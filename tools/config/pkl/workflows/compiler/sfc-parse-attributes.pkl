@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/sfc-parse-attributes.yml"
+      ".github/scripts/workflows/sfc-parse-attributes/**"
       "crates/vize_atelier_sfc/src/compile.rs"
       "crates/vize_atelier_sfc/src/compile/empty_component.rs"
       "crates/vize_atelier_sfc/src/module_shape.rs"
@@ -45,9 +46,11 @@ jobs {
       }
     }
     env {
+
       VIZE_SFC_ATTRS_SOURCE_SHA = "${{ matrix.role == 'base' && '49a98d1e72707083354b8ff11e1cec800ded28b3' || github.sha }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("sfc-parse-attributes")
       ci.checkoutAt("${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}")
       new Dynamic {
         uses = ci.checkout
@@ -64,12 +67,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify observer bootstrap and source roles"
-        run = """
-        node --test tests/tooling/sfc-parse-attributes-bootstrap.test.ts
-        node --test tests/tooling/sfc-parse-attributes-reference.test.ts
-        node tests/native/sfc-parse-attributes-source.mjs
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-observer-bootstrap-and-source-roles.sh""#
       }
       ci.rust("1.100.0")
       ci.wild()
@@ -86,31 +84,12 @@ jobs {
           SOURCE_ROLE = "${{ matrix.role }}"
           CARGO_TARGET_DIR = "${{ github.workspace }}/target"
         }
-        run = """
-        set -euo pipefail
-        source_dir="$GITHUB_WORKSPACE"
-        if [ "$SOURCE_ROLE" = base ]; then source_dir="$GITHUB_WORKSPACE/.attrs-base"; fi
-        test "$(git -C "$source_dir" rev-parse HEAD)" = "$VIZE_SFC_ATTRS_SOURCE_SHA"
-        cd "$source_dir"
-        if [ "$SOURCE_ROLE" = head ]; then
-          vp install --frozen-lockfile --prefer-offline
-        else
-          vp install --filter './npm/native...' --frozen-lockfile --prefer-offline
-        fi
-        vp run --filter @vizejs/native build:ci
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-canonical-source-image.sh""#
       }
       new Dynamic {
         name = "Seal each source role and capture complete API packets before comparisons"
         env { SOURCE_ROLE = "${{ matrix.role }}" }
-        run = """
-        set -euo pipefail
-        source_dir="$GITHUB_WORKSPACE"
-        if [ "$SOURCE_ROLE" = base ]; then source_dir="$GITHUB_WORKSPACE/.attrs-base"; fi
-        node tests/native/sfc-parse-attributes-capture.mjs "$source_dir" "$SOURCE_ROLE" "$GITHUB_WORKSPACE/artifacts/$SOURCE_ROLE"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/seal-each-source-role-and-capture-complete-api-packets-before-comparison.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

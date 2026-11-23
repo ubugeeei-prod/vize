@@ -8,6 +8,7 @@ on {
     types = List("opened", "synchronize", "reopened")
     paths = new Listing {
       ".github/workflows/cross-file-wasm-effects.yml"
+      ".github/scripts/workflows/cross-file-wasm-effects/**"
       "crates/vize_vitrine/src/wasm/cross_file.rs"
       "crates/vize_vitrine/src/wasm/cross_file/effect_summary/**"
       "crates/vize_vitrine/src/wasm/cross_file/effect_summary.rs"
@@ -31,6 +32,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-wasm-effects")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
       ci.workspaceVp()
       new Dynamic {
@@ -55,17 +57,7 @@ jobs {
       ci.command("Install frozen workspace tools", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Verify actual block grammars and binding owners"
-        run = #"""
-        mkdir -p target/vize-tests/cross-file-wasm-effects
-        cargo test --locked --profile ci -p vize_vitrine --no-default-features --features wasm --lib -- wasm::cross_file::effect_summary::tests:: --nocapture > target/vize-tests/cross-file-wasm-effects/rust.stdout 2> target/vize-tests/cross-file-wasm-effects/rust.stderr
-        cat target/vize-tests/cross-file-wasm-effects/rust.stdout
-        node --input-type=module <<'JS'
-        import assert from 'node:assert/strict';
-        import fs from 'node:fs';
-        assert.match(fs.readFileSync('target/vize-tests/cross-file-wasm-effects/rust.stdout', 'utf8'), /test result: ok\. 6 passed; 0 failed; 0 ignored;/u);
-        JS
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-actual-block-grammars-and-binding-owners.sh""#
       }
       ci.command("Build the existing actual WASM release configuration", "node tools/support/tasks/build-vize-wasm-package.ts")
       new Dynamic {

@@ -34,6 +34,19 @@ jobs:
       CARGO_PROFILE_RELEASE_CODEGEN_UNITS: 16
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/string-storage-bench/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.sha }}
@@ -59,7 +72,7 @@ jobs:
       # The cache action's nested local action resolves from the workspace root,
       # and this job checks the repository out under head/.
       - name: Expose the nested target action at the workspace root
-        run: mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/
+        run: . "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh"
       - uses: ./head/.github/actions/setup-rust-sticky-cache
         with:
           key: string-storage
@@ -73,9 +86,7 @@ jobs:
         run: node head/tools/benchmarks/scripts/string-storage.ts prepare
       - name: Check candidate CF semantics and lints
         working-directory: head
-        run: |
-          cargo test --profile ci -p vize_croquis_cf
-          cargo clippy -p vize_croquis_cf --lib --tests -- -D warnings
+        run: . "${{ env.VIZE_CI_FILES }}/check-candidate-cf-semantics-and-lints.sh"
       - name: Compare controlled production storage and traversal
         run: node head/tools/benchmarks/scripts/string-storage.ts measure
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

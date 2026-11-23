@@ -10,16 +10,18 @@ strategy {
 `runs-on` = ci.linux
 `timeout-minutes` = 35
 env {
+
   NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
   CARGO_BUILD_JOBS = "12"
   TEST_CASES_JOB = "PR package conformance (${{ matrix.surface }})"
   VIZE_TEST_CASES = "test-cases-js-conformance-${{ matrix.surface }}.json"
 }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("pr-js-checks")
   new Dynamic {
     name = "Explain documentation-only skip"
     `if` = "${{ !(inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}"
-    run = #"echo 'Fresco and UI conformance skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY""#
+    run = #". "${{ env.VIZE_CI_FILES }}/explain-documentation-only-skip-3.sh""#
   }
   new Dynamic {
     uses = ci.checkout
@@ -77,16 +79,12 @@ steps = new Listing {
   new Dynamic {
     name = "Check Fresco native declarations and consumer types"
     `if` = "${{ inputs.run-js && matrix.surface == 'fresco' && fromJSON(inputs.js-plan).conformance.fresco }}"
-    run = "vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types"
+    run = #". "${{ env.VIZE_CI_FILES }}/check-fresco-native-declarations-and-consumer-types.sh""#
   }
   new Dynamic {
     name = "Lint Fresco NAPI call sites and test corpus"
     `if` = "${{ inputs.run-js && matrix.surface == 'fresco' && fromJSON(inputs.js-plan).conformance.fresco }}"
-    run = """
-    cargo clippy --locked --profile ci -p vize_fresco --features napi --lib -- -D warnings
-    cargo clippy --locked --profile ci -p vize_fresco --lib --tests -- -D warnings
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/lint-fresco-napi-call-sites-and-test-corpus.sh""#
   }
   new Dynamic {
     name = "Check UI package conformance"
@@ -128,15 +126,7 @@ steps = new Listing {
     name = "Verify packaged direct-child props with source native on Node 22"
     `if` = "${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}"
     shell = "bash"
-    run = """
-    set -euo pipefail
-    capture="$RUNNER_TEMP/direct-child-props-source-11809"
-    mkdir -p "$capture"
-    node npm/native/scripts/native-build-receipt.mjs >"$capture/producer.stdout" 2>"$capture/producer.stderr"
-    (cd npm/cli && vp pack) >"$capture/cli-pack.stdout" 2>"$capture/cli-pack.stderr"
-    node tools/support/compat/content-mapper/direct-child-props-11809.ts --capture "$capture" >"$capture/consumer.stdout" 2>"$capture/consumer.stderr"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/verify-packaged-direct-child-props-with-source-native-on-node-22.sh""#
   }
   new Dynamic {
     name = "Retain source reporter archives and whole outcomes"
@@ -162,16 +152,7 @@ steps = new Listing {
       VIZE_IMPORTED_TYPES_REQUIRE_SOURCE = "1"
       VIZE_IMPORTED_TYPES_SOURCE_SHA = "${{ github.sha }}"
     }
-    run = """
-    set -euo pipefail
-    shopt -s nullglob
-    bindings=("$GITHUB_WORKSPACE"/npm/native/*.node)
-    test "${#bindings[@]}" -eq 1
-    capture="$RUNNER_TEMP/imported-type-project"
-    mkdir -p "$capture"
-    node tests/native/imported-type-project-stats.ts "${bindings[0]}" "$capture/receipt.json"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/verify-imported-type-projects-with-the-built-native-image.sh""#
   }
   new Dynamic {
     name = "Retain imported type project inputs and source receipts"

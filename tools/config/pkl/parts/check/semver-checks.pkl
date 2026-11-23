@@ -26,6 +26,9 @@ strategy {
     }
   }
 }
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/check"
+}
 steps = new Listing {
   new Dynamic {
     uses = ci.checkout
@@ -43,10 +46,7 @@ steps = new Listing {
   new Dynamic {
     name = "Use candidate version for SemVer classification"
     // cargo-semver-checks derives the release type from the bumped version.
-    run = """
-    : > "$RUNNER_TEMP/semver-change-marker.txt"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/use-candidate-version-for-semver-classification.sh""#
   }
   new Dynamic {
     uses = "./.github/actions/setup-wild-http-recovery"

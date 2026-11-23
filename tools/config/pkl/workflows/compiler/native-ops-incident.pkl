@@ -8,6 +8,7 @@ on {
       ".github/scripts/native-ops-driver.ts"
       ".github/scripts/native-ops-data.ts"
       ".github/workflows/native-ops-incident.yml"
+      ".github/scripts/workflows/native-ops-incident/**"
       "tests/tooling/native-ops-workflow.test.ts"
     }
   }
@@ -42,6 +43,9 @@ jobs {
     name = "Short-lived native observer control only"
     `runs-on` = ci.linux
     `timeout-minutes` = 5
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/native-ops-incident"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -53,23 +57,11 @@ jobs {
       }
       new Dynamic {
         name = "Install debugger for synthetic-only hosted controls"
-        run = """
-        sudo apt-get update
-        sudo apt-get install --no-install-recommends --no-upgrade gdb
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-debugger-for-synthetic-only-hosted-controls.sh""#
       }
       new Dynamic {
         name = "Require and record synthetic diagnostic tools"
-        run = """
-        command -v gdb
-        command -v cc
-        mkdir -p "$RUNNER_TEMP/native-ops-pr-private"
-        gdb --version > "$RUNNER_TEMP/native-ops-pr-private/gdb-version.txt"
-        cc --version > "$RUNNER_TEMP/native-ops-pr-private/cc-version.txt"
-        dpkg-query --show gdb libc6 > "$RUNNER_TEMP/native-ops-pr-private/package-versions.txt"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/require-and-record-synthetic-diagnostic-tools.sh""#
       }
       new Dynamic {
         name = "Validate actual fork, exec, thread and signal propagation"
@@ -100,11 +92,13 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 35
     env {
+
       NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
       CARGO_BUILD_JOBS = "12"
       VIZE_JS_PACKAGE_GROUP = "builders"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("native-ops-incident")
       new Dynamic {
         name = "Check out the reviewed observer orchestration"
         uses = ci.checkout
@@ -112,12 +106,7 @@ jobs {
       }
       new Dynamic {
         name = "Preserve reviewed helpers outside the tested source checkout"
-        run = """
-        mkdir "$RUNNER_TEMP/native-ops-harness"
-        cp .github/scripts/native-ops-driver.ts .github/scripts/native-ops-data.ts "$RUNNER_TEMP/native-ops-harness/"
-        sha256sum "$RUNNER_TEMP/native-ops-harness/"*.ts
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-reviewed-helpers-outside-the-tested-source-checkout.sh""#
       }
       new Dynamic {
         name = "Check out the exact original failing source"
@@ -129,14 +118,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify source and record read-only runner context"
-        run = """
-        test "$(git rev-parse HEAD)" = 710dfca619c82d76078a72ee64629632c798dea5
-        mkdir "$RUNNER_TEMP/native-ops-private"
-        uname -a > "$RUNNER_TEMP/native-ops-private/uname.txt"
-        cat /proc/self/limits > "$RUNNER_TEMP/native-ops-private/initial-limits.txt"
-        cat /proc/cpuinfo > "$RUNNER_TEMP/native-ops-private/cpuinfo.txt"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-source-and-record-read-only-runner-context.sh""#
       }
       ci.use("./.github/actions/cache-vp-bootstrap")
       new Dynamic {
@@ -165,13 +147,7 @@ jobs {
       }
       new Dynamic {
         name = "Require existing diagnostic tools without changing runtime packages"
-        run = """
-        command -v gdb
-        command -v cc
-        gdb --version > "$RUNNER_TEMP/native-ops-private/gdb-version.txt"
-        cc --version > "$RUNNER_TEMP/native-ops-private/control-cc-version.txt"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/require-existing-diagnostic-tools-without-changing-runtime-packages.sh""#
       }
       new Dynamic {
         name = "Prove short fork, exec, thread and original signal propagation"
@@ -179,30 +155,13 @@ jobs {
       }
       new Dynamic {
         name = "Run the original source command once"
-        run = #"""
-        node "$RUNNER_TEMP/native-ops-harness/native-ops-driver.ts" original \
-          "$RUNNER_TEMP/native-ops-private/original" \
-          "$RUNNER_TEMP/native-ops-private/control/control-complete.json"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/run-the-original-source-command-once.sh""#
       }
       new Dynamic {
         name = "Seal a public projection independently of the tracing process"
         id = "public-forensic"
         `if` = "always()"
-        run = #"""
-        node "$RUNNER_TEMP/native-ops-harness/native-ops-driver.ts" publish \
-          "$RUNNER_TEMP/native-ops-private" "$RUNNER_TEMP/native-ops-public" \
-          "$RUNNER_TEMP/js-native-fault-evidence-*" \
-          "npm/native/.artifacts/native/formatter-history" \
-          "target/template-style-fixes-7905.json" \
-          "target/oxlint-original-locations-7904.json" \
-          "target/oxlint-original-project-checks-7903.json" \
-          "target/oxlint-script-safe-carrier-7903.json" \
-          "target/oxlint-original-html-binding-7903" \
-          "target/vize-tests/original-sfc-host-7004-7005-*"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/seal-a-public-projection-independently-of-the-tracing-process.sh""#
       }
       new Dynamic {
         name = "Preserve only sealed public forensic projections"

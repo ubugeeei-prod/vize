@@ -1,0 +1,7 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"sed -i '/# Added by wild GitHub Action/,/^rustflags/d' "$HOME/.cargo/config.toml" || true"#
+}

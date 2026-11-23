@@ -23,6 +23,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/pr-rust-differential"
       CARGO_BUILD_JOBS: "24"
       RUST_TEST_THREADS: "4"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
@@ -59,7 +60,7 @@ jobs:
         if: ${{ matrix.lane == 'program' || matrix.lane == 'sfc-project' || matrix.lane == 'navigation' }}
         run: git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
       - name: Materialize affected Rust plan
-        run: node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
+        run: . "${{ env.VIZE_CI_FILES }}/materialize-affected-rust-plan.sh"
       - name: Run affected feature and production corpora
         if: ${{ matrix.lane != 'navigation' && matrix.lane != 'none' }}
         env: { DIFFERENTIAL_LANE: "${{ matrix.lane }}" }

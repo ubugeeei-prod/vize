@@ -21,6 +21,7 @@ outputs {
   `affected-tooling-matrix` = "${{ steps.tooling-plan.outputs.tooling-matrix }}"
 }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("pr-source-checks")
   new Dynamic {
     uses = ci.checkout
     with {
@@ -30,7 +31,7 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Expand the source planner checkout"
-    run = "git sparse-checkout set --no-cone --stdin < .github/source-plan-sparse-checkout"
+    run = #". "${{ env.VIZE_CI_FILES }}/expand-the-source-planner-checkout.sh""#
   }
   new Dynamic {
     uses = ci.setupNode
@@ -46,14 +47,7 @@ steps = new Listing {
       EVENT_BASE_SHA = "${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}"
       PR_HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
     }
-    run = """
-    comparison_base="$(node tools/support/compat/github/comparison-base.ts)"
-    if [[ ! "$comparison_base" =~ ^0+$ ]]; then
-      # Only the two trees are compared, so the base needs no history.
-      git fetch --no-tags --depth=1 origin "$comparison_base"
-    fi
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/resolve-and-fetch-comparison-base.sh""#
   }
   new Dynamic {
     name = "Plan source checks"

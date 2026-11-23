@@ -1,3 +1,4 @@
+import { readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { type ChildProcess, spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
@@ -411,10 +412,7 @@ test("performance targets require every correct p50 and p99 plus cold and warm m
 });
 
 test("the workflow keeps evidence after failure and measures the checked-out source", () => {
-  const workflow = readFileSync(
-    new URL("../../.github/workflows/lsp-vs-volar.yml", import.meta.url),
-    "utf8",
-  );
+  const workflow = readWorkflowShell("lsp-vs-volar");
   const upload = workflow
     .split(/^      - /m)
     .find((step) => step.startsWith("uses: actions/upload-artifact@"));

@@ -6,6 +6,7 @@ on {
     paths = new Listing {
       ".github/workflows/full-worker-contracts.yml"
       ".github/workflows/check.yml"
+      ".github/scripts/workflows/check/**"
       ".github/workflows/full-tooling-plan.yml"
       ".github/actions/test-full-tooling/**"
       ".github/actions/test-native-js-setup/**"

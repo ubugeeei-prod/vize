@@ -5,14 +5,16 @@ name = "PR Oxlint original project qualification"
 `runs-on` = ci.linux
 `timeout-minutes` = 35
 env {
+
   NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
   CARGO_BUILD_JOBS = "12"
 }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("pr-js-checks")
   new Dynamic {
     name = "Explain documentation-only skip"
     `if` = "${{ !inputs.run-js }}"
-    run = #"echo 'Oxlint project qualification skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY""#
+    run = #". "${{ env.VIZE_CI_FILES }}/explain-documentation-only-skip-2.sh""#
   }
   new Dynamic {
     uses = ci.checkout

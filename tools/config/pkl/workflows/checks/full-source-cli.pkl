@@ -26,6 +26,9 @@ jobs {
       `receipt-sha256` = "${{ steps.pack.outputs.receipt-sha256 }}"
       `producer-attempt` = "${{ steps.pack.outputs.producer-attempt }}"
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/full-source-cli"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       ci.workspaceVp()
@@ -43,7 +46,7 @@ jobs {
       }
       new Dynamic {
         name = "Build vize CLI and SFC oracle with original receipts"
-        run = "cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts && cat target/ci/vize.differential-build.json && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-vize-cli-and-sfc-oracle-with-original-receipts.sh""#
       }
       new Dynamic {
         name = "Pack original source binaries and receipt"

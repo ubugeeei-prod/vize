@@ -1,3 +1,4 @@
+import { readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import {
   chmodSync,
@@ -28,10 +29,7 @@ const vize: Tool = { label: "vize", kind: "vize", bin: "/unused", env: {} };
 const project = { id: "fixture", cwd: "/unused", tsconfig: "tsconfig.json" };
 
 test("Actions retains partial evidence after failure and records the source actually checked out", () => {
-  const workflow = readFileSync(
-    new URL("../../.github/workflows/typecheck-vs-vue-tsc.yml", import.meta.url),
-    "utf8",
-  );
+  const workflow = readWorkflowShell("typecheck-vs-vue-tsc");
   const upload = workflow
     .split(/^      - /m)
     .find((step) => step.startsWith("uses: actions/upload-artifact@"));

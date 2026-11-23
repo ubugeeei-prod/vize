@@ -78,12 +78,13 @@ jobs {
       receipt_run_attempt = "${{ steps.receipt-run.outputs.attempt }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("v1-exact-candidate")
       ci.checkoutAt("${{ inputs.candidate_sha }}")
       new Dynamic {
         name = "Verify the exact candidate checkout"
         shell = "bash"
         env { CANDIDATE_SHA = "${{ inputs.candidate_sha }}" }
-        run = #"test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA""#
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-the-exact-candidate-checkout.sh""#
       }
       new Dynamic {
         uses = ci.setupNode
@@ -101,19 +102,7 @@ jobs {
           CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
           RECEIPT_RUN_ID = "${{ inputs.receipt_run_id }}"
         }
-        run = #"""
-        [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]
-        [[ "$RECEIPT_RUN_ID" =~ ^[1-9][0-9]*$ ]]
-        IFS=$'\t' read -r run source attempt < <(
-          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RECEIPT_RUN_ID" \
-            --jq '[.id, .head_sha, .run_attempt] | @tsv'
-        )
-        test "$run" = "$RECEIPT_RUN_ID"
-        test "$source" = "$CANDIDATE_SHA"
-        [[ "$attempt" =~ ^[1-9][0-9]*$ ]]
-        printf 'run=%s\nattempt=%s\n' "$run" "$attempt" >> "$GITHUB_OUTPUT"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/bind-the-receipt-run-to-the-exact-candidate.sh""#
       }
       new Dynamic {
         name = "Download the immutable receipt bundle"
@@ -156,6 +145,7 @@ jobs {
       matrix = "${{ fromJSON(needs.plan.outputs.hosts) }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("v1-exact-candidate")
       ci.checkoutAt("${{ inputs.candidate_sha }}")
       new Dynamic {
         uses = ci.setupNode
@@ -175,20 +165,12 @@ jobs {
         name = "Admit exact positive, negative and qualification receipts"
         shell = "bash"
         env {
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN = "${{ needs.plan.outputs.receipt_run }}"
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT = "${{ needs.plan.outputs.receipt_run_attempt }}"
           CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
           HOST_ID = "${{ matrix.id }}"
         }
-        run = #"""
-        mkdir -p .qualification/admission
-        node tools/commands/release/v1-exact-candidate.ts validate-host \
-          --candidate "$CANDIDATE_SHA" \
-          --host "$HOST_ID" \
-          --run "${{ needs.plan.outputs.receipt_run }}" \
-          --run-attempt "${{ needs.plan.outputs.receipt_run_attempt }}" \
-          --receipts .qualification/receipts/v1-exact-candidate-receipts.json \
-          --output ".qualification/admission/$CANDIDATE_SHA-$HOST_ID.json"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/admit-exact-positive-negative-and-qualification-receipts.sh""#
       }
       new Dynamic {
         name = "Preserve immutable host admission"
@@ -209,6 +191,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 5
     steps = new Listing {
+      ...ci.stageWorkflowScripts("v1-exact-candidate")
       ci.checkoutAt("${{ inputs.candidate_sha }}")
       new Dynamic {
         uses = ci.setupNode
@@ -229,32 +212,23 @@ jobs {
       new Dynamic {
         name = "Assemble the exact-candidate manifest"
         shell = "bash"
-        env { CANDIDATE_SHA = "${{ inputs.candidate_sha }}" }
-        run = #"""
-        node tools/commands/release/v1-exact-candidate.ts admit \
-          --candidate "$CANDIDATE_SHA" \
-          --run "${{ needs.plan.outputs.receipt_run }}" \
-          --run-attempt "${{ needs.plan.outputs.receipt_run_attempt }}" \
-          --admissions .qualification/admissions \
-          --output .qualification/v1-exact-candidate-manifest.json
-
-        """#
+        env {
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN = "${{ needs.plan.outputs.receipt_run }}"
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT = "${{ needs.plan.outputs.receipt_run_attempt }}"
+          CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/assemble-the-exact-candidate-manifest.sh""#
       }
       new Dynamic {
         name = "Enforce complete exact-candidate host qualification"
         `if` = "${{ inputs.enforce_complete }}"
         shell = "bash"
-        env { CANDIDATE_SHA = "${{ inputs.candidate_sha }}" }
-        run = #"""
-        node tools/commands/release/v1-exact-candidate.ts admit \
-          --candidate "$CANDIDATE_SHA" \
-          --run "${{ needs.plan.outputs.receipt_run }}" \
-          --run-attempt "${{ needs.plan.outputs.receipt_run_attempt }}" \
-          --admissions .qualification/admissions \
-          --output .qualification/v1-exact-candidate-manifest.json \
-          --enforce-complete
-
-        """#
+        env {
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN = "${{ needs.plan.outputs.receipt_run }}"
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT = "${{ needs.plan.outputs.receipt_run_attempt }}"
+          CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/enforce-complete-exact-candidate-host-qualification.sh""#
       }
       new Dynamic {
         name = "Preserve the admitted manifest"

@@ -59,6 +59,19 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/criterion-bench/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Checkout head
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -77,15 +90,7 @@ jobs:
           BASE_SHA: ${{ inputs.base_sha }}
           HEAD_SHA: ${{ inputs.head_sha }}
           DISPATCH_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$BASE_SHA" != "$HEAD_SHA" ]]
-          [[ "$HEAD_SHA" == "$DISPATCH_SHA" ]]
-          [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
-          [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
-          git -C head merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/validate-exact-benchmark-commits.sh"
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
       # The A/B driver is plain Node (no npm deps); pin the runtime so the
@@ -101,20 +106,7 @@ jobs:
           PR_BASE_SHA: ${{ inputs.base_sha }}
           PR_HEAD_SHA: ${{ inputs.head_sha }}
           VAPOR_ONLY: ${{ inputs.vapor_only }}
-        run: |
-          if [[ "$VAPOR_ONLY" == "true" ]]; then
-            printf '%s\n' '{"selected":["vize_atelier_vapor"],"reason":"Explicit Davinci Vapor native/retained comparison."}' > "$GITHUB_WORKSPACE/criterion-impact.json"
-            echo 'has_suites=true' >> "$GITHUB_OUTPUT"
-          else
-            node head/tools/benchmarks/scripts/criterion-impact.ts \
-              --repo-dir "$GITHUB_WORKSPACE/head" \
-              --base-sha "$PR_BASE_SHA" \
-              --head-sha "$PR_HEAD_SHA" \
-              --out "$GITHUB_WORKSPACE/criterion-impact.json"
-          fi
-          if node -e 'const s = require(process.argv[1]); process.exit(s.selected.includes("vize_atelier_vapor") ? 0 : 1)' "$GITHUB_WORKSPACE/criterion-impact.json"; then
-            echo 'vapor_selected=true' >> "$GITHUB_OUTPUT"
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/select-affected-criterion-suites.sh"
       - name: Setup Wild linker
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: steps.impact.outputs.has_suites == 'true'
@@ -125,7 +117,7 @@ jobs:
       # The cache action's nested local action resolves from the workspace root,
       # and this job checks the repository out under head/.
       - name: Expose the nested target action at the workspace root
-        run: mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/
+        run: . "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh"
       - name: Mount Criterion cache
         uses: ./head/.github/actions/setup-rust-sticky-cache
         if: steps.impact.outputs.has_suites == 'true'
@@ -146,14 +138,7 @@ jobs:
       # The runner compares exported baseline snapshots, so base/head builds do
       # not share one Cargo target graph.
       - name: Run criterion A/B
-        run: |
-          node head/tools/benchmarks/scripts/criterion-ab.ts \
-            --base-dir "$GITHUB_WORKSPACE/base" \
-            --head-dir "$GITHUB_WORKSPACE/head" \
-            --target-dir "$GITHUB_WORKSPACE/head/target" \
-            --selection "$GITHUB_WORKSPACE/criterion-impact.json" \
-            ${CRITERION_AB_THRESHOLD:+--threshold "$CRITERION_AB_THRESHOLD"} \
-            --out "$GITHUB_WORKSPACE/criterion-ab-summary.md"
+        run: . "${{ env.VIZE_CI_FILES }}/run-criterion-a-b.sh"
       - name: Install pinned official compiler-vapor
         if: steps.impact.outputs.vapor_selected == 'true'
         working-directory: head
@@ -162,12 +147,7 @@ jobs:
         if: steps.impact.outputs.vapor_selected == 'true'
         env:
           HEAD_SHA: ${{ inputs.head_sha }}
-        run: |
-          node head/tools/benchmarks/scripts/vapor-compiler-compare.ts \
-            --head-sha "$HEAD_SHA" \
-            --criterion "$GITHUB_WORKSPACE/head/target/criterion-ab-head.json" \
-            --out "$GITHUB_WORKSPACE/vapor-compiler-comparison.json" \
-            --summary "$GITHUB_WORKSPACE/vapor-compiler-comparison.md"
+        run: . "${{ env.VIZE_CI_FILES }}/compare-vapor-l3-retained-and-official-compiler-on-exact-head.sh"
       - name: Upload criterion A/B summary
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -188,6 +168,19 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/criterion-bench/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Checkout head
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -219,13 +212,7 @@ jobs:
       - name: Generate Vue 3 corpus
         run: node tools/benchmarks/scripts/generate.mjs "$DIALECT_GUARD_FILE_COUNT"
       - name: Compare legacy OFF vs ON
-        run: |
-          node tools/benchmarks/scripts/dialect-guard.ts \
-            --input tools/benchmarks/scripts/__in__ \
-            --off-bin target/off/ci-opt/vize \
-            --on-bin target/on/ci-opt/vize \
-            --out-dir "$GITHUB_WORKSPACE/dialect-guard-out" \
-            --threshold "$DIALECT_GUARD_THRESHOLD_PERCENT"
+        run: . "${{ env.VIZE_CI_FILES }}/compare-legacy-off-vs-on.sh"
   production-pairs:
     if: ${{ !inputs.sfc_optional_lifecycle_only && inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}
     name: Production pairs (measurement ${{ matrix.repetition }})
@@ -238,6 +225,19 @@ jobs:
       matrix:
         repetition: [1, 2, 3]
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/criterion-bench/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.head_sha }}
@@ -248,13 +248,7 @@ jobs:
           BASE_SHA: ${{ inputs.base_sha }}
           HEAD_SHA: ${{ inputs.head_sha }}
           DISPATCH_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$HEAD_SHA" == "$DISPATCH_SHA" ]]
-          [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
-          git merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/validate-exact-production-comparison-head.sh"
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable, components: clippy }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -269,32 +263,18 @@ jobs:
           node-version-file: package.json
           run-install: false
       - name: Check scoped selector and benchmark compile contract
-        run: |
-          vp exec cargo test -p vize_atelier_vapor --features davinci-benchmark --lib compile::benchmark::tests
-          vp exec cargo clippy -p vize_atelier_sfc --features davinci-production-bench --example davinci_production_perf -- -D warnings -D clippy::wildcard_imports
+        run: . "${{ env.VIZE_CI_FILES }}/check-scoped-selector-and-benchmark-compile-contract.sh"
       - name: Build before timed windows
         run: vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features davinci-production-bench --example davinci_production_perf
       - name: Measure shipping adapter pairs
         env:
           VIZE_BENCH_HEAD_SHA: ${{ inputs.head_sha }}
-        run: |
-          mkdir -p production-perf
-          target/ci-opt/examples/davinci_production_perf production-perf/samples.json
-          {
-            git rev-parse HEAD
-            rustc --version --verbose
-            uname -a
-            lscpu
-          } > production-perf/runner.txt
+        run: . "${{ env.VIZE_CI_FILES }}/measure-shipping-adapter-pairs.sh"
       - name: Collect detailed bridge attribution in a separate binary
         if: ${{ matrix.repetition == 1 }}
         env:
           VIZE_BENCH_HEAD_SHA: ${{ inputs.head_sha }}
-        run: |
-          vp exec cargo clippy -p vize_l1_to_l2 --features davinci-benchmark-profile --lib -- -D warnings -D clippy::wildcard_imports
-          vp exec cargo clippy -p vize_atelier_sfc --features davinci-production-profile --example davinci_production_perf -- -D warnings -D clippy::wildcard_imports
-          vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features davinci-production-profile --example davinci_production_perf
-          target/ci-opt/examples/davinci_production_perf production-perf/bridge-attribution.json --attribution-only
+        run: . "${{ env.VIZE_CI_FILES }}/collect-detailed-bridge-attribution-in-a-separate-binary.sh"
       - name: Upload raw samples and separate attribution profiles
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

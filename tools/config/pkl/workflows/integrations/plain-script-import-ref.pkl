@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/plain-script-import-ref.yml"
+      ".github/scripts/workflows/plain-script-import-ref/**"
       "tools/support/compat/plain-script-import-ref.ts"
       "tests/tooling/support/setup-component-bracket-reference.ts"
       "tests/tooling/support/typescript-erasure-reference.ts"
@@ -72,12 +73,14 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
     env {
+
       SOURCE_SHA = "db5c35c12124086f034563b6800dbdab8605cdc0"
       VIZE10903_MODE = "source"
       VIZE10903_EXPECT = "before"
       VIZE10903_PROOF = "/tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/source-before"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("plain-script-import-ref")
       ci.checkoutAt("db5c35c12124086f034563b6800dbdab8605cdc0")
       new Dynamic {
         name = "Read qualification sources separately from the frozen compiler"
@@ -120,15 +123,7 @@ jobs {
       ci.use("./qualification/.github/actions/setup-rust-script")
       new Dynamic {
         name = "Build the unchanged baseline native image and real Vite adapter"
-        run = """
-        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-        vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
-        vp run --workspace-root build:native:test
-        vp run --workspace-root build:vite-plugin
-        GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs
-        git diff --exit-code -- crates davinci vendor npm/builder/vite/src
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-unchanged-baseline-native-image-and-real-vite-adapter.sh""#
       }
       new Dynamic {
         name = "Capture the actual baseline regression before candidate acceptance"
@@ -160,12 +155,14 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
     env {
+
       SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
       VIZE10903_MODE = "source"
       VIZE10903_EXPECT = "after"
       VIZE10903_PROOF = "/tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/candidate"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("plain-script-import-ref")
       ci.checkoutAt("${{ env.SOURCE_SHA }}")
       new Dynamic {
         uses = ci.setupVp121
@@ -192,24 +189,11 @@ jobs {
       ci.use("./.github/actions/setup-rust-script")
       new Dynamic {
         name = "Build the exact candidate native image and real Vite adapter"
-        run = """
-        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-        vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
-        vp run --workspace-root build:native:test
-        vp run --workspace-root build:vite-plugin
-        GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs
-        git diff --exit-code -- crates davinci vendor npm/builder/vite/src
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-unchanged-baseline-native-image-and-real-vite-adapter.sh""#
       }
       new Dynamic {
         name = "Verify exact import classifications and merge flags"
-        run = """
-        mkdir -p "$VIZE10903_PROOF"
-        cargo test -p vize_atelier_sfc --lib compile::bindings::tests::normal_script_imports_preserve_vue_ref_boundaries -- --exact 2>&1 | tee "$VIZE10903_PROOF/classification-test.log"
-        node -e 'const assert = require("node:assert/strict"); const fs = require("node:fs"); assert(fs.readFileSync(process.env.VIZE10903_PROOF + "/classification-test.log", "utf8").includes("1 passed; 0 failed"));'
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-exact-import-classifications-and-merge-flags.sh""#
       }
       new Dynamic {
         name = "Verify full modules maps and original production/dev browser behavior"
@@ -231,44 +215,7 @@ jobs {
         env {
           BEFORE = "/tmp/vize-plain-script-${{ github.run_id }}-${{ github.run_attempt }}/before-evidence/performance.json"
         }
-        run = #"""
-        node --input-type=module -e '
-        import assert from "node:assert/strict";
-        import { readFileSync, writeFileSync } from "node:fs";
-        import { createRequire } from "node:module";
-        import { setupComponentBracketReference } from "./tests/tooling/support/setup-component-bracket-reference.ts";
-        import { typescriptErasureReference } from "./tests/tooling/support/typescript-erasure-reference.ts";
-        import { assertSetupLiteralMovesIntoSetup, plainScriptProjectMetadataReference } from "./tests/tooling/support/plain-script-project-metadata-reference.ts";
-        const { parse } = createRequire(process.env.VIZE10903_PROOF + "/host/package.json")("@babel/parser");
-        const priorPackets = JSON.parse(readFileSync(process.env.BEFORE.replace("performance.json", "full-module-packets.json")));
-        const nextPackets = JSON.parse(readFileSync(process.env.VIZE10903_PROOF + "/full-module-packets.json"));
-        const setupComponents = { original: "Child", "named-alias": "Child", "default-unknown": "Child", "constant-controls": "DefaultAlias" };
-        assert.equal(priorPackets.length, nextPackets.length);
-        for (let i = 0; i < priorPackets.length; i++) {
-          const prior = priorPackets[i], next = nextPackets[i];
-          for (const key of ["case", "filename", "source", "sourceSha256", "options", "official"]) assert.deepEqual(prior[key], next[key]);
-          const assertProgram = prior.case === "constant-controls" && prior.filename === "src/App.vue" ? assertSetupLiteralMovesIntoSetup : undefined;
-          if (!prior.options.inlineTemplate && prior.filename === "src/App.vue") {
-            const component = setupComponents[prior.case];
-            assert.equal(typeof component, "string", `missing setup component reference for ${prior.case}`);
-            assert.deepEqual(plainScriptProjectMetadataReference(prior, typescriptErasureReference(setupComponentBracketReference(prior.native, component), next.native, parse, assertProgram), process.cwd()), next.native);
-          } else if (prior.filename === "src/Child.vue" || prior.case === "constant-controls") assert.deepEqual(plainScriptProjectMetadataReference(prior, typescriptErasureReference(prior.native, next.native, parse, assertProgram), process.cwd()), next.native);
-        }
-        const before = JSON.parse(readFileSync(process.env.BEFORE));
-        const after = JSON.parse(readFileSync(process.env.VIZE10903_PROOF + "/performance.json"));
-        const beforeIdentity = JSON.parse(readFileSync(process.env.BEFORE.replace("performance.json", "native-identity.json")));
-        const afterIdentity = JSON.parse(readFileSync(process.env.VIZE10903_PROOF + "/native-identity.json"));
-        for (const key of ["inputSha256", "options", "warmup", "iterations"]) assert.deepEqual(before[key], after[key]);
-        assert.notEqual(before.source, after.source);
-        assert.equal(afterIdentity.source, process.env.SOURCE_SHA);
-        assert.equal(afterIdentity.receipt.source, process.env.SOURCE_SHA);
-        assert.equal(afterIdentity.receipt.identity.token, afterIdentity.token);
-        assert.equal(afterIdentity.receipt.binary.sha256, afterIdentity.imageSha256);
-        assert.notEqual(beforeIdentity.imageSha256, afterIdentity.imageSha256);
-        writeFileSync(process.env.VIZE10903_PROOF + "/same-work-comparison.json", JSON.stringify({ before, after, beforeIdentity, afterIdentity, policy: "exact specified packet advance; performance observation only" }, null, 2) + "\n");
-        '
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/record-same-work-performance-without-a-speed-threshold.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

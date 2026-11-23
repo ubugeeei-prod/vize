@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+mapfile -t archives < <(find "$RUNNER_TEMP/source-symbolizer-replay-download" -type f -name '*.tgz')
+[[ "${#archives[@]}" == 1 ]]
+tar -xzf "${archives[0]}" -C "$RUNNER_TEMP" \
+  cold-scale/record-head/direct-process/perf.data \
+  cold-scale/record-head/direct-process/receipt.json \
+  cold-scale/binaries/normal-head/vize \
+  cold-scale/builds/normal-head.json
+provider="$RUNNER_TEMP/source-symbolizer-provider"
+mkdir "$provider"
+node "$VIZE_CI_FILES/restore-the-sealed-normal-binary-and-prepare-bounded-public-controls.cjs" > "$provider/package.json"
+npm install --prefix "$provider" --ignore-scripts --no-audit --no-fund
+node tools/benchmarks/scripts/source-symbolizer-stages.ts --perf "$SMOKE_PERF" \
+  --out "$out/bounded" --root "$RUNNER_TEMP/cold-scale" --provider "$provider" \
+  --carrier "$out/carrier/result.json"

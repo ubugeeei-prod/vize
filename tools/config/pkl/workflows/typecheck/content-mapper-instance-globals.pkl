@@ -35,6 +35,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 5
     steps = new Listing {
+      ...ci.stageWorkflowScripts("content-mapper-instance-globals")
       new Dynamic {
         name = "Admit the immutable event source before building"
         env {
@@ -42,16 +43,7 @@ jobs {
           EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}"
           PR_HEAD = "${{ github.event.pull_request.head.sha }}"
         }
-        run = """
-        if [ "$SOURCE_EVENT" = workflow_dispatch ]; then
-          [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
-        else
-          test "$SOURCE_EVENT" = pull_request
-          [[ "$PR_HEAD" =~ ^[0-9a-f]{40}$ ]]
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/admit-the-immutable-event-source-before-building.sh""#
       }
     }
   }
@@ -63,7 +55,10 @@ jobs {
     needs = "source-cli"
     `runs-on` = ci.linux
     `timeout-minutes` = 25
-    env { VIZE_SOURCE_CLI_RECEIPT_SHA256 = "${{ needs.source-cli.outputs.receipt-sha256 }}" }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/content-mapper-instance-globals"
+      VIZE_SOURCE_CLI_RECEIPT_SHA256 = "${{ needs.source-cli.outputs.receipt-sha256 }}"
+    }
     steps = new Listing {
       new Dynamic {
         name = "Checkout the same source as the immutable producer"
@@ -80,20 +75,7 @@ jobs {
           EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}"
           PR_HEAD = "${{ github.event.pull_request.head.sha }}"
         }
-        run = """
-        test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-        if [ "$SOURCE_EVENT" = workflow_dispatch ]; then
-          [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
-        else
-          test "$SOURCE_EVENT" = pull_request
-          test "$(git rev-parse HEAD^2)" = "$PR_HEAD"
-        fi
-        git diff --exit-code HEAD
-        mkdir -p "$RUNNER_TEMP/instance-globals-10617"
-        git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/instance-globals-10617/source-identity.txt"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/require-the-reviewed-source-and-retain-merge-identity.sh""#
       }
       new Dynamic {
         name = "Checkout the pinned source host"
@@ -138,50 +120,16 @@ jobs {
       }
       new Dynamic {
         name = "Retain the original producer receipt and executable hash"
-        run = """
-        cp target/ci/vize.differential-build.json "$RUNNER_TEMP/instance-globals-10617/source-build.json"
-        sha256sum target/ci/vize > "$RUNNER_TEMP/instance-globals-10617/source-cli.sha256"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/retain-the-original-producer-receipt-and-executable-hash.sh""#
       }
       new Dynamic {
         name = "Build the real source host and retain its complete authority"
         `working-directory` = "typescript-content-mapper/tsc"
-        run = """
-        mkdir -p "$RUNNER_TEMP/instance-globals-source-host"
-        go build -tags=noembed -trimpath -o "$RUNNER_TEMP/instance-globals-source-host/tsgo" ./cmd/tsc
-        cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/instance-globals-source-host/"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-real-source-host-and-retain-its-complete-authority.sh""#
       }
       new Dynamic {
         name = "Bind the source host receipt to this source and run"
-        run = #"""
-        vp node --input-type=module <<'JS'
-        import assert from 'node:assert/strict';
-        import { readFileSync, writeFileSync, realpathSync } from 'node:fs';
-        import { createHash } from 'node:crypto';
-        import { execFileSync, spawnSync } from 'node:child_process';
-        const upstream = execFileSync('git', ['-C', 'typescript-content-mapper', 'rev-parse', 'HEAD'], {encoding:'utf8'}).trim();
-        assert.equal(upstream, 'd6c4afddb2c55f4a9dea7b59293a99a8fdea1799');
-        const binary = realpathSync(`${process.env.RUNNER_TEMP}/instance-globals-source-host/tsgo`);
-        const bytes = readFileSync(binary);
-        const result = spawnSync(binary, ['--version'], {encoding:'utf8'});
-        assert.equal(result.status, 0);
-        assert.equal(result.stderr, '');
-        const receipt = {
-          schema:'vize.instance-globals-source-host', version:1,
-          repository:'microsoft/TypeScript', upstream,
-          source:execFileSync('git', ['rev-parse','HEAD'], {encoding:'utf8'}).trim(),
-          run:process.env.GITHUB_RUN_ID, binary,
-          sha256:createHash('sha256').update(bytes).digest('hex'), size:bytes.length,
-          compilerVersion:{status:result.status,signal:result.signal,error:null,stdout:result.stdout,stderr:result.stderr},
-        };
-        writeFileSync(`${process.env.RUNNER_TEMP}/instance-globals-10617/source-host.json`, JSON.stringify(receipt,null,2)+'\n');
-        JS
-        tar -C "$RUNNER_TEMP" -czf "$RUNNER_TEMP/instance-globals-10617/source-host.tar.gz" instance-globals-source-host
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/bind-the-source-host-receipt-to-this-source-and-run.sh""#
       }
       new Dynamic {
         name = "Check complete consumer packets with an explicit capture-only override"

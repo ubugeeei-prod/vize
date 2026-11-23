@@ -22,13 +22,6 @@ commands {
   npm install --prefer-online --ignore-scripts --no-audit --no-fund --save-exact \
     typescript@7.1.0-beta
   npm view typescript@7.1.0-beta gitHead dist.integrity --json > provider-metadata.json
-  node --input-type=module <<'JS'
-  import assert from "node:assert/strict";
-  import { readFileSync } from "node:fs";
-
-  const metadata = JSON.parse(readFileSync("provider-metadata.json", "utf8"));
-  assert.equal(metadata.gitHead, "3e9236361fa97a9e6c685f4833ac457ae2d8c50a");
-  assert.match(metadata["dist.integrity"], /^sha512-/u);
-  JS
+  node "$GITHUB_WORKSPACE/.github/scripts/component-input-diagnostic-ownership/verify-provider-metadata.ts"
   """#
 }

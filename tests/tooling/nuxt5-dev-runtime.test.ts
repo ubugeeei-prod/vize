@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
@@ -176,7 +177,7 @@ void test(
 );
 const fixture = new URL("tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/", root);
 const workflow = parse(
-  fs.readFileSync(new URL(".github/workflows/nuxt3-module-build.yml", root), "utf8"),
+  readAutomationPrograms(new URL(".github/workflows/nuxt3-module-build.yml", root)),
 ) as {
   on: { pull_request?: unknown; push: { paths: string[] } };
   jobs: Record<string, { "runs-on": string; "timeout-minutes": number; steps: Step[] }>;

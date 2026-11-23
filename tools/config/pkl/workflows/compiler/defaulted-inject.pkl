@@ -11,6 +11,7 @@ on {
       "tools/support/compat/defaulted-inject/**"
       "tests/tooling/defaulted-inject-snapshot-transition.test.ts"
       ".github/workflows/defaulted-inject.yml"
+      ".github/scripts/workflows/defaulted-inject/**"
     }
   }
   push {
@@ -20,6 +21,7 @@ on {
       "tools/support/compat/defaulted-inject/**"
       "tests/tooling/defaulted-inject-snapshot-transition.test.ts"
       ".github/workflows/defaulted-inject.yml"
+      ".github/scripts/workflows/defaulted-inject/**"
     }
   }
   workflow_dispatch = null
@@ -35,6 +37,9 @@ jobs {
     needs = "producer"
     `runs-on` = ci.linux
     `timeout-minutes` = 15
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/defaulted-inject"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -46,11 +51,7 @@ jobs {
       ci.wild()
       new Dynamic {
         name = "Preserve the consumer checkout before source restoration"
-        run = """
-        mkdir -p "$RUNNER_TEMP/defaulted-inject-proof"
-        git rev-parse HEAD > "$RUNNER_TEMP/defaulted-inject-proof/consumer-checkout.txt"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-consumer-checkout-before-source-restoration.sh""#
       }
       new Dynamic {
         uses = "./.github/actions/restore-source-cli"
@@ -58,15 +59,7 @@ jobs {
       }
       new Dynamic {
         name = "Preserve public before provenance"
-        run = """
-        mkdir -p "$RUNNER_TEMP/defaulted-inject-proof"
-        npm view --registry=https://registry.npmjs.org vize@0.602.0 --json > "$RUNNER_TEMP/defaulted-inject-proof/before-registry.json"
-        npm install --registry=https://registry.npmjs.org --prefix "$RUNNER_TEMP/defaulted-inject-before" --ignore-scripts --no-audit --no-fund vize@0.602.0 > "$RUNNER_TEMP/defaulted-inject-proof/install.stdout" 2> "$RUNNER_TEMP/defaulted-inject-proof/install.stderr"
-        cp "$RUNNER_TEMP/defaulted-inject-before/package-lock.json" "$RUNNER_TEMP/defaulted-inject-proof/before-lock.json"
-        cp target/ci/vize.differential-build.json "$RUNNER_TEMP/defaulted-inject-proof/candidate-build.json"
-        cp target/ci/vize.source-use.json "$RUNNER_TEMP/defaulted-inject-proof/candidate-use.json"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-public-before-provenance.sh""#
       }
       new Dynamic {
         name = "Require original and mutation whole packets with unchanged facts"
@@ -74,11 +67,7 @@ jobs {
           VIZE_DEFAULTED_INJECT_PROOF = "${{ runner.temp }}/defaulted-inject-proof/packets.json"
           VIZE_DEFAULTED_INJECT_BEFORE_CLI = "${{ runner.temp }}/defaulted-inject-before/node_modules/.bin/vize"
         }
-        run = """
-        node --test tests/tooling/defaulted-inject-snapshot-transition.test.ts
-        node tools/support/compat/defaulted-inject/verify.ts
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/require-original-and-mutation-whole-packets-with-unchanged-facts.sh""#
       }
       new Dynamic {
         name = "Preserve every input, full process and unchanged source identity"

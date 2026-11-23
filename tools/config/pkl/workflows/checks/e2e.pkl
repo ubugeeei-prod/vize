@@ -61,6 +61,7 @@ jobs {
       count = "${{ steps.plan.outputs.count }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("e2e")
       new Dynamic {
         name = "Detect app readiness changes"
         id = "changes"
@@ -141,23 +142,19 @@ jobs {
           EXPECTED_SHA = "${{ github.sha }}"
           SOURCE_HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
         }
-        run = """
-        test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-        echo "Tested merge SHA $EXPECTED_SHA for source head $SOURCE_HEAD_SHA" >> "$GITHUB_STEP_SUMMARY"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-readiness-merge-sha.sh""#
       }
       new Dynamic {
         name = "Plan readiness rows"
         `if` = "steps.changes.outputs.readiness == 'true'"
         id = "plan"
-        run = #"echo "matrix=$(node tools/commands/ci/github/app-e2e-plan.ts --profile readiness)" >> "$GITHUB_OUTPUT" && echo "count=$(node tools/commands/ci/github/app-e2e-plan.ts --profile readiness --field count)" >> "$GITHUB_OUTPUT""#
+        run = #". "${{ env.VIZE_CI_FILES }}/plan-readiness-rows.sh""#
       }
       new Dynamic {
         name = "Write readiness plan evidence"
         `if` = "steps.changes.outputs.readiness == 'true'"
         env { E2E_SOURCE_HEAD_SHA = "${{ github.event.pull_request.head.sha }}" }
-        run = "mkdir -p target/app-e2e-plan && node tools/commands/ci/github/app-e2e-plan.ts --profile readiness --field evidence > target/app-e2e-plan/readiness.json"
+        run = #". "${{ env.VIZE_CI_FILES }}/write-readiness-plan-evidence.sh""#
       }
       new Dynamic {
         name = "Upload readiness plan evidence"
@@ -181,12 +178,16 @@ jobs {
       `fail-fast` = false
       matrix = "${{ fromJSON(needs.app-readiness-plan.outputs.matrix) }}"
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/e2e"
+    }
     steps = new Listing {
       ci.checkoutAt("${{ github.sha }}")
       new Dynamic {
         name = "Verify producer SHA"
         env { EXPECTED_SHA = "${{ github.sha }}" }
-        run = #"test "$(git rev-parse HEAD)" = "$EXPECTED_SHA""#
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-producer-sha.sh""#
       }
       new Dynamic {
         uses = "./.github/actions/app-e2e-row"
@@ -239,6 +240,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 120
     steps = new Listing {
+      ...ci.stageWorkflowScripts("e2e")
       new Dynamic {
         name = "Validate optional target SHA"
         `if` = "${{ inputs.target_sha != '' }}"
@@ -246,17 +248,7 @@ jobs {
           REQUESTED_TARGET_SHA = "${{ inputs.target_sha }}"
           RUN_HEAD_SHA = "${{ github.sha }}"
         }
-        run = """
-        if [[ ! "$REQUESTED_TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-          echo "::error title=Invalid target_sha::target_sha must be a full lowercase 40-character commit SHA"
-          exit 1
-        fi
-        if [[ "$RUN_HEAD_SHA" != "$REQUESTED_TARGET_SHA" ]]; then
-          echo "::error title=Dispatch ref mismatch::--ref must point at $REQUESTED_TARGET_SHA (got $RUN_HEAD_SHA)"
-          exit 1
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-optional-target-sha.sh""#
       }
       new Dynamic {
         name = "Begin Testbox"
@@ -304,6 +296,7 @@ jobs {
       count = "${{ steps.plan.outputs.count }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("e2e")
       new Dynamic {
         name = "Validate target SHA"
         `if` = "${{ github.event_name == 'workflow_dispatch' }}"
@@ -312,24 +305,7 @@ jobs {
           REQUESTED_TARGET_SHA = "${{ inputs.target_sha }}"
           RUN_HEAD_SHA = "${{ github.sha }}"
         }
-        run = """
-        if [[ -z "$REQUESTED_TARGET_SHA" ]]; then
-          if [[ "$REQUESTED_SUITE" == "all" ]]; then
-            echo "::error title=Missing target_sha::target_sha is required when suite=all"
-            exit 1
-          fi
-          exit 0
-        fi
-        if [[ ! "$REQUESTED_TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-          echo "::error title=Invalid target_sha::target_sha must be a full lowercase 40-character commit SHA"
-          exit 1
-        fi
-        if [[ "$RUN_HEAD_SHA" != "$REQUESTED_TARGET_SHA" ]]; then
-          echo "::error title=Dispatch ref mismatch::--ref must point at $REQUESTED_TARGET_SHA (got $RUN_HEAD_SHA)"
-          exit 1
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-target-sha.sh""#
       }
       ci.checkoutAt("${{ env.E2E_TARGET_SHA }}")
       new Dynamic {
@@ -342,18 +318,19 @@ jobs {
       new Dynamic {
         name = "Verify full App E2E SHA"
         env { EXPECTED_SHA = "${{ env.E2E_TARGET_SHA }}" }
-        run = #"test "$(git rev-parse HEAD)" = "$EXPECTED_SHA""#
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-producer-sha.sh""#
       }
       new Dynamic {
         name = "Plan full rows"
         id = "plan"
         env { REQUESTED_SUITE = "${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'all' }}" }
-        run = #"echo "suite=$REQUESTED_SUITE" >> "$GITHUB_OUTPUT" && echo "matrix=$(node tools/commands/ci/github/app-e2e-plan.ts --profile full --suite "$REQUESTED_SUITE")" >> "$GITHUB_OUTPUT" && echo "count=$(node tools/commands/ci/github/app-e2e-plan.ts --profile full --suite "$REQUESTED_SUITE" --field count)" >> "$GITHUB_OUTPUT""#
+        run = #". "${{ env.VIZE_CI_FILES }}/plan-full-rows.sh""#
       }
       new Dynamic {
         name = "Write full plan evidence"
         env { REQUESTED_SUITE = "${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'all' }}" }
-        run = #"mkdir -p target/app-e2e-plan && node tools/commands/ci/github/app-e2e-plan.ts --profile full --suite "$REQUESTED_SUITE" --field evidence > target/app-e2e-plan/full.json"#
+        run = #". "${{ env.VIZE_CI_FILES }}/write-full-plan-evidence.sh""#
       }
       new Dynamic {
         name = "Upload full plan evidence"
@@ -378,11 +355,13 @@ jobs {
       matrix = "${{ fromJSON(needs.app-e2e-plan.outputs.matrix) }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("e2e")
       ci.checkoutAt("${{ env.E2E_TARGET_SHA }}")
       new Dynamic {
         name = "Verify producer SHA"
         env { EXPECTED_SHA = "${{ env.E2E_TARGET_SHA }}" }
-        run = #"test "$(git rev-parse HEAD)" = "$EXPECTED_SHA""#
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-producer-sha.sh""#
       }
       new Dynamic {
         uses = "./.github/actions/app-e2e-row"

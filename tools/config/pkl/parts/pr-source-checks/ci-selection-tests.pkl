@@ -5,10 +5,11 @@ needs = "pr-source-plan"
 `runs-on` = "${{ needs.pr-source-plan.outputs.tooling == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
 `timeout-minutes` = 5
 steps = new Listing {
+  ...ci.stageWorkflowScripts("pr-source-checks")
   new Dynamic {
     name = "Explain unrelated skip"
     `if` = "${{ needs.pr-source-plan.outputs.tooling != 'true' }}"
-    run = #"echo 'No CI selection inputs changed.' >> "$GITHUB_STEP_SUMMARY""#
+    run = #". "${{ env.VIZE_CI_FILES }}/explain-unrelated-skip.sh""#
   }
   new Dynamic {
     uses = ci.checkout

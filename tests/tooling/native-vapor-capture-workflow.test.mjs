@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -130,7 +130,10 @@ function assertRuntimeToolchainPreparation(workflow, configuration) {
 }
 
 const nativeRuntimeWorkflow = parse(
-  readFileSync(new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url), "utf8"),
+  readAutomationPrograms(
+    new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
+    "utf8",
+  ),
 );
 const nativeRustConfiguration = parseToml(
   readFileSync(new URL("../../rust-toolchain.toml", import.meta.url), "utf8"),
@@ -233,19 +236,23 @@ if (JSON.stringify(args) === JSON.stringify(['run', process.env.VIZE_NATIVE_RUST
       nativeRuntimeWorkflow,
       nativeRustConfiguration,
     );
-    const result = spawnSync("/bin/bash", ["-c", verification.run], {
-      encoding: "utf8",
-      timeout: 10_000,
-      env: {
-        ...process.env,
-        ...runtime.env,
-        PATH: `${fixture}:${process.env.PATH}`,
-        RUSTUP_TEST_TRACE: trace,
-        RUSTUP_TEST_COMPONENTS: components.join("\n"),
-        RUSTUP_TEST_TARGETS: targets.join("\n"),
-        RUSTUP_TEST_FAIL: fail,
+    const result = spawnSync(
+      "/bin/bash",
+      [automationShellPath(verification.run, "pr-source-checks")],
+      {
+        encoding: "utf8",
+        timeout: 10_000,
+        env: {
+          ...process.env,
+          ...runtime.env,
+          PATH: `${fixture}:${process.env.PATH}`,
+          RUSTUP_TEST_TRACE: trace,
+          RUSTUP_TEST_COMPONENTS: components.join("\n"),
+          RUSTUP_TEST_TARGETS: targets.join("\n"),
+          RUSTUP_TEST_FAIL: fail,
+        },
       },
-    });
+    );
     return {
       result,
       calls: readFileSync(trace, "utf8")

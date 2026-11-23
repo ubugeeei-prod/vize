@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/typescript-provider-vsix.yml"
+      ".github/scripts/workflows/typescript-provider-vsix/**"
       "npm/typescript-plugin/**"
       "npm/native/language-projection.*"
       "tools/support/editors/typescript-provider/**"
@@ -54,6 +55,7 @@ jobs {
     `runs-on` = "${{ matrix.runner }}"
     `timeout-minutes` = 45
     steps = new Listing {
+      ...ci.stageWorkflowScripts("typescript-provider-vsix")
       new Dynamic {
         name = "Preserve exact source line endings on Windows"
         `if` = "runner.os == 'Windows'"
@@ -73,16 +75,7 @@ jobs {
         name = "Read exact source toolchain and version"
         id = "source"
         shell = "bash"
-        run = #"""
-        node --input-type=module <<'JS'
-        import { readFileSync, appendFileSync } from 'node:fs';
-        const channel = /^channel = "([^"]+)"$/m.exec(readFileSync('rust-toolchain.toml', 'utf8'))?.[1];
-        const { version } = JSON.parse(readFileSync('npm/native/package.json', 'utf8'));
-        if (!channel || !/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(version)) throw new Error('Invalid source toolchain/version');
-        appendFileSync(process.env.GITHUB_OUTPUT, `channel=${channel}\nversion=${version}\n`);
-        JS
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/read-exact-source-toolchain-and-version.sh""#
       }
       new Dynamic {
         uses = ci.setupRust
@@ -127,11 +120,7 @@ jobs {
         name = "Match the existing Windows native release profile"
         `if` = "runner.os == 'Windows'"
         shell = "bash"
-        run = """
-        echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
-        echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/match-the-existing-windows-native-release-profile.sh""#
       }
       new Dynamic {
         name = "Use the canonical native producer with a same-invocation receipt"
@@ -145,16 +134,7 @@ jobs {
         name = "Collect only this image"
         shell = "bash"
         env { IMAGE_TARGET = "${{ matrix.target }}" }
-        run = """
-        node --input-type=module <<'JS'
-        import { readFileSync, copyFileSync } from 'node:fs';
-        import { join } from 'node:path';
-        const directory = join(process.env.RUNNER_TEMP, 'native');
-        const receipt = JSON.parse(readFileSync(join(directory, `build-receipt.${process.env.IMAGE_TARGET}.json`)));
-        copyFileSync(join('npm/native', receipt.nodeFile), join(directory, receipt.nodeFile));
-        JS
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/collect-only-this-image.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -174,6 +154,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
+      ...ci.stageWorkflowScripts("typescript-provider-vsix")
       new Dynamic {
         name = "Preserve exact source line endings on Windows"
         `if` = "runner.os == 'Windows'"
@@ -197,21 +178,12 @@ jobs {
       new Dynamic {
         name = "Preserve and qualify the universal metadata-only artifact"
         env { VIZE_TYPESCRIPT_PROVIDER_OUTPUT = "${{ runner.temp }}/typescript-provider-vsix" }
-        run = """
-        vp run --workspace-root package:vscode-extension
-        mkdir -p "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT"
-        cp editors/vscode/dist/vize.vsix "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT/vize.vsix"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-and-qualify-the-universal-metadata-only-artifact.sh""#
       }
       new Dynamic {
         name = "Package each corresponding same-source image"
         env { VIZE_TYPESCRIPT_PROVIDER_OUTPUT = "${{ runner.temp }}/typescript-provider-vsix" }
-        run = """
-        node tools/support/editors/typescript-provider/package.ts x86_64-unknown-linux-gnu .native-artifacts "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT/vize-linux-x64.vsix"
-        node tools/support/editors/typescript-provider/package.ts x86_64-pc-windows-msvc .native-artifacts "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT/vize-win32-x64.vsix"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/package-each-corresponding-same-source-image.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -248,6 +220,7 @@ jobs {
     `runs-on` = "${{ matrix.runner }}"
     `timeout-minutes` = 20
     steps = new Listing {
+      ...ci.stageWorkflowScripts("typescript-provider-vsix")
       new Dynamic {
         name = "Preserve exact source line endings on Windows"
         `if` = "runner.os == 'Windows'"
@@ -276,13 +249,8 @@ jobs {
       new Dynamic {
         name = "Ensure the Linux virtual display"
         `if` = "runner.os == 'Linux'"
-        run = """
-        if ! command -v xvfb-run >/dev/null 2>&1; then
-          sudo apt-get update
-          sudo apt-get install -y xvfb
-        fi
-
-        """
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/ensure-the-linux-virtual-display.sh""#
       }
       new Dynamic {
         name = "Run the actual installed platform extension"
@@ -291,14 +259,7 @@ jobs {
           VIZE_TYPESCRIPT_PROVIDER_CAPTURE = "${{ runner.temp }}/typescript-provider-host"
         }
         shell = "bash"
-        run = """
-        if [[ "$RUNNER_OS" == Linux ]]; then
-          xvfb-run -a vp node editors/vscode/test/run-typescript-provider-host.mjs
-        else
-          vp node editors/vscode/test/run-typescript-provider-host.mjs
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/run-the-actual-installed-platform-extension.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

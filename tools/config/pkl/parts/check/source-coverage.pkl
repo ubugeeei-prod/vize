@@ -6,6 +6,7 @@ import "../../Actions.pkl" as ci
 // retains all correctness jobs without repeating the instrumented trend run.
 `if` = "${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !(inputs.release-qualification && (startsWith(github.ref, 'refs/heads/release/v') || startsWith(github.ref, 'refs/tags/v')))) }}"
 env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/check"
   NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
   VIZE_NUXT_CONFIG_ITERATIONS = "100"
 }
@@ -36,7 +37,7 @@ steps = new Listing {
   ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
   new Dynamic {
     name = "Install Pkl CLI and hydrate pinned native fixture"
-    run = "npm install --global @pkl-community/pkl@0.27.2 && git submodule update --init --force --depth 1 -- tests/_fixtures/_git/element-plus"
+    run = #". "${{ env.VIZE_CI_FILES }}/install-pkl-cli-and-hydrate-pinned-native-fixture.sh""#
   }
   new Dynamic {
     name = "Install cargo-llvm-cov"

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+VIZE_CODEGEN_PROBE=1 node --test tests/tooling/levels-codegen-equivalence.test.ts
+[[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+git fetch --no-tags --depth=1 origin "$BASE_SHA" "$HEAD_SHA"

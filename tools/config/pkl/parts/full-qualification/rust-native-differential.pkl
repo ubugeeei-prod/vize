@@ -3,7 +3,10 @@ import "../../Actions.pkl" as ci
 `runs-on` = ci.linux
 `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
 `timeout-minutes` = 45
-env { VIZE_NUXT_CONFIG_ITERATIONS = "100" }
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/full-qualification"
+  VIZE_NUXT_CONFIG_ITERATIONS = "100"
+}
 steps = new Listing {
   ci.use(ci.checkout)
   new Dynamic {
@@ -35,7 +38,7 @@ steps = new Listing {
   ci.use("./.github/actions/setup-rust-script")
   new Dynamic {
     name = "Install Pkl CLI and hydrate pinned native fixture"
-    run = "npm install --global @pkl-community/pkl@0.27.2 && git submodule update --init --force --depth 1 -- tests/_fixtures/_git/element-plus"
+    run = #". "${{ env.VIZE_CI_FILES }}/install-pkl-cli-and-hydrate-pinned-native-fixture.sh""#
   }
   new Dynamic {
     name = "Test"

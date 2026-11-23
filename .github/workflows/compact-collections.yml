@@ -24,6 +24,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/compact-collections/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: head
@@ -34,30 +47,7 @@ jobs:
         env:
           REQUESTED_BASE: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
           REQUESTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          set -euo pipefail
-          [[ "$REQUESTED_BASE" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$REQUESTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$(git -C head rev-parse HEAD)" == "$REQUESTED_HEAD" ]]
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-            COMPARISON_BASE="$(git -C head merge-base "$REQUESTED_BASE" HEAD)"
-          else
-            git -C head merge-base --is-ancestor "$REQUESTED_BASE" HEAD
-            COMPARISON_BASE="$REQUESTED_BASE"
-          fi
-          git -C head worktree add ../base "$COMPARISON_BASE"
-          [[ "$(git -C base rev-parse HEAD)" == "$COMPARISON_BASE" ]]
-          mkdir -p measurements
-          export COMPARISON_BASE
-          node --input-type=module - <<'JS'
-          import fs from 'node:fs';
-          const commits = {
-            base: process.env.COMPARISON_BASE,
-            head: process.env.REQUESTED_HEAD,
-            requested_base: process.env.REQUESTED_BASE,
-          };
-          fs.writeFileSync('measurements/commits.json', JSON.stringify(commits, null, 2));
-          JS
+        run: . "${{ env.VIZE_CI_FILES }}/select-and-record-exact-comparison-commits.sh"
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with:
           toolchain: stable
@@ -69,7 +59,7 @@ jobs:
       # The cache action's nested local action resolves from the workspace root,
       # and this job checks the repository out under head/.
       - name: Expose the nested target action at the workspace root
-        run: mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/
+        run: . "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh"
       - uses: ./head/.github/actions/setup-rust-sticky-cache
         with:
           key: compact-collections
@@ -77,50 +67,13 @@ jobs:
           target-path: head/target
       - name: Focused production regressions and lint
         working-directory: head
-        run: |
-          cargo test --locked -p vize_croquis -p vize_croquis_cf --lib
-          cargo clippy --locked -p vize_croquis -p vize_croquis_cf --all-targets -- -D warnings
-          cargo check --locked -p vize_croquis -p vize_croquis_cf --target wasm32-unknown-unknown
+        run: . "${{ env.VIZE_CI_FILES }}/focused-production-regressions-and-lint.sh"
       - name: Install identical measurement harness on baseline
-        run: |
-          mkdir -p base/crates/vize_croquis_cf/examples
-          cp head/crates/vize_croquis_cf/examples/compact_collections.rs base/crates/vize_croquis_cf/examples/
-          node --input-type=module - <<'JS'
-          import fs from 'node:fs';
-          const path = 'base/crates/vize_croquis_cf/Cargo.toml';
-          const source = fs.readFileSync(path, 'utf8');
-          const dependency = 'davinci_harness.workspace = true';
-          if (!source.includes(dependency))
-            fs.writeFileSync(path, source.replaceAll('[dev-dependencies]', `[dev-dependencies]\n${dependency}`));
-          JS
+        run: . "${{ env.VIZE_CI_FILES }}/install-identical-measurement-harness-on-baseline.sh"
       - name: Build exact production base and head
-        run: |
-          (cd base && CARGO_TARGET_DIR=../head/target/base cargo build --release -p vize_croquis_cf --example compact_collections)
-          (cd head && CARGO_TARGET_DIR=target/head cargo build --release --locked -p vize_croquis_cf --example compact_collections)
+        run: . "${{ env.VIZE_CI_FILES }}/build-exact-production-base-and-head.sh"
       - name: Alternate measurements and check graph parity
-        run: |
-          mkdir -p measurements
-          for pass in 1 2 3 4 5; do
-            if (( pass % 2 )); then
-              head/target/base/release/examples/compact_collections "measurements/base-$pass.json"
-              head/target/head/release/examples/compact_collections "measurements/head-$pass.json"
-            else
-              head/target/head/release/examples/compact_collections "measurements/head-$pass.json"
-              head/target/base/release/examples/compact_collections "measurements/base-$pass.json"
-            fi
-          done
-          node --input-type=module - <<'JS'
-          import assert from 'node:assert/strict';
-          import fs from 'node:fs';
-          const read = (path) => JSON.parse(fs.readFileSync(path, 'utf8'));
-          for (let i = 1; i <= 5; i += 1) {
-            const base = read(`measurements/base-${i}.json`);
-            const head = read(`measurements/head-${i}.json`);
-            assert.deepEqual(base.cycle_fingerprints, head.cycle_fingerprints);
-            assert.deepEqual(base.semantic_fingerprints, head.semantic_fingerprints);
-            assert.ok(base.scope_id_bytes === 4 && head.scope_id_bytes === 4);
-          }
-          JS
+        run: . "${{ env.VIZE_CI_FILES }}/alternate-measurements-and-check-graph-parity.sh"
       - name: Upload raw samples
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

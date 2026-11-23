@@ -52,7 +52,7 @@ test("the large pinned Zed asset gets a scoped transfer budget with a hard total
 
 test("Zed grammar packaging uses the pinned WASI SDK through the verified downloader", () => {
   const action = readAutomationPrograms(path.join(path.dirname(script), "action.yml"));
-  const workflow = readFileSync(
+  const workflow = readAutomationPrograms(
     path.resolve(path.dirname(script), "../../workflows/release-zed-host.yml"),
     "utf8",
   );

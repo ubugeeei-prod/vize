@@ -40,4 +40,5 @@ jobs {
   `editor-extensions` = import("../../parts/full-qualification/editor-extensions.pkl")
   `editor-host-smoke` = import("../../parts/full-qualification/editor-host-smoke.pkl")
   `nuxt-module-qualification` = import("../../parts/full-qualification/nuxt-module-qualification.pkl")
+  `branch-coverage` = import("../../parts/full-qualification/branch-coverage.pkl")
 }

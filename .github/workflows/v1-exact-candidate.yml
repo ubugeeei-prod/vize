@@ -60,6 +60,19 @@ jobs:
       receipt_run: ${{ steps.receipt-run.outputs.run }}
       receipt_run_attempt: ${{ steps.receipt-run.outputs.attempt }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/v1-exact-candidate/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.candidate_sha }}
@@ -68,7 +81,7 @@ jobs:
         shell: bash
         env:
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
-        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/verify-the-exact-candidate-checkout.sh"
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24", package-manager-cache: false }
       - name: Bind the receipt run to the exact candidate
@@ -78,17 +91,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
           RECEIPT_RUN_ID: ${{ inputs.receipt_run_id }}
-        run: |
-          [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$RECEIPT_RUN_ID" =~ ^[1-9][0-9]*$ ]]
-          IFS=$'\t' read -r run source attempt < <(
-            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RECEIPT_RUN_ID" \
-              --jq '[.id, .head_sha, .run_attempt] | @tsv'
-          )
-          test "$run" = "$RECEIPT_RUN_ID"
-          test "$source" = "$CANDIDATE_SHA"
-          [[ "$attempt" =~ ^[1-9][0-9]*$ ]]
-          printf 'run=%s\nattempt=%s\n' "$run" "$attempt" >> "$GITHUB_OUTPUT"
+        run: . "${{ env.VIZE_CI_FILES }}/bind-the-receipt-run-to-the-exact-candidate.sh"
       - name: Download the immutable receipt bundle
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -123,6 +126,19 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.hosts) }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/v1-exact-candidate/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.candidate_sha }}
@@ -136,17 +152,11 @@ jobs:
       - name: Admit exact positive, negative and qualification receipts
         shell: bash
         env:
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN: "${{ needs.plan.outputs.receipt_run }}"
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT: "${{ needs.plan.outputs.receipt_run_attempt }}"
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
           HOST_ID: ${{ matrix.id }}
-        run: |
-          mkdir -p .qualification/admission
-          node tools/commands/release/v1-exact-candidate.ts validate-host \
-            --candidate "$CANDIDATE_SHA" \
-            --host "$HOST_ID" \
-            --run "${{ needs.plan.outputs.receipt_run }}" \
-            --run-attempt "${{ needs.plan.outputs.receipt_run_attempt }}" \
-            --receipts .qualification/receipts/v1-exact-candidate-receipts.json \
-            --output ".qualification/admission/$CANDIDATE_SHA-$HOST_ID.json"
+        run: . "${{ env.VIZE_CI_FILES }}/admit-exact-positive-negative-and-qualification-receipts.sh"
       - name: Preserve immutable host admission
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -161,6 +171,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/v1-exact-candidate/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.candidate_sha }}
@@ -176,27 +199,18 @@ jobs:
       - name: Assemble the exact-candidate manifest
         shell: bash
         env:
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN: "${{ needs.plan.outputs.receipt_run }}"
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT: "${{ needs.plan.outputs.receipt_run_attempt }}"
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
-        run: |
-          node tools/commands/release/v1-exact-candidate.ts admit \
-            --candidate "$CANDIDATE_SHA" \
-            --run "${{ needs.plan.outputs.receipt_run }}" \
-            --run-attempt "${{ needs.plan.outputs.receipt_run_attempt }}" \
-            --admissions .qualification/admissions \
-            --output .qualification/v1-exact-candidate-manifest.json
+        run: . "${{ env.VIZE_CI_FILES }}/assemble-the-exact-candidate-manifest.sh"
       - name: Enforce complete exact-candidate host qualification
         if: ${{ inputs.enforce_complete }}
         shell: bash
         env:
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN: "${{ needs.plan.outputs.receipt_run }}"
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT: "${{ needs.plan.outputs.receipt_run_attempt }}"
           CANDIDATE_SHA: ${{ inputs.candidate_sha }}
-        run: |
-          node tools/commands/release/v1-exact-candidate.ts admit \
-            --candidate "$CANDIDATE_SHA" \
-            --run "${{ needs.plan.outputs.receipt_run }}" \
-            --run-attempt "${{ needs.plan.outputs.receipt_run_attempt }}" \
-            --admissions .qualification/admissions \
-            --output .qualification/v1-exact-candidate-manifest.json \
-            --enforce-complete
+        run: . "${{ env.VIZE_CI_FILES }}/enforce-complete-exact-candidate-host-qualification.sh"
       - name: Preserve the admitted manifest
         if: ${{ always() && hashFiles('.qualification/v1-exact-candidate-manifest.json') != '' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

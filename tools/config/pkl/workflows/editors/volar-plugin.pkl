@@ -25,8 +25,12 @@ jobs {
   `native-volar-service` {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
-    env { VIZE_SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}" }
+    env {
+
+      VIZE_SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+    }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("volar-plugin")
       ci.checkoutAt("${{ env.VIZE_SOURCE_SHA }}")
       new Dynamic {
         uses = ci.setupNode
@@ -50,27 +54,11 @@ jobs {
       new Dynamic {
         name = "Install exact official Volar and TypeScript service providers"
         `working-directory` = "${{ runner.temp }}"
-        run = """
-        echo "VIZE_VOLAR_EVIDENCE_DIR=$RUNNER_TEMP/volar-plugin-evidence" >> "$GITHUB_ENV"
-        echo "VIZE_VOLAR_DEPENDENCY_LOCK=$RUNNER_TEMP/volar-plugin-deps/package-lock.json" >> "$GITHUB_ENV"
-        npm install --prefix "$RUNNER_TEMP/volar-plugin-deps" --ignore-scripts --no-audit --no-fund @volar/language-core@2.4.30 @volar/typescript@2.4.30 typescript@6.0.3 vue@3.5.42
-        mkdir -p "$RUNNER_TEMP/volar-plugin-deps/node_modules/@vizejs"
-        ln -s "$GITHUB_WORKSPACE/npm/native" "$RUNNER_TEMP/volar-plugin-deps/node_modules/@vizejs/native"
-        ln -s "$RUNNER_TEMP/volar-plugin-deps/node_modules" "$GITHUB_WORKSPACE/npm/volar/node_modules"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-exact-official-volar-and-typescript-service-providers.sh""#
       }
       new Dynamic {
         name = "Build the actual reviewed native source"
-        run = """
-        test "$(git rev-parse HEAD)" = "$VIZE_SOURCE_SHA"
-        token="$(openssl rand -hex 16)"
-        VIZE_NATIVE_BUILD_TOKEN="$token" cargo build --profile ci -p vize_vitrine --features napi
-        cp target/ci/libvize_vitrine.so npm/native/vize-vitrine.linux-x64-gnu.node
-        echo "VIZE_VOLAR_EXPECTED_NATIVE_TOKEN=$token" >> "$GITHUB_ENV"
-        echo "NAPI_RS_NATIVE_LIBRARY_PATH=$GITHUB_WORKSPACE/npm/native/vize-vitrine.linux-x64-gnu.node" >> "$GITHUB_ENV"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-actual-reviewed-native-source.sh""#
       }
       ci.command("Retain immutable source and actual loaded native identity", "node npm/volar/test/source-receipt.js")
       ci.command("Check portable native projection boundaries", "node --test npm/native/test/language-projection.test.cjs")

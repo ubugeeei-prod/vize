@@ -7,6 +7,7 @@ on {
     branches = List("main")
     paths = new Listing {
       ".github/workflows/nuxt3-module-build.yml"
+      ".github/scripts/workflows/nuxt3-module-build/**"
       "npm/framework/nuxt/**"
       "npm/framework/nuxt-lint-config/**"
       "npm/linter/oxlint/**"
@@ -72,6 +73,9 @@ jobs {
     name = "Nuxt 3 build and SSR"
     `runs-on` = ci.linux
     `timeout-minutes` = 15
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/nuxt3-module-build"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       ci.workspaceVp()
@@ -136,73 +140,7 @@ jobs {
       new Dynamic {
         name = "Download Chromium dependencies while building the current CLI"
         `if` = "${{ github.event_name != 'pull_request' }}"
-        run = #"""
-        archive_dir=
-        cache_config=
-        download_config=
-        cli_pid=
-        cleanup() {
-          status=$?
-          trap - EXIT INT TERM
-          if [[ -n "$cli_pid" ]]; then
-            kill -TERM -- "-$cli_pid" 2>/dev/null || :
-            wait "$cli_pid" 2>/dev/null || :
-          fi
-          for owned_config in "$download_config" "$cache_config"; do
-            if [[ -n "$owned_config" ]] && ! sudo rm -f -- "$owned_config"; then
-              status=1
-            fi
-          done
-          if [[ -n "$archive_dir" ]] && ! sudo rm -rf -- "$archive_dir"; then
-            status=1
-          fi
-          exit "$status"
-        }
-        trap cleanup EXIT
-        trap 'exit 130' INT
-        trap 'exit 143' TERM
-
-        archive_dir=$(sudo mktemp -d /var/cache/apt/vize-nuxt-archives-XXXXXX)
-        sudo chmod 0755 "$archive_dir"
-        cache_config=$(sudo mktemp /etc/apt/apt.conf.d/99-vize-nuxt-archives-XXXXXX)
-        download_config=$(sudo mktemp /etc/apt/apt.conf.d/98-vize-nuxt-download-only-XXXXXX)
-        sudo tee "$cache_config" >/dev/null <<APT
-        Dir::Cache::archives "$archive_dir";
-        APT::Update::Post-Invoke { "echo 'Nuxt3 archive inventory after package-index update'; find '$archive_dir' -maxdepth 1 -type f -name '*.deb' -print0 | sort -z | xargs -0 -r sha256sum"; };
-        APT
-        sudo tee "$download_config" >/dev/null <<'APT'
-        APT::Get::Download-Only "true";
-        APT
-
-        setsid --wait cargo build --profile ci -p vize &
-        cli_pid=$!
-        download_status=0
-        if (cd tests && vize-ci-apt-retry vp exec playwright install-deps chromium); then
-          :
-        else
-          download_status=$?
-        fi
-        cli_status=0
-        if wait "$cli_pid"; then
-          :
-        else
-          cli_status=$?
-        fi
-        cli_pid=
-        sudo rm -- "$download_config"
-        download_config=
-        printf 'Nuxt3 setup statuses: download=%s CLI=%s\n' "$download_status" "$cli_status"
-        if (( download_status != 0 )); then
-          exit "$download_status"
-        fi
-        if (( cli_status != 0 )); then
-          exit "$cli_status"
-        fi
-        echo 'Nuxt3 archive inventory before the original Chromium installation'
-        sudo find "$archive_dir" -maxdepth 1 -type f -name '*.deb' -print0 | sort -z | xargs -0 -r sha256sum
-        (cd tests && vize-ci-apt-retry vp exec playwright install --with-deps chromium)
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/download-chromium-dependencies-while-building-the-current-cli.sh""#
       }
       new Dynamic {
         name = "Verify candidate build and SSR routes"
@@ -256,10 +194,7 @@ jobs {
       new Dynamic {
         name = "Capture the source producer Node executable"
         id = "nuxt-source-runtime"
-        run = #"""
-        vp env exec node -e 'const fs = require("node:fs"); const crypto = require("node:crypto"); fs.appendFileSync(process.env.GITHUB_OUTPUT, "path=" + process.execPath + "\nsha256=" + crypto.createHash("sha256").update(fs.readFileSync(process.execPath)).digest("hex") + "\n");'
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/capture-the-source-producer-node-executable.sh""#
       }
       new Dynamic {
         name = "Use the reported Node version for the additional Nuxt 5 consumer"
@@ -287,12 +222,7 @@ jobs {
         name = "Install the frozen Nuxt 5 production reproduction"
         `working-directory` = "tools/support/compat/nuxt/fixtures/nuxt5-runtime-build"
         shell = "bash"
-        run = """
-        mkdir -p "$RUNNER_TEMP/nuxt5-runtime-proof"
-        node -p 'JSON.stringify({node:process.version,platform:process.platform,arch:process.arch,execPath:process.execPath})' > "$RUNNER_TEMP/nuxt5-runtime-proof/runtime.json"
-        npm ci --legacy-peer-deps --no-audit --no-fund 2>&1 | tee "$RUNNER_TEMP/nuxt5-runtime-proof/install.log"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-frozen-nuxt-5-production-reproduction.sh""#
       }
       new Dynamic {
         name = "Verify source-bound Nuxt 5 browser and isolated server output"
@@ -300,7 +230,7 @@ jobs {
           VIZE_NUXT_SOURCE_NODE = "${{ steps.nuxt-source-runtime.outputs.path }}"
           VIZE_NUXT_SOURCE_NODE_SHA256 = "${{ steps.nuxt-source-runtime.outputs.sha256 }}"
         }
-        run = #""$VIZE_NUXT_SOURCE_NODE" tools/support/compat/nuxt/nuxt5-runtime-build.ts "$RUNNER_TEMP/nuxt5-runtime-proof/acceptance" "$(command -v node)""#
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-source-bound-nuxt-5-browser-and-isolated-server-output.sh""#
       }
       new Dynamic {
         name = "Verify Nitro plugin ownership and frozen development inputs"
@@ -310,11 +240,7 @@ jobs {
         name = "Install the frozen Nuxt 5 development reproduction"
         `working-directory` = "tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime"
         shell = "bash"
-        run = """
-        mkdir -p "$RUNNER_TEMP/nuxt5-dev-runtime-proof"
-        npm ci --legacy-peer-deps --no-audit --no-fund 2>&1 | tee "$RUNNER_TEMP/nuxt5-dev-runtime-proof/install.log"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-frozen-nuxt-5-development-reproduction.sh""#
       }
       new Dynamic {
         name = "Verify source-bound Nuxt 5 development stylesheets and hydration"
@@ -322,7 +248,7 @@ jobs {
           VIZE_NUXT_SOURCE_NODE = "${{ steps.nuxt-source-runtime.outputs.path }}"
           VIZE_NUXT_SOURCE_NODE_SHA256 = "${{ steps.nuxt-source-runtime.outputs.sha256 }}"
         }
-        run = #""$VIZE_NUXT_SOURCE_NODE" tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts "$RUNNER_TEMP/nuxt5-dev-runtime-proof/acceptance" "$(command -v node)""#
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-source-bound-nuxt-5-development-stylesheets-and-hydration.sh""#
       }
       new Dynamic {
         name = "Upload Nuxt 3 build and SSR evidence"

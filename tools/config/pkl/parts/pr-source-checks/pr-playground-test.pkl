@@ -6,14 +6,16 @@ needs = "pr-source-plan"
 `runs-on` = "${{ needs.pr-source-plan.outputs.playground == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
 `timeout-minutes` = 60
 env {
+
   CARGO_BUILD_JOBS = "12"
   RUN_PLAYGROUND = "${{ needs.pr-source-plan.outputs.playground }}"
 }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("pr-source-checks")
   new Dynamic {
     name = "Explain unrelated skip"
     `if` = "${{ env.RUN_PLAYGROUND != 'true' }}"
-    run = #"echo 'Playground browser tests skipped because this PR changes no compiler, Vite, or playground source paths.' >> "$GITHUB_STEP_SUMMARY""#
+    run = #". "${{ env.VIZE_CI_FILES }}/explain-unrelated-skip-3.sh""#
   }
   new Dynamic {
     uses = ci.checkout
@@ -88,7 +90,7 @@ steps = new Listing {
   new Dynamic {
     name = "Build playground dependencies"
     `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
-    run = "vp run --filter './npm/native' build:ci && vp run --workspace-root build:packages"
+    run = #". "${{ env.VIZE_CI_FILES }}/build-playground-dependencies.sh""#
   }
   new Dynamic {
     name = "Cache Playwright browsers"
@@ -132,23 +134,7 @@ steps = new Listing {
       RUN_VRT = "${{ github.event_name == 'merge_group' }}"
       VRT_OUTCOME = "${{ steps.vrt.outcome }}"
     }
-    run = #"""
-    packets=("$RUNNER_TEMP/test-cases-playground-browser.json")
-    vrt_report="playground/e2e/vrt/test-results/case-report.json"
-    if [[ "$RUN_VRT" == true ]]; then
-      if [[ -s "$vrt_report" ]]; then
-        node tools/support/compat/github/test-cases.ts playwright \
-          "$vrt_report" "$RUNNER_TEMP/test-cases-playground-vrt.json"
-        packets+=("$RUNNER_TEMP/test-cases-playground-vrt.json")
-      elif [[ "$VRT_OUTCOME" == success ]]; then
-        echo "::error::successful VRT produced no Playwright case receipt" >&2
-        exit 1
-      fi
-    fi
-    node tools/support/compat/github/test-cases.ts merge \
-      "$RUNNER_TEMP/test-cases-playground.json" "${packets[@]}"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/collect-playground-test-cases.sh""#
   }
   new Dynamic {
     name = "Upload playground test cases"

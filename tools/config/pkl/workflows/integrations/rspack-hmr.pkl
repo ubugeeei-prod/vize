@@ -7,6 +7,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/rspack-hmr.yml"
+      ".github/scripts/workflows/rspack-hmr/**"
       "npm/builder/rspack/**"
       "npm/builder/shared/**"
       "npm/native/**"
@@ -28,6 +29,9 @@ jobs {
   browser {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/rspack-hmr"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -56,16 +60,7 @@ jobs {
       new Dynamic {
         name = "Install the isolated Rspack 2 runtime from the HMR docs"
         `working-directory` = "npm/builder/rspack"
-        run = #"""
-        set -euo pipefail
-        runtime="${RUNNER_TEMP}/vize-rspack-hmr-runtime"
-        npm install --prefix "$runtime" --legacy-peer-deps \
-          @rspack/core@2.2.2 @rspack/dev-server@2.2.1 \
-          vue@3.5.42 playwright@1.62.1 css-loader@7.1.2
-        vize-ci-apt-retry node "$runtime/node_modules/playwright/cli.js" install --with-deps chromium
-        echo "VIZE_HMR_RUNTIME=$runtime" >> "$GITHUB_ENV"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-isolated-rspack-2-runtime-from-the-hmr-docs.sh""#
       }
       new Dynamic {
         name = "Run browser HMR"

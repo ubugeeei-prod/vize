@@ -12,6 +12,7 @@ strategy {
   }
 }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("criterion-bench")
   new Dynamic {
     uses = ci.checkout
     with {
@@ -27,15 +28,7 @@ steps = new Listing {
       HEAD_SHA = "${{ inputs.head_sha }}"
       DISPATCH_SHA = "${{ github.sha }}"
     }
-    run = """
-    set -euo pipefail
-    [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-    [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-    [[ "$HEAD_SHA" == "$DISPATCH_SHA" ]]
-    [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
-    git merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/validate-exact-production-comparison-head.sh""#
   }
   new Dynamic {
     uses = ci.setupRust
@@ -61,11 +54,7 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Check scoped selector and benchmark compile contract"
-    run = """
-    vp exec cargo test -p vize_atelier_vapor --features davinci-benchmark --lib compile::benchmark::tests
-    vp exec cargo clippy -p vize_atelier_sfc --features davinci-production-bench --example davinci_production_perf -- -D warnings -D clippy::wildcard_imports
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/check-scoped-selector-and-benchmark-compile-contract.sh""#
   }
   new Dynamic {
     name = "Build before timed windows"
@@ -74,29 +63,13 @@ steps = new Listing {
   new Dynamic {
     name = "Measure shipping adapter pairs"
     env { VIZE_BENCH_HEAD_SHA = "${{ inputs.head_sha }}" }
-    run = """
-    mkdir -p production-perf
-    target/ci-opt/examples/davinci_production_perf production-perf/samples.json
-    {
-      git rev-parse HEAD
-      rustc --version --verbose
-      uname -a
-      lscpu
-    } > production-perf/runner.txt
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/measure-shipping-adapter-pairs.sh""#
   }
   new Dynamic {
     name = "Collect detailed bridge attribution in a separate binary"
     `if` = "${{ matrix.repetition == 1 }}"
     env { VIZE_BENCH_HEAD_SHA = "${{ inputs.head_sha }}" }
-    run = """
-    vp exec cargo clippy -p vize_l1_to_l2 --features davinci-benchmark-profile --lib -- -D warnings -D clippy::wildcard_imports
-    vp exec cargo clippy -p vize_atelier_sfc --features davinci-production-profile --example davinci_production_perf -- -D warnings -D clippy::wildcard_imports
-    vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features davinci-production-profile --example davinci_production_perf
-    target/ci-opt/examples/davinci_production_perf production-perf/bridge-attribution.json --attribution-only
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/collect-detailed-bridge-attribution-in-a-separate-binary.sh""#
   }
   new Dynamic {
     name = "Upload raw samples and separate attribution profiles"

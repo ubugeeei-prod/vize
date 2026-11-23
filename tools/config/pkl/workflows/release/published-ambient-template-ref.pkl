@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/published-ambient-template-ref.yml"
+      ".github/scripts/workflows/published-ambient-template-ref/**"
       "tools/support/release/**"
       "tools/support/config/windows_consumer/common.ts"
       "tools/support/json-value.ts"
@@ -77,6 +78,7 @@ jobs {
     `runs-on` = "blacksmith-8vcpu-ubuntu-2404"
     `timeout-minutes` = 15
     steps = new Listing {
+      ...ci.stageWorkflowScripts("published-ambient-template-ref")
       ci.checkoutAt("${{ env.SOURCE_SHA }}")
       new Dynamic {
         uses = ci.setupNode
@@ -98,13 +100,7 @@ jobs {
       new Dynamic {
         name = "Retain complete raw outcomes, original phase inputs and installed custody"
         `if` = "always()"
-        run = """
-        set -euo pipefail
-        if [[ -d "$RUNNER_TEMP/ambient-template-ref-public" ]]; then
-          tar --exclude=node_modules --exclude=registry-installation -czf "$RUNNER_TEMP/ambient-template-ref-public-raw.tgz" -C "$RUNNER_TEMP" ambient-template-ref-public
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/retain-complete-raw-outcomes-original-phase-inputs-and-installed-custody.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

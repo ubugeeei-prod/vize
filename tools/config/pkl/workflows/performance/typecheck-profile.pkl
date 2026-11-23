@@ -60,6 +60,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 150
     env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/typecheck-profile"
       BASE_SHA = "${{ inputs.base_sha }}"
       HEAD_SHA = "${{ inputs.head_sha || github.sha }}"
       CORPORA = "${{ inputs.corpora }}"
@@ -76,32 +77,11 @@ jobs {
       new Dynamic {
         name = "Read the pushed commit's profile trailers"
         `if` = "github.event_name == 'push'"
-        run = """
-        set -euo pipefail
-        trailer() { git show -s --format="%(trailers:key=$1,valueonly,separator=%x2C)" HEAD | tr -d '[:space:]'; }
-        for pair in BASE_SHA:Profile-Base CORPORA:Profile-Corpora LANES:Profile-Lanes FREQUENCY:Profile-Frequency; do
-          value="$(trailer "${pair#*:}")"
-          if [[ -n "$value" ]]; then echo "${pair%%:*}=$value" >> "$GITHUB_ENV"; fi
-        done
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/read-the-pushed-commit-s-profile-trailers.sh""#
       }
       new Dynamic {
         name = "Validate inputs"
-        run = """
-        set -euo pipefail
-        echo "head=$HEAD_SHA base=${BASE_SHA:-none} corpora=${CORPORA:-all} lanes=$LANES frequency=$FREQUENCY"
-        fail() { echo "::error::$1"; exit 1; }
-        [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || fail "head must be a full 40-hex SHA: $HEAD_SHA"
-        if [[ -n "$BASE_SHA" ]]; then
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]] || fail "Profile-Base / base_sha must be a full 40-hex SHA: $BASE_SHA"
-          [[ "$BASE_SHA" != "$HEAD_SHA" ]] || fail "base and head are the same commit"
-        fi
-        [[ "$CORPORA" =~ ^[a-z0-9,-]*$ ]] || fail "corpora must be comma-separated ids: $CORPORA"
-        [[ "$LANES" =~ ^[a-z,-]+$ ]] || fail "lanes must be comma-separated ids: $LANES"
-        [[ "$FREQUENCY" =~ ^[1-9][0-9]{1,4}$ ]] || fail "frequency must be 10..99999 Hz: $FREQUENCY"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-inputs.sh""#
       }
       ci.workspaceVp()
       ci.rust("1.100.0")
@@ -109,111 +89,31 @@ jobs {
       ci.use("./.github/actions/setup-rust-script")
       new Dynamic {
         name = "Check out the profiled commits beside the driver"
-        run = """
-        set -euo pipefail
-        git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" $HEAD_SHA $BASE_SHA
-        git worktree add --detach "$RUNNER_TEMP/profile-head" "$HEAD_SHA"
-        if [[ -n "$BASE_SHA" ]]; then git worktree add --detach "$RUNNER_TEMP/profile-base" "$BASE_SHA"; fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/check-out-the-profiled-commits-beside-the-driver.sh""#
       }
       new Dynamic {
         name = "Install perf, glibc symbols and FlameGraph"
-        run = """
-        set -euo pipefail
-        sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends linux-tools-generic libc6-dbg
-        # Kernel frames and symbols, and call chains deep enough for checker recursion.
-        sudo sysctl -w kernel.perf_event_paranoid=-1 kernel.kptr_restrict=0 kernel.perf_event_max_stack=1024
-        perf_bin=""
-        for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
-          if [[ -x "$candidate" ]]; then perf_bin="$candidate"; break; fi
-        done
-        test -n "$perf_bin"
-        "$perf_bin" --version
-        echo "PERF_BIN=$perf_bin" >> "$GITHUB_ENV"
-        mkdir -p "$RUNNER_TEMP/flamegraph"
-        for script in flamegraph.pl difffolded.pl; do
-          curl -fsSL "https://raw.githubusercontent.com/brendangregg/FlameGraph/$FLAMEGRAPH_SHA/$script" -o "$RUNNER_TEMP/flamegraph/$script"
-        done
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-perf-glibc-symbols-and-flamegraph.sh""#
       }
       new Dynamic {
         name = "Install the locked hosts and corpus packages and hydrate the corpora"
-        run = """
-        set -euo pipefail
-        npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
-        npm ci --prefix tools/benchmarks/typecheck-corpora --ignore-scripts --no-audit --no-fund
-        read -ra submodules <<< "$(node tools/benchmarks/scripts/typecheck-profile.ts --print-submodules --corpora "$CORPORA")"
-        git submodule update --init --depth 1 -- "${submodules[@]}"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-locked-hosts-and-corpus-packages-and-hydrate-the-corpora.sh""#
       }
       ci.command("Test the profile folder and parsers", "node --test tests/tooling/typecheck-profile.test.ts")
       // ci-opt (thin LTO) with frame pointers and an unstripped symbol table, so
       // perf unwinds and names Vize's Rust frames inside node.
       new Dynamic {
         name = "Build the native binding with frame pointers and the vize package"
-        run = #"""
-        set -euo pipefail
-        roles=(head)
-        if [[ -n "$BASE_SHA" ]]; then roles+=(base); fi
-        for role in "${roles[@]}"; do
-          (
-            cd "$RUNNER_TEMP/profile-$role"
-            vp install --frozen-lockfile --prefer-offline --filter './npm/cli...' --filter './npm/native...'
-            cargo --version
-          )
-        done
-        export RUSTFLAGS="${RUSTFLAGS:-} -C force-frame-pointers=yes"
-        export CARGO_PROFILE_CI_OPT_STRIP=none
-        pids=()
-        for role in "${roles[@]}"; do
-          (
-            cd "$RUNNER_TEMP/profile-$role/npm/native"
-            rm -rf .artifacts/native
-            VIZE_NATIVE_BUILD_TOKEN="$(openssl rand -hex 16)" CARGO_TARGET_DIR="$RUNNER_TEMP/profile-$role/target" \
-              node_modules/.bin/napi build --platform --profile ci-opt \
-                --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine \
-                --features napi,legacy --output-dir .artifacts/native --no-js > "$RUNNER_TEMP/build-$role.log" 2>&1
-            cp .artifacts/native/*.node .
-          ) &
-          pids+=("$!")
-        done
-        status=0
-        for pid in "${pids[@]}"; do wait "$pid" || status=1; done
-        for role in "${roles[@]}"; do echo "::group::native build $role"; tail -n 40 "$RUNNER_TEMP/build-$role.log"; echo "::endgroup::"; done
-        [[ "$status" == 0 ]]
-        for role in "${roles[@]}"; do
-          (cd "$RUNNER_TEMP/profile-$role" && vp run --filter './npm/cli' build)
-          file "$RUNNER_TEMP/profile-$role"/npm/native/*.node
-        done
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-native-binding-with-frame-pointers-and-the-vize-package.sh""#
       }
       new Dynamic {
         name = "Profile the lanes"
-        run = #"""
-        set -euo pipefail
-        args=(--head "$RUNNER_TEMP/profile-head" --head-sha "$HEAD_SHA")
-        if [[ -n "$BASE_SHA" ]]; then args+=(--base "$RUNNER_TEMP/profile-base" --base-sha "$BASE_SHA"); fi
-        node tools/benchmarks/scripts/typecheck-profile.ts "${args[@]}" \
-          --corpora "$CORPORA" --lanes "$LANES" --frequency "$FREQUENCY" \
-          --perf "$PERF_BIN" --flamegraph "$RUNNER_TEMP/flamegraph" \
-          --work "$RUNNER_TEMP/profile-work" --out "$RUNNER_TEMP/profile-out"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/profile-the-lanes.sh""#
       }
       new Dynamic {
         name = "Write job summary"
         `if` = "always()"
-        run = """
-        if [[ -f "$RUNNER_TEMP/profile-out/summary.md" ]]; then
-          head -c 900000 "$RUNNER_TEMP/profile-out/summary.md" >> "$GITHUB_STEP_SUMMARY"
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/write-job-summary.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

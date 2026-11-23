@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/vue2-editor-diagnostic-context.yml"
+      ".github/scripts/workflows/vue2-editor-diagnostic-context/**"
       "tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts"
       "tests/snapshots/check/vue-element-admin-unmapped-diagnostic-oracle.ts"
       "tests/tooling/vue2-rename-context-custody.test.mjs"
@@ -31,6 +32,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
+      ...ci.stageWorkflowScripts("vue2-editor-diagnostic-context")
       new Dynamic {
         uses = ci.checkout
         with { ref = "${{ github.event.pull_request.head.sha || github.sha }}" }
@@ -56,19 +58,11 @@ jobs {
       }
       new Dynamic {
         name = "Install pinned provider and Vue 2 fixture"
-        run = """
-        git submodule update --init --depth 1 -- tests/_fixtures/_git/vue-element-admin
-        vp install --frozen-lockfile --prefer-offline
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-provider-and-vue-2-fixture.sh""#
       }
       new Dynamic {
         name = "Build exact source CLI with its receipt"
-        run = """
-        cargo build --locked --profile ci -p vize --features legacy
-        node tests/differential/build-receipt.ts --legacy
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-exact-source-cli-with-its-receipt.sh""#
       }
       new Dynamic {
         name = "Verify whole CLI packets and original editor edit cycles"
@@ -79,13 +73,7 @@ jobs {
           VIZE_LSP_BUILD_RECIPE = "cargo build --profile ci -p vize --features legacy"
           RAYON_NUM_THREADS = "4"
         }
-        run = #"""
-        node --test --test-concurrency=1 \
-          tests/tooling/vue2-rename-context-custody.test.mjs \
-          tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts \
-          tests/snapshots/check/vue-element-admin-unmapped-diagnostic-oracle.ts
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-whole-cli-packets-and-original-editor-edit-cycles.sh""#
       }
       new Dynamic {
         name = "Retain complete source-built editor wires"

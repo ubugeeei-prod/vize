@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -7,7 +8,7 @@ import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 
-import { readRepoFile } from "../support/github-workflows.ts";
+import { root } from "../support/github-workflows.ts";
 
 type Job = { if?: string; steps: Array<{ name?: string; run?: string }> };
 type Workflow = { jobs: Record<string, Job> };
@@ -20,7 +21,7 @@ const candidate = "6c1c5b386c56745fcb0e7e28feedb930b1a51606";
 const filenames = ["release-contracts.yml", "public-native-events.yml"] as const;
 const workflows = filenames.map((filename) => ({
   filename,
-  workflow: parse(readRepoFile(".github", "workflows", filename)) as Workflow,
+  workflow: parse(readAutomationPrograms(".github", "workflows", filename)) as Workflow,
 }));
 
 function enabled(job: Job, context: Context): boolean {
@@ -117,6 +118,12 @@ test("selected public-consumer jobs reject missing, malformed, or mismatched can
             env: {
               ...process.env,
               RUNNER_TEMP: directory,
+              VIZE_CI_FILES: path.join(
+                root,
+                ".github/scripts/workflows",
+                filename.replace(/\.yml$/u, ""),
+              ),
+
               PUBLIC_VERSION: "0.601.0",
               PUBLIC_CANDIDATE: value,
               PUBLIC_SOURCE_SHA: source,

@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "../support/automation-source.ts";
 // npm-first: a refused rolling crate budget defers crates.io alone.
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -38,7 +39,7 @@ interface Job {
   permissions?: Record<string, string>;
   steps?: Step[];
 }
-const release = parse(readRepoFile(".github", "workflows", "release.yml")) as {
+const release = parse(readAutomationPrograms(".github", "workflows", "release.yml")) as {
   jobs: Record<string, Job>;
 };
 
@@ -347,7 +348,7 @@ test("the release-candidate cut never reads the crate quota; the admission decid
   );
   assert.equal(main.match(/recordCratePublication\(/g)?.length, 1);
   assert.match(main, /return quotaCommandStatus\(command, report\.kind\);/);
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "release.yml");
   assert.equal(workflow.match(/quota-publication/g)?.length, 1, "one decision per release");
   assert.equal(workflow.match(/needs\.publication-quota\.outputs\.crates\b/g)?.length, 2);
 });

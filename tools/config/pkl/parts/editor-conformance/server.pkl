@@ -3,6 +3,9 @@ import "../../Actions.pkl" as ci
 name = "Build the real vize server"
 `runs-on` = ci.linux
 `timeout-minutes` = 30
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/editor-conformance"
+}
 steps = new Listing {
   new Dynamic {
     uses = ci.checkout
@@ -11,12 +14,7 @@ steps = new Listing {
   // The runner's rustup installs the toolchain pinned in rust-toolchain.toml.
   new Dynamic {
     name = "Install the repository Rust toolchain"
-    run = """
-    rustup --version
-    rustup toolchain install || rustup show active-toolchain
-    cargo --version
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh""#
   }
   ci.wild()
   new Dynamic {
@@ -41,19 +39,7 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Record the real server source and executable identity"
-    run = """
-    set -euo pipefail
-    test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
-    {
-      echo "producer=$(git rev-parse HEAD)"
-      echo 'recipe=cargo build --profile ci -p vize'
-      rustc --version --verbose
-      cargo --version
-      sha256sum rust-toolchain.toml Cargo.lock target/ci/vize
-    } > target/ci/vize-producer.txt
-    (cd target/ci && sha256sum vize > vize.sha256)
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/record-the-real-server-source-and-executable-identity.sh""#
   }
   new Dynamic {
     uses = ci.uploadArtifact

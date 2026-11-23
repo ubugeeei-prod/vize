@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { test } from "node:test";
@@ -39,7 +40,7 @@ const check = parse(checkWorkflowJobSources()) as {
   on: { workflow_dispatch: { inputs: Record<string, { default: boolean }> } };
   jobs: Record<string, Job>;
 };
-const seed = parse(readRepoFile(".github", "workflows", "rust-pr-target-seed.yml")) as {
+const seed = parse(readAutomationPrograms(".github", "workflows", "rust-pr-target-seed.yml")) as {
   jobs: Record<string, Job>;
 };
 const workspace = check.jobs["full-rust-workspace"];
@@ -116,7 +117,12 @@ void test("full workspace retains native runtimes, frozen dependencies and resul
   ])
     assert.equal(use(workspace, action)?.if, "${{ always() }}");
   const upload = parse(
-    readRepoFile(".github", "actions", "upload-rust-full-workspace-results", "action.yml"),
+    readAutomationPrograms(
+      ".github",
+      "actions",
+      "upload-rust-full-workspace-results",
+      "action.yml",
+    ),
   ) as { runs: { steps: Step[] } };
   assert.equal(
     upload.runs.steps[0].with?.name,
@@ -259,7 +265,7 @@ void test("expensive original-profile comparison is opt-in and requested parity 
 });
 
 void test("full-only extraction preserves all seventeen complete original job objects", () => {
-  const full = parse(readRepoFile(".github/workflows/full-qualification.yml"));
+  const full = parse(readAutomationPrograms(".github/workflows/full-qualification.yml"));
   const original = structuredClone(full.jobs);
   assert.deepEqual(original["v1-supported-matrix"], {
     if: "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",

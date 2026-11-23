@@ -1,0 +1,7 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"test "$(git rev-parse HEAD)" = "$EXPECTED_SHA""#
+}

@@ -60,6 +60,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/content-mapper-replay.yml"
+      ".github/scripts/workflows/content-mapper-replay/**"
       "tools/benchmarks/scripts/content-mapper-replay*.ts"
       "tests/tooling/content-mapper-replay*.test.ts"
     }
@@ -104,6 +105,9 @@ jobs {
       base = "${{ steps.shas.outputs.base }}"
       head = "${{ steps.shas.outputs.head }}"
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/content-mapper-replay"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -118,18 +122,7 @@ jobs {
           BASE = "${{ inputs.base }}"
           HEAD = "${{ inputs.head || github.sha }}"
         }
-        run = """
-        set -euo pipefail
-        if [[ -z "$BASE" ]]; then
-          BASE=$(git log -1 --format='%(trailers:key=Replay-Base,valueonly)' "$HEAD" | head -1 | tr -d '[:space:]')
-        fi
-        [[ -n "$BASE" ]] || BASE=$(git merge-base origin/main "$HEAD")
-        [[ "$BASE" =~ ^[0-9a-f]{40}$ && "$HEAD" =~ ^[0-9a-f]{40}$ ]]
-        echo "base=$BASE" >> "$GITHUB_OUTPUT"
-        echo "head=$HEAD" >> "$GITHUB_OUTPUT"
-        echo "base $BASE, head $HEAD"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/shas.sh""#
       }
     }
   }
@@ -147,6 +140,7 @@ jobs {
       }
     }
     env {
+
       BASE = "${{ needs.resolve.outputs.base }}"
       HEAD = "${{ needs.resolve.outputs.head }}"
       RUSTUP_TOOLCHAIN = "1.100.0"
@@ -154,13 +148,10 @@ jobs {
       PROFILE_INPUT = "${{ github.event_name == 'push' || inputs.profile }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("content-mapper-replay")
       new Dynamic {
         name = "Validate inputs"
-        run = """
-        [[ "$BASE" =~ ^[0-9a-f]{40}$ ]]
-        [[ "$HEAD" =~ ^[0-9a-f]{40}$ ]]
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-inputs.sh""#
       }
       new Dynamic {
         uses = ci.checkout
@@ -180,35 +171,7 @@ jobs {
       new Dynamic {
         name = "Build"
         `if` = "env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'"
-        run = """
-        set -euo pipefail
-        target="$RUNNER_TEMP/replay-target"
-        args=(--profile ci-opt -p vize --bin vize)
-        sides=(base head)
-        case "$VARIANT" in
-          alloc) args+=(--features profiling) ;;
-          perf)
-            sides=(head)
-            export CARGO_PROFILE_CI_OPT_DEBUG=line-tables-only
-            export CARGO_PROFILE_CI_OPT_STRIP=none
-            args+=(--config 'profile.ci-opt.package.vize.strip="none"')
-            export RUSTFLAGS="${RUSTFLAGS:-} -C force-frame-pointers=yes"
-            export CFLAGS="${CFLAGS:-} -fno-omit-frame-pointer"
-            ;;
-        esac
-        for side in "${sides[@]}"; do
-          sha=$BASE; [[ $side == head ]] && sha=$HEAD
-          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
-          git worktree add --detach "$RUNNER_TEMP/src-$side" "$sha"
-          mkdir -p "replay-bin/$VARIANT/$side"
-          (cd "$RUNNER_TEMP/src-$side" && rustc -Vv) > "replay-bin/$VARIANT/$side-rustc.txt"
-          # One target directory: the second build recompiles only what differs.
-          (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build "${args[@]}")
-          cp "$target/ci-opt/vize" "replay-bin/$VARIANT/$side/"
-        done
-        ls -l replay-bin/*/*
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -227,6 +190,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 120
     env {
+
       BASE = "${{ needs.resolve.outputs.base }}"
       HEAD = "${{ needs.resolve.outputs.head }}"
       CORPORA = "${{ inputs.corpora || 'misskey,n8n,reka-ui,nuxt-ui' }}"
@@ -237,13 +201,10 @@ jobs {
       HOST_RUNS = "${{ inputs.host_runs || '3' }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("content-mapper-replay")
       new Dynamic {
         name = "Validate inputs"
-        run = """
-        [[ "$BASE" =~ ^[0-9a-f]{40}$ && "$HEAD" =~ ^[0-9a-f]{40}$ && "$HOST_RUNS" =~ ^[0-9][0-9]?$ ]]
-        [[ "$CORPORA" =~ ^[a-z0-9-]+(,[a-z0-9-]+)*$ && "$RUNS" =~ ^[0-9][0-9]?$ ]]
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-inputs-2.sh""#
       }
       new Dynamic {
         uses = ci.checkout
@@ -274,163 +235,35 @@ jobs {
       }
       new Dynamic {
         name = "Hydrate the corpora and install the locked hosts and corpus packages"
-        run = """
-        set -euo pipefail
-        chmod +x replay-bin/*/*/vize
-        modules=()
-        for corpus in ${CORPORA//,/ }; do modules+=("tests/_fixtures/_git/$corpus"); done
-        git submodule update --init --depth 1 -- "${modules[@]}"
-        npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
-        npm ci --prefix tools/benchmarks/typecheck-corpora --ignore-scripts --no-audit --no-fund
-        packages=(time)
-        [[ "$PROFILE" == true ]] && packages+=(strace linux-tools-generic)
-        sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends "${packages[@]}" > /dev/null
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/hydrate-the-corpora-and-install-the-locked-hosts-and-corpus-packages.sh""#
       }
       new Dynamic {
         name = "Build the npm launcher and the native binding for base and head"
         `if` = "env.LAUNCHER == 'true'"
-        run = """
-        set -euo pipefail
-        for side in base head; do
-          sha=$BASE; [[ $side == head ]] && sha=$HEAD
-          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
-          git worktree add --detach "$RUNNER_TEMP/npm-$side" "$sha"
-          (cd "$RUNNER_TEMP/npm-$side" && vp install --frozen-lockfile --prefer-offline --filter './npm/cli...' --filter './npm/native...' > /dev/null && cargo --version)
-        done
-        pids=()
-        for side in base head; do
-          (cd "$RUNNER_TEMP/npm-$side" && vp run --workspace-root build:native > "$RUNNER_TEMP/native-$side.log" 2>&1) &
-          pids+=("$!")
-        done
-        status=0
-        for pid in "${pids[@]}"; do wait "$pid" || status=1; done
-        for side in base head; do tail -n 5 "$RUNNER_TEMP/native-$side.log"; done
-        [[ "$status" == 0 ]]
-        for side in base head; do (cd "$RUNNER_TEMP/npm-$side" && vp run --filter './npm/cli' build > /dev/null); done
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-npm-launcher-and-the-native-binding-for-base-and-head.sh""#
       }
       new Dynamic {
         name = "Record tsc's request streams"
-        run = #"""
-        set -euo pipefail
-        node tools/benchmarks/scripts/content-mapper-replay-record.ts \
-          --bin replay-bin/cli/base/vize --tsc tools/benchmarks/typecheck-hosts/node_modules/.bin/tsc \
-          --corpora "$CORPORA" --work "$RUNNER_TEMP/replay" > "$RUNNER_TEMP/streams.args"
-        cat "$RUNNER_TEMP/streams.args"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/record-tsc-s-request-streams.sh""#
       }
       new Dynamic {
         name = "Replay"
-        run = #"""
-        set -euo pipefail
-        read -ra streams < "$RUNNER_TEMP/streams.args"
-        mappers=(--mapper "base=replay-bin/cli/base/vize" --mapper "head=replay-bin/cli/head/vize")
-        if [[ "$LAUNCHER" == true ]]; then
-          mappers+=(--mapper "base-npm=node:$RUNNER_TEMP/npm-base/npm/cli/bin/vize")
-          mappers+=(--mapper "head-npm=node:$RUNNER_TEMP/npm-head/npm/cli/bin/vize")
-        fi
-        node tools/benchmarks/scripts/content-mapper-replay.ts "${streams[@]}" "${mappers[@]}" \
-          --ready --runs "$RUNS" $ALLOW --out "$RUNNER_TEMP/replay-out" > /dev/null
-        {
-          echo "## Content mapper replay: head \`${HEAD::12}\` vs base \`${BASE::12}\` ($(nproc) vCPUs)"
-          echo ""
-          echo "Wall is the whole mapper process (spawn to exit) for burst, and request write to reply for serial. CPU is user+sys of the mapper process tree."
-          echo ""
-          cat "$RUNNER_TEMP/replay-out/replay.md"
-        } >> "$GITHUB_STEP_SUMMARY"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/replay.sh""#
       }
       new Dynamic {
         name = "Host runs through a timing proxy"
         `if` = "env.HOST_RUNS != '0'"
-        run = #"""
-        set -euo pipefail
-        hosts=tools/benchmarks/typecheck-hosts/node_modules/.bin
-        mappers=(--mapper "base=replay-bin/cli/base/vize" --mapper "head=replay-bin/cli/head/vize")
-        node tools/benchmarks/scripts/content-mapper-replay-hosts.ts --work "$RUNNER_TEMP/replay" \
-          --corpora "$CORPORA" --tsc "$hosts/tsc" --tsrs "$hosts/tsrs" "${mappers[@]}" --ready \
-          --runs "$HOST_RUNS" --out "$RUNNER_TEMP/replay-out" > /dev/null
-        cat "$RUNNER_TEMP/replay-out/hosts.md" >> "$GITHUB_STEP_SUMMARY"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/host-runs-through-a-timing-proxy.sh""#
       }
       new Dynamic {
         name = "Count allocations"
         `if` = "env.PROFILE == 'true'"
-        run = #"""
-        set -euo pipefail
-        read -ra streams < "$RUNNER_TEMP/streams.args"
-        node tools/benchmarks/scripts/content-mapper-replay.ts "${streams[@]}" \
-          --mapper "base=replay-bin/alloc/base/vize" --mapper "head=replay-bin/alloc/head/vize" \
-          --ready --runs 0 --slowest 0 $ALLOW --out "$RUNNER_TEMP/replay-out/alloc" > /dev/null
-        { echo "## Allocation counts (--features profiling, one burst)"; echo ""; cat "$RUNNER_TEMP/replay-out/alloc/replay.md"; } >> "$GITHUB_STEP_SUMMARY"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/count-allocations.sh""#
       }
       new Dynamic {
         name = "Profile the head CLI and count syscalls"
         `if` = "env.PROFILE == 'true'"
-        run = #"""
-        set -euo pipefail
-        sudo sysctl -w kernel.perf_event_paranoid=-1 kernel.kptr_restrict=0
-        perf_bin=""
-        for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
-          if [[ -x "$candidate" ]]; then perf_bin="$candidate"; break; fi
-        done
-        test -n "$perf_bin"
-        out="$RUNNER_TEMP/replay-out/profiles"
-        mkdir -p "$out"
-        read -ra streams < "$RUNNER_TEMP/streams.args"
-        for ((i = 1; i < ${#streams[@]}; i += 2)); do
-          spec=${streams[$i]}
-          corpus=${spec%%=*}; rest=${spec#*=}; stream=${rest%@*}; project=${rest##*@}
-          bin="$PWD/replay-bin/perf/head/vize"
-          (cd "$project" && "$perf_bin" stat -e task-clock,cycles,instructions,cache-misses,page-faults,context-switches,cpu-migrations \
-            -o "$out/$corpus.stat.txt" -- "$bin" content-mapper --reply-when-ready < "$stream" > /dev/null)
-          # Five fresh mapper processes, so short corpora still collect enough samples.
-          (cd "$project" && "$perf_bin" record -F 2999 --call-graph fp -o "$out/$corpus.perf.data" \
-            -- bash -c 'for _ in 1 2 3 4 5; do "$0" content-mapper --reply-when-ready < "$1" > /dev/null; done' "$bin" "$stream" 2> /dev/null)
-          "$perf_bin" report -i "$out/$corpus.perf.data" --no-children --sort dso,symbol --stdio -g none --percent-limit 0.2 > "$out/$corpus.self.txt" 2> /dev/null
-          "$perf_bin" report -i "$out/$corpus.perf.data" --children --sort symbol --stdio -g none --percent-limit 0.5 > "$out/$corpus.children.txt" 2> /dev/null
-          "$perf_bin" report -i "$out/$corpus.perf.data" --no-children --sort dso --stdio -g none > "$out/$corpus.dso.txt" 2> /dev/null
-          "$perf_bin" script -i "$out/$corpus.perf.data" 2> /dev/null | gzip > "$out/$corpus.perf-script.txt.gz"
-          rm "$out/$corpus.perf.data"
-          for side in base head; do
-            sbin="$PWD/replay-bin/cli/$side/vize"
-            (cd "$project" && strace -f -qq -c -o "$out/$corpus.$side.strace-c.txt" "$sbin" content-mapper < "$stream" > /dev/null)
-            # One file per thread (-ff), so no call is split into unfinished/resumed halves.
-            mkdir -p "$out/io"
-            (cd "$project" && strace -ff -qq -e trace=read,write,writev -e signal=none -o "$out/io/$corpus.$side" "$sbin" content-mapper < "$stream" > /dev/null)
-            # fd 0 reads and fd 1 writes: calls, bytes, and calls under 4 KiB.
-            cat "$out/io/$corpus.$side".* | awk -v side="$side" -v corpus="$corpus" '
-              match($0, /^(read|write|writev)\([01],/) { op = substr($0, RSTART, RLENGTH - 1) ")"; n = $NF + 0; calls[op]++; bytes[op] += n; if (n < 4096) small[op]++ }
-              END { for (op in calls) printf "| %s | %s | %s | %d | %.1f | %d |\n", corpus, side, op, calls[op], bytes[op] / 1048576, small[op] }
-            ' >> "$out/io.md"
-            rm -r "$out/io"
-          done
-        done
-        {
-          echo "## Syscalls on stdin/stdout"
-          echo ""
-          echo "| corpus | build | call | count | MiB | under 4 KiB |"
-          echo "|---|---|---|---|---|---|"
-          sort "$out/io.md"
-          echo ""
-          for f in "$out"/*.strace-c.txt; do echo "<details><summary>$(basename "$f")</summary>"; echo ""; echo '```'; awk 'n++ < 30' "$f"; echo '```'; echo "</details>"; done
-          echo ""
-          echo "## perf (head CLI, frame pointers)"
-          for f in "$out"/*.stat.txt; do echo '```'; awk 'NF && !/^#/' "$f"; echo '```'; done
-          for f in "$out"/*.self.txt; do echo "<details><summary>$(basename "$f") (self, dso and symbol)</summary>"; echo ""; echo '```'; awk 'NF && !/^#/ && n++ < 60' "$f"; echo '```'; echo "</details>"; done
-          for f in "$out"/*.children.txt; do echo "<details><summary>$(basename "$f") (inclusive)</summary>"; echo ""; echo '```'; awk 'NF && !/^#/ && n++ < 80' "$f"; echo '```'; echo "</details>"; done
-        } >> "$GITHUB_STEP_SUMMARY"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/profile-the-head-cli-and-count-syscalls.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -22,6 +22,7 @@ on {
       ".github/actions/setup-cargo-zigbuild/**"
       ".github/actions/smoke-glibc-floor-containers/**"
       ".github/workflows/release-glibc-floor.yml"
+      ".github/scripts/workflows/release-glibc-floor/**"
       "tools/support/github/build-napi-package.ts"
       "tools/support/github/elf-dynamic-requirements.ts"
       "tools/support/github/glibc-floor.ts"
@@ -67,6 +68,9 @@ jobs {
         }
       }
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-glibc-floor"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -75,7 +79,7 @@ jobs {
       new Dynamic {
         name = "Read the package version"
         id = "version"
-        run = #"node -e 'console.log(`version=${require("./npm/native/package.json").version}`)' >> "$GITHUB_OUTPUT""#
+        run = #". "${{ env.VIZE_CI_FILES }}/read-the-package-version.sh""#
       }
       new Dynamic {
         name = "Build the release native binding (gates the glibc floor)"
@@ -89,33 +93,16 @@ jobs {
       }
       new Dynamic {
         name = "Install packed runtime dependencies"
-        run = #"""
-        vp install --frozen-lockfile --prefer-offline \
-          --filter . \
-          --filter '@vize/tools' \
-          --filter './npm/native...' \
-          --filter './npm/cli...' \
-          --filter './npm/builder/vite...'
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/install-packed-runtime-dependencies.sh""#
       }
       new Dynamic {
         name = "Prepare the native platform package"
         env { NATIVE_PLATFORM = "${{ matrix.platform }}" }
-        run = """
-        node tools/support/github/stage-built-native-packages.ts npm/native
-        test -f "npm/native/npm/$NATIVE_PLATFORM/vize-vitrine.$NATIVE_PLATFORM.node"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-native-platform-package.sh""#
       }
       new Dynamic {
         name = "Build packed runtime packages"
-        run = """
-        vp run --filter './npm/cli' build
-        vp run --filter './npm/builder/unplugin' build
-        vp run --filter './npm/builder/vite' build
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-packed-runtime-packages.sh""#
       }
       new Dynamic {
         uses = "./.github/actions/smoke-glibc-floor-containers"
@@ -146,6 +133,9 @@ jobs {
         }
       }
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-glibc-floor"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -154,7 +144,7 @@ jobs {
       new Dynamic {
         name = "Read the package version"
         id = "version"
-        run = #"node -e 'console.log(`version=${require("./npm/native/package.json").version}`)' >> "$GITHUB_OUTPUT""#
+        run = #". "${{ env.VIZE_CI_FILES }}/read-the-package-version.sh""#
       }
       new Dynamic {
         name = "Build the release CLI (gates the glibc floor)"
@@ -191,6 +181,9 @@ jobs {
         }
       }
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-glibc-floor"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -206,12 +199,7 @@ jobs {
       new Dynamic {
         name = "Unpack the release CLI"
         env { TARGET = "${{ matrix.target }}" }
-        run = """
-        mkdir -p .artifacts/cli
-        tar -xzf ".artifacts/cli-archive/vize-$TARGET.tar.gz" -C .artifacts/cli
-        node tools/commands/ci/github/verify-glibc-symbols.ts .artifacts/cli/vize
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/unpack-the-release-cli.sh""#
       }
       new Dynamic {
         uses = "./.github/actions/smoke-glibc-floor-containers"

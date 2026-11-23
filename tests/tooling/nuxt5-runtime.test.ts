@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -5,6 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path, { matchesGlob } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 
 type Step = {
@@ -26,9 +28,12 @@ type Workflow = {
   >;
 };
 const root = new URL("../../", import.meta.url);
+const workflowScripts = fileURLToPath(
+  new URL(".github/scripts/workflows/nuxt3-module-build/", root),
+);
 const fixture = new URL("tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/", root);
 const workflow = parse(
-  fs.readFileSync(new URL(".github/workflows/nuxt3-module-build.yml", root), "utf8"),
+  readAutomationPrograms(new URL(".github/workflows/nuxt3-module-build.yml", root)),
 ) as Workflow;
 const job = workflow.jobs["nuxt3-module-build"];
 const step = (name: string) => {
@@ -223,10 +228,15 @@ void test("the actual frozen install shell preserves npm failure through raw log
       fs.mkdirSync(temporary);
       const result = spawnSync("/bin/bash", args, {
         encoding: "utf8",
-        env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, RUNNER_TEMP: temporary },
+        env: {
+          ...process.env,
+          PATH: `${bin}:${process.env.PATH}`,
+          RUNNER_TEMP: temporary,
+          VIZE_CI_FILES: workflowScripts,
+        },
       });
       assert.equal(result.error, undefined);
-      assert.equal(result.status, expected);
+      assert.equal(result.status, expected, result.stderr);
       assert.equal(
         fs.readFileSync(path.join(temporary, "nuxt5-runtime-proof/install.log"), "utf8"),
         "controlled npm failure\n",
@@ -259,6 +269,7 @@ void test("the Nuxt controller uses the source runtime while forwarding the cons
       ...process.env,
       PATH: `${bin}:${process.env.PATH}`,
       TEST_PRODUCER_NODE: process.execPath,
+      VIZE_CI_FILES: workflowScripts,
       GITHUB_OUTPUT: output,
       RUNNER_TEMP: directory,
     };
@@ -267,7 +278,7 @@ void test("the Nuxt controller uses the source runtime while forwarding the cons
       env: environment,
     });
     assert.equal(captured.error, undefined);
-    assert.equal(captured.status, 0);
+    assert.equal(captured.status, 0, captured.stderr);
     const values = Object.fromEntries(
       fs
         .readFileSync(output, "utf8")

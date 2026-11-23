@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE""#
+}

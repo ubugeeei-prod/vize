@@ -42,6 +42,9 @@ jobs {
     name = "TS-44 resource budgets (linux-x64-ci)"
     `runs-on` = ci.linux
     `timeout-minutes` = 45
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/davinci-resource-budgets"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       ci.workspaceVp()
@@ -49,11 +52,7 @@ jobs {
       // The runner's rustup installs the toolchain pinned in rust-toolchain.toml.
       new Dynamic {
         name = "Install the repository Rust toolchain"
-        run = """
-        rustup toolchain install || rustup show active-toolchain
-        cargo --version
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh""#
       }
       // No Wild: the server links with rust-lld like the shipped x86_64 Linux
       // CLI, so crates/vize/build.rs folds identical code and packs relocations.
@@ -69,7 +68,7 @@ jobs {
       // use fat LTO and one codegen unit on top of it.
       new Dynamic {
         name = "Build the measured server"
-        run = #"cargo build --profile ci-opt -p vize --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --message-format=json-render-diagnostics > "${RUNNER_TEMP}/resource-build.jsonl""#
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-measured-server.sh""#
       }
       new Dynamic {
         name = "Record the measured binary and build identity"
@@ -88,17 +87,7 @@ jobs {
         name = "No ceiling is loosened against the base"
         `if` = "${{ !cancelled() && github.event_name == 'pull_request' }}"
         env { BASE_SHA = "${{ github.event.pull_request.base.sha }}" }
-        run = """
-        set -euo pipefail
-        git fetch --no-tags --depth=1 origin "${BASE_SHA}"
-        # Resolve the base revision's path so the directory move itself can
-        # still compare against the pre-move budget registry.
-        BASE_BUDGET_PATH="$(git ls-tree -r --name-only "${BASE_SHA}" | rg '(^|/)plan/budgets[.]toml$')"
-        test -n "${BASE_BUDGET_PATH}"
-        git show "${BASE_SHA}:${BASE_BUDGET_PATH}" > "${RUNNER_TEMP}/base-budgets.toml"
-        rust-script tools/commands/davinci/resource-budgets.rs --ratchet "${RUNNER_TEMP}/base-budgets.toml"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/no-ceiling-is-loosened-against-the-base.sh""#
       }
       new Dynamic {
         name = "The measurement holds every pinned ceiling"
@@ -108,15 +97,7 @@ jobs {
       new Dynamic {
         name = "Summarize"
         `if` = "${{ !cancelled() }}"
-        run = """
-        {
-          echo "### TS-44 resource measurement (${RESOURCE_PRESET})"
-          echo '```json'
-          cat "${RUNNER_TEMP}/resource.json"
-          echo '```'
-        } >> "$GITHUB_STEP_SUMMARY"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/summarize.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -138,9 +119,12 @@ jobs {
     name = "Synthetic 10k-file resident resources (P5-4b)"
     `runs-on` = ci.linux
     `timeout-minutes` = 30
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/davinci-resource-budgets"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
-      ci.command("Install the repository Rust toolchain", "rustup toolchain install || rustup show active-toolchain")
+      ci.command("Install the repository Rust toolchain", #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain-2.sh""#)
       ci.wild()
       new Dynamic {
         uses = "./.github/actions/setup-rust-sticky-cache"
@@ -160,15 +144,7 @@ jobs {
       new Dynamic {
         name = "Summarize the isolated session"
         `if` = "${{ !cancelled() }}"
-        run = """
-        {
-          echo '### Synthetic resident database (fixture alpha inputs; no LSP or Corsa)'
-          echo '```json'
-          cat "${RUNNER_TEMP}/resident-resource.json"
-          echo '```'
-        } >> "$GITHUB_STEP_SUMMARY"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/summarize-the-isolated-session.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -187,11 +163,14 @@ jobs {
     `if` = "github.event_name == 'workflow_dispatch'"
     `runs-on` = ci.linux
     `timeout-minutes` = 60
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/davinci-resource-budgets"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       ci.workspaceVp()
       ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
-      ci.command("Install the repository Rust toolchain", "rustup toolchain install || rustup show active-toolchain")
+      ci.command("Install the repository Rust toolchain", #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain-2.sh""#)
       // No Wild: the server links with rust-lld like the shipped x86_64 Linux
       // CLI, so crates/vize/build.rs folds identical code and packs relocations.
       new Dynamic {
@@ -221,17 +200,7 @@ jobs {
       new Dynamic {
         name = "Summarize the actual scope and every process"
         `if` = "${{ !cancelled() }}"
-        run = """
-        {
-          echo '### Production Maestro LSP: 10000 open SFCs, 16 metadata provider witnesses'
-          echo 'Maestro and all Corsa descendants are included; the Node harness is excluded.'
-          echo 'The isolated resident example and nine-file TS-44 baseline remain separate.'
-          echo '```json'
-          cat "${RUNNER_TEMP}/lsp-resource.json" || cat "${RUNNER_TEMP}/lsp-resource-smoke.json"
-          echo '```'
-        } >> "$GITHUB_STEP_SUMMARY"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/summarize-the-actual-scope-and-every-process.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

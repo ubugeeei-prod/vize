@@ -12,6 +12,7 @@ on {
       "crates/vize_maestro/src/source_project/navigation.rs"
       "crates/vize_maestro/src/source_project/navigation/**"
       ".github/workflows/native-navigation-products.yml"
+      ".github/scripts/workflows/native-navigation-products/**"
     }
   }
 }
@@ -32,12 +33,14 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     env {
+
       CARGO_BUILD_JOBS = "24"
       CARGO_INCREMENTAL = "0"
       RUST_MIN_STACK = "16777216"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("native-navigation-products")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       new Dynamic {
         uses = ci.setupNode
@@ -69,33 +72,16 @@ jobs {
           key = "native-navigation-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}"
         }
       }
-      ci.command("Select tracked original Vue inputs", #"git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/navigation-sources""#)
+      ci.command("Select tracked original Vue inputs", #". "${{ env.VIZE_CI_FILES }}/select-tracked-original-vue-inputs.sh""#)
       new Dynamic {
         name = "Check real File membership and complete editor responses"
         `if` = "matrix.suite == 'correctness'"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt)
-        file=(-p vize_l1_to_l2 --features native-navigation-products --lib)
-        editor=(-p vize_maestro --features experimental-navigation-products,micro-profiling --lib)
-        cargo clippy "${flags[@]}" "${file[@]}" --no-deps -- -D warnings
-        cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
-        cargo test "${flags[@]}" "${file[@]}" native_file::query::
-        cargo test "${flags[@]}" "${editor[@]}" source_project::navigation::
-        export VIZE_NATIVE_NAVIGATION_INPUTS="$RUNNER_TEMP/navigation-sources"
-        cargo test "${flags[@]}" "${editor[@]}" original_file_membership_and_public_navigation_packets_match -- --ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/check-real-file-membership-and-complete-editor-responses.sh""#
       }
       new Dynamic {
         name = "Measure complete requests through the editor mailbox"
         `if` = "matrix.suite == 'performance'"
-        run = """
-        set -euo pipefail
-        export VIZE_NATIVE_NAVIGATION_INPUTS="$RUNNER_TEMP/navigation-sources"
-        cargo test --locked --profile ci-opt -p vize_maestro --features experimental-navigation-products,micro-profiling --lib paired_original_navigation_requests -- --ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/measure-complete-requests-through-the-editor-mailbox.sh""#
       }
     }
   }

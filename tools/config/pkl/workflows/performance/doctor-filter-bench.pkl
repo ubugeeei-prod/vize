@@ -33,6 +33,9 @@ jobs {
     name = "Doctor filter parity and paired matching"
     `runs-on` = ci.linux
     `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/head/.github/scripts/workflows/doctor-filter-bench"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -46,14 +49,7 @@ jobs {
       new Dynamic {
         name = "Select the exact ancestor baseline"
         env { REQUESTED_BASE = "${{ inputs.base_sha }}" }
-        run = """
-        set -euo pipefail
-        [[ "$REQUESTED_BASE" =~ ^[0-9a-f]{40}$ ]]
-        [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-        git -C head merge-base --is-ancestor "$REQUESTED_BASE" "$HEAD_SHA"
-        echo "BASE_SHA=$(git -C head merge-base "$REQUESTED_BASE" "$HEAD_SHA")" >> "$GITHUB_ENV"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/select-the-exact-ancestor-baseline.sh""#
       }
       new Dynamic {
         uses = ci.checkout
@@ -69,7 +65,7 @@ jobs {
       // and this job checks the repository out under head/.
       new Dynamic {
         name = "Expose the nested target action at the workspace root"
-        run = "mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/"
+        run = #". "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh""#
       }
       new Dynamic {
         uses = "./head/.github/actions/setup-rust-sticky-cache"
@@ -92,35 +88,15 @@ jobs {
       new Dynamic {
         name = "Verify filter semantics and lint contract"
         `working-directory` = "head"
-        run = """
-        cargo test --locked -p vize_doctor filter
-        cargo clippy --locked -p vize_doctor --all-targets -- -D warnings
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-filter-semantics-and-lint-contract.sh""#
       }
       new Dynamic {
         name = "Build identical public API probes against exact base and head"
-        run = """
-        set -euo pipefail
-        [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
-        [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
-        mkdir -p base/crates/vize_doctor/examples
-        cp -R head/crates/vize_doctor/examples/filter_patterns_bench base/crates/vize_doctor/examples/
-        diff -r head/crates/vize_doctor/examples/filter_patterns_bench base/crates/vize_doctor/examples/filter_patterns_bench
-        cargo build --locked --manifest-path base/Cargo.toml --profile ci-opt -p vize_doctor --example filter_patterns_bench
-        cargo build --locked --manifest-path head/Cargo.toml --profile ci-opt -p vize_doctor --example filter_patterns_bench
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-identical-public-api-probes-against-exact-base-and-head.sh""#
       }
       new Dynamic {
         name = "Compare planted verdicts and nine alternating measurement pairs"
-        run = #"""
-        node head/tools/benchmarks/scripts/doctor-filter-paired.ts \
-          "$GITHUB_WORKSPACE/base/target/ci-opt/examples/filter_patterns_bench" \
-          "$GITHUB_WORKSPACE/head/target/ci-opt/examples/filter_patterns_bench" \
-          "$GITHUB_WORKSPACE/doctor-filter-bench.json"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-planted-verdicts-and-nine-alternating-measurement-pairs.sh""#
       }
       new Dynamic {
         name = "Upload exact workloads and raw timings"

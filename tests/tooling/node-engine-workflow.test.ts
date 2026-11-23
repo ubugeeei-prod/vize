@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import { workflowJobBody } from "./support/github-workflows.ts";
 
 interface WorkflowJob {
   steps?: Array<{ run?: string; uses?: string; with?: Record<string, unknown> }>;
@@ -11,7 +11,7 @@ interface WorkflowJob {
 }
 
 test("check workflow runs declared Node engine compatibility matrix", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "check.yml");
   const parsed = parse(workflow) as { jobs?: Record<string, WorkflowJob> };
   const parsedJob = parsed.jobs?.["node-engine-compat"];
   const job = workflowJobBody(workflow, "node-engine-compat");

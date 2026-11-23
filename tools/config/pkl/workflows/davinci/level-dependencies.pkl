@@ -11,6 +11,9 @@ jobs {
     name = "Level dependency direction"
     `runs-on` = ci.linux
     `timeout-minutes` = 5
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/level-dependencies"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -31,19 +34,7 @@ jobs {
         env {
           BASE_SHA = "${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}"
         }
-        run = """
-        dependency_base="$BASE_SHA"
-        if [[ -z "$dependency_base" ]]; then
-          dependency_base="$(git rev-parse HEAD^)"
-        fi
-        if [[ ! "$dependency_base" =~ ^[0-9a-f]{40}$ || "$dependency_base" =~ ^0+$ ]]; then
-          echo 'Missing dependency policy comparison base' >&2
-          exit 1
-        fi
-        git fetch --no-tags --depth=1 origin "$dependency_base"
-        echo "DEPENDENCY_BASE=$dependency_base" >> "$GITHUB_ENV"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/fetch-dependency-policy-comparison-base.sh""#
       }
       new Dynamic {
         name = "Test dependency policy mutations"

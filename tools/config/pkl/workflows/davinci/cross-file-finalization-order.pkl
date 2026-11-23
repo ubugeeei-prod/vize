@@ -16,6 +16,7 @@ on {
     types = List("opened", "synchronize", "reopened")
     paths = new Listing {
       ".github/workflows/cross-file-finalization-order.yml"
+      ".github/scripts/workflows/cross-file-finalization-order/**"
       ".github/scripts/cross-file-finalization-scope.ts"
       ".github/scripts/cross-file-finalization-order-scope.ts"
       "tests/tooling/cross-file-finalization-order-scope.test.ts"
@@ -45,6 +46,7 @@ jobs {
     `timeout-minutes` = 5
     outputs { run_comparison = "${{ steps.plan.outputs.run_comparison }}" }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-finalization-order")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
       new Dynamic {
         uses = ci.setupNode
@@ -55,12 +57,7 @@ jobs {
       }
       new Dynamic {
         name = "Fetch the exact comparison base or fail"
-        run = """
-        set -euo pipefail
-        [[ "$BASE_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-        git fetch --no-tags --depth=1 origin "$BASE_SOURCE_SHA"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/fetch-the-exact-comparison-base-or-fail.sh""#
       }
       new Dynamic {
         name = "Validate original and ordering scope selection laws"
@@ -90,6 +87,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-finalization-order")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -114,37 +112,15 @@ jobs {
       }
       new Dynamic {
         name = "Install frozen tools and prepare identical observer-only overlays"
-        run = """
-        vp install --frozen-lockfile --prefer-offline
-        git worktree add --detach target/finalization-order-base "$BASE_SOURCE_SHA"
-        for root in . target/finalization-order-base; do
-          mkdir -p "$root/crates/vize/examples/cross_file_finalization_order"
-          cp tests/tooling/support/cross-file-finalization-order/observer/*.rs "$root/crates/vize/examples/cross_file_finalization_order/"
-        done
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-frozen-tools-and-prepare-identical-observer-only-overlays.sh""#
       }
       new Dynamic {
         name = "Verify linear ordering laws and complete raw node identity"
-        run = #"""
-        mkdir -p target/vize-tests/cross-file-finalization-order
-        cargo test --locked --profile ci -p vize_croquis_cf --target-dir target/finalization-order-head-build --lib -- graph::order::tests:: --nocapture > target/vize-tests/cross-file-finalization-order/rust.stdout 2> target/vize-tests/cross-file-finalization-order/rust.stderr
-        cat target/vize-tests/cross-file-finalization-order/rust.stdout
-        node --input-type=module <<'JS'
-        import assert from 'node:assert/strict';
-        import fs from 'node:fs';
-        assert.match(fs.readFileSync('target/vize-tests/cross-file-finalization-order/rust.stdout', 'utf8'), /test result: ok\. 3 passed; 0 failed; 0 ignored;/u);
-        JS
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-linear-ordering-laws-and-complete-raw-node-identity.sh""#
       }
       new Dynamic {
         name = "Compile actual base and head observers into isolated targets"
-        run = """
-        cargo build --locked --manifest-path target/finalization-order-base/Cargo.toml --profile ci -p vize --example cross_file_finalization_order --target-dir target/finalization-order-base-build
-        cargo build --locked --profile ci -p vize --example cross_file_finalization_order --target-dir target/finalization-order-head-build
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compile-actual-base-and-head-observers-into-isolated-targets.sh""#
       }
       new Dynamic {
         name = "Compare one new pass with the old second and third passes"

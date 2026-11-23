@@ -9,6 +9,7 @@ on {
     types = List("opened", "synchronize", "reopened")
     paths = new Listing {
       ".github/workflows/cross-file-sfc-effects.yml"
+      ".github/scripts/workflows/cross-file-sfc-effects/**"
       "crates/vize/src/commands/lint/cross_file.rs"
       "crates/vize/src/commands/lint/cross_file/**"
       "davinci/vize_l0/src/source_frame.rs"
@@ -51,6 +52,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-sfc-effects")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
       ci.workspaceVp()
       new Dynamic {
@@ -71,26 +73,11 @@ jobs {
       ci.command("Install frozen workspace tools", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Build and receipt the actual source CLI"
-        run = """
-        cargo build --locked --profile ci -p vize
-        node tests/differential/build-receipt.ts
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-actual-source-cli.sh""#
       }
       new Dynamic {
         name = "Verify descriptor and complete report regressions"
-        run = #"""
-        mkdir -p target/vize-tests/cross-file-sfc-effects
-        cargo test --locked --profile ci -p vize --lib -- commands::lint::cross_file::effect_summary_tests:: --nocapture > target/vize-tests/cross-file-sfc-effects/rust.stdout 2> target/vize-tests/cross-file-sfc-effects/rust.stderr
-        cat target/vize-tests/cross-file-sfc-effects/rust.stdout
-        node --input-type=module <<'JS'
-        import assert from 'node:assert/strict';
-        import fs from 'node:fs';
-        const raw = fs.readFileSync('target/vize-tests/cross-file-sfc-effects/rust.stdout', 'utf8');
-        assert.match(raw, /test result: ok\. 5 passed; 0 failed; 0 ignored;/u);
-        JS
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-descriptor-and-complete-report-regressions.sh""#
       }
       new Dynamic {
         name = "Compare complete public and source CLI packets with the actual WASM reference"
@@ -118,10 +105,12 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
     env {
+
       CARGO_BUILD_JOBS = "24"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-sfc-effects")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
       new Dynamic {
         uses = ci.setupRust
@@ -136,16 +125,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare compiler bindings and complete project effect graphs"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt --lib)
-        cargo clippy "${flags[@]}" -p vize_l2 -p vize_croquis -p vize_atelier_sfc --features vize_atelier_sfc/script-binding-products --no-deps -- -D warnings
-        cargo test "${flags[@]}" -p vize_l2 --features script-declaration-queries query::script::
-        export VIZE_SCRIPT_QUERY_INPUTS="$RUNNER_TEMP/script-effect-inputs"
-        git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_SCRIPT_QUERY_INPUTS"
-        cargo test "${flags[@]}" -p vize_atelier_sfc --features script-binding-products compile_script::binding_products:: -- --include-ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-compiler-bindings-and-complete-project-effect-graphs.sh""#
       }
     }
   }

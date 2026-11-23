@@ -33,6 +33,7 @@ jobs {
     `timeout-minutes` = 30
     permissions { contents = "read" }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("vue-benchmarks-replay")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -53,13 +54,7 @@ jobs {
       ci.command("Build Vize CLI", "cargo build --profile ci -p vize")
       new Dynamic {
         name = "Replay the upstream corpus against current main"
-        run = #"""
-        node tools/benchmarks/scripts/vue-benchmarks-replay.ts \
-          --vize-bin target/ci/vize \
-          --expect tools/benchmarks/scripts/vue-benchmarks-replay-expect-main.json \
-          --json replay-main-results.json
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/replay-the-upstream-corpus-against-current-main.sh""#
       }
       new Dynamic {
         name = "Upload replay results"
@@ -81,6 +76,7 @@ jobs {
     `timeout-minutes` = 20
     permissions { contents = "read" }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("vue-benchmarks-replay")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -95,13 +91,7 @@ jobs {
       }
       new Dynamic {
         name = "Replay the upstream corpus against the latest release"
-        run = #"""
-        node tools/benchmarks/scripts/vue-benchmarks-replay.ts \
-          --vize-bin "$RUNNER_TEMP/vize-release/node_modules/.bin/vize" \
-          --expect tools/benchmarks/scripts/vue-benchmarks-replay-expect-release.json \
-          --json replay-release-results.json
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/replay-the-upstream-corpus-against-the-latest-release.sh""#
       }
       new Dynamic {
         name = "Upload replay results"

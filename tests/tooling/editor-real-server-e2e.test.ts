@@ -106,7 +106,9 @@ test("CI runs all real-server editor scenarios from one built server binary", ()
     8,
     "every real-server scenario and host health check must consume the one built binary",
   );
-  const workflow = parse(readRepoFile(".github", "workflows", "editor-conformance.yml")) as any;
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "editor-conformance.yml"),
+  ) as any;
   const fullHosts = workflow.jobs.conformance.steps.filter(
     (step: any) => step.run === "xvfb-run -a node test/run-extension-host-real.mjs",
   );
@@ -184,7 +186,9 @@ test("CI runs both headless editor specs", () => {
     "nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua && VIZE_TEST_ART_VUE_NATIVE_PARSER=1 nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua",
     "both complete Lua suites must propagate assertion failures to CI",
   );
-  const conformance = parse(readRepoFile(".github", "workflows", "editor-conformance.yml")) as {
+  const conformance = parse(
+    readAutomationPrograms(".github", "workflows", "editor-conformance.yml"),
+  ) as {
     jobs: {
       conformance: { steps: Array<{ if?: string; run?: string; env?: Record<string, string> }> };
     };

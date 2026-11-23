@@ -3,7 +3,10 @@ import "../../Actions.pkl" as ci
 `runs-on` = ci.linux
 `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
 `timeout-minutes` = 30
-env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/full-qualification"
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+}
 steps = new Listing {
   ci.use(ci.checkout)
   ci.workspaceVp()
@@ -23,7 +26,7 @@ steps = new Listing {
   ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
   new Dynamic {
     name = "Verify declarations, build native package, and check UI package"
-    run = "vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types && vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check"
+    run = #". "${{ env.VIZE_CI_FILES }}/verify-declarations-build-native-package-and-check-ui-package.sh""#
   }
   new Dynamic {
     name = "Check composable hydration and Vapor conformance"
@@ -35,16 +38,7 @@ steps = new Listing {
   ci.command("Build JS packages", "vp run --workspace-root build:packages")
   new Dynamic {
     name = "Stage shared JS build artifacts"
-    run = """
-    mkdir -p .artifacts/shared-js-build/npm/native
-    mkdir -p .artifacts/shared-js-build/npm/cli
-    mkdir -p .artifacts/shared-js-build/npm/builder/vite
-    cp npm/native/*.node .artifacts/shared-js-build/npm/native/
-    cp npm/native/index.js npm/native/index.d.ts .artifacts/shared-js-build/npm/native/
-    cp -R npm/cli/dist .artifacts/shared-js-build/npm/cli/
-    cp -R npm/builder/vite/dist .artifacts/shared-js-build/npm/builder/vite/
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/stage-shared-js-build-artifacts.sh""#
   }
   new Dynamic {
     name = "Upload shared JS build artifacts"

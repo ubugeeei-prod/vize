@@ -6,6 +6,7 @@ on {
     types = List("opened", "synchronize", "reopened")
     paths = new Listing {
       ".github/workflows/source-symbolizer-smoke.yml"
+      ".github/scripts/workflows/source-symbolizer-smoke/**"
       "tools/benchmarks/scripts/source-symbolizer-*.ts"
       "tests/tooling/source-symbolizer-protocol.test.ts"
     }
@@ -44,6 +45,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 15
     steps = new Listing {
+      ...ci.stageWorkflowScripts("source-symbolizer-smoke")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
       ci.rust("1.100.0")
       new Dynamic {
@@ -55,20 +57,7 @@ jobs {
       }
       new Dynamic {
         name = "Install bounded symbolizer tools"
-        run = """
-        set -euo pipefail
-        sudo apt-get update -qq
-        sudo apt-get install -y linux-tools-generic binutils llvm elfutils
-        sudo sysctl kernel.perf_event_paranoid=0
-        shopt -s nullglob
-        for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
-          if [[ -x "$candidate" ]]; then
-            echo "SMOKE_PERF=$candidate" >> "$GITHUB_ENV"
-            break
-          fi
-        done
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-bounded-symbolizer-tools.sh""#
       }
       new Dynamic {
         name = "Validate exact count and source ownership admission"
@@ -76,13 +65,7 @@ jobs {
       }
       new Dynamic {
         name = "Prove the small original Rust carrier before decoding normal captures"
-        run = #"""
-        set -euo pipefail
-        out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-        node tools/benchmarks/scripts/source-symbolizer-smoke.ts \
-          --perf "$SMOKE_PERF" --out "$out/carrier"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-small-original-rust-carrier-before-decoding-normal-captures.sh""#
       }
       new Dynamic {
         uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
@@ -97,51 +80,17 @@ jobs {
       new Dynamic {
         name = "Restore the sealed normal binary and prepare bounded public controls"
         `if` = "${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}"
-        run = #"""
-        set -euo pipefail
-        out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-        mapfile -t archives < <(find "$RUNNER_TEMP/source-symbolizer-replay-download" -type f -name '*.tgz')
-        [[ "${#archives[@]}" == 1 ]]
-        tar -xzf "${archives[0]}" -C "$RUNNER_TEMP" \
-          cold-scale/record-head/direct-process/perf.data \
-          cold-scale/record-head/direct-process/receipt.json \
-          cold-scale/binaries/normal-head/vize \
-          cold-scale/builds/normal-head.json
-        provider="$RUNNER_TEMP/source-symbolizer-provider"
-        mkdir "$provider"
-        node -e 'process.stdout.write(JSON.stringify({private:true,dependencies:{vue:"3.6.0-rc.13",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta"}}))' > "$provider/package.json"
-        npm install --prefix "$provider" --ignore-scripts --no-audit --no-fund
-        node tools/benchmarks/scripts/source-symbolizer-stages.ts --perf "$SMOKE_PERF" \
-          --out "$out/bounded" --root "$RUNNER_TEMP/cold-scale" --provider "$provider" \
-          --carrier "$out/carrier/result.json"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/restore-the-sealed-normal-binary-and-prepare-bounded-public-controls.sh""#
       }
       new Dynamic {
         name = "Decode retained full software capture after bounded controls"
         `if` = "${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}"
-        run = #"""
-        set -euo pipefail
-        out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-        node tools/benchmarks/scripts/source-symbolizer-smoke.ts --perf "$SMOKE_PERF" \
-          --out "$out/normal" --replay-root "$RUNNER_TEMP/cold-scale" \
-          --carrier-result "$out/carrier/result.json" --bounded-result "$out/bounded/result.json"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/decode-retained-full-software-capture-after-bounded-controls.sh""#
       }
       new Dynamic {
         name = "Package bounded evidence without traversing project dependencies"
         `if` = "always()"
-        run = #"""
-        set -euo pipefail
-        out="$RUNNER_TEMP/source-symbolizer/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-        if [[ -d "$out" ]]; then
-          tar -czf "$RUNNER_TEMP/source-symbolizer-evidence.tgz" \
-            --exclude='*/project/node_modules' --exclude='*/tmp' --exclude='*/xdg-cache' \
-            -C "$out" .
-        fi
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/package-bounded-evidence-without-traversing-project-dependencies.sh""#
       }
       new Dynamic {
         name = "Preserve raw protocols, exact sample census, and separate self/inclusive reports"
@@ -161,6 +110,9 @@ jobs {
     `if` = "${{ inputs.symbols_only }}"
     `runs-on` = ci.linux
     `timeout-minutes` = 8
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/source-symbolizer-smoke"
+    }
     steps = new Listing {
       ci.checkoutAt("${{ github.sha }}")
       new Dynamic {
@@ -176,20 +128,7 @@ jobs {
           REPLAY_RUN_ID = "${{ inputs.replay_run_id }}"
           REPLAY_ARTIFACT_ID = "${{ inputs.replay_artifact_id }}"
         }
-        run = """
-        set -euo pipefail
-        [[ "$REPLAY_RUN_ID" =~ ^[0-9]+$ && "$REPLAY_ARTIFACT_ID" =~ ^[0-9]+$ ]]
-        sudo apt-get update -qq
-        sudo apt-get install -y linux-tools-generic binutils
-        shopt -s nullglob
-        for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
-          if [[ -x "$candidate" ]]; then
-            echo "SMOKE_PERF=$candidate" >> "$GITHUB_ENV"
-            break
-          fi
-        done
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-offline-symbol-tools-and-validate-the-immutable-request.sh""#
       }
       new Dynamic {
         uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"
@@ -202,23 +141,7 @@ jobs {
       }
       new Dynamic {
         name = "Restore the exact recorded DSO and decode all self samples without addr2line"
-        run = #"""
-        set -euo pipefail
-        mapfile -t archives < <(find "$RUNNER_TEMP/symbol-replay-download" -type f -name '*.tgz')
-        [[ "${#archives[@]}" == 1 ]]
-        restore=/home/runner/_work/_temp
-        [[ ! -e "$restore/cold-scale" ]]
-        mkdir -p "$restore"
-        tar -xzf "${archives[0]}" -C "$restore" \
-          cold-scale/record-head/direct-process/perf.data \
-          cold-scale/record-head/direct-process/receipt.json \
-          cold-scale/binaries/normal-head/vize \
-          cold-scale/builds/normal-head.json
-        node tools/benchmarks/scripts/source-symbolizer-symbol-cli.ts \
-          --perf "$SMOKE_PERF" --root "$restore/cold-scale" \
-          --out "$RUNNER_TEMP/symbol-replay"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/restore-the-exact-recorded-dso-and-decode-all-self-samples-without-addr2.sh""#
       }
       new Dynamic {
         name = "Preserve qualified symbols and explicit unresolved counts"

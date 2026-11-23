@@ -16,21 +16,19 @@ permissions {
   contents = "write"
 }
 env {
+
   RELEASE_TAG = "${{ needs.version.outputs.tag }}"
   RELEASE_CANDIDATE = "${{ needs.version.outputs.ref }}"
 }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("release")
   new Dynamic {
     uses = ci.checkout
     with { ref = "${{ needs.version.outputs.ref }}" }
   }
   new Dynamic {
     name = "Push the tag and drop the candidate ref"
-    run = """
-    git push origin "HEAD:refs/tags/$RELEASE_TAG"
-    git push origin ":$RELEASE_CANDIDATE"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/push-the-tag-and-drop-the-candidate-ref.sh""#
   }
   new Dynamic {
     name = "Dispatch Parcel native publication from the immutable tag"

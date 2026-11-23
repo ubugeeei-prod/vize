@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/published-slot-instance-noany.yml"
+      ".github/scripts/workflows/published-slot-instance-noany/**"
       "tools/support/release/slot_instance_public/**"
       "tools/support/release/computed_event_custody.ts"
       "tools/support/release/editor_vite_stub/custody.ts"
@@ -78,6 +79,7 @@ jobs {
     `runs-on` = "blacksmith-8vcpu-ubuntu-2404"
     `timeout-minutes` = 25
     steps = new Listing {
+      ...ci.stageWorkflowScripts("published-slot-instance-noany")
       ci.checkoutAt("${{ env.SOURCE_SHA }}")
       new Dynamic {
         uses = ci.setupNode
@@ -98,13 +100,7 @@ jobs {
       new Dynamic {
         name = "Preserve complete failures and physical installed custody"
         `if` = "always()"
-        run = """
-        set -euo pipefail
-        if [[ -d "$RUNNER_TEMP/slot-instance-public" ]]; then
-          tar --exclude=node_modules --exclude=registry-installation -czf "$RUNNER_TEMP/slot-instance-public.tgz" -C "$RUNNER_TEMP" slot-instance-public
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-complete-failures-and-physical-installed-custody.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

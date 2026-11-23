@@ -40,6 +40,7 @@ jobs {
       url = "${{ steps.deployment.outputs.page_url }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("deploy-docs")
       new Dynamic {
         name = "Checkout current main"
         uses = ci.checkout
@@ -63,16 +64,7 @@ jobs {
         id = "main"
         shell = "bash"
         env { GITHUB_TOKEN = "${{ github.token }}" }
-        run = """
-        set -euo pipefail
-        # Preserve trusted main validators when the completed source is older.
-        validator="$RUNNER_TEMP/docs-deployment/compat/github"
-        mkdir -p "$validator" "$RUNNER_TEMP/docs-deployment/archive"
-        cp tools/support/compat/github/docs-deployment-*.ts "$validator/"
-        cp tools/support/archive/tar.ts tools/support/archive/zip.ts "$RUNNER_TEMP/docs-deployment/archive/"
-        vp node "$validator/docs-deployment-entry.ts" prepare
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-completed-build-and-actual-pages-publication-floor.sh""#
       }
       new Dynamic {
         name = "Checkout docs build"

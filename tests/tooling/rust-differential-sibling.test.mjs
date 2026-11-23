@@ -1,4 +1,3 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
@@ -15,6 +14,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
+
+import { invocationWords } from "../../tools/support/ci/automation-commands.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -28,7 +30,7 @@ const runnerPath = "tools/support/compat/github/rust-differential-lanes.ts";
 const recipe = workflow(`${recipePath}/action.yml`);
 const fixturePath = "tests/_fixtures/_git/element-plus";
 const hydrationArgs = ["submodule", "update", "--init", "--depth", "1", "--", fixturePath];
-const realGit = execFileSync("/bin/sh", ["-c", "command -v git"], { encoding: "utf8" }).trim();
+const realGit = execFileSync("which", ["git"], { encoding: "utf8" }).trim();
 const fixturePin = execFileSync(realGit, ["ls-tree", "HEAD", fixturePath], {
   cwd: root,
   encoding: "utf8",
@@ -106,7 +108,6 @@ function selectedSteps(lane) {
     .filter((step) => !step.if || runInNewContext(step.if.slice(3, -3), { matrix: { lane } }))
     .flatMap((step) => (step.uses ? workflow(`${step.uses}/action.yml`).runs.steps : [step]));
 }
-const quote = (value) => `'${String(value).replaceAll("'", "'\\''")}'`;
 
 function fixture(lane) {
   const cwd = realpathSync(mkdtempSync(join(tmpdir(), "vize-rust-differential-")));
@@ -143,17 +144,6 @@ exec "$NODE" -e 'const fs=require("node:fs"),assert=require("node:assert/strict"
 `,
     { mode: 0o755 },
   );
-  const script = selectedSteps(lane)
-    .map((step) => {
-      const env = Object.entries(step.env ?? {})
-        .map(
-          ([key, value]) =>
-            `export ${key}=${quote(String(value).replaceAll("${{ matrix.lane }}", lane))}`,
-        )
-        .join("\n");
-      return `(\n${env}\n${step.run}\n)`;
-    })
-    .join("\n");
   const execute = (failure) => {
     const env = {
       ...process.env,
@@ -175,11 +165,48 @@ exec "$NODE" -e 'const fs=require("node:fs"),assert=require("node:assert/strict"
     delete env.VIZE_TEST_DISABLE_TSGO;
     delete env.TEST_CASES_JOB;
     delete env.VIZE_TEST_CASES;
-    return spawnSync("/bin/bash", ["--noprofile", "--norc", "-eo", "pipefail", "-c", script], {
-      cwd,
-      encoding: "utf8",
-      env,
-    });
+    const scripts = join(root, ".github/scripts/workflows/pr-rust-differential");
+    const action = join(root, ".github/actions/test-native-navigation");
+    let result;
+    for (const step of selectedSteps(lane)) {
+      const stepEnv = {
+        ...env,
+        GITHUB_ACTION_PATH: action,
+        VIZE_CI_FILES: scripts,
+        ...Object.fromEntries(
+          Object.entries(step.env ?? {}).map(([key, value]) => [
+            key,
+            String(value).replaceAll("${{ matrix.lane }}", lane),
+          ]),
+        ),
+      };
+      const words = invocationWords(step.run);
+      const [program, ...args] =
+        words && !step.run.includes("$VIZE_CI_FILES")
+          ? words.map((word) =>
+              word.replace(/\$(\w+)/gu, (_, key) => {
+                assert.ok(key in stepEnv, key);
+                return stepEnv[key];
+              }),
+            )
+          : [
+              "/bin/bash",
+              "--noprofile",
+              "--norc",
+              "-eo",
+              "pipefail",
+              automationShellPath(
+                step.run,
+                step.name === "Materialize affected Rust plan"
+                  ? "pr-rust-differential"
+                  : "test-native-navigation",
+              ),
+            ];
+      result = spawnSync(program, args, { cwd, encoding: "utf8", env: stepEnv });
+      if (result.status !== 0) break;
+    }
+    assert.ok(result);
+    return result;
   };
   const records = (filename) =>
     readFileSync(filename, "utf8").trim().split("\n").filter(Boolean).map(JSON.parse);

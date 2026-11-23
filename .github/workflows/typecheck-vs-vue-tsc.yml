@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/typecheck-vs-vue-tsc.yml
+      - .github/scripts/workflows/typecheck-vs-vue-tsc/**
       - tools/benchmarks/scripts/typecheck-vs-vue-tsc*.ts
       - tests/tooling/typecheck-vs-vue-tsc*.test.ts
       - tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/**
@@ -37,6 +38,8 @@ jobs:
     name: fixed-2500-and-misskey
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 240
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/typecheck-vs-vue-tsc"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false, fetch-depth: 2 }
@@ -45,28 +48,15 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24.14.0", package-manager-cache: false }
       - name: Prepare exact product and frozen provider
-        run: |
-          mkdir "$RUNNER_TEMP/comparative"
-          git fetch --no-tags --depth=1 origin ea22f2cd2aa661b9bdab940e25464eff692b935f
-          git worktree add --detach "$RUNNER_TEMP/comparative/source" ea22f2cd2aa661b9bdab940e25464eff692b935f
-          mkdir "$RUNNER_TEMP/comparative/provider"
-          cp tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package.json.txt "$RUNNER_TEMP/comparative/provider/package.json"
-          cp tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package-lock.json.txt "$RUNNER_TEMP/comparative/provider/package-lock.json"
-          test "$(node --version)" = v24.14.0
-          test "$(npm --version)" = 11.9.0
-          (cd "$RUNNER_TEMP/comparative/provider" && npm ci --ignore-scripts --no-audit --no-fund) > "$RUNNER_TEMP/comparative/provider-install.stdout" 2> "$RUNNER_TEMP/comparative/provider-install.stderr"
+        run: . "${{ env.VIZE_CI_FILES }}/prepare-exact-product-and-frozen-provider.sh"
       - name: Build fixed normal product
         run: |
           node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/comparative/source" --target-dir "$RUNNER_TEMP/comparative/target" --binary "$RUNNER_TEMP/comparative/vize" --receipt "$RUNNER_TEMP/comparative/vize.build.json" --role normal
       - name: Measure
-        run: |
-          node tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen.ts --source-root "$RUNNER_TEMP/comparative/source" --binary "$RUNNER_TEMP/comparative/vize" --provider "$RUNNER_TEMP/comparative/provider" --out "$RUNNER_TEMP/comparative/observations"
-          cat "$RUNNER_TEMP/comparative/observations/summary.md" >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/measure.sh"
       - name: Preserve all raw before any verdict
         if: always()
-        run: |
-          node -e 'const fs=require("node:fs");const p=process.env.RUNNER_TEMP+"/comparative";fs.mkdirSync(p,{recursive:true});fs.writeFileSync(p+"/controller.json",JSON.stringify({head:process.env.GITHUB_SHA,ref:process.env.GITHUB_REF,run:process.env.GITHUB_RUN_ID,event:process.env.GITHUB_EVENT_NAME}));'
-          tar -czf "$RUNNER_TEMP/typecheck-vs-vue-tsc-raw.tgz" -C "$RUNNER_TEMP/comparative" --exclude=target --exclude=source --exclude=provider/node_modules --exclude=vize --exclude=observations/misskey --exclude=observations/synthetic-project .
+        run: . "${{ env.VIZE_CI_FILES }}/preserve-all-raw-before-any-verdict.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

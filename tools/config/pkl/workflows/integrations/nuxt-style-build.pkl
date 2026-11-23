@@ -27,6 +27,9 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 3
     outputs { nuxt = "${{ steps.plan.outputs.nuxt }}" }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/nuxt-style-build"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -45,13 +48,7 @@ jobs {
         env {
           BASE_SHA = "${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}"
         }
-        run = """
-        if [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && ! "$BASE_SHA" =~ ^0+$ ]]; then
-          git fetch --no-tags --depth=1 origin "$BASE_SHA"
-        fi
-        node tools/support/compat/github/plan-product-integrations.ts "$GITHUB_EVENT_NAME" "$BASE_SHA" "$GITHUB_SHA"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/select-changed-product-inputs.sh""#
       }
     }
   }
@@ -89,6 +86,9 @@ jobs {
           }
         }
       }
+    }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/nuxt-style-build"
     }
     steps = new Listing {
       ci.use(ci.checkout)
@@ -155,17 +155,7 @@ jobs {
           FIXTURE = "${{ matrix.fixture }}"
           PROOF = "${{ matrix.proof }}"
         }
-        run = """
-        adapters="$RUNNER_TEMP/$PROOF/compared-adapters"
-        mkdir -p "$adapters/candidate" "$adapters/published"
-        for adapter in vite-plugin nuxt; do
-          published="$FIXTURE/node_modules/@vizejs/$adapter/dist"
-          if [[ -d "$published" ]]; then cp -R "$published" "$adapters/published/$adapter"; fi
-        done
-        if [[ -d npm/builder/vite/dist ]]; then cp -R npm/builder/vite/dist "$adapters/candidate/vite-plugin"; fi
-        if [[ -d npm/framework/nuxt/dist ]]; then cp -R npm/framework/nuxt/dist "$adapters/candidate/nuxt"; fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/retain-the-exact-compared-javascript-adapters.sh""#
       }
       new Dynamic {
         name = "Upload build and SSR evidence"

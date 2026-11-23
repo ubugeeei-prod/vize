@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -10,7 +11,7 @@ import {
   MAPPER_HOST_TARGETS,
   mapperHostTarget,
 } from "../../tools/support/release/type-admission-mapper-host.ts";
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { root } from "./support/github-workflows.ts";
 
 const proxy = path.join(root, "tools/support/compat/content-mapper/process-receipt.ts");
 type ProcessReceipt = {
@@ -59,7 +60,9 @@ test("the qualified mapper host selects exact Linux and macOS arm64 images", () 
 });
 
 test("the macOS cold-start workflow runs once and retains complete process evidence", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "content-mapper-cold-start.yml")) as {
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "content-mapper-cold-start.yml"),
+  ) as {
     jobs: Record<
       string,
       {

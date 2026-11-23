@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+node --version | tee runtime-version.txt
+node node_modules/typescript/bin/tsc --strict --noEmit --target ESNext --module NodeNext --moduleResolution NodeNext consumer-types.ts 2>&1 | tee types.log
+node consumer.ts @vizejs/vize --vite --core-only 2>&1 | tee runtime.log

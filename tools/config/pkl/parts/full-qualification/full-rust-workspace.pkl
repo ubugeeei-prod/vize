@@ -6,6 +6,7 @@ name = "Full Rust workspace and doctests"
 `timeout-minutes` = 45
 outputs { `producer-attempt` = "${{ steps.workspace.outputs.producer-attempt }}" }
 env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/full-qualification"
   CARGO_BUILD_JOBS = "24"
   RUST_TEST_THREADS = "4"
   VIZE_NUXT_CONFIG_ITERATIONS = "100"
@@ -43,7 +44,7 @@ steps = new Listing {
   ci.use("./.github/actions/setup-rust-script")
   new Dynamic {
     name = "Install Pkl CLI and hydrate pinned native fixture"
-    run = "npm install --global @pkl-community/pkl@0.27.2 && git submodule update --init --force --depth 1 -- tests/_fixtures/_git/element-plus"
+    run = #". "${{ env.VIZE_CI_FILES }}/install-pkl-cli-and-hydrate-pinned-native-fixture.sh""#
   }
   new Dynamic {
     name = "Install full-workspace nextest"

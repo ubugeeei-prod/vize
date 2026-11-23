@@ -11,6 +11,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/glibc-floor-bench.yml"
+      - ".github/scripts/workflows/glibc-floor-bench/**"
       - "tools/support/github/glibc-floor-bench.ts"
   workflow_dispatch:
     inputs:
@@ -32,6 +33,8 @@ jobs:
     name: Measure (linux-x64-gnu)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 180
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/glibc-floor-bench"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -41,7 +44,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
       - name: Read the repository Rust toolchain
         id: rust-toolchain
-        run: sed -n 's/^channel = "\(.*\)"$/channel=\1/p' rust-toolchain.toml >> "$GITHUB_OUTPUT"
+        run: . "${{ env.VIZE_CI_FILES }}/read-the-repository-rust-toolchain.sh"
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with:
           toolchain: ${{ steps.rust-toolchain.outputs.channel }}
@@ -51,29 +54,17 @@ jobs:
       - uses: ./.github/actions/setup-cargo-zigbuild
       # Before Wild exists: the host CLI links with rust-lld, as the release did.
       - name: Build the CLI against the runner glibc
-        run: |
-          cargo build --locked --release -p vize --target x86_64-unknown-linux-gnu
-          mkdir -p "$RUNNER_TEMP/host" && cp target/x86_64-unknown-linux-gnu/release/vize "$RUNNER_TEMP/host/vize"
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-cli-against-the-runner-glibc.sh"
       - name: Build the CLI at the glibc floor
-        run: |
-          cargo zigbuild --locked --release -p vize --target "$(node tools/support/github/glibc-floor.ts target x86_64-unknown-linux-gnu)"
-          mkdir -p "$RUNNER_TEMP/floor" && cp target/x86_64-unknown-linux-gnu/release/vize "$RUNNER_TEMP/floor/vize"
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-cli-at-the-glibc-floor.sh"
       - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Build the binding against the runner glibc
-        run: |
-          node tools/support/github/build-napi-package.ts npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine x86_64-unknown-linux-gnu
-          cp npm/native/vize-vitrine.linux-x64-gnu.node "$RUNNER_TEMP/host/vize-vitrine.node"
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-binding-against-the-runner-glibc.sh"
       - name: Build the binding at the glibc floor
-        run: |
-          node tools/support/github/build-napi-package.ts npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine x86_64-unknown-linux-gnu --cross-compile
-          cp npm/native/vize-vitrine.linux-x64-gnu.node "$RUNNER_TEMP/floor/vize-vitrine.node"
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-binding-at-the-glibc-floor.sh"
       - name: Record what each variant links
-        run: |
-          node tools/commands/ci/github/verify-glibc-symbols.ts "$RUNNER_TEMP/floor/vize" "$RUNNER_TEMP/floor/vize-vitrine.node"
-          # The host recipe is expected to break the floor (DT_RELR, GLIBC_2.39); record it only.
-          node tools/commands/ci/github/verify-glibc-symbols.ts --max 2.39 "$RUNNER_TEMP/host/vize" "$RUNNER_TEMP/host/vize-vitrine.node" || true
-          ls -l "$RUNNER_TEMP/host" "$RUNNER_TEMP/floor"
+        run: . "${{ env.VIZE_CI_FILES }}/record-what-each-variant-links.sh"
       - name: Measure
         run: >-
           node tools/support/github/glibc-floor-bench.ts run --rounds "$BENCH_ROUNDS"
@@ -82,10 +73,7 @@ jobs:
           --binding "host=$RUNNER_TEMP/host/vize-vitrine.node" --binding "floor=$RUNNER_TEMP/floor/vize-vitrine.node"
       - name: Summarize
         if: ${{ always() }}
-        run: >-
-          test ! -s "$RUNNER_TEMP/glibc-floor-bench.json" ||
-          node tools/support/github/glibc-floor-bench.ts summarize "$RUNNER_TEMP/glibc-floor-bench.json"
-          >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/summarize.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:

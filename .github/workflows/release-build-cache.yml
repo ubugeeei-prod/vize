@@ -19,6 +19,7 @@ on:
       - ".github/actions/setup-rust-sticky-cache/**"
       - ".github/actions/reuse-rust-target/**"
       - ".github/workflows/release-build-cache.yml"
+      - ".github/scripts/workflows/release-build-cache/**"
       - "tools/support/github/release-platforms.ts"
       - "tools/support/github/build-napi-package.ts"
       - "tools/support/github/clean-node-binaries.ts"
@@ -44,6 +45,8 @@ jobs:
       cli: ${{ steps.plan.outputs.cli_matrix }}
       native: ${{ steps.plan.outputs.native_matrix }}
       version: ${{ steps.next.outputs.version }}
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/release-build-cache"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -54,10 +57,7 @@ jobs:
       - id: next
         name: Read the version the next release stamps
         shell: bash
-        run: |
-          set -euo pipefail
-          version=$(node tools/support/release/release/main.ts next)
-          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+        run: . "${{ env.VIZE_CI_FILES }}/read-the-version-the-next-release-stamps.sh"
   cli:
     name: Cache CLI - ${{ matrix.settings.target }}
     needs: plan

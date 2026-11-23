@@ -35,15 +35,11 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     steps = new Listing {
+      ...ci.stageWorkflowScripts("vue-benchmarks-current-qualification")
       new Dynamic {
         name = "Refuse a branch, stale main, or unreviewed workflow source"
         shell = "bash"
-        run = """
-        [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-        test "$GITHUB_REF" = refs/heads/main
-        test "$EXECUTED_WORKFLOW_SHA" = "$EXPECTED_SOURCE_SHA"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/refuse-a-branch-stale-main-or-unreviewed-workflow-source.sh""#
       }
       new Dynamic {
         uses = ci.checkout
@@ -55,15 +51,7 @@ jobs {
       new Dynamic {
         name = "Verify current main and hydrate the fixed read-only upstream input"
         shell = "bash"
-        run = """
-        test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
-        test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$EXPECTED_SOURCE_SHA"
-        test "$(git ls-tree HEAD tests/_fixtures/_git/vue-benchmarks | cut -f1)" = '160000 commit 5489aee433cd1054b9d72973457498544da7c467'
-        git submodule update --init --depth 1 -- tests/_fixtures/_git/vue-benchmarks
-        test "$(git -C tests/_fixtures/_git/vue-benchmarks rev-parse HEAD)" = 5489aee433cd1054b9d72973457498544da7c467
-        test -z "$(git -C tests/_fixtures/_git/vue-benchmarks status --porcelain --untracked-files=all)"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-current-main-and-hydrate-the-fixed-read-only-upstream-input.sh""#
       }
       new Dynamic {
         uses = ci.setupVp
@@ -83,16 +71,7 @@ jobs {
       new Dynamic {
         name = "Materialize the frozen minimal reference installation"
         shell = "bash"
-        run = """
-        provider_source=tools/benchmarks/fixtures/vue-benchmarks-current-typecheck-provider
-        provider_prefix="$RUNNER_TEMP/vue-benchmarks-current-provider"
-        mkdir "$provider_prefix"
-        cp "$provider_source/package.json" "$provider_source/package-lock.json" "$provider_prefix/"
-        npm ci --prefix "$provider_prefix" --ignore-scripts --no-audit --no-fund
-        cmp "$provider_source/package-lock.json" "$provider_prefix/package-lock.json"
-        sha256sum "$provider_prefix/package.json" "$provider_prefix/package-lock.json"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/materialize-the-frozen-minimal-reference-installation.sh""#
       }
       new Dynamic {
         name = "Observe all eleven original lint pairs"
@@ -107,29 +86,13 @@ jobs {
         `if` = "${{ !cancelled() }}"
         `continue-on-error` = true
         shell = "bash"
-        run = #"""
-        provider_prefix="$RUNNER_TEMP/vue-benchmarks-current-provider"
-        node tools/benchmarks/scripts/vue-benchmarks-current-typecheck.mjs \
-          --source-sha "$EXPECTED_SOURCE_SHA" \
-          --vize-bin "$GITHUB_WORKSPACE/target/ci/vize" \
-          --corsa-bin "$provider_prefix/node_modules/@typescript/typescript-linux-x64/lib/tsc" \
-          --vue-dir "$provider_prefix/node_modules/vue" \
-          --vue-tsc-bin "$provider_prefix/node_modules/.bin/vue-tsc" \
-          --output "$RUNNER_TEMP/vue-benchmarks-current-typecheck"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/observe-all-154-original-typecheck-plants.sh""#
       }
       new Dynamic {
         name = "Recheck source, gitlink, and provider custody"
         `if` = "${{ always() }}"
         shell = "bash"
-        run = """
-        test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
-        test -z "$(git status --porcelain --untracked-files=no)"
-        test -z "$(git -C tests/_fixtures/_git/vue-benchmarks status --porcelain --untracked-files=all)"
-        cmp tools/benchmarks/fixtures/vue-benchmarks-current-typecheck-provider/package-lock.json "$RUNNER_TEMP/vue-benchmarks-current-provider/package-lock.json"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/recheck-source-gitlink-and-provider-custody.sh""#
       }
       new Dynamic {
         name = "Retain every successful and failed observation"
@@ -157,12 +120,7 @@ jobs {
           LINT_OUTCOME = "${{ steps.lint.outcome }}"
           TYPECHECK_OUTCOME = "${{ steps.typecheck.outcome }}"
         }
-        run = """
-        echo "lint=$LINT_OUTCOME typecheck=$TYPECHECK_OUTCOME"
-        test "$LINT_OUTCOME" = success
-        test "$TYPECHECK_OUTCOME" = success
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/require-complete-original-lint-and-typecheck-qualification.sh""#
       }
     }
   }

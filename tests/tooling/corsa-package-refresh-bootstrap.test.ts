@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -13,7 +14,7 @@ import {
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const recipe = "tools/support/compat/github/corsa-package-refresh";
-const workflow = fs.readFileSync(
+const workflow = readAutomationPrograms(
   path.join(root, ".github/workflows/corsa-package-refresh.yml"),
   "utf8",
 );

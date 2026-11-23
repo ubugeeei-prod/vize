@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/bundler-block-products.yml"
+      ".github/scripts/workflows/bundler-block-products/**"
       "tools/commands/levels/codegen-equivalence.ts"
       "tools/commands/levels/native-addon-identity.ts"
       "tools/support/compat/npm/stock-addon-rustc.rs"
@@ -42,6 +43,7 @@ jobs {
       }
     }
     env {
+
       CARGO_INCREMENTAL = "0"
       CARGO_BUILD_JOBS = "24"
       RUSTUP_TOOLCHAIN = "1.100.0"
@@ -49,6 +51,7 @@ jobs {
       HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("bundler-block-products")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       new Dynamic {
         uses = ci.setupNode
@@ -68,18 +71,7 @@ jobs {
       new Dynamic {
         name = "Compare the packaged Node build features against the base commit"
         `if` = "matrix.suite == 'stock-addon'"
-        run = """
-        set -euo pipefail
-        git fetch --no-tags --depth=1 origin "$BASE_SHA" "$HEAD_SHA"
-        VIZE_CODEGEN_PROBE=1 node --test tests/tooling/native-addon-identity.test.ts
-        status=0
-        node tools/commands/levels/codegen-equivalence.ts "$BASE_SHA" "$HEAD_SHA" vize_vitrine node-addon default "$RUNNER_TEMP/stock-addon.json" --control-plugin-identity || status=$?
-        # The real builds stamp their respective Git SHA and source closure into the plugin cache key.
-        test "$status" = 1
-        node tools/commands/levels/native-addon-identity.ts "$RUNNER_TEMP/stock-addon.json" | tee "$RUNNER_TEMP/stock-addon-identity.json"
-        node tools/support/compat/npm/bundler-block-products.ts --stock "$RUNNER_TEMP/stock-addon.json"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-packaged-node-build-features-against-the-base-commit.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -99,18 +91,7 @@ jobs {
       new Dynamic {
         name = "Compare native and Node products on original source"
         `if` = "matrix.suite == 'products'"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt)
-        rust=(-p vize_atelier_sfc --features bundler-block-products)
-        cargo clippy "${flags[@]}" "${rust[@]}" --lib --no-deps -- -D warnings
-        cargo test "${flags[@]}" "${rust[@]}" --lib bundler::tests
-        cargo test "${flags[@]}" "${rust[@]}" --test bundler_block_products -- --include-ignored --nocapture --test-threads=1
-        cargo build "${flags[@]}" -p vize_vitrine --features experimental-bundler-block-products,legacy --lib
-        cp target/ci-opt/libvize_vitrine.so "$RUNNER_TEMP/bundler-blocks.node"
-        node tools/support/compat/npm/bundler-block-products.ts "$RUNNER_TEMP/bundler-blocks.node"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-native-and-node-products-on-original-source.sh""#
       }
     }
   }

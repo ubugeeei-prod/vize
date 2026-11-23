@@ -1,3 +1,4 @@
+import { readAutomationPrograms, workflowProgram } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -10,7 +11,6 @@ import {
   writeReleaseZedSettings,
 } from "../../editor-conformance/release-zed-settings.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
-import { readAutomationPrograms } from "../support/automation-source.ts";
 
 type Step = {
   env?: Record<string, unknown>;
@@ -28,7 +28,7 @@ type Job = {
   steps?: Step[];
 };
 
-const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
+const workflow = parse(readAutomationPrograms(".github", "workflows", "release.yml")) as {
   jobs: Record<string, Job>;
 };
 const editorHostAction = readAutomationPrograms(
@@ -38,7 +38,7 @@ const editorHostAction = readAutomationPrograms(
   "action.yml",
 );
 const releaseZed = readRepoFile("tests", "editor-conformance", "release-zed.ts");
-const releaseZedHost = readRepoFile(".github", "workflows", "release-zed-host.yml");
+const releaseZedHost = readAutomationPrograms(".github", "workflows", "release-zed-host.yml");
 
 test("release editor hosts consume the packed candidate before the tag exists", () => {
   const job = workflow.jobs["smoke-editor-artifacts"]!;
@@ -64,7 +64,14 @@ test("release editor hosts consume the packed candidate before the tag exists", 
   assert.match(serialized, /\$\{editor\}-vize-extension\.tar\.gz/);
   const install = job.steps?.find((step) => step.id === "artifacts")?.run ?? "";
   assert.match(install, /node "\$packaged_cli" init [\s\S]*--typecheck --editor --no-install/);
-  assert.match(install, /"typescript-native": "npm:typescript@7\.1\.0-beta"/);
+  assert.match(
+    workflowProgram(
+      "release",
+      install,
+      "install-the-exact-release-artifacts-and-initialize-a-fresh-project.ts",
+    ),
+    /"typescript-native": "npm:typescript@7\.1\.0-beta"/,
+  );
   assert.match(install, /typescript-native@npm:typescript@7\.1\.0-beta/);
   assert.match(install, /typescript-native\/lib\/getExePath\.js/);
   assert.match(install, /test -x "\$native_checker"/);

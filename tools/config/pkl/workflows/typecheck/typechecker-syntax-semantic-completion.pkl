@@ -27,17 +27,11 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 105
     steps = new Listing {
+      ...ci.stageWorkflowScripts("typechecker-syntax-semantic-completion")
       ci.checkoutAt("${{ env.QUALIFIER_SHA }}")
       new Dynamic {
         name = "Authenticate the complete source"
-        run = """
-        [[ "$QUALIFIER_SHA" =~ ^[0-9a-f]{40}$ ]]
-        test "$(git rev-parse HEAD)" = "$QUALIFIER_SHA"
-        mkdir -p target/native-syntax-completion
-        git rev-parse HEAD > target/native-syntax-completion/source.sha
-        git ls-files -s > target/native-syntax-completion/whole-source-index.txt
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-the-complete-source.sh""#
       }
       new Dynamic {
         name = "Original complete App E2E check row, sharing its native build"
@@ -63,28 +57,7 @@ jobs {
           VIZE_TEST_REQUIRE_PIN_INPUT_FIXTURE = "1"
           VIZE_NATIVE_SYNTAX_CAPTURE_DIR = "${{ github.workspace }}/target/native-syntax-completion/packets"
         }
-        run = #"""
-        set -euo pipefail
-        unset VIZE_TEST_DISABLE_TSGO
-        qualifier_status=0
-        for control in anchors malformed-setup generic jsx native; do
-          case "$control" in
-            anchors) control_args=(--lib anchors::tests:: -- --nocapture) ;;
-            malformed-setup) control_args=(--lib vue_codegen::malformed_setup_tests:: -- --nocapture --test-threads=1) ;;
-            generic) control_args=(--lib vue_codegen::generic_component_tests:: -- --nocapture --test-threads=1) ;;
-            jsx) control_args=(--lib jsx_codegen::nested_tests:: -- --nocapture) ;;
-            native) control_args=(--test native_syntax_semantics -- --nocapture --test-threads=1) ;;
-          esac
-          set +e
-          cargo test --locked --profile ci -p vize_canon "${control_args[@]}" 2>&1 | tee "target/native-syntax-completion/$control.log"
-          control_status=("${PIPESTATUS[@]}")
-          set -e
-          printf '%s %s\n' "${control_status[0]}" "${control_status[1]}" > "target/native-syntax-completion/$control.status"
-          if (( control_status[0] != 0 || control_status[1] != 0 )); then qualifier_status=1; fi
-        done
-        exit "$qualifier_status"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/actual-generator-and-native-completion-controls.sh""#
       }
       new Dynamic {
         name = "Retain all whole-source qualification packets"

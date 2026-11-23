@@ -6,7 +6,9 @@ on {
     paths = new Listing {
       ".github/workflows/language-project-fixtures.yml"
       ".github/workflows/typescript-plugin.yml"
+      ".github/scripts/workflows/typescript-plugin/**"
       ".github/workflows/typescript-provider-vsix.yml"
+      ".github/scripts/workflows/typescript-provider-vsix/**"
       "crates/vize_vitrine/src/napi/language_code.rs"
       "npm/typescript-plugin/**"
       "npm/native/language-projection.js"

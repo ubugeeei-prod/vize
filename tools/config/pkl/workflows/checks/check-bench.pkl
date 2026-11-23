@@ -57,6 +57,7 @@ jobs {
     `timeout-minutes` = 30
     permissions { contents = "read" }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("check-bench")
       new Dynamic {
         name = "Checkout benchmark commit"
         uses = ci.checkout
@@ -85,25 +86,13 @@ jobs {
       ci.command("Generate benchmark corpus", #"node tools/benchmarks/scripts/generate.mjs "$VIZE_CHECK_BENCH_FILE_COUNT""#)
       new Dynamic {
         name = "Run the fail-closed check benchmark gate"
-        env { VIZE_BENCH_REF = "${{ github.ref_name }}" }
-        run = #"""
-        node tools/benchmarks/scripts/check-gate.mjs \
-          --input tools/benchmarks/scripts/__in__ \
-          --vize-bin target/ci-opt/vize \
-          --check-file-count "$VIZE_CHECK_BENCH_FILE_COUNT" \
-          --runs "$VIZE_CHECK_BENCH_RUNS" \
-          --warmups "$VIZE_CHECK_BENCH_WARMUPS" \
-          --require-vue-tsc \
-          --runner-label "blacksmith-32vcpu-ubuntu-2404" \
-          --commit "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" \
-          --ref "$VIZE_BENCH_REF" \
-          --repository "${{ github.repository }}" \
-          --out check-gate-summary.md \
-          --json check-gate-results.json
-
-        """#
+        env {
+          VIZE_BENCHMARK_REVISION = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          VIZE_BENCH_REF = "${{ github.ref_name }}"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/run-the-fail-closed-check-benchmark-gate.sh""#
       }
-      ci.command("Write job summary", #"cat check-gate-summary.md >> "$GITHUB_STEP_SUMMARY""#)
+      ci.command("Write job summary", #". "${{ env.VIZE_CI_FILES }}/write-job-summary.sh""#)
       new Dynamic {
         name = "Upload check benchmark gate results"
         uses = ci.uploadArtifact

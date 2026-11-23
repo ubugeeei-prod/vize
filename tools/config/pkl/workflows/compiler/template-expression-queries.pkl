@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/template-expression-queries.yml"
+      ".github/scripts/workflows/template-expression-queries/**"
       "crates/vize_maestro/Cargo.toml"
       "crates/vize_maestro/src/ide/context.rs"
       "crates/vize_maestro/src/ide/rename/canonical/event_rename*"
@@ -70,11 +71,13 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
     env {
+
       CARGO_BUILD_JOBS = "24"
       CARGO_INCREMENTAL = "0"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("template-expression-queries")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       new Dynamic {
         uses = ci.setupRust
@@ -89,20 +92,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare original reference packets and allocation windows"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt -p vize_l1_to_l2 --features template-operand-queries,setup-component-imports,vize_l2/position-index)
-        cargo clippy --locked --profile ci-opt -p vize_l2 -p vize_l1_to_l2 --features vize_l1_to_l2/setup-component-imports --lib --no-deps -- -D warnings
-        cargo test "${flags[@]}" --test expression_queries --test expression_query_alloc
-        export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/expression-query-files"
-        git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
-        cargo test "${flags[@]}" --test expression_queries -- corpus::original_vue_files --exact --ignored --nocapture
-        cargo test "${flags[@]}" --test expression_queries -- profile::paired_reference_queries --exact --ignored --nocapture
-        cargo test "${flags[@]}" --test expression_queries -- operand::paired_operand_products --exact --ignored --nocapture --test-threads=1
-        cargo test "${flags[@]}" --test expression_queries -- component_imports::original_vue_files --exact --ignored --nocapture --test-threads=1
-        cargo test "${flags[@]}" --test expression_queries -- component_imports::paired_queries --exact --ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-reference-packets-and-allocation-windows.sh""#
       }
     }
   }
@@ -110,11 +100,13 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
     env {
+
       CARGO_BUILD_JOBS = "24"
       CARGO_INCREMENTAL = "0"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("template-expression-queries")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       new Dynamic {
         uses = ci.setupRust
@@ -129,18 +121,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare project render sites and ordered dependency targets"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt -p vize_croquis_cf --features setup-render-products --lib)
-        cargo clippy "${flags[@]}" --no-deps -- -D warnings
-        cargo test "${flags[@]}" facts::
-        export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/setup-render-callers"
-        git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
-        for suite in corpus::original_project_results profile::paired_render_products profile::original_render_performance profile::registration::registration_and_first_read; do
-          cargo test "${flags[@]}" "facts::render_tree::setup::tests::$suite" -- --exact --ignored --nocapture --test-threads=1
-        done
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-project-render-sites-and-ordered-dependency-targets.sh""#
       }
     }
   }
@@ -149,12 +130,14 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     env {
+
       CARGO_BUILD_JOBS = "24"
       CARGO_INCREMENTAL = "0"
       RUST_MIN_STACK = "16777216"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("template-expression-queries")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       new Dynamic {
         uses = ci.setupRust
@@ -169,22 +152,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare original component props and editor diagnostics"
-        run = """
-        set -euo pipefail
-        export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/original-prop-inputs"
-        git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
-        flags=(--locked --profile ci-opt)
-        native=(-p vize_l1_to_l2 --features authored-bind-shorthand,component-prop-queries,template-operand-queries,vize_l2/expression-queries,vize_l2/position-index)
-        editor=(-p vize_maestro --features experimental-component-props,micro-profiling --lib)
-        cargo clippy "${flags[@]}" "${native[@]}" --lib --no-deps -- -D warnings
-        cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
-        cargo test "${flags[@]}" -p vize_l2 --features component-prop-queries --lib original_operand_checks
-        cargo test "${flags[@]}" "${native[@]}" --test expression_queries shorthand:: -- --include-ignored --nocapture --test-threads=1
-        cargo test "${flags[@]}" "${native[@]}" --test expression_query_alloc
-        cargo test "${flags[@]}" "${native[@]}" --test expression_queries component_props:: -- --include-ignored --nocapture --test-threads=1
-        cargo test "${flags[@]}" "${editor[@]}" component_props::original:: -- --include-ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-component-props-and-editor-diagnostics.sh""#
       }
     }
   }
@@ -199,6 +167,7 @@ jobs {
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("template-expression-queries")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       new Dynamic {
         uses = ci.setupRust
@@ -213,23 +182,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare every original listener, semantic edit and paired resident request"
-        run = """
-        set -euo pipefail
-        export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/original-listener-inputs"
-        export VIZE_REQUIRE_REPOSITORY_LISTENERS=1
-        git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
-        flags=(--locked --profile ci-opt)
-        native=(-p vize_l1_to_l2 --features component-listener-queries,template-operand-queries,vize_l2/position-index)
-        editor=(-p vize_maestro --features experimental-component-listeners,experimental-template-operand-products,micro-profiling --lib)
-        cargo clippy "${flags[@]}" -p vize_l2 --features component-listener-queries,template-operand-queries --lib --no-deps -- -D warnings
-        cargo clippy "${flags[@]}" "${native[@]}" --lib --no-deps -- -D warnings
-        cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
-        cargo test "${flags[@]}" "${native[@]}" --test expression_queries component_listeners:: -- --include-ignored --nocapture --test-threads=1
-        cargo test "${flags[@]}" "${editor[@]}" event_rename:: -- --include-ignored --nocapture --test-threads=1
-        cargo test "${flags[@]}" "${editor[@]}" named_dom_event_expressions_keep_their_checker_links_and_editor_exports
-        cargo test "${flags[@]}" "${editor[@]}" original_event_documents -- --ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-every-original-listener-semantic-edit-and-paired-resident-request.sh""#
       }
     }
   }

@@ -23,6 +23,7 @@ strategy {
   }
 }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("release")
   ci.checkoutAt("${{ needs.version.outputs.ref }}")
   new Dynamic {
     uses = "./.github/actions/setup-runtime-package-managers"
@@ -42,13 +43,7 @@ steps = new Listing {
       TARGET = "${{ matrix.target }}"
       PLATFORM = "${{ matrix.platform }}"
     }
-    run = #"""
-    mkdir -p .artifacts/cli
-    tar -xzf ".artifacts/cli-archive/vize-$TARGET.tar.gz" -C .artifacts/cli
-    node tools/commands/ci/github/verify-glibc-symbols.ts .artifacts/cli/vize \
-      "npm/native/npm/$PLATFORM/vize-vitrine.$PLATFORM.node"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/unpack-the-release-cli.sh""#
   }
   new Dynamic {
     uses = "./.github/actions/smoke-glibc-floor-containers"

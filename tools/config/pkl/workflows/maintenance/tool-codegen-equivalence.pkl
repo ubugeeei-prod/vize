@@ -31,6 +31,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/tool-codegen-equivalence.yml"
+      ".github/scripts/workflows/tool-codegen-equivalence/**"
       "tools/commands/levels/codegen-equivalence.ts"
       "tests/tooling/levels-codegen-equivalence.test.ts"
     }
@@ -49,6 +50,7 @@ jobs {
       }
     }
     env {
+
       BASE_SHA = "${{ inputs.base || github.event.pull_request.base.sha }}"
       HEAD_SHA = "${{ inputs.head || github.event.pull_request.head.sha }}"
       PACKAGE = "${{ inputs.package || 'vize_maestro' }}"
@@ -58,6 +60,7 @@ jobs {
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("tool-codegen-equivalence")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
       new Dynamic {
         uses = ci.setupNode
@@ -70,22 +73,11 @@ jobs {
       }
       new Dynamic {
         name = "Verify comparison controls and fetch both commits"
-        run = """
-        set -euo pipefail
-        VIZE_CODEGEN_PROBE=1 node --test tests/tooling/levels-codegen-equivalence.test.ts
-        [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-        git fetch --no-tags --depth=1 origin "$BASE_SHA" "$HEAD_SHA"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-comparison-controls-and-fetch-both-commits.sh""#
       }
       new Dynamic {
         name = "Compare independently compiled products"
-        run = #"""
-        set -euo pipefail
-        node tools/commands/levels/codegen-equivalence.ts \
-          "$BASE_SHA" "$HEAD_SHA" "$PACKAGE" "$PRODUCT" "$MODE" "$RUNNER_TEMP/codegen-$MODE.json" | tee -a "$GITHUB_STEP_SUMMARY"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-independently-compiled-products.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

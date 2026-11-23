@@ -4,6 +4,7 @@ import "../../Actions.pkl" as ci
 `runs-on` = ci.linux
 `timeout-minutes` = 90
 env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/ci-walltime-benchmark"
   CARGO_BUILD_JOBS = "12"
   VIZE_NUXT_CONFIG_ITERATIONS = "100"
   VIZE_TEST_REQUIRE_TSGO = "1"
@@ -38,12 +39,7 @@ steps = new Listing {
   ci.command("Install the existing Pkl fixture runtime", "npm install --global @pkl-community/pkl@0.27.2")
   new Dynamic {
     name = "Compile identical full-workspace test binaries once"
-    run = """
-    cargo test --locked --workspace --no-run
-    mkdir -p target/ci-walltime
-    cargo nextest list --locked --workspace --profile full --message-format json > target/ci-walltime/rust-selected-tests.json
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/compile-identical-full-workspace-test-binaries-once.sh""#
   }
   new Dynamic {
     name = "Serial full workspace including doctests"

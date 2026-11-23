@@ -22,6 +22,9 @@ jobs {
     name = "Publish preview packages"
     `runs-on` = ci.linux
     `timeout-minutes` = 30
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/pkg-pr-new"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       new Dynamic {
@@ -35,21 +38,7 @@ jobs {
       }
       new Dynamic {
         name = "Install rust-script"
-        run = #"""
-        set -euo pipefail
-        rustup toolchain install 1.100.0 --profile minimal --no-self-update
-        rustup default 1.100.0
-        if command -v rust-script >/dev/null 2>&1; then
-          rust_script_version="$(rust-script --version)"
-          printf '%s\n' "$rust_script_version"
-          if grep -Eq '(^|[[:space:]])0\.34\.0([[:space:]]|$)' <<<"$rust_script_version"; then
-            exit 0
-          fi
-        fi
-        cargo install rust-script --version 0.34.0 --locked
-        rust-script --version
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/install-rust-script.sh""#
       }
       new Dynamic {
         name = "Install package build dependencies"
@@ -63,32 +52,7 @@ jobs {
         // message and is marked successful so the workflow does not red-light
         // manual previews while waiting on a one-time install action by a maintainer.
         // https://github.com/apps/pkg-pr-new
-        run = #"""
-        set -e
-        OUTPUT_FILE=$(mktemp)
-        if vp exec pkg-pr-new publish --pnpm --packageManager=pnpm --comment=update \
-          './npm/cli' \
-          './npm/create-fresco' \
-          './npm/builder/vite' \
-          './npm/linter/oxlint' \
-          './npm/builder/unplugin' \
-          './npm/fresco' \
-          './npm/mcp-musea' \
-          './npm/builder/vite-musea' \
-          './npm/builder/rspack' \
-          './npm/framework/musea-nuxt' \
-          './npm/framework/nuxt-lint-config' \
-          './npm/framework/nuxt' \
-          './npm/ui' 2>&1 | tee "$OUTPUT_FILE"; then
-          exit 0
-        fi
-        if grep -q "The app https://github.com/apps/pkg-pr-new is not installed" "$OUTPUT_FILE"; then
-          echo "::warning::pkg-pr-new GitHub App is not installed on this repository. Install https://github.com/apps/pkg-pr-new to enable preview publishing. Skipping for now."
-          exit 0
-        fi
-        exit 1
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/publish-pkg-pr-new-preview.sh""#
       }
     }
   }

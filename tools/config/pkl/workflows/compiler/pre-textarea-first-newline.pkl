@@ -19,6 +19,7 @@ on {
       "tests/_fixtures/differential/compiler/first-newline-runtime.manifest.json"
       "tests/_fixtures/differential/compiler/manifest.json"
       ".github/workflows/pre-textarea-first-newline.yml"
+      ".github/scripts/workflows/pre-textarea-first-newline/**"
     }
   }
   workflow_dispatch = null
@@ -32,6 +33,9 @@ jobs {
   runtime {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/pre-textarea-first-newline"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       new Dynamic {
@@ -64,16 +68,7 @@ jobs {
           VIZE_FIRST_NEWLINE_BIN = "${{ github.workspace }}/target/ci/vize"
           VIZE_FIRST_NEWLINE_CAPTURE = "${{ runner.temp }}/first-newline-observations.json"
         }
-        run = """
-        git rev-parse HEAD > "$RUNNER_TEMP/first-newline-source.txt"
-        cargo build --locked --profile ci -p vize
-        cargo test --locked --profile ci -p vize_armature --lib
-        cargo test --locked --profile ci -p vize_l1_to_l2 --test integration -- pre_textarea_first_newline:: text_pass:: text_singleton::
-        vp node --test tests/tooling/pre-textarea-first-newline.test.mjs
-        mkdir -p "$RUNNER_TEMP/first-newline-tokenizer-current"
-        VIZE_TOKENIZER_CAPTURE_DIR="$RUNNER_TEMP/first-newline-tokenizer-current" cargo test --locked --profile ci -p vize_armature --features legacy --lib
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-actual-cli-and-run-source-bound-browser-observations.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

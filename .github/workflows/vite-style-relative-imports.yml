@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/vite-style-relative-imports.yml
+      - .github/scripts/workflows/vite-style-relative-imports/**
       - npm/builder/vite/**
       - npm/native/**
       - crates/vize_atelier_sfc/src/vite_plugin/**
@@ -21,6 +22,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/vite-style-relative-imports/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
@@ -42,42 +56,16 @@ jobs:
           }
       - uses: ./.github/actions/setup-rust-script
       - name: Install locked source adapter dependencies and exact CSS host
-        run: |
-          vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
-          npm ci --prefix tests/_fixtures/_projects/vize-style-relative-imports-host --ignore-scripts --no-audit --no-fund
-          if [ -e node_modules/lightningcss ] || [ -L node_modules/lightningcss ]; then
-            mv node_modules/lightningcss "$RUNNER_TEMP/vize-original-lightningcss-link"
-          fi
-          ln -s "$GITHUB_WORKSPACE/tests/_fixtures/_projects/vize-style-relative-imports-host/node_modules/lightningcss" node_modules/lightningcss
+        run: . "${{ env.VIZE_CI_FILES }}/install-locked-source-adapter-dependencies-and-exact-css-host.sh"
       - name: Build exact source addon and candidate adapter
-        run: |
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          custody="$RUNNER_TEMP/vite-style-source-custody"
-          mkdir -p "$custody"
-          record_source() {
-            source_stage="$1"
-            git rev-parse HEAD > "$custody/$source_stage.head"
-            git status --porcelain=v1 --untracked-files=all > "$custody/$source_stage.status"
-            git diff --binary HEAD > "$custody/$source_stage.diff"
-          }
-          record_source before-native
-          vp run --workspace-root build:native:test
-          record_source after-native
-          vp run --workspace-root build:vite-plugin
-          record_source after-adapter-build
-          node npm/builder/vite/scripts/run-tests.ts --require-prepared
+        run: . "${{ env.VIZE_CI_FILES }}/build-exact-source-addon-and-candidate-adapter.sh"
       - name: Retain all locked adapter tests and cross-root build contracts
         working-directory: npm/builder/vite
         run: |
           node ../../native/scripts/test-preparation.mjs node --run test:prepared
       - name: Retain complete source custody after adapter tests
         if: always()
-        run: |
-          custody="$RUNNER_TEMP/vite-style-source-custody"
-          mkdir -p "$custody"
-          git rev-parse HEAD > "$custody/after-tests.head"
-          git status --porcelain=v1 --untracked-files=all > "$custody/after-tests.status"
-          git diff --binary HEAD > "$custody/after-tests.diff"
+        run: . "${{ env.VIZE_CI_FILES }}/retain-complete-source-custody-after-adapter-tests.sh"
       - name: Verify real CSS imports assets checkouts dev and SSR with the source addon
         env:
           VIZE_STYLE_RELATIVE_MATRIX: "1"
@@ -91,9 +79,7 @@ jobs:
           persist-credentials: false
       - name: Install the untouched reported consumer with exact pnpm
         working-directory: .tmp/vize-style-relative-public
-        run: |
-          npx --yes pnpm@12.9.0 install --frozen-lockfile
-          ln -s "$GITHUB_WORKSPACE/tests/_fixtures/_projects/vize-style-relative-imports-host/node_modules/lightningcss" node_modules/lightningcss
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-untouched-reported-consumer-with-exact-pnpm.sh"
       - name: Prove published failure then cold and warm source success on the original consumer
         env:
           VIZE_STYLE_REQUIRE_SOURCE_NATIVE: "1"

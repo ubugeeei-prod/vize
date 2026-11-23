@@ -17,6 +17,7 @@ on {
       "Cargo.lock"
       "tools/support/compat/parcel/**"
       ".github/workflows/parcel-transformer.yml"
+      ".github/scripts/workflows/parcel-transformer/**"
     }
   }
   // Hosted macOS arm64 capacity is scarce, so pull requests build the per-platform
@@ -111,6 +112,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
+      ...ci.stageWorkflowScripts("parcel-transformer")
       ci.checkoutAt("${{ env.SOURCE_SHA }}")
       new Dynamic {
         uses = ci.setupVp
@@ -134,11 +136,7 @@ jobs {
       }
       new Dynamic {
         name = "Check the native transformer crate"
-        run = """
-        cargo test -p vize_parcel_transformer
-        cargo clippy -p vize_parcel_transformer --all-targets -- -D warnings
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/check-the-native-transformer-crate.sh""#
       }
       ci.command("Build in a real Parcel 3 consumer", "vp run --filter './npm/builder/parcel-native' test:host")
     }
@@ -148,6 +146,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     steps = new Listing {
+      ...ci.stageWorkflowScripts("parcel-transformer")
       ci.checkoutAt("${{ env.SOURCE_SHA }}")
       new Dynamic {
         uses = ci.setupVp
@@ -168,13 +167,7 @@ jobs {
       ci.command("Install locked workspace providers", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Authenticate committed source and observe the actual absent Cargo target"
-        run = """
-        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-        test -z "$(git status --porcelain --untracked-files=normal)"
-        node tools/support/compat/parcel/native-target.mjs before "$GITHUB_WORKSPACE"
-        node npm/native/scripts/build-ci.mjs --request-ci-capture
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-committed-source-and-observe-the-actual-absent-cargo-target.sh""#
       }
       ci.command("Build the actual native source", "vp run --filter './npm/native' build:ci")
       new Dynamic {
@@ -197,12 +190,7 @@ jobs {
       }
       new Dynamic {
         name = "Qualify packed packages in a fresh Parcel consumer"
-        run = """
-        test ! -e "$RUNNER_TEMP/parcel-cpu"
-        mkdir "$RUNNER_TEMP/parcel-cpu"
-        VIZE_PARCEL_PROFILE_DIR="$RUNNER_TEMP/parcel-cpu" vp run --no-cache --filter './npm/builder/parcel' test:host -- "$RUNNER_TEMP/parcel-proof"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/qualify-packed-packages-in-a-fresh-parcel-consumer.sh""#
       }
       new Dynamic {
         name = "Exercise the default cache frontier without disabling browser caching"
@@ -212,12 +200,7 @@ jobs {
       new Dynamic {
         name = "Preserve source samples and seal the complete evidence"
         `if` = "${{ always() && !cancelled() }}"
-        run = """
-        if test -d "$RUNNER_TEMP/parcel-cpu"; then
-          node tools/support/compat/parcel/profile.mjs "$RUNNER_TEMP/parcel-proof" "$RUNNER_TEMP/parcel-cpu"
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-source-samples-and-seal-the-complete-evidence.sh""#
       }
       new Dynamic {
         name = "Preserve complete source and host evidence"

@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
@@ -23,7 +24,7 @@ const runtimeFiles = [
   "tools/support/github/opinionated-source-inputs.ts",
 ];
 const plannerPath = "tools/support/compat/github/plan-check-inputs.ts";
-const workflow = parse(readFileSync(join(root, ".github/workflows/check.yml"), "utf8"));
+const workflow = parse(readAutomationPrograms(join(root, ".github/workflows/check.yml"), "utf8"));
 const job = workflow.jobs["iteration-plan"];
 const checkoutInputs = job.steps.find((step: { uses?: string }) =>
   step.uses?.startsWith("actions/checkout@"),

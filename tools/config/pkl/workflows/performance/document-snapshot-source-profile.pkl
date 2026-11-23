@@ -5,6 +5,8 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/document-snapshot-source-profile.yml"
+      ".github/scripts/workflows/document-snapshot-source-profile/**"
+      ".github/scripts/workflows/shared/**"
       "crates/vize_maestro/src/document/store.rs"
       "crates/vize_maestro/src/document/store/**"
       "crates/vize_maestro/src/ide/diagnostics/corsa/**"
@@ -30,6 +32,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 40
     env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/document-snapshot-source-profile"
       CARGO_BUILD_JOBS = "4"
       CARGO_INCREMENTAL = "0"
       CARGO_TERM_COLOR = "never"
@@ -50,27 +53,7 @@ jobs {
       }
       new Dynamic {
         name = "Run the bounded normal and source-counter carriers"
-        run = #"""
-        set -euo pipefail
-        mkdir -p evidence
-        git rev-parse HEAD > evidence/source.sha
-        rustc +1.100.0 -vV > evidence/rustc.txt
-        lscpu > evidence/cpu.txt
-        python3 -c 'import json,os; print(json.dumps({"runner":{k:os.environ.get(k) for k in ("RUNNER_NAME","RUNNER_OS","RUNNER_ARCH","RUNNER_ENVIRONMENT","CARGO_BUILD_JOBS","RAYON_NUM_THREADS","GOMAXPROCS")},"affinity":sorted(os.sched_getaffinity(0)),"scope":"untimed correctness and source-counter law; no throughput comparison"}))' > evidence/resources.json
-        cargo +1.100.0 test --locked --profile ci -p vize_maestro --test source_snapshot_profile -- --nocapture 2>&1 | tee evidence/normal.log
-        cargo +1.100.0 test --locked --profile ci -p vize_maestro --test source_snapshot_profile --features micro-profiling -- --nocapture 2>&1 | tee evidence/instrumented.log
-        cargo +1.100.0 test --locked --profile ci -p vize_maestro --lib server::state::workspace_project_files::symbols::allocation_tests::native_workspace_symbol_cache_allocation_law --features micro-profiling -- --exact --nocapture 2>&1 | tee evidence/native-workspace-symbol.log
-        cargo +1.100.0 test --locked --profile ci -p vize_l0 --test source_operations_profile 2>&1 | tee evidence/disabled-operands.log
-        python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("document_store_micro=",1)[1]) for line in Path("evidence/instrumented.log").read_text().splitlines() if "document_store_micro=" in line]; assert len(rows)==3; Path("evidence/counts.json").write_text(json.dumps(rows,indent=2)+"\n")'
-        python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("document_text_snapshot_allocation=",1)[1]) for line in Path("evidence/instrumented.log").read_text().splitlines() if "document_text_snapshot_allocation=" in line]; assert len(rows)==1; Path("evidence/text-snapshot-allocation.json").write_text(json.dumps(rows[0],indent=2)+"\n")'
-        python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("document_uri_snapshot_allocation=",1)[1]) for line in Path("evidence/instrumented.log").read_text().splitlines() if "document_uri_snapshot_allocation=" in line]; assert len(rows)==1; Path("evidence/uri-snapshot-allocation.json").write_text(json.dumps(rows[0],indent=2)+"\n")'
-        python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("document_vue_batch_allocation=",1)[1]) for line in Path("evidence/instrumented.log").read_text().splitlines() if "document_vue_batch_allocation=" in line]; assert len(rows)==1; Path("evidence/vue-batch-allocation.json").write_text(json.dumps(rows[0],indent=2)+"\n")'
-        python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("workspace_symbol_cache_allocation=",1)[1]) for line in Path("evidence/instrumented.log").read_text().splitlines() if "workspace_symbol_cache_allocation=" in line]; assert len(rows)==1; Path("evidence/workspace-symbol-cache-allocation.json").write_text(json.dumps(rows[0],indent=2)+"\n")'
-        python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("native_workspace_symbol_cache_allocation=",1)[1]) for line in Path("evidence/native-workspace-symbol.log").read_text().splitlines() if "native_workspace_symbol_cache_allocation=" in line]; assert len(rows)==1; Path("evidence/native-workspace-symbol-cache-allocation.json").write_text(json.dumps(rows[0],indent=2)+"\n")'
-        python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("workspace_symbol_hit_selection_allocation=",1)[1]) for line in Path("evidence/native-workspace-symbol.log").read_text().splitlines() if "workspace_symbol_hit_selection_allocation=" in line]; assert len(rows)==1; Path("evidence/workspace-symbol-hit-selection-allocation.json").write_text(json.dumps(rows[0],indent=2)+"\n")'
-        python3 -c 'import json; from pathlib import Path; rows=[json.loads(line.split("native_disk_workspace_symbol_cache_allocation=",1)[1]) for line in Path("evidence/native-workspace-symbol.log").read_text().splitlines() if "native_disk_workspace_symbol_cache_allocation=" in line]; assert len(rows)==1; Path("evidence/native-disk-workspace-symbol-cache-allocation.json").write_text(json.dumps(rows[0],indent=2)+"\n")'
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/run-the-bounded-normal-and-source-counter-carriers.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

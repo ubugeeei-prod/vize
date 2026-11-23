@@ -4,6 +4,7 @@ import "../../Actions.pkl" as ci
 `runs-on` = ci.linux
 `timeout-minutes` = 60
 env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/ci-walltime-benchmark"
   CARGO_BUILD_JOBS = "12"
   VIZE_N8N_BASELINE_MODE = "partitioned"
 }
@@ -15,11 +16,7 @@ steps = new Listing {
   ci.use("./.github/actions/setup-js-package-tests")
   new Dynamic {
     name = "Build the same source native binary and bridge once"
-    run = """
-    vp run --workspace-root build:native:test
-    vp run --filter './npm/linter/oxlint' build
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/build-the-same-source-native-binary-and-bridge-once.sh""#
   }
   new Dynamic {
     name = "Sequential preparation with unchanged concurrent project hosts"

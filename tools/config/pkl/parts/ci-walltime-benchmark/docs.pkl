@@ -3,6 +3,9 @@ import "../../Actions.pkl" as ci
 `if` = "${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'docs')) }}"
 `runs-on` = ci.linux
 `timeout-minutes` = 120
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/ci-walltime-benchmark"
+}
 steps = new Listing {
   new Dynamic {
     uses = ci.checkout
@@ -21,20 +24,11 @@ steps = new Listing {
   ci.use("./.github/actions/setup-rust-script")
   new Dynamic {
     name = "Install identical Docs dependencies and rendering fonts"
-    run = """
-    node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
-    sudo apt-get update
-    sudo apt-get install -y --no-install-recommends fonts-noto-cjk
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/install-identical-docs-dependencies-and-rendering-fonts.sh""#
   }
   new Dynamic {
     name = "Build the same native packages and Docs once"
-    run = """
-    node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
-    vp run --no-cache --filter './docs' build
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/build-the-same-native-packages-and-docs-once.sh""#
   }
   new Dynamic {
     name = "Serial complete navigation proof"

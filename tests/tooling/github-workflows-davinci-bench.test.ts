@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -74,7 +75,9 @@ test("check workflow uploads Davinci allocation bench reports", () => {
 });
 
 test("editor script qualification runs the original readers and paired measurements on tracked inputs", (t) => {
-  const workflow = parse(readRepoFile(".github", "workflows", "editor-script-queries.yml")) as {
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "editor-script-queries.yml"),
+  ) as {
     jobs: Record<string, WorkflowJob>;
   };
   const root = mkdtempSync(join(tmpdir(), "vize-editor-script-queries-"));
@@ -175,7 +178,9 @@ test("editor script qualification runs the original readers and paired measureme
 });
 
 test("client and server target qualification exercises original inputs and serialized allocation windows", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "client-server-decisions.yml")) as {
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "client-server-decisions.yml"),
+  ) as {
     jobs: Record<string, WorkflowJob>;
   };
   const commands = workflow.jobs["target-products"].steps?.find((step) =>
@@ -207,7 +212,7 @@ test("client and server target qualification exercises original inputs and seria
 });
 
 test("Vapor Criterion dispatch validates revisions and selects only its suite", (t) => {
-  const workflow = parse(readRepoFile(".github", "workflows", "criterion-bench.yml")) as {
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "criterion-bench.yml")) as {
     on?: Record<string, { inputs?: Record<string, unknown> }>;
     jobs?: Record<string, WorkflowJob>;
   };

@@ -9,6 +9,7 @@ strategy {
 `runs-on` = "${{ matrix.lane != 'none' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
 `timeout-minutes` = 15
 env {
+
   CARGO_BUILD_JOBS = "12"
   VIZE_NATIVE_RUST_TOOLCHAIN = "1.100.0"
   VIZE_NATIVE_RUST_COMPONENTS = "clippy,rust-src,rustfmt"
@@ -18,10 +19,11 @@ env {
   VIZE_TEST_CASES = "test-cases-native-${{ matrix.lane }}.json"
 }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("pr-source-checks")
   new Dynamic {
     name = "Explain unrelated skip"
     `if` = "${{ matrix.lane == 'none' }}"
-    run = #"echo 'No native runtime inputs changed.' >> "$GITHUB_STEP_SUMMARY""#
+    run = #". "${{ env.VIZE_CI_FILES }}/explain-unrelated-skip-2.sh""#
   }
   new Dynamic {
     uses = ci.checkout
@@ -56,31 +58,7 @@ steps = new Listing {
     name = "Verify configured native runtime toolchain"
     `if` = "${{ matrix.lane != 'none' }}"
     shell = "bash"
-    run = #"""
-    set -euo pipefail
-    # Verify the repository toolchain setup here, before a Cargo proxy can
-    # implicitly download missing components inside a runtime test step.
-    host=$(rustup run "$VIZE_NATIVE_RUST_TOOLCHAIN" rustc --version --verbose | sed -n 's/^host: //p')
-    test -n "$host"
-    components=$(rustup component list --toolchain "$VIZE_NATIVE_RUST_TOOLCHAIN" --installed)
-    targets=$(rustup target list --toolchain "$VIZE_NATIVE_RUST_TOOLCHAIN" --installed)
-    printf '%s\n' "$components" "$targets"
-    IFS=',' read -r -a required_components <<< "$VIZE_NATIVE_RUST_COMPONENTS"
-    for component in "${required_components[@]}"; do
-      if ! grep -Fxq -- "$component" <<< "$components" && ! grep -Fxq -- "$component-$host" <<< "$components"; then
-        echo "::error::Missing configured Rust component: $component" >&2
-        exit 1
-      fi
-    done
-    IFS=',' read -r -a required_targets <<< "$VIZE_NATIVE_RUST_TARGETS"
-    for target in "${required_targets[@]}"; do
-      if ! grep -Fxq -- "$target" <<< "$targets"; then
-        echo "::error::Missing configured Rust target: $target" >&2
-        exit 1
-      fi
-    done
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/verify-configured-native-runtime-toolchain.sh""#
   }
   new Dynamic {
     uses = "./.github/actions/setup-wild-http-recovery"
@@ -118,12 +96,7 @@ steps = new Listing {
   new Dynamic {
     name = "Replay complete formatter CLI stock semantics with the source CLI"
     `if` = "${{ success() && matrix.lane == 'lsp' }}"
-    run = """
-    set -euo pipefail
-    mkdir -p target/differential
-    node --test tests/tooling/formatter-expression-width-semantics.test.mjs tests/tooling/formatter-continuation-prefix-width.test.mjs 2>&1 | tee target/differential/formatter-source.log
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/replay-complete-formatter-cli-stock-semantics-with-the-source-cli.sh""#
   }
   new Dynamic {
     name = "Preserve complete source formatter semantic observations"

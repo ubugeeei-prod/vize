@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/router-preview-conformance.yml"
+      ".github/scripts/workflows/router-preview-conformance/**"
       ".github/actions/check-router-page-types/**"
       "tests/snapshots/check/vue-router-page-route-oracle.ts"
       "tests/fixtures/typechecker/page-route-types/**"
@@ -74,6 +75,9 @@ jobs {
       `receipt-sha256` = "${{ steps.build.outputs.receipt-sha256 }}"
       `producer-attempt` = "${{ github.run_attempt }}"
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/router-preview-conformance"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -83,13 +87,7 @@ jobs {
         name = "Require the selected source revision"
         `if` = "github.event_name == 'workflow_dispatch'"
         env { EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}" }
-        run = """
-        if [[ ! "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ || "$GITHUB_SHA" != "$EXPECTED_SOURCE_SHA" ]]; then
-          echo 'The checked out source must equal the reviewed immutable revision.' >&2
-          exit 1
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/require-the-selected-source-revision.sh""#
       }
       new Dynamic {
         uses = ci.setupNode
@@ -144,6 +142,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/router-preview-conformance"
       VIZE_SOURCE_CLI_RECEIPT_SHA256 = "${{ needs.source-cli.outputs.receipt-sha256 }}"
       VIZE_ROUTER_PREVIEW_RECEIPT_SHA256 = "${{ needs.provider.outputs.receipt-sha256 }}"
       VIZE_ROUTER_PREVIEW_PRODUCER_ATTEMPT = "${{ needs.provider.outputs.producer-attempt }}"
@@ -215,13 +214,7 @@ jobs {
           PROBE_OUTCOME = "${{ steps.probe.outcome }}"
           AUTOMATIC_OUTCOME = "${{ steps.automatic.outcome }}"
         }
-        run = """
-        if [[ "$PROBE_OUTCOME" != success || "$AUTOMATIC_OUTCOME" != success ]]; then
-          echo 'Preview discovery or a failed control cannot qualify source support.' >&2
-          exit 1
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/refuse-discovery-as-qualification-credit.sh""#
       }
     }
   }
@@ -232,6 +225,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/router-preview-conformance"
       VIZE_SOURCE_CLI_RECEIPT_SHA256 = "${{ needs.source-cli.outputs.receipt-sha256 }}"
       VIZE_TEST_BIN = "${{ github.workspace }}/target/ci/vize"
       VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
@@ -247,13 +241,7 @@ jobs {
         name = "Require the reviewed source revision"
         `if` = "github.event_name == 'workflow_dispatch'"
         env { EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}" }
-        run = """
-        if [[ ! "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ || "$GITHUB_SHA" != "$EXPECTED_SOURCE_SHA" ]]; then
-          echo 'The checked out source must equal the reviewed immutable revision.' >&2
-          exit 1
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/require-the-selected-source-revision.sh""#
       }
       ci.workspaceVp()
       ci.command("Install frozen source dependencies", "vp install --frozen-lockfile --prefer-offline")

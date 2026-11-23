@@ -33,17 +33,14 @@ jobs {
         replica = List(1, 2, 3)
       }
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/fresco-dimension-bench"
+    }
     steps = new Listing {
       ci.checkoutAt("${{ github.sha }}")
       new Dynamic {
         name = "Record exact source of both parser implementations"
-        run = """
-        set -euo pipefail
-        [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-        [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
-        echo "BASE_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/record-exact-source-of-both-parser-implementations.sh""#
       }
       new Dynamic {
         uses = ci.setupRust

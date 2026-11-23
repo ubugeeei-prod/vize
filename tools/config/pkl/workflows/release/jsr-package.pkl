@@ -12,7 +12,9 @@ on {
       "tests/tooling/release-jsr-workflow.test.ts"
       "tests/tooling/jsr-fresh-provenance.test.ts"
       ".github/workflows/jsr-package.yml"
+      ".github/scripts/workflows/jsr-package/**"
       ".github/workflows/release-jsr.yml"
+      ".github/scripts/workflows/release-jsr/**"
     }
   }
   workflow_dispatch {
@@ -36,6 +38,9 @@ jobs {
     name = "JSR publish dry-run"
     `runs-on` = "ubuntu-24.04"
     `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/jsr-package"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -74,7 +79,7 @@ jobs {
       new Dynamic {
         name = "Resolve the latest immutable public preview version"
         id = "preview"
-        run = #"echo "version=$(node tools/support/release/jsr/package.ts latest-public)" >> "$GITHUB_OUTPUT""#
+        run = #". "${{ env.VIZE_CI_FILES }}/resolve-the-latest-immutable-public-preview-version.sh""#
       }
       new Dynamic {
         name = "Generate a PR preview from that public release"

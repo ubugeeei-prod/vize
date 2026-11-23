@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -15,7 +16,6 @@ import {
   type SessionReceipt,
 } from "../../tools/support/compat/github/lsp-focused-lifecycle.ts";
 import { receiptJson } from "../../tools/support/compat/github/lsp-focused-campaign.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
 
 const campaignModule = new URL(
   "../../tools/support/compat/github/lsp-focused-campaign.ts",
@@ -25,7 +25,9 @@ const campaignModule = new URL(
 type Mode = "success" | "packet-spawn-failure" | "observer-spawn-failure";
 
 test("the traced original packet step runs the TypeScript lifecycle", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "lsp-focused-projects.yml"));
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "lsp-focused-projects.yml"),
+  );
   const step = workflow.jobs["original-projects"].steps.find(
     (candidate: { id?: string }) => candidate.id === "lifecycle",
   );
@@ -34,7 +36,7 @@ test("the traced original packet step runs the TypeScript lifecycle", () => {
 });
 
 test("the focused LSP workflow runs every step without Python", () => {
-  const text = readRepoFile(".github", "workflows", "lsp-focused-projects.yml");
+  const text = readAutomationPrograms(".github", "workflows", "lsp-focused-projects.yml");
   assert.doesNotMatch(text, /python/iu);
   const steps: { run?: string }[] = parse(text).jobs["original-projects"].steps;
   const commands = steps.flatMap((step) =>

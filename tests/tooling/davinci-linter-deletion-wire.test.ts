@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -12,9 +13,8 @@ import { linterProjects } from "../differential/linter-deletion-verifier.ts";
 
 void test("Matrix records the blocked preflight without registering linter deletion credit", () => {
   const workflow = parse(
-      fs.readFileSync(
+      readAutomationPrograms(
         new URL("../../.github/workflows/real-project-matrix.yml", import.meta.url),
-        "utf8",
       ),
     ) as { jobs: Record<string, { steps: Array<Record<string, unknown>> }> },
     steps = workflow.jobs["real-project-matrix"].steps,

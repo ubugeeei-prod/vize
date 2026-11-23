@@ -10,7 +10,10 @@ strategy {
     client = List("neovim", "helix", "zed", "vscode")
   }
 }
-env { CLIENT = "${{ matrix.client }}" }
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/editor-conformance"
+  CLIENT = "${{ matrix.client }}"
+}
 steps = new Listing {
   new Dynamic {
     uses = ci.checkout
@@ -27,15 +30,7 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Verify the source-built server"
-    run = """
-    set -euo pipefail
-    (cd "${RUNNER_TEMP}/vize-server" && sha256sum --check vize.sha256)
-    grep -Fx "producer=${GITHUB_SHA}" "${RUNNER_TEMP}/vize-server/vize-producer.txt"
-    node tests/editor-conformance/server-artifact.ts verify "${RUNNER_TEMP}/vize-server/vize" "${RUNNER_TEMP}/vize-server/server.json" "$GITHUB_SHA"
-    chmod +x "${RUNNER_TEMP}/vize-server/vize"
-    echo "VIZE_SERVER_PATH=${RUNNER_TEMP}/vize-server/vize" >> "$GITHUB_ENV"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/verify-the-source-built-server.sh""#
   }
   new Dynamic {
     name = "Install pinned Neovim"
@@ -44,30 +39,12 @@ steps = new Listing {
       NVIM_SHA256 = "a74740047e73b2b380d63a474282814063d10650cd6cc95efa16d1713c7e616c"
       NVIM_VERSION = "v0.11.4"
     }
-    run = #"""
-    set -euo pipefail
-    bash .github/actions/vscode-host-smoke/download-artifact.sh \
-      "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
-      "${RUNNER_TEMP}/nvim.tar.gz" "${NVIM_SHA256}"
-    tar -C "${RUNNER_TEMP}" -xzf "${RUNNER_TEMP}/nvim.tar.gz"
-    echo "VIZE_TEST_NVIM_PATH=${RUNNER_TEMP}/nvim-linux-x86_64/bin/nvim" >> "$GITHUB_ENV"
-    "${RUNNER_TEMP}/nvim-linux-x86_64/bin/nvim" --version | head -1
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-neovim.sh""#
   }
   new Dynamic {
     name = "Exercise both packaged Neovim headless suites"
     `if` = "matrix.client == 'neovim'"
-    run = """
-    set -euo pipefail
-    PATH="$(dirname "${VIZE_TEST_NVIM_PATH}"):$PATH"
-    export PATH
-    test "$(command -v nvim)" = "${VIZE_TEST_NVIM_PATH}"
-    command -v nvim
-    nvim --version | head -1
-    vp run --workspace-root test:nvim-extension:headless
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/exercise-both-packaged-neovim-headless-suites.sh""#
   }
   new Dynamic {
     name = "Install pinned Helix"
@@ -76,30 +53,12 @@ steps = new Listing {
       HELIX_VERSION = "25.07.1"
       HELIX_SHA256 = "3f08e63ecd388fff657ad39722f88bb03dcf326f1f2da2700d99e1dc40ab2e8b"
     }
-    run = #"""
-    set -euo pipefail
-    archive="${RUNNER_TEMP}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz"
-    bash .github/actions/vscode-host-smoke/download-artifact.sh \
-      "https://github.com/helix-editor/helix/releases/download/${HELIX_VERSION}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz" \
-      "${archive}" "${HELIX_SHA256}"
-    mkdir -p "${RUNNER_TEMP}/helix"
-    tar -xJf "${archive}" -C "${RUNNER_TEMP}/helix" --strip-components=1
-    {
-      echo "VIZE_TEST_HELIX_PATH=${RUNNER_TEMP}/helix/hx"
-      echo "HELIX_RUNTIME=${RUNNER_TEMP}/helix/runtime"
-    } >> "$GITHUB_ENV"
-    "${RUNNER_TEMP}/helix/hx" --version
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-helix.sh""#
   }
   new Dynamic {
     name = "Install the repository Rust toolchain for VS Code packaging"
     `if` = "matrix.client == 'vscode'"
-    run = """
-    rustup toolchain install || rustup show active-toolchain
-    cargo --version
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain-for-vs-code-packaging.sh""#
   }
   new Dynamic {
     name = "Setup Rust Script for VS Code packaging"
@@ -115,15 +74,7 @@ steps = new Listing {
     name = "Prepare pinned VS Code"
     `if` = "matrix.client == 'vscode'"
     env { VIZE_TEST_VSCODE_VERSION = "1.107.1" }
-    run = """
-    set -euo pipefail
-    if ! command -v xvfb-run >/dev/null 2>&1; then
-      vize-ci-apt-retry sudo apt-get update
-      vize-ci-apt-retry sudo apt-get install -y xvfb
-    fi
-    timeout --signal=TERM --kill-after=10s 300s vp run --workspace-root test:vscode-extension:download
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/prepare-pinned-vs-code.sh""#
   }
   new Dynamic {
     name = "Exercise existing VS Code configuration and lifecycle contracts"
@@ -134,12 +85,7 @@ steps = new Listing {
   new Dynamic {
     name = "Hydrate pinned create-vue fixture for the original real host suite"
     `if` = "matrix.client == 'vscode'"
-    run = #"""
-    git submodule update --init --force --depth 1 -- tests/_fixtures/_git/create-vue
-    test "$(git rev-parse HEAD:tests/_fixtures/_git/create-vue)" = \
-      "$(git -C tests/_fixtures/_git/create-vue rev-parse HEAD)"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/hydrate-pinned-create-vue-fixture-for-the-original-real-host-suite.sh""#
   }
   new Dynamic {
     name = "Exercise original real VS Code authoring contracts"
@@ -149,15 +95,7 @@ steps = new Listing {
       VIZE_LSP_TRACE_NATIVE_SCOPE = "1"
       VIZE_RICH_CUSTODY_OUTPUT = "${{ runner.temp }}/rich-host-evidence/public-api.json"
     }
-    run = """
-    set -euo pipefail
-    mkdir -p "${RUNNER_TEMP}/rich-host-evidence"
-    cp "${RUNNER_TEMP}/vize-server/vize-producer.txt" "${RUNNER_TEMP}/rich-host-evidence/"
-    sha256sum "${VIZE_SERVER_PATH}" > "${RUNNER_TEMP}/rich-host-evidence/consumed-server.sha256"
-    git rev-parse HEAD > "${RUNNER_TEMP}/rich-host-evidence/harness-sha.txt"
-    xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/exercise-original-real-vs-code-authoring-contracts.sh""#
   }
   new Dynamic {
     name = "Retain VS Code configuration and lifecycle evidence"
@@ -187,15 +125,7 @@ steps = new Listing {
   new Dynamic {
     name = "Play the TS-45 scenario"
     env { VIZE_TEST_VSCODE_VERSION = "1.107.1" }
-    run = """
-    set -euo pipefail
-    if [ "${CLIENT}" = "vscode" ]; then
-      xvfb-run -a node tests/editor-conformance/run.ts "${CLIENT}" --out "${RUNNER_TEMP}/ts45"
-    else
-      node tests/editor-conformance/run.ts "${CLIENT}" --out "${RUNNER_TEMP}/ts45"
-    fi
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/play-the-ts-45-scenario.sh""#
   }
   new Dynamic {
     uses = ci.uploadArtifact
@@ -212,12 +142,7 @@ steps = new Listing {
   new Dynamic {
     name = "Hydrate the pinned full-host fixture"
     `if` = "matrix.client == 'vscode'"
-    run = #"""
-    git submodule update --init --force --depth 1 -- tests/_fixtures/_git/create-vue
-    test "$(git rev-parse HEAD:tests/_fixtures/_git/create-vue)" = \
-      "$(git -C tests/_fixtures/_git/create-vue rev-parse HEAD)"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/hydrate-pinned-create-vue-fixture-for-the-original-real-host-suite.sh""#
   }
   new Dynamic {
     name = "Run the complete packaged VS Code authoring oracle"

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+{
+  printf 'profile=%s\n' "$VIZE_BENCH_BUILD_PROFILE_KEY"
+  rustc --version --verbose
+  sha256sum base/target/ci-opt/vize head/target/ci-opt/vize
+} > benchmark-provenance.txt

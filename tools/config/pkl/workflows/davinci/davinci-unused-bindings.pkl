@@ -15,6 +15,7 @@ on {
       "tests/tooling/davinci-unused-setup-bindings.test.ts"
       "tests/_fixtures/davinci-fpfn/**"
       ".github/workflows/davinci-unused-bindings.yml"
+      ".github/scripts/workflows/davinci-unused-bindings/**"
       "tools/support/compat/github/compare-unused-bindings-profiles.ts"
       "tests/tooling/unused-bindings-profiles.test.ts"
     }
@@ -42,6 +43,9 @@ jobs {
     name = "Unused bindings fact specs and seeded recall"
     `runs-on` = ci.linux
     `timeout-minutes` = 35
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/davinci-unused-bindings"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       ci.rust("stable")
@@ -71,11 +75,7 @@ jobs {
       }
       new Dynamic {
         name = "Start fresh Cargo unit evidence"
-        run = """
-        rm -rf target/unused-bindings-units
-        mkdir -p target/unused-bindings-units
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/start-fresh-cargo-unit-evidence.sh""#
       }
       new Dynamic {
         name = "Check independent specs and real rule dispatch"
@@ -83,13 +83,7 @@ jobs {
         env {
           VIZE_DAVINCI_FACT_CORPUS = "tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator"
         }
-        run = """
-        set -o pipefail
-        cargo test --profile ci --message-format=json-render-diagnostics -p vize_l0 --test fact_demand | tee target/unused-bindings-units/ci-fact_demand.jsonl
-        cargo test --profile ci --message-format=json-render-diagnostics -p vize_croquis --test fact_spec | tee target/unused-bindings-units/ci-fact_spec.jsonl
-        cargo test --profile ci --message-format=json-render-diagnostics -p vize_patina unused_setup_bindings | tee target/unused-bindings-units/ci-unused_setup_bindings.jsonl
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/check-independent-specs-and-real-rule-dispatch.sh""#
       }
       new Dynamic {
         name = "Compare the same complete fact specs under both profiles"
@@ -101,15 +95,11 @@ jobs {
       }
       new Dynamic {
         name = "Build the real CLI"
-        run = """
-        set -o pipefail
-        cargo build --profile ci --message-format=json-render-diagnostics -p vize | tee target/unused-bindings-units/ci-vize.jsonl
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-real-cli.sh""#
       }
       new Dynamic {
         name = "Recall every class-b mutation and reject wrong diagnostic identities"
-        run = #"VIZE_BIN="$PWD/target/ci/vize" vp exec node --test tests/tooling/davinci-unused-setup-bindings.test.ts tests/tooling/davinci-fpfn-pilots.test.ts"#
+        run = #". "${{ env.VIZE_CI_FILES }}/recall-every-class-b-mutation-and-reject-wrong-diagnostic-identities.sh""#
       }
       new Dynamic {
         name = "Collect only emitted Cargo unit fingerprints"

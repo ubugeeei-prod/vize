@@ -6,6 +6,7 @@ name = "criterion-ab"
 `timeout-minutes` = 120
 permissions { contents = "read" }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("criterion-bench")
   new Dynamic {
     name = "Checkout head"
     uses = ci.checkout
@@ -32,17 +33,7 @@ steps = new Listing {
       HEAD_SHA = "${{ inputs.head_sha }}"
       DISPATCH_SHA = "${{ github.sha }}"
     }
-    run = """
-    set -euo pipefail
-    [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-    [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-    [[ "$BASE_SHA" != "$HEAD_SHA" ]]
-    [[ "$HEAD_SHA" == "$DISPATCH_SHA" ]]
-    [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
-    [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
-    git -C head merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/validate-exact-benchmark-commits.sh""#
   }
   ci.rust("stable")
   // The A/B driver is plain Node (no npm deps); pin the runtime so the
@@ -63,22 +54,7 @@ steps = new Listing {
       PR_HEAD_SHA = "${{ inputs.head_sha }}"
       VAPOR_ONLY = "${{ inputs.vapor_only }}"
     }
-    run = #"""
-    if [[ "$VAPOR_ONLY" == "true" ]]; then
-      printf '%s\n' '{"selected":["vize_atelier_vapor"],"reason":"Explicit Davinci Vapor native/retained comparison."}' > "$GITHUB_WORKSPACE/criterion-impact.json"
-      echo 'has_suites=true' >> "$GITHUB_OUTPUT"
-    else
-      node head/tools/benchmarks/scripts/criterion-impact.ts \
-        --repo-dir "$GITHUB_WORKSPACE/head" \
-        --base-sha "$PR_BASE_SHA" \
-        --head-sha "$PR_HEAD_SHA" \
-        --out "$GITHUB_WORKSPACE/criterion-impact.json"
-    fi
-    if node -e 'const s = require(process.argv[1]); process.exit(s.selected.includes("vize_atelier_vapor") ? 0 : 1)' "$GITHUB_WORKSPACE/criterion-impact.json"; then
-      echo 'vapor_selected=true' >> "$GITHUB_OUTPUT"
-    fi
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/select-affected-criterion-suites.sh""#
   }
   new Dynamic {
     name = "Setup Wild linker"
@@ -92,7 +68,7 @@ steps = new Listing {
   // and this job checks the repository out under head/.
   new Dynamic {
     name = "Expose the nested target action at the workspace root"
-    run = "mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/"
+    run = #". "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh""#
   }
   new Dynamic {
     name = "Mount Criterion cache"
@@ -123,16 +99,7 @@ steps = new Listing {
   // not share one Cargo target graph.
   new Dynamic {
     name = "Run criterion A/B"
-    run = #"""
-    node head/tools/benchmarks/scripts/criterion-ab.ts \
-      --base-dir "$GITHUB_WORKSPACE/base" \
-      --head-dir "$GITHUB_WORKSPACE/head" \
-      --target-dir "$GITHUB_WORKSPACE/head/target" \
-      --selection "$GITHUB_WORKSPACE/criterion-impact.json" \
-      ${CRITERION_AB_THRESHOLD:+--threshold "$CRITERION_AB_THRESHOLD"} \
-      --out "$GITHUB_WORKSPACE/criterion-ab-summary.md"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/run-criterion-a-b.sh""#
   }
   new Dynamic {
     name = "Install pinned official compiler-vapor"
@@ -144,14 +111,7 @@ steps = new Listing {
     name = "Compare Vapor L3, retained and official compiler on exact head"
     `if` = "steps.impact.outputs.vapor_selected == 'true'"
     env { HEAD_SHA = "${{ inputs.head_sha }}" }
-    run = #"""
-    node head/tools/benchmarks/scripts/vapor-compiler-compare.ts \
-      --head-sha "$HEAD_SHA" \
-      --criterion "$GITHUB_WORKSPACE/head/target/criterion-ab-head.json" \
-      --out "$GITHUB_WORKSPACE/vapor-compiler-comparison.json" \
-      --summary "$GITHUB_WORKSPACE/vapor-compiler-comparison.md"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/compare-vapor-l3-retained-and-official-compiler-on-exact-head.sh""#
   }
   new Dynamic {
     name = "Upload criterion A/B summary"

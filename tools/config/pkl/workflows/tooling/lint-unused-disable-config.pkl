@@ -8,6 +8,7 @@ on {
     types = List("opened", "synchronize", "reopened")
     paths = new Listing {
       ".github/workflows/lint-unused-disable-config.yml"
+      ".github/scripts/workflows/lint-unused-disable-config/**"
       "davinci/vize_l0/src/config/model/linter.rs"
       "crates/vize/src/commands/lint/entry_rules.rs"
       "crates/vize_maestro/src/ide/diagnostics/patina.rs"
@@ -32,6 +33,9 @@ jobs {
     needs = "producer"
     `runs-on` = ci.linux
     `timeout-minutes` = 15
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/lint-unused-disable-config"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       ci.workspaceVp()
@@ -40,7 +44,7 @@ jobs {
       new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
       new Dynamic {
         name = "Install pinned Pkl renderer for presence semantics"
-        run = "npm install --global @pkl-community/pkl@0.27.2 && pkl --version"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-pkl-renderer-for-presence-semantics.sh""#
       }
       new Dynamic {
         uses = "./.github/actions/restore-source-cli"

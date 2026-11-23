@@ -1,0 +1,13 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+  [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+  git diff --exit-code HEAD --
+  mkdir -p "$RUNNER_TEMP/n8n-whole-corpus-workflow"
+  git rev-parse HEAD > "$RUNNER_TEMP/n8n-whole-corpus-workflow/source-sha.txt"
+  """#
+}

@@ -1,7 +1,8 @@
+import { stagedWorkflowAction, verifyWorkflowStage } from "./workflow-stage.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { lstatSync, readFileSync, readdirSync } from "node:fs";
-import { join, relative } from "node:path";
+import { basename, join, relative } from "node:path";
 import { parse } from "yaml";
 
 const cacheAction = "./.github/actions/setup-rust-sticky-cache";
@@ -51,6 +52,25 @@ const dynamicPrefixes = new Set([
 // The WASM command was re-reviewed as its TypeScript port and imports (#8840).
 // A changed producer requires review, rather than accepting a new dynamic role.
 const producerHashes = {
+  ".github/actions/stage-workflow-scripts/action.yml":
+    "3964722bfe0474b2a026449850af68bae0eab7f6a7f94b2ae597dac941fdf58c",
+  ".github/actions/stage-workflow-scripts/stage.ts":
+    "1d68c22d65e438704ae91f4a840dabc5619fda69d8a971207a32c6a967384733",
+  ".github/scripts/workflows/e2e/plan-full-rows.sh":
+    "48db48b3259ddf195d7b41563c396ef9c6058ee1ccd7123dcc8488e60d645a66",
+  ".github/scripts/workflows/e2e/plan-readiness-rows.sh":
+    "1bdf100557be3c0d25eb0217a122750aedf04887daee0e34db294807665a834d",
+  ".github/scripts/workflows/e2e/validate-target-sha.sh":
+    "0a8e0b4584b88fd1712b97387a3b554c1fa8d642c932bb590758159a144420fa",
+  ".github/scripts/workflows/e2e/verify-producer-sha.sh":
+    "79b2cd2e878ca1d71373872ded348d38d7bcdd3ddc622d0fec32523cf6c56ef2",
+  ".github/scripts/workflows/e2e/verify-readiness-merge-sha.sh":
+    "e1845eaf90a99bf275e2be08fcffbf7cd5a1d052678dc427d43de4d839cf4f37",
+  ".github/scripts/workflows/e2e/write-full-plan-evidence.sh":
+    "007613ed91016c66a320038841944ab5225390d7461438093af557646c11d991",
+  ".github/scripts/workflows/e2e/write-readiness-plan-evidence.sh":
+    "e7110ceaa0266e4a479b2de79660834f82ace685e217be9a8967d14a56b206d6",
+
   "tools/commands/ci/github/app-e2e-plan.ts":
     "ca7682cc8f0834fa48a325954fbcc10765241ee1f9e29a0ebef9b60048cbc7d2",
   "tools/support/compat/github/app-e2e-plan.ts":
@@ -193,8 +213,8 @@ function verifyRecipes(root, docs, e2e) {
     anchor + "  - '.github/actions/setup-moonbit/**'\n",
   );
   for (const [job, expected] of [
-    ["app-readiness-plan", "4abaa0c77a49d4f6a979ffde47f45f78723c2f4fc2320f800c3cfca7a3b02463"],
-    ["app-e2e-plan", "563ab69d3f9c62305dbe54074c7edda29a924244a31b22a41665267b24cbb226"],
+    ["app-readiness-plan", "1479bb7068aacef5c40c05601b3ef4d223bcdf7d3d79b9ca5084e0021c60299a"],
+    ["app-e2e-plan", "782b8e00e62cd7dcd80ecfe4aec75fea411a0edfc25fcea0ef3d7feea0bc5733"],
   ])
     assert.equal(
       hash(JSON.stringify(job === "app-readiness-plan" ? readiness : e2e.jobs[job])),
@@ -250,6 +270,17 @@ export function verifyDocsWasmConsumers(root) {
     for (const { job, step } of steps(document)) {
       if (typeof step.uses !== "string") continue;
       assert(!step.uses.includes("${{"), "unreviewed dynamic cache consumer action");
+      if (step.uses === stagedWorkflowAction) {
+        assert.ok(file.startsWith(".github/workflows/"));
+        const group = document.jobs[job].steps;
+        assert.equal(group.indexOf(step), 1);
+        verifyWorkflowStage(basename(file, ".yml"), group[0], step);
+        assert.deepEqual(source.get(".github/actions/stage-workflow-scripts/action.yml")?.runs, {
+          using: "node24",
+          main: "stage.ts",
+        });
+        continue;
+      }
       if (step.uses.startsWith(".")) {
         const path = step.uses.slice(2);
         assert(

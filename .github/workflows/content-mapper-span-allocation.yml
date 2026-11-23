@@ -8,6 +8,7 @@ on:
       - tools/benchmarks/scripts/content-mapper-span-profile.ts
       - tools/benchmarks/scripts/content-mapper-span-profile.test.ts
       - .github/workflows/content-mapper-span-allocation.yml
+      - .github/scripts/workflows/content-mapper-span-allocation/**
 permissions: { contents: read }
 concurrency:
   group: content-mapper-span-allocation-${{ github.event.pull_request.number }}
@@ -23,6 +24,19 @@ jobs:
       CARGO_INCREMENTAL: "0"
       RAYON_NUM_THREADS: "8"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/content-mapper-span-allocation/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           {
@@ -37,15 +51,12 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
       - name: Test the evidence oracle and build isolated before and after sources
-        run: |
-          node --test tools/benchmarks/scripts/content-mapper-span-profile.test.ts
-          node tools/benchmarks/scripts/content-mapper-span-profile.ts build "$RUNNER_TEMP/span-evidence"
+        run: . "${{ env.VIZE_CI_FILES }}/test-the-evidence-oracle-and-build-isolated-before-and-after-sources.sh"
       - name: Compare complete packets and fresh process measurements
         run: node tools/benchmarks/scripts/content-mapper-span-profile.ts measure "$RUNNER_TEMP/span-evidence"
       - name: Write every family result
         if: always()
-        run: |
-          if [[ -f "$RUNNER_TEMP/span-evidence/summary.md" ]]; then cat "$RUNNER_TEMP/span-evidence/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
+        run: . "${{ env.VIZE_CI_FILES }}/write-every-family-result.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

@@ -1,8 +1,13 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
+import {
+  validateAutomationSteps,
+  automationProgramReferences,
+} from "../../tools/support/ci/automation-commands.ts";
 
 import {
   githubHeadingAnchor,
@@ -12,9 +17,6 @@ import {
 import { parseTapCounts } from "../../tools/support/github/docs-preview-readiness.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 import { plannedBusyRunner, plannedRunnerCondition } from "./support/planned-runner.ts";
-
-const embeddedProgram =
-  /(?:node|python\d*)\s+(?:--input-type=module\s+)?-\s+<<|(?:node|python\d*)\s+--input-type=module\s+<</g;
 
 const approvedRunnerLabels = new Set([
   "blacksmith-12vcpu-macos-15",
@@ -103,7 +105,9 @@ test("the flat GitHub workflow directory has a generated navigation catalog", ()
 });
 
 test("public unused script vars authenticates one release and runs the exact package under Bun", () => {
-  const workflow = parse(readRepoFile(".github/workflows/no-unused-script-vars-public.yml"));
+  const workflow = parse(
+    readAutomationPrograms(".github/workflows/no-unused-script-vars-public.yml"),
+  );
   assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), [
     "version",
     "candidate",
@@ -206,28 +210,40 @@ test("the extracted docs readiness driver preserves TAP totals", () => {
   );
 });
 
-test("embedded workflow programs only shrink", () => {
-  const debt = JSON.parse(readRepoFile("tools/config/workflow-inline-script-debt.json")) as Record<
-    string,
-    number
-  >;
-  const current: Record<string, number> = {};
+test("every action and workflow step invokes a named program", () => {
   for (const directory of [".github/workflows", ".github/actions"]) {
     const absolute = path.join(root, directory);
-    for (const entry of fs.readdirSync(absolute, { recursive: true })) {
-      if (typeof entry !== "string" || !/\.ya?ml$/.test(entry)) continue;
+    for (const entry of fs.readdirSync(absolute, { recursive: true, encoding: "utf8" })) {
+      if (!/\.ya?ml$/u.test(entry)) continue;
       const relative = path.join(directory, entry);
-      const source = readRepoFile(relative);
-      assert.doesNotMatch(source, /uses:\s*actions\/github-script@/u, relative);
-      const count = [...source.matchAll(embeddedProgram)].length;
-      if (count > 0) current[relative] = count;
+      validateAutomationSteps(relative, parse(readRepoFile(relative)));
     }
   }
-  for (const [file, count] of Object.entries(current)) {
-    assert.ok(file in debt, `${file} introduced an embedded program; use a typed tools/ driver`);
-    assert.ok(
-      count <= debt[file]!,
-      `${file} increased embedded programs from ${debt[file]} to ${count}`,
-    );
+});
+
+test("every named automation program is available in the same checkout as its caller", () => {
+  function check(directory: string, source: string) {
+    for (const name of automationProgramReferences(source)) {
+      assert.match(name, /^(?:\.\.\/shared\/)?[\w.-]+$/u, name);
+      const program = path.join(directory, name);
+      assert.ok(fs.statSync(program, { throwIfNoEntry: false })?.isFile(), program);
+    }
+  }
+  const workflows = path.join(root, ".github/workflows");
+  for (const file of fs.readdirSync(workflows).filter((file) => file.endsWith(".yml"))) {
+    const directory = path.join(root, ".github/scripts/workflows", path.basename(file, ".yml"));
+    check(directory, fs.readFileSync(path.join(workflows, file), "utf8"));
+    if (fs.existsSync(directory))
+      for (const program of fs.readdirSync(directory))
+        check(directory, fs.readFileSync(path.join(directory, program), "utf8"));
+  }
+  const actions = path.join(root, ".github/actions");
+  for (const entry of fs.readdirSync(actions, { recursive: true, withFileTypes: true })) {
+    if (entry.name !== "action.yml") continue;
+    const directory = path.join(entry.parentPath, "scripts");
+    check(directory, fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8"));
+    if (fs.existsSync(directory))
+      for (const program of fs.readdirSync(directory))
+        check(directory, fs.readFileSync(path.join(directory, program), "utf8"));
   }
 });

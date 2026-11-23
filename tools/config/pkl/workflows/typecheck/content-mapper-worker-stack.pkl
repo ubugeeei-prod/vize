@@ -8,6 +8,7 @@ on {
     types = List("opened", "synchronize", "reopened")
     paths = new Listing {
       ".github/workflows/content-mapper-worker-stack.yml"
+      ".github/scripts/workflows/content-mapper-worker-stack/**"
       "tools/benchmarks/scripts/content-mapper-worker-stack.ts"
       "tools/benchmarks/scripts/content-mapper-worker-stack-core.ts"
       "tests/tooling/content-mapper-worker-stack.test.ts"
@@ -49,6 +50,7 @@ jobs {
       }
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("content-mapper-worker-stack")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -81,87 +83,22 @@ jobs {
           BUILD_PROFILE = "${{ matrix.profile }}"
           COMPARISON_SHA = "${{ github.event.pull_request.base.sha }}"
         }
-        run = #"""
-        set -euo pipefail
-        dispatcher=crates/vize/src/commands/content_mapper/dispatch.rs
-        tests=crates/vize/src/commands/content_mapper/dispatch/tests.rs
-        evidence="$RUNNER_TEMP/worker-admission-before-$BUILD_PROFILE.log"
-        artifacts="$RUNNER_TEMP/worker-admission-before-$BUILD_PROFILE.jsonl"
-        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-        comparison_dispatcher="$(git rev-parse "$COMPARISON_SHA:$dispatcher")"
-        if [ "$comparison_dispatcher" != "765353130eaba123edb530df5c0ade0944639659" ]; then
-          printf 'Historical admission witness not applicable: comparison dispatcher %s\n' "$comparison_dispatcher" > "$evidence"
-          cat "$evidence"
-          exit 0
-        fi
-        trap 'git show "HEAD:$dispatcher" > "$dispatcher"' EXIT
-        git show "$COMPARISON_SHA:$dispatcher" > "$dispatcher"
-        printf 'comparison=%s source=%s profile=%s dispatcher=%s tests=%s\n' "$COMPARISON_SHA" "$SOURCE_SHA" "$BUILD_PROFILE" "$(git hash-object "$dispatcher")" "$(git hash-object "$tests")" > "$evidence"
-        cargo clean --profile "$BUILD_PROFILE" -p vize
-        cargo test --locked --profile "$BUILD_PROFILE" -p vize --lib --no-run --message-format=json > "$artifacts"
-        test_image="$(jq -r 'select(.reason == "compiler-artifact" and .target.name == "vize" and .profile.test == true and .executable != null) | .executable' "$artifacts")"
-        test -x "$test_image"
-        image_hash="$(sha256sum "$test_image" | cut -d' ' -f1)"
-        printf 'image=%s sha256=%s\n' "$test_image" "$image_hash" >> "$evidence"
-        set +e
-        "$test_image" commands::content_mapper::dispatch::tests::admission_waits_before_reading_unknown_malformed_or_uninitialized_requests \
-          --exact --nocapture >> "$evidence" 2>&1
-        result=$?
-        set -e
-        cat "$evidence"
-        test "$result" -ne 0
-        test "$result" -lt 128
-        rg -F 'mapper read beyond the effective-worker admission window' "$evidence"
-        rg -F 'test result: FAILED. 0 passed; 1 failed;' "$evidence"
-        test "$(sha256sum "$test_image" | cut -d' ' -f1)" = "$image_hash"
-        git show "HEAD:$dispatcher" > "$dispatcher"
-        trap - EXIT
-        git diff --exit-code -- "$dispatcher"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/witness-the-native-admission-regression-on-the-known-comparison-source.sh""#
       }
       new Dynamic {
         name = "Build exact mapper source"
         env { BUILD_PROFILE = "${{ matrix.profile }}" }
-        run = """
-        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-        cargo clean --profile "$BUILD_PROFILE" -p vize
-        cargo build --locked --profile "$BUILD_PROFILE" -p vize --bin vize
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-exact-mapper-source.sh""#
       }
       new Dynamic {
         name = "Verify worker spawn and admission release scoped threads"
         env { BUILD_PROFILE = "${{ matrix.profile }}" }
-        run = #"""
-        set -euo pipefail
-        artifacts="$RUNNER_TEMP/worker-admission-head-$BUILD_PROFILE.jsonl"
-        evidence="$RUNNER_TEMP/worker-spawn-$BUILD_PROFILE.log"
-        cargo test --locked --profile "$BUILD_PROFILE" -p vize --lib --no-run --message-format=json > "$artifacts"
-        test_image="$(jq -r 'select(.reason == "compiler-artifact" and .target.name == "vize" and .profile.test == true and .executable != null) | .executable' "$artifacts")"
-        test -x "$test_image"
-        image_hash="$(sha256sum "$test_image" | cut -d' ' -f1)"
-        printf 'source=%s tree=%s dispatcher=%s tests=%s image=%s sha256=%s\n' "$SOURCE_SHA" "$(git rev-parse HEAD^{tree})" "$(git hash-object crates/vize/src/commands/content_mapper/dispatch.rs)" "$(git hash-object crates/vize/src/commands/content_mapper/dispatch/tests.rs)" "$test_image" "$image_hash" > "$evidence"
-        "$test_image" commands::content_mapper::dispatch::tests:: --nocapture | tee -a "$evidence"
-        test "$(sha256sum "$test_image" | cut -d' ' -f1)" = "$image_hash"
-        rg -F 'test result: ok. 7 passed; 0 failed;' "$RUNNER_TEMP/worker-spawn-$BUILD_PROFILE.log"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-worker-spawn-and-admission-release-scoped-threads.sh""#
       }
       new Dynamic {
         name = "Probe bounded child processes and retain complete packets"
         env { BUILD_PROFILE = "${{ matrix.profile }}" }
-        run = #"""
-        test -x /usr/bin/prlimit
-        test -x /usr/bin/time
-        node tools/benchmarks/scripts/content-mapper-worker-stack.ts \
-          --binary "target/$BUILD_PROFILE/vize" \
-          --source-sha "$SOURCE_SHA" \
-          --profile "$BUILD_PROFILE" \
-          --fixed-worker-budget \
-          --out "$RUNNER_TEMP/worker-stack"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/probe-bounded-child-processes-and-retain-complete-packets.sh""#
       }
       new Dynamic {
         name = "Retain complete source and process evidence"
@@ -189,15 +126,10 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
+      ...ci.stageWorkflowScripts("content-mapper-worker-stack")
       new Dynamic {
         name = "Reserve five minutes for functional raw retention"
-        run = #"""
-        mkdir -p "$RUNNER_TEMP/mapper-admission"
-        deadline="$(( $(date -u +%s) * 1000 + 15 * 60 * 1000 ))"
-        printf 'ADMISSION_DEADLINE_MS=%s\n' "$deadline" >> "$GITHUB_ENV"
-        printf '{"hardMinutes":20,"softDeadlineMs":%s,"artifactReserveMinutes":5,"performance":false}\n' "$deadline" > "$RUNNER_TEMP/mapper-admission/budget.json"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/reserve-five-minutes-for-functional-raw-retention.sh""#
       }
       ci.checkoutAt("${{ env.SOURCE_SHA }}")
       ci.rust("1.100.0")
@@ -223,52 +155,11 @@ jobs {
           CARGO_INCREMENTAL = "0"
           CARGO_BUILD_JOBS = "16"
         }
-        run = #"""
-        set -euo pipefail
-        within_budget() {
-          remaining="$(( (ADMISSION_DEADLINE_MS - $(date -u +%s) * 1000) / 1000 ))"
-          test "$remaining" -gt 0
-          timeout --signal=TERM --kill-after=5s "${remaining}s" "$@"
-        }
-        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-        git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/mapper-admission/source.txt"
-        node --version > "$RUNNER_TEMP/mapper-admission/toolchain.txt"
-        rustc -Vv >> "$RUNNER_TEMP/mapper-admission/toolchain.txt"
-        cargo -V >> "$RUNNER_TEMP/mapper-admission/toolchain.txt"
-        vp --version >> "$RUNNER_TEMP/mapper-admission/toolchain.txt"
-        mkdir "$RUNNER_TEMP/mapper-admission/controls"
-        ADMISSION_RETAIN_CONTROLS=1 TMPDIR="$RUNNER_TEMP/mapper-admission/controls" within_budget timeout --signal=TERM --kill-after=5s 120s node --test tests/tooling/content-mapper-admission-hosts*.test.ts > "$RUNNER_TEMP/mapper-admission/pure.log" 2>&1
-        within_budget vp install --frozen-lockfile --prefer-offline > "$RUNNER_TEMP/mapper-admission/source-install.log" 2>&1
-        provider_fixture=tests/_fixtures/tooling/content-mapper-admission-provider
-        mkdir "$RUNNER_TEMP/admission-provider"
-        cp "$provider_fixture/package.json.txt" "$RUNNER_TEMP/admission-provider/package.json"
-        cp "$provider_fixture/package-lock.json.txt" "$RUNNER_TEMP/admission-provider/package-lock.json"
-        cp "$provider_fixture/provenance.json" "$RUNNER_TEMP/admission-provider/provenance.json"
-        cp -R "$provider_fixture" "$RUNNER_TEMP/mapper-admission/public-provider-inputs"
-        (cd "$RUNNER_TEMP/admission-provider" && within_budget npm ci --ignore-scripts --no-audit --no-fund --prefer-offline) > "$RUNNER_TEMP/mapper-admission/provider-install.log" 2>&1
-        cmp "$provider_fixture/package-lock.json.txt" "$RUNNER_TEMP/admission-provider/package-lock.json"
-        token="$(openssl rand -hex 16)"
-        printf 'ADMISSION_NATIVE_TOKEN=%s\n' "$token" >> "$GITHUB_ENV"
-        within_budget cargo clean --profile ci -p vize -p vize_vitrine
-        VIZE_NATIVE_BUILD_TOKEN="$token" within_budget cargo build --locked --profile ci -p vize_vitrine --features napi > "$RUNNER_TEMP/mapper-admission/native-build.log" 2>&1
-        cp target/ci/libvize_vitrine.so npm/native/vize-vitrine.linux-x64-gnu.node
-        (cd npm/cli && within_budget vp pack) > "$RUNNER_TEMP/mapper-admission/cli-pack.log" 2>&1
-        git diff --exit-code HEAD
-        sha256sum npm/native/vize-vitrine.linux-x64-gnu.node > "$RUNNER_TEMP/mapper-admission/native.sha256"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-reviewed-normal-node-and-napi-endpoint-with-a-frozen-provider.sh""#
       }
       new Dynamic {
         name = "Require normal host completion, complete packets and authored negative controls"
-        run = #"""
-        set -euo pipefail
-        cpu="$(node -e 'const fs=require("node:fs");const line=fs.readFileSync("/proc/self/status","utf8").split("\n").find(row=>row.startsWith("Cpus_allowed_list:"));process.stdout.write(line.split(":")[1].trim().split(/[,-]/)[0]);')"
-        taskset -c "$cpu" node tools/support/compat/content-mapper/admission-hosts.ts \
-          --source "$GITHUB_WORKSPACE" --source-sha "$SOURCE_SHA" \
-          --provider "$RUNNER_TEMP/admission-provider" \
-          --output "$RUNNER_TEMP/mapper-admission/hosts" --token "$ADMISSION_NATIVE_TOKEN"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/require-normal-host-completion-complete-packets-and-authored-negative-co.sh""#
       }
       new Dynamic {
         name = "Preserve functional packets before accepting the run"

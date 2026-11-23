@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -25,7 +26,7 @@ type Step = {
   "continue-on-error"?: boolean;
 };
 type Workflow = { jobs: Record<string, { steps: Step[]; needs?: string[] }> };
-const workflow = parse(fs.readFileSync(path.join(root, workflowPath), "utf8")) as Workflow;
+const workflow = parse(readAutomationPrograms(path.join(root, workflowPath))) as Workflow;
 const steps = workflow.jobs["pr-js-package-conformance"]!.steps;
 const required = (name: string): Step => {
   const step = steps.find((entry) => entry.name === name);
@@ -66,7 +67,7 @@ test("failed or cancelled source project execution retains raw receipts in the e
   assert.equal(upload["continue-on-error"], undefined);
   assert.ok(steps.indexOf(upload) > steps.indexOf(required(proofName)));
   const source = parse(
-    fs.readFileSync(path.join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
+    readAutomationPrograms(path.join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
   ) as Workflow;
   assert.ok(source.jobs["source-report"]!.needs?.includes("pr-js-packages"));
 });

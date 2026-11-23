@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/native-sfc-runtime-version.yml"
+      ".github/scripts/workflows/native-sfc-runtime-version/**"
       "crates/vize_vitrine/src/napi/sfc.rs"
       "crates/vize_vitrine/src/napi/sfc/**"
       "davinci/vize_l0/src/config/model/vue.rs"
@@ -25,6 +26,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     env {
+
       CARGO_BUILD_JOBS = "12"
       CARGO_TERM_COLOR = "always"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
@@ -34,6 +36,7 @@ jobs {
       VIZE_NATIVE_SFC_VERSION_PROOF = "target/vize-tests/sfc-runtime-version"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("native-sfc-runtime-version")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
       ci.workspaceVp()
       ci.rust("1.100.0")
@@ -50,17 +53,12 @@ jobs {
       ci.command("Build the actual source-native package", "vp run --filter './npm/native' build:ci")
       new Dynamic {
         name = "Seal the selected image and exact source"
-        run = #"GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs"#
+        run = #". "${{ env.VIZE_CI_FILES }}/seal-the-selected-image-and-exact-source.sh""#
       }
       new Dynamic {
         name = "Verify runtime selectors, all native paths and whole outputs"
         shell = "bash"
-        run = """
-        set -euo pipefail
-        mkdir -p "$VIZE_NATIVE_SFC_VERSION_PROOF"
-        node --test tests/tooling/native-sfc-runtime-version.test.mjs 2>&1 | tee "$VIZE_NATIVE_SFC_VERSION_PROOF/tap.log"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-runtime-selectors-all-native-paths-and-whole-outputs.sh""#
       }
       new Dynamic {
         name = "Preserve source identity and all observations"

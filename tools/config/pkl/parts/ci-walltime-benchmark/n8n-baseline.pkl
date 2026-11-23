@@ -3,7 +3,10 @@ import "../../Actions.pkl" as ci
 `if` = "${{ github.event_name == 'workflow_dispatch' && inputs.component == 'n8n-baseline' }}"
 `runs-on` = ci.linux
 `timeout-minutes` = 60
-env { CARGO_BUILD_JOBS = "12" }
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/ci-walltime-benchmark"
+  CARGO_BUILD_JOBS = "12"
+}
 steps = new Listing {
   new Dynamic {
     uses = ci.checkout
@@ -12,11 +15,7 @@ steps = new Listing {
   ci.use("./.github/actions/setup-js-package-tests")
   new Dynamic {
     name = "Build the same source native binary and bridge once"
-    run = """
-    vp run --workspace-root build:native:test
-    vp run --filter './npm/linter/oxlint' build
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/build-the-same-source-native-binary-and-bridge-once.sh""#
   }
   new Dynamic {
     name = "Serial baseline with unchanged concurrent project hosts"

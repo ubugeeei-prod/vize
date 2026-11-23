@@ -54,6 +54,7 @@ jobs {
       }
     }
     env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/pr-rust-checks"
       CARGO_BUILD_JOBS = "24"
       VIZE_NUXT_CONFIG_ITERATIONS = "100"
       RUST_PLAN_JSON = "${{ inputs.rust-plan }}"
@@ -111,18 +112,11 @@ jobs {
       }
       new Dynamic {
         name = "Materialize affected Rust plan"
-        run = #"node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'"#
+        run = #". "${{ env.VIZE_CI_FILES }}/materialize-affected-rust-plan.sh""#
       }
       new Dynamic {
         name = "Select Clippy and doctest runtime envelope"
-        run = #"""
-        case "$GITHUB_EVENT_NAME" in
-          pull_request) printf 'VIZE_TEST_DISABLE_TSGO=1\n' >> "$GITHUB_ENV" ;;
-          merge_group) printf 'VIZE_TEST_REQUIRE_TSGO=1\n' >> "$GITHUB_ENV" ;;
-          *) exit 1 ;;
-        esac
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/select-clippy-and-doctest-runtime-envelope.sh""#
       }
       new Dynamic {
         name = "Clippy affected crates"

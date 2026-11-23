@@ -4,6 +4,8 @@ import { test } from "node:test";
 import {
   isProgramInvocation,
   validateAutomationSteps,
+  validateShellProgram,
+  automationProgramReferences,
 } from "../../tools/support/ci/automation-commands.ts";
 
 test("automation steps accept one program invocation with arguments", () => {
@@ -48,4 +50,25 @@ test("automation steps reject compound commands and embedded interpreter program
       /inline code/u,
     );
   }
+});
+
+test("standalone drivers reject embedded interpreters while accepting real program arguments", () => {
+  for (const command of [
+    "node --input-type=module -e '42'",
+    "python3 <<'PY'\nprint(1)\nPY",
+    "docker run example sh -euxc 'test -f result'",
+    "pwsh -NoProfile -Command run",
+    "bun eval '1'",
+  ]) {
+    assert.throws(() => validateShellProgram("driver.sh", command), /named script/u);
+  }
+  for (const command of [
+    "docker run example sh -eux /work/smoke.sh",
+    'node "$VIZE_CI_FILES/check.ts" -p tsconfig.json',
+    "cat <<EOF > data.json\n{}\nEOF",
+  ])
+    validateShellProgram("driver.sh", command);
+  assert.deepEqual(automationProgramReferences('node "$VIZE_CI_FILES/../shared/receipts.ts"'), [
+    "../shared/receipts.ts",
+  ]);
 });

@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/l1-document-special-text.yml"
+      ".github/scripts/workflows/l1-document-special-text/**"
       ".github/actions/install-playwright-browsers/**"
       "Cargo.lock"
       "Cargo.toml"
@@ -41,6 +42,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
+      ...ci.stageWorkflowScripts("l1-document-special-text")
       ci.checkoutAt("${{ env.HEAD_SHA }}")
       ci.rust("1.100.0")
       ci.wild()
@@ -68,39 +70,11 @@ jobs {
       }
       new Dynamic {
         name = "Compare the original packet with native and legacy Rust"
-        run = #"""
-        test "$(git rev-parse HEAD)" = "$HEAD_SHA"
-        cargo test --locked --profile ci -p vize_l1 \
-          --test html_body_elements \
-          --test html_body_elements_legacy_oracle \
-          --test html_disclosure_elements \
-          --test html_disclosure_elements_legacy_oracle \
-          --test html_embedded_fallback \
-          --test html_embedded_fallback_legacy_oracle \
-          --test html_foreign_content \
-          --test html_foreign_content_legacy_oracle \
-          --test html_phrasing \
-          --test html_phrasing_legacy_oracle \
-          --test html_select \
-          --test html_select_legacy_oracle \
-          --test html_special_text \
-          --test html_special_text_legacy_oracle
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-packet-with-native-and-legacy-rust.sh""#
       }
       new Dynamic {
         name = "Compare the original packet with Chromium"
-        run = #"""
-        vp node --test \
-          tests/tooling/davinci-document-body-elements.test.ts \
-          tests/tooling/davinci-document-disclosure-elements.test.ts \
-          tests/tooling/davinci-document-embedded-fallback.test.ts \
-          tests/tooling/davinci-document-foreign-content.test.ts \
-          tests/tooling/davinci-document-phrasing.test.ts \
-          tests/tooling/davinci-document-select.test.ts \
-          tests/tooling/davinci-document-special-text.test.ts
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-packet-with-chromium.sh""#
       }
     }
   }
