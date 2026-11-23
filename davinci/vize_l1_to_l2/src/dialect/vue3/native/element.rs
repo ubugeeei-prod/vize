@@ -38,7 +38,7 @@ impl<'a> Context<'_, 'a> {
             self.text_lane = Some(lane.component_children_of(
                 crate::lower::TextSource::new(self.allocator, self.block()),
                 element,
-                header.tag,
+                element.tag(),
                 header.namespace == Namespace::Html,
                 matches!(header.admission, HeaderAdmission::PreCarrier),
             ));
