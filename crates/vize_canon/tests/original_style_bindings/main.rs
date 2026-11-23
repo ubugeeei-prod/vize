@@ -203,18 +203,27 @@ fn all_style_languages_keep_edits_expressions_and_whole_compilations() {
 }
 
 #[test]
-fn retained_empty_style_is_observed_and_an_absent_style_never_runs_the_pass() {
-    for (source, present) in [
-        ("<template></template>", false),
-        ("<template></template><style></style>", true),
+fn retained_styles_publish_completed_calls_and_visit_empty_blocks() {
+    for (source, has_calls) in [
+        ("<template></template>", None),
+        ("<template></template><style></style>", Some(false)),
+        ("<template></template><style>v-bind(</style>", Some(false)),
+        ("<template></template><style>v-bind()</style>", Some(true)),
+        (
+            "<template></template><style>v-bind(x);v-bind(</style>",
+            Some(true),
+        ),
     ] {
         let arena = Allocator::new();
         let owner = Vue.observe_descriptor(&arena, source, options());
         let mut visits = 0;
-        let result =
-            StyleBindingReferences::observe(&arena, owner.admitted().unwrap(), |_| visits += 1);
-        assert_eq!(result.is_some(), present);
-        assert_eq!(visits, usize::from(present));
+        let result = StyleBindingReferences::observe(&arena, owner.admitted().unwrap(), |style| {
+            visits += 1;
+            assert_eq!(Some(style.has_calls()), has_calls);
+            assert_eq!(style.has_calls(), style.calls().next().is_some());
+        });
+        assert_eq!(result.is_some(), has_calls.is_some());
+        assert_eq!(visits, usize::from(has_calls.is_some()));
     }
 }
 
