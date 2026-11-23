@@ -10,9 +10,10 @@ pub use position::{
 /// Returns true for standalone HTML files that should be linted outside the SFC pipeline.
 #[inline]
 pub fn is_standalone_html_path(path: &str) -> bool {
-    path.rsplit_once('.').is_some_and(|(_, extension)| {
-        extension.eq_ignore_ascii_case("html") || extension.eq_ignore_ascii_case("htm")
-    })
+    use vize_l1::container::lang::{TemplateLang, markup_extension};
+    path.rsplit_once('.')
+        .and_then(|(_, extension)| markup_extension(extension))
+        == Some(TemplateLang::Html)
 }
 
 /// Routes JSX and TSX files to the standalone compiler diagnostics (see #1497).
