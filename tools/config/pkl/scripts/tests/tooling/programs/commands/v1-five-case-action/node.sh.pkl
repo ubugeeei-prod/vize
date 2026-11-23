@@ -1,0 +1,29 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  set -euo pipefail
+  printf "%s\n" "$@" > "$NODE_ARGUMENTS_LOG"
+  arguments=("$@")
+  required=(--source --candidate --mode)
+  case "$2" in
+    plan) required+=(--run --attempt --shards --output) ;;
+    validate-bundles) required+=(--bundles) ;;
+    admit) required+=(--bundles --output) ;;
+    *) exit 2 ;;
+  esac
+  for required_argument in "${required[@]}"; do
+    found=false
+    for ((index = 0; index < ${#arguments[@]}; index++)); do
+      if [ "${arguments[$index]}" = "$required_argument" ]; then
+        value_index=$((index + 1))
+        test -n "${arguments[$value_index]:-}"
+        found=true
+      fi
+    done
+    $found
+  done
+  """#
+}

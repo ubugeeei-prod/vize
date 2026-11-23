@@ -1,0 +1,14 @@
+if (process.argv.includes("--listFilesOnly")) {
+  process.@@COVERAGE_STREAM@@.write(@@FILES@@);
+  process.exit(@@COVERAGE_EXIT_CODE@@);
+}
+let output = @@BASELINE_OUTPUT@@;
+import { mutationDiagnostic } from @@DIAGNOSTICS_MODULE@@;
+for (const { file, sourcePath } of @@SOURCE_FILES@@) {
+  if (!fs.existsSync(sourcePath)) continue;
+  const source = fs.readFileSync(sourcePath, "utf8");
+  const mutation = mutationDiagnostic(source, @@MUTATION_MODE@@, "vue-tsc", file);
+  if (mutation != null) output += mutation;
+}
+process.@@BASELINE_STREAM@@.write(output);
+process.exit(@@EXIT_CODE@@ ?? (output === "" ? 0 : 2));

@@ -1,3 +1,8 @@
+import {
+  automationShellPath,
+  readAutomationPrograms,
+  workflowProgram,
+} from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -10,7 +15,6 @@ import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 
 import { officialActorInputs } from "../../tools/support/compat/content-mapper/official-fixtures.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -142,7 +146,7 @@ interface PublicStep {
   "continue-on-error"?: boolean;
 }
 const publishedWorkflow = () =>
-  parse(readRepoFile(".github", "workflows", "content-mapper-conformance.yml")) as {
+  parse(readAutomationPrograms(".github", "workflows", "content-mapper-conformance.yml")) as {
     permissions: Record<string, string>;
     concurrency: { group: string; "cancel-in-progress": string };
     on: {
@@ -266,17 +270,18 @@ test("published mapper workflow selects fixed reports without source builds or b
     default: "9499",
   });
   assert.equal(run.env?.PUBLIC_REPORT, "${{ inputs.published-report }}");
-  const selector = run.run!.match(/case "\$PUBLIC_REPORT" in[\s\S]*?\n\s*esac/u)?.[0];
-  assert.ok(selector, "fixture selection must run before the public actor");
-  assert.ok(run.run!.indexOf(selector) < run.run!.indexOf("officialActorInputs(inputs)"));
+  const selector = "select-published-fixture.ts";
+  assert.ok(workflowProgram("content-mapper-conformance", run.run!, selector));
+  const actor = "run-exact-published-reporter-fixtures.ts";
+  const actorSource = workflowProgram("content-mapper-conformance", run.run!, actor);
+  assert.ok(run.run!.indexOf(selector) < run.run!.indexOf(actor));
   assert.ok(run.run!.includes('sha256sum "$public_fixture"'));
   const choose = (value: string) =>
     spawnSync(
-      "bash",
-      ["-eu", "-o", "pipefail", "-c", `${selector}\nprintf '%s' "$public_fixture"`],
+      process.execPath,
+      [path.join(root, ".github/scripts/workflows/content-mapper-conformance", selector), value],
       {
         encoding: "utf8",
-        env: { ...process.env, PUBLIC_REPORT: value },
       },
     );
   for (const [value, fixture] of [
@@ -285,7 +290,7 @@ test("published mapper workflow selects fixed reports without source builds or b
   ]) {
     const selected = choose(value);
     assert.equal(selected.status, 0, selected.stderr);
-    assert.equal(selected.stdout, fixture);
+    assert.equal(selected.stdout, fixture + "\n");
     assert.equal(selected.stderr, "");
   }
   for (const value of [
@@ -305,7 +310,7 @@ test("published mapper workflow selects fixed reports without source builds or b
     run.run!,
     /--public-version "\$\{PUBLIC_TAG#v\}" --public-inputs "\$PUBLIC_INPUTS"/u,
   );
-  assert.match(run.run!, /officialActorInputs\(inputs\)/u);
+  assert.match(actorSource, /officialActorInputs\(inputs\)/u);
   assert.equal(run.env?.PUBLIC_ACTOR, "${{ github.workflow_sha }}");
   for (const [key, input] of Object.entries({
     PUBLIC_CUT: "cut",
@@ -334,18 +339,21 @@ test("published mapper admission rejects mixed scopes, tags, runtime overrides a
   const focused = job.steps.find(
     (step) => step.name === "Require an unambiguous focused campaign",
   )!;
-  const script = `${guard.run}\n${focused.run}`;
   const env = {
     PATH: process.env.PATH,
     SOURCE_MODE: "false",
     GITHUB_REF: "refs/heads/reviewed-actor",
     EVENT_RENAME_ONLY: "false",
   };
-  const execute = (extra = {}) =>
-    spawnSync("bash", ["-euo", "pipefail", "-c", script], {
-      env: { ...env, ...extra },
-      encoding: "utf8",
-    });
+  const execute = (extra = {}) => {
+    const invoke = (body: string) =>
+      spawnSync("bash", ["-euo", "pipefail", automationShellPath(body)], {
+        env: { ...env, ...extra },
+        encoding: "utf8",
+      });
+    const first = invoke(guard.run!);
+    return first.status === 0 ? invoke(focused.run!) : first;
+  };
   assert.equal(execute().status, 0);
   for (const extra of [
     { SOURCE_MODE: "true" },

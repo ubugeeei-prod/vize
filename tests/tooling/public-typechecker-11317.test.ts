@@ -1,3 +1,4 @@
+import { archivedWorkflow } from "./support/workflow-history.ts";
 import assert from "node:assert/strict";
 import { realpathSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -339,7 +340,7 @@ test("no authority token reaches npm/native children and only exact arguments ar
 });
 
 test("the new closed manual role preserves the old 0.602 job body and never selects it", () => {
-  const workflow = readFileSync(
+  const workflow = archivedWorkflow(
     fileURLToPath(
       new URL("../../.github/workflows/public-typechecker-consumer.yml", import.meta.url),
     ),

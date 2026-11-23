@@ -1,0 +1,10 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  printf '%s\n' "$@" > "@@OUTPUT@@/args.txt"
+  printf '<template><span/></template>' > "$6"
+  """#
+}

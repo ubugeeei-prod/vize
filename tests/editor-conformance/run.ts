@@ -1,3 +1,4 @@
+import { shellLauncher } from "../../tools/support/process-launcher.ts";
 // TS-45 runner: `node tests/editor-conformance/run.ts <neovim|helix|zed|vscode> [--out <dir>]`
 //
 // 1. materializes the shared `real-vue` fixture in a fresh temporary workspace;
@@ -52,7 +53,7 @@ async function main(argv: string[]): Promise<number> {
   const tap = path.join(suiteRoot, "lsp-tap.mjs");
   fs.writeFileSync(
     path.join(shimDir, "vize"),
-    `#!/bin/sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(tap)} ${JSON.stringify(server)} "$@"\n`,
+    shellLauncher("exec", { COMMAND: [process.execPath, tap, server] }),
     { mode: 0o755 },
   );
   const transcript = path.join(out, `${id}.transcript.jsonl`);

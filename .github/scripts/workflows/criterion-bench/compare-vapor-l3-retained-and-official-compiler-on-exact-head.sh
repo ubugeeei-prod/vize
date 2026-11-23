@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+node head/tools/benchmarks/scripts/vapor-compiler-compare.ts \
+  --head-sha "$HEAD_SHA" \
+  --criterion "$GITHUB_WORKSPACE/head/target/criterion-ab-head.json" \
+  --out "$GITHUB_WORKSPACE/vapor-compiler-comparison.json" \
+  --summary "$GITHUB_WORKSPACE/vapor-compiler-comparison.md"

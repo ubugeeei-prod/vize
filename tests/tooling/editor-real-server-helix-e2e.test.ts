@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -17,7 +18,7 @@ test("the Helix real-server scenario has a task that runs its Rust Script launch
 });
 
 test("CI checks the package with a pinned official Helix before the server scenario", () => {
-  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "vscode-host-smoke", "action.yml");
   const installAt = action.indexOf("- name: Install pinned Helix");
   const healthAt = action.indexOf("- name: Check the Helix package with the official CLI");
   const scenarioAt = action.indexOf("- name: Run the Helix scenario against the real server");

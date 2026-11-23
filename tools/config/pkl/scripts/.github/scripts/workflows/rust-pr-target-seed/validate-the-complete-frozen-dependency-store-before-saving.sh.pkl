@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("vp", List("install", "--frozen-lockfile", "--prefer-offline"))
+  module.command("git", List("diff", "--exit-code", "--", "package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"))
+}

@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { globSync } from "node:fs";
 import path from "node:path";
@@ -32,6 +33,7 @@ type WorkflowJob = {
 };
 
 type WorkflowStep = {
+  env?: Record<string, unknown>;
   if?: string;
   "continue-on-error"?: boolean;
   name?: string;
@@ -81,7 +83,7 @@ function workflowUsesStep(job: WorkflowJob, uses: string): WorkflowStep {
 }
 
 test("fresco platform suites run nightly or by explicit dispatch", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "fresco.yml")) as {
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "fresco.yml")) as {
     on: Record<string, unknown>;
   };
   assert.equal(Object.hasOwn(workflow.on, "push"), false);
@@ -91,7 +93,9 @@ test("fresco platform suites run nightly or by explicit dispatch", () => {
 });
 
 test("repeated Fresco and storage measurements stay outside ordinary PR and queue checks", () => {
-  const fresco = parse(readRepoFile(".github", "workflows", "fresco-dimension-bench.yml"));
+  const fresco = parse(
+    readAutomationPrograms(".github", "workflows", "fresco-dimension-bench.yml"),
+  );
   assert.deepEqual(Object.keys(fresco.on).sort(), ["schedule", "workflow_dispatch"]);
   assert.deepEqual(fresco.on.schedule, [{ cron: "37 6 * * *" }]);
   assert.deepEqual(fresco.jobs.dimensions.strategy.matrix.replica, [1, 2, 3]);
@@ -100,23 +104,37 @@ test("repeated Fresco and storage measurements stay outside ordinary PR and queu
       .run,
     "cargo test --locked --profile ci-opt -p vize_fresco --lib paired_parse_and_layout -- --ignored --test-threads=1",
   );
-  const storage = parse(readRepoFile(".github", "workflows", "string-storage-bench.yml"));
+  const storage = parse(readAutomationPrograms(".github", "workflows", "string-storage-bench.yml"));
   assert.deepEqual(Object.keys(storage.on), ["workflow_dispatch"]);
   for (const sha of ["base_sha", "head_sha"]) {
     assert.equal(storage.on.workflow_dispatch.inputs[sha].required, true);
     assert.equal(storage.on.workflow_dispatch.inputs[sha].type, "string");
   }
   assert.deepEqual(storage.jobs["bounded-storage"].strategy.matrix.repetition, [1, 2, 3]);
+  const checkout = workflowUsesStep(storage.jobs["bounded-storage"], "actions/checkout@");
+  assert.equal(checkout.with?.ref, "${{ github.sha }}");
+  assert.equal(checkout.with?.path, "head");
   const validate = workflowStep(
     storage.jobs["bounded-storage"],
     "Validate exact commits and use identical benchmark harness",
   );
-  assert.match(validate.run ?? "", /\[\[ "\$HEAD_SHA" == "\$DISPATCH_SHA" \]\]/);
-  assert.match(validate.run ?? "", /merge-base --is-ancestor "\$BASE_SHA" "\$HEAD_SHA"/);
+  assert.equal(validate.run, "node head/tools/benchmarks/scripts/string-storage.ts prepare");
+  assert.deepEqual(validate.env, {
+    BASE_SHA: "${{ inputs.base_sha }}",
+    HEAD_SHA: "${{ inputs.head_sha }}",
+    DISPATCH_SHA: "${{ github.sha }}",
+  });
+  assert.equal(
+    workflowStep(
+      storage.jobs["bounded-storage"],
+      "Compare controlled production storage and traversal",
+    ).run,
+    "node head/tools/benchmarks/scripts/string-storage.ts measure",
+  );
 });
 
 test("affected Fresco conformance keeps NAPI compilation, strict lints and consumer checks daily", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml"));
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "pr-js-checks.yml"));
   const job = workflow.jobs["pr-js-package-conformance"];
   const build = workflowStep(job, "Check Fresco native declarations and consumer types");
   const lint = workflowStep(job, "Lint Fresco NAPI call sites and test corpus");
@@ -154,7 +172,7 @@ test("affected Fresco conformance keeps NAPI compilation, strict lints and consu
 });
 
 test("fresco JS lane checks, builds, and tests the package on all three platforms", () => {
-  const workflow = readRepoFile(".github", "workflows", "fresco.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "fresco.yml");
   const parsed = parse(workflow) as { jobs?: Record<string, WorkflowJob> };
   const job = workflowJob(parsed, "fresco-js");
   const setup = workflowUsesStep(job, "voidzero-dev/setup-vp@");
@@ -174,7 +192,7 @@ test("fresco JS lane checks, builds, and tests the package on all three platform
 });
 
 test("fresco Rust lane tests vize_fresco with per-platform toolchain and caches", () => {
-  const workflow = readRepoFile(".github", "workflows", "fresco.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "fresco.yml");
   const parsed = parse(workflow) as { jobs?: Record<string, WorkflowJob> };
   const job = workflowJob(parsed, "fresco-rust");
 

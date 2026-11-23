@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+[[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]
+[[ "$RELEASE_TAG" == "v$RELEASE_VERSION" ]]
+[[ "$(git rev-parse HEAD)" == "$RELEASE_SHA" ]]

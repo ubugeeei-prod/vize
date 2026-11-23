@@ -1,0 +1,46 @@
+const originalHandler = require.extensions[".node"];
+let getterCalls = 0;
+require.extensions[".node"] = (module, filename) => {
+  originalHandler(module, filename);
+  const original = module.exports;
+  module.exports = Object.freeze({
+    body: original.body,
+    getNativeBuildToken: () => {
+      getterCalls++;
+      return original.getNativeBuildToken();
+    },
+  });
+};
+process.report.getReport = () => {
+  throw Error("loader must not request a process-wide report");
+};
+const binding = requireWithBindingIdentity(localRequire, binary);
+const identity = getBindingIdentity(binding);
+assert.equal(binding.body, oldBody);
+assert.equal(identity.kind, "native");
+assert.equal(
+  identity.token,
+  crypto.createHash("sha256").update(oldBody).digest("hex").slice(0, 32),
+);
+assert.equal(Object.isFrozen(identity), true);
+assert.equal(getterCalls, 1);
+const stat = fs.statSync(binary);
+fs.writeFileSync(binary, newBody);
+fs.utimesSync(binary, stat.atime, stat.mtime);
+assert.equal(requireWithBindingIdentity(localRequire, binary), binding);
+assert.equal(getBindingIdentity(binding), identity);
+assert.equal(binding.body, oldBody);
+assert.equal(getterCalls, 1, "the actual image identity must stay immutable");
+const fresh = require("node:child_process").spawnSync(
+  process.execPath,
+  [@@CHILD_PROGRAM@@, helper, binary],
+  { encoding: "utf8" },
+);
+assert.ifError(fresh.error);
+assert.equal(fresh.status, 0, fresh.stderr);
+const successor = JSON.parse(fresh.stdout);
+assert.equal(
+  successor.token,
+  crypto.createHash("sha256").update(newBody).digest("hex").slice(0, 32),
+);
+assert.notEqual(successor.token, identity.token);

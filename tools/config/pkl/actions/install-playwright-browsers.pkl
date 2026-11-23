@@ -1,0 +1,26 @@
+name = "Install Playwright browsers"
+description = "Install Chromium from a workspace's Playwright after stabilizing apt for its OS dependencies"
+
+inputs {
+  workspace {
+    description = "Installed workspace package that owns the Playwright dependency"
+    required = false
+    ["default"] = "./playground"
+  }
+}
+
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Stabilize Ubuntu package archive"
+      uses = "./.github/actions/setup-ubuntu-archive"
+    }
+    new Dynamic {
+      name = "Install Playwright browsers"
+      shell = "bash"
+      env { PLAYWRIGHT_WORKSPACE = "${{ inputs.workspace }}" }
+      run = "vize-ci-apt-retry node tools/support/github/install-playwright-browsers.ts"
+    }
+  }
+}

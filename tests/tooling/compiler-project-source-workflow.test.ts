@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -25,7 +27,7 @@ type Step = {
   "continue-on-error"?: boolean;
 };
 type Workflow = { jobs: Record<string, { steps: Step[]; needs?: string[] }> };
-const workflow = parse(fs.readFileSync(path.join(root, workflowPath), "utf8")) as Workflow;
+const workflow = parse(readAutomationPrograms(path.join(root, workflowPath))) as Workflow;
 const steps = workflow.jobs["pr-js-package-conformance"]!.steps;
 const required = (name: string): Step => {
   const step = steps.find((entry) => entry.name === name);
@@ -66,7 +68,7 @@ test("failed or cancelled source project execution retains raw receipts in the e
   assert.equal(upload["continue-on-error"], undefined);
   assert.ok(steps.indexOf(upload) > steps.indexOf(required(proofName)));
   const source = parse(
-    fs.readFileSync(path.join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
+    readAutomationPrograms(path.join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
   ) as Workflow;
   assert.ok(source.jobs["source-report"]!.needs?.includes("pr-js-packages"));
 });
@@ -103,7 +105,7 @@ test("the actual workflow command keeps the driver failure and rejects ambiguous
     fs.writeFileSync(path.join(native, "source.node"), "controlled source image");
     fs.writeFileSync(
       path.join(bin, "node"),
-      '#!/bin/bash\nprintf "%s\\n" "$@" > "$MOCK_ARGS"\nprintf "controlled failure\\n" > "$3"\nexit 23\n',
+      readToolingProgram("commands/compiler-project-source-workflow/node.sh"),
       { mode: 0o755 },
     );
     const args = path.join(directory, "args.txt");

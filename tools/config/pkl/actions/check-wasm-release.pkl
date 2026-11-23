@@ -1,0 +1,40 @@
+import "../Actions.pkl" as ci
+
+name = "Check the WASM release build"
+description = "Type-check the exact @vizejs/wasm release crate configuration on its own warm disk."
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      uses = ci.setupNode
+      with {
+        `node-version-file` = "package.json"
+        `package-manager-cache` = false
+      }
+    }
+    new Dynamic {
+      uses = ci.setupRust
+      with {
+        toolchain = "1.100.0"
+        targets = "wasm32-unknown-unknown"
+      }
+    }
+    new Dynamic {
+      uses = "./.github/actions/setup-rust-sticky-cache"
+      with {
+        key = "wasm-check"
+        `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+      }
+    }
+    new Dynamic {
+      name = "Check the release WASM crate without the native feature"
+      shell = "bash"
+      run = "node tools/support/tasks/build-vize-wasm-package.ts --check"
+    }
+    new Dynamic {
+      name = "Test Canon through a consumer without native test dependencies"
+      shell = "bash"
+      run = ci.actionScript("test-canon-through-a-consumer-without-native-test-dependencies.sh")
+    }
+  }
+}

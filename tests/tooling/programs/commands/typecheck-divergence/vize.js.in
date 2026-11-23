@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+import fs from "node:fs";
+if (process.argv.includes("--version")) {
+  console.log("vize 0.0.0-test");
+  process.exit(0);
+}
+const baselineDiagnostics = new Map([["src/App.vue", @@BASELINE_DIAGNOSTICS@@]]);
+import { listVueFiles, mutationDiagnostic } from @@DIAGNOSTICS_MODULE@@;
+const files = listVueFiles("src").sort();
+const entries = files.map((sourcePath) => {
+  const source = fs.readFileSync(sourcePath, "utf8");
+  const diagnostics = [...(baselineDiagnostics.get(sourcePath) ?? [])];
+  const mutation = mutationDiagnostic(source, @@MUTATION_MODE@@, "vize", sourcePath);
+  if (mutation != null) diagnostics.push(mutation);
+  return { file: sourcePath, diagnostics };
+});
+const report = {
+  errorCount: entries
+    .flatMap((entry) => entry.diagnostics)
+    .filter((entry) => entry.startsWith("error:")).length,
+  warningCount: entries
+    .flatMap((entry) => entry.diagnostics)
+    .filter((entry) => entry.startsWith("warning:")).length,
+  fileCount: entries.length,
+  files: entries,
+};
+process.stdout.write(JSON.stringify(report));
+process.exit(report.errorCount > 0 ? 1 : 0);

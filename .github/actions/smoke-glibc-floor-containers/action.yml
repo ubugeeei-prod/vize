@@ -32,16 +32,7 @@ runs:
       if: inputs.cli == '' && inputs.platform == 'linux-x64-gnu'
       shell: bash
       env: { PLATFORM: "${{ inputs.platform }}" }
-      run: |
-        set -euo pipefail
-        archive="$RUNNER_TEMP/node-v24.22.3-linux-x64-glibc-217.tar.xz"
-        curl --fail --silent --show-error --location --retry 5 --retry-all-errors --output "$archive" \
-          https://unofficial-builds.nodejs.org/download/release/v24.22.3/node-v24.22.3-linux-x64-glibc-217.tar.xz
-        echo "f15f516e7a451982730cdc6fdb7928205f5b2935deba70e6543705f04847c911  $archive" | sha256sum --check --strict
-        tar -xJf "$archive" -C "$RUNNER_TEMP"
-        node tools/commands/release/npm/smoke-glibc-floor-containers.ts \
-          --platform "$PLATFORM" --mode binding --node-dir "$RUNNER_TEMP/node-v24.22.3-linux-x64-glibc-217" \
-          centos:7@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4
+      run: . "$GITHUB_ACTION_PATH/scripts/load-the-binding-on-centos-7-glibc-2-17.sh"
     - name: Run the release CLI on glibc 2.17, 2.28 and 2.34
       if: inputs.cli != ''
       shell: bash

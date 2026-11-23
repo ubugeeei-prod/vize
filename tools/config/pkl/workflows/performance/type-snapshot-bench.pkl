@@ -1,0 +1,241 @@
+import "../../Actions.pkl" as ci
+
+name = "Benchmark - Type source snapshots"
+
+on {
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Exact ancestor baseline commit for the paired comparison"
+        type = "string"
+        required = true
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "type-snapshot-${{ github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env {
+  CARGO_TERM_COLOR = "always"
+  CARGO_INCREMENTAL = "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  HEAD_SHA = "${{ github.sha }}"
+}
+
+jobs {
+  `paired-snapshot` {
+    name = "Type source snapshot parity and paired analysis"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/head/.github/scripts/workflows/type-snapshot-bench"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "head"
+          ref = "${{ github.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Select the exact ancestor baseline"
+        env { REQUESTED_BASE = "${{ inputs.base_sha }}" }
+        run = ci.workflowScript("select-the-exact-ancestor-baseline.sh")
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "base"
+          ref = "${{ env.BASE_SHA }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"  // stable
+        with { toolchain = "stable" }
+      }
+      ci.wild()
+      // The cache action's nested local action resolves from the workspace root,
+      // and this job checks the repository out under head/.
+      new Dynamic {
+        name = "Expose the nested target action at the workspace root"
+        run = ci.workflowScript("expose-the-nested-target-action-at-the-workspace-root.sh")
+      }
+      new Dynamic {
+        uses = "./head/.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "type-snapshot-head"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+          `target-path` = "head/target"
+          `secondary-key` = "type-snapshot-base"
+          `secondary-target-path` = "base/target"
+          `secondary-cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "head/package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Verify scoped types, overlays, root edits and concurrent consumers"
+        `working-directory` = "head"
+        run = ci.workflowScript("verify-scoped-types-overlays-root-edits-and-concurrent-consumers.sh")
+      }
+      new Dynamic {
+        name = "Build identical public type-world probes at exact base and head"
+        run = ci.workflowScript("build-identical-public-type-world-probes-at-exact-base-and-head.sh")
+      }
+      new Dynamic {
+        name = "Compare complete module facts and nine alternating measurement pairs"
+        run = ci.workflowScript("compare-complete-module-facts-and-nine-alternating-measurement-pairs.sh")
+      }
+      new Dynamic {
+        name = "Upload input corpus, complete fact signatures and raw timings"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "type-snapshot-bench"
+          path = """
+          type-snapshot-bench.json
+          type-snapshot-bench.json.samples/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  `paired-cli` {
+    name = "Type source snapshot actual CLI parity and paired timings"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 40
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/head/.github/scripts/workflows/type-snapshot-bench"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "head"
+          ref = "${{ github.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Select the exact ancestor baseline for the full CLI comparison"
+        env { REQUESTED_BASE = "${{ inputs.base_sha }}" }
+        run = ci.workflowScript("select-the-exact-ancestor-baseline-for-the-full-cli-comparison.sh")
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "base"
+          ref = "${{ env.BASE_SHA }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"  // stable
+        with { toolchain = "stable" }
+      }
+      ci.wild()
+      // The cache action's nested local action resolves from the workspace root,
+      // and this job checks the repository out under head/.
+      new Dynamic {
+        name = "Expose the nested target action at the workspace root"
+        run = ci.workflowScript("expose-the-nested-target-action-at-the-workspace-root.sh")
+      }
+      new Dynamic {
+        uses = "./head/.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "type-snapshot-cli-head"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+          `target-path` = "head/target"
+          `secondary-key` = "type-snapshot-cli-base"
+          `secondary-target-path` = "base/target"
+          `secondary-cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "head/package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Check timing protocol, diagnostic normalization and input fingerprints"
+        `working-directory` = "head"
+        run = "node tools/benchmarks/scripts/type-snapshot-cli-paired.mjs --self-test"
+      }
+      new Dynamic {
+        name = "Install the shared head Vue and native TypeScript dependencies"
+        `working-directory` = "head"
+        run = "vp install --frozen-lockfile --prefer-offline"
+      }
+      new Dynamic {
+        name = "Verify batch source snapshot integration and frozen prop metadata"
+        `working-directory` = "head"
+        env { VIZE_TEST_REQUIRE_TSGO = "1" }
+        run = ci.workflowScript("verify-batch-source-snapshot-integration-and-frozen-prop-metadata.sh")
+      }
+      new Dynamic {
+        name = "Preserve native alias selection and existing suffix laws"
+        `working-directory` = "head"
+        env { VIZE_TEST_REQUIRE_TSGO = "1" }
+        run = ci.workflowScript("preserve-native-alias-selection-and-existing-suffix-laws.sh")
+      }
+      new Dynamic {
+        name = "Build exact base and head CLIs with identical ci-opt settings"
+        run = ci.workflowScript("build-exact-base-and-head-clis-with-identical-ci-opt-settings.sh")
+      }
+      new Dynamic {
+        name = "Qualify exact source alias diagnostics against stock TypeScript and native Corsa"
+        run = ci.workflowScript("qualify-exact-source-alias-diagnostics-against-stock-typescript-and-nati.sh")
+      }
+      new Dynamic {
+        name = "Gate the pinned corpora and compare max/1T with nine alternating pairs"
+        env { RUNNER_LABEL = ci.linux }
+        run = ci.workflowScript("gate-the-pinned-corpora-and-compare-max-1t-with-nine-alternating-pairs.sh")
+      }
+      new Dynamic {
+        name = "Upload CLI inputs, every process report, profiles and provenance"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "type-snapshot-cli-bench"
+          path = """
+          type-snapshot-cli-bench.json
+          type-snapshot-cli-bench.json.md
+          type-snapshot-cli-bench.json.samples/provenance.json
+          type-snapshot-cli-bench.json.samples/failure.json
+          type-snapshot-cli-bench.json.samples/runs.ndjson
+          type-snapshot-cli-bench.json.samples/inputs/
+          type-snapshot-cli-bench.json.samples/raw/
+          type-snapshot-cli-bench.json.samples/profiles/
+          canon-path-alias-before-after.json
+          canon-path-alias-before-after.json.samples/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

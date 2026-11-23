@@ -1,3 +1,4 @@
+import { beforeClassificationPrograms } from "./language-project-workflow-programs.ts";
 import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
 import { historicalDemandedSfcSource } from "./language-project-demanded-sfc-20261105.ts";
@@ -133,7 +134,8 @@ function historicalCurrentPluginSource(read: ReadFile, path: string, current: Bu
 }
 
 /** Authenticate complete current sources before replaying the frozen validation chain. */
-export function historicalCurrentLanguageProjectSources(read: ReadFile): ReadFile {
+export function historicalCurrentLanguageProjectSources(rawRead: ReadFile): ReadFile {
+  const read = beforeClassificationPrograms(rawRead);
   let custody: Record | undefined;
   return (side, path) => {
     const body = historicalDemandedSfcSource(

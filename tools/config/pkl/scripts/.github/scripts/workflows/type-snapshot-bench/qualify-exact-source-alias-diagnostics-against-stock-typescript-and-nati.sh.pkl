@@ -1,0 +1,12 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  node head/tools/benchmarks/scripts/canon-alias-native.mjs \
+    "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \
+    "$GITHUB_WORKSPACE/head/target/ci-opt/vize" \
+    "$GITHUB_WORKSPACE/canon-path-alias-before-after.json"
+  """#
+}

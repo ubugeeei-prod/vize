@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "check": "vp exec node ./check-configs.ts",
-    "build:deps": "vp run --workspace-root build:native && sh -c 'cd ../../npm/linter/oxlint && vp pack'",
+    "build:deps": "node ./scripts/package-tasks.cjs build:deps",
     "prelint": "vp run build:deps",
     "prelint:clean": "vp run build:deps",
     "prelint:short-help": "vp run build:deps",

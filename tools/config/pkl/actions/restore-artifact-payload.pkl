@@ -1,0 +1,46 @@
+import "../Actions.pkl" as ci
+
+name = "Restore complete artifact payload"
+description = "Restore and verify every independent file from the measured envelope"
+inputs {
+  artifact_id {
+    description = "Authenticated original artifact identity"
+    required = true
+  }
+  artifact_source_sha {
+    description = "Authenticated original source identity"
+    required = true
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      uses = ci.setupNode
+      with {
+        `node-version-file` = "package.json"
+        `package-manager-cache` = false
+      }
+    }
+    new Dynamic {
+      name = "Download the complete experimental envelope into a fresh consumer"
+      uses = ci.downloadArtifact
+      with {
+        name = "artifact-payload-envelope-${{ github.sha }}-${{ github.run_attempt }}"
+        path = "${{ runner.temp }}/payload-envelope"
+      }
+    }
+    new Dynamic {
+      name = "Restore and verify every independent file, mode and complete inventory"
+      shell = "bash"
+      env {
+        PAYLOAD_ARTIFACT_ID = "${{ inputs.artifact_id }}"
+        PAYLOAD_SOURCE_SHA = "${{ inputs.artifact_source_sha }}"
+      }
+      run = """
+      /usr/bin/time -v -o "$RUNNER_TEMP/payload-restore-resources.txt" node tools/support/compat/github/artifact-payload.ts restore "$RUNNER_TEMP/payload-envelope" "$RUNNER_TEMP/payload-restored" --source-sha "$PAYLOAD_SOURCE_SHA" --driver-sha "$GITHUB_SHA" --artifact-id "$PAYLOAD_ARTIFACT_ID" --report "$RUNNER_TEMP/payload-restore.json"
+
+      """
+    }
+  }
+}

@@ -3,6 +3,8 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { mock, test } from "node:test";
+
+import { toolingProgram } from "./support/program-path.ts";
 import {
   beginProcessObservation,
   finishProcessObservation,
@@ -167,8 +169,8 @@ test("early command failure still makes one terminal attempt and keeps its origi
   );
   try {
     const calls = path.join(output, "calls.txt");
-    const program = `require('node:fs').appendFileSync(process.argv[1], 'once'); process.exit(23);`;
-    assert.equal(await main(["--", process.execPath, "-e", program, calls], "linux"), 23);
+    const program = toolingProgram("process/record-once.js");
+    assert.equal(await main(["--", process.execPath, program, "23", calls], "linux"), 23);
     assert.equal(fs.readFileSync(calls, "utf8"), "once");
     assert.equal(phases.filter((phase) => phase === "terminal").length, 1);
     assert.equal(phases.at(-1), "terminal");

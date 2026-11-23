@@ -1,0 +1,66 @@
+import "../Actions.pkl" as ci
+
+name = "Native JS setup runtime"
+description = "Check source-bound native SFC modules and preserve real Vue renders"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Prepare the pinned plugin isolation runtime"
+      `if` = "${{ !cancelled() }}"
+      shell = "bash"
+      run = "vp exec node tools/support/compat/davinci/plugin-sandbox-image.ts"
+    }
+    new Dynamic {
+      name = "Test native JS setup modules and real Vue runtime"
+      shell = "bash"
+      env {
+        VIZE_NATIVE_SFC_SETUP_CAPTURE = "${{ runner.temp }}/native-sfc-js-setup-capture.json"
+        VIZE_NATIVE_SFC_SETUP_RUNTIME_CAPTURE = "${{ runner.temp }}/native-sfc-js-setup-runtime.json"
+        VIZE_NATIVE_SFC_STRICT_SETUP_CAPTURE = "${{ runner.temp }}/native-sfc-strict-setup-capture.json"
+        VIZE_NATIVE_SFC_STRICT_SETUP_REFUSAL_CAPTURE = "${{ runner.temp }}/native-sfc-strict-setup-refusals.json"
+        VIZE_NATIVE_SFC_CONST_SETUP_CAPTURE = "${{ runner.temp }}/native-sfc-const-setup-capture.json"
+        VIZE_NATIVE_SFC_TS_SETUP_CAPTURE = "${{ runner.temp }}/native-sfc-ts-setup-capture.json"
+        VIZE_NATIVE_SFC_TS_ANNOTATION_SETUP_CAPTURE = "${{ runner.temp }}/native-sfc-ts-annotation-setup-capture.json"
+        VIZE_NATIVE_SFC_TS_ANNOTATION_SETUP_RUNTIME_CAPTURE = "${{ runner.temp }}/native-sfc-ts-annotation-setup-runtime.json"
+        VIZE_NATIVE_SFC_TS_SETUP_RUNTIME_CAPTURE = "${{ runner.temp }}/native-sfc-ts-setup-runtime.json"
+        VIZE_NATIVE_SFC_CONST_SETUP_RUNTIME_CAPTURE = "${{ runner.temp }}/native-sfc-const-setup-runtime.json"
+        VIZE_NATIVE_SFC_ORDINARY_EMPTY_CAPTURE = "${{ runner.temp }}/native-sfc-ordinary-empty-capture.json"
+        VIZE_NATIVE_SFC_ORDINARY_EMPTY_RUNTIME_CAPTURE = "${{ runner.temp }}/native-sfc-ordinary-empty-runtime.json"
+      }
+      run = ci.actionScript("test-native-js-setup-modules-and-real-vue-runtime.sh")
+    }
+    new Dynamic {
+      name = "Upload native JS setup module and runtime captures"
+      uses = ci.uploadArtifact
+      with {
+        name = "native-js-setup-${{ github.sha }}-${{ github.run_attempt }}"
+        path = """
+        ${{ runner.temp }}/native-sfc-js-setup-capture.json
+        ${{ runner.temp }}/native-sfc-js-setup-runtime.json
+        ${{ runner.temp }}/native-sfc-const-setup-capture.json
+        ${{ runner.temp }}/native-sfc-const-setup-runtime.json
+        ${{ runner.temp }}/native-sfc-ts-setup-capture.json
+        ${{ runner.temp }}/native-sfc-ts-setup-runtime.json
+        ${{ runner.temp }}/native-sfc-ts-annotation-setup-capture.json
+        ${{ runner.temp }}/native-sfc-ts-annotation-setup-runtime.json
+        ${{ runner.temp }}/native-sfc-strict-setup-capture.json
+        ${{ runner.temp }}/native-sfc-strict-setup-refusals.json
+        ${{ runner.temp }}/native-sfc-ordinary-empty-capture.json
+        ${{ runner.temp }}/native-sfc-ordinary-empty-runtime.json
+
+        """
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+    new Dynamic {
+      name = "Capture whole original selected SFC components and runtime"
+      uses = "./.github/actions/test-native-selected-sfc-dom"
+    }
+    new Dynamic {
+      name = "Capture original block-local handler components and runtime"
+      uses = "./.github/actions/test-native-handler-local-sfc-dom"
+    }
+  }
+}

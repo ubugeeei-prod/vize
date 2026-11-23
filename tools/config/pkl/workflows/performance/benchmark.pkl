@@ -1,0 +1,69 @@
+import "../../Actions.pkl" as ci
+
+name = "Benchmark - Source comparison"
+
+on {
+  schedule = new Listing {
+    new Dynamic { cron = "29 5 * * 2" }
+  }
+  // Dispatch records its head SHA from --ref, so validation rejects mismatches.
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Full lowercase 40-character base commit SHA"
+        required = true
+        type = "string"
+      }
+      head_sha {
+        description = "Full lowercase 40-character head SHA; --ref must be a branch or tag at this commit"
+        required = true
+        type = "string"
+      }
+      patina_project_batch {
+        description = "Measure the frozen 1210-file type-aware project batch in deterministic shards"
+        required = false
+        ["default"] = false
+        type = "boolean"
+      }
+      patina_plain_type_packets {
+        description = "Replay complete conditional native type packets after all benchmark observations"
+        required = false
+        ["default"] = false
+        type = "boolean"
+      }
+      check_diagnostic_messages {
+        description = "Compare complete checker diagnostics on fresh uncached source builds"
+        required = false
+        ["default"] = false
+        type = "boolean"
+      }
+    }
+  }
+}
+
+`run-name` = "Benchmark ${{ github.event_name == 'schedule' && format('long baseline...{0}', github.sha) || github.event_name == 'workflow_dispatch' && format('{0}...{1}', inputs.base_sha, inputs.head_sha) || format('PR #{0}', github.event.pull_request.number) }}"
+
+concurrency {
+  group = "benchmark-${{ github.event_name == 'schedule' && 'long-baseline' || github.event_name == 'workflow_dispatch' && format('dispatch-{0}-{1}', inputs.base_sha, inputs.head_sha) || github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  BENCHMARK_BASE_SHA = "${{ github.event_name == 'schedule' && 'cea92c7994b4b84c1e42ed74c023b17c0c54090d' || github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}"
+  BENCHMARK_HEAD_SHA = "${{ github.event_name == 'schedule' && github.sha || github.event_name == 'workflow_dispatch' && inputs.head_sha || github.event.pull_request.head.sha }}"
+  // Keep the fastest lane above the runner's noise floor (#1411).
+  VIZE_BENCH_FILE_COUNT = 1000
+  VIZE_BENCH_RUNS = 10
+  VIZE_BENCH_WARMUPS = 2
+  VIZE_BENCH_REGRESSION_THRESHOLD_PERCENT = 5
+  VIZE_BENCH_BUILD_PROFILE_KEY = "ci-opt-release-thin-lto-cgu16"
+}
+
+jobs {
+  `check-diagnostic-messages` = import("../../parts/benchmark/check-diagnostic-messages.pkl")
+  `pr-benchmark` = import("../../parts/benchmark/pr-benchmark.pkl")
+  `pr-benchmark-budget` = import("../../parts/benchmark/pr-benchmark-budget.pkl")
+  `pr-benchmark-comment` = import("../../parts/benchmark/pr-benchmark-comment.pkl")
+}

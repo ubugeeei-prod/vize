@@ -1,8 +1,7 @@
+import { readAutomationPrograms } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
-
-import { readRepoFile } from "../support/github-workflows.ts";
 
 type Step = {
   env?: Record<string, string>;
@@ -18,10 +17,10 @@ type Job = {
   steps?: Step[];
 };
 
-const release = parse(readRepoFile(".github", "workflows", "release.yml")) as {
+const release = parse(readAutomationPrograms(".github", "workflows", "release.yml")) as {
   jobs: Record<string, Job>;
 };
-const verify = parse(readRepoFile(".github", "workflows", "release-verify.yml")) as {
+const verify = parse(readAutomationPrograms(".github", "workflows", "release-verify.yml")) as {
   jobs: Record<string, Job>;
 };
 

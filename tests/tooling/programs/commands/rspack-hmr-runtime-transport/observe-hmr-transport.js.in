@@ -1,0 +1,13 @@
+import { writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import path from "node:path";
+const observed = { runtime: process.env.VIZE_HMR_RUNTIME ?? null, server: null, error: null };
+try {
+  observed.server = createRequire(
+    path.resolve(process.env.VIZE_HMR_RUNTIME ?? ".", "package.json"),
+  ).resolve("@rspack/dev-server");
+} catch (error) {
+  observed.error = error.code;
+  process.exitCode = 1;
+}
+writeFileSync(@@OUTPUT@@, JSON.stringify(observed));

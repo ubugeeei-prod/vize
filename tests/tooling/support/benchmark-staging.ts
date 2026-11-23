@@ -4,6 +4,14 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
+function expandPath(path: string): string[] {
+  const choice = /\{([^{}]+)\}/u.exec(path);
+  if (!choice) return [path];
+  return choice[1]!
+    .split(",")
+    .flatMap((alternative) => expandPath(path.replace(choice[0], alternative)));
+}
+
 export function stagedSnapshotFiles(run: string, files: string[]): string[] {
   const commands = run
     .replace(/\\\r?\n/g, "")
@@ -22,7 +30,10 @@ export function stagedSnapshotFiles(run: string, files: string[]): string[] {
       mkdirSync(dirname(join(root, file)), { recursive: true });
       writeFileSync(join(root, file), "benchmark fixture\n");
     }
-    command("bash", ["--noprofile", "--norc", "-c", commands[0]]);
+    const paths = commands[0]!.trim().split(/\s+/u).slice(2);
+    for (const path of paths)
+      assert.match(path, /^[\w.,/{}-]+$/u, "expected literal staging paths");
+    command("git", ["add", "--", ...paths.flatMap(expandPath)]);
     return command("git", ["ls-files", "--cached", "-z"]).split("\0").filter(Boolean).sort();
   } finally {
     rmSync(root, { recursive: true, force: true });

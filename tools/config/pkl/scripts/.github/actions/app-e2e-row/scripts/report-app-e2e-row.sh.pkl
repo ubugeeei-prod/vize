@@ -1,0 +1,13 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  echo "App E2E row $ROW_ID: $ROW_OUTCOME" >> "$GITHUB_STEP_SUMMARY"
+  if [[ "$ROW_OUTCOME" != "success" ]]; then
+    echo "::error title=App E2E row failed::$ROW_ID failed; inspect its unique artifact"
+    exit 1
+  fi
+  """#
+}

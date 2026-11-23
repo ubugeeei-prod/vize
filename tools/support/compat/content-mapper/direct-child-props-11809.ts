@@ -167,8 +167,11 @@ export function main(args = process.argv.slice(2)) {
     const runtime = run(
       node.path,
       [
-        "-p",
-        "JSON.stringify({version:process.version,platform:process.platform,arch:process.arch,execPath:process.execPath})",
+        fileURLToPath(new URL("../../node-runtime-identity.cjs", import.meta.url)),
+        "version",
+        "platform",
+        "arch",
+        "execPath",
       ],
       repository,
       path.join(output, "consumer-node"),

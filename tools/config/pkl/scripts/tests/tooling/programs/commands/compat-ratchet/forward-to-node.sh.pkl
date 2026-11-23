@@ -1,0 +1,10 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  exec node "$@"
+  # cmd-shim-target=@@ENTRY@@
+  """#
+}

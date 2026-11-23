@@ -1,8 +1,9 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import { hostedOrBlacksmith, workflowJobBody } from "./support/github-workflows.ts";
 
 type ParsedWorkflow = {
   jobs?: Record<
@@ -33,7 +34,7 @@ function workflowStepBody(job: string, stepName: string): string {
 }
 
 test("benchmark workflow comments from trusted code after a read-only benchmark run", () => {
-  const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "benchmark.yml");
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
   const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
   const commentJob = workflowJobBody(workflow, "pr-benchmark-comment");
@@ -105,7 +106,7 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
 });
 
 test("benchmark dispatch validates exact SHA evidence and runs the existing budget", () => {
-  const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "benchmark.yml");
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
   const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
   const commentJob = workflowJobBody(workflow, "pr-benchmark-comment");
@@ -165,7 +166,7 @@ test("benchmark dispatch validates exact SHA evidence and runs the existing budg
 });
 
 test("benchmark schedule gates long-term drift against a fixed commit", () => {
-  const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "benchmark.yml");
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
   const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
   const validateStep = workflowStepBody(benchmarkJob, "Validate benchmark SHAs");
@@ -238,7 +239,7 @@ test("benchmark schedule gates long-term drift against a fixed commit", () => {
 });
 
 test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard", () => {
-  const workflow = readRepoFile(".github", "workflows", "criterion-bench.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "criterion-bench.yml");
   const abJob = workflowJobBody(workflow, "criterion-ab");
   const guardJob = workflowJobBody(workflow, "dialect-guard");
 

@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 /**
  * Fresh-project release smoke (#3956).
  *
@@ -101,6 +102,7 @@ export function packedFileSpec(tarball, pathApi = path) {
 }
 
 export function packedRedirects(context, manager, shape) {
+  /** @type {Record<string, string>} */
   const redirects = {};
   for (const [name, tarball] of context.packed) {
     // Yarn resolves foreign-platform optional dependencies before filtering
@@ -132,29 +134,7 @@ export function assertExpectedNativeBinding(
 
   const output = runCommand(
     process.execPath,
-    [
-      "-e",
-      [
-        'const assert = require("node:assert/strict");',
-        'const { createRequire } = require("node:module");',
-        "const expectedPackage = process.argv[1];",
-        'const fromVize = createRequire(require.resolve("vize"));',
-        'const native = fromVize("@vizejs/native");',
-        'const fromNative = createRequire(fromVize.resolve("@vizejs/native"));',
-        "const selected = fromNative(expectedPackage);",
-        'assert.strictEqual(native, selected, expectedPackage + " was installed but not loaded");',
-        "const token = native.getNativeBuildToken();",
-        'assert.match(token, /^[0-9a-f]{32}$/u, "loaded native image has no build token");',
-        'assert.equal(selected.getNativeBuildToken(), token, "loaded native build token differs");',
-        "console.log(JSON.stringify({",
-        '  schema: "vize.loadedNativeBinding",',
-        "  version: 1,",
-        "  package: expectedPackage,",
-        "  token,",
-        "}));",
-      ].join("\n"),
-      expectedPackage,
-    ],
+    [fileURLToPath(new URL("./smoke-loaded-native-package.cjs", import.meta.url)), expectedPackage],
     { cwd: projectRoot, env: projectEnv() },
   ).trim();
   const evidence = JSON.parse(output);

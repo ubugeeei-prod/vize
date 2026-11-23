@@ -7,6 +7,7 @@
   stdenv,
 }:
 let
+  renderScript = import ./render-script.nix;
   inherit (lib.importTOML (root + /Cargo.toml)) workspace;
   inherit (workspace.package) version license;
 
@@ -93,12 +94,10 @@ let
   cargoArtifacts = craneLib.buildDepsOnly (
     commonArgs
     // {
-      extraDummyScript = ''
-        rm -rf "$out/upstream/forks/oxc_parser" "$out/upstream/forks/oxc_parser_compat"
-        cp -R ${patchedParser} "$out/upstream/forks/oxc_parser"
-        cp -R ${patchedParserCompat} "$out/upstream/forks/oxc_parser_compat"
-        chmod -R +w "$out/upstream/forks/oxc_parser" "$out/upstream/forks/oxc_parser_compat"
-      '';
+      extraDummyScript = renderScript ./scripts/restore-parser-sources.sh {
+        PARSER = "${patchedParser}";
+        PARSER_COMPAT = "${patchedParserCompat}";
+      };
     }
   );
 in

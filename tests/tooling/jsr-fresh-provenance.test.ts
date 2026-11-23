@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { createServer, type Server } from "node:http";
 import { test } from "node:test";
 
+import { toolingProgram } from "./support/program-path.ts";
+
 import {
   decodeJwtPayload,
   exitCodeForPublish,
@@ -39,33 +41,6 @@ const hash = `sha256-${"ab".repeat(32)}`;
 const otherHash = `sha256-${"cd".repeat(32)}`;
 const issuer = "https://token.actions.githubusercontent.com";
 const versionPath = "/api/scopes/vizejs/packages/vize/versions/0.471.0";
-
-const childSource = `
-const audience = process.env.PERMISSION_AUDIENCE;
-const versionPath = process.env.VERSION_PATH;
-const registry = process.env.JSR_URL.replace(/\\/$/, "");
-const oidcUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL + "&audience=" + encodeURIComponent(audience);
-const minted = await fetch(oidcUrl, {
-  headers: { authorization: "Bearer " + process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN },
-});
-if (!minted.ok) throw new Error("oidc " + minted.status);
-const { value } = await minted.json();
-const authorization = "githuboidc " + value;
-const upload = await fetch(registry + versionPath + "?config=/jsr.json", {
-  method: "POST",
-  headers: { authorization, "content-type": "application/gzip" },
-  body: "tarball",
-});
-await upload.arrayBuffer();
-if (!upload.ok) throw new Error("upload " + upload.status);
-const provenance = await fetch(registry + versionPath + "/provenance", {
-  method: "POST",
-  headers: { authorization, "content-type": "application/json" },
-  body: JSON.stringify({ bundle: { mediaType: "application/vnd.dev.sigstore.bundle+json" } }),
-});
-await provenance.arrayBuffer();
-console.log("provenance-status=" + provenance.status);
-`;
 
 function audienceFor(binding: PermissionBinding) {
   return JSON.stringify({
@@ -195,7 +170,7 @@ async function runScenario({
   const registryUrl = await listen(registry);
   try {
     const result = await publishWithFreshProvenance({
-      command: [process.execPath, "--input-type=module", "-e", childSource],
+      command: [process.execPath, toolingProgram("release/submit-jsr-provenance.js")],
       env: {
         ...process.env,
         ACTIONS_ID_TOKEN_REQUEST_URL: oidcUrl,

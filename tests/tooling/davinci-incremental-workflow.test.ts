@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 // P5-9 / P5-1a: the incrementality workflow keeps its shape — TS-42 runs on
 // every matching main/davinci push, over the corpus shard, with the seeded
 // stale-cache defect proven caught; TS-43 runs on a Linux and a macOS lane.
@@ -23,7 +24,7 @@ type Workflow = {
 };
 
 const workflow = parseYaml(
-  fs.readFileSync(path.join(repoRoot, ".github/workflows/davinci-incremental.yml"), "utf8"),
+  readAutomationPrograms(path.join(repoRoot, ".github/workflows/davinci-incremental.yml")),
 ) as Workflow;
 
 const shard = ["splitpanes", "layoutit-grid", "cssgridgenerator"];

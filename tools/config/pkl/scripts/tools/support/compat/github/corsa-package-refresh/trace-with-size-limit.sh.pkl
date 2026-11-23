@@ -1,0 +1,10 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  ulimit -f 524288
+  exec "$@"
+  """#
+}

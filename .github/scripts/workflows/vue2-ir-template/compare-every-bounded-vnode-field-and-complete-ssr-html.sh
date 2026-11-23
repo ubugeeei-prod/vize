@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+node --test tests/tooling/native-vue2-ir-template.test.mjs tests/tooling/native-vue2-ir-lexical.test.mjs 2>&1 | tee target/vize-tests/vue2-ir/runtime.log

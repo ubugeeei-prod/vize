@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -87,13 +88,14 @@ void test("uncached native build execution preserves complete output and nonzero
     for (const exitStatus of [0, 1]) {
       fs.writeFileSync(
         path.join(directory, "probe.mjs"),
-        `
-import fs from "node:fs";
-fs.appendFileSync("invocations.txt", "${exitStatus}\\n");
-await new Promise((resolve) => process.stdout.write(Buffer.from(${JSON.stringify(stdout.toString())}), resolve));
-await new Promise((resolve) => process.stderr.write(Buffer.from(${JSON.stringify(stderr.toString())}), resolve));
-process.exitCode = ${exitStatus};
-`,
+        readToolingProgram(
+          "commands/vite-plus-native-build-backpressure/relay-build-output.js.in",
+          {
+            EXIT_STATUS: exitStatus,
+            STDOUT: JSON.stringify(stdout.toString()),
+            STDERR: JSON.stringify(stderr.toString()),
+          },
+        ),
       );
       const [actualOut, actualErr] = await consumeUnderBackpressure(directory, exitStatus);
       // The pinned interleaved reporter adds only this genuine task-start line

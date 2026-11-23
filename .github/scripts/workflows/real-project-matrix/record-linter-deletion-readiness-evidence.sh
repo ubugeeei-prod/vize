@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+node tests/differential/linter-deletion-recorder.ts "$FIXTURE_REPORT_DIR" && test -s "$FIXTURE_REPORT_DIR/linter-deletion-readiness.json"

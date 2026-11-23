@@ -28,7 +28,7 @@ fn refusing_session_with_successful_cli(root: &Path) -> (CorsaExecutor, std::pat
     // Every ordinary CLI invocation would succeed. Both session transports
     // close immediately, so any accidental CLI fallback masks the real failure.
     let script = cstr!(
-        "#!/usr/bin/env node\nconst fs = require('node:fs');\nfs.appendFileSync({}, JSON.stringify(process.argv.slice(2)) + '\\n');\nif (process.argv.includes('--api')) process.stdout.write('api unavailable');\n",
+        include_str!("../../../../tests/programs/record-syntax-route.cjs.in"),
         serde_json::to_string(&transcript).unwrap()
     );
     fs::write(&executable, script.as_bytes()).unwrap();

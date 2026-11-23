@@ -1,0 +1,103 @@
+import "../../Actions.pkl" as ci
+
+name = "Provide type assertion whole packets"
+`run-name` = "Provide type assertion complete packets @ ${{ github.event.pull_request.head.sha || github.sha }}"
+on {
+  workflow_dispatch = null
+  pull_request {
+    types = List("opened", "synchronize", "reopened")
+    paths = new Listing {
+      ".github/workflows/provide-type-assertion.yml"
+      ".github/scripts/workflows/provide-type-assertion/**"
+      ".github/scripts/workflows/shared/**"
+      "crates/vize/tests/provide_type_assertion_cli.rs"
+      "crates/vize/tests/provide_type_assertion_expected.json"
+      "crates/vize_croquis/src/script_parser/extract/provide.rs"
+      "crates/vize_croquis_cf/src/rules/cross_file_reactivity/provide_helpers.rs"
+      "crates/vize_croquis_cf/src/rules/cross_file_reactivity/collect.rs"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "provide-type-assertion-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_INCREMENTAL = "0"
+  CARGO_BUILD_JOBS = "12"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `whole-before` {
+    name = "Native and actual CLI complete packets (${{ matrix.role }})"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        role = List("baseline", "source")
+      }
+    }
+    env {
+
+      ROLE = "${{ matrix.role }}"
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("provide-type-assertion")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ matrix.role == 'baseline' && '98ff4d1ca1ccc2c6ac9ca869177913b90c0da6a1' || github.event.pull_request.head.sha || github.sha }}"
+          `persist-credentials` = false
+          `fetch-depth` = 0
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "provide-type-assertion"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Preserve exact product source identity"
+        env { VIZE_PROVIDE_ASSERTION_ARTIFACTS = "${{ runner.temp }}/provide-assertion-packets" }
+        run = ci.workflowScript("preserve-exact-product-source-identity.sh")
+      }
+      new Dynamic {
+        name = "Verify source producer metadata and all classifier controls"
+        `if` = "${{ matrix.role == 'source' }}"
+        run = ci.workflowScript("verify-source-producer-metadata-and-all-classifier-controls.sh")
+      }
+      new Dynamic {
+        name = "Capture whole original and positive negative destructuring controls"
+        env { VIZE_PROVIDE_ASSERTION_ARTIFACTS = "${{ runner.temp }}/provide-assertion-packets" }
+        run = ci.workflowScript("capture-whole-original-and-positive-negative-destructuring-controls.sh")
+      }
+      new Dynamic {
+        name = "Require all twenty seven executed complete packet controls"
+        env { PACKETS = "${{ runner.temp }}/provide-assertion-packets" }
+        run = ci.workflowScript("require-all-twenty-seven-executed-complete-packet-controls.sh")
+      }
+      new Dynamic {
+        name = "Preserve actual executable identity"
+        `if` = "${{ always() }}"
+        run = ci.workflowScript("preserve-actual-executable-identity.sh")
+      }
+      new Dynamic {
+        name = "Preserve every raw report and complete native result"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "provide-assertion-whole-${{ matrix.role }}-${{ github.sha }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/provide-assertion-packets"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

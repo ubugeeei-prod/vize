@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export CARGO_TARGET_DIR="$RUNNER_TEMP/partition-weight-target"
+[[ ! -e "$CARGO_TARGET_DIR" ]]
+cargo build --locked --profile ci-opt -p vize --bin vize --message-format=json > "$RUNNER_TEMP/partition-weight/cargo.jsonl"
+node "$VIZE_CI_FILES/build-one-uninstrumented-source-cli-in-a-fresh-target.cjs"

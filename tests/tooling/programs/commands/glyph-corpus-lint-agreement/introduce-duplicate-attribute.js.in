@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+import fs from "node:fs";
+import { spawnSync } from "node:child_process";
+const real = @@COMMAND@@;
+const args = process.argv.slice(2);
+const run = spawnSync(real[0], [...real.slice(1), ...args], {
+  stdio: ["ignore", "inherit", "inherit"],
+});
+if (args.includes("--write")) {
+  const source = fs.readFileSync("src/App.vue", "utf8");
+  fs.writeFileSync("src/App.vue", source.replace('<p class="a">', '<p class="a" class="b">'));
+}
+process.exit(run.status ?? 1);

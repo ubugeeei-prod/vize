@@ -1,0 +1,45 @@
+#!/usr/bin/env node
+import { appendFileSync } from "node:fs";
+const logPath = LOG_PATH;
+const finishes = FINISHES;
+const retain = (packet) => appendFileSync(logPath, JSON.stringify(packet) + "\n");
+function write(packet) {
+  const payload = Buffer.from(JSON.stringify(packet));
+  process.stdout.write(Buffer.concat([Buffer.from(`Content-Length: ${payload.length}\r\n\r\n`), payload]));
+}
+function log(message) {
+  retain({ log: message });
+  write({ jsonrpc: "2.0", method: "window/logMessage", params: { type: 3, message } });
+}
+let pending = Buffer.alloc(0);
+for await (const bytes of process.stdin) {
+  pending = Buffer.concat([pending, bytes]);
+  for (;;) {
+    const boundary = pending.indexOf("\r\n\r\n");
+    if (boundary < 0) break;
+    const length = Number(/content-length: *(\d+)/i.exec(pending.subarray(0, boundary).toString())[1]);
+    if (pending.length < boundary + 4 + length) break;
+    const message = JSON.parse(pending.subarray(boundary + 4, boundary + 4 + length).toString());
+    pending = pending.subarray(boundary + 4 + length);
+    if (message.method === undefined) {
+      if (message.id === "watch-1") {
+        retain({ answered: message.id });
+        log("Updated watches in 1ms");
+      }
+      continue;
+    }
+    retain({ method: message.method });
+    if (message.method === "initialize") {
+      // Like a request whose snapshot adoption is logged before its response.
+      log("file watching: using LSP client-side watching (client supports dynamic registration)");
+      log("Adopted snapshot 1 (parent 0) as current session snapshot (replacing 0)");
+      write({ jsonrpc: "2.0", id: message.id, result: { capabilities: {} } });
+    } else if (message.method === "initialized" && finishes) {
+      write({ jsonrpc: "2.0", id: "watch-1", method: "client/registerCapability", params: { registrations: [] } });
+    } else if (message.method === "shutdown") {
+      write({ jsonrpc: "2.0", id: message.id, result: null });
+    } else if (message.method === "exit") {
+      process.exit(0);
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -347,12 +348,12 @@ test("new UI library fixtures are wired into Vize-wide check and lint lanes", ()
 
   for (const id of ["primevue", "vuetify", "naive-ui"]) {
     assert.match(
-      pkg.scripts["test:check"],
+      packageScripts("tests", pkg.scripts)["test:check"],
       new RegExp(`snapshots/check/${id}\\.ts`),
       `${id} should run in the app check lane`,
     );
     assert.match(
-      pkg.scripts["test:lint"],
+      packageScripts("tests", pkg.scripts)["test:lint"],
       new RegExp(`snapshots/lint/${id}\\.ts`),
       `${id} should run in the app lint lane`,
     );
@@ -362,6 +363,9 @@ test("new UI library fixtures are wired into Vize-wide check and lint lanes", ()
 test("Directus fixture is wired into Vize-wide check and lint lanes", () => {
   const pkg = readTestsPackage();
 
-  assert.match(pkg.scripts["test:check"], /snapshots\/check\/directus\.ts/);
-  assert.match(pkg.scripts["test:lint"], /snapshots\/lint\/directus\.ts/);
+  assert.match(
+    packageScripts("tests", pkg.scripts)["test:check"],
+    /snapshots\/check\/directus\.ts/,
+  );
+  assert.match(packageScripts("tests", pkg.scripts)["test:lint"], /snapshots\/lint\/directus\.ts/);
 });

@@ -3,17 +3,18 @@ on:
   pull_request:
     paths:
       - ".github/workflows/template-expression-queries.yml"
+      - ".github/scripts/workflows/template-expression-queries/**"
       - "crates/vize_maestro/Cargo.toml"
       - "crates/vize_maestro/src/ide/context.rs"
-      - "crates/vize_maestro/src/source_project/navigation.rs"
-      - "crates/vize_maestro/src/source_project/navigation/**"
-      - "crates/vize_maestro/src/ide/rename/canonical/event_rename*"
-      - "crates/vize_maestro/src/ide/rename/canonical/event_rename/**"
-      - "crates/vize_maestro/src/virtual_code/generator/template_products.rs"
-      - "davinci/vize_l1_to_l2/src/dialect/vue3/native/pattern.rs"
-      - "davinci/vize_l2/src/artifact/builder/binding*"
-      - "davinci/vize_l2/src/artifact/builder/binding/**"
-      - "crates/vize_croquis/src/drawer/template/components.rs"
+      - crates/vize_maestro/src/source_project/navigation.rs
+      - crates/vize_maestro/src/source_project/navigation/**
+      - crates/vize_maestro/src/ide/rename/canonical/event_rename*
+      - crates/vize_maestro/src/ide/rename/canonical/event_rename/**
+      - crates/vize_maestro/src/virtual_code/generator/template_products.rs
+      - davinci/vize_l1_to_l2/src/dialect/vue3/native/pattern.rs
+      - davinci/vize_l2/src/artifact/builder/binding*
+      - davinci/vize_l2/src/artifact/builder/binding/**
+      - crates/vize_croquis/src/drawer/template/components.rs
       - "crates/vize_maestro/src/ide/definition/component_import.rs"
       - "crates/vize_maestro/src/ide/diagnostics/component_props*"
       - "crates/vize_maestro/src/ide/diagnostics/component_props/**"
@@ -34,15 +35,15 @@ on:
       - "davinci/vize_l1_to_l2/src/native_file*"
       - "davinci/vize_l1_to_l2/src/native_file/**"
       - "davinci/vize_l1_to_l2/tests/expression_queries/**"
-      - "davinci/vize_l1/Cargo.toml"
-      - "davinci/vize_l1/src/embed/**"
-      - "upstream/forks/oxc_parser/Cargo.toml"
-      - "upstream/forks/oxc_parser/src/lib.rs"
-      - "upstream/forks/oxc_parser/src/js/statement.rs"
-      - "upstream/forks/oxc_parser/src/js/expression*"
-      - "upstream/forks/oxc_parser/src/js/expression/**"
-      - "upstream/forks/oxc_parser/src/embedding*"
-      - "upstream/forks/oxc_parser/src/embedding/**"
+      - davinci/vize_l1/Cargo.toml
+      - davinci/vize_l1/src/embed/**
+      - upstream/forks/oxc_parser/Cargo.toml
+      - upstream/forks/oxc_parser/src/lib.rs
+      - upstream/forks/oxc_parser/src/js/statement.rs
+      - upstream/forks/oxc_parser/src/js/expression*
+      - upstream/forks/oxc_parser/src/js/expression/**
+      - upstream/forks/oxc_parser/src/embedding*
+      - upstream/forks/oxc_parser/src/embedding/**
       - "davinci/vize_l1/src/container/vue/descriptor*"
       - "davinci/vize_l1/src/container/vue/descriptor/**"
       - "davinci/vize_l1_to_l2/src/vue_file*"
@@ -79,6 +80,19 @@ jobs:
       CARGO_INCREMENTAL: "0"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/template-expression-queries/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -86,18 +100,7 @@ jobs:
       - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Compare original reference packets and allocation windows
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt -p vize_l1_to_l2 --features template-operand-queries,setup-component-imports,vize_l2/position-index)
-          cargo clippy --locked --profile ci-opt -p vize_l2 -p vize_l1_to_l2 --features vize_l1_to_l2/setup-component-imports --lib --no-deps -- -D warnings
-          cargo test "${flags[@]}" --test expression_queries --test expression_query_alloc
-          export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/expression-query-files"
-          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
-          cargo test "${flags[@]}" --test expression_queries -- corpus::original_vue_files --exact --ignored --nocapture
-          cargo test "${flags[@]}" --test expression_queries -- profile::paired_reference_queries --exact --ignored --nocapture
-          cargo test "${flags[@]}" --test expression_queries -- operand::paired_operand_products --exact --ignored --nocapture --test-threads=1
-          cargo test "${flags[@]}" --test expression_queries -- component_imports::original_vue_files --exact --ignored --nocapture --test-threads=1
-          cargo test "${flags[@]}" --test expression_queries -- component_imports::paired_queries --exact --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/compare-original-reference-packets-and-allocation-windows.sh"
   setup-render-products:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
@@ -106,6 +109,19 @@ jobs:
       CARGO_INCREMENTAL: "0"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/template-expression-queries/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -113,16 +129,7 @@ jobs:
       - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Compare project render sites and ordered dependency targets
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt -p vize_croquis_cf --features setup-render-products --lib)
-          cargo clippy "${flags[@]}" --no-deps -- -D warnings
-          cargo test "${flags[@]}" facts::
-          export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/setup-render-callers"
-          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
-          for suite in corpus::original_project_results profile::paired_render_products profile::original_render_performance profile::registration::registration_and_first_read; do
-            cargo test "${flags[@]}" "facts::render_tree::setup::tests::$suite" -- --exact --ignored --nocapture --test-threads=1
-          done
+        run: . "${{ env.VIZE_CI_FILES }}/compare-project-render-sites-and-ordered-dependency-targets.sh"
 
   component-prop-diagnostics:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -133,6 +140,19 @@ jobs:
       RUST_MIN_STACK: "16777216"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/template-expression-queries/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -140,21 +160,7 @@ jobs:
       - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Compare original component props and editor diagnostics
-        run: |
-          set -euo pipefail
-          export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/original-prop-inputs"
-          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
-          flags=(--locked --profile ci-opt)
-          native=(-p vize_l1_to_l2 --features authored-bind-shorthand,component-prop-queries,template-operand-queries,vize_l2/expression-queries,vize_l2/position-index)
-          editor=(-p vize_maestro --features experimental-component-props,micro-profiling --lib)
-          cargo clippy "${flags[@]}" "${native[@]}" --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
-          cargo test "${flags[@]}" -p vize_l2 --features component-prop-queries --lib original_operand_checks
-          cargo test "${flags[@]}" "${native[@]}" --test expression_queries shorthand:: -- --include-ignored --nocapture --test-threads=1
-          cargo test "${flags[@]}" "${native[@]}" --test expression_query_alloc
-          cargo test "${flags[@]}" "${native[@]}" --test expression_queries component_props:: -- --include-ignored --nocapture --test-threads=1
-          cargo test "${flags[@]}" "${editor[@]}" component_props::original:: -- --include-ignored --nocapture --test-threads=1
-
+        run: . "${{ env.VIZE_CI_FILES }}/compare-original-component-props-and-editor-diagnostics.sh"
   component-event-edits:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -162,31 +168,34 @@ jobs:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
       RUST_MIN_STACK: "16777216"
-      RUSTUP_TOOLCHAIN: "1.100.0"
+      RUSTUP_TOOLCHAIN: 1.100.0
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/template-expression-queries/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
-        with: { toolchain: "1.100.0", components: clippy }
+        with:
+          toolchain: 1.100.0
+          components: clippy
       - uses: ./.github/actions/setup-wild-http-recovery
-        with: { wild-version: "0.9.0" }
+        with:
+          wild-version: 0.9.0
       - name: Compare every original listener, semantic edit and paired resident request
-        run: |
-          set -euo pipefail
-          export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/original-listener-inputs"
-          export VIZE_REQUIRE_REPOSITORY_LISTENERS=1
-          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
-          flags=(--locked --profile ci-opt)
-          native=(-p vize_l1_to_l2 --features component-listener-queries,template-operand-queries,vize_l2/position-index)
-          editor=(-p vize_maestro --features experimental-component-listeners,experimental-template-operand-products,micro-profiling --lib)
-          cargo clippy "${flags[@]}" -p vize_l2 --features component-listener-queries,template-operand-queries --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" "${native[@]}" --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
-          cargo test "${flags[@]}" "${native[@]}" --test expression_queries component_listeners:: -- --include-ignored --nocapture --test-threads=1
-          cargo test "${flags[@]}" "${editor[@]}" event_rename:: -- --include-ignored --nocapture --test-threads=1
-          cargo test "${flags[@]}" "${editor[@]}" named_dom_event_expressions_keep_their_checker_links_and_editor_exports
-          cargo test "${flags[@]}" "${editor[@]}" original_event_documents -- --ignored --nocapture --test-threads=1
-
+        run: . "${{ env.VIZE_CI_FILES }}/compare-every-original-listener-semantic-edit-and-paired-resident-request.sh"
   lexical-script-products:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -194,31 +203,42 @@ jobs:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
       RUST_MIN_STACK: "16777216"
-      RUSTUP_TOOLCHAIN: "1.100.0"
+      RUSTUP_TOOLCHAIN: 1.100.0
+      VIZE_LEXICAL_REFERENCE: .vize-lexical-originals
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/template-expression-queries/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Check out the original lexical navigation inputs
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: 54832d863ba3353e758b537934a93baf90e5897c
+          path: ${{ env.VIZE_LEXICAL_REFERENCE }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /tools/config/vite-plus/tasks/testbox.ts
+            /tools/support/compat/davinci/lib/lsp-profile-launch.ts
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
-        with: { toolchain: "1.100.0", components: clippy }
+        with:
+          toolchain: 1.100.0
+          components: clippy
       - uses: ./.github/actions/setup-wild-http-recovery
-        with: { wild-version: "0.9.0" }
+        with:
+          wild-version: 0.9.0
       - name: Compare original OXC symbols, component listeners and public editor requests
-        run: |
-          set -euo pipefail
-          export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/vue-files"
-          export VIZE_LEXICAL_MODULE_MANIFEST="$RUNNER_TEMP/standalone-modules"
-          export VIZE_REQUIRE_REPOSITORY_ARROWS=1
-          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
-          git ls-files -z -- '*.js' '*.mjs' '*.ts' '*.mts' ':!*.d.ts' ':!*.d.mts' > "$VIZE_LEXICAL_MODULE_MANIFEST"
-          flags=(--locked --profile ci-opt)
-          native=(-p vize_l1_to_l2 --features lexical-arrow-initializers,template-operand-queries,vize_l2/position-index)
-          editor=(-p vize_maestro --features experimental-lexical-arrow-queries,micro-profiling --lib)
-          cargo test "${flags[@]}" -p vize_oxc_parser --features terminal-embedding --lib embedding::terminal::tests::
-          cargo test "${flags[@]}" -p vize_l1 --features retained-expressions --lib handoff::sequence::
-          cargo clippy "${flags[@]}" -p vize_l1 --features retained-expressions --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" -p vize_l2 --features lexical-arrow-initializers --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" "${native[@]}" --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
-          cargo test "${flags[@]}" "${native[@]}" --test expression_queries lexical_arrows:: -- --include-ignored --nocapture --test-threads=1
-          cargo test "${flags[@]}" "${native[@]}" --test expression_query_alloc
-          cargo test "${flags[@]}" "${editor[@]}" tests::lexical:: -- --include-ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/compare-original-oxc-symbols-component-listeners-and-public-editor-requests.sh"

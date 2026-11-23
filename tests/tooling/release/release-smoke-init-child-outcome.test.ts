@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -37,7 +38,7 @@ type OutcomeError = Error & { outcome: Outcome };
 
 function childProject(
   t: { after: (fn: () => void) => void },
-  termination: string,
+  termination: number | NodeJS.Signals,
   stdout = STDOUT,
 ) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-init-outcome-"));
@@ -46,14 +47,11 @@ function childProject(
   fs.mkdirSync(path.dirname(bin), { recursive: true });
   fs.writeFileSync(
     bin,
-    [
-      'const fs = require("node:fs");',
-      'fs.writeFileSync("actual-child.json", JSON.stringify({ pid: process.pid, argv: process.argv.slice(2) }));',
-      `fs.writeSync(1, ${JSON.stringify(stdout)});`,
-      `fs.writeSync(2, ${JSON.stringify(STDERR)});`,
-      termination,
-      "",
-    ].join("\n"),
+    readToolingProgram("commands/release-smoke-init-child-outcome/emit-init-outcome.cjs.in", {
+      STDOUT: JSON.stringify(stdout),
+      STDERR: JSON.stringify(STDERR),
+      TERMINATION: JSON.stringify(termination),
+    }),
   );
   return root;
 }
@@ -68,7 +66,7 @@ function assertRawChild(root: string, outcome: Outcome, stdout = STDOUT) {
 }
 
 void test("complete authored diagnostics require a normal exit one and retain the actual child", (t) => {
-  const root = childProject(t, "process.exit(1);");
+  const root = childProject(t, 1);
   const result = checkReport(root);
   assertRawChild(root, result.outcome);
   assert.equal(result.status, 1);
@@ -80,7 +78,7 @@ void test("complete authored diagnostics require a normal exit one and retain th
 });
 
 void test("complete identical diagnostics cannot hide an actual fatal child signal", (t) => {
-  const root = childProject(t, 'process.kill(process.pid, "SIGTERM");');
+  const root = childProject(t, "SIGTERM");
   assert.throws(
     () => checkReport(root),
     (rawError: unknown) => {
@@ -98,7 +96,7 @@ void test("complete identical diagnostics cannot hide an actual fatal child sign
 });
 
 void test("complete identical diagnostics cannot replace exit one with another failure status", (t) => {
-  const root = childProject(t, "process.exit(7);");
+  const root = childProject(t, 7);
   assert.throws(
     () => checkReport(root),
     (rawError: unknown) => {
@@ -116,7 +114,7 @@ void test("complete identical diagnostics cannot replace exit one with another f
 
 void test("a normal malformed JSON child retains untrimmed output beside the parse error", (t) => {
   const stdout = "  {malformed}\r\n";
-  const root = childProject(t, "process.exit(1);", stdout);
+  const root = childProject(t, 1, stdout);
   assert.throws(
     () => checkReport(root),
     (rawError: unknown) => {

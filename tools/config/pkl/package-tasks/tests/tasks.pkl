@@ -1,0 +1,112 @@
+amends "../../PackageTasks.pkl"
+
+local previewApps = List("elk", "misskey", "npmx", "vuefes")
+local devApps = List("elk", "misskey", "npmx", "nuxt-ui", "vuefes")
+
+local function preview(app: String): Command = (module.run("node", List("app/preview/\(app).ts"))) {
+  environment { ["RUN_BUILD_TESTS"] = "1" }
+}
+
+local function browserTest(app: String, worktree: String, flags: List<String>): Command =
+  (module.run("playwright", List("test", "--config", "app/playwright.config.ts") + flags + List("app/dev/\(app).spec.ts"))) {
+    defaults { ["VIZE_TEST_WORKTREE_ID"] = worktree }
+  }
+
+tasks {
+  ["test:dev:ci"] {
+    for (app in devApps) { browserTest(app, "ci-dev", List()) }
+  }
+  ["test:preview"] {
+    for (app in previewApps) { preview(app) }
+  }
+  for (app in previewApps) {
+    ["test:preview:\(app)"] { preview(app) }
+  }
+  ["test:check"] {
+    module.run("node", List(
+      "--test",
+      "--test-concurrency=1",
+      "snapshots/check/ant-design-vue.ts",
+      "snapshots/check/directus.ts",
+      "snapshots/check/element-plus.ts",
+      "snapshots/check/elk.ts",
+      "snapshots/check/frontend-phpcon.ts",
+      "snapshots/check/hoppscotch.ts",
+      "snapshots/check/misskey.ts",
+      "snapshots/check/naive-ui.ts",
+      "snapshots/check/npmx.ts",
+      "snapshots/check/nuxt-ui.ts",
+      "snapshots/check/openvue.ts",
+      "snapshots/check/primevue.ts",
+      "snapshots/check/reka-ui.ts",
+      "snapshots/check/voicevox.ts",
+      "snapshots/check/vue-vben-admin.ts",
+      "snapshots/check/vuefes.ts",
+      "snapshots/check/vuetify.ts",
+      "snapshots/check/zz-intentional-errors-realworld.ts",
+    ))
+    module.run("node", List(
+      "--test",
+      "--test-concurrency=1",
+      "snapshots/inspect/npmx.ts",
+      "snapshots/inspect/elk.ts",
+      "snapshots/inspect/vuefes.ts",
+    ))
+  }
+  ["test:lint"] {
+    (module.run("node", List(
+      "--test",
+      "--test-concurrency=1",
+      "snapshots/lint/ant-design-vue.ts",
+      "snapshots/lint/directus.ts",
+      "snapshots/lint/element-plus.ts",
+      "snapshots/lint/elk.ts",
+      "snapshots/lint/hoppscotch.ts",
+      "snapshots/lint/misskey.ts",
+      "snapshots/lint/naive-ui.ts",
+      "snapshots/lint/npmx.ts",
+      "snapshots/lint/nuxt-ui.ts",
+      "snapshots/lint/openvue.ts",
+      "snapshots/lint/primevue.ts",
+      "snapshots/lint/reka-ui.ts",
+      "snapshots/lint/voicevox.ts",
+      "snapshots/lint/vue-vben-admin.ts",
+      "snapshots/lint/vuefes.ts",
+      "snapshots/lint/vuetify.ts",
+    ))) { defaults { ["VIZE_TEST_WORKTREE_ID"] = "lint" } }
+  }
+  ["test:readiness"] {
+    module.run("pnpm", List("test:readiness:check"))
+    module.run("pnpm", List("test:readiness:lint"))
+    module.run("pnpm", List("test:readiness:build"))
+    module.run("pnpm", List("test:readiness:dev"))
+  }
+  ["test:readiness:check"] {
+    (module.run("node", List(
+      "--test",
+      "--test-concurrency=1",
+      "snapshots/check/compiler-macros.ts",
+      "snapshots/check/elk.ts",
+      "snapshots/check/misskey.ts",
+      "snapshots/check/npmx.ts",
+      "snapshots/check/nuxt-ui.ts",
+      "snapshots/check/reka-ui.ts",
+    ))) { defaults { ["VIZE_TEST_WORKTREE_ID"] = "ci-readiness" } }
+  }
+  ["test:readiness:lint"] {
+    (module.run("node", List(
+      "--test",
+      "--test-concurrency=1",
+      "tooling/cli-lint-contract.test.ts",
+      "snapshots/lint/elk.ts",
+      "snapshots/lint/misskey.ts",
+      "snapshots/lint/npmx.ts",
+      "snapshots/lint/nuxt-ui.ts",
+      "snapshots/lint/reka-ui.ts",
+    ))) { defaults { ["VIZE_TEST_WORKTREE_ID"] = "ci-readiness" } }
+  }
+  ["test:readiness:dev"] {
+    browserTest("misskey", "ci-readiness", List())
+    browserTest("nuxt-ui", "ci-readiness", List("--retries=0"))
+  }
+}

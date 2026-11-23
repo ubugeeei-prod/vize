@@ -1,3 +1,4 @@
+import { configuredNodeLauncher } from "../../tools/support/process-launcher.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -16,14 +17,19 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
+
+import { invocationWords } from "../../tools/support/ci/automation-commands.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import { parse } from "yaml";
 
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const workflow = parse(readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"));
+const workflow = parse(
+  readAutomationPrograms(join(root, ".github/workflows/pr-source-checks.yml")),
+);
 const jsChecksPath = "./.github/workflows/pr-js-checks.yml";
-const jsChecks = parse(readFileSync(join(root, jsChecksPath), "utf8"));
+const jsChecks = parse(readAutomationPrograms(join(root, jsChecksPath)));
 const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
 const inputJs = "${{ inputs.run-js }}";
 const selectedGroup = "${{ (inputs.run-js && matrix.group != 'none') }}";
@@ -34,13 +40,16 @@ const evidenceJs = "${{ !cancelled() && inputs.run-js }}";
 const groupCommand =
   'node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"';
 const historyActionPath = "./.github/actions/test-js-packages-with-history";
-const history = parse(readFileSync(join(root, historyActionPath, "action.yml"), "utf8"));
+const history = parse(readAutomationPrograms(join(root, historyActionPath, "action.yml")));
 
-function recordingCli(directory, source = "process.exit(0);") {
+function recordingCli(directory, tsc) {
   const calls = join(directory, "calls.jsonl");
   writeFileSync(
     join(directory, "vp"),
-    `#!${process.execPath}\nimport fs from 'node:fs'; import path from 'node:path'; import {spawnSync} from 'node:child_process'; const args=process.argv.slice(2); fs.appendFileSync(${JSON.stringify(calls)},JSON.stringify({args,cwd:process.cwd()})+'\\n'); ${source}\n`,
+    configuredNodeLauncher(
+      new URL("./programs/workflow/record-js-package-cli.js", import.meta.url),
+      { calls, tsc },
+    ),
     { mode: 0o755 },
   );
   return {
@@ -62,12 +71,20 @@ void test("full partitions validate the actual inventory and retain every origin
       success: () => prior === "success",
     });
   for (const partition of ["all", "builders", "ui", "oxlint", "original-project"]) {
-    const result = spawnSync("/bin/bash", ["-c", validate.run], {
-      cwd: root,
-      env: { ...process.env, VIZE_JS_PARTITION: partition },
-      encoding: "utf8",
-      timeout: 10_000,
-    });
+    const result = spawnSync(
+      "/bin/bash",
+      [automationShellPath(validate.run, "test-js-packages-with-history")],
+      {
+        cwd: root,
+        env: {
+          ...process.env,
+          GITHUB_ACTION_PATH: join(root, historyActionPath),
+          VIZE_JS_PARTITION: partition,
+        },
+        encoding: "utf8",
+        timeout: 10_000,
+      },
+    );
     assert.equal(result.status, 0, result.stderr);
     for (const prior of ["success", "failure", "cancelled", "skipped"]) {
       const selected = [all, group, build, qualify].filter((step) =>
@@ -88,12 +105,20 @@ void test("full partitions validate the actual inventory and retain every origin
     }
   }
   for (const partition of ["", "none", "all; exit 0", "builders,ui", "unknown"]) {
-    const result = spawnSync("/bin/bash", ["-c", validate.run], {
-      cwd: root,
-      env: { ...process.env, VIZE_JS_PARTITION: partition },
-      encoding: "utf8",
-      timeout: 10_000,
-    });
+    const result = spawnSync(
+      "/bin/bash",
+      [automationShellPath(validate.run, "test-js-packages-with-history")],
+      {
+        cwd: root,
+        env: {
+          ...process.env,
+          GITHUB_ACTION_PATH: join(root, historyActionPath),
+          VIZE_JS_PARTITION: partition,
+        },
+        encoding: "utf8",
+        timeout: 10_000,
+      },
+    );
     assert.equal(result.status, 1, result.stderr);
     assert.match(result.stderr, /AssertionError.*unknown full JS partition/);
   }
@@ -214,7 +239,11 @@ void test("PR and merge queue preserve package tests, native declaration, type a
           ]
         : [];
       for (const { command, group } of commands) {
-        const result = spawnSync("/bin/sh", ["-c", command], {
+        const words = invocationWords(command);
+        const [program, ...args] = words
+          ? words.map((word) => word.replaceAll("$VIZE_JS_PACKAGE_GROUP", group ?? ""))
+          : ["/bin/bash", automationShellPath(command, "pr-js-checks")];
+        const result = spawnSync(program, args, {
           cwd: root,
           env: { ...cli.env, ...(group ? { VIZE_JS_PACKAGE_GROUP: group } : {}) },
           encoding: "utf8",
@@ -389,17 +418,7 @@ void test("Fresco checks generate declarations and invoke static TypeScript with
       mkdirSync(dirname(join(packageDir, file)), { recursive: true });
       copyFileSync(join(originalPackage, file), join(packageDir, file));
     }
-    const cli = recordingCli(
-      fixture,
-      `
-if(args[0]==='exec' && args[1]==='napi') {
-  const out=args[args.indexOf('--output-dir')+1]; fs.mkdirSync(out,{recursive:true});
-  for(const name of ['index.js','index.d.ts']) fs.copyFileSync(path.join(process.cwd(),name),path.join(out,name));
-} else if(args[0]==='exec' && args[1]==='tsc') {
-  process.exit(spawnSync(process.execPath,[${JSON.stringify(tsc)},...args.slice(2)],{stdio:'inherit'}).status ?? 1);
-} else { throw new Error('unexpected CLI'); }
-`,
-    );
+    const cli = recordingCli(fixture, tsc);
     const generated = spawnSync(
       process.execPath,
       [

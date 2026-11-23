@@ -1,0 +1,9 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  exit 0
+  """#
+}

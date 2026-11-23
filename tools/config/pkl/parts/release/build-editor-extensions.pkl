@@ -1,0 +1,45 @@
+import "../../Actions.pkl" as ci
+
+name = "Build editor extensions"
+needs = "version"
+`if` = "needs.version.outputs.ref != ''"
+`runs-on` = ci.linux
+`timeout-minutes` = 30
+steps = new Listing {
+  ...ci.stageWorkflowScripts("release")
+  ci.checkoutAt("${{ needs.version.outputs.ref }}")
+  ci.workspaceVp()
+  ci.command("Install JS dependencies", "vp install --workspace-root --frozen-lockfile --prefer-offline")
+  ci.rust("stable")
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      `reuse-target` = "true"
+      `restore-trusted` = "true"
+      key = "release-tools"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  ci.use("./.github/actions/setup-rust-script")
+  new Dynamic {
+    name = "Package editor extensions"
+    run = #". "${{ env.VIZE_CI_FILES }}/package-editor-extensions.sh""#
+  }
+  new Dynamic {
+    uses = ci.uploadArtifact
+    with {
+      name = "editor-extensions"
+      path = """
+      emacs-vize-extension.tar.gz
+      helix-vize-extension.tar.gz
+      editors/vscode/dist/vize.vsix
+      nvim-vize-extension.tar.gz
+      vim-vize-extension.tar.gz
+      zed-vize-extension.tar.gz
+
+      """
+      `if-no-files-found` = "error"
+      `compression-level` = 0
+    }
+  }
+}

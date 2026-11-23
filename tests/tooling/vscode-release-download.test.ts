@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 
 import { isTrustedReleaseDownloadUrl } from "../../editors/vscode/src/release-download.ts";
 
@@ -39,7 +40,7 @@ test("vscode release download source imports without package module warnings", (
   const source = pathToFileURL(path.join(root, "editors/vscode/src/release-download.ts")).href;
   const result = spawnSync(
     process.execPath,
-    ["--input-type=module", "--eval", `await import(${JSON.stringify(source)});`],
+    [toolingProgram("process/import-selected-module.js"), source],
     { cwd: root, encoding: "utf8" },
   );
 
