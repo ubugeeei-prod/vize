@@ -197,3 +197,6 @@ mod tests;
 
 mod declaration;
 pub use declaration::DeclarationStatement;
+
+#[cfg(feature = "literal-assignments")]
+pub mod assignments;

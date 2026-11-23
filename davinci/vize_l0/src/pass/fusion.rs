@@ -194,3 +194,6 @@ impl Pipeline {
             .unwrap_or_default()
     }
 }
+
+#[cfg(feature = "streamed-pass-groups")]
+mod grouped;
