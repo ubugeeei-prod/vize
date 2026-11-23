@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
+  templateLabelRanking,
   retiredToolingLanguage,
   retiredToolingLanguages as languages,
   retiredToolingLedger as ledgerPath,
@@ -92,9 +93,12 @@ function retiringFiles(ledger: Ledger, language: Language, tracked: readonly str
   const prefixes = ledger.permanent
     .filter((entry) => entry.language === language)
     .map((entry) => entry.prefix);
+  const rankingChecked =
+    tracked.includes(templateLabelRanking.kernel) && tracked.includes(templateLabelRanking.harness);
   return tracked
     .filter(
       (file) =>
+        !(file === templateLabelRanking.theorem && rankingChecked) &&
         retiredToolingLanguage(file) === language &&
         !prefixes.some((prefix) => file.startsWith(prefix)),
     )
