@@ -33,6 +33,8 @@ stacker = { workspace = true }
 xxhash-rust = { workspace = true }
 
 [features]
+# Sequential pass-group traversal for explicit compiler and tool pipelines.
+streamed-pass-groups = []
 # Reuse global UTF-16 positions across diagnostic requests.
 diagnostic-positions = []
 # Compose UTF-16 positions across validated source slices.
