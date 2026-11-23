@@ -98,6 +98,17 @@ const archivedFixtureInputs = new Set([
   "tests/tooling/fixtures/setup-wild-original-0bbbfa5d.yml",
 ]);
 
+// The source-recipe observer hashes the complete step bodies from signed revisions.
+const historicalStepBodies = new Set([
+  "tests/_fixtures/tooling/native-current-recipe-8231.sh",
+  "tests/_fixtures/tooling/native-current-recipe-8253.sh",
+  "tests/_fixtures/tooling/native-current-recipe-ignore-3984.sh",
+  "tests/_fixtures/tooling/native-current-recipe-integration-binary.sh",
+  "tests/_fixtures/tooling/native-current-recipe-jsx-slot-8419.sh",
+  "tests/_fixtures/tooling/native-current-recipe-passive-lsp-3952.sh",
+  "tests/_fixtures/tooling/native-current-recipe-selected-alias-3984.sh",
+]);
+
 const vendoredDirectories = [
   "upstream/",
   "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/reference/",
@@ -200,7 +211,7 @@ async function main(): Promise<void> {
     }
     if (kind === "shell") {
       if (!isScript(value)) throw new Error(`Invalid shell script definition for ${target}`);
-      if (!target.startsWith("tests/_fixtures/")) validateShellProgram(target, value.text);
+      if (!historicalStepBodies.has(target)) validateShellProgram(target, value.text);
       if (
         current !== value.text ||
         (process.platform !== "win32" && ((statSync(file).mode & 0o100) !== 0) !== value.executable)

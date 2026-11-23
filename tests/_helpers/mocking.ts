@@ -1,3 +1,4 @@
+import { installMisskeyVisualMocks } from "./browser/misskey.ts";
 import type { Page, Route } from "@playwright/test";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -13,15 +14,6 @@ const MISSKEY_LOCALES_DIRS = [
   path.join(MISSKEY_WORKTREE_INSTANCE_DIR, "vrt-candidate", "misskey"),
   MISSKEY_WORK_DIR,
 ].map((dir) => path.resolve(dir, "built/_frontend_dist_/locales"));
-const MISSKEY_SW_STUB = `
-self.addEventListener("install", (event) => {
-  event.waitUntil(self.skipWaiting());
-});
-self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
-});
-self.addEventListener("message", () => {});
-`;
 const EMPTY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>`;
 const TRANSPARENT_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z/C/HwAFgwJ/lE6nWQAAAABJRU5ErkJggg==",
@@ -441,7 +433,7 @@ async function fulfillMisskeyServiceWorkerRoute(route: Route): Promise<void> {
   await route.fulfill({
     status: 200,
     contentType: "application/javascript",
-    body: MISSKEY_SW_STUB,
+    path: fileURLToPath(new URL("./browser/misskey-service-worker.js", import.meta.url)),
   });
 }
 
@@ -500,88 +492,7 @@ export async function setupMisskeyMocks(page: Page): Promise<void> {
     });
   });
 
-  await page.addInitScript((apiFixtures) => {
-    const _origFetch = window.fetch.bind(window);
-
-    window.fetch = function (input, init) {
-      const url =
-        typeof input === "string"
-          ? new URL(input, window.location.href)
-          : input instanceof URL
-            ? input
-            : new URL(input.url, window.location.href);
-
-      if (!url.pathname.startsWith("/api/")) {
-        return _origFetch(input, init);
-      }
-
-      const endpoint = url.pathname.slice("/api/".length);
-      let body: unknown = {};
-
-      if (Object.prototype.hasOwnProperty.call(apiFixtures, endpoint)) {
-        body = apiFixtures[endpoint as keyof typeof apiFixtures];
-      } else if (endpoint.startsWith("notes/")) {
-        body = [];
-      } else if (endpoint.startsWith("charts/")) {
-        body = {
-          read: [],
-          write: [],
-        };
-      } else if (
-        endpoint.endsWith("/list") ||
-        endpoint.endsWith("/search") ||
-        endpoint.includes("timeline") ||
-        endpoint.includes("notifications") ||
-        endpoint.includes("requests") ||
-        endpoint.includes("following") ||
-        endpoint.includes("followers") ||
-        endpoint.includes("files") ||
-        endpoint.includes("folders") ||
-        endpoint.includes("featured") ||
-        endpoint.includes("owned") ||
-        endpoint.includes("joined") ||
-        endpoint.includes("liked")
-      ) {
-        body = [];
-      }
-
-      return Promise.resolve(
-        new Response(JSON.stringify(body), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
-      );
-    } as typeof window.fetch;
-
-    const serviceWorkerRegistration = {
-      active: {
-        postMessage() {},
-      },
-      unregister: async () => true,
-      update: async () => {},
-      scope: "/",
-    };
-
-    if ("serviceWorker" in navigator) {
-      try {
-        navigator.serviceWorker.register = (async () =>
-          serviceWorkerRegistration) as typeof navigator.serviceWorker.register;
-        navigator.serviceWorker.getRegistrations = (async () => [
-          serviceWorkerRegistration,
-        ]) as typeof navigator.serviceWorker.getRegistrations;
-        Object.defineProperty(navigator.serviceWorker, "controller", {
-          configurable: true,
-          value: serviceWorkerRegistration.active,
-        });
-        Object.defineProperty(navigator.serviceWorker, "ready", {
-          configurable: true,
-          value: Promise.resolve(serviceWorkerRegistration),
-        });
-      } catch {
-        // Network-level sw.js routing still keeps the VRT environment deterministic.
-      }
-    }
-  }, MISSKEY_API_FIXTURES);
+  await page.addInitScript(installMisskeyVisualMocks, MISSKEY_API_FIXTURES);
 }
 
 // --- npmx.dev VRT mocks ---

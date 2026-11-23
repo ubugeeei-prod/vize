@@ -1,3 +1,4 @@
+import { seedLocalStorage } from "../../_helpers/browser/local-storage.ts";
 import { test, expect, type Browser, type Page } from "@playwright/test";
 import type { ChildProcess } from "node:child_process";
 import * as path from "node:path";
@@ -276,20 +277,17 @@ async function compareRoute(browser: Browser, route: VisualRoute): Promise<void>
 async function setupPage(page: Page, route: VisualRoute): Promise<void> {
   await installVisualStabilityHooks(page);
   await setupMisskeyMocks(page);
-  await page.addInitScript(
-    ({ account, signedIn }) => {
-      localStorage.clear();
-      localStorage.setItem("lang", "en-US");
-      localStorage.setItem("lastVersion", "9999.0.0");
-      localStorage.setItem("hidePreferencesRestoreSuggestion", "true");
-      localStorage.setItem("neverShowDonationInfo", "true");
-      localStorage.setItem("modifiedVersionMustProminentlyOfferInAgplV3Section13Read", "true");
-      if (signedIn) {
-        localStorage.setItem("account", JSON.stringify(account));
-      }
+  await page.addInitScript(seedLocalStorage, {
+    clear: true,
+    values: {
+      lang: "en-US",
+      lastVersion: "9999.0.0",
+      hidePreferencesRestoreSuggestion: "true",
+      neverShowDonationInfo: "true",
+      modifiedVersionMustProminentlyOfferInAgplV3Section13Read: "true",
+      ...(route.account === true ? { account: JSON.stringify(MISSKEY_TEST_ACCOUNT) } : {}),
     },
-    { account: MISSKEY_TEST_ACCOUNT, signedIn: route.account === true },
-  );
+  });
 }
 
 async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promise<void> {
