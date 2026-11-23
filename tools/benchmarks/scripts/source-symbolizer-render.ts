@@ -90,8 +90,8 @@ export function createSentinelAdapter(out: string, decoder: string) {
   assert.ok(!existsSync(path));
   const script = sentinelAdapterScript(decoder);
   writeFileSync(path, script, { mode: 0o755 });
-  const python = boundedCommand(join(out, "python-version"), "python3", ["--version"], 3000);
-  assert.equal(python.status, 0);
+  const node = boundedCommand(join(out, "node-version"), process.execPath, ["--version"], 3000);
+  assert.equal(node.status, 0);
   writeFileSync(
     join(out, "adapter.json"),
     JSON.stringify(
@@ -100,7 +100,7 @@ export function createSentinelAdapter(out: string, decoder: string) {
         decoderSha256: digest(decoder),
         wrapper: path,
         wrapperSha256: digest(path),
-        driver: python.stdout.trim(),
+        driver: node.stdout.trim(),
         script,
         inputChange: "standalone comma becomes reserved noncanonical 0xdeadbeefbadc0ffe",
         outputChange: "only the response bound to an injected comma request becomes comma",
@@ -131,19 +131,10 @@ export function probeDecoders(
   );
   assert.equal(dwarf.status, 0);
   assert.ok(dwarf.stdout.includes(".debug_line"), "actual carrier lacks line tables");
-  const quote = (value: string) => "'" + value.replaceAll("'", "'\\''") + "'";
   const nm = boundedCommand(
     join(out, "symbols"),
     "/bin/bash",
-    [
-      "-o",
-      "pipefail",
-      "-c",
-      "nm --defined-only --numeric-sort " +
-        quote(binary) +
-        " | awk " +
-        quote("/ [tT] .*" + witness.symbol + "/ { print; found=1 } END { if (!found) exit 1 }"),
-    ],
+    [join(import.meta.dirname, "source-symbolizer-matching-symbols.sh"), binary, witness.symbol],
     10_000,
   );
   assert.equal(nm.status, 0);

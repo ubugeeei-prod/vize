@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+mkdir -p "$RUNNER_TEMP/ambient-ref-provider" "$RUNNER_TEMP/ambient-ref-evidence"
+npm install --prefix "$RUNNER_TEMP/ambient-ref-provider" --ignore-scripts --no-audit --no-fund --save-exact vue@3.6.0-rc.13 vue-tsc@3.3.13 typescript@6.0.3 @typescript/typescript-linux-x64@7.1.0-beta
+cp "$RUNNER_TEMP/ambient-ref-provider/package-lock.json" "$RUNNER_TEMP/ambient-ref-evidence/provider-lock.json"

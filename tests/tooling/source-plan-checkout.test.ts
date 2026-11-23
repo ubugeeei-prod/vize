@@ -14,9 +14,10 @@ import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parse } from "yaml";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const workflow = parse(readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"));
+const workflow = parse(readAutomationPrograms(".github/workflows/pr-source-checks.yml"));
 const job = workflow.jobs["pr-source-plan"];
 const checkoutInputs = job.steps.find((step: { uses?: string }) =>
   step.uses?.startsWith("actions/checkout@"),

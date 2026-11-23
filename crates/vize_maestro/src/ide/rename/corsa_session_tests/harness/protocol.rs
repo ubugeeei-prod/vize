@@ -152,13 +152,10 @@ pub(in crate::ide) fn traced_corsa_executable(
 /// opaque bridge spawn failure.
 fn assert_shutdown_gate_runtime() -> Result<(), String> {
     let probe = std::process::Command::new("perl")
-        .args([
-            "-MIO::Socket::INET",
-            "-MIO::Select",
-            "-MIPC::Open3",
-            "-e",
-            "1",
-        ])
+        .arg(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/programs/check-session-modules.pl"
+        ))
         .output()
         .map_err(|error| {
             cstr!("editor shutdown gate requires perl with IO::Socket::INET: {error}")

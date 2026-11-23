@@ -1,0 +1,24 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  # The shared target is a build cache, not exact-head evidence. Make the
+  # compiler and this capture newer than cached fingerprints before Cargo
+  # decides whether to relink the integration test.
+  touch crates/vize_atelier_core/src/codegen/element/block.rs \
+    crates/vize_atelier_core/src/codegen/children.rs \
+    crates/vize_atelier_core/src/codegen/emit.rs \
+    crates/vize_atelier_core/src/codegen/slots/detect.rs \
+    crates/vize_atelier_core/src/codegen/slots/generate.rs \
+    crates/vize_atelier_dom/tests/runtime_patch_flags.rs \
+    davinci/vize_l4/src/targets/dom/artifact/fragment.rs \
+    davinci/vize_l4/src/targets/dom/artifact/vnode.rs \
+    davinci/vize_l4/src/targets/dom/artifact/component.rs \
+    davinci/vize_l4/src/targets/dom/artifact/component/children_arg.rs \
+    davinci/vize_l4/src/targets/dom/artifact/slots.rs
+  cargo test -p vize_atelier_dom --profile ci --test integration runtime_patch_flags::
+  NODE_ENV=development vp node --test tests/tooling/runtime-patch-flags.test.ts
+  """#
+}

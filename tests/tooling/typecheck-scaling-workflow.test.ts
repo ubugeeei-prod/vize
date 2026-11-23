@@ -1,11 +1,12 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile } from "./support/github-workflows.ts";
-
 void test("the scaling workflow supports isolated single and same-runner paired measurements", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "typecheck-scaling.yml")) as {
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "typecheck-scaling.yml"),
+  ) as {
     on: { workflow_dispatch: { inputs: Record<string, { default?: string; required?: boolean }> } };
     jobs: Record<
       string,

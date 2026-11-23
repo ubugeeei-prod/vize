@@ -1,0 +1,13 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("vp", List("run", "--workspace-root", "package:vscode-extension"))
+  module.command("vp", List("run", "--workspace-root", "check:zed-extension"))
+  module.command("vp", List("run", "--workspace-root", "package:zed-extension"))
+  module.command("vp", List("run", "--workspace-root", "package:nvim-extension"))
+  module.command("vp", List("run", "--workspace-root", "package:vim-extension"))
+  module.command("vp", List("run", "--workspace-root", "package:helix-extension"))
+  module.command("vp", List("run", "--workspace-root", "package:emacs-extension"))
+}

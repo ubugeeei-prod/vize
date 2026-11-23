@@ -1,0 +1,40 @@
+import "../Actions.pkl" as ci
+
+name = "Restore the same-run source-built CLI and SFC oracle"
+description = "Preserve producer custody and bind a separate immutable consumer attempt."
+inputs {
+  producer {
+    required = true
+    description = "Complete outputs of the successful source CLI producer"
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Validate the exact retained producer outputs"
+      id = "producer"
+      shell = "bash"
+      env { SOURCE_CLI_PRODUCER_OUTPUTS = "${{ inputs.producer }}" }
+      run = "node tools/support/compat/github/source-cli-artifact.ts producer"
+    }
+    new Dynamic {
+      uses = ci.downloadArtifact
+      with {
+        name = "source-cli-${{ github.run_id }}-${{ steps.producer.outputs.producer-attempt }}"
+        path = "${{ runner.temp }}/source-cli"
+        `digest-mismatch` = "error"
+      }
+    }
+    new Dynamic {
+      name = "Validate and install original producer binaries and receipt"
+      shell = "bash"
+      env {
+        SOURCE_CLI_SHA256 = "${{ steps.producer.outputs.sha256 }}"
+        SOURCE_CLI_PRODUCER_ATTEMPT = "${{ steps.producer.outputs.producer-attempt }}"
+        SOURCE_CLI_RECEIPT_SHA256 = "${{ steps.producer.outputs.receipt-sha256 }}"
+      }
+      run = ci.actionScript("validate-and-install-original-producer-binaries-and-receipt.sh")
+    }
+  }
+}

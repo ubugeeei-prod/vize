@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -16,7 +17,9 @@ await test(
     try {
       const server = path.join(root, "server ' $(printf expanded)");
       const profile = path.join(root, "profile ' `printf expanded`.json");
-      fs.writeFileSync(server, "#!/bin/sh\nprintf '%s\\n' \"$@\"\n", { mode: 0o700 });
+      fs.writeFileSync(server, readToolingProgram("commands/lsp-profile-launch/server.sh"), {
+        mode: 0o700,
+      });
       const launch = profiledLauncher(server, root, profile);
       const version = spawnSync(launch, ["--version"], { encoding: "utf8" });
       assert.equal(version.status, 0, version.stderr);

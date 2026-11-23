@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { test } from "node:test";
 import { promisify } from "node:util";
+import { toolingProgram } from "./support/program-path.ts";
 import { retainCapturedWorkerStderr } from "../../npm/ui/scripts/source-quality/lint-sfc.ts";
 
 test("unknown captured stderr stays whole without changing the returned object", async () => {
@@ -102,9 +103,16 @@ for (const control of [
   { id: "split-unicode-over-cap", limit: 2, bytes: [233, 155], tail: [170], failure: true },
 ]) {
   test(`original UTF8 execFile gate remains unchanged: ${control.id}`, async () => {
-    const script = `process.stdout.write("[]"); process.stderr.write(Buffer.from(${JSON.stringify(control.bytes)})); ${control.tail ? `setTimeout(()=>process.stderr.write(Buffer.from(${JSON.stringify(control.tail)})),5);` : ""} setTimeout(()=>{},40);`;
     const launch = () =>
-      promisify(execFile)(process.execPath, ["-e", script], { maxBuffer: control.limit });
+      promisify(execFile)(
+        process.execPath,
+        [
+          toolingProgram("workflow/emit-ui-stderr.js"),
+          JSON.stringify(control.bytes),
+          JSON.stringify(control.tail ?? []),
+        ],
+        { maxBuffer: control.limit },
+      );
     const baseline = await outcome(launch());
     const retained: string[] = [];
     const actual = await outcome(

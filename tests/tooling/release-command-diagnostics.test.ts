@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -93,7 +94,10 @@ test("package metadata failures stop before any registry or publish command", (t
     writeFakeCommand(
       bin,
       name,
-      `require('node:fs').appendFileSync(${JSON.stringify(log)}, '${name}\\n');`,
+      readToolingProgram("commands/release-command-diagnostics/name.js.in", {
+        LOG: JSON.stringify(log),
+        NAME: name,
+      }),
     );
   }
   const env = { PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`, VIZE_REPO_ROOT: root };
@@ -146,20 +150,13 @@ test("Open VSX namespace failures report trimmed diagnostics and stop before pub
     manifest,
     JSON.stringify({ publisher: "ubugeeei", name: "vize", version: "0.57.0" }),
   );
-  writeFakeCommand(bin, "curl", "process.exit(22);");
+  writeFakeCommand(bin, "curl", readToolingProgram("commands/release-command-diagnostics/curl.js"));
   writeFakeCommand(
     bin,
     "vp",
-    `
-    const fs = require('node:fs');
-    const args = process.argv.slice(2);
-    fs.appendFileSync(${JSON.stringify(log)}, args.join(' ') + '\\n');
-    if (args.includes('create-namespace')) {
-      if (process.env.NAMESPACE === 'exists') { console.error('  Namespace ubugeeei ALREADY Exists  '); process.exit(1); }
-      console.log(' out '); console.error('denied\\n'); process.exit(3);
-    }
-    process.exit(4);
-  `,
+    readToolingProgram("commands/release-command-diagnostics/vp.js.in", {
+      LOG: JSON.stringify(log),
+    }),
   );
   const env = {
     PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`,

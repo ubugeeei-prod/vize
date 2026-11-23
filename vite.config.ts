@@ -6,6 +6,7 @@ import { rootBuildTaskPlugin } from "./tools/config/vite-plus/task-helpers.ts";
 
 const localGeneratedIgnorePatterns = [
   ".cache/**",
+  "**/scripts/package-tasks.cjs",
   ".direnv/**",
   "editors/vscode/.vscode-test/**",
   "npm/fresco-native/index.d.ts",

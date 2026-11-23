@@ -1,0 +1,7 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"node tools/support/release/jsr/package.ts matrix >> "$GITHUB_OUTPUT""#
+}

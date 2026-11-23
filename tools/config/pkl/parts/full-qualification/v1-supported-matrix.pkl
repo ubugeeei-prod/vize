@@ -1,0 +1,3 @@
+`if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+uses = "./.github/workflows/v1-supported-matrix.yml"
+with { enforce_complete = true }

@@ -67,13 +67,21 @@ jobs:
       FLOORS: ${{ inputs.floors }}
       CORPORA: ${{ inputs.corpora }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/typecheck-corpus-pair/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Validate inputs
-        run: |
-          set -euo pipefail
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          # One SHA twice is an A/A run of the corpus pair; owned pairs need two builds.
-          [[ "$OWNED_PAIR" != true || "$BASE_SHA" != "$HEAD_SHA" ]]
-          [[ "$RUNS" =~ ^[1-9][0-9]?$ && "$CORPORA" =~ ^[a-z0-9,-]*$ ]]
+        run: . "${{ env.VIZE_CI_FILES }}/validate-inputs.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -87,32 +95,9 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-script
       - name: Check out base and head beside the driver
-        run: |
-          set -euo pipefail
-          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA" "$HEAD_SHA"
-          git worktree add --detach "$RUNNER_TEMP/pair-head" "$HEAD_SHA"
-          if [[ "$BASE_SHA" == "$HEAD_SHA" ]]; then
-            ln -s "$RUNNER_TEMP/pair-head" "$RUNNER_TEMP/pair-base"
-          else
-            git worktree add --detach "$RUNNER_TEMP/pair-base" "$BASE_SHA"
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/check-out-base-and-head-beside-the-driver.sh"
       - name: Hydrate the pinned corpora and install the locked hosts and corpus packages
-        run: |
-          set -euo pipefail
-          git submodule update --init --depth 1 -- tests/_fixtures/_git/misskey tests/_fixtures/_git/n8n tests/_fixtures/_git/nuxt-ui tests/_fixtures/_git/reka-ui
-          npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
-          npm ci --prefix tools/benchmarks/typecheck-hosts-tsrs-0.23 --ignore-scripts --no-audit --no-fund
-          npm ci --prefix tools/benchmarks/typecheck-corpora --ignore-scripts --no-audit --no-fund
-          if [[ "$OWNED_PAIR" == true ]]; then
-            npm ci --prefix tools/benchmarks/nuxt-app --no-audit --no-fund
-          fi
-          # The vue-tsc reference and its TypeScript 6, as the workspace lockfile pins them.
-          vp install --frozen-lockfile --prefer-offline --filter './tools/benchmarks/scripts'
-          if ! /usr/bin/time --version 2>&1 | grep -qi 'GNU time'; then
-            sudo apt-get update -qq
-            sudo apt-get install -y --no-install-recommends time
-          fi
-          /usr/bin/time --version
+        run: . "${{ env.VIZE_CI_FILES }}/hydrate-the-pinned-corpora-and-install-the-locked-hosts-and-corpus-packa.sh"
       - name: Test the pair parsers and the byte probe
         run: node --test tests/tooling/typecheck-corpus-pair.test.ts tests/tooling/typecheck-corpus-pair-corpora.test.ts tests/tooling/typecheck-corpus-pair-cold.test.ts tests/tooling/typecheck-corpus-pair-floors.test.ts tests/tooling/typecheck-owned-pair.test.ts tests/tooling/typecheck-corpus-mutations.test.ts
       - name: Test the opt-in Linux raw runner
@@ -124,60 +109,12 @@ jobs:
         if: inputs.owned_pair
         run: node tools/benchmarks/scripts/typecheck-owned-pair-build.ts "$RUNNER_TEMP/pair-base" "$BASE_SHA" "$RUNNER_TEMP/pair-head" "$HEAD_SHA" "$RUNNER_TEMP/pair-out"
       - name: Build the native binding and the vize package for base and head
-        run: |
-          set -euo pipefail
-          roles=(base head)
-          # An A/A run builds its one SHA once; pair-base links to pair-head.
-          if [[ "$BASE_SHA" == "$HEAD_SHA" ]]; then roles=(head); fi
-          for role in "${roles[@]}"; do
-            (
-              cd "$RUNNER_TEMP/pair-$role"
-              vp install --frozen-lockfile --prefer-offline --filter './npm/cli...' --filter './npm/native...'
-              # Install each rust-toolchain.toml toolchain before the parallel builds race on it.
-              cargo --version
-            )
-          done
-          pids=()
-          for role in "${roles[@]}"; do
-            (
-              cd "$RUNNER_TEMP/pair-$role"
-              if [[ "$OWNED_PAIR" == true ]]; then export CARGO_TARGET_DIR="$PWD/target"; fi
-              vp run --workspace-root build:native > "$RUNNER_TEMP/build-$role.log" 2>&1
-            ) &
-            pids+=("$!")
-          done
-          status=0
-          for pid in "${pids[@]}"; do wait "$pid" || status=1; done
-          for role in "${roles[@]}"; do echo "::group::native build $role"; tail -n 40 "$RUNNER_TEMP/build-$role.log"; echo "::endgroup::"; done
-          [[ "$status" == 0 ]]
-          for role in "${roles[@]}"; do
-            (cd "$RUNNER_TEMP/pair-$role" && vp run --filter './npm/cli' build)
-            git -C "$RUNNER_TEMP/pair-$role" rev-parse HEAD
-          done
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-native-binding-and-the-vize-package-for-base-and-head.sh"
       - name: Measure the corpora
         id: measure
         env:
           VIZE_PAIR_RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
-        run: |
-          set -euo pipefail
-          if [[ "$OWNED_PAIR" == true ]]; then
-            workload_args=()
-            if [[ -n "$OWNED_WORKLOADS" ]]; then workload_args+=(--workloads "$OWNED_WORKLOADS"); fi
-            if [[ -n "$OWNED_LANES" ]]; then workload_args+=(--lanes "$OWNED_LANES"); fi
-            node tools/benchmarks/scripts/typecheck-owned-pair.ts \
-              --base "$RUNNER_TEMP/pair-base" --head "$RUNNER_TEMP/pair-head" \
-              --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA" \
-              --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out" \
-              "${workload_args[@]}"
-            exit
-          fi
-          extra=(--corpora "$CORPORA")
-          if [[ "$BATCH" == true ]]; then extra+=(--batch); fi
-          if [[ "$FLOORS" == true ]]; then extra+=(--floors); fi
-          node tools/benchmarks/scripts/typecheck-corpus-pair.ts \
-            --base "$RUNNER_TEMP/pair-base" --head "$RUNNER_TEMP/pair-head" \
-            --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA" --runs "$RUNS" \
-            --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out" "${extra[@]}"
+        run: . "${{ env.VIZE_CI_FILES }}/measure-the-corpora.sh"
       # Reads the traced probe runs the measure step left behind.
       - name: Attribute check cost to helpers and projection families
         if: always() && !inputs.owned_pair && inputs.attribution
@@ -188,10 +125,7 @@ jobs:
         run: node tools/benchmarks/scripts/typecheck-corpus-mutations-run.ts --base "$RUNNER_TEMP/pair-base" --head "$RUNNER_TEMP/pair-head" --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out" --corpora "$CORPORA"
       - name: Write job summary
         if: always()
-        run: |
-          for report in cold summary projection reply-shape attribution batch-vs-mapper; do
-            if [[ -f "$RUNNER_TEMP/pair-out/$report.md" ]]; then cat "$RUNNER_TEMP/pair-out/$report.md" >> "$GITHUB_STEP_SUMMARY"; fi
-          done
+        run: . "${{ env.VIZE_CI_FILES }}/write-job-summary.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

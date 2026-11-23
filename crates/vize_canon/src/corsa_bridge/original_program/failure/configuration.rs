@@ -29,7 +29,7 @@ fn inherited_option_change_at_real_lsp_startup_refuses_and_reaps_original_checks
         write_executable(
             &wrapper,
             &cstr!(
-                "#!/bin/sh\nif [ \"$1\" = \"--lsp\" ]; then\n echo \"$$\" > {}\n cat {} > {}\nfi\nexec {} \"$@\"\n",
+                include_str!("../../../../tests/programs/replace-selected-config.sh.in"),
                 shell_quote(&pid_path),
                 shell_quote(&changed_file),
                 shell_quote(&base),

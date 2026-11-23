@@ -1,0 +1,21 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA"
+  git worktree add --detach "$RUNNER_TEMP/instance-directive-base" "$BASE_SHA"
+  for source in base head; do
+    source_root="$GITHUB_WORKSPACE"
+    if [[ "$source" == base ]]; then source_root="$RUNNER_TEMP/instance-directive-base"; fi
+    export CARGO_TARGET_DIR="$RUNNER_TEMP/instance-directive-build-$source"
+    test ! -e "$CARGO_TARGET_DIR"
+    mkdir -p "$RUNNER_TEMP/instance-directives/builds/$source"
+    cargo build --locked --profile ci-opt -p vize --bin vize --manifest-path "$source_root/Cargo.toml" --message-format=json > "$RUNNER_TEMP/instance-directives/builds/$source/cargo.jsonl" 2> "$RUNNER_TEMP/instance-directives/builds/$source/cargo.stderr"
+    SOURCE_ROOT="$source_root" SOURCE_ROLE="$source" node "$VIZE_CI_FILES/record-instance-directive-build.ts"
+  done
+  node "$VIZE_CI_FILES/verify-build-pair.ts"
+  """#
+}

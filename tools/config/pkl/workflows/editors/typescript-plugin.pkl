@@ -1,0 +1,115 @@
+import "../../Actions.pkl" as ci
+
+name = "TypeScript plugin packed consumer"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/typescript-plugin.yml"
+      ".github/scripts/workflows/typescript-plugin/**"
+      "npm/typescript-plugin/**"
+      "npm/native/index.*"
+      "npm/native/language-projection.*"
+      "npm/native/package.json"
+      "crates/vize_canon/**"
+      "crates/vize_vitrine/src/napi/language_code.rs"
+      "editors/vscode/package.json"
+      "editors/vscode/.vscodeignore"
+      "tests/typescript-plugin/**"
+      "tests/_fixtures/tooling/typescript-classification-runtime-11664/**"
+      "tests/tooling/vscode-typescript*"
+      "tests/tooling/cargo-metadata-observer.test.ts"
+      "tools/support/ci/cargo-metadata-observer.ts"
+      "tools/commands/editors/vscode/assert-vsix-package.rs"
+      "tools/commands/editors/vscode/sync-typescript-plugin.rs"
+    }
+  }
+  // Not a required check, so a queue run gated nothing while it competed with
+  // every queue entry for runners. Each main commit is still validated in full;
+  // cancel-in-progress coalesces a burst of merges into one run of the newest.
+  push {
+    branches = List("main")
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "typescript-plugin-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `packed-consumer` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("typescript-plugin")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        name = "Retain the attempted source even if setup fails"
+        run = ci.workflowScript("retain-the-attempted-source-even-if-setup-fails.sh")
+      }
+      ci.use("./.github/actions/setup-js-package-tests")
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Exercise plugin boundaries and canonical staging"
+        run = "vp node --test npm/native/test/language-projection.test.cjs tests/typescript-plugin/mapped-language-service.test.cjs tests/typescript-plugin/project-configuration.test.cjs tests/typescript-plugin/package-options.test.cjs tests/typescript-plugin/host-boundaries.test.cjs tests/tooling/vscode-typescript-vue-plugin.test.ts tests/tooling/vscode-typescript-vue-plugin-types.test.ts tests/tooling/vscode-typescript-vue-plugin-module-resolution.test.ts tests/tooling/vscode-typescript-plugin-staging.test.ts tests/tooling/vscode-vsix-policy.test.ts tests/tooling/cargo-metadata-observer.test.ts"
+      }
+      new Dynamic {
+        name = "Build the exact-source native producer"
+        run = ci.workflowScript("build-the-exact-source-native-producer.sh")
+      }
+      new Dynamic {
+        name = "Measure the installed package with real tsserver packets"
+        env { VIZE_TYPESCRIPT_PLUGIN_CAPTURE = "${{ runner.temp }}/typescript-plugin" }
+        run = "vp node tests/typescript-plugin/packed-consumer.ts"
+      }
+      new Dynamic {
+        name = "Measure the supported TypeScript 5 server"
+        env {
+          VIZE_TYPESCRIPT_PLUGIN_TYPESCRIPT = "5.7.3"
+          VIZE_TYPESCRIPT_PLUGIN_CAPTURE = "${{ runner.temp }}/typescript-plugin-5"
+        }
+        run = "vp node tests/typescript-plugin/packed-consumer.ts"
+      }
+      new Dynamic {
+        name = "Package the same canonical plugin in a production VSIX"
+        env { VIZE_TYPESCRIPT_PLUGIN_CAPTURE = "${{ runner.temp }}/typescript-plugin" }
+        run = ci.workflowScript("package-the-same-canonical-plugin-in-a-production-vsix.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "typescript-plugin-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = """
+          ${{ runner.temp }}/typescript-plugin
+          ${{ runner.temp }}/typescript-plugin-5
+          editors/vscode/dist/vize.vsix
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+      new Dynamic {
+        name = "Validate complete Cargo metadata capture packets"
+        `if` = "always()"
+        run = #"vp node tools/support/ci/cargo-metadata-observer.ts --validate-dir "$RUNNER_TEMP/typescript-plugin-cargo-metadata""#
+      }
+      new Dynamic {
+        name = "Preserve actual Cargo metadata child streams and exit state"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "typescript-plugin-cargo-metadata-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "${{ runner.temp }}/typescript-plugin-cargo-metadata"
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

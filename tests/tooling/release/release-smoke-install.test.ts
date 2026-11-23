@@ -286,9 +286,14 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   // vize declares its Corsa runtime itself, so the fresh-install smoke must not
   // manually add the retired native-preview package as a project runtime peer.
   assert.doesNotMatch(smokeSources, /"@typescript\/native-preview":/);
-  assert.match(smokeSources, /require\("@vizejs\/native"\)/);
-  assert.match(smokeSources, /import\("@vizejs\/native"\)/);
-  assert.match(smokeSources, /native\.compileSfc/);
+  assert.ok(runtimeScript.includes('consumerProgram(installDir, "native-check.cjs")'));
+  const nativeCheck = fs.readFileSync(
+    path.join(root, "tools/support/release/smoke_release_install/programs/native-check.cjs"),
+    "utf8",
+  );
+  assert.match(nativeCheck, /require\("@vizejs\/native"\)/);
+  assert.match(nativeCheck, /import\("@vizejs\/native"\)/);
+  assert.match(nativeCheck, /native\.compileSfc/);
   // Bins are resolved out of the installed tree and invoked through
   // `process.execPath` so that `npm exec` cannot re-resolve native optional
   // deps and drop them mid-run (npm/cli#4828).

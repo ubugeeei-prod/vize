@@ -16,10 +16,21 @@ jobs:
       EXPECTED_DRIVER_SHA: ${{ inputs.expected-driver-sha }}
       CONFLICTING_MODES: ${{ inputs.conflicting-modes }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/sfc-optional-lifecycle/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Refuse stale or conflicting diagnostic dispatch
-        run: |
-          [[ "$EXPECTED_DRIVER_SHA" == "$GITHUB_SHA" && "$CONFLICTING_MODES" == false ]]
-          [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize ]]
+        run: . "${{ env.VIZE_CI_FILES }}/refuse-stale-or-conflicting-diagnostic-dispatch.sh"
       - name: Checkout diagnostic driver
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -33,9 +44,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install the pinned Linux heap observer
-        run: |
-          vize-ci-apt-retry sudo apt-get update -qq
-          vize-ci-apt-retry sudo apt-get install -y --no-install-recommends valgrind
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-pinned-linux-heap-observer.sh"
       - name: Install exact source lifecycle dependencies
         working-directory: source
         run: vp install --filter './npm/native...' --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline

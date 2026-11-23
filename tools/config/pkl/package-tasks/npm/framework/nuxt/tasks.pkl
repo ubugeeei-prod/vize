@@ -1,0 +1,9 @@
+amends "../../../../PackageTasks.pkl"
+
+tasks {
+  ["test"] {
+    module.run("pnpm", List("--filter", "@vizejs/nuxt-lint-config", "build"))
+    module.run("pnpm", List("build"))
+    module.run("pnpm", List("run", "test:unit"))
+  }
+}

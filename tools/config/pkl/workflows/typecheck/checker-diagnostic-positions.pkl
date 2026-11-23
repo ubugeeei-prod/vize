@@ -1,0 +1,73 @@
+import "../../Actions.pkl" as ci
+
+name = "Checker diagnostic positions"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/checker-diagnostic-positions.yml"
+      ".github/scripts/workflows/checker-diagnostic-positions/**"
+      "davinci/vize_l0/Cargo.toml"
+      "davinci/vize_l0/src/line_index.rs"
+      "davinci/vize_l0/src/line_index/**"
+      "davinci/vize_l4/Cargo.toml"
+      "davinci/vize_l4/src/targets/ts.rs"
+      "davinci/vize_l4/src/targets/ts/**"
+      "davinci/vize_l4/src/framework/vue.rs"
+      "davinci/vize_l4/src/framework/vue/**"
+      "davinci/vize_l4/tests/program_projection/**"
+      "davinci/vize_l4/tests/vue_projection/**"
+      "davinci/vize_l4/tests/jsx_module_projection/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "checker-diagnostic-positions-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `diagnostic-positions` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("checker-diagnostic-positions")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Install the pinned checker used by the original projection suites"
+        run = "node tools/support/github/vp-install.ts --filter vize-workspace --filter './npm/ui...' --filter './npm/cli'"
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare complete original projection outcomes and repeated queries"
+        run = ci.workflowScript("compare-complete-original-projection-outcomes-and-repeated-queries.sh")
+      }
+    }
+  }
+}

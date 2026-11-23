@@ -1,0 +1,15 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  if [ "$SOURCE_EVENT" = workflow_dispatch ]; then
+    [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+    test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
+  else
+    test "$SOURCE_EVENT" = pull_request
+    [[ "$PR_HEAD" =~ ^[0-9a-f]{40}$ ]]
+  fi
+  """#
+}

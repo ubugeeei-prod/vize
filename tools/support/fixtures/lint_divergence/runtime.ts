@@ -177,8 +177,9 @@ export function runPatina(
   return { results: envelope, findings };
 }
 
-export const baselineScript =
-  '\nimport { readFileSync } from "node:fs";\nimport { baselineConfig } from "./tools/support/compat/fixtures/lint-divergence-baseline.mjs";\nimport { resolveScorecardRuntime, runScorecardBaseline } from "./tools/support/compat/fixtures/lint-divergence-scorecard.ts";\nconst input = JSON.parse(readFileSync(0, "utf8"));\nconst runtime = resolveScorecardRuntime();\nconst baseline = await runScorecardBaseline(runtime, baselineConfig, input.cwd, input.files, input.rules);\nconst output = input.rawOnly ? { rawResults: baseline.rawResults } : baseline;\nprocess.stdout.write(JSON.stringify({ version: runtime.version, runtimeVersions: runtime.runtimeVersions, ...output }));\n';
+export function eslintBaselineProgram(root: string): string {
+  return path.join(root, "tools/support/fixtures/lint_divergence/eslint-baseline.ts");
+}
 
 function retainAvailableRuleMessages(
   parsed: Json,
@@ -304,7 +305,7 @@ export function runEslintBaseline(
         rawOnly: true,
         rules: availableRules,
       },
-      output = spawnSync("node", ["--input-type=module", "--eval", baselineScript], {
+      output = spawnSync("node", [eslintBaselineProgram(root)], {
         cwd: root,
         input: canonicalJson(input),
         maxBuffer: limits?.maxOutputBytes ?? Infinity,

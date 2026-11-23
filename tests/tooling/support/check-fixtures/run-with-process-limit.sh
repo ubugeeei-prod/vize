@@ -1,0 +1,6 @@
+#!/bin/sh
+limit=$1
+unsupported=$2
+shift 2
+ulimit -u "$limit" 2>/dev/null || ulimit -p "$limit" 2>/dev/null || exit "$unsupported"
+exec "$@"

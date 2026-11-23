@@ -1,0 +1,31 @@
+import "../../Actions.pkl" as ci
+
+name = "Affected tooling (${{ matrix.name }})"
+needs = List("pr-source-plan", "affected-tooling-cli")
+`if` = "${{ needs.pr-source-plan.outputs.affected-tooling == 'true' }}"
+`runs-on` = ci.linux
+`timeout-minutes` = 30
+strategy {
+  `fail-fast` = false
+  matrix = "${{ fromJSON(needs.pr-source-plan.outputs.affected-tooling-matrix) }}"
+}
+env {
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  VIZE_SOURCE_CLI_RECEIPT_SHA256 = "${{ needs.affected-tooling-cli.outputs.receipt-sha256 }}"
+}
+steps = new Listing {
+  new Dynamic {
+    uses = ci.checkout
+    with { `fetch-depth` = 0 }
+  }
+  new Dynamic {
+    uses = "./.github/actions/test-affected-tooling"
+    with {
+      producer = "${{ toJSON(needs.affected-tooling-cli.outputs) }}"
+      base = "${{ needs.pr-source-plan.outputs.comparison-base }}"
+      shard = "${{ matrix.index }}"
+      total = "${{ matrix.total }}"
+      job = "Affected tooling (${{ matrix.name }})"
+    }
+  }
+}

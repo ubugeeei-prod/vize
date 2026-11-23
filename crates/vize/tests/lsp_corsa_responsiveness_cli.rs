@@ -47,7 +47,7 @@ fn workspace(root: &Path) {
         // Native startup may use the selected private Canon working directory.
         // Both witnesses remain at the same owned paths read by this fixture.
         vize_l0::cstr!(
-            "#!/bin/sh\necho $$ >> {}\n: > {}\nexec cat 3>&1 > /dev/null\n",
+            include_str!("programs/hold-responsive-corsa.sh.in"),
             shell_quoted_path(&root.join("backend.pids")),
             shell_quoted_path(&root.join("backend.entered"))
         )

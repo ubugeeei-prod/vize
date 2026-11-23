@@ -18,7 +18,7 @@ for sdk in actual-20261024 beta-3e923 d6c4; do
     --output "$RUNNER_TEMP/component-input-ownership/$sdk" "${extra[@]}" || failed=1
 
   if [[ "$sdk" == actual-20261024 ]]; then
-    aria_host="$(node --input-type=module -e 'const {default: resolve} = await import(`${process.env.RUNNER_TEMP}/component-input-consumer/node_modules/typescript/lib/getExePath.js`); console.log(resolve());')"
+    aria_host="$(node tools/support/compat/content-mapper/resolve-consumer-host.ts "$RUNNER_TEMP/component-input-consumer")"
   else
     aria_host="$native"
   fi

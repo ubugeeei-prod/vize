@@ -1,0 +1,6 @@
+if (process.argv[2] === "install") {
+  @@SUCCESS_BODY@@;
+} else if (process.argv[4] === "stub") process.exit(0);
+else {
+  @@STEPS@@;
+}

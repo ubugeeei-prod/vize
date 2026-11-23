@@ -29,7 +29,7 @@
     "build:debug": "cargo build -p vize_parcel_transformer",
     "check": "cargo check -p vize_parcel_transformer",
     "test": "cargo test -p vize_parcel_transformer",
-    "test:host": "cargo build -p vize_parcel_transformer && node test/host.ts"
+    "test:host": "node ./scripts/package-tasks.cjs test:host"
   },
   "devDependencies": {
     "parcel": "3.0.0-alpha.2",

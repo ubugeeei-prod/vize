@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -137,7 +138,9 @@ await test("actual case-sensitive Windows directories keep distinct same-version
     const binary = path.join(packageRoot, "vize.cjs");
     fs.writeFileSync(
       binary,
-      `#!/usr/bin/env node\n// Distinct engine build ${index}, both report vize 9.8.7.\n`,
+      readToolingProgram("commands/vscode-workspace-server-identity/binary.cjs.in", {
+        INDEX: index,
+      }),
     );
     return fs.realpathSync(binary);
   });

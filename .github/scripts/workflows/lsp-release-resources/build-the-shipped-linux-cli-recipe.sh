@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+cargo build --release -p vize --target x86_64-unknown-linux-gnu --message-format=json-render-diagnostics > "${RUNNER_TEMP}/release-build.jsonl"

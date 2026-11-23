@@ -20,16 +20,7 @@ fn write_project(root: &Path) -> std::io::Result<()> {
     }
     fs::write(
         root.join("corsa.sh"),
-        r#"#!/bin/sh
-previous=''
-for arg in "$@"; do
-  if [ "$previous" = '--checkers' ]; then
-    printf '%s\n' "$arg" >> "$VIZE_TEST_CHECKER_LOG"
-  fi
-  previous="$arg"
-done
-exit 0
-"#,
+        include_str!("programs/report-checker-count.sh"),
     )?;
     fs::set_permissions(root.join("corsa.sh"), fs::Permissions::from_mode(0o755))
 }

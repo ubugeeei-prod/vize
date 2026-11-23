@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -8,7 +9,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { promisify } from "node:util";
 
-import { fakeNpmArchiveSource } from "./support/fake-npm-registry.ts";
+import { fakeRegistryArchivePath } from "./support/fake-npm-registry.ts";
 
 import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
@@ -167,25 +168,10 @@ test("publish_npm_package computes the tag and forwards provenance to vp", () =>
     writeFakeCommand(
       binDir,
       "curl",
-      [
-        fakeNpmArchiveSource,
-        "const fs = require('node:fs');",
-        "const url = process.argv.at(-1);",
-        "const name = decodeURIComponent(new URL(url).pathname.split('/')[1]);",
-        "const version = process.env.NPM_FAKE_VERSION;",
-        "const statePath = process.env.NPM_FAKE_STATE_PATH;",
-        "const state = fs.existsSync(statePath)",
-        "  ? JSON.parse(fs.readFileSync(statePath, 'utf8')) : {};",
-        "fs.appendFileSync(process.env.NPM_FAKE_URL_LOG, `${url}\\n`);",
-        "if (state.published !== true) {",
-        "  process.stdout.write('{}VIZE_HTTP_STATUS:404');",
-        "  process.exit(0);",
-        "}",
-        "const body = url.includes(`/${version}?`)",
-        "  ? { name, version, dist: fakeDist(name, version) }",
-        "  : { name, 'dist-tags': { latest: version, beta: version, rc: version } };",
-        "process.stdout.write(`${JSON.stringify(body)}VIZE_HTTP_STATUS:200`);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package-registry/curl-computes-tag-forwards-provenance-vp.js.in",
+        { ARCHIVE_MODULE: JSON.stringify(fakeRegistryArchivePath) },
+      ),
     );
     writeFileSync(
       path.join(packageDir, "package.json"),
@@ -194,36 +180,10 @@ test("publish_npm_package computes the tag and forwards provenance to vp", () =>
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "const state = fs.existsSync(process.env.VP_STATE_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
-        "  : { published: false };",
-        "if (args[0] === 'pm' && args[1] === 'publish') {",
-        "  fs.writeFileSync(process.env.VP_ARGS_LOG, args.join('\\n'));",
-        "  fs.writeFileSync(process.env.VP_CWD_LOG, process.cwd());",
-        "  state.published = true;",
-        "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-        `  fs.appendFileSync(process.env.NPM_FAKE_URL_LOG, ${JSON.stringify(`${published}\n`)});`,
-        "  process.exit(0);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'version') {",
-        "  if (state.published) {",
-        "    process.stdout.write(JSON.stringify('1.2.3-beta.1'));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'dist-tags') {",
-        "  if (state.published) {",
-        "    process.stdout.write(JSON.stringify({ beta: '1.2.3-beta.1' }));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package-registry/vp-computes-tag-forwards-provenance-vp.js.in",
+        { PUBLISHED_N: JSON.stringify(`${published}\n`) },
+      ),
     );
 
     const result = runReleaseCommand("publish_npm_package", [packageDir, "--provenance"], {
@@ -278,30 +238,17 @@ test("an older missing release publishes under a backfill tag without moving lat
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "fs.writeFileSync(process.env.VP_ARGS_LOG, args.join('\\n'));",
-        "fs.writeFileSync(process.env.NPM_FAKE_STATE_PATH, JSON.stringify({ published: true }));",
-        "process.exit(0);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package-registry/vp-older-missing-release-publishes-under-backfill-tag-without.js",
+      ),
     );
     writeFakeCommand(
       binDir,
       "curl",
-      [
-        fakeNpmArchiveSource,
-        "const fs = require('node:fs');",
-        "const url = new URL(process.argv.at(-1));",
-        "const state = fs.existsSync(process.env.NPM_FAKE_STATE_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.NPM_FAKE_STATE_PATH, 'utf8')) : {};",
-        "if (url.pathname.endsWith('/1.2.3')) {",
-        "  const body = state.published ? { name: '@vizejs/example', version: '1.2.3', dist: fakeDist('@vizejs/example', '1.2.3') } : {};",
-        "  process.stdout.write(JSON.stringify(body) + `VIZE_HTTP_STATUS:${state.published ? '200' : '404'}`);",
-        "  process.exit(0);",
-        "}",
-        "process.stdout.write(JSON.stringify({ name: '@vizejs/example', 'dist-tags': { latest: '1.3.0', 'backfill-1-2-3': '1.2.3' } }) + 'VIZE_HTTP_STATUS:200');",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package-registry/curl-older-missing-release-publishes-under-backfill-tag-without.js.in",
+        { ARCHIVE_MODULE: JSON.stringify(fakeRegistryArchivePath) },
+      ),
     );
 
     const result = runReleaseCommand("publish_npm_package", [packageDir], {

@@ -1,0 +1,22 @@
+import "../Actions.pkl" as ci
+
+
+name = "Setup Rust Script"
+description = "Install the pinned rust-script runner used by tools/commands"
+
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Configure Windows Rust linker"
+      `if` = "runner.os == 'Windows'"
+      shell = "bash"
+      run = ci.actionScript("configure-windows-rust-linker.sh")
+    }
+    new Dynamic {
+      name = "Install rust-script"
+      shell = "bash"
+      run = ci.actionScript("install-rust-script.sh")
+    }
+  }
+}

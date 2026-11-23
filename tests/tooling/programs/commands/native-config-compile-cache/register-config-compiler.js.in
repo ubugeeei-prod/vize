@@ -1,0 +1,8 @@
+import { appendFileSync } from "node:fs";
+globalThis.factoryLoads = (globalThis.factoryLoads ?? 0) + 1;
+if (globalThis.factoryLoads !== 1 || process.cwd() !== @@APPLICATION@@)
+  throw new Error("app context leaked");
+export default () => {
+  appendFileSync(@@COUNTER@@, "once\n");
+  return { vue: { formatter: { printWidth: Number(process.env.AUTHORED_WIDTH) } } };
+};

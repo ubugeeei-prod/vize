@@ -19,6 +19,8 @@ jobs:
       sha256: ${{ steps.pack.outputs.sha256 }}
       receipt-sha256: ${{ steps.pack.outputs.receipt-sha256 }}
       producer-attempt: ${{ steps.pack.outputs.producer-attempt }}
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/full-source-cli"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -30,7 +32,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Build vize CLI and SFC oracle with original receipts
-        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts && cat target/ci/vize.differential-build.json && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
+        run: . "${{ env.VIZE_CI_FILES }}/build-vize-cli-and-sfc-oracle-with-original-receipts.sh"
       - name: Pack original source binaries and receipt
         id: pack
         run: node tools/support/compat/github/source-cli-artifact.ts pack "$RUNNER_TEMP/source-cli.tar.gz"

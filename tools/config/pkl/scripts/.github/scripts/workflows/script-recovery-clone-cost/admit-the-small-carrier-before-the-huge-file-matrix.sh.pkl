@@ -1,0 +1,27 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  cpus=$(node "$VIZE_CI_FILES/../shared/runner-resources.ts" first 8)
+  printf '%s\n' "$cpus" > evidence/affinity.txt
+  for scenario in irreparable valid repairable; do
+    for role in base head; do
+      taskset -c "$cpus" "evidence/normal-$role" 8 4096 normal "$scenario" > "evidence/normal-$scenario-$role-4096-1.json"
+    done
+  done
+  for role in base head; do
+    source="$GITHUB_WORKSPACE"
+    if [[ "$role" == base ]]; then source="$RUNNER_TEMP/recovery-base"; fi
+    cargo +1.100.0 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-clone-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -p vize_l0 --example source_recovery_clone_benchmark --features micro-profiling --message-format json > "evidence/profile-build-$role.jsonl"
+    cp "target/recovery-clone-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/examples/source_recovery_clone_benchmark" "evidence/instrumented-$role"
+    for scenario in irreparable valid repairable; do
+      taskset -c "$cpus" "evidence/instrumented-$role" 8 4096 profile "$scenario" > "evidence/profile-$scenario-$role-4096.json"
+    done
+  done
+  sha256sum evidence/instrumented-base evidence/instrumented-head > evidence/instrumented-binaries.sha256
+  node tools/benchmarks/scripts/compare_recovery_clone.ts tiny evidence
+  """#
+}

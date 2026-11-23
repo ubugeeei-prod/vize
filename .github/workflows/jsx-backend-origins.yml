@@ -13,6 +13,7 @@ on:
       - "tests/tooling/jsx-current-backend-profile-contract.test.ts"
       - "tests/tooling/support/jsx-current-backend-profile-contract.ts"
       - ".github/workflows/jsx-backend-origins.yml"
+      - ".github/scripts/workflows/jsx-backend-origins/**"
 permissions: { contents: read }
 concurrency:
   group: jsx-backend-origins-${{ github.event.pull_request.number || github.ref }}
@@ -28,6 +29,19 @@ jobs:
       BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/jsx-backend-origins/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -44,32 +58,11 @@ jobs:
       - name: Capture exact backend maps and code equality
         env:
           VIZE_JSX_BACKEND_ORIGIN_CAPTURE: ${{ runner.temp }}/jsx-backend-origins/origins.json
-        run: |
-          mkdir -p "$RUNNER_TEMP/jsx-backend-origins"
-          test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
-          git diff --exit-code
-          cargo test --locked --profile ci -p vize_atelier_jsx --test backend_module_origins -- --nocapture
+        run: . "${{ env.VIZE_CI_FILES }}/capture-exact-backend-maps-and-code-equality.sh"
       - name: Measure complete default backends before and after the source change
-        run: |
-          set -euo pipefail
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          baseline="$RUNNER_TEMP/jsx-origin-base"
-          observer=crates/vize_atelier_jsx/tests/backend_codegen_profile.rs
-          git worktree add --detach "$baseline" "$BASE_SHA"
-          cp "$observer" "$baseline/$observer"
-          cmp "$observer" "$baseline/$observer"
-          git -C "$baseline" diff --exit-code -- crates/*/src
-          (cd "$baseline" && rustc -Vv) > "$RUNNER_TEMP/jsx-backend-origins/base-rustc.txt"
-          rustc -Vv > "$RUNNER_TEMP/jsx-backend-origins/head-rustc.txt"
-          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-origin-base-target" VIZE_JSX_DEFAULT_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-backend-origins/base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test backend_codegen_profile -- --nocapture)
-          VIZE_JSX_DEFAULT_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-backend-origins/head-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test backend_codegen_profile -- --nocapture
-          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-backend-origins/head-source.txt"
-          git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-backend-origins/base-source.txt"
-          sha256sum "$observer" "$baseline/$observer" > "$RUNNER_TEMP/jsx-backend-origins/observer.sha256"
+        run: . "${{ env.VIZE_CI_FILES }}/measure-complete-default-backends-before-and-after-the-source-change.sh"
       - name: Compare whole backend outputs and report measured default overhead
-        run: |
-          node --test tests/tooling/jsx-child-backend-profile-contract.test.ts tests/tooling/jsx-current-backend-profile-contract.test.ts
-          node tests/tooling/support/jsx-current-backend-profile-contract.ts "$RUNNER_TEMP/jsx-backend-origins"
+        run: . "${{ env.VIZE_CI_FILES }}/compare-whole-backend-outputs-and-report-measured-default-overhead.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

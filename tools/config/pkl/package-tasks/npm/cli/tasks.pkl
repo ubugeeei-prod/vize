@@ -1,0 +1,28 @@
+amends "../../../PackageTasks.pkl"
+
+tasks {
+  ["build"] {
+    module.run("vp", List("run", "--workspace-root", "generate:rule-types"))
+    module.run("vp", List("pack"))
+  }
+  ["test"] {
+    module.run("vp", List("pack"))
+    module.run("vp", List(
+      "test",
+      "run",
+      "tests/config.test.ts",
+      "tests/vite-project-config.test.ts",
+      "tests/vite-module-config.test.ts",
+      "tests/define-config.test.ts",
+      "tests/corsa-runtime.test.ts",
+      "tests/setup.test.ts",
+      "tests/setup-oxlint-config.test.ts",
+      "tests/init.test.ts",
+      "tests/init-frameworks.test.ts",
+      "tests/init-tsconfig.test.ts",
+      "tests/init-prompt.test.ts",
+      "tests/init-config-free.test.ts",
+      "tests/init-workspace.test.ts",
+    ))
+  }
+}

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
+
+import { processResultArgs } from "./support/program-path.ts";
 import {
   createInstanceGlobalsRunner,
   createTs59ContextReferences,
@@ -189,10 +191,7 @@ test("the moved runner retains whole nonzero packets and logs spawn failure befo
     recorded.push(packet);
   });
   const input = Buffer.from("日本語🍣\r\n");
-  const args = [
-    "-e",
-    'process.stdout.write(require("fs").readFileSync(0)); process.stderr.write("retained stderr\\n"); process.exit(2)',
-  ];
+  const args = [...processResultArgs({ echoStdin: true, stderr: "retained stderr\n", status: 2 })];
   const result = run("authored-error", process.execPath, args, process.cwd(), input);
   assert.strictEqual(recorded[0], result);
   assert.deepEqual(

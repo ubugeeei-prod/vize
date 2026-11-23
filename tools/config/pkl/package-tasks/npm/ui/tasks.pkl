@@ -1,0 +1,42 @@
+amends "../../../PackageTasks.pkl"
+
+tasks {
+  ["build"] {
+    module.run("vp", List("pack"))
+    module.run("vp", List("exec", "node", "scripts/build-source-registry.ts"))
+  }
+  ["lint:sfc"] {
+    module.run("vp", List("exec", "node", "scripts/lint-sfc.ts", "src"))
+    module.run("vp", List("exec", "node", "scripts/check-renderers.ts", "src"))
+  }
+  ["pretest"] {
+    module.run("vp", List("pack"))
+    module.run("pnpm", List("check:size"))
+    module.run("pnpm", List("check:tree-shaking"))
+  }
+  ["test"] {
+    module.run("vp", List("test", "run"))
+    module.run("vp", List("test", "run", "--config", "vite.production-vue.config.ts"))
+  }
+  ["check:static"] {
+    module.run("vp", List("check", "src", "scripts", "vite.config.ts", "tsconfig.typecheck.json"))
+    module.run("vue-tsc", List("--noEmit", "-p", "tsconfig.typecheck.json"))
+  }
+  ["check:vapor-runtime"] {
+    module.run("vp", List(
+      "exec",
+      "node",
+      "--test",
+      "scripts/vapor-runtime/css-properties-hydration.test.ts",
+      "scripts/vapor-runtime/scoped-union-props.test.ts",
+      "scripts/vapor-runtime/scoped-union-controls.test.ts",
+    ))
+    module.run("vp", List("exec", "node", "scripts/check-vapor-runtime.ts"))
+  }
+  ["check"] {
+    module.run("pnpm", List("lint:sfc"))
+    module.run("pnpm", List("check:static"))
+    module.run("pnpm", List("check:story-testbed"))
+    module.run("pnpm", List("check:vapor-runtime"))
+  }
+}

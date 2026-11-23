@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+test "$(node "$VIZE_CI_FILES/build-exact-source-binding-and-package-exports.cjs")" = 24.14.0
+vp run --workspace-root build:native:test
+cd npm/formatter/prettier
+vp check src test vite.config.ts
+vp pack

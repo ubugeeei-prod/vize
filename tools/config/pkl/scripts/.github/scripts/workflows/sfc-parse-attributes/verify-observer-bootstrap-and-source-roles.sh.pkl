@@ -1,0 +1,9 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("node", List("--test", "tests/tooling/sfc-parse-attributes-bootstrap.test.ts"))
+  module.command("node", List("--test", "tests/tooling/sfc-parse-attributes-reference.test.ts"))
+  module.command("node", List("tests/native/sfc-parse-attributes-source.mjs"))
+}

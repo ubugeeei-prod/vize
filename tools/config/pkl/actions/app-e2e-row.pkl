@@ -1,0 +1,205 @@
+import "../Actions.pkl" as ci
+
+name = "App E2E row"
+description = "Run one validated App E2E planner row on an isolated runner"
+
+inputs {
+  profile {
+    description = "Planner profile"
+    required = true
+  }
+  suite {
+    description = "Planner suite"
+    required = true
+  }
+  shard {
+    description = "Planner shard"
+    required = true
+  }
+  task {
+    description = "Validated package task"
+    required = true
+  }
+  timeout {
+    description = "Validated task timeout"
+    required = true
+  }
+  `needs-playwright` {
+    description = "Whether this row needs Chromium"
+    required = true
+  }
+  `cache-key` {
+    description = "Unique mutable cache namespace"
+    required = true
+  }
+  `worktree-id` {
+    description = "Unique test worktree namespace"
+    required = true
+  }
+  `artifact-stem` {
+    description = "Unique artifact namespace"
+    required = true
+  }
+}
+
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Setup Rust"
+      id = "rust-toolchain"
+      uses = ci.setupRust
+      with { toolchain = "stable" }
+    }
+    new Dynamic {
+      uses = ci.setupNode
+      with {
+        `node-version-file` = "package.json"
+        `package-manager-cache` = false
+      }
+    }
+    new Dynamic {
+      name = "Validate and hydrate planned fixtures"
+      shell = "bash"
+      env {
+        PLAN_PROFILE = "${{ inputs.profile }}"
+        PLAN_SUITE = "${{ inputs.suite }}"
+        PLAN_SHARD = "${{ inputs.shard }}"
+        PLANNED_TASK = "${{ inputs.task }}"
+        PLANNED_TIMEOUT = "${{ inputs.timeout }}"
+        PLANNED_BROWSER = "${{ inputs.needs-playwright }}"
+        PLANNED_CACHE_KEY = "${{ inputs.cache-key }}"
+        PLANNED_WORKTREE_ID = "${{ inputs.worktree-id }}"
+        PLANNED_ARTIFACT_STEM = "${{ inputs.artifact-stem }}"
+      }
+      run = ci.actionScript("validate-and-hydrate-planned-fixtures.sh")
+    }
+    new Dynamic {
+      name = "Setup Wild linker"
+      uses = "./.github/actions/setup-wild-http-recovery"
+      with { `wild-version` = "0.9.0" }
+    }
+    new Dynamic {
+      uses = "./.github/actions/setup-rust-sticky-cache"
+      with {
+        key = "${{ inputs.cache-key }}"
+        `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}-${{ steps.rust-toolchain.outputs.cachekey }}"
+      }
+    }
+    new Dynamic {
+      name = "Setup Vite+ and Node.js"
+      uses = ci.setupVp
+      with {
+        `node-version-file` = "package.json"
+        cache = true
+        `run-install` = false
+      }
+    }
+    new Dynamic {
+      name = "Provision Node 22 for authored Nuxt fixture preparation"
+      `if` = "inputs.suite == 'check' || inputs.suite == 'build'"
+      shell = "bash"
+      run = ci.actionScript("provision-node-22-for-authored-nuxt-fixture-preparation.sh")
+    }
+    new Dynamic {
+      name = "Install JavaScript dependencies"
+      shell = "bash"
+      run = ci.actionScript("install-javascript-dependencies.sh")
+    }
+    new Dynamic {
+      name = "Prepare original pinned ReKa providers"
+      `if` = "inputs.suite == 'check'"
+      shell = "bash"
+      run = "node tests/_helpers/reka-check-prepare.ts"
+    }
+    new Dynamic {
+      name = "Build native package"
+      shell = "bash"
+      run = "vp run --filter './npm/native' build:ci"
+    }
+    new Dynamic {
+      name = "Build Vize CLI"
+      shell = "bash"
+      run = "cargo build --profile ci -p vize"
+    }
+    new Dynamic {
+      name = "Build local Vize packages"
+      shell = "bash"
+      run = ci.actionScript("build-local-vize-packages.sh")
+    }
+    new Dynamic {
+      name = "Stabilize Ubuntu package archive"
+      `if` = "inputs.needs-playwright == 'true'"
+      uses = "./.github/actions/setup-ubuntu-archive"
+    }
+    new Dynamic {
+      name = "Cache Playwright browsers"
+      id = "cache-playwright"
+      `if` = "inputs.needs-playwright == 'true'"
+      uses = ci.cache
+      with {
+        path = "~/.cache/ms-playwright"
+        key = "${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}"
+      }
+    }
+    new Dynamic {
+      name = "Install Playwright OS dependencies"
+      `if` = "inputs.needs-playwright == 'true'"
+      shell = "bash"
+      run = "vize-ci-apt-retry vp exec --filter './tests' -- playwright install-deps chromium"
+    }
+    new Dynamic {
+      name = "Install Playwright browser"
+      `if` = "inputs.needs-playwright == 'true' && steps.cache-playwright.outputs.cache-hit != 'true'"
+      shell = "bash"
+      run = "vp exec --filter './tests' -- playwright install chromium"
+    }
+    new Dynamic {
+      name = "Run planned App E2E row"
+      id = "run"
+      `continue-on-error` = true
+      shell = "bash"
+      env {
+        PLAN_PROFILE = "${{ inputs.profile }}"
+        PLAN_SUITE = "${{ inputs.suite }}"
+        PLAN_SHARD = "${{ inputs.shard }}"
+        PLANNED_TASK = "${{ inputs.task }}"
+        PLANNED_TIMEOUT = "${{ inputs.timeout }}"
+        PLANNED_BROWSER = "${{ inputs.needs-playwright }}"
+        VIZE_TEST_WORKTREE_ID = "${{ inputs.worktree-id }}"
+        VIZE_APP_CHECK_CAPTURE_DIR = "${{ github.workspace }}/target/app-e2e-logs/check-authority"
+      }
+      run = ci.actionScript("run-planned-app-e2e-row.sh")
+    }
+    new Dynamic {
+      name = "Upload App E2E row artifacts"
+      `if` = "${{ cancelled() || failure() || steps.run.outcome == 'failure' }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "app-e2e-${{ inputs.artifact-stem }}-${{ github.run_id }}-${{ github.run_attempt }}"
+        path = """
+        target/app-e2e-logs/
+        tests/app/results/
+        tests/app/screenshots/
+        tests/app/playwright-report/
+        tests/playwright-report/
+        tests/snapshots/**/__snapshots__/*.snap.actual
+        .vize/artifacts/
+
+        """
+        `if-no-files-found` = "ignore"
+        `retention-days` = 7
+      }
+    }
+    new Dynamic {
+      name = "Report App E2E row"
+      `if` = "${{ !cancelled() }}"
+      shell = "bash"
+      env {
+        ROW_OUTCOME = "${{ steps.run.outcome }}"
+        ROW_ID = "${{ inputs.profile }}:${{ inputs.suite }}:${{ inputs.shard }}"
+      }
+      run = ci.actionScript("report-app-e2e-row.sh")
+    }
+  }
+}

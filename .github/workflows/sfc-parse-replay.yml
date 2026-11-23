@@ -16,6 +16,7 @@ jobs:
     permissions:
       contents: read
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/harness/.github/scripts/workflows/sfc-parse-replay"
       CARGO_TERM_COLOR: never
       CARGO_INCREMENTAL: "0"
       RUSTUP_TOOLCHAIN: "1.98.0"
@@ -36,12 +37,7 @@ jobs:
           run-install: false
       - name: Validate frozen historical pair before checkout
         working-directory: harness
-        run: |
-          node --input-type=module -e '
-            import { validateRevisionInputs } from "./tools/benchmarks/scripts/sfc-parse-replay-contract.ts";
-            validateRevisionInputs({ base: process.env.REPLAY_BASE_SHA, head: process.env.REPLAY_HEAD_SHA, conflictingModes: process.env.REPLAY_CONFLICTING_MODES !== "false" });
-          '
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/validate-frozen-historical-pair-before-checkout.sh"
       - name: Checkout historical base
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -65,10 +61,9 @@ jobs:
         working-directory: harness
         run: node --test tests/tooling/sfc-parse-replay.test.ts
       - name: Build both binaries then measure adjacent pairs
-        run: |
-          node harness/tools/benchmarks/scripts/sfc-parse-replay.mjs \
-            "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" \
-            "$GITHUB_WORKSPACE/sfc-parse-replay" "${{ inputs.repetition }}"
+        run: . "${{ env.VIZE_CI_FILES }}/build-both-binaries-then-measure-adjacent-pairs.sh"
+        env:
+          VIZE_INPUTS_REPETITION: "${{ inputs.repetition }}"
       - name: Upload every sample and provenance, including failed attempts
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

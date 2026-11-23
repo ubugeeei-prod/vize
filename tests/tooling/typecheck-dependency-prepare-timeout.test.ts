@@ -1,3 +1,4 @@
+import { readToolingProgram, toolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -28,12 +29,12 @@ test("dependency prepare bounds an install process that ignores SIGTERM", () => 
       fixture.runner,
       fixture.invocationPath,
       "10.0.0",
-      `const { spawn } = await import("node:child_process");
-process.on("SIGTERM", () => {});
-spawn(process.execPath, ["-e", ${JSON.stringify(
-        "process.on('SIGTERM', () => {}); setInterval(() => {}, 1000);",
-      )}], { stdio: "inherit" });
-setInterval(() => {}, 1000);`,
+      readToolingProgram(
+        "commands/typecheck-dependency-prepare-timeout/package-manager-bounds-install-process-ignores-sigterm.js.in",
+        {
+          CHILD_PROGRAM: JSON.stringify(toolingProgram("process/ignore-termination.js")),
+        },
+      ),
       { spec: "pnpm@10.0.0" },
     );
 
@@ -76,18 +77,13 @@ test("dependency prepare bounds a baseline prepare process that ignores SIGTERM"
       fixture.runner,
       fixture.invocationPath,
       "10.0.0",
-      `if (managerArgs[0] === "install") {
-  ${successBody}
-} else {
-  const { spawn } = await import("node:child_process");
-  fs.mkdirSync(".generated", { recursive: true });
-  fs.writeFileSync(".generated/tsconfig.json", "{}\\n");
-  process.on("SIGTERM", () => {});
-  spawn(process.execPath, ["-e", ${JSON.stringify(
-    "process.on('SIGTERM', () => {}); setInterval(() => {}, 1000);",
-  )}], { stdio: "inherit" });
-  setInterval(() => {}, 1000);
-}`,
+      readToolingProgram(
+        "commands/typecheck-dependency-prepare-timeout/package-manager-bounds-baseline-process-ignores-sigterm.js.in",
+        {
+          SUCCESS_BODY: successBody,
+          CHILD_PROGRAM: JSON.stringify(toolingProgram("process/ignore-termination.js")),
+        },
+      ),
       { spec: "pnpm@10.0.0" },
     );
 
@@ -157,18 +153,15 @@ test("Misskey preparation rejects failed, missing and empty build output", () =>
         fixture.runner,
         fixture.invocationPath,
         "10.0.0",
-        `if (managerArgs[0] === "install") { ${successBody} } else {
-          const declaration = ${JSON.stringify(declaration)};
-          const runtime = ${JSON.stringify(runtime)};
-          if (declaration !== null) {
-            for (const name of ["misskey-js", "misskey-reversi", "misskey-bubble-game", "i18n"]) {
-              fs.mkdirSync("packages/" + name + "/built", { recursive: true });
-              fs.writeFileSync("packages/" + name + "/built/index.d.ts", declaration);
-            }
-          }
-          if (runtime !== null) fs.writeFileSync("packages/i18n/built/index.js", runtime);
-          process.exit(${exitCode});
-        }`,
+        readToolingProgram(
+          "commands/typecheck-dependency-prepare-timeout/package-manager-misskey-preparation-rejects-failed-missing-empty-build-output.js.in",
+          {
+            SUCCESS_BODY: successBody,
+            DECLARATION: JSON.stringify(declaration),
+            RUNTIME: JSON.stringify(runtime),
+            EXIT_CODE: exitCode,
+          },
+        ),
         { spec: "pnpm@10.0.0" },
       );
       const result = run(fixture);

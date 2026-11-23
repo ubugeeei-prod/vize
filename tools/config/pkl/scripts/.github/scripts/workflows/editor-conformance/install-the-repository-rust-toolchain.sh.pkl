@@ -1,0 +1,9 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"rustup --version"#
+  module.installRustToolchain
+  module.command("cargo", List("--version"))
+}

@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 import { parse } from "yaml";
 import { localImportInputs } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 
@@ -52,13 +53,9 @@ for (const [file, id] of reports) {
       cpSync(join(root, path), join(scratch, path), { recursive: true });
     }
     const entry = pathToFileURL(join(scratch, scripts[0])).href;
-    execFileSync(
-      process.execPath,
-      ["--input-type=module", "-e", `await import(${JSON.stringify(entry)})`],
-      {
-        cwd: scratch,
-        stdio: "pipe",
-      },
-    );
+    execFileSync(process.execPath, [toolingProgram("process/import-selected-module.js"), entry], {
+      cwd: scratch,
+      stdio: "pipe",
+    });
   });
 }

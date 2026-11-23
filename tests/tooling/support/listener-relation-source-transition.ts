@@ -392,8 +392,36 @@ function inverse(current: string, transition: Transition, context: string): stri
   return current;
 }
 
+type PackageRevision = {
+  current_sha256: string;
+  previous_sha256: string;
+  edits: { current: string; previous: string }[];
+};
+
+function beforeNamedPackageTasks(path: string, current: string): string {
+  const record = JSON.parse(
+    readRepository(
+      "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/named-package-task-history.json",
+    ),
+  ) as Record<string, PackageRevision[]>;
+  const revisions = record[path];
+  assert.ok(revisions?.length, path);
+  for (const revision of revisions) {
+    assert.equal(hash(current), revision.current_sha256, path);
+    for (const edit of revision.edits) {
+      assert.equal(current.split(edit.current).length, 2, path);
+      current = current.replace(edit.current, () => edit.previous);
+    }
+    assert.equal(hash(current), revision.previous_sha256, path);
+  }
+  return current;
+}
+
 /** Restore only the authenticated pre-listener-relation source image. */
 export function beforeSharedListenerRelationSource(path: string, current: string): string {
+  if (path === "npm/cli/package.json" && current.includes("node ./scripts/package-tasks.cjs ")) {
+    current = beforeNamedPackageTasks(path, current);
+  }
   if (
     path === "npm/cli/package.json" &&
     identity(current).sha256 === entryPackageExportsTransition.after.sha256

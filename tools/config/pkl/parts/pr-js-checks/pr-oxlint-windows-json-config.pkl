@@ -1,0 +1,45 @@
+import "../../Actions.pkl" as ci
+
+name = "PR Oxlint Windows JSON config"
+`if` = "${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}"
+`runs-on` = ci.windows
+`timeout-minutes` = 25
+defaults {
+  run { shell = "bash" }
+}
+steps = new Listing {
+  new Dynamic {
+    uses = ci.checkout
+    `if` = "${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}"
+  }
+  new Dynamic {
+    uses = "./.github/actions/cache-vp-bootstrap"
+    `if` = "${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}"
+  }
+  new Dynamic {
+    uses = ci.setupVp121
+    `if` = "${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}"
+    with {
+      version = "latest"
+      `node-version-file` = "package.json"
+      cache = true
+      `cache-save` = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Install Oxlint package dependencies"
+    `if` = "${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}"
+    run = "node tools/support/compat/github/install-js-checks.ts original-project"
+  }
+  new Dynamic {
+    name = "Build the source Oxlint bundles"
+    `if` = "${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}"
+    run = "vp run --filter './npm/linter/oxlint' build"
+  }
+  new Dynamic {
+    name = "Run the reported JSON-config command on Windows"
+    `if` = "${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}"
+    run = "node --test npm/linter/oxlint/src/windows-json-config.test.ts"
+  }
+}

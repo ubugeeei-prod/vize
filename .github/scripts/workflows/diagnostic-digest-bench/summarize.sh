@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+test ! -s "$RUNNER_TEMP/digest-bench/report.md" || cat "$RUNNER_TEMP/digest-bench/report.md" >> "$GITHUB_STEP_SUMMARY"

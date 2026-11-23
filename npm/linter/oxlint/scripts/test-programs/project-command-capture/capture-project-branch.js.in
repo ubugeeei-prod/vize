@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import {prepareReferenceSource} from @@REFERENCE@@;
+import {runQualificationBranches} from @@QUALIFICATION@@;
+const root=@@PROJECT@@,mode=@@MODE@@;
+const timer=mode==='cancel'?setInterval(()=>{if(fs.existsSync(root+'/ready')){clearInterval(timer);process.kill(process.pid,'SIGTERM');}},10):null;
+try {await runQualificationBranches([
+ {id:'mixedDirectory8507',run:()=>new Promise(resolve=>setTimeout(()=>{fs.writeFileSync(root+'/remaining.done','complete');resolve();},150))},
+ {id:'n8n',run:()=>prepareReferenceSource(root+'/output')},
+],root+'/branch-outcomes.json');process.exitCode=2;}
+catch {process.exitCode=1;}finally{clearInterval(timer);}

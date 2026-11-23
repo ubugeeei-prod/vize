@@ -1,3 +1,4 @@
+import { workflowPredecessor } from "../../ci/workflow-program-history.ts";
 // One closed API/SourceFile ABI registration, outside authored-language rates.
 import { createHash } from "node:crypto";
 // Bun does not expose Node's experimental named export. A namespace import
@@ -138,9 +139,9 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
         require(transitioned.split(file).length === 2, "one exact producer workflow path required");
         transitioned = transitioned.replace(file, file.replace(/\.mjs$/u, ".ts"));
       }
-      require(current.equals(
-        Buffer.from(transitioned),
-      ), "workflow changed beyond four typed producer paths");
+      require(workflowPredecessor("native-beta-diagnostic-dto", current, (file) =>
+        read("head", file),
+      ).equals(Buffer.from(transitioned)), "workflow changed beyond four typed producer paths");
     } else if (index === 1) {
       pinned(read, tests[3]!.source, watcherSuccessor.observerCurrentSha256);
       pinned(read, currentObserverHelperPath, watcherSuccessor.storageObserverSha256);
@@ -518,7 +519,11 @@ export function newNativeBetaDtoProtocolCases(
         : actual.includes(
             marker === "expected_refusal" ? "expect_refusal" : marker,
           ), `missing actual observer authority: ${marker}`);
-    const job = read("head", workflow)?.toString("utf8") ?? "";
+    const currentJob = read("head", workflow);
+    require(currentJob, "missing actual four-role producer workflow");
+    const job = workflowPredecessor("native-beta-diagnostic-dto", currentJob, (file) =>
+      read("head", file),
+    ).toString("utf8");
     for (const marker of [
       "role: [before, after]",
       "version: 7.0.2",

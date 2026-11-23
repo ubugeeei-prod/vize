@@ -1,5 +1,5 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -25,7 +25,7 @@ const studies = [
 ];
 const workflow = (name: string) =>
   parse(
-    readFileSync(new URL(`../../.github/workflows/${name}.yml`, import.meta.url), "utf8"),
+    readAutomationPrograms(new URL(`../../.github/workflows/${name}.yml`, import.meta.url)),
   ) as StudyWorkflow;
 
 test("repeated performance studies stay outside automatic PR checks", () => {

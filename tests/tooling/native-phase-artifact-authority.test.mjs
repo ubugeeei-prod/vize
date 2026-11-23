@@ -1,3 +1,4 @@
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -28,7 +29,7 @@ const closure = [
 ];
 const prefix = "tools/support/compat/github";
 const workflow = parse(
-  readFileSync(
+  readAutomationPrograms(
     new URL("../../.github/workflows/typechecker-native-phases.yml", import.meta.url),
     "utf8",
   ),
@@ -104,19 +105,30 @@ function fixture(t) {
   const output = join(root, "github-output");
   const run = (sha = authority) => {
     rmSync(output, { force: true });
-    return spawnSync("bash", ["--noprofile", "--norc", "-e", "-o", "pipefail", "-c", script], {
-      cwd: checkout,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        PATH: `${dirname(process.execPath)}:${process.env.PATH}`,
-        GITHUB_WORKFLOW_SHA: sha,
-        GITHUB_OUTPUT: output,
-        RUNNER_TEMP: capture,
-        SOURCE_SHA: sourceSha,
-        DRIVER_SHA: sourceSha,
+    return spawnSync(
+      "bash",
+      [
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        automationShellPath(script, "typechecker-native-phases"),
+      ],
+      {
+        cwd: checkout,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PATH: `${dirname(process.execPath)}:${process.env.PATH}`,
+          GITHUB_WORKFLOW_SHA: sha,
+          GITHUB_OUTPUT: output,
+          RUNNER_TEMP: capture,
+          SOURCE_SHA: sourceSha,
+          DRIVER_SHA: sourceSha,
+        },
       },
-    });
+    );
   };
   return { origin, checkout, capture, root, output, git, sourceSha, authority, run, expected };
 }

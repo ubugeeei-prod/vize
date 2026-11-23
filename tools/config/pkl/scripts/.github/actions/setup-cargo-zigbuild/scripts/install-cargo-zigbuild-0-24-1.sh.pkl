@@ -1,0 +1,23 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  case "$RUNNER_ARCH" in
+    X64) arch=x86_64; sha256=32581c8e13f27a807bb244aaaac870522f5b51263c766cf77b1a99771ce9fa5c ;;
+    ARM64) arch=aarch64; sha256=70bb4c9cc71a6d16211b9079996e3cd588671053312adeff4d043499ed887601 ;;
+    *) echo "::error::Unsupported runner architecture: $RUNNER_ARCH" >&2; exit 1 ;;
+  esac
+  name="cargo-zigbuild-${arch}-unknown-linux-gnu"
+  archive="$RUNNER_TEMP/${name}.tar.xz"
+  curl --fail --silent --show-error --location --retry 5 --retry-all-errors \
+    --output "$archive" \
+    "https://github.com/rust-cross/cargo-zigbuild/releases/download/v0.24.1/${name}.tar.xz"
+  echo "${sha256}  ${archive}" | sha256sum --check --strict
+  tar -xJf "$archive" -C "$RUNNER_TEMP"
+  echo "$RUNNER_TEMP/${name}" >> "$GITHUB_PATH"
+  "$RUNNER_TEMP/${name}/cargo-zigbuild" --version
+  """#
+}

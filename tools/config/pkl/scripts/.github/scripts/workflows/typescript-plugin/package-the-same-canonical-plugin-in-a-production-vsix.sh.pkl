@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("vp", List("run", "--workspace-root", "package:vscode-extension"))
+  module.command("vp", List("node", "tests/typescript-plugin/assert-vsix.ts"))
+}

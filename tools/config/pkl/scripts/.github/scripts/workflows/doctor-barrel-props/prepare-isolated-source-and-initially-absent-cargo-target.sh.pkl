@@ -1,0 +1,26 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  source_sha="$EXPECTED_SOURCE_SHA"
+  source_root="$GITHUB_WORKSPACE"
+  if [[ "$ROLE" == baseline ]]; then
+    source_sha="$BASELINE_SHA"
+    source_root="$RUNNER_TEMP/doctor-baseline-source"
+    git worktree add --detach "$source_root" "$source_sha"
+    cp crates/vize/tests/doctor_barrel_props_cli.rs "$source_root/crates/vize/tests/"
+    echo 'mod doctor_barrel_props_cli;' >> "$source_root/crates/vize/tests/main.rs"
+  fi
+  target_root="$RUNNER_TEMP/doctor-barrel-$source_sha-$ROLE-target"
+  test ! -e "$target_root"
+  echo "SOURCE_SHA=$source_sha" >> "$GITHUB_ENV"
+  echo "SOURCE_ROOT=$source_root" >> "$GITHUB_ENV"
+  echo "CARGO_TARGET_DIR=$target_root" >> "$GITHUB_ENV"
+  echo "VIZE_BARREL_PROPS_ARTIFACTS=$RUNNER_TEMP/doctor-barrel-packets" >> "$GITHUB_ENV"
+  mkdir -p "$RUNNER_TEMP/doctor-barrel-packets"
+  printf '%s\n' "$source_sha" > "$RUNNER_TEMP/doctor-barrel-packets/source-sha.txt"
+  git -C "$source_root" status --porcelain > "$RUNNER_TEMP/doctor-barrel-packets/source-status.txt"
+  """#
+}

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cargo test --locked --profile ci -p vize_maestro --lib ide::completion::template::tag_name_tests:: -- --nocapture 2>&1 | tee target/vize-tests/tag-prefix-classification-10622/native.log

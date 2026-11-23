@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -34,7 +36,7 @@ type Step = {
   "continue-on-error"?: boolean;
 };
 type Workflow = { jobs: Record<string, { steps: Step[]; needs?: string[] }> };
-const workflow = parse(fs.readFileSync(path.join(root, workflowPath), "utf8")) as Workflow;
+const workflow = parse(readAutomationPrograms(path.join(root, workflowPath))) as Workflow;
 const steps = workflow.jobs["pr-js-package-conformance"]!.steps;
 function required(name: string): Step {
   const result = steps.find((step) => step.name === name);
@@ -92,7 +94,7 @@ test("source reporter raw archives and receipts survive failure and cancellation
   assert.equal(upload.with?.["if-no-files-found"], "error");
   assert.equal(upload["continue-on-error"], undefined);
   const source = parse(
-    fs.readFileSync(path.join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
+    readAutomationPrograms(path.join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
   ) as Workflow;
   assert.ok(source.jobs["source-report"]!.needs?.includes("pr-js-packages"));
 });
@@ -113,17 +115,17 @@ test("the actual workflow rejects extra builds and preserves failed phase output
     fs.mkdirSync(path.join(directory, "npm/cli"), { recursive: true });
     fs.writeFileSync(
       path.join(bin, "vp"),
-      '#!/bin/bash\nprintf "%s\\n" "$@" >> "$MOCK_PACK"\nif [ "$#" -ne 1 ] || [ "$1" != "pack" ]; then exit 91; fi\nprintf "controlled pack stdout\\n"\nprintf "controlled pack stderr\\n" >&2\nexit "$PACK_STATUS"\n',
+      readToolingProgram("commands/content-mapper-source-node22-workflow/vp.sh"),
       { mode: 0o755 },
     );
     fs.writeFileSync(
       path.join(bin, "cargo"),
-      '#!/bin/bash\nprintf "%s\\n" "$@" >> "$MOCK_CARGO"\nexit 92\n',
+      readToolingProgram("commands/content-mapper-source-node22-workflow/cargo.sh"),
       { mode: 0o755 },
     );
     fs.writeFileSync(
       path.join(bin, "node"),
-      '#!/bin/bash\nif [ "$1" = "npm/native/scripts/native-build-receipt.mjs" ]; then printf "producer receipt\\n" > "$MOCK_PRODUCER"; exit 0; fi\nmkdir -p "$3"\nprintf "controlled consumer stderr\\n" >&2\nprintf "%s\\n" "$@" > "$MOCK_ARGS"\nprintf "failed outcome\\n" > "$3/receipt.json"\nexit 23\n',
+      readToolingProgram("commands/content-mapper-source-node22-workflow/node.sh"),
       { mode: 0o755 },
     );
     const args = path.join(directory, "args.txt");

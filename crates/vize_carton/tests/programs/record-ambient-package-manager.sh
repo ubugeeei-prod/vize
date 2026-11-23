@@ -1,0 +1,3 @@
+#!/bin/sh
+: > "$VIZE_TEST_AMBIENT_PM_MARKER"
+printf '%s\n' "$VIZE_TEST_AMBIENT_GLOBAL_ROOT"

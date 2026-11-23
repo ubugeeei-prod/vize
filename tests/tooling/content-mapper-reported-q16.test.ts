@@ -1,3 +1,4 @@
+import { archivedWorkflow } from "./support/workflow-history.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createHash } from "node:crypto";
@@ -20,7 +21,7 @@ import {
 } from "../../tools/support/compat/content-mapper/reported-q16.ts";
 import { restoreConformanceWorkflow } from "./support/conformance-workflow-inverse.ts";
 
-const actualWorkflow = fs.readFileSync(
+const actualWorkflow = archivedWorkflow(
   new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
   "utf8",
 );
@@ -61,7 +62,7 @@ const workflow = receiverAdjustedWorkflow
   .replace(staticRefCommand, modelEventsCommand)
   .replace(modelEventsCommand, syntaxCommand);
 const data = parse(workflow);
-const childWorkflow = fs.readFileSync(
+const childWorkflow = archivedWorkflow(
   new URL("../../.github/workflows/content-mapper-reported-q16.yml", import.meta.url),
   "utf8",
 );

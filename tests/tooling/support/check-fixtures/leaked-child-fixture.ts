@@ -13,14 +13,19 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
 import { LEAK_LIFETIME_MS, LEAK_PID_FILE_ENV } from "./control-fixtures.ts";
 
 test("leaks a node descendant on purpose", () => {
-  const child = spawn(process.execPath, ["-e", `setTimeout(() => {}, ${LEAK_LIFETIME_MS})`], {
-    stdio: "ignore",
-  });
+  const child = spawn(
+    process.execPath,
+    [fileURLToPath(new URL("./timed-child.ts", import.meta.url)), String(LEAK_LIFETIME_MS)],
+    {
+      stdio: "ignore",
+    },
+  );
   child.unref();
   const pid = child.pid;
   assert.ok(pid != null, "the leaked child must have been forked");
