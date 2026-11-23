@@ -307,3 +307,6 @@ mod tests {
         assert_eq!(PIPELINE.group_of_pass(4), None);
     }
 }
+
+#[cfg(feature = "streamed-pass-groups")]
+pub use observer::run_grouped_pipeline;

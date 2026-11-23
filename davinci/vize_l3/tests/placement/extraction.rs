@@ -258,3 +258,43 @@ fn both_passes_are_optional_graph_preserving_barriers_of_one_l3_pipeline() {
     );
     assert_eq!(OPTIMIZE.group_count(), 2);
 }
+
+#[cfg(feature = "streamed-pass-groups")]
+#[test]
+fn grouped_real_optimizer_preserves_every_placement_decision_and_remark() {
+    use vize_l0::pass::run_grouped_pipeline;
+    use vize_l3::{
+        extract::EXTRACT,
+        optimize::OPTIMIZE,
+        placement::{ANNOTATE, annotate},
+    };
+    for tier in [OptTier::O0, OptTier::O1, OptTier::O2, OptTier::O3] {
+        let arena = Allocator::default();
+        let mut baseline = fixture(&arena, (LIT, "hi"));
+        let mut grouped = fixture(&arena, (LIT, "hi"));
+        let mut expected_remarks = RemarkCollector::default();
+        let expected = optimize(&mut baseline.program, tier, &mut expected_remarks).unwrap();
+        let mut observed_remarks = RemarkCollector::default();
+        let mut actual = None;
+        run_grouped_pipeline(&OPTIMIZE, &mut observed_remarks, |event, remarks| {
+            let desc = event.desc();
+            if desc == ANNOTATE {
+                annotate(&mut grouped.program);
+            } else {
+                assert_eq!(desc, EXTRACT);
+                let extraction = extract(&mut grouped.program, tier);
+                extraction.remark(remarks);
+                actual = Some(extraction);
+            }
+            Ok(())
+        })
+        .unwrap();
+        assert_eq!(actual.unwrap(), expected);
+        assert_eq!(
+            grouped.program.placements.as_slice(),
+            baseline.program.placements.as_slice()
+        );
+        assert_eq!(observed_remarks.finish(), expected_remarks.finish());
+        assert_eq!(verify(&grouped.program), []);
+    }
+}
