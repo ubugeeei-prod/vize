@@ -15,7 +15,12 @@ fn check_queries<const N: usize>(bounds: [[u32; 2]; N], offset: u32, selected: u
     check_index(&spans, &index, offset, selected);
 }
 
-fn check_index(spans: &[Span], index: &Intervals<usize>, offset: u32, selected: u8) {
+fn check_index<const N: usize>(
+    spans: &[Span; N],
+    index: &Intervals<usize>,
+    offset: u32,
+    selected: u8,
+) {
     let mut expect = 0u8;
     for (i, span) in spans.iter().enumerate() {
         if span.start <= offset && offset < span.end {
@@ -23,15 +28,25 @@ fn check_index(spans: &[Span], index: &Intervals<usize>, offset: u32, selected: 
         }
     }
     let mut seen = 0u8;
+    let mut visited = [0; N];
+    let mut count = 0;
     index
         .visit(offset, &mut |span, &i| {
             assert_eq!(spans[i], span);
             assert_eq!(seen & (1 << i), 0);
             seen |= 1 << i;
+            visited[count] = i;
+            count += 1;
             Ok::<_, ()>(())
         })
         .unwrap();
     assert_eq!(seen, expect);
+    let physical_order = index
+        .0
+        .iter()
+        .filter(|entry| entry.span.start <= offset && offset < entry.span.end)
+        .map(|entry| entry.value);
+    assert!(visited[..count].iter().copied().eq(physical_order));
 
     let matches = expect & selected;
     let expected = match matches.count_ones() {
