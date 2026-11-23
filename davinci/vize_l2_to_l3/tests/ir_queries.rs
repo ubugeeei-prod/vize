@@ -270,7 +270,10 @@ fn original_l1_round_trips_recovered_source_and_only_admitted_l2_supplies_the_gr
         assert_eq!(cursor as usize, text.len());
         assert_eq!(observed.admitted().is_some(), admits);
         if let Some(native) = observed.admitted() {
-            let ir = vize_l2_to_l3::lower_ir(&arena, native.l2ir());
+            let file = native.l2ir();
+            assert!(core::ptr::eq(file.source(), text));
+            assert!(core::ptr::eq(file.root_region(), file.artifact().root()));
+            let ir = vize_l2_to_l3::lower_ir(&arena, file);
             assert!(!ir.l3ir().ops.is_empty());
             differential(ir.l3ir());
         } else {
