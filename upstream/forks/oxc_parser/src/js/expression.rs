@@ -1518,13 +1518,6 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         &mut self,
         allow_return_type_in_arrow_function: bool,
     ) -> Expression<'a> {
-        #[cfg(feature = "terminal-embedding")]
-        if core::any::TypeId::of::<C>()
-            == core::any::TypeId::of::<crate::embedding::terminal::TerminalExpression>()
-            && let Some(expression) = self.terminal_embedding_expression()
-        {
-            return expression;
-        }
         let has_no_side_effects_comment =
             self.lexer.trivia_builder.previous_token_has_no_side_effects_comment();
         let pure_comment_index = self.lexer.trivia_builder.previous_token_has_pure_comment();
