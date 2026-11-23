@@ -186,3 +186,7 @@ fn scanning_all_starts_keeps_only_the_graph_and_evicted_answers_recheck() {
     assert_eq!(graphs, 0);
     assert_eq!(recomputed, 128);
 }
+
+mod incremental {
+    mod trails;
+}
