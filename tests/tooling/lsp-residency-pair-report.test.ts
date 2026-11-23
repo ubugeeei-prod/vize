@@ -57,7 +57,16 @@ function fixture(root: string, role: "base" | "head", sample: number, diagnostic
     elapsed_ms: 100 + sample,
     initialized_ms: 20 + sample,
     warming_elapsed_ms: 80 + sample,
-    observed_processes: [observedProcessRow],
+    observed_processes: [
+      observedProcessRow,
+      {
+        pid: 2,
+        birth_ticks: 90,
+        executables: [server, path.join(root, "bridge-runtime")],
+        peak_rss_bytes: 500 * 1024 * 1024,
+        cpu_seconds: 3,
+      },
+    ],
     idle_processes: [idleProcessRow],
     rss_peak_mib: 70 + sample,
     rss_idle_mib: 60 + sample,
@@ -93,8 +102,30 @@ void test("paired residency report keeps alternating exact diagnostics and sampl
   assert.equal(report.controls.samples_per_role, 3);
   assert.deepEqual(report.roles.base.wall_ms.values, [101, 102, 103]);
   assert.equal(report.roles.base.wall_ms.median, 102);
+  assert.equal(report.roles.base.server_peak_mib.median, 52);
+  assert.equal(report.roles.base.cpu_seconds.median, 7);
   assert.equal(report.roles.base.wall_ms.sample_variance, 1);
   assert.equal(report.comparison.wall_ms.ratio, 1);
+});
+
+void test("paired residency rejects a reused PID and two server-only process histories", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "lsp-residency-report-"));
+  t.after(() => fs.rmSync(root, { recursive: true }));
+  for (let sample = 1; sample <= 3; sample++) {
+    fixture(root, "base", sample);
+    fixture(root, "head", sample);
+  }
+  const sample = path.join(root, "sample-1-base.json");
+  const measurement = JSON.parse(fs.readFileSync(sample, "utf8"));
+  const [run] = measurement.per_run;
+  run.idle_processes[0].birth_ticks++;
+  fs.writeFileSync(sample, JSON.stringify(measurement));
+  assert.throws(() => summarizeResidencyPair(root, sha("a"), sha("b")), /lifetime changed/u);
+
+  run.idle_processes[0].birth_ticks = run.observed_processes[0].birth_ticks;
+  run.observed_processes[1].executables = [measurement.server];
+  fs.writeFileSync(sample, JSON.stringify(measurement));
+  assert.throws(() => summarizeResidencyPair(root, sha("a"), sha("b")), /one exact Maestro/u);
 });
 
 void test("paired residency report rejects diagnostic drift", (t) => {
