@@ -4,9 +4,9 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  #"mkdir -p "$RUNNER_TEMP/vapor-literal-styles""#
+  module.requireCheckout("QUALIFICATION_HEAD_SHA")
   #"""
-  mkdir -p "$RUNNER_TEMP/vapor-literal-styles"
-  test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
   git diff --exit-code
   node --test tests/tooling/vapor-style-api-fixtures.test.ts tests/tooling/vapor-style-authored-transition.test.ts tests/tooling/vapor-ssr-expose-successor.test.ts tests/tooling/vapor-style-successor-composition.test.ts
   git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/vapor-literal-styles/head-source.txt"

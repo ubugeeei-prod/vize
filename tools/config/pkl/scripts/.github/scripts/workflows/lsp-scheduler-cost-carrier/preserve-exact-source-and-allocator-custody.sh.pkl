@@ -4,8 +4,8 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCheckout("SOURCE_SHA")
   #"""
-  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
   mkdir scheduler-evidence
   base=b34edc288fda5f596eea16183b225cd894fd2c3a
   git merge-base --is-ancestor "$base" HEAD

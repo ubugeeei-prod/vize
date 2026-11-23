@@ -3,5 +3,5 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
-  #"test "$(git rev-parse HEAD)" = "$SOURCE_SHA""#
+  module.requireCheckout("SOURCE_SHA")
 }

@@ -4,9 +4,9 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCheckout("SOURCE_SHA")
+  module.requireCommitShas(List("BASE_SHA"))
   #"""
-  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-  [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
   mkdir -p "$OBSERVATION_ROOT"
   profile=crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/overlay_profile.rs
   cp "$profile" "$OBSERVATION_ROOT/overlay_profile.rs"
@@ -31,7 +31,9 @@ commands {
   git restore crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs
   if ! git cat-file -e "$BASE_SHA:$profile" 2>/dev/null; then rm "$profile"; else git restore "$profile"; fi
   git checkout --detach "$SOURCE_SHA"
-  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+  """#
+  module.requireCheckout("SOURCE_SHA")
+  #"""
   rustc -Vv > "$OBSERVATION_ROOT/after-rustc.txt"
   test -z "$(git status --porcelain --untracked-files=no)"
   """#

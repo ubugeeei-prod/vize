@@ -228,7 +228,10 @@ test("check workflow builds local native bindings before JS checks", () => {
 test("check workflow uploads the VRT HTML report when snapshots fail", () => {
   const workflow = checkWorkflowJobSources();
 
-  assert.match(workflow, /- name: Upload VRT report\s+if: steps\.vrt\.outcome == 'failure'/);
+  assert.match(
+    workflow,
+    /- name: Upload VRT report\s+if: failure\(\) && steps\.vrt\.outcome == 'failure'/,
+  );
   assert.match(workflow, /name:\s*playground-vrt-report/);
   assert.match(workflow, /path:\s*playground\/playwright-report\//);
   assert.match(workflow, /if-no-files-found:\s*ignore/);

@@ -4,9 +4,9 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  #"mkdir -p "$RUNNER_TEMP/instance-directives""#
+  module.requireCommitShas(List("PR_HEAD_SHA"))
   #"""
-  mkdir -p "$RUNNER_TEMP/instance-directives"
-  [[ "$PR_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
   read -r parent_base parent_head parent_extra < <(git show -s --format=%P HEAD)
   [[ "$parent_base" =~ ^[0-9a-f]{40}$ ]]
   [[ "$parent_head" == "$PR_HEAD_SHA" && -z "$parent_extra" ]]

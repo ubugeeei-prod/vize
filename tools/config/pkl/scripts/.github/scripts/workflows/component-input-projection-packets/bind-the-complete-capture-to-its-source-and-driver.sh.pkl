@@ -4,9 +4,9 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCommitShas(List("SOURCE_SHA"))
+  module.requireCheckout("SOURCE_SHA")
   #"""
-  [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
   EVIDENCE="$RUNNER_TEMP/component-input-packets"
   printf 'EVIDENCE=%s\n' "$EVIDENCE" >> "$GITHUB_ENV"
   mkdir -p "$EVIDENCE"

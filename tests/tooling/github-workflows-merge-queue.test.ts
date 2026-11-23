@@ -165,11 +165,9 @@ test("queue scope reaches the planner and every selected source lane remains req
     commands(source.jobs["pr-playground-test"]),
     /vp exec --filter '\.\/playground' -- playwright test/,
   );
-  const vrtFailure = source.jobs["pr-playground-test"].steps?.find(
-    (step) => step.name === "Fail if VRT failed",
-  );
-  assert.match(vrtFailure?.if ?? "", /steps\.vrt\.outcome == 'failure'/);
-  assert.equal(vrtFailure?.run, "exit 1");
+  const vrt = source.jobs["pr-playground-test"].steps?.find((step) => step.name === "Run VRT");
+  assert.ok(vrt);
+  assert.notEqual(vrt["continue-on-error"], true);
 });
 test("queue Rust keeps affected doctests beside archive builds and the differential feature tail", () => {
   assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/pr-rust-checks.yml");

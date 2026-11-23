@@ -3,8 +3,8 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
+  module.requireCommitShas(List("SOURCE_SHA"))
   #"""
-  [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
   [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
   git diff --exit-code HEAD --
   mkdir -p "$RUNNER_TEMP/n8n-script-rule-workflow"

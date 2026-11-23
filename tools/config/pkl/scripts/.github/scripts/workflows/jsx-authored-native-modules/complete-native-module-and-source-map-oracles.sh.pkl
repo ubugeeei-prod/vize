@@ -3,9 +3,9 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
+  #"mkdir -p "$RUNNER_TEMP/jsx-authored-native""#
+  module.requireCheckout("QUALIFICATION_HEAD_SHA")
   #"""
-  mkdir -p "$RUNNER_TEMP/jsx-authored-native"
-  test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
   git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/source.txt"
   git diff --exit-code
   status=0

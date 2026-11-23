@@ -211,14 +211,14 @@ test("opted-in PR and merge browser qualification retain tests and enforce merge
   const steps = source.jobs["pr-playground-test"].steps ?? [];
   const browser = steps.find((step) => step.name === "Run playground tests");
   assert.equal(browser?.if, "${{ env.RUN_PLAYGROUND == 'true' }}");
-  for (const name of [
-    "Run VRT",
-    "Upload VRT report",
-    "Upload VRT diff artifacts",
-    "Fail if VRT failed",
-  ]) {
+  const vrt = steps.find((step) => step.name === "Run VRT");
+  assert.equal(
+    vrt?.if,
+    "${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' }}",
+  );
+  for (const name of ["Upload VRT report", "Upload VRT diff artifacts"]) {
     const step = steps.find((candidate) => candidate.name === name);
-    assert.ok(step?.if?.includes("github.event_name == 'merge_group'"), name);
+    assert.equal(step?.if, "failure() && steps.vrt.outcome == 'failure'", name);
   }
 });
 

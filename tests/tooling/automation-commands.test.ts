@@ -23,6 +23,9 @@ test("automation steps accept one program invocation with arguments", () => {
 
 test("automation steps reject compound commands and embedded interpreter programs", () => {
   for (const command of [
+    "exit 1",
+    "return 3",
+    "unset NAME",
     "prepare && check",
     "run | tee log",
     "first; second",

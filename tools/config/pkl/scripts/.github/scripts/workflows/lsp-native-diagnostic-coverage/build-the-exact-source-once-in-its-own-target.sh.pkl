@@ -4,8 +4,8 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCheckout("SOURCE_SHA")
   #"""
-  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
   target_dir="$RUNNER_TEMP/diagnostic-capacity-$SOURCE_SHA"
   test ! -e "$target_dir"
   export CARGO_TARGET_DIR="$target_dir"

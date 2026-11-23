@@ -2,10 +2,10 @@ amends "../../../../ShellScript.pkl"
 
 commands {
   module.strictMode
+  ""
+  module.requireCommitShas(List("SOURCE_SHA"))
+  module.requireCommitShas(List("BASE_SHA"))
   #"""
-
-  [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-  [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
   [[ "$HISTORICAL_CALLBACK_BEFORE" == 78719553cf550bcffbf1d0fb891fda642f42de3a ]]
   [[ "$SOURCE_SHA" != "$BASE_SHA" ]]
 

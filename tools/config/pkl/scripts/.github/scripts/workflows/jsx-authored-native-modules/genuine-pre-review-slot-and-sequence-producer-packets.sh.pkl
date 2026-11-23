@@ -7,7 +7,9 @@ commands {
   #"""
   directory="$RUNNER_TEMP/jsx-authored-native/vdom-review"
   mkdir -p "$directory"
-  test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
+  """#
+  module.requireCheckout("QUALIFICATION_HEAD_SHA")
+  #"""
   git rev-parse HEAD HEAD^{tree} > "$directory/head-source.txt"
   baseline="$RUNNER_TEMP/jsx-vdom-review-base"
   observer=crates/vize_atelier_jsx/tests/vdom_child_review.rs

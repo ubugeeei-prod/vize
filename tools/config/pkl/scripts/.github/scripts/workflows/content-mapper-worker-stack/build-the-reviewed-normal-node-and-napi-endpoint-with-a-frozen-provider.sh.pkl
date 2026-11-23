@@ -10,7 +10,9 @@ commands {
     test "$remaining" -gt 0
     timeout --signal=TERM --kill-after=5s "${remaining}s" "$@"
   }
-  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+  """#
+  module.requireCheckout("SOURCE_SHA")
+  #"""
   git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/mapper-admission/source.txt"
   node --version > "$RUNNER_TEMP/mapper-admission/toolchain.txt"
   rustc -Vv >> "$RUNNER_TEMP/mapper-admission/toolchain.txt"

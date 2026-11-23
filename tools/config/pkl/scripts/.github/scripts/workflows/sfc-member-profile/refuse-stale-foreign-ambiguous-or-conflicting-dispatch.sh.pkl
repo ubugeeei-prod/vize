@@ -4,8 +4,8 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCommitShas(List("MEMBER_BASE_SHA", "MEMBER_HEAD_SHA"))
   #"""
-  [[ "$MEMBER_BASE_SHA" =~ ^[0-9a-f]{40}$ && "$MEMBER_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
   [[ "$MEMBER_HEAD_SHA" == "$GITHUB_SHA" && "$MEMBER_CONFLICTING_MODES" == false ]]
   [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize ]]
   [[ "$(git -C head rev-parse HEAD)" == "$MEMBER_HEAD_SHA" ]]

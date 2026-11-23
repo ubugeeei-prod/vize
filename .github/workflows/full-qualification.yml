@@ -413,10 +413,9 @@ jobs:
         run: vp run --filter './playground' test:browser
       - name: Run VRT
         run: vp run --filter './playground' test:vrt
-        continue-on-error: true
         id: vrt
       - name: Upload VRT report
-        if: steps.vrt.outcome == 'failure'
+        if: failure() && steps.vrt.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: playground-vrt-report
@@ -424,15 +423,12 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Upload VRT diff artifacts
-        if: steps.vrt.outcome == 'failure'
+        if: failure() && steps.vrt.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: vrt-diff
           path: playground/e2e/vrt/test-results/
           retention-days: 7
-      - name: Fail if VRT failed
-        if: steps.vrt.outcome == 'failure'
-        run: exit 1
   editor-extensions:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}

@@ -4,8 +4,8 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCommitShas(List("BASE_SHA", "HEAD_SHA"))
   #"""
-  [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
   [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
   mkdir "$RUNNER_TEMP/binding-evidence"
   base_revision=$(git merge-base "$BASE_SHA" "$HEAD_SHA")

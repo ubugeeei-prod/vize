@@ -9,7 +9,7 @@ function record(value: ConfigValue | undefined): value is Record<string, ConfigV
 const expression = /\$\{\{(?:[^}'"]|'(?:[^']|'')*'|"[^"]*"|\}(?!\}))*\}\}/gu;
 const shellOperators = /[;&|<>(){}]/u;
 const shellKeywords =
-  /^(?:if|then|for|while|until|case|function|eval|execscript|invoke-expression|iex|trap|export)$/iu;
+  /^(?:if|then|for|while|until|case|function|eval|execscript|invoke-expression|iex|trap|exit|return|break|continue|shift|unset|export)$/iu;
 const interpreter =
   /^(?:node(?:js)?|bun|deno|python(?:\d+(?:\.\d+)*)?|ruby|perl|(?:ba|da|z|k)?sh|pwsh|powershell)(?:\.exe)?$/iu;
 

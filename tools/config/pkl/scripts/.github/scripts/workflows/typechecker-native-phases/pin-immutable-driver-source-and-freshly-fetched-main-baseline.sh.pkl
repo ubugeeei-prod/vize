@@ -4,8 +4,8 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCommitShas(List("DRIVER_SHA", "SOURCE_SHA"))
   #"""
-  [[ "$DRIVER_SHA" =~ ^[0-9a-f]{40}$ && "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
   [[ "$(git rev-parse HEAD)" == "$DRIVER_SHA" ]]
   git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
   main_head_sha="$(git rev-parse refs/remotes/origin/main)"

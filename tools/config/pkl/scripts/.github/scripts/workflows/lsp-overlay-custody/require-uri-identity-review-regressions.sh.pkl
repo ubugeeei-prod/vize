@@ -4,8 +4,8 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCheckout("EXPECTED_SOURCE")
   #"""
-  test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
   capture="$RUNNER_TEMP/lsp-overlay-custody/identity-review"
   mkdir -p "$capture"
   git rev-parse HEAD > "$capture/source.txt"

@@ -24,6 +24,8 @@ function command(label: String, commandLine: String): Dynamic = new {
   run = commandLine
 }
 
+function onFailureOf(step: String): String = "failure() && steps.\(step).outcome == 'failure'"
+
 function checkoutAt(revision: String): Dynamic = new {
   uses = checkout
   with {

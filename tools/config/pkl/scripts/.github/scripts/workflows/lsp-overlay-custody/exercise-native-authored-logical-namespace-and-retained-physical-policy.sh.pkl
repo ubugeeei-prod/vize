@@ -4,8 +4,8 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCheckout("EXPECTED_SOURCE")
   #"""
-  test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
   node "$VIZE_CI_FILES/exercise-native-authored-logical-namespace-and-retained-physical-policy.ts"
   git rev-parse HEAD > "$VIZE_PRIVATE_OVERLAY_CAPTURE/source.txt"
   cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage:: --no-run --message-format=json > "$VIZE_PRIVATE_OVERLAY_CAPTURE/build.jsonl" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/build.stderr"
