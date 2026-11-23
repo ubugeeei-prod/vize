@@ -1,3 +1,4 @@
+import { installMisskeyDevResponses } from "./browser/misskey.ts";
 import type { Page } from "@playwright/test";
 import { execFileSync, execSync } from "node:child_process";
 import * as fs from "node:fs";
@@ -947,119 +948,7 @@ export const misskeyApp: AppConfig = {
     setupMisskeyWorktree({ enableVize: true, port: 5173 });
   },
   async setupPage(page) {
-    await page.addInitScript(() => {
-      const _origFetch = window.fetch;
-      window.fetch = function (input, init) {
-        const url =
-          typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-        if (url.includes("/api/")) {
-          let body = "{}";
-          if (url.includes("/api/meta")) {
-            body = JSON.stringify({
-              name: "Misskey",
-              uri: "http://localhost:3000",
-              version: "2024.11.0",
-              description: "A Misskey instance",
-              disableRegistration: false,
-              federation: "all",
-              iconUrl: null,
-              backgroundImageUrl: null,
-              defaultDarkTheme: null,
-              defaultLightTheme: null,
-              clientOptions: {},
-              policies: { ltlAvailable: true, gtlAvailable: true },
-              maxNoteTextLength: 3000,
-              features: {
-                registration: true,
-                localTimeline: true,
-                globalTimeline: true,
-                miauth: true,
-              },
-            });
-          } else if (url.includes("/api/emojis")) {
-            body = JSON.stringify({ emojis: [] });
-          }
-          return Promise.resolve(
-            new Response(body, {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            }),
-          );
-        }
-        if (url.includes("/assets/locales/")) {
-          return Promise.resolve(
-            new Response(
-              JSON.stringify({
-                _lang_: "English",
-                headlineMisskey: "A network connected by notes",
-                introMisskey:
-                  "Welcome! Misskey is an open source, decentralized microblogging platform.",
-                monthAndDay: "{month}/{day}",
-                search: "Search",
-                notifications: "Notifications",
-                username: "Username",
-                password: "Password",
-                forgotPassword: "Forgot password",
-                fetchingAsAp498: "Fetching...",
-                login: "Sign In",
-                loggingIn: "Signing In",
-                signup: "Sign Up",
-                uploading: "Uploading...",
-                save: "Save",
-                users: "Users",
-                notes: "Notes",
-                following: "Following",
-                followers: "Followers",
-                ok: "OK",
-                gotIt: "Got it!",
-                cancel: "Cancel",
-                enterUsername: "Enter username",
-                renotedBy: "Boosted by {user}",
-                noNotes: "No notes",
-                noNotifications: "No notifications",
-                instance: "Instance",
-                settings: "Settings",
-                basicSettings: "General",
-                otherSettings: "Other Settings",
-                openInWindow: "Open in window",
-                profile: "Profile",
-                timeline: "Timeline",
-                noAccountDescription: "No description",
-                loginFailed: "Sign in failed",
-                showMore: "Show More",
-                youGotNewFollower: "followed you",
-                explore: "Explore",
-                favorited: "Favorited",
-                unfavorite: "Unfavorite",
-                pinnedNote: "Pinned note",
-                somethingHappened: "Something went wrong",
-                retry: "Retry",
-                pageLoadError: "An error occurred while loading the page.",
-                pageLoadErrorDescription:
-                  "This is usually caused by a network error or the browser's cache.",
-                serverIsDead: "Server is not responding. Please wait a moment and try again.",
-                youShouldUpgradeClient: "Please refresh the page to use the updated client.",
-                enterListName: "Enter list name",
-                privacy: "Privacy",
-                makeFollowManuallyApprove: "Follow requests require approval",
-                defaultNavigationBehaviour: "Default navigation behavior",
-                editProfile: "Edit profile",
-                noteOfThisUser: "Notes by this user",
-                joinThisServer: "Sign up at this instance",
-                exploreOtherServers: "Look for another instance",
-                letsLookAtTimeline: "Have a look at the timeline",
-                invitationRequiredToRegister: "This instance is invite-only.",
-              }),
-              {
-                status: 200,
-                headers: { "Content-Type": "application/json" },
-              },
-            ),
-          );
-        }
-        return _origFetch.call(window, input, init);
-      } as typeof window.fetch;
-    });
+    await page.addInitScript(installMisskeyDevResponses);
   },
   build: {
     command: "npx",

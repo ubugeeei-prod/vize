@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -93,6 +94,8 @@ function hasInlineBrowserScript(argument: ts.Expression | undefined): boolean {
     );
   }
   return (
+    ts.isArrowFunction(argument) ||
+    ts.isFunctionExpression(argument) ||
     ts.isStringLiteralLike(argument) ||
     ts.isTemplateExpression(argument) ||
     ts.isTaggedTemplateExpression(argument) ||
@@ -100,9 +103,18 @@ function hasInlineBrowserScript(argument: ts.Expression | undefined): boolean {
   );
 }
 
+function servesInlineJavaScript(argument: ts.Expression | undefined): boolean {
+  if (!argument || !ts.isObjectLiteralExpression(argument)) return false;
+  const properties = argument.properties.filter(ts.isPropertyAssignment);
+  const mime = properties.find(({ name }) => name.getText() === "contentType")?.initializer;
+  if (!mime || !ts.isStringLiteralLike(mime) || !/\b(?:java|ecma)script\b/iu.test(mime.text))
+    return false;
+  return properties.some(({ name }) => name.getText() === "body");
+}
+
 function inlineFixtureBodies(file: string, text: string): number[] {
   if (
-    !/\.(?:addInitScript|addScriptTag)\s*\(/u.test(text) &&
+    !/\.(?:addInitScript|addScriptTag|fulfill)\s*\(/u.test(text) &&
     !text.includes("writeFile") &&
     ![...fixtureWriters.keys()].some((name) => text.includes(name))
   )
@@ -116,8 +128,9 @@ function inlineFixtureBodies(file: string, text: string): number[] {
         : node.expression;
       const name = ts.isIdentifier(callee) ? callee.text : "";
       if (
-        (name === "addInitScript" || name === "addScriptTag") &&
-        hasInlineBrowserScript(node.arguments[0])
+        ((name === "addInitScript" || name === "addScriptTag") &&
+          hasInlineBrowserScript(node.arguments[0])) ||
+        (name === "fulfill" && servesInlineJavaScript(node.arguments[0]))
       ) {
         lines.push(source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1);
       }
@@ -159,15 +172,18 @@ test("automation clients and executable fixtures load named programs", () => {
   );
   const failures: string[] = [];
   for (const file of files.split("\0")) {
-    if (
-      file.startsWith("upstream/") ||
-      !/\.[cm]?[jt]s(?:\.in)?$/u.test(file) ||
-      /(?:^|\/)(?:_?fixtures|__fixtures__|testdata)\//u.test(file)
-    )
-      continue;
+    if (file.startsWith("upstream/") || !/\.[cm]?[jt]sx?(?:\.in)?$/u.test(file)) continue;
     const source = path.join(root, file);
     if (!existsSync(source)) continue;
     const text = readFileSync(source, "utf8");
+    if (
+      file === "tests/_fixtures/differential/lint/released-reserved-8090/observe-public-before.mjs"
+    ) {
+      const receipt = path.join(path.dirname(source), "old-public-authority.json");
+      const { files } = JSON.parse(readFileSync(receipt, "utf8"));
+      assert.equal(createHash("sha256").update(text).digest("hex"), files[path.basename(source)]);
+      continue;
+    }
     for (const line of inlineFixtureBodies(file, text)) failures.push(file + ":" + line);
     if (/\.d\.[cm]?[jt]s$/u.test(file)) continue;
     const program = file.endsWith(".in") ? text.replace(/@@[A-Z][A-Z0-9_]*@@/gu, "argument") : text;
@@ -191,8 +207,25 @@ test("browser scripts load named sources", () => {
   const file = "browser.ts";
   assert.deepEqual(inlineFixtureBodies(file, 'page.addInitScript("install()")'), [1]);
   assert.deepEqual(inlineFixtureBodies(file, "page.addScriptTag({ content: source })"), [1]);
+  assert.deepEqual(inlineFixtureBodies(file, "page.addInitScript(() => install())"), [1]);
+  assert.deepEqual(inlineFixtureBodies(file, "page.addInitScript(function () { install() })"), [1]);
   assert.deepEqual(inlineFixtureBodies(file, "page.addInitScript({ path: driver })"), []);
   assert.deepEqual(inlineFixtureBodies(file, "page.addInitScript(install, options)"), []);
+  assert.deepEqual(
+    inlineFixtureBodies(file, 'route.fulfill({ contentType: "text/javascript", body: "run()" })'),
+    [1],
+  );
+  assert.deepEqual(
+    inlineFixtureBodies(
+      file,
+      'route.fulfill({ contentType: "application/javascript", path: worker })',
+    ),
+    [],
+  );
+  assert.deepEqual(
+    inlineFixtureBodies(file, 'route.fulfill({ contentType: "application/json", body: data })'),
+    [],
+  );
 });
 
 test("fixture writers take their command bodies from named sources", () => {

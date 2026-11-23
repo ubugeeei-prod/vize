@@ -12,6 +12,7 @@ import {
   defaults,
   createPermalinkServer,
   preparePermalinkContext,
+  seedConflictingPalette,
 } from "./props-permalink.browser-fixtures.ts";
 
 const repository = fileURLToPath(new URL("../../../../../", import.meta.url));
@@ -158,22 +159,7 @@ await test(
         await dialog.dismiss();
       });
       // Conflicting local state must not win over an explicit shared snapshot.
-      await shared.addInitScript(
-        ({ key }) => {
-          if (localStorage.getItem("musea:permalink-fixture-initialized")) return;
-          localStorage.setItem("musea:permalink-fixture-initialized", "true");
-          localStorage.setItem(
-            key,
-            JSON.stringify({
-              version: 1,
-              values: { label: "wrong persisted label" },
-              customProps: [],
-              deletedPaletteProps: [],
-            }),
-          );
-        },
-        { key: getPaletteStateStorageKey(art.path) },
-      );
+      await shared.addInitScript(seedConflictingPalette, getPaletteStateStorageKey(art.path));
       await shared.goto(copied);
       observations.push({ phase: "copied-link", rendered: await preview(shared, expected) });
       await shared.goto(link);
