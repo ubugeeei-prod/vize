@@ -65,7 +65,13 @@ fn original_graphs_and_lossless_recovery() {
             continue;
         };
         admitted += 1;
-        let lowered = vize_l2_to_l3::lower_ir(&arena, native.l2ir());
+        let file = native.l2ir();
+        assert!(core::ptr::eq(file.source(), l1.source()), "{path}");
+        assert!(
+            core::ptr::eq(file.root_region(), file.artifact().root()),
+            "{path}"
+        );
+        let lowered = vize_l2_to_l3::lower_ir(&arena, file);
         let ir = lowered.l3ir();
         let index = OpGraph::new(ir).unwrap();
         if ir.ops.is_empty() {
