@@ -59,17 +59,21 @@ fn complete() {
     let block = db.document_blocks(file).unwrap().iter().next().unwrap();
     let run = |observed| {
         let block = black_box(block);
-        let graph = if observed {
-            let TemplateGraphObservation::Complete(graph) =
+        let span = if observed {
+            let TemplateGraphObservation::Complete(sites) =
                 TemplateGraphObservation::read(block, Lang::Js).unwrap()
             else {
                 panic!("expected a graph");
             };
-            graph
+            sites.get(black_box(OpId::new(0))).unwrap().0
         } else {
-            block.reach_batch(Lang::Js).unwrap()
+            block
+                .reach_batch(Lang::Js)
+                .unwrap()
+                .authored_span(black_box(OpId::new(0)))
+                .unwrap()
         };
-        black_box(graph.authored_span(black_box(OpId::new(0))).unwrap());
+        black_box(span);
     };
     run(false);
     run(true);

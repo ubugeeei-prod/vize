@@ -14,7 +14,7 @@ use vize_l3::{
 };
 use vize_resident_graph::{
     TemplateGraphError, TemplateGraphObservation, TemplateQueries, TemplateReachBatch,
-    TemplateRecovery,
+    TemplateRecovery, TemplateSourceSites,
 };
 
 #[derive(Debug, Default, PartialEq, Eq)]
@@ -64,14 +64,19 @@ fn checked_graph(
     lang: Lang,
     ir: &L3Ir<'_>,
     batch: TemplateReachBatch<'_>,
+    observed: TemplateSourceSites<'_>,
     counts: &mut Counts,
 ) {
     let original = OpGraph::new(ir).unwrap();
     let sites = batch.source_sites();
+    assert!(std::ptr::eq(observed.graph(), sites.graph()));
     for op in &ir.ops {
         let span = position(block, source, op.span);
         assert_eq!(batch.authored_span(op.id), Ok(span));
         let (projected, text) = sites.get(op.id).unwrap();
+        let (observed_span, observed_text) = observed.get(op.id).unwrap();
+        assert_eq!(observed_span, span);
+        assert!(std::ptr::eq(observed_text, text));
         assert_eq!(projected, span);
         assert_eq!(
             Some(text),
@@ -87,6 +92,7 @@ fn checked_graph(
     let absent = request(missing, Direction::Forward);
     let expected = TemplateGraphError::Graph(GraphError::UnknownOp(missing));
     assert_eq!(sites.get(missing).as_ref().err(), Some(&expected));
+    assert_eq!(observed.get(missing).as_ref().err(), Some(&expected));
     assert_eq!(block.reachable(lang, absent).err(), Some(&expected));
     assert_eq!(batch.reachable(absent).err(), Some(expected));
 
@@ -224,13 +230,17 @@ fn selected(source: &str, block: BlockView<'_>, lang: Lang, counts: &mut Counts)
     let TemplateGraphObservation::Complete(graph) = observation.unwrap() else {
         panic!("fresh native lowering admitted a complete graph");
     };
-    assert_eq!(
-        graph.authored_span(OpId::new(0)),
-        batch.as_ref().unwrap().authored_span(OpId::new(0))
-    );
     counts.accepted += 1;
     let native = vize_l2_to_l3::lower(&arena, native.artifact.root());
-    checked_graph(source, block, lang, native.l3ir(), batch.unwrap(), counts);
+    checked_graph(
+        source,
+        block,
+        lang,
+        native.l3ir(),
+        batch.unwrap(),
+        graph,
+        counts,
+    );
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

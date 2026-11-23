@@ -52,7 +52,8 @@ fn retained_recovery_moves_with_its_block_and_expires_when_the_body_is_repaired(
     else {
         panic!("the repaired body was admitted");
     };
-    assert!(graph.authored_span(OpId::new(0)).is_ok());
+    let (span, spelling) = graph.get(OpId::new(0)).unwrap();
+    assert_eq!(spelling, span.slice(&repaired));
     assert_eq!(executions(&db), (1, 0));
     db.edit(file, original);
     assert_eq!(sites(&db, file), first);
