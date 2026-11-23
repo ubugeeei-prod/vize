@@ -22,9 +22,22 @@ jobs:
       receipt-sha256: ${{ steps.pack.outputs.receipt-sha256 }}
       producer-attempt: ${{ steps.pack.outputs.producer-attempt }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/pr-source-cli/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Explain unrelated skip
         if: ${{ !inputs.run-cli }}
-        run: echo 'Shared CLI build skipped because no tooling job is selected.' >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/explain-unrelated-skip.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ inputs.run-cli }}
       - uses: ./.github/actions/cache-vp-bootstrap
@@ -48,7 +61,7 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Build vize CLI and SFC oracle with original receipts
         if: ${{ inputs.run-cli }}
-        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts && cat target/ci/vize.differential-build.json && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
+        run: . "${{ env.VIZE_CI_FILES }}/build-vize-cli-and-sfc-oracle-with-original-receipts.sh"
       - name: Pack original source binaries and receipt
         if: ${{ inputs.run-cli }}
         id: pack

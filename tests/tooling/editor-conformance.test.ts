@@ -1,8 +1,3 @@
-// TS-45 (Davinci P5-12): the judge, the scenario and the CI wiring of the
-// multi-client LSP conformance suite in `tests/editor-conformance/`. The
-// editors themselves run in `.github/workflows/editor-conformance.yml`; this
-// file proves the judge is exact, that every expectation is load-bearing, and
-// that the scenario's text expectations follow from its response expectations.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
@@ -19,7 +14,11 @@ import {
 import { corruptExpectation, negativeControl } from "../editor-conformance/negative-control.ts";
 import { loadScenario, suiteRoot } from "../editor-conformance/support/context.ts";
 import { applyTextEdits, workspaceEditsFor } from "../editor-conformance/support/document.ts";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
+
+const conformanceWorkflow = readAutomationPrograms(".github/workflows/editor-conformance.yml");
+const smokeAction = readAutomationPrograms(".github/actions/vscode-host-smoke/action.yml");
 import { projectConfigDefaults } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
 
 const root = "/work/space";
@@ -243,8 +242,7 @@ test("batched and incremental edits are judged by the states the server applied"
 });
 
 test("CI runs every client at the editor-host-smoke pins and requires all four results", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "editor-conformance.yml")) as any;
-  const smoke = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const workflow = parse(conformanceWorkflow) as any;
   assert.deepEqual(workflow.jobs.conformance.strategy.matrix.client, [
     "neovim",
     "helix",
@@ -269,7 +267,7 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
   ]) {
     assert.ok(pins[name], `${name} is pinned`);
     assert.match(
-      smoke,
+      smokeAction,
       new RegExp(`${name}: "?${pins[name]}"?`),
       `${name} matches the editor-host-smoke pin`,
     );
@@ -341,7 +339,7 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
 });
 
 test("Vim and Emacs configuration cases use the verified native artifact and retain full evidence", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "editor-conformance.yml")) as any;
+  const workflow = parse(conformanceWorkflow) as any;
   const host = workflow.jobs["configuration-clients"];
   assert.equal(host.needs, "server");
   assert.equal(host.strategy["fail-fast"], false);
@@ -357,7 +355,7 @@ test("Vim and Emacs configuration cases use the verified native artifact and ret
   assert.equal(upload.with["if-no-files-found"], "error");
   assert.equal(upload.with.name, "configuration-${{ matrix.client }}");
   const pin = host.steps.find((step: any) => step.env?.VIM_LSP_COMMIT).env.VIM_LSP_COMMIT;
-  assert.ok(readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml").includes(pin));
+  assert.ok(smokeAction.includes(pin));
   const build = workflow.jobs.server.steps;
   assert.ok(build.some((step: any) => step.run?.includes("server-artifact.ts write")));
   const artifact = build.find((step: any) => step.uses?.startsWith("actions/upload-artifact@"));

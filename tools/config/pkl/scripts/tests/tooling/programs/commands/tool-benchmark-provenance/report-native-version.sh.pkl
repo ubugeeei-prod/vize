@@ -1,0 +1,9 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  echo "7.0.0-dev.20260602.1"
+  """#
+}

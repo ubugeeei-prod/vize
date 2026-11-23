@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 
 import { sourceLspRuntimeEnvironment } from "./support/lsp/runtime-environment.ts";
 import { stableTypeScriptRuntimePath } from "./support/typecheck-dependency.ts";
@@ -18,7 +19,7 @@ test("source LSP fixtures carry only their checkout platform provider into a for
     assert.deepEqual(input, { PATH: "/foreign/bin", RETAINED: "unchanged" });
     const child = spawnSync(
       process.execPath,
-      ["-e", "process.stdout.write(process.env.CORSA_PATH)"],
+      [toolingProgram("native/print-lsp-provider-path.js")],
       {
         cwd: workspace,
         env: environment,

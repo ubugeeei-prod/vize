@@ -5,6 +5,20 @@ use std::path::PathBuf;
 use super::{MaterializedFileSnapshot, materialize_package_links, remove_stale_package_links};
 use vize_carton::{FxHashMap, FxHashSet};
 
+#[test]
+fn hash_samples_are_isolated_between_threads() {
+    super::take_materialized_hash_count();
+    super::hash_materialized_file(b"caller");
+    let worker_sample = std::thread::spawn(|| {
+        super::hash_materialized_file(b"worker");
+        super::take_materialized_hash_count()
+    })
+    .join()
+    .unwrap();
+    assert_eq!(worker_sample, 1);
+    assert_eq!(super::take_materialized_hash_count(), 1);
+}
+
 fn snapshot(entries: &[(&str, u64)]) -> MaterializedFileSnapshot {
     MaterializedFileSnapshot {
         revisions: entries

@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { COPY_TREE_SOURCE } from "./release-smoke-parity-peer.ts";
+import { toolingProgram, readToolingProgram } from "../support/program-path.ts";
 
 type Entry = { name: string; type: string; mode: number; bytes?: string; target?: string };
 
@@ -72,7 +72,7 @@ for (const rich of [false, true]) {
       fs.writeFileSync(path.join(source, "index.js"), "module.exports = { ok: true };\n");
       fs.writeFileSync(
         path.join(source, "cli.js"),
-        "#!/usr/bin/env node\nconsole.log('parity executable');\n",
+        readToolingProgram("commands/release-smoke-parity-peer-copy/cli.cjs"),
         { mode: 0o755 },
       );
       if (rich) {
@@ -95,12 +95,7 @@ for (const rich of [false, true]) {
       };
       const baseline = spawnSync(
         process.execPath,
-        [
-          "-e",
-          'require("node:fs").cpSync(process.argv[1], process.argv[2], { recursive: true });',
-          source,
-          destination,
-        ],
+        [toolingProgram("release/copy-peer-tree.cjs"), source, destination],
         { cwd: install, encoding: "utf8", timeout: 30_000 },
       );
       const baselineRecord = {
@@ -136,12 +131,7 @@ for (const rich of [false, true]) {
       fs.rmSync(destination, { recursive: true, force: true });
       const replacement = spawnSync(
         process.execPath,
-        [
-          "-e",
-          `const fs = require("node:fs"); const path = require("node:path"); ${COPY_TREE_SOURCE}\ncopyTree(process.argv[1], process.argv[2]);`,
-          source,
-          destination,
-        ],
+        [toolingProgram("release/copy-release-peer-tree.js"), source, destination],
         { cwd: install, encoding: "utf8", timeout: 30_000 },
       );
       const after = tree(destination);
@@ -175,12 +165,7 @@ test("npm parity peer rejects recursive source/destination ancestry", () => {
     const destination = path.join(temporary, "nested");
     const result = spawnSync(
       process.execPath,
-      [
-        "-e",
-        `const fs = require("node:fs"); const path = require("node:path"); ${COPY_TREE_SOURCE}\ntry { copyTree(process.argv[1], process.argv[2]); } catch (error) { process.stderr.write(error.message); process.exit(1); }`,
-        temporary,
-        destination,
-      ],
+      [toolingProgram("release/copy-release-peer-tree.js"), temporary, destination],
       { encoding: "utf8" },
     );
     assert.ifError(result.error);

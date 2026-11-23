@@ -1,0 +1,4 @@
+#!@@NODE@@
+process.stdout.write("retained body");
+process.stderr.write("retained error");
+process.exitCode = 3;

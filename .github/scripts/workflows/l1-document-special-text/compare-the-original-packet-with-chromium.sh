@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+vp node --test \
+  tests/tooling/davinci-document-body-elements.test.ts \
+  tests/tooling/davinci-document-disclosure-elements.test.ts \
+  tests/tooling/davinci-document-embedded-fallback.test.ts \
+  tests/tooling/davinci-document-foreign-content.test.ts \
+  tests/tooling/davinci-document-phrasing.test.ts \
+  tests/tooling/davinci-document-select.test.ts \
+  tests/tooling/davinci-document-special-text.test.ts

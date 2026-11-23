@@ -4,6 +4,8 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+
+import { processResultArgs } from "./support/program-path.ts";
 import { runLinuxInvocation } from "../../tools/benchmarks/scripts/typecheck-owned-pair-run.ts";
 
 const enabled = process.platform === "linux" && process.env.GITHUB_ACTIONS === "true";
@@ -14,11 +16,7 @@ test(
     const out = mkdtempSync(join(tmpdir(), "owned-pair-linux-test-"));
     try {
       const run = await runLinuxInvocation({
-        command: [
-          process.execPath,
-          "-e",
-          "process.stdout.write(Buffer.from([0,255,10])); setTimeout(()=>{},400)",
-        ],
+        command: [process.execPath, ...processResultArgs({ stdout: [0, 255, 10], delayMs: 400 })],
         cwd: out,
         out: join(out, "sample"),
         native: null,
@@ -50,8 +48,7 @@ test(
       const run = await runLinuxInvocation({
         command: [
           process.execPath,
-          "-e",
-          "process.stdout.write('partial'); process.stderr.write('exact failure\\n'); process.exitCode=7",
+          ...processResultArgs({ stdout: "partial", stderr: "exact failure\n", status: 7 }),
         ],
         cwd: out,
         out: join(out, "sample"),

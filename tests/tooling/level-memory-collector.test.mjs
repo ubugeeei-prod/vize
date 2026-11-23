@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 import { loadRegistry } from "../../tools/benchmarks/scripts/instruction-counts-lib.mjs";
 import {
   levelInstructionSuites,
@@ -104,10 +105,7 @@ await test("a failing process preserves complete raw streams before refusing adm
     () =>
       run(
         process.execPath,
-        [
-          "-e",
-          "process.stdout.write(Buffer.from([0,255,10]));process.stderr.write('whole stderr\\n');process.exit(7)",
-        ],
+        [toolingProgram("native/emit-failed-level-streams.js")],
         f.root,
         directory,
         { ...process.env, MEMORY_TEST_SECRET: "must-not-escape" },

@@ -1,19 +1,11 @@
-use crate::validate_runtime_output;
+use crate::{runtime_output, validate_runtime_output};
 use serde_json::json;
 use std::process::Command;
 
 #[test]
 fn runtime_failure_preserves_non_utf8_child_stream_bytes() {
     for byte in [255, 254] {
-        let output = Command::new("node")
-            .args([
-                "-e",
-                &format!(
-                    "require('node:fs').writeSync(1, Buffer.from([{byte},0,10,97])); require('node:fs').writeSync(2, Buffer.from([{byte},13,27])); process.exit(13)"
-                ),
-            ])
-            .output()
-            .unwrap();
+        let output = runtime_output(&[byte, 0, 10, 97], &[byte, 13, 27], 13, None);
         assert_eq!(output.status.code(), Some(13));
         assert_eq!(output.stdout, [byte, 0, 10, 97]);
         assert_eq!(output.stderr, [byte, 13, 27]);
@@ -37,18 +29,7 @@ fn runtime_failure_preserves_non_utf8_child_stream_bytes() {
 fn a_signal_after_the_exact_passing_payload_fails() {
     use std::os::unix::process::ExitStatusExt;
 
-    let run = |stdout: &str, end: &str| {
-        Command::new("node")
-            .args([
-                "-e",
-                &format!("require('node:fs').writeSync(1, process.argv[1]); {end}"),
-                stdout,
-            ])
-            .output()
-            .unwrap()
-    };
-    let crash = "process.kill(process.pid, 'SIGSEGV')";
-    let passed = run("{\"passed\":1}", crash);
+    let passed = runtime_output(br#"{"passed":1}"#, b"", 0, Some("SIGSEGV"));
     assert_eq!(passed.status.signal(), Some(11));
     let report =
         validate_runtime_output("vapor", "source", &json!([{}]), "code", &passed).unwrap_err();
@@ -67,8 +48,8 @@ fn a_signal_after_the_exact_passing_payload_fails() {
         "rendered result must stay in the evidence:\n{report}"
     );
     for output in [
-        run("{\"passed\":0}", crash),
-        run("{\"passed\":1}", "process.exit(1)"),
+        runtime_output(br#"{"passed":0}"#, b"", 0, Some("SIGSEGV")),
+        runtime_output(br#"{"passed":1}"#, b"", 1, None),
     ] {
         let report =
             validate_runtime_output("vapor", "source", &json!([{}]), "code", &output).unwrap_err();

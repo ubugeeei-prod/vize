@@ -1,0 +1,11 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$SHA"
+  git worktree add --detach "$RUNNER_TEMP/scaling-target" "$SHA"
+  """#
+}

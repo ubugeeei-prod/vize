@@ -1,0 +1,17 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  evidence="$RUNNER_TEMP/ambient-ref-evidence"
+  sha256sum "$VIZE_TEST_CONTENT_MAPPER_TSGO" > "$evidence/native.sha256"
+  "$VIZE_TEST_CONTENT_MAPPER_TSGO" --version > "$evidence/native.version"
+  cargo test --locked --profile ci -p vize --test integration content_mapper_tsgo_cli::support::ambient_template_ref:: -- --nocapture --test-threads=1 > "$evidence/test.stdout" 2> "$evidence/test.stderr"
+  grep -Fxq 'running 3 tests' "$evidence/test.stdout"
+  grep -Fq 'test result: ok. 3 passed; 0 failed; 0 ignored;' "$evidence/test.stdout"
+  sha256sum target/ci/vize > "$evidence/source-cli.sha256"
+  printf '%s\n' "$SOURCE_SHA" > "$evidence/source.sha"
+  """#
+}

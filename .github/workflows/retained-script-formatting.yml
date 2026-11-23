@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/retained-script-formatting.yml"
+      - ".github/scripts/workflows/retained-script-formatting/**"
       - "crates/vize_glyph/Cargo.toml"
       - "crates/vize_glyph/src/lib.rs"
       - "crates/vize_glyph/src/script*"
@@ -37,6 +38,19 @@ jobs:
       CARGO_INCREMENTAL: "0"
       RUST_MIN_STACK: "16777216"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/retained-script-formatting/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -47,26 +61,9 @@ jobs:
         env:
           VIZE_RETAINED_FORMAT_SAMPLE: ${{ runner.temp }}/retained-format-files
           VIZE_RETAINED_FORMAT_MANIFEST: ${{ runner.temp }}/retained-format-files
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt -p vize_glyph --features retained-script)
-          cargo test "${flags[@]}" --lib script::snapshot::
-          cargo test "${flags[@]}" --test auto_line_endings --test sfc_empty_script_blocks --test import_sorting --test program_snapshot
-          git ls-files -z -- '*.vue' '*.vue.txt' '*.js' '*.mjs' '*.cjs' '*.jsx' '*.ts' '*.mts' '*.cts' '*.tsx' > "$VIZE_RETAINED_FORMAT_MANIFEST"
-          cargo test "${flags[@]}" --lib script::snapshot::tests::corpus::original_sources -- --exact --ignored --nocapture
-          cargo test "${flags[@]}" --lib script::snapshot::tests::profile::paired_formatter_requests -- --exact --ignored --nocapture
-          cargo test "${flags[@]}" --lib script::snapshot::tests::profile::corpus::original_formatter_requests -- --exact --ignored --nocapture
+        run: . "${{ env.VIZE_CI_FILES }}/compare-formatter-results-on-original-files-and-record-paired-requests.sh"
       - name: Compare shared Vue Program inputs through semantic and formatter APIs
         env:
           VIZE_SCRIPT_PROGRAMS_MANIFEST: ${{ runner.temp }}/vue-script-inputs
           VIZE_SCRIPT_PROGRAMS_SAMPLE: ${{ runner.temp }}/vue-script-inputs
-        run: |
-          set -euo pipefail
-          cargo test --locked --profile ci-opt -p vize_l1 --features script-queries --lib container::vue::programs::
-          cargo test --locked --profile ci-opt -p vize_l2 --features script-queries --lib query::vue::
-          flags=(--locked --profile ci-opt -p vize_glyph --features retained-script,vize_l2/script-queries --test selected_script_programs)
-          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_SCRIPT_PROGRAMS_MANIFEST"
-          cargo test "${flags[@]}"
-          cargo test "${flags[@]}" original_sources -- --exact --ignored --nocapture
-          cargo test "${flags[@]}" profile::shared_program_requests -- --exact --ignored --nocapture
-          cargo test "${flags[@]}" profile::corpus::original_program_requests -- --exact --ignored --nocapture
+        run: . "${{ env.VIZE_CI_FILES }}/compare-shared-vue-program-inputs-through-semantic-and-formatter-apis.sh"

@@ -1,0 +1,63 @@
+import "../Actions.pkl" as ci
+
+name = "Cache Vite+ bootstrap runtime"
+description = "Restore the Node.js and pnpm that setup-vp downloads while installing the global CLI. Only a trusted default-branch run that asks to save writes the entry."
+
+inputs {
+  save {
+    description = "Save after this job when the event is a trusted default-branch run. Pull requests and the merge queue cannot write."
+    required = false
+    ["default"] = "false"
+  }
+}
+
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Resolve the Vite+ bootstrap cache key"
+      id = "key"
+      uses = "./.github/actions/cache-vp-bootstrap/select-key"
+      env {
+
+        RUNNER_OS = "${{ runner.os }}"
+        RUNNER_ARCH = "${{ runner.arch }}"
+        EVENT_NAME = "${{ github.event_name }}"
+        REF = "${{ github.ref }}"
+        DEFAULT_BRANCH = "${{ github.event.repository.default_branch }}"
+        SAVE_REQUESTED = "${{ inputs.save }}"
+      }
+    }
+    // setup-vp forces VP_HOME=~/.vite-plus. These are the directories its
+    // installer skips when the exact Node LTS and pinned pnpm are already there.
+    // Fallbacks retain the current schema and pinned Node/pnpm pair.
+    new Dynamic {
+      name = "Save the Vite+ bootstrap runtime from a trusted default branch"
+      `if` = "${{ steps.key.outputs.key != '' && steps.key.outputs.save == 'true' }}"
+      uses = ci.cache
+      with {
+        path = """
+        ~/.vite-plus/js_runtime
+        ~/.vite-plus/package_manager
+
+        """
+        key = "${{ steps.key.outputs.key }}"
+        `restore-keys` = "${{ steps.key.outputs.restore }}"
+      }
+    }
+    new Dynamic {
+      name = "Restore the Vite+ bootstrap runtime"
+      `if` = "${{ steps.key.outputs.key != '' && steps.key.outputs.save != 'true' }}"
+      uses = "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae"  // v5
+      with {
+        path = """
+        ~/.vite-plus/js_runtime
+        ~/.vite-plus/package_manager
+
+        """
+        key = "${{ steps.key.outputs.key }}"
+        `restore-keys` = "${{ steps.key.outputs.restore }}"
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir "$RUNNER_TEMP/instance-directive-provider"
+cd "$RUNNER_TEMP/instance-directive-provider"
+cat > package.json <<'JSON'
+{"private":true,"dependencies":{"vue":"3.6.0-rc.6","typescript":"6.0.3","native-typescript":"npm:typescript@7.1.0-beta","vue-language-tools-fixture-vue":"npm:vue@3.6.0-rc.6","vue-component-type-helpers":"3.3.14"}}
+JSON
+npm install --ignore-scripts --no-audit --no-fund

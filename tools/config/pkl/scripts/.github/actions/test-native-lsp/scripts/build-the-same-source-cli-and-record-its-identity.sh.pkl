@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("cargo", List("build", "--locked", "--profile", "ci", "-p", "vize"))
+  module.command("node", List("tests/differential/build-receipt.ts"))
+}

@@ -1,0 +1,36 @@
+import "../../Actions.pkl" as ci
+
+name = "PR source checks"
+on {
+  workflow_call = null
+}
+permissions {
+  contents = "read"
+  `pull-requests` = "read"
+  actions = "read"
+}
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `nuxt-module-qualification` = import("../../parts/pr-source-checks/nuxt-module-qualification.pkl")
+  `pr-source-plan` = import("../../parts/pr-source-checks/pr-source-plan.pkl")
+  // Check the release-only non-native WASM configuration beside PR Rust lanes.
+  `wasm-release-check` = import("../../parts/pr-source-checks/wasm-release-check.pkl")
+  // Tooling tests otherwise ran only in scheduled Full qualification, so docs
+  // and tooling breaks reached main. The PR tier selects what a change affects.
+  // Build beside the planner, not after it: nearly every PR selects tooling.
+  `affected-tooling-cli` = import("../../parts/pr-source-checks/affected-tooling-cli.pkl")
+  `affected-tooling` = import("../../parts/pr-source-checks/affected-tooling.pkl")
+  `affected-tooling-report` = import("../../parts/pr-source-checks/affected-tooling-report.pkl")
+  // Run beside the lanes; their required source report already waits for this job.
+  `ci-selection-tests` = import("../../parts/pr-source-checks/ci-selection-tests.pkl")
+  `canonical-corpus` = import("../../parts/pr-source-checks/canonical-corpus.pkl")
+  `pr-rust-source` = import("../../parts/pr-source-checks/pr-rust-source.pkl")
+  `pr-rust-products` = import("../../parts/pr-source-checks/pr-rust-products.pkl")
+  `pr-js-packages` = import("../../parts/pr-source-checks/pr-js-packages.pkl")
+  `pr-native-runtime` = import("../../parts/pr-source-checks/pr-native-runtime.pkl")
+  `pr-playground-test` = import("../../parts/pr-source-checks/pr-playground-test.pkl")
+  `source-report` = import("../../parts/pr-source-checks/source-report.pkl")
+}

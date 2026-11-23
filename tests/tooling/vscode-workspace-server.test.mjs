@@ -1,3 +1,4 @@
+import { configuredNodeLauncher } from "../../tools/support/process-launcher.ts";
 import assert from "node:assert/strict";
 import { execFile, spawn } from "node:child_process";
 import fs from "node:fs";
@@ -54,15 +55,17 @@ function fixture(t) {
   fs.writeFileSync(path.join(folder, "package.json"), "{}");
   const log = path.join(directory, "events.jsonl");
   fs.writeFileSync(log, "");
-  const program = fs.readFileSync(
-    path.join(root, "editors/vscode/test/fixtures/workspace-protocol-server.cjs"),
-    "utf8",
-  );
   function server(destination, version = "9.8.7", mode = "valid") {
     fs.mkdirSync(path.dirname(destination), { recursive: true });
     fs.writeFileSync(
       destination,
-      `#!/usr/bin/env node\nconst options = ${JSON.stringify({ log, version, mode })};\n${program}`,
+      configuredNodeLauncher(
+        new URL(
+          "../../editors/vscode/test/fixtures/workspace-protocol-server.cjs",
+          import.meta.url,
+        ),
+        { log, version, mode },
+      ),
       { mode: 0o755 },
     );
     return destination;

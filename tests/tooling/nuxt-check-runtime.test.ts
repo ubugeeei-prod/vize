@@ -5,6 +5,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 
 import { prepareNuxtCheckFixture } from "../_helpers/nuxt-check-prepare.ts";
 import {
@@ -19,15 +20,11 @@ test("preparation binds an actual executable and scopes child Node without chang
   const before = { ...env };
   const selected = inspectPrepareNode(process.execPath, env);
   const actual = JSON.parse(
-    execFileSync(
-      "node",
-      ["-p", "JSON.stringify({execPath:process.execPath,version:process.version})"],
-      {
-        env: selected.env,
-        encoding: "utf8",
-        timeout: 10_000,
-      },
-    ),
+    execFileSync("node", [toolingProgram("process/print-node-identity.js")], {
+      env: selected.env,
+      encoding: "utf8",
+      timeout: 10_000,
+    }),
   );
   assert.equal(fs.realpathSync(actual.execPath), fs.realpathSync(process.execPath));
   assert.equal(actual.version, process.version);

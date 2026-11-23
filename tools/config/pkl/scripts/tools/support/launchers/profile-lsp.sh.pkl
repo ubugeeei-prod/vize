@@ -1,0 +1,12 @@
+amends "../../../../ShellScript.pkl"
+
+interpreter = "sh"
+executable = false
+
+commands {
+  #"set -e"#
+  #"if [ "$1" = "lsp" ]; then"#
+  #"  exec @@COMMAND@@ "$@" --profile-json @@PROFILE@@"#
+  #"fi"#
+  #"exec @@COMMAND@@ "$@""#
+}

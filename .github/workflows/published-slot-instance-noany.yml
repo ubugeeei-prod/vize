@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/published-slot-instance-noany.yml
+      - .github/scripts/workflows/published-slot-instance-noany/**
       - tools/support/release/slot_instance_public/**
       - tools/support/release/computed_event_custody.ts
       - tools/support/release/editor_vite_stub/custody.ts
@@ -55,6 +56,19 @@ jobs:
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 25
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/published-slot-instance-noany/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -69,11 +83,7 @@ jobs:
           "$BEFORE_CAPSULE" "$HEAD_CAPSULE" "$RUNNER_TEMP/slot-instance-public"
       - name: Preserve complete failures and physical installed custody
         if: always()
-        run: |
-          set -euo pipefail
-          if [[ -d "$RUNNER_TEMP/slot-instance-public" ]]; then
-            tar --exclude=node_modules --exclude=registry-installation -czf "$RUNNER_TEMP/slot-instance-public.tgz" -C "$RUNNER_TEMP" slot-instance-public
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/preserve-complete-failures-and-physical-installed-custody.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:

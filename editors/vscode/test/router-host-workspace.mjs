@@ -1,3 +1,4 @@
+import { configuredNodeLauncher } from "../../../tools/support/process-launcher.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -41,7 +42,10 @@ export async function prepareRouterHostWorkspace({
   // Use the same passive forwarder for the compiler side as well. Its raw
   // chunks preserve in-memory Art projections that have no on-disk mirror.
   const observedCorsa = path.join(directory, "typescript-observed");
-  const compilerLauncher = `#!${process.execPath}\nprocess.env.VIZE_TEST_OBSERVED_SERVER_PATH=${JSON.stringify(corsa)};\nprocess.env.VIZE_TEST_CONFIG_PROTOCOL_PATH=${JSON.stringify(path.join(output, "compiler-protocol.jsonl"))};\nrequire(${JSON.stringify(proxy)});\n`;
+  const compilerLauncher = configuredNodeLauncher(
+    new URL("./fixtures/launch-observed-server.cjs", import.meta.url),
+    { proxy, server: corsa, protocol: path.join(output, "compiler-protocol.jsonl") },
+  );
   fs.writeFileSync(observedCorsa, compilerLauncher);
   fs.chmodSync(observedCorsa, 0o755);
   fs.writeFileSync(path.join(output, "compiler-launcher.js.txt"), compilerLauncher);
@@ -99,7 +103,12 @@ export async function prepareRouterHostWorkspace({
     });
   }
   const launcher = path.join(directory, "vize-observed");
-  fs.writeFileSync(launcher, `#!${process.execPath}\nrequire(${JSON.stringify(proxy)});\n`);
+  fs.writeFileSync(
+    launcher,
+    configuredNodeLauncher(new URL("./fixtures/launch-observed-server.cjs", import.meta.url), {
+      proxy,
+    }),
+  );
   fs.chmodSync(launcher, 0o755);
   const workspace = path.join(directory, "router.code-workspace");
   fs.writeFileSync(

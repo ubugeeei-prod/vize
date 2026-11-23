@@ -27,6 +27,19 @@ jobs:
       native: ${{ steps.plan.outputs.musea-native }}
       browser: ${{ steps.plan.outputs.musea-browser }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/musea-browser/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
@@ -41,11 +54,7 @@ jobs:
         id: plan
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          if [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && ! "$BASE_SHA" =~ ^0+$ ]]; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          fi
-          node tools/support/compat/github/plan-product-integrations.ts "$GITHUB_EVENT_NAME" "$BASE_SHA" "$GITHUB_SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/select-changed-product-inputs.sh"
 
   musea-native-inline:
     name: Musea native inline Art contracts
@@ -53,6 +62,8 @@ jobs:
     if: ${{ needs.plan.outputs.native == 'true' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/musea-browser"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/cache-vp-bootstrap
@@ -78,30 +89,17 @@ jobs:
       - name: Install Chromium and its system dependencies
         run: vize-ci-apt-retry vp exec --filter './npm/builder/vite-musea' -- playwright install --with-deps chromium
       - name: Build the exact source native binding and gallery
-        run: |
-          vp run --filter './npm/native' build:ci
-          vp run --filter './npm/cli' build
-          vp run --filter './npm/builder/vite' build
-          vp run --filter './npm/builder/vite-musea' build
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-exact-source-native-binding-and-gallery.sh"
       - name: Verify actual native inline component rendering and globals
         working-directory: npm/builder/vite-musea
         env:
           VIZE_MUSEA_NATIVE_BROWSER_TESTS: "1"
-        run: |
-          vp exec tsx --test src/plugin/inline-art-query.test.ts src/plugin/art-processing.test.ts src/inline-art-query.browser.test.ts
-          vp exec tsx --test src/runtime-props-native.browser.test.ts src/runtime-props-quoted-native.test.ts src/optional-prop-spacing-native.test.ts src/readonly-primitive-native.test.ts
-          vp exec tsx --test src/art-component.test.ts src/inline-art.browser.test.ts src/vrt-api.browser.test.ts src/vrt-report.browser.test.ts src/vrt/report-identity.test.ts src/usage-component.browser.test.ts src/compact-props.test.ts src/api-routes/handler-palette-compact.test.ts src/compact-props.browser.test.ts src/cli/serve.test.ts src/cli/service/input.test.ts src/cli/service/reports.test.ts src/hosted-vrt-service.browser.test.ts src/hosted-vrt-lifecycle.browser.test.ts src/literal-variant-keys.browser.test.ts src/literal-variant-keys.test.ts src/hosted-vrt-literal.browser.test.ts src/hosted-vrt-reconnect.browser.test.ts src/packed-gallery-base.browser.test.ts src/unsupported-props.browser.test.ts gallery/utils/supportedProps.test.ts
-          vp exec tsx --test src/inline-art-static.browser.test.ts
-          vp exec tsx --test src/variant-bindings-native.browser.test.ts src/variant-bindings-http.test.ts
-          vp exec tsx --test src/variant-navigation-owner.test.ts src/variant-navigation-probe.browser.test.ts src/variant-navigation-owner.browser.test.ts
-          vp exec tsx --test src/vrt/before-capture.browser.test.ts
+        run: . "${{ env.VIZE_CI_FILES }}/verify-actual-native-inline-component-rendering-and-globals.sh"
       - name: Verify hosted CLI capture and snapshot identities with the exact source packages
         working-directory: npm/builder/vite-musea
         env:
           VIZE_MUSEA_BROWSER_TESTS: "1"
-        run: |
-          vp exec tsx --test gallery/components/hosted-vrt.browser.test.ts
-          vp exec tsx --test gallery/components/snapshot-identities.browser.test.ts
+        run: . "${{ env.VIZE_CI_FILES }}/verify-hosted-cli-capture-and-snapshot-identities-with-the-exact-source.sh"
       - name: Retain native inline Art browser observations
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -145,6 +143,8 @@ jobs:
     if: ${{ needs.plan.outputs.browser == 'true' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/musea-browser"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/cache-vp-bootstrap
@@ -161,28 +161,12 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install Chromium and its system dependencies
-        run: |
-          # Browser dependency resolution needs package indices, not desktop metadata.
-          sudo tee /etc/apt/apt.conf.d/81-vize-musea-package-indexes >/dev/null <<'APT'
-          Acquire::Languages "none";
-          Acquire::IndexTargets::deb::DEP-11::DefaultEnabled "false";
-          Acquire::IndexTargets::deb::CNF::DefaultEnabled "false";
-          APT
-          vize-ci-apt-retry vp exec --filter './npm/builder/vite-musea' -- playwright install --with-deps chromium
+        run: . "${{ env.VIZE_CI_FILES }}/install-chromium-and-its-system-dependencies.sh"
       - name: Verify real accessibility and deterministic screenshots
         working-directory: npm/builder/vite-musea
         env:
           VIZE_MUSEA_BROWSER_TESTS: "1"
-        run: |
-          vp exec tsx --test gallery/components/home-layout.browser.test.ts
-          vp exec tsx --test src/a11y/browser-contracts.test.ts src/a11y/node-report.test.ts gallery/components/code-display.browser.test.ts gallery/components/global-toolbar.browser.test.ts gallery/components/public-browser-observation.browser.test.ts gallery/components/hosted-tests.browser.test.ts gallery/components/snapshot-collisions.browser.test.ts
-          vp exec tsx --test gallery/components/viewport-presets.browser.test.ts
-          vp exec tsx --test src/props-permalink.test.ts gallery/components/props-permalink.browser.test.ts
-          vp exec tsx --test gallery/components/sidebar-rotation.browser.test.ts
-          vp exec tsx --test src/vrt/mask-capture.browser.test.ts
-          vp exec tsx --test src/vrt/diff-style.browser.test.ts
-          vp exec tsx --test src/vrt/before-capture.browser.test.ts
-          vp exec tsx --test gallery/components/content-layout.browser.test.ts
+        run: . "${{ env.VIZE_CI_FILES }}/verify-real-accessibility-and-deterministic-screenshots.sh"
       - name: Retain gallery browser observations and screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

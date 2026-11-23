@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { constants } from "node:os";
+import { stripTypeScriptTypes } from "node:module";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { pathToFileURL } from "node:url";
@@ -46,117 +47,23 @@ export interface RuntimeObservations {
   vite: Record<string, string>;
 }
 
-// These complete scripts retain the reviewed child-process bytes.
-export const NATIVE_RUNTIME_SCRIPT = `
-const required = require("@vizejs/native");
-(async () => {
-  const imported = await import("@vizejs/native");
-  const importedNative = imported.default ?? imported;
-  for (const [label, native] of [["require", required], ["import", importedNative]]) {
-    if (typeof native.compileSfc !== "function") throw new Error(\`compileSfc missing from \${label} smoke\`);
-    const result = native.compileSfc(
-      '<template><div>{{ msg }}</div></template><script setup lang="ts">const msg: string = "ok";</script>',
-      { filename: "Smoke.vue", isTs: true },
-    );
-    if (!result || result.errors.length > 0 || typeof result.code !== "string" || result.code.length === 0) {
-      throw new Error(\`compileSfc \${label} runtime smoke failed\`);
-    }
+function consumerProgram(
+  installDir: string,
+  name: "native-check.cjs" | "native-observation.cjs" | "init.mjs" | "lsp.mjs",
+): string {
+  // CommonJS and ESM must both resolve the freshly installed consumer package.
+  const folder = path.join(installDir, ".vize-runtime-check");
+  fs.mkdirSync(folder, { recursive: true });
+  const file = path.join(folder, name);
+  if (name.endsWith(".mjs")) {
+    // The installed consumer may use an older Node that cannot strip TypeScript.
+    const source = new URL("./programs/" + name.replace(/\.mjs$/u, ".ts"), import.meta.url);
+    fs.writeFileSync(file, stripTypeScriptTypes(fs.readFileSync(source, "utf8")));
+  } else {
+    fs.copyFileSync(new URL("./programs/" + name, import.meta.url), file);
   }
-})().catch((error) => { console.error(error); process.exit(1); });
-`;
-export const NATIVE_RUNTIME_OBSERVATION_SCRIPT = `
-const native = require("@vizejs/native");
-const result = native.compileSfc(
-  '<template><div>{{ msg }}</div></template><script setup lang="ts">const msg: string = "ok";</script>',
-  { filename: "Smoke.vue", isTs: true },
-);
-process.stdout.write(JSON.stringify(result));
-`;
-export const LSP_RUNTIME_SCRIPT = String.raw`
-import { spawn } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { pathToFileURL } from "node:url";
-const [runtime, bin, root, app] = JSON.parse(process.env.VIZE_SMOKE_LSP_CONTEXT);
-const child = spawn(runtime, [bin, "lsp"], { cwd: root, stdio: ["pipe", "pipe", "pipe"] });
-let buffer = Buffer.alloc(0);
-let stderr = "";
-let settled = false;
-let cleanTimer;
-let diagnostics = [];
-let shutdownRequested = false;
-const timer = setTimeout(() => finish(new Error(
-  "LSP smoke timed out with diagnostics: " + JSON.stringify(diagnostics) + "\n" + stderr
-)), 60_000);
-function send(message) {
-  const body = Buffer.from(JSON.stringify({ jsonrpc: "2.0", ...message }));
-  child.stdin.write(Buffer.concat([Buffer.from("Content-Length: " + body.length + "\r\n\r\n"), body]));
+  return file;
 }
-function finish(error) {
-  if (settled) return;
-  settled = true;
-  clearTimeout(timer);
-  clearTimeout(cleanTimer);
-  if (error) {
-    console.error(error);
-    child.kill();
-    process.exitCode = 1;
-  }
-}
-child.stderr.on("data", chunk => { stderr = (stderr + chunk).slice(-4000); });
-child.stdout.on("data", chunk => {
-  buffer = Buffer.concat([buffer, chunk]);
-  for (;;) {
-    const header = buffer.indexOf("\r\n\r\n");
-    if (header < 0) return;
-    const length = Number(/Content-Length: (\d+)/i.exec(buffer.subarray(0, header).toString())?.[1]);
-    if (buffer.length < header + 4 + length) return;
-    const message = JSON.parse(buffer.subarray(header + 4, header + 4 + length).toString());
-    buffer = buffer.subarray(header + 4 + length);
-    if (message.id === 1) {
-      send({ method: "initialized", params: {} });
-      send({ method: "textDocument/didOpen", params: { textDocument: {
-        uri: pathToFileURL(app).href, languageId: "vue", version: 1, text: readFileSync(app, "utf8")
-      } } });
-    } else if (message.method === "textDocument/publishDiagnostics" &&
-      message.params.uri === pathToFileURL(app).href) {
-      diagnostics = message.params.diagnostics ?? [];
-      clearTimeout(cleanTimer);
-      if (diagnostics.length === 0) cleanTimer = setTimeout(() => {
-        shutdownRequested = true;
-        send({ id: 2, method: "shutdown", params: null });
-      }, 500);
-    } else if (message.id === 2) {
-      send({ method: "exit", params: null });
-    }
-  }
-});
-child.on("exit", code => {
-  if (!settled && (code !== 0 || !shutdownRequested)) return finish(new Error(
-    "LSP exited " + code + " with diagnostics: " + JSON.stringify(diagnostics) + "\n" + stderr
-  ));
-  if (!settled) {
-    settled = true;
-    clearTimeout(timer);
-  }
-});
-const rootUri = pathToFileURL(root).href;
-send({ id: 1, method: "initialize", params: {
-  processId: process.pid, rootUri, workspaceFolders: [{ uri: rootUri, name: "root" }], capabilities: {}
-} });
-`;
-export const INIT_SCRIPT = `
-import { pathToFileURL } from "node:url";
-import path from "node:path";
-const context = JSON.parse(process.argv[1]);
-const helper = (name) => import(pathToFileURL(path.join(context.repoRoot, "tools/support/compat/npm", name)));
-const { runInitTypecheckChecks } = await helper("smoke-release-init-typecheck.mjs");
-const { runFreshProjectInitChecks } = await helper("smoke-release-init-fresh.mjs");
-context.packed = new Map(Object.entries(context.packed));
-context.compatiblePacked = new Set(context.compatiblePacked);
-context.versions = new Map(Object.entries(context.versions));
-runInitTypecheckChecks(context.installDir, context.vizeBin, context.repoRoot, context.peers);
-runFreshProjectInitChecks(context);
-`;
 
 function runInitChecks(
   installDir: string,
@@ -191,7 +98,7 @@ function runInitChecks(
     delete env[key];
   const output = spawnSync(
     process.env.NODE_BIN ?? "node",
-    ["--input-type=module", "-e", INIT_SCRIPT, JSON.stringify(sortedJson(context))],
+    [consumerProgram(installDir, "init.mjs"), JSON.stringify(sortedJson(context))],
     { cwd: installDir, env, encoding: "utf8", maxBuffer: Infinity },
   );
   if (output.error) throw new Error(`cannot run installed init oracles: ${output.error.message}`);
@@ -243,8 +150,7 @@ function runLspRuntimeCheck(runtime: string, vizeBin: string, installDir: string
   const app = path.join(installDir, "src/App.vue");
   const context = JSON.stringify([runtime, vizeBin, installDir, app]);
   const command = process.env.NODE_BIN ?? "node";
-  const script = `process.env.VIZE_SMOKE_LSP_CONTEXT=${JSON.stringify(context)};\n${LSP_RUNTIME_SCRIPT}`;
-  runCommand(command, ["--input-type=module", "--eval", script], installDir);
+  runCommand(command, [consumerProgram(installDir, "lsp.mjs"), context], installDir);
 }
 
 export function runRuntimeChecks(
@@ -270,9 +176,9 @@ export function runRuntimeChecks(
     vite: {},
   };
   if (packages.some((entry) => entry.name === "@vizejs/native")) {
-    runCommand(runtime, ["-e", NATIVE_RUNTIME_SCRIPT], installDir);
+    runCommand(runtime, [consumerProgram(installDir, "native-check.cjs")], installDir);
     observations.native = normalizeRuntimeText(
-      runCommand(runtime, ["-e", NATIVE_RUNTIME_OBSERVATION_SCRIPT], installDir),
+      runCommand(runtime, [consumerProgram(installDir, "native-observation.cjs")], installDir),
       installDir,
     );
     console.log(`${runtimePrefix}: @vizejs/native require/import compileSfc`);

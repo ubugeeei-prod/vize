@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
@@ -219,11 +220,9 @@ void test("runner preserves literal arguments and the child process failure stat
       planPath,
       JSON.stringify(planAffectedRust(fixture(), ["crates/unrelated/src/lib.rs"])),
     );
-    writeFileSync(
-      join(cwd, "cargo"),
-      "#!/usr/bin/env node\nrequire('node:fs').writeFileSync(process.env.ARGS_FILE, JSON.stringify(process.argv.slice(2))); process.exit(37);\n",
-      { mode: 0o755 },
-    );
+    writeFileSync(join(cwd, "cargo"), readToolingProgram("commands/plan-affected-rust/cargo.cjs"), {
+      mode: 0o755,
+    });
     const literal = "archive with spaces $(touch should-not-exist).tar.zst";
     const environment = {
       ...process.env,

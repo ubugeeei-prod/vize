@@ -1,0 +1,8 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"printf '%s\n' "$*" >> "$FAKE_BLACKSMITH_LOG""#
+  #"printf '%s\n' tbx_testbox_id"#
+}

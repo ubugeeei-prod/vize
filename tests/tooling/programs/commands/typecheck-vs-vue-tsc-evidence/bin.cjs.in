@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+process.stdout.write(@@STDOUT@@);
+process.stderr.write(@@STDERR@@);
+process.exitCode = @@STATUS@@;

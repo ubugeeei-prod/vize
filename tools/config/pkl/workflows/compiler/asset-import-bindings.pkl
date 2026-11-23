@@ -1,0 +1,103 @@
+import "../../Actions.pkl" as ci
+
+name = "SFC asset import bindings"
+
+on {
+  pull_request {
+    paths = new Listing {
+      "crates/vize_atelier_sfc/src/bundler/assets.rs"
+      "crates/vize_atelier_sfc/src/bundler/assets/**"
+      "crates/vize_atelier_sfc/src/bundler/tests/asset_names.rs"
+      "crates/vize_croquis/src/drawer/helpers/v_for/**"
+      "crates/vize_atelier_sfc/examples/asset_import_names_profile.rs"
+      "tests/tooling/asset-import-binding-source.mjs"
+      ".github/workflows/asset-import-bindings.yml"
+      ".github/scripts/workflows/asset-import-bindings/**"
+    }
+  }
+}
+
+permissions { contents = "read" }
+concurrency {
+  group = "asset-import-bindings-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  // The immutable before image qualifies this repair; Check retains routine regression tests.
+  `source-native` {
+    `if` = "${{ github.event.pull_request.number == 10711 }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 35
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUSTC_WRAPPER = ""
+      RUSTC_WORKSPACE_WRAPPER = ""
+      BASE_SHA = "e466c0366d303baf725d67942a8a6a0f872c0dc0"
+      HEAD_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("asset-import-bindings")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "1.1.0"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = ci.cache
+        with {
+          path = """
+          ~/.cargo/registry
+          ~/.cargo/git
+
+          """
+          key = "asset-bindings-registry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}"
+        }
+      }
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        name = "Build immutable before and head producers in separate source targets"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-immutable-before-and-head-producers-in-separate-source-targets.sh""#
+      }
+      new Dynamic {
+        name = "Verify full unchanged packets, actual collision repair and source custody"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-full-unchanged-packets-actual-collision-repair-and-source-custody.sh""#
+      }
+      new Dynamic {
+        name = "Preserve complete source evidence, images, packets and unnormalized logs"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "asset-import-bindings-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.HEAD_SHA }}"
+          path = """
+          ${{ runner.temp }}/asset-import-bindings/**
+          !${{ runner.temp }}/asset-import-bindings/node_modules/**
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

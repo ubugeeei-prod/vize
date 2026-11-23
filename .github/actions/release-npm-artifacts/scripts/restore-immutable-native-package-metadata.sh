@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+git fetch --no-tags --depth=1 origin "refs/tags/$RELEASE_TAG"
+for file in pnpm-workspace.yaml npm/native/package.json npm/fresco-native/package.json; do
+  git show "FETCH_HEAD:$file" > "$file"
+done

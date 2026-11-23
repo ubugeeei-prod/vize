@@ -140,7 +140,9 @@ export function restoreSourceCliLauncher(
   // Rust CLI. Its original arguments, environment and all streams pass through.
   fs.writeFileSync(
     launcher,
-    `#!/usr/bin/env node\nimport { spawn } from "node:child_process";\nconsole.error("VIZE_TASK_CACHE_SOURCE_ENV " + JSON.stringify({ cwd: process.cwd(), xdgCacheHome: process.env.XDG_CACHE_HOME, tmpdir: process.env.TMPDIR, argv: process.argv.slice(2) }));\nconst child = spawn(${JSON.stringify(sourceCli)}, process.argv.slice(2), { stdio: "inherit" });\nconst stop = (signal) => { if (!child.killed) child.kill(signal); };\nprocess.on("SIGTERM", () => stop("SIGTERM"));\nprocess.on("SIGINT", () => stop("SIGINT"));\nchild.on("error", (error) => { throw error; });\nchild.on("exit", (code, signal) => {\n  if (signal) process.kill(process.pid, signal);\n  else process.exitCode = code ?? 1;\n});\n`,
+    fs
+      .readFileSync(new URL("./task-cache-source-cli.js", import.meta.url), "utf8")
+      .replace('"@@SOURCE_CLI@@"', () => JSON.stringify(sourceCli)),
   );
   return {
     path: launcher,

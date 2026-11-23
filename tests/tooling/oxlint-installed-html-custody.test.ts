@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 import {
   campaignAuthority,
   htmlInstalledAuthority,
@@ -210,8 +211,7 @@ test("actual child status and byte streams survive invalid output and observer j
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   withoutAmbientOverrides(() => {
     const child = spawnSync(process.execPath, [
-      "-e",
-      "process.stdout.write(Buffer.from([0,255,10]));process.stderr.write('retained stderr');process.exit(23)",
+      toolingProgram("native/emit-failed-oxlint-streams.js"),
     ]);
     assert.equal(child.error, undefined);
     assert.equal(child.signal, null);

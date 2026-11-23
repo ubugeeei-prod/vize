@@ -23,15 +23,7 @@ fn corsa_without_checkers_support_fails_instead_of_retrying() {
     let stub = case_dir.join("corsa-stub.sh");
     fs::write(
         &stub,
-        r#"#!/bin/sh
-for arg in "$@"; do
-  if [ "$arg" = "--checkers" ]; then
-    echo "error TS5023: Unknown compiler option '--checkers'."
-    exit 1
-  fi
-done
-exit 0
-"#,
+        include_str!("../../../../../tests/programs/observe-checker-options.sh"),
     )
     .unwrap();
     fs::set_permissions(&stub, fs::Permissions::from_mode(0o755)).unwrap();

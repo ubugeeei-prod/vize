@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"tar --exclude='*/node_modules' --exclude='*/project' -czf "$RUNNER_TEMP/partition-weight-raw.tgz" -C "$RUNNER_TEMP" partition-weight"#
+}

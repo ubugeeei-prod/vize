@@ -1,25 +1,20 @@
-import { defineTasks, nodeTool, noCacheTask, runTask, shellCommand } from "../task-helpers.ts";
+import { defineTasks, nodeTool, noCacheTask, runTask, steps } from "../task-helpers.ts";
 
-/**
- * Code generation tasks and local CLI smoke commands.
- *
- * JSON Schema remains the source of truth for public config declarations, while
- * TypeScript performs the post-processing that encodes Vize-specific API details
- * which the schema generator cannot express on its own. The CLI aliases stay in
- * the same module because they are the fastest manual way to inspect generated
- * config and compiler output after the generator changes.
- */
 export const generationAndCliTasks = defineTasks({
   "gen:schema": noCacheTask(
     "pnpm --dir npm/cli exec pkl eval --project-dir pkl -f json pkl/jsonschema/generate.pkl -o schemas/vize.config.schema.json",
   ),
   "gen:types": noCacheTask(
-    `${runTask("gen:schema")} && pnpm --dir npm/cli exec json2ts -i schemas/vize.config.schema.json -o src/types/generated.ts && ${nodeTool("tasks/postprocess-types")} && ${nodeTool("tasks/generate-vue-config-validation")} && pnpm --dir npm/cli exec oxfmt --write schemas/vize.config.schema.json src/types/generated.ts ../../crates/vize_carton/src/config/loader/vite-runtime.mjs`,
+    steps(
+      runTask("gen:schema"),
+      "pnpm --dir npm/cli exec json2ts -i schemas/vize.config.schema.json -o src/types/generated.ts",
+      nodeTool("tasks/postprocess-types"),
+      nodeTool("tasks/generate-vue-config-validation"),
+      "pnpm --dir npm/cli exec oxfmt --write schemas/vize.config.schema.json src/types/generated.ts ../../crates/vize_carton/src/config/loader/vite-runtime.mjs",
+    ),
   ),
   gen: noCacheTask(runTask("gen:types")),
-  cli: noCacheTask(
-    `${shellCommand('if [ "${usage_debug:-$1}" = "true" ] || [ "$1" = "--debug" ]; then cargo install --path crates/vize --force --locked --debug && echo "Installed vize CLI (debug build)"; else cargo install --path crates/vize --force --locked && echo "Installed vize CLI (release build)"; fi')} --`,
-  ),
+  cli: noCacheTask(nodeTool("tasks/install-cli")),
   "cli:help": noCacheTask("vize --help"),
   "cli:example": noCacheTask("vize './**/*.vue' -o . -v"),
   "cli:example-json": noCacheTask("vize './**/*.vue' -o . -f json -v"),

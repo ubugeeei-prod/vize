@@ -1,0 +1,3 @@
+#!/bin/sh
+basedir_win="$basedir"
+exec "$basedir/node"  "$basedir/../.pnpm/vue-tsc@9.9.9/node_modules/vue-tsc/bin/vue-tsc.js" "$@"

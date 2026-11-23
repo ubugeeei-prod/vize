@@ -4,17 +4,21 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { PNG } from "pngjs";
 import { writePng } from "./comparison.ts";
 
-const comparisonModule = new URL("./runner-comparison.ts", import.meta.url).href;
-
 // A subprocess makes an uncaught stream error, an unhandled rejection, and a
 // hanging comparison observable independently of the test runner's handlers.
-function inChild(source: string): unknown {
+function inChild(driver: "compare-png" | "capture-png", ...args: string[]): unknown {
   const child = spawnSync(
     process.execPath,
-    ["--import", import.meta.resolve("tsx"), "--input-type=module", "--eval", source],
+    [
+      "--import",
+      import.meta.resolve("tsx"),
+      fileURLToPath(new URL(`../../test/${driver}.ts`, import.meta.url)),
+      ...args,
+    ],
     { encoding: "utf8", timeout: 10000 },
   );
   assert.equal(child.error, undefined);
@@ -36,18 +40,11 @@ for (const side of ["baseline", "current"]) {
         if (failure === "directory") await mkdir(invalid);
         if (failure === "corrupt") await writeFile(invalid, "not a PNG");
 
-        const result = inChild(`
-          import { compareImages } from ${JSON.stringify(comparisonModule)};
-          const paths = ${JSON.stringify([baseline, current, path.join(root, "diff.png")])};
-          try {
-            await compareImages(...paths, {});
-            process.stdout.write(JSON.stringify({ rejected: false }));
-          } catch (error) {
-            process.stdout.write(JSON.stringify({
-              rejected: true, code: error.code ?? null, message: error.message,
-            }));
-          }
-        `) as { rejected: boolean; code: string | null; message: string };
+        const result = inChild("compare-png", baseline, current, path.join(root, "diff.png")) as {
+          rejected: boolean;
+          code: string | null;
+          message: string;
+        };
 
         assert.equal(result.rejected, true);
         assert.equal(
@@ -71,28 +68,10 @@ void test("an unreadable baseline returns the complete failed capture and closes
     const source = path.join(root, "capture.png");
     await writePng(new PNG({ width: 1, height: 1 }), source);
 
-    const output = inChild(`
-      import fs from "node:fs/promises";
-      import { captureAndCompare } from ${JSON.stringify(comparisonModule)};
-      const closed = [];
-      const page = {
-        async goto() {}, async waitForSelector() {}, async waitForTimeout() {},
-        async screenshot({ path }) { await fs.copyFile(${JSON.stringify(source)}, path); },
-        async close() { closed.push("page"); },
-      };
-      const context = { async newPage() { return page; }, async close() { closed.push("context"); } };
-      const runner = {
-        getBrowser() { return { async newContext() { return context; } }; },
-        getOptions() { return { snapshotDir: ${JSON.stringify(root)}, threshold: 0 }; },
-        getCapture() { return { hideElements: [], maskElements: [] }; },
-        getComparison() { return {}; },
-        getHostedNavigation() {},
-        getPreviewUrl() { return "http://localhost/preview"; },
-        async getSnapshotName() { return "baseline.png"; },
-      };
-      const result = await captureAndCompare(runner, { path: "Button.art.vue" }, "Default", { width: 1, height: 1 }, "http://localhost");
-      process.stdout.write(JSON.stringify({ result, closed }));
-    `) as { result: { error: string }; closed: string[] };
+    const output = inChild("capture-png", root, source) as {
+      result: { error: string };
+      closed: string[];
+    };
 
     assert.match(output.result.error, /EISDIR/);
     assert.deepEqual(output, {

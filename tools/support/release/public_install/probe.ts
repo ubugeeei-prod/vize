@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 // The only prospective execution boundary; require genuine successful return.
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -102,8 +103,10 @@ export function publicProbe(
     command(
       node,
       [
-        "-e",
-        "process.stdout.write(JSON.stringify({version:process.version,platform:process.platform,arch:process.arch}))",
+        fileURLToPath(new URL("../../node-runtime-identity.cjs", import.meta.url)),
+        "version",
+        "platform",
+        "arch",
       ],
       install,
       environment,
@@ -115,8 +118,7 @@ export function publicProbe(
     command(
       node,
       [
-        "-e",
-        "process.stdout.write(require.resolve(process.argv[1],{paths:[process.argv[2]]}))",
+        fileURLToPath(new URL("./resolve-platform-binding.cjs", import.meta.url)),
         platformName,
         install,
       ],

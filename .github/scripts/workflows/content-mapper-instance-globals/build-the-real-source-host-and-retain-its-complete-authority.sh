@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+mkdir -p "$RUNNER_TEMP/instance-globals-source-host"
+go build -tags=noembed -trimpath -o "$RUNNER_TEMP/instance-globals-source-host/tsgo" ./cmd/tsc
+cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/instance-globals-source-host/"

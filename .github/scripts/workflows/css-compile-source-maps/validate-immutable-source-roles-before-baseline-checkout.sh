@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+[[ "$VIZE_CSS_MAP_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+[[ "$VIZE_CSS_MAP_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+test "$(git -C head rev-parse HEAD)" = "$VIZE_CSS_MAP_SOURCE_SHA"
+git -C head merge-base --is-ancestor "$VIZE_CSS_MAP_BASE_SHA" "$VIZE_CSS_MAP_SOURCE_SHA"

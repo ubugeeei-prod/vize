@@ -1,0 +1,88 @@
+import "../../Actions.pkl" as ci
+
+name = "Native template tool projections"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/template-tool-projections.yml"
+      ".github/scripts/workflows/template-tool-projections/**"
+      "davinci/vize_l2/Cargo.toml"
+      "davinci/vize_l2/src/query/**"
+      "davinci/vize_l1_to_l2/Cargo.toml"
+      "davinci/vize_l1_to_l2/src/native.rs"
+      "davinci/vize_l1_to_l2/src/native/**"
+      "davinci/vize_l1_to_l2/src/native_file.rs"
+      "davinci/vize_l1_to_l2/src/native_file/**"
+      "crates/vize_canon/Cargo.toml"
+      "crates/vize_canon/src/projection.rs"
+      "crates/vize_canon/src/projection/**"
+      "crates/vize_maestro/Cargo.toml"
+      "crates/vize_maestro/src/virtual_code.rs"
+      "crates/vize_maestro/src/virtual_code/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "template-tool-projections-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `template-products` {
+    name = "Template tool projections ${{ matrix.suite }}"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        suite = List("correctness", "performance")
+      }
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("template-tool-projections")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = ci.cache
+        with {
+          path = """
+          ~/.cargo/registry
+          ~/.cargo/git
+
+          """
+          key = "template-tool-projections-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}"
+        }
+      }
+      new Dynamic {
+        name = "Compare the complete source maps, script exports and editor documents"
+        `if` = "matrix.suite == 'correctness'"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-complete-source-maps-script-exports-and-editor-documents.sh""#
+      }
+      new Dynamic {
+        name = "Measure the complete checker and editor products on retained files"
+        `if` = "matrix.suite == 'performance'"
+        run = """
+        cargo test --locked --profile ci-opt -p vize_maestro --features experimental-template-operand-products,micro-profiling --lib paired_template_tool_products -- --ignored --nocapture --test-threads=1
+
+        """
+      }
+    }
+  }
+}

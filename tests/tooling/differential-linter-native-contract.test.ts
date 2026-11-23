@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import path from "node:path";
 import fs from "node:fs";
@@ -336,7 +337,9 @@ void test("a failed native process still retains both fresh failed attempts", ()
     const count = path.join(dir, "attempts");
     fs.writeFileSync(
       binary,
-      `#!/bin/sh\nprintf 'attempt\\n' >> '${count}'\nprintf 'malformed outcome\\n'\nexit 1\n`,
+      readToolingProgram("commands/differential-linter-native-contract/binary.sh", {
+        COUNT: count,
+      }),
       { mode: 0o755 },
     );
     const actual = runNative(binary, loaded.cases[0], receipt);

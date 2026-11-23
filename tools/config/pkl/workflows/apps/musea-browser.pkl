@@ -1,0 +1,243 @@
+import "../../Actions.pkl" as ci
+
+name = "Musea accessibility and capture"
+// #6830: off the PR tier; main runs it per commit and nightly.
+// Not a required check, so a queue run gated nothing while it competed with
+// every queue entry for runners. main gets a post-merge run per commit instead.
+on {
+  push {
+    branches = List("main")
+  }
+  schedule = new Listing {
+    new Dynamic { cron = "43 3 * * *" }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+
+// The planner selects from one commit's diff, so a push run must never be
+// coalesced into a newer one that would not select the same integrations.
+concurrency {
+  group = "musea-browser-${{ github.event.pull_request.number || (github.event_name == 'push' && github.sha) || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  plan {
+    name = "Select affected Musea integrations"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 3
+    outputs {
+      native = "${{ steps.plan.outputs.musea-native }}"
+      browser = "${{ steps.plan.outputs.musea-browser }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("musea-browser")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          `fetch-depth` = 1
+          `sparse-checkout-cone-mode` = false
+          `sparse-checkout` = """
+          /package.json
+          /tools/support/compat/github/plan-product-integrations.ts
+
+          """
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Select changed product inputs"
+        id = "plan"
+        env { BASE_SHA = "${{ github.event.pull_request.base.sha || github.event.before }}" }
+        run = #". "${{ env.VIZE_CI_FILES }}/select-changed-product-inputs.sh""#
+      }
+    }
+  }
+
+  `musea-native-inline` {
+    name = "Musea native inline Art contracts"
+    needs = "plan"
+    `if` = "${{ needs.plan.outputs.native == 'true' }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/musea-browser"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      ci.workspaceVp()
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f"  // master
+        with { toolchain = "1.100.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "native-inline-browser"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Install source-native browser dependencies"
+        run = "vp install --filter './npm/native...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline"
+      }
+      new Dynamic {
+        uses = ci.cache
+        with {
+          path = "~/.cache/ms-playwright"
+          key = "${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}"
+        }
+      }
+      ci.use("./.github/actions/setup-ubuntu-archive")
+      new Dynamic {
+        name = "Install Chromium and its system dependencies"
+        run = "vize-ci-apt-retry vp exec --filter './npm/builder/vite-musea' -- playwright install --with-deps chromium"
+      }
+      new Dynamic {
+        name = "Build the exact source native binding and gallery"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-exact-source-native-binding-and-gallery.sh""#
+      }
+      new Dynamic {
+        name = "Verify actual native inline component rendering and globals"
+        `working-directory` = "npm/builder/vite-musea"
+        env { VIZE_MUSEA_NATIVE_BROWSER_TESTS = "1" }
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-actual-native-inline-component-rendering-and-globals.sh""#
+      }
+      new Dynamic {
+        name = "Verify hosted CLI capture and snapshot identities with the exact source packages"
+        `working-directory` = "npm/builder/vite-musea"
+        env { VIZE_MUSEA_BROWSER_TESTS = "1" }
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-hosted-cli-capture-and-snapshot-identities-with-the-exact-source.sh""#
+      }
+      new Dynamic {
+        name = "Retain native inline Art browser observations"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "musea-native-inline-${{ github.sha }}"
+          path = """
+          artifacts/musea-native-inline/**
+          artifacts/musea-native-inline-query/**
+          artifacts/musea-native-runtime-props/**
+          artifacts/musea-native-optional-spacing/**
+          artifacts/musea-native-static/**
+          artifacts/musea-native-bindings/**
+          artifacts/musea-native-vrt-api/**
+          artifacts/musea-native-vrt-reports/**
+          artifacts/musea-native-hosted-vrt/**
+          artifacts/musea-native-hosted-vrt-lifecycle/**
+          artifacts/musea-native-hosted-vrt-reconnect/**
+          artifacts/musea-native-literal-variants/**
+          artifacts/musea-native-packed-gallery-base/**
+          output/playwright/musea-interactions/**
+          !artifacts/**/node_modules/**
+
+          """
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+          `include-hidden-files` = true
+        }
+      }
+      new Dynamic {
+        name = "Retain hosted CLI captures and snapshot identities"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "musea-hosted-cli-${{ github.sha }}"
+          path = """
+          artifacts/musea-hosted-vrt/**/*.png
+          artifacts/musea-hosted-vrt/*.json
+          artifacts/musea-snapshot-identities/**/*.png
+          artifacts/musea-snapshot-identities/**/*.json
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+          `include-hidden-files` = false
+        }
+      }
+    }
+  }
+  `musea-browser` {
+    name = "Musea real Chromium contracts"
+    needs = "plan"
+    `if` = "${{ needs.plan.outputs.browser == 'true' }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/musea-browser"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      ci.workspaceVp()
+      new Dynamic {
+        name = "Install Musea test dependencies"
+        run = "vp install --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline"
+      }
+      new Dynamic {
+        uses = ci.cache
+        with {
+          path = "~/.cache/ms-playwright"
+          key = "${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}"
+        }
+      }
+      ci.use("./.github/actions/setup-ubuntu-archive")
+      new Dynamic {
+        name = "Install Chromium and its system dependencies"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-chromium-and-its-system-dependencies.sh""#
+      }
+      new Dynamic {
+        name = "Verify real accessibility and deterministic screenshots"
+        `working-directory` = "npm/builder/vite-musea"
+        env { VIZE_MUSEA_BROWSER_TESTS = "1" }
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-real-accessibility-and-deterministic-screenshots.sh""#
+      }
+      new Dynamic {
+        name = "Retain gallery browser observations and screenshots"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "musea-code-display-${{ github.sha }}"
+          path = """
+          artifacts/musea-home-layout/*.png
+          artifacts/musea-home-layout/observations.json
+          artifacts/musea-code/*.png
+          artifacts/musea-code/observations.json
+          artifacts/musea-globals/*.png
+          artifacts/musea-globals/observations.json
+          artifacts/musea-viewports/*.png
+          artifacts/musea-viewports/observations.json
+          artifacts/musea-sidebar-rotation/*.png
+          artifacts/musea-sidebar-rotation/observations.json
+          artifacts/musea-content-layout/*.png
+          artifacts/musea-content-layout/observations.json
+          artifacts/musea-hosted/*.png
+          artifacts/musea-hosted/observations.json
+          artifacts/musea-snapshot-collisions/*.png
+          artifacts/musea-snapshot-collisions/*.json
+          output/playwright/musea-props/*.png
+          output/playwright/musea-props/observations.json
+          artifacts/musea-vrt-mask/**
+          artifacts/musea-vrt-styles/**
+          output/playwright/musea-interactions/**
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+          `include-hidden-files` = false
+        }
+      }
+    }
+  }
+}

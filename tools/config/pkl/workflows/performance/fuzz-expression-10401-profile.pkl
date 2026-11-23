@@ -1,0 +1,149 @@
+import "../../Actions.pkl" as ci
+
+name = "Expression slow unit 10401 profile"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/fuzz-expression-10401-profile.yml"
+      ".github/scripts/workflows/fuzz-expression-10401-profile/**"
+      ".github/scripts/workflows/shared/**"
+      "crates/vize_atelier_core/examples/fuzz_expression_10401_profile.rs"
+      "tests/fuzz/regressions/js_ts_expression/issue-10401.input"
+      "davinci/vize_l0/src/expression_guard/**"
+      "davinci/vize_l0/src/expression_guard.rs"
+      "upstream/forks/oxc_parser/src/**"
+    }
+  }
+  workflow_dispatch {}
+}
+permissions { contents = "read" }
+concurrency {
+  group = "expression-10401-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  profile {
+    name = "Expression 10401 ${{ matrix.role }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    strategy {
+      `fail-fast` = false
+      matrix {
+        role = List("baseline", "candidate")
+      }
+    }
+    env {
+
+      CARGO_INCREMENTAL = "0"
+      CARGO_TERM_COLOR = "never"
+      ROLE = "${{ matrix.role }}"
+      DRIVER_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+      SOURCE_SHA = "${{ matrix.role == 'baseline' && '3a4bf713f85589a50da5d0a7aaf8ae33fdcdc004' || github.event.pull_request.head.sha || github.sha }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("fuzz-expression-10401-profile")
+      new Dynamic {
+        name = "Checkout frozen driver and exact input"
+        uses = ci.checkout
+        with {
+          ref = "${{ env.DRIVER_SHA }}"
+          path = "driver"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Checkout immutable source"
+        uses = ci.checkout
+        with {
+          ref = "${{ env.SOURCE_SHA }}"
+          path = "source"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f"  // master
+        with { toolchain = "nightly-2026-10-23" }
+      }
+      // Downloaded sources may be reused; compiled targets are never restored.
+      new Dynamic {
+        uses = "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae"  // v5
+        with {
+          path = """
+          ~/.cargo/registry
+          ~/.cargo/git
+
+          """
+          key = "expression-profile-downloads-${{ runner.os }}"
+        }
+      }
+      new Dynamic {
+        name = "Prepare source and provenance"
+        run = #". "${{ env.VIZE_CI_FILES }}/prepare-source-and-provenance.sh""#
+      }
+      new Dynamic {
+        name = "Build optimized phase probe with source line information"
+        id = "optimized-build"
+        `working-directory` = "source"
+        env { CARGO_PROFILE_CI_OPT_DEBUG = "1" }
+        run = #". "${{ env.VIZE_CI_FILES }}/build-optimized-phase-probe-with-source-line-information.sh""#
+      }
+      new Dynamic {
+        name = "Measure guard, guarded parse, and raw parser separately"
+        run = #". "${{ env.VIZE_CI_FILES }}/measure-guard-guarded-parse-and-raw-parser-separately.sh""#
+      }
+      new Dynamic {
+        name = "Install source profiler"
+        `if` = "always() && steps.optimized-build.outcome == 'success'"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-source-profiler.sh""#
+      }
+      new Dynamic {
+        name = "Profile exact guarded and raw parser source"
+        `if` = "always() && steps.optimized-build.outcome == 'success'"
+        run = #". "${{ env.VIZE_CI_FILES }}/profile-exact-guarded-and-raw-parser-source.sh""#
+      }
+      new Dynamic {
+        name = "Build and replay exact original sanitizer regime"
+        `if` = "always() && steps.optimized-build.outcome == 'success'"
+        `working-directory` = "source"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-and-replay-exact-original-sanitizer-regime.sh""#
+      }
+      new Dynamic {
+        name = "Require causal private parser regressions on candidate"
+        `if` = "matrix.role == 'candidate'"
+        `working-directory` = "source"
+        run = #". "${{ env.VIZE_CI_FILES }}/require-causal-private-parser-regressions-on-candidate.sh""#
+      }
+      new Dynamic {
+        name = "Retain all phase measurements and source profiles"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "expression-10401-${{ matrix.role }}-${{ env.SOURCE_SHA }}"
+          path = "evidence/"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+  `compare-control-packets` {
+    name = "Expression 10401 AST and diagnostic packet parity"
+    needs = "profile"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("fuzz-expression-10401-profile")
+      new Dynamic {
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        with {
+          pattern = "expression-10401-*"
+          path = "evidence"
+        }
+      }
+      new Dynamic {
+        name = "Require unchanged complete packets for every TS, TSX and JSX control"
+        run = #". "${{ env.VIZE_CI_FILES }}/require-unchanged-complete-packets-for-every-ts-tsx-and-jsx-control.sh""#
+      }
+    }
+  }
+}

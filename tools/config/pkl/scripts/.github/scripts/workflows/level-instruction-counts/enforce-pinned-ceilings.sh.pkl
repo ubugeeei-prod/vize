@@ -1,0 +1,15 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  BASE_ARGS=()
+  if [[ -f "${RUNNER_TEMP}/base-instruction-budgets.toml" ]]; then
+    BASE_ARGS=(--base-budgets "${RUNNER_TEMP}/base-instruction-budgets.toml")
+  fi
+  node tools/benchmarks/scripts/instruction-counts.mjs --check \
+    --measurement "${RUNNER_TEMP}/instruction-counts/measurement.json" "${BASE_ARGS[@]}"
+  """#
+}

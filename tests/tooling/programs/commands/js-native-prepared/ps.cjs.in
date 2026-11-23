@@ -1,0 +1,2 @@
+#!@@NODE@@
+process.exit(1);

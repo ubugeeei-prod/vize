@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -193,10 +194,10 @@ function assertSmokeTimingEnvironments(source: string, jobName: string, stepName
 }
 
 test("release smokes retain the timing artifact for every host", () => {
-  const release = readRepoFile(".github", "workflows", "release.yml");
-  const native = readRepoFile(".github", "workflows", "native-smoke.yml");
+  const release = readAutomationPrograms(".github", "workflows", "release.yml");
+  const native = readAutomationPrograms(".github", "workflows", "native-smoke.yml");
   for (const { file, job, steps } of smokeWorkflows) {
-    assertSmokeTimingEnvironments(readRepoFile(".github", "workflows", file), job, steps);
+    assertSmokeTimingEnvironments(readAutomationPrograms(".github", "workflows", file), job, steps);
   }
   for (const workflow of [release, native]) {
     assert.match(
@@ -215,7 +216,7 @@ test("release smokes retain the timing artifact for every host", () => {
 
 test("smoke timing accepts quoted YAML and workflow/job environment inheritance", () => {
   for (const { file, job, steps } of smokeWorkflows) {
-    const source = readRepoFile(".github", "workflows", file);
+    const source = readAutomationPrograms(".github", "workflows", file);
     const quoted = source.replaceAll(
       `${timingVariable}: ${timingFile}`,
       `${timingVariable}: ${JSON.stringify(timingFile)}`,
@@ -235,7 +236,7 @@ test("smoke timing accepts quoted YAML and workflow/job environment inheritance"
 
 test("a commented timing setting cannot satisfy either native smoke branch", () => {
   for (const { file, job, steps } of smokeWorkflows) {
-    const source = readRepoFile(".github", "workflows", file);
+    const source = readAutomationPrograms(".github", "workflows", file);
     const setting = `${timingVariable}: ${timingFile}`;
     for (const [index] of steps.entries()) {
       let occurrence = 0;
@@ -252,7 +253,7 @@ test("a commented timing setting cannot satisfy either native smoke branch", () 
 
 test("every smoke branch rejects a missing or shadowed timing environment", () => {
   for (const { file, job, steps } of smokeWorkflows) {
-    const source = readRepoFile(".github", "workflows", file);
+    const source = readAutomationPrograms(".github", "workflows", file);
     for (const name of steps) {
       const workflow = parse(source) as SmokeWorkflow;
       const step = workflow.jobs[job].steps.find((step) => step.name === name)!;

@@ -1,0 +1,118 @@
+import "../../Actions.pkl" as ci
+
+name = "Benchmark - Doctor filters"
+
+on {
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Exact ancestor baseline commit for the paired comparison"
+        type = "string"
+        required = true
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "doctor-filter-${{ github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env {
+  CARGO_TERM_COLOR = "always"
+  CARGO_INCREMENTAL = "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  HEAD_SHA = "${{ github.sha }}"
+}
+
+jobs {
+  `paired-filter` {
+    name = "Doctor filter parity and paired matching"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/head/.github/scripts/workflows/doctor-filter-bench"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "head"
+          ref = "${{ github.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Select the exact ancestor baseline"
+        env { REQUESTED_BASE = "${{ inputs.base_sha }}" }
+        run = #". "${{ env.VIZE_CI_FILES }}/select-the-exact-ancestor-baseline.sh""#
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "base"
+          ref = "${{ env.BASE_SHA }}"
+          `persist-credentials` = false
+        }
+      }
+      ci.rust("stable")
+      ci.wild()
+      // The cache action's nested local action resolves from the workspace root,
+      // and this job checks the repository out under head/.
+      new Dynamic {
+        name = "Expose the nested target action at the workspace root"
+        run = #". "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh""#
+      }
+      new Dynamic {
+        uses = "./head/.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "doctor-filter-head"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+          `target-path` = "head/target"
+          `secondary-key` = "doctor-filter-base"
+          `secondary-target-path` = "base/target"
+          `secondary-cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "head/package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Verify filter semantics and lint contract"
+        `working-directory` = "head"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-filter-semantics-and-lint-contract.sh""#
+      }
+      new Dynamic {
+        name = "Build identical public API probes against exact base and head"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-identical-public-api-probes-against-exact-base-and-head.sh""#
+      }
+      new Dynamic {
+        name = "Compare planted verdicts and nine alternating measurement pairs"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-planted-verdicts-and-nine-alternating-measurement-pairs.sh""#
+      }
+      new Dynamic {
+        name = "Upload exact workloads and raw timings"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "doctor-filter-bench"
+          path = """
+          doctor-filter-bench.json
+          doctor-filter-bench.json.samples/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

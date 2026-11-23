@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+mkdir -p "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime"
+npm view --registry=https://registry.npmjs.org nuxt@4.6.3 --json > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/nuxt-registry.json"
+npm view --registry=https://registry.npmjs.org @nuxt/kit@4.6.3 --json > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/kit-registry.json"
+npm view --registry=https://registry.npmjs.org @nuxt/schema@4.6.3 --json > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/schema-registry.json"
+npm view --registry=https://registry.npmjs.org rc9@3.1.0 --json > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/rc9-registry.json"
+npm view --registry=https://registry.npmjs.org @nuxt/kit@4.6.2 --json > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/unsupported-kit-registry.json"
+npm install --registry=https://registry.npmjs.org --prefix "$RUNNER_TEMP/nuxt-runtime-10919" --ignore-scripts --no-audit --no-fund --save-exact nuxt@4.6.3 @nuxt/kit@4.6.3 @nuxt/schema@4.6.3 rc9@3.1.0 nuxt-kit-unsupported@npm:@nuxt/kit@4.6.2 > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/install.stdout" 2> "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/install.stderr"
+cp "$RUNNER_TEMP/nuxt-runtime-10919/package-lock.json" "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/package-lock.json"
+cp "$RUNNER_TEMP/nuxt-runtime-10919/package.json" "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/package.json"

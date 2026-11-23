@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/l1-document-special-text.yml
+      - .github/scripts/workflows/l1-document-special-text/**
       - .github/actions/install-playwright-browsers/**
       - Cargo.lock
       - Cargo.toml
@@ -34,6 +35,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/l1-document-special-text/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ env.HEAD_SHA }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
@@ -55,30 +69,6 @@ jobs:
       - uses: ./.github/actions/install-playwright-browsers
         with: { workspace: ./tests }
       - name: Compare the original packet with native and legacy Rust
-        run: |
-          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
-          cargo test --locked --profile ci -p vize_l1 \
-            --test html_body_elements \
-            --test html_body_elements_legacy_oracle \
-            --test html_disclosure_elements \
-            --test html_disclosure_elements_legacy_oracle \
-            --test html_embedded_fallback \
-            --test html_embedded_fallback_legacy_oracle \
-            --test html_foreign_content \
-            --test html_foreign_content_legacy_oracle \
-            --test html_phrasing \
-            --test html_phrasing_legacy_oracle \
-            --test html_select \
-            --test html_select_legacy_oracle \
-            --test html_special_text \
-            --test html_special_text_legacy_oracle
+        run: . "${{ env.VIZE_CI_FILES }}/compare-the-original-packet-with-native-and-legacy-rust.sh"
       - name: Compare the original packet with Chromium
-        run: |
-          vp node --test \
-            tests/tooling/davinci-document-body-elements.test.ts \
-            tests/tooling/davinci-document-disclosure-elements.test.ts \
-            tests/tooling/davinci-document-embedded-fallback.test.ts \
-            tests/tooling/davinci-document-foreign-content.test.ts \
-            tests/tooling/davinci-document-phrasing.test.ts \
-            tests/tooling/davinci-document-select.test.ts \
-            tests/tooling/davinci-document-special-text.test.ts
+        run: . "${{ env.VIZE_CI_FILES }}/compare-the-original-packet-with-chromium.sh"

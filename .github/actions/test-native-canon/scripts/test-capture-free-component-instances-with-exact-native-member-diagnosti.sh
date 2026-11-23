@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+unset VIZE_TEST_DISABLE_TSGO
+cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::component_render_h_props:: -- --nocapture

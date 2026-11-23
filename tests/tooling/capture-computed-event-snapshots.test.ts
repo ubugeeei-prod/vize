@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -31,19 +32,18 @@ function fixture() {
   const pending = path.join(root, `${computedEventFiles[1]}.new`);
   fs.writeFileSync(
     binary,
-    `#!${process.execPath}
-const fs = require('node:fs');
-if (process.argv.includes('--list')) {
-  console.log(${JSON.stringify(`${computedEventFilter}: test`)});
-} else {
-  const assert = require('node:assert/strict');
-  assert.deepEqual(process.argv.slice(2), ${JSON.stringify([computedEventFilter, "--exact", "--nocapture", "--test-threads=1"])});
-  assert.equal(process.env.INSTA_UPDATE, 'new');
-  assert.equal(process.env.INSTA_FORCE_PASS, '1');
-  fs.writeFileSync(${JSON.stringify(pending)}, ${JSON.stringify("fresh observed body\n")});
-  console.log('test result: ok. 1 passed; 0 failed; 0 ignored;');
-}
-`,
+    readToolingProgram("commands/capture-computed-event-snapshots/binary.cjs.in", {
+      NODE: process.execPath,
+      COMPUTED_EVENT_FILTER_TEST: JSON.stringify(`${computedEventFilter}: test`),
+      NOCAPTURE: JSON.stringify([
+        computedEventFilter,
+        "--exact",
+        "--nocapture",
+        "--test-threads=1",
+      ]),
+      PENDING: JSON.stringify(pending),
+      FRESH_OBSERVED_BODY_N: JSON.stringify("fresh observed body\n"),
+    }),
   );
   fs.chmodSync(binary, 0o755);
   const message = {

@@ -1,0 +1,5 @@
+require("node:fs").appendFileSync(
+  @@PLAYWRIGHT_LOG_PATH@@,
+  process.argv.slice(2).join(" ") + "\n",
+);
+process.exit(0);

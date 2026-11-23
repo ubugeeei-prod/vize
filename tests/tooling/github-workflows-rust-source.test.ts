@@ -1,3 +1,4 @@
+import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -7,13 +8,13 @@ import { runInNewContext } from "node:vm";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { restoreRustCaseReporting, type RustJob } from "./support/rust-case-reporting.ts";
 import { requiredUiConformance } from "./support/ui-conformance-contract.ts";
 import {
   readRepoFile,
   requireDailySourceContracts,
   restoreRustToolchainPin,
   type DailyRustSourceWorkflow,
-  type DailySourceStep,
 } from "./support/github-workflows.ts";
 
 type Step = {
@@ -40,7 +41,8 @@ type Workflow = {
   jobs: Record<string, Job>;
   concurrency?: { "cancel-in-progress"?: boolean };
 };
-const workflow = (name: string): Workflow => parse(readRepoFile(".github", "workflows", name));
+const workflow = (name: string): Workflow =>
+  parse(readAutomationPrograms(".github", "workflows", name));
 const check = workflow("check.yml");
 const source = workflow("pr-source-checks.yml");
 const rust = workflow("pr-rust-checks.yml");
@@ -226,101 +228,14 @@ void test("trusted main and scheduled runs seed the CI profiles while candidate 
 // Whole parsed producer vectors (pr-rust-build since its lane matrix split).
 // Current daily source policy is checked before reversing its command/evidence additions.
 // Every other producer field and the explicit product guard retain the historical whole digest.
-type RustJob = {
-  if: string;
-  needs: string[];
-  env: Record<string, string>;
-  steps: Array<DailySourceStep & Record<string, unknown>>;
-};
 const workflowRoot = fileURLToPath(new URL("../../.github/workflows/", import.meta.url));
 const yaml = createRequire(import.meta.url)("yaml") as {
   parse: (source: string) => DailyRustSourceWorkflow & { jobs: Record<string, RustJob> };
 };
-const rustWorkflow = (name: string) => yaml.parse(readFileSync(join(workflowRoot, name), "utf8"));
+const rustWorkflow = (name: string) => yaml.parse(readAutomationPrograms(join(workflowRoot, name)));
 const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const productJobs = ["pr-rust-shard"];
 const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
-
-function restoreRustCaseReporting(job: RustJob, contracts: number) {
-  assert.equal(job.env.TEST_CASES_JOB, "Clippy, doctests and feature lanes (${{ matrix.lane }})");
-  assert.equal(job.env.VIZE_TEST_CASES, "test-cases-rust-source-${{ matrix.lane }}.json");
-  delete job.env.TEST_CASES_JOB;
-  delete job.env.VIZE_TEST_CASES;
-
-  const contract = job.steps[contracts];
-  const reporter =
-    ' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./tools/support/compat/github/test-case-reporter.ts --test-reporter-destination="$VIZE_TEST_CASES"';
-  assert.equal(contract.id, "contract-cases");
-  assert.ok(contract.run?.includes(reporter));
-  delete contract.id;
-  contract.run = contract.run?.replace(reporter, "");
-
-  const named = (name: string) => {
-    const index = job.steps.findIndex((step) => step.name === name);
-    assert.notEqual(index, -1, name);
-    return { index, step: job.steps[index] };
-  };
-  for (const name of ["Clippy affected crates", "Run affected Rust doctests"]) {
-    const { step } = named(name);
-    assert.ok(step.env?.VIZE_RUST_CASE_LABEL);
-    delete step.env;
-  }
-  const ratchet = named("Clippy test targets of touched ratchet crates").step;
-  assert.match(ratchet.run ?? "", /rust-test-cases\.ts capture/);
-  assert.ok(
-    ratchet.run?.includes(
-      'node tools/support/compat/github/clippy-test-targets.ts touched "$RUNNER_TEMP/rust-plan.json"',
-    ),
-  );
-  ratchet.run =
-    'node tools/support/compat/github/clippy-test-targets.ts touched "$RUNNER_TEMP/rust-plan.json"';
-  for (const [name, run] of [
-    [
-      "Native L1 markup parity",
-      "cargo test -p vize_armature --features native-lex-parity,legacy --lib --test markup_lex_parity",
-    ],
-    [
-      "Test shared legacy transform capabilities",
-      "cargo test --locked --profile ci -p vize_atelier_core --features legacy --lib legacy -- --nocapture",
-    ],
-    [
-      "Test L1 feature-enabled surface corpus",
-      "cargo test -p vize_l1 --features legacy-differential --test surface_corpus -- --nocapture",
-    ],
-  ] as const) {
-    const step = named(name).step;
-    assert.equal(step["continue-on-error"], undefined);
-    assert.match(step.run ?? "", /rust-test-cases\.ts capture/);
-    assert.ok(step.run?.includes(run));
-    step.run = run;
-  }
-  const navigation = named("Test affected native Program and Vue navigation").step;
-  assert.equal(navigation.id, "navigation");
-  delete navigation.id;
-  job.steps.splice(named("Record native navigation case").index, 1);
-  for (const name of ["Require Rust source test cases", "Upload Rust source test cases"])
-    job.steps.splice(named(name).index, 1);
-  const glyphDocs = named("Document Glyph public APIs");
-  assert.equal(
-    glyphDocs.step.if,
-    "${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_glyph') }}",
-  );
-  assert.match(
-    glyphDocs.step.run ?? "",
-    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_glyph --lib -- -D missing-docs/,
-  );
-  job.steps.splice(glyphDocs.index, 1);
-  const patinaDocs = named("Document Patina public APIs");
-  assert.equal(
-    patinaDocs.step.if,
-    "${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}",
-  );
-  assert.match(
-    patinaDocs.step.run ?? "",
-    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_patina --lib -- -D warnings/,
-  );
-  job.steps.splice(patinaDocs.index, 1);
-}
 
 function requireSplitRustRecipes(
   sourceWorkflow = rustWorkflow("pr-rust-checks.yml"),
@@ -353,6 +268,21 @@ function requireSplitRustRecipes(
   for (const [id, expected] of Object.entries(oldHashes)) {
     const job = structuredClone(source[id]);
     if (id === "pr-rust-build") {
+      const writePlan = job.steps.find((step) => step.name === "Materialize affected Rust plan");
+      assert.equal(writePlan?.run, 'node "$VIZE_CI_FILES/materialize-affected-rust-plan.cjs"');
+      const program = workflowProgram(
+        "pr-rust-checks",
+        writePlan.run,
+        "materialize-affected-rust-plan.cjs",
+      );
+      assert.equal(
+        createHash("sha256").update(program).digest("hex"),
+        "abbe79bebd07e4edb53465ce29aa21a5a7ef6f7569d3e33e3ab258ad19f2b68a",
+      );
+      writePlan.run = readFileSync(
+        new URL("./fixtures/archived-rust-plan-invocation.txt", import.meta.url),
+        "utf8",
+      ).trimEnd();
       assert.equal(restoreRustToolchainPin(job.steps, "1.99.1"), 1);
       const wild = job.steps.find(
         (step) => step.uses === "./.github/actions/setup-wild-http-recovery",
