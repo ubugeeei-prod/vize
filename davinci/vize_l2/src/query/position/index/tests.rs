@@ -118,3 +118,5 @@ fn interval_tree_preserves_duplicate_and_crossing_spans() {
         }
     }
 }
+#[path = "tests/checked_points.rs"]
+mod checked_points;
