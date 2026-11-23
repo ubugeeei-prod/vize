@@ -1,6 +1,6 @@
 //! Source-resolved SCSS variables, nested selectors and ordered declarations.
 use alloc::vec::Vec;
-use vize_l0::{Span, String};
+use vize_l0::{SourceBlock, Span, String};
 use vize_l1::css::lang::OriginalStyleStructure;
 
 mod lower;
@@ -10,6 +10,7 @@ mod syntax;
 /// model, including declarations from earlier, otherwise valid rules.
 #[derive(Debug)]
 pub struct ScssProgram<'a> {
+    block: SourceBlock<'a>,
     runs: Vec<RuleRun<'a>>,
     variables: Vec<Variable<'a>>,
     uses: Vec<VariableUse>,
@@ -67,6 +68,10 @@ impl<'a> ScssProgram<'a> {
         &self.runs
     }
 
+    pub fn block(&self) -> SourceBlock<'a> {
+        self.block
+    }
+
     pub fn variables(&self) -> &[Variable<'a>] {
         &self.variables
     }
@@ -77,8 +82,34 @@ impl<'a> ScssProgram<'a> {
 
     /// A value use refers to the most recent original definition at that point.
     pub fn definition_at(&self, offset: u32) -> Option<&Variable<'a>> {
+        self.variables.get(self.use_at(offset)?.declaration)
+    }
+
+    fn use_at(&self, offset: u32) -> Option<&VariableUse> {
         let at = self.uses.partition_point(|use_| use_.span.end <= offset);
-        let use_ = self.uses.get(at).filter(|use_| use_.span.start <= offset)?;
-        self.variables.get(use_.declaration)
+        self.uses.get(at).filter(|use_| use_.span.start <= offset)
+    }
+
+    /// A single variable inherits the original literal's range through aliases.
+    /// A CSS list retains the range of the expression at the use site.
+    pub fn value_origin(&self, expression: Span) -> Option<Span> {
+        if !self.block.contains_block_span(expression) {
+            return None;
+        }
+        if self
+            .block
+            .root_source()
+            .as_bytes()
+            .get(expression.start as usize)
+            == Some(&b'$')
+            && let Some(use_) = self
+                .use_at(expression.start)
+                .filter(|u| u.span == expression)
+        {
+            return self
+                .block
+                .span_of(self.variables.get(use_.declaration)?.value);
+        }
+        Some(expression)
     }
 }

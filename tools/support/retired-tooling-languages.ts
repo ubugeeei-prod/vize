@@ -6,6 +6,10 @@ import { join } from "node:path";
 // This file is an executable proof specification outside the product tooling.
 export const independentGraphTheory = "tests/formal/ir-graph/Reach.lean";
 export const retiredToolingLedger = "tools/config/retired-tooling-languages.json";
+// A mathematical reference paired with the Rust coordinate kernel and Kani harness.
+export const coordinateTheory = "tests/formal/source-map/Coordinates.lean";
+export const coordinateKernel = "davinci/vize_l4/src/write/source_map/indexed/geometry.rs";
+export const coordinateProof = "davinci/vize_l4/src/write/source_map/indexed/kani.rs";
 export const retiredToolingLedgerTest = "tests/tooling/retired-tooling-languages.test.ts";
 export const retiredToolingLanguages = ["py", "lean", "mbt", "mjs"] as const;
 export type RetiredToolingLanguage = (typeof retiredToolingLanguages)[number];
@@ -27,7 +31,7 @@ function record(value: unknown): Readonly<Record<string, unknown>> | undefined {
 // An unreadable ledger keeps the test selected so it reports the damage.
 export function retiredToolingDrift(paths: readonly string[], cwd: string): boolean {
   const changed = paths.flatMap((path) => {
-    if (path === independentGraphTheory) return [];
+    if (path === independentGraphTheory || path === coordinateTheory) return [];
     const language = retiredToolingLanguage(path);
     return language ? [{ path, language }] : [];
   });

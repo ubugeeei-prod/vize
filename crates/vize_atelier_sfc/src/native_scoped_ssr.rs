@@ -168,6 +168,8 @@ fn emit<L: LinkSink>(
         core::slice::from_ref(view.style_syntax()),
         Some(scope),
         options.style_trim,
+        #[cfg(feature = "native-sfc-scss")]
+        false,
     )
     .map_err(Error::Style)?;
     let receipt = build_scoped_template_ssr_decisions(view).map_err(Error::Analysis)?;
