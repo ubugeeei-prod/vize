@@ -20,3 +20,16 @@ export function windowsLauncher(command: readonly string[]): string {
   const args = command.map((value) => '"' + value.replaceAll("%", "%%") + '"');
   return template.replace("@@COMMAND@@", () => args.join(" ")).replace(/\r?\n/gu, "\r\n");
 }
+
+/** Preserve the interpreter and the exact configured executable bytes in capture receipts. */
+export function configuredNodeLauncher(
+  source: URL,
+  settings: Readonly<Record<string, unknown>>,
+): string {
+  const program = readFileSync(source, "utf8");
+  const slot = JSON.stringify("@@PROGRAM_SETTINGS@@");
+  if (program.split(slot).length !== 2)
+    throw new Error("Expected one settings slot in " + source.href);
+  const encoded = JSON.stringify(JSON.stringify(settings));
+  return "#!" + process.execPath + "\n" + program.replace(slot, () => encoded);
+}

@@ -1,3 +1,5 @@
+import { windowsLauncher } from "../../../tools/support/process-launcher.ts";
+import { installToolingProgram } from "../support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -93,13 +95,10 @@ function setup() {
   // These executable protocol peers record every real subprocess invocation.
   // They exercise the installed oracle, not public native release acceptance.
   const tsgoSource = path.join(temporary, "tsgo.cjs");
-  fs.writeFileSync(tsgoSource, `#!${process.execPath}\n${protocolPeer}`, { mode: 0o755 });
+  installToolingProgram(tsgoSource, "release/typescript-protocol-peer.js");
   const tsgo = process.platform === "win32" ? path.join(temporary, "tsgo.cmd") : tsgoSource;
   if (process.platform === "win32")
-    fs.writeFileSync(
-      tsgo,
-      `@echo off\r\n"${process.execPath}" "${tsgoSource}" %*\r\nexit /b %errorlevel%\r\n`,
-    );
+    fs.writeFileSync(tsgo, windowsLauncher([process.execPath, tsgoSource]));
   const tsc = path.join(install, "node_modules/typescript/bin/tsc");
   fs.mkdirSync(path.dirname(tsc), { recursive: true });
   fs.writeFileSync(
@@ -123,26 +122,6 @@ function setup() {
         .map((line) => JSON.parse(line) as Call),
   };
 }
-const protocolPeer = String.raw`
-const fs = require("node:fs"), path = require("node:path");
-const args = process.argv.slice(2), fault = process.env.VIZE_SMOKE_RUNTIME_TEST_FAULT;
-fs.appendFileSync(process.env.VIZE_SMOKE_RUNTIME_TEST_LOG, JSON.stringify({tool:"tsgo",args,cwd:process.cwd()}) + "\n");
-if (args.includes("tsconfig.error.json")) {
-  if (fault === "false-clean") process.exit(0);
-  const diagnostics = [["errors/Broken.vue","TS2322"],["errors/JavaScriptConsumer.js","TS2322"],["errors/JsxConsumer.jsx","TS2322"],["src/Unused.vue","TS6133"]];
-  diagnostics.forEach(([file,code],index) => {
-    if (fault === "drop-" + index) return;
-    const text = fault === "split-diagnostic" && index === 0 ? file + "\n" + code : file + " " + code;
-    (index % 2 === 0 ? process.stdout : process.stderr).write(text + "\n");
-  });
-  process.exit(1);
-}
-if (args.includes("tsconfig.emit.json")) {
-  fs.mkdirSync("dist",{recursive:true});
-  if (fault !== "missing-app") fs.writeFileSync(path.join("dist",fault === "alternate-declaration" ? "App.d.vue.ts" : "App.vue.d.ts"), "export {}\n");
-  if (fault !== "missing-main") fs.writeFileSync("dist/main.d.ts","export {}\n");
-}
-`;
 
 test("installed mapper accepts the exact production contract", () => {
   fixture(({ install }) => assertInstalledMapperContract(install));

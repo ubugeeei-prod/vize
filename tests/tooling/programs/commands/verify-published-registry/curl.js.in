@@ -1,0 +1,13 @@
+const { fakeDist } = require(@@ARCHIVE_MODULE@@);
+const url = new URL(process.argv.at(-1));
+const [, encoded, version] = url.pathname.split("/");
+const name = decodeURIComponent(encoded);
+if (version !== undefined && version !== process.env.TEST_PUBLISHED) {
+  process.stdout.write("{}VIZE_HTTP_STATUS:404");
+  process.exit(0);
+}
+const body =
+  version === undefined
+    ? { name, "dist-tags": { [process.env.TEST_TAG]: process.env.TEST_TAG_VERSION } }
+    : { name, version, dist: fakeDist(name, version) };
+process.stdout.write(`${JSON.stringify(body)}VIZE_HTTP_STATUS:200`);

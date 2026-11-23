@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -128,7 +129,7 @@ void test("a reach difference is filed and reduced on its recorded shape and nam
     writeFileSync(sourcePath, "<template><div><span>large source</span></div></template>");
     writeFileSync(
       vize,
-      `#!/bin/sh\nprintf '%s\\n' "$@" > "${output}/args.txt"\nprintf '<template><span/></template>' > "$6"\n`,
+      readToolingProgram("commands/canonical-corpus/write-reduced-template.sh", { OUTPUT: output }),
     );
     chmodSync(vize, 0o755);
     const planPath = `${output}/reduction-plan.json`;

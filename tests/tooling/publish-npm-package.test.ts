@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -68,37 +69,9 @@ test("publish_npm_package normalizes workspace and catalog dependency specs befo
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "const state = fs.existsSync(process.env.VP_STATE_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
-        "  : { published: false };",
-        "if (args[0] === 'pm' && args[1] === 'publish') {",
-        "  fs.writeFileSync(",
-        "    process.env.MANIFEST_LOG_PATH,",
-        "    fs.readFileSync('package.json', 'utf8'),",
-        "  );",
-        "  state.published = true;",
-        "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-        "  process.exit(0);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'version') {",
-        "  if (state.published) {",
-        "    process.stdout.write(JSON.stringify('0.57.0'));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'dist-tags') {",
-        "  if (state.published) {",
-        "    process.stdout.write(JSON.stringify({ latest: '0.57.0' }));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package/vp-normalizes-workspace-catalog-dependency-specs-publishing.js",
+      ),
     );
 
     const result = runReleaseCommand("publish_npm_package", [packageDir], {
@@ -240,21 +213,7 @@ test("publish_npm_package skips publish when the version is already visible in n
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "fs.appendFileSync(process.env.VP_ARGS_LOG, `${args.join(' ')}\\n`);",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'version') {",
-        "  process.stdout.write(JSON.stringify('1.2.3-beta.1'));",
-        "  process.exit(0);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'dist-tags') {",
-        "  process.stdout.write(JSON.stringify({ beta: '1.2.3-beta.1' }));",
-        "  process.exit(0);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'publish') process.exit(99);",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram("commands/publish-npm-package/vp-skips-version-is-already-visible-in.js"),
     );
 
     const result = runReleaseCommand("publish_npm_package", [packageDir, "--provenance"], {
@@ -293,34 +252,9 @@ test("publish_npm_package treats a non-zero publish exit as success when npm alr
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "const state = fs.existsSync(process.env.VP_STATE_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
-        "  : { publishCalls: 0, versionVisible: false };",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'version') {",
-        "  if (state.versionVisible) {",
-        "    process.stdout.write(JSON.stringify('1.2.3'));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'dist-tags') {",
-        "  if (state.versionVisible) {",
-        "    process.stdout.write(JSON.stringify({ latest: '1.2.3' }));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'publish') {",
-        "  state.publishCalls += 1;",
-        "  state.versionVisible = true;",
-        "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-        "  process.exit(1);",
-        "}",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package/vp-treats-non-zero-exit-as-success-already-has.js",
+      ),
     );
 
     const result = runReleaseCommand("publish_npm_package", [packageDir], {
@@ -372,43 +306,9 @@ test("publish_npm_package_dirs publishes only subdirectories that contain packag
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const fs = require('node:fs');",
-        "const path = require('node:path');",
-        "const args = process.argv.slice(2);",
-        "const state = fs.existsSync(process.env.VP_STATE_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
-        "  : { published: {}, order: [] };",
-        "const packageJson = path.join(process.cwd(), 'package.json');",
-        "if (args[0] === 'pm' && args[1] === 'publish') {",
-        "  const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));",
-        "  state.published[pkg.name] = pkg.version;",
-        "  state.order.push(pkg.name);",
-        "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-        "  process.exit(0);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'version') {",
-        "  const spec = args[2];",
-        "  const splitAt = spec.lastIndexOf('@');",
-        "  const name = spec.slice(0, splitAt);",
-        "  const version = state.published[name];",
-        "  if (version) {",
-        "    process.stdout.write(JSON.stringify(version));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'dist-tags') {",
-        "  const name = args[2];",
-        "  const version = state.published[name];",
-        "  if (version) {",
-        "    process.stdout.write(JSON.stringify({ latest: version }));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package/vp-dirs-publishes-only-subdirectories-contain-json.js",
+      ),
     );
 
     const result = runReleaseCommand("publish_npm_package_dirs", [baseDir, "--concurrency", "1"], {
@@ -450,16 +350,17 @@ test("publish_vscode_extension adds pre-release when NPM_TAG is not latest", () 
       packageJsonPath,
       `${JSON.stringify({ publisher: "ubugeeei", name: "vize", version: "0.57.0" }, null, 2)}\n`,
     );
-    writeFakeCommand(binDir, "curl", "process.exit(22);");
+    writeFakeCommand(
+      binDir,
+      "curl",
+      readToolingProgram("commands/release-command-diagnostics/curl.js"),
+    );
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "fs.writeFileSync(process.env.VP_ARGS_LOG, args.join('\\n'));",
-        "process.exit(0);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package/vp-vscode-extension-adds-pre-release-tag-is-not.js",
+      ),
     );
 
     const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {
@@ -503,22 +404,21 @@ test("publish_vscode_extension skips publish when the Marketplace already has th
     writeFakeCommand(
       binDir,
       "curl",
-      [
-        "const fs = require('node:fs');",
-        "fs.appendFileSync(process.env.VP_ARGS_LOG, `curl ${process.argv.slice(2).join(' ')}\\n`);",
-        `process.stdout.write(${JSON.stringify(JSON.stringify(galleryWith([{ version: "0.57.0", flags: "validated" }])))});`,
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package/curl-vscode-extension-skips-marketplace-already-has-version.js.in",
+        {
+          VALIDATED: JSON.stringify(
+            JSON.stringify(galleryWith([{ version: "0.57.0", flags: "validated" }])),
+          ),
+        },
+      ),
     );
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "fs.appendFileSync(process.env.VP_ARGS_LOG, `${args.join(' ')}\\n`);",
-        "if (args[0] === 'dlx' && args[3] === 'vsce' && args[4] === 'publish') process.exit(99);",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package/vp-vscode-extension-skips-marketplace-already-has-version.js",
+      ),
     );
 
     const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {
@@ -557,34 +457,17 @@ test("publish_vscode_extension waits for delayed Marketplace visibility after pu
     writeFakeCommand(
       binDir,
       "curl",
-      [
-        "const fs = require('node:fs');",
-        "const state = fs.existsSync(process.env.VP_STATE_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
-        "  : { publishCalls: 0, queryCalls: 0 };",
-        "state.queryCalls += 1;",
-        "fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-        `const gallery = ${JSON.stringify(galleryWith([{ version: "0.57.0", flags: "none" }]))};`,
-        "if (state.publishCalls > 0 && state.queryCalls >= 3) gallery.results[0].extensions[0].versions[0].flags = 'validated';",
-        "process.stdout.write(JSON.stringify(gallery));",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package/curl-vscode-extension-waits-delayed-marketplace-visibility-failure.js.in",
+        { NONE: JSON.stringify(galleryWith([{ version: "0.57.0", flags: "none" }])) },
+      ),
     );
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "const state = fs.existsSync(process.env.VP_STATE_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
-        "  : { publishCalls: 0, queryCalls: 0 };",
-        "if (args[0] === 'dlx' && args[3] === 'vsce' && args[4] === 'publish') {",
-        "  state.publishCalls += 1;",
-        "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-        "  process.exit(1);",
-        "}",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-npm-package/vp-vscode-extension-waits-delayed-marketplace-visibility-failure.js",
+      ),
     );
 
     const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {

@@ -1,0 +1,16 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = null
+
+commands {
+  #"""
+  #!/bin/bash
+  printf "%s\n" "$*" >> "$CARGO_LOG"
+  if [ "$CARGO_STATUS" -eq 0 ]; then
+    mkdir -p "$CARGO_HOME/bin"
+    cp "$FIXTURE_RUNNER" "$CARGO_HOME/bin/rust-script"
+    chmod 0755 "$CARGO_HOME/bin/rust-script"
+  fi
+  exit "$CARGO_STATUS"
+  """#
+}

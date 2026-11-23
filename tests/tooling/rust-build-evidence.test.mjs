@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { automationShellPath, readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -153,7 +154,10 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
       const argsFile = join(directory, "args.txt");
       writeFileSync(
         join(bin, "cargo"),
-        `#!/bin/sh\nprintf '%s\\n' "$@" > "$ARGS_FILE"\nprintf '%s\\n' '{"reason":"build-finished","success":${exit === 0}}'\nexit ${exit}\n`,
+        readToolingProgram("commands/rust-build-evidence/cargo.sh", {
+          EXIT_0: exit === 0,
+          EXIT: exit,
+        }),
         { mode: 0o755 },
       );
       const plan = {

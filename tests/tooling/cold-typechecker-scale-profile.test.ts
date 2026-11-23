@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -23,23 +24,18 @@ test("source counters execute the direct checker after preparation and retain un
     // Stubs exercise capture custody; they provide no product speed/accuracy evidence.
     writeFileSync(
       binary,
-      `#!${process.execPath}
-const fs = require("node:fs");
-if (!fs.existsSync("tsconfig.json")) throw Error("fixture must precede perf");
-fs.writeFileSync(process.env.TMPDIR + "/checker-ran", "yes");
-console.log(JSON.stringify({fileCount:2000,errorCount:0,warningCount:0,files:[]}));\n`,
+      readToolingProgram("commands/cold-typechecker-scale-profile/binary.cjs.in", {
+        NODE: process.execPath,
+      }),
       { mode: 0o755 },
     );
     const perf = join(root, "perf.cjs");
     writeFileSync(
       perf,
-      `#!${process.execPath}
-const fs = require("node:fs"), cp = require("node:child_process");
-const args = process.argv.slice(2), split = args.indexOf("--");
-if (args.includes("--version")) { console.log("fixture-perf"); process.exit(0); }
-if (args[split+1] !== ${JSON.stringify(binary)}) throw Error("must measure direct checker");
-fs.writeFileSync(args[args.indexOf("--output")+1], args[args.indexOf("-e")+1].split(",").map(e=>"7,,"+e+",100,100").join("\\n"));
-process.exit(cp.spawnSync(args[split+1], args.slice(split+2), {stdio:"inherit",env:process.env}).status);\n`,
+      readToolingProgram("commands/cold-typechecker-scale-profile/record-perf-events.cjs.in", {
+        NODE: process.execPath,
+        BINARY: JSON.stringify(binary),
+      }),
       { mode: 0o755 },
     );
     const calibration = join(root, "calibration.json");
@@ -88,7 +84,9 @@ process.exit(cp.spawnSync(args[split+1], args.slice(split+2), {stdio:"inherit",e
     );
     writeFileSync(
       perf,
-      `#!${process.execPath}\nconsole.error("No permission to enable instructions event.");process.exit(255);\n`,
+      readToolingProgram("commands/cold-typechecker-scale-profile/deny-perf-permission.cjs.in", {
+        NODE: process.execPath,
+      }),
       { mode: 0o755 },
     );
     const denied = join(root, "unavailable");

@@ -8,6 +8,8 @@ on:
       - "tests/_fixtures/differential/typechecker/narrowed-slot-host-guard-10660/**"
       - "tools/support/compat/content-mapper/narrowed-slot-guard.ts"
       - "tools/support/compat/content-mapper/native-capture.ts"
+      - tools/support/compat/content-mapper/observe-native-child.js
+      - tools/support/process-launcher.ts
       - "tests/tooling/differential-dialect-coverage.test.ts"
       - ".github/workflows/narrowed-slot-host-guard.yml"
       - ".github/scripts/workflows/narrowed-slot-host-guard/**"

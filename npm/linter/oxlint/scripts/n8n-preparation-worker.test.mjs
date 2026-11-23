@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -22,18 +23,7 @@ void test("the actual host worker runs all original preparation commands before 
   const npm = path.join(bin, "npm");
   fs.writeFileSync(
     npm,
-    `#!${process.execPath}
-import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
-assert.deepEqual(process.argv.slice(2),["install","--ignore-scripts","--no-audit","--no-fund","--legacy-peer-deps","oxlint@1.78.0","oxlint-tsgolint@7.0.2001"]);
-for (const [name,version] of [["oxlint","1.78.0"],["oxlint-tsgolint","7.0.2001"]]) {
- fs.mkdirSync(path.join("node_modules",name,"bin"),{recursive:true});
- fs.writeFileSync(path.join("node_modules",name,"package.json"),JSON.stringify({version}));
-}
-fs.writeFileSync("package-lock.json","complete original controlled installation lock\\r\\n");
-console.log("complete install raw output");
-`,
+    readToolingProgram("commands/n8n-preparation-worker/npm.js.in", { NODE: process.execPath }),
   );
   fs.chmodSync(npm, 0o755);
   // These isolated child fixtures prove the production worker's command and

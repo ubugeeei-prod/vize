@@ -1,0 +1,4 @@
+#!/bin/sh
+if [ "$1" = "--version" ]; then echo "vize 0.0.0-fake"; exit 0; fi
+echo '{"files":[],"errorCount":0,"warningCount":0,"fileCount":0}'
+exit 0

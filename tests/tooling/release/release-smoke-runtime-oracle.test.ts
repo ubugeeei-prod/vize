@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -121,25 +122,9 @@ test("the release command rejects a packed CLI that accepts every broken project
     );
     // This deliberately broken checker handles setup successfully, then always
     // returns a clean report. The real release entrypoint must catch that lie.
-    const historicalFalseCleanCli = `#!/usr/bin/env node
-const fs = require("node:fs");
-const path = require("node:path");
-const args = process.argv.slice(2);
-if (args[0] === "init") {
-  const project = args[1] && !args[1].startsWith("-") ? args[1] : process.cwd();
-  const filename = path.join(project, "package.json");
-  const manifest = JSON.parse(fs.readFileSync(filename, "utf8"));
-  manifest.scripts = { "vize:check": "vize check" };
-  fs.writeFileSync(filename, JSON.stringify(manifest));
-  const js = !manifest.devDependencies.typescript;
-  fs.writeFileSync(path.join(project, "tsconfig.json"), JSON.stringify({
-    compilerOptions: js ? { allowJs: true, checkJs: true } : {},
-  }));
-  fs.writeFileSync(path.join(project, "vize.config.ts"), "export default {};\\n");
-} else {
-  console.log(JSON.stringify({ errorCount: 0, files: [] }));
-}
-`;
+    const historicalFalseCleanCli = readToolingProgram(
+      "commands/release-smoke-runtime-oracle/historical-false-clean-cli.cjs",
+    );
     const configFreeFalseCleanCli = historicalFalseCleanCli.replace(
       '  fs.writeFileSync(path.join(project, "vize.config.ts"), "export default {};\\n");\n',
       "",

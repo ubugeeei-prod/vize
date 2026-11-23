@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -104,7 +105,7 @@ test("the actual workflow command keeps the driver failure and rejects ambiguous
     fs.writeFileSync(path.join(native, "source.node"), "controlled source image");
     fs.writeFileSync(
       path.join(bin, "node"),
-      '#!/bin/bash\nprintf "%s\\n" "$@" > "$MOCK_ARGS"\nprintf "controlled failure\\n" > "$3"\nexit 23\n',
+      readToolingProgram("commands/compiler-project-source-workflow/node.sh"),
       { mode: 0o755 },
     );
     const args = path.join(directory, "args.txt");

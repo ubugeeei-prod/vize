@@ -1,0 +1,2 @@
+@@CURL@@
+process.stdout.write(@@JSON_STRINGIFY_GALLERY@@);

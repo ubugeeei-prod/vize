@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -27,47 +28,14 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "const calls = fs.existsSync(process.env.CALLS_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.CALLS_PATH, 'utf8'))",
-        "  : [];",
-        "calls.push(args);",
-        "fs.writeFileSync(process.env.CALLS_PATH, JSON.stringify(calls));",
-        "const state = fs.existsSync(process.env.STATE_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.STATE_PATH, 'utf8'))",
-        "  : { published: false };",
-        "if (args[0] === 'dlx' && args[2] === 'ovsx@^1.0.0' && args[3] === 'ovsx' && args[4] === 'create-namespace') {",
-        "  if (process.env.NAMESPACE_ERROR === 'auth') { console.error('token is not authorized'); process.exit(17); }",
-        "  console.error('Namespace already exists');",
-        "  process.exit(17);",
-        "}",
-        "if (args[0] === 'dlx' && args[2] === 'ovsx@^1.0.0' && args[3] === 'ovsx' && args[4] === 'publish') {",
-        "  state.published = true;",
-        "  fs.writeFileSync(process.env.STATE_PATH, JSON.stringify(state));",
-        "  process.exit(0);",
-        "}",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram("commands/publish-open-vsx-extension/vp-publishes-packaged-vsix-ovsx.js"),
     );
     writeFakeCommand(
       binDir,
       "curl",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "const calls = fs.existsSync(process.env.CURL_CALLS_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.CURL_CALLS_PATH, 'utf8'))",
-        "  : [];",
-        "calls.push(args);",
-        "fs.writeFileSync(process.env.CURL_CALLS_PATH, JSON.stringify(calls));",
-        "const state = fs.existsSync(process.env.STATE_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.STATE_PATH, 'utf8'))",
-        "  : { published: false };",
-        "if (!state.published) process.exit(22); // curl --fail on HTTP 404",
-        "process.stdout.write(JSON.stringify({ version: '0.57.0' }));",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-open-vsx-extension/curl-publishes-packaged-vsix-ovsx.js",
+      ),
     );
 
     const runPublish = (namespaceError?: string) =>
@@ -142,27 +110,16 @@ test("publish_open_vsx_extension selects the published universal version even wh
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "const calls = fs.existsSync(process.env.CALLS_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.CALLS_PATH, 'utf8'))",
-        "  : [];",
-        "calls.push(args);",
-        "fs.writeFileSync(process.env.CALLS_PATH, JSON.stringify(calls));",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-open-vsx-extension/vp-selects-published-universal-version-even-generic-endpoint-selects.js",
+      ),
     );
     writeFakeCommand(
       binDir,
       "curl",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "fs.writeFileSync(process.env.CURL_CALLS_PATH, JSON.stringify([args]));",
-        "const targetPlatform = args.at(-1).includes('/universal/') ? 'universal' : 'darwin-x64';",
-        "process.stdout.write(JSON.stringify({ version: '0.57.0', targetPlatform }));",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-open-vsx-extension/curl-selects-published-universal-version-even-generic-endpoint-selects.js",
+      ),
     );
 
     const result = runReleaseCommand("publish_open_vsx_extension", [vsixPath, manifestPath], {
@@ -203,22 +160,7 @@ function readOnlyRun(t: TestContext, namespaceRefusals: number, publishRefusals:
     manifest,
     JSON.stringify({ publisher: "ubugeeei", name: "vize", version: "0.57.0" }),
   );
-  const step = [
-    "const fs = require('node:fs');",
-    "const state = JSON.parse(fs.readFileSync(process.env.STATE_PATH, 'utf8'));",
-    "const tool = require('node:path').basename(process.argv[1]);",
-    "const args = process.argv.slice(2);",
-    "const name = tool === 'curl' ? 'curl' : args[4];",
-    "state.calls.push(name);",
-    "const refusals = { 'create-namespace': Number(process.env.NAMESPACE_REFUSALS), publish: Number(process.env.PUBLISH_REFUSALS) };",
-    "const seen = state.calls.filter((call) => call === name).length;",
-    "if (name in refusals && seen <= refusals[name]) { console.error('❌  Registry is in read-only mode.'); process.exitCode = 1; }",
-    "else if (name === 'create-namespace') { console.error('Namespace already exists'); process.exitCode = 1; }",
-    "else if (name === 'publish') { state.published = true; console.log('published'); }",
-    "else if (state.published) process.stdout.write(JSON.stringify({ version: '0.57.0' }));",
-    "else process.exitCode = 22;",
-    "fs.writeFileSync(process.env.STATE_PATH, JSON.stringify(state));",
-  ].join("\n");
+  const step = readToolingProgram("commands/publish-open-vsx-extension/read-only-registry.cjs");
   writeFakeCommand(bin, "vp", step);
   writeFakeCommand(bin, "curl", step);
   const result = runReleaseCommand(

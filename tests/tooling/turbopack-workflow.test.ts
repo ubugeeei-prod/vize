@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -33,7 +34,7 @@ void test(
       const script = path.join(bin, "node");
       await fs.writeFile(
         script,
-        '#!/bin/sh\ncase "$*" in *turbopack-workflow.test.ts*) exit 0;; esac\nprintf "intentional producer failure\\n"\nexit 23\n',
+        readToolingProgram("commands/turbopack-workflow/run-selected-producer.sh"),
         { mode: 0o755 },
       );
       const failed = spawnSync(
@@ -46,9 +47,13 @@ void test(
         await fs.readFile(path.join(artifacts, "source-unit.tap"), "utf8"),
         "intentional producer failure\n",
       );
-      await fs.writeFile(script, '#!/bin/sh\nprintf "producer passed\\n"\nexit 0\n', {
-        mode: 0o755,
-      });
+      await fs.writeFile(
+        script,
+        readToolingProgram("commands/turbopack-workflow/complete-producer.sh"),
+        {
+          mode: 0o755,
+        },
+      );
       const passed = spawnSync(
         "/bin/bash",
         ["-e", automationShellPath(step.run, "turbopack-consumers")],

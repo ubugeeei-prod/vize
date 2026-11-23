@@ -1,0 +1,2 @@
+#!@@NODE@@
+process.stderr.write(@@STDERR@@);

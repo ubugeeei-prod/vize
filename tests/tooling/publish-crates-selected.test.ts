@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs, { mkdtempSync, rmSync } from "node:fs";
@@ -42,31 +43,14 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
     writeFakeCommand(
       binDir,
       "cargo",
-      [
-        "const fs = require('node:fs');",
-        "const path = require('node:path');",
-        "const args = process.argv.slice(2);",
-        "fs.appendFileSync(process.env.CARGO_LOG, args.join(' ') + '\\n');",
-        ...assertPublishManifestIsSanitized,
-        "if (['package', 'publish', 'info'].includes(args[0])) process.exit(0);",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram("commands/publish-crates/cargo-selected-crates.js.in", {
+        CHECK_MANIFEST: assertPublishManifestIsSanitized,
+      }),
     );
     writeFakeCommand(
       binDir,
       "curl",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "if (process.env.CURL_LOG) fs.appendFileSync(process.env.CURL_LOG, args.join(' ') + '\\n');",
-        "const endpoint = args.at(-1).split('/');",
-        "const crateName = endpoint.at(-2);",
-        "const version = endpoint.at(-1);",
-        "const published = (process.env.TEST_PUBLISHED_CRATES || '').split(',').includes(crateName);",
-        "const body = published ? { version: { crate: crateName, num: version } } : { errors: [{ detail: 'Not Found' }] };",
-        "fs.writeSync(1, JSON.stringify(body) + 'VIZE_HTTP_STATUS:' + (published ? '200' : '404'));",
-        "process.exit(published ? 0 : 22);",
-      ].join("\n"),
+      readToolingProgram("commands/publish-crates-selected/curl.js"),
     );
 
     const env = {

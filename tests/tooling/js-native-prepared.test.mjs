@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { packageCommands } from "./support/package-task-source.ts";
 import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
 import assert from "node:assert/strict";
@@ -230,7 +231,11 @@ process.exit(7);
     assert.equal(existsSync(receipt), false);
     const bin = join(fixture, "bin");
     mkdirSync(bin);
-    writeFileSync(join(bin, "ps"), `#!${process.execPath}\nprocess.exit(1);\n`, { mode: 0o755 });
+    writeFileSync(
+      join(bin, "ps"),
+      readToolingProgram("commands/js-native-prepared/ps.cjs.in", { NODE: process.execPath }),
+      { mode: 0o755 },
+    );
     writeFileSync(
       join(fixture, "fallback.mjs"),
       `import assert from 'node:assert/strict'; import fs from 'node:fs'; assert.equal(fs.existsSync(${JSON.stringify(receipt)}),false); process.exit(4);\n`,

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -114,17 +115,17 @@ test("the actual workflow rejects extra builds and preserves failed phase output
     fs.mkdirSync(path.join(directory, "npm/cli"), { recursive: true });
     fs.writeFileSync(
       path.join(bin, "vp"),
-      '#!/bin/bash\nprintf "%s\\n" "$@" >> "$MOCK_PACK"\nif [ "$#" -ne 1 ] || [ "$1" != "pack" ]; then exit 91; fi\nprintf "controlled pack stdout\\n"\nprintf "controlled pack stderr\\n" >&2\nexit "$PACK_STATUS"\n',
+      readToolingProgram("commands/content-mapper-source-node22-workflow/vp.sh"),
       { mode: 0o755 },
     );
     fs.writeFileSync(
       path.join(bin, "cargo"),
-      '#!/bin/bash\nprintf "%s\\n" "$@" >> "$MOCK_CARGO"\nexit 92\n',
+      readToolingProgram("commands/content-mapper-source-node22-workflow/cargo.sh"),
       { mode: 0o755 },
     );
     fs.writeFileSync(
       path.join(bin, "node"),
-      '#!/bin/bash\nif [ "$1" = "npm/native/scripts/native-build-receipt.mjs" ]; then printf "producer receipt\\n" > "$MOCK_PRODUCER"; exit 0; fi\nmkdir -p "$3"\nprintf "controlled consumer stderr\\n" >&2\nprintf "%s\\n" "$@" > "$MOCK_ARGS"\nprintf "failed outcome\\n" > "$3/receipt.json"\nexit 23\n',
+      readToolingProgram("commands/content-mapper-source-node22-workflow/node.sh"),
       { mode: 0o755 },
     );
     const args = path.join(directory, "args.txt");

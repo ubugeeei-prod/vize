@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -45,7 +46,7 @@ void test("Matrix records the blocked preflight without registering linter delet
     fs.mkdirSync(bin);
     fs.writeFileSync(
       path.join(bin, "node"),
-      '#!/bin/sh\nprintf \'%s\\n\' "$@" > "$RECORDER_ARGUMENTS"\nmkdir -p "$2"\nprintf \'{}\\n\' > "$2/linter-deletion-readiness.json"\n',
+      readToolingProgram("commands/davinci-linter-deletion-wire/node.sh"),
       { mode: 0o755 },
     );
     const result = spawnSync(

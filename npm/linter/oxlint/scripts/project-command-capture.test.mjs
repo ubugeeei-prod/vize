@@ -6,7 +6,10 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { toolingProgram } from "../../../../tests/tooling/support/program-path.ts";
+import {
+  toolingProgram,
+  readToolingProgram,
+} from "../../../../tests/tooling/support/program-path.ts";
 import { captureProjectCommand } from "./project-command-capture.mjs";
 import {
   originalSfcSourceCommand,
@@ -84,16 +87,9 @@ for (const mode of ["cancel", "missing-object", "missing-command"])
     if (mode !== "missing-command")
       fs.writeFileSync(
         path.join(root, "bin/git"),
-        `#!${process.execPath}
-const fs=require('node:fs'),root=process.env.VIZE_REFERENCE_CONTROL,args=process.argv.slice(2);
-fs.appendFileSync(root+'/commands.jsonl',JSON.stringify({pid:process.pid,args})+'\\n');
-if(args[0]==='cat-file') {
- process.stdout.write('whole exists stdout');process.stderr.write('whole exists stderr');
- if(process.env.VIZE_REFERENCE_MODE==='cancel') {fs.writeFileSync(root+'/ready',String(process.pid));setInterval(()=>{},1000);}
- else process.exitCode=128;
-} else if(args[0]==='fetch') process.exitCode=0;
-else {process.stdout.write('refuse invalid tree authority');process.exitCode=0;}
-`,
+        readToolingProgram("commands/project-command-capture/git.cjs.in", {
+          NODE: process.execPath,
+        }),
         { mode: 0o755 },
       );
     const moduleUrl = (name) => JSON.stringify(new URL(name, import.meta.url).href);

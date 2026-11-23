@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { packageCommands } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import fs, { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -85,7 +86,10 @@ test("docs finish runs all Node phases concurrently and preserves complete failu
       writeFakeCommand(
         bin,
         command,
-        `require("node:fs").writeFileSync(${JSON.stringify(pmLog)}, ${JSON.stringify(command)}); process.exit(99);`,
+        readToolingProgram("commands/docs-browser/command.js.in", {
+          PM_LOG: JSON.stringify(pmLog),
+          COMMAND: JSON.stringify(command),
+        }),
       );
     for (const [index, [name, entrypoint]] of phases.entries()) {
       const file = path.join(docs, entrypoint);
@@ -186,13 +190,9 @@ test("docs browser helper reuses an existing browser path without invoking Playw
     writeFakeCommand(
       binDir,
       "playwright",
-      [
-        "require('node:fs').appendFileSync(",
-        `  ${JSON.stringify(playwrightLogPath)},`,
-        "  process.argv.slice(2).join(' ') + '\\n',",
-        ");",
-        "process.exit(0);",
-      ].join("\n"),
+      readToolingProgram("commands/docs-browser/playwright.js.in", {
+        PLAYWRIGHT_LOG_PATH: JSON.stringify(playwrightLogPath),
+      }),
     );
 
     const result = spawnSync("node", [helperPath], {

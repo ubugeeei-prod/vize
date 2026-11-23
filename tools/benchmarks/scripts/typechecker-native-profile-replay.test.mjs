@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../../../tests/tooling/support/program-path.ts";
 /** Real subprocess transport controls, never native performance evidence. */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -27,39 +28,9 @@ function fixture(mode = "valid", large = false) {
   );
   writeFileSync(
     runtime,
-    `#!${process.execPath}
-import { appendFileSync, linkSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { gzipSync } from "node:zlib";
-const args = process.argv.slice(2);
-const config = JSON.parse(readFileSync(args[args.indexOf("--project") + 1], "utf8"));
-const output = Buffer.from(config.stdout, "base64");
-const errors = Buffer.from(config.stderr, "base64");
-const index = args.indexOf("--pprofDir");
-const mode = process.env.PROFILE_CASE;
-process.stdout.write(index >= 0 && mode === "diagnostics" ? Buffer.from("changed diagnostics\\n") : output);
-process.stderr.write(errors);
-process.exitCode = 3;
-if (index >= 0) {
-  const directory = args[index + 1];
-  const pid = mode === "wrong-pid" ? process.pid + 1 : process.pid;
-  const cpu = join(directory, pid + "-cpuprofile.pb.gz");
-  const memory = join(directory, pid + "-memprofile.pb.gz");
-  const content = gzipSync(Buffer.from("fake controlled profile bytes"));
-  if (mode !== "missing") writeFileSync(cpu, mode === "empty" ? Buffer.alloc(0) : mode === "bad-gzip" ? Buffer.from("invalid gzip") : content);
-  writeFileSync(memory, content);
-  if (mode === "symlink") { const target = join(directory, "outside.gz"); writeFileSync(target, content); (await import("node:fs")).unlinkSync(cpu); symlinkSync(target, cpu); (await import("node:fs")).unlinkSync(target); }
-  if (mode === "hardlink") { (await import("node:fs")).unlinkSync(cpu); linkSync(memory, cpu); }
-  if (mode === "extra-file") writeFileSync(join(directory, "unexpected.gz"), content);
-  if (mode === "extra-line") process.stdout.write("error TS9999: unexpected extra diagnostic\\n");
-  if (mode === "stderr") process.stderr.write("unexpected stderr\\n");
-  if (mode === "status") process.exitCode = 4;
-  if (mode === "binary-change") appendFileSync(process.argv[1], "\\n// changed runtime\\n");
-  const memoryLine = "Memory profile: " + memory + "\\n";
-  const cpuLine = "CPU profile: " + cpu + "\\n";
-  process.stdout.write(mode === "order" ? cpuLine + memoryLine : mode === "wrong-line" ? memoryLine + "CPU profile: /wrong/path\\n" : memoryLine + cpuLine);
-}
-`,
+    readToolingProgram("commands/typechecker-native-profile-replay/runtime.js.in", {
+      NODE: process.execPath,
+    }),
   );
   chmodSync(runtime, 0o755);
   const args = ["--checkers", "1", "--project", config];

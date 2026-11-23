@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -64,11 +65,11 @@ void test("the reusable Action publishes the same plan or admission artifact", (
     mkdirSync(bundlesDirectory);
     writeFileSync(
       path.join(binaryDirectory, "git"),
-      '#!/usr/bin/env bash\nset -euo pipefail\ntest "$1" = rev-parse\ntest "$2" = HEAD\nprintf "%s\\n" "$SOURCE_SHA"\n',
+      readToolingProgram("commands/v1-five-case-action/git.sh"),
     );
     writeFileSync(
       path.join(binaryDirectory, "node"),
-      '#!/usr/bin/env bash\nset -euo pipefail\nprintf "%s\\n" "$@" > "$NODE_ARGUMENTS_LOG"\narguments=("$@")\nrequired=(--source --candidate --mode)\ncase "$2" in\n  plan) required+=(--run --attempt --shards --output) ;;\n  validate-bundles) required+=(--bundles) ;;\n  admit) required+=(--bundles --output) ;;\n  *) exit 2 ;;\nesac\nfor required_argument in "${required[@]}"; do\n  found=false\n  for ((index = 0; index < ${#arguments[@]}; index++)); do\n    if [ "${arguments[$index]}" = "$required_argument" ]; then\n      value_index=$((index + 1))\n      test -n "${arguments[$value_index]:-}"\n      found=true\n    fi\n  done\n  $found\ndone\n',
+      readToolingProgram("commands/v1-five-case-action/node.sh"),
     );
     chmodSync(path.join(binaryDirectory, "git"), 0o755);
     chmodSync(path.join(binaryDirectory, "node"), 0o755);

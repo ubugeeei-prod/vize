@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
@@ -129,19 +130,16 @@ function fixture(lane) {
   copyFileSync(join(root, runnerPath), join(cwd, runnerPath));
   writeFileSync(
     join(bin, "git"),
-    `#!/bin/sh
-if [ "$1" = submodule ]; then
-exec "$NODE" -e 'const fs=require("node:fs"),cp=require("node:child_process"),assert=require("node:assert/strict"),path=require("node:path"),args=process.argv.slice(1);assert.deepEqual(args,${JSON.stringify(hydrationArgs)});const tree=cp.execFileSync(process.env.REAL_GIT,["ls-tree","HEAD",args.at(-1)],{encoding:"utf8"}).trim();assert.equal(tree,"160000 commit "+process.env.FIXTURE_PIN+"\\t"+args.at(-1));fs.appendFileSync(process.env.GIT_LOG,JSON.stringify(args)+"\\n");if(process.env.FAIL==="fixture-hydration")process.exit(42);fs.mkdirSync(args.at(-1),{recursive:true});fs.writeFileSync(path.join(args.at(-1),"fixture-pin"),process.env.FIXTURE_PIN);' -- "$@"
-fi
-exec "$REAL_GIT" "$@"
-`,
+    readToolingProgram("commands/rust-differential-sibling/git.sh", {
+      HYDRATION_ARGS: JSON.stringify(hydrationArgs),
+    }),
     { mode: 0o755 },
   );
   writeFileSync(
     join(bin, "cargo"),
-    `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs"),assert=require("node:assert/strict"),args=process.argv.slice(1);if(process.env.REQUIRE_HYDRATION==="1")assert.equal(fs.readFileSync(${JSON.stringify(`${fixturePath}/fixture-pin`)},"utf8"),process.env.FIXTURE_PIN);fs.appendFileSync(process.env.LOG,JSON.stringify({args,tsgo:process.env.VIZE_TEST_REQUIRE_TSGO,disable:process.env.VIZE_TEST_DISABLE_TSGO,iterations:process.env.VIZE_NUXT_CONFIG_ITERATIONS,production:process.env.VIZE_VUE_RUNTIME_PRODUCTION,corpus:process.env.VIZE_DAVINCI_DIFFERENTIAL_CORPUS})+"\\n");if(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")||process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(92);if(args.includes(process.env.FAIL))process.exit(42);' -- "$@"
-`,
+    readToolingProgram("commands/rust-differential-sibling/cargo.sh", {
+      FIXTURE_PATH_FIXTURE_PIN: JSON.stringify(`${fixturePath}/fixture-pin`),
+    }),
     { mode: 0o755 },
   );
   const execute = (failure) => {
