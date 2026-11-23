@@ -206,10 +206,22 @@ jobs {
       CARGO_INCREMENTAL = "0"
       RUST_MIN_STACK = "16777216"
       RUSTUP_TOOLCHAIN = "1.100.0"
+      VIZE_LEXICAL_REFERENCE = ".vize-lexical-originals"
     }
     steps = new Listing {
       ...ci.stageWorkflowScripts("template-expression-queries")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        name = "Check out the original lexical navigation inputs"
+        uses = ci.checkout
+        with {
+          ref = "54832d863ba3353e758b537934a93baf90e5897c"
+          path = "${{ env.VIZE_LEXICAL_REFERENCE }}"
+          `persist-credentials` = false
+          `sparse-checkout-cone-mode` = false
+          `sparse-checkout` = "/tools/config/vite-plus/tasks/testbox.ts\n/tools/support/compat/davinci/lib/lsp-profile-launch.ts"
+        }
+      }
       new Dynamic {
         uses = ci.setupRust
         with {
