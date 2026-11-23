@@ -48,7 +48,7 @@ impl ScriptQueryProducts {
             None => tag_ranges(block, prefix)
                 .unwrap_or_else(|| block_ranges(&LineIndex::new(prefix), &block.loc, "script")),
         };
-        self.symbols.push(DocumentSymbol {
+        self.push_script_symbol(DocumentSymbol {
             name: name.into(),
             kind: SymbolKind::MODULE,
             tags: None,
