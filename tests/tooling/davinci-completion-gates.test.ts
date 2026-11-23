@@ -121,6 +121,7 @@ void test("the Rust-only gate matches Lean workflow tokens without substring fal
         ".github/workflows/cleanup-obsolete-merge-groups.yml": "",
         ".github/workflows/patina-boolean-public.yml": "",
         ".github/workflows/patina-native-boolean-protocol.yml": "",
+        "tests/formal/ir-graph/Reach.lean": "",
       }),
     ).pass,
     true,
@@ -130,10 +131,11 @@ void test("the Rust-only gate matches Lean workflow tokens without substring fal
       ".github/workflows/davinci-lean.yml": "",
       "tests/formal/reference/lakefile.lean": "",
       "tests/formal/reference/Reference.lean": "",
+      "tests/formal/ir-graph/Unreviewed.lean": "",
     }),
   );
   assert.equal(lean.pass, false);
-  assert.equal(lean.detail, "3 Lean files or workflows");
+  assert.equal(lean.detail, "4 Lean files or workflows");
 });
 
 void test("issue gates are unknown offline and fail while an issue is open", () => {

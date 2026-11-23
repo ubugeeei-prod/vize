@@ -6,6 +6,7 @@ import {
   coordinateKernel,
   coordinateProof,
   coordinateTheory,
+  independentGraphTheory,
 } from "../../support/retired-tooling-languages.ts";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -198,6 +199,7 @@ const measureRustOnlyFormal = (repo: Repo): Measured => {
   const paired = repo.paths.includes(coordinateKernel) && repo.paths.includes(coordinateProof);
   const lean = repo.paths.filter(
     (file) =>
+      file !== independentGraphTheory &&
       !(file === coordinateTheory && paired) &&
       (file.endsWith(".lean") ||
         /(^|\/)(lakefile\.(lean|toml)|lean-toolchain|lake-manifest\.json)$/.test(file) ||
