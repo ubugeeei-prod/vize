@@ -152,7 +152,14 @@ fn checker_rejects_corrupted_witnesses_even_when_the_claimed_set_looks_plausible
     };
     let root = step(0, None);
     let good = [root, step(1, Some(0)), step(2, Some(1))];
-    let check = |rows: &[ReachStep]| check_reachability(&ir, q, rows);
+    let graph = OpGraph::new(&ir).unwrap();
+    let owned = graph.clone().into_owned();
+    let check = |rows: &[ReachStep]| {
+        let reference = check_reachability(&ir, q, rows);
+        assert_eq!(graph.check(q, rows), reference);
+        assert_eq!(owned.check(q, rows), reference);
+        reference
+    };
     assert_eq!(check(&good), Ok(()));
     assert_eq!(check(&[]), Err(CertificateError::Root));
     assert_eq!(check(&[step(0, Some(0))]), Err(CertificateError::Root));
