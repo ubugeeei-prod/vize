@@ -218,3 +218,10 @@ impl<'db> TemplateQueries<'db> for BlockView<'db> {
         })
     }
 }
+
+impl TemplateReachBatch<'_> {
+    /// Certify a root-only claim on the current template's original edges.
+    pub fn check_singleton(&self, query: ReachQuery) -> Result<(), CertificateError> {
+        self.graph.check_singleton(query)
+    }
+}
