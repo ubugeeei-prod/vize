@@ -297,6 +297,11 @@ impl EmitDocument {
         self.write_segments(&mut builder);
         builder.finish(&self.text, filename, source)
     }
+
+    #[cfg(feature = "scss-rules")]
+    pub(crate) fn reserve_text(&mut self, additional: usize) {
+        self.text.reserve(additional);
+    }
 }
 
 #[cfg(test)]
