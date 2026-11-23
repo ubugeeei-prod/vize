@@ -25,6 +25,7 @@ fn original_graphs_and_lossless_recovery() {
     let mut graphs = 0;
     let mut queries = 0;
     let mut reached = 0;
+    let mut singleton_answers = 0;
     let (mut patterns, mut trails) = (0, 0);
     let mut bytes = 0;
     let options = DescriptorOptions {
@@ -88,6 +89,11 @@ fn original_graphs_and_lossless_recovery() {
                         );
                     })
                     .unwrap();
+                let root = &steps[..1];
+                let singleton = check_reachability(ir, q, root);
+                assert_eq!(index.check_singleton(q), singleton, "{path}");
+                assert_eq!(singleton.is_ok(), steps.len() == 1, "{path}");
+                singleton_answers += usize::from(singleton.is_ok());
                 check_reachability(ir, q, &steps).unwrap_or_else(|e| panic!("{path}: {e:?}"));
                 index
                     .check(q, &steps)
@@ -128,6 +134,7 @@ fn original_graphs_and_lossless_recovery() {
     assert!(graphs > 0 && refused > 0 && queries > 0);
     assert_eq!(total, invalid_utf8 + admitted + refused);
     assert!(trails > 0 && patterns == 2 * queries);
+    println!("singleton reachability accepted={singleton_answers} checked={queries}");
     println!(
         "graph corpus files={total} bytes={bytes} invalid_utf8={invalid_utf8} admitted={admitted} rejected={refused} nonempty={graphs} queries={queries} witnessed_ops={reached} two_hop_queries={patterns} ordered_trails={trails}"
     );
