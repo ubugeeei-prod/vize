@@ -49,6 +49,7 @@ on:
       - "davinci/vize_l4/src/write/source_map.rs"
       - "davinci/vize_l4/src/write/source_map/**"
       - "tests/formal/source-map/**"
+      - "tests/formal/style-format/**"
       - "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json"
       - "crates/vize_atelier_sfc/tests/scss_products.rs"
       - "crates/vize_atelier_sfc/tests/observed_scss/**"
@@ -166,7 +167,7 @@ jobs:
           cargo test "${flags[@]}" -p vize_maestro --features experimental-verified-style-format,experimental-style-lint-products,micro-profiling --lib source_project::style_format::composition:: -- --include-ignored --nocapture --test-threads=1
 
   authored-coordinates:
-    name: Authored UTF-16 coordinate proofs
+    name: Authored coordinates and style header proofs
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -179,7 +180,7 @@ jobs:
           args: davinci/vize_l4/src/write/source_map/indexed/kani.rs --output-format=terse
       - name: Verify authored style attribute names, values and ordering
         run: kani crates/vize_maestro/src/source_project/style_format/kani.rs --output-format=terse
-      - name: Verify authored positions for arbitrary finite Unicode text
+      - name: Verify source positions and style attributes for arbitrary finite input
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
@@ -188,3 +189,5 @@ jobs:
           tar --zstd -xf lean.tar.zst
           lean-4.33.1-linux/bin/lean -DwarningAsError=true "$GITHUB_WORKSPACE/tests/formal/source-map/Coordinates.lean" | tee theorem.log
           grep -Fx "'Davinci.SourceMap.column_exact' depends on axioms: [propext, Quot.sound]" theorem.log
+          lean-4.33.1-linux/bin/lean -DwarningAsError=true "$GITHUB_WORKSPACE/tests/formal/style-format/Header.lean" | tee header.log
+          grep -Fx "'Davinci.StyleFormat.accepted_iff' depends on axioms: [propext, Classical.choice, Quot.sound]" header.log
