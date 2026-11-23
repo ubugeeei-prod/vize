@@ -1,0 +1,117 @@
+import "../../Actions.pkl" as ci
+
+name = "Published original ambient template ref"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/published-ambient-template-ref.yml"
+      ".github/scripts/workflows/published-ambient-template-ref/**"
+      "tools/support/release/**"
+      "tools/support/config/windows_consumer/common.ts"
+      "tools/support/json-value.ts"
+      "tests/tooling/release/ambient-template-ref-public.test.ts"
+      "tests/fixtures/release/ambient-template-ref-public-10980/**"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      version {
+        description = "Exact C12 public version 0.620.0"
+        type = "string"
+        required = true
+      }
+      release_run {
+        description = "Official C12 Release producer run"
+        type = "string"
+        required = true
+      }
+      authority_blob {
+        description = "Immutable authenticated C12 native receipt and npm SRI capsule Git blob"
+        type = "string"
+        required = true
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+concurrency {
+  group = "published-ambient-template-ref-${{ github.event.pull_request.number || github.ref }}-${{ inputs.version || 'contracts' }}"
+  `cancel-in-progress` = false
+}
+env {
+  SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  NODE_DISABLE_COMPILE_CACHE = "1"
+}
+defaults {
+  run { shell = "bash" }
+}
+
+jobs {
+  contracts {
+    name = "Original issue bytes, four commands and immutable C12 custody controls"
+    `runs-on` = "blacksmith-8vcpu-ubuntu-2404"
+    `timeout-minutes` = 5
+    steps = new Listing {
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24.14.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic { run = "node --test tests/tooling/release/ambient-template-ref-public.test.ts" }
+    }
+  }
+
+  `installed-public` {
+    name = "Untouched C12 original10980 four-phase public CLI witness"
+    `if` = "github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'"
+    needs = "contracts"
+    permissions {
+      contents = "read"
+      actions = "read"
+    }
+    `runs-on` = "blacksmith-8vcpu-ubuntu-2404"
+    `timeout-minutes` = 15
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("published-ambient-template-ref")
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24.14.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Authenticate C12, install public packages and execute exactly four original CLI commands"
+        env {
+          GITHUB_TOKEN = "${{ github.token }}"
+          PUBLIC_VERSION = "${{ inputs.version }}"
+          RELEASE_RUN = "${{ inputs.release_run }}"
+          AUTHORITY_BLOB = "${{ inputs.authority_blob }}"
+        }
+        run = #"node tools/support/release/ambient_template_ref_public/run.ts "$PUBLIC_VERSION" "$RELEASE_RUN" "$AUTHORITY_BLOB" "$RUNNER_TEMP/ambient-template-ref-public""#
+      }
+      new Dynamic {
+        name = "Retain complete raw outcomes, original phase inputs and installed custody"
+        `if` = "always()"
+        run = #". "${{ env.VIZE_CI_FILES }}/retain-complete-raw-outcomes-original-phase-inputs-and-installed-custody.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "ambient-template-ref-installed-public-${{ inputs.version }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/ambient-template-ref-public-raw.tgz"
+          `if-no-files-found` = "error"
+          `retention-days` = 90
+        }
+      }
+    }
+  }
+}

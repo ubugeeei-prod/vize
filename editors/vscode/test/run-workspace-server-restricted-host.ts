@@ -55,16 +55,8 @@ fs.writeFileSync(
   path.join(packageRoot, "package.json"),
   JSON.stringify({ name: "vize", version: "9.9.9", bin: { vize: "bin/vize.cjs" } }),
 );
-fs.writeFileSync(
-  forbiddenServerPath,
-  [
-    "#!/usr/bin/env node",
-    'const fs = require("node:fs");',
-    'fs.appendFileSync(process.env.VIZE_TEST_FORBIDDEN_SERVER_MARKER, JSON.stringify({ argv: process.argv.slice(2) }) + "\\n");',
-    'if (process.argv.includes("--version")) console.log("vize 9.9.9");',
-  ].join("\n") + "\n",
-  { mode: 0o755 },
-);
+fs.copyFileSync(new URL("./restricted-host-server.cjs", import.meta.url), forbiddenServerPath);
+fs.chmodSync(forbiddenServerPath, 0o755);
 fs.writeFileSync(
   path.join(workspacePath, ".vscode", "settings.json"),
   JSON.stringify({

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+mkdir -p target/app-e2e-plan && node tools/commands/ci/github/app-e2e-plan.ts --profile full --suite "$REQUESTED_SUITE" --field evidence > target/app-e2e-plan/full.json

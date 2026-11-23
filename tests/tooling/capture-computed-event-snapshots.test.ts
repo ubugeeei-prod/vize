@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -12,7 +13,9 @@ import {
   selectCanonTestBinary,
 } from "../../tools/support/compat/github/capture-computed-event-snapshots.ts";
 
-function fixture() {
+type SnapshotMode = "complete" | "overwrite-reference" | "ignored" | "change-head";
+
+function fixture(mode: SnapshotMode = "complete") {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "canon-observation-"));
   const git = (...args: string[]) =>
     execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
@@ -28,22 +31,22 @@ function fixture() {
   const deps = path.join(root, "target/ci/deps");
   fs.mkdirSync(deps, { recursive: true });
   const binary = path.join(deps, "vize_canon-fixture");
-  const pending = path.join(root, `${computedEventFiles[1]}.new`);
+  const reference = path.join(root, computedEventFiles[1]!);
+  const snapshot = mode === "overwrite-reference" ? reference : reference + ".new";
   fs.writeFileSync(
     binary,
-    `#!${process.execPath}
-const fs = require('node:fs');
-if (process.argv.includes('--list')) {
-  console.log(${JSON.stringify(`${computedEventFilter}: test`)});
-} else {
-  const assert = require('node:assert/strict');
-  assert.deepEqual(process.argv.slice(2), ${JSON.stringify([computedEventFilter, "--exact", "--nocapture", "--test-threads=1"])});
-  assert.equal(process.env.INSTA_UPDATE, 'new');
-  assert.equal(process.env.INSTA_FORCE_PASS, '1');
-  fs.writeFileSync(${JSON.stringify(pending)}, ${JSON.stringify("fresh observed body\n")});
-  console.log('test result: ok. 1 passed; 0 failed; 0 ignored;');
-}
-`,
+    readToolingProgram("commands/capture-computed-event-snapshots/binary.cjs.in", {
+      NODE: process.execPath,
+      FILTER_LISTING: JSON.stringify(`${computedEventFilter}: test`),
+      FILTER_ARGS: JSON.stringify([
+        computedEventFilter,
+        "--exact",
+        "--nocapture",
+        "--test-threads=1",
+      ]),
+      SNAPSHOT_PATH: JSON.stringify(snapshot),
+      MODE: JSON.stringify(mode),
+    }),
   );
   fs.chmodSync(binary, 0o755);
   const message = {
@@ -121,16 +124,8 @@ void test("binary selection rejects missing, foreign, non-test and ambiguous Car
 });
 
 void test("an artifact-only execution cannot modify a checked-in snapshot", () => {
-  const f = fixture();
+  const f = fixture("overwrite-reference");
   try {
-    const original = fs.readFileSync(f.binary, "utf8");
-    fs.writeFileSync(
-      f.binary,
-      original.replace(
-        JSON.stringify(path.join(f.root, `${computedEventFiles[1]}.new`)),
-        JSON.stringify(path.join(f.root, computedEventFiles[1]!)),
-      ),
-    );
     assert.throws(() => captureComputedEvents(f.root, f.evidence, f.source), /source changed/);
     const receipt = parseJson(
       fs.readFileSync(path.join(f.evidence, "computed-event-observations/receipt.json"), "utf8"),
@@ -150,22 +145,13 @@ void test("an artifact-only execution cannot modify a checked-in snapshot", () =
 });
 
 void test("ignored filters and a changed HEAD cannot become complete observations", () => {
-  for (const change of [
-    (source: string) =>
-      source.replace("1 passed; 0 failed; 0 ignored;", "0 passed; 0 failed; 1 ignored;"),
-    (source: string) =>
-      source.replace(
-        "console.log('test result:",
-        "require('node:child_process').execFileSync('git', ['commit', '--allow-empty', '-qm', 'changed source']); console.log('test result:",
-      ),
-  ]) {
-    const f = fixture();
+  for (const [mode, expectedError] of [
+    ["ignored", /non-ignored/],
+    ["change-head", /source changed/],
+  ] as const) {
+    const f = fixture(mode);
     try {
-      fs.writeFileSync(f.binary, change(fs.readFileSync(f.binary, "utf8")));
-      assert.throws(
-        () => captureComputedEvents(f.root, f.evidence, f.source),
-        /non-ignored|source changed/,
-      );
+      assert.throws(() => captureComputedEvents(f.root, f.evidence, f.source), expectedError);
       const receipt = parseJson(
         fs.readFileSync(path.join(f.evidence, "computed-event-observations/receipt.json"), "utf8"),
       );

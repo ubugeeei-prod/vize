@@ -5,6 +5,7 @@ import path from "node:path";
 import type { TestContext } from "node:test";
 
 import type { PinnedFixtureWorkspace } from "../../../_helpers/realworld-patch.ts";
+import { installToolingProgram } from "../../../tooling/support/program-path.ts";
 import { pageRouteObserver } from "./cli-observer.ts";
 import type { RecordObservation } from "./raw-process.ts";
 import { PAGE_PATH, PLAYGROUND, ROUTES_PATH } from "./support.ts";
@@ -69,9 +70,10 @@ export function fakeFixture(t: TestContext, options: { activeConfig?: boolean } 
     }
     assert.equal(fs.existsSync(fixture.resolve("project-root-map.d.ts")), false);
   }
-  function stub(body: string) {
+  function stubCli(stdout: string | Buffer = "{}") {
     const file = fixture.resolve("owned-cli-stub.cjs");
-    fs.writeFileSync(file, `#!${process.execPath}\n${body}\n`, { mode: 0o755 });
+    fs.writeFileSync(file + ".stdout", stdout);
+    installToolingProgram(file, "process/emit-cli-response.cjs");
     return file;
   }
   function observer(
@@ -90,5 +92,5 @@ export function fakeFixture(t: TestContext, options: { activeConfig?: boolean } 
       routes,
     );
   }
-  return { fixture, source, stub, assertRestored, observer };
+  return { fixture, source, stubCli, assertRestored, observer };
 }

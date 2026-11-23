@@ -1,0 +1,113 @@
+import "../../Actions.pkl" as ci
+
+name = "LSP marker scan allocation and residency comparison"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/lsp-marker-scan-scale.yml"
+      ".github/scripts/workflows/lsp-marker-scan-scale/**"
+      ".github/scripts/workflows/shared/**"
+      "crates/vize_maestro/src/server/state/project_contexts/root_discovery/**"
+      "crates/vize_maestro/src/server/state/project_contexts/root_discovery.rs"
+      "tools/support/compat/davinci/lsp-*.ts"
+      "tools/support/compat/davinci/lib/lsp-*.ts"
+      "tests/tooling/support/lsp/**"
+      "tests/tooling/lsp-marker-scan-compare.test.ts"
+      "tests/tooling/lsp-marker-scan-source.test.ts"
+      "tests/tooling/lsp-resource-corpus.test.ts"
+      "tests/tooling/lsp-resource-finalize.test.ts"
+      "tests/tooling/lsp-resource-sampler.test.ts"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Immutable baseline source distinct from dispatched source"
+        required = true
+        type = "string"
+      }
+      files {
+        description = "Actual resident Vue SFCs"
+        type = "choice"
+        options = List("2500", "10000")
+        ["default"] = "2500"
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+concurrency {
+  group = "lsp-marker-scan-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  compare {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 90
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/lsp-marker-scan-scale"
+      REQUESTED_BASE_SHA = "${{ github.event.pull_request.base.sha || inputs.base_sha }}"
+      EXPECTED_PR_HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
+      FILES = "${{ inputs.files || '2500' }}"
+      GOMAXPROCS = "8"
+      RAYON_NUM_THREADS = "8"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = "true"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.workspaceVp()
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        name = "Verify measurement tooling"
+        run = "node --test tests/tooling/lsp-marker-scan-compare.test.ts tests/tooling/lsp-marker-scan-source.test.ts tests/tooling/lsp-resource-corpus.test.ts tests/tooling/lsp-resource-finalize.test.ts tests/tooling/lsp-resource-sampler.test.ts"
+      }
+      new Dynamic { run = #". "${{ env.VIZE_CI_FILES }}/compare-rustup-toolchain-install-rustup-show-active-too.sh""# }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "lsp-marker-scan-head"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Pin the actual checked-out comparison parents"
+        run = #". "${{ env.VIZE_CI_FILES }}/pin-the-actual-checked-out-comparison-parents.sh""#
+      }
+      new Dynamic {
+        name = "Validate immutable paired sources"
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-immutable-paired-sources.sh""#
+      }
+      new Dynamic {
+        name = "Build distinct baseline and candidate targets with equal flags"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-distinct-baseline-and-candidate-targets-with-equal-flags.sh""#
+      }
+      new Dynamic {
+        name = "Verify project markers and unannounced configuration freshness"
+        run = "cargo test --locked --profile ci-opt -p vize_maestro server::state::project_contexts -- --nocapture"
+      }
+      new Dynamic {
+        name = "Alternate three fresh ordinary-process rounds"
+        run = #". "${{ env.VIZE_CI_FILES }}/alternate-three-fresh-ordinary-process-rounds.sh""#
+      }
+      new Dynamic {
+        name = "Collect separate source callsites and allocator requests"
+        run = #". "${{ env.VIZE_CI_FILES }}/collect-separate-source-callsites-and-allocator-requests.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "lsp-marker-scan-${{ github.sha }}"
+          path = "${{ runner.temp }}/lsp-marker-evidence"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  echo "$2" >> '{}'
+  tar -czf "$4/vizejs-ui-2.0.0.tgz" -C '{}' package
+  """#
+}

@@ -1,0 +1,6 @@
+#!/bin/sh
+if [ "$1" = "--lsp" ]; then
+  echo "$$" > {}
+  printf '\n' >> {}
+fi
+exec {} "$@"

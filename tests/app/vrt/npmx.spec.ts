@@ -1,3 +1,4 @@
+import { seedLocalStorage } from "../../_helpers/browser/local-storage.ts";
 import { test, expect, type Browser, type Page } from "@playwright/test";
 import type { ChildProcess } from "node:child_process";
 import * as path from "node:path";
@@ -197,19 +198,13 @@ async function compareRoute(
 
 async function setupPage(page: Page): Promise<void> {
   await installVisualStabilityHooks(page);
-  await page.addInitScript(() => {
-    localStorage.setItem("npmx-color-mode", "light");
-  });
+  await page.addInitScript(seedLocalStorage, { values: { "npmx-color-mode": "light" } });
 }
 
 async function setupRoute(page: Page, route: VisualRoute): Promise<void> {
   if (!route.storage) return;
 
-  await page.addInitScript((storage) => {
-    for (const [key, value] of Object.entries(storage)) {
-      localStorage.setItem(key, value);
-    }
-  }, route.storage);
+  await page.addInitScript(seedLocalStorage, { values: route.storage });
 }
 
 async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promise<void> {

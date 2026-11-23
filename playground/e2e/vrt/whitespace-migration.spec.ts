@@ -1,10 +1,9 @@
-import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { expect, test } from "@playwright/test";
 import native from "../../../npm/native/index.js";
 
 const require = createRequire(import.meta.url);
-const vueRuntime = readFileSync(require.resolve("vue/dist/vue.global.prod.js"), "utf8");
+const vueRuntime = require.resolve("vue/dist/vue.global.prod.js");
 const source = `<p style="display: flex; letter-spacing: 0.25px">
     {{ label }}
     <i class="icon" />
@@ -25,7 +24,7 @@ test("Vue 2 line-break migration keeps the text before a flex icon", async ({ pa
     <div id="default"></div>
     <div id="migration"></div>
   `);
-  await page.addScriptTag({ content: vueRuntime });
+  await page.addScriptTag({ path: vueRuntime });
 
   const rendered = await page.evaluate(
     ({ defaultCode, migrationCode }) => {

@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -74,7 +76,9 @@ test("check workflow uploads Davinci allocation bench reports", () => {
 });
 
 test("editor script qualification runs the original readers and paired measurements on tracked inputs", (t) => {
-  const workflow = parse(readRepoFile(".github", "workflows", "editor-script-queries.yml")) as {
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "editor-script-queries.yml"),
+  ) as {
     jobs: Record<string, WorkflowJob>;
   };
   const root = mkdtempSync(join(tmpdir(), "vize-editor-script-queries-"));
@@ -89,18 +93,12 @@ test("editor script qualification runs the original readers and paired measureme
   const log = join(root, "cargo.jsonl");
   writeFileSync(
     join(bin, "cargo"),
-    [
-      "#!/usr/bin/env node",
-      "const fs = require('node:fs');",
-      "const input = process.env.VIZE_SCRIPT_QUERY_INPUTS;",
-      "const manifest = input && fs.readFileSync(input, 'utf8').split('\\0');",
-      "fs.appendFileSync(process.env.CARGO_INVOCATIONS, JSON.stringify({args:process.argv.slice(2),manifest})+'\\n');",
-    ].join("\n"),
+    readToolingProgram("commands/github-workflows-davinci-bench/cargo.cjs").slice(0, -1),
     { mode: 0o755 },
   );
   for (const step of workflow.jobs["editor-products"].steps ?? []) {
     if (!step.run) continue;
-    const result = spawnSync("bash", ["-e", "-o", "pipefail", "-c", step.run], {
+    const result = spawnSync("bash", ["-e", "-o", "pipefail", automationShellPath(step.run)], {
       cwd: root,
       encoding: "utf8",
       env: {
@@ -175,7 +173,9 @@ test("editor script qualification runs the original readers and paired measureme
 });
 
 test("client and server target qualification exercises original inputs and serialized allocation windows", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "client-server-decisions.yml")) as {
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "client-server-decisions.yml"),
+  ) as {
     jobs: Record<string, WorkflowJob>;
   };
   const commands = workflow.jobs["target-products"].steps?.find((step) =>
@@ -207,7 +207,7 @@ test("client and server target qualification exercises original inputs and seria
 });
 
 test("Vapor Criterion dispatch validates revisions and selects only its suite", (t) => {
-  const workflow = parse(readRepoFile(".github", "workflows", "criterion-bench.yml")) as {
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "criterion-bench.yml")) as {
     on?: Record<string, { inputs?: Record<string, unknown> }>;
     jobs?: Record<string, WorkflowJob>;
   };
@@ -255,7 +255,7 @@ test("Vapor Criterion dispatch validates revisions and selects only its suite", 
   git(head, ["checkout", "-q", headSha]);
 
   const validate = (baseValue: string, headValue: string, dispatchValue: string) =>
-    spawnSync("bash", ["-e", "-o", "pipefail", "-c", validation], {
+    spawnSync("bash", ["-e", "-o", "pipefail", automationShellPath(validation)], {
       cwd: root,
       encoding: "utf8",
       env: {
@@ -281,7 +281,7 @@ test("Vapor Criterion dispatch validates revisions and selects only its suite", 
     PR_HEAD_SHA: headSha,
     VAPOR_ONLY: "true",
   };
-  const vapor = spawnSync("bash", ["-e", "-o", "pipefail", "-c", impact], {
+  const vapor = spawnSync("bash", ["-e", "-o", "pipefail", automationShellPath(impact)], {
     cwd: root,
     encoding: "utf8",
     env,
@@ -294,10 +294,10 @@ test("Vapor Criterion dispatch validates revisions and selects only its suite", 
   mkdirSync(bin);
   writeFileSync(
     join(bin, "node"),
-    '#!/bin/sh\nprintf \'%s\\n\' \'{"selected":["vize_glyph"],"reason":"from impact script"}\' > "$GITHUB_WORKSPACE/criterion-impact.json"\nprintf \'%s\\n\' \'has_suites=true\' >> "$GITHUB_OUTPUT"\n',
+    readToolingProgram("commands/github-workflows-davinci-bench/node.sh"),
     { mode: 0o755 },
   );
-  const affected = spawnSync("bash", ["-e", "-o", "pipefail", "-c", impact], {
+  const affected = spawnSync("bash", ["-e", "-o", "pipefail", automationShellPath(impact)], {
     cwd: root,
     encoding: "utf8",
     env: { ...env, VAPOR_ONLY: "false", PATH: `${bin}${delimiter}${process.env.PATH ?? ""}` },

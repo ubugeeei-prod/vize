@@ -3,6 +3,9 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
+import { pathToFileURL } from "node:url";
+
+import { toolingProgram } from "../../../tooling/support/program-path.ts";
 
 import { ownError, rawCommand } from "./raw-process.ts";
 import { fakeFixture, temporary } from "./raw-process-test-workspace.ts";
@@ -61,8 +64,7 @@ await test("page-route configuration retains native evidence and emits the activ
   configure(fixture, "owned-corsa-path", PAGE_PATH, { inherited: true });
   const native = fixture.read("vize.config.json.fixture");
   const settings = JSON.parse(native) as { lsp: unknown; typeChecker: unknown };
-  const carrier = fixture.read("vite.config.mjs");
-  const loaded = (await import(`data:text/javascript,${encodeURIComponent(carrier)}`)) as {
+  const loaded = (await import(pathToFileURL(fixture.resolve("vite.config.mjs")).href)) as {
     default: { vue: { languageServer: unknown; typeChecker: unknown } };
   };
   assert.deepEqual(loaded.default.vue.languageServer, settings.lsp);
@@ -86,11 +88,12 @@ await test("binary stdout/stderr and nonzero status are recorded before UTF-8 de
   const cwd = temporary(t);
   const stdout = Buffer.from([0, 102, 128, 255, 10]);
   const stderr = Buffer.from([129, 192, 0, 13]);
-  const script = `process.stdout.write(Buffer.from(${JSON.stringify([...stdout])}));
-process.stderr.write(Buffer.from(${JSON.stringify([...stderr])}));
-process.exitCode = process.env.LANG === 'C' && process.env.LC_ALL === 'C'
-  && process.cwd() === ${JSON.stringify(fs.realpathSync(cwd))} ? 23 : 24;`;
-  const args = ["-e", script];
+  const args = [
+    toolingProgram("process/emit-checked-streams.js"),
+    stdout.toString("base64"),
+    stderr.toString("base64"),
+    fs.realpathSync(cwd),
+  ];
   const capture = recorder();
   const originalToString = Buffer.prototype.toString;
   let saved = false;
@@ -240,7 +243,7 @@ await test("failed capture prevents an unrecorded owned subprocess from starting
     () =>
       rawCommand(
         process.execPath,
-        ["-e", `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'started')`],
+        [toolingProgram("process/append-command-marker.js"), marker, "started"],
         cwd,
         () => {
           throw error;
@@ -259,9 +262,9 @@ await test(
   },
   async (t) => {
     await t.test("malformed JSON is saved before the parser throws", (t) => {
-      const { source, stub, assertRestored, observer } = fakeFixture(t);
+      const { source, stubCli, assertRestored, observer } = fakeFixture(t);
       const bytes = Buffer.from([123, 255, 125]);
-      const cli = stub(`process.stdout.write(Buffer.from(${JSON.stringify([...bytes])}));`);
+      const cli = stubCli(bytes);
       const capture = recorder();
       const observe = observer(capture, cli);
       assert.throws(
@@ -278,8 +281,8 @@ await test(
     await t.test(
       "throwing transformation restores authored configuration and optional absence",
       (t) => {
-        const { fixture, source, stub, assertRestored, observer } = fakeFixture(t);
-        const cli = stub("process.stdout.write('{}');");
+        const { fixture, source, stubCli, assertRestored, observer } = fakeFixture(t);
+        const cli = stubCli();
         const capture = recorder();
         const observe = observer(capture, cli);
         const failure = new Error("owned reference transform failure");
@@ -312,10 +315,10 @@ await test(
       },
     );
     await t.test("reference failure restores an absent active carrier", (t) => {
-      const { fixture, source, stub, assertRestored, observer } = fakeFixture(t, {
+      const { fixture, source, stubCli, assertRestored, observer } = fakeFixture(t, {
         activeConfig: false,
       });
-      const cli = stub("process.stdout.write('{}');");
+      const cli = stubCli();
       const capture = recorder();
       const observe = observer(capture, cli);
       const failure = new Error("owned absent carrier control");
@@ -334,8 +337,8 @@ await test(
     await t.test(
       "reference spawn failure retains transformed typeof input before restoration",
       (t) => {
-        const { fixture, source, stub, assertRestored, observer } = fakeFixture(t);
-        const cli = stub("process.stdout.write('{}');");
+        const { fixture, source, stubCli, assertRestored, observer } = fakeFixture(t);
+        const cli = stubCli();
         const capture = recorder();
         const missingReference = fixture.resolve("nonexistent-owned-reference");
         const observe = observer(capture, cli, missingReference);

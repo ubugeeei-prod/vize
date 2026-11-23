@@ -1,0 +1,2 @@
+#!@@NODE@@
+console.log('rustc @@CONFIGURATION_COMPILER@@ (fixture)\nhost: fixture');

@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 /** Source and loaded-image custody, outside timed samples. */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -18,14 +19,7 @@ export function ownedNativeAuthority(directory: string, source: string): NativeA
   const probe = spawnSync(
     process.execPath,
     [
-      "-e",
-      `
-    const fs=require('node:fs'), path=require('node:path');
-    const binding=require(process.argv[1]);
-    const images=Object.entries(require.cache).filter(([file,module])=>file.endsWith('.node')&&module.exports===binding);
-    if(images.length!==1) throw Error('exact native image unavailable');
-    console.log(JSON.stringify({image:fs.realpathSync(images[0][0]),token:binding.getNativeBuildToken()}));
-  `,
+      fileURLToPath(new URL("./owned-native-image.cjs", import.meta.url)),
       join(directory, "npm/native"),
     ],
     { encoding: "utf8" },

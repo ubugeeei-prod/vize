@@ -1,0 +1,6 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+commands {
+  #"node tools/support/release/release/main.ts cut ${RELEASE_VERSION:+"$RELEASE_VERSION"}"#
+}

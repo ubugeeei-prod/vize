@@ -62,6 +62,7 @@ jobs:
             target: win32-arm64-msvc
             msvc_arch: arm64
     env: &native-host-env
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/native-smoke"
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps: &native-host-steps
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -101,19 +102,14 @@ jobs:
         run: cargo build --profile ci -p vize
       - name: Smoke CLI
         shell: bash
-        run: |
-          if [ -x target/ci/vize.exe ]; then
-            target/ci/vize.exe --version
-          else
-            target/ci/vize --version
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/smoke-cli.sh"
       - name: Build @vizejs/native
         run: vp run --filter './npm/native' build:ci
       - name: Verify GNU native glibc compatibility
         if: runner.os == 'Linux' && endsWith(matrix.target, '-gnu')
         run: node tools/commands/ci/github/verify-glibc-symbols.ts --max 2.36 npm/native/*.linux-*-gnu.node
       - name: Smoke @vizejs/native
-        run: node -e "const native = require('./npm/native'); if (typeof native.compileSfc !== 'function') throw new Error('compileSfc missing')"
+        run: node "${{ env.VIZE_CI_FILES }}/smoke-vizejs-native.cjs"
       - name: Package-install smoke for host native package
         if: runner.os == 'Linux'
         run: node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests npm/native
@@ -165,6 +161,7 @@ jobs:
             target: win32-arm64-msvc
             msvc_arch: arm64
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/native-smoke"
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -196,13 +193,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - name: Install package dependencies
         shell: bash
-        run: |
-          vp install --frozen-lockfile --prefer-offline \
-            --filter . \
-            --filter '@vize/tools' \
-            --filter './npm/native...' \
-            --filter './npm/cli...' \
-            --filter './npm/builder/vite...'
+        run: . "${{ env.VIZE_CI_FILES }}/install-package-dependencies.sh"
       - name: Build @vizejs/native
         run: vp run --filter './npm/native' build:ci
       - name: Prepare native platform packages
@@ -211,9 +202,7 @@ jobs:
       - name: Build npm runtime packages
         if: ${{ matrix.platform.target != 'linux-x64-gnu' || matrix.node-version != '24' }}
         shell: bash
-        run: |
-          vp run --filter './npm/cli' build
-          vp run --filter './npm/builder/vite' build
+        run: . "${{ env.VIZE_CI_FILES }}/build-npm-runtime-packages.sh"
       - name: Build the packed Nuxt release graph
         if: ${{ matrix.platform.target == 'linux-x64-gnu' && matrix.node-version == '24' }}
         uses: ./.github/actions/release-build-packages
@@ -222,19 +211,13 @@ jobs:
         env:
           VIZE_SMOKE_TIMING_FILE: ${{ runner.temp }}/packed-smoke-timing.jsonl
         shell: bash
-        run: |
-          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks \
-            npm/native npm/native/npm/* \
-            npm/cli npm/builder/vite
+        run: . "${{ env.VIZE_CI_FILES }}/fresh-install-and-runtime-smoke-published-tarballs.sh"
       - name: Fresh packed Nuxt init, check, and LSP smoke
         if: ${{ matrix.platform.target == 'linux-x64-gnu' && matrix.node-version == '24' }}
         env:
           VIZE_SMOKE_TIMING_FILE: ${{ runner.temp }}/packed-smoke-timing.jsonl
         shell: bash
-        run: |
-          read -ra js <<< "$RELEASE_JS_PACKAGES"
-          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks \
-            npm/native npm/native/npm/* "${js[@]}"
+        run: . "${{ env.VIZE_CI_FILES }}/fresh-packed-nuxt-init-check-and-lsp-smoke.sh"
       - name: Retain packed smoke timing
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -259,13 +242,14 @@ jobs:
           - runner: ubuntu-22.04-arm
             target: aarch64-unknown-linux-musl
             platform: linux-arm64-musl
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/native-smoke"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Read the package version
         id: version
         shell: bash
-        run: |
-          node -e 'console.log(`version=${require("./npm/native/package.json").version}`)' >> "$GITHUB_OUTPUT"
+        run: . "${{ env.VIZE_CI_FILES }}/read-the-package-version.sh"
       - name: Cross-build the musl native binding
         uses: ./.github/actions/build-release-native
         with:
@@ -276,53 +260,21 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - name: Install packed runtime dependencies
         shell: bash
-        run: |
-          vp install --frozen-lockfile --prefer-offline \
-            --filter . \
-            --filter '@vize/tools' \
-            --filter './npm/native...' \
-            --filter './npm/cli...' \
-            --filter './npm/builder/vite...'
+        run: . "${{ env.VIZE_CI_FILES }}/install-package-dependencies.sh"
       - name: Prepare the musl native platform package
         shell: bash
         env:
           NATIVE_PLATFORM: ${{ matrix.platform }}
-        run: |
-          node tools/support/github/stage-built-native-packages.ts npm/native
-          test -f "npm/native/npm/$NATIVE_PLATFORM/vize-vitrine.$NATIVE_PLATFORM.node"
+        run: . "${{ env.VIZE_CI_FILES }}/prepare-the-musl-native-platform-package.sh"
       - name: Build packed runtime packages
         shell: bash
-        run: |
-          vp run --filter './npm/cli' build
-          vp run --filter './npm/builder/vite' build
+        run: . "${{ env.VIZE_CI_FILES }}/build-npm-runtime-packages.sh"
       - name: Fresh install and runtime smoke in Alpine
         shell: bash
         env:
           NATIVE_PACKAGE: ${{ format('@vizejs/native-{0}', matrix.platform) }}
           NATIVE_PLATFORM: ${{ matrix.platform }}
-        run: |
-          docker run --rm \
-            --env VIZE_SMOKE_TIMING_FILE=/evidence/packed-smoke-timing.jsonl \
-            --env "VIZE_SMOKE_EXPECTED_NATIVE_PACKAGE=$NATIVE_PACKAGE" \
-            --env "NATIVE_PLATFORM=$NATIVE_PLATFORM" \
-            --volume "$GITHUB_WORKSPACE:/work" \
-            --volume "$RUNNER_TEMP:/evidence" \
-            --workdir /work \
-            node:24-alpine@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8 \
-            sh -euxc '
-              set -o pipefail
-              corepack enable
-              npm install --global --allow-scripts=bun bun@1.3.14 vite-plus@0.1.24
-              node tools/commands/release/npm/smoke-release-install.ts \
-                --prepare-manifests --runtime-checks \
-                npm/native "npm/native/npm/$NATIVE_PLATFORM" \
-                npm/cli npm/builder/vite \
-                2>&1 | tee /evidence/musl-smoke.log
-              grep -F "\"package\":\"$VIZE_SMOKE_EXPECTED_NATIVE_PACKAGE\"" \
-                /evidence/musl-smoke.log
-              grep -F '"'"'"schema":"vize.loadedNativeBinding"'"'"' \
-                /evidence/musl-smoke.log
-            '
+        run: . "${{ env.VIZE_CI_FILES }}/fresh-install-and-runtime-smoke-in-alpine.sh"
       - name: Retain packed musl smoke evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

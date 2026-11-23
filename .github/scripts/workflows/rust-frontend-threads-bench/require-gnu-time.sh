@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+test -x /usr/bin/time || { sudo apt-get update -qq && sudo apt-get install -y -qq time; }

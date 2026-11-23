@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 
 import { corpus, measure } from "./fixtures/davinci-plugin-sdk/bench.mjs";
 import { definePlugin, runProxy } from "./fixtures/davinci-plugin-sdk/sdk.mjs";
@@ -117,19 +118,18 @@ test("results are content-keyed by the plugin's own version and code", () => {
 
 test("plugin results persist across Node processes under the manifest key", () => {
   const dir = mkdtempSync(path.join(tmpdir(), "vize-plugin-cache-"));
-  const child = `
-    import { createRequire } from "node:module";
-    const native = createRequire(import.meta.url)(${JSON.stringify(path.join(root, "npm/native/index.js"))});
-    const { default: team } = await import(${JSON.stringify(pathToFileURL(path.join(root, "tests/tooling/fixtures/davinci-plugin-sdk/team-conventions.mjs")).href)});
-    const output = native.lintWithPlugins(${JSON.stringify(TODO_LIST)}, [team], {
-      filename: "TodoList.vue", cache: true, cacheDir: process.argv[1]
-    });
-    process.stdout.write(JSON.stringify({ diagnostics: output.diagnostics, plugin: {
-      contentKey: output.plugins[0].contentKey, cached: output.plugins[0].cached
-    }}));
-  `;
+  const child = [
+    toolingProgram("plugins/compile-with-team-conventions.js"),
+    JSON.stringify({
+      nativeLibrary: path.join(root, "npm/native/index.js"),
+      pluginModule: pathToFileURL(
+        path.join(root, "tests/tooling/fixtures/davinci-plugin-sdk/team-conventions.mjs"),
+      ).href,
+      source: TODO_LIST,
+    }),
+  ];
   const run = () => {
-    const result = spawnSync(process.execPath, ["--input-type=module", "-e", child, dir], {
+    const result = spawnSync(process.execPath, [...child, dir], {
       encoding: "utf8",
     });
     assert.equal(result.status, 0, result.stderr);
@@ -151,32 +151,17 @@ test("plugin results persist across Node processes under the manifest key", () =
 
 test("captured plugin configuration invalidates a persisted result across processes", () => {
   const dir = mkdtempSync(path.join(tmpdir(), "vize-plugin-config-cache-"));
-  const child = `
-    import { createRequire } from "node:module";
-    const native = createRequire(import.meta.url)(${JSON.stringify(path.join(root, "npm/native/index.js"))});
-    const { definePlugin } = await import(${JSON.stringify(pathToFileURL(path.join(root, "tests/tooling/fixtures/davinci-plugin-sdk/sdk.mjs")).href)});
-    const threshold = process.argv[2];
-    const plugin = definePlugin({
-      name: "captured-config", version: "1", visit: ["ui.element"], demands: [],
-      cacheInputs: [{ name: "threshold", value: threshold }],
-      rules: { check(ctx) { ctx.report(ctx.nodes[0], threshold); } }
-    });
-    const output = native.lintWithPlugins(${JSON.stringify(TODO_LIST)}, [plugin], {
-      filename: "TodoList.vue", cache: true, cacheDir: process.argv[1]
-    });
-    process.stdout.write(JSON.stringify({
-      fingerprint: plugin.fingerprint,
-      key: output.plugins[0].contentKey,
-      cached: output.plugins[0].cached,
-      messages: output.diagnostics.map((diagnostic) => diagnostic.message)
-    }));
-  `;
+  const child = [
+    toolingProgram("plugins/compile-with-plugin-configuration.js"),
+    JSON.stringify({
+      nativeLibrary: path.join(root, "npm/native/index.js"),
+      sdkModule: pathToFileURL(path.join(root, "tests/tooling/fixtures/davinci-plugin-sdk/sdk.mjs"))
+        .href,
+      source: TODO_LIST,
+    }),
+  ];
   const run = (threshold: string) => {
-    const result = spawnSync(
-      process.execPath,
-      ["--input-type=module", "-e", child, dir, threshold],
-      { encoding: "utf8" },
-    );
+    const result = spawnSync(process.execPath, [...child, dir, threshold], { encoding: "utf8" });
     assert.equal(result.status, 0, result.stderr);
     return JSON.parse(result.stdout);
   };

@@ -1,11 +1,11 @@
+import { readAutomationPrograms } from "./automation-source.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { parse } from "yaml";
 
 /** Every selected native lane must execute its action and reach the required report. */
 export function assertNativeRuntimeHook(lane: string, action: string) {
   const workflow = parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../../.github/workflows/pr-source-checks.yml", import.meta.url),
       "utf8",
     ),

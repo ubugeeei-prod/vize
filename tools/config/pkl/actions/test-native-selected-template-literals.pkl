@@ -1,0 +1,26 @@
+import "../Actions.pkl" as ci
+
+name = "Execute original selected-template literal modules"
+description = "Capture twelve genuine L1-L4 modules and run their pinned Vue laws"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Capture and execute original selected-template literal modules"
+      shell = "bash"
+      env { VIZE_L4_SELECTED_LITERAL_CAPTURE = "${{ runner.temp }}/native-selected-template-literals.json" }
+      run = #". "$GITHUB_ACTION_PATH/scripts/capture-and-execute-original-selected-template-literal-modules.sh""#
+    }
+    new Dynamic {
+      name = "Retain the actual literal module, map and range capture"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "native-selected-template-literals-${{ github.run_id }}-${{ github.sha }}"
+        path = "${{ runner.temp }}/native-selected-template-literals.json"
+        `if-no-files-found` = "error"
+        `retention-days` = 14
+      }
+    }
+  }
+}

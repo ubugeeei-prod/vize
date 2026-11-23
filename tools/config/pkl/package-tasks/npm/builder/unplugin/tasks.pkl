@@ -1,0 +1,12 @@
+amends "../../../../PackageTasks.pkl"
+
+tasks {
+  ["test"] {
+    module.run("vp", List("pack"))
+    (module.run("node", List(
+      "--test",
+      "src/*.test.ts",
+      "src/**/*.test.ts",
+    ))) { globs = Set("src/*.test.ts", "src/**/*.test.ts") }
+  }
+}

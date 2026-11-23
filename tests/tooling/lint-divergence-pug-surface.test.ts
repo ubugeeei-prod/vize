@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 // Davinci P4-12c: Patina lints `<template lang="pug">` through the pug
 // dialect, but the ESLint baseline (vue-eslint-parser) cannot parse pug, so
 // the lint-divergence runner reports Patina findings inside a pug template
@@ -66,20 +67,7 @@ test("the TypeScript runner keeps pug template findings out of the scored surfac
     const fakeVize = path.join(fixtureDir, "fake-vize.mjs");
     fs.writeFileSync(
       fakeVize,
-      [
-        "#!/usr/bin/env node",
-        "if (process.argv[2] !== 'lint') process.exit(2);",
-        "process.stdout.write(JSON.stringify([{",
-        '  file: "App.vue",',
-        "  messages: [{",
-        '    ruleId: "vue/require-v-for-key",',
-        '    severity: "error",',
-        "    line: 3, column: 6, endLine: 3, endColumn: 27,",
-        "    message: \"[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives.\",",
-        "  }],",
-        "}]));",
-        "",
-      ].join("\n"),
+      readToolingProgram("commands/lint-divergence-pug-surface/fake-vize.cjs"),
     );
     fs.chmodSync(fakeVize, 0o755);
     const registryPath = path.join(fixtureDir, "registry.json");

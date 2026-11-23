@@ -10,6 +10,7 @@ on:
       - .gitmodules
       - "tests/_fixtures/_git/**"
       - .github/workflows/canonical-corpus-objects.yml
+      - .github/scripts/workflows/canonical-corpus-objects/**
   schedule:
     # Daily, so the entry is never evicted as unused.
     - cron: "41 2 * * *"
@@ -26,6 +27,8 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/canonical-corpus-objects"
     steps:
       - name: Checkout trusted main
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -38,7 +41,7 @@ jobs:
         run: node tools/support/compat/github/canonical-corpus-observer.mjs plan
       - name: Require a trusted cache writer
         if: ${{ steps.corpus-plan.outputs.cache-trusted != 'true' }}
-        run: echo 'Only trusted default-branch runs seed canonical fixture objects.' >&2; exit 1
+        run: . "${{ env.VIZE_CI_FILES }}/require-a-trusted-cache-writer.sh"
       - name: Cache immutable trusted fixture objects
         id: objects
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5

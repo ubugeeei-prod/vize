@@ -1,5 +1,5 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -17,9 +17,8 @@ type ObservationWorkflow = {
   concurrency: { "cancel-in-progress": boolean };
   jobs: Record<string, { name: string; needs?: unknown; steps: Step[] }>;
 };
-const source = readFileSync(
+const source = readAutomationPrograms(
   new URL("../../.github/workflows/pr-performance-observation.yml", import.meta.url),
-  "utf8",
 );
 const workflow = parse(source) as ObservationWorkflow;
 
@@ -49,9 +48,8 @@ test("every PR gets an independent read-only observation without a performance b
     "queue-release-gates.yml",
     "release.yml",
   ]) {
-    const existing = readFileSync(
+    const existing = readAutomationPrograms(
       new URL(`../../.github/workflows/${file}`, import.meta.url),
-      "utf8",
     );
     assert.doesNotMatch(
       existing,

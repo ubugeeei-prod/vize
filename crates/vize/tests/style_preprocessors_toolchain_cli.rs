@@ -90,10 +90,7 @@ fn details(output: &std::process::Output) -> String {
 fn project(lang: &str, scoped: &str, module: &str) -> tempfile::TempDir {
     let dir = tempfile::tempdir().unwrap();
     let status = Command::new("node")
-        .arg("-e")
-        .arg(format!(
-            "require({STAND_INS:?}).installStandIns(process.cwd())"
-        ))
+        .arg(STAND_INS)
         .current_dir(dir.path())
         .status()
         .unwrap();

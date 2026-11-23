@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+test "$(git rev-parse HEAD)" = 710dfca619c82d76078a72ee64629632c798dea5
+mkdir "$RUNNER_TEMP/native-ops-private"
+uname -a > "$RUNNER_TEMP/native-ops-private/uname.txt"
+cat /proc/self/limits > "$RUNNER_TEMP/native-ops-private/initial-limits.txt"
+cat /proc/cpuinfo > "$RUNNER_TEMP/native-ops-private/cpuinfo.txt"

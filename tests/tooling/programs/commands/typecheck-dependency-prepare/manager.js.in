@@ -1,0 +1,34 @@
+#!@@NODE@@
+import fs from "node:fs";
+const rawArgs = process.argv.slice(2);
+const expectedSpec = @@MANAGER_SPEC@@;
+let managerArgs = rawArgs;
+if (expectedSpec !== null) {
+  if (rawArgs[0] !== expectedSpec) {
+    console.error(`expected ${expectedSpec}, received ${rawArgs[0] ?? "<missing>"}`);
+    process.exit(13);
+  }
+  managerArgs = rawArgs.slice(1);
+}
+if (managerArgs.includes("--version")) {
+  console.log(@@VERSION@@);
+  process.exit(0);
+}
+const command = process.argv[1].split(/[\\/]/u).pop();
+fs.writeFileSync(
+  @@INVOCATION_PATH@@,
+  JSON.stringify({
+    cwd: process.cwd(),
+    command,
+    args: rawArgs,
+    managerArgs,
+    env: {
+      CI: process.env.CI,
+      npm: process.env.npm_config_ignore_scripts,
+      yarn: process.env.YARN_ENABLE_SCRIPTS,
+      corepackProjectSpec: process.env.COREPACK_ENABLE_PROJECT_SPEC,
+    },
+  }),
+);
+process.argv = [process.argv[0], process.argv[1], ...managerArgs];
+@@INSTALL_BODY@@

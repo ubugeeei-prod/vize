@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+cargo +nightly-2026-10-23 build --locked --profile ci-opt -p vize_atelier_core --example fuzz_expression_10401_profile 2>&1 | tee ../evidence/optimized-build.log

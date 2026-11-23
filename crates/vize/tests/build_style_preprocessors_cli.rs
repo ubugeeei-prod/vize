@@ -48,11 +48,7 @@ fn project(with_preprocessors: bool, name: &str, source: &str) -> tempfile::Temp
     let dir = tempfile::tempdir().unwrap();
     if with_preprocessors {
         let status = Command::new("node")
-            .arg("-e")
-            .arg(format!(
-                "require({:?}).installStandIns(process.cwd())",
-                STAND_INS
-            ))
+            .arg(STAND_INS)
             .current_dir(dir.path())
             .status()
             .unwrap();

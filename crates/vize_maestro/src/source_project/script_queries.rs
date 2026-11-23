@@ -80,7 +80,7 @@ impl SourceSnapshot {
     ) -> Result<Option<ScriptQueryProducts>, ScriptQueryRefusal> {
         let parsed = self
             .with_current(&state.documents, |_| {
-                if self.language_id() != "vue" || is_jsx_host(self.uri().path()) {
+                if self.language_id() != "vue" || crate::utils::is_jsx_path(self.uri().path()) {
                     return Err(ScriptQueryRefusal::Language);
                 }
                 Ok(state.sfc_descriptor(self.uri(), self.source()))
@@ -102,12 +102,6 @@ impl SourceSnapshot {
             None
         })
     }
-}
-
-fn is_jsx_host(path: &str) -> bool {
-    path.as_bytes().last_chunk::<4>().is_some_and(|suffix| {
-        suffix.eq_ignore_ascii_case(b".jsx") || suffix.eq_ignore_ascii_case(b".tsx")
-    })
 }
 
 fn script_frame<'a>(
@@ -178,8 +172,16 @@ impl ScriptQueryProducts {
             }
             symbol
         };
-        self.symbols.push(symbol);
+        self.push_script_symbol(symbol);
         Ok(())
+    }
+
+    pub(crate) fn push_script_symbol(&mut self, symbol: DocumentSymbol) {
+        if self.symbols.is_empty() {
+            // An SFC has at most one ordinary script and one setup script.
+            self.symbols.reserve_exact(2);
+        }
+        self.symbols.push(symbol);
     }
 }
 

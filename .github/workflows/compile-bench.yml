@@ -1,4 +1,4 @@
-name: Compile Benchmark
+name: Benchmark - SFC compilation
 
 # Compile-only measurements on the README runner class: wall, CPU-seconds
 # (user+sys) and load cost per build, single-thread and parallel apart.
@@ -51,6 +51,8 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/compile-bench"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -67,58 +69,13 @@ jobs:
         run: node tools/benchmarks/scripts/generate.mjs "$COMPILE_BENCH_FILES"
 
       - name: Fetch published natives
-        run: |
-          set -euo pipefail
-          for v in $COMPILE_BENCH_VERSIONS; do
-            dir="$RUNNER_TEMP/native/$v"
-            mkdir -p "$dir"
-            curl -fsSL "https://registry.npmjs.org/@vizejs/native-linux-x64-gnu/-/native-linux-x64-gnu-$v.tgz" | tar -xz -C "$dir"
-            file "$dir"/package/*.node
-          done
+        run: . "${{ env.VIZE_CI_FILES }}/fetch-published-natives.sh"
 
       - name: Measure
-        run: |
-          set -euo pipefail
-          args=()
-          for v in $COMPILE_BENCH_VERSIONS; do
-            args+=(--native "$v=$(ls "$RUNNER_TEMP/native/$v"/package/*.node)")
-          done
-          node tools/benchmarks/scripts/compile-history.ts \
-            --input tools/benchmarks/scripts/__in__ \
-            --vue "$PWD/tools/benchmarks/scripts/node_modules/@vue/compiler-sfc" \
-            "${args[@]}" --runs 5 --warmups 2 --rounds 2 \
-            --out compile-history.md --json compile-history.json
-          node -p '"@vue/compiler-sfc " + require("./tools/benchmarks/scripts/node_modules/@vue/compiler-sfc/package.json").version' >> compile-history.md
-          cat compile-history.md >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/measure.sh"
 
       - name: Profile single-thread compile
-        run: |
-          set -euo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends linux-tools-generic
-          sudo sysctl -w kernel.perf_event_paranoid=-1 kernel.kptr_restrict=0
-          perf_bin=""
-          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
-            if [[ -x "$candidate" ]]; then perf_bin="$candidate"; break; fi
-          done
-          test -n "$perf_bin"
-          mkdir -p profiles
-          input="$PWD/tools/benchmarks/scripts/__in__"
-          for v in $COMPILE_BENCH_PROFILE_VERSIONS; do
-            node_file=$(ls "$RUNNER_TEMP/native/$v"/package/*.node)
-            spec=$(printf '{"label":"%s","kind":"native","path":"%s","mode":"loop1t"}' "$v" "$node_file")
-            "$perf_bin" stat -e task-clock,instructions,cycles,cache-misses,branch-misses -o "profiles/$v.stat.txt" \
-              node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 5 --warmups 1 > /dev/null
-            "$perf_bin" record -F 999 --call-graph dwarf,16384 -o "profiles/$v.perf.data" \
-              node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 3 --warmups 1 > /dev/null
-            "$perf_bin" report -i "profiles/$v.perf.data" --no-children --sort dso,symbol --stdio --percent-limit 0.3 2> /dev/null | head -150 > "profiles/$v.self.txt"
-            "$perf_bin" report -i "profiles/$v.perf.data" --children --sort symbol --stdio -g none --percent-limit 1 2> /dev/null | head -200 > "profiles/$v.children.txt"
-            "$perf_bin" script -i "profiles/$v.perf.data" 2> /dev/null | gzip > "profiles/$v.perf-script.txt.gz"
-            echo "::group::$v perf stat"; cat "profiles/$v.stat.txt"; echo "::endgroup::"
-            echo "::group::$v self"; cat "profiles/$v.self.txt"; echo "::endgroup::"
-            echo "::group::$v children"; cat "profiles/$v.children.txt"; echo "::endgroup::"
-            rm "profiles/$v.perf.data"
-          done
+        run: . "${{ env.VIZE_CI_FILES }}/profile-single-thread-compile.sh"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
@@ -137,6 +94,8 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/compile-bench"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -167,59 +126,19 @@ jobs:
         env:
           CARGO_PROFILE_RELEASE_DEBUG: line-tables-only
           CARGO_PROFILE_RELEASE_STRIP: none
-        run: |
-          export RUSTFLAGS="${RUSTFLAGS:-} -C force-frame-pointers=yes"
-          vp run --workspace-root build:native
+        run: . "${{ env.VIZE_CI_FILES }}/build-native-with-symbols.sh"
 
       - name: Generate benchmark corpus
         run: node tools/benchmarks/scripts/generate.mjs "$COMPILE_BENCH_FILES"
 
       - name: Fetch latest published native
-        run: |
-          set -euo pipefail
-          v="${COMPILE_BENCH_VERSIONS##* }"
-          mkdir -p "$RUNNER_TEMP/native/$v"
-          curl -fsSL "https://registry.npmjs.org/@vizejs/native-linux-x64-gnu/-/native-linux-x64-gnu-$v.tgz" | tar -xz -C "$RUNNER_TEMP/native/$v"
-          echo "LATEST_VERSION=$v" >> "$GITHUB_ENV"
+        run: . "${{ env.VIZE_CI_FILES }}/fetch-latest-published-native.sh"
 
       - name: Measure source against latest release
-        run: |
-          set -euo pipefail
-          node tools/benchmarks/scripts/compile-history.ts \
-            --input tools/benchmarks/scripts/__in__ \
-            --vue "$PWD/tools/benchmarks/scripts/node_modules/@vue/compiler-sfc" \
-            --native "$LATEST_VERSION=$(ls "$RUNNER_TEMP/native/$LATEST_VERSION"/package/*.node)" \
-            --native "source-${GITHUB_SHA::10}=$(ls npm/native/*.node)" \
-            --runs 5 --warmups 2 --rounds 2 \
-            --out compile-source.md --json compile-source.json
-          cat compile-source.md >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/measure-source-against-latest-release.sh"
 
       - name: Profile source compile
-        run: |
-          set -euo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends linux-tools-generic
-          sudo sysctl -w kernel.perf_event_paranoid=-1 kernel.kptr_restrict=0
-          perf_bin=""
-          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
-            if [[ -x "$candidate" ]]; then perf_bin="$candidate"; break; fi
-          done
-          test -n "$perf_bin"
-          mkdir -p profiles
-          node_file=$(ls "$PWD"/npm/native/*.node)
-          input="$PWD/tools/benchmarks/scripts/__in__"
-          for mode in loop1t batchmax; do
-            spec=$(printf '{"label":"source","kind":"native","path":"%s","mode":"%s"}' "$node_file" "$mode")
-            "$perf_bin" stat -e task-clock,instructions,cycles,cache-misses -o "profiles/$mode.stat.txt" \
-              node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 5 --warmups 1 > /dev/null
-            "$perf_bin" record -F 2999 --call-graph fp -o "profiles/$mode.perf.data" \
-              node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 5 --warmups 1 > /dev/null
-            "$perf_bin" report -i "profiles/$mode.perf.data" --no-children --sort dso,symbol --stdio -g none --percent-limit 0.2 2> /dev/null | head -250 > "profiles/$mode.self.txt"
-            "$perf_bin" report -i "profiles/$mode.perf.data" --children --sort symbol --stdio -g none --percent-limit 0.3 2> /dev/null | head -400 > "profiles/$mode.children.txt"
-            "$perf_bin" script -i "profiles/$mode.perf.data" 2> /dev/null | gzip > "profiles/$mode.perf-script.txt.gz"
-            for f in stat self children; do echo "::group::$mode $f"; head -120 "profiles/$mode.$f.txt"; echo "::endgroup::"; done
-            rm "profiles/$mode.perf.data"
-          done
+        run: . "${{ env.VIZE_CI_FILES }}/profile-source-compile.sh"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
@@ -238,6 +157,8 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/compile-bench"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -260,89 +181,23 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
 
       - name: Check out the merge base
-        run: |
-          set -euo pipefail
-          git fetch --no-tags --depth=50 origin main
-          base=$(git merge-base HEAD FETCH_HEAD)
-          # A fixed base measures a whole series against one starting point.
-          if [[ -n "${COMPILE_BENCH_BASE:-}" ]]; then
-            git fetch --no-tags --depth=1 origin "$COMPILE_BENCH_BASE"
-            base=$COMPILE_BENCH_BASE
-          fi
-          echo "BASE_SHA=$base" >> "$GITHUB_ENV"
-          git worktree add --detach "$RUNNER_TEMP/base" "$base"
+        run: . "${{ env.VIZE_CI_FILES }}/check-out-the-merge-base.sh"
 
       # Separate target dirs: two checkouts sharing one overwrite each other.
       - name: Build base and head natives
-        run: |
-          set -euo pipefail
-          for side in base head; do
-            dir=$PWD
-            if [[ $side == base ]]; then dir=$RUNNER_TEMP/base; fi
-            (cd "$dir" && CARGO_TARGET_DIR="$RUNNER_TEMP/target-$side" cargo build --release -p vize_vitrine --features napi,legacy --lib)
-            cp "$RUNNER_TEMP/target-$side/release/libvize_vitrine.so" "$RUNNER_TEMP/$side.node"
-            rm -rf "$RUNNER_TEMP/target-$side"
-          done
+        run: . "${{ env.VIZE_CI_FILES }}/build-base-and-head-natives.sh"
 
       - name: Generate benchmark corpus
         run: node tools/benchmarks/scripts/generate.mjs "$COMPILE_BENCH_FILES"
 
       - name: Measure base against head
-        run: |
-          set -euo pipefail
-          node tools/benchmarks/scripts/compile-history.ts \
-            --input tools/benchmarks/scripts/__in__ \
-            --vue "$PWD/tools/benchmarks/scripts/node_modules/@vue/compiler-sfc" \
-            --native "base-${BASE_SHA::10}=$RUNNER_TEMP/base.node" \
-            --native "head-${GITHUB_SHA::10}=$RUNNER_TEMP/head.node" \
-            --runs 5 --warmups 2 --rounds 4 \
-            --out compile-compare.md --json compile-compare.json
-          cat compile-compare.md >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/measure-base-against-head.sh"
 
       - name: Count instructions
-        run: |
-          set -euo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends linux-tools-generic
-          sudo sysctl -w kernel.perf_event_paranoid=-1
-          perf_bin=""
-          for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
-            if [[ -x "$candidate" ]]; then perf_bin="$candidate"; break; fi
-          done
-          test -n "$perf_bin"
-          input="$PWD/tools/benchmarks/scripts/__in__"
-          {
-            echo
-            echo "perf stat, one process: 1 warmup + 5 passes"
-            echo
-            echo "| Build | Mode | Instructions | Cycles | Task clock |"
-            echo "| --- | --- | ---: | ---: | ---: |"
-          } >> compile-compare.md
-          for mode in loop1t batch1t batchmax; do
-            for side in base head; do
-              spec=$(printf '{"label":"%s","kind":"native","path":"%s","mode":"%s"}' "$side" "$RUNNER_TEMP/$side.node" "$mode")
-              "$perf_bin" stat -x, -e instructions,cycles,task-clock -o "stat-$side-$mode.csv" \
-                node tools/benchmarks/scripts/compile-history.ts --child "$spec" --input "$input" --runs 5 --warmups 1 > /dev/null
-              node -e 'const [f, side, mode] = process.argv.slice(1); const rows = Object.fromEntries(require("fs").readFileSync(f, "utf8").split("\n").filter((l) => /^[0-9]/.test(l)).map((l) => { const c = l.split(","); return [c[2], Number(c[0])]; })); console.log(`| ${side} | ${mode} | ${(rows.instructions / 1e9).toFixed(3)}G | ${(rows.cycles / 1e9).toFixed(3)}G | ${(rows["task-clock"] / 1e6).toFixed(1)} ms |`)' "stat-$side-$mode.csv" "$side" "$mode" >> compile-compare.md
-            done
-          done
-          cat compile-compare.md
+        run: . "${{ env.VIZE_CI_FILES }}/count-instructions.sh"
 
       - name: Require identical output
-        run: |
-          node -e '
-            const { rows } = JSON.parse(require("fs").readFileSync("compile-compare.json", "utf8"));
-            let ok = true;
-            // An approved TS-source output change sets COMPILE_BENCH_TS_OUTPUT_MAY_CHANGE; JS-source output must never change.
-            const keys = process.env.COMPILE_BENCH_TS_OUTPUT_MAY_CHANGE === "true" ? ["outputSha256Js"] : ["outputSha256"];
-            for (const mode of ["loop1t", "batch1t", "batchmax"]) {
-              for (const key of keys) {
-                const hashes = new Set(rows.filter((row) => row.mode === mode).map((row) => row[key]));
-                if (hashes.size !== 1) { ok = false; console.error(`${mode}: ${key} differs between base and head`); }
-              }
-            }
-            if (!ok) process.exit(1);
-          '
+        run: . "${{ env.VIZE_CI_FILES }}/require-identical-output.sh"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()

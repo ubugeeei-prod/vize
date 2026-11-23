@@ -1,0 +1,2 @@
+require("node:fs").writeFileSync(@@PM_LOG@@, @@COMMAND@@);
+process.exit(99);

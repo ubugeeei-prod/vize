@@ -27,7 +27,8 @@
     "language-projection.d.ts",
     "native-binding.js",
     "native-binding-identity.js",
-    "native-targets.js"
+    "native-targets.js",
+    "scripts/package-tasks.cjs"
   ],
   "main": "index.js",
   "types": "index.d.ts",
@@ -38,7 +39,7 @@
     "build": "node ./scripts/build-local.mts --release",
     "build:ci": "node ./scripts/build-ci.mjs",
     "build:debug": "node ./scripts/build-local.mts",
-    "prepublishOnly": "napi pre-publish -t npm --no-gh-release --skip-optional-publish && node ./scripts/sync-entrypoint.mjs"
+    "prepublishOnly": "node ./scripts/package-tasks.cjs prepublishOnly"
   },
   "devDependencies": {
     "@napi-rs/cli": "catalog:integrations"

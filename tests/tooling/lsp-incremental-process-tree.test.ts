@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 
 import { ChurnMetrics } from "../performance/support/churn-metrics.ts";
 import type { LspChurnBudget } from "../performance/support/churn-metrics.ts";
@@ -122,7 +123,7 @@ test("process-tree RSS accounting sees the probing process and a child", async (
     assert.equal(tree, null);
     return;
   }
-  const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], {
+  const child = spawn(process.execPath, [toolingProgram("process/hold-process-open.js")], {
     stdio: "ignore",
   });
   try {
@@ -163,7 +164,7 @@ test("Linux process-tree attribution retains stable executable and argv identity
   ];
   const child = spawn(
     process.execPath,
-    ["-e", "setInterval(() => {}, 1000)", "--", ...privateArguments],
+    [toolingProgram("process/hold-process-open.js"), "--", ...privateArguments],
     { stdio: "ignore" },
   );
   try {
@@ -183,7 +184,7 @@ test("Linux process-tree attribution retains stable executable and argv identity
     assert.equal(root.identity.executableKind, "node");
     assert.match(root.identity.executableSha256, /^[0-9a-f]{64}$/);
     assert.match(root.identity.argvSha256, /^[0-9a-f]{64}$/);
-    assert.equal(root.identity.argvCount, 7);
+    assert.equal(root.identity.argvCount, 3 + privateArguments.length);
     assert.equal(root.identity.runtimeRole, "other");
     const secondSample = processTreeRss(child.pid, {
       stableIdentity: true,

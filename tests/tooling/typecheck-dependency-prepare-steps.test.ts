@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -41,7 +42,10 @@ test("dependency prepare runs ordered baseline steps that build on each other", 
       fixture.runner,
       fixture.invocationPath,
       "10.0.0",
-      `if (process.argv[2] === "install") { ${successBody} } else { ${steps} }`,
+      readToolingProgram(
+        "commands/typecheck-dependency-prepare-steps/package-manager-runs-ordered-baseline-build-each-other.js.in",
+        { SUCCESS_BODY: successBody, STEPS: steps },
+      ),
       { spec: "pnpm@10.0.0" },
     );
     const result = run(fixture);
@@ -57,7 +61,10 @@ test("dependency prepare runs ordered baseline steps that build on each other", 
       fixture.runner,
       fixture.invocationPath,
       "10.0.0",
-      `if (process.argv[2] === "install") { ${successBody} } else if (process.argv[4] === "stub") process.exit(0); else { ${steps} }`,
+      readToolingProgram(
+        "commands/typecheck-dependency-prepare-steps/package-manager-dependency-prepare-runs-ordered-baseline-steps-build-each-other.js.in",
+        { SUCCESS_BODY: successBody, STEPS: steps },
+      ),
       { spec: "pnpm@10.0.0" },
     );
     const failed = run(fixture);

@@ -1,0 +1,46 @@
+import "../../Actions.pkl" as ci
+
+`runs-on` = ci.linux
+`if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+`timeout-minutes` = 45
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/full-qualification"
+  VIZE_NUXT_CONFIG_ITERATIONS = "100"
+}
+steps = new Listing {
+  ci.use(ci.checkout)
+  new Dynamic {
+    uses = ci.setupRust
+    with {
+      toolchain = "stable"
+      components = "clippy"
+    }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-wild-http-recovery"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "package.json"
+      cache = true
+      `run-install` = true
+    }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "clippy-test"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    name = "Clippy"
+    run = #". "${{ env.VIZE_CI_FILES }}/clippy.sh""#
+  }
+  new Dynamic {
+    name = "Davinci no_std stage-library portability lanes (TS-24)"
+    run = #". "${{ env.VIZE_CI_FILES }}/davinci-no-std-stage-library-portability-lanes-ts-24.sh""#
+  }
+}

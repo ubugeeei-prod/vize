@@ -1,0 +1,17 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  flags=(--locked --profile ci-opt -p vize_croquis_cf --features setup-render-products --lib)
+  cargo clippy "${flags[@]}" --no-deps -- -D warnings
+  cargo test "${flags[@]}" facts::
+  export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/setup-render-callers"
+  git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
+  for suite in corpus::original_project_results profile::paired_render_products profile::original_render_performance profile::registration::registration_and_first_read; do
+    cargo test "${flags[@]}" "facts::render_tree::setup::tests::$suite" -- --exact --ignored --nocapture --test-threads=1
+  done
+  """#
+}

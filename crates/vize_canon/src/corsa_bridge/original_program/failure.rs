@@ -47,10 +47,10 @@ fn failed_and_timed_out_original_overlays_are_reaped_without_source_writes() {
         let pid_path = root.path().join("overlay.pid");
         let wrapper = root.path().join("tsc");
         let script = cstr!(
-            "#!/bin/sh\nif [ \"$1\" = \"--lsp\" ]; then\n  echo \"$$\" > {}\n  {}\n  exit 23\nfi\nexec {} \"$@\"\n",
-            shell_quote(&pid_path),
-            if pause { "sleep 1" } else { ":" },
-            shell_quote(&backend())
+            include_str!("../../../tests/programs/refuse-original-overlay.sh.in"),
+            pid = shell_quote(&pid_path),
+            pause = pause,
+            backend = shell_quote(&backend())
         );
         write_executable(&wrapper, &script);
         let mut bridge = CorsaBridge::with_config(CorsaBridgeConfig {
@@ -135,19 +135,13 @@ fn diagnosing_project_and_configuration_changes_refuse_and_reap_real_overlays() 
         // Root membership and the front-end nested-config check run before
         // the independent diagnosing process starts. Only this real process
         // startup changes its configured project or the root's source bytes.
-        let mutation = if nested {
-            cstr!(
-                "printf '%s' '{{\"compilerOptions\":{{\"allowJs\":true,\"checkJs\":true,\"types\":[],\"noEmit\":true}}}}' > {}",
-                shell_quote(&subdirectory.join("tsconfig.json"))
-            )
-        } else {
-            cstr!("echo ' ' >> {}", shell_quote(&config))
-        };
         let script = cstr!(
-            "#!/bin/sh\nif [ \"$1\" = \"--lsp\" ]; then\n  echo \"$$\" > {}\n  {}\nfi\nexec {} \"$@\"\n",
-            shell_quote(&pid_path),
-            mutation,
-            shell_quote(&backend())
+            include_str!("../../../tests/programs/mutate-original-overlay.sh.in"),
+            pid = shell_quote(&pid_path),
+            nested = nested,
+            nested_config = shell_quote(&subdirectory.join("tsconfig.json")),
+            config = shell_quote(&config),
+            backend = shell_quote(&backend())
         );
         write_executable(&wrapper, &script);
         let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
