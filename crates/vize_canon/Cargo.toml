@@ -9,6 +9,7 @@ description = "Canon - The standard of correctness for Vize type checking"
 metadata.vize.stability = "compatibility-preview"
 
 [features]
+verified-literal-assignments = ["native", "vize_l2/literal-assignments"]
 original-style-bindings = [
   "native",
   "vize_croquis/original-style-bindings",
