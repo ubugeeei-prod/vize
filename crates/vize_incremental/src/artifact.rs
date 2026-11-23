@@ -329,3 +329,10 @@ pub fn compute_file_artifacts(text: &str, config: StageConfig) -> Vec<BlockArtif
 
 #[cfg(feature = "open-block-queries")]
 pub(crate) mod open;
+
+#[cfg(feature = "resident-providers")]
+impl BlockSource {
+    pub(crate) fn is_inline_html(&self) -> bool {
+        is_html_template(self)
+    }
+}

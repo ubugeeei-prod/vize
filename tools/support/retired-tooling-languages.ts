@@ -3,6 +3,8 @@ import { join } from "node:path";
 
 // Python, Lean, MoonBit and `.mjs` tooling were retired on 2026-10-13 (#8840).
 // The ledger lists every file still waiting for its port; its test is the ratchet.
+// This file is an executable proof specification outside the product tooling.
+export const independentGraphTheory = "tests/formal/ir-graph/Reach.lean";
 // An executable mathematical reference checked alongside the Rust used by Patina.
 export const templateLabelRanking = {
   theorem: "tests/formal/template-lint/Selection.lean",
@@ -31,6 +33,7 @@ function record(value: unknown): Readonly<Record<string, unknown>> | undefined {
 // An unreadable ledger keeps the test selected so it reports the damage.
 export function retiredToolingDrift(paths: readonly string[], cwd: string): boolean {
   const changed = paths.flatMap((path) => {
+    if (path === independentGraphTheory) return [];
     const language = retiredToolingLanguage(path);
     return language ? [{ path, language }] : [];
   });
