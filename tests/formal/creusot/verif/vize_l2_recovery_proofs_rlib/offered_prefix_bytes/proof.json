@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_len_tup2_usize_usize": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_min_usize": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_offered_prefix_bytes": { "prover": "alt-ergo", "time": 0.039 },
+      "vc_retry_limit": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}
