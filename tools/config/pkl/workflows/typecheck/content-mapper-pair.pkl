@@ -62,6 +62,7 @@ on {
       ".github/workflows/content-mapper-pair.yml"
       ".github/scripts/workflows/content-mapper-pair/**"
       "tools/benchmarks/scripts/content-mapper-pair*.ts"
+      "tools/benchmarks/scripts/content-mapper-burst-windows.ps1"
       "tests/tooling/content-mapper-pair*.test.ts"
     }
   }

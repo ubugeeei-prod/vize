@@ -1,4 +1,3 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -7,6 +6,9 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { gzipSync } from "node:zlib";
+
+import { toolingProgram } from "./support/program-path.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import { parse } from "yaml";
 
 const actionPath = path.resolve(".github/actions/setup-rust-script");
@@ -58,7 +60,11 @@ function installScript(original) {
     );
     assert.equal(digest(body), "f07c60eb9030ac17e58f5a325935433cabdde0d949b3314a6ffd8b0c21d06ec1");
   }
-  return parse(body).runs.steps.find((s) => s.name === "Install rust-script").run;
+  const step = parse(body).runs.steps.find((s) => s.name === "Install rust-script");
+  if (!original) return automationShellPath(step.run, "setup-rust-script");
+  const file = toolingProgram("workflow/original-rust-script-install.sh");
+  assert.equal(fs.readFileSync(file, "utf8"), "#!/usr/bin/env bash\n" + step.run.trimEnd() + "\n");
+  return file;
 }
 function run(options = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize rust-script transport "));
@@ -139,7 +145,7 @@ function run(options = {}) {
     'exec /usr/bin/tar "$@"',
   ]);
   const script = installScript(options.original);
-  const result = spawnSync("/bin/bash", ["-c", script], {
+  const result = spawnSync("/bin/bash", [script], {
     encoding: "utf8",
     timeout: 30_000,
     env: {

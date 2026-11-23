@@ -71,7 +71,7 @@ steps = new Listing {
       `retention-days` = 14
     }
   }
-  ci.command("Verify source coverage summary", "test -s target/llvm-cov/source-summary.json")
+  ci.command("Verify source coverage summary", #". "${{ env.VIZE_CI_FILES }}/verify-source-coverage-summary.sh""#)
   new Dynamic {
     name = "Upload source coverage summary"
     `continue-on-error` = true

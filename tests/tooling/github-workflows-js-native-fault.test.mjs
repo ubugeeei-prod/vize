@@ -4,6 +4,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   mkdirSync,
+  copyFileSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
@@ -14,9 +15,10 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
+import { toolingProgram } from "./support/program-path.ts";
 import { parse } from "yaml";
 import {
   privateGuest,
@@ -29,13 +31,6 @@ import {
 } from "../../.github/actions/test-js-packages-with-history/native-fault-core.ts";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
-const helper = join(root, ".github/actions/test-js-packages-with-history/native-fault-evidence.ts");
-const importHelper = `const fault = await import(${JSON.stringify(pathToFileURL(helper).href)});
-const unavailable = () => { const error = new Error("typed observation gap"); error.name = "PermissionError"; throw error; };
-fault.observers.privateGuest = () => ({ privateFirecrackerGuest: false });
-fault.observers.sourceSnapshot = unavailable;
-fault.observers.runnerResources = () => ({ syntheticResources: true });
-`;
 const environment = (fixture, id = "123") => ({
   ...process.env,
   GITHUB_ACTIONS: "true",
@@ -73,26 +68,14 @@ for (const outcome of ["0", "7", "SIGTERM", "SIGKILL"]) {
     try {
       const child = join(fixture, "original.mjs");
       const calls = join(fixture, "calls.jsonl");
-      writeFileSync(
-        child,
-        `import fs from "node:fs";
-fs.appendFileSync(process.argv[2], JSON.stringify({ argv: process.argv.slice(2), cwd: process.cwd(), env: process.env }) + "\\n");
-fs.writeSync(1, "original stdout\\n"); fs.writeSync(2, "original stderr\\n");
-const result = process.argv[3];
-if (result.startsWith("SIG")) process.kill(process.pid, result);
-else process.exit(Number(result));
-`,
-      );
+      copyFileSync(toolingProgram("process/record-command-outcome.js"), child);
       const env = environment(fixture);
-      const source =
-        importHelper +
-        'process.exitCode = await fault.main(["--", process.execPath, ...process.argv.slice(1)], "linux");';
       const result = spawnSync(
         process.execPath,
         [
-          "--input-type=module",
-          "-e",
-          source,
+          toolingProgram("workflow/run-observed-command.js"),
+          "normal",
+          process.execPath,
           child,
           calls,
           outcome,
@@ -104,10 +87,14 @@ else process.exit(Number(result));
       assert.equal(records.length, 1);
       assert.deepEqual(records[0].argv, [calls, outcome, "quoted argument with ' space\nnewline"]);
       assert.equal(records[0].cwd, realpathSync(fixture));
-      const baseline = spawnSync(process.execPath, ["-p", "JSON.stringify(process.env)"], {
-        env,
-        encoding: "utf8",
-      });
+      const baseline = spawnSync(
+        process.execPath,
+        [toolingProgram("process/print-process-environment.js")],
+        {
+          env,
+          encoding: "utf8",
+        },
+      );
       assert.equal(baseline.status, 0);
       assert.deepEqual(records[0].env, JSON.parse(baseline.stdout));
       assert.equal(result.stdout, "original stdout\n");
@@ -153,19 +140,20 @@ void test("the command writes regular files that the observer relays in full (#1
   // made it nonblocking; a regular file cannot, whatever the reader does.
   const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-relay-"));
   try {
-    const program =
-      "const fs = require('node:fs');" +
-      "fs.writeSync(1, `${fs.fstatSync(1).isFile()} ${fs.fstatSync(2).isFile()}\\n`);" +
-      "for (let i = 0; i < 64; i++) fs.writeSync(1, `${String(i).padStart(2, '0')} ${'x'.repeat(8190)}\\n`);" +
-      "fs.writeSync(2, 'burst stderr\\n');";
-    const source =
-      importHelper +
-      `process.exitCode = await fault.main(["--", process.execPath, "-e", ${JSON.stringify(program)}], "linux");`;
-    const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
-      env: environment(fixture, "126"),
-      encoding: "utf8",
-      maxBuffer: 16 * 1024 * 1024,
-    });
+    const result = spawnSync(
+      process.execPath,
+      [
+        toolingProgram("workflow/run-observed-command.js"),
+        "normal",
+        process.execPath,
+        toolingProgram("process/burst-file-streams.js"),
+      ],
+      {
+        env: environment(fixture, "126"),
+        encoding: "utf8",
+        maxBuffer: 16 * 1024 * 1024,
+      },
+    );
     assert.equal(result.status, 0, result.stderr);
     const lines = result.stdout.split("\n");
     assert.equal(lines[0], "true true");
@@ -181,14 +169,21 @@ void test("the command writes regular files that the observer relays in full (#1
 void test("diagnostic collection failures retain an original command failure", () => {
   const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-gap-"));
   try {
-    const source =
-      importHelper +
-      `fault.observers.observeDescendants = unavailable;
-process.exitCode = await fault.main(["--", process.execPath, "-e", "setTimeout(() => process.exit(9), 300)"], "linux");`;
-    const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
-      env: environment(fixture, "124"),
-      encoding: "utf8",
-    });
+    const result = spawnSync(
+      process.execPath,
+      [
+        toolingProgram("workflow/run-observed-command.js"),
+        "descendants",
+        process.execPath,
+        toolingProgram("process/exit-with-status.js"),
+        "9",
+        "300",
+      ],
+      {
+        env: environment(fixture, "124"),
+        encoding: "utf8",
+      },
+    );
     assert.equal(result.status, 9, result.stderr);
     const receipt = receiptAt(fixture, "124");
     assert.equal(receipt.observationGaps["process-maps"], "PermissionError");
@@ -204,13 +199,19 @@ void test(
   async () => {
     const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-signal-"));
     try {
-      const source =
-        importHelper +
-        `process.exitCode = await fault.main(["--", process.execPath, "-e", "console.log('ready'); setInterval(() => {}, 1000)"], "linux");`;
-      const child = spawn(process.execPath, ["--input-type=module", "-e", source], {
-        env: environment(fixture),
-        stdio: ["ignore", "pipe", "pipe"],
-      });
+      const child = spawn(
+        process.execPath,
+        [
+          toolingProgram("workflow/run-observed-command.js"),
+          "normal",
+          process.execPath,
+          toolingProgram("process/signal-ready.js"),
+        ],
+        {
+          env: environment(fixture),
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      );
       const result = new Promise((resolve, reject) => {
         child.once("error", reject);
         child.once("exit", (code, signal) => resolve({ code, signal }));
@@ -228,11 +229,7 @@ void test(
 
 void test("diagnostic capture enforces its requested timeout and retains partial output authority", () => {
   const result = runCapture(
-    [
-      process.execPath,
-      "-e",
-      "process.stdout.write('started\\n'); setTimeout(() => console.log('finished'), 5000)",
-    ],
+    [process.execPath, toolingProgram("process/time-out-diagnostic.js")],
     false,
     500,
   );
@@ -252,8 +249,10 @@ void test("public gdb text excludes startup arguments and retains bounded stream
   const prefix = "Core was generated by argument-secret\nVIZE_NATIVE_FAULT_BEGIN\n";
   const suffix = "\nVIZE_NATIVE_FAULT_END\n";
   const text = `${prefix}${"f".repeat(300000)}${suffix}`;
-  const program = `process.stdout.write(${JSON.stringify(prefix)} + 'f'.repeat(300000) + ${JSON.stringify(suffix)}); process.stderr.write('private argument-secret');`;
-  const result = runCapture([process.execPath, "-e", program], true);
+  const result = runCapture(
+    [process.execPath, toolingProgram("workflow/emit-debugger-output.js"), prefix, suffix],
+    true,
+  );
   assert.doesNotMatch(result.stdout + result.stderr, /argument-secret/);
   assert.equal(result.stdout.length, 262144);
   assert.equal(result.stderr, "");
@@ -338,25 +337,26 @@ for (const gap of ["source", "guest", "gdb"]) {
   void test(`${gap} collection failures execute the original command once and preserve failure`, () => {
     const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-once-"));
     try {
-      let setup = "";
-      if (gap === "guest") setup = "fault.observers.privateGuest = unavailable;";
       if (gap === "gdb") {
-        setup = "fault.observers.diagnoseCore = unavailable;";
         const cores = join(fixture, "js-native-fault-cores-125-1-law");
         mkdirSync(cores);
         writeFileSync(join(cores, "core.1"), "typed control");
       }
-      const program =
-        'const fs = require("node:fs"); fs.appendFileSync("calls", "once"); process.exit(11);';
-      const source =
-        importHelper +
-        setup +
-        `process.exitCode = await fault.main(["--", process.execPath, "-e", ${JSON.stringify(program)}], "linux");`;
-      const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
-        cwd: fixture,
-        env: environment(fixture, "125"),
-        encoding: "utf8",
-      });
+      const result = spawnSync(
+        process.execPath,
+        [
+          toolingProgram("workflow/run-observed-command.js"),
+          gap,
+          process.execPath,
+          toolingProgram("process/record-once.js"),
+          "11",
+        ],
+        {
+          cwd: fixture,
+          env: environment(fixture, "125"),
+          encoding: "utf8",
+        },
+      );
       assert.equal(result.status, 11, result.stderr);
       assert.equal(readFileSync(join(fixture, "calls"), "utf8"), "once");
       const receipt = receiptAt(fixture, "125");
@@ -382,14 +382,21 @@ void test("observation setup refusal executes the original command once with its
   const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-refusal-"));
   try {
     mkdirSync(join(fixture, "js-native-fault-evidence-123-1-law"));
-    const source =
-      importHelper +
-      'process.exitCode = await fault.main(["--", process.execPath, "-e", "require(\'node:fs\').appendFileSync(\'calls\', \'once\'); process.exit(17)"], "linux");';
-    const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
-      cwd: fixture,
-      env: environment(fixture),
-      encoding: "utf8",
-    });
+    const result = spawnSync(
+      process.execPath,
+      [
+        toolingProgram("workflow/run-observed-command.js"),
+        "normal",
+        process.execPath,
+        toolingProgram("process/record-once.js"),
+        "17",
+      ],
+      {
+        cwd: fixture,
+        env: environment(fixture),
+        encoding: "utf8",
+      },
+    );
     assert.equal(result.status, 17, result.stderr);
     assert.equal(readFileSync(join(fixture, "calls"), "utf8"), "once");
   } finally {

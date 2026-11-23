@@ -5,6 +5,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSyn
 import os from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 
 import {
   type Editor,
@@ -200,7 +201,9 @@ test("a location reached through a workspace symlink is the file it links to", (
 });
 
 test("survivors of a shutdown are killed and named", async () => {
-  const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
+  const child = spawn(process.execPath, [toolingProgram("process/hold-process-open.js")], {
+    stdio: "ignore",
+  });
   const exit = new Promise((resolve) => child.once("exit", (_, signal) => resolve(signal)));
   const reading = readTree([child.pid!], false, true);
   assert.deepEqual(killSurvivors(reading), [reading.members![0].name]);
@@ -220,7 +223,9 @@ test(
       kind: "vize",
       pids: () => (child?.pid ? [child.pid] : []),
       start: async () => {
-        child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
+        child = spawn(process.execPath, [toolingProgram("process/hold-process-open.js")], {
+          stdio: "ignore",
+        });
       },
       open: () => {},
       change: () => {},

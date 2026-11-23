@@ -1,4 +1,3 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -7,6 +6,9 @@ import os from "node:os";
 import path, { matchesGlob } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+
+import { installToolingProgram, toolingProgram } from "./support/program-path.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import { parse } from "yaml";
 
 type Step = {
@@ -210,16 +212,11 @@ void test("the actual frozen install shell preserves npm failure through raw log
   try {
     const bin = path.join(directory, "bin");
     fs.mkdirSync(bin);
-    fs.writeFileSync(
-      path.join(bin, "npm"),
-      "#!/bin/sh\nprintf 'controlled npm failure\\n' >&2\nexit 17\n",
-      { mode: 0o755 },
-    );
+    installToolingProgram(path.join(bin, "npm"), "workflow/fail-nuxt-install.cjs");
     const install = step("Install the frozen Nuxt 5 production reproduction");
     assert.equal(install.shell, "bash");
     assert.ok(install.run);
-    const script = path.join(directory, "install.sh");
-    fs.writeFileSync(script, install.run);
+    const script = automationShellPath(install.run, "nuxt3-module-build");
     for (const [variant, args, expected] of [
       ["default-no-pipefail", ["-e", script], 0],
       ["explicit-bash", ["--noprofile", "--norc", "-e", "-o", "pipefail", script], 17],
@@ -252,16 +249,8 @@ void test("the Nuxt controller uses the source runtime while forwarding the cons
   try {
     const bin = path.join(directory, "bin");
     fs.mkdirSync(bin);
-    fs.writeFileSync(
-      path.join(bin, "node"),
-      '#!/bin/sh\nprintf "ambient\\n" > "$AMBIENT_NODE_LOG"\n',
-      { mode: 0o755 },
-    );
-    fs.writeFileSync(
-      path.join(bin, "vp"),
-      '#!/bin/sh\ntest "$1" = env && test "$2" = exec && test "$3" = node || exit 19\nshift 3\nexec "$TEST_PRODUCER_NODE" "$@"\n',
-      { mode: 0o755 },
-    );
+    installToolingProgram(path.join(bin, "node"), "workflow/record-ambient-node.cjs");
+    installToolingProgram(path.join(bin, "vp"), "workflow/forward-source-node.cjs");
     const capture = step("Capture the source producer Node executable").run;
     assert.ok(capture);
     const output = path.join(directory, "github-output");
@@ -273,10 +262,14 @@ void test("the Nuxt controller uses the source runtime while forwarding the cons
       GITHUB_OUTPUT: output,
       RUNNER_TEMP: directory,
     };
-    const captured = spawnSync("/bin/bash", ["-e", "-c", capture], {
-      encoding: "utf8",
-      env: environment,
-    });
+    const captured = spawnSync(
+      "/bin/bash",
+      ["-e", automationShellPath(capture, "nuxt3-module-build")],
+      {
+        encoding: "utf8",
+        env: environment,
+      },
+    );
     assert.equal(captured.error, undefined);
     assert.equal(captured.status, 0, captured.stderr);
     const values = Object.fromEntries(
@@ -296,21 +289,27 @@ void test("the Nuxt controller uses the source runtime while forwarding the cons
     );
     const probe = path.join(directory, "tools/support/compat/nuxt/nuxt5-runtime-build.ts");
     fs.mkdirSync(path.dirname(probe), { recursive: true });
-    fs.writeFileSync(
-      probe,
-      'require("node:fs").writeFileSync(process.env.PROBE_LOG, JSON.stringify({producer:process.execPath,args:process.argv.slice(2)}));\n',
-    );
+    fs.copyFileSync(toolingProgram("workflow/record-nuxt-producer.cjs"), probe);
     const current = step("Verify source-bound Nuxt 5 browser and isolated server output").run;
     assert.ok(current);
-    const before =
-      'node tools/support/compat/nuxt/nuxt5-runtime-build.ts "$RUNNER_TEMP/nuxt5-runtime-proof/acceptance"';
-    for (const [variant, command] of [
-      ["ambient-node-before", before],
-      ["source-controller", current],
-    ]) {
+    for (const [variant, command, args] of [
+      [
+        "ambient-node-before",
+        "node",
+        [
+          "tools/support/compat/nuxt/nuxt5-runtime-build.ts",
+          path.join(directory, "nuxt5-runtime-proof/acceptance"),
+        ],
+      ],
+      [
+        "source-controller",
+        "/bin/bash",
+        ["-e", automationShellPath(current, "nuxt3-module-build")],
+      ],
+    ] as const) {
       const observation = path.join(directory, variant);
       fs.mkdirSync(observation);
-      const result = spawnSync("/bin/bash", ["-e", "-c", command], {
+      const result = spawnSync(command, args, {
         encoding: "utf8",
         cwd: directory,
         env: {

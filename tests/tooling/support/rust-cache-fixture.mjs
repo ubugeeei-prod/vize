@@ -14,6 +14,11 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 
+import {
+  invocationWords,
+  isProgramCommand,
+} from "../../../tools/support/ci/automation-commands.ts";
+
 const actionDir = fileURLToPath(
   new URL("../../../.github/actions/setup-rust-sticky-cache", import.meta.url),
 );
@@ -267,17 +272,25 @@ export function executeCacheAction(
           String(value(expr, inputs, outputs)),
         ]),
       );
-      const program = policy ? process.execPath : "bash";
-      const args = policy
+      const words = policy
         ? [
+            process.execPath,
             join(
               actionDir,
               "cache-policy",
               parse(readFileSync(join(actionDir, "cache-policy/action.yml"), "utf8")).runs.main,
             ),
           ]
-        : ["-e", "-c", step.run];
-      const result = execute(program, args, cwd, {
+        : invocationWords(step.run);
+      assert.ok(
+        words && (policy || isProgramCommand(words)),
+        "cache steps must name their program",
+      );
+      const [program, ...args] = words.map((word) =>
+        word.replaceAll("$GITHUB_ACTION_PATH", actionDir),
+      );
+      const command = program === "." ? ["bash", "-e", ...args] : [program, ...args];
+      const result = execute(command[0], command.slice(1), cwd, {
         ...env,
         ...stepEnv,
         GITHUB_OUTPUT: file,

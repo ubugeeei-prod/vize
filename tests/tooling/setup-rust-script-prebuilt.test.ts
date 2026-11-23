@@ -7,9 +7,9 @@ import path from "node:path";
 import { test } from "node:test";
 import { gzipSync } from "node:zlib";
 
-import { parse } from "yaml";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 
-import { readRepoFile } from "./support/github-workflows.ts";
+import { parse } from "yaml";
 
 const pinnedDigest = "0700ecfe6c768c007f3e5a7919f4fedbf0a6727d275a196791f134a1742d4d13";
 const actionPath = path.resolve(".github/actions/setup-rust-script");
@@ -140,12 +140,14 @@ chmod +x "$CARGO_HOME/bin/rust-script"
     path.join(bin, "tar"),
     `#!/bin/bash\nprintf '%s\\n' "$*" >> "$TAR_LOG"\nexec /usr/bin/tar "$@"\n`,
   );
-  const action = parse(readRepoFile(".github", "actions", "setup-rust-script", "action.yml")) as {
+  const action = parse(
+    readAutomationPrograms(".github", "actions", "setup-rust-script", "action.yml"),
+  ) as {
     runs: { steps: Array<{ name?: string; run?: string }> };
   };
   const script = action.runs.steps.find((step) => step.name === "Install rust-script")?.run;
   assert.ok(script);
-  const result = spawnSync("/bin/bash", ["-c", script], {
+  const result = spawnSync("/bin/bash", [automationShellPath(script, "setup-rust-script")], {
     encoding: "utf8",
     env: {
       ...process.env,

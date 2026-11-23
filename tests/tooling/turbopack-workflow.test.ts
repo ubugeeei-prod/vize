@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import fs from "node:fs/promises";
@@ -36,7 +36,11 @@ void test(
         '#!/bin/sh\ncase "$*" in *turbopack-workflow.test.ts*) exit 0;; esac\nprintf "intentional producer failure\\n"\nexit 23\n',
         { mode: 0o755 },
       );
-      const failed = spawnSync("/bin/bash", ["-e", "-c", step.run], { env, encoding: "utf8" });
+      const failed = spawnSync(
+        "/bin/bash",
+        ["-e", automationShellPath(step.run, "turbopack-consumers")],
+        { env, encoding: "utf8" },
+      );
       assert.equal(failed.status, 23, failed.stderr);
       assert.equal(
         await fs.readFile(path.join(artifacts, "source-unit.tap"), "utf8"),
@@ -45,7 +49,11 @@ void test(
       await fs.writeFile(script, '#!/bin/sh\nprintf "producer passed\\n"\nexit 0\n', {
         mode: 0o755,
       });
-      const passed = spawnSync("/bin/bash", ["-e", "-c", step.run], { env, encoding: "utf8" });
+      const passed = spawnSync(
+        "/bin/bash",
+        ["-e", automationShellPath(step.run, "turbopack-consumers")],
+        { env, encoding: "utf8" },
+      );
       assert.equal(passed.status, 0, passed.stderr);
       assert.equal(
         await fs.readFile(path.join(artifacts, "source-unit.tap"), "utf8"),

@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { test } from "node:test";
@@ -148,7 +148,7 @@ test("the real tooling report requires the source CLI and every selected worker"
       for (const workers of ["success", "skipped", "failure", "cancelled", ""]) {
         const result: SpawnSyncReturns<string> = spawnSync(
           "bash",
-          ["-euo", "pipefail", "-c", step.run],
+          ["-euo", "pipefail", automationShellPath(step.run)],
           {
             encoding: "utf8",
             env: {

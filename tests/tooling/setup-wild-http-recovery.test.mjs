@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -344,9 +345,7 @@ void test("Exact context refusal and API nonzero status do not depend on inherit
       const p = spawnSync(
         "bash",
         [
-          "-c",
-          'set +e; . "$1" "$2" "$3" "$4"; printf AFTER_HELPER',
-          "law",
+          fileURLToPath(new URL("./programs/source-download-helper.sh", import.meta.url)),
           path.join(local, "download-linux-x64.sh"),
           path.join(root, "archive"),
           requested,

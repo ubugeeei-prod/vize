@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const nativePackageDir = path.join(root, "npm/native");
@@ -238,10 +240,17 @@ module.exports.compileSfc = nativeBinding.compileSfc
     fs.readFileSync(path.join(nativePackageDir, "package.json"), "utf8"),
   ) as { scripts?: Record<string, string> };
   assert.equal(manifest.scripts?.["build:ci"], "node ./scripts/build-ci.mjs");
-  assert.match(
-    manifest.scripts?.prepublishOnly ?? "",
-    /napi pre-publish[\s\S]*&& node \.\/scripts\/sync-entrypoint\.mjs$/,
+  assert.equal(manifest.scripts?.prepublishOnly, "node ./scripts/package-tasks.cjs prepublishOnly");
+  const { tasks } = createRequire(import.meta.url)(
+    path.join(nativePackageDir, "scripts/package-tasks.cjs"),
   );
+  assert.deepEqual(tasks.prepublishOnly, [
+    {
+      program: "napi",
+      arguments: ["pre-publish", "-t", "npm", "--no-gh-release", "--skip-optional-publish"],
+    },
+    { program: "node", arguments: ["./scripts/sync-entrypoint.mjs"] },
+  ]);
 });
 
 test("packed package root rejects stale bindings by default and keeps the explicit escape hatch", () => {
@@ -344,15 +353,8 @@ module.exports = {
       process.execPath,
       [
         "--input-type=commonjs",
-        "--eval",
-        `const native = require(${JSON.stringify(entrypoint)});
-native.compileSfc("one");
-native.compileSfc("two");
-queueMicrotask(() => {
-  const first = native.counts();
-  native.compileSfc("three");
-  queueMicrotask(() => console.log(JSON.stringify({ first, second: native.counts() })));
-});`,
+        toolingProgram("native/count-native-validation-turns.cjs"),
+        JSON.stringify({ nativeLibrary: entrypoint }),
       ],
       { cwd: root },
     );

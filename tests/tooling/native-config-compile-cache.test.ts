@@ -17,11 +17,11 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 import { test } from "node:test";
-import { nativeLoaderScript } from "./support/native-config-script.ts";
+import { nativeLoaderPath } from "./support/native-config-script.ts";
 
 const require = createRequire(import.meta.url);
 const vite = dirname(require.resolve("vite/package.json"));
-const embedded = await nativeLoaderScript();
+const runtimeFile = await nativeLoaderPath();
 const cacheVariables = [
   "NODE_COMPILE_CACHE",
   "NODE_DISABLE_COMPILE_CACHE",
@@ -48,7 +48,7 @@ async function observed(selected: string, cache?: string, settings: NodeJS.Proce
   for (const name of cacheVariables) delete env[name];
   delete env.NODE_OPTIONS;
   Object.assign(env, settings);
-  const args = ["--input-type=module", "-e", embedded, selected];
+  const args = [runtimeFile, selected];
   if (cache) args.push(cache);
   args.push("--observe-config-inputs");
   const child = spawn(process.execPath, args, {

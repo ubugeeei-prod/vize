@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 import { parse } from "yaml";
 import { provisionFullRustRuntime } from "../../tools/support/compat/github/full-rust-runtime.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
@@ -118,10 +119,7 @@ test("locked provider reaches an external test child with its actual image/versi
     try {
       const child = spawnSync(
         process.execPath,
-        [
-          "-e",
-          "process.stdout.write(JSON.stringify([process.env.CORSA_PATH, process.env.VIZE_TEST_REQUIRE_TSGO, process.env.VIZE_TEST_DISABLE_TSGO]))",
-        ],
+        [toolingProgram("native/print-rust-provider-environment.js")],
         {
           cwd: external,
           encoding: "utf8",

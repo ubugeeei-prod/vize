@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 import {
   assertOfficialDiagnostics,
   loadOfficialFixture,
@@ -89,7 +90,19 @@ test("public-prop reproduction changes only the listener or the invalid prop val
     new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
   );
   const fixturePath = "tests/_fixtures/content-mapper/escaton-public-props-9498.json";
-  assert.equal(workflow.split(fixturePath).length - 1, 3);
+  assert.equal(workflow.split(fixturePath).length - 1, 2);
+  const selected = execFileSync(
+    process.execPath,
+    [
+      path.join(
+        root,
+        ".github/scripts/workflows/content-mapper-conformance/select-published-fixture.ts",
+      ),
+      "9498",
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(selected.trimEnd(), fixturePath);
   assert.ok(workflow.includes(`--fixture ${fixturePath}`));
 });
 
@@ -179,15 +192,7 @@ test("public9498 acceptance laws are enrolled in ordinary source and full merge 
   const plans: unknown = JSON.parse(
     execFileSync(
       process.execPath,
-      [
-        "--input-type=module",
-        "--eval",
-        `import { planToolingTests } from './tools/support/compat/github/plan-tooling-tests.mjs';
-         const requests = JSON.parse(process.argv[1]);
-         console.log(JSON.stringify(requests.map(({input, tier}) =>
-           planToolingTests([input], {tier, cwd: process.cwd()}).tests)));`,
-        JSON.stringify(requests),
-      ],
+      [toolingProgram("workflow/plan-public-props-qualification.js"), JSON.stringify(requests)],
       { cwd: root, encoding: "utf8" },
     ),
   );

@@ -115,7 +115,7 @@ jobs {
           `run-id` = "${{ inputs.receipt_run_id }}"
         }
       }
-      ci.command("Require the canonical receipt bundle name", "test -f .qualification/receipts/v1-exact-candidate-receipts.json")
+      ci.command("Require the canonical receipt bundle name", #". "${{ env.VIZE_CI_FILES }}/require-candidate-receipt.sh""#)
       new Dynamic {
         name = "Derive every host row from the committed manifest"
         id = "plan"

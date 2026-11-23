@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "../support/automation-source.ts";
+import { automationShellPath, readAutomationPrograms } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -112,7 +112,13 @@ test("selected public-consumer jobs reject missing, malformed, or mismatched can
       try {
         const result: SpawnSyncReturns<string> = spawnSync(
           "bash",
-          ["-e", "-u", "-o", "pipefail", "-c", validator.run],
+          [
+            "-e",
+            "-u",
+            "-o",
+            "pipefail",
+            automationShellPath(validator.run, path.basename(filename, ".yml")),
+          ],
           {
             encoding: "utf8",
             env: {

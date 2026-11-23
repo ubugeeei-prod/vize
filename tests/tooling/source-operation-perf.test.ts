@@ -3,6 +3,8 @@ import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+
+import { toolingProgram } from "./support/program-path.ts";
 import {
   captureSourceOperationPerf,
   parsePerfEventStats,
@@ -48,7 +50,7 @@ process.exit(c.status);
       outputDir: out,
       command: {
         executable: process.execPath,
-        args: ["-e", "console.log(process.env.PERF_TEST_UNIT);process.exit(2)"],
+        args: [toolingProgram("process/print-perf-unit.js")],
         cwd: root,
         env: { PERF_TEST_UNIT: "exact-output" },
       },
@@ -93,7 +95,7 @@ test("permission failure retains raw stderr and never fabricates command accepta
       outputDir: out,
       command: {
         executable: process.execPath,
-        args: ["-e", "throw Error('must not run')"],
+        args: [toolingProgram("process/unexpected-invocation.js")],
         cwd: root,
         env: {},
       },

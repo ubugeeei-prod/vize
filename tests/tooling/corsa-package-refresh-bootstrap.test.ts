@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 import {
   comparisonSources,
   sourceProvenance,
@@ -77,12 +78,19 @@ void test("an older PR without the recipe bootstraps from the merged actor witho
   const copyRecipe = (name: string) => {
     const temporary = path.join(scratch, name);
     fs.mkdirSync(temporary);
-    const result = spawnSync("bash", ["-euo", "pipefail", "-c", commands[0]], {
-      cwd: checkout,
-      env: { ...process.env, RUNNER_TEMP: temporary },
-      encoding: "utf8",
-      timeout: 10_000,
-    });
+    assert.equal(
+      commands[0],
+      'cp -R tools/support/compat/github/corsa-package-refresh "$RUNNER_TEMP/corsa-package-refresh-harness"',
+    );
+    const result = spawnSync(
+      "cp",
+      ["-R", recipe, path.join(temporary, "corsa-package-refresh-harness")],
+      {
+        cwd: checkout,
+        encoding: "utf8",
+        timeout: 10_000,
+      },
+    );
     assert.equal(result.error, undefined);
     return { ...result, destination: path.join(temporary, "corsa-package-refresh-harness") };
   };
@@ -116,12 +124,12 @@ void test("an older PR without the recipe bootstraps from the merged actor witho
       fs.readFileSync(path.join(root, recipe, file)),
     );
   }
-  const script = `import { execFileSync } from 'node:child_process';
-    import { sourceProvenance } from ${JSON.stringify(pathToFileURL(path.join(copiedRecipe, "source.mjs")).href)};
-    const actual = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-    process.stdout.write(JSON.stringify(sourceProvenance(actual)));`;
+  const script = [
+    toolingProgram("native/read-corsa-source-provenance.js"),
+    pathToFileURL(path.join(copiedRecipe, "source.mjs")).href,
+  ];
   const actual = JSON.parse(
-    execFileSync(process.execPath, ["--input-type=module", "--eval", script], {
+    execFileSync(process.execPath, [...script], {
       cwd: checkout,
       encoding: "utf8",
       env: { ...process.env, ...environment("pull_request", observerActor, triggerHead) },

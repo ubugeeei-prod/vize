@@ -3,6 +3,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, statSync }
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+
+import { toolingProgram } from "../../../tests/tooling/support/program-path.ts";
 import { advisoryComparison, collectObservation } from "./pr-performance-observation.ts";
 import { verifyObservationBindings } from "./pr-performance-observation-binding.ts";
 import {
@@ -65,7 +67,7 @@ void test("a hung command is unavailable with raw timeout evidence, never a fast
   try {
     const run = runObservation({
       executable: process.execPath,
-      args: ["-e", "setInterval(()=>{},1000)"],
+      args: [toolingProgram("process/hold-process-open.js")],
       cwd: dir,
       env: observationEnvironment(1),
       rawDir: join(dir, "raw"),

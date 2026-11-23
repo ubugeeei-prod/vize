@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -155,7 +155,7 @@ test("manual Actions comparisons reject absent, mutable or identical baseline id
         "environment-" + base.length + (base === head.stdout.trim() ? "-head" : ""),
       );
       writeFileSync(envFile, "");
-      const result = spawnSync("bash", ["-euc", script], {
+      const result = spawnSync("bash", ["-eu", automationShellPath(script)], {
         cwd,
         env: {
           ...process.env,
@@ -192,7 +192,7 @@ test("Actions evidence packaging retains packets without following dependency-li
     writeFileSync(join(evidence, "measurement.json"), packet);
     writeFileSync(join(evidence, "stdout.txt"), "complete diagnostic bytes\n");
     const script = workflowScript("Package evidence without traversing workspace links");
-    const packed = spawnSync("bash", ["-euc", script], {
+    const packed = spawnSync("bash", ["-eu", automationShellPath(script)], {
       env: { ...process.env, RUNNER_TEMP: root },
       encoding: "utf8",
       timeout: 10000,

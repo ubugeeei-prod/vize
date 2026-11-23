@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
+import { toolingProgram } from "../../../../tests/tooling/support/program-path.ts";
 import { captureProjectCommand } from "./project-command-capture.mjs";
 import { requireSuccessfulHosts, runHostProcesses } from "./ci-host-concurrency.mjs";
 import {
@@ -51,24 +52,22 @@ fs.writeFileSync(path.join(f.artifacts,id+".done"),"terminal evidence");
     args: [worker, config, id, failure ?? "none"],
     timeoutMs,
   }));
-  const baseline = `
-const fs=require("node:fs"),root=${JSON.stringify(f.artifacts)};
-fs.writeFileSync(root+"/baseline.started","started");
-console.log("whole baseline stdout");console.error("whole baseline stderr");
-const timer=setInterval(()=>{
- if(!fs.existsSync(root+"/baseline.release"))return;
- clearInterval(timer);fs.writeFileSync(root+"/baseline.done","joined vectors and reference");
- process.exit(${failure === "baseline" ? 7 : 0});
-},10);
-`;
   const pending = runPreparationBranches(f, {
     mode,
     prepare: async () => {
-      const result = await captureProjectCommand(process.execPath, ["-e", baseline], {
-        timeout: 6000,
-        maxBuffer: 1024 * 1024,
-        encoding: "utf8",
-      });
+      const result = await captureProjectCommand(
+        process.execPath,
+        [
+          toolingProgram("native/hold-n8n-baseline.js"),
+          f.artifacts,
+          failure === "baseline" ? "7" : "0",
+        ],
+        {
+          timeout: 6000,
+          maxBuffer: 1024 * 1024,
+          encoding: "utf8",
+        },
+      );
       fs.writeFileSync(path.join(f.artifacts, "baseline-process.json"), JSON.stringify(result));
       assert.equal(result.status, 0);
       return f.replay;

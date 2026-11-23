@@ -261,7 +261,7 @@ jobs:
         if: always()
         env:
           TRANSACTIONS_OUTCOME: ${{ steps.transactions.outcome }}
-        run: test "$TRANSACTIONS_OUTCOME" = success
+        run: . "${{ env.VIZE_CI_FILES }}/require-both-transactions.sh"
 
   official-css-options:
     if: github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && !inputs.router-experimental-only && (inputs.official-css-options-only || inputs.published-defaults-only)
@@ -291,8 +291,7 @@ jobs:
       - name: Require an unambiguous focused campaign
         env:
           EVENT_RENAME_ONLY: ${{ inputs.event-rename-only }}
-        run: |
-          test "$EVENT_RENAME_ONLY" != true
+        run: . "${{ env.VIZE_CI_FILES }}/require-an-unambiguous-focused-campaign.sh"
       - name: Checkout the reviewed Vize source
         if: ${{ !inputs.published-defaults-only }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -347,13 +346,7 @@ jobs:
         if: ${{ !inputs.published-defaults-only }}
         id: official
         run: >-
-          node tools/support/compat/content-mapper/official-css-options.ts
-          --output "$RUNNER_TEMP/official-css-options"
-          --fixture tests/_fixtures/content-mapper/escaton-component-events.json
-          --fixture tests/_fixtures/content-mapper/escaton-component-props.json
-          --fixture tests/_fixtures/content-mapper/escaton-nested-flow-9433.json
-          --fixture tests/_fixtures/content-mapper/escaton-public-props-9498.json
-          --fixture tests/_fixtures/content-mapper/nuxt-pattern-emit-10195.json
+          node tools/support/compat/content-mapper/official-css-options.ts --output "$RUNNER_TEMP/official-css-options" --fixture tests/_fixtures/content-mapper/escaton-component-events.json --fixture tests/_fixtures/content-mapper/escaton-component-props.json --fixture tests/_fixtures/content-mapper/escaton-nested-flow-9433.json --fixture tests/_fixtures/content-mapper/escaton-public-props-9498.json --fixture tests/_fixtures/content-mapper/nuxt-pattern-emit-10195.json
       - name: Run exact published reporter fixtures
         if: inputs.published-defaults-only
         env:

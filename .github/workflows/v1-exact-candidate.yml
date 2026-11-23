@@ -101,7 +101,7 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ inputs.receipt_run_id }}
       - name: Require the canonical receipt bundle name
-        run: test -f .qualification/receipts/v1-exact-candidate-receipts.json
+        run: . "${{ env.VIZE_CI_FILES }}/require-candidate-receipt.sh"
       - name: Derive every host row from the committed manifest
         id: plan
         env:

@@ -19,10 +19,7 @@ steps = new Listing {
   new Dynamic {
     name = "Require an unambiguous focused campaign"
     env { EVENT_RENAME_ONLY = "${{ inputs.event-rename-only }}" }
-    run = """
-    test "$EVENT_RENAME_ONLY" != true
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/require-an-unambiguous-focused-campaign.sh""#
   }
   new Dynamic {
     name = "Checkout the reviewed Vize source"

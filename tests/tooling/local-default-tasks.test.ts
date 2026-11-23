@@ -7,6 +7,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { toolingProgram } from "./support/program-path.ts";
 import { buildTasks } from "../../tools/config/vite-plus/tasks/build.ts";
 import { checkTasks } from "../../tools/config/vite-plus/tasks/check.ts";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
@@ -23,13 +24,7 @@ const createFakeBlacksmith = (body: string) => {
   return { directory, executable };
 };
 
-const extractTestboxLifecycle = (guide: string): string => {
-  const lifecycle = guide.match(
-    /```sh\n(run_testbox_checks\(\) \{[\s\S]*?\nrun_testbox_checks)\n```/,
-  )?.[1];
-  assert.ok(lifecycle, "guarded Testbox lifecycle");
-  return lifecycle;
-};
+const testboxLifecyclePath = "tools/commands/ci/run-testbox-checks.sh";
 
 const localGraph = (tasks: readonly string[]) =>
   tasks.map((name) => ({ program: "vp", arguments: ["run", "--workspace-root", name] }));
@@ -253,7 +248,8 @@ test("contributor docs use workspace-explicit commands outside the Nix aliases",
     assert.match(guide, /Inside the Nix development shell/);
     assert.match(guide, /nix develop \.#testbox/);
     assert.match(guide, /default `nix develop` shell\s+intentionally omits Blacksmith/);
-    const lifecycle = extractTestboxLifecycle(guide);
+    assert.ok(guide.includes("sh " + testboxLifecyclePath));
+    const lifecycle = fs.readFileSync(path.join(root, testboxLifecyclePath), "utf8");
     assert.ok(
       lifecycle.indexOf("unset BLACKSMITH_TESTBOX_ID") < lifecycle.indexOf("testbox:warmup"),
     );
@@ -264,34 +260,11 @@ test("contributor docs use workspace-explicit commands outside the Nix aliases",
 });
 
 test("documented Testbox lifecycle rejects stale ids and always stops after task failure", () => {
-  const guides = [".github/CONTRIBUTING.md", "docs/content/contributing.md"].map((relativePath) =>
-    fs.readFileSync(path.join(root, relativePath), "utf8"),
-  );
-  const lifecycle = extractTestboxLifecycle(guides[0]);
-  assert.equal(extractTestboxLifecycle(guides[1]), lifecycle);
-  const definition = lifecycle.replace(/\nrun_testbox_checks$/, "");
   const fake = createFakeBlacksmith('[ "$1 $2" = "auth login" ]');
   const log = path.join(fake.directory, "lifecycle.log");
-  const harness = [
-    'git() { if [ "$1" = "branch" ]; then printf \'%s\\n\' feature/testbox; fi; }',
-    "vp() {",
-    '  printf \'%s|id=%s\\n\' "$*" "${BLACKSMITH_TESTBOX_ID-unset}" >> "$FAKE_LIFECYCLE_LOG"',
-    '  case "$*" in',
-    '    "run --workspace-root testbox:warmup")',
-    "      if [ \"$FAKE_WARMUP_STATUS\" -eq 0 ]; then printf '%s\\n' fresh-box; fi",
-    '      return "$FAKE_WARMUP_STATUS" ;;',
-    '    "run --workspace-root build:testbox") return "${FAKE_TASK_STATUS:-0}" ;;',
-    '    "run --workspace-root testbox:stop") return "${FAKE_STOP_STATUS:-0}" ;;',
-    "  esac",
-    "}",
-    definition,
-    "run_testbox_checks",
-    "lifecycle_status=$?",
-    'printf \'final|id=%s\\n\' "${BLACKSMITH_TESTBOX_ID-unset}" >> "$FAKE_LIFECYCLE_LOG"',
-    'exit "$lifecycle_status"',
-  ].join("\n");
+  const harness = toolingProgram("workflow/run-testbox-lifecycle.sh");
   const runLifecycle = (extraEnv: NodeJS.ProcessEnv) =>
-    spawnSync("/bin/sh", ["-c", harness], {
+    spawnSync("/bin/sh", [harness, path.join(root, testboxLifecyclePath)], {
       encoding: "utf8",
       env: {
         PATH: process.env.PATH ?? "",

@@ -1,3 +1,4 @@
+import { toolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import {
   spawnSync,
@@ -457,8 +458,8 @@ process.exit(result.status ?? 1);
         "capture",
         "--",
         "bash",
-        "-c",
-        `export PATH=${JSON.stringify(dotbin)}:"$PATH"; node plain.mjs && node --test a.test.ts; status=$?; vp test run src/one.test.ts; tsx --test b.test.ts; exit $status`,
+        toolingProgram("workflow/collect-js-test-cases.sh"),
+        dotbin,
       ],
       {
         cwd: directory,

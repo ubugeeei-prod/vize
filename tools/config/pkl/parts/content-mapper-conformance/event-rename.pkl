@@ -97,6 +97,6 @@ steps = new Listing {
     name = "Require both whole transaction targets"
     `if` = "always()"
     env { TRANSACTIONS_OUTCOME = "${{ steps.transactions.outcome }}" }
-    run = #"test "$TRANSACTIONS_OUTCOME" = success"#
+    run = #". "${{ env.VIZE_CI_FILES }}/require-both-transactions.sh""#
   }
 }

@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -74,7 +74,7 @@ void test("the reusable Action publishes the same plan or admission artifact", (
     chmodSync(path.join(binaryDirectory, "node"), 0o755);
 
     const runDriver = (script: string, operation: string, overrides: Record<string, string> = {}) =>
-      spawnSync("bash", ["-euo", "pipefail", "-c", script], {
+      spawnSync("bash", ["-euo", "pipefail", automationShellPath(script)], {
         cwd: temporary,
         encoding: "utf8",
         env: {
