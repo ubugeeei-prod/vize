@@ -1,6 +1,6 @@
-import { readToolingProgram } from "../support/program-path.ts";
 import fs from "node:fs";
 import path from "node:path";
+import { readToolingProgram } from "../support/program-path.ts";
 
 const mutationDiagnostics = new URL(
   "../programs/commands/typecheck-divergence/mutation-diagnostics.js",
@@ -24,16 +24,23 @@ export function writeVize(
   fs.chmodSync(pathname, 0o755);
 }
 
+export type PreSemanticProbe = {
+  output?: string;
+  exitCode?: number;
+  appendNewlineToConfig?: "generated" | { path: string };
+};
+
 export function writeVueTsc(
   pathname: string,
   runBody: string,
   invocationPath?: string,
-  preSemantic: { output?: string; exitCode?: number } = {},
+  preSemantic: PreSemanticProbe = {},
 ) {
   fs.writeFileSync(
     pathname,
     readToolingProgram("commands/typecheck-divergence/vue-tsc.js.in", {
       INVOCATION_PATH: JSON.stringify(invocationPath ?? null),
+      CONFIG_TO_CHANGE: JSON.stringify(preSemantic.appendNewlineToConfig ?? null),
       PRE_SEMANTIC_OUTPUT: JSON.stringify(preSemantic.output ?? ""),
       PRE_SEMANTIC_EXIT_CODE: JSON.stringify(preSemantic.exitCode ?? 0),
       RUN: runBody,

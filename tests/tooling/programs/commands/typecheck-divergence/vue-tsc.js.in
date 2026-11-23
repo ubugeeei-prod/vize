@@ -11,6 +11,11 @@ if (invocationPath !== null)
     JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }),
   );
 if (process.argv.includes("--noCheck")) {
+  const config = @@CONFIG_TO_CHANGE@@;
+  if (config !== null) {
+    const file = config === "generated" ? process.argv[process.argv.indexOf("-p") + 1] : config.path;
+    fs.appendFileSync(file, "\n");
+  }
   process.stdout.write(@@PRE_SEMANTIC_OUTPUT@@);
   process.exit(@@PRE_SEMANTIC_EXIT_CODE@@);
 }
