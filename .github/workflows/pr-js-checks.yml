@@ -256,7 +256,7 @@ jobs:
     name: PR package conformance (${{ matrix.surface }})
     strategy:
       fail-fast: false
-      matrix: { surface: [ fresco, ui ] }
+      matrix: { surface: [fresco, ui] }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
