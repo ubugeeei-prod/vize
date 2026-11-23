@@ -49,7 +49,7 @@ fn spelling(attr: Attribute) -> Spelling<'static> {
     let value = match attr.value {
         Value::Absent => None,
         Value::Empty => Some(""),
-        Value::Literal => Some("scss"),
+        Value::Literal => Some("named"),
         Value::Other => Some("雪"),
     };
     Spelling { name, value }
