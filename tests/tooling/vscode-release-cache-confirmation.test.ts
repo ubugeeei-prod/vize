@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
+import { runVmProgram, vmProgramSource } from "./support/vm-programs.ts";
 import { createSync, deferred } from "./support/vscode-config-sync.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -30,21 +31,11 @@ await test("a cached release starts unprobed; only a refresh spawns its --versio
     fs: { existsSync: (file: string) => file === "/storage/vize" },
     operations,
   });
-  const hooks = `
-    inspectServerCandidate = async (candidate) => {
-      operations.push(["probe", candidate.path]);
-      return { ...candidate, version: "1.2.3" };
-    };
-    return { inspect: (file, probe) => inspectCachedReleaseServer(file, "1.2.3", probe) };
-  `;
-  const control: CachedInspection = new vm.Script(
-    `${discoverySource.replace(/return\s*\{\s*findServerPath\s*\};/u, hooks)}\n
-    createServerDiscovery(
-      { configurationSyncGeneration: 1, outputChannel: { appendLine: () => {} } },
-      () => {}, () => {},
-    );
-  `,
+  const hooks = vmProgramSource("cached-release-hooks.cjs");
+  new vm.Script(
+    discoverySource.replace(/return\s*\{\s*findServerPath\s*\};/u, () => hooks),
   ).runInContext(context);
+  const control: CachedInspection = runVmProgram("create-server-discovery.js", context);
   assert.deepEqual(
     { ...(await control.inspect("/storage/vize", false)) },
     { path: "/storage/vize", source: "release", version: "1.2.3", versionUnconfirmed: true },

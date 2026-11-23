@@ -30,13 +30,15 @@ function load(file, dependencies, name) {
   const body = stripTypeScriptTypes(source)
     .replace(/^import[\s\S]*?;\n/gm, "")
     .replace(/^export /gm, "");
-  return new vm.Script(`${body}\n${name};`).runInNewContext({
+  const context = vm.createContext({
     Buffer,
     process,
     setTimeout,
     clearTimeout,
     ...dependencies,
   });
+  new vm.Script(body).runInContext(context);
+  return context[name];
 }
 const inspectWorkspaceServerProtocol = load(
   "workspace-server-protocol.ts",
@@ -330,16 +332,25 @@ await test("an actual client startup failure disposes the workspace client befor
   );
   const operations = [];
   let starts = 0;
-  const dependencies = {
+  const dependencies = vm.createContext({
+    client: undefined,
+    activeInitializationOptions: undefined,
+    activeClientInputs: undefined,
+    selectedServerCandidate: undefined,
     traceConfig() {},
     getInitializationOptions: () => ({ editor: true }),
     workspaceLspConfig: { hasConfig: true, describeCapabilities: () => "editor" },
     outputChannel: { appendLine() {} },
     updateStatusBar: (status) => operations.push(status),
     configurationSyncGeneration: 1,
-    resolve: (reason) => {
+    async findServerPath(_context, _config, _generation, reason) {
       operations.push(reason ? "resolve-fallback" : "resolve-workspace");
-      return { source: reason ? "bundled" : "workspace", path: "/vize", version: "1.2.3" };
+      dependencies.selectedServerCandidate = {
+        source: reason ? "bundled" : "workspace",
+        path: "/vize",
+        version: "1.2.3",
+      };
+      return dependencies.selectedServerCandidate.path;
     },
     resolveCorsaServerEnv: async () => ({}),
     createServerOptions: () => ({}),
@@ -354,20 +365,13 @@ await test("an actual client startup failure disposes the workspace client befor
         operations.push("workspace-disposed");
       }
     },
-  };
-  await new vm.Script(`
-    let client, selectedServerCandidate, activeInitializationOptions, activeClientInputs;
-    async function findServerPath(context, config, generation, reason) {
-      selectedServerCandidate = resolve(reason);
-      return selectedServerCandidate.path;
-    }
-    ${start}
-    startClient(
-      { extensionPath: "/extension", globalStorageUri: { fsPath: "/storage" } },
-      { inspect: () => undefined },
-      1,
-    );
-  `).runInNewContext(dependencies);
+  });
+  new vm.Script(start).runInContext(dependencies);
+  await dependencies.startClient(
+    { extensionPath: "/extension", globalStorageUri: { fsPath: "/storage" } },
+    { inspect: () => undefined },
+    1,
+  );
   assert.equal(starts, 2);
   assert.ok(operations.indexOf("workspace-disposed") < operations.indexOf("resolve-fallback"));
   assert.equal(operations.at(-1), "ready");

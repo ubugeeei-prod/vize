@@ -27,6 +27,15 @@ impl ScriptQueryProducts {
                 }
             }
         }
+        Self::script_block_symbol(name, block, index, symbols)
+    }
+
+    pub(crate) fn script_block_symbol(
+        name: &str,
+        block: &SfcScriptBlock<'_>,
+        index: &LineIndex<'_>,
+        symbols: Vec<DocumentSymbol>,
+    ) -> DocumentSymbol {
         let (range, selection_range) = block_ranges(index, &block.loc, "script");
         DocumentSymbol {
             name: name.into(),
