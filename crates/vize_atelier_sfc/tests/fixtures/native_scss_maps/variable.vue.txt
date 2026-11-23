@@ -1,0 +1,2 @@
+<template><p>雪🌸</p></template>
+<style lang="scss">$ink:red;.card{color:$ink}</style>
