@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+args=()
+for id in $FIXTURES; do args+=(--fixture "$id"); done
+# Assigned first, so an unknown fixture fails this step instead of planning nothing.
+jobs=$(node tools/benchmarks/scripts/lsp-vs-volar.ts --plan "${args[@]}")
+echo "jobs=$jobs" >> "$GITHUB_OUTPUT"

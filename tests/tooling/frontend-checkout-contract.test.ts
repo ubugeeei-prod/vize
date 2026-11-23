@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
@@ -13,7 +14,7 @@ type Step = { uses?: string; with?: Record<string, unknown>; [key: string]: unkn
 type Job = { steps: [Step, ...Step[]] };
 type Workflow = { jobs: Record<string, Job> };
 const current = parse(
-  fs.readFileSync(new URL("../../.github/workflows/check.yml", import.meta.url), "utf8"),
+  readAutomationPrograms(new URL("../../.github/workflows/check.yml", import.meta.url), "utf8"),
 ) as Workflow;
 const archived = parse(
   fs.readFileSync(

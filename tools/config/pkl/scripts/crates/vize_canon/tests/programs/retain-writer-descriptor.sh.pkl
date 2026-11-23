@@ -1,0 +1,10 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  printf 'holder-ready\n'
+  IFS= read -r release
+  """#
+}

@@ -1,3 +1,4 @@
+import { readToolingProgram, toolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -103,31 +104,12 @@ async function lifecycle(fatal) {
   fs.writeFileSync(preload, "// Process-only control; no addon or source-acceptance claims.\n");
   fs.writeFileSync(
     path.join(directory, "src/mixed-directory-8507.test.mjs"),
-    `
-import fs from 'node:fs';
-import { spawn } from 'node:child_process';
-import { setTimeout } from 'node:timers/promises';
-const index = process.env.VIZE_OXLINT_MIXED_WORKER;
-${
-  fatal
-    ? `
-if (index === '0') {
-  spawn(process.execPath, ['-e', "const fs=require('node:fs'); process.on('SIGTERM',()=>{fs.writeFileSync('descendant-stopped',String(process.pid));process.exit(0)}); fs.writeFileSync('descendant-started',String(process.pid)); setInterval(()=>{},1000)"], { stdio: ['ignore', 'inherit', 'inherit'] });
-  while (!fs.existsSync('descendant-started')) await setTimeout(10);
-}
-`
-    : ""
-}
-fs.writeFileSync('started-' + index, String(process.pid));
-for (let attempt = 0; !fs.existsSync('started-' + (1 - Number(index))); attempt++) {
-  if (attempt > 200) throw Error('fixed workers were serialized');
-  await setTimeout(10);
-}
-await new Promise((resolve) => process.stdout.write('control-worker-' + index + '\\n', resolve));
-await new Promise((resolve) => process.stderr.write('control-stderr-' + index + '\\n', resolve));
-fs.writeFileSync('ready-' + index, 'streams flushed');
-${fatal ? "if (index === '0') { while (!fs.existsSync('ready-1')) await setTimeout(10); process.exit(7); } await setTimeout(60_000);" : ""}
-`,
+    readToolingProgram("commands/oxlint-mixed-directory-8507-workers/simulate-mixed-worker.js.in", {
+      FATAL: fatal,
+      DESCENDANT: JSON.stringify(
+        toolingProgram("commands/oxlint-mixed-directory-8507-workers/observe-termination.cjs"),
+      ),
+    }),
   );
   try {
     if (fatal)

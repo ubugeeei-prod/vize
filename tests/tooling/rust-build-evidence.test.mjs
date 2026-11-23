@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { automationShellPath, readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -20,9 +22,8 @@ import {
 } from "../../tools/support/compat/github/rust-build-evidence.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-// The source-plan job has Node but deliberately installs no dependencies.
-// Execute the actual named literal shell block without importing a YAML package.
-const workflowSource = readFileSync(join(root, ".github/workflows/pr-rust-products.yml"), "utf8");
+// The source-plan job runs these commands before installing workspace dependencies.
+const workflowSource = readWorkflowShell("pr-rust-products");
 function workflowStep(name) {
   const marker = `      - name: ${name}\n`;
   const start = workflowSource.indexOf(marker);
@@ -153,7 +154,10 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
       const argsFile = join(directory, "args.txt");
       writeFileSync(
         join(bin, "cargo"),
-        `#!/bin/sh\nprintf '%s\\n' "$@" > "$ARGS_FILE"\nprintf '%s\\n' '{"reason":"build-finished","success":${exit === 0}}'\nexit ${exit}\n`,
+        readToolingProgram("commands/rust-build-evidence/cargo.sh", {
+          EXIT_0: exit === 0,
+          EXIT: exit,
+        }),
         { mode: 0o755 },
       );
       const plan = {
@@ -166,6 +170,7 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
         ...process.env,
         PATH: `${bin}:${dirname(process.execPath)}:${process.env.PATH}`,
         RUNNER_TEMP: directory,
+        VIZE_CI_FILES: join(root, ".github/scripts/workflows/pr-rust-products"),
         RUST_PLAN_JSON: JSON.stringify(plan),
         NEXTEST_PROFILE: "pr",
         NEXTEST_FILTER: "package(=vize_l0)",
@@ -175,7 +180,7 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
       };
       delete environment.VIZE_TEST_CASES;
       delete environment.TEST_CASES_JOB;
-      const result = spawnSync("bash", ["-e", "-c", step.run], {
+      const result = spawnSync("bash", ["-e", automationShellPath(step.run)], {
         cwd: directory,
         encoding: "utf8",
         env: environment,

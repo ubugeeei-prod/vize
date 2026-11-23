@@ -35,6 +35,7 @@ const inputs = [
   "tests/editor-conformance/server-artifact.ts",
   "tests/editor-conformance/support/lsp-client.ts",
   "tests/editor-conformance/lsp-tap.mjs",
+  "tests/editor-conformance/record-server-exit.sh",
   ".github/workflows/editor-conformance.yml",
   "crates/vize_maestro/src/server/state/features.rs",
   ...(editor === "neovim"
@@ -236,7 +237,7 @@ for (const name of names) {
   const transcript = path.join(output, `${name}.jsonl`);
   // GNU timeout also bounds the native process and its tap when the transport
   // refuses initialization; no unresolved request can strand this Actions job.
-  const client = new LspClient(
+  const client: LspClient = new LspClient(
     "timeout",
     [
       "--signal=TERM",
@@ -250,7 +251,7 @@ for (const name of names) {
     { cwd: workspace, env: { ...process.env, VIZE_CONFORMANCE_TRANSCRIPT: transcript } },
     () => null,
   );
-  const request = async (method: string, params: Json | undefined) => {
+  const request = async (method: string, params: Json | undefined): Promise<Json> => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       return await Promise.race([

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -169,21 +170,7 @@ test("installed Content Mapper contract rejects a missing executable", () => {
 test("installed Content Mapper release smoke compares declarations with TypeScript 7 tsc", () => {
   withInstalledMapper((installDir) => {
     const tsgo = path.join(installDir, "tsgo-stub.mjs");
-    fs.writeFileSync(
-      tsgo,
-      [
-        "#!/usr/bin/env node",
-        "if (process.argv.includes('-p') && process.argv.includes('tsconfig.error.json')) {",
-        "  process.stdout.write('errors/Broken.vue TS2322\\n');",
-        "  process.stdout.write('errors/JavaScriptConsumer.js TS2322\\n');",
-        "  process.stdout.write('errors/JsxConsumer.jsx TS2322\\n');",
-        "  process.stdout.write('src/Unused.vue TS6133\\n');",
-        "  process.exit(1);",
-        "}",
-        "process.exit(0);",
-        "",
-      ].join("\n"),
-    );
+    fs.writeFileSync(tsgo, readToolingProgram("commands/content-mapper-package-contract/tsgo.cjs"));
     fs.chmodSync(tsgo, 0o755);
 
     const tscBin = path.join(installDir, "node_modules", "typescript", "bin", "tsc");

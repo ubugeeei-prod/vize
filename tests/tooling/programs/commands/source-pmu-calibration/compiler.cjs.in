@@ -1,0 +1,18 @@
+#!@@NODE@@
+const fs = require("node:fs"),
+  crypto = require("node:crypto"),
+  a = process.argv.slice(2);
+if (a[0] === "-Vv") {
+  console.log("fixture compiler; protocol control, not genuine Rust or hardware proof");
+  process.exit(0);
+}
+if (JSON.stringify(a.slice(0, 3)) !== JSON.stringify(["--edition=2024", "-O", "-g"]))
+  process.exit(2);
+const source = a[3],
+  binary = a[a.indexOf("-o") + 1];
+fs.writeFileSync(
+  binary,
+  "test-only carrier from source " +
+    crypto.createHash("sha256").update(fs.readFileSync(source)).digest("hex"),
+);
+fs.writeFileSync(binary + ".compiler-argv.json", JSON.stringify(a));

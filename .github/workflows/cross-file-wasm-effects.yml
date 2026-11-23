@@ -6,6 +6,7 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - .github/workflows/cross-file-wasm-effects.yml
+      - .github/scripts/workflows/cross-file-wasm-effects/**
       - crates/vize_vitrine/src/wasm/cross_file.rs
       - crates/vize_vitrine/src/wasm/cross_file/effect_summary/**
       - crates/vize_vitrine/src/wasm/cross_file/effect_summary.rs
@@ -25,6 +26,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/cross-file-wasm-effects/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -51,15 +65,7 @@ jobs:
       - name: Install frozen workspace tools
         run: vp install --frozen-lockfile --prefer-offline
       - name: Verify actual block grammars and binding owners
-        run: |
-          mkdir -p target/vize-tests/cross-file-wasm-effects
-          cargo test --locked --profile ci -p vize_vitrine --no-default-features --features wasm --lib -- wasm::cross_file::effect_summary::tests:: --nocapture > target/vize-tests/cross-file-wasm-effects/rust.stdout 2> target/vize-tests/cross-file-wasm-effects/rust.stderr
-          cat target/vize-tests/cross-file-wasm-effects/rust.stdout
-          node --input-type=module <<'JS'
-          import assert from 'node:assert/strict';
-          import fs from 'node:fs';
-          assert.match(fs.readFileSync('target/vize-tests/cross-file-wasm-effects/rust.stdout', 'utf8'), /test result: ok\. 6 passed; 0 failed; 0 ignored;/u);
-          JS
+        run: . "${{ env.VIZE_CI_FILES }}/verify-actual-block-grammars-and-binding-owners.sh"
       - name: Build the existing actual WASM release configuration
         run: node tools/support/tasks/build-vize-wasm-package.ts
       - name: Verify whole source WASM responses against actual public observations

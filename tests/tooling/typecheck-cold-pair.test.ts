@@ -1,3 +1,4 @@
+import { readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -86,10 +87,7 @@ test("the cold pair exposes the qualified runtime and checker-width matrix", () 
   ) as { dependencies?: Record<string, string> };
   assert.match(hosts.dependencies?.tsrs ?? "", /^\d+\.\d+\.\d+-ts\d+\.\d+\.\d+-beta$/u);
 
-  const workflow = readFileSync(
-    new URL("../../.github/workflows/typecheck-cold-pair.yml", import.meta.url),
-    "utf8",
-  );
+  const workflow = readWorkflowShell("typecheck-cold-pair");
   assert.match(workflow, /options: \[tsgo, tsrs\]/u);
   assert.match(workflow, /options: \["1", "8"\]/u);
   assert.match(workflow, /--runtime "\$RUNTIME" --checkers "\$CHECKERS"/u);

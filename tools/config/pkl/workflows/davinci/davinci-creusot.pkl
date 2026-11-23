@@ -1,0 +1,87 @@
+import "../../Actions.pkl" as ci
+
+name = "Davinci Creusot"
+
+// Deductive proofs of the Davinci laws (docs/davinci/decisions/2026-11-17-creusot.md).
+// Creusot compiles the tests/formal/creusot workspace, whose library roots sit
+// next to the shipped kernels, and why3find replays the committed proofs. Any goal without a valid
+// proof fails the job. The toolchain comes from its own flake, so the product
+// flake and the stable Rust build never see Creusot's nightly compiler.
+//
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/davinci-creusot.yml"
+      "tools/nix/creusot/**"
+      "tests/formal/creusot/**"
+      "davinci/vize_l2/src/query/script/assignments/prefix/frame.rs"
+      "davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs"
+      "davinci/vize_l3/src/lattice/class.rs"
+      "davinci/vize_l3/src/lattice/creusot.rs"
+      "davinci/vize_l3/src/query/check/creusot.rs"
+      "davinci/vize_l3/src/query/check/rule.rs"
+    }
+  }
+  push {
+    branches = List("main")
+    paths = new Listing {
+      ".github/workflows/davinci-creusot.yml"
+      "tools/nix/creusot/**"
+      "tests/formal/creusot/**"
+      "davinci/vize_l2/src/query/script/assignments/prefix/frame.rs"
+      "davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs"
+      "davinci/vize_l3/src/lattice/class.rs"
+      "davinci/vize_l3/src/lattice/creusot.rs"
+      "davinci/vize_l3/src/query/check/creusot.rs"
+      "davinci/vize_l3/src/query/check/rule.rs"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+jobs {
+  prove {
+    name = "Creusot proofs"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 60
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = "cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3"  // v31
+        with {
+          extra_nix_config = """
+          keep-derivations = true
+          keep-outputs = true
+
+          """
+        }
+      }
+      new Dynamic {
+        name = "Cache the Creusot toolchain"
+        uses = "nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569"  // v7
+        with {
+          `primary-key` = "creusot-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/nix/creusot/flake.nix', 'tools/nix/creusot/flake.lock') }}"
+          `restore-prefixes-first-match` = "creusot-${{ runner.os }}-${{ runner.arch }}-"
+          `gc-max-store-size-linux` = "8G"
+        }
+      }
+      new Dynamic {
+        name = "Build the pinned toolchain"
+        run = #"nix build 'path:./tools/nix/creusot' --out-link "$RUNNER_TEMP/creusot" --print-build-logs"#
+      }
+      new Dynamic {
+        name = "Replay the proofs"
+        // --replay checks the committed proof certificates and never searches
+        // for new ones; why3find exits non-zero on any unproved goal.
+        `working-directory` = "tests/formal/creusot"
+        run = "nix develop 'path:../../../tools/nix/creusot' --command cargo creusot --replay -- --locked"
+      }
+    }
+  }
+}

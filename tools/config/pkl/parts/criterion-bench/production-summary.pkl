@@ -1,0 +1,36 @@
+import "../../Actions.pkl" as ci
+
+`if` = "${{ !inputs.sfc_optional_lifecycle_only && inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}"
+needs = "production-pairs"
+`runs-on` = ci.linux
+permissions { contents = "read" }
+steps = new Listing {
+  ci.checkoutAt("${{ inputs.head_sha }}")
+  new Dynamic {
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "package.json"
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+    with {
+      pattern = "davinci-production-perf-*"
+      path = "production-perf"
+    }
+  }
+  new Dynamic {
+    name = "Validate identities and aggregate all independent observations"
+    run = "vp exec node tools/benchmarks/scripts/davinci-production-summary.ts production-perf production-perf/summary.md"
+  }
+  new Dynamic {
+    uses = ci.uploadArtifact
+    with {
+      name = "davinci-production-summary"
+      path = "production-perf/summary.md"
+      `if-no-files-found` = "error"
+      `retention-days` = 30
+    }
+  }
+}

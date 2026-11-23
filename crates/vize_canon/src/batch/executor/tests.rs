@@ -188,7 +188,7 @@ fn cli_global_diagnostics_do_not_trigger_session_fallback() {
     let tsgo = cache_dir.join("tsgo");
     fs::write(
         &tsgo,
-        "#!/bin/sh\nif [ \"$1\" = \"--api\" ]; then exec sleep 600; fi\necho \"error TS2688: Cannot find type definition file for 'vite/client'.\"\nexit 2\n",
+        include_str!("../../../tests/programs/report-missing-vite-types.sh"),
     )
     .unwrap();
     fs::set_permissions(&tsgo, fs::Permissions::from_mode(0o755)).unwrap();
@@ -229,7 +229,7 @@ fn checks_with_cli_when_project_session_api_is_unavailable() {
     let tsgo = cache_dir.join("tsgo");
     fs::write(
         &tsgo,
-        "#!/bin/sh\nif [ \"$1\" = \"--api\" ]; then printf 'api unavailable'; exit 0; fi\nexit 0\n",
+        include_str!("../../../tests/programs/reject-native-api.sh"),
     )
     .unwrap();
     fs::set_permissions(&tsgo, fs::Permissions::from_mode(0o755)).unwrap();

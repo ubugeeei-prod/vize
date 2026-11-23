@@ -39,6 +39,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/typecheck-scaling.yml
+      - .github/scripts/workflows/typecheck-scaling/**
       - tools/benchmarks/scripts/typecheck-scaling*.ts
       - tests/tooling/typecheck-scaling*.test.ts
 permissions: { contents: read }
@@ -63,16 +64,21 @@ jobs:
       GIANT_BLOCKS: ${{ inputs.giant_blocks }}
       NUXT_SIZES: ${{ inputs.nuxt_sizes }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/typecheck-scaling/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Validate inputs
-        run: |
-          set -euo pipefail
-          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$SIZES" =~ ^([0-9]+(,[0-9]+)*)?$ ]]
-          [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
-          [[ "$SCALING_TOOLS" =~ ^([a-z0-9-]+(,[a-z0-9-]+)*)?$ ]]
-          [[ "$MONOREPO_SFCS" =~ ^[0-9]+$ ]]
-          [[ "$GIANT_BLOCKS" =~ ^[0-9]+$ ]]
-          [[ "$NUXT_SIZES" =~ ^([0-9]+(,[0-9]+)*)?$ ]]
+        run: . "${{ env.VIZE_CI_FILES }}/validate-inputs.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -86,57 +92,21 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-script
       - name: Check out the measured commit beside the driver
-        run: |
-          set -euo pipefail
-          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$SHA"
-          git worktree add --detach "$RUNNER_TEMP/scaling-target" "$SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/check-out-the-measured-commit-beside-the-driver.sh"
       - name: Install the locked hosts, the Nuxt app and GNU time
-        run: |
-          set -euo pipefail
-          npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
-          if [[ -n "$NUXT_SIZES" ]]; then npm ci --prefix tools/benchmarks/nuxt-app --ignore-scripts --no-audit --no-fund; fi
-          if ! /usr/bin/time --version 2>&1 | grep -qi 'GNU time'; then
-            sudo apt-get update -qq
-            sudo apt-get install -y --no-install-recommends time
-          fi
-          /usr/bin/time --version
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-locked-hosts-the-nuxt-app-and-gnu-time.sh"
       - name: Test the generator, gate and report
         run: node --test tests/tooling/scale-project-generator.test.ts tests/tooling/typecheck-scaling.test.ts
       - name: Build the native binding and the vize package
         working-directory: ${{ runner.temp }}/scaling-target
-        run: |
-          set -euo pipefail
-          # The whole workspace: vue-tsc and vue come from tools/benchmarks/scripts, tsgo from the root.
-          vp install --frozen-lockfile --prefer-offline
-          cargo --version
-          vp run --workspace-root build:native > "$RUNNER_TEMP/build-native.log" 2>&1 || { tail -n 80 "$RUNNER_TEMP/build-native.log"; exit 1; }
-          tail -n 20 "$RUNNER_TEMP/build-native.log"
-          if [[ -n "$NUXT_SIZES" ]]; then
-            # The @vizejs/nuxt build lane loads the module and its Vite plugin as well.
-            vp run --workspace-root build:vite-plugin
-            vp run --workspace-root build:nuxt-stack
-          else
-            vp run --filter './npm/cli' build
-          fi
-          git rev-parse HEAD
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-native-binding-and-the-vize-package.sh"
       - name: Measure
         env:
           VIZE_SCALING_RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
-        run: |
-          set -euo pipefail
-          tool_args=()
-          if [[ -n "$SCALING_TOOLS" ]]; then tool_args+=(--tools "$SCALING_TOOLS"); fi
-          node tools/benchmarks/scripts/typecheck-scaling.ts \
-            --target "$RUNNER_TEMP/scaling-target" --sha "$SHA" \
-            --sizes "$SIZES" --runs "$RUNS" --giant-blocks "$GIANT_BLOCKS" \
-            --monorepo-sfcs "$MONOREPO_SFCS" --nuxt-sizes "$NUXT_SIZES" \
-            "${tool_args[@]}" \
-            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
-            --work "$RUNNER_TEMP/scaling-work" --out "$RUNNER_TEMP/scaling-out"
+        run: . "${{ env.VIZE_CI_FILES }}/measure.sh"
       - name: Write job summary
         if: always()
-        run: |
-          if [[ -f "$RUNNER_TEMP/scaling-out/summary.md" ]]; then cat "$RUNNER_TEMP/scaling-out/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
+        run: . "${{ env.VIZE_CI_FILES }}/write-job-summary.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -161,12 +131,21 @@ jobs:
       # Both checkouts build on one compiler, even across a toolchain bump.
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/typecheck-scaling/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Validate paired inputs
-        run: |
-          set -euo pipefail
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$SIZES" == "1000,5000,20000" ]]
+        run: . "${{ env.VIZE_CI_FILES }}/validate-paired-inputs.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: driver
@@ -183,12 +162,7 @@ jobs:
           ref: ${{ env.HEAD_SHA }}
           persist-credentials: false
       - name: Record exact source pair
-        run: |
-          set -euo pipefail
-          [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
-          [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
-          [[ "$(git -C driver rev-parse HEAD)" == "$DRIVER_SHA" ]]
-          mkdir -p paired-scaling/build
+        run: . "${{ env.VIZE_CI_FILES }}/record-exact-source-pair.sh"
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.100.0" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -204,34 +178,12 @@ jobs:
         working-directory: driver
         run: node --test tests/tooling/typecheck-scaling.test.ts tools/benchmarks/scripts/pr-performance-build.test.ts
       - name: Build source binaries in independent fresh targets
-        run: |
-          set -euo pipefail
-          for role in base head; do
-            target="$RUNNER_TEMP/paired-scaling-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-            node driver/tools/benchmarks/scripts/pr-performance-build.ts \
-              --source-root "$GITHUB_WORKSPACE/$role" --target-dir "$target" \
-              --binary "$target/ci-opt/vize" --role "$role" \
-              --receipt "$GITHUB_WORKSPACE/paired-scaling/build/$role.json"
-          done
+        run: . "${{ env.VIZE_CI_FILES }}/build-source-binaries-in-independent-fresh-targets.sh"
       - name: Measure five alternating paired cycles on one runner
-        run: |
-          node driver/tools/benchmarks/scripts/typecheck-scaling-paired.ts \
-            --base-bin "$RUNNER_TEMP/paired-scaling-base-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
-            --head-bin "$RUNNER_TEMP/paired-scaling-head-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
-            --base-source "$BASE_SHA" --head-source "$HEAD_SHA" \
-            --provider-root "$GITHUB_WORKSPACE/driver" \
-            --build-receipts "$GITHUB_WORKSPACE/paired-scaling/build" \
-            --sizes "$SIZES" --runs 5 \
-            --runner blacksmith-32vcpu-ubuntu-2404 \
-            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
-            --work "$RUNNER_TEMP/paired-scaling-work" \
-            --out "$GITHUB_WORKSPACE/paired-scaling/measurements"
+        run: . "${{ env.VIZE_CI_FILES }}/measure-five-alternating-paired-cycles-on-one-runner.sh"
       - name: Write paired summary
         if: always()
-        run: |
-          if [[ -f paired-scaling/measurements/summary.md ]]; then
-            cat paired-scaling/measurements/summary.md >> "$GITHUB_STEP_SUMMARY"
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/write-paired-summary.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

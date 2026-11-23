@@ -14,6 +14,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test, type TestContext } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 
 import { createTypecheckToolVariants } from "../../tools/benchmarks/scripts/compare-tools-typecheck.mjs";
 import { measureVariants } from "../../tools/benchmarks/scripts/compare-tools-measure.mjs";
@@ -243,13 +244,9 @@ void test("process lanes publish CPU and a cold first run; wall-only lanes are u
 
 void test("an invocation is charged the CPU of the processes it waited for", (t) => {
   const cwd = scratch(t);
-  const burn = "const end = Date.now() + 300; while (Date.now() < end) {}";
   const result = runTypecheckCommand(
     process.execPath,
-    [
-      "-e",
-      `require("node:child_process").spawnSync(process.execPath, ["-e", ${JSON.stringify(burn)}])`,
-    ],
+    [toolingProgram("process/run-node-child.js"), toolingProgram("process/consume-child-cpu.js")],
     { cwd },
   );
   assert.equal(result.status, 0);

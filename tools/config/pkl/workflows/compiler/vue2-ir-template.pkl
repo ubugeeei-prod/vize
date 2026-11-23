@@ -1,0 +1,136 @@
+import "../../Actions.pkl" as ci
+
+name = "Native Vue 2 IR template target"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/vue2-ir-template.yml"
+      ".github/scripts/workflows/vue2-ir-template/**"
+      "davinci/vize_l1_to_l2/src/native_vue2*"
+      "davinci/vize_l1_to_l2/src/native_vue2/**"
+      "davinci/vize_l1_to_l2/src/dialect/vue2*"
+      "davinci/vize_l1_to_l2/src/dialect/vue2/**"
+      "davinci/vize_l4/src/targets/vue2*"
+      "davinci/vize_l4/src/targets/vue2/**"
+      "davinci/vize_l4/examples/vue2_ir_template.rs"
+      "davinci/vize_l4/examples/vue2_ir_template_lexical/**"
+      "davinci/vize_l4/src/expr/resolved.rs"
+      "Cargo.lock"
+      "tests/tooling/native-vue2-ir-*.mjs"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "vue2-ir-template-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `native-vue2-template` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    strategy {
+      `fail-fast` = false
+      matrix {
+        producer = List("candidate", "before")
+      }
+    }
+    env {
+
+      CARGO_BUILD_JOBS = "12"
+      CARGO_TERM_COLOR = "always"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+      SOURCE_SHA = "${{ matrix.producer == 'before' && '5a8bb7bec7c06a5bc5ee4d53e82b454db9f5ff1e' || github.event.pull_request.head.sha || github.sha }}"
+      RECIPE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+      VIZE_VUE2_IR_BASELINE = "${{ matrix.producer == 'before' && '1' || '0' }}"
+      VIZE_VUE2_IR_REQUIRED = "1"
+      VIZE_VUE2_IR_CAPTURE = "target/vize-tests/vue2-ir/native.json"
+      VIZE_VUE2_IR_RUNTIME_RESULTS = "target/vize-tests/vue2-ir/runtime.json"
+      VIZE_VUE2_IR_LEXICAL_RESULTS = "target/vize-tests/vue2-ir/lexical.json"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("vue2-ir-template")
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.RECIPE_SHA }}"
+          path = ".vue2-ir-recipe"
+          `persist-credentials` = false
+          `sparse-checkout` = """
+          davinci/vize_l4/examples/vue2_ir_template.rs
+          davinci/vize_l4/examples/vue2_ir_template_lexical
+          tests/tooling/native-vue2-ir-template.test.mjs
+          tests/tooling/native-vue2-ir-lexical.test.mjs
+          tests/tooling/native-vue2-ir-vnode.mjs
+
+          """
+          `sparse-checkout-cone-mode` = false
+        }
+      }
+      new Dynamic {
+        name = "Use the same public-IR consumer against both producer revisions"
+        run = #". "${{ env.VIZE_CI_FILES }}/use-the-same-public-ir-consumer-against-both-producer-revisions.sh""#
+      }
+      ci.workspaceVp()
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        name = "Bind this initial-empty source target and source revision"
+        run = #". "${{ env.VIZE_CI_FILES }}/bind-this-initial-empty-source-target-and-source-revision.sh""#
+      }
+      new Dynamic {
+        name = "Test actual retained owners and the shared-IR emitter"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/test-actual-retained-owners-and-the-shared-ir-emitter.sh""#
+      }
+      new Dynamic {
+        name = "Capture complete generated modules and source phase timings"
+        run = #". "${{ env.VIZE_CI_FILES }}/capture-complete-generated-modules-and-source-phase-timings.sh""#
+      }
+      new Dynamic {
+        name = "Seal the actual source-native executable"
+        run = #". "${{ env.VIZE_CI_FILES }}/seal-the-actual-source-native-executable.sh""#
+      }
+      new Dynamic {
+        name = "Install exact official Vue 2 runtime and compiler pairs"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-exact-official-vue-2-runtime-and-compiler-pairs.sh""#
+      }
+      new Dynamic {
+        name = "Compare every bounded VNode field and complete SSR HTML"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-every-bounded-vnode-field-and-complete-ssr-html.sh""#
+      }
+      new Dynamic {
+        name = "Preserve source, complete modules, runtime packets and failures"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "vue2-ir-template-${{ matrix.producer }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "target/vize-tests/vue2-ir/"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+  `unchanged-default-modules` {
+    needs = "native-vue2-template"
+    `runs-on` = ci.linux
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("vue2-ir-template")
+      new Dynamic {
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        with {
+          pattern = "vue2-ir-template-*"
+          path = "evidence"
+        }
+      }
+      new Dynamic {
+        name = "Compare all original modules, maps, links and retained facts"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-all-original-modules-maps-links-and-retained-facts.sh""#
+      }
+    }
+  }
+}

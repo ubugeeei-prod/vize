@@ -1,0 +1,60 @@
+import "../Actions.pkl" as ci
+
+name = "Check Vize applications"
+description = "Build the current-source CLI and verify the affected product applications"
+runs {
+  using = "composite"
+  steps = new Listing {
+    ci.workspaceVp()
+    ci.rust("stable")
+    new Dynamic {
+      uses = "./.github/actions/setup-wild-http-recovery"
+      with { `wild-version` = "0.9.0" }
+    }
+    new Dynamic {
+      uses = "./.github/actions/setup-rust-sticky-cache"
+      with {
+        key = "check-vize-apps"
+        `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+      }
+    }
+    new Dynamic {
+      name = "Install JS dependencies"
+      shell = "bash"
+      run = "vp install --frozen-lockfile --prefer-offline"
+    }
+    new Dynamic {
+      name = "Build public Vue config APIs"
+      shell = "bash"
+      // Pack the checked-in sources directly; CLI build hooks also regenerate rule types.
+      run = #". "$GITHUB_ACTION_PATH/scripts/build-public-vue-config-apis.sh""#
+    }
+    new Dynamic {
+      name = "Build vize CLI"
+      shell = "bash"
+      run = #". "$GITHUB_ACTION_PATH/scripts/build-vize-cli.sh""#
+    }
+    new Dynamic {
+      name = "Install vize CLI"
+      shell = "bash"
+      run = "sudo install -m 0755 target/ci/vize /usr/local/bin/vize"
+    }
+    // Use this commit-built CLI without waiting for npm or building a second binary.
+    new Dynamic {
+      name = "Lint authored source with the opinionated preset"
+      shell = "bash"
+      run = "vp node tools/commands/ci/opinionated-source-lint.ts"
+    }
+    new Dynamic {
+      name = "Test gallery Markdown renderer"
+      `working-directory` = "npm/builder/vite-musea"
+      shell = "bash"
+      run = "vp exec tsx --test gallery/components/MarkdownContent.test.ts"
+    }
+    new Dynamic {
+      name = "Check Vize app fixtures"
+      shell = "bash"
+      run = "vp run --workspace-root check:ci:vize-apps"
+    }
+  }
+}

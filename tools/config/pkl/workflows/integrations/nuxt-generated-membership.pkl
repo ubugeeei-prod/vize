@@ -1,0 +1,96 @@
+import "../../Actions.pkl" as ci
+
+name = "Nuxt generated declaration membership"
+`run-name` = "Nuxt generated declaration membership @ ${{ github.event.pull_request.head.sha || github.sha }}"
+on {
+  workflow_dispatch = null
+  pull_request {
+    types = List("opened", "synchronize", "reopened")
+    paths = new Listing {
+      ".github/workflows/nuxt-generated-membership.yml"
+      ".github/scripts/workflows/nuxt-generated-membership/**"
+      ".github/scripts/workflows/shared/**"
+      "crates/vize/tests/check_cli.rs"
+      "crates/vize/src/commands/check/nuxt/**"
+      "crates/vize/src/commands/check/nuxt.rs"
+      "crates/vize/src/commands/check/tsconfig_inputs.rs"
+      "crates/vize/src/commands/check/tsconfig_inputs/**"
+      "crates/vize/src/commands/check/runner/execution.rs"
+      "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "nuxt-generated-membership-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_INCREMENTAL = "0"
+  CARGO_BUILD_JOBS = "12"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `configured-membership` {
+    name = "Required native and stock Nuxt complete packets"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("nuxt-generated-membership")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          `persist-credentials` = false
+          `fetch-depth` = 0
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nuxt-generated-membership"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.workspaceVp()
+      ci.command("Install pinned stock and native providers", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Require real backends and preserve source identity"
+        run = #". "${{ env.VIZE_CI_FILES }}/require-real-backends-and-preserve-source-identity.sh""#
+      }
+      new Dynamic {
+        name = "Verify original negative and configured reference positive whole packets"
+        env {
+          VIZE_TEST_REQUIRE_TSGO = "1"
+          VIZE_TEST_STOCK_VUE_TSC = "${{ github.workspace }}/tests/node_modules/vue-tsc/bin/vue-tsc.js"
+          VIZE_NUXT_MEMBERSHIP_ARTIFACTS = "${{ runner.temp }}/nuxt-membership-packets"
+        }
+        run = "cargo test --locked --profile ci -p vize --test integration check_cli::check_nuxt_generated_computed_map_values_preserve_record_types -- --exact --nocapture"
+      }
+      new Dynamic {
+        name = "Require every executed native stock and graph control"
+        env { PACKETS = "${{ runner.temp }}/nuxt-membership-packets" }
+        run = #". "${{ env.VIZE_CI_FILES }}/require-every-executed-native-stock-and-graph-control.sh""#
+      }
+      new Dynamic {
+        name = "Preserve actual executable and providers"
+        `if` = "${{ always() }}"
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-actual-executable-and-providers.sh""#
+      }
+      new Dynamic {
+        name = "Preserve every complete packet and original input"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "nuxt-membership-whole-${{ github.sha }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/nuxt-membership-packets"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+          `include-hidden-files` = true
+        }
+      }
+    }
+  }
+}

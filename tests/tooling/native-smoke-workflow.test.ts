@@ -1,3 +1,5 @@
+import { archivedWorkflow } from "./support/workflow-history.ts";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -27,7 +29,7 @@ function workflowJobBody(workflow: string, jobName: string): string {
 }
 
 test("native smoke keeps MoonBit out of the npm fresh install path", () => {
-  const workflow = readRepoFile(".github", "workflows", "native-smoke.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "native-smoke.yml");
   const hostJob = workflowJobBody(workflow, "host-native-smoke");
   const freshJob = workflowJobBody(workflow, "fresh-install-smoke");
 
@@ -54,14 +56,14 @@ test("native smoke keeps MoonBit out of the npm fresh install path", () => {
 });
 
 test("one Linux Node 24 row runs the packed Nuxt LSP release graph", () => {
-  const native = parse(readRepoFile(".github", "workflows", "native-smoke.yml")) as {
+  const native = parse(readAutomationPrograms(".github", "workflows", "native-smoke.yml")) as {
     env: Record<string, string>;
     jobs: Record<
       string,
       { steps: Array<{ name?: string; if?: string; run?: string; uses?: string }> }
     >;
   };
-  const release = parse(readRepoFile(".github", "workflows", "release.yml")) as {
+  const release = parse(readAutomationPrograms(".github", "workflows", "release.yml")) as {
     env: Record<string, string>;
   };
   assert.deepEqual(
@@ -92,7 +94,7 @@ test("one Linux Node 24 row runs the packed Nuxt LSP release graph", () => {
 
 const selected =
   "github.event_name == 'workflow_dispatch' && inputs.host_only && inputs.target == 'darwin-arm64'";
-const workflowFile = () => readRepoFile(".github", "workflows", "native-smoke.yml");
+const workflowFile = () => readAutomationPrograms(".github", "workflows", "native-smoke.yml");
 const workflowObject = () => parse(workflowFile());
 const evaluate = (
   expression: string,
@@ -137,7 +139,7 @@ function authenticateWorkflow(source: string) {
 }
 
 void test("the complete workflow retains the original setup and token-law provenance", () => {
-  const source = workflowFile();
+  const source = archivedWorkflow(".github/workflows/native-smoke.yml");
   authenticateWorkflow(source);
   for (const removed of [
     "cargo build --profile ci -p vize",

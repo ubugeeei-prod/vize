@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+flags=(--locked --profile ci-opt)
+for package in vize_l3 vize_l4; do
+  cargo clippy "${flags[@]}" -p "$package" --features client-server-decisions --lib --no-deps -- -D warnings
+done
+cargo test "${flags[@]}" -p vize_l4 --features client-server-decisions --test native_dom_file --test native_ssr --test native_selected_ssr --test native_selected_root_text --test native_selected_template_output
+suite=(-p vize_atelier_sfc --features vize_l4/client-server-decisions --test client_server_decisions)
+cargo clippy "${flags[@]}" "${suite[@]}" --no-deps -- -D warnings
+export VIZE_CLIENT_SERVER_INPUTS="$RUNNER_TEMP/target-sources"
+git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_CLIENT_SERVER_INPUTS"
+VIZE_CLIENT_SERVER_REQUIRE_OUTPUT=1 VIZE_CLIENT_SERVER_TIMINGS=1 cargo test "${flags[@]}" "${suite[@]}" -- --include-ignored --nocapture --test-threads=1

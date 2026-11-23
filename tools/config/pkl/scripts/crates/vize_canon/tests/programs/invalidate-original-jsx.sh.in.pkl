@@ -1,0 +1,13 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  if [ "$1" = "--lsp" ]; then
+    echo "$$" > {}
+    printf '\n' >> {}
+  fi
+  exec {} "$@"
+  """#
+}

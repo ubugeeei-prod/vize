@@ -1,5 +1,5 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.ts";
@@ -35,7 +35,9 @@ test("shared genuine Model identity always qualifies both actual target consumer
 });
 
 test("Model SSR retains every real attempt before its whole current verdict", () => {
-  const action = parse(fs.readFileSync(".github/actions/test-native-ssr/action.yml", "utf8"));
+  const action = parse(
+    readAutomationPrograms(".github/actions/test-native-ssr/action.yml", "utf8"),
+  );
   const step = action.runs.steps.find(
     (entry: { id?: string }) => entry.id === "native-input-model-ssr",
   );

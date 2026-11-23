@@ -1,0 +1,21 @@
+#!@@NODE@@
+const fs = require("node:fs"),
+  cp = require("node:child_process");
+const args = process.argv.slice(2),
+  split = args.indexOf("--");
+if (args.includes("--version")) {
+  console.log("fixture-perf");
+  process.exit(0);
+}
+if (args[split + 1] !== @@BINARY@@) throw Error("must measure direct checker");
+fs.writeFileSync(
+  args[args.indexOf("--output") + 1],
+  args[args.indexOf("-e") + 1]
+    .split(",")
+    .map((e) => "7,," + e + ",100,100")
+    .join("\n"),
+);
+process.exit(
+  cp.spawnSync(args[split + 1], args.slice(split + 2), { stdio: "inherit", env: process.env })
+    .status,
+);

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -93,7 +94,13 @@ test("--no-wait returns after a successful publish without polling the registry"
       JSON.stringify({ name: "@vizejs/example", version: "1.0.0" }),
     );
     writeFakeNpmRegistry(bin);
-    writeFakeCommand(bin, "vp", "process.exit(0);");
+    writeFakeCommand(
+      bin,
+      "vp",
+      readToolingProgram(
+        "commands/publish-npm-package-dirs/vp-no-wait-returns-successful-without-polling-registry.js",
+      ),
+    );
     const env = {
       PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`,
       NPM_FAKE_URL_LOG: urls,
@@ -134,7 +141,9 @@ test("manifests are resolved before any publish rewrites a sibling package.json"
     writeFakeCommand(
       bin,
       "vp",
-      "const fs = require('node:fs'); if (process.cwd().endsWith('b')) fs.writeFileSync('package.json', '{'); process.exit(0);",
+      readToolingProgram(
+        "commands/publish-npm-package-dirs/vp-manifests-are-resolved-any-rewrites-sibling-json.js",
+      ),
     );
     const result = runReleaseCommand(
       "publish_npm_package_dirs",

@@ -1,0 +1,1 @@
+console.log('wasm-bindgen @@WASM_BINDGEN_VERSION@@');

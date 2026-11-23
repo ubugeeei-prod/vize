@@ -1,0 +1,12 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  case " $* " in *" --proto-redir =https "*) ;; *) exit 97 ;; esac
+  for a; do last="$a"; done
+  while [ "$1" != --output ]; do shift; done
+  cp "{}/${{last#https://acme.test/r/}}" "$2"
+  """#
+}

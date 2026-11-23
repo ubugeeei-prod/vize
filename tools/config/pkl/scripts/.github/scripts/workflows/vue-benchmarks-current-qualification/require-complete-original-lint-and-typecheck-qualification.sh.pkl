@@ -1,0 +1,11 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  echo "lint=$LINT_OUTCOME typecheck=$TYPECHECK_OUTCOME"
+  test "$LINT_OUTCOME" = success
+  test "$TYPECHECK_OUTCOME" = success
+  """#
+}

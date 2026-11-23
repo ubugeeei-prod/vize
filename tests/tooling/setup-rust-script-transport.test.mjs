@@ -6,6 +6,9 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { gzipSync } from "node:zlib";
+
+import { toolingProgram, readToolingProgram } from "./support/program-path.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import { parse } from "yaml";
 
 const actionPath = path.resolve(".github/actions/setup-rust-script");
@@ -39,12 +42,18 @@ function archive(entries) {
   }
   return gzipSync(Buffer.concat([...blocks, Buffer.alloc(1024)]));
 }
-function executable(file, lines) {
-  fs.writeFileSync(file, lines.join("\n") + "\n", { mode: 0o755 });
+function executable(file, source) {
+  fs.writeFileSync(file, source, { mode: 0o755 });
 }
 function installScript(original) {
-  let body = fs.readFileSync(path.join(actionPath, "action.yml"), "utf8");
+  let body = readAutomationPrograms(path.join(actionPath, "action.yml"));
   if (original) {
+    const namedFilter = '-f "${BASH_SOURCE[0]%/*}/rust-script-version.sed"';
+    const versionFilter = fs
+      .readFileSync(path.join(actionPath, "scripts/rust-script-version.sed"), "utf8")
+      .trimEnd();
+    assert.equal(body.split(namedFilter).length, 3);
+    body = body.replaceAll(namedFilter, "'" + versionFilter + "'");
     const replacement = '          "$BASH" "$GITHUB_ACTION_PATH/download-prebuilt.sh" "$archive"';
     assert.equal(body.split(replacement).length, 2);
     body = body.replace(
@@ -57,7 +66,11 @@ function installScript(original) {
     );
     assert.equal(digest(body), "f07c60eb9030ac17e58f5a325935433cabdde0d949b3314a6ffd8b0c21d06ec1");
   }
-  return parse(body).runs.steps.find((s) => s.name === "Install rust-script").run;
+  const step = parse(body).runs.steps.find((s) => s.name === "Install rust-script");
+  if (!original) return automationShellPath(step.run, "setup-rust-script");
+  const file = toolingProgram("workflow/original-rust-script-install.sh");
+  assert.equal(fs.readFileSync(file, "utf8"), "#!/usr/bin/env bash\n" + step.run.trimEnd() + "\n");
+  return file;
 }
 function run(options = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize rust-script transport "));
@@ -66,12 +79,9 @@ function run(options = {}) {
   const cargoHome = path.join(root, "cargo");
   fs.mkdirSync(bin);
   fs.mkdirSync(temporary);
-  const runner =
-    [
-      "#!/bin/bash",
-      'printf "%s\\n" "$*" >> "$RUNNER_LOG"',
-      'printf "rust-script ' + (options.version ?? "0.34.0") + '\\n"',
-    ].join("\n") + "\n";
+  const runner = readToolingProgram("commands/setup-rust-script-transport/runner.sh", {
+    VERSION: options.version ?? "0.34.0",
+  });
   const entries = [["rust-script", runner]];
   if (options.extraMember) entries.push(["extra", "unowned"]);
   const bytes = archive(entries),
@@ -82,63 +92,26 @@ function run(options = {}) {
   fs.writeFileSync(path.join(root, "changed.tar.gz"), bad);
   fs.writeFileSync(path.join(root, "partial.tar.gz"), bytes.subarray(0, 7));
   fs.writeFileSync(path.join(root, "json.tar.gz"), "{}");
-  executable(path.join(bin, "curl"), [
-    "#!/bin/bash",
-    "set -euo pipefail",
-    'count=0; [ ! -f "$CURL_COUNT" ] || count="$(cat "$CURL_COUNT")"',
-    'count=$((count + 1)); printf "%s" "$count" > "$CURL_COUNT"',
-    'printf "%s\\n" "$@" > "$CURL_LOG.$count"',
-    'url=""; output=""; writeout=false',
-    'while [ "$#" -gt 0 ]; do',
-    '  case "$1" in',
-    '    --output) output="$2"; shift 2 ;;',
-    '    --write-out) [ "$2" = "%{http_code}" ]; writeout=true; shift 2 ;;',
-    "    --header|--proto) shift 2 ;;",
-    "    --*) shift ;;",
-    '    *) url="$1"; shift ;;',
-    "  esac",
-    "done",
-    'if [ "$url" = "$PRIMARY_URL" ]; then',
-    '  status="$PRIMARY_STATUS"; http="$PRIMARY_HTTP"; body="$FIXTURE_ARCHIVE"',
-    'elif [ "$url" = "$API_URL" ]; then',
-    '  status="$API_STATUS"; http="$API_HTTP"; body="$API_BODY"',
-    "else exit 65; fi",
-    'cp "$body" "$output"',
-    '$writeout && printf "%s" "$http"',
-    'if [ "$status" -ne 0 ]; then',
-    '  printf "curl fixture: original failure %s HTTP %s\\n" "$status" "$http" >&2',
-    "fi",
-    'exit "$status"',
-  ]);
+  executable(
+    path.join(bin, "curl"),
+    readToolingProgram("commands/setup-rust-script-transport/curl.sh"),
+  );
   // The production pin is asserted before a benign Mac-only extractor fixture
   // substitutes its own full digest. No downloaded Linux runner is executed.
-  executable(path.join(bin, "bash"), [
-    "#!/bin/bash",
-    "set -euo pipefail",
-    'printf "%s\\n" "$@" > "$HELPER_LOG"',
-    '[ "$1" = "$EXTRACTOR" ] && [ "$4" = "$PRODUCTION_PIN" ]',
-    'if [ "$FIXTURE_DIGEST" = true ]; then',
-    '  exec /bin/bash "$1" "$2" "$3" "$FIXTURE_SHA"',
-    "fi",
-    'exec /bin/bash "$@"',
-  ]);
-  executable(path.join(bin, "cargo"), [
-    "#!/bin/bash",
-    'printf "%s\\n" "$*" >> "$CARGO_LOG"',
-    'if [ "$CARGO_STATUS" -eq 0 ]; then',
-    '  mkdir -p "$CARGO_HOME/bin"',
-    '  cp "$FIXTURE_RUNNER" "$CARGO_HOME/bin/rust-script"',
-    '  chmod 0755 "$CARGO_HOME/bin/rust-script"',
-    "fi",
-    'exit "$CARGO_STATUS"',
-  ]);
-  executable(path.join(bin, "tar"), [
-    "#!/bin/bash",
-    'printf "%s\\n" "$*" >> "$TAR_LOG"',
-    'exec /usr/bin/tar "$@"',
-  ]);
+  executable(
+    path.join(bin, "bash"),
+    readToolingProgram("commands/setup-rust-script-transport/bash.sh"),
+  );
+  executable(
+    path.join(bin, "cargo"),
+    readToolingProgram("commands/setup-rust-script-transport/cargo.sh"),
+  );
+  executable(
+    path.join(bin, "tar"),
+    readToolingProgram("commands/setup-rust-script-transport/tar.sh"),
+  );
   const script = installScript(options.original);
-  const result = spawnSync("/bin/bash", ["-c", script], {
+  const result = spawnSync("/bin/bash", [script], {
     encoding: "utf8",
     timeout: 30_000,
     env: {

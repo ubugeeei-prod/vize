@@ -1,0 +1,75 @@
+import "../../Actions.pkl" as ci
+
+name = "Published plain-script import acceptance"
+on {
+  workflow_dispatch {
+    inputs {
+      version {
+        description = "Exact published package version without v"
+        type = "string"
+        required = true
+      }
+      `source-sha` {
+        description = "Exact immutable release tag commit"
+        type = "string"
+        required = true
+      }
+    }
+  }
+}
+permissions {
+  contents = "read"
+  `pull-requests` = "read"
+}
+concurrency {
+  group = "plain-script-import-public-${{ inputs.version }}"
+  `cancel-in-progress` = false
+}
+jobs {
+  `registry-consumer` {
+    `runs-on` = "blacksmith-8vcpu-ubuntu-2404"
+    `timeout-minutes` = 15
+    env {
+
+      SOURCE_SHA = "${{ inputs.source-sha }}"
+      PUBLIC_VERSION = "${{ inputs.version }}"
+      GH_TOKEN = "${{ github.token }}"
+      VIZE10903_MODE = "public"
+      VIZE10903_EXPECT = "after"
+      VIZE10903_PUBLIC_VERSION = "${{ inputs.version }}"
+      VIZE10903_PROOF = "/tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("plain-script-import-public-acceptance")
+      ci.checkoutAt("v${{ inputs.version }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with { `node-version` = "26.6.0" }
+      }
+      new Dynamic {
+        name = "Verify the immutable release includes the merged source fix"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-the-immutable-release-includes-the-merged-source-fix.sh""#
+      }
+      new Dynamic {
+        name = "Install fresh registry packages and run the untouched reported browser consumer"
+        run = "node tools/support/compat/plain-script-import-ref.ts"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "plain-script-public-release-${{ inputs.version }}-${{ github.run_id }}"
+          path = """
+          /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/*.json
+          /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/host/package*.json
+          /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/projects/*/src/
+          /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}/actual-vite-native/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 90
+        }
+      }
+    }
+  }
+}

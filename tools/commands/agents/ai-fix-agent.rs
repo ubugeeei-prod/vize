@@ -4,6 +4,7 @@
 //! vize_tool_support = { path = "../../support" }
 //! chrono = { version = "0.4", default-features = false, features = ["clock"] }
 //! regex = "1"
+//! which = "=8.0.6"
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //!
@@ -158,16 +159,9 @@ fn ensure_tool(bin: &str) -> Result<(), String> {
     if bin.contains('/') || bin.contains('\\') || !tool_name.is_match(bin) {
         return Err(format!("invalid tool name: {bin}"));
     }
-    let output = Command::new("sh")
-        .args(["-lc", &format!("command -v -- {bin}")])
-        .stdin(Stdio::null())
-        .output()
-        .map_err(|error| format!("failed to check {bin}: {error}"))?;
-    if output.status.success() {
-        Ok(())
-    } else {
-        Err(format!("{bin} was not found on PATH"))
-    }
+    which::which(bin)
+        .map(|_| ())
+        .map_err(|_| format!("{bin} was not found on PATH"))
 }
 
 fn parse_command_arguments(command: &str) -> Result<Vec<String>, String> {

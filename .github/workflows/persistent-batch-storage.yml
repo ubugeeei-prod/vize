@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/persistent-batch-storage.yml
+      - .github/scripts/workflows/persistent-batch-storage/**
       - crates/vize/src/commands/check/runner.rs
       - crates/vize/src/commands/check/runner/execution.rs
       - crates/vize_canon/src/batch/type_checker/installed_sources*
@@ -24,6 +25,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/persistent-batch-storage"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       CARGO_BUILD_JOBS: "24"
       RUST_TEST_THREADS: "4"
@@ -51,29 +53,13 @@ jobs:
       - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1
         with: { tool: cargo-nextest@0.9.146 }
       - name: Pin source and toolchain identity
-        run: |
-          mkdir -p target/persistent-storage-evidence
-          git rev-parse HEAD > target/persistent-storage-evidence/source.sha
-          rustc --version --verbose > target/persistent-storage-evidence/rustc.txt
-          cp Cargo.lock target/persistent-storage-evidence/
+        run: . "${{ env.VIZE_CI_FILES }}/pin-source-and-toolchain-identity.sh"
       - name: Select the required physical native provider
-        run: |
-          runtime="$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc"
-          test -x "$runtime"
-          "$runtime" --version > target/persistent-storage-evidence/native-provider-version.txt
-          sha256sum "$runtime" > target/persistent-storage-evidence/native-provider.sha256
-          printf '%s\n' "$runtime" > target/persistent-storage-evidence/native-provider-path.txt
-          printf 'CORSA_PATH=%s\n' "$runtime" >> "$GITHUB_ENV"
+        run: . "${{ env.VIZE_CI_FILES }}/select-the-required-physical-native-provider.sh"
       - name: Require native visibility and three-process storage acceptance
-        run: |
-          cargo nextest run -p vize --test integration --cargo-profile ci --profile full -E 'test(relative_sibling_sfc_keeps_package_storage_and_exact_repeated_diagnostics) | test(type_config_anchor_does_not_expose_app_modules_to_sibling_sources) | test(expanded_program_cache_redirect_stays_outside_authored_workspace)' --no-tests=fail
-          cp target/nextest/full/junit.xml target/persistent-storage-evidence/cli.junit.xml
-          sha256sum target/ci/vize > target/persistent-storage-evidence/cli.sha256
-          tar -czf target/persistent-storage-evidence/source-cli-linux-x64.tgz -C target/ci vize
+        run: . "${{ env.VIZE_CI_FILES }}/require-native-visibility-and-three-process-storage-acceptance.sh"
       - name: Require exact batch packets and linked-target ownership invariants
-        run: |
-          cargo nextest run -p vize_canon --lib --test fix_history_diagnostics --cargo-profile ci --profile full -E 'test(relative_sibling_imports_preserve_complete_package_diagnostics) | test(persistent_namespace) | test(installed_sources) | test(replacing_a_hardlinked_cache_leaf)' --no-tests=fail
-          cp target/nextest/full/junit.xml target/persistent-storage-evidence/canon.junit.xml
+        run: . "${{ env.VIZE_CI_FILES }}/require-exact-batch-packets-and-linked-target-ownership-invariants.sh"
       - name: Preserve exact native evidence paths in one portable archive
         if: always()
         run: tar -czf target/persistent-storage-evidence.tgz -C target persistent-storage-evidence

@@ -1,0 +1,76 @@
+import "../../Actions.pkl" as ci
+
+name = "Vue component metadata"
+on {
+  pull_request {
+    paths = new Listing {
+      "crates/vize_canon/src/virtual_ts/generator.rs"
+      "tests/_fixtures/differential/typechecker/component-meta-13430/**"
+      "crates/vize_canon/src/virtual_ts/generator/component_export*"
+      "crates/vize_canon/src/virtual_ts/generator/component_constructors*"
+      "tools/support/compat/content-mapper/fixtures/vue-component-meta/**"
+      ".github/workflows/content-mapper-vue-component-meta.yml"
+      ".github/scripts/workflows/content-mapper-vue-component-meta/**"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "vue-component-meta-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  metadata {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/content-mapper-vue-component-meta"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"
+        with { toolchain = "1.100.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "component-meta"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic { run = "cargo build --locked --profile ci -p vize" }
+      new Dynamic {
+        name = "Read component metadata and check template diagnostics"
+        run = #". "${{ env.VIZE_CI_FILES }}/read-component-metadata-and-check-template-diagnostics.sh""#
+      }
+      new Dynamic {
+        name = "Check component tag hover and go-to-definition"
+        env {
+          VIZE_TEST_CONTENT_MAPPER_TSGO = "${{ runner.temp }}/component-meta/node_modules/.bin/tsrs"
+          VIZE_TEST_CONTENT_MAPPER_VUE = "${{ runner.temp }}/component-meta/node_modules/vue"
+        }
+        run = """
+        cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_editor_accuracy::component_tags:: --nocapture
+
+        """
+      }
+    }
+  }
+}

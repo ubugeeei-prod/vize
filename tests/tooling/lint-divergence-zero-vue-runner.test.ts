@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -8,9 +9,10 @@ import { runBaseline } from "../../tools/support/compat/fixtures/lint-divergence
 import { resolveScorecardRuntime } from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 
 import { runLintDivergenceReport } from "../../tools/support/compat/fixtures/lint-divergence-report.mjs";
-import { baselineScript } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
+import { eslintBaselineProgram } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
+const baselineProgram = eslintBaselineProgram(root);
 const isBun = "Bun" in globalThis;
 
 function fixture() {
@@ -20,15 +22,9 @@ function fixture() {
   const binary = path.join(directory, "vize.mjs");
   fs.writeFileSync(
     binary,
-    [
-      "#!/usr/bin/env node",
-      'import fs from "node:fs";',
-      "if (process.argv[2] === '--version') process.exit(0);",
-      "if (process.argv[2] !== 'lint') process.exit(2);",
-      `fs.appendFileSync(${JSON.stringify(marker)}, JSON.stringify(process.argv.slice(2)) + '\\n');`,
-      "process.stdout.write(JSON.stringify(fs.existsSync('App.vue') ? [{ file: 'App.vue', messages: [] }] : []));",
-      "",
-    ].join("\n"),
+    readToolingProgram("commands/lint-divergence-zero-vue-runner/binary.js.in", {
+      MARKER: JSON.stringify(marker),
+    }),
   );
   fs.chmodSync(binary, 0o755);
   return {
@@ -255,7 +251,7 @@ test("both actual ESLint entry points validate mapped rules without linting an e
   const input = fixture();
   try {
     assert.ok(
-      baselineScript,
+      baselineProgram,
       "the actual TypeScript runner's retained ESLint entry point must exist",
     );
     const runtime = resolveScorecardRuntime();
@@ -264,20 +260,16 @@ test("both actual ESLint entry points validate mapped rules without linting an e
       { "vue/no-v-html": ["warn", { invalidOption: true }] },
     ]) {
       await assert.rejects(runBaseline(runtime, input.directory, [], rules), /Key "rules"/u);
-      const measured = spawnSync(
-        process.execPath,
-        ["--input-type=module", "--eval", baselineScript],
-        {
-          cwd: root,
-          encoding: "utf8",
-          input: JSON.stringify({
-            benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
-            cwd: input.directory,
-            files: [],
-            rules,
-          }),
-        },
-      );
+      const measured = spawnSync(process.execPath, [baselineProgram], {
+        cwd: root,
+        encoding: "utf8",
+        input: JSON.stringify({
+          benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
+          cwd: input.directory,
+          files: [],
+          rules,
+        }),
+      });
       assert.equal(measured.error, undefined, measured.error?.message);
       assert.equal(measured.status, 1, `${measured.stdout}\n${measured.stderr}`);
       assert.match(measured.stderr, /Key "rules"/u);

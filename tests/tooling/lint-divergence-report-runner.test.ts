@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -24,12 +25,7 @@ test("the TypeScript runner counts the same ignore-filtered files as vize lint",
     const fakeVize = path.join(fixtureDir, "fake-vize.mjs");
     fs.writeFileSync(
       fakeVize,
-      [
-        "#!/usr/bin/env node",
-        "if (process.argv[2] !== 'lint') process.exit(2);",
-        'process.stdout.write(JSON.stringify([{ file: "App.vue", messages: [] }]));',
-        "",
-      ].join("\n"),
+      readToolingProgram("commands/lint-divergence-report-runner/report-vue-diagnostic.cjs"),
     );
     fs.chmodSync(fakeVize, 0o755);
     const registryPath = path.join(fixtureDir, "registry.json");
@@ -106,28 +102,7 @@ test("the TypeScript runner pairs prefixed unused-component location divergences
     const fakeVize = path.join(fixtureDir, "fake-vize.mjs");
     fs.writeFileSync(
       fakeVize,
-      [
-        "#!/usr/bin/env node",
-        "if (process.argv[2] !== 'lint') process.exit(2);",
-        "process.stdout.write(JSON.stringify([{",
-        '  file: "App.vue",',
-        "  messages: [",
-        "    {",
-        '      ruleId: "vue/no-unused-components",',
-        '      severity: "warning",',
-        "      line: 1, column: 11, endLine: 2, endColumn: 12,",
-        "      message: \"[vize:vue/no-unused-components] Component 'UploaderFile' is registered but never used in template\",",
-        "    },",
-        "    {",
-        '      ruleId: "vue/no-unused-components",',
-        '      severity: "warning",',
-        "      line: 1, column: 11, endLine: 2, endColumn: 12,",
-        "      message: \"[vize:vue/no-unused-components] Component 'UploaderFiles' is registered but never used in template\",",
-        "    },",
-        "  ],",
-        "}]));",
-        "",
-      ].join("\n"),
+      readToolingProgram("commands/lint-divergence-report-runner/report-native-coverage.cjs"),
     );
     fs.chmodSync(fakeVize, 0o755);
     const registryPath = path.join(fixtureDir, "registry.json");
@@ -209,22 +184,7 @@ test("the TypeScript runner keeps embedded brackets in unused-component messages
     const fakeVize = path.join(fixtureDir, "fake-vize.mjs");
     fs.writeFileSync(
       fakeVize,
-      [
-        "#!/usr/bin/env node",
-        "if (process.argv[2] !== 'lint') process.exit(2);",
-        "process.stdout.write(JSON.stringify([{",
-        '  file: "App.vue",',
-        "  messages: [",
-        "    {",
-        '      ruleId: "vue/no-unused-components",',
-        '      severity: "warning",',
-        "      line: 1, column: 11, endLine: 2, endColumn: 12,",
-        "      message: \"debug ] Component 'UploaderFile' is registered but never used in template\",",
-        "    },",
-        "  ],",
-        "}]));",
-        "",
-      ].join("\n"),
+      readToolingProgram("commands/lint-divergence-report-runner/report-source-markers.cjs"),
     );
     fs.chmodSync(fakeVize, 0o755);
     const registryPath = path.join(fixtureDir, "registry.json");

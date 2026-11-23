@@ -1,0 +1,55 @@
+import "../Actions.pkl" as ci
+
+name = "Setup runtime package managers"
+description = "Install Vite+, Node.js, Corepack shims, and Bun for release runtime smokes."
+inputs {
+  `node-version` {
+    description = "Node version passed directly to setup-vp."
+    required = false
+  }
+  `node-version-file` {
+    description = "Node version file passed to setup-vp."
+    required = false
+    ["default"] = "package.json"
+  }
+  cache {
+    description = "Whether setup-vp should cache dependencies."
+    required = false
+    ["default"] = "true"
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Setup Vite+ and Node.js from version file"
+      `if` = "inputs.node-version == ''"
+      uses = ci.setupVp
+      with {
+        `node-version-file` = "${{ inputs.node-version-file }}"
+        cache = "${{ inputs.cache }}"
+        `run-install` = false
+      }
+    }
+    new Dynamic {
+      name = "Setup Vite+ and Node.js from matrix version"
+      `if` = "inputs.node-version != ''"
+      uses = ci.setupVp
+      with {
+        `node-version` = "${{ inputs.node-version }}"
+        cache = "${{ inputs.cache }}"
+        `run-install` = false
+      }
+    }
+    new Dynamic {
+      name = "Enable package manager shims"
+      shell = "bash"
+      run = "corepack enable"
+    }
+    new Dynamic {
+      name = "Install Bun package manager"
+      uses = ci.setupBun
+      with { `bun-version` = "1.3.14" }
+    }
+  }
+}

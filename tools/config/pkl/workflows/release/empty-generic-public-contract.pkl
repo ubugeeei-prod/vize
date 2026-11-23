@@ -1,0 +1,100 @@
+import "../../Actions.pkl" as ci
+
+name = "Empty generic public contract"
+on {
+  workflow_dispatch = null
+  pull_request {
+    paths = new Listing {
+      "crates/vize_canon/src/virtual_ts/generator.rs"
+      "crates/vize_canon/src/virtual_ts/generator/setup_props.rs"
+      "crates/vize_canon/src/batch/virtual_project/vue_codegen.rs"
+      "crates/vize_canon/src/batch/virtual_project/vue_codegen/generic_syntax.rs"
+      "crates/vize_canon/tests/empty_generic_public_contract.rs"
+      "tests/_fixtures/differential/typechecker/empty-generic-public-contract-10540/**"
+      "tools/support/compat/content-mapper/empty-generic-contract.ts"
+      "tools/support/compat/content-mapper/fetch-empty-generic-baseline.ts"
+      "tests/tooling/empty-generic-baseline-fetch.test.ts"
+      ".github/workflows/empty-generic-public-contract.yml"
+      ".github/scripts/workflows/empty-generic-public-contract/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "empty-generic-contract-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `actual-contract` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+      BASE_SHA = "4fdc457df6498c4636efb35dd76af61394ad7006"
+      BASE_RETAINING_SHA = "df7b4f5b9f4cb63c1d5c076755ade37ba3fe4350"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("empty-generic-public-contract")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "26.12.1"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Fetch and authenticate the unchanged historical before-image"
+        run = #". "${{ env.VIZE_CI_FILES }}/fetch-and-authenticate-the-unchanged-historical-before-image.sh""#
+      }
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "empty-generic-contract"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Compile separate exact source images and focused producer controls"
+        run = #". "${{ env.VIZE_CI_FILES }}/compile-separate-exact-source-images-and-focused-producer-controls.sh""#
+      }
+      new Dynamic {
+        name = "Install pinned actual native, mapper and reference providers"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-actual-native-mapper-and-reference-providers.sh""#
+      }
+      new Dynamic {
+        name = "Capture both images and all actual provider vectors before assertions"
+        run = #". "${{ env.VIZE_CI_FILES }}/capture-both-images-and-all-actual-provider-vectors-before-assertions.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "empty-generic-contract-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = """
+          ${{ runner.temp }}/empty-generic-evidence
+          ${{ runner.temp }}/empty-generic-baseline-fetch.json
+          ${{ runner.temp }}/empty-generic-consumer/package.json
+          ${{ runner.temp }}/empty-generic-consumer/package-lock.json
+          ${{ runner.temp }}/empty-generic-consumer/beta-metadata.json
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

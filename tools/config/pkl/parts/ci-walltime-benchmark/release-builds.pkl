@@ -1,0 +1,2 @@
+`if` = "${{ github.event_name == 'workflow_dispatch' && inputs.component == 'release-builds' }}"
+uses = "./.github/workflows/release-build-cache.yml"

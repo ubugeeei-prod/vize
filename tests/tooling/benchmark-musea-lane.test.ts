@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -68,8 +70,7 @@ function withStubbedNode(fn: (env: NodeJS.ProcessEnv, logPath: string) => void):
   const bin = path.join(directory, "bin");
   const logPath = path.join(directory, "node-args.txt");
   const node = path.join(bin, "node");
-  const script =
-    '#!/usr/bin/env bash\nprintf "%s\\n" "$@" > "$VIZE_BENCH_STUB_LOG"\nexit "${VIZE_BENCH_STUB_EXIT:-0}"\n';
+  const script = readToolingProgram("commands/benchmark-musea-lane/record-arguments.sh");
   const pathEnv = `${bin}${path.delimiter}${process.env.PATH ?? ""}`;
   fs.mkdirSync(bin);
   fs.writeFileSync(node, script);
@@ -86,11 +87,11 @@ test("bench:musea is registered as a no-cache benchmark lane", () => {
 });
 
 test("bench:all runs the Musea lane alongside the other benchmark lanes", () => {
-  assert.equal(
-    taskShape(testAndBenchmarkTasks["bench:all"]).command,
-    ["bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite", "bench:musea"]
-      .map((task) => `vp run --workspace-root ${task}`)
-      .join(" && "),
+  assert.deepEqual(
+    workspaceTaskSteps(testAndBenchmarkTasks["bench:all"]),
+    ["bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite", "bench:musea"].map(
+      (task) => ({ program: "vp", arguments: ["run", "--workspace-root", task] }),
+    ),
   );
 });
 

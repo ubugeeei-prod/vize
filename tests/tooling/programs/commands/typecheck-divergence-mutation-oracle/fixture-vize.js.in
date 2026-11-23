@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+import { spawn } from "node:child_process";
+if (process.argv.includes("--version")) {
+  console.log("vize 0.0.0-test");
+  process.exit(0);
+}
+process.on("SIGTERM", () => {});
+spawn(process.execPath, @@CHILD_ARGS@@, { stdio: "inherit" });
+setInterval(() => {}, 1000);

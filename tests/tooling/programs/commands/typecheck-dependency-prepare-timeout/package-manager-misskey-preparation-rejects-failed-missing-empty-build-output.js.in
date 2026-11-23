@@ -1,0 +1,14 @@
+if (managerArgs[0] === "install") {
+  @@SUCCESS_BODY@@;
+} else {
+  const declaration = @@DECLARATION@@;
+  const runtime = @@RUNTIME@@;
+  if (declaration !== null) {
+    for (const name of ["misskey-js", "misskey-reversi", "misskey-bubble-game", "i18n"]) {
+      fs.mkdirSync("packages/" + name + "/built", { recursive: true });
+      fs.writeFileSync("packages/" + name + "/built/index.d.ts", declaration);
+    }
+  }
+  if (runtime !== null) fs.writeFileSync("packages/i18n/built/index.js", runtime);
+  process.exit(@@EXIT_CODE@@);
+}

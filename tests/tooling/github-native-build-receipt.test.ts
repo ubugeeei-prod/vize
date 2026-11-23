@@ -52,7 +52,7 @@ void test("the producer binds the image to its own freshly minted token and chec
   const bin = path.join(root, "bin");
   const image = path.join(packageDir, "vize-vitrine.linux-x64-gnu.node");
   writeRecordingCommand(bin, "vp", path.join(root, "calls.log"), {
-    script: `fs.writeFileSync(${JSON.stringify(image)}, 'image:' + process.env.VIZE_NATIVE_BUILD_TOKEN);`,
+    hook: { name: "write-build-token-image", args: [image] },
   });
   const result = runToolCommand(
     "tools/support/github/build-napi-package.ts",

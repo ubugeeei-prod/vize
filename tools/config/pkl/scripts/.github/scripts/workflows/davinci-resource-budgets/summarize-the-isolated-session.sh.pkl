@@ -1,0 +1,14 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  {
+    echo '### Synthetic resident database (fixture alpha inputs; no LSP or Corsa)'
+    echo '```json'
+    cat "${RUNNER_TEMP}/resident-resource.json"
+    echo '```'
+  } >> "$GITHUB_STEP_SUMMARY"
+  """#
+}

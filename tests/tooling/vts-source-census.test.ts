@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -211,13 +213,31 @@ type CensusWorkflow = {
   permissions: Record<string, string>;
   jobs: Record<string, { steps: WorkflowStep[] }>;
 };
+test("the isolated census runtime installs the pinned parser as its sole dependency", (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-census-parser-"));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const program = new URL(
+    "../../.github/scripts/workflows/vts-source-census/install-only-the-pinned-workflow-parser.cjs",
+    import.meta.url,
+  );
+  const result = spawnSync(process.execPath, [fileURLToPath(program)], {
+    cwd: temporary,
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(temporary, "package.json"), "utf8")), {
+    private: true,
+    dependencies: { yaml: "2.9.0" },
+  });
+});
+
 const parserInstallContract = `set -euo pipefail
 parser_link="$GITHUB_WORKSPACE/node_modules/yaml"
 parser_target="$RUNNER_TEMP/census-test-runtime/node_modules/yaml"
 parser_marker="$RUNNER_TEMP/census-test-runtime/workspace-yaml-link-owned"
 mkdir "$RUNNER_TEMP/census-test-runtime"
 cd "$RUNNER_TEMP/census-test-runtime"
-node -e 'require("node:fs").writeFileSync("package.json",JSON.stringify({private:true,dependencies:{yaml:"2.9.0"}}))'
+node "$VIZE_CI_FILES/install-only-the-pinned-workflow-parser.cjs"
 npm install --ignore-scripts --no-audit --no-fund
 test ! -e "$parser_marker"
 test ! -L "$parser_marker"
@@ -231,6 +251,15 @@ test ! -L "$parser_link"
 ln -s "$parser_target" "$parser_link"
 test -L "$parser_link"
 test "$(readlink "$parser_link")" = "$parser_target"`;
+const parserProgram = (name: string) =>
+  fileURLToPath(
+    new URL("../../.github/scripts/workflows/vts-source-census/" + name, import.meta.url),
+  );
+const linkStart = parserInstallContract.indexOf('mkdir "$GITHUB_WORKSPACE/node_modules"');
+const parserClaimContract = [
+  ...parserInstallContract.split("\n").slice(0, 4),
+  parserInstallContract.slice(linkStart),
+].join("\n");
 const parserCleanupContract = `set -euo pipefail
 parser_link="$GITHUB_WORKSPACE/node_modules/yaml"
 parser_target="$RUNNER_TEMP/census-test-runtime/node_modules/yaml"
@@ -259,7 +288,7 @@ case "$parser_state" in
 esac`;
 function censusWorkflow(): CensusWorkflow {
   return parse(
-    fs.readFileSync(".github/workflows/vts-source-census.yml", "utf8"),
+    readAutomationPrograms(".github/workflows/vts-source-census.yml", "utf8"),
   ) as CensusWorkflow;
 }
 function workflowUses(value: unknown): string[] {
@@ -336,7 +365,19 @@ void test("workflow is structurally pinned to exact sources and three repetition
     profilingLaws.run ?? "",
     /cargo test --locked -p vize --features profiling --lib[\s\\]+commands::profile_export::tests::aliased_receipt_creation_fails_after_profile_write -- --exact/u,
   );
-  assert.equal(parserInstall.run?.trim(), parserInstallContract);
+  const setup = parserInstallContract
+    .slice(0, linkStart)
+    .split("\n")
+    .filter((line) => !line.startsWith("parser_link=") && !line.startsWith("parser_target="))
+    .join("\n");
+  assert.equal(
+    parserInstall.run?.trim(),
+    setup + 'bash "$VIZE_CI_FILES/claim-workspace-parser.sh"',
+  );
+  assert.equal(
+    fs.readFileSync(parserProgram("claim-workspace-parser.sh"), "utf8"),
+    "#!/usr/bin/env bash\n" + parserClaimContract + "\n",
+  );
   assert.equal(parserCleanup.if, "always()");
   assert.equal(parserCleanup.run?.trim(), parserCleanupContract);
   assert.ok(
@@ -363,7 +404,7 @@ void test("workflow is structurally pinned to exact sources and three repetition
 
 void test("workflow parser workspace custody is fail-closed and non-destructive", (t) => {
   const run = (script: string, root: string) =>
-    spawnSync("bash", ["-euo", "pipefail", "-c", script], {
+    spawnSync("bash", ["-euo", "pipefail", script], {
       encoding: "utf8",
       env: { ...process.env, GITHUB_WORKSPACE: root, RUNNER_TEMP: root },
     });
@@ -375,13 +416,8 @@ void test("workflow parser workspace custody is fail-closed and non-destructive"
   };
   const marker = (value: string) =>
     path.join(value, "census-test-runtime", "workspace-yaml-link-owned");
-  const mutation = [
-    "set -euo pipefail",
-    'parser_link="$GITHUB_WORKSPACE/node_modules/yaml"',
-    'parser_target="$RUNNER_TEMP/census-test-runtime/node_modules/yaml"',
-    'parser_marker="$RUNNER_TEMP/census-test-runtime/workspace-yaml-link-owned"',
-    parserInstallContract.slice(parserInstallContract.indexOf('mkdir "$GITHUB_WORKSPACE')),
-  ].join("\n");
+  const claim = parserProgram("claim-workspace-parser.sh");
+  const cleanup = parserProgram("remove-the-workflow-parser-link.sh");
   const rootReceipt = (value: string) => {
     const candidate = path.join(value, "node_modules"),
       stat = fs.lstatSync(candidate);
@@ -403,9 +439,9 @@ void test("workflow parser workspace custody is fail-closed and non-destructive"
       if (kind === "nonempty") fs.writeFileSync(path.join(workspaceRoot, "foreign"), "retain");
     }
     const before = rootReceipt(value),
-      install = run(mutation, value);
+      install = run(claim, value);
     assert.notEqual(install.status, 0, `${kind} root must reject ownership`);
-    assert.equal(run(parserCleanupContract, value).status, 0);
+    assert.equal(run(cleanup, value).status, 0);
     assert.deepEqual(rootReceipt(value), before);
     assert.equal(fs.readFileSync(marker(value), "utf8"), "none\n");
   }
@@ -416,10 +452,10 @@ void test("workflow parser workspace custody is fail-closed and non-destructive"
     target = path.join(owned, "census-test-runtime", "node_modules", "yaml");
   fs.mkdirSync(target, { recursive: true });
   fs.writeFileSync(marker(owned), "none\n");
-  assert.equal(run(mutation, owned).status, 0);
+  assert.equal(run(claim, owned).status, 0);
   assert.equal(fs.readFileSync(marker(owned), "utf8"), "root\n");
   assert.equal(fs.readlinkSync(link), target);
-  assert.equal(run(parserCleanupContract, owned).status, 0);
+  assert.equal(run(cleanup, owned).status, 0);
   assert.equal(fs.existsSync(workspaceRoot), false);
   assert.equal(fs.lstatSync(marker(owned)).isSymbolicLink(), false);
   assert.equal(fs.readFileSync(marker(owned), "utf8"), "none\n");
@@ -432,7 +468,7 @@ void test("workflow parser workspace custody is fail-closed and non-destructive"
     fs.writeFileSync(marker(value), "root\n");
     if (kind === "wrong-link") fs.symlinkSync(path.join(value, "foreign-yaml"), yaml);
     else fs.writeFileSync(yaml, "retain");
-    assert.notEqual(run(parserCleanupContract, value).status, 0);
+    assert.notEqual(run(cleanup, value).status, 0);
     assert.equal(
       kind === "wrong-link" ? fs.readlinkSync(yaml) : fs.readFileSync(yaml, "utf8"),
       kind === "wrong-link" ? path.join(value, "foreign-yaml") : "retain",
@@ -449,7 +485,7 @@ void test("workflow parser workspace custody is fail-closed and non-destructive"
   fs.symlinkSync(siblingTarget, siblingLink);
   fs.writeFileSync(path.join(siblingRoot, "foreign"), "retain");
   fs.writeFileSync(marker(sibling), "root\n");
-  assert.notEqual(run(parserCleanupContract, sibling).status, 0);
+  assert.notEqual(run(cleanup, sibling).status, 0);
   assert.equal(fs.existsSync(siblingLink), false);
   assert.equal(fs.readFileSync(path.join(siblingRoot, "foreign"), "utf8"), "retain");
   assert.equal(fs.readFileSync(marker(sibling), "utf8"), "root\n");

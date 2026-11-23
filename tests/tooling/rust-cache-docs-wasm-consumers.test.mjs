@@ -252,21 +252,25 @@ void test("package versions may advance while changed native or secondary script
 });
 
 void test("secondary checks retain canonical Vite configs and reject retired config reintroduction", (t) => {
-  const file = "examples/vite-musea/package.json";
+  const file = "examples/vite-musea/scripts/package-tasks.cjs";
   for (const change of [
-    (command) => command.replace(" vite.config.ts", ""),
-    (command) => command.replace(" vite.app.config.ts", ""),
-    (command) => command.replace(" vite.ui-gallery.config.ts", ""),
-    (command) => command.replace(" vite.globals.config.ts", ""),
-    (command) => command + " vize.config.ts",
+    (source) => source.replace('        "vite.config.ts",', ""),
+    (source) => source.replace('        "vite.app.config.ts",', ""),
+    (source) => source.replace('        "vite.ui-gallery.config.ts",', ""),
+    (source) => source.replace('        "vite.globals.config.ts",', ""),
+    (source) =>
+      source.replace(
+        '        "vite.globals.config.ts",',
+        '        "vite.globals.config.ts", "vize.config.ts",',
+      ),
   ]) {
     const directory = fixture(t);
-    edit(directory, file, (value) => {
-      const original = value.scripts.check;
-      value.scripts.check = change(original);
-      assert.notEqual(value.scripts.check, original);
-    });
-    assert.throws(() => verifyDocsWasmConsumers(directory), assert.AssertionError);
+    const target = join(directory, file);
+    const original = readFileSync(target, "utf8");
+    const revised = change(original);
+    assert.notEqual(revised, original);
+    writeFileSync(target, revised);
+    assert.throws(() => verifyDocsWasmConsumers(directory), /reviewed command producer changed/);
   }
 });
 

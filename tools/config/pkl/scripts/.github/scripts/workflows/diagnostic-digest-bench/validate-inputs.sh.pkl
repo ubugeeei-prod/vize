@@ -1,0 +1,9 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.requireCommitShas(List("BASE"))
+  module.requireCommitShas(List("HEAD"))
+  #"[[ "$ROUNDS" =~ ^[1-9][0-9]?$ ]]"#
+}

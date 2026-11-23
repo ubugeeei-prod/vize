@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+unset VIZE_TEST_DISABLE_TSGO
+cargo test --locked --profile ci -p vize --test integration -- check_tsconfig_mixed_project_graph_cli::default_reference::later_default_reference_checks_vue_template_and_repair --exact --nocapture

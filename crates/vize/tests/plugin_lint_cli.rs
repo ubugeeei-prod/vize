@@ -21,12 +21,13 @@ fn repo(path: &str) -> String {
 /// The P4-16 fixture source the v1 packet freeze was recorded from.
 fn todo_list() -> Vec<u8> {
     let output = Command::new("node")
-        .args([
-            "--input-type=module",
-            "-e",
-            "const { TODO_LIST } = await import(process.argv[1]); process.stdout.write(TODO_LIST);",
-            &repo("tests/tooling/fixtures/davinci-plugin-sdk/sources.mjs"),
-        ])
+        .arg(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/programs/print-plugin-todo.js"
+        ))
+        .arg(repo(
+            "tests/tooling/fixtures/davinci-plugin-sdk/sources.mjs",
+        ))
         .output()
         .unwrap();
     assert_eq!(output.status.code(), Some(0));

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+case "$GITHUB_EVENT_NAME" in
+  pull_request) printf 'VIZE_TEST_DISABLE_TSGO=1\n' >> "$GITHUB_ENV" ;;
+  merge_group) printf 'VIZE_TEST_REQUIRE_TSGO=1\n' >> "$GITHUB_ENV" ;;
+  *) exit 1 ;;
+esac

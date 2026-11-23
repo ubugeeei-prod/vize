@@ -30,8 +30,4 @@ runs:
       shell: bash
       # These outputs already passed flake check. Roots protect compiled Cargo
       # dependencies and shell tools; GC can discard older unrooted versions.
-      run: |
-        nix build --no-update-lock-file --out-link "$RUNNER_TEMP/vize-nix-cache-root" \
-          .#packages.x86_64-linux.vize \
-          .#packages.x86_64-linux.vize.cargoArtifacts \
-          .#checks.x86_64-linux.shell
+      run: . "$GITHUB_ACTION_PATH/scripts/keep-current-build-dependencies-through-cache-gc.sh"

@@ -10,6 +10,7 @@ on:
       - "**/*.art.vue"
       - "**/*.art.vue.txt"
       - ".github/workflows/art-source-products.yml"
+      - ".github/scripts/workflows/art-source-products/**"
 permissions: { contents: read }
 concurrency:
   group: art-source-products-${{ github.event.pull_request.number }}
@@ -29,6 +30,19 @@ jobs:
       RUST_MIN_STACK: "16777216"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/art-source-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -42,21 +56,10 @@ jobs:
             ~/.cargo/git
           key: art-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
       - name: Select original Vue and colocated gallery sources
-        run: git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/gallery-sources"
+        run: . "${{ env.VIZE_CI_FILES }}/select-original-vue-and-colocated-gallery-sources.sh"
       - name: Compare original gallery records, generated modules, Markdown and public warnings
         if: matrix.suite == 'correctness'
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt -p vize_musea)
-          cargo test "${flags[@]}" --lib
-          cargo clippy "${flags[@]}" --features art-source-products --lib --no-deps -- -D warnings
-          suite=(--features art-source-products --test art_source_products)
-          export VIZE_ART_SOURCE_INPUTS="$RUNNER_TEMP/gallery-sources"
-          cargo test "${flags[@]}" "${suite[@]}"
-          cargo test "${flags[@]}" "${suite[@]}" descriptor_warnings_and_complete_gallery_products_on_original_files -- --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/compare-original-gallery-records-generated-modules-markdown-and-public-w.sh"
       - name: Measure descriptor and warning time, allocations and peak on an independent runner
         if: matrix.suite == 'performance'
-        run: |
-          set -euo pipefail
-          export VIZE_ART_SOURCE_INPUTS="$RUNNER_TEMP/gallery-sources"
-          cargo test --locked --profile ci-opt -p vize_musea --features art-source-products --test art_source_products complete_responses_share_the_original_art_surface -- --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/measure-descriptor-and-warning-time-allocations-and-peak-on-an-independe.sh"

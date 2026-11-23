@@ -1,5 +1,6 @@
 // Tooling selection follows what a test reads, not what shared data names (#6830).
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { matchesGlob } from "node:path";
 import test from "node:test";
 import { cacheInputs } from "../../tools/config/vite-plus/task-inputs.ts";
@@ -7,6 +8,7 @@ import { toolingTestScopes } from "../../tools/config/vite-plus/tooling-test-sco
 import {
   memberReferences,
   planToolingTests,
+  readsProse,
   SHARED_HELPER_IMPORTERS,
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 
@@ -66,4 +68,16 @@ test("nightly Full qualification (merge tier) still runs every release contract"
   const all = planToolingTests([], { tier: "merge" }).tests as string[];
   assert.deepEqual(merge, all);
   assert.ok(merge.some((file) => file.startsWith("tests/tooling/release/")));
+});
+
+test("native package probes name the files that select their owning test", () => {
+  for (const [owner, program] of [
+    ["native-loader.test.ts", "reject-stale.cjs"],
+    ["native-loader-errors.test.ts", "reject-missing.cjs"],
+    ["native-loader-failures.test.ts", "reject-dlopen.cjs"],
+  ]) {
+    const source = readFileSync(new URL(owner, import.meta.url), "utf8");
+    const references = memberReferences("tests/tooling/" + owner, source, 1);
+    assert.ok(readsProse("tests/tooling/programs/native/" + program, [references]), owner);
+  }
 });

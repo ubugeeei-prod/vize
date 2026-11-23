@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+node tests/editor-conformance/server-artifact.ts verify "${RUNNER_TEMP}/vize-server/vize" "${RUNNER_TEMP}/vize-server/server.json" "$GITHUB_SHA"
+chmod +x "${RUNNER_TEMP}/vize-server/vize"
+echo "VIZE_SERVER_PATH=${RUNNER_TEMP}/vize-server/vize" >> "$GITHUB_ENV"

@@ -1,0 +1,163 @@
+import "../../Actions.pkl" as ci
+
+name = "Source symbolizer smoke"
+on {
+  pull_request {
+    types = List("opened", "synchronize", "reopened")
+    paths = new Listing {
+      ".github/workflows/source-symbolizer-smoke.yml"
+      ".github/scripts/workflows/source-symbolizer-smoke/**"
+      "tools/benchmarks/scripts/source-symbolizer-*.ts"
+      "tools/benchmarks/scripts/source-symbolizer-adapter.cjs"
+      "tools/benchmarks/scripts/source-symbolizer-matching-symbols.sh"
+      "tools/benchmarks/scripts/source-symbolizer-matching-symbols.awk"
+      "tests/tooling/support/source-symbolizer-decoder.ts"
+      "tests/tooling/source-symbolizer-protocol.test.ts"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      symbols_only {
+        description = "Decode retained ELF symbols only without new captures or corpus execution"
+        type = "boolean"
+        ["default"] = false
+      }
+      replay_run_id {
+        description = "Optional existing public cold-scale run for normal CPU replay"
+        type = "string"
+        required = false
+      }
+      replay_artifact_id {
+        description = "Optional immutable cold-scale artifact from the specified run"
+        type = "string"
+        required = false
+      }
+    }
+  }
+}
+permissions {
+  contents = "read"
+  actions = "read"
+}
+concurrency {
+  group = "source-symbolizer-smoke-${{ github.event.pull_request.number || github.ref }}-${{ inputs.symbols_only && 'symbols' || 'source' }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `software-source` {
+    `if` = "${{ github.event_name == 'workflow_dispatch' && !inputs.symbols_only }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("source-symbolizer-smoke")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Install bounded symbolizer tools"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-bounded-symbolizer-tools.sh""#
+      }
+      new Dynamic {
+        name = "Validate exact count and source ownership admission"
+        run = "node --test tests/tooling/source-symbolizer-protocol.test.ts"
+      }
+      new Dynamic {
+        name = "Prove the small original Rust carrier before decoding normal captures"
+        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-small-original-rust-carrier-before-decoding-normal-captures.sh""#
+      }
+      new Dynamic {
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        `if` = "${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}"
+        with {
+          `artifact-ids` = "${{ inputs.replay_artifact_id }}"
+          `run-id` = "${{ inputs.replay_run_id }}"
+          `github-token` = "${{ github.token }}"
+          path = "${{ runner.temp }}/source-symbolizer-replay-download"
+        }
+      }
+      new Dynamic {
+        name = "Restore the sealed normal binary and prepare bounded public controls"
+        `if` = "${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}"
+        run = #". "${{ env.VIZE_CI_FILES }}/restore-the-sealed-normal-binary-and-prepare-bounded-public-controls.sh""#
+      }
+      new Dynamic {
+        name = "Decode retained full software capture after bounded controls"
+        `if` = "${{ inputs.replay_run_id != '' && inputs.replay_artifact_id != '' }}"
+        run = #". "${{ env.VIZE_CI_FILES }}/decode-retained-full-software-capture-after-bounded-controls.sh""#
+      }
+      new Dynamic {
+        name = "Package bounded evidence without traversing project dependencies"
+        `if` = "always()"
+        run = #". "${{ env.VIZE_CI_FILES }}/package-bounded-evidence-without-traversing-project-dependencies.sh""#
+      }
+      new Dynamic {
+        name = "Preserve raw protocols, exact sample census, and separate self/inclusive reports"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "source-symbolizer-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/source-symbolizer-evidence.tgz"
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+
+  `symbol-replay` {
+    `if` = "${{ inputs.symbols_only }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 8
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/source-symbolizer-smoke"
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Install offline symbol tools and validate the immutable request"
+        env {
+          REPLAY_RUN_ID = "${{ inputs.replay_run_id }}"
+          REPLAY_ARTIFACT_ID = "${{ inputs.replay_artifact_id }}"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/install-offline-symbol-tools-and-validate-the-immutable-request.sh""#
+      }
+      new Dynamic {
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"
+        with {
+          `artifact-ids` = "${{ inputs.replay_artifact_id }}"
+          `run-id` = "${{ inputs.replay_run_id }}"
+          `github-token` = "${{ github.token }}"
+          path = "${{ runner.temp }}/symbol-replay-download"
+        }
+      }
+      new Dynamic {
+        name = "Restore the exact recorded DSO and decode all self samples without addr2line"
+        run = #". "${{ env.VIZE_CI_FILES }}/restore-the-exact-recorded-dso-and-decode-all-self-samples-without-addr2.sh""#
+      }
+      new Dynamic {
+        name = "Preserve qualified symbols and explicit unresolved counts"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "source-symbols-${{ github.run_id }}"
+          path = "${{ runner.temp }}/symbol-replay"
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

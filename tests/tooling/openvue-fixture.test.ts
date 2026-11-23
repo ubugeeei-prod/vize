@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -5,6 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { packageScripts } from "./support/package-task-source.ts";
 import { openVueApp } from "../_helpers/ui-library-apps.ts";
 import { OPENVUE_SOURCE } from "../_helpers/openvue-source.ts";
 import { planAppE2eRows } from "../../tools/support/compat/github/app-e2e-plan.ts";
@@ -62,12 +64,15 @@ test("OpenVue source, license, globs, and App E2E selectors stay pinned together
       `${suite} must hydrate OpenVue`,
     );
   }
-  const scripts = JSON.parse(fs.readFileSync(path.join(root, "tests/package.json"), "utf8"))
-    .scripts as Record<string, string>;
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "tests/package.json"), "utf8"));
+  const scripts = packageScripts("tests", manifest.scripts);
   assert.match(scripts["test:check"]!, /snapshots\/check\/openvue\.ts/);
   assert.match(scripts["test:lint"]!, /snapshots\/lint\/openvue\.ts/);
   assert.match(
-    fs.readFileSync(path.join(root, ".github/actions/hydrate-app-fixtures/action.yml"), "utf8"),
+    readAutomationPrograms(
+      path.join(root, ".github/actions/hydrate-app-fixtures/action.yml"),
+      "utf8",
+    ),
     /tests\/_fixtures\/_git\/openvue/,
   );
 });
