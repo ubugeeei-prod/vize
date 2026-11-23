@@ -851,6 +851,9 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
 
         let hashbang = self.parse_hashbang();
         self.ctx |= Context::TopLevel;
+        #[cfg(feature = "terminal-embedding")]
+        let (directives, mut statements) = self.parse_program_body_with_terminal_operand();
+        #[cfg(not(feature = "terminal-embedding"))]
         let (directives, mut statements) =
             self.parse_directives_and_statements(/* in_ts_namespace_body */ false);
 
@@ -1286,3 +1289,6 @@ mod test {
         assert_eq!(ret.program.body.len(), 2);
     }
 }
+
+#[cfg(feature = "terminal-embedding")]
+pub use embedding::terminal::PreparedExpression;

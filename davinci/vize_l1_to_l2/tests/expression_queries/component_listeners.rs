@@ -22,7 +22,7 @@ fn listeners<'a>(arena: &'a Allocator, source: &'a str) -> NativeSfcObservation<
     )
 }
 
-fn compare(imports: &SetupComponentImports<'_, '_>) -> (usize, usize) {
+pub(super) fn compare(imports: &SetupComponentImports<'_, '_>) -> (usize, usize) {
     let source = imports.source();
     let (original, start, _) = draw(source);
     let mut usages = vize_croquis::facts::component_usage_slice(&original).iter();

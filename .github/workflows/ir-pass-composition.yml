@@ -11,6 +11,12 @@ on:
       - "crates/vize_maestro/Cargo.toml"
       - "crates/vize_maestro/src/source_project/query.rs"
       - "crates/vize_maestro/tests/original_template_requests.rs"
+      - "crates/vize_patina/Cargo.toml"
+      - "crates/vize_patina/src/rules/facts/max_template_complexity.rs"
+      - "crates/vize_patina/src/rules/facts/max_template_complexity/**"
+      - "crates/vize_patina/tests/original_template_lint.rs"
+      - "crates/vize_patina/tests/original_template_lint/**"
+      - "tests/formal/template-lint/**"
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/container/vue.rs"
       - "davinci/vize_l1/src/container/vue/descriptor.rs"
@@ -83,6 +89,37 @@ jobs:
           cargo test "${flags[@]}" --test original_template_queries -- --include-ignored --nocapture --test-threads=1
           cargo test --locked --profile ci-opt -p vize_l1 --features independent-template-block --doc CheckedTemplateBlock
           cargo test --locked --profile ci-opt -p vize_maestro --features vize_l1_to_l2/original-template-queries --test original_template_requests
+      - name: Compare complete original complexity diagnostics and compiler-plus-lint timing
+        env:
+          VIZE_ORIGINAL_TEMPLATE_ORACLE: ${{ runner.temp }}/template-oracle.json
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt -p vize_patina --features original-template-lint)
+          cargo clippy "${flags[@]}" --lib --no-deps -- -D warnings
+          cargo test "${flags[@]}" --test original_template_lint -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" --lib max_template_complexity::
+  lint-ranking:
+    name: Prove stable complexity label selection for unbounded inputs
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - name: Check the prefix theorem with Lean
+        working-directory: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 -o lean.tar.zst https://github.com/leanprover/lean4/releases/download/v4.33.1/lean-4.33.1-linux.tar.zst
+          echo '890afd185370f85666025b883914ab4f4b339136f8c96167b69cfb62aecaf235  lean.tar.zst' | sha256sum --check
+          tar --zstd -xf lean.tar.zst
+          lean-4.33.1-linux/bin/lean -DwarningAsError=true "$GITHUB_WORKSPACE/tests/formal/template-lint/Selection.lean" | tee theorem.log
+          grep -Fx "'Davinci.TemplateLint.fold_prefix' depends on axioms: [propext]" theorem.log
+          grep -Fx "'Davinci.TemplateLint.labels_exact' depends on axioms: [propext, Classical.choice, Quot.sound]" theorem.log
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
+        with:
+          kani-version: "0.68.0"
+          command: kani
+          args: crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs --output-format=terse
   partition:
     name: Prove the Rust group cursor partitions every bounded plan
     runs-on: blacksmith-32vcpu-ubuntu-2404

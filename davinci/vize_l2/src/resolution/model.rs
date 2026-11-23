@@ -15,6 +15,9 @@ pub(crate) fn resolve_model_facts<'a>(
     let occurrences = sink::resolve_model(input, bindings)?;
     Ok(ResolutionTable {
         expression: *expression,
+        #[cfg(not(feature = "lexical-arrow-initializers"))]
         occurrences,
+        #[cfg(feature = "lexical-arrow-initializers")]
+        occurrences: super::Occurrences::Owned(occurrences),
     })
 }

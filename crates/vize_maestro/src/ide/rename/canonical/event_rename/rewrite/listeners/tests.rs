@@ -140,3 +140,6 @@ fn original_event_rewrites() {
 
 #[cfg(feature = "micro-profiling")]
 mod profile;
+
+#[cfg(feature = "experimental-lexical-arrow-queries")]
+mod lexical;

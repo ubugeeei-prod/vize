@@ -2,7 +2,7 @@
 use super::{TemplateAnalysis, analyze};
 use crate::{Lowered, lower_source_block};
 use vize_l0::{
-    Allocator, SourceBlock,
+    Allocator, SourceBlock, Span,
     pass::{PassFailure, PassObserver},
 };
 use vize_l1::{
@@ -15,6 +15,7 @@ use vize_l1::{
 /// original file. Sibling script bindings remain outside this structural query.
 pub struct OriginalTemplate<'a> {
     block: SourceBlock<'a>,
+    open_tag: Span,
     l1ir: SurfaceTree<'a>,
     syntax_errors: &'a [SurfaceError],
     l2ir: Lowered<'a>,
@@ -36,6 +37,7 @@ impl<'a> OriginalTemplate<'a> {
         let analysis = analyze(&mut l2ir, observer)?;
         Ok(Self {
             block,
+            open_tag: selected.open_tag(),
             l1ir,
             syntax_errors,
             l2ir,
@@ -46,6 +48,11 @@ impl<'a> OriginalTemplate<'a> {
     #[must_use]
     pub fn block(&self) -> SourceBlock<'a> {
         self.block
+    }
+    /// Whole-file byte range of the original opening template tag.
+    #[must_use]
+    pub fn open_tag(&self) -> Span {
+        self.open_tag
     }
     #[must_use]
     pub fn l1ir(&self) -> &SurfaceTree<'a> {

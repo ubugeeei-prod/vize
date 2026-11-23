@@ -132,3 +132,6 @@ fn ready_products_cannot_be_published_after_a_configuration_or_revision_change()
 mod corpus;
 #[cfg(feature = "micro-profiling")]
 mod profile;
+
+#[cfg(feature = "experimental-lexical-arrow-queries")]
+mod lexical;
