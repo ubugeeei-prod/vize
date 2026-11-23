@@ -120,7 +120,7 @@ export function generateVrtReport(results: VrtResult[], summary: VrtSummary): st
     .compare-mode-btn:has(:checked) { background: var(--musea-bg-tertiary); color: var(--musea-text); }
 
     .filter-btn, .compare-mode-btn { position: relative; }
-    .filter-btn input, .compare-mode-btn input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+    .filter-btn input, .compare-mode-btn input { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
     .filter-btn:has(:focus-visible), .compare-mode-btn:has(:focus-visible) { outline: 2px solid var(--musea-info); outline-offset: 2px; }
     ${hiddenResultSelectors} { display: none; }
 

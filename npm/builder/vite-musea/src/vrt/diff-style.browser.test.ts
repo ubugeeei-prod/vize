@@ -158,7 +158,9 @@ void test(
           assert.equal(response.headers.get("X-Content-Type-Options"), "nosniff");
           assert.deepEqual(Buffer.from(await response.arrayBuffer()), bytes);
 
-          const page = await runner.getBrowser()!.newPage({ javaScriptEnabled: false });
+          const page = await runner.getBrowser()!.newPage({
+            javaScriptEnabled: diffStyle === "sideBySide",
+          });
           try {
             await page.goto(`${base}/consumer`);
             await page.locator("#diff").evaluate((image) => (image as HTMLImageElement).decode());
