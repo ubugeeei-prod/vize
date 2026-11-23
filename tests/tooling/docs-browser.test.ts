@@ -96,29 +96,10 @@ test("docs finish runs all Node phases concurrently and preserves complete failu
       fs.mkdirSync(path.dirname(file), { recursive: true });
       writeFileSync(
         file,
-        `import { writeFileSync, readdirSync, existsSync } from "node:fs";
-import { join } from "node:path";
-import { setTimeout } from "node:timers/promises";
-const receipt = { name: ${JSON.stringify(name)}, cwd: process.cwd(), execPath: process.execPath };
-const output = process.env.VIZE_DOCS_FINISH_TEST_OUTPUT;
-writeFileSync(join(output, "${index}-started.json"), JSON.stringify(receipt));
-const deadline = Date.now() + 4000;
-while (readdirSync(output).filter((name) => name.endsWith("-started.json")).length !== 3) {
-  if (Date.now() >= deadline) throw new Error("All three phases must start before any can finish");
-  await setTimeout(10);
-}
-const uiFinished = join(output, "1-finished.json");
-while (${index} !== 1 && !existsSync(uiFinished)) {
-  if (Date.now() >= deadline) throw new Error("The UI phase must finish first");
-  await setTimeout(10);
-}
-writeFileSync(join(output, "${index}-finished.json"), JSON.stringify({
-  ...receipt, uiFinishedBeforeThisPhase: existsSync(uiFinished),
-}));
-process.stdout.write("stdout-complete\\n");
-process.stderr.write("stderr-complete\\n");
-if (process.env.VIZE_DOCS_FINISH_TEST_FAILURE === "${index}") process.exit(7);
-`,
+        readToolingProgram("commands/docs-browser/emulate-browser.js.in", {
+          BROWSER: JSON.stringify(name),
+          INDEX: index,
+        }),
       );
     }
     for (const failure of ["", "1"]) {

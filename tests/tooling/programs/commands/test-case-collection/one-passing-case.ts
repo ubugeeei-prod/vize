@@ -1,2 +1,2 @@
 import { test } from "node:test";
-test("passes", () => {});
+void test("passes", () => {});

@@ -1,5 +1,5 @@
 import { windowsLauncher } from "../../../tools/support/process-launcher.ts";
-import { installToolingProgram } from "../support/program-path.ts";
+import { installToolingProgram, readToolingProgram } from "../support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -103,7 +103,7 @@ function setup() {
   fs.mkdirSync(path.dirname(tsc), { recursive: true });
   fs.writeFileSync(
     tsc,
-    `const fs = require("node:fs"); fs.appendFileSync(process.env.VIZE_SMOKE_RUNTIME_TEST_LOG, JSON.stringify({ tool: "tsc", args: process.argv.slice(2), cwd: process.cwd() }) + "\\n");`,
+    readToolingProgram("commands/release-smoke-typescript-runtime/record-typescript-calls.cjs"),
   );
   return {
     temporary,

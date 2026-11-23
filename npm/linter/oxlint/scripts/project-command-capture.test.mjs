@@ -96,17 +96,12 @@ for (const mode of ["cancel", "missing-object", "missing-command"])
     const driver = path.join(root, "driver.mjs");
     fs.writeFileSync(
       driver,
-      `import fs from 'node:fs';
-import {prepareReferenceSource} from ${moduleUrl("./n8n-reference-source.mjs")};
-import {runQualificationBranches} from ${moduleUrl("./project-qualification-branches.mjs")};
-const root=${JSON.stringify(root)},mode=${JSON.stringify(mode)};
-const timer=mode==='cancel'?setInterval(()=>{if(fs.existsSync(root+'/ready')){clearInterval(timer);process.kill(process.pid,'SIGTERM');}},10):null;
-try {await runQualificationBranches([
- {id:'mixedDirectory8507',run:()=>new Promise(resolve=>setTimeout(()=>{fs.writeFileSync(root+'/remaining.done','complete');resolve();},150))},
- {id:'n8n',run:()=>prepareReferenceSource(root+'/output')},
-],root+'/branch-outcomes.json');process.exitCode=2;}
-catch {process.exitCode=1;}finally{clearInterval(timer);}
-`,
+      readToolingProgram("commands/project-command-capture/capture-project-branch.js.in", {
+        REFERENCE: moduleUrl("./n8n-reference-source.mjs"),
+        QUALIFICATION: moduleUrl("./project-qualification-branches.mjs"),
+        PROJECT: JSON.stringify(root),
+        MODE: JSON.stringify(mode),
+      }),
     );
     const child = spawn(process.execPath, [driver], {
       env: {
@@ -193,7 +188,7 @@ function sourceMatrixAuthority(t) {
   );
   fs.writeFileSync(
     path.join(root, "npm/native/index.js"),
-    "module.exports=require(process.env.NAPI_RS_NATIVE_LIBRARY_PATH);\n",
+    readToolingProgram("commands/project-command-capture/load-staged-binding.cjs"),
   );
   const plugin = file("plugin.mjs", "// authored plugin control\n");
   const manifest = file("host-package.json", '{"name":"oxlint","version":"1.86.0"}\n');

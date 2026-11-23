@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import {
@@ -242,11 +243,10 @@ test("two app roots share only compiled code while selected cwd, environment and
       const selected = join(app, "vite.config.mjs");
       await writeFile(
         selected,
-        `import {appendFileSync} from 'node:fs';
-        globalThis.factoryLoads=(globalThis.factoryLoads??0)+1;
-        if(globalThis.factoryLoads!==1 || process.cwd()!==${JSON.stringify(app)}) throw new Error('app context leaked');
-        export default()=>{appendFileSync(${JSON.stringify(counter)},'once\\n');
-        return {vue:{formatter:{printWidth:Number(process.env.AUTHORED_WIDTH)}}};};`,
+        readToolingProgram("commands/native-config-compile-cache/register-config-compiler.js.in", {
+          APPLICATION: JSON.stringify(app),
+          COUNTER: JSON.stringify(counter),
+        }),
       );
       const loaded = await observed(selected, cache, { AUTHORED_WIDTH: String(width) });
       assert.equal(loaded.status, 0, loaded.stderr);

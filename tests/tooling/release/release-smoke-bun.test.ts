@@ -188,13 +188,7 @@ function writeNativePackage(tempDir: string): string {
   );
   fs.writeFileSync(
     path.join(nativeDir, "index.js"),
-    `const runtime = process.env.VIZE_BUN_STUB_RUNTIME === "1" ? "bun" : "node";
-module.exports.compileSfc = () => ({
-  code: process.env.VIZE_BUN_STUB_DIFFER === "1" ? runtime : "identical",
-  errors: [],
-  warnings: [],
-});
-`,
+    readToolingProgram("commands/release-smoke-bun/emulate-bun-binding.cjs"),
   );
   return nativeDir;
 }
@@ -264,35 +258,9 @@ function writeWindowsBunRuntimeStub(tempDir: string): string {
   fs.copyFileSync(process.execPath, executable);
   fs.writeFileSync(
     path.join(tempDir, "bun-runtime-hook.cjs"),
-    `const { spawnSync } = require("node:child_process");
-const fs = require("node:fs");
-const path = require("node:path");
-const stub = ${JSON.stringify(executable)}.toLowerCase();
-if (process.execPath.toLowerCase() === stub) {
-  const installing = path.basename(process.argv[1] || "").toLowerCase() === "install";
-  const args = installing ? ["install", ...process.argv.slice(2)] : process.argv.slice(1);
-  let overrides;
-  if (installing) {
-    const manifestPath = path.join(process.cwd(), "package.json");
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-    overrides = manifest.overrides;
-    manifest.dependencies = Object.fromEntries(
-      Object.entries(manifest.dependencies || {}).filter(([, value]) => String(value).startsWith("file:")),
-    );
-    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\\n");
-    fs.appendFileSync(process.env.VIZE_RUNTIME_STUB_LOG, JSON.stringify({ kind: "bun", args, cwd: process.cwd(), overrides }) + "\\n");
-    const child = spawnSync(
-      '"' + process.env.VIZE_RUNTIME_STUB_NPM + '"',
-      ["install", "--ignore-scripts", "--package-lock=false", "--no-audit", "--fund=false", "--legacy-peer-deps", "--include=optional"],
-      { cwd: process.cwd(), env: process.env, shell: true, stdio: "inherit" },
-    );
-    if (child.error) throw child.error;
-    process.exit(child.status ?? 1);
-  }
-  fs.appendFileSync(process.env.VIZE_RUNTIME_STUB_LOG, JSON.stringify({ kind: "bun", args, cwd: process.cwd(), overrides }) + "\\n");
-  process.env.VIZE_BUN_STUB_RUNTIME = "1";
-}
-`,
+    readToolingProgram("commands/release-smoke-bun/route-bun-spawns.cjs.in", {
+      EXECUTABLE: JSON.stringify(executable),
+    }),
   );
   return executable;
 }

@@ -4,7 +4,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { toolingProgram } from "../../../../tests/tooling/support/program-path.ts";
+import {
+  toolingProgram,
+  readToolingProgram,
+} from "../../../../tests/tooling/support/program-path.ts";
 import { runHostProcesses, requireSuccessfulHosts } from "./ci-host-concurrency.mjs";
 import { runQualificationBranches } from "./project-qualification-branches.mjs";
 import { captureProjectCommand } from "./project-command-capture.mjs";
@@ -32,43 +35,14 @@ function fixture(t, mode) {
   const environment = { ...process.env, FIXTURE_ROOT: root, FIXTURE_MODE: mode };
   fs.writeFileSync(
     path.join(root, "src/mixed-directory-8507.test.mjs"),
-    `import fs from "node:fs";
-import path from "node:path";
-import { spawn } from "node:child_process";
-const root = process.env.FIXTURE_ROOT, index = process.env.VIZE_OXLINT_MIXED_WORKER;
-const mode = process.env.FIXTURE_MODE;
-const child = spawn(process.execPath, ["-e", "process.on('SIGTERM',()=>{});setInterval(()=>{},1000)"], {stdio:"ignore"});
-fs.writeSync(1,"whole stdout " + index + "\\n");
-fs.writeSync(2,"whole stderr " + index + "\\n");
-fs.writeFileSync(path.join(root, index + ".ready.json"), JSON.stringify({pid:process.pid,child:child.pid}));
-if (mode === "timeout") process.on("SIGTERM",()=>{});
-if (mode === "deadline-prefix" || mode === "deadline-history")
- setTimeout(()=>fs.writeFileSync(path.join(root,index+".after-deadline"),"late"),800);
-const timer = setInterval(() => {
-  if (!fs.existsSync(path.join(root, "remaining.started"))) return;
-  if (mode === "success" || (mode === "closed-leader-red" && index === "0")) { clearInterval(timer); process.exit(0); }
-  if (mode === "red" && index === "0") process.exit(7);
-  if (mode === "closed-leader-red" && index === "1") {clearInterval(timer);setTimeout(()=>process.exit(7),200);}
-  if (mode === "child-cancel" && index === "0") process.kill(process.pid,"SIGTERM");
-}, 10);
-`,
+    readToolingProgram("commands/project-qualification-branches/exercise-mixed-worker.js.in", {
+      CHILD_PROGRAM: JSON.stringify(toolingProgram("process/ignore-termination.js")),
+    }),
   );
   const remainingScript = path.join(root, "remaining.mjs");
   fs.writeFileSync(
     remainingScript,
-    `import fs from "node:fs";
-import path from "node:path";
-const root = process.env.FIXTURE_ROOT;
-process.stdout.write("complete remaining stdout\\n");
-process.stderr.write("complete remaining stderr\\n");
-const timer = setInterval(() => {
-  if (!["0.ready.json","1.ready.json"].every(name=>fs.existsSync(path.join(root,name)))) return;
-  clearInterval(timer);
-  fs.writeFileSync(path.join(root,"remaining.started"),"started");
-  if (process.env.FIXTURE_MODE === "parent-cancel") setInterval(()=>{},1000);
-  else setTimeout(()=>{fs.writeFileSync(path.join(root,"remaining.done"),"complete");},150);
-},10);
-`,
+    readToolingProgram("commands/project-qualification-branches/record-remaining-work.js"),
   );
   const output = path.join(root, "mixed");
   fs.mkdirSync(output);
@@ -197,20 +171,12 @@ void test("real parent cancellation joins both groups and preserves evidence bef
   const moduleUrl = (name) => JSON.stringify(new URL(name, import.meta.url).href);
   fs.writeFileSync(
     driver,
-    `
-import fs from "node:fs";
-import { runQualificationBranches } from ${moduleUrl("./project-qualification-branches.mjs")};
-import { runHostProcesses, requireSuccessfulHosts } from ${moduleUrl("./ci-host-concurrency.mjs")};
-import { runMixedWorkers } from ${moduleUrl("../src/test-support/mixed-directory-8507-workers.mjs")};
-const f = ${JSON.stringify(f)};
-try {
- await runQualificationBranches([
-  {id:"mixedDirectory8507",run:()=>runMixedWorkers(f.mixedOptions)},
-  {id:"n8n",run:async()=>{const r=await runHostProcesses([f.remaining],{workers:1});requireSuccessfulHosts(r);return r;}},
- ],f.outcomes);
- process.exitCode=0;
-} catch {fs.writeFileSync(f.root+"/exit-after-join","joined");process.exitCode=1;}
-`,
+    readToolingProgram("commands/project-qualification-branches/qualify-project-branches.js.in", {
+      QUALIFICATION: moduleUrl("./project-qualification-branches.mjs"),
+      CONCURRENCY: moduleUrl("./ci-host-concurrency.mjs"),
+      WORKERS: moduleUrl("../src/test-support/mixed-directory-8507-workers.mjs"),
+      PROJECT: JSON.stringify(f),
+    }),
   );
   const child = spawn(process.execPath, [driver], { stdio: "ignore" });
   t.after(() => {

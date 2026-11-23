@@ -1,10 +1,10 @@
 import { describe, test } from "node:test";
-test("passes", () => {});
-test("fails", () => {
+void test("passes", () => {});
+void test("fails", () => {
   throw new Error("no");
 });
-test("skips", { skip: true }, () => {});
-test("todo", { todo: true }, () => {});
-describe("group", () => {
-  test("inner", () => {});
+void test("skips", { skip: true }, () => {});
+void test("todo", { todo: true }, () => {});
+void describe("group", () => {
+  void test("inner", () => {});
 });

@@ -1,5 +1,5 @@
 import { test } from "node:test";
-test("passes", () => {});
-test("fails", () => {
+void test("passes", () => {});
+void test("fails", () => {
   throw new Error("no");
 });

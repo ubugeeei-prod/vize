@@ -5,7 +5,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
-import { toolingProgram, processResultArgs } from "../../../tests/tooling/support/program-path.ts";
+import {
+  toolingProgram,
+  processResultArgs,
+  readToolingProgram,
+} from "../../../tests/tooling/support/program-path.ts";
 import { installMapperCapture, mapperCaptureAsset } from "./template-alias-paired-11822-capture.ts";
 
 void test("the shipped typed capture preserves input/output/errors and child exit status", (t) => {
@@ -64,18 +68,10 @@ for (const stream of ["stdin", "stdout", "stderr"] as const) {
     const preload = join(root, "fail-source.mjs");
     writeFileSync(
       preload,
-      `import { createRequire, syncBuiltinESMExports } from 'node:module';
-const require = createRequire(import.meta.url);
-const childProcess = require('node:child_process');
-const original = childProcess.spawn;
-childProcess.spawn = (...args) => {
-  const child = original(...args);
-  const source = ${stream === "stdin" ? "process.stdin" : `child.${stream}`};
-  setImmediate(() => source.emit('error', new Error(${JSON.stringify(message)})));
-  return child;
-};
-syncBuiltinESMExports();
-`,
+      readToolingProgram("commands/template-alias-paired-11822-capture/inject-stream-error.js.in", {
+        STREAM: JSON.stringify(stream),
+        MESSAGE: JSON.stringify(message),
+      }),
     );
     const result = spawnSync(command[0], ["--import", preload, ...command.slice(1)], {
       input: Buffer.alloc(0),

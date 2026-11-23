@@ -9,12 +9,9 @@ if (args[0] === "init") {
   manifest.scripts = { "vize:check": "vize check" };
   fs.writeFileSync(filename, JSON.stringify(manifest));
   const js = !manifest.devDependencies.typescript;
-  fs.writeFileSync(
-    path.join(project, "tsconfig.json"),
-    JSON.stringify({
-      compilerOptions: js ? { allowJs: true, checkJs: true } : {},
-    }),
-  );
+  fs.writeFileSync(path.join(project, "tsconfig.json"), JSON.stringify({
+    compilerOptions: js ? { allowJs: true, checkJs: true } : {},
+  }));
   fs.writeFileSync(path.join(project, "vize.config.ts"), "export default {};\n");
 } else {
   console.log(JSON.stringify({ errorCount: 0, files: [] }));

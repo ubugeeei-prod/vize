@@ -1,4 +1,7 @@
-import { toolingProgram } from "../../../../tests/tooling/support/program-path.ts";
+import {
+  toolingProgram,
+  readToolingProgram,
+} from "../../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -21,16 +24,7 @@ function subprocesses(t, failures = []) {
   const script = path.join(root, "child.mjs");
   fs.writeFileSync(
     script,
-    `
-    import fs from "node:fs";
-    const [directory, id, failure] = process.argv.slice(2);
-    fs.writeFileSync(directory + "/start.json", JSON.stringify({ time: Date.now(), pid: process.pid }));
-    console.log("started " + id);
-    console.error("evidence " + id);
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    fs.writeFileSync(directory + "/end.json", JSON.stringify({ time: Date.now() }));
-    process.exitCode = Number(failure);
-  `,
+    readToolingProgram("commands/ci-host-concurrency/sample-peak-workers.js"),
   );
   return ["first", "second", "third"].map((id) => {
     const output = path.join(root, id);

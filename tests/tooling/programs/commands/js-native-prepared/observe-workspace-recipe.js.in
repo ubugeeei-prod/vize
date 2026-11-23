@@ -1,0 +1,12 @@
+import fs from "node:fs";
+const pkg = @@PACKAGE@@;
+const prepared =
+  pkg === "./npm/builder/vite"
+    ? (await import("../../native/scripts/test-preparation.mjs")).nativePreparationIsActive(
+        @@NATIVE_ROOT@@,
+      )
+    : null;
+fs.appendFileSync(
+  @@EVENTS@@,
+  JSON.stringify({ package: pkg, prepared, env: process.env.VIZE_PREPARED_OTHER }) + "\n",
+);

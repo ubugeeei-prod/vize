@@ -57,13 +57,56 @@ const fixtureWriters = new Map([
   ["runWarningBudget", 0],
 ]);
 
+function writesNodeProgram(node: ts.Expression): boolean {
+  if (ts.isStringLiteralLike(node)) return hasNodeProgram(node.text);
+  if (ts.isTemplateExpression(node))
+    return (
+      hasNodeProgram(node.head.text) ||
+      node.templateSpans.some((span) => hasNodeProgram(span.literal.text))
+    );
+  if (ts.isTaggedTemplateExpression(node)) return writesNodeProgram(node.template);
+  if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.PlusToken)
+    return writesNodeProgram(node.left) || writesNodeProgram(node.right);
+  if (
+    ts.isCallExpression(node) &&
+    ts.isPropertyAccessExpression(node.expression) &&
+    node.expression.name.text === "join" &&
+    ts.isArrayLiteralExpression(node.expression.expression)
+  )
+    return node.expression.expression.elements.some(writesNodeProgram);
+  return false;
+}
+
+function hasNodeProgram(source: string): boolean {
+  return (
+    /\b(?:process\.(?:argv|stdout|stderr|exit)\b|node:child_process)/u.test(source) &&
+    /(?:^|[\n;])\s*(?:import\b|export\b|(?:const|let|var)\s+|process\.|require\()/u.test(source)
+  );
+}
+
 function inlineFixtureBodies(file: string, text: string): number[] {
-  if (![...fixtureWriters.keys()].some((name) => text.includes(name))) return [];
+  if (
+    !text.includes("writeFile") &&
+    ![...fixtureWriters.keys()].some((name) => text.includes(name))
+  )
+    return [];
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const lines: number[] = [];
   function visit(node: ts.Node): void {
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
-      const index = fixtureWriters.get(node.expression.text);
+    if (ts.isCallExpression(node)) {
+      const callee = ts.isPropertyAccessExpression(node.expression)
+        ? node.expression.name
+        : node.expression;
+      const name = ts.isIdentifier(callee) ? callee.text : "";
+      if (
+        (name === "writeFileSync" || name === "writeFile") &&
+        node.arguments[1] &&
+        writesNodeProgram(node.arguments[1])
+      )
+        lines.push(
+          source.getLineAndCharacterOfPosition(node.arguments[1].getStart(source)).line + 1,
+        );
+      const index = fixtureWriters.get(name);
       const argument = index === undefined ? undefined : node.arguments[index];
       if (
         argument &&
@@ -111,9 +154,7 @@ test("automation clients and executable fixtures load named programs", () => {
     )
       continue;
     const text = readFileSync(path.join(root, file), "utf8");
-    if (file.startsWith("tests/tooling/")) {
-      for (const line of inlineFixtureBodies(file, text)) failures.push(file + ":" + line);
-    }
+    for (const line of inlineFixtureBodies(file, text)) failures.push(file + ":" + line);
     if (/(?:\.d|\.test|\.spec)\.[cm]?[jt]s$/u.test(file)) continue;
     const program = file.endsWith(".in") ? text.replace(/@@[A-Z][A-Z0-9_]*@@/gu, "argument") : text;
     for (const line of inlineDispatches(file, program)) failures.push(file + ":" + line);
@@ -133,6 +174,18 @@ test("child-process checks distinguish interpreter options from program argument
 });
 
 test("fixture writers take their command bodies from named sources", () => {
+  assert.deepEqual(
+    inlineFixtureBodies("probe.ts", 'fs.writeFileSync(file, "process.exit(2)")'),
+    [1],
+  );
+  assert.deepEqual(
+    inlineFixtureBodies(
+      "probe.ts",
+      'fs.writeFileSync(file, JSON.stringify({example:"process.exit(2)"}))',
+    ),
+    [],
+  );
+
   assert.deepEqual(
     inlineFixtureBodies(
       "probe.ts",

@@ -30,30 +30,16 @@ void test("the actual host worker runs all original preparation commands before 
   // scheduling boundaries only; no native implementation is substituted or qualified.
   fs.writeFileSync(
     path.join(packageDir, "src/project-transport.test.ts"),
-    `
-import fs from "node:fs";
-import { createHash } from "node:crypto";
-const custody=JSON.parse(fs.readFileSync(process.env.VIZE_OXLINT_NATIVE_CUSTODY));
-const common={source:custody.source,binary:custody.binary.path,binarySha256:custody.binary.sha256};
-const source="controlled verifier input",sha=createHash("sha256").update(source).digest("hex");
-const rows=[...Array.from({length:5},(_,i)=>({...common,kind:"load",pid:i+1,control:"Guard-"+i+".vue"})),
- {...common,kind:"load",pid:10},...Array.from({length:18},()=>({...common,kind:"call",pid:10,outcome:"return",hasRuleHint:true,args:[source,{filename:"/Controlled.vue",enabledRules:Array(51).fill("control-rule")}],originalSha256:sha}))];
-fs.writeFileSync(custody.calls,rows.map(x=>JSON.stringify(x)).join("\\n")+"\\n");
-fs.writeFileSync(process.env.VIZE_OXLINT_PROJECT_CAPTURE,JSON.stringify({qualified:{imports:true,typeAware:true}}));
-console.log("complete transport raw output");
-`,
+    readToolingProgram("commands/n8n-preparation-worker/exercise-project-transport.js"),
   );
   for (const file of ["script-safe-transport.test.ts", "original-ignore.test.ts"])
     fs.writeFileSync(path.join(packageDir, "src", file), "// Controlled command membership.\n");
   const marker = path.join(f.artifacts, "html-preparation.done");
   fs.writeFileSync(
     path.join(packageDir, "src/html-cli.test.mjs"),
-    `
-import fs from "node:fs";
-fs.writeFileSync(process.env.VIZE_OXLINT_HTML_CAPTURE,JSON.stringify({complete:true,qualified:{controlled:true}}));
-fs.writeFileSync(${JSON.stringify(marker)},JSON.stringify({owner:process.ppid}));
-console.log("complete HTML raw output");
-`,
+    readToolingProgram("commands/n8n-preparation-worker/assert-html-preparation.js.in", {
+      MARKER: JSON.stringify(marker),
+    }),
   );
   const configuration = path.join(output, "worker-config.json");
   fs.writeFileSync(

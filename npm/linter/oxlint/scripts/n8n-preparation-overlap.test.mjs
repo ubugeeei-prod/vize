@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import { toolingProgram } from "../../../../tests/tooling/support/program-path.ts";
+import {
+  toolingProgram,
+  readToolingProgram,
+} from "../../../../tests/tooling/support/program-path.ts";
 import { captureProjectCommand } from "./project-command-capture.mjs";
 import { requireSuccessfulHosts, runHostProcesses } from "./ci-host-concurrency.mjs";
 import {
@@ -27,23 +30,9 @@ function campaign(t, mode, failure, timeoutMs = 6000) {
   fs.writeFileSync(config, JSON.stringify(f));
   fs.writeFileSync(
     worker,
-    `
-import fs from "node:fs";
-import path from "node:path";
-import { waitForReplayReady } from ${JSON.stringify(module)};
-const [file,id,failure]=process.argv.slice(2), f=JSON.parse(fs.readFileSync(file));
-for (const phase of ["install","transport","htmlTransport"])
- fs.writeFileSync(path.join(f.artifacts,id+"."+phase),phase+"\\r\\n");
-console.log("whole host stdout " + id);
-console.error("whole host stderr " + id);
-if (failure==="host" && id==="first") process.exit(7);
-try {
- await waitForReplayReady(f);
- if (!fs.existsSync(path.join(f.artifacts,"baseline.done"))) throw Error("early replay");
- fs.writeFileSync(path.join(f.artifacts,id+".replay"),"complete original replay");
-} catch {process.exitCode=1;}
-fs.writeFileSync(path.join(f.artifacts,id+".done"),"terminal evidence");
-`,
+    readToolingProgram("commands/n8n-preparation-overlap/record-worker-overlap.js.in", {
+      HOST_CONCURRENCY: JSON.stringify(module),
+    }),
   );
   const jobs = ["first", "second"].map((id) => ({
     id,
