@@ -449,3 +449,5 @@ mod template_only_tests;
 mod style_blocks;
 #[cfg(feature = "independent-style-blocks")]
 pub use style_blocks::CheckedStyleBlocks;
+#[cfg(feature = "independent-template-block")]
+pub use template::CheckedTemplateBlock;

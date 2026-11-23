@@ -36,6 +36,10 @@ component-listener-queries = [
 ]
 # Native L1/L2 views for explicit layered graph consumers.
 ir-views = ["vize_l1/ir-views", "vize_l2/ir-views"]
+# Retain the original L1 syntax alongside both observed L2 analyses.
+original-template-queries = ["observed-template-passes", "vize_l1/independent-template-block"]
+# Share compiler and lint template analyses on an explicitly selected L2 owner.
+observed-template-passes = ["vize_l0/streamed-pass-groups", "vize_l2/composed-template-analysis"]
 # Admit Vue 3.4+ same-name binds with an authored identifier operand.
 authored-bind-shorthand = []
 # Read authored props in source order from each resolved component operation.
@@ -162,3 +166,11 @@ path = "tests/cfg_complexity_oracle/main.rs"
 
 [lints]
 workspace = true
+
+[[test]]
+name = "observed_template_passes"
+required-features = ["observed-template-passes"]
+
+[[test]]
+name = "original_template_queries"
+required-features = ["original-template-queries"]

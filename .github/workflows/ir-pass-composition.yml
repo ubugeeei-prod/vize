@@ -1,0 +1,173 @@
+name: IR pass composition
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ir-pass-composition.yml"
+      - "tools/benchmarks/crates/davinci_harness/src/paired.rs"
+      - "davinci/vize_l0/Cargo.toml"
+      - "davinci/vize_l0/src/pass.rs"
+      - "davinci/vize_l0/src/pass/**"
+      - "davinci/vize_l0/tests/grouped_passes.rs"
+      - "crates/vize_maestro/Cargo.toml"
+      - "crates/vize_maestro/src/source_project/query.rs"
+      - "crates/vize_maestro/tests/original_template_requests.rs"
+      - "crates/vize_patina/Cargo.toml"
+      - "crates/vize_patina/src/rules/facts/max_template_complexity.rs"
+      - "crates/vize_patina/src/rules/facts/max_template_complexity/**"
+      - "crates/vize_patina/tests/original_template_lint.rs"
+      - "crates/vize_patina/tests/original_template_lint/**"
+      - "tests/formal/template-lint/**"
+      - "davinci/vize_l1/Cargo.toml"
+      - "davinci/vize_l1/src/container/vue.rs"
+      - "davinci/vize_l1/src/container/vue/descriptor.rs"
+      - "davinci/vize_l1/src/container/vue/descriptor/template.rs"
+      - "davinci/vize_l1/src/container/vue/descriptor/template/**"
+      - "davinci/vize_l1_to_l2/Cargo.toml"
+      - "davinci/vize_l1_to_l2/src/pass.rs"
+      - "davinci/vize_l1_to_l2/src/pass/**"
+      - "davinci/vize_l1_to_l2/tests/observed_template_passes.rs"
+      - "davinci/vize_l1_to_l2/tests/original_template_queries.rs"
+      - "davinci/vize_l1_to_l2/tests/original_template_queries/**"
+      - "davinci/vize_l2/src/analysis.rs"
+      - "davinci/vize_l2/src/analysis/static_facts.rs"
+      - "davinci/vize_l2/src/analysis/static_facts/**"
+      - "davinci/vize_l2/src/analysis/template_complexity.rs"
+      - "davinci/vize_l2/src/analysis/template_complexity/**"
+      - "davinci/vize_l3/Cargo.toml"
+      - "davinci/vize_l3/src/optimize.rs"
+      - "davinci/vize_l3/tests/placement/extraction.rs"
+permissions: { contents: read }
+concurrency:
+  group: ir-pass-composition-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  composition:
+    name: Source-order groups, optimizer equivalence and paired timings
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 40
+    env:
+      RUSTUP_TOOLCHAIN: "1.100.0"
+      RUST_MIN_STACK: "16777216"
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Run the original catalogue, traces and allocation measurements
+        run: |
+          set -euo pipefail
+          cargo clippy --locked --profile ci-opt -p vize_l0 --features streamed-pass-groups --lib --no-deps -- -D warnings
+          cargo test --locked --profile ci-opt -p vize_l0 --features streamed-pass-groups --test grouped_passes -- --include-ignored --nocapture --test-threads=1
+          cargo test --locked --profile ci-opt -p vize_l0 --features streamed-pass-groups --lib pass::
+          cargo test --locked --profile ci-opt -p vize_l3 --features streamed-pass-groups --test placement
+      - name: Check original Vue templates against both passes and the independent CFG
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt -p vize_l1_to_l2 --features observed-template-passes)
+          export VIZE_TEMPLATE_PASS_INPUTS="$RUNNER_TEMP/original-template-passes"
+          export VIZE_COMPOSED_TEMPLATE_FILES="$RUNNER_TEMP/original-cfg-templates"
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_TEMPLATE_PASS_INPUTS"
+          git ls-files -z -- '*.vue' > "$VIZE_COMPOSED_TEMPLATE_FILES"
+          cargo clippy "${flags[@]}" --lib --no-deps -- -D warnings
+          cargo test --locked --profile ci-opt -p vize_l2 --features composed-template-analysis --lib lattice::composed::
+          cargo test "${flags[@]}" --test observed_template_passes -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" --test cfg_complexity_oracle composed:: -- --include-ignored --nocapture --test-threads=1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: 24 }
+      - name: Check lossless template queries against Vue and existing Vize products
+        run: |
+          set -euo pipefail
+          export NODE_PATH="$RUNNER_TEMP/template-oracle/node_modules"
+          export VIZE_ORIGINAL_TEMPLATE_ORACLE="$RUNNER_TEMP/template-oracle.json"
+          npm install --prefix "$RUNNER_TEMP/template-oracle" --no-audit --no-fund --ignore-scripts @vue/compiler-sfc@3.5.35
+          node davinci/vize_l1_to_l2/tests/original_template_queries/oracle.ts "$RUNNER_TEMP/original-template-passes" "$VIZE_ORIGINAL_TEMPLATE_ORACLE"
+          flags=(--locked --profile ci-opt -p vize_l1_to_l2 --features original-template-queries)
+          cargo clippy "${flags[@]}" --lib --no-deps -- -D warnings
+          cargo test "${flags[@]}" --test original_template_queries -- --include-ignored --nocapture --test-threads=1
+          cargo test --locked --profile ci-opt -p vize_l1 --features independent-template-block --doc CheckedTemplateBlock
+          cargo test --locked --profile ci-opt -p vize_maestro --features vize_l1_to_l2/original-template-queries --test original_template_requests
+      - name: Compare complete original complexity diagnostics and compiler-plus-lint timing
+        env:
+          VIZE_ORIGINAL_TEMPLATE_ORACLE: ${{ runner.temp }}/template-oracle.json
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt -p vize_patina --features original-template-lint)
+          cargo clippy "${flags[@]}" --lib --no-deps -- -D warnings
+          cargo test "${flags[@]}" --test original_template_lint -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" --lib max_template_complexity::
+  lint-ranking:
+    name: Prove stable complexity label selection for unbounded inputs
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - name: Check the prefix theorem with Lean
+        working-directory: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 -o lean.tar.zst https://github.com/leanprover/lean4/releases/download/v4.33.1/lean-4.33.1-linux.tar.zst
+          echo '890afd185370f85666025b883914ab4f4b339136f8c96167b69cfb62aecaf235  lean.tar.zst' | sha256sum --check
+          tar --zstd -xf lean.tar.zst
+          lean-4.33.1-linux/bin/lean -DwarningAsError=true "$GITHUB_WORKSPACE/tests/formal/template-lint/Selection.lean" | tee theorem.log
+          grep -Fx "'Davinci.TemplateLint.fold_prefix' depends on axioms: [propext]" theorem.log
+          grep -Fx "'Davinci.TemplateLint.labels_exact' depends on axioms: [propext, Classical.choice, Quot.sound]" theorem.log
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
+        with:
+          kani-version: "0.68.0"
+          command: kani
+          args: tests/formal/template-lint/ranking.rs --output-format=terse
+  partition:
+    name: Prove the Rust group cursor partitions every bounded plan
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
+        with:
+          kani-version: "0.68.0"
+          command: kani
+          args: davinci/vize_l0/src/pass/fusion/grouped/kani.rs --output-format=terse
+  stock:
+    name: Stock compiler and Node addon (${{ matrix.mode }})
+    strategy:
+      fail-fast: false
+      matrix: { mode: [default, portable] }
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      RUSTUP_TOOLCHAIN: "1.100.0"
+      RUST_MIN_STACK: "16777216"
+      CARGO_INCREMENTAL: "0"
+      MODE: ${{ matrix.mode }}
+      TARGET_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0" }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: 24 }
+      - name: Compare the shipping entry points against the common base
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          base=$(gh api "repos/$GITHUB_REPOSITORY/compare/$TARGET_SHA...$HEAD_SHA" --jq .merge_base_commit.sha)
+          [[ "$base" =~ ^[a-f0-9]{40}$ ]]
+          git fetch --no-tags --depth=1 origin "$base" "$HEAD_SHA"
+          node tools/commands/levels/codegen-equivalence.ts "$base" "$HEAD_SHA" vize bin:vize "$MODE" "$RUNNER_TEMP/cli.json"
+          status=0
+          node tools/commands/levels/codegen-equivalence.ts "$base" "$HEAD_SHA" vize_vitrine node-addon "$MODE" "$RUNNER_TEMP/addon.json" --control-plugin-identity || status=$?
+          if ((status != 0)); then
+            test "$status" = 1
+            node tools/commands/levels/native-addon-identity.ts "$RUNNER_TEMP/addon.json"
+          fi
+          node tools/support/compat/npm/bundler-block-products.ts --stock "$RUNNER_TEMP/addon.json"

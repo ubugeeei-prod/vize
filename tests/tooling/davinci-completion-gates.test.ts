@@ -15,6 +15,7 @@ import {
 
 import {
   coordinateKernel,
+  templateLabelRanking,
   coordinateProof,
   coordinateTheory,
 } from "../../tools/support/retired-tooling-languages.ts";
@@ -170,6 +171,20 @@ void test("the supplemental reference for UTF-16 columns requires its Rust kerne
   assert.equal(gate.measure(memory({ [coordinateTheory]: "", [coordinateProof]: "" })).pass, false);
   assert.equal(
     gate.measure(memory({ ...pair, "tests/formal/source-map/Other.lean": "" })).pass,
+    false,
+  );
+});
+
+void test("the template label theorem requires its production insertion and Kani harness", () => {
+  const formal = gates.find((gate) => gate.id === "formal.rust-only")?.measure;
+  assert.ok(formal);
+  const { theorem, kernel, harness } = templateLabelRanking;
+  assert.equal(formal(memory({ [theorem]: "", [kernel]: "", [harness]: "" })).pass, true);
+  assert.equal(formal(memory({ [theorem]: "", [kernel]: "" })).pass, false);
+  assert.equal(formal(memory({ [theorem]: "", [harness]: "" })).pass, false);
+  assert.equal(
+    formal(memory({ [kernel]: "", [harness]: "", "tests/formal/template-lint/Other.lean": "" }))
+      .pass,
     false,
   );
 });
