@@ -11,6 +11,12 @@ on:
       - crates/vize_maestro/Cargo.toml
       - crates/vize_maestro/src/source_project/query.rs
       - crates/vize_maestro/tests/original_template_requests.rs
+      - crates/vize_patina/Cargo.toml
+      - crates/vize_patina/src/rules/facts/max_template_complexity.rs
+      - crates/vize_patina/src/rules/facts/max_template_complexity/**
+      - crates/vize_patina/tests/original_template_lint.rs
+      - crates/vize_patina/tests/original_template_lint/**
+      - tests/formal/template-lint/**
       - davinci/vize_l1/Cargo.toml
       - davinci/vize_l1/src/container/vue.rs
       - davinci/vize_l1/src/container/vue/descriptor.rs
@@ -75,6 +81,40 @@ jobs:
           node-version: 24
       - name: Check lossless template queries against Vue and existing Vize products
         run: . "${{ env.VIZE_CI_FILES }}/check-lossless-template-queries-against-vue-and-existing-vize-products.sh"
+      - name: Compare complete original complexity diagnostics and compiler-plus-lint timing
+        env:
+          VIZE_ORIGINAL_TEMPLATE_ORACLE: ${{ runner.temp }}/template-oracle.json
+        run: . "${{ env.VIZE_CI_FILES }}/compare-complete-original-complexity-diagnostics-and-compiler-plus-lint-timing.sh"
+  lint-ranking:
+    name: Prove stable complexity label selection for unbounded inputs
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/ir-pass-composition/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Check the prefix theorem with Lean
+        working-directory: ${{ runner.temp }}
+        run: . "${{ env.VIZE_CI_FILES }}/check-the-prefix-theorem-with-lean.sh"
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
+        with:
+          kani-version: 0.68.0
+          command: kani
+          args: crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs --output-format=terse
   partition:
     name: Prove the Rust group cursor partitions every bounded plan
     runs-on: blacksmith-32vcpu-ubuntu-2404
