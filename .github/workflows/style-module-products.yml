@@ -196,8 +196,6 @@ jobs:
           kani-version: "0.68.0"
           command: kani
           args: davinci/vize_l4/src/write/source_map/indexed/kani.rs --output-format=terse
-      - name: Compare nearest line starts with the LSP iterator on arbitrary short bytes
-        run: env RUSTFLAGS=-Ctarget-feature=+avx2 cargo kani --manifest-path davinci/vize_l0/Cargo.toml --features lsp-line-break-search --tests --lib --harness nearest_lsp_line_starts_match_every_short_byte_slice --output-format=terse
       - name: Verify authored positions for arbitrary finite Unicode text
         run: |
           set -euo pipefail
@@ -210,3 +208,15 @@ jobs:
           grep -Fx "'Davinci.SourceMap.LineBreaks.last_exact' depends on axioms: [propext]" line-breaks.log
           lean-4.33.1-linux/bin/lean -DwarningAsError=true "$GITHUB_WORKSPACE/tests/formal/source-map/Coordinates.lean" | tee theorem.log
           grep -Fx "'Davinci.SourceMap.column_exact' depends on axioms: [propext, Quot.sound]" theorem.log
+
+  nearest-line-starts:
+    name: Prove nearest LSP line starts on ARM64
+    runs-on: blacksmith-32vcpu-ubuntu-2404-arm
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
+        with:
+          kani-version: "0.68.0"
+          args: --manifest-path davinci/vize_l0/Cargo.toml --features lsp-line-break-search --tests --lib --harness nearest_lsp_line_starts_match_every_short_byte_slice --output-format=terse
