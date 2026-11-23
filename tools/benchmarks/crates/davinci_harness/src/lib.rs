@@ -46,6 +46,7 @@
 pub mod alloc;
 pub mod fixtures;
 pub mod instruction;
+pub mod paired;
 pub mod report;
 pub mod rss;
 pub mod stage;
