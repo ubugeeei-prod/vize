@@ -65493,6 +65493,40 @@
       }
     },
     {
+      "id": "typechecker/regression/editor-mirror-hash-sampling",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "editor-mirror-hash-sampling/Host.vue.txt",
+          "sha256": "1920a0a019ff9233b0a3223f361a4ac353e779f048f54b6f07974a7ebdfe0ed7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "editor-mirror-hash-sampling/Child.vue.txt",
+          "sha256": "d42059736a063fdc68c5ff3ef32488852541494a7055ef788555bf05db83caab",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "corsa_bridge::vue_document::build::tests::fingerprint_hit_hashes_changed_files_and_a_miss_hashes_the_mirror embeds the host and child, edits the host, and checks hit and cold mirror contents and per-thread hash counts."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/emit-props-listener-block-scope",
       "state": "active",
       "targets": [

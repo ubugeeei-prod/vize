@@ -2,8 +2,8 @@
 //! materializing the first projection. Neither measurement stores output rows.
 use davinci_harness::alloc;
 use std::{hint::black_box, ops::ControlFlow, time::Instant};
-use vize_l0::{Allocator, Lang};
 use vize_l3::{
+    L3Ir,
     op::{OpId, StateEdge},
     query::{Direction, EdgeKinds, EdgePattern, OpGraph, ReachQuery, TwoHopMatch, TwoHopQuery},
 };
@@ -54,13 +54,7 @@ fn visit(graph: &OpGraph<'_>, query: TwoHopQuery, stream: bool, mut sink: impl F
     }
 }
 
-pub(crate) fn profile(siblings: usize) {
-    let source = "<p :title=\"title\">{{title}}</p>".repeat(siblings);
-    let arena = Allocator::default();
-    let native = vize_l1_to_l2::native::lower_component_native(&arena, &source, Lang::Js).unwrap();
-    assert!(native.is_supported());
-    let lowered = vize_l2_to_l3::lower(&arena, native.artifact.root());
-    let ir = lowered.l3ir();
+pub(crate) fn profile(ir: &L3Ir<'_>, siblings: usize) {
     let graph = OpGraph::new(ir).unwrap();
     let first = EdgePattern {
         direction: Direction::Forward,
