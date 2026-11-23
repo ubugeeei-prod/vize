@@ -1,0 +1,7 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  "git sparse-checkout set --no-cone --stdin < .github/source-plan-sparse-checkout"
+}

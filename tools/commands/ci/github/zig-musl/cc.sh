@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+name=${0##*/}
+target=${name#zig-cc-}
+args=()
+while (($#)); do
+  case "$1" in
+    --target=*) shift ;;
+    --target)
+      shift
+      if (($#)); then shift; fi
+      ;;
+    *) args+=("$1"); shift ;;
+  esac
+done
+
+exec zig cc -target "$target" "${args[@]}"

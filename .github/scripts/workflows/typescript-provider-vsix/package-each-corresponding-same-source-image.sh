@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+node tools/support/editors/typescript-provider/package.ts x86_64-unknown-linux-gnu .native-artifacts "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT/vize-linux-x64.vsix"
+node tools/support/editors/typescript-provider/package.ts x86_64-pc-windows-msvc .native-artifacts "$VIZE_TYPESCRIPT_PROVIDER_OUTPUT/vize-win32-x64.vsix"

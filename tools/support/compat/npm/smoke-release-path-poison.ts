@@ -1,15 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const POISON_MESSAGE = "outside vize executable reached";
-
-function writeExecutable(filename: string, source: string): void {
-  fs.writeFileSync(filename, source);
-  if (process.platform !== "win32") {
-    fs.chmodSync(filename, 0o755);
-  }
-}
-
 /**
  * Places a failing `vize` command before the inherited PATH.
  *
@@ -23,13 +14,12 @@ export function withPoisonedVizePath(
 ): NodeJS.ProcessEnv & { PATH: string } {
   const poisonDir = path.join(projectRoot, ".vize-path-poison");
   fs.mkdirSync(poisonDir, { recursive: true });
-  writeExecutable(
-    path.join(poisonDir, "vize"),
-    ["#!/bin/sh", `echo '${POISON_MESSAGE}' >&2`, "exit 42", ""].join("\n"),
-  );
-  fs.writeFileSync(
+  const executable = path.join(poisonDir, "vize");
+  fs.copyFileSync(new URL("./path-poison/vize.sh", import.meta.url), executable);
+  if (process.platform !== "win32") fs.chmodSync(executable, 0o755);
+  fs.copyFileSync(
+    new URL("./path-poison/vize.cmd", import.meta.url),
     path.join(poisonDir, "vize.cmd"),
-    ["@echo off", `echo ${POISON_MESSAGE} 1>&2`, "exit /b 42", ""].join("\r\n"),
   );
   return {
     ...env,

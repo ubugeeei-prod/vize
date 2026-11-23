@@ -1,87 +1,34 @@
-/**
- * Quotes a command fragment for POSIX shell interpolation.
- *
- * Vite+ tasks are command strings, so a few helpers intentionally compose shell
- * snippets. This function keeps that composition centralized and prevents
- * environment-derived paths from breaking commands that are later wrapped in
- * `sh -c`.
- */
-export const shellQuote = (command: string) => `'${command.replaceAll("'", `'"'"'`)}'`;
+/** Quotes one argument in the command line passed to Vite+. */
+export const shellQuote = (value: string) => "'" + value.replaceAll("'", "'\"'\"'") + "'";
 
-const darwinUnsupportedUtf8Locale = "C.UTF-8";
-const darwinFallbackUtf8Locale = "en_US.UTF-8";
-const taskShellLocaleVariables = ["LC_ALL", "LC_CTYPE", "LANG"] as const;
+const localeVariables = ["LC_ALL", "LC_CTYPE", "LANG"] as const;
 
-const needsDarwinLocaleFallback = (platform: NodeJS.Platform, env: NodeJS.ProcessEnv) =>
-  platform === "darwin" &&
-  taskShellLocaleVariables.some((name) => env[name] === darwinUnsupportedUtf8Locale);
-
-export const getTaskShellLocaleAssignments = (
+export function normalizeTaskShellLocale(
   platform: NodeJS.Platform = process.platform,
   env: NodeJS.ProcessEnv = process.env,
-) =>
-  needsDarwinLocaleFallback(platform, env)
-    ? taskShellLocaleVariables.map((name) => `${name}=${shellQuote(darwinFallbackUtf8Locale)}`)
-    : [];
-
-export const normalizeTaskShellLocale = (
-  platform: NodeJS.Platform = process.platform,
-  env: NodeJS.ProcessEnv = process.env,
-) => {
-  if (!needsDarwinLocaleFallback(platform, env)) {
-    return;
+): void {
+  if (platform === "darwin" && localeVariables.some((name) => env[name] === "C.UTF-8")) {
+    for (const name of localeVariables) env[name] = "en_US.UTF-8";
   }
-
-  for (const name of taskShellLocaleVariables) {
-    env[name] = darwinFallbackUtf8Locale;
-  }
-};
-
-const taskShellLocaleAssignments = getTaskShellLocaleAssignments();
-// macOS does not ship C.UTF-8, but Nix shells often export it by default.
+}
+// The Nix shell may export C.UTF-8, which macOS does not install.
 normalizeTaskShellLocale();
 
-export const shellCommand = (
-  command: string,
-  environmentAssignments: readonly string[] = taskShellLocaleAssignments,
-) =>
-  `${environmentAssignments.length === 0 ? "" : `env ${environmentAssignments.join(" ")} `}sh -c ${shellQuote(command)}`;
+export const rustEnvironmentKeys = ["VIZE_DARWIN_LIBICONV_LIB", "LIBRARY_PATH", "RUSTFLAGS"];
 
-export const shellCommandForwardingArguments = (
-  command: string,
-  environmentAssignments: readonly string[] = taskShellLocaleAssignments,
-) => `${shellCommand(command, environmentAssignments)} --`;
-
-const darwinLibiconvLibraryPath = process.env.VIZE_DARWIN_LIBICONV_LIB;
-const rustTaskEnvironment =
-  darwinLibiconvLibraryPath == null
-    ? []
-    : [
-        `export LIBRARY_PATH=${shellQuote(darwinLibiconvLibraryPath)}\${LIBRARY_PATH:+:$LIBRARY_PATH}`,
-        `export RUSTFLAGS=${shellQuote(`-L native=${darwinLibiconvLibraryPath}`)}\${RUSTFLAGS:+ $RUSTFLAGS}`,
-      ];
-
-/**
- * Applies the optional macOS libiconv environment to Rust-oriented task
- * commands.
- *
- * The environment is injected only when explicitly requested so regular Linux
- * CI and developer machines keep the shortest possible command path. When the
- * variable is present, both Cargo and any nested Rust build script see the same
- * library search path.
- */
-export const withRustTaskEnvironment = (
-  command: string,
-  options: {
-    forwardArguments?: boolean;
-  } = {},
-) => {
-  const commandWithEnvironment =
-    rustTaskEnvironment.length === 0 ? command : `${rustTaskEnvironment.join("; ")}; ${command}`;
-
-  return options.forwardArguments
-    ? shellCommandForwardingArguments(commandWithEnvironment)
-    : rustTaskEnvironment.length === 0
-      ? command
-      : shellCommand(commandWithEnvironment);
-};
+export function workspaceTaskEnvironment(
+  platform: NodeJS.Platform,
+  environment: NodeJS.ProcessEnv,
+): NodeJS.ProcessEnv {
+  const env = { ...environment };
+  normalizeTaskShellLocale(platform, env);
+  const library = env.VIZE_DARWIN_LIBICONV_LIB;
+  if (library) {
+    if (!env.LIBRARY_PATH?.split(":").includes(library))
+      env.LIBRARY_PATH = library + (env.LIBRARY_PATH ? ":" + env.LIBRARY_PATH : "");
+    const flag = "-L native=" + library;
+    if (env.RUSTFLAGS !== flag && !env.RUSTFLAGS?.startsWith(flag + " "))
+      env.RUSTFLAGS = flag + (env.RUSTFLAGS ? " " + env.RUSTFLAGS : "");
+  }
+  return env;
+}

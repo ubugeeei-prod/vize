@@ -1,0 +1,276 @@
+import "../../Actions.pkl" as ci
+
+name = "Platform VSIX native projection"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/typescript-provider-vsix.yml"
+      ".github/scripts/workflows/typescript-provider-vsix/**"
+      "npm/typescript-plugin/**"
+      "npm/native/language-projection.*"
+      "tools/support/editors/typescript-provider/**"
+      "tools/commands/editors/vscode/sync-typescript-plugin.rs"
+      "editors/vscode/test/run-typescript-provider-host.mjs"
+      "editors/vscode/test/suite/typescript-provider-host.cjs"
+      "tests/typescript-plugin/provider-packaging.test.ts"
+      "tests/typescript-plugin/classification-*"
+      "tests/_fixtures/tooling/typescript-classification-runtime-11664/**"
+      "editors/vscode/test/suite/classification-provider.cjs"
+    }
+  }
+  workflow_dispatch = null  // Not a required check, so a queue run gated nothing while it competed with
+
+  // every queue entry for runners. Each main commit is still validated in full;
+  // cancel-in-progress coalesces a burst of merges into one run of the newest.
+  push {
+    branches = List("main")
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "typescript-provider-vsix-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+jobs {
+  native {
+    name = "Produce current-host native image (${{ matrix.target }})"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        include = new Listing {
+          new Dynamic {
+            os = "Linux"
+            runner = ci.linux2204
+            target = "x86_64-unknown-linux-gnu"
+          }
+          new Dynamic {
+            os = "Windows"
+            runner = ci.windows
+            target = "x86_64-pc-windows-msvc"
+          }
+        }
+      }
+    }
+    `runs-on` = "${{ matrix.runner }}"
+    `timeout-minutes` = 45
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("typescript-provider-vsix")
+      new Dynamic {
+        name = "Preserve exact source line endings on Windows"
+        `if` = "runner.os == 'Windows'"
+        run = "git config --global core.autocrlf false"
+      }
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          `run-install` = false
+          cache = true
+        }
+      }
+      new Dynamic {
+        name = "Read exact source toolchain and version"
+        id = "source"
+        shell = "bash"
+        run = ci.workflowScript("read-exact-source-toolchain-and-version.sh")
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "${{ steps.source.outputs.channel }}"
+          targets = "${{ matrix.target }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupWild
+        `if` = "runner.os == 'Linux'"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756"  // v1
+        `if` = "runner.os == 'Windows'"
+        with { arch = "amd64" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        `if` = "runner.os == 'Linux'"
+        with {
+          key = "release-native-${{ matrix.target }}"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+          `reuse-target` = "true"
+        }
+      }
+      new Dynamic {
+        uses = "Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32"  // v2
+        `if` = "runner.os == 'Windows'"
+        with {
+          `shared-key` = "release-native-${{ matrix.target }}"
+          `cache-workspace-crates` = "true"
+          `save-if` = "false"
+        }
+      }
+      new Dynamic {
+        name = "Install locked native build dependencies"
+        run = "vp install --frozen-lockfile --prefer-offline --filter './npm/native...'"
+      }
+      new Dynamic {
+        name = "Match the existing Windows native release profile"
+        `if` = "runner.os == 'Windows'"
+        shell = "bash"
+        run = ci.workflowScript("match-the-existing-windows-native-release-profile.sh")
+      }
+      new Dynamic {
+        name = "Use the canonical native producer with a same-invocation receipt"
+        env {
+          VIZE_RELEASE_VERSION = "${{ steps.source.outputs.version }}"
+          VIZE_NATIVE_BUILD_RECEIPT = "${{ runner.temp }}/native/build-receipt.${{ matrix.target }}.json"
+        }
+        run = "vp node tools/support/github/build-napi-package.ts npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.target }}"
+      }
+      new Dynamic {
+        name = "Collect only this image"
+        shell = "bash"
+        env { IMAGE_TARGET = "${{ matrix.target }}" }
+        run = ci.workflowScript("collect-only-this-image.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        with {
+          name = "typescript-provider-native-${{ matrix.target }}-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "${{ runner.temp }}/native"
+          `if-no-files-found` = "error"
+          `compression-level` = 0
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+  package {
+    name = "Package the current Linux and Windows platform VSIXs"
+    needs = "native"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("typescript-provider-vsix")
+      new Dynamic {
+        name = "Preserve exact source line endings on Windows"
+        `if` = "runner.os == 'Windows'"
+        run = "git config --global core.autocrlf false"
+      }
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      ci.use("./.github/actions/setup-js-package-tests")
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          pattern = "typescript-provider-native-*-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = ".native-artifacts"
+          `merge-multiple` = true
+        }
+      }
+      new Dynamic {
+        name = "Verify eight controlled inventories and failure controls"
+        run = "vp node --test tests/typescript-plugin/provider-packaging.test.ts tests/tooling/github-native-build-receipt.test.ts tests/tooling/vscode-vsix-policy.test.ts"
+      }
+      new Dynamic {
+        name = "Preserve and qualify the universal metadata-only artifact"
+        env { VIZE_TYPESCRIPT_PROVIDER_OUTPUT = "${{ runner.temp }}/typescript-provider-vsix" }
+        run = ci.workflowScript("preserve-and-qualify-the-universal-metadata-only-artifact.sh")
+      }
+      new Dynamic {
+        name = "Package each corresponding same-source image"
+        env { VIZE_TYPESCRIPT_PROVIDER_OUTPUT = "${{ runner.temp }}/typescript-provider-vsix" }
+        run = ci.workflowScript("package-each-corresponding-same-source-image.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "typescript-provider-vsix-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "${{ runner.temp }}/typescript-provider-vsix"
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+  `installed-extension` {
+    name = "Installed platform VSIX native service (${{ matrix.os }})"
+    needs = "package"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        include = new Listing {
+          new Dynamic {
+            os = "Linux"
+            runner = ci.linux
+            platform = "linux-x64"
+          }
+          new Dynamic {
+            os = "Windows"
+            runner = ci.windows
+            platform = "win32-x64"
+          }
+        }
+      }
+    }
+    `runs-on` = "${{ matrix.runner }}"
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("typescript-provider-vsix")
+      new Dynamic {
+        name = "Preserve exact source line endings on Windows"
+        `if` = "runner.os == 'Windows'"
+        run = "git config --global core.autocrlf false"
+      }
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          `run-install` = false
+          cache = true
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic { run = "vp run --workspace-root check:vscode-extension" }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "typescript-provider-vsix-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "editors/vscode/dist"
+        }
+      }
+      new Dynamic {
+        name = "Ensure the Linux virtual display"
+        `if` = "runner.os == 'Linux'"
+        shell = "bash"
+        run = ci.workflowScript("ensure-the-linux-virtual-display.sh")
+      }
+      new Dynamic {
+        name = "Run the actual installed platform extension"
+        env {
+          VIZE_TYPESCRIPT_PROVIDER_VSIX = "editors/vscode/dist/vize-${{ matrix.platform }}.vsix"
+          VIZE_TYPESCRIPT_PROVIDER_CAPTURE = "${{ runner.temp }}/typescript-provider-host"
+        }
+        shell = "bash"
+        run = ci.workflowScript("run-the-actual-installed-platform-extension.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "typescript-provider-host-${{ matrix.os }}-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "${{ runner.temp }}/typescript-provider-host"
+          `if-no-files-found` = "warn"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

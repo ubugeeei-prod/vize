@@ -11,6 +11,7 @@
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -34,24 +35,15 @@ import {
  * concurrently in this one (#11566), so neither may be changed here.
  */
 function isolatedColdRuns(root: string, env: NodeJS.ProcessEnv = {}) {
-  const helpers = JSON.stringify(
-    new URL("../test/precompile-cache-project.ts", import.meta.url).href,
-  );
-  const script = `
-const { coldRun, manifestFiles } = await import(${helpers});
-const runs = [];
-for (let i = 0; i < 2; i++) {
-  const warnings = [];
-  console.warn = (...args) => warnings.push(args.map(String).join(" "));
-  const { log } = await coldRun(${JSON.stringify(root)});
-  runs.push({ log, warnings, manifests: manifestFiles(${JSON.stringify(root)}).length });
-}
-process.stdout.write(JSON.stringify(runs));`;
   const childEnv = { ...process.env };
   delete childEnv[PRECOMPILE_CACHE_ENV];
   const child = spawnSync(
     process.execPath,
-    ["--no-warnings", "--input-type=module", "-e", script],
+    [
+      "--no-warnings",
+      fileURLToPath(new URL("../../test/precompile-cold-runs.ts", import.meta.url)),
+      root,
+    ],
     {
       env: { ...childEnv, ...env },
       encoding: "utf8",

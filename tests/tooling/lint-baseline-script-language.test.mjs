@@ -12,15 +12,20 @@ import {
 import { resolveScorecardRuntime } from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 import { collectBaselineFindings } from "../../tools/support/compat/fixtures/lint-divergence-records.ts";
 import { evaluateBudget } from "../../tools/support/compat/fixtures/lint-divergence-budget.ts";
-import { baselineScript as candidate } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
+import { eslintBaselineProgram } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
+const baselineProgram = eslintBaselineProgram(root);
 const corpus = path.join(root, "tests/_fixtures/differential/lint/reference-script-language");
 const originals = JSON.parse(fs.readFileSync(path.join(corpus, "originals.json"), "utf8"));
 const frozen = fs.readFileSync(path.join(corpus, "before-script.mjs.txt"), "utf8");
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
-assert.ok(candidate);
+assert.ok(fs.statSync(baselineProgram).isFile());
 assert.equal(digest(frozen), originals.beforeScriptSha256);
+const historicalDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-eslint-baseline-"));
+process.once("exit", () => fs.rmSync(historicalDirectory, { recursive: true, force: true }));
+const historicalProgram = path.join(historicalDirectory, "eslint-baseline.mjs");
+fs.writeFileSync(historicalProgram, frozen);
 assert.equal(originals.inputs.length, 8);
 assert.equal(new Set(originals.inputs.map((input) => input.project)).size, 6);
 const runtime = resolveScorecardRuntime();
@@ -31,8 +36,8 @@ const rules = selectComparableRules(
 ).rules;
 const transport = (value) => JSON.parse(JSON.stringify(value));
 
-function execute(script, cwd, filename, selected = rules) {
-  const result = spawnSync(process.execPath, ["--input-type=module", "--eval", script], {
+function execute(program, cwd, filename, selected = rules) {
+  const result = spawnSync(process.execPath, [program], {
     cwd: root,
     input: JSON.stringify({
       benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
@@ -102,7 +107,7 @@ for (const original of originals.inputs) {
     const filename = "Original.vue";
     try {
       fs.writeFileSync(path.join(cwd, filename), original.source);
-      const before = execute(frozen, cwd, filename, originals.originalRules);
+      const before = execute(historicalProgram, cwd, filename, originals.originalRules);
       assert.deepEqual(
         before,
         original.before.results.map((result) => ({
@@ -117,7 +122,7 @@ for (const original of originals.inputs) {
       const selected = originals.originalRules;
       const expected = await publicReference(cwd, filename, !original.expectedRepaired, selected);
       const measured = [
-        execute(candidate, cwd, filename, selected),
+        execute(baselineProgram, cwd, filename, selected),
         transport((await runBaseline(runtime, cwd, [filename], selected)).results),
       ];
       for (const results of measured) {
@@ -140,9 +145,9 @@ for (const original of originals.inputs) {
     try {
       fs.writeFileSync(path.join(cwd, filename), original.source);
       const expected = await publicReference(cwd, filename, !original.expectedRepaired);
-      const before = execute(frozen, cwd, filename);
+      const before = execute(historicalProgram, cwd, filename);
       for (const results of [
-        execute(candidate, cwd, filename),
+        execute(baselineProgram, cwd, filename),
         transport((await runBaseline(runtime, cwd, [filename], rules)).results),
       ]) {
         assert.deepEqual(results, expected, "complete independent public ESLint result");
@@ -171,11 +176,11 @@ for (const lang of ["jsx", "tsx"]) {
         1,
       );
       for (const results of [
-        execute(candidate, cwd, "Control.vue"),
+        execute(baselineProgram, cwd, "Control.vue"),
         transport((await runBaseline(runtime, cwd, ["Control.vue"], rules)).results),
       ])
         assert.deepEqual(results, expected);
-      assert.deepEqual(execute(frozen, cwd, "Control.vue"), expected);
+      assert.deepEqual(execute(historicalProgram, cwd, "Control.vue"), expected);
     } finally {
       fs.rmSync(cwd, { recursive: true, force: true });
     }
@@ -192,7 +197,7 @@ await test("genuinely malformed TypeScript remains a complete strict fatal refus
     const expected = await publicReference(cwd, "Malformed.vue", false);
     assert.equal(expected[0].fatalErrorCount, 1);
     for (const results of [
-      execute(candidate, cwd, "Malformed.vue"),
+      execute(baselineProgram, cwd, "Malformed.vue"),
       transport((await runBaseline(runtime, cwd, ["Malformed.vue"], rules)).results),
     ]) {
       assert.deepEqual(results, expected);

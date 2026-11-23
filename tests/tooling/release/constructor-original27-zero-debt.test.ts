@@ -13,6 +13,8 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+
+import { toolingProgram } from "../support/program-path.ts";
 import { writeTarGz } from "../../../tools/support/archive/tar.ts";
 import { asArray } from "../../../tools/support/json-value.ts";
 import {
@@ -135,9 +137,13 @@ test("actual capture strips credential names while preserving safe journal value
     VIZE_PUBLIC_NATIVE_CUSTODY: "inert-journal-retained",
   };
   try {
-    const code =
-      "process.stdout.write(JSON.stringify({ token: !!process.env.GITHUB_TOKEN, auth: !!process.env.NPM_CONFIG__AUTH, secret: !!process.env.example_secret, journal: process.env.VIZE_PUBLIC_NATIVE_CUSTODY }))";
-    const row = capture(new Recorder(root), "canary", [process.execPath, "-e", code], root, env);
+    const row = capture(
+      new Recorder(root),
+      "canary",
+      [process.execPath, toolingProgram("release/record-custody-environment.js")],
+      root,
+      env,
+    );
     completed(row, 0);
     assert.deepEqual(JSON.parse(row.stdout.toString("utf8")), {
       token: false,

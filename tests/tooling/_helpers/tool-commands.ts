@@ -1,3 +1,9 @@
+import {
+  configuredNodeLauncher,
+  shellLauncher,
+  windowsLauncher,
+} from "../../../tools/support/process-launcher.ts";
+import { toolingProgram } from "../support/program-path.ts";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -55,33 +61,33 @@ export function writeRecordingCommand(
   binDir: string,
   name: string,
   logPath: string,
-  options: { exitCodes?: readonly number[]; stdout?: string; script?: string } = {},
+  options: {
+    exitCodes?: readonly number[];
+    stdout?: string;
+    hook?: { name: string; args: string[] };
+  } = {},
 ): void {
   fs.mkdirSync(binDir, { recursive: true });
   const body = path.join(binDir, `.${name}.cjs`);
+  const hook = options.hook && {
+    program: toolingProgram("process/" + options.hook.name + ".cjs"),
+    args: options.hook.args,
+  };
   fs.writeFileSync(
     body,
-    [
-      "const fs = require('node:fs');",
-      `const logPath = ${JSON.stringify(logPath)};`,
-      `const exitCodes = ${JSON.stringify(options.exitCodes ?? [0])};`,
-      `const previous = fs.existsSync(logPath) ? fs.readFileSync(logPath, 'utf8').split('\\n').filter((line) => line && JSON.parse(line).name === ${JSON.stringify(name)}).length : 0;`,
-      `fs.appendFileSync(logPath, JSON.stringify({ name: ${JSON.stringify(name)}, argv: process.argv.slice(2), cwd: process.cwd(), env: process.env }) + '\\n');`,
-      options.script ?? "",
-      `process.stdout.write(${JSON.stringify(options.stdout ?? "")});`,
-      "process.exit(exitCodes[Math.min(previous, exitCodes.length - 1)]);",
-      "",
-    ].join("\n"),
+    configuredNodeLauncher(new URL("../programs/process/record-tool-call.cjs", import.meta.url), {
+      logPath,
+      name,
+      hook,
+      exitCodes: options.exitCodes ?? [0],
+      stdout: options.stdout ?? "",
+    }),
   );
-  const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
   const unixPath = path.join(binDir, name);
-  fs.writeFileSync(unixPath, `#!/bin/sh\nexec ${quote(process.execPath)} ${quote(body)} "$@"\n`);
+  fs.writeFileSync(unixPath, shellLauncher("exec", { COMMAND: [process.execPath, body] }));
   fs.chmodSync(unixPath, 0o755);
   if (process.platform === "win32") {
-    fs.writeFileSync(
-      path.join(binDir, `${name}.cmd`),
-      `@echo off\r\n"${process.execPath}" "${body}" %*\r\n`,
-    );
+    fs.writeFileSync(path.join(binDir, `${name}.cmd`), windowsLauncher([process.execPath, body]));
   }
 }
 

@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { packageCommands } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import fs, { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -27,7 +29,7 @@ test("docs build prepares its browser before previews and checks the rendered si
     return command;
   }
 
-  assert.deepEqual(script("build").split(" && "), [
+  assert.deepEqual(packageCommands(repoRoot, "docs", script("build"), "build"), [
     "node ./scripts/ensure-browser.ts",
     "pnpm generate:ui-previews",
     "pnpm generate:reference",
@@ -84,36 +86,20 @@ test("docs finish runs all Node phases concurrently and preserves complete failu
       writeFakeCommand(
         bin,
         command,
-        `require("node:fs").writeFileSync(${JSON.stringify(pmLog)}, ${JSON.stringify(command)}); process.exit(99);`,
+        readToolingProgram("commands/docs-browser/command.js.in", {
+          PM_LOG: JSON.stringify(pmLog),
+          COMMAND: JSON.stringify(command),
+        }),
       );
     for (const [index, [name, entrypoint]] of phases.entries()) {
       const file = path.join(docs, entrypoint);
       fs.mkdirSync(path.dirname(file), { recursive: true });
       writeFileSync(
         file,
-        `import { writeFileSync, readdirSync, existsSync } from "node:fs";
-import { join } from "node:path";
-import { setTimeout } from "node:timers/promises";
-const receipt = { name: ${JSON.stringify(name)}, cwd: process.cwd(), execPath: process.execPath };
-const output = process.env.VIZE_DOCS_FINISH_TEST_OUTPUT;
-writeFileSync(join(output, "${index}-started.json"), JSON.stringify(receipt));
-const deadline = Date.now() + 4000;
-while (readdirSync(output).filter((name) => name.endsWith("-started.json")).length !== 3) {
-  if (Date.now() >= deadline) throw new Error("All three phases must start before any can finish");
-  await setTimeout(10);
-}
-const uiFinished = join(output, "1-finished.json");
-while (${index} !== 1 && !existsSync(uiFinished)) {
-  if (Date.now() >= deadline) throw new Error("The UI phase must finish first");
-  await setTimeout(10);
-}
-writeFileSync(join(output, "${index}-finished.json"), JSON.stringify({
-  ...receipt, uiFinishedBeforeThisPhase: existsSync(uiFinished),
-}));
-process.stdout.write("stdout-complete\\n");
-process.stderr.write("stderr-complete\\n");
-if (process.env.VIZE_DOCS_FINISH_TEST_FAILURE === "${index}") process.exit(7);
-`,
+        readToolingProgram("commands/docs-browser/emulate-browser.js.in", {
+          BROWSER: JSON.stringify(name),
+          INDEX: index,
+        }),
       );
     }
     for (const failure of ["", "1"]) {
@@ -185,13 +171,9 @@ test("docs browser helper reuses an existing browser path without invoking Playw
     writeFakeCommand(
       binDir,
       "playwright",
-      [
-        "require('node:fs').appendFileSync(",
-        `  ${JSON.stringify(playwrightLogPath)},`,
-        "  process.argv.slice(2).join(' ') + '\\n',",
-        ");",
-        "process.exit(0);",
-      ].join("\n"),
+      readToolingProgram("commands/docs-browser/playwright.js.in", {
+        PLAYWRIGHT_LOG_PATH: JSON.stringify(playwrightLogPath),
+      }),
     );
 
     const result = spawnSync("node", [helperPath], {

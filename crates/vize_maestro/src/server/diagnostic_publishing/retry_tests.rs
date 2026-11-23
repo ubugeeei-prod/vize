@@ -55,10 +55,6 @@ impl Fixture {
     }
 }
 
-fn shell_quoted_path(path: &std::path::Path) -> vize_l0::String {
-    vize_l0::cstr!("'{}'", path.to_str().unwrap().replace('\'', "'\\''"))
-}
-
 #[test]
 fn held_backend_pid_witness_uses_its_owned_path_from_a_different_working_directory() {
     let authored = crate::test_support::tempdir().unwrap();
@@ -66,22 +62,26 @@ fn held_backend_pid_witness_uses_its_owned_path_from_a_different_working_directo
     let owned = authored.path().join("owned 雪 ' $HOME `uname`");
     std::fs::create_dir(&owned).unwrap();
     let pid_file = owned.join("backend.pids");
-    let status = std::process::Command::new("sh")
-        .arg("-c")
-        .arg(
-            vize_l0::cstr!(
-                "printf '%s' 'whole owned PID witness' > {}",
-                shell_quoted_path(&pid_file)
-            )
-            .as_str(),
-        )
+    let backend = owned.join("held-corsa");
+    std::fs::write(
+        &backend,
+        include_str!("../../../tests/programs/retain-backend-pid.sh"),
+    )
+    .unwrap();
+    let mut child = std::process::Command::new("sh")
+        .arg(&backend)
         .current_dir(canon.path())
-        .status()
+        .stdin(std::process::Stdio::null())
+        .spawn()
         .unwrap();
-    assert!(status.success());
+    assert!(child.wait().unwrap().success());
     assert_eq!(
-        std::fs::read(&pid_file).unwrap(),
-        b"whole owned PID witness"
+        std::fs::read_to_string(&pid_file)
+            .unwrap()
+            .trim()
+            .parse::<u32>()
+            .unwrap(),
+        child.id()
     );
     assert!(!canon.path().join("backend.pids").exists());
 }
@@ -97,13 +97,7 @@ fn fixture(held: bool) -> Fixture {
     if held {
         std::fs::write(
             &backend,
-            // The selected native project may use its private Canon cwd.
-            // Keep this fixture's stop/read witness owned by its authored root.
-            vize_l0::cstr!(
-                "#!/bin/sh\necho $$ >> {}\nexec cat 3>&1 > /dev/null\n",
-                shell_quoted_path(&root.path().join("backend.pids"))
-            )
-            .as_bytes(),
+            include_str!("../../../tests/programs/retain-backend-pid.sh"),
         )
         .unwrap();
         std::fs::set_permissions(&backend, std::fs::Permissions::from_mode(0o755)).unwrap();

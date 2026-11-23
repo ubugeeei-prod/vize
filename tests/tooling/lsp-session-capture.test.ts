@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { once } from "node:events";
@@ -27,11 +28,9 @@ function fixture() {
   git("commit", "-qm", "synthetic capture source");
   const binary = path.join(root, "target/ci/vize");
   fs.mkdirSync(path.dirname(binary), { recursive: true });
-  fs.writeFileSync(
-    binary,
-    '#!/bin/sh\nif [ "$1" = "--version" ]; then printf "vize 1.0.0-dev\\n"; exit 0; fi\ncat\nprintf "observer stderr 🧪\\n" >&2\nexit 23\n',
-    { mode: 0o755 },
-  );
+  fs.writeFileSync(binary, readToolingProgram("commands/lsp-session-capture/binary.sh"), {
+    mode: 0o755,
+  });
   writeBuildReceipt(root);
   let launch: VerifiedLspLaunch | undefined;
   resolveVizeLaunchCommand(undefined, binary, {

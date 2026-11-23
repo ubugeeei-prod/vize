@@ -1,3 +1,4 @@
+import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -51,14 +52,17 @@ test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
   );
   assert.match(taskGroups, /"test:e2e:vrt":\s*task\(runInPackages\("test:vrt", \["\.\/tests"\]\)/);
   assert.match(taskGroups, /input:\s*cacheInputs\.e2e/);
-  assert.match(testPackage.scripts?.["test:dev:ci"] ?? "", /app\/dev\/nuxt-ui\.spec\.ts/);
+  assert.match(
+    packageScripts("tests", testPackage.scripts)?.["test:dev:ci"] ?? "",
+    /app\/dev\/nuxt-ui\.spec\.ts/,
+  );
 });
 
 test("fast app readiness aliases use bounded pinned fixtures", () => {
   const testPackage = JSON.parse(readRepoFile("tests", "package.json")) as {
     scripts?: Record<string, string>;
   };
-  const scripts = testPackage.scripts ?? {};
+  const scripts = packageScripts("tests", testPackage.scripts) ?? {};
 
   assert.equal(
     scripts["test:readiness"],
@@ -211,7 +215,11 @@ test("generic compiler build snapshots stay in the blocking build inventory", ()
     scripts?: Record<string, string>;
   };
   const readinessWorkflow = readRepoFile(".github", "workflows", "e2e.yml");
-  assert.ok(testPackage.scripts?.["test:build"]?.includes("snapshots/build/generic.ts"));
+  assert.ok(
+    packageScripts("tests", testPackage.scripts)?.["test:build"]?.includes(
+      "snapshots/build/generic.ts",
+    ),
+  );
   for (const trigger of [
     "tests/_fixtures/_projects/generic-build/**",
     "tests/snapshots/build/generic.ts",
@@ -238,9 +246,9 @@ test("real-world browser smoke inventory stays wired into app e2e scripts", () =
   const testPackage = JSON.parse(readRepoFile("tests", "package.json")) as {
     scripts?: Record<string, string>;
   };
-  const devScript = testPackage.scripts?.["test:dev:ci"] ?? "";
-  const previewScript = testPackage.scripts?.["test:preview"] ?? "";
-  const vrtScript = testPackage.scripts?.["test:vrt"] ?? "";
+  const devScript = packageScripts("tests", testPackage.scripts)?.["test:dev:ci"] ?? "";
+  const previewScript = packageScripts("tests", testPackage.scripts)?.["test:preview"] ?? "";
+  const vrtScript = packageScripts("tests", testPackage.scripts)?.["test:vrt"] ?? "";
 
   const devProjects = ["elk", "misskey", "npmx", "nuxt-ui", "vuefes"];
   for (const project of devProjects) {

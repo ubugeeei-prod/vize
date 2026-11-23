@@ -1,0 +1,17 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  export EVIDENCE="$RUNNER_TEMP/component-binding-evidence"
+  node "$VIZE_CI_FILES/../shared/component-profile-overlay.ts" component-binding-base
+  for role in base head; do
+    source_root="$GITHUB_WORKSPACE"
+    if [[ "$role" == base ]]; then source_root="$RUNNER_TEMP/component-binding-base"; fi
+    (cd "$source_root" && CARGO_TARGET_DIR="$RUNNER_TEMP/component-$role-profile-target" cargo test --locked --profile ci-opt -p vize_benchmarks --test component_binding_profile --no-run --message-format=json) > "$EVIDENCE/$role-profile-build.jsonl"
+    node "$VIZE_CI_FILES/../shared/profile-build.ts" component_binding_profile "$role"
+  done
+  """#
+}

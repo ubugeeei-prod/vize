@@ -136,44 +136,42 @@ void test("known address streams require every ordered address and complete sent
   );
 });
 
-void test("stream adapter preserves genuine frames while isolating mapped marker bodies", async () => {
+void test("stream adapter preserves genuine frames while isolating mapped marker bodies", async (t) => {
   const { sentinelAdapterScript } =
     await import("../../tools/benchmarks/scripts/source-symbolizer-adapter.ts");
   const { spawn, spawnSync } = await import("node:child_process");
-  const fake =
-    'import sys\nfor line in sys.stdin.buffer:\n    if line == b"0xdeadbeefbadc0ffe\\n":\n        sys.stdout.buffer.write(line + b"tombstone\\n/unrelated.rs:12\\ninline\\n/other.rs:99\\n")\n    else:\n        sys.stdout.buffer.write(line + "original_function\\n/source/雪.rs:12\\n".encode("utf8"))\n    sys.stdout.buffer.flush()\n';
-  const script = sentinelAdapterScript("/usr/bin/python3");
-  const run = (child: string, input = ",\n0x123\n,\n0x456\n,\n") =>
-    spawnSync("python3", ["-c", script, "-c", child], {
+  const fs = await import("node:fs");
+  const os = await import("node:os");
+  const path = await import("node:path");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-symbolizer-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const script = path.join(directory, "adapter.cjs");
+  fs.writeFileSync(script, sentinelAdapterScript(process.execPath));
+  const decoder = path.join(import.meta.dirname, "support/source-symbolizer-decoder.ts");
+  const run = (mode: string, input = ",\n0x123\n,\n0x456\n,\n") =>
+    spawnSync(process.execPath, [script, decoder, mode], {
       input,
       encoding: "utf8",
       timeout: 3000,
     });
-  const good = run(fake);
+  const good = run("good");
   assert.equal(good.status, 0, good.stderr);
   assert.equal(
     good.stdout,
     ",\n0x123\noriginal_function\n/source/雪.rs:12\n,\n0x456\noriginal_function\n/source/雪.rs:12\n,\n",
   );
-  const collision = run(fake, "0xdeadbeefbadc0ffe\n,\n");
+  const collision = run("good", "0xdeadbeefbadc0ffe\n,\n");
   assert.equal(collision.status, 0, collision.stderr);
   assert.equal(
     collision.stdout,
     "0xdeadbeefbadc0ffe\ntombstone\n/unrelated.rs:12\ninline\n/other.rs:99\n,\n",
   );
-  for (const child of [
-    fake.replace("/other.rs:99\\n", ""),
-    fake.replace(
-      'sys.stdout.buffer.write(line + "original_function',
-      'sys.stdout.buffer.write(b"0x999\\n" + "original_function',
-    ),
-    fake.replace("    sys.stdout.buffer.flush()", "    sys.stdout.buffer.flush()\n    break"),
-  ]) {
+  for (const child of ["partial", "wrong-address", "early-exit"]) {
     const malformed = run(child);
     assert.equal(malformed.status, 1, malformed.stderr);
     assert.match(malformed.stderr, /sentinel frame failed/u);
   }
-  const child = spawn("python3", ["-c", script, "-c", fake]);
+  const child = spawn(process.execPath, [script, decoder, "good"]);
   let output = "",
     errors = "",
     sent = false;

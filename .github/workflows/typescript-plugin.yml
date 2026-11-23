@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/typescript-plugin.yml
+      - .github/scripts/workflows/typescript-plugin/**
       - npm/typescript-plugin/**
       - npm/native/index.*
       - npm/native/language-projection.*
@@ -35,22 +36,31 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/typescript-plugin/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Retain the attempted source even if setup fails
-        run: |
-          mkdir -p "$RUNNER_TEMP/typescript-plugin"
-          git rev-parse HEAD > "$RUNNER_TEMP/typescript-plugin/attempted-source.txt"
+        run: . "${{ env.VIZE_CI_FILES }}/retain-the-attempted-source-even-if-setup-fails.sh"
       - uses: ./.github/actions/setup-js-package-tests
       - uses: ./.github/actions/setup-rust-script
       - name: Exercise plugin boundaries and canonical staging
         run: vp node --test npm/native/test/language-projection.test.cjs tests/typescript-plugin/mapped-language-service.test.cjs tests/typescript-plugin/project-configuration.test.cjs tests/typescript-plugin/package-options.test.cjs tests/typescript-plugin/host-boundaries.test.cjs tests/tooling/vscode-typescript-vue-plugin.test.ts tests/tooling/vscode-typescript-vue-plugin-types.test.ts tests/tooling/vscode-typescript-vue-plugin-module-resolution.test.ts tests/tooling/vscode-typescript-plugin-staging.test.ts tests/tooling/vscode-vsix-policy.test.ts tests/tooling/cargo-metadata-observer.test.ts
       - name: Build the exact-source native producer
-        run: |
-          export NODE_OPTIONS="${NODE_OPTIONS:-} --import=file://$GITHUB_WORKSPACE/tools/support/ci/cargo-metadata-observer.ts?capture=$RUNNER_TEMP/typescript-plugin-cargo-metadata"
-          vp run --filter './npm/native' build:ci
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-exact-source-native-producer.sh"
       - name: Measure the installed package with real tsserver packets
         env:
           VIZE_TYPESCRIPT_PLUGIN_CAPTURE: ${{ runner.temp }}/typescript-plugin
@@ -63,9 +73,7 @@ jobs:
       - name: Package the same canonical plugin in a production VSIX
         env:
           VIZE_TYPESCRIPT_PLUGIN_CAPTURE: ${{ runner.temp }}/typescript-plugin
-        run: |
-          vp run --workspace-root package:vscode-extension
-          vp node tests/typescript-plugin/assert-vsix.ts
+        run: . "${{ env.VIZE_CI_FILES }}/package-the-same-canonical-plugin-in-a-production-vsix.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

@@ -1,0 +1,7 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  "read line"
+}

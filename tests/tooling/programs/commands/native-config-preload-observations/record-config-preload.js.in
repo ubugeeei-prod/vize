@@ -1,0 +1,6 @@
+import { appendFileSync } from "node:fs";
+export default () => {
+  appendFileSync(@@COUNTER@@, "once\n");
+  console.error("authored-specificreason 日本語");
+  process.exit(17);
+};

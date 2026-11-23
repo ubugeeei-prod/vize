@@ -1,0 +1,49 @@
+import "../../Actions.pkl" as ci
+
+name = "Admit the immutable release publication"
+needs = List("version", "tag")
+`if` = "${{ always() && needs.version.result == 'success' && (inputs.npm_resume_run != '' || needs.tag.result == 'success') }}"
+`runs-on` = "ubuntu-24.04"
+`timeout-minutes` = 10
+permissions {
+  contents = "read"
+  actions = "read"
+}
+env {
+  GITHUB_TOKEN = "${{ github.token }}"
+  RELEASE_VERSION = "${{ needs.version.outputs.version }}"
+  RELEASE_SHA = "${{ needs.version.outputs.sha }}"
+  RELEASE_PRODUCER_RUN = "${{ inputs.npm_resume_run || github.run_id }}"
+}
+// publish, or defer when the rolling budget refuses: only crates.io waits.
+outputs {
+  crates = "${{ steps.admission.outputs.crates }}"
+  crates_reason = "${{ steps.admission.outputs.crates_reason }}"
+}
+steps = new Listing {
+  ci.checkoutAt("${{ github.sha }}")
+  new Dynamic {
+    uses = ci.setupNode
+    with {
+      `node-version-file` = "package.json"
+      `package-manager-cache` = false
+    }
+  }
+  new Dynamic {
+    name = "Decide crate publication from a fresh rolling budget for the original producer"
+    id = "admission"
+    env { RELEASE_QUOTA_EVIDENCE = "${{ runner.temp }}/publication-quota/report.json" }
+    run = #"node tools/support/release/release/main.ts quota-publication "$RELEASE_VERSION""#
+  }
+  new Dynamic {
+    name = "Retain the publication admission receipt"
+    `if` = "always()"
+    uses = ci.uploadArtifact
+    with {
+      name = "publication-quota-${{ needs.version.outputs.tag }}-${{ github.run_attempt }}"
+      path = "${{ runner.temp }}/publication-quota"
+      `if-no-files-found` = "error"
+      `retention-days` = 90
+    }
+  }
+}

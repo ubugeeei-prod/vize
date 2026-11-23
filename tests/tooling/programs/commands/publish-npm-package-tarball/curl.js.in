@@ -1,0 +1,27 @@
+const url = new URL(process.argv.at(-1));
+if (url.pathname.endsWith(".tgz")) {
+  if (process.env.TEST_PROBE_MODE === "frame")
+    process.stderr.write("unexpected diagnostic frame\n");
+  const child = require("node:child_process").spawnSync(
+    @@CURL@@,
+    process.argv.slice(2),
+    { stdio: "inherit" },
+  );
+  process.exit(child.status ?? 1);
+}
+if (
+  process.env.TEST_METADATA_DELAY_MS &&
+  url.searchParams.get("vize-publish-check")?.endsWith("-1")
+)
+  await new Promise((resolve) => setTimeout(resolve, Number(process.env.TEST_METADATA_DELAY_MS)));
+const probe = url.searchParams.get("vize-publish-check")?.endsWith("-1");
+const mode = process.env.TEST_PROBE_MODE;
+const body = {
+  name: "@vizejs/example",
+  version: probe && mode === "version" ? "9.9.9" : "1.2.3",
+  "dist-tags": {
+    latest: probe && mode === "tag" ? "9.9.9" : probe && mode === "tag-older" ? "0.9.9" : "1.2.3",
+  },
+  dist: { tarball: process.env.TEST_TARBALL_URL, integrity: @@INTEGRITY@@ },
+};
+process.stdout.write(JSON.stringify(body) + "VIZE_HTTP_STATUS:200");

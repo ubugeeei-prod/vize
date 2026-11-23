@@ -1,0 +1,13 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  git fetch origin "$VIZE_N8N_CAPTURE_BASELINE" "$VIZE_N8N_REPAIR_ANCHOR"
+  curl --fail --location --retry 5 --retry-all-errors \
+    --output "$RUNNER_TEMP/n8n-official-compiler.mjs" \
+    https://unpkg.com/@vue/compiler-sfc@3.5.26/dist/compiler-sfc.esm-browser.js
+  echo "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec  $RUNNER_TEMP/n8n-official-compiler.mjs" | sha256sum --check
+  """#
+}

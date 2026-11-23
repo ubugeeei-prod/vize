@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+rust_log="$RUNNER_TEMP/native-vue2-scriptless-sfc-rust.log"
+oracle_log="$RUNNER_TEMP/native-vue2-scriptless-sfc-oracle.log"
+status_path="$RUNNER_TEMP/native-vue2-scriptless-sfc-status.json"
+rm -f "$VIZE_GLYPH_VUE2_SFC_CAPTURE" "$rust_log" "$oracle_log" "$status_path" "$VIZE_GLYPH_VUE2_SFC_RUNTIME_CAPTURE"
+set +e
+cargo test --locked --profile ci -p vize_glyph --test native_vue2_scriptless_sfc capture::whole_original_sfc_attempts_are_captured_before_complete_goldens_and_fixed_points -- --exact > "$rust_log" 2>&1
+rust_status=$?
+cat "$rust_log"
+capture_present=false
+oracle_executed=false
+oracle_status=1
+if [[ -s "$VIZE_GLYPH_VUE2_SFC_CAPTURE" ]]; then
+  capture_present=true
+  oracle_executed=true
+  vp node --test tests/tooling/native-vue2-scriptless-sfc-oracle.test.ts > "$oracle_log" 2>&1
+  oracle_status=$?
+else
+  printf '%s\n' 'Native capture absent; primary join was not executed.' > "$oracle_log"
+fi
+cat "$oracle_log"
+runtime_present=false
+if [[ -s "$VIZE_GLYPH_VUE2_SFC_RUNTIME_CAPTURE" ]]; then runtime_present=true; fi
+RUST_STATUS="$rust_status" ORACLE_STATUS="$oracle_status" CAPTURE_PRESENT="$capture_present" ORACLE_EXECUTED="$oracle_executed" RUNTIME_PRESENT="$runtime_present" STATUS_PATH="$status_path" vp node "$GITHUB_ACTION_PATH/scripts/capture-every-complete-original-sfc-doc-before-judging-the-primary-join.ts"
+receipt_status=$?
+[[ "$rust_status" == 0 && "$oracle_status" == 0 && "$capture_present" == true && "$runtime_present" == true && "$receipt_status" == 0 ]]

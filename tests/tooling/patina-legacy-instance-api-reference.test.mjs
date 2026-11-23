@@ -8,6 +8,7 @@ import { test } from "node:test";
 import { gunzipSync } from "node:zlib";
 import { compileFunction } from "node:vm";
 import { pathToFileURL } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 
 import { loadFrozenTemplateCompiler } from "./support/patina-template-provider.ts";
 
@@ -290,20 +291,11 @@ await test("original Vue compiler scope and TS erasure preserve explicit referen
   const foreign = spawnSync(
     process.execPath,
     [
-      "--input-type=module",
-      "-e",
-      `import assert from "node:assert/strict";
-import { createRequire } from "node:module";
-import { readFileSync } from "node:fs";
-import { loadFrozenTemplateCompiler } from ${JSON.stringify(helper.href)};
-const provider = JSON.parse(readFileSync(${JSON.stringify(path.join(fixture, "template-boundaries.json"))}, "utf8")).compilerProvider;
-const foreignRequire = createRequire(process.env.VIZE_LEGACY_API_VUE_MANIFEST);
-const installed = foreignRequire("vue/package.json").version;
-const runtimeVersion = foreignRequire("vue").version;
-assert.equal(runtimeVersion, installed);
-assert.notEqual(installed, provider.vue, "the control must install a genuinely different Vue");
-assert.throws(() => loadFrozenTemplateCompiler("template-boundaries.json", provider, "dom"), assert.AssertionError);
-process.stdout.write(JSON.stringify({ installed, runtimeVersion, expected: provider.vue, refused: true }));`,
+      toolingProgram("plugins/compare-pinned-template-references.js"),
+      JSON.stringify({
+        compilerModule: helper.href,
+        boundaryFile: path.join(fixture, "template-boundaries.json"),
+      }),
     ],
     {
       encoding: "utf8",

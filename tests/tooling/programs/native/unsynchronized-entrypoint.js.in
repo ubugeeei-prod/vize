@@ -1,0 +1,8 @@
+const loadErrors = [];
+function requireNative() { return null; }
+let nativeBinding = requireNative();
+module.exports = nativeBinding
+module.exports.TypeResolutionBatch = nativeBinding.TypeResolutionBatch
+module.exports.beginTypeResolutionBatch = nativeBinding.beginTypeResolutionBatch
+module.exports.compile = nativeBinding.compile
+module.exports.compileSfc = nativeBinding.compileSfc

@@ -39,7 +39,7 @@ fn bridge_diagnostics_and_hover_reuse_one_standard_editor_lsp_session() {
     std::fs::write(
         &traced_tsgo,
         vize_l0::cstr!(
-            "#!/bin/sh\nprintf '%s\\n' \"$*\" >> {}\nexec {} \"$@\"\n",
+            include_str!("../programs/record-editor-session.sh.in"),
             shell_quote_path(&trace_log),
             shell_quote_path(&corsa_path)
         )

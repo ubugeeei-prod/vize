@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -275,11 +276,7 @@ test("fixture tool matrix records formatter mutations", () => {
   fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
   fs.writeFileSync(
     executable,
-    `#!/usr/bin/env node
-import fs from "node:fs";
-fs.writeFileSync("src/App.vue", "<template><main /></template>\\n");
-process.stderr.write("Found 1 file(s)\\nWould reformat: src/App.vue\\n\\nChecked 1 file(s)\\n  1 file(s) would be reformatted\\n");
-process.exit(1);\n`,
+    readToolingProgram("commands/fixture-tool-matrix-formatter/format-project-files.js"),
   );
   fs.chmodSync(executable, 0o755);
 
@@ -318,8 +315,7 @@ test("fixture tool matrix rejects partial formatter coverage", () => {
   fs.writeFileSync(path.join(fixtureDir, "src", "Card.vue"), "<template />\n");
   fs.writeFileSync(
     executable,
-    `#!/usr/bin/env node
-process.stderr.write("Found 1 file(s)\\n\\nChecked 1 file(s)\\n  1 file(s) already formatted\\n");\n`,
+    readToolingProgram("commands/fixture-tool-matrix-formatter/report-format-coverage.cjs"),
   );
   fs.chmodSync(executable, 0o755);
 

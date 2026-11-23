@@ -1,5 +1,5 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import { test } from "node:test";
 import { nativeVaporCaptureRequired } from "../../tools/support/compat/github/native-vapor-capture.mjs";
 
@@ -33,7 +33,7 @@ test("original Model and all Vapor consumers select the actual native lane", () 
 });
 
 test("all four real attempts and six packets survive before a failing verdict", () => {
-  const action = fs.readFileSync(
+  const action = readAutomationPrograms(
     new URL("../../.github/actions/test-native-vapor/action.yml", import.meta.url),
     "utf8",
   );

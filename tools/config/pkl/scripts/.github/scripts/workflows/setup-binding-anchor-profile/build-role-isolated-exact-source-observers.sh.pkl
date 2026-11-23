@@ -1,0 +1,27 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  module.requireCommitShas(List("BASE_SHA", "HEAD_SHA"))
+  #"""
+  [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+  mkdir "$RUNNER_TEMP/binding-evidence"
+  base_revision=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+  git worktree add --detach "$RUNNER_TEMP/binding-base" "$base_revision"
+  printf '%s\n' "$BASE_SHA" > "$RUNNER_TEMP/binding-evidence/pull-request-base.sha"
+  observer=tools/benchmarks/crates/vize/tests/setup_binding_anchor_profile.rs
+  cp "$observer" "$RUNNER_TEMP/binding-base/$observer"
+  for role in base head; do
+    source_root="$GITHUB_WORKSPACE"
+    if [[ "$role" == base ]]; then source_root="$RUNNER_TEMP/binding-base"; fi
+    git -C "$source_root" rev-parse HEAD > "$RUNNER_TEMP/binding-evidence/$role.source"
+    (cd "$source_root" && rustc -Vv) > "$RUNNER_TEMP/binding-evidence/$role-rustc.txt"
+    cmp "$observer" "$source_root/$observer"
+    (cd "$source_root" && CARGO_TARGET_DIR="$RUNNER_TEMP/binding-$role-target" cargo test --locked --profile ci-opt -p vize_benchmarks --test setup_binding_anchor_profile --no-run --message-format=json) > "$RUNNER_TEMP/binding-evidence/$role-build.jsonl"
+    node "$VIZE_CI_FILES/../shared/profile-build.ts" setup_binding_anchor_profile "$role"
+  done
+  node "$VIZE_CI_FILES/build-role-isolated-exact-source-observers.ts"
+  """#
+}

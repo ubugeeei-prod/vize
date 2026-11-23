@@ -1,0 +1,43 @@
+import "../Actions.pkl" as ci
+
+name = "Capture original Vue2 interpolation documents"
+description = "Join fresh original Glyph outputs to complete pinned Vue2 compiler/runtime goldens"
+inputs {
+  `comparison-base` {
+    required = true
+    description = "Literal source comparison base used by the enclosing tooling plan"
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Select the original Vue2 document source slice"
+      id = "select"
+      shell = "bash"
+      env { BASE_SHA = "${{ inputs.comparison-base }}" }
+      run = ci.actionScript("select-the-original-vue2-document-source-slice.sh")
+    }
+    new Dynamic {
+      name = "Join fresh original TextView outputs to pinned whole goldens"
+      `if` = "${{ steps.select.outputs.selected == 'true' }}"
+      shell = "bash"
+      env {
+        VIZE_GLYPH_VUE2_TEXT_CAPTURE = "${{ runner.temp }}/native-vue2-text-documents.json"
+        VIZE_GLYPH_VUE2_TEXT_SOURCE_HEAD = "${{ github.event.pull_request.head.sha || github.sha }}"
+      }
+      run = ci.actionScript("join-fresh-original-textview-outputs-to-pinned-whole-goldens.sh")
+    }
+    new Dynamic {
+      name = "Retain the actual original Vue2 document capture"
+      `if` = "${{ always() && steps.select.outputs.selected == 'true' }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "native-vue2-text-documents-${{ github.run_id }}-${{ github.sha }}"
+        path = "${{ runner.temp }}/native-vue2-text-documents.json"
+        `if-no-files-found` = "error"
+        `retention-days` = 14
+      }
+    }
+  }
+}

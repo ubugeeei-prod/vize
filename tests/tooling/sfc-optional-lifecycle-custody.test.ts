@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -12,7 +13,7 @@ const ordinary = readRepoFile(
   "src",
   "optional-prop-spacing-native.test.ts",
 );
-const workflow = readRepoFile(".github", "workflows", "sfc-optional-lifecycle.yml");
+const workflow = readAutomationPrograms(".github", "workflows", "sfc-optional-lifecycle.yml");
 
 void test("issue 10582 keeps the reported and controlled evidence immutable", () => {
   for (const value of [

@@ -1,0 +1,17 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  if [ "$1" = --lsp ]; then
+    echo "$$" > {pid}
+    if [ "{nested}" = true ]; then
+      printf '%s' '{{"compilerOptions":{{"allowJs":true,"checkJs":true,"types":[],"noEmit":true}}}}' > {nested_config}
+    else
+      echo ' ' >> {config}
+    fi
+  fi
+  exec {backend} "$@"
+  """#
+}

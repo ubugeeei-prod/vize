@@ -1,11 +1,7 @@
 # Workflow catalog
 
-GitHub only discovers workflow files directly under this directory, so the files
-cannot be organized into subdirectories without changing how Actions finds them.
-This generated, numbered catalog is the navigation layer; reusable implementation
-belongs in `.github/actions/` or typed drivers under `tools/`.
-
-Regenerate with `node tools/commands/ci/workflow-catalog.ts`.
+Edit the Pkl sources linked from each group. GitHub runs the generated YAML in this directory. Each step invokes a named program. Shell recipes live under `tools/config/pkl/scripts/` and workflow drivers under `.github/scripts/workflows/`. Jobs that qualify an older checkout stage the workflow revision’s drivers before switching source.
+Run `node tools/commands/generate/repository-config.ts` to update the workflows and this catalog.
 
 ## Start here
 
@@ -44,11 +40,13 @@ surfaces and are not routine CI-refactor targets.
 
 Start here for required checks, change planning, merge queues, and full qualification.
 
+[Edit the Pkl sources](../../tools/config/pkl/workflows/checks/)
+
 | ID    | Workflow                           | File                                                                             |
 | ----- | ---------------------------------- | -------------------------------------------------------------------------------- |
 | 01.01 | Canonical corpus divergence        | [`canonical-corpus-divergence.yml`](./canonical-corpus-divergence.yml)           |
 | 01.02 | Canonical corpus objects           | [`canonical-corpus-objects.yml`](./canonical-corpus-objects.yml)                 |
-| 01.03 | Check Benchmark Gate               | [`check-bench.yml`](./check-bench.yml)                                           |
+| 01.03 | Benchmark - Type checking gate     | [`check-bench.yml`](./check-bench.yml)                                           |
 | 01.04 | Check                              | [`check.yml`](./check.yml)                                                       |
 | 01.05 | App E2E                            | [`e2e.yml`](./e2e.yml)                                                           |
 | 01.06 | Full qualification                 | [`full-qualification.yml`](./full-qualification.yml)                             |
@@ -72,6 +70,8 @@ Start here for required checks, change planning, merge queues, and full qualific
 ## 02 Release and public acceptance
 
 Publication, registry, and installed-consumer evidence. Trusted-publishing workflows are protected surfaces.
+
+[Edit the Pkl sources](../../tools/config/pkl/workflows/release/)
 
 | ID    | Workflow                                  | File                                                                                       |
 | ----- | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -117,55 +117,59 @@ Publication, registry, and installed-consumer evidence. Trusted-publishing workf
 
 Wall time, allocation, instruction, memory, scaling, and reproducible benchmark runs.
 
+[Edit the Pkl sources](../../tools/config/pkl/workflows/performance/)
+
 | ID    | Workflow                                            | File                                                                                     |
 | ----- | --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| 03.01 | Benchmark                                           | [`benchmark.yml`](./benchmark.yml)                                                       |
-| 03.02 | CI walltime comparison                              | [`ci-walltime-benchmark.yml`](./ci-walltime-benchmark.yml)                               |
+| 03.01 | Benchmark - Source comparison                       | [`benchmark.yml`](./benchmark.yml)                                                       |
+| 03.02 | Benchmark - CI wall time                            | [`ci-walltime-benchmark.yml`](./ci-walltime-benchmark.yml)                               |
 | 03.03 | Cold typechecker scale                              | [`cold-typechecker-scale.yml`](./cold-typechecker-scale.yml)                             |
-| 03.04 | Compile Benchmark                                   | [`compile-bench.yml`](./compile-bench.yml)                                               |
+| 03.04 | Benchmark - SFC compilation                         | [`compile-bench.yml`](./compile-bench.yml)                                               |
 | 03.05 | Component binding view allocation profile           | [`component-binding-view-profile.yml`](./component-binding-view-profile.yml)             |
 | 03.06 | Component scope binding allocation profile          | [`component-scope-binding.yml`](./component-scope-binding.yml)                           |
 | 03.07 | Content Mapper Cold Start                           | [`content-mapper-cold-start.yml`](./content-mapper-cold-start.yml)                       |
 | 03.08 | Content mapper span allocation                      | [`content-mapper-span-allocation.yml`](./content-mapper-span-allocation.yml)             |
-| 03.09 | Criterion Bench                                     | [`criterion-bench.yml`](./criterion-bench.yml)                                           |
+| 03.09 | Benchmark - Criterion suites                        | [`criterion-bench.yml`](./criterion-bench.yml)                                           |
 | 03.10 | Davinci Canon distinct-host scaling                 | [`davinci-canon-scaling.yml`](./davinci-canon-scaling.yml)                               |
 | 03.11 | Davinci resource budgets                            | [`davinci-resource-budgets.yml`](./davinci-resource-budgets.yml)                         |
-| 03.12 | Diagnostic digest benchmark                         | [`diagnostic-digest-bench.yml`](./diagnostic-digest-bench.yml)                           |
-| 03.13 | Doctor filter benchmark                             | [`doctor-filter-bench.yml`](./doctor-filter-bench.yml)                                   |
+| 03.12 | Benchmark - Diagnostic digest                       | [`diagnostic-digest-bench.yml`](./diagnostic-digest-bench.yml)                           |
+| 03.13 | Benchmark - Doctor filters                          | [`doctor-filter-bench.yml`](./doctor-filter-bench.yml)                                   |
 | 03.14 | Document snapshot source profile                    | [`document-snapshot-source-profile.yml`](./document-snapshot-source-profile.yml)         |
-| 03.15 | Fresco dimension benchmark                          | [`fresco-dimension-bench.yml`](./fresco-dimension-bench.yml)                             |
+| 03.15 | Benchmark - Fresco dimensions                       | [`fresco-dimension-bench.yml`](./fresco-dimension-bench.yml)                             |
 | 03.16 | Expression slow unit 10401 profile                  | [`fuzz-expression-10401-profile.yml`](./fuzz-expression-10401-profile.yml)               |
-| 03.17 | glibc floor benchmark                               | [`glibc-floor-bench.yml`](./glibc-floor-bench.yml)                                       |
+| 03.17 | Benchmark - glibc compatibility                     | [`glibc-floor-bench.yml`](./glibc-floor-bench.yml)                                       |
 | 03.18 | Level instruction counts                            | [`level-instruction-counts.yml`](./level-instruction-counts.yml)                         |
-| 03.19 | Complete Level Memory Comparison                    | [`level-memory-bench.yml`](./level-memory-bench.yml)                                     |
-| 03.20 | Same-wire LSP benchmark                             | [`lsp-dual-server-benchmark.yml`](./lsp-dual-server-benchmark.yml)                       |
+| 03.19 | Benchmark - Level memory                            | [`level-memory-bench.yml`](./level-memory-bench.yml)                                     |
+| 03.20 | Benchmark - LSP server comparison                   | [`lsp-dual-server-benchmark.yml`](./lsp-dual-server-benchmark.yml)                       |
 | 03.21 | LSP marker scan allocation and residency comparison | [`lsp-marker-scan-scale.yml`](./lsp-marker-scan-scale.yml)                               |
 | 03.22 | LSP source operations and allocations               | [`lsp-source-profile.yml`](./lsp-source-profile.yml)                                     |
 | 03.23 | Partition weight work                               | [`partition-weight-work.yml`](./partition-weight-work.yml)                               |
 | 03.24 | Persistent batch storage                            | [`persistent-batch-storage.yml`](./persistent-batch-storage.yml)                         |
 | 03.25 | Profile allocation thread law                       | [`profile-allocation-thread-law.yml`](./profile-allocation-thread-law.yml)               |
-| 03.26 | Rust frontend threads benchmark                     | [`rust-frontend-threads-bench.yml`](./rust-frontend-threads-bench.yml)                   |
+| 03.26 | Benchmark - Rust frontend threads                   | [`rust-frontend-threads-bench.yml`](./rust-frontend-threads-bench.yml)                   |
 | 03.27 | Script recovery clone cost                          | [`script-recovery-clone-cost.yml`](./script-recovery-clone-cost.yml)                     |
 | 03.28 | Script recovery cost                                | [`script-recovery-cost.yml`](./script-recovery-cost.yml)                                 |
 | 03.29 | Setup binding anchor allocation profile             | [`setup-binding-anchor-profile.yml`](./setup-binding-anchor-profile.yml)                 |
 | 03.30 | Native SFC member phase comparison                  | [`sfc-member-profile.yml`](./sfc-member-profile.yml)                                     |
 | 03.31 | Shipped release-profile measure                     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)                           |
 | 03.32 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
-| 03.33 | String Storage Bench                                | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
-| 03.34 | Text boundary benchmark                             | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
-| 03.35 | Tool Benchmark                                      | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
+| 03.33 | Benchmark - String storage                          | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
+| 03.34 | Benchmark - UTF-8 file reads                        | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
+| 03.35 | Benchmark - Tool comparison                         | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
 | 03.36 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
-| 03.37 | Type source snapshot benchmark                      | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
+| 03.37 | Benchmark - Type source snapshots                   | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
 | 03.38 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
 | 03.39 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
 | 03.40 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
-| 03.41 | VS Code startup bench                               | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
+| 03.41 | Benchmark - VS Code startup                         | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
 | 03.42 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
 | 03.43 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
 
 ## 04 Type checking and content mapping
 
 Typechecker, content-mapper, Corsa, and TypeScript-provider qualification.
+
+[Edit the Pkl sources](../../tools/config/pkl/workflows/typecheck/)
 
 | ID    | Workflow                                  | File                                                                                         |
 | ----- | ----------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -192,6 +196,8 @@ Typechecker, content-mapper, Corsa, and TypeScript-provider qualification.
 ## 05 Language services and editors
 
 LSP behavior, editor packages, VSIX hosts, overlays, navigation, and hover checks.
+
+[Edit the Pkl sources](../../tools/config/pkl/workflows/editors/)
 
 | ID    | Workflow                                  | File                                                                         |
 | ----- | ----------------------------------------- | ---------------------------------------------------------------------------- |
@@ -223,6 +229,8 @@ LSP behavior, editor packages, VSIX hosts, overlays, navigation, and hover check
 ## 06 SFC, JSX, and compiler correctness
 
 SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctness.
+
+[Edit the Pkl sources](../../tools/config/pkl/workflows/compiler/)
 
 | ID    | Workflow                                 | File                                                                           |
 | ----- | ---------------------------------------- | ------------------------------------------------------------------------------ |
@@ -274,6 +282,8 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 
 Davinci migration, Canon ownership, Level lowering, and cross-file graph contracts.
 
+[Edit the Pkl sources](../../tools/config/pkl/workflows/davinci/)
+
 | ID    | Workflow                                      | File                                                                             |
 | ----- | --------------------------------------------- | -------------------------------------------------------------------------------- |
 | 07.01 | Canon component casing accuracy               | [`canon-component-casing.yml`](./canon-component-casing.yml)                     |
@@ -309,6 +319,8 @@ Davinci migration, Canon ownership, Level lowering, and cross-file graph contrac
 
 Babel, Nuxt, Parcel, Rspack, Turbopack, Vite, Vitest, and consumer hosts.
 
+[Edit the Pkl sources](../../tools/config/pkl/workflows/integrations/)
+
 | ID    | Workflow                               | File                                                                       |
 | ----- | -------------------------------------- | -------------------------------------------------------------------------- |
 | 08.01 | Babel plugin host contracts            | [`babel-plugin-hosts.yml`](./babel-plugin-hosts.yml)                       |
@@ -340,6 +352,8 @@ Babel, Nuxt, Parcel, Rspack, Turbopack, Vite, Vitest, and consumer hosts.
 
 ESLint, Oxlint, Prettier, formatter, doctor, configuration, and tooling contracts.
 
+[Edit the Pkl sources](../../tools/config/pkl/workflows/tooling/)
+
 | ID    | Workflow                           | File                                                                                         |
 | ----- | ---------------------------------- | -------------------------------------------------------------------------------------------- |
 | 09.01 | Doctor barrel prop accuracy        | [`doctor-barrel-props.yml`](./doctor-barrel-props.yml)                                       |
@@ -361,6 +375,8 @@ ESLint, Oxlint, Prettier, formatter, doctor, configuration, and tooling contract
 
 Musea, Fresco, playground, app E2E, UI packages, and browser-facing integrations.
 
+[Edit the Pkl sources](../../tools/config/pkl/workflows/apps/)
+
 | ID    | Workflow                            | File                                                                                   |
 | ----- | ----------------------------------- | -------------------------------------------------------------------------------------- |
 | 10.01 | Fresco                              | [`fresco.yml`](./fresco.yml)                                                           |
@@ -371,6 +387,8 @@ Musea, Fresco, playground, app E2E, UI packages, and browser-facing integrations
 ## 11 Security, maintenance, and documentation
 
 Security audits, dependency upkeep, scheduled maintenance, docs, and repository hygiene.
+
+[Edit the Pkl sources](../../tools/config/pkl/workflows/maintenance/)
 
 | ID    | Workflow                                    | File                                                                       |
 | ----- | ------------------------------------------- | -------------------------------------------------------------------------- |

@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -163,7 +164,7 @@ test("release builds link every GNU artifact against the documented floor", () =
     new RegExp(`const linuxGnuGlibcFloor = "${linuxGnuGlibcFloor.replace(".", "\\.")}";`),
   );
 
-  const native = readRepoFile(".github", "actions", "build-release-native", "action.yml");
+  const native = readAutomationPrograms(".github", "actions", "build-release-native", "action.yml");
   assert.match(
     native,
     /verify-glibc-symbols\.ts npm\/native\/\*\.linux-\*-gnu\.node[\s\S]*verify-glibc-symbols\.ts npm\/fresco-native\/\*\.linux-\*-gnu\.node/,
@@ -171,7 +172,7 @@ test("release builds link every GNU artifact against the documented floor", () =
   assert.doesNotMatch(native, /verify-glibc-symbols\.ts --max/);
   assert.match(native, /uses: \.\/\.github\/actions\/setup-cargo-zigbuild/);
 
-  const cli = readRepoFile(".github", "actions", "build-release-cli", "action.yml");
+  const cli = readAutomationPrograms(".github", "actions", "build-release-cli", "action.yml");
   assert.match(cli, /glibc-floor\.ts target "\$RELEASE_TARGET"/);
   assert.match(cli, /cargo zigbuild --locked --release -p vize --target "\$floor_target"/);
   assert.match(cli, /verify-glibc-symbols\.ts "target\/\$RELEASE_TARGET\/release\/vize"/);
@@ -188,7 +189,7 @@ test("the release cannot tag before the GNU artifacts ran on old glibc", () => {
   assert.match(smoke, /cli: \.artifacts\/cli\/vize/);
   assert.match(workflowJobBody(release, "tag"), /smoke-glibc-floor/);
 
-  const containers = readRepoFile(
+  const containers = readAutomationPrograms(
     ".github",
     "actions",
     "smoke-glibc-floor-containers",

@@ -1,0 +1,129 @@
+import "../../Actions.pkl" as ci
+
+name = "Real Project Matrix differential"
+// Writes one shared-format result per product from each completed full Real
+// Project Matrix run on main (#6891), then publishes the native-only acceptance
+// census and zero-fallback verdict over it (#6853, #6854). Scoped diagnostics
+// cover one project. A dispatch republishes an earlier full matrix run.
+//
+on {
+  workflow_run {
+    workflows = List("Real Project Matrix")
+    types = List("completed")
+    branches = List("main")
+  }
+  workflow_dispatch {
+    inputs {
+      matrix_run_id {
+        description = "Completed full Real Project Matrix run on main to publish"
+        required = true
+        type = "string"
+      }
+    }
+  }
+}
+
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+permissions {
+  actions = "read"
+  contents = "read"
+}
+
+jobs {
+  results {
+    name = "per-product differential results"
+    `if` = "${{ github.event_name == 'workflow_dispatch' || !contains(github.event.workflow_run.display_title, 'scoped-diagnostic') }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("real-project-matrix-differential")
+      new Dynamic {
+        name = "Resolve the matrix run"
+        id = "run"
+        env {
+          GH_TOKEN = "${{ github.token }}"
+          RUN_ID = "${{ inputs.matrix_run_id || github.event.workflow_run.id }}"
+        }
+        run = ci.workflowScript("resolve-the-matrix-run.sh")
+      }
+      ci.checkoutAt("${{ steps.run.outputs.sha }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Download shard reports"
+        uses = ci.downloadArtifact
+        with {
+          `run-id` = "${{ steps.run.outputs.id }}"
+          `github-token` = "${{ github.token }}"
+          pattern = "real-project-matrix-*"
+          path = "real-project-shards"
+        }
+      }
+      new Dynamic {
+        name = "Download canonical DOM corpus evidence"
+        `continue-on-error` = true
+        uses = ci.downloadArtifact
+        with {
+          `run-id` = "${{ steps.run.outputs.id }}"
+          `github-token` = "${{ github.token }}"
+          name = "real-project-davinci-dom-corpus"
+          path = "dom-corpus"
+        }
+      }
+      new Dynamic {
+        name = "Download canonical SSR corpus evidence"
+        `continue-on-error` = true
+        uses = ci.downloadArtifact
+        with {
+          `run-id` = "${{ steps.run.outputs.id }}"
+          `github-token` = "${{ github.token }}"
+          name = "canonical-corpus-ssr-pug-${{ steps.run.outputs.id }}-${{ steps.run.outputs.attempt }}-${{ steps.run.outputs.sha }}"
+          path = "ssr-corpus"
+        }
+      }
+      new Dynamic {
+        name = "Write per-product results and acceptance"
+        env { SOURCE_REVISION = "${{ steps.run.outputs.sha }}" }
+        run = "node tests/differential/real-project.ts real-project-shards real-project-differential dom-corpus ssr-corpus"
+      }
+      // The census tool and policy come from this workflow's revision, so a
+      // matrix run that predates the tool can still be published.
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.sha }}"
+          path = "census-tool"
+          `persist-credentials` = false
+          `sparse-checkout-cone-mode` = false
+          `sparse-checkout` = """
+          /package.json
+          /tests/differential/
+          /docs/davinci/plan/deletion-readiness-policy.json
+
+          """
+        }
+      }
+      new Dynamic {
+        name = "Publish native-only acceptance and zero-fallback census"
+        run = "node census-tool/tests/differential/native-acceptance.ts --out real-project-differential/acceptance real-project-differential"
+      }
+      new Dynamic {
+        name = "Upload per-product results"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "real-project-differential"
+          path = "real-project-differential"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

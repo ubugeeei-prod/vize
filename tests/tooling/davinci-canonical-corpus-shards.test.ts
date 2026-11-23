@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -15,7 +16,6 @@ import {
 import { validateObserverLog } from "../../tools/support/compat/github/canonical-corpus-observer.mjs";
 import { shardedObserverEvidence } from "./support/canonical-corpus-shard-logs.ts";
 import type { ShardedEvidence } from "./support/canonical-corpus-shard-logs.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
 
 const paths = Array.from(
   { length: 61 },
@@ -233,7 +233,9 @@ await test("every process must be present, clean and from the same binary", () =
 
 await test("the observer workflow builds in the background and runs each sharded observer", () => {
   type Step = { name?: string; run?: string; uses?: string; with?: Record<string, unknown> };
-  const workflow = parse(readRepoFile(".github", "workflows", "davinci-canonical-corpus.yml"));
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "davinci-canonical-corpus.yml"),
+  );
   const steps = workflow.jobs["canonical-observers"].steps as Step[];
   const names = steps.map((step) => step.name);
   const step = (name: string) => steps.find((candidate) => candidate.name === name) as Step;
@@ -276,13 +278,16 @@ await test("the observer workflow builds in the background and runs each sharded
 
 await test("only trusted main seeds the fixture objects that PR and queue observers restore", () => {
   type Step = { name?: string; run?: string; uses?: string; if?: string; with?: unknown };
-  const workflow = parse(readRepoFile(".github", "workflows", "canonical-corpus-objects.yml"));
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "canonical-corpus-objects.yml"),
+  );
   assert.deepEqual(workflow.on.push, {
     branches: ["main"],
     paths: [
       ".gitmodules",
       "tests/_fixtures/_git/**",
       ".github/workflows/canonical-corpus-objects.yml",
+      ".github/scripts/workflows/canonical-corpus-objects/**",
     ],
   });
   assert.equal(workflow.on.pull_request, undefined);

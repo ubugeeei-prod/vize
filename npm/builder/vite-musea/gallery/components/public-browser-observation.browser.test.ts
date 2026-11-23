@@ -17,21 +17,33 @@ void test(
     const directory = await mkdtemp(path.join(os.tmpdir(), "musea-public-failure-"));
     const output = path.join(directory, "musea.json");
     const observer = observeBrowser(output);
+    const scripts = new Map([
+      [
+        "/public-observation-preview.js",
+        await readFile(new URL("./public-observation-preview.js", import.meta.url)),
+      ],
+      [
+        "/public-observation-gallery.js",
+        await readFile(new URL("./public-observation-gallery.js", import.meta.url)),
+      ],
+    ]);
     const server = createServer((request, response) => {
-      if (request.url === "/missing.js") {
+      const script = scripts.get(request.url ?? "");
+      if (script !== undefined) {
+        response.writeHead(200, { "Content-Type": "text/javascript" });
+        response.end(script);
+      } else if (request.url === "/missing.js") {
         response.writeHead(404, { "Content-Type": "text/javascript" });
         response.end("// genuinely missing diagnostic module\n");
       } else if (request.url?.startsWith("/preview")) {
         response.writeHead(200, { "Content-Type": "text/html" });
-        response.end(`<!doctype html><html lang="en" data-brand="default" data-scheme="light"><body><museacomponent>Default Button</museacomponent><script>
-window.__publicSetupCalls=1;window.__publicDocumentToken=crypto.randomUUID();
-window.__publicFirstGlobals={brand:'default',scheme:'light',locale:'en'};
-throw new Error('actual-preview-diagnostic-error');
-</script></body></html>`);
+        response.end(
+          `<!doctype html><html lang="en" data-brand="default" data-scheme="light"><body><museacomponent>Default Button</museacomponent><script src="/public-observation-preview.js"></script></body></html>`,
+        );
       } else {
         response.writeHead(200, { "Content-Type": "text/html" });
         response.end(
-          `<!doctype html><html><body><script src="/missing.js"></script><script>console.error('actual-gallery-diagnostic-console');fetch('/missing.js').then(response=>response.text()).then(text=>window.__actualFailureBody=text);</script><section class="variant-card"><iframe src="/preview?variant=Default"></iframe></section><section class="variant-card"><iframe src="/preview?variant=Second"></iframe></section></body></html>`,
+          `<!doctype html><html><body><script src="/missing.js"></script><script src="/public-observation-gallery.js"></script><section class="variant-card"><iframe src="/preview?variant=Default"></iframe></section><section class="variant-card"><iframe src="/preview?variant=Second"></iframe></section></body></html>`,
         );
       }
     });

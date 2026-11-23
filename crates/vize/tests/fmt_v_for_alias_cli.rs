@@ -2,15 +2,6 @@
 #![cfg(feature = "glyph")]
 use std::{error::Error, fs, path::Path, process::Command};
 
-const OBSERVE: &str = r#"
-import { readFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
-const { observeSource, providerIdentities } = await import(pathToFileURL(process.argv[1]).href);
-const before = await observeSource(readFileSync(process.argv[2], 'utf8'), 'original', [false, true]);
-const after = await observeSource(readFileSync(process.argv[3], 'utf8'), 'formatted', [false, true]);
-process.stdout.write(JSON.stringify({ before, after, providers: providerIdentities }) + '\n');
-"#;
-
 #[test]
 fn complete_aliases_survive_five_cli_processes_and_stock_dom_ssr_per_case()
 -> Result<(), Box<dyn Error>> {
@@ -193,7 +184,10 @@ fn assert_stock_semantics(
     let helper = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/tooling/support/formatter-expression-width-semantics.mjs");
     let result = Command::new("node")
-        .args(["--input-type=module", "-e", OBSERVE])
+        .arg(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/programs/observe-formatted-for-alias.js"
+        ))
         .arg(helper)
         .arg(original)
         .arg(formatted)

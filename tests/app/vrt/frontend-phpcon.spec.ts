@@ -1,3 +1,4 @@
+import { seedLocalStorage } from "../../_helpers/browser/local-storage.ts";
 import { test, expect, type Browser, type Page } from "@playwright/test";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -145,9 +146,7 @@ function actionForRoute(routeName: string): VisualRoute["action"] {
 async function setupPage(page: Page): Promise<void> {
   await mockViteHmrSocket(page);
   await installVisualStabilityHooks(page);
-  await page.addInitScript(() => {
-    localStorage.setItem("nuxt-color-mode", "light");
-  });
+  await page.addInitScript(seedLocalStorage, { values: { "nuxt-color-mode": "light" } });
 }
 
 async function mockViteHmrSocket(page: Page): Promise<void> {

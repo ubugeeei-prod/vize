@@ -26,9 +26,8 @@ assert.ok(
     'const OFFICIAL_COMPILER_NODE_SCRIPT: &str = include_str!("official_compiler.ts");',
   ),
 );
-const embedded = readFileSync(
+const compilerProgram = fileURLToPath(
   new URL("../../crates/vize/src/commands/inspector/official_compiler.ts", import.meta.url),
-  "utf8",
 );
 const cwd = fileURLToPath(new URL("../", import.meta.url));
 
@@ -46,16 +45,20 @@ interface ComparedFile {
 }
 
 function compare(target: "dom" | "ssr", input: string, filename = origin.path): ComparedFile {
-  const result = spawnSync(process.execPath, ["--input-type=module", "-e", embedded], {
-    cwd,
-    input: JSON.stringify({
-      target,
-      moduleRoot: cwd,
-      files: [{ path: filename, source: input, vizeCode: "" }],
-    }),
-    encoding: "utf8",
-    timeout: 30_000,
-  });
+  const result = spawnSync(
+    process.execPath,
+    ["--experimental-import-meta-resolve", compilerProgram],
+    {
+      cwd,
+      input: JSON.stringify({
+        target,
+        moduleRoot: cwd,
+        files: [{ path: filename, source: input, vizeCode: "" }],
+      }),
+      encoding: "utf8",
+      timeout: 30_000,
+    },
+  );
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stderr, "", "official compiler must not warn about omitted SSR CSS vars");

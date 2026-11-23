@@ -1,5 +1,8 @@
 export { rootBuildTaskPlugin } from "./root-build-task-plugin.ts";
 export {
+  assertVscodePackage,
+  packageVscodeExtension,
+  stageVscodeTypeScriptPlugin,
   devApp,
   installVscodeExtensionDependencies,
   localVp,
@@ -17,6 +20,7 @@ export {
   vscodeExtensionPackageBin,
 } from "./task-commands.ts";
 export { noCacheTask, task } from "./task-definition.ts";
-export { shellCommand, shellQuote, withRustTaskEnvironment } from "./task-shell.ts";
+export { shellQuote } from "./task-shell.ts";
+export { steps } from "./task-plan.ts";
 export { defineTasks } from "./task-types.ts";
 export type { PackagePath, TaskInput } from "./task-types.ts";

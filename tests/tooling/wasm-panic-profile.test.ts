@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -25,19 +26,25 @@ for (const [script, args, status] of [
       writeFakeCommand(
         bindgen,
         "wasm-bindgen",
-        `console.log('wasm-bindgen ${wasmBindgenVersion}');`,
+        readToolingProgram("commands/wasm-panic-profile/wasm-bindgen.js.in", {
+          WASM_BINDGEN_VERSION: wasmBindgenVersion,
+        }),
       );
       // Exercise hosts without Apple's SDK discovery command, including macOS
       // installations where the command exists but cannot locate an SDK.
-      writeFakeCommand(bin, "xcrun", "process.exit(1);");
+      writeFakeCommand(
+        bin,
+        "xcrun",
+        readToolingProgram(
+          "commands/fixture-tool-matrix-compiler/vize-requires-explicit-zero-file-expectation.js",
+        ),
+      );
       writeFakeCommand(
         bin,
         "cargo",
-        `require('node:fs').writeFileSync(${JSON.stringify(record)}, JSON.stringify({
-          panic: process.env.CARGO_PROFILE_RELEASE_PANIC,
-          flags: process.env.RUSTFLAGS,
-          args: process.argv.slice(2),
-        })); process.exit(17);`,
+        readToolingProgram("commands/wasm-panic-profile/cargo.js.in", {
+          RECORD: JSON.stringify(record),
+        }),
       );
       const result = runToolCommand(script, [...args], {
         cwd: root,

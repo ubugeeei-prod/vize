@@ -6,7 +6,11 @@ use super::diagnosing_key;
 fn launcher_scripts_preserve_fresh_diagnosing_process_behavior() {
     let root = tempfile::TempDir::new().unwrap();
     let launcher = root.path().join("corsa");
-    std::fs::write(&launcher, "#!/bin/sh\nexec \"$SELECTED_CORSA\" \"$@\"\n").unwrap();
+    std::fs::write(
+        &launcher,
+        include_str!("../../../../tests/programs/forward-selected-corsa.sh"),
+    )
+    .unwrap();
     assert!(
         diagnosing_key(
             launcher.to_str().unwrap(),

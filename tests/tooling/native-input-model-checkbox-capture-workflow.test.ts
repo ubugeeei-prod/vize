@@ -1,5 +1,5 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import { test } from "node:test";
 import { nativeVaporCaptureRequired } from "../../tools/support/compat/github/native-vapor-capture.mjs";
 
@@ -38,7 +38,7 @@ test("checkbox producer, inputs and all three consumers select genuine hosted ca
 });
 
 test("checkbox capture retains every phase before verdict and preserves actual number replay", () => {
-  const action = fs.readFileSync(
+  const action = readAutomationPrograms(
     new URL("../../.github/actions/test-native-vapor/action.yml", import.meta.url),
     "utf8",
   );

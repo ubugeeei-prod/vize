@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+node "$VIZE_CI_FILES/verify-the-immutable-release-includes-the-merged-source-fix.ts"

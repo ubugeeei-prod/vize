@@ -203,35 +203,31 @@ async function runOnce(
   let childHwmMiB: number | undefined;
   let processWallMs: number | undefined;
   if (windows) {
-    const quote = (value: string) => `'${value.replace(/'/gu, "''")}'`;
-    const args = checkArgs(project, checker, checkers)
-      .map((arg) => `"${arg}"`)
-      .join(",");
-    // The process object's own start and exit times give the wall time, so
-    // PowerShell's startup and the polling below stay outside it. An exited
-    // process no longer answers its peak working set, so vize and its checker
-    // children are sampled while they run.
-    const script = [
-      `$env:VIZE_CANON_CACHE_ROOT = ${quote(cache.env.VIZE_CANON_CACHE_ROOT ?? "")};`,
-      `$p = Start-Process -FilePath ${quote(build.bin)} -ArgumentList @(${args})`,
-      `-WorkingDirectory ${quote(project.dir)} -RedirectStandardOutput ${quote(output)}`,
-      `-RedirectStandardError ${quote(`${output}.err`)} -NoNewWindow -PassThru;`,
-      // Holding the handle keeps exit code and processor time readable after exit.
-      "$null = $p.Handle; $vizePeak = 0; $children = @{};",
-      "while (-not $p.HasExited) {",
-      "  $p.Refresh(); if ($p.PeakWorkingSet64 -gt $vizePeak) { $vizePeak = $p.PeakWorkingSet64 };",
-      '  foreach ($c in Get-CimInstance Win32_Process -Filter "ParentProcessId=$($p.Id)") {',
-      "    $kib = [int64]$c.PeakWorkingSetSize; if (-not $children.ContainsKey($c.ProcessId) -or $children[$c.ProcessId] -lt $kib) { $children[$c.ProcessId] = $kib } };",
-      "  Start-Sleep -Milliseconds 250 };",
-      "$p.WaitForExit();",
-      "$childKiB = 0; foreach ($v in $children.Values) { $childKiB += $v };",
-      "@{ exit = $p.ExitCode; cpu = $p.TotalProcessorTime.TotalSeconds; vizePeak = $vizePeak;",
-      "   childKiB = $childKiB; wallMs = ($p.ExitTime - $p.StartTime).TotalMilliseconds } | ConvertTo-Json -Compress",
-    ].join(" ");
-    const result = spawnSync("powershell.exe", ["-NoProfile", "-Command", script], {
-      encoding: "utf8",
-      env: cache.env,
-    });
+    // Windows PowerShell passes Start-Process one command line. Quote each CRT argument
+    // before handing it across, including embedded quotes and trailing backslashes.
+    const commandLine = checkArgs(project, checker, checkers)
+      .map((arg) => '"' + arg.replace(/(\\*)"/gu, '$1$1\\"').replace(/(\\+)$/u, "$1$1") + '"')
+      .join(" ");
+    const result = spawnSync(
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-File",
+        join(import.meta.dirname, "typecheck-cold-windows.ps1"),
+        "-Executable",
+        build.bin,
+        "-Directory",
+        project.dir,
+        "-OutputFile",
+        output,
+      ],
+      {
+        encoding: "utf8",
+        env: { ...cache.env, VIZE_CHECK_ARGUMENTS: commandLine },
+      },
+    );
+    if (result.error) throw result.error;
+    if (result.status !== 0) throw new Error(result.stderr || "Windows process measurement failed");
     const measured = JSON.parse(result.stdout.trim().split(/\r?\n/u).pop() ?? "{}") as {
       exit?: number;
       cpu?: number;

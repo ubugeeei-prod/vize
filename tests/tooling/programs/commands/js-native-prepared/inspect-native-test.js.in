@@ -1,0 +1,6 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+test("filtered reporter case", () => {
+  assert.equal(process.execPath, @@NODE@@);
+  assert.equal(process.env.VIZE_REPORTER_UNKNOWN, undefined);
+});

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs, { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -56,21 +57,9 @@ test("github/write-coverage-summary appends the tail of coverage output", () => 
     writeFakeCommand(
       binDir,
       "coverage-cargo",
-      [
-        "const args = process.argv.slice(2);",
-        "if (args.join(' ') !== 'run --profile ci -p vize_test_runner --bin coverage') process.exit(99);",
-        "process.stdout.write([",
-        "  'Coverage report',",
-        "  'line-1',",
-        "  'line-2',",
-        "  'line-3',",
-        "  'line-4',",
-        "  'line-5',",
-        "  'line-6',",
-        "  'line-7',",
-        "  'line-8',",
-        "].join('\\n'));",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/github-coverage-summary/coverage-cargo-write-appends-tail-output.js",
+      ),
     );
     writeFileSync(summaryPath, "existing\n");
 
@@ -127,17 +116,9 @@ test("github/write-coverage-summary preserves failing coverage output before ret
     writeFakeCommand(
       binDir,
       "coverage-cargo",
-      [
-        "const args = process.argv.slice(2);",
-        "if (args.join(' ') !== 'run --profile ci -p vize_test_runner --bin coverage') process.exit(99);",
-        "process.stdout.write([",
-        "  'Vue Compiler Coverage Report',",
-        "  '----------------------------',",
-        "  'TOTAL:  502/594 (84.5%)',",
-        "  '92 tests failed',",
-        "].join('\\n'));",
-        "process.exit(7);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/github-coverage-summary/coverage-cargo-write-preserves-failing-output-returning-non-zero.js",
+      ),
     );
     writeFileSync(summaryPath, "existing\n");
 

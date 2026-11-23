@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -106,12 +107,9 @@ test("dependency prepare owns nested setup-only projects and their generated inp
       fixture.runner,
       fixture.invocationPath,
       "1.22.22",
-      `if (managerArgs[0] === "install") {
-  fs.mkdirSync("node_modules", { recursive: true });
-} else {
-  fs.mkdirSync(".nuxt", { recursive: true });
-  fs.writeFileSync(".nuxt/tsconfig.json", "{}\\n");
-}`,
+      readToolingProgram(
+        "commands/typecheck-dependency-prepare/package-manager-owns-nested-setup-only-projects-their-generated-inputs.js",
+      ),
       { spec: "yarn@1.22.22" },
     );
 
@@ -309,7 +307,10 @@ test("dependency prepare materializes and records an explicit generated baseline
       fixture.runner,
       fixture.invocationPath,
       "10.0.0",
-      `if (process.argv[2] === "install") { ${successBody} } else process.exit(9);`,
+      readToolingProgram(
+        "commands/typecheck-dependency-prepare/package-manager-materializes-records-explicit-generated-baseline-config.js.in",
+        { SUCCESS_BODY: successBody },
+      ),
       { spec: "pnpm@10.0.0" },
     );
     const failed = run(fixture);
@@ -319,7 +320,10 @@ test("dependency prepare materializes and records an explicit generated baseline
       fixture.runner,
       fixture.invocationPath,
       "10.0.0",
-      `if (process.argv[2] === "install") { ${successBody} } else { fs.mkdirSync(".generated", { recursive: true }); fs.writeFileSync(".generated/tsconfig.json", "{}\\n"); process.stdout.write("prepared"); }`,
+      readToolingProgram(
+        "commands/typecheck-dependency-prepare/package-manager-dependency-prepare-materializes-records-explicit-generated-baseline-config.js.in",
+        { SUCCESS_BODY: successBody },
+      ),
       { spec: "pnpm@10.0.0" },
     );
     const result = run(fixture);
@@ -342,7 +346,10 @@ test("dependency prepare materializes and records an explicit generated baseline
 test("dependency prepare rejects an unavailable pinned package manager", () => {
   const fixture = setup();
   try {
-    fs.writeFileSync(fixture.runner, "#!/bin/sh\nexit 12\n");
+    fs.writeFileSync(
+      fixture.runner,
+      readToolingProgram("commands/typecheck-dependency-prepare/exit-12.sh"),
+    );
     const result = run(fixture);
     assert.equal(result.status, 1);
     assert.match(result.stderr, /pnpm@10\.0\.0 is not runnable/);
@@ -354,8 +361,14 @@ test("dependency prepare rejects an unavailable pinned package manager", () => {
 
 test("dependency prepare rejects lockfile and tracked-source mutations", () => {
   for (const [body, message] of [
-    [`fs.appendFileSync("pnpm-lock.yaml", "changed");`, /modified frozen lockfile/],
-    [`fs.appendFileSync("package.json", " ");`, /tracked source changed/],
+    [
+      readToolingProgram("commands/typecheck-dependency-prepare/change-lockfile.cjs"),
+      /modified frozen lockfile/,
+    ],
+    [
+      readToolingProgram("commands/typecheck-dependency-prepare/change-package.cjs"),
+      /tracked source changed/,
+    ],
   ] as const) {
     const fixture = setup();
     try {
@@ -389,12 +402,12 @@ test("dependency prepare rejects pre-existing tracked-source changes", () => {
 test("dependency prepare rejects failed and timed-out installs", () => {
   for (const [body, args, message] of [
     [
-      'process.stderr.write("ERR_PNPM_LOCKFILE_CONFIG_MISMATCH concise\\nignored\\n"); process.exit(9);',
+      readToolingProgram("commands/typecheck-dependency-prepare/reject-install.cjs"),
       [],
       /exited with status 9: ERR_PNPM_LOCKFILE_CONFIG_MISMATCH concise/,
     ],
     [
-      "Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 500);",
+      readToolingProgram("commands/typecheck-dependency-prepare/timeout.cjs"),
       ["--timeout-ms", "50"],
       /failed to run/,
     ],

@@ -1,0 +1,154 @@
+import "../../Actions.pkl" as ci
+
+name = "Template compiler global policy"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/template-global-policy.yml"
+      ".github/scripts/workflows/template-global-policy/**"
+      ".github/scripts/workflows/shared/**"
+      "davinci/vize_l0/src/template_globals.rs"
+      "davinci/vize_l4/src/targets/dom/artifact/prefix/**"
+      "crates/vize_atelier_core/src/steps/expression/**"
+      "crates/vize_atelier_core/src/lane/context.rs"
+      "crates/vize_atelier_core/src/codegen/helpers/constant_expression.rs"
+      "crates/vize_atelier_core/src/codegen/expression/**"
+      "crates/vize_atelier_core/src/codegen/slots/params.rs"
+      "crates/vize_atelier_sfc/src/script/import_usage_check/**"
+      "crates/vize_atelier_sfc/tests/template_global_policy.rs"
+      "tests/tooling/native-template-global-policy.test.ts"
+      "tests/tooling/support/template-global-*.ts"
+      "tests/_fixtures/differential/compiler/template-global-policy/**"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "template-global-policy-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `whole-modules` {
+    name = "Complete compiler modules (${{ matrix.role }})"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        role = List("before", "candidate")
+      }
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+
+      CARGO_BUILD_JOBS = "12"
+      CARGO_TERM_COLOR = "always"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+      VIZE_TEMPLATE_GLOBAL_CAPTURE_DIR = "${{ github.workspace }}/target/vize-tests/template-global-${{ matrix.role }}"
+      VIZE_TEMPLATE_GLOBAL_BEFORE = "${{ matrix.role == 'before' && '1' || '' }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("template-global-policy")
+      ci.checkoutAt("${{ matrix.role == 'before' && 'f5973f93e2c2f33092300c59145074a2dd753be7' || github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        name = "Read the observer without changing the immutable before producer"
+        `if` = "matrix.role == 'before'"
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "qualification"
+          `persist-credentials` = false
+          `sparse-checkout` = "crates/vize_atelier_sfc/tests/template_global_policy.rs"
+          `sparse-checkout-cone-mode` = false
+        }
+      }
+      new Dynamic {
+        name = "Install only the whole-module observer in the before tree"
+        `if` = "matrix.role == 'before'"
+        run = "cp qualification/crates/vize_atelier_sfc/tests/template_global_policy.rs crates/vize_atelier_sfc/tests/template_global_policy.rs"
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nextest-ci"
+          `cache-key-suffix` = "Linux-X64-1.100.0"
+        }
+      }
+      new Dynamic {
+        name = "Require the whole-module policy and preserve actual execution"
+        shell = "bash"
+        run = ci.workflowScript("require-the-whole-module-policy-and-preserve-actual-execution.sh")
+      }
+      new Dynamic {
+        name = "Preserve complete authored inputs, modules, maps and free-reference results"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "template-global-${{ matrix.role }}-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "${{ github.workspace }}/target/vize-tests/template-global-${{ matrix.role }}"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+  runtime {
+    name = "Actual stock and native component runtimes"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+
+      CARGO_BUILD_JOBS = "12"
+      VIZE_TEMPLATE_GLOBAL_SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+      VIZE_TEMPLATE_GLOBAL_RUNTIME_REQUIRED = "1"
+      VIZE_TEMPLATE_GLOBAL_RUNTIME_PROOF = "${{ github.workspace }}/target/vize-tests/template-global-runtime"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("template-global-policy")
+      ci.checkoutAt("${{ env.VIZE_TEMPLATE_GLOBAL_SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "test-js-packages"
+          `cache-key-suffix` = "Linux-X64-1.100.0"
+        }
+      }
+      ci.command("Install the pinned workspace runtime providers", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Install the independent public Vue and Vize baseline"
+        run = ci.workflowScript("install-the-independent-public-vue-and-vize-baseline.sh")
+      }
+      new Dynamic {
+        name = "Build the exact candidate native compiler"
+        run = ci.workflowScript("build-the-exact-candidate-native-compiler.sh")
+      }
+      new Dynamic {
+        name = "Execute complete modules under the actual Vue runtimes"
+        run = ci.workflowScript("execute-complete-modules-under-the-actual-vue-runtimes.sh")
+      }
+      new Dynamic {
+        name = "Preserve complete public and candidate modules, graphs and actual runtime observations"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "template-global-runtime-${{ env.VIZE_TEMPLATE_GLOBAL_SOURCE_SHA }}"
+          path = "${{ env.VIZE_TEMPLATE_GLOBAL_RUNTIME_PROOF }}"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}

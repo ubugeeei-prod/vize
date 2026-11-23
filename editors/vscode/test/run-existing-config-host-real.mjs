@@ -1,3 +1,4 @@
+import { configuredNodeLauncher } from "../../../tools/support/process-launcher.ts";
 import fs from "node:fs";
 import os from "node:os";
 import { createRequire } from "node:module";
@@ -155,7 +156,12 @@ function prepareExternalConfigHost(directory, workspace, options) {
   write(manifest, JSON.stringify({ policy, pending, base, inherited, a, b, vite }));
   const launcher = path.join(directory, "vize-observed");
   const proxy = path.join(options.sourceExtensionPath, "test/fixtures/passive-vize-server.cjs");
-  write(launcher, `#!${process.execPath}\nrequire(${JSON.stringify(proxy)});\n`);
+  write(
+    launcher,
+    configuredNodeLauncher(new URL("./fixtures/launch-observed-server.cjs", import.meta.url), {
+      proxy,
+    }),
+  );
   fs.chmodSync(launcher, 0o755);
   return { launcher, protocol, manifest };
 }

@@ -47,14 +47,23 @@ function requireOriginalOrder(consumer: string): void {
     /uses: actions\/setup-node@[a-f0-9]{40}(?=\s|$)/u,
     /uses: pnpm\/action-setup@[a-f0-9]{40}(?=\s|$)/u,
   ].map((pattern) => pattern.exec(consumer)?.index ?? -1);
+  const stem = "authenticate-manual-request-and-execute-original-public-recipe";
+  const directory = ".github/scripts/workflows/published-human-reports-11252-11253";
+  assert.ok(consumer.includes('VIZE_CI_FILES: "${{ github.workspace }}/' + directory + '"'));
+  const launch = consumer.indexOf('run: . "${{ env.VIZE_CI_FILES }}/' + stem + '.sh"');
+  const body = readFileSync(resolve(root, directory, stem + ".sh"), "utf8");
   const commands = [
     'root="$RUNNER_TEMP/human-reports-$ROLE-$PHASE"',
-    'pnpm_cli="$(node -p',
+    'pnpm_cli="$(node "$VIZE_CI_FILES/' + stem + '.cjs" "$(command -v pnpm)")"',
     "human_reports_11252_11253_public/bootstrap.ts",
     "human_reports_11252_11253_public/run.ts",
     '--execute-public "$root-request/request.json" "$pnpm_cli" "$root-output"',
-  ].map((value) => consumer.indexOf(value));
-  const ordered = [...actions, ...commands];
+  ].map((value) => body.indexOf(value));
+  const ordered = [
+    ...actions,
+    launch,
+    ...commands.map((position) => (position < 0 ? -1 : consumer.length + position)),
+  ];
   assert(
     ordered.every(
       (position, index) => position >= 0 && (index === 0 || position > ordered[index - 1]!),

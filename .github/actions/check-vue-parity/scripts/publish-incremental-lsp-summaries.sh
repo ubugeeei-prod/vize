@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+for suite in check-fixtures-topology check-fixtures-cycles vben-batch-incremental misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn; do
+  if [ -s "target/vize-tests/metrics/$suite/summary.md" ]; then
+    cat "target/vize-tests/metrics/$suite/summary.md" >> "$GITHUB_STEP_SUMMARY"
+  fi
+done

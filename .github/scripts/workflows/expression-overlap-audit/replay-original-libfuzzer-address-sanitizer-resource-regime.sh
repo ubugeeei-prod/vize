@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cargo +nightly-2026-10-23 install cargo-fuzz --locked --version 0.13.2 --target-dir "$RUNNER_TEMP/expression-overlap-$ROLE-$SOURCE_SHA-tool"
+target="$RUNNER_TEMP/expression-overlap-$ROLE-$SOURCE_SHA-asan"
+test ! -e "$target"
+export CARGO_TARGET_DIR="$target"
+cargo +nightly-2026-10-23 fuzz build --fuzz-dir tests/fuzz js_ts_expression -v 2>&1 | tee ../evidence/asan-build.log
+binary="$target/x86_64-unknown-linux-gnu/release/js_ts_expression"
+sha256sum "$binary" > ../evidence/asan-binary.sha256
+for name in issue-10845.input issue-10845.min.input issue-10845.slow-1.input issue-10845.slow-2.input 10401-append-greater.input; do
+  set +e
+  /usr/bin/time -v timeout 120 "$binary" "$GITHUB_WORKSPACE/evidence/cases/$name" -runs=1 -max_len=65536 -timeout=25 -rss_limit_mb=4096 -malloc_limit_mb=2048 > "../evidence/$name.asan.log" 2>&1
+  status=$?
+  set -e
+  printf '%s\n' "$status" > "../evidence/$name.asan.exit"
+  if [[ "$ROLE" == candidate ]]; then test "$status" = 0; fi
+done

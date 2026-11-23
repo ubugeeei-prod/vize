@@ -1,0 +1,114 @@
+import "../../Actions.pkl" as ci
+
+name = "Queue release gates"
+// Every main commit is releasable as-is (release.yml does not re-run checks), so
+// queue candidates run the Vue parity, docs, Miri and fuzz gates their changed
+// paths can affect. Pull requests only plan.
+on {
+  workflow_call = null
+}
+permissions { contents = "read" }
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `release-gate-plan` {
+    name = "Plan release gates"
+    `runs-on` = "ubuntu-24.04"
+    `timeout-minutes` = 5
+    outputs {
+      `vue-parity` = "${{ steps.plan.outputs.vue-parity }}"
+      docs = "${{ steps.plan.outputs.docs }}"
+      miri = "${{ steps.plan.outputs.miri }}"
+      fuzz = "${{ steps.plan.outputs.fuzz }}"
+    }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/queue-release-gates"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Plan release gates"
+        id = "plan"
+        env { BASE_SHA = "${{ github.event.merge_group.base_sha }}" }
+        run = ci.workflowScript("plan-release-gates.sh")
+      }
+    }
+  }
+  // Same steps as Check's full-run vue-parity job.
+  `vue-parity` {
+    `runs-on` = ci.linux
+    needs = "release-gate-plan"
+    `if` = "${{ github.event_name == 'merge_group' && needs.release-gate-plan.outputs.vue-parity == 'true' }}"
+    `timeout-minutes` = 30
+    env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      ci.rust("stable")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "vue-parity"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/check-vue-parity")
+    }
+  }
+  `docs-build` {
+    needs = "release-gate-plan"
+    `if` = "${{ github.event_name == 'merge_group' && needs.release-gate-plan.outputs.docs == 'true' }}"
+    uses = "./.github/workflows/build-docs.yml"
+    with { `links-only` = true }
+  }
+  miri {
+    needs = "release-gate-plan"
+    `if` = "${{ github.event_name == 'merge_group' && needs.release-gate-plan.outputs.miri == 'true' }}"
+    uses = "./.github/workflows/miri.yml"
+  }
+  `fuzz-replay` {
+    needs = "release-gate-plan"
+    `if` = "${{ github.event_name == 'merge_group' && needs.release-gate-plan.outputs.fuzz == 'true' }}"
+    permissions {
+      contents = "read"
+      issues = "write"
+    }
+    uses = "./.github/workflows/fuzz.yml"
+    with { mode = "replay" }
+  }
+  `release-gates` {
+    name = "Release gates"
+    `if` = "${{ always() }}"
+    `runs-on` = "ubuntu-24.04"
+    `timeout-minutes` = 5
+    needs = List("release-gate-plan", "vue-parity", "docs-build", "miri", "fuzz-replay")
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Require every selected release gate to succeed"
+        env { NEEDS_JSON = "${{ toJSON(needs) }}" }
+        run = "node tools/support/compat/github/plan-release-gates.ts --check"
+      }
+    }
+  }
+}

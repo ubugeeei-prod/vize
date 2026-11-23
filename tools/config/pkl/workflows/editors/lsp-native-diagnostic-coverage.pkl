@@ -1,0 +1,92 @@
+import "../../Actions.pkl" as ci
+
+name = "LSP native diagnostic coverage"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/lsp-native-diagnostic-coverage.yml"
+      ".github/scripts/workflows/lsp-native-diagnostic-coverage/**"
+      ".github/scripts/workflows/shared/**"
+      "tests/tooling/lsp-diagnostic-capacity*.test.ts"
+      "tests/tooling/support/lsp/diagnostic-capacity*.ts"
+      "tests/tooling/support/lsp/diagnostic-capacity-pidfd.c"
+      "crates/vize_maestro/src/server/open_document.rs"
+      "crates/vize_maestro/src/server/diagnostic_publishing.rs"
+      "crates/vize_maestro/src/server/diagnostic_publishing/**"
+      "crates/vize_maestro/src/server/document_changes.rs"
+      "crates/vize_maestro/src/document/store.rs"
+      "crates/vize_maestro/src/server/state/corsa_requests.rs"
+      "crates/vize_maestro/src/server/initial_diagnostics/**"
+      "crates/vize_maestro/src/server/initial_diagnostics.rs"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "lsp-native-diagnostic-coverage-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  coverage {
+    name = "Every one of 129 independent native diagnostics and repairs"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    env {
+
+      CARGO_TERM_COLOR = "always"
+      CARGO_BUILD_JOBS = "4"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = "true"
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+      VIZE_TRACE_EDITOR_PREPARATION = "1"
+      VIZE_CAPACITY_FILES = "129"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("lsp-native-diagnostic-coverage")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      ci.workspaceVp()
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic { run = ci.workflowScript("coverage-rustup-toolchain-install-rustup-show-active-too.sh") }
+      new Dynamic {
+        name = "Verify exact token, version, UTF16 and duplicate controls"
+        run = "vp exec node --test tests/tooling/lsp-diagnostic-capacity-oracle.test.ts tests/tooling/lsp-diagnostic-capacity-socket.test.ts tests/tooling/lsp-diagnostic-capacity-workflow.test.ts"
+      }
+      new Dynamic {
+        name = "Prove the same conservation law fails on the original scheduler"
+        run = ci.workflowScript("prove-the-same-conservation-law-fails-on-the-original-scheduler.sh")
+      }
+      new Dynamic {
+        name = "Build the exact source once in its own target"
+        env { SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}" }
+        run = ci.workflowScript("build-the-exact-source-once-in-its-own-target.sh")
+      }
+      new Dynamic {
+        name = "Preserve scheduler/version/cancellation laws"
+        run = ci.workflowScript("preserve-scheduler-version-cancellation-laws.sh")
+      }
+      new Dynamic {
+        name = "Observe all native errors, complete repairs and checked idle"
+        env {
+          CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+        }
+        run = "vp exec node --test --test-concurrency=1 tests/tooling/lsp-diagnostic-capacity.test.ts tests/tooling/lsp-diagnostic-capacity-reopen.test.ts"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "lsp-native-diagnostic-coverage-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = """
+          target/ci/vize.differential-build.json
+          target/vize-tests/diagnostic-capacity-129/
+          target/differential/lsp-sessions/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

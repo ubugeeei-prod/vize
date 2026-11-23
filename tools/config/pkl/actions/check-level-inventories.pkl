@@ -1,0 +1,26 @@
+import "../Actions.pkl" as ci
+
+name = "Check Davinci inventories"
+description = "Validate committed source witnesses and publish generated run ledgers"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Check Davinci source inventories"
+      shell = "bash"
+      // The independent lanes run together; see source-inventories.ts.
+      run = "node tools/support/compat/davinci/source-inventories.ts"
+    }
+    new Dynamic {
+      name = "Upload generated Davinci ledgers"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "davinci-generated-ledgers"
+        path = "artifacts/davinci-ledgers/"
+        `if-no-files-found` = "error"
+        `retention-days` = 14
+      }
+    }
+  }
+}

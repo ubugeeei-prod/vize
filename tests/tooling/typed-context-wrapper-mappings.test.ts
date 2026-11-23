@@ -9,17 +9,14 @@ const capture = JSON.parse(readFileSync(`${family}/wrapper-successor/capture.jso
 const producer = readFileSync("crates/vize_canon/src/batch/virtual_project/content_mapper.rs");
 const integratedCapture = (): typeof capture => {
   const data = structuredClone(capture);
-  const generated = Buffer.from(data.current.text);
-  const declaration = generated.indexOf("declare const Route: typeof __vize_component__;");
-  assert(declaration >= 0, "captured generated component declaration");
-  data.current.mappings.push([
-    declaration + Buffer.byteLength("declare const "),
-    Buffer.byteLength("Route"),
-    0,
-    0,
-    1,
-    248,
-  ]);
+  const exportStatement = "export default Route as typeof Route;";
+  data.current.text = data.current.text.replace(
+    "\nexport default Route;\n",
+    "\n" + exportStatement + "\n",
+  );
+  const offset = Buffer.from(data.current.text).indexOf(exportStatement);
+  assert(offset >= 0, "captured default component export");
+  data.current.mappings.push([offset, Buffer.byteLength(exportStatement), 0, 0, 1, 248]);
   return data;
 };
 const verify = (data = integratedCapture(), bytes = producer) =>
@@ -100,8 +97,8 @@ void test("every historical tuple field and its ordering remain mandatory", () =
   assert.throws(() => verify(data), /all projected historical tuples must remain exact/u);
 });
 
-void test("both atoms keep every field, including diagnostic-only features, and ordered whole equality", () => {
-  for (const row of [9, 11]) {
+void test("the wrapper atoms and default export retain every field and their order", () => {
+  for (const row of [9, 11, 12]) {
     for (let field = 0; field < 6; field++) {
       const changed = integratedCapture();
       changed.current.mappings[row][field]++;

@@ -87,8 +87,11 @@ export async function prepareConsumer() {
   const nativeManifest = JSON.parse(
     await fs.readFile(path.join(nativeRoot, "package.json"), "utf8"),
   );
-  for (const file of nativeManifest.files)
-    await fs.copyFile(path.join(nativeRoot, file), path.join(nativeStage, file));
+  for (const file of nativeManifest.files) {
+    const destination = path.join(nativeStage, file);
+    await fs.mkdir(path.dirname(destination), { recursive: true });
+    await fs.copyFile(path.join(nativeRoot, file), destination);
+  }
   await fs.writeFile(path.join(nativeStage, sourceReceipt.binary.filename), binary);
   const manifest = {
     ...nativeManifest,

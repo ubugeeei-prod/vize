@@ -1,0 +1,18 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  rust_status=0
+  cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for_constant::eleven_whole_original_constant_for_components_and_raw_maps_are_captured -- --exact || rust_status=$?
+  node_status=0
+  vp node tests/tooling/support/native-original-for-constant-sfc-dom-processes.ts || node_status=$?
+  RUST_STATUS="$rust_status" NODE_STATUS="$node_status" vp node "$GITHUB_ACTION_PATH/scripts/capture-and-qualify-original-constant-for-components-in-both-runtime-mod.ts"
+  test "$rust_status" -eq 0
+  test "$node_status" -eq 0
+  test -s "$VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_CAPTURE"
+  test -s "$RUNNER_TEMP/native-original-for-constant-sfc-dom-development-runtime.json"
+  test -s "$RUNNER_TEMP/native-original-for-constant-sfc-dom-production-runtime.json"
+  """#
+}

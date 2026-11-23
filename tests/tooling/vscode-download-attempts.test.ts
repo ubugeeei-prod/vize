@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -78,8 +79,10 @@ await test("both original child streams survive retries without rewriting", (t) 
   const helper = new URL("../../editors/vscode/test/download-attempts.mjs", import.meta.url).href;
   writeFileSync(
     driver,
-    `import { downloadAttempts } from ${JSON.stringify(helper)};
-process.exitCode = await downloadAttempts(process.execPath, [${JSON.stringify(script)}]);`,
+    readToolingProgram("commands/vscode-download-attempts/retry-server-download.js.in", {
+      HELPER: JSON.stringify(helper),
+      SCRIPT: JSON.stringify(script),
+    }),
   );
   const result = spawnSync(process.execPath, [driver]);
   assert.equal(result.status, 1);

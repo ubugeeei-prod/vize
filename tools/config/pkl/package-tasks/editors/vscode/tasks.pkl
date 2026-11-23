@@ -1,0 +1,33 @@
+amends "../../../PackageTasks.pkl"
+
+tasks {
+  ["check"] {
+    module.run("tsc", List("--noEmit"))
+    module.run("vp", List("check", "src", "vite.config.ts"))
+  }
+  ["check:fix"] {
+    module.run("vp", List("check", "--fix", "src", "vite.config.ts"))
+    module.run("tsc", List("--noEmit"))
+  }
+  ["package"] {
+    module.run("node", List("../../tools/commands/editors/vscode/sync-typescript-plugin.ts", "stage"))
+    module.run("vsce", List("package", "--no-dependencies", "--out", "dist/vize.vsix"))
+    module.run("node", List(
+      "../../tools/commands/editors/vscode/sync-typescript-plugin.ts",
+      "inject",
+      "dist/vize.vsix",
+    ))
+  }
+  ["test:host"] {
+    module.run("node", List("../../tools/commands/editors/vscode/sync-typescript-plugin.ts", "stage"))
+    module.run("node", List("test/run-extension-host.mjs"))
+  }
+  ["publish"] {
+    module.run("npm", List("run", "package"))
+    module.run("vsce", List("publish", "--packagePath", "dist/vize.vsix"))
+  }
+  ["publish:pre"] {
+    module.run("npm", List("run", "package"))
+    module.run("vsce", List("publish", "--pre-release", "--packagePath", "dist/vize.vsix"))
+  }
+}

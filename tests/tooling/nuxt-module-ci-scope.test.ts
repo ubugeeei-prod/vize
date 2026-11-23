@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
@@ -18,7 +19,9 @@ type Step = {
   "continue-on-error"?: boolean;
   with?: { path?: string };
 };
-const workflow = parse(readRepoFile(".github", "workflows", "nuxt3-module-build.yml")) as {
+const workflow = parse(
+  readAutomationPrograms(".github", "workflows", "nuxt3-module-build.yml"),
+) as {
   on: Record<string, { paths?: string[] }>;
   jobs: Record<string, { if?: string; "continue-on-error"?: boolean; steps: Step[] }>;
 };
@@ -70,8 +73,8 @@ test("main and merge candidates retain source-built Nuxt 3 SSR, hydration and na
 test("merge, main and manual runs retain every extended campaign and source receipt", () => {
   assert.ok(Object.hasOwn(workflow.on, "workflow_call"));
   assert.equal(Object.hasOwn(workflow.on, "merge_group"), false, "one required reusable execution");
-  const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml"));
-  const check = parse(readRepoFile(".github", "workflows", "check.yml"));
+  const source = parse(readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"));
+  const check = parse(readAutomationPrograms(".github", "workflows", "check.yml"));
   assert.deepEqual(source.jobs["nuxt-module-qualification"], {
     name: "Nuxt and Vite release products",
     if: "${{ github.event_name == 'merge_group' }}",
@@ -163,7 +166,7 @@ test("the required integration product edge closes every supported Nuxt and Vite
     );
   }
 
-  const full = parse(readRepoFile(".github", "workflows", "full-qualification.yml"));
+  const full = parse(readAutomationPrograms(".github", "workflows", "full-qualification.yml"));
   assert.deepEqual(full.jobs["nuxt-module-qualification"], {
     name: "Nuxt and Vite release products",
     uses: "./.github/workflows/nuxt-vite-release-products.yml",

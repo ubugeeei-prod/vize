@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mapfile -t archives < <(find "$RUNNER_TEMP/thin-download" -type f -name '*.tgz')
+[[ "${#archives[@]}" == 1 ]]
+node tools/benchmarks/scripts/cold-evidence-thin.ts "${archives[0]}" \
+  "$RUNNER_TEMP/thin-metadata" "$SOURCE_RUN" "$SOURCE_ARTIFACT" \
+  "$RUNNER_TEMP/source-artifact-api.json"
