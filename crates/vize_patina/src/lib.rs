@@ -197,3 +197,6 @@ mod tests {
         assert!(!result.has_errors());
     }
 }
+
+#[cfg(feature = "verified-prefer-const")]
+pub mod checked_prefer_const;
