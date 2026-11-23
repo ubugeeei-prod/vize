@@ -11,6 +11,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Original listener operations and method-reference queries for explicit tool requests.
 component-listener-queries = ["setup-component-imports"]
+# Name the original source/semantic view for explicit layered consumers.
+ir-views = []
 # Read authored props in source order from each resolved component operation.
 component-prop-queries = ["setup-component-imports"]
 setup-component-imports = []

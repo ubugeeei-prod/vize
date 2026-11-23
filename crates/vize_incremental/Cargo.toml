@@ -17,6 +17,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Borrow selected stage results for an explicitly requested document view.
 block-queries = []
+# Lend an admitted template and its database to optional resident providers.
+resident-providers = ["block-queries"]
 # Share a named open document's descriptor and its selected block stages.
 open-block-queries = ["block-queries"]
 # TS-42's seeded defect (P5-9): weakens the block firewall's equality so the

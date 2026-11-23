@@ -97,3 +97,6 @@ pub fn lower_sfc_with_listener_references<'a>(
     use template::prepare_listeners as prepare;
     include!("native_file/assembly.rs")
 }
+
+#[cfg(feature = "ir-views")]
+mod ir_views;

@@ -24,3 +24,8 @@ pub use decision::{
 };
 pub use lower::{Lowered, lower};
 pub use vize_l3::jsx::{JsxAnalysis, RejectedJsxAnalysis, build_jsx_decisions};
+
+#[cfg(feature = "graph-queries")]
+mod graph;
+#[cfg(feature = "graph-queries")]
+pub use graph::lower_ir;
