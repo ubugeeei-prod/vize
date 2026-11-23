@@ -1,3 +1,4 @@
+import { actionNodeProgramPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -90,12 +91,12 @@ test("evidence artifact identity preserves its prefix and separates jobs, shards
 test("the full tooling gate retains failed observations after its extracted tests", () => {
   const full = parse(checkWorkflowJobSources()) as Workflow;
   const fullProducer = parse(
-    readRepoFile(".github", "workflows", "full-source-cli.yml"),
+    readAutomationPrograms(".github", "workflows", "full-source-cli.yml"),
   ) as Workflow;
   const fullWorker = {
     ...full.jobs["test-scripts"],
     steps: (
-      parse(readRepoFile(".github", "actions", "test-full-tooling", "action.yml")) as {
+      parse(readAutomationPrograms(".github", "actions", "test-full-tooling", "action.yml")) as {
         runs: { steps: Step[] };
       }
     ).runs.steps,
@@ -111,7 +112,9 @@ test("the full tooling gate retains failed observations after its extracted test
     shard: "${{ matrix.index }}",
     total: "${{ matrix.total }}",
   });
-  const restore = parse(readRepoFile(".github", "actions", "restore-source-cli", "action.yml")) as {
+  const restore = parse(
+    readAutomationPrograms(".github", "actions", "restore-source-cli", "action.yml"),
+  ) as {
     runs: { steps: Step[] };
   };
   const job = fullWorker;
@@ -154,7 +157,9 @@ test("the full tooling gate retains failed observations after its extracted test
 // selected native product actions and remains required by both report levels.
 test("the current PR native runtime lane remains connected to required source and Check reports", () => {
   const full = parse(checkWorkflowJobSources()) as Workflow;
-  const pr = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as Workflow;
+  const pr = parse(
+    readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"),
+  ) as Workflow;
   assert.equal(full.jobs["pr-source-checks"].uses, "./.github/workflows/pr-source-checks.yml");
   const outerNeeds = full.jobs["test-report"].needs;
   assert.ok(Array.isArray(outerNeeds));
@@ -183,7 +188,9 @@ test("the current PR native runtime lane remains connected to required source an
 });
 
 test("native compiler-kind read qualification preserves the complete original snapshot command", () => {
-  const action = parse(readRepoFile(".github", "actions", "test-native-canon", "action.yml")) as {
+  const action = parse(
+    readAutomationPrograms(".github", "actions", "test-native-canon", "action.yml"),
+  ) as {
     runs: { steps: Array<{ name: string; run?: string; env?: Record<string, string> }> };
   };
   const step = action.runs.steps[0];
@@ -207,15 +214,20 @@ test("native compiler-kind read qualification preserves the complete original sn
       'cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::tests::native::actual_native_compiler_kind_reads_match_whole_ts_and_generated_vue_pull_packets -- --ignored --exact --nocapture --color never >"$capture/test.stdout" 2>"$capture/test.stderr"',
     ),
   );
-  assert.ok(real.run?.includes("if (status !== 0) process.exit(status);"));
-  assert.ok(real.run?.includes("if (executed !== 1) throw new Error"));
-  assert.ok(real.run?.includes("1 passed; 0 failed; 0 ignored;"));
-  assert.ok(real.run?.includes("'provider.json', 'source.ts.json', 'View.vue.ts.json'"));
-  assert.ok(real.run?.includes("stdoutSha256: digest(stdout), stderrSha256: digest(stderr)"));
+  const verifier = readFileSync(actionNodeProgramPath("test-native-canon", real.run), "utf8");
+  assert.ok(verifier.includes("if (status !== 0) process.exit(status);"));
+  assert.ok(verifier.includes("if (executed !== 1) throw new Error"));
+  assert.ok(verifier.includes("1 passed; 0 failed; 0 ignored;"));
+  for (const file of ["provider.json", "source.ts.json", "View.vue.ts.json"])
+    assert.ok(verifier.includes(JSON.stringify(file)), file);
+  assert.match(verifier, /stdoutSha256:\s*digest\(stdout\)/u);
+  assert.match(verifier, /stderrSha256:\s*digest\(stderr\)/u);
 });
 
 test("memberless preparation is enrolled after real Vue installation and requires whole same-owner evidence", () => {
-  const action = parse(readRepoFile(".github", "actions", "test-native-canon", "action.yml")) as {
+  const action = parse(
+    readAutomationPrograms(".github", "actions", "test-native-canon", "action.yml"),
+  ) as {
     runs: { steps: Array<{ name?: string; run?: string; env?: Record<string, string> }> };
   };
   const steps = action.runs.steps;
@@ -234,17 +246,17 @@ test("memberless preparation is enrolled after real Vue installation and require
       'cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::configured_project::shared_transport::tests::native::replay::actual_memberless_vue_preparation_reattaches_same_editor_owner -- --ignored --exact --nocapture --color never >"$capture/test.stdout" 2>"$capture/test.stderr"',
     ),
   );
-  assert.ok(
-    law.run?.includes(
-      "'without-editor/prepared-vs-native.json', 'without-editor/materialized-tsconfig.json', 'without-editor/materialized-ui-package.json', 'with-editor/prepared-vs-native.json', 'with-editor/materialized-tsconfig.json', 'with-editor/materialized-ui-package.json'",
-    ),
-  );
-  assert.ok(law.run?.includes("['ordered-without-editor', 'ordered-with-editor']"));
-  assert.ok(
-    law.run?.includes(
-      "'other-before-app/world.json', 'other-before-app/materialized-tsconfig.json', 'other-prepared-vs-native.json'",
-    ),
-  );
+  const verifier = readFileSync(actionNodeProgramPath("test-native-canon", law.run), "utf8");
+  for (const file of memberlessEvidenceFiles.filter((file) => !file.startsWith("ordered-")))
+    assert.ok(verifier.includes(JSON.stringify(file)), file);
+  for (const field of [
+    "ordered-without-editor",
+    "ordered-with-editor",
+    "other-before-app/world.json",
+    "other-before-app/materialized-tsconfig.json",
+    "other-prepared-vs-native.json",
+  ])
+    assert.ok(verifier.includes(JSON.stringify(field)), field);
   const retention = steps.find(
     (step) => step.name === "Preserve actual native inputs and responses",
   );
@@ -252,7 +264,9 @@ test("memberless preparation is enrolled after real Vue installation and require
 });
 
 test("the actual compiler-kind carrier refuses zero execution and preserves whole output/status", () => {
-  const action = parse(readRepoFile(".github", "actions", "test-native-canon", "action.yml")) as {
+  const action = parse(
+    readAutomationPrograms(".github", "actions", "test-native-canon", "action.yml"),
+  ) as {
     runs: { steps: Array<{ run?: string }> };
   };
   for (const [name, step, files] of [
@@ -264,15 +278,13 @@ test("the actual compiler-kind carrier refuses zero execution and preserves whol
     [
       "lsp_client::editor_lsp::configured_project::shared_transport::tests::native::replay::actual_memberless_vue_preparation_reattaches_same_editor_owner",
       action.runs.steps.find((step) =>
-        step.run?.includes(
-          "const name = 'lsp_client::editor_lsp::configured_project::shared_transport",
-        ),
+        step.run?.includes("actual_memberless_vue_preparation_reattaches_same_editor_owner"),
       ),
       memberlessEvidenceFiles,
     ],
   ] as const) {
     assert.ok(step);
-    const source = step.run?.match(/<<'NODE'\n([\s\S]*?)\nNODE/)?.[1];
+    const source = actionNodeProgramPath("test-native-canon", step.run);
     assert.ok(source);
     const full = `test ${name} ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 123 filtered out; finished in 0.01s\n`;
     for (const [stdout, status, provider, expected] of [
@@ -292,14 +304,9 @@ test("the actual compiler-kind carrier refuses zero execution and preserves whol
           mkdirSync(dirname(join(directory, file)), { recursive: true });
           writeFileSync(join(directory, file), "{}\n");
         }
-        const child: SpawnSyncReturns<string> = spawnSync(
-          process.execPath,
-          ["--input-type=module", "-", directory],
-          {
-            input: source,
-            encoding: "utf8",
-          },
-        );
+        const child: SpawnSyncReturns<string> = spawnSync(process.execPath, [source, directory], {
+          encoding: "utf8",
+        });
         assert.equal(child.status, expected, child.stderr);
         const receipt = JSON.parse(readFileSync(join(directory, "test-run.json"), "utf8"));
         assert.equal(receipt.status, status);
@@ -316,14 +323,16 @@ test("the actual compiler-kind carrier refuses zero execution and preserves whol
 });
 
 test("ordered preparation requires exactly one complete first-world UI observation", () => {
-  const action = parse(readRepoFile(".github", "actions", "test-native-canon", "action.yml")) as {
+  const action = parse(
+    readAutomationPrograms(".github", "actions", "test-native-canon", "action.yml"),
+  ) as {
     runs: { steps: Array<{ run?: string }> };
   };
   const name =
     "lsp_client::editor_lsp::configured_project::shared_transport::tests::native::replay::actual_memberless_vue_preparation_reattaches_same_editor_owner";
-  const step = action.runs.steps.find((step) => step.run?.includes(`const name = '${name}'`));
+  const step = action.runs.steps.find((step) => step.run?.includes(name));
   assert.ok(step);
-  const source = step.run?.match(/<<'NODE'\n([\s\S]*?)\nNODE/)?.[1];
+  const source = actionNodeProgramPath("test-native-canon", step.run);
   assert.ok(source);
   for (const [mode, expected] of [
     ["missing", 1],
@@ -353,11 +362,9 @@ test("ordered preparation requires exactly one complete first-world UI observati
       );
       writeFileSync(join(directory, "test.stderr"), "whole first-world custody stderr\n");
       writeFileSync(join(directory, "test.status"), "0\n");
-      const child: SpawnSyncReturns<string> = spawnSync(
-        process.execPath,
-        ["--input-type=module", "-", directory],
-        { input: source, encoding: "utf8" },
-      );
+      const child: SpawnSyncReturns<string> = spawnSync(process.execPath, [source, directory], {
+        encoding: "utf8",
+      });
       assert.equal(child.status, expected, child.stderr);
     } finally {
       rmSync(directory, { recursive: true, force: true });

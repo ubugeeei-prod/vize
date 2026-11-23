@@ -1,0 +1,8 @@
+amends "../../../../PackageTasks.pkl"
+
+tasks {
+  ["test:host"] {
+    module.run("cargo", List("build", "-p", "vize_parcel_transformer"))
+    module.run("node", List("test/host.ts"))
+  }
+}

@@ -1,3 +1,4 @@
+import { seedLocalStorage } from "../../_helpers/browser/local-storage.ts";
 import { test, expect, type Browser, type Page } from "@playwright/test";
 import type { ChildProcess } from "node:child_process";
 import * as path from "node:path";
@@ -147,15 +148,10 @@ async function warmUpApp(browser: Browser, app: AppConfig): Promise<void> {
 async function setupPage(page: Page, route: VisualRoute): Promise<void> {
   await disableViteHmrClient(page);
   await installVisualStabilityHooks(page);
-  await page.addInitScript(
-    (storage) => {
-      localStorage.clear();
-      for (const [key, value] of Object.entries(storage)) {
-        localStorage.setItem(key, value);
-      }
-    },
-    { ...defaultStorage, ...route.storage },
-  );
+  await page.addInitScript(seedLocalStorage, {
+    clear: true,
+    values: { ...defaultStorage, ...route.storage },
+  });
 }
 
 async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promise<void> {

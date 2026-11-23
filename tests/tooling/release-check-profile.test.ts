@@ -1,3 +1,4 @@
+import { automationShellPath } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { runInNewContext } from "node:vm";
@@ -89,7 +90,7 @@ test("explicit profile refuses nonrelease and malformed release refs through its
   ]) {
     assert.equal(condition(step.if, "workflow_dispatch", ref, true), true);
     assert.equal(
-      spawnSync("bash", ["-e", "-c", step.run], {
+      spawnSync("bash", ["-e", automationShellPath(step.run)], {
         env: { ...process.env, RELEASE_QUALIFICATION_REF: ref },
       }).status,
       0,
@@ -105,7 +106,7 @@ test("explicit profile refuses nonrelease and malformed release refs through its
     "refs/tags/v0.458.0;true",
   ]) {
     assert.equal(
-      spawnSync("bash", ["-e", "-c", step.run], {
+      spawnSync("bash", ["-e", automationShellPath(step.run)], {
         env: { ...process.env, RELEASE_QUALIFICATION_REF: ref },
       }).status,
       1,

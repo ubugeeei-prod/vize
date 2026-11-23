@@ -4,7 +4,8 @@
 # Rust 1.100 build never see Creusot's nightly compiler. See
 # docs/davinci/decisions/2026-11-17-creusot.md.
 #
-#   nix develop ./tools/nix/creusot --command bash -c 'cd tests/formal/creusot && cargo creusot prove --replay'
+#   cd tests/formal/creusot
+#   nix develop ../../../tools/nix/creusot --command cargo creusot prove --replay
 #
 # `free` is Creusot's solver bundle with the open-source Alt-Ergo 2.4.3
 # (alongside Z3, CVC5 and CVC4); the default bundle's Alt-Ergo 2.6 carries a

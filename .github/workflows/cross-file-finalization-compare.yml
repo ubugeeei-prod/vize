@@ -11,6 +11,7 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - .github/workflows/cross-file-finalization-compare.yml
+      - .github/scripts/workflows/cross-file-finalization-compare/**
       - .github/scripts/cross-file-finalization-scope.ts
       - tests/tooling/cross-file-finalization-scope.test.ts
       - crates/vize/src/commands/lint/cross_file.rs
@@ -62,6 +63,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/cross-file-finalization-compare/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -87,14 +101,9 @@ jobs:
           secondary-target-path: target/finalization-compare-base-build
           secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install frozen tools and checkout the exact matched base
-        run: |
-          vp install --frozen-lockfile --prefer-offline
-          [[ "$BASE_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          git worktree add --detach target/finalization-compare-base "$BASE_SOURCE_SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/install-frozen-tools-and-checkout-the-exact-matched-base.sh"
       - name: Compile both actual optimized providers into isolated targets
-        run: |
-          cargo build --locked --manifest-path target/finalization-compare-base/Cargo.toml --profile ci-opt -p vize --target-dir target/finalization-compare-base-build
-          cargo build --locked --profile ci-opt -p vize --target-dir target/finalization-compare-head-build
+        run: . "${{ env.VIZE_CI_FILES }}/compile-both-actual-optimized-providers-into-isolated-targets.sh"
       - name: Compare full packets and actual source work on identical physical inputs
         run: node tests/tooling/support/cross-file-finalization-compare.ts
       - name: Preserve both providers, full original profiles and packets

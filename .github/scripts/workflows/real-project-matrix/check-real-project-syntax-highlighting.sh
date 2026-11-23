@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+node --test --test-concurrency=1 \
+  tests/tooling/real-project-syntax-highlighting.test.ts
+test -s "$FIXTURE_REPORT_DIR/syntax-highlighter-summary.json"

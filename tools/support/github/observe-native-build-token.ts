@@ -1,3 +1,4 @@
+import { configuredNodeLauncher } from "../process-launcher.ts";
 /** Exact release-recipe witness; this script never publishes or restores a compiled cache. */
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
@@ -87,10 +88,12 @@ async function producer(directory: string, role: string, expectedSource: string,
   // command with unchanged arguments and the explicitly installed repository rustc. Never mint/replace its token.
   fs.writeFileSync(
     path.join(bin, "cargo"),
-    `#!${process.execPath}\n` +
-      `const fs=require('node:fs');const cp=require('node:child_process');\n` +
-      `fs.writeFileSync(${JSON.stringify(invocation)},JSON.stringify({argv:process.argv.slice(2),cwd:process.cwd(),token:process.env.VIZE_NATIVE_BUILD_TOKEN,cargo:${JSON.stringify(originalCargo)},rustc:${JSON.stringify(realRustc)}},null,2)+'\\n',{flag:'wx'});\n` +
-      `const r=cp.spawnSync("cargo",process.argv.slice(2),{env:{...process.env,PATH:${JSON.stringify(originalPath)},RUSTC:${JSON.stringify(realRustc)}},stdio:'inherit'});if(r.error)throw r.error;process.exit(r.status??1);\n`,
+    configuredNodeLauncher(new URL("./observe-cargo-invocation.cjs", import.meta.url), {
+      invocation,
+      originalCargo,
+      realRustc,
+      originalPath,
+    }),
     { mode: 0o755 },
   );
   const receipt = path.join(output, "build-receipt.json");

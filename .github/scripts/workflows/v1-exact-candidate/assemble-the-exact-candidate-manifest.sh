@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+node tools/commands/release/v1-exact-candidate.ts admit \
+  --candidate "$CANDIDATE_SHA" \
+  --run "${VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN}" \
+  --run-attempt "${VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT}" \
+  --admissions .qualification/admissions \
+  --output .qualification/v1-exact-candidate-manifest.json

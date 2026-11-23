@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+unset VIZE_TEST_DISABLE_TSGO
+cargo test --locked --profile ci -p vize_canon --test native_syntax_semantics -- --nocapture --test-threads=1
+cargo test --locked --profile ci -p vize_canon --lib generated_diagnostics:: -- --nocapture --test-threads=1

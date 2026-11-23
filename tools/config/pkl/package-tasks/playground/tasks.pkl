@@ -1,0 +1,41 @@
+amends "../../PackageTasks.pkl"
+
+tasks {
+  ["test"] {
+    module.run("pnpm", List("test:node"))
+    module.run("pnpm", List("test:browser"))
+  }
+  ["test:browser"] {
+    (module.run("vp", List(
+      "test",
+      "run",
+      "--config",
+      "vite.test.config.ts",
+    ))) { environment { ["CI"] = "1" } }
+  }
+  ["check"] {
+    module.run("vp", List(
+      "check",
+      "src",
+      "e2e/*.ts",
+      "e2e/vrt/*.ts",
+      "vite.config.ts",
+      "vite.app.config.ts",
+      "vite.test.config.ts",
+      "vite.node.config.ts",
+      "playwright.config.ts",
+    ))
+    (module.run("cargo", List(
+      "run",
+      "--quiet",
+      "--manifest-path",
+      "../Cargo.toml",
+      "-p",
+      "vize",
+      "--",
+      "lint",
+      "--max-warnings",
+      "0",
+    ))) { absolutePaths = Set("../Cargo.toml") }
+  }
+}

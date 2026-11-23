@@ -7,6 +7,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import YAML from "yaml";
+import { toolingProgram } from "./support/program-path.ts";
 import {
   assertPicomatchLock,
   patchedPicomatchRef,
@@ -51,8 +52,12 @@ function unpatchedCopy(temporary: string, version: string): string {
 
 // Measure one pathological match in a child, so an unbounded run is killed.
 function timedMatch(packageRoot: string, pattern: string, input: string, timeout: number) {
-  const source = `const pm=require(${JSON.stringify(packageRoot)});const re=pm.makeRe(${JSON.stringify(pattern)});const t=process.hrtime.bigint();const m=re.test(${JSON.stringify(input)});process.stdout.write(JSON.stringify({m,ms:Number(process.hrtime.bigint()-t)/1e6}))`;
-  return spawnSync(process.execPath, ["-e", source], { encoding: "utf8", timeout });
+  const matcher: RegExp = createRequire(import.meta.url)(packageRoot).makeRe(pattern);
+  return spawnSync(process.execPath, [toolingProgram("process/measure-regexp-match.cjs")], {
+    input: JSON.stringify({ source: matcher.source, flags: matcher.flags, input }),
+    encoding: "utf8",
+    timeout,
+  });
 }
 
 test("every installed picomatch copy is the patched source and passes the extglob laws", () => {

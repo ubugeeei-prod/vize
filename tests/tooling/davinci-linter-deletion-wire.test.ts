@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -12,9 +14,8 @@ import { linterProjects } from "../differential/linter-deletion-verifier.ts";
 
 void test("Matrix records the blocked preflight without registering linter deletion credit", () => {
   const workflow = parse(
-      fs.readFileSync(
+      readAutomationPrograms(
         new URL("../../.github/workflows/real-project-matrix.yml", import.meta.url),
-        "utf8",
       ),
     ) as { jobs: Record<string, { steps: Array<Record<string, unknown>> }> },
     steps = workflow.jobs["real-project-matrix"].steps,
@@ -45,19 +46,23 @@ void test("Matrix records the blocked preflight without registering linter delet
     fs.mkdirSync(bin);
     fs.writeFileSync(
       path.join(bin, "node"),
-      '#!/bin/sh\nprintf \'%s\\n\' "$@" > "$RECORDER_ARGUMENTS"\nmkdir -p "$2"\nprintf \'{}\\n\' > "$2/linter-deletion-readiness.json"\n',
+      readToolingProgram("commands/davinci-linter-deletion-wire/node.sh"),
       { mode: 0o755 },
     );
-    const result = spawnSync("bash", ["-euo", "pipefail", "-c", String(recorder.run)], {
-      cwd: root,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        FIXTURE_REPORT_DIR: reportDirectory,
-        PATH: `${bin}:${process.env.PATH}`,
-        RECORDER_ARGUMENTS: argumentsPath,
+    const result = spawnSync(
+      "bash",
+      ["-euo", "pipefail", automationShellPath(String(recorder.run))],
+      {
+        cwd: root,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          FIXTURE_REPORT_DIR: reportDirectory,
+          PATH: `${bin}:${process.env.PATH}`,
+          RECORDER_ARGUMENTS: argumentsPath,
+        },
       },
-    });
+    );
     assert.equal(result.status, 0, result.stderr);
     assert.deepEqual(fs.readFileSync(argumentsPath, "utf8").trim().split("\n"), [
       "tests/differential/linter-deletion-recorder.ts",

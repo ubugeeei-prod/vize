@@ -1,0 +1,145 @@
+import "../../Actions.pkl" as ci
+
+name = "Benchmark - Diagnostic digest"
+`run-name` = "Diagnostic digest ${{ inputs.head }} vs ${{ inputs.base }}"
+// Base vs head cost of the `vize check` / `vize build` diagnostic digest on
+// pinned real corpora (elk, misskey), interleaved per round on one runner,
+// with an A/A control (a second copy of the base binary). Also checks that
+// zero-digest runs print exactly base's output and that `--verbose` restores
+// it where a digest prints. Driver:
+// tools/benchmarks/scripts/diagnostic-digest-bench.ts
+on {
+  workflow_dispatch {
+    inputs {
+      base {
+        description = "Full 40-hex base commit"
+        type = "string"
+        required = true
+      }
+      head {
+        description = "Full 40-hex head commit"
+        type = "string"
+        required = true
+      }
+      rounds {
+        description = "Measured rounds per scenario (each round runs every variant once, rotated)"
+        type = "string"
+        ["default"] = "7"
+      }
+    }
+  }
+  // Registers the dispatch-only workflow from its PR; only the tests run there.
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/diagnostic-digest-bench.yml"
+      ".github/scripts/workflows/diagnostic-digest-bench/**"
+      "tools/benchmarks/scripts/diagnostic-digest-bench.ts"
+      "tests/tooling/diagnostic-digest-bench.test.ts"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "diagnostic-digest-bench-${{ github.event.pull_request.number || inputs.head }}-${{ inputs.base }}"
+  `cancel-in-progress` = true
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+  CARGO_INCREMENTAL = "0"
+  ELK_SHA = "6b956a6d4a89a676059d83a0b0e59d7165d5f266"
+  MISSKEY_SHA = "ec27657bf51af0d9dcb3539623f107ee35f66e6e"
+}
+jobs {
+  test {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic { run = "node --test tests/tooling/diagnostic-digest-bench.test.ts" }
+    }
+  }
+
+  measure {
+    `if` = "github.event_name == 'workflow_dispatch'"
+    needs = "test"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 150
+    env {
+
+      BASE = "${{ inputs.base }}"
+      HEAD = "${{ inputs.head }}"
+      ROUNDS = "${{ inputs.rounds }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("diagnostic-digest-bench")
+      new Dynamic {
+        name = "Validate inputs"
+        shell = "bash"
+        run = ci.workflowScript("validate-inputs.sh")
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Build both commits"
+        shell = "bash"
+        run = ci.workflowScript("build-both-commits.sh")
+      }
+      new Dynamic {
+        name = "Install GNU time and perf"
+        shell = "bash"
+        run = ci.workflowScript("install-gnu-time-and-perf.sh")
+      }
+      new Dynamic {
+        name = "Fetch the pinned corpora"
+        shell = "bash"
+        run = ci.workflowScript("fetch-the-pinned-corpora.sh")
+      }
+      new Dynamic {
+        name = "Measure"
+        shell = "bash"
+        run = ci.workflowScript("measure.sh")
+      }
+      new Dynamic {
+        name = "Summarize"
+        `if` = "always()"
+        shell = "bash"
+        run = ci.workflowScript("summarize.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "diagnostic-digest-bench"
+          path = """
+          ${{ runner.temp }}/digest-bench/report.md
+          ${{ runner.temp }}/digest-bench/results.json
+
+          """
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

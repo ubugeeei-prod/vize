@@ -1,3 +1,4 @@
+import { configuredNodeLauncher } from "../../tools/support/process-launcher.ts";
 import assert from "node:assert/strict";
 import { execFile, spawn } from "node:child_process";
 import fs from "node:fs";
@@ -56,15 +57,17 @@ function fixture(t) {
   fs.writeFileSync(path.join(folder, "package.json"), "{}");
   const log = path.join(directory, "events.jsonl");
   fs.writeFileSync(log, "");
-  const program = fs.readFileSync(
-    path.join(root, "editors/vscode/test/fixtures/workspace-protocol-server.cjs"),
-    "utf8",
-  );
   function server(destination, version = "9.8.7", mode = "valid") {
     fs.mkdirSync(path.dirname(destination), { recursive: true });
     fs.writeFileSync(
       destination,
-      `#!/usr/bin/env node\nconst options = ${JSON.stringify({ log, version, mode })};\n${program}`,
+      configuredNodeLauncher(
+        new URL(
+          "../../editors/vscode/test/fixtures/workspace-protocol-server.cjs",
+          import.meta.url,
+        ),
+        { log, version, mode },
+      ),
       { mode: 0o755 },
     );
     return destination;
@@ -154,6 +157,19 @@ function discovery(
       ),
   };
 }
+
+await test("the bundled protocol fixture keeps its portable Node interpreter under a native filename", async (t) => {
+  const f = fixture(t);
+  const bundled = f.server(path.join(f.directory, "vize.exe"));
+  assert.equal(fs.readFileSync(bundled, "utf8").split("\n", 1)[0], "#!/usr/bin/env node");
+  const invocation = serverInvocation(bundled);
+  assert.equal(invocation.command, process.execPath);
+  const { stdout } = await promisify(execFile)(invocation.command, [
+    ...invocation.args,
+    "--version",
+  ]);
+  assert.equal(stdout.trim(), "vize 9.8.7");
+});
 
 await test("workspace npm bin wins over extension version after real stdio initialize and shutdown", async (t) => {
   const f = fixture(t);

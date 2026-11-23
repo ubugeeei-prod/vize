@@ -1,0 +1,9 @@
+import "../../Actions.pkl" as ci
+
+`runs-on` = ci.linux
+`timeout-minutes` = 60
+`if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+steps = new Listing {
+  ci.use(ci.checkout)
+  ci.use("./.github/actions/check-nix")
+}

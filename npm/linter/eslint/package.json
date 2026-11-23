@@ -20,7 +20,8 @@
     "directory": "npm/linter/eslint"
   },
   "files": [
-    "dist"
+    "dist",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "main": "./dist/index.mjs",
@@ -37,7 +38,7 @@
   },
   "scripts": {
     "build": "vp pack",
-    "test": "vp pack && node --test test/consumer.test.mjs",
+    "test": "node ./scripts/package-tasks.cjs test",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts"
   },

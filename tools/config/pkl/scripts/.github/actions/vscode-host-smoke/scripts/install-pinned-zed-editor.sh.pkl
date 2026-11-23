@@ -1,0 +1,1 @@
+amends "../../../../../parts/shell/install-zed-editor.pkl"

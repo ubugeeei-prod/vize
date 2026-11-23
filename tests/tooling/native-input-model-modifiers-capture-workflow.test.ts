@@ -1,5 +1,5 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import { test } from "node:test";
 import { nativeVaporCaptureRequired } from "../../tools/support/compat/github/native-vapor-capture.mjs";
 
@@ -35,7 +35,7 @@ test("modifier inputs, native producers, and all real consumer leaves select hos
 });
 
 test("the initial observation retains all ten statuses before verdict and uploads on failure", () => {
-  const action = fs.readFileSync(
+  const action = readAutomationPrograms(
     new URL("../../.github/actions/test-native-vapor/action.yml", import.meta.url),
     "utf8",
   );

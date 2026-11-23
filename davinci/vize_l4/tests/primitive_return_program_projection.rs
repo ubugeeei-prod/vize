@@ -161,11 +161,10 @@ fn original_primitive_return_ts_tsx_projection_preserves_full_primary_vectors_an
     // The unchanged helper's actual filename/options/schema are also used by
     // the independently frozen original TS6 observation, before Rust execution.
     let mut child = Command::new("node")
-        .args([
-            "--input-type=module",
-            "-e",
-            include_str!("../../../tests/tooling/support/native-array-typescript.ts"),
-        ])
+        .arg(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/tooling/support/native-array-typescript.ts"
+        ))
         .current_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

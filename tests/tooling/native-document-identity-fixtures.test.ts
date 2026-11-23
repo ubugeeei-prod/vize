@@ -103,7 +103,17 @@ test("four historical inputs, all five current consumers and actual A/B producer
   }
   assert.throws(
     () => validate(corrupt("head", row.legacyProtocol.workflow.path)),
-    changedSource("head", row.legacyProtocol.workflow.path),
+    /native-beta-diagnostic-dto: unreviewed workflow revision/,
+  );
+  assert.throws(
+    () =>
+      validate(
+        corrupt(
+          "head",
+          ".github/scripts/workflows/native-beta-diagnostic-dto/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh",
+        ),
+      ),
+    /native-beta-diagnostic-dto: executable source changed/,
   );
   for (const [path, expected] of [
     [

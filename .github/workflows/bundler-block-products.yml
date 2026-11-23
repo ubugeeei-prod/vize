@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/bundler-block-products.yml"
+      - ".github/scripts/workflows/bundler-block-products/**"
       - "tools/commands/levels/codegen-equivalence.ts"
       - "tools/commands/levels/native-addon-identity.ts"
       - "tools/support/compat/npm/stock-addon-rustc.rs"
@@ -39,6 +40,19 @@ jobs:
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/bundler-block-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
@@ -49,16 +63,7 @@ jobs:
         with: { wild-version: "0.9.0" }
       - name: Compare the packaged Node build features against the base commit
         if: matrix.suite == 'stock-addon'
-        run: |
-          set -euo pipefail
-          git fetch --no-tags --depth=1 origin "$BASE_SHA" "$HEAD_SHA"
-          VIZE_CODEGEN_PROBE=1 node --test tests/tooling/native-addon-identity.test.ts
-          status=0
-          node tools/commands/levels/codegen-equivalence.ts "$BASE_SHA" "$HEAD_SHA" vize_vitrine node-addon default "$RUNNER_TEMP/stock-addon.json" --control-plugin-identity || status=$?
-          # The real builds stamp their respective Git SHA and source closure into the plugin cache key.
-          test "$status" = 1
-          node tools/commands/levels/native-addon-identity.ts "$RUNNER_TEMP/stock-addon.json" | tee "$RUNNER_TEMP/stock-addon-identity.json"
-          node tools/support/compat/npm/bundler-block-products.ts --stock "$RUNNER_TEMP/stock-addon.json"
+        run: . "${{ env.VIZE_CI_FILES }}/compare-the-packaged-node-build-features-against-the-base-commit.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always() && matrix.suite == 'stock-addon'
         with:
@@ -71,13 +76,4 @@ jobs:
             !${{ runner.temp }}/stock-addon.json.executables-*/*.node
       - name: Compare native and Node products on original source
         if: matrix.suite == 'products'
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt)
-          rust=(-p vize_atelier_sfc --features bundler-block-products)
-          cargo clippy "${flags[@]}" "${rust[@]}" --lib --no-deps -- -D warnings
-          cargo test "${flags[@]}" "${rust[@]}" --lib bundler::tests
-          cargo test "${flags[@]}" "${rust[@]}" --test bundler_block_products -- --include-ignored --nocapture --test-threads=1
-          cargo build "${flags[@]}" -p vize_vitrine --features experimental-bundler-block-products,legacy --lib
-          cp target/ci-opt/libvize_vitrine.so "$RUNNER_TEMP/bundler-blocks.node"
-          node tools/support/compat/npm/bundler-block-products.ts "$RUNNER_TEMP/bundler-blocks.node"
+        run: . "${{ env.VIZE_CI_FILES }}/compare-native-and-node-products-on-original-source.sh"

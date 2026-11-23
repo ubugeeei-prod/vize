@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cargo test --locked --profile ci -p vize_maestro --features micro-profiling --lib server::initial_diagnostics::indexed_cost_carrier::indexed_scheduler_cost_carrier -- --exact --nocapture --test-threads=1 2>&1 | tee scheduler-evidence/carrier.log
+node "$VIZE_CI_FILES/verify-carrier.ts"
+test -s "$VIZE_SCHEDULER_COST_EVIDENCE"

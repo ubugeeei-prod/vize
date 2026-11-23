@@ -1,4 +1,4 @@
-name: Diagnostic digest benchmark
+name: Benchmark - Diagnostic digest
 run-name: "Diagnostic digest ${{ inputs.head }} vs ${{ inputs.base }}"
 # Base vs head cost of the `vize check` / `vize build` diagnostic digest on
 # pinned real corpora (elk, misskey), interleaved per round on one runner,
@@ -25,6 +25,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/diagnostic-digest-bench.yml
+      - .github/scripts/workflows/diagnostic-digest-bench/**
       - tools/benchmarks/scripts/diagnostic-digest-bench.ts
       - tests/tooling/diagnostic-digest-bench.test.ts
 permissions: { contents: read }
@@ -58,12 +59,22 @@ jobs:
       HEAD: ${{ inputs.head }}
       ROUNDS: ${{ inputs.rounds }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/diagnostic-digest-bench/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Validate inputs
         shell: bash
-        run: |
-          [[ "$BASE" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$HEAD" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$ROUNDS" =~ ^[1-9][0-9]?$ ]]
+        run: . "${{ env.VIZE_CI_FILES }}/validate-inputs.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
@@ -72,61 +83,20 @@ jobs:
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Build both commits
         shell: bash
-        run: |
-          set -euo pipefail
-          target="$RUNNER_TEMP/pair-target"
-          for side in base head; do
-            sha=$BASE; [[ $side == head ]] && sha=$HEAD
-            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
-            git worktree add --detach "$RUNNER_TEMP/src-$side" "$sha"
-            # One target directory: the second build recompiles only what differs.
-            (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build --profile ci-opt -p vize --bin vize)
-            mkdir -p "pair-bin/$side"
-            cp "$target/ci-opt/vize" "pair-bin/$side/"
-          done
-          # The A/A control: the base binary again, measured as its own variant.
-          mkdir -p pair-bin/base-aa && cp pair-bin/base/vize pair-bin/base-aa/
-          ls -l pair-bin/*
+        run: . "${{ env.VIZE_CI_FILES }}/build-both-commits.sh"
       - name: Install GNU time and perf
         shell: bash
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends time
-          # Instruction counts are optional: the driver notes their absence.
-          sudo apt-get install -y --no-install-recommends linux-tools-common "linux-tools-$(uname -r)" || true
-          sudo sysctl -w kernel.perf_event_paranoid=1 || true
+        run: . "${{ env.VIZE_CI_FILES }}/install-gnu-time-and-perf.sh"
       - name: Fetch the pinned corpora
         shell: bash
-        run: |
-          set -euo pipefail
-          corpora="$RUNNER_TEMP/corpora"
-          mkdir -p "$corpora"
-          curl --fail --silent --show-error --location --retry 5 \
-            "https://codeload.github.com/elk-zone/elk/tar.gz/$ELK_SHA" | tar -xz -C "$corpora"
-          curl --fail --silent --show-error --location --retry 5 \
-            "https://codeload.github.com/misskey-dev/misskey/tar.gz/$MISSKEY_SHA" | tar -xz -C "$corpora"
-          cd "$corpora/misskey-$MISSKEY_SHA"
-          pnpm_spec=$(jq -r .packageManager package.json)
-          [[ "$pnpm_spec" =~ ^pnpm@[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          # misskey pins a newer Node than this repository; its packages
-          # are only read here, so a dependency's engines range must not stop
-          # the install.
-          npx --yes "$pnpm_spec" install --filter "./packages/frontend..." --ignore-scripts \
-            --config.engine-strict=false
+        run: . "${{ env.VIZE_CI_FILES }}/fetch-the-pinned-corpora.sh"
       - name: Measure
         shell: bash
-        run: |
-          set -euo pipefail
-          chmod +x pair-bin/*/vize
-          corpora="$RUNNER_TEMP/corpora"
-          node tools/benchmarks/scripts/diagnostic-digest-bench.ts \
-            --bin base=pair-bin/base/vize --bin head=pair-bin/head/vize --bin base-aa=pair-bin/base-aa/vize \
-            --elk "$corpora/elk-$ELK_SHA" --misskey "$corpora/misskey-$MISSKEY_SHA/packages/frontend" \
-            --rounds "$ROUNDS" --out "$RUNNER_TEMP/digest-bench" > /dev/null
+        run: . "${{ env.VIZE_CI_FILES }}/measure.sh"
       - name: Summarize
         if: always()
         shell: bash
-        run: test ! -s "$RUNNER_TEMP/digest-bench/report.md" || cat "$RUNNER_TEMP/digest-bench/report.md" >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/summarize.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

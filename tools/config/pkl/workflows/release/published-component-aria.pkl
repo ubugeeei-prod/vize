@@ -1,0 +1,166 @@
+import "../../Actions.pkl" as ci
+
+name = "Published component ARIA"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/published-component-aria.yml"
+      ".github/scripts/workflows/published-component-aria/**"
+      "tools/support/compat/content-mapper/aria-component-*.ts"
+      "tools/support/release/computed_event_*.ts"
+      "tests/tooling/aria-component-attrs.test.ts"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      version {
+        description = "Exact containing public Vize version"
+        type = "string"
+        required = true
+      }
+      release_run {
+        description = "Successful official Release workflow run for that version"
+        type = "string"
+        required = true
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+concurrency {
+  group = "published-component-aria-${{ github.event.pull_request.number || github.ref }}-${{ inputs.version || 'contracts' }}"
+  `cancel-in-progress` = false
+}
+env {
+  SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+  PUBLIC_VERSION = "${{ inputs.version }}"
+  PUBLIC_RELEASE_RUN = "${{ inputs.release_run }}"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+defaults {
+  run { shell = "bash" }
+}
+
+jobs {
+  contracts {
+    name = "Original ARIA inputs and public release admission controls"
+    `runs-on` = "blacksmith-8vcpu-ubuntu-2404"
+    `timeout-minutes` = 5
+    steps = new Listing {
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "26.13.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Require original cases, exact negative repair diagnostics and release custody"
+        run = "node --test tests/tooling/aria-component-attrs.test.ts tests/tooling/release/computed-event-release.test.ts"
+      }
+    }
+  }
+
+  `release-identity` {
+    name = "Authenticate the containing public release"
+    `if` = "github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize'"
+    needs = "contracts"
+    permissions {
+      contents = "read"
+      actions = "read"
+    }
+    `runs-on` = "blacksmith-8vcpu-ubuntu-2404"
+    `timeout-minutes` = 10
+    steps = new Listing {
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "26.13.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Retain successful official producer, immutable tag and integrated main source"
+        env { GITHUB_TOKEN = "${{ github.token }}" }
+        run = #"node tools/support/release/computed_event_release.ts --phase after --version "$PUBLIC_VERSION" --release-run "$PUBLIC_RELEASE_RUN" --out "$RUNNER_TEMP/component-aria-release.json""#
+      }
+      new Dynamic {
+        name = "Retain public release admission"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "component-aria-release-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/component-aria-release.json"
+          `if-no-files-found` = "error"
+          `retention-days` = 90
+        }
+      }
+    }
+  }
+
+  `public-consumer` {
+    name = "Original public ARIA consumer (${{ matrix.os }})"
+    `if` = "github.event_name == 'workflow_dispatch'"
+    needs = List("contracts", "release-identity")
+    strategy {
+      `fail-fast` = false
+      matrix {
+        include = new Listing {
+          new Dynamic {
+            os = "Windows"
+            runner = ci.windows
+          }
+          new Dynamic {
+            os = "Linux"
+            runner = "blacksmith-8vcpu-ubuntu-2404"
+          }
+          new Dynamic {
+            os = "macOS"
+            runner = "${{ vars.VIZE_RELEASE_MACOS_RUNNER || 'blacksmith-12vcpu-macos-15' }}"
+          }
+        }
+      }
+    }
+    `runs-on` = "${{ matrix.runner }}"
+    `timeout-minutes` = 15
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("published-component-aria")
+      new Dynamic {
+        name = "Preserve reporter fixture bytes on Windows"
+        `if` = "runner.os == 'Windows'"
+        run = "git config --global core.autocrlf false"
+      }
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "26.13.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Install unmodified public packages and exercise every original ARIA control"
+        run = ci.workflowScript("install-unmodified-public-packages-and-exercise-every-original-aria-cont.sh")
+      }
+      new Dynamic {
+        name = "Retain original inputs, installed declaration bytes and every raw process"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "component-aria-consumer-${{ matrix.os }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = """
+          ${{ runner.temp }}/component-aria-consumer/**
+          !${{ runner.temp }}/component-aria-consumer/**/node_modules/**
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 90
+        }
+      }
+    }
+  }
+}

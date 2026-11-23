@@ -48,7 +48,7 @@ import {
 } from "./content-mapper-pair-report.ts";
 
 /** A mapper process: a `vize` build, or a reference mapper timed beside them. */
-type Build = { id: string; bin: string; argv: string[]; reference: boolean };
+type Build = { id: string; bin: string; argument: string; reference: boolean };
 
 function sfcFiles(dir: string): string[] {
   const out: string[] = [];
@@ -99,31 +99,47 @@ function burst(build: Build, project: string, stream: string, scratch: string): 
   let processWallMs: number | undefined;
   let peakMiB: number | undefined;
   if (process.platform === "win32") {
-    // Start-Process keeps the exited process object, which still answers its
-    // processor time and peak working set. The stopwatch excludes PowerShell's
-    // own startup, which would otherwise dominate the wall time.
-    const script = [
-      `$w = [System.Diagnostics.Stopwatch]::StartNew();`,
-      `$p = Start-Process -FilePath '${build.bin}' -ArgumentList '${build.argv.join(" ")}'`,
-      `-WorkingDirectory '${project}' -RedirectStandardInput '${stream}'`,
-      `-RedirectStandardOutput '${output}' -NoNewWindow -PassThru -Wait;`,
-      `$w.Stop(); "$($p.ExitCode) $($p.TotalProcessorTime.TotalSeconds) $($p.PeakWorkingSet64) $($w.Elapsed.TotalMilliseconds)"`,
-    ].join(" ");
-    const result = spawnSync("powershell.exe", ["-NoProfile", "-Command", script], {
-      encoding: "utf8",
-    });
-    const [code, cpu, peak, elapsed] = result.stdout.trim().split(/\s+/);
-    processWallMs = parseNumber(elapsed);
-    if (result.status !== 0 || code !== "0")
-      throw new Error(`${build.id} failed: ${result.stderr}`);
-    cpuSeconds = parseNumber(cpu);
-    peakMiB = (parseNumber(peak) ?? NaN) / 1048576;
+    const result = spawnSync(
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        join(import.meta.dirname, "content-mapper-burst-windows.ps1"),
+        "-Executable",
+        build.bin,
+        "-MapperArgument",
+        build.argument,
+        "-Project",
+        project,
+        "-InputFile",
+        stream,
+        "-OutputFile",
+        output,
+      ],
+      { encoding: "utf8" },
+    );
+    if (result.error) throw result.error;
+    if (result.status !== 0) throw new Error(`${build.id} failed: ${result.stderr}`);
+    const measurement = JSON.parse(result.stdout) as {
+      exitCode: number;
+      cpuSeconds: number;
+      peakBytes: number;
+      wallMs: number;
+    };
+    if (measurement.exitCode !== 0)
+      throw new Error(`${build.id} exited with ${measurement.exitCode}`);
+    cpuSeconds = measurement.cpuSeconds;
+    peakMiB = measurement.peakBytes / 1048576;
+    processWallMs = measurement.wallMs;
   } else {
     const gnu = process.platform === "linux";
     const timer = gnu ? ["-f", "%U %S %M", "-o", metrics] : ["-l"];
     const input = openSync(stream, "r");
     const out = openSync(output, "w");
-    const result = spawnSync("/usr/bin/time", [...timer, build.bin, ...build.argv], {
+    const result = spawnSync("/usr/bin/time", [...timer, build.bin, build.argument], {
       cwd: project,
       stdio: [input, out, "pipe"],
       encoding: "utf8",
@@ -164,7 +180,7 @@ function burst(build: Build, project: string, stream: string, scratch: string): 
 async function burstPipe(build: Build, project: string, stream: string): Promise<BurstSample> {
   const input = openSync(stream, "r");
   const start = performance.now();
-  const child = spawn(build.bin, build.argv, {
+  const child = spawn(build.bin, [build.argument], {
     cwd: project,
     stdio: [input, "pipe", "inherit"],
   });
@@ -200,7 +216,7 @@ function errorReplies(bytes: Buffer): number {
 
 /** Drive one transform at a time and time each reply. */
 async function serial(build: Build, project: string, messages: Message[]): Promise<SerialSample> {
-  const child = spawn(build.bin, build.argv, {
+  const child = spawn(build.bin, [build.argument], {
     cwd: project,
     stdio: ["pipe", "pipe", "inherit"],
   });
@@ -262,7 +278,7 @@ async function main(): Promise<void> {
     return {
       id: spec.slice(0, at),
       bin: resolve(spec.slice(at + 1)),
-      argv: ["content-mapper"],
+      argument: "content-mapper",
       reference: false,
     };
   });
@@ -272,7 +288,7 @@ async function main(): Promise<void> {
     return {
       id: spec.slice(0, at),
       bin: process.execPath,
-      argv: [resolve(spec.slice(at + 1))],
+      argument: resolve(spec.slice(at + 1)),
       reference: true,
     };
   });

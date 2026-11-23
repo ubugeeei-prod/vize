@@ -1,0 +1,9 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  test -f .qualification/receipts/v1-exact-candidate-receipts.json
+  """#
+}

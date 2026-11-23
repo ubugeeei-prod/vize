@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./program-path.ts";
 import fs from "node:fs";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import os from "node:os";
@@ -32,14 +33,7 @@ export function runPolicy(
 
   fs.mkdirSync(binDir);
   fs.writeFileSync(eventPath, JSON.stringify(payload));
-  writeFakeCommand(
-    binDir,
-    "gh",
-    [
-      "const fs = require('node:fs');",
-      "fs.appendFileSync(process.env.FAKE_GH_LOG, JSON.stringify(process.argv.slice(2)) + '\\n');",
-    ].join("\n"),
-  );
+  writeFakeCommand(binDir, "gh", readToolingProgram("commands/title-policy-ts/gh.js"));
 
   const env: NodeJS.ProcessEnv = {
     ...process.env,

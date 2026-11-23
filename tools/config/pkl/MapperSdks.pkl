@@ -1,0 +1,17 @@
+module vize.ci.MapperSdks
+
+current = "actual-20261024"
+beta = "beta-3e923"
+comparison = "d6c4"
+names = List(current, beta, comparison).join(" ")
+
+selectHost = #"""
+extra=()
+if [[ "$sdk" == \#(beta) ]]; then
+  native="$RUNNER_TEMP/component-input-beta/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+  extra=(--mapper-host "$native" --mapper-version 'Version 7.1.0-beta')
+elif [[ "$sdk" == \#(comparison) ]]; then
+  native="$RUNNER_TEMP/component-input-d6c4/tsgo"
+  extra=(--mapper-host "$native" --mapper-version "$("$native" --version)")
+fi
+"""#

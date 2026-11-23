@@ -1,0 +1,4 @@
+#!/bin/bash
+printf "%s\n" "$@" > "$MOCK_ARGS"
+printf "controlled failure\n" > "$3"
+exit 23

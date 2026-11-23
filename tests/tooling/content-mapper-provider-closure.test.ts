@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -83,7 +84,7 @@ test("the JavaScript tsc package resolves from a pnpm shell-shim launcher", (t) 
   fs.mkdirSync(path.dirname(tsc), { recursive: true });
   fs.mkdirSync(path.join(modules, "typescript"), { recursive: true });
   fs.writeFileSync(path.join(workspace, "package.json"), '{"private":true}\n');
-  fs.writeFileSync(tsc, '#!/bin/sh\nexec node "$basedir/../typescript/bin/tsc" "$@"\n');
+  fs.writeFileSync(tsc, readToolingProgram("commands/content-mapper-provider-closure/tsc.sh"));
   fs.writeFileSync(
     path.join(modules, "typescript/package.json"),
     '{"name":"typescript","version":"6.0.3"}\n',

@@ -1,0 +1,53 @@
+import "../../Actions.pkl" as ci
+
+`runs-on` = ci.linux
+`if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+`timeout-minutes` = 30
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/full-qualification"
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+}
+steps = new Listing {
+  ci.use(ci.checkout)
+  ci.workspaceVp()
+  ci.rust("stable")
+  new Dynamic {
+    uses = "./.github/actions/setup-wild-http-recovery"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "build-js-packages"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  ci.use("./.github/actions/setup-rust-script")
+  ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+  new Dynamic {
+    name = "Verify declarations, build native package, and check UI package"
+    run = #". "${{ env.VIZE_CI_FILES }}/verify-declarations-build-native-package-and-check-ui-package.sh""#
+  }
+  new Dynamic {
+    name = "Check composable hydration and Vapor conformance"
+    // Independent of the UI package check above; it only needs the native
+    // binding that step built, so a UI failure must not hide this result.
+    `if` = "${{ !cancelled() }}"
+    run = "vp run --filter './npm/compose/core' check:conformance"
+  }
+  ci.command("Build JS packages", "vp run --workspace-root build:packages")
+  new Dynamic {
+    name = "Stage shared JS build artifacts"
+    run = #". "${{ env.VIZE_CI_FILES }}/stage-shared-js-build-artifacts.sh""#
+  }
+  new Dynamic {
+    name = "Upload shared JS build artifacts"
+    uses = ci.uploadArtifact
+    with {
+      name = "shared-js-build"
+      path = ".artifacts/shared-js-build/"
+      `if-no-files-found` = "error"
+      `retention-days` = 7
+    }
+  }
+}

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+for repetition in 1 2 3 4 5; do
+  "$1" content-mapper --reply-when-ready < "$2" > /dev/null
+done

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
+import { readAutomationPrograms } from "../support/automation-source.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
 interface WorkflowStep {
@@ -22,7 +23,7 @@ interface MuslJob {
 }
 
 function muslJob(): MuslJob {
-  const workflow = parse(readRepoFile(".github", "workflows", "native-smoke.yml")) as {
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "native-smoke.yml")) as {
     jobs: Record<string, MuslJob>;
   };
   return workflow.jobs["fresh-install-musl-smoke"];
@@ -77,6 +78,14 @@ test("the musl fresh install smoke cross-builds x64 and arm64 in Alpine", () => 
   assert.match(alpine, /node:24-alpine@sha256:[0-9a-f]{64}/u);
   assert.match(
     alpine,
+    /--volume "\$VIZE_CI_FILES\/smoke-in-alpine-container\.sh:\/vize-ci-smoke\.sh:ro"/u,
+  );
+  assert.match(alpine, /sh -eux \/vize-ci-smoke\.sh/u);
+  const inside = readRepoFile(
+    ".github/scripts/workflows/native-smoke/smoke-in-alpine-container.sh",
+  );
+  assert.match(
+    inside,
     /node tools\/commands\/release\/npm\/smoke-release-install\.ts[\s\\]+--prepare-manifests --runtime-checks/u,
   );
   for (const packageDir of [
@@ -85,9 +94,9 @@ test("the musl fresh install smoke cross-builds x64 and arm64 in Alpine", () => 
     "npm/cli",
     "npm/builder/vite",
   ])
-    assert.ok(alpine.includes(packageDir), `musl smoke does not pack ${packageDir}`);
+    assert.ok(inside.includes(packageDir), `musl smoke does not pack ${packageDir}`);
   assert.ok(
-    alpine.includes('"schema":"vize.loadedNativeBinding"'),
+    inside.includes('"schema":"vize.loadedNativeBinding"'),
     "musl smoke must prove which binding the fresh project loaded",
   );
   assert.equal(alpineStep?.env?.NATIVE_PLATFORM, "${{ matrix.platform }}");
@@ -96,5 +105,5 @@ test("the musl fresh install smoke cross-builds x64 and arm64 in Alpine", () => 
     "${{ format('@vizejs/native-{0}', matrix.platform) }}",
   );
   assert.match(alpine, /VIZE_SMOKE_EXPECTED_NATIVE_PACKAGE=\$NATIVE_PACKAGE/u);
-  assert.match(alpine, /grep -F .*package/u, "receipt package evidence stays independent");
+  assert.match(inside, /grep -F .*package/u, "receipt package evidence stays independent");
 });

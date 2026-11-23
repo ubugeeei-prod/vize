@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -10,14 +11,10 @@ await test("passive original-law command is scoped and both native failures stop
   const root = mkdtempSync(join(os.tmpdir(), "passive-recipe-control-"));
   try {
     const journal = join(root, "journal.jsonl");
-    const mock = `#!${process.execPath}
-import {appendFileSync} from "node:fs";
-const name=process.argv[1].split("/").at(-1), args=process.argv.slice(2);
-const passive=args.includes("lsp_reactive_diagnostics_cli::");
-appendFileSync(process.env.JOURNAL,JSON.stringify({name,args,capture:process.env.VIZE_INLAY_HINT_CAPTURE??null,passive:process.env.VIZE_LSP_PASSIVE_EVIDENCE??null,trace:process.env.VIZE_TRACE_EDITOR_PREPARATION??null})+"\\n");
-if(name==="cargo" && (passive?process.env.FAIL_PASSIVE:process.env.FAIL_ORIGINAL)==="1")process.exit(passive?31:29);
-if(name==="node")process.stdout.write("/authored/native");
-`;
+    const mock = readToolingProgram(
+      "commands/typechecker-native-passive-recipe/record-passive-tool.js.in",
+      { NODE: process.execPath },
+    );
     for (const name of ["cargo", "node", "bash"]) {
       writeFileSync(join(root, name), mock);
       chmodSync(join(root, name), 0o755);

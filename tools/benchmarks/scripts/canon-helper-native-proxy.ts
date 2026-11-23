@@ -1,3 +1,4 @@
+import { shellLauncher } from "../../support/process-launcher.ts";
 /** Untimed native observers: byte-exact RPC tee and compiler-statistics capture. */
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
@@ -28,7 +29,6 @@ const environmentKeys = [
 const environment = (env: NodeJS.ProcessEnv) =>
   Object.fromEntries(environmentKeys.map((key) => [key, env[key] ?? null]));
 const sha = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
-const quote = (value: string) => "'" + value.replaceAll("'", "'\\''") + "'";
 export function nativeProxyLauncher(options: {
   node: string;
   module: string;
@@ -36,14 +36,9 @@ export function nativeProxyLauncher(options: {
   executable: string;
   mode: "rpc" | "stats";
 }) {
-  return (
-    "#!/bin/sh\nexec " +
-    [options.node, options.module, options.mode, options.out, options.executable]
-      .map(quote)
-      .join(" ") +
-    (options.mode === "stats" ? ' "$@"' : "") +
-    "\n"
-  );
+  return shellLauncher(options.mode === "stats" ? "exec" : "exec-fixed", {
+    COMMAND: [options.node, options.module, options.mode, options.out, options.executable],
+  });
 }
 export function classifyNativeInvocation(args: string[], config: unknown, configReadable: boolean) {
   if (

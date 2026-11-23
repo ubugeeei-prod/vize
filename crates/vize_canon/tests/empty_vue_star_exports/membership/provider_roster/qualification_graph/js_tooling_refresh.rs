@@ -1,4 +1,4 @@
-use super::{Checked, Value, bound, fs, load, support};
+use super::{Checked, Value, bound, load};
 use serde_json::json;
 
 pub(super) const UPDATE: &str =
@@ -33,16 +33,16 @@ pub(super) fn authorize(
     workspace: &[u8],
 ) -> Checked<Value> {
     let update = update();
-    let unplugin_manifest = fs::read(support::repository().join(UNPLUGIN_MANIFEST))
+    let unplugin_manifest = crate::package_task_history::read(UNPLUGIN_MANIFEST)
         .map_err(|_| "complete unplugin manifest")?;
-    let example_manifest = fs::read(support::repository().join(EXAMPLE_MANIFEST))
+    let example_manifest = crate::package_task_history::read(EXAMPLE_MANIFEST)
         .map_err(|_| "complete unplugin example manifest")?;
     let graph = JsToolingRefreshQualificationGraph {
         lock,
         package,
         workspace,
-        unplugin_manifest: &unplugin_manifest,
-        example_manifest: &example_manifest,
+        unplugin_manifest: unplugin_manifest.as_bytes(),
+        example_manifest: example_manifest.as_bytes(),
     };
     verify(predecessor, predecessor_bytes, &update, &graph)?;
     Ok(update)

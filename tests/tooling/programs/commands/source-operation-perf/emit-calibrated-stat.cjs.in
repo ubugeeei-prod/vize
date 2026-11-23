@@ -1,0 +1,14 @@
+#!@@NODE@@
+const fs = require("node:fs"),
+  a = process.argv.slice(2);
+if (a[0] === "--version") {
+  console.log("fixture-perf 1");
+  process.exit(0);
+}
+fs.writeFileSync(
+  a[a.indexOf("--output") + 1],
+  a[a.indexOf("-e") + 1]
+    .split(",")
+    .map((e) => "7,," + e + ",100,100.00")
+    .join("\n"),
+);

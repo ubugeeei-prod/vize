@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { globSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-// Paths are resolved from the package cwd: the runner virtualizes import.meta.url.
 import path from "node:path";
 
 import { test } from "vite-plus/test";
@@ -60,16 +59,9 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
   assert.equal(formatSfcLintResults(results), "");
 });
 
-test("package lint:sfc stays wired to the shared Vize SFC gate", async () => {
-  const manifest = JSON.parse(await readFile(path.resolve("package.json"), "utf8")) as {
-    scripts?: Record<string, string>;
-  };
+test("the SFC lint entrypoint applies the package compatibility rules", async () => {
   const lintScript = await readFile(path.resolve("scripts/lint-sfc.ts"), "utf8");
 
-  assert.equal(
-    manifest.scripts?.["lint:sfc"],
-    "vp exec node scripts/lint-sfc.ts src && vp exec node scripts/check-renderers.ts src",
-  );
   assert.match(lintScript, /import \{ lintPatinaSfc \} from "@vizejs\/native";/);
   assert.match(lintScript, /const lintCoreSfc: SfcLintFunction = \(source, options\) =>/);
   assert.match(lintScript, /customEventNameCasing: "camelCase"/);

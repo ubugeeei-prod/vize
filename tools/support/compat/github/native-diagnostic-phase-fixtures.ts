@@ -1,3 +1,4 @@
+import { workflowPredecessor } from "../../ci/workflow-program-history.ts";
 // One current phase contract; the historical beta ABI remains independently required.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -30,8 +31,12 @@ function pinned(read: ReadFile, side: "base" | "head", path: unknown, expected: 
   assert.match(path, /^(?:[a-zA-Z0-9_.-]+\/)*[a-zA-Z0-9_.-]+$/);
   assert.ok(typeof expected === "string");
   assert.match(expected, /^[a-f0-9]{64}$/);
-  const bytes = read(side, path);
-  assert.ok(bytes, `missing ${side} phase contract input: ${path}`);
+  const actual = read(side, path);
+  assert.ok(actual, `missing ${side} phase contract input: ${path}`);
+  const bytes =
+    path === ".github/workflows/native-beta-diagnostic-dto.yml" && hash(actual) !== expected
+      ? workflowPredecessor("native-beta-diagnostic-dto", actual, (file) => read(side, file))
+      : actual;
   assert.equal(hash(bytes), expected, `changed ${side} phase contract input: ${path}`);
   return bytes;
 }

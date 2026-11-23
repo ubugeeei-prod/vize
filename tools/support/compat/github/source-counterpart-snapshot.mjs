@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+import { observePrime, processAlive } from "./source-counterpart-worker.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -33,24 +35,6 @@ const sources = new Set([
   "2da71113a3f8ab528b1a9cda20fc6a4c2bd273f6",
   "ebbdc1b1e1559d7f4efd55978bd8b52f127acb3a",
 ]);
-function observePrime(event) {
-  const directory = process.env.VIZE_TOOLING_LISTING_OBSERVATION_DIR;
-  if (!directory) return;
-  fs.mkdirSync(directory, { recursive: true });
-  fs.appendFileSync(
-    path.join(directory, "history-prime-" + process.pid + ".jsonl"),
-    JSON.stringify({ time: new Date().toISOString(), pid: process.pid, ...event }) + "\n",
-  );
-}
-function alive(pid) {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (error) {
-    if (error.code === "ESRCH") return false;
-    throw error;
-  }
-}
 function stopGroup(pid) {
   if (!pid) return;
   observePrime({ event: "cleanup-signal", group: pid, signal: "SIGKILL" });
@@ -105,7 +89,7 @@ export function primeStarCounterpartHistory(owner, { timeoutMs = 240_000 } = {})
             previous = fs.readFileSync(lock, "utf8");
           assert(stat.isFile() && !stat.isSymbolicLink() && (stat.mode & 0o777) === 0o600);
           const parsed = /^([1-9][0-9]*):([0-9]+)$/u.exec(previous);
-          if (parsed && !alive(Number(parsed[1]))) {
+          if (parsed && !processAlive(Number(parsed[1]))) {
             let finished = true;
             const previousWorkerFile = lock + ".worker." + previous;
             if (fs.existsSync(previousWorkerFile)) {
@@ -113,7 +97,7 @@ export function primeStarCounterpartHistory(owner, { timeoutMs = 240_000 } = {})
               assert(worker.startsWith(previous + ":"), "same dead owner's worker");
               const pid = Number(worker.slice(previous.length + 1));
               assert(Number.isSafeInteger(pid) && pid > 0);
-              finished = !alive(process.platform === "win32" ? pid : -pid);
+              finished = !processAlive(process.platform === "win32" ? pid : -pid);
               if (finished) fs.unlinkSync(previousWorkerFile);
             }
             if (finished) {
@@ -136,16 +120,20 @@ export function primeStarCounterpartHistory(owner, { timeoutMs = 240_000 } = {})
     }
     const remaining = Math.ceil(deadline - performance.now()) - 500;
     assert(remaining > 0, "remaining bounded history priming budget");
-    const helper = new URL(
-      "../../../../tests/performance/support/warm-type-backed-git-reader-literal-source.ts",
-      import.meta.url,
-    ).href;
-    const observation = `const observe=${observePrime.toString()};`;
-    const monitor = `const fs=require('node:fs'), path=require('node:path'); ${observation} const owner=${process.pid}; const group=Number(process.argv[1]); const end=Date.now()+Number(process.argv[2]); observe({event:'monitor-start',owner,group,end}); const alive=p=>{try{process.kill(p,0);return true}catch(e){if(e.code==='ESRCH')return false;throw e}}; process.on('SIGTERM',()=>{}); const timer=setInterval(()=>{const ownerAlive=alive(owner),groupAlive=alive(group),expired=Date.now()>=end;if(!ownerAlive||!groupAlive||expired){clearInterval(timer);observe({event:'monitor-signal',owner,group,ownerAlive,groupAlive,expired,signal:'SIGTERM'});try{process.kill(-group,'SIGTERM')}catch(e){if(e.code!=='ESRCH')throw e}setTimeout(()=>{observe({event:'monitor-signal',owner,group,signal:'SIGKILL'});try{process.kill(-group,'SIGKILL')}catch(e){if(e.code!=='ESRCH')throw e}},200)}},50);`;
-    const script = `import fs from 'node:fs'; import path from 'node:path'; import {spawn} from 'node:child_process'; import {ensureHostedLiteralSource} from ${JSON.stringify(helper)}; ${observation} const lock=${JSON.stringify(lock)}, token=${JSON.stringify(token)}; observe({event:'worker-start',owner:${process.pid},group:process.pid}); if(fs.readFileSync(lock,'utf8')!==token) throw Error('same owned lock required'); fs.writeFileSync(${JSON.stringify(workerFile)},token+':'+process.pid,{flag:'wx',mode:0o600}); if(fs.readFileSync(lock,'utf8')!==token) throw Error('same live owner lock required'); try{process.kill(${process.pid},0)}catch(e){throw Error('live owner required')} const monitor=spawn(process.execPath,['-e',${JSON.stringify(monitor)},String(process.pid),${JSON.stringify(String(remaining))}],{stdio:'ignore'}); observe({event:'monitor-launched',monitor:monitor.pid,owner:${process.pid},group:process.pid}); monitor.unref(); for(const source of ${JSON.stringify(required)}) ensureHostedLiteralSource(${JSON.stringify(root)},source); observe({event:'worker-complete',owner:${process.pid},group:process.pid});`;
+    const program = fileURLToPath(new URL("./source-counterpart-worker.ts", import.meta.url));
+    const args = [
+      program,
+      "prime",
+      String(process.pid),
+      String(remaining),
+      lock,
+      token,
+      workerFile,
+      ...required,
+    ];
     let result;
     try {
-      result = spawnSync(process.execPath, ["--input-type=module", "-e", script], {
+      result = spawnSync(process.execPath, args, {
         cwd: root,
         env: process.env,
         stdio: "inherit",

@@ -3,6 +3,8 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
+
+import { toolingProgram } from "../support/program-path.ts";
 import { parse } from "yaml";
 import {
   buildEligibility,
@@ -241,8 +243,7 @@ test("the actual verifier command removes credentials while retaining runtime ov
       [
         ...tokens.slice(1, nodeAt),
         process.execPath,
-        "-e",
-        "process.stdout.write(JSON.stringify([process.env.GH_TOKEN,process.env.GITHUB_TOKEN,process.env.NODE_AUTH_TOKEN,process.env.NPM_TOKEN,process.env.CORSA_PATH]))",
+        toolingProgram("release/print-sanitized-environment.js"),
       ],
       {
         encoding: "utf8",

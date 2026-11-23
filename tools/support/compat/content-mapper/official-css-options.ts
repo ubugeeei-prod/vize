@@ -219,11 +219,7 @@ export async function installedIdentity(
   if (probeNative) {
     const probe = run(
       process.execPath,
-      [
-        "--input-type=commonjs",
-        "-e",
-        "require('@vizejs/native'); process.stdout.write(JSON.stringify(Object.keys(require.cache).filter(p => p.endsWith('.node'))))",
-      ],
+      [fileURLToPath(new URL("./loaded-native-images.cjs", import.meta.url))],
       directory,
       path.join(output, "native-load"),
     );

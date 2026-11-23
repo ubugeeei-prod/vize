@@ -1,0 +1,55 @@
+#!/bin/bash
+# Cached tasks can filter environment variables and still inherit this executable on PATH.
+tool=@@VIZE_REPORT_TOOL@@
+capture_environment=(@@VIZE_REPORT_ENV@@)
+for entry in "${capture_environment[@]}"; do export -- "$entry"; done
+
+if [[ "$tool" == node ]]; then
+  # .bin/vp and .bin/tsx are shell shims that exec node on the real CLI, and
+  # package scripts prepend node_modules/.bin over this directory.
+  script=""
+  prev=""
+  for arg in "$@"; do
+    if [[ "$arg" == "--" ]]; then break; fi
+    if [[ -n "$prev" ]]; then prev=""; continue; fi
+    case "$arg" in
+      -e|--eval|-p|--print|-r|--require|--import|--loader|--experimental-loader|--test-reporter|--test-reporter-destination)
+        prev=1
+        continue
+        ;;
+    esac
+    if [[ "$arg" == "--test" ]]; then
+      exec "$VIZE_TEST_CASES_NODE" "$VIZE_JS_TEST_CASES" exec-node -- "$@"
+    fi
+    if [[ "$arg" == -* ]]; then continue; fi
+    script="$arg"
+    break
+  done
+  if [[ -n "$script" ]]; then
+    exec "$VIZE_TEST_CASES_NODE" "$VIZE_JS_TEST_CASES" exec-wrapped -- "$@"
+  fi
+  exec "$VIZE_TEST_CASES_NODE" "$@"
+fi
+
+real=""
+IFS=:
+for dir in $PATH; do
+  if [[ "$dir" == "$VIZE_TEST_CASE_SHIM" || -z "$dir" ]]; then continue; fi
+  if [[ -x "$dir/$tool" && ! -d "$dir/$tool" ]]; then real="$dir/$tool"; break; fi
+done
+unset IFS
+if [[ -z "$real" ]]; then echo "$tool: command not found" >&2; exit 127; fi
+
+if [[ "$tool" == tsx ]]; then
+  inject=0
+  for arg in "$@"; do
+    if [[ "$arg" == "--" ]]; then break; fi
+    if [[ "$arg" == "--test" ]]; then inject=1; break; fi
+    if [[ "$arg" != -* ]]; then break; fi
+  done
+
+  if [[ "$inject" == 1 ]]; then exec "$VIZE_TEST_CASES_NODE" "$VIZE_JS_TEST_CASES" exec-tsx -- "$@"; fi
+  exec "$real" "$@"
+fi
+if [[ "${1-}" == "test" && "${2-}" == "run" ]]; then exec "$VIZE_TEST_CASES_NODE" "$VIZE_JS_TEST_CASES" exec-vp -- "$@"; fi
+exec "$real" "$@"

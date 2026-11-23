@@ -1,0 +1,150 @@
+import "../../Actions.pkl" as ci
+
+name = "Native parsed SFC attributes"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/sfc-parse-attributes.yml"
+      ".github/scripts/workflows/sfc-parse-attributes/**"
+      "crates/vize_atelier_sfc/src/compile.rs"
+      "crates/vize_atelier_sfc/src/compile/empty_component.rs"
+      "crates/vize_atelier_sfc/src/module_shape.rs"
+      "crates/vize_vitrine/src/napi/sfc/compile.rs"
+      "crates/vize_vitrine/src/napi/sfc/parse.rs"
+      "crates/vize_vitrine/src/napi/sfc/parse/**"
+      "crates/vize_vitrine/src/napi/sfc/types.rs"
+      "npm/native/index.d.ts"
+      "tests/native/sfc-parse-attributes-*.mjs"
+      "tests/native/sfc-parse-attributes-*.ts"
+      "tests/tooling/sfc-parse-attributes-bootstrap.test.ts"
+      "tests/tooling/sfc-parse-attributes-reference.test.ts"
+      "tests/tooling/support/script-setup-default-expose.ts"
+      "tests/tooling/support/typescript-erasure-reference.ts"
+      "tests/fixtures/sfc/parsed-attributes/**"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "sfc-parse-attributes-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  VIZE_SFC_ATTRS_ACTOR_SHA = "${{ github.sha }}"
+  VIZE_SFC_ATTRS_TRIGGER_HEAD = "${{ github.event.pull_request.head.sha || '' }}"
+  CARGO_TERM_COLOR = "never"
+}
+jobs {
+  source {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    strategy {
+      `fail-fast` = false
+      matrix {
+        role = List("base", "head")
+      }
+    }
+    env {
+
+      VIZE_SFC_ATTRS_SOURCE_SHA = "${{ matrix.role == 'base' && '49a98d1e72707083354b8ff11e1cec800ded28b3' || github.sha }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("sfc-parse-attributes")
+      ci.checkoutAt("${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}")
+      new Dynamic {
+        uses = ci.checkout
+        `if` = "matrix.role == 'base'"
+        with {
+          ref = "49a98d1e72707083354b8ff11e1cec800ded28b3"
+          path = ".attrs-base"
+          `persist-credentials` = false
+        }
+      }
+      ci.workspaceVp()
+      new Dynamic {
+        run = "vp install --filter './tests' --frozen-lockfile --prefer-offline --ignore-scripts"
+      }
+      new Dynamic {
+        name = "Verify observer bootstrap and source roles"
+        run = ci.workflowScript("verify-observer-bootstrap-and-source-roles.sh")
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "sfc-parse-attributes"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Build the canonical source image"
+        env {
+          SOURCE_ROLE = "${{ matrix.role }}"
+          CARGO_TARGET_DIR = "${{ github.workspace }}/target"
+        }
+        run = ci.workflowScript("build-the-canonical-source-image.sh")
+      }
+      new Dynamic {
+        name = "Seal each source role and capture complete API packets before comparisons"
+        env { SOURCE_ROLE = "${{ matrix.role }}" }
+        run = ci.workflowScript("seal-each-source-role-and-capture-complete-api-packets-before-comparison.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "sfc-parse-attributes-${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "artifacts/${{ matrix.role }}/"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+  compare {
+    needs = "source"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    steps = new Listing {
+      ci.checkoutAt("${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = false
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        run = "vp install --filter './tests' --frozen-lockfile --prefer-offline --ignore-scripts"
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "sfc-parse-attributes-${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}-base-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "artifacts/base"
+        }
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "sfc-parse-attributes-${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}-head-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "artifacts/head"
+        }
+      }
+      new Dynamic { run = "node tests/native/sfc-parse-attributes-compare.mjs artifacts" }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "sfc-parse-attributes-qualified-${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "artifacts/"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

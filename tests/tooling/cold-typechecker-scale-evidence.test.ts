@@ -1,8 +1,11 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync, readFileSync, mkdirSync, symlinkSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -18,7 +21,7 @@ type ScaleWorkflow = {
 
 function scaleWorkflow(): ScaleWorkflow {
   return parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/workflows/cold-typechecker-scale.yml", import.meta.url),
       "utf8",
     ),
@@ -108,9 +111,9 @@ test("exported capture creates its own empty temporary directory before invoking
     const binary = join(root, "checker.cjs");
     writeFileSync(
       binary,
-      `#!${process.execPath}\nconst fs = require("node:fs");
-fs.writeFileSync(process.env.TMPDIR + "/probe", "fresh temporary directory");
-console.log(JSON.stringify({fileCount:2000,errorCount:0,warningCount:0,files:[]}));\n`,
+      readToolingProgram("commands/cold-typechecker-scale-evidence/binary.cjs.in", {
+        NODE: process.execPath,
+      }),
       { mode: 0o755 },
     );
     const out = join(root, "evidence");
@@ -153,10 +156,13 @@ test("manual Actions comparisons reject absent, mutable or identical baseline id
         "environment-" + base.length + (base === head.stdout.trim() ? "-head" : ""),
       );
       writeFileSync(envFile, "");
-      const result = spawnSync("bash", ["-euc", script], {
+      const result = spawnSync("bash", ["-eu", automationShellPath(script)], {
         cwd,
         env: {
           ...process.env,
+          VIZE_CI_FILES: fileURLToPath(
+            new URL("../../.github/scripts/workflows/cold-typechecker-scale/", import.meta.url),
+          ),
           BASE_SHA: base,
           BENCH_EVENT: "workflow_dispatch",
           RUNNER_TEMP: root,
@@ -187,7 +193,7 @@ test("Actions evidence packaging retains packets without following dependency-li
     writeFileSync(join(evidence, "measurement.json"), packet);
     writeFileSync(join(evidence, "stdout.txt"), "complete diagnostic bytes\n");
     const script = workflowScript("Package evidence without traversing workspace links");
-    const packed = spawnSync("bash", ["-euc", script], {
+    const packed = spawnSync("bash", ["-eu", automationShellPath(script)], {
       env: { ...process.env, RUNNER_TEMP: root },
       encoding: "utf8",
       timeout: 10000,

@@ -43,6 +43,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 360
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/shipped-profile-measure/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { path: driver, persist-credentials: false }
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -59,7 +72,7 @@ jobs:
       - name: Install pinned Rust
         run: rustup toolchain install 1.100.0 --profile minimal --target x86_64-unknown-linux-gnu
       - name: Install Callgrind
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
+        run: . "${{ env.VIZE_CI_FILES }}/install-callgrind.sh"
       - uses: ./driver/.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Test the report renderer

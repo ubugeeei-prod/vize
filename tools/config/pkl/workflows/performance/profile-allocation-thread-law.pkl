@@ -1,0 +1,76 @@
+import "../../Actions.pkl" as ci
+
+name = "Profile allocation thread law"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/profile-allocation-thread-law.yml"
+      ".github/scripts/workflows/profile-allocation-thread-law/**"
+      ".github/scripts/workflows/shared/**"
+      "davinci/vize_l0/src/profiler/core.rs"
+      "davinci/vize_l0/src/profiler/allocation.rs"
+      "davinci/vize_l0/src/profiler/metrics.rs"
+      "davinci/vize_l0/tests/profile_allocation_thread_law.rs"
+      "tools/benchmarks/scripts/profile_guard_send_law.ts"
+      "tools/benchmarks/scripts/profile-evidence-json.ts"
+    }
+  }
+  workflow_dispatch {}
+}
+permissions { contents = "read" }
+concurrency {
+  group = "profile-allocation-thread-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  laws {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 40
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/profile-allocation-thread-law"
+      CARGO_BUILD_JOBS = "4"
+      CARGO_INCREMENTAL = "0"
+      CARGO_TERM_COLOR = "never"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with { `node-version` = "26.6.0" }
+      }
+      new Dynamic { run = "rustup toolchain install 1.100.0 --profile minimal" }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "profile-thread-law-v1"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Check the small normal and instrumented allocation carriers"
+        run = ci.workflowScript("check-the-small-normal-and-instrumented-allocation-carriers.sh")
+      }
+      new Dynamic {
+        name = "Check the same public-type snippet against old and new guards"
+        run = "node tools/benchmarks/scripts/profile_guard_send_law.ts"
+      }
+      new Dynamic {
+        name = "Compile the profiling CLI after the carrier succeeds"
+        run = ci.workflowScript("compile-the-profiling-cli-after-the-carrier-succeeds.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "profile-allocation-thread-${{ github.sha }}"
+          path = "evidence/"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}

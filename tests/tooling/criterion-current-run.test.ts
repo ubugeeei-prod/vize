@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -35,37 +36,12 @@ function fixture(t: TestContext) {
   // The fake exporter includes every saved row, just as critcmp does.
   writeFileSync(
     join(bin, "cargo"),
-    `#!/usr/bin/env node
-const fs = require('node:fs');
-const path = require('node:path');
-const home = process.env.CRITERION_HOME;
-if (home !== path.join(process.env.CARGO_TARGET_DIR, 'criterion')) process.exit(2);
-fs.mkdirSync(home, {recursive: true});
-if (!process.env.VIZE_TEST_EMPTY_CRITERION) {
-  fs.writeFileSync(path.join(home, 'current-benchmark.json'), '100');
-}
-`,
+    readToolingProgram("commands/criterion-current-run/cargo.cjs"),
     { mode: 0o755 },
   );
   writeFileSync(
     join(bin, "critcmp"),
-    `#!/usr/bin/env node
-const fs = require('node:fs');
-const path = require('node:path');
-const args = process.argv.slice(2);
-if (args.includes('--export')) {
-  const home = path.join(args[args.indexOf('--target-dir') + 1], 'criterion');
-  const benchmarks = Object.fromEntries(fs.readdirSync(home).map(file => [
-    file.replace(/\\.json$/, ''),
-    {criterion_estimates_v1: {median: {point_estimate: JSON.parse(fs.readFileSync(path.join(home, file), 'utf8'))}}}
-  ]));
-  console.log(JSON.stringify({name: args[args.indexOf('--export') + 1], benchmarks}));
-} else {
-  const exports = args.slice(-2).map(file => JSON.parse(fs.readFileSync(file, 'utf8')));
-  const names = new Set(exports.flatMap(value => Object.keys(value.benchmarks)));
-  console.log('group base head\\n----- ---- ----\\n' + [...names].map(name => name + ' 1.00 1.00').join('\\n'));
-}
-`,
+    readToolingProgram("commands/criterion-current-run/critcmp.cjs"),
     { mode: 0o755 },
   );
   function run(empty = false) {

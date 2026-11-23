@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("node", List("tools/commands/release/npm/smoke-wasm-package.ts", "npm/wasm"))
+  module.command("node", List("tools/commands/release/npm/smoke-release-install.ts", "npm/wasm"))
+}

@@ -4,6 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
+import { toolingProgram, processResultArgs } from "./support/program-path.ts";
+
 import { runLanes } from "../../tools/support/compat/davinci/source-inventories.ts";
 
 await test("parallel source preflights keep lane order and fail on any lane", async () => {
@@ -11,15 +13,15 @@ await test("parallel source preflights keep lane order and fail on any lane", as
   try {
     const results = await runLanes(
       [
-        [["-e", "process.stdout.write('first ok'); process.exit(0)"]],
-        [["-e", "process.stderr.write('second failed'); process.exit(3)"]],
+        [[...processResultArgs({ stdout: "first ok" })]],
+        [[...processResultArgs({ stderr: "second failed", status: 3 })]],
         [
-          ["-e", "process.exit(4)"],
-          ["-e", "require('node:fs').writeFileSync('must-not-run', '')"],
+          [toolingProgram("process/exit-with-status.js"), "4"],
+          [toolingProgram("process/append-command-marker.js"), "must-not-run", ""],
         ],
         [
-          ["-e", "require('node:fs').writeFileSync('written', 'ledger')"],
-          ["-e", "process.stdout.write(require('node:fs').readFileSync('written', 'utf8'))"],
+          [toolingProgram("process/append-command-marker.js"), "written", "ledger"],
+          [toolingProgram("workflow/read-inventory-marker.js"), "written"],
         ],
       ],
       cwd,

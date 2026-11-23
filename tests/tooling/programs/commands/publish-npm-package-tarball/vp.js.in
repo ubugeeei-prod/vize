@@ -1,0 +1,2 @@
+require("node:fs").appendFileSync(@@TRACE@@, "UNEXPECTED PUBLISH\n");
+process.exit(1);

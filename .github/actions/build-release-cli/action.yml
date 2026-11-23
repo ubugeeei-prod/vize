@@ -29,13 +29,7 @@ runs:
     - name: Read the repository Rust toolchain
       id: rust-toolchain
       shell: bash
-      run: |
-        node --input-type=module <<'JS' >> "$GITHUB_OUTPUT"
-        import { readFileSync } from "node:fs";
-        const channel = /^channel = "([^"]+)"$/m.exec(readFileSync("rust-toolchain.toml", "utf8"))?.[1];
-        if (!channel) throw new Error("Missing repository Rust toolchain channel");
-        console.log(`channel=${channel}`);
-        JS
+      run: . "$GITHUB_ACTION_PATH/scripts/read-the-repository-rust-toolchain.sh"
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
       with:
@@ -74,33 +68,20 @@ runs:
     - name: Tune Windows release profile
       if: runner.os == 'Windows'
       shell: bash
-      run: |
-        echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
-        echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
+      run: . "$GITHUB_ACTION_PATH/scripts/tune-windows-release-profile.sh"
     - name: Build CLI
       shell: bash
       env:
         RELEASE_TARGET: ${{ inputs.target }}
         VIZE_RELEASE_VERSION: ${{ inputs.release-version }}
-      run: |
-        if [[ "$RELEASE_TARGET" == *-unknown-linux-gnu ]]; then
-          floor_target="$(node tools/support/github/glibc-floor.ts target "$RELEASE_TARGET")"
-          cargo zigbuild --locked --release -p vize --target "$floor_target"
-          node tools/commands/ci/github/verify-glibc-symbols.ts "target/$RELEASE_TARGET/release/vize"
-        else
-          cargo build --locked --release -p vize --target "$RELEASE_TARGET"
-        fi
+      run: . "$GITHUB_ACTION_PATH/scripts/build-cli.sh"
     - name: Create archive (Unix)
       if: runner.os != 'Windows'
       shell: bash
       env:
         RELEASE_TARGET: ${{ inputs.target }}
         RELEASE_ARCHIVE: ${{ inputs.archive }}
-      run: |
-        if [[ "$RELEASE_TARGET" == *-musl ]]; then
-          node tools/commands/ci/github/verify-musl-cli-binary.ts "$RELEASE_TARGET"
-        fi
-        node tools/support/github/create-cli-archive.ts "$RELEASE_TARGET" "$RELEASE_ARCHIVE" vize
+      run: . "$GITHUB_ACTION_PATH/scripts/create-archive-unix.sh"
     - name: Create archive (Windows)
       if: runner.os == 'Windows'
       shell: bash

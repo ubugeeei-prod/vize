@@ -1,0 +1,8 @@
+@echo off
+if not "%1"=="build" exit /b 9
+if not "%VIZE_MUSEA_STATIC_BUILD%"=="1" exit /b 1
+echo vite stdout sentinel
+echo vite stderr sentinel 1>&2
+if "%VIZE_MUSEA_TEST_FAIL%"=="1" exit /b 7
+mkdir dist\__musea__
+echo ^<!doctype html^>^<title^>Musea^</title^> > dist\__musea__\index.html
