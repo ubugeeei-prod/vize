@@ -10,9 +10,16 @@ impl ScriptQueryProducts {
     }
 
     pub(crate) fn read_specifiers(&mut self, syntax: &AuthoredProgram<'_>) {
+        self.read_program_specifiers(&syntax.parsed().program, syntax.block().start());
+    }
+
+    pub(crate) fn read_program_specifiers(
+        &mut self,
+        program: &oxc_ast::ast::Program<'_>,
+        base: u32,
+    ) {
         let mut collector = ModuleSpecifierCollector::default();
-        collector.visit_program(&syntax.parsed().program);
-        let base = syntax.block().span().start;
+        collector.visit_program(program);
         self.module_specifiers
             .extend(
                 collector
@@ -26,12 +33,11 @@ impl ScriptQueryProducts {
     }
 }
 
-#[cfg(feature = "experimental-checker-script-queries")]
 impl ScriptQueryProducts {
     /// Static module declarations are already ordered by the Program. A clean
     /// JavaScript tree can add nested literals only through dynamic import or
     /// a call to require. Escaped identifiers and recovered trees keep the visitor.
-    pub(crate) fn read_checker_specifiers(&mut self, syntax: &AuthoredProgram<'_>) {
+    pub(crate) fn read_selected_specifiers(&mut self, syntax: &AuthoredProgram<'_>) {
         if !Self::static_specifiers_only(syntax) {
             self.read_specifiers(syntax);
             return;
