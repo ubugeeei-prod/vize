@@ -8,7 +8,6 @@ import {
   githubHeadingAnchor,
   readWorkflowEntries,
   renderWorkflowCatalog,
-  workflowGroupId,
 } from "../../tools/commands/ci/workflow-catalog.ts";
 import { parseTapCounts } from "../../tools/support/github/docs-preview-readiness.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
@@ -93,8 +92,7 @@ function workflowRunnerLabels(
 }
 
 test("the flat GitHub workflow directory has a generated navigation catalog", () => {
-  const directory = path.join(root, ".github/workflows");
-  const expected = renderWorkflowCatalog(readWorkflowEntries(directory));
+  const expected = renderWorkflowCatalog(readWorkflowEntries(root));
   assert.equal(readRepoFile(".github/workflows/README.md"), expected);
   const headingAnchors = new Set(
     [...expected.matchAll(/^## (.+)$/gmu)].map((match) => githubHeadingAnchor(match[1]!)),
@@ -140,11 +138,9 @@ test("public unused script vars authenticates one release and runs the exact pac
 });
 
 test("non-release workflows use maximum Blacksmith runner classes", () => {
-  const workflows = path.join(root, ".github/workflows");
-  const violations = fs
-    .readdirSync(workflows)
-    .filter((file) => /\.ya?ml$/.test(file) && workflowGroupId(file) !== "02")
-    .flatMap((file) => {
+  const violations = readWorkflowEntries(root)
+    .filter(({ groupId }) => groupId !== "02")
+    .flatMap(({ file }) => {
       const source = readRepoFile(`.github/workflows/${file}`);
       return workflowRunnerLabels(source, hostedZeroComputeJobs[file], file)
         .filter((runner) => !approvedRunnerLabels.has(runner))

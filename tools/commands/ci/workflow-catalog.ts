@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 interface WorkflowEntry {
   readonly file: string;
+  readonly groupId: WorkflowGroupId;
   readonly name: string;
 }
 
@@ -106,67 +107,18 @@ const startHere = [
   ["08", "release.yml", "Protected release orchestration; do not casually edit"],
 ] as const;
 
-export function workflowGroupId(file: string): WorkflowGroupId {
-  if (
-    /^(check(?:-|\.)|pr-|full-|v1-(?:supported-matrix|exact-candidate)|title-policy|rust-pr-target-seed|merge-queue|e2e|canonical-corpus|real-project-matrix)/.test(
-      file,
-    )
-  ) {
-    return "01";
+export function readWorkflowEntries(root: string): readonly WorkflowEntry[] {
+  const directory = path.join(root, ".github/workflows");
+  const sources = path.join(root, "tools/config/pkl/workflows");
+  const groupByName = new Map<string, WorkflowGroupId>();
+  for (const group of groups) {
+    for (const source of readdirSync(path.join(sources, group.directory))) {
+      if (!source.endsWith(".pkl")) continue;
+      const name = path.basename(source, ".pkl");
+      assert.ok(!groupByName.has(name), `Duplicate workflow source for ${name}`);
+      groupByName.set(name, group.id);
+    }
   }
-  if (/release|(^|-)published-|(^|-)public(?:-|\.yml)|^(pkg-pr|jsr-|corsa-package)/.test(file)) {
-    return "02";
-  }
-  if (
-    /(bench|benchmark|profile|scaling|scale|memory|instruction|allocation|walltime|cold-|resource-budget|source-operation|recovery-cost|clone-cost|partition-weight|persistent-batch|component-scope-binding)/.test(
-      file,
-    )
-  ) {
-    return "03";
-  }
-  if (
-    /^(typecheck|typechecker|typescript-provider|content-mapper|corsa-|checker-|component-input-(?:diagnostic|projection))/.test(
-      file,
-    )
-  ) {
-    return "04";
-  }
-  if (
-    /^(lsp-|editor-|vscode-|typescript-plugin|volar-|router-|named-sfc|css-hover|vue2-editor|zed-|helix-|vim-|neovim-|emacs-)/.test(
-      file,
-    )
-  ) {
-    return "05";
-  }
-  if (
-    /^(native-|sfc-|jsx-|vapor-|binding-|template-|recovery-|for-bindings|defaulted-|async-|asset-import|ambient-template|compiler-|cross-file-script|unicode-|provide-type|expression-|css-|empty-generic|l1-|narrowed-slot|pre-textarea|scoped-nesting|source-symbolizer|typed-context|vue2-ir)/.test(
-      file,
-    )
-  ) {
-    return "06";
-  }
-  if (/^(canon-|cross-file|davinci-|level-|compact-collections)/.test(file)) return "07";
-  if (
-    /^(babel-|bundler-|nuxt|parcel-|rspack-|turbopack-|vite|vitest-|plain-script-import-ref|js-install-closure|void-build|vuefes-)/.test(
-      file,
-    )
-  ) {
-    return "08";
-  }
-  if (
-    /^(eslint-|oxlint-|prettier-|formatter-|lint-|doctor-|n8n-|patina-|workspace-|windows-config|config-|pkl-)/.test(
-      file,
-    )
-  ) {
-    return "09";
-  }
-  if (/^(musea-|fresco|playground-|app-|ui-|mounted-runtime)/.test(file)) return "10";
-  // Group 11 is the explicit default for security, maintenance, documentation,
-  // and workflows that do not belong to a more specific product area.
-  return "11";
-}
-
-export function readWorkflowEntries(directory: string): readonly WorkflowEntry[] {
   return readdirSync(directory)
     .filter((file) => /\.ya?ml$/.test(file))
     .sort()
@@ -174,13 +126,15 @@ export function readWorkflowEntries(directory: string): readonly WorkflowEntry[]
       const source = readFileSync(path.join(directory, file), "utf8");
       const name = /^name:\s*(.+?)\s*$/m.exec(source)?.[1];
       assert.ok(name != null && name !== "", `${file} must declare a workflow name`);
-      return { file, name };
+      const groupId = groupByName.get(path.basename(file, path.extname(file)));
+      assert.ok(groupId, `Missing Pkl workflow source for ${file}`);
+      return { file, groupId, name };
     });
 }
 
 function workflowRows(entries: readonly WorkflowEntry[], groupId: WorkflowGroupId) {
   return entries
-    .filter((candidate) => workflowGroupId(candidate.file) === groupId)
+    .filter((candidate) => candidate.groupId === groupId)
     .map(
       (entry, index) =>
         [
@@ -262,7 +216,7 @@ if (process.argv[1] != null && path.resolve(process.argv[1]) === scriptPath) {
   const root = path.resolve(path.dirname(scriptPath), "../../..");
   const directory = path.join(root, ".github/workflows");
   const output = path.join(directory, "README.md");
-  const expected = renderWorkflowCatalog(readWorkflowEntries(directory));
+  const expected = renderWorkflowCatalog(readWorkflowEntries(root));
   if (process.argv.includes("--check")) {
     assert.equal(readFileSync(output, "utf8"), expected, "workflow catalog is stale");
   } else writeFileSync(output, expected);

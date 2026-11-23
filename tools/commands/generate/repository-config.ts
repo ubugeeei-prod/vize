@@ -181,7 +181,7 @@ function main(): void {
 
   const directory = path.join(root, ".github/workflows");
   const catalog = path.join(directory, "README.md");
-  const contents = renderWorkflowCatalog(readWorkflowEntries(directory));
+  const contents = renderWorkflowCatalog(readWorkflowEntries(root));
   if (readOutput(catalog) !== contents) {
     if (check) throw new Error("The workflow catalog needs regeneration");
     writeFileSync(catalog, contents);
