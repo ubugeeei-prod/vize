@@ -1,11 +1,19 @@
-use davinci_harness::{alloc, paired::assert_paired_time};
+//! Compare repeated source projections in an independently measured process.
+use davinci_harness::{
+    alloc::{self, CountingAllocator},
+    paired::assert_paired_time,
+};
 use std::hint::black_box;
 use vize_incremental::{BlockKind, ResidentDatabase};
 use vize_l0::{Lang, cstr};
 use vize_l3::op::OpId;
 use vize_resident_graph::TemplateQueries;
 
-pub(crate) fn profile() {
+#[global_allocator]
+static ALLOCATOR: CountingAllocator = CountingAllocator::mimalloc();
+
+fn main() {
+    alloc::mark_installed();
     let db = ResidentDatabase::default();
     let text = cstr!(
         "<script>/*😀*/</script>\r\n<template>{}</template>",
