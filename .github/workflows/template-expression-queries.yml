@@ -37,6 +37,8 @@ on:
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/embed/**"
       - "upstream/forks/oxc_parser/Cargo.toml"
+      - "upstream/forks/oxc_parser/src/lib.rs"
+      - "upstream/forks/oxc_parser/src/js/statement.rs"
       - "upstream/forks/oxc_parser/src/js/expression*"
       - "upstream/forks/oxc_parser/src/js/expression/**"
       - "upstream/forks/oxc_parser/src/embedding*"
@@ -211,7 +213,7 @@ jobs:
           flags=(--locked --profile ci-opt)
           native=(-p vize_l1_to_l2 --features lexical-arrow-initializers,template-operand-queries,vize_l2/position-index)
           editor=(-p vize_maestro --features experimental-lexical-arrow-queries,micro-profiling --lib)
-          cargo test "${flags[@]}" -p vize_oxc_parser --features terminal-embedding --lib terminal_lookahead_preserves_the_entire_ordinary_parser_return
+          cargo test "${flags[@]}" -p vize_oxc_parser --features terminal-embedding --lib embedding::terminal::tests::
           cargo test "${flags[@]}" -p vize_l1 --features retained-expressions --lib handoff::sequence::
           cargo clippy "${flags[@]}" -p vize_l1 --features retained-expressions --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" -p vize_l2 --features lexical-arrow-initializers --lib --no-deps -- -D warnings
