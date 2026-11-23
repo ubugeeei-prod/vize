@@ -87,7 +87,7 @@ mod tests {
         )
         .unwrap();
         fs::write(root.join("native-output"), cstr!("{output}\n")).unwrap();
-        fs::write(root.join("native-status"), exit.to_string()).unwrap();
+        fs::write(root.join("native-status"), cstr!("{exit}")).unwrap();
         fs::set_permissions(&executable, fs::Permissions::from_mode(0o755)).unwrap();
         (temp, project, executable)
     }
