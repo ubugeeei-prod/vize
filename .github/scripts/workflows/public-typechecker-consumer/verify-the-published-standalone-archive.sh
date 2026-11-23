@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir "$RUNNER_TEMP/public-cli"
+cd "$RUNNER_TEMP/public-cli"
+curl --fail --location --retry 3 --output vize.tar.gz https://github.com/ubugeeei-prod/vize/releases/download/v0.602.0/vize-x86_64-unknown-linux-gnu.tar.gz
+printf '%s\n' '4a75062b16eeee03449c0e471f3776be383f16e99e0820fe6a170b40e63ff93e  vize.tar.gz' | sha256sum --check -
+tar -xzf vize.tar.gz
+test -x vize

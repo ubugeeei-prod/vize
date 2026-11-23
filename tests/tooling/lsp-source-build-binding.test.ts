@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -30,7 +31,7 @@ function fixture() {
     fs.mkdirSync(path.dirname(binary), { recursive: true });
     fs.writeFileSync(
       binary,
-      `#!/bin/sh\nif [ "$1" = "--version" ]; then echo 'vize 1.0.0'; else echo '${identity}'; fi\n`,
+      readToolingProgram("commands/lsp-source-build-binding/binary.sh", { IDENTITY: identity }),
       { mode: 0o755 },
     );
   }
@@ -137,7 +138,9 @@ test("missing, corrupt or stale required LSP source bindings fail before any deb
     execFileSync("git", ["commit", "-qm", "new source revision"], { cwd: f.root });
     assert.throws(() => f.resolve(), /sourceRevision/);
     assert.deepEqual(f.probed, []);
-    fs.writeFileSync(f.binary, "#!/bin/sh\nexit 1\n", { mode: 0o755 });
+    fs.writeFileSync(f.binary, readToolingProgram("commands/lsp-source-build-binding/exit-1.sh"), {
+      mode: 0o755,
+    });
     writeBuildReceipt(f.root);
     assert.throws(() => f.resolve(), /cannot launch/);
     assert.deepEqual(f.probed, [f.binary]);

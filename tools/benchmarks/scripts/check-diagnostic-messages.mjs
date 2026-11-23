@@ -1,3 +1,4 @@
+import { configuredNodeLauncher } from "../../support/process-launcher.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -338,32 +339,10 @@ export function captureMembers(configPath, config) {
 function captureWrapper(output, runtime) {
   const location = path.join(output, "capture-location.txt");
   const wrapper = path.join(output, "capture-native.mjs");
-  const code = `#!${process.execPath}
-import fs from "node:fs";
-import path from "node:path";
-import { spawnSync } from "node:child_process";
-import { captureMembers } from ${JSON.stringify(import.meta.url)};
-const runtime = ${JSON.stringify(runtime)};
-const dir = fs.readFileSync(${JSON.stringify(location)}, "utf8");
-const args = process.argv.slice(2);
-const result = spawnSync(runtime, args, { env: process.env, maxBuffer: 64 * 1024 * 1024 });
-const stem = path.join(dir, String(process.pid));
-fs.writeFileSync(stem + ".stdout", result.stdout ?? "");
-fs.writeFileSync(stem + ".stderr", result.stderr ?? "");
-const projectIndex = args.indexOf("--project");
-if (projectIndex < 0 || args.lastIndexOf("--project") !== projectIndex) throw Error("unknown project argv");
-const configPath = path.resolve(args[projectIndex + 1]);
-const configBytes = fs.readFileSync(configPath);
-fs.writeFileSync(stem + ".tsconfig.json", configBytes);
-const declared = captureMembers(configPath, JSON.parse(configBytes));
-for (const [index, member] of declared.members.entries()) fs.writeFileSync(stem + ".member-" + String(index) + ".txt", fs.readFileSync(member.file));
-fs.writeFileSync(stem + ".json", JSON.stringify({ runtime, args, cwd: process.cwd(), configPath, ...declared, status: result.status, signal: result.signal, error: result.error ? String(result.error) : null }));
-process.stdout.write(result.stdout ?? "");
-process.stderr.write(result.stderr ?? "");
-if (result.error) process.exitCode = 125;
-else if (result.signal) process.kill(process.pid, result.signal);
-else process.exitCode = result.status;
-`;
+  const code = configuredNodeLauncher(
+    new URL("./programs/capture-native-diagnostics.js", import.meta.url),
+    { runtime, location, moduleUrl: import.meta.url },
+  );
   fs.writeFileSync(wrapper, code, { mode: 0o755 });
   return { wrapper, location, sha256: sha256(code) };
 }

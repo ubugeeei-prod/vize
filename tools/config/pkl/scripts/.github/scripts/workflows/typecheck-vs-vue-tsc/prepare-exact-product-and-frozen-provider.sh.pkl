@@ -1,0 +1,17 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  mkdir "$RUNNER_TEMP/comparative"
+  git fetch --no-tags --depth=1 origin ea22f2cd2aa661b9bdab940e25464eff692b935f
+  git worktree add --detach "$RUNNER_TEMP/comparative/source" ea22f2cd2aa661b9bdab940e25464eff692b935f
+  mkdir "$RUNNER_TEMP/comparative/provider"
+  cp tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package.json.txt "$RUNNER_TEMP/comparative/provider/package.json"
+  cp tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package-lock.json.txt "$RUNNER_TEMP/comparative/provider/package-lock.json"
+  test "$(node --version)" = v24.14.0
+  test "$(npm --version)" = 11.9.0
+  (cd "$RUNNER_TEMP/comparative/provider" && npm ci --ignore-scripts --no-audit --no-fund) > "$RUNNER_TEMP/comparative/provider-install.stdout" 2> "$RUNNER_TEMP/comparative/provider-install.stderr"
+  """#
+}

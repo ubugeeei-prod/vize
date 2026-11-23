@@ -10,19 +10,24 @@ export type NativeLife = {
   rawStat: string;
 };
 
-function readLife(pid: number): NativeLife {
-  const raw = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
-  const fields = raw
-    .slice(raw.lastIndexOf(") ") + 2)
+export function readNativeProcess(pid: number, allowMissingExecutable = false) {
+  const rawStat = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
+  const fields = rawStat
+    .slice(rawStat.lastIndexOf(") ") + 2)
     .trim()
     .split(/\s+/u);
   assert.match(fields[19], /^\d+$/u);
+  const link = `/proc/${pid}/exe`;
+  let executable;
+  try {
+    executable = fs.realpathSync(link);
+  } catch (error) {
+    if (!allowMissingExecutable || (error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    executable = link;
+  }
   return {
-    pid,
-    rawStat: raw,
-    birthTicks: fields[19],
-    state: fields[0],
-    executable: fs.realpathSync(`/proc/${pid}/exe`),
+    parent: Number(fields[1]),
+    life: { pid, rawStat, birthTicks: fields[19], state: fields[0], executable },
   };
 }
 
@@ -41,14 +46,14 @@ export class NativeDiagnosticsGate {
     assert.ok(descendants, "actual server process tree unavailable");
     this.lives = descendants.members
       .filter(({ pid }) => pid !== owner)
-      .map(({ pid }) => readLife(pid))
+      .map(({ pid }) => readNativeProcess(pid).life)
       .filter((life) => life.executable === executable && life.state !== "Z");
     assert.ok(this.lives.length > 0, "real native typecheck must have started before gating");
   }
 
   private current(entry: NativeLife): NativeLife {
     assert.ok(processTreeRss(this.owner)?.members.some(({ pid }) => pid === entry.pid));
-    const current = readLife(entry.pid);
+    const current = readNativeProcess(entry.pid).life;
     assert.equal(current.birthTicks, entry.birthTicks, "do not signal a reused PID");
     assert.equal(current.executable, this.executable);
     assert.notEqual(current.state, "Z");

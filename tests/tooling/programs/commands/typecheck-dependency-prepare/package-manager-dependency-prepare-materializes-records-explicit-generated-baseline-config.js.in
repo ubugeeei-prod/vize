@@ -1,0 +1,7 @@
+if (process.argv[2] === "install") {
+  @@SUCCESS_BODY@@;
+} else {
+  fs.mkdirSync(".generated", { recursive: true });
+  fs.writeFileSync(".generated/tsconfig.json", "{}\n");
+  process.stdout.write("prepared");
+}

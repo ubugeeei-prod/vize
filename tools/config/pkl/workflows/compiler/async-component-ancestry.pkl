@@ -1,0 +1,129 @@
+import "../../Actions.pkl" as ci
+
+name = "Async component render ancestry"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/actions/setup-wild-http-recovery/**"
+      ".github/workflows/async-component-ancestry.yml"
+      ".github/scripts/workflows/async-component-ancestry/**"
+      ".github/scripts/workflows/shared/**"
+      "crates/vize_croquis/**"
+      "crates/vize_croquis_cf/**"
+      "tests/tooling/async-component-ancestry-workflow.test.ts"
+      "tools/support/cross_file/async_component/**"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "async-component-ancestry-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `whole-project` {
+    name = "Whole project and lexical controls (${{ matrix.role }})"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        role = List("before", "candidate")
+      }
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+
+      CARGO_BUILD_JOBS = "8"
+      CARGO_TERM_COLOR = "always"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+      SOURCE_SHA = "${{ matrix.role == 'before' && 'b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd' || github.event.pull_request.head.sha || github.sha }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("async-component-ancestry")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.SOURCE_SHA }}"
+          `fetch-depth` = "${{ matrix.role == 'candidate' && '0' || '1' }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "qualification"
+          `persist-credentials` = false
+          `sparse-checkout` = """
+          .github/actions/setup-wild-http-recovery
+          tests/tooling/async-component-ancestry-workflow.test.ts
+          tools/support/cross_file/async_component
+
+          """
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with { `node-version` = "26.6.0" }
+      }
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = "./qualification/.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nextest-ci"
+          `cache-key-suffix` = "Linux-X64-1.100.0"
+        }
+      }
+      new Dynamic {
+        name = "Record the exact producer before execution"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/record-the-exact-producer-before-execution.sh""#
+      }
+      new Dynamic {
+        name = "Install the independent pinned actual Vue runtime"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-independent-pinned-actual-vue-runtime.sh""#
+      }
+      new Dynamic {
+        name = "Require each new precision control to fail at its pinned parent production"
+        `if` = "matrix.role == 'candidate'"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/qualify-parent-precision-controls.sh""#
+      }
+      new Dynamic {
+        name = "Require complete Croquis and cross-file unit suites"
+        `if` = "matrix.role == 'candidate'"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/require-complete-croquis-and-cross-file-unit-suites.sh""#
+      }
+      new Dynamic {
+        name = "Build the exact source CLI and source NAPI image"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-exact-source-cli-and-source-napi-image.sh""#
+      }
+      new Dynamic {
+        name = "Preserve every original file and full process, graph, Doctor and inspector packet"
+        shell = "bash"
+        env {
+          VIZE_MATRIX_ROLE = "${{ matrix.role }}"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-every-original-file-and-full-process-graph-doctor-and-inspector.sh""#
+      }
+      new Dynamic {
+        name = "Preserve complete evidence even on failure"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "async-component-ancestry-${{ matrix.role }}-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "target/vize-tests/async-component"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}

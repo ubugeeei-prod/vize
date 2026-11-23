@@ -1,0 +1,22 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  flags=(--locked --profile ci-opt)
+  for modes in retained-tsrx retained-tsrx,typescript; do
+    cargo test "${flags[@]}" -p vize_l4 --features "$modes" --test tsrx_retained
+  done
+  cargo test "${flags[@]}" -p vize_l4 --features typescript --test tsrx_dom
+  node --test tests/tooling/tsrx-oracle.test.ts tests/tooling/tsrx-mount.test.ts
+  suite=(-p vize_patina --features retained-tsrx,vize_l4/retained-tsrx)
+  cargo clippy "${flags[@]}" "${suite[@]}" --lib --test prepared_tsrx --no-deps -- -D warnings
+  cargo test "${flags[@]}" "${suite[@]}" --lib linter::engine::tsrx::tests
+  cargo test "${flags[@]}" "${suite[@]}" --test prepared_tsrx
+  export VIZE_TSRX_INPUTS="$RUNNER_TEMP/tsrx-originals"
+  git ls-files -z -- '*.tsrx' '*.tsrx.txt' > "$VIZE_TSRX_INPUTS"
+  cargo test "${flags[@]}" "${suite[@]}" --test prepared_tsrx -- --ignored --nocapture --test-threads=1
+  """#
+}

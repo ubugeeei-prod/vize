@@ -1,0 +1,117 @@
+import "../../Actions.pkl" as ci
+
+name = "Public unused script vars acceptance"
+`run-name` = "Public unused script vars @ ${{ inputs.version || github.event.pull_request.head.sha || github.sha }}"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/no-unused-script-vars-public.yml"
+      ".github/scripts/workflows/no-unused-script-vars-public/**"
+      "tools/support/release/no_unused_script_vars_public/**"
+      "tests/tooling/no-unused-script-vars-public.test.ts"
+      "tests/_fixtures/differential/linter/no-unused-script-vars-12999/**"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      version {
+        description = "Exact published version containing the reported fix"
+        required = true
+        type = "string"
+      }
+      candidate {
+        description = "Immutable release tag commit"
+        required = true
+        type = "string"
+      }
+      source {
+        description = "Sole parent of the release tag commit"
+        required = true
+        type = "string"
+      }
+      producer_run {
+        description = "Completed successful Release run"
+        required = true
+        type = "string"
+      }
+    }
+  }
+}
+permissions {
+  contents = "read"
+  actions = "read"
+}
+env {
+  SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+concurrency {
+  group = "no-unused-script-vars-public-${{ github.event.pull_request.number || inputs.version || github.ref }}"
+  `cancel-in-progress` = false
+}
+defaults {
+  run { shell = "bash" }
+}
+jobs {
+  controls {
+    name = "Exact packet and provenance refusal controls"
+    `runs-on` = "blacksmith-8vcpu-ubuntu-2404"
+    `timeout-minutes` = 10
+    steps = new Listing {
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24.14.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Verify exact packets and reject non-release requests"
+        run = "node --test tests/tooling/no-unused-script-vars-public.test.ts"
+      }
+    }
+  }
+
+  published {
+    needs = "controls"
+    `if` = "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'"
+    name = "Fresh Bun public CLI exact packets"
+    `runs-on` = "ubuntu-24.04"
+    `timeout-minutes` = 20
+    env {
+
+      GH_TOKEN = "${{ github.token }}"
+      PUBLIC_VERSION = "${{ inputs.version }}"
+      PUBLIC_CANDIDATE = "${{ inputs.candidate }}"
+      PUBLIC_SOURCE = "${{ inputs.source }}"
+      PRODUCER_RUN = "${{ inputs.producer_run }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("no-unused-script-vars-public")
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupBun
+        with { `bun-version` = "1.3.14" }
+      }
+      new Dynamic {
+        name = "Authenticate the immutable release tag and successful producer"
+        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-the-immutable-release-tag-and-successful-producer.sh""#
+      }
+      new Dynamic {
+        name = "Install vize from public npm and require every reported packet under Bun"
+        run = #"bun tools/support/release/no_unused_script_vars_public/run.ts "$PUBLIC_VERSION" "$PUBLIC_CANDIDATE" "$PUBLIC_SOURCE" "$PRODUCER_RUN" "$RUNNER_TEMP/no-unused-script-vars-public""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "no-unused-script-vars-public-${{ inputs.version }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/no-unused-script-vars-public/proof/"
+          `if-no-files-found` = "error"
+          `retention-days` = 90
+        }
+      }
+    }
+  }
+}

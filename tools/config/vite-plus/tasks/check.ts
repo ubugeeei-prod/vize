@@ -17,12 +17,13 @@ import {
   runTask,
   runTasks,
   shellQuote,
+  steps,
   task,
   vscodeExtensionPackageBin,
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
-const ciPackageCheckCommand = [
+const ciPackageCheckCommand = steps(
   runInPackages("check", checkedPackagesBeforeNativeBuild, {
     concurrencyLimit: 1,
   }),
@@ -31,14 +32,14 @@ const ciPackageCheckCommand = [
   runInPackages("check:static", nativeBuiltCheckPackages, {
     concurrencyLimit: 1,
   }),
-].join(" && ");
+);
 const localLintCommand = runTask("check");
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
-const rustClippyCommand = [
+const rustClippyCommand = steps(
   "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports",
   "node tools/commands/ci/check-workspace-lints.ts --check",
   "node tools/commands/ci/check-skeleton-todos.ts --check",
-].join(" && ");
+);
 const iterationRepoCheckCommand = [
   "node",
   "tools/commands/ci/check-warning-budget.ts",
@@ -48,30 +49,24 @@ const iterationRepoCheckCommand = [
 ]
   .map(shellQuote)
   .join(" ");
-const strictRepoCheckCommand = [
+const strictRepoCheckCommand = steps(
   iterationRepoCheckCommand,
   // Every project the root tsconfig.json solution references.
   "node tools/support/typescript/check-project.ts",
-].join(" && ");
-const ciVizeAppCheckCommand = [
+);
+const ciVizeAppCheckCommand = steps(
   runInDirectory(
     "./examples/vite-musea",
-    "vize check && vp check src vite.config.ts vite.app.config.ts playwright.config.ts",
+    "vize check",
+    "vp check src vite.config.ts vite.app.config.ts playwright.config.ts",
   ),
   runInDirectory(
     "./playground",
-    "vp check src 'e2e/*.ts' 'e2e/vrt/*.ts' vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts && vize lint --max-warnings 0",
+    "vp check src 'e2e/*.ts' 'e2e/vrt/*.ts' vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts",
+    "vize lint --max-warnings 0",
   ),
-].join(" && ");
+);
 
-/**
- * Repository-wide formatting, linting, package checks, and CI aggregate tasks.
- *
- * The Vite+ task graph deliberately separates cached checks from non-cached
- * commands so local development can stay fast while CI remains strict. Package
- * checks that run through `vp run` are throttled to avoid CPU-heavy production
- * builds competing with each other on Windows runners.
- */
 export const checkTasks = defineTasks({
   check: noCacheTask(
     runTasks("check:repo", "check:rust", "check:js", "check:vize-apps", "check:editor-extensions"),
@@ -92,7 +87,7 @@ export const checkTasks = defineTasks({
   // Every package that exposes a `check` task takes part, including the oxlint
   // example. Its `lint` script is the one that intentionally exits non-zero, and
   // the aggregate never runs `lint`, so there is nothing here to exempt.
-  "check:ci": noCacheTask(`${runTask("check:repo")} && ${ciPackageCheckCommand}`),
+  "check:ci": noCacheTask(steps(runTask("check:repo"), ciPackageCheckCommand)),
   "check:fix": noCacheTask(runInPackages("check:fix", checkedPackages)),
   "check:rust": noCacheTask("cargo check --workspace"),
   "check:vscode-extension": noCacheTask(
@@ -109,7 +104,7 @@ export const checkTasks = defineTasks({
   "fmt:rust": task("cargo fmt --all", { input: cacheInputs.rust }),
   "fmt:all": noCacheTask(runTask("fmt")),
   lint: noCacheTask(localLintCommand),
-  "lint:testbox": noCacheTask(inTestbox(localLintCommand)),
+  "lint:testbox": noCacheTask(inTestbox("lint")),
   "lint:fix": noCacheTask(runTask("check:fix")),
   "lint:rust": task(rustClippyCommand, { input: cacheInputs.rust }),
   "lint:all": noCacheTask(runTasks("lint:rust", "check")),

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+runtime="$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+test -x "$runtime"
+"$runtime" --version > target/persistent-storage-evidence/native-provider-version.txt
+sha256sum "$runtime" > target/persistent-storage-evidence/native-provider.sha256
+printf '%s\n' "$runtime" > target/persistent-storage-evidence/native-provider-path.txt
+printf 'CORSA_PATH=%s\n' "$runtime" >> "$GITHUB_ENV"

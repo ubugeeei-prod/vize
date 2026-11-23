@@ -1,0 +1,83 @@
+import "../../Actions.pkl" as ci
+
+name = "Art source products"
+on {
+  pull_request {
+    paths = new Listing {
+      "crates/vize_musea/**"
+      "crates/vize_croquis/src/sfc/**"
+      "crates/vize_croquis/src/script_parser/**"
+      "davinci/vize_l1/src/container/**"
+      "davinci/vize_l1/src/markup/**"
+      "**/*.art.vue"
+      "**/*.art.vue.txt"
+      ".github/workflows/art-source-products.yml"
+      ".github/scripts/workflows/art-source-products/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "art-source-products-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `gallery-products` {
+    name = "Gallery ${{ matrix.suite }}"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        suite = List("correctness", "performance")
+      }
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("art-source-products")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = ci.cache
+        with {
+          path = """
+          ~/.cargo/registry
+          ~/.cargo/git
+
+          """
+          key = "art-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}"
+        }
+      }
+      new Dynamic {
+        name = "Select original Vue and colocated gallery sources"
+        run = #". "${{ env.VIZE_CI_FILES }}/select-original-vue-and-colocated-gallery-sources.sh""#
+      }
+      new Dynamic {
+        name = "Compare original gallery records, generated modules, Markdown and public warnings"
+        `if` = "matrix.suite == 'correctness'"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-gallery-records-generated-modules-markdown-and-public-w.sh""#
+      }
+      new Dynamic {
+        name = "Measure descriptor and warning time, allocations and peak on an independent runner"
+        `if` = "matrix.suite == 'performance'"
+        run = #". "${{ env.VIZE_CI_FILES }}/measure-descriptor-and-warning-time-allocations-and-peak-on-an-independe.sh""#
+      }
+    }
+  }
+}

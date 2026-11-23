@@ -1,0 +1,81 @@
+import "../../Actions.pkl" as ci
+
+name = "L1 document special text"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/l1-document-special-text.yml"
+      ".github/scripts/workflows/l1-document-special-text/**"
+      ".github/actions/install-playwright-browsers/**"
+      "Cargo.lock"
+      "Cargo.toml"
+      "davinci/vize_l0/**"
+      "davinci/vize_l1/**"
+      "crates/vize_armature/**"
+      "crates/vize_relief/**"
+      "package.json"
+      "pnpm-lock.yaml"
+      "tests/package.json"
+      "tests/tooling/davinci-document-body-elements.test.ts"
+      "tests/tooling/davinci-document-disclosure-elements.test.ts"
+      "tests/tooling/davinci-document-embedded-fallback.test.ts"
+      "tests/tooling/davinci-document-foreign-content.test.ts"
+      "tests/tooling/davinci-document-phrasing.test.ts"
+      "tests/tooling/davinci-document-select.test.ts"
+      "tests/tooling/davinci-document-special-text.test.ts"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "l1-document-special-text-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
+}
+jobs {
+  differential {
+    name = "Chromium, legacy and native packets"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("l1-document-special-text")
+      ci.checkoutAt("${{ env.HEAD_SHA }}")
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "l1-document-special-text"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          `run-install` = false
+          cache = true
+          `cache-save` = false
+        }
+      }
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        uses = "./.github/actions/install-playwright-browsers"
+        with { workspace = "./tests" }
+      }
+      new Dynamic {
+        name = "Compare the original packet with native and legacy Rust"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-packet-with-native-and-legacy-rust.sh""#
+      }
+      new Dynamic {
+        name = "Compare the original packet with Chromium"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-packet-with-chromium.sh""#
+      }
+    }
+  }
+}

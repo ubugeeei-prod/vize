@@ -82,7 +82,9 @@ void test("the shared hydration checks out the Gitlink rather than the repositor
     assert.equal(git(fixture, "rev-parse", "HEAD"), git(consumer, "rev-parse", "HEAD"));
     assert.notEqual(git(fixture, "rev-parse", "HEAD"), pinned);
 
-    execFileSync("bash", ["-euo", "pipefail", "-c", hydration.run], {
+    const [program, ...args] = hydration.run.trim().split(/\s+/u);
+    assert.equal(program, "git");
+    execFileSync(program, args, {
       cwd: consumer,
       env,
       stdio: ["ignore", "pipe", "pipe"],

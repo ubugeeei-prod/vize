@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+BENCH_TARGET_DIR="$RUNNER_TEMP/frontend-bench-target" node tools/support/github/rust-frontend-threads-bench.ts run --scenario "$BENCH_SCENARIO" --configs "$BENCH_CONFIGS" --rounds "$BENCH_ROUNDS" --out "$RUNNER_TEMP/frontend-bench/$BENCH_NAME.json"

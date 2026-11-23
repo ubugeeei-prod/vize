@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+mkdir -p base/crates/vize_croquis_cf/examples
+cp head/crates/vize_croquis_cf/examples/compact_collections.rs base/crates/vize_croquis_cf/examples/
+node "$VIZE_CI_FILES/install-identical-measurement-harness-on-baseline.ts"

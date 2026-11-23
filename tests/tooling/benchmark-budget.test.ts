@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -13,7 +14,7 @@ import {
   DEFAULT_SKIP_OVERRIDE_LABEL,
   enforceBenchmarkBudget,
 } from "../../tools/benchmarks/scripts/enforce-pr-budget.ts";
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import { workflowJobBody } from "./support/github-workflows.ts";
 
 const stableResult = {
   id: "compile",
@@ -147,7 +148,7 @@ test("benchmark tasks gate lint and fmt at max parallelism as well as single-thr
 // only reaches the parallel lint and fmt paths while the workflow keeps passing
 // no `--tasks` filter; a filter added later would silently drop them again.
 test("the benchmark workflow gates every lane on both the PR and the fixed-baseline run", () => {
-  const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "benchmark.yml");
   const job = workflowJobBody(workflow, "pr-benchmark");
   const step = job.slice(job.indexOf("\n      - name: Compare base and head\n"));
   const compare = step.slice(0, step.indexOf("\n      - name: ", 1));

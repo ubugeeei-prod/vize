@@ -13,6 +13,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+
+import { processResultArgs } from "../support/program-path.ts";
 import {
   assertCustody,
   assertCheckerVersion,
@@ -236,10 +238,7 @@ test("raw streams and failed process metadata survive oracle rejection", () => {
       directory,
       "valid",
       process.execPath,
-      [
-        "-e",
-        "process.stdout.write('unexpected\\n');process.stderr.write('warning\\n');process.exitCode=2",
-      ],
+      [...processResultArgs({ stdout: "unexpected\n", stderr: "warning\n", status: 2 })],
       directory,
     );
     assert.throws(() => assertObservations("after", [observation, ...accepted().slice(1)]));

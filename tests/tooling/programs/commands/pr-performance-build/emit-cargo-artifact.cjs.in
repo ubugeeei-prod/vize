@@ -1,0 +1,26 @@
+#!@@NODE@@
+if (process.argv.includes("--version")) {
+  console.log("fixture cargo 1");
+  process.exit(0);
+}
+const fs = require("node:fs"),
+  p = require("node:path");
+const binary = p.join(process.env.CARGO_TARGET_DIR, "ci-opt", "vize");
+fs.mkdirSync(p.dirname(binary), { recursive: true });
+fs.writeFileSync(binary, "same optimized bytes", { mode: 0o755 });
+console.log(
+  JSON.stringify({
+    reason: "compiler-artifact",
+    target: { name: "vize", kind: ["bin"] },
+    features: [],
+    profile: {
+      opt_level: "3",
+      debuginfo: 0,
+      debug_assertions: @@ASSERTIONS@@,
+      test: false,
+      overflow_checks: false,
+    },
+    executable: binary,
+    fresh: @@FRESH@@,
+  }),
+);

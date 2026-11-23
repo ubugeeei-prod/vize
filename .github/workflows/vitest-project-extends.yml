@@ -13,6 +13,7 @@ on:
       - "tests/tooling/vitest-project-extends.test.ts"
       - "tests/_fixtures/_projects/vitest-project-extends/**"
       - ".github/workflows/vitest-project-extends.yml"
+      - ".github/scripts/workflows/vitest-project-extends/**"
 permissions: { contents: read }
 concurrency:
   group: vitest-project-extends-${{ github.event.pull_request.number || github.ref }}
@@ -21,15 +22,15 @@ jobs:
   consumers:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/vitest-project-extends"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
       - run: vp install --filter './npm/builder/vite...' --filter './npm/cli...' --frozen-lockfile --prefer-offline
       - name: Build both source configuration adapters
-        run: |
-          (cd npm/cli && vp pack)
-          (cd npm/builder/vite && vp pack)
+        run: . "${{ env.VIZE_CI_FILES }}/build-both-source-configuration-adapters.sh"
       - name: Install the exact released reproduction
         working-directory: tests/_fixtures/_projects/vitest-project-extends
         run: npm ci --prefer-offline --no-audit --no-fund

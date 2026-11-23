@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -54,26 +55,10 @@ fn main() {
     // Synthetic transport law only: these processes provide no native checker credit.
     fs.writeFileSync(
       path.join(directory, "lsp"),
-      `const fs = require("node:fs");
-fs.writeFileSync(process.env.EDITOR_RUNTIME_MARKER, "child started");
-let bytes = Buffer.alloc(0);
-process.stdin.on("data", chunk => {
-  bytes = Buffer.concat([bytes, chunk]);
-  while (true) {
-    const separator = bytes.indexOf("\\r\\n\\r\\n");
-    if (separator < 0) return;
-    const length = Number(/Content-Length: (\\d+)/.exec(bytes.subarray(0, separator).toString())[1]);
-    if (bytes.length < separator + 4 + length) return;
-    const request = JSON.parse(bytes.subarray(separator + 4, separator + 4 + length));
-    bytes = bytes.subarray(separator + 4 + length);
-    if (request.method === "exit") process.exit(0);
-    if (request.id === undefined) continue;
-    const runtime = Object.fromEntries(${JSON.stringify(runtimeVariables)}.filter(name => process.env[name] !== undefined).map(name => [name, process.env[name]]));
-    const body = JSON.stringify({jsonrpc:"2.0",id:request.id,result:request.method === "shutdown" ? null : runtime});
-    process.stdout.write("Content-Length: " + Buffer.byteLength(body) + "\\r\\n\\r\\n" + body);
-  }
-});
-`,
+      readToolingProgram(
+        "commands/editor-lsp-runtime-authority/inspect-editor-environment.cjs.in",
+        { ENVIRONMENT_KEYS: JSON.stringify(runtimeVariables) },
+      ),
     );
     const selected = path.join(directory, "selected provider é 日本");
     fs.writeFileSync(selected, "inert native authority file; never executed\n");

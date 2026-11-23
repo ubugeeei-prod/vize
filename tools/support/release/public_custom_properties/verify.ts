@@ -145,12 +145,7 @@ const nativeIdentity = asRecord(
   parseJson(
     run(
       "native-identity",
-      [
-        process.execPath,
-        "--input-type=module",
-        "-e",
-        'import {createRequire} from "node:module"; const require=createRequire(import.meta.url); const native=require("@vizejs/native"); const identity=require("@vizejs/native/native-binding-identity.js").getBindingIdentity(native); console.log(JSON.stringify({identity,token:native.getNativeBuildToken(),binary:require.resolve("@vizejs/native-linux-x64-gnu")}));',
-      ],
+      [process.execPath, fileURLToPath(new URL("./native-identity.ts", import.meta.url))],
       [0],
     ),
   ),

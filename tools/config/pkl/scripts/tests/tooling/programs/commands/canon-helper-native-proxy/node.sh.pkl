@@ -1,0 +1,10 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  : "${NATIVE_LAUNCHER_ARGS:?}"
+  printf '%s\n' "$@" > "$NATIVE_LAUNCHER_ARGS"
+  """#
+}

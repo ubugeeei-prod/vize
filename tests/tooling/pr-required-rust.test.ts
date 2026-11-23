@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { requireRustTier } from "../../tools/support/compat/github/require-rust-tier.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -212,11 +213,7 @@ test("the real CLI reads offline metadata for docs PRs and emits mandatory PR/MQ
     writeFileSync(metadataPath, JSON.stringify(metadata(cwd)));
     writeFileSync(
       join(bin, "cargo"),
-      `#!${process.execPath}
-const fs = require("node:fs");
-fs.appendFileSync(process.env.CARGO_CALLS, JSON.stringify(process.argv.slice(2)) + "\\n");
-process.stdout.write(fs.readFileSync(process.env.CARGO_METADATA, "utf8"));
-`,
+      readToolingProgram("commands/pr-required-rust/cargo.cjs.in", { NODE: process.execPath }),
       { mode: 0o755 },
     );
     mkdirSync(join(cwd, "npm/native"), { recursive: true });

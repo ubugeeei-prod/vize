@@ -84,7 +84,14 @@ impl RuntimeDistribution {
                 let owner = tempfile::tempdir_in(project.parent().unwrap()).unwrap();
                 let wrapper = owner.path().join("native-relay");
                 let quoted = executable.to_str().unwrap().replace('\'', "'\\''");
-                std::fs::write(&wrapper, format!("#!/bin/sh\nexec '{quoted}' \"$@\"\n")).unwrap();
+                std::fs::write(
+                    &wrapper,
+                    format!(
+                        include_str!("../../programs/forward-lsp-runtime.sh.in"),
+                        quoted = quoted
+                    ),
+                )
+                .unwrap();
                 std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
                 let physical_owner = owner.path().canonicalize().unwrap();
                 let physical_project = project.canonicalize().unwrap();

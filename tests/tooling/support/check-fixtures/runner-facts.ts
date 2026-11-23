@@ -11,6 +11,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 export type CgroupPids = {
   /** Cgroup path from `/proc/self/cgroup`, or `null` when unavailable. */
@@ -100,7 +101,7 @@ export function readUlimitProcessesHard(): number | "unlimited" | null {
 function readUlimit(prefix = ""): number | "unlimited" | null {
   const result = spawnSync(
     "/bin/sh",
-    ["-c", `ulimit ${prefix}u 2>/dev/null || ulimit ${prefix}p`],
+    [fileURLToPath(new URL("./process-limit.sh", import.meta.url)), prefix],
     {
       encoding: "utf8",
     },

@@ -1,0 +1,7 @@
+const fs = require("node:fs");
+const path = require("node:path");
+const argsPath = @@COMMAND_ARGS_PATH@@;
+const artifactPath = @@ARTIFACT_PATH@@;
+fs.writeFileSync(argsPath, process.argv.slice(2).join("\n"));
+fs.mkdirSync(path.dirname(artifactPath), { recursive: true });
+fs.writeFileSync(artifactPath, "apple-native");

@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const producer = path.join(root, "tools/support/release/public_install");
@@ -62,16 +63,20 @@ function inertHookFixture() {
     nativeSha256: digest(fs.readFileSync(native)),
     journalPath: journal,
   };
-  const run = (script: string, changes: Record<string, string> = {}) =>
-    spawnSync(process.execPath, ["--require", hook, "-e", script], {
-      env: {
-        ...cleanEnvironment(),
-        VIZE_PUBLIC_NATIVE_CUSTODY: JSON.stringify(config),
-        ...changes,
+  const run = (args: string[], changes: Record<string, string> = {}) =>
+    spawnSync(
+      process.execPath,
+      ["--require", hook, toolingProgram("release/load-inert-native.cjs"), ...args],
+      {
+        env: {
+          ...cleanEnvironment(),
+          VIZE_PUBLIC_NATIVE_CUSTODY: JSON.stringify(config),
+          ...changes,
+        },
+        encoding: "utf8",
+        timeout: 10_000,
       },
-      encoding: "utf8",
-      timeout: 10_000,
-    });
+    );
   const events = () =>
     fs
       .readFileSync(journal, "utf8")
@@ -84,9 +89,7 @@ function inertHookFixture() {
 test("the genuine Node loader rejects inert native text and never journals returned", (t) => {
   const fixture = inertHookFixture();
   t.after(() => fs.rmSync(fixture.temporary, { recursive: true, force: true }));
-  const result = fixture.run(
-    `try { require(${JSON.stringify(fixture.native)}) } catch (error) { process.stdout.write(error.message); process.exitCode = 42 }`,
-  );
+  const result = fixture.run(["observe-failure", fixture.native]);
   assert.equal(result.error, undefined);
   assert.equal(result.status, 42);
   assert.equal(result.stderr, "");
@@ -105,9 +108,7 @@ test("the genuine Node loader rejects inert native text and never journals retur
 test("native bytes changed after hook initialization are rejected before the loader", (t) => {
   const fixture = inertHookFixture();
   t.after(() => fs.rmSync(fixture.temporary, { recursive: true, force: true }));
-  const result = fixture.run(
-    `require('node:fs').writeFileSync(${JSON.stringify(fixture.native)}, 'tampered'); require(${JSON.stringify(fixture.native)})`,
-  );
+  const result = fixture.run(["change-before-load", fixture.native]);
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Vize native loader escaped/u);
   assert.deepEqual(
@@ -121,7 +122,7 @@ test("another Vize native provider is rejected instead of granting load credit",
   t.after(() => fs.rmSync(fixture.temporary, { recursive: true, force: true }));
   const alternate = path.join(path.dirname(fixture.native), "alternate.node");
   fs.writeFileSync(alternate, "second inert text library");
-  const result = fixture.run(`require(${JSON.stringify(alternate)})`);
+  const result = fixture.run(["load", alternate]);
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Vize native loader escaped/u);
   assert.deepEqual(
@@ -139,7 +140,7 @@ test("explicit checker authority must match its custody-bound path and digest", 
   fixture.config.checkerPath = checker;
   fixture.config.checkerSha256 = digest(fs.readFileSync(checker));
 
-  const accepted = fixture.run("void 0", { CORSA_PATH: checker });
+  const accepted = fixture.run([], { CORSA_PATH: checker });
   assert.equal(accepted.status, 0, accepted.stderr);
   assert.deepEqual(
     fixture.events().map((event) => event.event),
@@ -149,13 +150,13 @@ test("explicit checker authority must match its custody-bound path and digest", 
 
   const alternate = path.join(path.dirname(checker), "alternate-tsc");
   fs.writeFileSync(alternate, "other checker");
-  const mismatchedPath = fixture.run("void 0", { CORSA_PATH: alternate });
+  const mismatchedPath = fixture.run([], { CORSA_PATH: alternate });
   assert.equal(mismatchedPath.status, 1);
   assert.match(mismatchedPath.stderr, /differs from custody/u);
   assert.equal(fs.existsSync(fixture.journal), false);
 
   fixture.config.checkerSha256 = "0".repeat(64);
-  const mismatchedDigest = fixture.run("void 0", { CORSA_PATH: checker });
+  const mismatchedDigest = fixture.run([], { CORSA_PATH: checker });
   assert.equal(mismatchedDigest.status, 1);
   assert.match(mismatchedDigest.stderr, /escaped the registry installation/u);
   assert.equal(fs.existsSync(fixture.journal), false);
@@ -165,19 +166,19 @@ test("native hook refuses existing journals, wrong digest, escaped paths and ove
   const fixture = inertHookFixture();
   t.after(() => fs.rmSync(fixture.temporary, { recursive: true, force: true }));
   fs.writeFileSync(fixture.journal, "preserved journal");
-  assert.equal(fixture.run("void 0").status, 1);
+  assert.equal(fixture.run([]).status, 1);
   assert.equal(fs.readFileSync(fixture.journal, "utf8"), "preserved journal");
   fs.unlinkSync(fixture.journal);
   fixture.config.nativeSha256 = "0".repeat(64);
-  assert.match(fixture.run("void 0").stderr, /digest differs/u);
+  assert.match(fixture.run([]).stderr, /digest differs/u);
   fixture.config.nativeSha256 = digest(fs.readFileSync(fixture.native));
   const escaped = path.join(fixture.temporary, "escaped.node");
   fs.copyFileSync(fixture.native, escaped);
   fixture.config.nativePath = escaped;
-  assert.match(fixture.run("void 0").stderr, /escaped the registry installation/u);
+  assert.match(fixture.run([]).stderr, /escaped the registry installation/u);
   fixture.config.nativePath = fixture.native;
   for (const key of overrideKeys.filter((key) => key !== "VIZE_PUBLIC_NATIVE_CUSTODY")) {
-    const result = fixture.run("void 0", {
+    const result = fixture.run([], {
       [key]: key === "NODE_OPTIONS" ? "--no-warnings" : "forbidden",
     });
     assert.equal(result.status, 1);

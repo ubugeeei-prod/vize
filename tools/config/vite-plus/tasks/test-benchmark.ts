@@ -1,16 +1,18 @@
 import { cacheInputs, testedPackages } from "../task-inputs.ts";
 import { testedPackageGroups } from "../tested-package-groups.ts";
 import {
+  assertVscodePackage,
+  packageVscodeExtension,
+  stageVscodeTypeScriptPlugin,
+  steps,
   defineTasks,
   nodeCommand,
-  nodeCommandFromVscodeExtension,
   nodeTool,
   noCacheTask,
   runInPackages,
   runInVscodeExtension,
   runPackageScriptDirectly,
   rustTool,
-  rustToolFromVscodeExtension,
   runTask,
   runTasks,
   task,
@@ -19,24 +21,6 @@ import {
 import type { PackagePath } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
-const stageVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
-  "editors/vscode/sync-typescript-plugin",
-  "stage",
-);
-const injectVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
-  "editors/vscode/sync-typescript-plugin",
-  "inject",
-  "dist/vize.vsix",
-);
-const assertVscodePackage = rustToolFromVscodeExtension(
-  "editors/vscode/assert-vsix-package",
-  "dist/vize.vsix",
-);
-const packageVscodeExtension = [
-  stageVscodeTypeScriptPlugin,
-  `${vscodeExtensionPackageBin("@vscode/vsce", "vsce")} package --no-dependencies --out dist/vize.vsix`,
-  injectVscodeTypeScriptPlugin,
-].join(" && ");
 const localTestCommand = runTasks(
   "test:rust",
   "test:js",
@@ -49,17 +33,37 @@ const toolingTestFiles = [
   "tests/tooling/davinci/*.test.ts",
   "tests/tooling/davinci/*.test.mjs",
   "tests/tooling/release/*.test.ts",
-].join(" ");
+];
 
 // The Vite package reuses the successful native preparation. Keep the same
 // package selection, dependency ordering, concurrency, and inherited env.
-const preparedPackageTests = (packages: readonly PackagePath[]) =>
-  runInPackages("test", packages, { concurrencyLimit: 1 }).replace(
-    "vp run",
-    "node npm/native/scripts/test-preparation.mjs vp run",
-  );
+const preparedPackageTests = (packages: readonly PackagePath[]) => {
+  const command = runInPackages("test", packages, { concurrencyLimit: 1 });
+  return {
+    ...command,
+    program: "node",
+    arguments: [
+      "npm/native/scripts/test-preparation.mjs",
+      command.program,
+      ...(command.arguments ?? []),
+    ],
+  };
+};
 const nativePreparedPackageTests = (packages: readonly PackagePath[]) =>
-  `${runTask("build:native:test")} && ${preparedPackageTests(packages)}`;
+  steps(runTask("build:native:test"), preparedPackageTests(packages));
+
+const prepareToolingTests = steps(
+  runTask("build:native:test"),
+  nodeCommand("ci/verify-tool-layout"),
+);
+const plannedToolingTests = steps(
+  prepareToolingTests,
+  "node tools/support/compat/github/run-tooling-tests.mjs",
+);
+const nvimTest = {
+  program: "nvim",
+  arguments: ["--headless", "-u", "NONE", "--noplugin", "-l", "editors/nvim/test/vize_spec.lua"],
+};
 
 // Pull-request CI runs one group per job. A group keeps the full set's package
 // order and builds its out-of-group dependencies' bundles before testing.
@@ -68,12 +72,12 @@ const jsPackageGroupTasks = Object.fromEntries(
     const selected = testedPackages.filter((pkg) =>
       (packages as readonly PackagePath[]).includes(pkg),
     );
-    const steps = [
+    const commands = steps(
       runTask("build:native:test"),
       ...(prebuilt.length > 0 ? [runPackageScriptDirectly("build", prebuilt)] : []),
       preparedPackageTests(selected),
-    ];
-    return [`test:js:${name}`, noCacheTask(steps.join(" && "))];
+    );
+    return [`test:js:${name}`, noCacheTask(commands)];
   }),
 );
 
@@ -100,8 +104,8 @@ const rustBranchCoverageMinimums = [
 const benchmarkDispatcher = (...args: string[]) => nodeCommand("benchmarks/dispatch", ...args);
 const sourceCoverage = (...args: string[]) =>
   ["node", "tools/commands/ci/source-coverage.ts", ...args].join(" ");
-const rustSourceCoverageCommand = [
-  "mkdir -p target/llvm-cov",
+const rustSourceCoverageCommand = steps(
+  nodeTool("tasks/prepare-coverage-directory"),
   [
     // nextest runs the instrumented test binaries in parallel; libtest ran them one by one.
     // The full profile's groups apply, and eight threads leave the slower instrumented
@@ -110,9 +114,9 @@ const rustSourceCoverageCommand = [
     `--output-path ${rustSourceCoverageJson}`,
   ].join(" "),
   sourceCoverage("--json", rustSourceCoverageJson, ...rustSourceCoverageMinimums),
-].join(" && ");
-const rustBranchCoverageCommand = [
-  "mkdir -p target/llvm-cov",
+);
+const rustBranchCoverageCommand = steps(
+  nodeTool("tasks/prepare-coverage-directory"),
   "cargo clean --target-dir target/llvm-cov-target",
   [
     "cargo +nightly llvm-cov -p vize_carton -p vize_armature -p vize_atelier_core",
@@ -122,37 +126,29 @@ const rustBranchCoverageCommand = [
   // Keep threshold enforcement in one place so failures still render the
   // complete metric table instead of stopping at cargo-llvm-cov's exit code.
   sourceCoverage("--json", rustBranchCoverageJson, ...rustBranchCoverageMinimums),
-].join(" && ");
+);
 
-/**
- * Test, snapshot, coverage, and benchmark tasks.
- *
- * These commands validate observable behavior across Rust compiler crates,
- * JavaScript packages, browser-facing playground flows, and generated fixture
- * output. Snapshot and benchmark entries live beside normal tests because they
- * are both part of the same feedback loop: keep correctness visible and keep
- * performance regressions difficult to miss.
- */
 export const testAndBenchmarkTasks = defineTasks({
   test: noCacheTask(localTestCommand),
-  "test:testbox": noCacheTask(inTestbox(localTestCommand)),
+  "test:testbox": noCacheTask(inTestbox("test")),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
   "test:js": noCacheTask(nativePreparedPackageTests(testedPackages)),
   ...jsPackageGroupTasks,
   // The PR Oxlint qualification job builds the same source addon and the
   // bundles the oxlint package test packs, without the package tests.
   "build:oxlint-qualification": noCacheTask(
-    `${runTask("build:native:test")} && ${runPackageScriptDirectly("build", ["./npm/linter/oxlint"])}`,
+    steps(runTask("build:native:test"), runPackageScriptDirectly("build", ["./npm/linter/oxlint"])),
   ),
   "test:scripts": noCacheTask(
-    `${runTask("build:native:test")} && node tools/commands/ci/verify-tool-layout.ts && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 ${toolingTestFiles}`,
+    steps(prepareToolingTests, {
+      program: "node",
+      arguments: ["--test", "--test-concurrency=1", ...toolingTestFiles],
+      globs: toolingTestFiles,
+      environment: { VIZE_TEST_REQUIRE_TSGO: "1" },
+    }),
   ),
-  "test:scripts:pr": noCacheTask(
-    `${runTask("build:native:test")} && node tools/commands/ci/verify-tool-layout.ts && node tools/support/compat/github/run-tooling-tests.mjs`,
-  ),
-  "test:scripts:planned": noCacheTask(
-    `${runTask("build:native:test")} && node tools/commands/ci/verify-tool-layout.ts && node tools/support/compat/github/run-tooling-tests.mjs`,
-  ),
+  "test:scripts:pr": noCacheTask(plannedToolingTests),
+  "test:scripts:planned": noCacheTask(plannedToolingTests),
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(packageVscodeExtension, assertVscodePackage),
   ),
@@ -179,7 +175,7 @@ export const testAndBenchmarkTasks = defineTasks({
   }),
   "test:zed-extension:real-server": noCacheTask(rustTool("editors/zed/run-real-server")),
   "test:nvim-extension:headless": noCacheTask(
-    "nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua && VIZE_TEST_ART_VUE_NATIVE_PARSER=1 nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua",
+    steps(nvimTest, { ...nvimTest, environment: { VIZE_TEST_ART_VUE_NATIVE_PARSER: "1" } }),
   ),
   "test:nvim-extension:package": noCacheTask("vp run --workspace-root package:nvim-extension"),
   // The headless Neovim end-to-end scenario against a real `vize lsp` (#3457).

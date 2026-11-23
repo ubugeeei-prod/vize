@@ -1,3 +1,4 @@
+import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -87,8 +88,14 @@ test("npmx head runtime oracle is wired and cannot mutate authored sources", () 
   };
 
   assert.match(spec, /verifyNpmxHeadMacros\(page, app\.url, app\.cwd\)/);
-  assert.match(packageJson.scripts?.["test:dev:npmx"] ?? "", /app\/dev\/npmx\.spec\.ts/);
-  assert.match(packageJson.scripts?.["test:dev:ci"] ?? "", /app\/dev\/npmx\.spec\.ts/);
+  assert.match(
+    packageScripts("tests", packageJson.scripts)?.["test:dev:npmx"] ?? "",
+    /app\/dev\/npmx\.spec\.ts/,
+  );
+  assert.match(
+    packageScripts("tests", packageJson.scripts)?.["test:dev:ci"] ?? "",
+    /app\/dev\/npmx\.spec\.ts/,
+  );
   assert.match(runtimeOracle, /readNpmxHeadFixtureContent\(fixtureRoot\)/);
   assert.doesNotMatch(runtimeOracle, /better UX\/DX/);
   assert.doesNotMatch(

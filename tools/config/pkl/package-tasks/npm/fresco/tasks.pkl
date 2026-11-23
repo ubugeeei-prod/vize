@@ -1,0 +1,14 @@
+amends "../../../PackageTasks.pkl"
+
+tasks {
+  ["check"] {
+    module.run("vp", List("check", "src", "vite.config.ts"))
+    module.run("vue-tsc", List("--noEmit", "-p", "tsconfig.json"))
+    module.run("vue-tsc", List("--noEmit", "-p", "tsconfig.examples.json"))
+    module.run("vue-tsc", List("--noEmit", "-p", "tsconfig.external-plugin.json"))
+  }
+  ["check:types"] {
+    module.run("vue-tsc", List("--noEmit", "-p", "tsconfig.json"))
+    module.run("vue-tsc", List("--noEmit", "-p", "tsconfig.examples.json"))
+  }
+}

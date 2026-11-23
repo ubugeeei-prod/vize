@@ -17,7 +17,16 @@ fn externally_revised_original_jsx_cannot_publish_old_diagnostics_and_reaps_over
     std::fs::write(&path, source).unwrap();
     let pid_path = root.path().join("overlay.pid");
     let wrapper = root.path().join("tsc");
-    std::fs::write(&wrapper,cstr!("#!/bin/sh\nif [ \"$1\" = \"--lsp\" ]; then\n  echo \"$$\" > {}\n  printf '\\n' >> {}\nfi\nexec {} \"$@\"\n",quoted(&pid_path),quoted(&path),quoted(&backend()))).unwrap();
+    std::fs::write(
+        &wrapper,
+        cstr!(
+            include_str!("../programs/invalidate-original-jsx.sh.in"),
+            quoted(&pid_path),
+            quoted(&path),
+            quoted(&backend())
+        ),
+    )
+    .unwrap();
     std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
     let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
         corsa_path: Some(wrapper),

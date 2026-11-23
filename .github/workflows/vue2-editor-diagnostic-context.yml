@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/vue2-editor-diagnostic-context.yml
+      - .github/scripts/workflows/vue2-editor-diagnostic-context/**
       - tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts
       - tests/snapshots/check/vue-element-admin-unmapped-diagnostic-oracle.ts
       - tests/tooling/vue2-rename-context-custody.test.mjs
@@ -24,6 +25,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/vue2-editor-diagnostic-context/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -43,13 +57,9 @@ jobs:
           key: vue-parity
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install pinned provider and Vue 2 fixture
-        run: |
-          git submodule update --init --depth 1 -- tests/_fixtures/_git/vue-element-admin
-          vp install --frozen-lockfile --prefer-offline
+        run: . "${{ env.VIZE_CI_FILES }}/install-pinned-provider-and-vue-2-fixture.sh"
       - name: Build exact source CLI with its receipt
-        run: |
-          cargo build --locked --profile ci -p vize --features legacy
-          node tests/differential/build-receipt.ts --legacy
+        run: . "${{ env.VIZE_CI_FILES }}/build-exact-source-cli-with-its-receipt.sh"
       - name: Verify whole CLI packets and original editor edit cycles
         env:
           VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
@@ -57,11 +67,7 @@ jobs:
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
           VIZE_LSP_BUILD_RECIPE: cargo build --profile ci -p vize --features legacy
           RAYON_NUM_THREADS: "4"
-        run: |
-          node --test --test-concurrency=1 \
-            tests/tooling/vue2-rename-context-custody.test.mjs \
-            tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts \
-            tests/snapshots/check/vue-element-admin-unmapped-diagnostic-oracle.ts
+        run: . "${{ env.VIZE_CI_FILES }}/verify-whole-cli-packets-and-original-editor-edit-cycles.sh"
       - name: Retain complete source-built editor wires
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

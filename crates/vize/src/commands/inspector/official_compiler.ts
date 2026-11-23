@@ -20,7 +20,9 @@ async function importFromRoots(specifier, roots) {
       // Try the next root, then the default resolver below.
     }
   }
-  return await import(specifier);
+  // Import-only package exports resolve from the inspected project.
+  const project = pathToFileURL(path.join(process.cwd(), "package.json")).href;
+  return await import(import.meta.resolve(specifier, project));
 }
 
 function normalizeCompilerMessages(messages) {

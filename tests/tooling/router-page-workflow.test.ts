@@ -1,6 +1,6 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
-import { readFileSync } from "node:fs";
 import { matchesGlob } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -27,14 +27,14 @@ type Workflow = {
 
 const root = new URL("../../", import.meta.url);
 const workflow = parse(
-  readFileSync(new URL(".github/workflows/router-preview-conformance.yml", root), "utf8"),
+  readAutomationPrograms(new URL(".github/workflows/router-preview-conformance.yml", root)),
 ) as Workflow;
 const job = workflow.jobs["page-route-cli-editor"];
 const action = parse(
-  readFileSync(new URL(".github/actions/check-router-page-types/action.yml", root), "utf8"),
+  readAutomationPrograms(new URL(".github/actions/check-router-page-types/action.yml", root)),
 ) as { runs: { steps: Step[] } };
 const producer = parse(
-  readFileSync(new URL(".github/workflows/full-source-cli.yml", root), "utf8"),
+  readAutomationPrograms(new URL(".github/workflows/full-source-cli.yml", root)),
 ) as { jobs: Record<string, { steps: Step[] }> };
 
 void test("page implementation, oracle and action dependencies trigger qualification", () => {
@@ -161,7 +161,7 @@ void test("all raw packet families and source receipts survive oracle failure", 
 
 void test("full tooling retains Router failure evidence on its original source shard", () => {
   const full = parse(
-    readFileSync(new URL(".github/actions/test-full-tooling/action.yml", root), "utf8"),
+    readAutomationPrograms(new URL(".github/actions/test-full-tooling/action.yml", root)),
   ) as { runs: { steps: Step[] } };
   const steps = full.runs.steps;
   const oracle = steps.filter((step) => step.uses === "./.github/actions/check-router-page-types");

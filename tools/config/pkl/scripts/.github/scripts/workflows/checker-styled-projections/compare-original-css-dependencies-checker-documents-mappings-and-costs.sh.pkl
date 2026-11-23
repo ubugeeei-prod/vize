@@ -1,0 +1,23 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  node npm/ui/node_modules/typescript/bin/tsc -p crates/vize_canon/tests/styled_projection/checker.tsconfig.json
+  flags=(--locked --profile ci-opt)
+  suite=(-p vize_canon --features styled-projection-tests)
+  cargo clippy "${flags[@]}" -p vize_l1 --features style-bindings --lib --no-deps -- -D warnings
+  cargo clippy "${flags[@]}" -p vize_l4 --features vue-style-projection --lib --no-deps -- -D warnings
+  cargo clippy "${flags[@]}" "${suite[@]}" --test styled_projection --example styled_projection_profile --no-deps -- -D warnings
+  cargo test "${flags[@]}" -p vize_l1 --features style-bindings --lib css::bind::tests
+  cargo test "${flags[@]}" -p vize_l4 --features vue-style-projection --test vue_projection
+  cargo test "${flags[@]}" "${suite[@]}" --lib css_var_usage
+  cargo test "${flags[@]}" "${suite[@]}" --test styled_projection
+  export VIZE_STYLED_CHECKER_INPUTS="$RUNNER_TEMP/styled-checker-inputs"
+  git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_STYLED_CHECKER_INPUTS"
+  cargo test "${flags[@]}" "${suite[@]}" --test styled_projection -- original_styled_files --exact --ignored --nocapture
+  cargo run "${flags[@]}" "${suite[@]}" --example styled_projection_profile
+  """#
+}

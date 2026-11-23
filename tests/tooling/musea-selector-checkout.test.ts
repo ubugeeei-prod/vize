@@ -1,3 +1,4 @@
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
@@ -16,8 +17,8 @@ import test from "node:test";
 import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const job = parse(readFileSync(join(root, ".github/workflows/musea-browser.yml"), "utf8")).jobs
-  .plan;
+const job = parse(readAutomationPrograms(join(root, ".github/workflows/musea-browser.yml"), "utf8"))
+  .jobs.plan;
 const inputs = job.steps.find((step: { uses?: string }) =>
   step.uses?.startsWith("actions/checkout@"),
 ).with;
@@ -150,7 +151,7 @@ await test("Musea selection preserves its Git inputs without materializing produ
   function execute(cwd: string, event: string, comparison = base, target = head) {
     const output = join(scratch, `${basename(cwd)}-outputs`);
     rmSync(output, { force: true });
-    const result = spawnSync("bash", ["-e", "-o", "pipefail", "-c", command], {
+    const result = spawnSync("bash", ["-e", "-o", "pipefail", automationShellPath(command)], {
       cwd,
       env: {
         ...process.env,

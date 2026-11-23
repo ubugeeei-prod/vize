@@ -1,9 +1,10 @@
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources } from "./support/github-workflows.ts";
 
 type Step = {
   id?: string;
@@ -31,14 +32,14 @@ type Workflow = {
 test("scheduled full tooling requires the original current-source CLI receipt before testing", () => {
   const workflow = parse(checkWorkflowJobSources()) as Workflow;
   const steps = (
-    parse(readRepoFile(".github", "actions", "test-full-tooling", "action.yml")) as {
+    parse(readAutomationPrograms(".github", "actions", "test-full-tooling", "action.yml")) as {
       runs: { steps: Step[] };
     }
   ).runs.steps;
   const build = steps.findIndex((step) => step.uses === "./.github/actions/restore-source-cli");
   const producer =
-    (parse(readRepoFile(".github", "workflows", "full-source-cli.yml")) as Workflow).jobs.cli
-      .steps ?? [];
+    (parse(readAutomationPrograms(".github", "workflows", "full-source-cli.yml")) as Workflow).jobs
+      .cli.steps ?? [];
   const originalBuild = producer.find((step) =>
     /cargo build --profile ci -p vize/.test(step.run ?? ""),
   );
@@ -85,7 +86,9 @@ test("scheduled full tooling requires the original current-source CLI receipt be
   }
   assert.equal(steps[tests].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
   assert.equal(steps[tests].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
-  const restore = parse(readRepoFile(".github", "actions", "restore-source-cli", "action.yml")) as {
+  const restore = parse(
+    readAutomationPrograms(".github", "actions", "restore-source-cli", "action.yml"),
+  ) as {
     runs: { steps: Step[] };
   };
   const command = restore.runs.steps.at(-1)?.run ?? "";
@@ -100,7 +103,9 @@ test("scheduled full tooling requires the original current-source CLI receipt be
 });
 
 test("PR product lanes stay independent of the affected tooling producer", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as Workflow;
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"),
+  ) as Workflow;
   assert.equal(workflow.jobs["pr-source-cli"], undefined);
   assert.equal(workflow.jobs["pr-tooling-scripts"], undefined);
   for (const name of [
@@ -124,7 +129,9 @@ test("PR product lanes stay independent of the affected tooling producer", () =>
 });
 
 test("the real tooling report requires the source CLI and every selected worker", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as Workflow;
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"),
+  ) as Workflow;
   const report = workflow.jobs["affected-tooling-report"];
   assert.deepEqual(report.needs, ["pr-source-plan", "affected-tooling-cli", "affected-tooling"]);
   const step = report.steps?.find((item) => item.name === "Require every selected tooling worker");
@@ -141,7 +148,7 @@ test("the real tooling report requires the source CLI and every selected worker"
       for (const workers of ["success", "skipped", "failure", "cancelled", ""]) {
         const result: SpawnSyncReturns<string> = spawnSync(
           "bash",
-          ["-euo", "pipefail", "-c", step.run],
+          ["-euo", "pipefail", automationShellPath(step.run)],
           {
             encoding: "utf8",
             env: {
@@ -160,7 +167,7 @@ test("the real tooling report requires the source CLI and every selected worker"
 
 test("affected tooling builds the native addon only for a shard that reads it", () => {
   const action = parse(
-    readRepoFile(".github", "actions", "test-affected-tooling", "action.yml"),
+    readAutomationPrograms(".github", "actions", "test-affected-tooling", "action.yml"),
   ) as { runs: { steps: Step[] } };
   const plan = action.runs.steps.find((step) => step.id === "plan");
   assert.match(plan?.run ?? "", /tooling-shard-native-build\.ts/);

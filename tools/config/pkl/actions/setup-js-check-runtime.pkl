@@ -1,0 +1,44 @@
+import "../Actions.pkl" as ci
+
+name = "Setup JS Check Runtime"
+description = "Validate workflows using the Actions Node.js runtime without compiling orchestration tools"
+
+inputs {
+  full {
+    description = "Install native and compatibility tooling for scheduled or manual qualification"
+    required = false
+    ["default"] = "false"
+  }
+}
+
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      uses = "./.github/actions/check-workflow-syntax"
+      with { controls = "${{ inputs.full }}" }
+    }
+    new Dynamic {
+      uses = ci.setupRust
+      `if` = "inputs.full == 'true'"
+      with { toolchain = "stable" }
+    }
+    new Dynamic {
+      uses = "./.github/actions/setup-wild-http-recovery"
+      `if` = "inputs.full == 'true'"
+      with { `wild-version` = "0.9.0" }
+    }
+    new Dynamic {
+      uses = "./.github/actions/setup-rust-sticky-cache"
+      `if` = "inputs.full == 'true'"
+      with {
+        key = "check-js"
+        `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+      }
+    }
+    new Dynamic {
+      uses = "./.github/actions/setup-rust-script"
+      `if` = "inputs.full == 'true'"
+    }
+  }
+}

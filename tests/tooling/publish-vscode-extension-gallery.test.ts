@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { tmpdir } from "node:os";
@@ -96,10 +97,17 @@ function rerun(t: TestContext, gallery: unknown) {
   writeFakeCommand(
     bin,
     "curl",
-    `${record("curl")}\nprocess.stdout.write(${JSON.stringify(JSON.stringify(gallery))});`,
+    readToolingProgram("commands/publish-vscode-extension-gallery/curl.js.in", {
+      CURL: record("curl"),
+      JSON_STRINGIFY_GALLERY: JSON.stringify(JSON.stringify(gallery)),
+    }),
   );
   // vsce would refuse a second upload of the same version and target.
-  writeFakeCommand(bin, "vp", `${record("vp")}\nprocess.exit(1);`);
+  writeFakeCommand(
+    bin,
+    "vp",
+    readToolingProgram("commands/publish-vscode-extension-gallery/vp.js.in", { VP: record("vp") }),
+  );
   const result = runReleaseCommand(
     "publish_vscode_extension",
     [path.join(root, "x.vsix"), manifest],

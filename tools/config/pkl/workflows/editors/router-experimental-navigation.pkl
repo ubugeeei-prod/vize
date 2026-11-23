@@ -1,0 +1,111 @@
+import "../../Actions.pkl" as ci
+
+name = "Published router navigation matrix"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/router-experimental-navigation.yml"
+      ".github/scripts/workflows/router-experimental-navigation/**"
+      "tests/fixtures/typechecker/experimental-router-navigation-5.4/**"
+      "tests/tooling/router-experimental-navigation-matrix.test.ts"
+      "tests/tooling/support/router-experimental-navigation-matrix.ts"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      `expected-source-sha` {
+        description = "Exact reviewed source commit"
+        required = true
+        type = "string"
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "router-navigation-${{ github.ref }}"
+  `cancel-in-progress` = false
+}
+
+jobs {
+  `published-navigation` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("router-experimental-navigation")
+      new Dynamic {
+        name = "Checkout reviewed source"
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+        }
+      }
+      new Dynamic {
+        name = "Require exact source identity"
+        env { EXPECTED_SOURCE_SHA = "${{ github.event.pull_request.head.sha || inputs.expected-source-sha }}" }
+        run = #". "${{ env.VIZE_CI_FILES }}/require-exact-source-identity.sh""#
+      }
+      new Dynamic {
+        name = "Setup Rust"
+        uses = ci.setupRust
+        with { toolchain = "1.100.0" }
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "router-navigation"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Setup Vite Plus"
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = true
+          `run-install` = false
+        }
+      }
+      ci.command("Install frozen source dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Install independently pinned published checker host"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-independently-pinned-published-checker-host.sh""#
+      }
+      new Dynamic {
+        name = "Install the immutable released Vize oracle"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-immutable-released-vize-oracle.sh""#
+      }
+      new Dynamic {
+        name = "Build exact source CLI"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-exact-source-cli.sh""#
+      }
+      new Dynamic {
+        name = "Capture complete source and independent reference matrix"
+        env {
+          VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+          VIZE_TEST_BIN = "${{ github.workspace }}/target/ci/vize"
+          VIZE_TEST_ROUTER_MATRIX_REQUIRED = "1"
+          VIZE_TEST_ROUTER_MATRIX_CHECKER = "${{ runner.temp }}/router-navigation-checker/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+          VIZE_TEST_ROUTER_MATRIX_PUBLIC_CLI = "${{ runner.temp }}/router-navigation-public/node_modules/vize/bin/vize"
+          VIZE_TEST_ROUTER_MATRIX_OUTPUT = "${{ runner.temp }}/router-navigation/matrix"
+        }
+        run = "vp node --test --test-concurrency=1 tests/tooling/router-experimental-navigation-matrix.test.ts"
+      }
+      new Dynamic {
+        name = "Retain complete packets, declarations, generated code and format discoveries"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "router-navigation-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/router-navigation/"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+import fs from "node:fs";
+import path from "node:path";
+const args = process.argv.slice(2);
+const tsconfigIndex = args.indexOf("--tsconfig");
+const tsconfig = tsconfigIndex === -1 ? null : args[tsconfigIndex + 1];
+const source =
+  tsconfig == null ? null : fs.readFileSync(path.resolve(process.cwd(), tsconfig), "utf8");
+fs.writeFileSync(@@INVOCATION_PATH@@, JSON.stringify({ args, tsconfig, source }));
+const output =
+  tsconfig == null
+    ? {
+        files: [{ file: "src/App.vue", diagnostics: [] }],
+        programs: [
+          {
+            root: ".",
+            files: [
+              "src/App.vue",
+              path.resolve(process.cwd(), "../../node_modules/@types/node/assert.d.ts"),
+            ],
+          },
+        ],
+        errorCount: 0,
+        warningCount: 0,
+        fileCount: 1,
+      }
+    : {
+        files: [{ file: "src/App.vue", diagnostics: [] }],
+        programs: [{ root: ".", tsconfig, compilerOptions: {}, files: ["src/App.vue"] }],
+        errorCount: 0,
+        warningCount: 0,
+        fileCount: 1,
+      };
+process.stdout.write(JSON.stringify(output));

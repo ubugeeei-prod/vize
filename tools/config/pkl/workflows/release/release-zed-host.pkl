@@ -1,0 +1,123 @@
+import "../../Actions.pkl" as ci
+
+name = "Release Zed host"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/release-zed-host.yml"
+      ".github/scripts/workflows/release-zed-host/**"
+      ".github/actions/vscode-host-smoke/download-artifact.sh"
+      "editors/zed/**"
+      "tests/editor-conformance/release-zed*"
+      "tests/tooling/release/release-editor-host-workflow.test.ts"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "release-zed-host-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  zed {
+    name = "Packaged extension in actual Zed"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-zed-host"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = false
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "stable"
+          targets = "wasm32-wasip2"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "release-zed-host"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.command("Build the candidate server", "cargo build --profile ci -p vize")
+      new Dynamic {
+        name = "Install the pinned Zed extension packager"
+        env {
+          VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS = "180"
+          ZED_EXTENSION_CLI_SHA = "9ee3c503a4bbbc6b4a0f8a789acca4871d773223"
+          ZED_EXTENSION_CLI_SHA256 = "a6fca5ef11ff23f0ef8b03bd2453270591c9fc6c03700c3c92017e5082ada757"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-pinned-zed-extension-packager.sh""#
+      }
+      new Dynamic {
+        name = "Package the candidate Zed extension"
+        `working-directory` = "editors/zed"
+        env { VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS = "180" }
+        run = #". "${{ env.VIZE_CI_FILES }}/package-the-candidate-zed-extension.sh""#
+      }
+      new Dynamic {
+        name = "Install the pinned Zed editor"
+        env {
+          ZED_VERSION = "1.27.0"
+          ZED_SHA256 = "719f6bf649ea8d87961adbf728e178561bac3f598d72d7949558d1150cfc43dd"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-pinned-zed-editor.sh""#
+      }
+      new Dynamic {
+        name = "Prepare the release-shaped project"
+        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-release-shaped-project.sh""#
+      }
+      ci.use("./.github/actions/setup-ubuntu-archive")
+      new Dynamic {
+        name = "Ensure xvfb is available"
+        run = #". "${{ env.VIZE_CI_FILES }}/ensure-xvfb-is-available.sh""#
+      }
+      new Dynamic {
+        name = "Run the packaged extension in actual Zed"
+        env {
+          VIZE_RELEASE_ZED_EVIDENCE = "${{ runner.temp }}/release-zed-evidence"
+          VIZE_RELEASE_ZED_EXTENSION = "${{ runner.temp }}/zed-extension-installed"
+          VIZE_RELEASE_ZED_WORKSPACE = "${{ runner.temp }}/release-zed-project"
+          VIZE_SERVER_PATH = "${{ github.workspace }}/target/ci/vize"
+          VIZE_TEST_ZED_PATH = "${{ runner.temp }}/zed/zed.app/bin/zed"
+        }
+        run = "xvfb-run -a node tests/editor-conformance/release-zed.ts"
+      }
+      new Dynamic {
+        name = "Retain Zed host evidence"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "release-zed-host-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/release-zed-evidence"
+          `include-hidden-files` = true
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

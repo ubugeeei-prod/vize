@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -24,10 +25,11 @@ type Step = {
 };
 
 test("startup diagnostics retain the production producer and unchanged scale-one oracle", () => {
-  const workflow = parse(readRepoFile(".github/workflows/lsp-config-diagnostics.yml"));
+  const workflow = parse(readAutomationPrograms(".github/workflows/lsp-config-diagnostics.yml"));
   assert.deepEqual(Object.keys(workflow.on), ["pull_request"]);
   assert.deepEqual(workflow.on.pull_request.paths, [
     ".github/workflows/lsp-config-diagnostics.yml",
+    ".github/scripts/workflows/lsp-config-diagnostics/**",
     "tools/support/compat/github/run-lsp-config-diagnostics.ts",
     "tests/tooling/lsp-config-diagnostics-workflow.test.ts",
   ]);

@@ -135,11 +135,10 @@ mod cases {
             assert_eq!(owner.observation().comments().len(), 1);
         }
         let mut child = Command::new("node")
-            .args([
-                "--input-type=module",
-                "-e",
-                include_str!("../../../tests/tooling/support/native-array-typescript.ts"),
-            ])
+            .arg(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/tooling/support/native-array-typescript.ts"
+            ))
             .current_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."))
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())

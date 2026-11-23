@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "$MEMORY_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+[[ "$MEMORY_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+[[ "$MEMORY_CONFLICTING_MODES" == false ]]
+[[ "$MEMORY_BASE_SHA" != "$MEMORY_HEAD_SHA" ]]
+[[ "$MEMORY_HEAD_SHA" == "$GITHUB_SHA" ]]
+[[ "$(git -C base rev-parse HEAD)" == "$MEMORY_BASE_SHA" ]]
+[[ "$(git -C head rev-parse HEAD)" == "$MEMORY_HEAD_SHA" ]]
+git -C head merge-base --is-ancestor "$MEMORY_BASE_SHA" "$MEMORY_HEAD_SHA"

@@ -5,10 +5,9 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { once } from "node:events";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 
 import { installSourceRestores } from "../app/dev/source-restore.ts";
-
-const cleanupModule = new URL("../app/dev/source-restore.ts", import.meta.url).href;
 
 async function verifyRestoreOnTermination(
   mode: "exit" | NodeJS.Signals,
@@ -22,15 +21,13 @@ async function verifyRestoreOnTermination(
     ...sourcePaths.map((sourcePath) => ({ sourcePath, originalSource: "original" })),
     { sourcePath: createdPath, originalSource: null },
   ];
-  const script = `
-    import { installSourceRestores } from ${JSON.stringify(cleanupModule)};
-    installSourceRestores(${JSON.stringify(restoreEntries)});
-    process.stdout.write("ready\\n");
-    ${mode === "exit" ? "setTimeout(() => process.exit(0), 50);" : "setInterval(() => {}, 1000);"}
-  `;
-  const child = spawn(process.execPath, ["--input-type=module", "--eval", script], {
-    stdio: ["ignore", "pipe", "inherit"],
-  });
+  const child = spawn(
+    process.execPath,
+    [toolingProgram("runtime/restore-source-on-exit.js"), JSON.stringify(restoreEntries), mode],
+    {
+      stdio: ["ignore", "pipe", "inherit"],
+    },
+  );
 
   try {
     await once(child.stdout!, "data");

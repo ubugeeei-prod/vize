@@ -1,0 +1,85 @@
+import "../../Actions.pkl" as ci
+
+name = "Cross-file WASM effect grammars"
+`run-name` = "Cross-file WASM effects @ ${{ github.event.pull_request.head.sha || github.sha }}"
+on {
+  workflow_dispatch = null
+  pull_request {
+    types = List("opened", "synchronize", "reopened")
+    paths = new Listing {
+      ".github/workflows/cross-file-wasm-effects.yml"
+      ".github/scripts/workflows/cross-file-wasm-effects/**"
+      "crates/vize_vitrine/src/wasm/cross_file.rs"
+      "crates/vize_vitrine/src/wasm/cross_file/effect_summary/**"
+      "crates/vize_vitrine/src/wasm/cross_file/effect_summary.rs"
+      "tests/tooling/support/cross-file-wasm-effects.ts"
+      "tests/tooling/support/cross-file-sfc-effects/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "cross-file-wasm-effects-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_INCREMENTAL = "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  EXPECTED_SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+}
+jobs {
+  `actual-wasm-packets` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-wasm-effects")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      ci.workspaceVp()
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          targets = "wasm32-unknown-unknown"
+        }
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "cross-file-wasm-effects"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = "taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1"  // v2
+        with { tool = "wasm-bindgen-cli@0.2.129" }
+      }
+      ci.command("Install frozen workspace tools", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Verify actual block grammars and binding owners"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-actual-block-grammars-and-binding-owners.sh""#
+      }
+      ci.command("Build the existing actual WASM release configuration", "node tools/support/tasks/build-vize-wasm-package.ts")
+      new Dynamic {
+        name = "Verify whole source WASM responses against actual public observations"
+        run = "node tests/tooling/support/cross-file-wasm-effects.ts"
+      }
+      new Dynamic {
+        name = "Preserve complete providers, responses and actual source artifact"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "cross-file-wasm-effects-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = """
+          target/vize-tests/cross-file-wasm-effects
+          npm/wasm/vize_vitrine.js
+          npm/wasm/vize_vitrine_bg.wasm
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

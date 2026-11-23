@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
@@ -96,7 +97,7 @@ test("actual selected setup consumers require source-built whole-module runtime 
     ]),
     false,
   );
-  const action = fs.readFileSync(
+  const action = readAutomationPrograms(
     new URL("../../.github/actions/test-native-selected-sfc-dom/action.yml", import.meta.url),
     "utf8",
   );
@@ -396,7 +397,7 @@ test("the PR planner requires the setup lane and its chained selected-SFC captur
   assert.equal(hooks[0]["continue-on-error"], undefined);
   assert(workflow.jobs["source-report"].needs.includes("pr-native-runtime"));
   const enclosingAction = parse(
-    fs.readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/actions/test-native-js-setup/action.yml", import.meta.url),
       "utf8",
     ),

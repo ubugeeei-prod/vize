@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("git", List("submodule", "update", "--init", "--depth", "1", "--", "tests/_fixtures/_git/vue-element-admin"))
+  module.command("vp", List("install", "--frozen-lockfile", "--prefer-offline"))
+}

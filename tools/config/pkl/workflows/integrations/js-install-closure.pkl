@@ -1,0 +1,102 @@
+import "../../Actions.pkl" as ci
+
+name = "JS install dependency closure"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/js-install-closure.yml"
+      "tools/support/compat/github/install-js-checks.ts"
+      "tools/support/compat/github/js-install-closure.mjs"
+      "tools/support/compat/github/js-install-issuer.ts"
+      "tests/tooling/js-install-dependency-closure.test.mjs"
+      "tests/fixtures/ci/js-install-closure/install-js-checks.fc745.ts.txt"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "js-install-closure-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  install {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    strategy {
+      `fail-fast` = false
+      matrix {
+        role = List("before", "after")
+      }
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.sha }}")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.sha }}"
+          path = "source"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = false
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Reproduce the real filtered installer on a fresh source tree"
+        env { SOURCE_ROLE = "${{ matrix.role }}" }
+        run = #"node tools/support/compat/github/js-install-closure.mjs "$SOURCE_ROLE" source "artifacts/$SOURCE_ROLE""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "js-install-closure-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "artifacts/${{ matrix.role }}/"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+  compare {
+    needs = "install"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    steps = new Listing {
+      ci.checkoutAt("${{ github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = false
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        with {
+          name = "js-install-closure-before-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "artifacts/before"
+        }
+      }
+      new Dynamic {
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        with {
+          name = "js-install-closure-after-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "artifacts/after"
+        }
+      }
+      new Dynamic { run = "node tools/support/compat/github/js-install-closure.mjs compare artifacts" }
+      new Dynamic {
+        name = "Exercise private transitive, optional, UI fixture and Unicode path controls with the real package manager"
+        run = "node --test tests/tooling/js-install-dependency-closure.test.mjs"
+      }
+    }
+  }
+}

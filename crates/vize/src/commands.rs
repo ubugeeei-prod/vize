@@ -22,6 +22,7 @@ pub mod lint;
 #[cfg(feature = "maestro")]
 pub mod lsp;
 pub mod musea;
+mod node_module;
 pub mod plugin;
 pub mod profile_export;
 mod project_nuxt;

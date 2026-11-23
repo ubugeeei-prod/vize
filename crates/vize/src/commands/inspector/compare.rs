@@ -1,7 +1,4 @@
-use std::{
-    io::Write,
-    process::{Command, Stdio},
-};
+use crate::commands::node_module::{self, NodeModuleError};
 
 use super::{
     InspectorArgs, InspectorTemplateSyntaxArg, String, compare_error, compile_vize_for_compare,
@@ -229,30 +226,22 @@ fn run_official_compiler_for_compare(
         std::process::exit(1);
     });
     let node = std::env::var_os("VIZE_INSPECTOR_NODE").unwrap_or_else(|| "node".into());
-    let mut child = Command::new(&node)
-        .arg("--input-type=module")
-        .arg("-e")
-        .arg(OFFICIAL_COMPILER_NODE_SCRIPT)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap_or_else(|error| {
-            let node = node.to_string_lossy();
-            eprintln!(
-                "--format compare requires a local Node.js runtime and @vue/compiler-sfc. Failed to start {node}: {error}"
-            );
-            std::process::exit(1);
-        });
-
-    let write_result = child
-        .stdin
-        .take()
-        .ok_or_else(|| std::io::Error::other("the Node.js process has no piped stdin"))
-        .and_then(|mut stdin| stdin.write_all(&input_json));
-
-    let output = child.wait_with_output().unwrap_or_else(|error| {
-        eprintln!("Failed to wait for official compiler process: {error}");
+    let (output, write_result) = node_module::run(
+        &node,
+        &["--experimental-import-meta-resolve"],
+        "official-compiler.mjs",
+        OFFICIAL_COMPILER_NODE_SCRIPT,
+        &input_json,
+    )
+    .unwrap_or_else(|error| {
+        match error {
+            NodeModuleError::Prepare(error) => eprintln!("Failed to prepare official compiler module: {error}"),
+            NodeModuleError::Start(error) => {
+                let node = node.to_string_lossy();
+                eprintln!("--format compare requires a local Node.js runtime and @vue/compiler-sfc. Failed to start {node}: {error}");
+            }
+            NodeModuleError::Wait(error) => eprintln!("Failed to wait for official compiler process: {error}"),
+        }
         std::process::exit(1);
     });
 

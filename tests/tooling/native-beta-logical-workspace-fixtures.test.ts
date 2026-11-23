@@ -286,18 +286,23 @@ void test("whole authored input, source authority, production preimages and comp
 });
 
 void test("all four genuine workflow roles and the actual Rust selector remain mandatory", () => {
-  const file = ".github/workflows/native-beta-diagnostic-dto.yml";
-  const source = read("head", file)!.toString("utf8");
-  for (const marker of [
-    "role: [before, after]",
-    "version: 7.1.0-beta",
-    "version: 7.0.2",
-    "13fa41356d075047a229f580014b637d3bbeb57f",
-    row.tests[0].selector,
-  ])
+  const workflow = ".github/workflows/native-beta-diagnostic-dto.yml";
+  const source = read("head", workflow)!.toString("utf8");
+  const program =
+    ".github/scripts/workflows/native-beta-diagnostic-dto/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh";
+  for (const [file, marker] of [
+    [workflow, "role: [before, after]"],
+    [workflow, "version: 7.1.0-beta"],
+    [workflow, "version: 7.0.2"],
+    [workflow, "13fa41356d075047a229f580014b637d3bbeb57f"],
+    [program, row.tests[0].selector],
+  ]) {
+    const text = file === workflow ? source : read("head", file)!.toString("utf8");
+    assert.ok(text.includes(marker), marker);
     assert.throws(() =>
-      validate([row], [], { [`head:${file}`]: Buffer.from(source.replaceAll(marker, "removed")) }),
+      validate([row], [], { ["head:" + file]: Buffer.from(text.replaceAll(marker, "removed")) }),
     );
+  }
 });
 
 void test("planner routes only this closed logical case and refuses unknown protocols and unrelated source", () => {

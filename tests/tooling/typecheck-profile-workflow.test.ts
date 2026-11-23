@@ -1,11 +1,12 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile } from "./support/github-workflows.ts";
-
 void test("the type-check profile workflow builds unstripped frame-pointer Vize and records whole trees", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "typecheck-profile.yml")) as {
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "typecheck-profile.yml"),
+  ) as {
     on: {
       push?: { branches?: string[] };
       workflow_dispatch: {
