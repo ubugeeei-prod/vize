@@ -61,14 +61,11 @@ pub struct Document {
     /// document version so per-request consumers (completion, definition, ...)
     /// never re-scan the content. Reset on every edit.
     petite_vue_detected: OnceLock<bool>,
-    /// Flat immutable text shared by every request for this exact revision.
-    ///
-    /// Rope remains the edit/coordinate owner. This snapshot exists because
-    /// request futures must release the `DashMap` guard before `.await`; an
-    /// `Arc` preserves that safety without flattening the same Rope once per
-    /// hover, completion, navigation, or rename request.
+    /// Requests share this revision's flat text and can release the document
+    /// guard before awaiting a hover, completion, navigation or rename.
     text_snapshot: OnceLock<Arc<String>>,
     structural_snapshot: OnceLock<Arc<StructuralSnapshotCell>>,
+    /// Retain the template analysis across edits to this open document.
     #[cfg(feature = "experimental-resident-template-passes")]
     pub(crate) template_passes:
         OnceLock<Arc<parking_lot::Mutex<vize_incremental::template::TemplateDocument>>>,
@@ -98,10 +95,8 @@ impl Document {
         }
     }
 
-    /// Monotonic stamp for the content this document currently holds.
-    ///
-    /// Two reads that return the same value observed the same text; a bumped
-    /// value means the text may differ. Never reused across documents.
+    /// Equal stamps identify the same text. Each edit and reopen gets a fresh
+    /// process-global stamp, independent of the client-supplied version.
     #[inline]
     pub fn revision(&self) -> u64 {
         self.revision
