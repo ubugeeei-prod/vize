@@ -9,6 +9,10 @@ on:
       - "davinci/vize_l2_to_l3/**"
       - "davinci/vize_l3/**"
       - "crates/vize_incremental/**"
+      - "crates/vize_maestro/src/document/store.rs"
+      - "crates/vize_maestro/src/source_project/query.rs"
+      - "crates/vize_maestro/src/source_project/scoped_component.rs"
+      - "crates/vize_maestro/src/source_project/snapshot.rs"
       - "tests/formal/ir-graph/**"
   workflow_dispatch:
 permissions: { contents: read }
@@ -78,3 +82,17 @@ jobs:
           java -cp "$RUNNER_TEMP/tlc.jar" tlc2.TLC -workers 1 -metadir "$RUNNER_TEMP/tlc-negative" -config Stale.cfg Publication.tla > "$RUNNER_TEMP/stale" 2>&1 || result=$?
           test "$result" = 12
           grep -F 'Invariant CurrentAnswer is violated' "$RUNNER_TEMP/stale"
+      - name: Check publication after cancellation and reopening the same document
+        working-directory: tests/formal/ir-graph
+        run: |
+          set -euo pipefail
+          tlc=(java -cp "$RUNNER_TEMP/tlc.jar" tlc2.TLC -workers 1)
+          "${tlc[@]}" -metadir "$RUNNER_TEMP/request-model" -config Request.cfg Request.tla
+          for proof in Version:CurrentRevision Cancelled:LiveRequest Partial:NoPartialOutput; do
+            config=${proof%%:*}
+            invariant=${proof#*:}
+            result=0
+            "${tlc[@]}" -metadir "$RUNNER_TEMP/request-$config" -config "Request$config.cfg" Request.tla > "$RUNNER_TEMP/request-$config.log" 2>&1 || result=$?
+            test "$result" = 12
+            grep -F "Invariant $invariant is violated" "$RUNNER_TEMP/request-$config.log"
+          done
