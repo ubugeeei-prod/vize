@@ -10,6 +10,8 @@ metadata.vize.stability = "experimental"
 readme = "README.md"
 
 [features]
+# Directed graph queries with independently checkable reachability results.
+graph-queries = []
 # Build both original client and server target analyses in one canonical walk.
 client-server-decisions = []
 
