@@ -8,7 +8,9 @@ flags=(--locked --profile ci-opt)
 host=(-p vize_atelier_sfc --features native-sfc-scss)
 editor=(-p vize_maestro --features experimental-scss-definitions)
 cargo clippy "${flags[@]}" -p vize_l2 --features scss-rules --lib --no-deps -- -D warnings
-cargo clippy "${flags[@]}" -p vize_l4 --features scss-rules --lib --no-deps -- -D warnings
+cargo clippy "${flags[@]}" -p vize_l4 --features scss-rules,indexed-source-maps --lib --no-deps -- -D warnings
+cargo test "${flags[@]}" -p vize_l4 --features indexed-source-maps --lib write::source_map::indexed
+cargo test "${flags[@]}" -p vize_l4 --features indexed-source-maps,serde_json/preserve_order --lib write::source_map::indexed
 cargo clippy "${flags[@]}" "${host[@]}" --lib --no-deps -- -D warnings
 cargo clippy "${flags[@]}" "${editor[@]}" --lib --no-deps -- -D warnings
 cargo test "${flags[@]}" "${host[@]}" --test scss_products -- --include-ignored --nocapture --test-threads=1

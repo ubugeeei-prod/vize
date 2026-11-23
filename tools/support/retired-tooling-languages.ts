@@ -5,7 +5,12 @@ import { join } from "node:path";
 // The ledger lists every file still waiting for its port; its test is the ratchet.
 // This file is an executable proof specification outside the product tooling.
 export const independentGraphTheory = "tests/formal/ir-graph/Reach.lean";
-// An executable mathematical reference checked alongside the Rust used by Patina.
+// UTF-16 source map coordinate conversion.
+export const sourceMapCoordinates = {
+  theorem: "tests/formal/source-map/Coordinates.lean",
+  kernel: "davinci/vize_l4/src/write/source_map/indexed/geometry.rs",
+  harness: "davinci/vize_l4/src/write/source_map/indexed/kani.rs",
+} as const;
 export const templateLabelRanking = {
   theorem: "tests/formal/template-lint/Selection.lean",
   kernel: "crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs",
@@ -16,11 +21,15 @@ export const templateSpanProjection = {
   kernel: "crates/vize_incremental/src/template/projection.rs",
   harness: "crates/vize_incremental/src/template/kani.rs",
 } as const;
-const templateProofs = [templateLabelRanking, templateSpanProjection] as const;
+export const rustProofReferences = [
+  sourceMapCoordinates,
+  templateLabelRanking,
+  templateSpanProjection,
+] as const;
 
-export function checkedTemplateTheorems(paths: readonly string[]): Set<string> {
+export function checkedRustTheorems(paths: readonly string[]): Set<string> {
   return new Set(
-    templateProofs
+    rustProofReferences
       .filter(({ kernel, harness }) => paths.includes(kernel) && paths.includes(harness))
       .map(({ theorem }) => theorem),
   );
@@ -53,7 +62,9 @@ export function retiredToolingDrift(paths: readonly string[], cwd: string): bool
     return language ? [{ path, language }] : [];
   });
   if (
-    templateProofs.some(({ kernel, harness }) => paths.includes(kernel) || paths.includes(harness))
+    rustProofReferences.some(
+      ({ kernel, harness }) => paths.includes(kernel) || paths.includes(harness),
+    )
   ) {
     return true;
   }

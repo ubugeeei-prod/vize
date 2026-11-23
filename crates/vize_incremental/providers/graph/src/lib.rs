@@ -1,5 +1,9 @@
 //! Resident queries over the selected template's own source and expression
 //! language. Positions become document-absolute only through the current view.
+mod source_sites;
+
+pub use source_sites::TemplateSourceSites;
+
 use std::{borrow::Borrow, ops::ControlFlow};
 use vize_incremental::{block_query::BlockView, db::Block};
 use vize_l0::{Allocator, Lang, Span, diag::Diagnostic};
@@ -216,5 +220,12 @@ impl<'db> TemplateQueries<'db> for BlockView<'db> {
             view: self,
             graph: template_graph(db, block, lang).as_ref()?,
         })
+    }
+}
+
+impl TemplateReachBatch<'_> {
+    /// Certify a root-only claim on the current template's original edges.
+    pub fn check_singleton(&self, query: ReachQuery) -> Result<(), CertificateError> {
+        self.graph.check_singleton(query)
     }
 }

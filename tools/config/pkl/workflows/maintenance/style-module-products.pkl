@@ -49,6 +49,9 @@ on {
       "crates/vize_atelier_sfc/tests/native_sfc_scss.rs"
       "crates/vize_atelier_sfc/tests/component_scss/**"
       "davinci/vize_l4/src/write/document.rs"
+      "davinci/vize_l4/src/write/source_map.rs"
+      "davinci/vize_l4/src/write/source_map/**"
+      "tests/formal/source-map/**"
       "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json"
       "crates/vize_atelier_sfc/tests/scss_products.rs"
       "crates/vize_atelier_sfc/tests/observed_scss/**"
@@ -161,6 +164,28 @@ jobs {
       new Dynamic {
         name = "Compare the original preprocessor, shared products and authored editor locations"
         run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-preprocessor-shared-products-and-authored-editor-locations.sh""#
+      }
+    }
+  }
+
+  `authored-coordinates` {
+    name = "Authored UTF-16 coordinate proofs"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("style-module-products")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"
+        with {
+          `kani-version` = "0.68.0"
+          command = "kani"
+          args = "davinci/vize_l4/src/write/source_map/indexed/kani.rs --output-format=terse"
+        }
+      }
+      new Dynamic {
+        name = "Verify authored positions for arbitrary finite Unicode text"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-authored-positions-for-arbitrary-finite-unicode-text.sh""#
       }
     }
   }

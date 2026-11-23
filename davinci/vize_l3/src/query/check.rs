@@ -52,3 +52,29 @@ pub(super) fn check_with_positions(
 ) -> Result<(), CertificateError> {
     include!("check/witness.rs")
 }
+
+/// Graph construction validated all endpoints. The same closure rule used for
+/// a complete witness can test membership in a singleton by comparing IDs.
+pub(super) fn check_singleton(
+    positions: &Positions,
+    edges: &[StateEdge],
+    query: ReachQuery,
+) -> Result<(), CertificateError> {
+    positions
+        .get(query.start)
+        .ok_or(GraphError::UnknownOp(query.start))?;
+    if query.kinds == super::EdgeKinds::NONE {
+        return Ok(());
+    }
+    if let Some(ordinal) = edges.iter().position(|edge| {
+        let (from, to) = query.direction.endpoints(edge);
+        !rule::closed(
+            from == query.start,
+            query.kinds.contains(edge.kind),
+            to == query.start,
+        )
+    }) {
+        return Err(CertificateError::OpenEdge(ordinal as u32));
+    }
+    Ok(())
+}
