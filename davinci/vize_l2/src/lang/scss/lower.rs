@@ -171,6 +171,7 @@ pub(super) fn program<'a>(
         }
     }
     Ok(ScssProgram {
+        block: style.block(),
         runs,
         variables: variables.rows,
         uses: variables.uses,
