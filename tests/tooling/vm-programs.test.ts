@@ -14,6 +14,8 @@ const entrypoints = new Set([
   "runInThisContext",
 ]);
 
+const moduleSpecifierPattern = /['"`](node:)?vm['"`]/;
+
 const vmModule = (name: ts.Node | undefined) =>
   name !== undefined &&
   ts.isStringLiteralLike(name) &&
@@ -139,6 +141,21 @@ test("VM imports resolve to their declaration through local scopes", () => {
   assert.deepEqual(inlineVmPrograms("nested.ts", source), [2, 6, 7, 8]);
 });
 
+test("candidate selection recognizes each literal CommonJS module spelling", () => {
+  for (const quote of ["'", '"', "`"]) {
+    for (const module of ["vm", "node:vm"]) {
+      const source =
+        "const runtime = require(" +
+        quote +
+        module +
+        quote +
+        "); runtime.runInThisContext('observe()')";
+      assert.match(source, moduleSpecifierPattern);
+      assert.deepEqual(inlineVmPrograms("fixture.cjs", source), [1]);
+    }
+  }
+});
+
 test("repository VM entrypoints load their authored programs from files", () => {
   const root = fileURLToPath(new URL("../../", import.meta.url));
   const files = execFileSync(
@@ -146,7 +163,7 @@ test("repository VM entrypoints load their authored programs from files", () => 
     [
       "grep",
       "-IlzE",
-      `['"](node:)?vm['"]`,
+      moduleSpecifierPattern.source,
       "--",
       "*.ts",
       "*.tsx",
