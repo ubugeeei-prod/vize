@@ -14,6 +14,8 @@ on:
       - "tests/formal/creusot/**"
       - "davinci/vize_l3/src/lattice/class.rs"
       - "davinci/vize_l3/src/lattice/creusot.rs"
+      - "davinci/vize_l3/src/query/check/creusot.rs"
+      - "davinci/vize_l3/src/query/check/rule.rs"
   push:
     branches: [main]
     paths:
@@ -22,6 +24,8 @@ on:
       - "tests/formal/creusot/**"
       - "davinci/vize_l3/src/lattice/class.rs"
       - "davinci/vize_l3/src/lattice/creusot.rs"
+      - "davinci/vize_l3/src/query/check/creusot.rs"
+      - "davinci/vize_l3/src/query/check/rule.rs"
   workflow_dispatch:
 
 permissions:

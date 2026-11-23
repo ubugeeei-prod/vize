@@ -72,3 +72,7 @@ pub mod framework;
 pub mod markup;
 pub mod registry;
 mod slice;
+
+/// Original Vue file syntax, including selected blocks, recovery diagnostics and exact source.
+#[cfg(feature = "ir-views")]
+pub use container::vue::DescriptorObservation as L1Ir;
