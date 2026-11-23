@@ -19,9 +19,11 @@ metadata.vize.stability = "experimental"
 readme = "README.md"
 
 [features]
-scoped-scss = ["scss-rules"]
+expanded-css = ["vize_l2/expanded-css"]
+scoped-expanded-css = ["expanded-css"]
+scoped-scss = ["scss-rules", "scoped-expanded-css"]
 indexed-source-maps = []
-scss-rules = ["vize_l2/scss-rules"]
+scss-rules = ["expanded-css", "vize_l2/scss-rules"]
 original-style-bindings = ["vize_l1_to_l2/original-style-bindings"]
 # Explicit consumers of the same parsed TSRX module and sealed regions.
 retained-tsrx = ["vize_l1_to_l2/retained-tsrx"]
@@ -66,3 +68,8 @@ davinci_test_support = { workspace = true, features = ["native-dom"] }
 
 [lints]
 workspace = true
+
+[[test]]
+name = "expanded_css"
+path = "tests/expanded_css.rs"
+required-features = ["expanded-css"]

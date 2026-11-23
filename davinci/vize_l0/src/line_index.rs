@@ -242,3 +242,6 @@ mod tests {
 mod ascii_lines;
 #[cfg(feature = "positioned-edits")]
 pub use ascii_lines::AsciiLineCursor;
+
+#[cfg(feature = "lsp-line-break-search")]
+pub mod lsp_breaks;

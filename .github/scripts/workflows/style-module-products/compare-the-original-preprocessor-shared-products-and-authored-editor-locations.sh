@@ -11,6 +11,9 @@ cargo clippy "${flags[@]}" -p vize_l1_to_l2 --features component-text-condense -
 cargo test "${flags[@]}" -p vize_l1_to_l2 --features component-text-condense --lib
 cargo clippy "${flags[@]}" -p vize_l2 --features scss-rules --lib --no-deps -- -D warnings
 cargo clippy "${flags[@]}" -p vize_l4 --features scoped-scss,indexed-source-maps --lib --no-deps -- -D warnings
+cargo test "${flags[@]}" -p vize_l0 --features lsp-line-break-search --lib line_index::lsp_breaks
+cargo test "${flags[@]}" -p vize_l4 --no-default-features --features expanded-css --test expanded_css
+cargo test "${flags[@]}" -p vize_l4 --no-default-features --features scoped-expanded-css --doc append_scoped
 cargo test "${flags[@]}" -p vize_l4 --features indexed-source-maps --lib write::source_map::indexed
 cargo test "${flags[@]}" -p vize_l4 --features indexed-source-maps,serde_json/preserve_order --lib write::source_map::indexed
 cargo clippy "${flags[@]}" "${host[@]}" --lib --no-deps -- -D warnings

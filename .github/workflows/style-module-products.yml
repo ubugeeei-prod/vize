@@ -4,6 +4,9 @@ on:
     paths:
       - ".github/workflows/style-module-products.yml"
       - ".github/scripts/workflows/style-module-products/**"
+      - "davinci/vize_l0/Cargo.toml"
+      - "davinci/vize_l0/src/line_index.rs"
+      - "davinci/vize_l0/src/line_index/lsp_breaks.rs"
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/container/lang.rs"
       - "davinci/vize_l1/src/css.rs"
@@ -24,12 +27,15 @@ on:
       - "crates/vize_maestro/src/ide/completion/template/css_modules/**"
       - davinci/vize_l1_to_l2/**
       - davinci/vize_l2/Cargo.toml
+      - davinci/vize_l2/src/lib.rs
       - davinci/vize_l2/src/lang/mod.rs
+      - davinci/vize_l2/src/style.rs
       - davinci/vize_l2/src/lang/scss.rs
       - davinci/vize_l2/src/lang/scss/**
       - davinci/vize_l4/Cargo.toml
       - davinci/vize_l4/src/targets.rs
-      - davinci/vize_l4/src/targets/scss.rs
+      - davinci/vize_l4/src/targets/css_rules.rs
+      - davinci/vize_l4/tests/expanded_css.rs
       - crates/vize_atelier_sfc/Cargo.toml
       - crates/vize_atelier_sfc/src/lib.rs
       - crates/vize_atelier_sfc/src/scss.rs
