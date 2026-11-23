@@ -1,3 +1,4 @@
+import { toolingProgram } from "../../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -107,7 +108,7 @@ void test("both failed hosts and the queued host retain complete output before a
 
 void test("timed out workers are killed and successful peers still finish", async (t) => {
   const jobs = subprocesses(t).slice(0, 2);
-  jobs[0].args = ["-e", "setInterval(() => {}, 1000)"];
+  jobs[0].args = [toolingProgram("process/hold-process-open.js")];
   jobs[0].timeoutMs = 40;
   const results = await runHostProcesses(jobs, { workers: 2 });
   assert.match(results[0].error, /timed out/u);

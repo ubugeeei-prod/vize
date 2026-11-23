@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -49,7 +49,7 @@ test("cache planning preserves a failed version producer before writing any job 
       fs.writeFileSync(output, original);
       const result = spawnSync(
         "bash",
-        ["--noprofile", "--norc", "-e", "-o", "pipefail", "-c", step.run],
+        ["--noprofile", "--norc", "-e", "-o", "pipefail", automationShellPath(step.run)],
         {
           cwd: directory,
           encoding: "utf8",

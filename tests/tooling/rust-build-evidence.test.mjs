@@ -1,4 +1,4 @@
-import { readWorkflowShell } from "./support/automation-source.ts";
+import { automationShellPath, readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -176,7 +176,7 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
       };
       delete environment.VIZE_TEST_CASES;
       delete environment.TEST_CASES_JOB;
-      const result = spawnSync("bash", ["-e", "-c", step.run], {
+      const result = spawnSync("bash", ["-e", automationShellPath(step.run)], {
         cwd: directory,
         encoding: "utf8",
         env: environment,

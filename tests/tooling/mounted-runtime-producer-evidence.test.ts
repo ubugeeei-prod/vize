@@ -15,6 +15,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { parse, stringify } from "yaml";
 import { readAutomationPrograms } from "./support/automation-source.ts";
+import { toolingProgram } from "./support/program-path.ts";
 import { collectRuntimeProducer } from "./support/mounted-runtime-source.ts";
 
 const keys = [
@@ -29,24 +30,7 @@ const canonical = Buffer.from(
 function execute(stdout: Buffer, stderr: Buffer, exit: number, signal: string | null = null) {
   const child = spawn(
     process.execPath,
-    [
-      "-e",
-      `
-    const fs = require('node:fs');
-    const chunks = [];
-    process.stdin.on('data', chunk => chunks.push(chunk));
-    process.stdin.on('end', () => {
-      const input = JSON.parse(Buffer.concat(chunks).toString());
-      for (const [fd, encoded] of [[1, input.stdout], [2, input.stderr]]) {
-        const bytes = Buffer.from(encoded, 'hex');
-        let at = 0;
-        while (at < bytes.length) at += fs.writeSync(fd, bytes, at);
-      }
-      if (input.signal) process.kill(process.pid, input.signal);
-      else process.exitCode = input.exit;
-    });
-  `,
-    ],
+    [toolingProgram("runtime/relay-mounted-producer-streams.cjs")],
     { stdio: ["pipe", "pipe", "pipe"] },
   );
   const result = collectRuntimeProducer(child, false);

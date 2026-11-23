@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { toolingProgram } from "../../../../tests/tooling/support/program-path.ts";
 import { runHostProcesses, requireSuccessfulHosts } from "./ci-host-concurrency.mjs";
 import { runQualificationBranches } from "./project-qualification-branches.mjs";
 import { captureProjectCommand } from "./project-command-capture.mjs";
@@ -248,10 +249,14 @@ for (const mode of ["deadline-prefix", "deadline-history"])
     const f = fixture(t, mode);
     let remaining;
     const delayedCommand = async () => {
-      remaining = await captureProjectCommand(process.execPath, ["-e", "setTimeout(()=>{},1500)"], {
-        timeout: 3000,
-        maxBuffer: 1024,
-      });
+      remaining = await captureProjectCommand(
+        process.execPath,
+        [toolingProgram("process/wait-for-project-command.js")],
+        {
+          timeout: 3000,
+          maxBuffer: 1024,
+        },
+      );
       assert.equal(remaining.error, undefined);
       assert.equal(remaining.status, 0);
     };

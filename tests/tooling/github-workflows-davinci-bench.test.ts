@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -103,7 +103,7 @@ test("editor script qualification runs the original readers and paired measureme
   );
   for (const step of workflow.jobs["editor-products"].steps ?? []) {
     if (!step.run) continue;
-    const result = spawnSync("bash", ["-e", "-o", "pipefail", "-c", step.run], {
+    const result = spawnSync("bash", ["-e", "-o", "pipefail", automationShellPath(step.run)], {
       cwd: root,
       encoding: "utf8",
       env: {
@@ -260,7 +260,7 @@ test("Vapor Criterion dispatch validates revisions and selects only its suite", 
   git(head, ["checkout", "-q", headSha]);
 
   const validate = (baseValue: string, headValue: string, dispatchValue: string) =>
-    spawnSync("bash", ["-e", "-o", "pipefail", "-c", validation], {
+    spawnSync("bash", ["-e", "-o", "pipefail", automationShellPath(validation)], {
       cwd: root,
       encoding: "utf8",
       env: {
@@ -286,7 +286,7 @@ test("Vapor Criterion dispatch validates revisions and selects only its suite", 
     PR_HEAD_SHA: headSha,
     VAPOR_ONLY: "true",
   };
-  const vapor = spawnSync("bash", ["-e", "-o", "pipefail", "-c", impact], {
+  const vapor = spawnSync("bash", ["-e", "-o", "pipefail", automationShellPath(impact)], {
     cwd: root,
     encoding: "utf8",
     env,
@@ -302,7 +302,7 @@ test("Vapor Criterion dispatch validates revisions and selects only its suite", 
     '#!/bin/sh\nprintf \'%s\\n\' \'{"selected":["vize_glyph"],"reason":"from impact script"}\' > "$GITHUB_WORKSPACE/criterion-impact.json"\nprintf \'%s\\n\' \'has_suites=true\' >> "$GITHUB_OUTPUT"\n',
     { mode: 0o755 },
   );
-  const affected = spawnSync("bash", ["-e", "-o", "pipefail", "-c", impact], {
+  const affected = spawnSync("bash", ["-e", "-o", "pipefail", automationShellPath(impact)], {
     cwd: root,
     encoding: "utf8",
     env: { ...env, VAPOR_ONLY: "false", PATH: `${bin}${delimiter}${process.env.PATH ?? ""}` },

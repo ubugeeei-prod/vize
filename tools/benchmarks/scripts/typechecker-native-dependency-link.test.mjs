@@ -1,3 +1,5 @@
+import { readAutomationPrograms } from "../../../tests/tooling/support/automation-source.ts";
+import { toolingProgram } from "../../../tests/tooling/support/program-path.ts";
 /** Real checkout controls for the manual source dependency-link exceptions. */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -127,7 +129,7 @@ function hide(f) {
 }
 
 await test("manual workflow links every allowlisted workspace dependency root before qualification", () => {
-  const workflow = readFileSync(WORKFLOW, "utf8");
+  const workflow = readAutomationPrograms(WORKFLOW);
   const rootLoop = workflow.indexOf(
     `for dependency_root in ${SOURCE_DEPENDENCY_LINKS.join(" ")}; do`,
   );
@@ -387,33 +389,18 @@ for (const mode of ["link-revision", "target-directory"]) {
     fixture((f) => {
       install(f);
       // Isolated child patches only observation timing; actual files/Git/guard are real.
-      const script = `
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import { syncBuiltinESMExports } from 'node:module';
-const target = ${JSON.stringify(f.modules)}, link = ${JSON.stringify(f.link)};
-if (${JSON.stringify(mode)} === 'link-revision') {
-  const read = fs.readlinkSync; let changed = false;
-  fs.readlinkSync = (...args) => {
-    const raw = read(...args);
-    if (args[0] === link && !changed) { changed = true; fs.lutimesSync(link, new Date(10000), new Date(20000)); }
-    return raw;
-  };
-} else {
-  const open = fs.openSync; let changed = false;
-  fs.openSync = (...args) => {
-    const fd = open(...args);
-    if (args[0] === target && !changed) {
-      changed = true; fs.renameSync(target, ${JSON.stringify(join(f.temporary, "old-dependencies"))}); fs.mkdirSync(target);
-    }
-    return fd;
-  };
-}
-syncBuiltinESMExports();
-const { captureSourceCustody } = await import(${JSON.stringify(new URL("./typechecker-native-source-custody.mjs", import.meta.url).href)});
-assert.throws(() => captureSourceCustody(${JSON.stringify(f.options)}), /changed during custody/);
-`;
-      const result = spawnSync(process.execPath, ["--input-type=module", "--eval", script], {
+      const script = [
+        toolingProgram("native/observe-native-dependency-link.js"),
+        JSON.stringify({
+          modulesPath: f.modules,
+          linkPath: f.link,
+          mode,
+          previousModules: join(f.temporary, "old-dependencies"),
+          custodyModule: new URL("./typechecker-native-source-custody.mjs", import.meta.url).href,
+          options: f.options,
+        }),
+      ];
+      const result = spawnSync(process.execPath, [...script], {
         encoding: "utf8",
         timeout: 30_000,
       });

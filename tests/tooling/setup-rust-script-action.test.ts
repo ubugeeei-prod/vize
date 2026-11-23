@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -23,7 +23,7 @@ function setupRustScriptInstaller(): string {
   ) as CompositeAction;
   const script = action.runs?.steps?.find((step) => step.name === "Install rust-script")?.run;
   assert.ok(script, "setup-rust-script action must define an install step");
-  return script;
+  return automationShellPath(script, "setup-rust-script");
 }
 
 function writeExecutable(file: string, contents: string): void {
@@ -83,7 +83,7 @@ chmod +x "$CARGO_HOME/bin/rust-script"
 `,
   );
 
-  const result = spawnSync("/bin/bash", ["-c", setupRustScriptInstaller()], {
+  const result = spawnSync("/bin/bash", [setupRustScriptInstaller()], {
     encoding: "utf8",
     env: {
       PATH: `${fakeBin}:/usr/bin:/bin`,

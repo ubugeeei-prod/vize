@@ -453,6 +453,7 @@ jobs:
     # Keep the strict nightly instrumentation gate on scheduled and explicit runs.
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_CI_FILES: ${{ github.workspace }}/.github/scripts/workflows/full-qualification
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -480,7 +481,7 @@ jobs:
       - name: Branch coverage report
         run: vp run --workspace-root coverage:source:branch
       - name: Verify branch coverage summary
-        run: test -s target/llvm-cov/source-branch-summary.json
+        run: . "${{ env.VIZE_CI_FILES }}/verify-branch-coverage-summary.sh"
       - name: Upload branch coverage summary
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

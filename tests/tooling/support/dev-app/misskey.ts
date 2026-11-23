@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
@@ -129,8 +130,9 @@ function getMisskeyRuntimeInfo(misskeyRoot: string): MisskeyRuntimeInfo {
   const runtime = spawnMisskeyPnpm(misskeyRoot, [
     "exec",
     "node",
-    "-p",
-    "JSON.stringify({ version: process.version, modules: process.versions.modules })",
+    fileURLToPath(new URL("../../../../tools/support/node-runtime-identity.cjs", import.meta.url)),
+    "version",
+    "modules",
   ]);
 
   if (runtime.status !== 0) {

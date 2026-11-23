@@ -5,7 +5,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 
 import {
   acquireMuseaWorkspaceLock,
@@ -14,9 +15,6 @@ import {
 } from "../../tools/benchmarks/scripts/musea-lock.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const measureModule = pathToFileURL(
-  path.join(root, "tools", "benchmarks", "scripts", "musea.mjs"),
-).href;
 
 async function withTempRoot(fn: (directory: string) => Promise<void>): Promise<void> {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bench-musea-lock-"));
@@ -27,8 +25,8 @@ async function withTempRoot(fn: (directory: string) => Promise<void>): Promise<v
   }
 }
 
-function child(source: string, env: NodeJS.ProcessEnv = {}) {
-  const subprocess = spawn(process.execPath, ["--input-type=module", "-e", source], {
+function measureChild(env: NodeJS.ProcessEnv = {}) {
+  const subprocess = spawn(process.execPath, [toolingProgram("native/measure-musea-lock.js")], {
     cwd: root,
     env: { ...process.env, ...env },
     stdio: ["ignore", "pipe", "pipe"],
@@ -135,16 +133,6 @@ module.exports = {};
   fs.writeFileSync(path.join(nativeDir, "package.json"), '{"name":"@vizejs/native"}\n');
 }
 
-const measureSource = `
-import { measureMusea } from ${JSON.stringify(measureModule)};
-try {
-  await measureMusea({ root: process.env.VIZE_TEST_ROOT, files: 2, runs: 1, warmups: 0 });
-} catch (error) {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-}
-`;
-
 test("a live owner is rejected and release runs after success or failure", async () => {
   await withTempRoot(async (directory) => {
     const release = acquireMuseaWorkspaceLock(directory);
@@ -168,7 +156,7 @@ test("a live owner is rejected and release runs after success or failure", async
 
 test("a lock is reclaimed only after its owner process is dead", async () => {
   await withTempRoot(async (directory) => {
-    const exited = spawn(process.execPath, ["-e", ""], { stdio: "ignore" });
+    const exited = spawn(process.execPath, ["--version"], { stdio: "ignore" });
     const deadPid = exited.pid;
     await once(exited, "exit");
     assert.ok(deadPid != null);
@@ -195,7 +183,7 @@ test("a second process cannot delete or perturb a running lane's pinned artifact
     writeFixtureBuild(directory);
     const ready = path.join(directory, "holder-ready");
     const allowRelease = path.join(directory, "holder-release");
-    const holder = child(measureSource, {
+    const holder = measureChild({
       VIZE_TEST_ROOT: directory,
       VIZE_TEST_MUSEA_HOLD_READY: ready,
       VIZE_TEST_MUSEA_HOLD_RELEASE: allowRelease,
@@ -221,7 +209,7 @@ test("a second process cannot delete or perturb a running lane's pinned artifact
       );
       const measuredBytes = fs.readFileSync(measuredEntry, "utf8");
 
-      const contender = child(measureSource, { VIZE_TEST_ROOT: directory });
+      const contender = measureChild({ VIZE_TEST_ROOT: directory });
       const blocked = await contender.completed;
       assert.equal(blocked.code, 1);
       assert.match(blocked.stderr, /already held by live pid/);

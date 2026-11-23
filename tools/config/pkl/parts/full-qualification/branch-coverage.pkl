@@ -4,7 +4,10 @@ import "../../Actions.pkl" as ci
 `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
 `timeout-minutes` = 45
 // Keep the strict nightly instrumentation gate on scheduled and explicit runs.
-env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+env {
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/full-qualification"
+}
 steps = new Listing {
   ci.use(ci.checkout)
   ci.workspaceVp()
@@ -35,7 +38,7 @@ steps = new Listing {
     with { tool = "cargo-llvm-cov" }
   }
   ci.command("Branch coverage report", "vp run --workspace-root coverage:source:branch")
-  ci.command("Verify branch coverage summary", "test -s target/llvm-cov/source-branch-summary.json")
+  ci.command("Verify branch coverage summary", #". "${{ env.VIZE_CI_FILES }}/verify-branch-coverage-summary.sh""#)
   new Dynamic {
     name = "Upload branch coverage summary"
     `continue-on-error` = true

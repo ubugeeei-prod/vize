@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 import { test } from "node:test";
-import { nativeLoaderScript } from "./support/native-config-script.ts";
+import { nativeLoaderPath } from "./support/native-config-script.ts";
 
 import {
   configModuleEvaluationTimings,
@@ -15,7 +15,7 @@ import {
 
 const require = createRequire(import.meta.url);
 const vite = dirname(require.resolve("vite/package.json"));
-const embedded = await nativeLoaderScript();
+const runtimeFile = await nativeLoaderPath();
 
 async function project(run: (root: string, selected: string) => Promise<void>) {
   const root = await realpath(await mkdtemp(join(tmpdir(), "vize-config-preload-")));
@@ -99,17 +99,13 @@ async function observedNative(
   beforeRead: (paths: string[]) => Promise<boolean | void>,
   trace?: boolean,
 ) {
-  const child = spawn(
-    process.execPath,
-    ["--input-type=module", "-e", embedded, selected, "--observe-config-inputs"],
-    {
-      cwd: dirname(selected),
-      stdio: ["pipe", "pipe", "pipe"],
-      ...(trace === undefined
-        ? {}
-        : { env: { ...process.env, VIZE_TRACE_EDITOR_PREPARATION: trace ? "1" : "0" } }),
-    },
-  );
+  const child = spawn(process.execPath, [runtimeFile, selected, "--observe-config-inputs"], {
+    cwd: dirname(selected),
+    stdio: ["pipe", "pipe", "pipe"],
+    ...(trace === undefined
+      ? {}
+      : { env: { ...process.env, VIZE_TRACE_EDITOR_PREPARATION: trace ? "1" : "0" } }),
+  });
   let stderr = "";
   child.stderr.setEncoding("utf8").on("data", (part) => {
     stderr += part;
@@ -223,14 +219,10 @@ for (const installedVite of [false, true]) {
           console.error('authored-specificreason 日本語'); process.exit(17);
         };`,
       );
-      const child = spawn(
-        process.execPath,
-        ["--input-type=module", "-e", embedded, selected, "--observe-config-inputs"],
-        {
-          cwd: root,
-          stdio: ["pipe", "pipe", "pipe"],
-        },
-      );
+      const child = spawn(process.execPath, [runtimeFile, selected, "--observe-config-inputs"], {
+        cwd: root,
+        stdio: ["pipe", "pipe", "pipe"],
+      });
       const exited = new Promise<number | null>((resolve, reject) => {
         child.on("error", reject);
         child.on("close", resolve);

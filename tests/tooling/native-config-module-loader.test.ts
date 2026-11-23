@@ -18,18 +18,23 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
+import { toolingProgram } from "./support/program-path.ts";
 
 import {
   importConfigModule,
   importConfigModuleWithDependencies,
 } from "../../crates/vize_carton/src/config/loader/module-runtime.mjs";
 import { resolveViteConfigExport } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
-import { nativeLoaderScript } from "./support/native-config-script.ts";
+import { nativeLoaderPath } from "./support/native-config-script.ts";
 
 const require = createRequire(join(process.cwd(), "package.json"));
 const vitePackage = dirname(require.resolve("vite/package.json"));
 const vitePlusPackage = dirname(require.resolve("vite-plus/package.json"));
 const execute = promisify(execFile);
+const selectedConfigProgram = [
+  toolingProgram("runtime/read-selected-vite-config.js"),
+  new URL("../../crates/vize_carton/src/config/loader/module-runtime.mjs", import.meta.url).href,
+];
 
 async function project(
   run: (directory: string) => Promise<void>,
@@ -161,21 +166,29 @@ await test("dependency-free native configurations retain their original module c
 });
 
 await test("the loader removes its private adapters after both successful and rejected imports", async () => {
-  const adapters = async () =>
-    (await readdir(tmpdir())).filter((entry) => entry.startsWith("vize-config-module-")).sort();
-  const before = await adapters();
   await project(async (directory) => {
+    const temporary = join(directory, "adapters");
+    await mkdir(temporary);
     const selected = join(directory, "vite.config.mjs");
+    const load = () =>
+      execute(process.execPath, [...selectedConfigProgram, selected], {
+        cwd: directory,
+        env: { ...process.env, TMPDIR: temporary, TEMP: temporary, TMP: temporary },
+      });
+    const adapters = async () =>
+      (await readdir(temporary)).filter((entry) => entry.startsWith("vize-config-module-"));
+
     await writeFile(selected, "export default {formatter:{printWidth:90}};");
-    await importConfigModule(selected);
+    assert.deepEqual(JSON.parse((await load()).stdout), { formatter: { printWidth: 90 } });
+    assert.deepEqual(await adapters(), []);
     await writeFile(selected, "throw new Error('actual selected config failed');");
-    await assert.rejects(importConfigModule(selected), /actual selected config failed/);
+    await assert.rejects(load(), /actual selected config failed/);
+    assert.deepEqual(await adapters(), []);
   });
-  assert.deepEqual(await adapters(), before);
 });
 
 await test("the exact script embedded by native Carton loads and projects the original selected config once", async () => {
-  const script = await nativeLoaderScript();
+  const runtimeFile = await nativeLoaderPath();
   await project(async (directory) => {
     const selected = join(directory, "vite.config.mts");
     const counter = join(directory, "native-evaluations.txt");
@@ -187,14 +200,10 @@ await test("the exact script embedded by native Carton loads and projects the or
          return {vue:{formatter:{printWidth:pkg.value+83}},fmt:{vue:{singleQuote:true}}};
        };`;
     await writeFile(selected, authored);
-    const loaded = await execute(
-      process.execPath,
-      ["--input-type=module", "-e", script, selected],
-      {
-        cwd: dirname(selected),
-        timeout: 10_000,
-      },
-    );
+    const loaded = await execute(process.execPath, [runtimeFile, selected], {
+      cwd: dirname(selected),
+      timeout: 10_000,
+    });
     const { config, dependencies } = JSON.parse(loaded.stdout);
     assert.ok(dependencies.includes(selected));
     assert.deepEqual(config.formatter, { printWidth: 90, singleQuote: true });
@@ -319,21 +328,11 @@ await test("global Vite search paths cannot replace a dependency-free project's 
     const selected = join(directory, "vite.config.mjs");
     const authored = "export default {vue:{formatter:{printWidth:92}}};";
     await writeFile(selected, authored);
-    const loader = new URL(
-      "../../crates/vize_carton/src/config/loader/module-runtime.mjs",
-      import.meta.url,
-    );
-    const script = `import {importConfigModule} from ${JSON.stringify(loader.href)};
-      const loaded=await importConfigModule(process.argv[1]);process.stdout.write(JSON.stringify(loaded.default));`;
-    const output = await execute(
-      process.execPath,
-      ["--input-type=module", "-e", script, selected],
-      {
-        cwd: directory,
-        env: { ...process.env, NODE_PATH: global },
-        timeout: 10_000,
-      },
-    );
+    const output = await execute(process.execPath, [...selectedConfigProgram, selected], {
+      cwd: directory,
+      env: { ...process.env, NODE_PATH: global },
+      timeout: 10_000,
+    });
     assert.equal(output.stderr, "");
     assert.deepEqual(JSON.parse(output.stdout), { vue: { formatter: { printWidth: 92 } } });
     assert.equal(await readFile(selected, "utf8"), authored);
@@ -376,7 +375,7 @@ await test("older Node runtimes require project Vite to retain a complete config
 for (const withVite of [true, false]) {
   for (const form of ["factory", "fluent", "top-level"]) {
     await test(`native async export retains runtime helpers exactly once (Vite: ${withVite}, form: ${form})`, async () => {
-      const script = await nativeLoaderScript();
+      const runtimeFile = await nativeLoaderPath();
       await project(async (directory) => {
         const selected = join(directory, "vite.config.mjs");
         const helper = join(directory, "policy.mjs");
@@ -407,14 +406,10 @@ for (const withVite of [true, false]) {
           }
         `;
         await writeFile(selected, authored);
-        const output = await execute(
-          process.execPath,
-          ["--input-type=module", "-e", script, selected],
-          {
-            cwd: directory,
-            timeout: 10_000,
-          },
-        );
+        const output = await execute(process.execPath, [runtimeFile, selected], {
+          cwd: directory,
+          timeout: 10_000,
+        });
         const loaded = JSON.parse(output.stdout);
         assert.equal(loaded.config.languageServer.hover, false);
         assert.ok(loaded.dependencies.includes(selected));

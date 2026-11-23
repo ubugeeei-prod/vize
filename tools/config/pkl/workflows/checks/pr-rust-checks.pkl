@@ -178,7 +178,7 @@ jobs {
         name = "Require Rust source test cases"
         id = "cases"
         `if` = "${{ !cancelled() }}"
-        run = #"test -s "$VIZE_TEST_CASES""#
+        run = #". "${{ env.VIZE_CI_FILES }}/require-source-test-cases.sh""#
       }
       new Dynamic {
         name = "Upload Rust source test cases"

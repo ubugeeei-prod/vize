@@ -1,4 +1,3 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -17,6 +16,9 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
+
+import { invocationWords } from "../../tools/support/ci/automation-commands.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import { parse } from "yaml";
 
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
@@ -65,16 +67,20 @@ void test("full partitions validate the actual inventory and retain every origin
       success: () => prior === "success",
     });
   for (const partition of ["all", "builders", "ui", "oxlint", "original-project"]) {
-    const result = spawnSync("/bin/bash", ["-c", validate.run], {
-      cwd: root,
-      env: {
-        ...process.env,
-        GITHUB_ACTION_PATH: join(root, historyActionPath),
-        VIZE_JS_PARTITION: partition,
+    const result = spawnSync(
+      "/bin/bash",
+      [automationShellPath(validate.run, "test-js-packages-with-history")],
+      {
+        cwd: root,
+        env: {
+          ...process.env,
+          GITHUB_ACTION_PATH: join(root, historyActionPath),
+          VIZE_JS_PARTITION: partition,
+        },
+        encoding: "utf8",
+        timeout: 10_000,
       },
-      encoding: "utf8",
-      timeout: 10_000,
-    });
+    );
     assert.equal(result.status, 0, result.stderr);
     for (const prior of ["success", "failure", "cancelled", "skipped"]) {
       const selected = [all, group, build, qualify].filter((step) =>
@@ -95,16 +101,20 @@ void test("full partitions validate the actual inventory and retain every origin
     }
   }
   for (const partition of ["", "none", "all; exit 0", "builders,ui", "unknown"]) {
-    const result = spawnSync("/bin/bash", ["-c", validate.run], {
-      cwd: root,
-      env: {
-        ...process.env,
-        GITHUB_ACTION_PATH: join(root, historyActionPath),
-        VIZE_JS_PARTITION: partition,
+    const result = spawnSync(
+      "/bin/bash",
+      [automationShellPath(validate.run, "test-js-packages-with-history")],
+      {
+        cwd: root,
+        env: {
+          ...process.env,
+          GITHUB_ACTION_PATH: join(root, historyActionPath),
+          VIZE_JS_PARTITION: partition,
+        },
+        encoding: "utf8",
+        timeout: 10_000,
       },
-      encoding: "utf8",
-      timeout: 10_000,
-    });
+    );
     assert.equal(result.status, 1, result.stderr);
     assert.match(result.stderr, /AssertionError.*unknown full JS partition/);
   }
@@ -225,7 +235,11 @@ void test("PR and merge queue preserve package tests, native declaration, type a
           ]
         : [];
       for (const { command, group } of commands) {
-        const result = spawnSync("/bin/sh", ["-c", command], {
+        const words = invocationWords(command);
+        const [program, ...args] = words
+          ? words.map((word) => word.replaceAll("$VIZE_JS_PACKAGE_GROUP", group ?? ""))
+          : ["/bin/bash", automationShellPath(command, "pr-js-checks")];
+        const result = spawnSync(program, args, {
           cwd: root,
           env: { ...cli.env, ...(group ? { VIZE_JS_PACKAGE_GROUP: group } : {}) },
           encoding: "utf8",

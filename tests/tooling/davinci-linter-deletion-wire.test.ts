@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -48,16 +48,20 @@ void test("Matrix records the blocked preflight without registering linter delet
       '#!/bin/sh\nprintf \'%s\\n\' "$@" > "$RECORDER_ARGUMENTS"\nmkdir -p "$2"\nprintf \'{}\\n\' > "$2/linter-deletion-readiness.json"\n',
       { mode: 0o755 },
     );
-    const result = spawnSync("bash", ["-euo", "pipefail", "-c", String(recorder.run)], {
-      cwd: root,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        FIXTURE_REPORT_DIR: reportDirectory,
-        PATH: `${bin}:${process.env.PATH}`,
-        RECORDER_ARGUMENTS: argumentsPath,
+    const result = spawnSync(
+      "bash",
+      ["-euo", "pipefail", automationShellPath(String(recorder.run))],
+      {
+        cwd: root,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          FIXTURE_REPORT_DIR: reportDirectory,
+          PATH: `${bin}:${process.env.PATH}`,
+          RECORDER_ARGUMENTS: argumentsPath,
+        },
       },
-    });
+    );
     assert.equal(result.status, 0, result.stderr);
     assert.deepEqual(fs.readFileSync(argumentsPath, "utf8").trim().split("\n"), [
       "tests/differential/linter-deletion-recorder.ts",

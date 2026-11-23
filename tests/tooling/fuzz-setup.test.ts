@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -101,7 +101,7 @@ test("fuzz CI workflow runs strict nightly and dispatched campaigns", () => {
     ["3600", 0],
   ] as const) {
     const output = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "vize-fuzz-budget-")), "output");
-    const result = spawnSync("bash", ["-c", dispatchBudgetScript], {
+    const result = spawnSync("bash", [automationShellPath(dispatchBudgetScript)], {
       encoding: "utf8",
       env: {
         ...process.env,

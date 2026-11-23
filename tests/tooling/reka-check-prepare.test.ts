@@ -268,7 +268,7 @@ test("forged Node identities and npx shims fail before an install is permitted",
     assert.equal(installs, 0);
     assert.throws(() => inspectRekaNpx({ PATH: f.root }), /refuses an npx shim/);
     assert.equal(
-      execFileSync(process.execPath, ["-p", "process.version"], { encoding: "utf8" }).trim(),
+      execFileSync(process.execPath, ["--version"], { encoding: "utf8" }).trim(),
       process.version,
     );
   } finally {

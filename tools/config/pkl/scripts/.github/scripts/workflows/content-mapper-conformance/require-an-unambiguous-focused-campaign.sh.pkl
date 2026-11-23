@@ -1,0 +1,9 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  test "$EVENT_RENAME_ONLY" != true
+  """#
+}

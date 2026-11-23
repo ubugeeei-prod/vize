@@ -110,7 +110,7 @@ jobs {
         name = "Require Rust differential test cases"
         id = "cases"
         `if` = "${{ !cancelled() && matrix.lane != 'none' }}"
-        run = #"test -s "$VIZE_TEST_CASES""#
+        run = #". "${{ env.VIZE_CI_FILES }}/require-differential-test-cases.sh""#
       }
       new Dynamic {
         name = "Upload Rust differential test cases"

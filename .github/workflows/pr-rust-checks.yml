@@ -168,7 +168,7 @@ jobs:
       - name: Require Rust source test cases
         id: cases
         if: ${{ !cancelled() }}
-        run: test -s "$VIZE_TEST_CASES"
+        run: . "${{ env.VIZE_CI_FILES }}/require-source-test-cases.sh"
       - name: Upload Rust source test cases
         if: ${{ !cancelled() && steps.cases.outcome == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

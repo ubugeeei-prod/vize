@@ -4,6 +4,7 @@ const facts = {
   version: process.version,
   platform: process.platform,
   arch: process.arch,
+  modules: process.versions.modules,
   execPath: process.execPath,
 };
 const fields = process.argv.slice(2);

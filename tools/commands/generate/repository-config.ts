@@ -56,10 +56,7 @@ function listProducts(): Product[] {
   return products.sort((left, right) => left.target.localeCompare(right.target, "en"));
 }
 
-// A single evaluator shares imported modules across the entire inventory. A raw record
-// separator cannot occur inside a JSON string, including a multiline Actions command.
-function evaluateBatch(products: Product[]): ConfigValue[] {
-  const separator = "\u001e";
+function evaluate(products: Product[]): ConfigValue[] {
   const result = spawnSync(
     process.platform === "win32" ? "pkl" : pkl.getExePath(),
     [
@@ -70,48 +67,23 @@ function evaluateBatch(products: Product[]): ConfigValue[] {
       "--root-dir",
       sources,
       "--allowed-modules",
-      "pkl:,file:,repl:text$",
+      "pkl:,file:",
       "--allowed-resources",
       "^$",
-      "--module-output-separator",
-      separator,
-      "-x",
-      '(new JsonRenderer { omitNullProperties = false }).renderDocument(new Dynamic { uri = import("pkl:reflect").Module(module).uri; value = module.output.value })',
-      ...products.map(({ source }) => path.relative(sources, source)),
+      "RepositoryProducts.pkl",
     ],
     { cwd: sources, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
   );
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(result.stderr || "Pkl evaluation failed");
-  const bySource = new Map<string, ConfigValue>();
-  for (const document of result.stdout.split(separator)) {
-    const { uri, value } = JSON.parse(document) as { uri: string; value: ConfigValue };
-    bySource.set(fileURLToPath(uri), value);
-  }
+  const records = JSON.parse(result.stdout) as Record<string, ConfigValue>;
+  const values = new Map(
+    Object.entries(records).map(([uri, value]) => [fileURLToPath(uri), value]),
+  );
   return products.map(({ source }) => {
-    if (!bySource.has(source)) throw new Error(`Missing Pkl evaluation for ${source}`);
-    return bySource.get(source)!;
+    if (!values.has(source)) throw new Error("Missing Pkl evaluation for " + source);
+    return values.get(source)!;
   });
-}
-
-function evaluate(products: Product[]): ConfigValue[] {
-  // Leave room for the executable and flags under Windows' command-line limit.
-  const limit = process.platform === "win32" ? 24_000 : 100_000;
-  const batches: Product[][] = [];
-  let batch: Product[] = [];
-  let length = 0;
-  for (const product of products) {
-    const size = path.relative(sources, product.source).length + 3;
-    if (length + size > limit && batch.length) {
-      batches.push(batch);
-      batch = [];
-      length = 0;
-    }
-    batch.push(product);
-    length += size;
-  }
-  if (batch.length) batches.push(batch);
-  return batches.flatMap(evaluateBatch);
 }
 
 function ownedTarget(file: string): boolean {
