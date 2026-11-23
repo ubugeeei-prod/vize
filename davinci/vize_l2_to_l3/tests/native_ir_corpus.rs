@@ -25,6 +25,7 @@ fn original_graphs_and_lossless_recovery() {
     let mut graphs = 0;
     let mut queries = 0;
     let mut reached = 0;
+    let mut singleton_answers = 0;
     let (mut patterns, mut trails) = (0, 0);
     let mut bytes = 0;
     let options = DescriptorOptions {
@@ -65,7 +66,13 @@ fn original_graphs_and_lossless_recovery() {
             continue;
         };
         admitted += 1;
-        let lowered = vize_l2_to_l3::lower_ir(&arena, native.l2ir());
+        let file = native.l2ir();
+        assert!(core::ptr::eq(file.source(), l1.source()), "{path}");
+        assert!(
+            core::ptr::eq(file.root_region(), file.artifact().root()),
+            "{path}"
+        );
+        let lowered = vize_l2_to_l3::lower_ir(&arena, file);
         let ir = lowered.l3ir();
         let index = OpGraph::new(ir).unwrap();
         if ir.ops.is_empty() {
@@ -88,7 +95,15 @@ fn original_graphs_and_lossless_recovery() {
                         );
                     })
                     .unwrap();
+                let root = &steps[..1];
+                let singleton = check_reachability(ir, q, root);
+                assert_eq!(index.check_singleton(q), singleton, "{path}");
+                assert_eq!(singleton.is_ok(), steps.len() == 1, "{path}");
+                singleton_answers += usize::from(singleton.is_ok());
                 check_reachability(ir, q, &steps).unwrap_or_else(|e| panic!("{path}: {e:?}"));
+                index
+                    .check(q, &steps)
+                    .unwrap_or_else(|e| panic!("{path}: {e:?}"));
                 for second in [Direction::Forward, Direction::Reverse] {
                     let pattern = TwoHopQuery {
                         start: op.id,
@@ -111,6 +126,9 @@ fn original_graphs_and_lossless_recovery() {
                     assert!(result.is_continue());
                     check_two_hop_matches(ir, pattern, &rows)
                         .unwrap_or_else(|e| panic!("{path}: {e:?}"));
+                    index
+                        .check_two_hop(pattern, &rows)
+                        .unwrap_or_else(|e| panic!("{path}: {e:?}"));
                     patterns += 1;
                     trails += rows.len();
                 }
@@ -122,6 +140,7 @@ fn original_graphs_and_lossless_recovery() {
     assert!(graphs > 0 && refused > 0 && queries > 0);
     assert_eq!(total, invalid_utf8 + admitted + refused);
     assert!(trails > 0 && patterns == 2 * queries);
+    println!("singleton reachability accepted={singleton_answers} checked={queries}");
     println!(
         "graph corpus files={total} bytes={bytes} invalid_utf8={invalid_utf8} admitted={admitted} rejected={refused} nonempty={graphs} queries={queries} witnessed_ops={reached} two_hop_queries={patterns} ordered_trails={trails}"
     );

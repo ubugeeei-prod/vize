@@ -63,3 +63,7 @@ pub mod recovered_script;
     feature = "experimental-style-lint-products"
 ))]
 mod toolchain_session;
+#[cfg(feature = "experimental-resident-template-passes")]
+mod template;
+#[cfg(feature = "experimental-resident-template-passes")]
+pub use template::TemplateRequestError;

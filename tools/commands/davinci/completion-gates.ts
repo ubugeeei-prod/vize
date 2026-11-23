@@ -3,10 +3,8 @@
 //   node tools/commands/davinci/completion-gates.ts [--json] [--issues]
 // `--issues` asks GitHub (gh) for issue state; without it issue gates print "unknown".
 import {
-  coordinateKernel,
-  coordinateProof,
-  coordinateTheory,
   independentGraphTheory,
+  checkedRustTheorems,
 } from "../../support/retired-tooling-languages.ts";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -196,11 +194,11 @@ const measureCodenames = (repo: Repo): Measured => {
 };
 
 const measureRustOnlyFormal = (repo: Repo): Measured => {
-  const paired = repo.paths.includes(coordinateKernel) && repo.paths.includes(coordinateProof);
+  const checked = checkedRustTheorems(repo.paths);
   const lean = repo.paths.filter(
     (file) =>
       file !== independentGraphTheory &&
-      !(file === coordinateTheory && paired) &&
+      !checked.has(file) &&
       (file.endsWith(".lean") ||
         /(^|\/)(lakefile\.(lean|toml)|lean-toolchain|lake-manifest\.json)$/.test(file) ||
         (file.startsWith(".github/workflows/") &&
