@@ -83,6 +83,23 @@ fn profile_ir(ir: &L3Ir<'_>, name: &str) {
             trails.push((query, rows));
         }
     }
+    let singletons: Vec<_> = reach
+        .iter()
+        .map(|(query, steps)| {
+            let root = &steps[..1];
+            (*query, root, check_reachability(ir, *query, root))
+        })
+        .collect();
+    measure(&format!("{name} singleton"), |singleton| {
+        for (query, root, expected) in black_box(&singletons) {
+            let result = if singleton {
+                black_box(&graph).check_singleton(*query)
+            } else {
+                black_box(&graph).check(*query, root)
+            };
+            assert_eq!(&result, expected);
+        }
+    });
     measure(&format!("{name} reach"), |retained| {
         for (query, claim) in black_box(&reach) {
             let result = if retained {

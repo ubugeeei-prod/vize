@@ -181,4 +181,11 @@ impl<'p> OpGraph<'p> {
         }
         Ok(steps)
     }
+
+    /// Check whether the seed alone is the complete reachable set. Self-loops
+    /// preserve the claim. The first selected edge to leave the seed supplies
+    /// its original ordinal on failure.
+    pub fn check_singleton(&self, query: ReachQuery) -> Result<(), super::CertificateError> {
+        super::check::check_singleton(&self.positions, &self.edges, query)
+    }
 }
