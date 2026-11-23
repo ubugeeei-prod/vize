@@ -62,15 +62,10 @@ runs:
         printf 'binary=%s\n' "$binary" >> "$GITHUB_OUTPUT"
 
     - name: Check complete workflow syntax
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+      uses: ./.github/actions/check-workflow-syntax/validate
       env:
         ACTIONLINT_BINARY: ${{ steps.install.outputs.binary }}
-        WORKFLOW_VALIDATOR_ACTION_PATH: ${{ github.action_path }}
         WORKFLOW_VALIDATOR_CONTROLS: ${{ inputs.controls }}
-      with:
-        script: |
-          const script = require('node:url').pathToFileURL(`${process.env.WORKFLOW_VALIDATOR_ACTION_PATH}/check.ts`);
-          await import(script.href);
 
     - name: Preserve workflow diagnostics on failure
       if: ${{ failure() }}

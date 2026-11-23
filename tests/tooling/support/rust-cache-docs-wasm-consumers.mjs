@@ -275,6 +275,16 @@ export function verifyDocsWasmConsumers(root) {
           "unreviewed local cache consumer action",
         );
       }
+      if (
+        file === ".github/actions/setup-rust-sticky-cache/action.yml" &&
+        step.uses === `${cacheAction}/cache-policy`
+      ) {
+        const policy = source.get(
+          ".github/actions/setup-rust-sticky-cache/cache-policy/action.yml",
+        );
+        assert.deepEqual(policy?.runs, { using: "node24", main: "main.ts" });
+        continue;
+      }
       if (!/(?:setup-rust-sticky-cache|app-e2e-row)(?:\/|@|$)/.test(step.uses)) continue;
       assert(
         [cacheAction, headCacheAction, appAction].includes(step.uses),

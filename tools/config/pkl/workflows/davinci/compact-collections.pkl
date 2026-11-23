@@ -86,7 +86,7 @@ jobs {
       // and this job checks the repository out under head/.
       new Dynamic {
         name = "Expose the nested target action at the workspace root"
-        run = "mkdir -p .github/actions && cp -R head/.github/actions/reuse-rust-target .github/actions/"
+        run = "mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/"
       }
       new Dynamic {
         uses = "./head/.github/actions/setup-rust-sticky-cache"

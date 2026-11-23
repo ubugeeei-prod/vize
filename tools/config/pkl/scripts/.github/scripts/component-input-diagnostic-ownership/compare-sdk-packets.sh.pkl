@@ -17,7 +17,7 @@ commands {
       --output "$RUNNER_TEMP/component-input-ownership/$sdk" "${extra[@]}" || failed=1
 
     if [[ "$sdk" == \#(sdks.current) ]]; then
-      aria_host="$(node --input-type=module -e 'const {default: resolve} = await import(`${process.env.RUNNER_TEMP}/component-input-consumer/node_modules/typescript/lib/getExePath.js`); console.log(resolve());')"
+      aria_host="$(node tools/support/compat/content-mapper/resolve-consumer-host.ts "$RUNNER_TEMP/component-input-consumer")"
     else
       aria_host="$native"
     fi
