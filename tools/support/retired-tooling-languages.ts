@@ -36,6 +36,11 @@ export const templateSpanProjection = {
   kernel: "crates/vize_incremental/src/template/projection.rs",
   harness: "crates/vize_incremental/src/template/kani.rs",
 } as const;
+const nearestLineStarts = {
+  theorem: "tests/formal/source-map/LineBreaks.lean",
+  kernel: "davinci/vize_l0/src/line_index/lsp_breaks.rs",
+  harness: "davinci/vize_l0/src/line_index/lsp_breaks/kani.rs",
+} as const;
 export const rustProofReferences = [
   sourceMapCoordinates,
   styleHeaderValidation,
@@ -43,6 +48,7 @@ export const rustProofReferences = [
   compilerStringLiterals,
   templateLabelRanking,
   templateSpanProjection,
+  nearestLineStarts,
 ] as const;
 
 export function checkedRustTheorems(paths: readonly string[]): Set<string> {
