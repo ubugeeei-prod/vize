@@ -23,6 +23,8 @@ davinci/vize_l1_to_l2/tests/emit_on_handler_body.rs	@click.stop.prevent
 davinci/vize_l1_to_l2/tests/emit_on_handler_body.rs	@keyup.d
 davinci/vize_l1_to_l2/tests/emit_on_handler_body.rs	@contextmenu.prevent
 davinci/vize_l1_to_l2/tests/emit_outlets.rs	@click.stop
+davinci/vize_l1_to_l2/tests/expression_queries/component_listeners.rs	@update:modelValue.once
+davinci/vize_l1_to_l2/tests/expression_queries/component_listeners.rs	v-on:閉じる.stop.once
 davinci/vize_l1_to_l2/tests/fixtures/complexity/constructs.vue	@keyup.enter
 davinci/vize_l1_to_l2/tests/fixtures/vmodel/bindings.vue	@submit.prevent
 davinci/vize_l1_to_l2/tests/legacy_pass.rs	@click.native

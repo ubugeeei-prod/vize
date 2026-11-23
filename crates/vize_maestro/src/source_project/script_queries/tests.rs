@@ -146,6 +146,55 @@ fn authored_candidates_identify_the_public_file_rename_edits() {
 }
 
 #[test]
+fn jsx_host_suffix_matches_the_editor_dispatcher() {
+    for first in ["j", "J", "t", "T"] {
+        for second in ["s", "S"] {
+            for third in ["x", "X"] {
+                for prefix in ["", "/projects/雪🌱", "/projects/many.dots/App.vue"] {
+                    let path = vize_l0::cstr!("{prefix}.{first}{second}{third}");
+                    assert!(crate::utils::is_jsx_path(&path));
+                    assert!(is_jsx_host(&path));
+                }
+            }
+        }
+    }
+    for path in [
+        "",
+        ".",
+        "x",
+        "tsx",
+        ".ts",
+        "🌱x",
+        ".tſx",
+        ".jsx/",
+        ".tsx.vue",
+        "A.jsxx",
+        ".jsX\u{301}",
+    ] {
+        assert_eq!(is_jsx_host(path), crate::utils::is_jsx_path(path), "{path}");
+    }
+    let state = ServerState::new();
+    let cache = SourceSnapshotCache::default();
+    let text = "<script setup>import './leaf';</script>";
+    for name in [".JsX", "Leaf.tSX", "Leaf.tsx.vue"] {
+        let uri = Url::parse(&vize_l0::cstr!("file:///projects/{name}")).unwrap();
+        state
+            .documents
+            .open(uri.clone(), text.into(), 1, "vue".into());
+        let snapshot = cache.capture(&state.documents, &uri).unwrap();
+        let result = snapshot.script_query_products(&state);
+        if crate::utils::is_jsx_path(uri.path()) {
+            assert_eq!(result, Err(ScriptQueryRefusal::Language));
+        } else {
+            assert_eq!(
+                result.unwrap().unwrap().module_specifiers[0].specifier,
+                "./leaf"
+            );
+        }
+    }
+}
+
+#[test]
 fn closed_reopened_and_non_vue_hosts_cannot_publish_old_scripts() {
     let state = ServerState::new();
     let uri = Url::parse("file:///projects/Current.vue").unwrap();

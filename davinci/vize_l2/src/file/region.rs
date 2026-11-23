@@ -273,3 +273,6 @@ where
         self.region.record(record)
     }
 }
+
+#[cfg(feature = "component-listener-queries")]
+mod listener;

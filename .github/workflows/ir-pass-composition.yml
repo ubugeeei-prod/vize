@@ -8,10 +8,20 @@ on:
       - "davinci/vize_l0/src/pass.rs"
       - "davinci/vize_l0/src/pass/**"
       - "davinci/vize_l0/tests/grouped_passes.rs"
+      - "crates/vize_maestro/Cargo.toml"
+      - "crates/vize_maestro/src/source_project/query.rs"
+      - "crates/vize_maestro/tests/original_template_requests.rs"
+      - "davinci/vize_l1/Cargo.toml"
+      - "davinci/vize_l1/src/container/vue.rs"
+      - "davinci/vize_l1/src/container/vue/descriptor.rs"
+      - "davinci/vize_l1/src/container/vue/descriptor/template.rs"
+      - "davinci/vize_l1/src/container/vue/descriptor/template/**"
       - "davinci/vize_l1_to_l2/Cargo.toml"
       - "davinci/vize_l1_to_l2/src/pass.rs"
       - "davinci/vize_l1_to_l2/src/pass/**"
       - "davinci/vize_l1_to_l2/tests/observed_template_passes.rs"
+      - "davinci/vize_l1_to_l2/tests/original_template_queries.rs"
+      - "davinci/vize_l1_to_l2/tests/original_template_queries/**"
       - "davinci/vize_l2/src/analysis.rs"
       - "davinci/vize_l2/src/analysis/static_facts.rs"
       - "davinci/vize_l2/src/analysis/static_facts/**"
@@ -28,7 +38,7 @@ jobs:
   composition:
     name: Source-order groups, optimizer equivalence and paired timings
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 25
+    timeout-minutes: 40
     env:
       RUSTUP_TOOLCHAIN: "1.100.0"
       RUST_MIN_STACK: "16777216"
@@ -56,8 +66,23 @@ jobs:
           git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_TEMPLATE_PASS_INPUTS"
           git ls-files -z -- '*.vue' > "$VIZE_COMPOSED_TEMPLATE_FILES"
           cargo clippy "${flags[@]}" --lib --no-deps -- -D warnings
+          cargo test --locked --profile ci-opt -p vize_l2 --features composed-template-analysis --lib lattice::composed::
           cargo test "${flags[@]}" --test observed_template_passes -- --include-ignored --nocapture --test-threads=1
           cargo test "${flags[@]}" --test cfg_complexity_oracle composed:: -- --include-ignored --nocapture --test-threads=1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: 24 }
+      - name: Check lossless template queries against Vue and existing Vize products
+        run: |
+          set -euo pipefail
+          export NODE_PATH="$RUNNER_TEMP/template-oracle/node_modules"
+          export VIZE_ORIGINAL_TEMPLATE_ORACLE="$RUNNER_TEMP/template-oracle.json"
+          npm install --prefix "$RUNNER_TEMP/template-oracle" --no-audit --no-fund --ignore-scripts @vue/compiler-sfc@3.5.35
+          node davinci/vize_l1_to_l2/tests/original_template_queries/oracle.ts "$RUNNER_TEMP/original-template-passes" "$VIZE_ORIGINAL_TEMPLATE_ORACLE"
+          flags=(--locked --profile ci-opt -p vize_l1_to_l2 --features original-template-queries)
+          cargo clippy "${flags[@]}" --lib --no-deps -- -D warnings
+          cargo test "${flags[@]}" --test original_template_queries -- --include-ignored --nocapture --test-threads=1
+          cargo test --locked --profile ci-opt -p vize_l1 --features independent-template-block --doc CheckedTemplateBlock
+          cargo test --locked --profile ci-opt -p vize_maestro --features vize_l1_to_l2/original-template-queries --test original_template_requests
   partition:
     name: Prove the Rust group cursor partitions every bounded plan
     runs-on: blacksmith-32vcpu-ubuntu-2404

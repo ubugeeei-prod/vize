@@ -5,6 +5,13 @@ on:
       - ".github/workflows/template-expression-queries.yml"
       - "crates/vize_maestro/Cargo.toml"
       - "crates/vize_maestro/src/ide/context.rs"
+      - "crates/vize_maestro/src/ide/rename/canonical/event_rename*"
+      - "crates/vize_maestro/src/ide/rename/canonical/event_rename/**"
+      - "crates/vize_maestro/src/virtual_code/generator/template_products.rs"
+      - "davinci/vize_l1_to_l2/src/dialect/vue3/native/pattern.rs"
+      - "davinci/vize_l2/src/artifact/builder/binding*"
+      - "davinci/vize_l2/src/artifact/builder/binding/**"
+      - "crates/vize_croquis/src/drawer/template/components.rs"
       - "crates/vize_maestro/src/ide/definition/component_import.rs"
       - "crates/vize_maestro/src/ide/diagnostics/component_props*"
       - "crates/vize_maestro/src/ide/diagnostics/component_props/**"
@@ -136,3 +143,35 @@ jobs:
           cargo test "${flags[@]}" "${native[@]}" --test expression_query_alloc
           cargo test "${flags[@]}" "${native[@]}" --test expression_queries component_props:: -- --include-ignored --nocapture --test-threads=1
           cargo test "${flags[@]}" "${editor[@]}" component_props::original:: -- --include-ignored --nocapture --test-threads=1
+
+  component-event-edits:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUST_MIN_STACK: "16777216"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Compare every original listener, semantic edit and paired resident request
+        run: |
+          set -euo pipefail
+          export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/original-listener-inputs"
+          export VIZE_REQUIRE_REPOSITORY_LISTENERS=1
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
+          flags=(--locked --profile ci-opt)
+          native=(-p vize_l1_to_l2 --features component-listener-queries,template-operand-queries,vize_l2/position-index)
+          editor=(-p vize_maestro --features experimental-component-listeners,experimental-template-operand-products,micro-profiling --lib)
+          cargo clippy "${flags[@]}" -p vize_l2 --features component-listener-queries,template-operand-queries --lib --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" "${native[@]}" --lib --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
+          cargo test "${flags[@]}" "${native[@]}" --test expression_queries component_listeners:: -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" "${editor[@]}" event_rename:: -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" "${editor[@]}" named_dom_event_expressions_keep_their_checker_links_and_editor_exports
+          cargo test "${flags[@]}" "${editor[@]}" original_event_documents -- --ignored --nocapture --test-threads=1
