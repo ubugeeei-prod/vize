@@ -186,6 +186,11 @@ const _: () = {
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
+    #![allow(
+        unexpected_cfgs,
+        reason = "Kani enables its symbolic harnesses with cfg(kani)"
+    )]
+
     use super::{SourceFrameError, SourceRoot};
     use crate::Span;
 
@@ -252,4 +257,7 @@ mod tests {
         let mid_char = (source.find('\u{e9}').expect("accent") + 1) as u32;
         assert_eq!(block.zero_width_at(mid_char), "");
     }
+
+    #[cfg(kani)]
+    mod proofs;
 }
