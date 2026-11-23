@@ -1,7 +1,8 @@
 //! Compare two independent checks of complete SCSS observables. The
 //! materialized path renders both CSS results before comparing bytes.
 use davinci_harness::alloc::{self, CountingAllocator};
-use std::{hint::black_box, time::Instant};
+use davinci_harness::paired::assert_paired_time;
+use std::hint::black_box;
 use vize_atelier_sfc::scss::ScssProducts;
 use vize_l0::SourceRoot;
 
@@ -69,36 +70,15 @@ fn run(label: &str, a: &str, b: &str) {
     let (b, bm) = alloc::measure_returning(|| check(true));
     assert!(a && b);
     let (am, bm) = (am.unwrap(), bm.unwrap());
-    let sample = |mode| {
-        let time = Instant::now();
-        for _ in 0..128 {
-            black_box(check(mode));
-        }
-        time.elapsed().as_nanos() / 128
-    };
-    let (mut old, mut new) = (Vec::new(), Vec::new());
-    for i in 0..35 {
-        let (x, y) = if i % 2 == 0 {
-            (sample(false), sample(true))
-        } else {
-            let y = sample(true);
-            (sample(false), y)
-        };
-        if i >= 4 {
-            old.push(x);
-            new.push(y);
-        }
-    }
-    old.sort_unstable();
-    new.sort_unstable();
-    let (old, new) = (old[old.len() / 2], new[new.len() / 2]);
-    println!(
-        "style certificate {label} ns={old}/{new} calls={}/{} peak={}/{}",
+    let label = format!(
+        "style certificate {label} calls={}/{} peak={}/{}",
         am.calls, bm.calls, am.peak_bytes_over_start, bm.peak_bytes_over_start
     );
-    assert!(new <= old);
     assert_eq!(bm.calls, 0);
     assert!(bm.peak_bytes_over_start <= am.peak_bytes_over_start);
+    assert_paired_time(&label, 128, |candidate| {
+        black_box(check(candidate));
+    });
 }
 
 fn main() {
