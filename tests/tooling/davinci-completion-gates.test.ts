@@ -4,10 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import {
-  templateLabelRanking,
-  templateSpanProjection,
-} from "../../tools/support/retired-tooling-languages.ts";
+import { rustProofReferences } from "../../tools/support/retired-tooling-languages.ts";
 import {
   codenames,
   evaluate,
@@ -156,27 +153,27 @@ void test("workspace members are read from the real Cargo.toml", () => {
   assert.ok(members.includes("davinci/vize_l0"));
 });
 
-void test("each template theorem requires its own Rust implementation and Kani harness", () => {
+void test("every supplemental theorem requires its own Rust implementation and Kani harness", () => {
   const formal = gates.find((gate) => gate.id === "formal.rust-only")?.measure;
   assert.ok(formal);
-  for (const { theorem, kernel, harness } of [templateLabelRanking, templateSpanProjection]) {
+  for (const { theorem, kernel, harness } of rustProofReferences) {
     assert.equal(formal(memory({ [theorem]: "", [kernel]: "", [harness]: "" })).pass, true);
     assert.equal(formal(memory({ [theorem]: "", [kernel]: "" })).pass, false);
     assert.equal(formal(memory({ [theorem]: "", [harness]: "" })).pass, false);
     assert.equal(
-      formal(memory({ [kernel]: "", [harness]: "", "tests/formal/template-lint/Other.lean": "" }))
-        .pass,
+      formal(memory({ [kernel]: "", [harness]: "", "tests/formal/Other.lean": "" })).pass,
       false,
     );
+    for (const other of rustProofReferences) {
+      if (other.theorem === theorem) continue;
+      assert.equal(
+        formal(memory({ [theorem]: "", [kernel]: "", [other.harness]: "" })).pass,
+        false,
+      );
+      assert.equal(
+        formal(memory({ [theorem]: "", [other.kernel]: "", [harness]: "" })).pass,
+        false,
+      );
+    }
   }
-  assert.equal(
-    formal(
-      memory({
-        [templateLabelRanking.kernel]: "",
-        [templateSpanProjection.harness]: "",
-        [templateSpanProjection.theorem]: "",
-      }),
-    ).pass,
-    false,
-  );
 });

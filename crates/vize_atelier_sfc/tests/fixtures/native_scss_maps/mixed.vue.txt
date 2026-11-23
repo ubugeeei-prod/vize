@@ -1,0 +1,4 @@
+<script setup lang="ts">const title: string = '雪🦀'</script>
+<template><p>{{ title }}</p></template>
+<style>.plain{color:blue}</style>
+<style lang="scss">$space:4px;.outer{.child{padding:$space}}</style>
