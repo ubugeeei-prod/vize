@@ -109,7 +109,10 @@ mod tests {
         let executable = root.path().join("legacy-wrapper");
         fs::write(
             &executable,
-            include_str!("../../../../../../../../tests/tooling/programs/process/exit-success.sh"),
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/programs/exit-success.sh"
+            )),
         )
         .expect("seed executable");
         fs::set_permissions(&executable, Permissions::from_mode(0o755)).expect("chmod executable");

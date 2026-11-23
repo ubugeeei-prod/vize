@@ -18,8 +18,10 @@ use std::{
     time::{Duration, Instant},
 };
 
-const SCRIPT: &[u8] =
-    include_bytes!("../../../../../../tests/tooling/programs/process/exit-success.sh");
+const SUCCESSFUL_PROGRAM: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/programs/exit-success.sh"
+));
 
 struct RetainedWriter(Child);
 impl RetainedWriter {
@@ -87,7 +89,7 @@ impl Drop for RetainedWriter {
 
 fn write_fixture(path: &Path) -> File {
     let mut writer = File::create(path).unwrap();
-    writer.write_all(SCRIPT).unwrap();
+    writer.write_all(SUCCESSFUL_PROGRAM).unwrap();
     writer
         .set_permissions(std::fs::Permissions::from_mode(0o755))
         .unwrap();
@@ -95,7 +97,7 @@ fn write_fixture(path: &Path) -> File {
 }
 
 fn assert_single_exec(path: &Path) {
-    assert_eq!(std::fs::read(path).unwrap(), SCRIPT);
+    assert_eq!(std::fs::read(path).unwrap(), SUCCESSFUL_PROGRAM);
     assert_eq!(
         std::fs::metadata(path).unwrap().permissions().mode() & 0o777,
         0o755
