@@ -17,23 +17,15 @@ runs {
     new Dynamic {
       name = "Resolve the Vite+ bootstrap cache key"
       id = "key"
-      uses = "actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd"  // v8
+      uses = "./.github/actions/cache-vp-bootstrap/select-key"
       env {
-        VIZE_BOOTSTRAP_ACTION_PATH = "${{ github.action_path }}"
+
         RUNNER_OS = "${{ runner.os }}"
         RUNNER_ARCH = "${{ runner.arch }}"
         EVENT_NAME = "${{ github.event_name }}"
         REF = "${{ github.ref }}"
         DEFAULT_BRANCH = "${{ github.event.repository.default_branch }}"
         SAVE_REQUESTED = "${{ inputs.save }}"
-      }
-      with {
-        script = """
-        const script = require('node:url').pathToFileURL(`${process.env.VIZE_BOOTSTRAP_ACTION_PATH}/cache-key.ts`);
-        const { cacheBootstrapRuntime } = await import(script.href);
-        cacheBootstrapRuntime();
-
-        """
       }
     }
     // setup-vp forces VP_HOME=~/.vite-plus. These are the directories its

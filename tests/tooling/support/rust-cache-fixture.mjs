@@ -257,8 +257,8 @@ export function executeCacheAction(
   const posts = [];
   for (const step of steps) {
     if (step.if && !value(step.if, inputs, outputs)) continue;
-    const githubScript = step.uses?.startsWith("actions/github-script@");
-    if (step.run || githubScript) {
+    const policy = step.uses === "./.github/actions/setup-rust-sticky-cache/cache-policy";
+    if (step.run || policy) {
       const file = join(cwd, `output-${step.id}.txt`);
       writeFileSync(file, "");
       const stepEnv = Object.fromEntries(
@@ -267,9 +267,15 @@ export function executeCacheAction(
           String(value(expr, inputs, outputs)),
         ]),
       );
-      const program = githubScript ? process.execPath : "bash";
-      const args = githubScript
-        ? ["--input-type=commonjs", "--eval", `void (async () => {\n${step.with.script}\n})()`]
+      const program = policy ? process.execPath : "bash";
+      const args = policy
+        ? [
+            join(
+              actionDir,
+              "cache-policy",
+              parse(readFileSync(join(actionDir, "cache-policy/action.yml"), "utf8")).runs.main,
+            ),
+          ]
         : ["-e", "-c", step.run];
       const result = execute(program, args, cwd, {
         ...env,

@@ -221,7 +221,9 @@ test("embedded workflow programs only shrink", () => {
     for (const entry of fs.readdirSync(absolute, { recursive: true })) {
       if (typeof entry !== "string" || !/\.ya?ml$/.test(entry)) continue;
       const relative = path.join(directory, entry);
-      const count = [...readRepoFile(relative).matchAll(embeddedProgram)].length;
+      const source = readRepoFile(relative);
+      assert.doesNotMatch(source, /uses:\s*actions\/github-script@/u, relative);
+      const count = [...source.matchAll(embeddedProgram)].length;
       if (count > 0) current[relative] = count;
     }
   }
