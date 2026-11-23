@@ -21,6 +21,8 @@ const helper = await readFile(
   "utf8",
 );
 
+const navigationExports = await readFile(new URL("navigation-exports.cjs", corpus), "utf8");
+
 // Execute the complete production navigation block, including its actual cleanup watchers.
 // Controlled nextTick resolution makes superseded continuations deterministic without timers.
 function harness(script: string) {
@@ -95,20 +97,12 @@ function harness(script: string) {
     ),
     helperJavascript,
   );
-  const initialization = extracted
-    ? transport
-    : "let variantObserver = null; let variantObserverGeneration = 0;";
   const execute = compileFunction(
-    `
-    const { ${Object.keys(scope).join(", ")} } = scope;
-    ${initialization}
-    ${javascript}
-    return { setupVariantObserver, syncSelectionFromHash, handleVariantSelect, disconnectVariantObserver };
-    `,
-    ["scope"],
+    [extracted ? transport : "", javascript, navigationExports].join("\n"),
+    [...Object.keys(scope), "variantObserver", "variantObserverGeneration"],
     { filename: manifest.producer },
   );
-  const api = execute(scope) as {
+  const api = execute(...Object.values(scope), null, 0) as {
     setupVariantObserver(): Promise<void>;
     syncSelectionFromHash(): Promise<void>;
     handleVariantSelect(name: string): void;

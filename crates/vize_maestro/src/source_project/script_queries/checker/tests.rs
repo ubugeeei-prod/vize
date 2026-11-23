@@ -15,6 +15,11 @@ fn public_sfc_diagnostics_agree_for_both_parser_profiles_and_recovery() {
     let uri = Url::parse("file:///checker/Original.vue").unwrap();
     let mut errors = 0;
     for source in [
+        "<script></script>",
+        "<script lang='ts' setup></script>",
+        "<script lang='jsx'></script><script setup lang='tsx'></script>",
+        "<script lang='coffee'></script><script setup>const bad: = ;</script>",
+        "<!-- 雪🌱 -->\r\n<script lang='js'></script><script setup lang='ts'> </script>",
         "<script>const value: number = 1</script>",
         "<script setup>const invalid: = 2</script>",
         "<!-- 雪🌱 -->\r\n<script lang='tsx'>export const tree = <div/>;</script>\r\n<script setup lang='ts'>const value: = 2;</script>",

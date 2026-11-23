@@ -1,7 +1,7 @@
 // Actual pinned Vue refs; full independently authored write-result vectors.
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { compileFunction } from "node:vm";
+import { Script } from "node:vm";
 const evidence = { vue: null, observations: [] };
 try {
   assert.equal(process.env.NODE_ENV, "production");
@@ -15,25 +15,28 @@ try {
   assert.equal(rows.length, 13);
   for (const row of rows) {
     for (const ref of [false, true]) {
-      const context = {
+      let calls = 0;
+      const scope = {
         _isRef: vue.isRef,
         _unref: vue.unref,
-        ref: vue.ref,
+        evt: ref ? vue.ref(1) : 1,
+        attr: ref ? vue.ref(3) : 3,
+        n: vue.ref(2),
+        _ctx: {
+          next(value) {
+            calls++;
+            return value;
+          },
+        },
       };
-      const run = compileFunction(
-        `
-        const { _isRef, _unref, ref } = context;
-        let evt = asRef ? ref(1) : 1;
-        let attr = asRef ? ref(3) : 3;
-        const n = ref(2);
-        let calls = 0;
-        const _ctx = { next(value) { calls++; return value; } };
-        const value = (${row.code});
-        return { value, event: _unref(evt), attr: _unref(attr), calls, n: n.value };
-      `,
-        ["context", "asRef"],
-      );
-      const actual = run(context, ref);
+      const value = new Script(`(${row.code})`).runInNewContext(scope);
+      const actual = {
+        value,
+        event: vue.unref(scope.evt),
+        attr: vue.unref(scope.attr),
+        calls,
+        n: scope.n.value,
+      };
       evidence.observations.push({ source: row.source, code: row.code, ref, actual });
       assert.deepEqual(actual, row.expected);
     }

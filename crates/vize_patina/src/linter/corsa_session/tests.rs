@@ -40,13 +40,10 @@ fn initialization_errors_keep_the_entire_original_cause_and_resolved_path() {
 
 #[test]
 fn finished_sessions_are_removed_once_per_linted_directory() {
-    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("target")
-        .join("vize-tests")
-        .join(&*vize_l0::cstr!(
-            "patina-corsa-finished-directories-{}",
-            std::process::id()
-        ));
+    let root = crate::linter::tests::scratch_project_root().join(&*vize_l0::cstr!(
+        "patina-corsa-finished-directories-{}",
+        std::process::id()
+    ));
     let _ = std::fs::remove_dir_all(&root);
     std::fs::create_dir_all(root.join("src/components")).unwrap();
     std::fs::write(root.join("package.json"), "{}").unwrap();

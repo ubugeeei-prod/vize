@@ -237,5 +237,6 @@ fn original_template_graphs_follow_the_same_toolchain_session() {
 }
 
 mod incremental {
+    mod recovery;
     mod trails;
 }
