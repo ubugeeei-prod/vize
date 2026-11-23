@@ -143,8 +143,11 @@ test("automation clients and executable fixtures load named programs", () => {
       "davinci",
       "tools",
       "npm",
-      "tests/_helpers",
-      "tests/tooling",
+      "tests",
+      "examples",
+      "editors",
+      "docs",
+      "playground",
     ],
     { cwd: root, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 },
   );
@@ -159,7 +162,7 @@ test("automation clients and executable fixtures load named programs", () => {
     if (!existsSync(source)) continue;
     const text = readFileSync(source, "utf8");
     for (const line of inlineFixtureBodies(file, text)) failures.push(file + ":" + line);
-    if (/(?:\.d|\.test|\.spec)\.[cm]?[jt]s$/u.test(file)) continue;
+    if (/\.d\.[cm]?[jt]s$/u.test(file)) continue;
     const program = file.endsWith(".in") ? text.replace(/@@[A-Z][A-Z0-9_]*@@/gu, "argument") : text;
     for (const line of inlineDispatches(file, program)) failures.push(file + ":" + line);
   }

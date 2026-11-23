@@ -222,10 +222,10 @@ export function actionNodeProgramPath(owner: string, command: string | undefined
   return path.join(root, ".github/actions", owner, "scripts", matches[0]![1]!);
 }
 
-/** Read a script reached by the actual step, including node arguments inside its shell driver. */
+/** Read the named program or filter reached by the actual workflow step. */
 export function workflowProgram(owner: string, command: string, program: string): string {
   assert.match(owner, /^[a-z0-9-]+$/u);
-  assert.match(program, /^[a-z0-9-]+\.(?:ts|cjs)$/u);
+  assert.match(program, /^[a-z0-9-]+\.(?:ts|cjs|jq)$/u);
   assert.ok(
     command.includes('"$VIZE_CI_FILES/' + program + '"') ||
       command.includes('"${{ env.VIZE_CI_FILES }}/' + program + '"'),
