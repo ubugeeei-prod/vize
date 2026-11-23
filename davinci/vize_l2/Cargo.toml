@@ -13,6 +13,9 @@ metadata.vize.stability = "experimental"
 lexical-arrow-initializers = []
 # Original listener operations and method-reference queries for explicit tool requests.
 component-listener-queries = ["setup-component-imports"]
+recovered-literal-prefix = ["literal-assignments"]
+# Checked primitive assignment judgments on the actual TypeScript AST.
+literal-assignments = ["script-declaration-queries"]
 # Name the original source/semantic view for explicit layered consumers.
 ir-views = []
 # Read authored props in source order from each resolved component operation.

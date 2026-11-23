@@ -16,6 +16,14 @@ experimental-lexical-arrow-queries = [
 ]
 # Rewrite event rename edits against a retained current component File.
 experimental-component-listeners = ["native", "vize_l1_to_l2/component-listener-queries"]
+experimental-recovered-literal-prefix = [
+  "experimental-literal-products",
+  "vize_l2/recovered-literal-prefix",
+]
+experimental-literal-products = [
+  "vize_canon/verified-literal-assignments",
+  "vize_patina/verified-prefer-const",
+]
 experimental-style-lint-products = [
   "experimental-style-module-products",
   "vize_patina/observed-style-rules",

@@ -331,3 +331,8 @@ where
     observer.after_pipeline(pipeline);
     Ok(())
 }
+
+#[cfg(feature = "streamed-pass-groups")]
+mod grouped;
+#[cfg(feature = "streamed-pass-groups")]
+pub use grouped::run_grouped_pipeline;

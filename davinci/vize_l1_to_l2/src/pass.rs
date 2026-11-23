@@ -269,3 +269,6 @@ mod tests {
         assert!(!TRANSFORM.is_fully_serialized());
     }
 }
+
+#[cfg(feature = "observed-template-passes")]
+pub mod template;
