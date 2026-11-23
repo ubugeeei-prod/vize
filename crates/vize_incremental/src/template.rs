@@ -31,6 +31,7 @@ pub enum TemplateReadError {
 }
 
 mod cursor;
+mod projection;
 pub use cursor::TemplateDocument;
 
 struct TemplateProducts {
@@ -82,12 +83,13 @@ impl<'source, 'read> TemplateRead<'source, 'read> {
     /// Project a complete UTF-8 span into the matching file revision.
     #[must_use]
     pub fn authored_span(&self, relative: Span) -> Option<Span> {
-        self.block
-            .source()
-            .get(relative.start as usize..relative.end as usize)?;
-        // Both endpoints are inside a block already validated against a u32-sized root.
-        let start = self.block.start();
-        Some(Span::new(start + relative.start, start + relative.end))
+        let (start, end) = projection::authored(
+            self.block.source(),
+            self.block.start(),
+            relative.start,
+            relative.end,
+        )?;
+        Some(Span::new(start, end))
     }
 
     /// Materialize the source ranges used by an editor response.
