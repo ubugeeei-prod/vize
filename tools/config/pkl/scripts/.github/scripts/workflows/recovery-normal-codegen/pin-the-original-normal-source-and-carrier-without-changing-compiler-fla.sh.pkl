@@ -1,0 +1,25 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  mkdir -p codegen
+  for role in base head; do
+    sha="$PINNED_HEAD"
+    if [[ "$role" == base ]]; then sha="$PINNED_BASE"; fi
+    git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
+    git worktree add --detach "$RUNNER_TEMP/recovery-codegen-$role" "$sha"
+    git -C "$RUNNER_TEMP/recovery-codegen-$role" rev-parse HEAD > "codegen/$role.sha"
+  done
+  git cat-file commit "$PINNED_HEAD" > codegen/head.commit
+  node "$VIZE_CI_FILES/../shared/first-parent.ts" codegen/head.commit expect "$PINNED_BASE"
+  cp "$RUNNER_TEMP/recovery-codegen-head/davinci/vize_l0/examples/source_recovery_clone_benchmark.rs" "$RUNNER_TEMP/recovery-codegen-base/davinci/vize_l0/examples/"
+  git diff --name-status "$PINNED_BASE" "$PINNED_HEAD" > codegen/source-diff.txt
+  rustc +1.99.1 -vV > codegen/rustc.txt
+  objdump --version > codegen/objdump.txt
+  nm --version > codegen/nm.txt
+  lscpu > codegen/cpu.txt
+  """#
+}

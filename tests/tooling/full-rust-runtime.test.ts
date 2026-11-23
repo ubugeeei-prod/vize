@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { toolingProgram, readToolingProgram } from "./support/program-path.ts";
 import { parse } from "yaml";
 import { provisionFullRustRuntime } from "../../tools/support/compat/github/full-rust-runtime.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
@@ -66,7 +67,7 @@ function fixture() {
   // Carrier control only: this executable is not native compiler qualification.
   fs.writeFileSync(
     executable,
-    `#!/bin/sh\n[ "$#" = 1 ] && [ "$1" = --version ] || exit 9\nprintf 'Version ${version}\\n'\n`,
+    readToolingProgram("commands/full-rust-runtime/report-version.sh", { VERSION: version }),
     { mode: 0o755 },
   );
   fs.writeFileSync(environment.GITHUB_ENV, "EXISTING=retained\n");
@@ -118,10 +119,7 @@ test("locked provider reaches an external test child with its actual image/versi
     try {
       const child = spawnSync(
         process.execPath,
-        [
-          "-e",
-          "process.stdout.write(JSON.stringify([process.env.CORSA_PATH, process.env.VIZE_TEST_REQUIRE_TSGO, process.env.VIZE_TEST_DISABLE_TSGO]))",
-        ],
+        [toolingProgram("native/print-rust-provider-environment.js")],
         {
           cwd: external,
           encoding: "utf8",
@@ -263,20 +261,43 @@ test("missing, foreign, nested, mismatched and nonexecutable providers fail with
       fs.mkdirSync(f.executable);
     },
     (f) => fs.chmodSync(f.executable, 0o644),
-    (f) => fs.writeFileSync(f.executable, "#!/bin/sh\nprintf 'Version 7.1.0-beta\\n'\n"),
-    (f) => fs.writeFileSync(f.executable, "#!/bin/sh\nexit 7\n"),
-    (f) => fs.writeFileSync(f.executable, `#!/bin/sh\nprintf 'Version ${version} \\n'\n`),
-    (f) => fs.writeFileSync(f.executable, `#!/bin/sh\nprintf '\\nVersion ${version}\\n'\n`),
     (f) =>
       fs.writeFileSync(
         f.executable,
-        `#!/bin/sh\nprintf 'Version ${version}\\n'\nprintf 'warning\\n' >&2\n`,
+        readToolingProgram("commands/full-rust-runtime/report-other-version.sh"),
       ),
-    (f) => fs.writeFileSync(f.executable, "#!/bin/sh\nkill -TERM $$\n"),
+    (f) =>
+      fs.writeFileSync(f.executable, readToolingProgram("commands/full-rust-runtime/exit-7.sh")),
     (f) =>
       fs.writeFileSync(
         f.executable,
-        `#!/bin/sh\nprintf 'Version ${version}\\n'\nprintf '# changed\\n' >> "$0"\n`,
+        readToolingProgram("commands/full-rust-runtime/report-trailing-whitespace.sh", {
+          VERSION: version,
+        }),
+      ),
+    (f) =>
+      fs.writeFileSync(
+        f.executable,
+        readToolingProgram("commands/full-rust-runtime/report-leading-newline.sh", {
+          VERSION: version,
+        }),
+      ),
+    (f) =>
+      fs.writeFileSync(
+        f.executable,
+        readToolingProgram("commands/full-rust-runtime/report-warning.sh", { VERSION: version }),
+      ),
+    (f) =>
+      fs.writeFileSync(
+        f.executable,
+        readToolingProgram("commands/full-rust-runtime/terminate-with-signal.sh"),
+      ),
+    (f) =>
+      fs.writeFileSync(
+        f.executable,
+        readToolingProgram("commands/full-rust-runtime/report-failed-version.sh", {
+          VERSION: version,
+        }),
       ),
     (f) => {
       const nested = path.join(f.root, "tests/node_modules", name);

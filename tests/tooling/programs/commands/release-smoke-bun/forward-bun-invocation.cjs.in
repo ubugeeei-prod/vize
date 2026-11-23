@@ -1,0 +1,48 @@
+#!@@NODE@@
+const { spawnSync } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const kind = @@KIND@@;
+const args = process.argv.slice(2);
+const originalArgs = [...args];
+const installing = args[0] === "install";
+let overrides;
+if (installing) {
+  const manifestPath = path.join(process.cwd(), "package.json");
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  overrides = manifest.overrides;
+  manifest.dependencies = Object.fromEntries(
+    Object.entries(manifest.dependencies || {}).filter(([, value]) =>
+      String(value).startsWith("file:"),
+    ),
+  );
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+  args.splice(
+    0,
+    args.length,
+    "install",
+    "--ignore-scripts",
+    "--package-lock=false",
+    "--no-audit",
+    "--fund=false",
+    "--legacy-peer-deps",
+    "--include=optional",
+  );
+}
+fs.appendFileSync(
+  process.env.VIZE_RUNTIME_STUB_LOG,
+  JSON.stringify({ kind, args: originalArgs, cwd: process.cwd(), overrides }) + "\n",
+);
+const command = kind === "npm" || installing ? process.env.VIZE_RUNTIME_STUB_NPM : process.execPath;
+const env =
+  kind === "bun" && !installing ? { ...process.env, VIZE_BUN_STUB_RUNTIME: "1" } : process.env;
+const shell = process.platform === "win32" && /\.(cmd|bat)$/i.test(command);
+const executable = shell ? '"' + command + '"' : command;
+const child = spawnSync(executable, args, {
+  cwd: process.cwd(),
+  env,
+  shell,
+  stdio: "inherit",
+});
+if (child.error) throw child.error;
+process.exit(child.status ?? 1);

@@ -134,75 +134,24 @@ function compile(source, indented = false) {
   return flatten(substituted, "").join("\n");
 }
 
-const PACKAGES = {
-  sass: `const { compile, inlineUses } = require(STAND_IN);
-const run = (source, options = {}) => {
-  try {
-    const used = inlineUses(source, options.url);
-    return { css: compile(used.css, options.syntax === "indented"), loadedUrls: used.loadedUrls };
-  } catch (error) {
-    throw Object.assign(new Error(error.message), {
-      sassMessage: error.message,
-      span: { start: { line: error.line - 1, column: error.column - 1 } },
-    });
-  }
-};
-exports.info = "dart-sass\\t1.80.0";
-exports.compileString = run;
-exports.compileStringAsync = async (source, options) => run(source, options);
-exports.initAsyncCompiler = async () => ({
-  compileStringAsync: async (source, options) => run(source, options),
-  dispose() {},
-});
-`,
-  less: `const { compile } = require(STAND_IN);
-exports.FileManager = class FileManager {};
-exports.render = async (source) => {
-  try {
-    return { css: compile(source), imports: [] };
-  } catch (error) {
-    throw Object.assign(new Error(error.message), { line: error.line, column: error.column - 1 });
-  }
-};
-`,
-  stylus: `const { compile } = require(STAND_IN);
-module.exports = (source) => {
-  const ref = {
-    set: () => ref,
-    define: () => ref,
-    include: () => ref,
-    import: () => ref,
-    deps: () => [],
-    render: (callback) => {
-      let css;
-      try {
-        css = compile(source, !source.includes("{"));
-      } catch (error) {
-        throw Object.assign(new Error(error.message), { lineno: error.line, column: error.column });
-      }
-      return callback ? callback(null, css) : css;
-    },
-  };
-  return ref;
-};
-`,
-};
-
 /** Write sass, less and stylus stand-ins into `<root>/node_modules`. */
 function installStandIns(root) {
   fs.writeFileSync(path.join(root, "package.json"), '{ "name": "fixture", "private": true }\n');
-  for (const [name, source] of Object.entries(PACKAGES)) {
+  for (const name of ["sass", "less", "stylus"]) {
     const dir = path.join(root, "node_modules", name);
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(
       path.join(dir, "package.json"),
       `{ "name": "${name}", "version": "99.0.0", "main": "index.cjs" }\n`,
     );
-    fs.writeFileSync(
+    fs.writeFileSync(path.join(dir, "stand-in-path.json"), JSON.stringify(__filename));
+    fs.copyFileSync(
+      path.join(__dirname, "test-preprocessor-programs", name + ".cjs"),
       path.join(dir, "index.cjs"),
-      source.replace("STAND_IN", JSON.stringify(__filename)),
     );
   }
 }
 
 module.exports = { compile, inlineUses, installStandIns };
+
+if (require.main === module) installStandIns(process.cwd());

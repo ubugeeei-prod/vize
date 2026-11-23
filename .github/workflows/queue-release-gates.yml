@@ -15,6 +15,8 @@ jobs:
       docs: ${{ steps.plan.outputs.docs }}
       miri: ${{ steps.plan.outputs.miri }}
       fuzz: ${{ steps.plan.outputs.fuzz }}
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/queue-release-gates"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -22,11 +24,7 @@ jobs:
       - name: Plan release gates
         id: plan
         env: { BASE_SHA: "${{ github.event.merge_group.base_sha }}" }
-        run: |
-          if [[ "$GITHUB_EVENT_NAME" == merge_group && ! "$BASE_SHA" =~ ^0+$ ]]; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          fi
-          node tools/support/compat/github/plan-release-gates.ts "$GITHUB_EVENT_NAME" "$BASE_SHA" "$GITHUB_SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/plan-release-gates.sh"
   # Same steps as Check's full-run vue-parity job.
   vue-parity:
     runs-on: blacksmith-32vcpu-ubuntu-2404

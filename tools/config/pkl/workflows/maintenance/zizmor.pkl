@@ -1,0 +1,96 @@
+import "../../Actions.pkl" as ci
+
+name = "Zizmor"
+
+on {
+  push {
+    branches = List("main", "davinci")
+    paths = List(".github/**")
+  }
+  // #6830: PRs audit workflows only when they change them.
+  pull_request {
+    paths = List(".github/**")
+  }
+  release {
+    types = List("published")
+  }
+  // Weekly workflow-security audit, offset from the heavier daily gates.
+  schedule = new Listing {
+    new Dynamic { cron = "17 2 * * 2" }
+  }
+  workflow_dispatch = null
+}
+concurrency {
+  group = "zizmor-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}"
+  `cancel-in-progress` = true
+}
+
+permissions {}
+
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+jobs {
+  plan {
+    name = "Plan workflow security audit"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    permissions {
+      contents = "read"
+      `pull-requests` = "read"
+    }
+    outputs { audit = "${{ steps.plan.outputs.audit || 'true' }}" }
+    steps = new Listing {
+      new Dynamic {
+        name = "Read the audit planner from the PR base"
+        `if` = "github.event_name == 'pull_request'"
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.base.sha }}"
+          `persist-credentials` = false
+          `sparse-checkout-cone-mode` = false
+          `sparse-checkout` = "/.github/actions/plan-workflow-audit/"
+        }
+      }
+      new Dynamic {
+        name = "Select workflow security audit"
+        id = "plan"
+        `if` = "github.event_name == 'pull_request' && hashFiles('.github/actions/plan-workflow-audit/action.yml') != ''"
+        uses = "./.github/actions/plan-workflow-audit"
+        env { GH_TOKEN = "${{ github.token }}" }
+      }
+    }
+  }
+
+  zizmor {
+    name = "Run zizmor"
+    needs = "plan"
+    `if` = "${{ !cancelled() && (needs.plan.result != 'success' || needs.plan.outputs.audit != 'false') }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    permissions {
+      actions = "read"
+      contents = "read"
+      `security-events` = "write"
+    }
+    steps = new Listing {
+      new Dynamic {
+        name = "Checkout repository"
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Run zizmor"
+        uses = "zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99"  // v0.6.3
+        // Fork scans use console output and fail on findings.
+        with {
+          `advanced-security` = "${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}"
+          inputs = ".github"
+          `min-confidence` = "high"
+          `min-severity` = "high"
+          `online-audits` = true
+          version = "1.30.0"
+        }
+      }
+    }
+  }
+}

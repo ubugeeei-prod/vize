@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+for v in $COMPILE_BENCH_VERSIONS; do
+  dir="$RUNNER_TEMP/native/$v"
+  mkdir -p "$dir"
+  curl -fsSL "https://registry.npmjs.org/@vizejs/native-linux-x64-gnu/-/native-linux-x64-gnu-$v.tgz" | tar -xz -C "$dir"
+  file "$dir"/package/*.node
+done

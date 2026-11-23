@@ -1,0 +1,86 @@
+import "../../Actions.pkl" as ci
+
+name = "V1 qualification manifest"
+
+// #6830: off the PR tier; nightly Full qualification calls it.
+on {
+  workflow_call {
+    inputs {
+      enforce_complete {
+        description = "Reject every unresolved v1 qualification row"
+        required = false
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      enforce_complete {
+        description = "Reject every unresolved v1 qualification row"
+        required = false
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+concurrency {
+  group = "v1-supported-matrix-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  `inventory-contract` {
+    name = "Generated fail-closed inventory contract"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    env {
+
+      SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("v1-supported-matrix")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Verify the exact source checkout"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-the-exact-source-checkout.sh""#
+      }
+      ci.command("Reject a stale generated manifest", "node tools/commands/release/v1-support-matrix.ts --check")
+      new Dynamic {
+        name = "Verify closed support, boundary and identity inventories"
+        run = "node --test tests/tooling/v1-supported-matrix.test.ts tests/tooling/v1-exact-candidate.test.ts"
+      }
+      new Dynamic {
+        name = "Retain the complete exact-head coverage plan"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/retain-the-complete-exact-head-coverage-plan.sh""#
+      }
+      new Dynamic {
+        name = "Upload the exact-head coverage receipt"
+        uses = ci.uploadArtifact
+        with {
+          name = "v1-exact-candidate-plan-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = ".qualification/v1-exact-candidate-plan.json"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+      new Dynamic {
+        name = "Enforce complete exact-candidate qualification"
+        `if` = "${{ inputs.enforce_complete }}"
+        run = "node tools/commands/release/v1-support-matrix.ts --check --enforce-complete"
+      }
+    }
+  }
+}

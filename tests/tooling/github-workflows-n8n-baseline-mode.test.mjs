@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 import { parse } from "yaml";
 
 import {
@@ -36,11 +37,7 @@ function observedMode(...overlays) {
   for (const overlay of overlays) Object.assign(environment, overlay ?? {});
   const child = spawnSync(
     process.execPath,
-    [
-      "--input-type=module",
-      "-e",
-      `import { baselineMode } from ${JSON.stringify(selector)}; process.stdout.write(baselineMode());`,
-    ],
+    [toolingProgram("native/read-n8n-baseline-mode.js"), selector],
     { env: environment, encoding: "utf8", timeout: 5000 },
   );
   assert.equal(child.error, undefined);

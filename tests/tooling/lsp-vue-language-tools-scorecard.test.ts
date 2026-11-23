@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -96,7 +97,11 @@ function assertEvidence(evidence: Evidence[]): void {
   for (const item of evidence) {
     const absolute = path.join(repoRoot, item.file);
     assert.ok(fs.existsSync(absolute), `missing evidence file ${item.file}`);
-    const content = collapseWhitespace(fs.readFileSync(absolute, "utf8"));
+    const content = collapseWhitespace(
+      item.file.endsWith("/action.yml")
+        ? readAutomationPrograms(absolute)
+        : fs.readFileSync(absolute, "utf8"),
+    );
     for (const required of item.contains) {
       assert.ok(
         content.includes(collapseWhitespace(required)),
@@ -155,7 +160,12 @@ test("Maestro scorecard gates editor breadth through CI-backed artifacts", () =>
   );
 
   const workflow = checkWorkflowJobSources();
-  const hostAction = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const hostAction = readAutomationPrograms(
+    ".github",
+    "actions",
+    "vscode-host-smoke",
+    "action.yml",
+  );
   const hostJob = workflowJobBody(workflow, "editor-host-smoke");
   assert.match(hostJob, /uses: \.\/\.github\/actions\/vscode-host-smoke/);
   const jobs = (
@@ -198,7 +208,7 @@ test("Maestro scorecard names enforced Misskey and Vue Vben Admin latency budget
     ["misskey", "vue-vben-admin"],
   );
 
-  const workflow = readRepoFile(".github", "actions", "check-vue-parity", "action.yml");
+  const workflow = readAutomationPrograms(".github", "actions", "check-vue-parity", "action.yml");
   for (const row of scorecard.latencyBudgets) {
     assert.equal(row.budgetSource, budgetRegistryPath);
     assert.equal(row.ciJob, "vue-parity");

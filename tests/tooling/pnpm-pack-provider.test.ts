@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -48,7 +49,10 @@ void test("active physical native PNPM bypasses hostile PATH without executing f
   try {
     const hostile = path.join(f.root, "hostile");
     fs.mkdirSync(hostile);
-    fs.writeFileSync(path.join(hostile, "pnpm"), "#!/bin/sh\nexit 99\n");
+    fs.writeFileSync(
+      path.join(hostile, "pnpm"),
+      readToolingProgram("commands/pnpm-pack-provider/exit-99.sh"),
+    );
     process.env.PATH = hostile;
     const calls: unknown[] = [];
     const result = resolvePnpmPackProvider(f.root, f.entry, (command, args, cwd) => {
@@ -75,7 +79,7 @@ void test("missing, relative, symlink, directory, foreign and unowned script pro
     const link = path.join(f.root, "link");
     fs.symlinkSync(f.entry, link);
     assert.throws(() => resolvePnpmPackProvider(f.root, link, valid), /regular file/);
-    fs.writeFileSync(f.entry, '#!/bin/sh\nexec vp "$@"\n');
+    fs.writeFileSync(f.entry, readToolingProgram("commands/pnpm-pack-provider/f-entry.sh"));
     assert.throws(() => resolvePnpmPackProvider(f.root, f.entry, valid), /belong to pnpm/);
   } finally {
     f.cleanup();

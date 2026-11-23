@@ -87,11 +87,10 @@ fn actual_shorthand_output_keeps_own_properties_and_object_prototype_in_js() {
         fixtures.push(serde_json::json!({ "original": source, "emitted": output.text.as_str() }));
     }
     let mut child = Command::new("node")
-        .args([
-            "--input-type=module",
-            "-e",
-            include_str!("../../../tests/tooling/support/native-expression-prototype.ts"),
-        ])
+        .arg(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/tooling/support/native-expression-prototype.ts"
+        ))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

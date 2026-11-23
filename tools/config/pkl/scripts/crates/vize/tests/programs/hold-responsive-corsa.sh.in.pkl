@@ -1,0 +1,11 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  echo $$ >> {}
+  : > {}
+  exec cat 3>&1 > /dev/null
+  """#
+}

@@ -3,6 +3,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, statSync }
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+
+import { toolingProgram, readToolingProgram } from "../../../tests/tooling/support/program-path.ts";
 import { advisoryComparison, collectObservation } from "./pr-performance-observation.ts";
 import { verifyObservationBindings } from "./pr-performance-observation-binding.ts";
 import {
@@ -65,7 +67,7 @@ void test("a hung command is unavailable with raw timeout evidence, never a fast
   try {
     const run = runObservation({
       executable: process.execPath,
-      args: ["-e", "setInterval(()=>{},1000)"],
+      args: [toolingProgram("process/hold-process-open.js")],
       cwd: dir,
       env: observationEnvironment(1),
       rawDir: join(dir, "raw"),
@@ -128,21 +130,10 @@ void test("full external-process admission catches invalid witnesses and require
     const plants = new URL("./check-gate-plants.mjs", import.meta.url).href;
     writeFileSync(
       fake,
-      `#!${process.execPath}
-import {readdirSync,readFileSync} from 'node:fs';
-import {basename} from 'node:path';
-import {MINIMAL_PLANTS,CORPUS_PLANT_DIAGNOSTICS} from ${JSON.stringify(plants)};
-const files=readdirSync(process.cwd()).filter(f=>f.endsWith('.vue')).sort().map(file=>({file,diagnostics:[]}));
-let errors=0;
-for(const file of files){
- const source=readFileSync(file.file,'utf8');
- const plant=MINIMAL_PLANTS.find(p=>p.id===basename(process.cwd()));
- if(plant && file.file===plant.expected.file && /not-a-number|disabledFlag: string|clickHandler = 123|variant="danger"/.test(source))file.diagnostics=[plant.expected.diagnostic];
- if(file.file==='__CheckGatePlant.vue')file.diagnostics=CORPUS_PLANT_DIAGNOSTICS;
- errors+=file.diagnostics.length;
-}
-console.log(JSON.stringify({files,fileCount:files.length,errorCount:errors,warningCount:0}));process.exitCode=errors?1:0;
-`,
+      readToolingProgram("commands/pr-performance-observation/collect-performance-samples.js.in", {
+        NODE: process.execPath,
+        PLANTS: JSON.stringify(plants),
+      }),
       { mode: 0o755 },
     );
     const result = qualifyCheck({
@@ -252,17 +243,22 @@ void test("a backend swapped during otherwise successful commands prevents a spe
     mkdirSync(receipts);
     writeFileSync(join(input, "A.vue"), "<template><div /></template>\n");
     const backend = join(dir, "backend.mjs");
-    writeFileSync(backend, `#!${process.execPath}\nconsole.log('backend 1');\n`, { mode: 0o755 });
+    writeFileSync(
+      backend,
+      readToolingProgram("commands/pr-performance-observation/backend.cjs.in", {
+        NODE: process.execPath,
+      }),
+      { mode: 0o755 },
+    );
     const sources = { base: "a".repeat(40), head: "b".repeat(40) };
     const binaries = { base: join(dir, "base.mjs"), head: join(dir, "head.mjs") };
     for (const side of ["base", "head"] as const) {
       writeFileSync(
         binaries[side],
-        `#!${process.execPath}
-import{writeFileSync}from'node:fs';
-if(process.argv.includes('--version'))console.log('vize fake');
-else writeFileSync(${JSON.stringify(backend)},'changed during measurement');
-`,
+        readToolingProgram("commands/pr-performance-observation/binaries-side.cjs.in", {
+          NODE: process.execPath,
+          BACKEND: JSON.stringify(backend),
+        }),
         { mode: 0o755 },
       );
       writeFileSync(

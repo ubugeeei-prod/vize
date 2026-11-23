@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -7,7 +8,7 @@ import { test } from "node:test";
 
 import { runReleaseCommand } from "./support/release-command.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
-import { fakeNpmArchiveSource, writeFakeNpmRegistry } from "./support/fake-npm-registry.ts";
+import { fakeRegistryArchivePath, writeFakeNpmRegistry } from "./support/fake-npm-registry.ts";
 
 // Run the actual registry peer unchanged, but admit one complete transaction
 // before the other. Both orders are legal for Promise.all visibility requests.
@@ -17,30 +18,11 @@ function orderRegistryProbes(binDir: string, first: "version" | "metadata"): voi
   writeFakeCommand(
     binDir,
     "curl",
-    [
-      fakeNpmArchiveSource,
-      "const fs = require('node:fs');",
-      "const path = require('node:path');",
-      "const { spawnSync } = require('node:child_process');",
-      "const url = process.argv.at(-1);",
-      "const probe = Number(new URL(url).searchParams.get('vize-publish-check').replace('staged-order-1-', ''));",
-      "const role = url.includes('/1.2.3?') ? 'version' : 'metadata';",
-      `const first = ${JSON.stringify(first)};`,
-      "const marker = path.join(process.env.STAGED_ORDER_ROOT, probe + '-' + first);",
-      "if (probe > 0 && role !== first && !fs.existsSync(marker)) {",
-      "  await new Promise((resolve, reject) => {",
-      "    const watcher = fs.watch(process.env.STAGED_ORDER_ROOT, () => { if (fs.existsSync(marker)) done(); });",
-      "    const timer = setTimeout(() => { watcher.close(); reject(Error('registry peer did not finish')); }, 10000);",
-      "    function done() { watcher.close(); clearTimeout(timer); resolve(); }",
-      "    if (fs.existsSync(marker)) done();",
-      "  });",
-      "}",
-      `const result = spawnSync(process.execPath, [${JSON.stringify(original)}, ...process.argv.slice(2)], { encoding: 'utf8' });`,
-      "process.stdout.write(result.stdout ?? '');",
-      "process.stderr.write(result.stderr ?? '');",
-      "if (probe > 0 && role === first) fs.writeFileSync(marker, 'complete');",
-      "process.exitCode = result.status ?? 1;",
-    ].join("\n"),
+    readToolingProgram("commands/publish-npm-package-staged/curl.js.in", {
+      ARCHIVE_MODULE: JSON.stringify(fakeRegistryArchivePath),
+      FIRST: JSON.stringify(first),
+      ORIGINAL: JSON.stringify(original),
+    }),
   );
 }
 
@@ -61,48 +43,7 @@ function assertStagedPublish(first: "version" | "metadata"): void {
       `${JSON.stringify({ name: "@vizejs/example", version: "1.2.3" }, null, 2)}\n`,
     );
     writeFileSync(statePath, JSON.stringify({ publishCalls: 0, tagChecks: 0, versionChecks: 0 }));
-    writeFakeCommand(
-      binDir,
-      "vp",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "const state = fs.existsSync(process.env.VP_STATE_PATH)",
-        "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
-        "  : { publishCalls: 0, tagChecks: 0, versionChecks: 0 };",
-        "function save() {",
-        "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'version') {",
-        "  state.versionChecks += 1;",
-        "  save();",
-        "  if (state.publishCalls === 1 && state.versionChecks >= 3) {",
-        "    process.stdout.write(JSON.stringify('1.2.3'));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'view' && args[3] === 'dist-tags') {",
-        "  state.tagChecks += 1;",
-        "  save();",
-        "  if (state.publishCalls === 1) {",
-        "    process.stdout.write(JSON.stringify({ latest: '1.2.3' }));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
-        "if (args[0] === 'pm' && args[1] === 'publish') {",
-        "  state.publishCalls += 1;",
-        "  save();",
-        "  fs.appendFileSync(process.env.NPM_FAKE_URL_LOG, 'staged publish\\n');",
-        "  process.stderr.write(",
-        "    'Cannot publish over previously staged version \"1.2.3\".',",
-        "  );",
-        "  process.exit(1);",
-        "}",
-        "process.exit(1);",
-      ].join("\n"),
-    );
+    writeFakeCommand(binDir, "vp", readToolingProgram("commands/publish-npm-package-staged/vp.js"));
 
     const result = runReleaseCommand("publish_npm_package", [packageDir], {
       env: {

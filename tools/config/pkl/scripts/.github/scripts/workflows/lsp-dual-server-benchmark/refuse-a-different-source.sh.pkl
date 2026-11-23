@@ -1,0 +1,9 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  module.requireCommitShas(List("EXPECTED_SOURCE"))
+  module.requireCheckout("EXPECTED_SOURCE")
+}

@@ -60,6 +60,8 @@ on:
       - "pnpm-lock.yaml"
       - "Cargo.lock"
       - ".github/workflows/jsx-authored-native-modules.yml"
+      - ".github/scripts/workflows/jsx-authored-native-modules/**"
+      - ".github/scripts/workflows/shared/**"
 permissions: { contents: read }
 concurrency:
   group: jsx-authored-native-${{ github.event.pull_request.number || github.ref }}
@@ -75,6 +77,19 @@ jobs:
       BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/jsx-authored-native-modules/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -97,107 +112,18 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Compare reusable module regions with the original checker projection
-        run: |
-          # Both the projected modules and the published ambient file import Vue.
-          test -f npm/cli/node_modules/vue/package.json
-          cargo test --locked --profile ci -p vize_l4 --features module-ir --test jsx_module_projection
-          export VIZE_MODULE_IR_MANIFEST="$RUNNER_TEMP/module-ir-paths"
-          git ls-files -z '*.jsx' '*.tsx' '*.jsx.txt' '*.tsx.txt' > "$VIZE_MODULE_IR_MANIFEST"
-          cargo test --locked --profile ci -p vize_l4 --features module-ir --test jsx_module_projection -- neutral_corpus::compare_modules_at_every_outcome --exact --ignored --nocapture
+        run: . "${{ env.VIZE_CI_FILES }}/compare-reusable-module-regions-with-the-original-checker-projection.sh"
       - name: Check lexical component props against the Canon TypeScript generator
         env:
           VIZE_MODULE_IR_MANIFEST: ${{ runner.temp }}/module-ir-paths
-        run: |
-          cargo test --locked --profile ci -p vize_canon --features component-projection-tests --test component_prop_projection
-          cargo run --locked --profile ci -p vize_canon --features component-projection-tests --example component_projection_alloc
-          cargo test --locked --profile ci -p vize_canon --features component-projection-tests --test component_prop_projection -- corpus::component_props_in_original_modules --exact --ignored --nocapture
+        run: . "${{ env.VIZE_CI_FILES }}/check-lexical-component-props-against-the-canon-typescript-generator.sh"
       - name: Original VDOM child values and parent block ownership before and after
         env:
           INSTA_UPDATE: new
-        run: |
-          set -euo pipefail
-          directory="$RUNNER_TEMP/jsx-authored-native/vdom-child-values"
-          mkdir -p "$directory"
-          test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
-          git rev-parse HEAD HEAD^{tree} > "$directory/head-source.txt"
-          baseline="$RUNNER_TEMP/jsx-vdom-values-base"
-          observer=crates/vize_atelier_jsx/tests/vdom_child_values.rs
-          git worktree add --detach "$baseline" 9c594186bae97cbc4b4c5441d9165b3354ccbec0
-          cp "$observer" "$baseline/$observer"
-          cmp "$observer" "$baseline/$observer"
-          git -C "$baseline" diff --exit-code -- crates/*/src davinci/*/src
-          git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$directory/base-source.txt"
-          sha256sum "$observer" "$baseline/$observer" tests/tooling/jsx-vapor-oracle/{child-values.ts,vdom-child-values.ts,runtime.ts} tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json > "$directory/observer.sha256"
-          status=0
-          cargo test --locked --profile ci -p vize_l2 --test op_family --test jsx_child_dump > "$directory/typed-ir.stdout" 2> "$directory/typed-ir.stderr" || status=1
-          cargo test --locked --profile ci -p vize_l2_to_l3 --test jsx_child_value > "$directory/child-graph.stdout" 2> "$directory/child-graph.stderr" || status=1
-          cargo test --locked --profile ci -p vize_l3 --test op_family --test values_dump > "$directory/child-graph-codec.stdout" 2> "$directory/child-graph-codec.stderr" || status=1
-          cargo test --locked --profile ci -p vize_canon --test jsx_child_expression_control > "$directory/projection-control.stdout" 2> "$directory/projection-control.stderr" || status=1
-          lint_selector=jsx_child_expression_control::ordinary_template_and_v_text_keep_the_complete_undefined_reference_diagnostic
-          cargo test --locked --profile ci -p vize_patina --test integration "$lint_selector" -- --exact --list > "$directory/linter-control.list.stdout" 2> "$directory/linter-control.list.stderr" || status=1
-          cargo test --locked --profile ci -p vize_patina --test integration "$lint_selector" -- --exact > "$directory/linter-control.stdout" 2> "$directory/linter-control.stderr" || status=1
-          LINTER_CONTROL_DIRECTORY="$directory" LINTER_CONTROL_SELECTOR="$lint_selector" python3 - <<'PYCONTROL' || status=1
-          import os,re
-          from pathlib import Path
-          directory=Path(os.environ['LINTER_CONTROL_DIRECTORY'])
-          selected=[line for line in (directory/'linter-control.list.stdout').read_text().splitlines() if line.endswith(': test')]
-          assert selected==[os.environ['LINTER_CONTROL_SELECTOR']+': test'], selected
-          assert re.search(r'test result: ok\. 1 passed; 0 failed; 0 ignored;', (directory/'linter-control.stdout').read_text())
-          PYCONTROL
-          VIZE_JSX_VDOM_CHILD_CAPTURE="$directory/head" cargo test --locked --profile ci -p vize_atelier_jsx --test vdom_child_values -- --nocapture > "$directory/head.stdout" 2> "$directory/head.stderr" || status=1
-          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-vdom-values-base-target" VIZE_JSX_VALUE_ORACLE_ROOT="$GITHUB_WORKSPACE" VIZE_JSX_VDOM_EXPECT_OLD=1 VIZE_JSX_VDOM_CHILD_CAPTURE="$directory/base" cargo test --locked --profile ci -p vize_atelier_jsx --test vdom_child_values -- --nocapture) > "$directory/base.stdout" 2> "$directory/base.stderr" || status=1
-          if test "$status" = 0; then
-            node --input-type=module - "$directory" <<'JSCODE'
-          import assert from 'node:assert/strict';
-          import fs from 'node:fs';
-          import path from 'node:path';
-          const directory=process.argv[2];
-          const read=role=>JSON.parse(fs.readFileSync(path.join(directory,role,'complete.json'),'utf8'));
-          const before=read('base'),after=read('head');
-          assert.deepEqual(after.original,before.original);
-          assert.deepEqual(after.templates,before.templates,'complete ordinary template interpolation and v-text code/maps/diagnostics unchanged');
-          assert.equal(before.cases.length,4);assert.equal(after.cases.length,4);
-          for(let index=0;index<4;index++) {
-            const old=before.cases[index],current=after.cases[index];
-            assert.deepEqual(current.input.original,old.input.original);
-            for(const key of ['vapor','shadowedSource','shadowedVapor']) assert.deepEqual(current.input[key],old.input[key]);
-            for(const key of ['source','mapped','diagnostics','functionName']) assert.deepEqual(current.input.vdom[key],old.input.vdom[key]);
-          }
-          fs.writeFileSync(path.join(directory,'comparison.json'),JSON.stringify({originalPhases:10,originalSourceUnchanged:true,oldNativeVdomMatchesBabel:[true,true,true,true,true,false,false,false,false,true],newNativeVdomMatchesBabel:Array(10).fill(true),templateControlsWholeEqual:true,wholeCorpusQualified:false,issue6890Complete:false},null,2)+'\n');
-          JSCODE
-          fi
-          exit "$status"
+        run: . "${{ env.VIZE_CI_FILES }}/original-vdom-child-values-and-parent-block-ownership-before-and-after.sh"
       - name: Genuine pre-review slot and sequence producer packets
         if: always()
-        run: |
-          set -euo pipefail
-          directory="$RUNNER_TEMP/jsx-authored-native/vdom-review"
-          mkdir -p "$directory"
-          test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
-          git rev-parse HEAD HEAD^{tree} > "$directory/head-source.txt"
-          baseline="$RUNNER_TEMP/jsx-vdom-review-base"
-          observer=crates/vize_atelier_jsx/tests/vdom_child_review.rs
-          git fetch --no-tags origin 18ebd0556f55fc1fff4b7a993efa752bdabc7232
-          git worktree add --detach "$baseline" 18ebd0556f55fc1fff4b7a993efa752bdabc7232
-          cp "$observer" "$baseline/$observer"
-          cmp "$observer" "$baseline/$observer"
-          ir_observer=davinci/vize_l4/tests/jsx_child_values.rs
-          # The baseline predates the neutral `Op::ChildValue` name (`ui.jsx-child`);
-          # its copy of the observer spells the variant as the baseline does, and
-          # nothing else may differ.
-          sed 's/\bOp::ChildValue\b/Op::JsxChildValue/g' "$ir_observer" > "$baseline/$ir_observer"
-          diff <(sed 's/\bOp::JsxChildValue\b/Op::ChildValue/g' "$baseline/$ir_observer") "$ir_observer"
-          git -C "$baseline" diff --exit-code -- crates/*/src davinci/*/src
-          git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$directory/base-source.txt"
-          sha256sum "$observer" "$baseline/$observer" "$ir_observer" "$baseline/$ir_observer" tests/tooling/jsx-vapor-oracle/{vdom-child-review.ts,vdom-child-review-browser.ts,vdom-child-ir.ts,runtime.ts} tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json > "$directory/observer.sha256"
-          status=0
-          VIZE_JSX_VDOM_REVIEW_CAPTURE="$directory/head.json" cargo test --locked --profile ci -p vize_atelier_jsx --test vdom_child_review > "$directory/head.stdout" 2> "$directory/head.stderr" || status=1
-          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-vdom-review-base-target" VIZE_JSX_VDOM_REVIEW_CAPTURE="$directory/base.json" cargo test --locked --profile ci -p vize_atelier_jsx --test vdom_child_review) > "$directory/base.stdout" 2> "$directory/base.stderr" || status=1
-          node tests/tooling/jsx-vapor-oracle/vdom-child-review.ts "$directory/base.json" "$directory/head.json" "$directory/node.json" > "$directory/node.stdout" 2> "$directory/node.stderr" || status=1
-          VIZE_JSX_RAW_IR_CAPTURE="$directory/head-ir.json" cargo test --locked --profile ci -p vize_l4 --test jsx_child_values > "$directory/head-ir.stdout" 2> "$directory/head-ir.stderr" || status=1
-          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-vdom-review-base-target" VIZE_JSX_RAW_IR_CAPTURE="$directory/base-ir.json" cargo test --locked --profile ci -p vize_l4 --test jsx_child_values) > "$directory/base-ir.stdout" 2> "$directory/base-ir.stderr" || status=1
-          node tests/tooling/jsx-vapor-oracle/vdom-child-ir.ts "$directory/base-ir.json" "$directory/head-ir.json" "$directory/ir-ast.json" > "$directory/ir-ast.stdout" 2> "$directory/ir-ast.stderr" || status=1
-          exit "$status"
+        run: . "${{ env.VIZE_CI_FILES }}/genuine-pre-review-slot-and-sequence-producer-packets.sh"
       - name: Complete native module and source-map oracles
         if: always()
         env:
@@ -205,121 +131,11 @@ jobs:
           VIZE_JSX_ADMISSION_CAPTURE: ${{ runner.temp }}/jsx-authored-native/admission.json
           VIZE_JSX_STATEFUL_SSR_CAPTURE: ${{ runner.temp }}/jsx-authored-native/stateful-vdom-ssr.json
           INSTA_UPDATE: new
-        run: |
-          mkdir -p "$RUNNER_TEMP/jsx-authored-native"
-          test "$(git rev-parse HEAD)" = "$QUALIFICATION_HEAD_SHA"
-          git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/source.txt"
-          git diff --exit-code
-          status=0
-          cargo test --locked --profile ci -p vize_atelier_jsx --test authored_native_modules -- --nocapture || status=1
-          VIZE_JSX_NATIVE_USES_CAPTURE="$RUNNER_TEMP/jsx-authored-native/component-uses.json" cargo test --locked --profile ci -p vize_atelier_jsx --test native_component_uses -- --nocapture || status=1
-          VIZE_JSX_COMPONENT_STABILITY_CAPTURE="$RUNNER_TEMP/jsx-authored-native/component-stability.json" cargo test --locked --profile ci -p vize_atelier_jsx --test native_component_stability -- --nocapture || status=1
-          exit "$status"
+        run: . "${{ env.VIZE_CI_FILES }}/complete-native-module-and-source-map-oracles.sh"
       - name: Measure the exact old and new authored-module contracts
-        run: |
-          set -euo pipefail
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          baseline="$RUNNER_TEMP/jsx-authored-base"
-          observer=crates/vize_atelier_jsx/tests/authored_module_profile.rs
-          git worktree add --detach "$baseline" "$BASE_SHA"
-          cp "$observer" "$baseline/$observer"
-          cmp "$observer" "$baseline/$observer"
-          role_observer=crates/vize_atelier_jsx/tests/ssr_functional_role_packet.rs
-          cp "$role_observer" "$baseline/$role_observer"
-          cmp "$role_observer" "$baseline/$role_observer"
-          git -C "$baseline" diff --exit-code -- crates/*/src
-          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-authored-base-target" VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
-          VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/head-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture
-          (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-authored-base-target" VIZE_JSX_FUNCTIONAL_ROLE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/base-functional-role.json" cargo test --locked --profile ci -p vize_atelier_jsx --test ssr_functional_role_packet -- --nocapture)
-          VIZE_JSX_FUNCTIONAL_ROLE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/head-functional-role.json" cargo test --locked --profile ci -p vize_atelier_jsx --test ssr_functional_role_packet -- --nocapture
-          git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/base-source.txt"
-          sha256sum "$observer" "$baseline/$observer" "$role_observer" "$baseline/$role_observer" > "$RUNNER_TEMP/jsx-authored-native/observer.sha256"
-          # A separate source tree/target isolates the actual static-value
-          # change from the earlier standalone-to-authored-module transition.
-          stable_base="$RUNNER_TEMP/jsx-stability-base"
-          git worktree add --detach "$stable_base" 664c7dc3846c068a756b7562e11eab35a9497d9d
-          cp "$observer" "$stable_base/$observer"
-          cmp "$observer" "$stable_base/$observer"
-          git -C "$stable_base" diff --exit-code -- crates/*/src
-          (cd "$stable_base" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-stability-base-target" VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/stability-base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
-          git -C "$stable_base" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/stability-base-source.txt"
-          sha256sum "$observer" "$stable_base/$observer" > "$RUNNER_TEMP/jsx-authored-native/stability-observer.sha256"
-          stability_oracle=crates/vize_atelier_jsx/tests/native_component_stability.rs
-          stability_packet=tests/_fixtures/differential/jsx/authored-native-modules-10700/component-stability.json
-          cp "$stability_oracle" "$stable_base/$stability_oracle"
-          cp "$stability_packet" "$stable_base/$stability_packet"
-          cmp "$stability_oracle" "$stable_base/$stability_oracle"
-          cmp "$stability_packet" "$stable_base/$stability_packet"
-          (cd "$stable_base" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-stability-base-target" VIZE_JSX_COMPONENT_STABILITY_EXPECT_OLD=1 VIZE_JSX_COMPONENT_STABILITY_CAPTURE="$RUNNER_TEMP/jsx-authored-native/stability-base-packets.json" cargo test --locked --profile ci -p vize_atelier_jsx --test native_component_stability -- --nocapture)
-          sha256sum "$stability_oracle" "$stable_base/$stability_oracle" > "$RUNNER_TEMP/jsx-authored-native/stability-oracle.sha256"
+        run: . "${{ env.VIZE_CI_FILES }}/measure-the-exact-old-and-new-authored-module-contracts.sh"
       - name: Verify measured contracts and source counters
-        run: |
-          node tests/tooling/support/jsx-child-profile-contract.ts verify "$RUNNER_TEMP/jsx-authored-native"
-          python3 - <<'PYCODE'
-          import json, os, statistics
-          from pathlib import Path
-          directory=Path(os.environ['RUNNER_TEMP'])/'jsx-authored-native'
-          base=json.loads((directory/'base-profile.json').read_text())
-          head=json.loads((directory/'head-profile.json').read_text())
-          assert len(base)==len(head)==16
-          stability_base=json.loads((directory/'stability-base-profile.json').read_text())
-          assert len(stability_base)==len(head)
-          before_packets=json.loads((directory/'stability-base-packets.json').read_text())
-          after_packets=json.loads((directory/'component-stability.json').read_text())
-          assert len(before_packets)==len(after_packets)==28
-          for previous,current in zip(before_packets,after_packets):
-            for key in ['source','name','mode','stable']: assert previous[key]==current[key]
-            if current['mode']=='Vdom' or not current['stable']:
-              assert {k:v for k,v in previous.items() if k!='counters'}=={k:v for k,v in current.items() if k!='counters'}, 'complete default/conservative code/maps/tokens remain exact'
-          before_roles=json.loads((directory/'base-functional-role.json').read_text())
-          after_roles=json.loads((directory/'head-functional-role.json').read_text())
-          assert len(before_roles)==len(after_roles)==6
-          for index,(before,after) in enumerate(zip(before_roles,after_roles)):
-            assert before['source']==after['source']
-            assert before['components']==after['components'], 'module admission must retain the whole original producer packet'
-            if index==0:
-              assert after['module']=='' and len(after['diagnostics'])==1
-              if not before['diagnostics']:
-                assert 'function ssrRender' in before['module'] and 'const A =' not in before['module']
-            if index==3:
-              assert not after['diagnostics'] and '__ssrInlineRender: true' in after['module']
-            if index in [1,2,4,5]:
-              assert len(after['diagnostics'])==1 and after['module']==''
-              diagnostic=after['diagnostics'][0]
-              assert after['source'][diagnostic['start']:diagnostic['end']] in ['1','`text`']
-          rows=[]
-          for previous,current in zip(base,head):
-            for field in ['source','ssr','map','iterationsPerSample']: assert previous[field]==current[field]
-            assert not current['output']['diagnostics'], current['output']
-            counters={entry['name']:entry['total'] for entry in current['counters']}
-            assert counters.get('atelier.jsx.lower.component_stability_builds',0)<=1
-            roots=counters['atelier.jsx.module.native_roots']
-            assert counters['atelier.jsx.module.component_use_candidates']==0
-            assert counters['atelier.jsx.module.component_use_semantic_builds']==0
-            assert counters['atelier.jsx.module.component_use_refusals']==0
-            assert counters['atelier.jsx.module.native_plans']==roots
-            assert counters['atelier.jsx.module.native_generated_maps']==(roots if current['map'] else 0)
-            if current['ssr']: assert counters['l4.ssr.accepted']==roots
-            else: assert counters['atelier.vapor.transformed_root.origin_collections']==(roots if current['map'] else 0)
-            if current['map']:
-              mapped=json.loads(current['output']['map'])
-              assert mapped['sourcesContent']==[current['source']]
-            else: assert current['output']['map'] is None
-            assert len(previous['samplesNs'])==len(current['samplesNs'])==9
-            before=statistics.median(previous['samplesNs'])
-            after=statistics.median(current['samplesNs'])
-            rows.append({'source':current['source'],'ssr':current['ssr'],'map':current['map'],'baseContract':'explicit-refusal' if previous['output']['diagnostics'] else 'complete-module','headContract':'complete-module','baseMedianNs':before,'headMedianNs':after,'ratio':after/before,'counters':current['counters']})
-          (directory/'comparison.json').write_text(json.dumps({'scope':'same sources with raw before/head outcomes retained; ratios describe the observed contracts and do not claim equivalent work or a speedup','rows':rows},indent=2)+'\n')
-          stable_rows=[]
-          for previous,current in zip(stability_base,head):
-            for field in ['source','ssr','map','iterationsPerSample']: assert previous[field]==current[field]
-            changed=current['source'].startswith('const Child={};') and not current['ssr']
-            assert not previous['output']['diagnostics'] and not current['output']['diagnostics']
-            before=statistics.median(previous['samplesNs']); after=statistics.median(current['samplesNs'])
-            stable_rows.append({'source':current['source'],'ssr':current['ssr'],'map':current['map'],'intentionalStaticValueChange':changed,'baseMedianNs':before,'headMedianNs':after,'ratio':after/before,'counters':current['counters']})
-          (directory/'stability-comparison.json').write_text(json.dumps({'scope':'literal guarded664 source versus head; exact generated-output transitions are verified separately and raw timings are descriptive','rows':stable_rows},indent=2)+'\n')
-          PYCODE
-          node tests/tooling/support/jsx-child-profile-contract.ts report "$RUNNER_TEMP/jsx-authored-native"
+        run: . "${{ env.VIZE_CI_FILES }}/verify-measured-contracts-and-source-counters.sh"
       - name: Existing JSX library contracts
         if: always()
         env: { INSTA_UPDATE: new }
@@ -330,50 +146,16 @@ jobs:
           INSTA_UPDATE: new
           VIZE_JSX_ADVERSARIAL_CAPTURE: ${{ runner.temp }}/jsx-authored-native/adversarial
           VIZE_JSX_VDOM_SCOPED_SLOT_CAPTURE: ${{ runner.temp }}/jsx-authored-native/scoped-slot-vdom.json
-        run: |
-          status=0
-          for target in compile ssr vapor_ssr babel_is_custom_element babel_merge_props babel_v_slots babel_compat_oracle babel_tag_classification compat_mode control_flow parity_vdom slots style v_slots vdom authored_modules pragma v_model_argument v_slots_forwarding adversarial_snapshots vapor parity_vapor parity_tsx ordered_spread_props spread_child; do
-            cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" || status=1
-          done
-          exit "$status"
+        run: . "${{ env.VIZE_CI_FILES }}/existing-mode-and-babel-option-producer-contracts.sh"
       - name: Exact pure Rust JSX adapter DTO test
         if: always()
         env: { INSTA_UPDATE: new }
-        run: |
-          set -euo pipefail
-          directory="$RUNNER_TEMP/jsx-authored-native"
-          test_name=napi::jsx::tests::jsx_compile_result_supports_ssr_output
-          cargo test --locked --profile ci -p vize_vitrine --lib "$test_name" -- --exact --list > "$directory/napi-dto.list.stdout" 2> "$directory/napi-dto.list.stderr"
-          python3 - <<'PYCODE'
-          import os
-          from pathlib import Path
-          lines=(Path(os.environ['RUNNER_TEMP'])/'jsx-authored-native/napi-dto.list.stdout').read_text().splitlines()
-          assert [line for line in lines if line.endswith(': test')]==['napi::jsx::tests::jsx_compile_result_supports_ssr_output: test'], lines
-          PYCODE
-          status=0
-          cargo test --locked --profile ci -p vize_vitrine --lib "$test_name" -- --exact > "$directory/napi-dto.run.stdout" 2> "$directory/napi-dto.run.stderr" || status=1
-          python3 - <<'PYCODE'
-          import hashlib,json,os,re
-          from pathlib import Path
-          directory=Path(os.environ['RUNNER_TEMP'])/'jsx-authored-native'
-          stdout=(directory/'napi-dto.run.stdout').read_text()
-          passed=bool(re.search(r'test result: ok\. 1 passed; 0 failed; 0 ignored;',stdout))
-          names=[line for line in (directory/'napi-dto.list.stdout').read_text().splitlines() if line.endswith(': test')]
-          receipt={'sourceHead':(directory/'source.txt').read_text().splitlines()[0],'selected':names,'selectedCount':len(names),'exactOnePassed':passed,'scope':'pure Rust adapter DTO and compile implementation; no Node ABI execution credit','filesSha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in directory.glob('napi-dto.*') if p.is_file()}}
-          (directory/'napi-dto.receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
-          assert passed, stdout
-          PYCODE
-          exit "$status"
+        run: . "${{ env.VIZE_CI_FILES }}/exact-pure-rust-jsx-adapter-dto-test.sh"
       - name: Preserve complete source-native VDOM adapter modules
         if: always()
         env:
           VIZE_JSX_VDOM_NAPI_CAPTURE: ${{ runner.temp }}/jsx-authored-native/napi-vdom-modules
-        run: |
-          status=0
-          for name in jsx_compile_result_includes_runtime_helper_preamble jsx_compile_result_wraps_block_body_setup_state; do
-            cargo test --locked --profile ci -p vize_vitrine --lib "napi::jsx::tests::$name" -- --exact > "$RUNNER_TEMP/jsx-authored-native/napi-vdom-$name.stdout" 2> "$RUNNER_TEMP/jsx-authored-native/napi-vdom-$name.stderr" || status=1
-          done
-          exit "$status"
+        run: . "${{ env.VIZE_CI_FILES }}/preserve-complete-source-native-vdom-adapter-modules.sh"
       - name: Complete WASM JSX DTO and original refusal contracts
         if: always()
         run: |
@@ -395,14 +177,7 @@ jobs:
           VIZE_JSX_CHILD_TRACE_CAPTURE: ${{ runner.temp }}/jsx-authored-native/child-runtime.json
           VIZE_L4_SSR_REQUIRE_NATIVE: "1"
           VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE: ${{ runner.temp }}/jsx-authored-native/runtime-producer
-        run: |
-          status=0
-          mkdir -p "$RUNNER_TEMP/jsx-authored-native"
-          for target in falsy_and nested_typecheck_runtime vue_jsx_vapor_compat_oracle dynamic_child_values; do
-            cargo test --locked --profile ci -p vize_atelier_jsx --test "$target" -- --nocapture > "$RUNNER_TEMP/jsx-authored-native/$target.stdout.log" 2> "$RUNNER_TEMP/jsx-authored-native/$target.stderr.log" || status=1
-          done
-          VIZE_JSX_VAPOR_COMPAT_TRACE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/reference-metadata.json" node tests/tooling/jsx-vapor-oracle/oracle.mjs --reference > "$RUNNER_TEMP/jsx-authored-native/reference.stdout.json" 2> "$RUNNER_TEMP/jsx-authored-native/reference.stderr.log" || status=1
-          exit "$status"
+        run: . "${{ env.VIZE_CI_FILES }}/capture-whole-native-fixture-packets-and-genuine-runtime-traces.sh"
       - uses: ./.github/actions/install-playwright-browsers
         if: always()
         with: { workspace: ./tests }

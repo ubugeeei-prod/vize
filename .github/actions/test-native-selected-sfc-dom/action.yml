@@ -10,13 +10,7 @@ runs:
         VIZE_L4_DOM_STATIC_CLASS_CAPTURE: ${{ runner.temp }}/native-dom-static-class.json
         VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE: ${{ runner.temp }}/native-dom-static-class-runtime
         VIZE_L4_DOM_STATIC_CLASS_REQUIRE_CAPTURE: "1"
-      run: |
-        cargo test --locked --profile ci -p vize_l4 --test native_dom_static_class -- --nocapture
-        NODE_ENV=development vp node --test tests/tooling/native-dom-static-class-reference.test.ts
-        NODE_ENV=production vp node --test tests/tooling/native-dom-static-class-reference.test.ts
-        test -s "$VIZE_L4_DOM_STATIC_CLASS_CAPTURE"
-        test -s "${VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE}.development.json"
-        test -s "${VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE}.production.json"
+      run: . "$GITHUB_ACTION_PATH/scripts/qualify-fresh-completed-lower-file-static-class-modules-in-both-runtime.sh"
     - name: Qualify whole public selected static class components in both runtime modes
       if: ${{ !cancelled() }}
       shell: bash
@@ -24,73 +18,35 @@ runs:
         VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE: ${{ runner.temp }}/native-selected-static-class.json
         VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE: ${{ runner.temp }}/native-selected-static-class-runtime
         VIZE_NATIVE_SELECTED_STATIC_CLASS_REQUIRE_CAPTURE: "1"
-      run: |
-        set +e
-        cargo test --locked --profile ci -p vize_atelier_sfc --test native_selected_static_class -- --nocapture
-        public_class_rust_status=$?
-        cargo test --locked --profile ci -p vize_atelier_sfc --lib native_selected_setup::tests::original_for::refusal::constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_policies -- --exact --nocapture
-        public_class_stage_status=$?
-        NODE_ENV=development vp node --test tests/tooling/native-selected-static-class-reference.test.ts tests/tooling/native-static-class-history-successor-reference.test.ts
-        public_class_development_status=$?
-        NODE_ENV=production vp node --test tests/tooling/native-selected-static-class-reference.test.ts tests/tooling/native-static-class-history-successor-reference.test.ts
-        public_class_production_status=$?
-        set -e
-        printf '{"rust":%s,"stage":%s,"development":%s,"production":%s}\n' "$public_class_rust_status" "$public_class_stage_status" "$public_class_development_status" "$public_class_production_status" > "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.statuses.json"
-        test -s "$VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE"
-        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE}.late-header.json"
-        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE}.for-refusal.json"
-        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.late-header.development.json"
-        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.late-header.production.json"
-        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.production.json"
-        test "$public_class_rust_status" -eq 0
-        test "$public_class_stage_status" -eq 0
-        test "$public_class_development_status" -eq 0
-        test "$public_class_production_status" -eq 0
+      run: . "$GITHUB_ACTION_PATH/scripts/qualify-whole-public-selected-static-class-components-in-both-runtime-mo.sh"
     - name: Capture and execute source-built selected SFC components
       shell: bash
       env:
         VIZE_NATIVE_SELECTED_SFC_DOM_CAPTURE: ${{ runner.temp }}/native-selected-sfc-dom-capture.json
         VIZE_NATIVE_SELECTED_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_SELECTED_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-selected-sfc-dom-runtime.json
-      run: |
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected::tests::five_whole_original_click_components_and_maps_are_captured -- --exact
-        vp node --test tests/tooling/native-selected-sfc-dom-reference.test.ts
-        test -s "$VIZE_NATIVE_SELECTED_SFC_DOM_CAPTURE"
-        test -s "$VIZE_NATIVE_SELECTED_SFC_DOM_RUNTIME_CAPTURE"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-and-execute-source-built-selected-sfc-components.sh"
     - name: Capture and execute whole original selected setup components
       shell: bash
       env:
         VIZE_NATIVE_SELECTED_SETUP_SFC_DOM_CAPTURE: ${{ runner.temp }}/native-selected-setup-sfc-dom-capture.json
         VIZE_NATIVE_SELECTED_SETUP_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_SELECTED_SETUP_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-selected-setup-sfc-dom-runtime.json
-      run: |
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::seven_whole_original_setup_components_and_maps_are_captured -- --exact
-        vp node --test tests/tooling/native-selected-setup-sfc-dom-reference.test.ts
-        test -s "$VIZE_NATIVE_SELECTED_SETUP_SFC_DOM_CAPTURE"
-        test -s "$VIZE_NATIVE_SELECTED_SETUP_SFC_DOM_RUNTIME_CAPTURE"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-and-execute-whole-original-selected-setup-components.sh"
     - name: Capture and execute whole original mutable For components
       shell: bash
       env:
         VIZE_NATIVE_ORIGINAL_FOR_SFC_DOM_CAPTURE: ${{ runner.temp }}/native-original-for-sfc-dom-capture.json
         VIZE_NATIVE_ORIGINAL_FOR_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_ORIGINAL_FOR_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-for-sfc-dom-runtime.json
-      run: |
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for::ten_whole_original_for_components_and_maps_are_captured -- --exact
-        vp node --test tests/tooling/native-original-for-sfc-dom-reference.test.ts
-        test -s "$VIZE_NATIVE_ORIGINAL_FOR_SFC_DOM_CAPTURE"
-        test -s "$VIZE_NATIVE_ORIGINAL_FOR_SFC_DOM_RUNTIME_CAPTURE"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-and-execute-whole-original-mutable-for-components.sh"
     - name: Capture and execute whole original For value components
       shell: bash
       env:
         VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_CAPTURE: ${{ runner.temp }}/native-original-for-value-sfc-dom-capture.json
         VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-for-value-sfc-dom-runtime.json
-      run: |
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for_value::six_whole_original_for_value_components_and_raw_maps_are_captured -- --exact
-        vp node --test tests/tooling/native-original-for-value-sfc-dom-reference.test.ts
-        test -s "$VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_CAPTURE"
-        test -s "$VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_RUNTIME_CAPTURE"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-and-execute-whole-original-for-value-components.sh"
     - name: Capture new original For key components and execute both primary runtime modes
       shell: bash
       env:
@@ -98,46 +54,14 @@ runs:
         VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_PRIMARY_CAPTURE: ${{ runner.temp }}/native-original-for-key-sfc-dom-primary
         VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-for-key-sfc-dom-runtime
-      run: |
-        key_rust_status=0
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for_key::nine_whole_original_key_sources_capture_real_bindings_and_maps -- --exact --nocapture || key_rust_status=$?
-        key_development_status=0
-        NODE_ENV=development vp node --test tests/tooling/native-original-for-key-sfc-dom-reference.test.ts || key_development_status=$?
-        key_production_status=0
-        NODE_ENV=production vp node --test tests/tooling/native-original-for-key-sfc-dom-reference.test.ts || key_production_status=$?
-        printf '{"rust":%s,"development":%s,"production":%s}\n' "$key_rust_status" "$key_development_status" "$key_production_status" > "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_CAPTURE}.statuses.json"
-        test "$key_rust_status" -eq 0
-        test "$key_development_status" -eq 0
-        test "$key_production_status" -eq 0
-        test -s "$VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_CAPTURE"
-        test -s "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_PRIMARY_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_PRIMARY_CAPTURE}.production.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_RUNTIME_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_RUNTIME_CAPTURE}.production.json"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-new-original-for-key-components-and-execute-both-primary-runtime.sh"
     - name: Capture and qualify original constant For components in both runtime modes
       shell: bash
       env:
         VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_CAPTURE: ${{ runner.temp }}/native-original-for-constant-sfc-dom-capture.json
         VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_RAW_CAPTURE: ${{ runner.temp }}/native-original-for-constant-sfc-dom-unqualified-attempts.json
-      run: |
-        rust_status=0
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for_constant::eleven_whole_original_constant_for_components_and_raw_maps_are_captured -- --exact || rust_status=$?
-        node_status=0
-        vp node tests/tooling/support/native-original-for-constant-sfc-dom-processes.ts || node_status=$?
-        RUST_STATUS="$rust_status" NODE_STATUS="$node_status" vp node --input-type=module -e '
-          import fs from "node:fs";
-          fs.writeFileSync(process.env.VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_RAW_CAPTURE + ".statuses.json", JSON.stringify({
-            schema: "vize.native-sfc.original-for-constant-process-statuses",
-            sourceRevision: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID,
-            rustStatus: Number(process.env.RUST_STATUS), nodeStatus: Number(process.env.NODE_STATUS)
-          }, null, 2) + "\n");
-        '
-        test "$rust_status" -eq 0
-        test "$node_status" -eq 0
-        test -s "$VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_CAPTURE"
-        test -s "${{ runner.temp }}/native-original-for-constant-sfc-dom-development-runtime.json"
-        test -s "${{ runner.temp }}/native-original-for-constant-sfc-dom-production-runtime.json"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-and-qualify-original-constant-for-components-in-both-runtime-mod.sh"
     - name: Capture genuine original root If components in both explicit modes
       if: ${{ !cancelled() }}
       shell: bash
@@ -146,22 +70,7 @@ runs:
         VIZE_NATIVE_ORIGINAL_ROOT_IF_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_ORIGINAL_ROOT_IF_SFC_DOM_PRIMARY_CAPTURE: ${{ runner.temp }}/native-original-root-if-sfc-dom-primary
         VIZE_NATIVE_ORIGINAL_ROOT_IF_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-root-if-sfc-dom-runtime
-      run: |
-        root_if_rust_status=0
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_root_if::eighteen_whole_original_root_if_components_and_maps_are_captured -- --exact --nocapture || root_if_rust_status=$?
-        root_if_development_status=0
-        NODE_ENV=development vp node --test tests/tooling/native-original-root-if-sfc-dom-reference.test.ts || root_if_development_status=$?
-        root_if_production_status=0
-        NODE_ENV=production vp node --test tests/tooling/native-original-root-if-sfc-dom-reference.test.ts || root_if_production_status=$?
-        printf '{"rust":%s,"development":%s,"production":%s}\n' "$root_if_rust_status" "$root_if_development_status" "$root_if_production_status" > "${VIZE_NATIVE_ORIGINAL_ROOT_IF_SFC_DOM_CAPTURE}.statuses.json"
-        test "$root_if_rust_status" -eq 0
-        test "$root_if_development_status" -eq 0
-        test "$root_if_production_status" -eq 0
-        test -s "$VIZE_NATIVE_ORIGINAL_ROOT_IF_SFC_DOM_CAPTURE"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_SFC_DOM_PRIMARY_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_SFC_DOM_PRIMARY_CAPTURE}.production.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_SFC_DOM_RUNTIME_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_SFC_DOM_RUNTIME_CAPTURE}.production.json"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-genuine-original-root-if-components-in-both-explicit-modes.sh"
     - name: Capture genuine root If setup-binding text in both explicit modes
       if: ${{ !cancelled() }}
       shell: bash
@@ -170,22 +79,7 @@ runs:
         VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_PRIMARY_CAPTURE: ${{ runner.temp }}/native-original-root-if-text-sfc-dom-primary
         VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-root-if-text-sfc-dom-runtime
-      run: |
-        root_if_text_rust_status=0
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_root_if_text::eight_whole_original_root_if_text_components_and_raw_maps_are_captured -- --exact --nocapture || root_if_text_rust_status=$?
-        root_if_text_development_status=0
-        NODE_ENV=development vp node --test tests/tooling/native-original-root-if-text-sfc-dom-reference.test.ts || root_if_text_development_status=$?
-        root_if_text_production_status=0
-        NODE_ENV=production vp node --test tests/tooling/native-original-root-if-text-sfc-dom-reference.test.ts || root_if_text_production_status=$?
-        printf '{"rust":%s,"development":%s,"production":%s}\n' "$root_if_text_rust_status" "$root_if_text_development_status" "$root_if_text_production_status" > "${VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_CAPTURE}.statuses.json"
-        test "$root_if_text_rust_status" -eq 0
-        test "$root_if_text_development_status" -eq 0
-        test "$root_if_text_production_status" -eq 0
-        test -s "$VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_CAPTURE"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_PRIMARY_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_PRIMARY_CAPTURE}.production.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_RUNTIME_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_RUNTIME_CAPTURE}.production.json"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-genuine-root-if-setup-binding-text-in-both-explicit-modes.sh"
     - name: Capture genuine adjacent root If Else components in both explicit modes
       if: ${{ !cancelled() }}
       shell: bash
@@ -194,22 +88,7 @@ runs:
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_PRIMARY_CAPTURE: ${{ runner.temp }}/native-original-root-if-else-sfc-dom-primary
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-root-if-else-sfc-dom-runtime
-      run: |
-        root_if_else_rust_status=0
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_root_if_else::twelve_whole_original_root_if_else_components_and_raw_maps_are_captured -- --exact --nocapture || root_if_else_rust_status=$?
-        root_if_else_development_status=0
-        NODE_ENV=development vp node --test tests/tooling/native-original-root-if-else-sfc-dom-reference.test.ts || root_if_else_development_status=$?
-        root_if_else_production_status=0
-        NODE_ENV=production vp node --test tests/tooling/native-original-root-if-else-sfc-dom-reference.test.ts || root_if_else_production_status=$?
-        printf '{"rust":%s,"development":%s,"production":%s}\n' "$root_if_else_rust_status" "$root_if_else_development_status" "$root_if_else_production_status" > "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_CAPTURE}.statuses.json"
-        test "$root_if_else_rust_status" -eq 0
-        test "$root_if_else_development_status" -eq 0
-        test "$root_if_else_production_status" -eq 0
-        test -s "$VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_CAPTURE"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_PRIMARY_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_PRIMARY_CAPTURE}.production.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_RUNTIME_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_RUNTIME_CAPTURE}.production.json"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-genuine-adjacent-root-if-else-components-in-both-explicit-modes.sh"
     - name: Capture genuine adjacent root If Else setup text in both explicit modes
       if: ${{ !cancelled() }}
       shell: bash
@@ -218,22 +97,7 @@ runs:
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_PRIMARY_CAPTURE: ${{ runner.temp }}/native-original-root-if-else-text-sfc-dom-primary
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-root-if-else-text-sfc-dom-runtime
-      run: |
-        root_if_else_text_rust_status=0
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_root_if_else_text::twelve_whole_original_root_if_else_text_components_and_raw_maps_are_captured -- --exact --nocapture || root_if_else_text_rust_status=$?
-        root_if_else_text_development_status=0
-        NODE_ENV=development vp node --test tests/tooling/native-original-root-if-else-text-sfc-dom-reference.test.ts || root_if_else_text_development_status=$?
-        root_if_else_text_production_status=0
-        NODE_ENV=production vp node --test tests/tooling/native-original-root-if-else-text-sfc-dom-reference.test.ts || root_if_else_text_production_status=$?
-        printf '{"rust":%s,"development":%s,"production":%s}\n' "$root_if_else_text_rust_status" "$root_if_else_text_development_status" "$root_if_else_text_production_status" > "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_CAPTURE}.statuses.json"
-        test "$root_if_else_text_rust_status" -eq 0
-        test "$root_if_else_text_development_status" -eq 0
-        test "$root_if_else_text_production_status" -eq 0
-        test -s "$VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_CAPTURE"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_PRIMARY_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_PRIMARY_CAPTURE}.production.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_RUNTIME_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_RUNTIME_CAPTURE}.production.json"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-genuine-adjacent-root-if-else-setup-text-in-both-explicit-modes.sh"
     - name: Capture genuine paired original literal and setup text in both explicit modes
       if: ${{ !cancelled() }}
       shell: bash
@@ -242,22 +106,7 @@ runs:
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_PRIMARY_CAPTURE: ${{ runner.temp }}/native-original-root-if-else-composite-sfc-dom-primary
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-root-if-else-composite-sfc-dom-runtime
-      run: |
-        root_if_else_composite_rust_status=0
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_root_if_else_composite::fourteen_whole_original_root_if_else_composite_components_and_raw_maps_are_captured -- --exact --nocapture || root_if_else_composite_rust_status=$?
-        root_if_else_composite_development_status=0
-        NODE_ENV=development vp node --test tests/tooling/native-original-root-if-else-composite-sfc-dom-reference.test.ts || root_if_else_composite_development_status=$?
-        root_if_else_composite_production_status=0
-        NODE_ENV=production vp node --test tests/tooling/native-original-root-if-else-composite-sfc-dom-reference.test.ts || root_if_else_composite_production_status=$?
-        printf '{"rust":%s,"development":%s,"production":%s}\n' "$root_if_else_composite_rust_status" "$root_if_else_composite_development_status" "$root_if_else_composite_production_status" > "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_CAPTURE}.statuses.json"
-        test "$root_if_else_composite_rust_status" -eq 0
-        test "$root_if_else_composite_development_status" -eq 0
-        test "$root_if_else_composite_production_status" -eq 0
-        test -s "$VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_CAPTURE"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_PRIMARY_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_PRIMARY_CAPTURE}.production.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_RUNTIME_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_RUNTIME_CAPTURE}.production.json"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-genuine-paired-original-literal-and-setup-text-in-both-explicit.sh"
     - name: Capture genuine original input Models with actual DOM events and IME
       if: ${{ !cancelled() }}
       shell: bash
@@ -266,22 +115,7 @@ runs:
         VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_REQUIRE_CAPTURE: "1"
         VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_PRIMARY_CAPTURE: ${{ runner.temp }}/native-original-input-model-sfc-dom-primary
         VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-original-input-model-sfc-dom-runtime
-      run: |
-        model_rust_status=0
-        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_input_model::fourteen_whole_original_input_model_components_and_raw_maps_are_captured -- --exact --nocapture || model_rust_status=$?
-        model_development_status=0
-        NODE_ENV=development vp node --test tests/tooling/native-original-input-model-sfc-dom-reference.test.ts || model_development_status=$?
-        model_production_status=0
-        NODE_ENV=production vp node --test tests/tooling/native-original-input-model-sfc-dom-reference.test.ts || model_production_status=$?
-        printf '{"rust":%s,"development":%s,"production":%s}\n' "$model_rust_status" "$model_development_status" "$model_production_status" > "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_CAPTURE}.statuses.json"
-        test "$model_rust_status" -eq 0
-        test "$model_development_status" -eq 0
-        test "$model_production_status" -eq 0
-        test -s "$VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_CAPTURE"
-        test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_PRIMARY_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_PRIMARY_CAPTURE}.production.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_RUNTIME_CAPTURE}.development.json"
-        test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_RUNTIME_CAPTURE}.production.json"
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-genuine-original-input-models-with-actual-dom-events-and-ime.sh"
     - name: Upload complete selected SFC component and runtime captures
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

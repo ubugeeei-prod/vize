@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -31,11 +32,12 @@ void test("fresh normal builds support Cargo's own output path and legitimate id
     );
     writeFileSync(join(source, "Cargo.lock"), "fixture lock\n");
     const compiler = join(root, "cargo.cjs");
-    const fake = (fresh: boolean, assertions = false) => `#!${process.execPath}
-if(process.argv.includes('--version')){console.log('fixture cargo 1');process.exit(0)}
-const fs=require('node:fs'),p=require('node:path');const binary=p.join(process.env.CARGO_TARGET_DIR,'ci-opt','vize');
-fs.mkdirSync(p.dirname(binary),{recursive:true});fs.writeFileSync(binary,'same optimized bytes',{mode:0o755});
-console.log(JSON.stringify({reason:'compiler-artifact',target:{name:'vize',kind:['bin']},features:[],profile:{opt_level:'3',debuginfo:0,debug_assertions:${assertions},test:false,overflow_checks:false},executable:binary,fresh:${fresh}}));\n`;
+    const fake = (fresh: boolean, assertions = false) =>
+      readToolingProgram("commands/pr-performance-build/emit-cargo-artifact.cjs.in", {
+        NODE: process.execPath,
+        ASSERTIONS: assertions,
+        FRESH: fresh,
+      });
     writeFileSync(compiler, fake(false), { mode: 0o755 });
     const commit = (body: string) => {
       writeFileSync(join(source, "crates", "code.rs"), body);

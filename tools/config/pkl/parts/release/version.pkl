@@ -1,0 +1,110 @@
+import "../../Actions.pkl" as ci
+
+`if` = "github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'"
+name = "Prepare the release candidate"
+`runs-on` = "ubuntu-24.04"
+`timeout-minutes` = 5
+permissions {
+  actions = "read"
+  contents = "write"
+}
+outputs {
+  version = "${{ steps.resume.outputs.version || steps.cut.outputs.version }}"
+  tag = "${{ steps.resume.outputs.tag || steps.cut.outputs.tag }}"
+  sha = "${{ steps.resume.outputs.sha || steps.cut.outputs.sha }}"
+  ref = "${{ steps.cut.outputs.ref }}"
+  npm_tag = "${{ steps.channel.outputs.npm_tag }}"
+  prerelease = "${{ steps.channel.outputs.prerelease }}"
+  make_latest = "${{ steps.channel.outputs.make_latest }}"
+  publish_tag = "${{ steps.resume.outputs.publish_tag }}"
+  allow_newer_tag = "${{ steps.resume.outputs.allow_newer_tag }}"
+  cli_matrix = "${{ steps.platforms.outputs.cli_matrix }}"
+  native_matrix = "${{ steps.platforms.outputs.native_matrix }}"
+  editor_matrix = "${{ steps.platforms.outputs.editor_matrix }}"
+  editor_platform_artifacts = "${{ steps.resume.outputs.editor_platform_artifacts }}"
+}
+steps = new Listing {
+  ...ci.stageWorkflowScripts("release")
+  ci.use(ci.checkout)
+  new Dynamic {
+    uses = ci.setupNode
+    with {
+      `node-version-file` = "package.json"
+      `package-manager-cache` = false
+    }
+  }
+  new Dynamic {
+    name = "Validate the npm release resume"
+    id = "resume"
+    `if` = "inputs.npm_resume_run != ''"
+    env {
+      GITHUB_TOKEN = "${{ github.token }}"
+      RESUME_RUN = "${{ inputs.npm_resume_run }}"
+      RESUME_VERSION = "${{ inputs.version }}"
+      RELEASE_SOURCE_INPUT = "${{ inputs.source }}"
+      RELEASE_JS_PACKAGES = "${{ env.RELEASE_JS_PACKAGES }}"
+    }
+    run = #"node tools/support/release/npm_resume/main.ts "$RESUME_VERSION" "$RESUME_RUN""#
+  }
+  new Dynamic {
+    name = "Check out the requested main commit"
+    `if` = "inputs.npm_resume_run == '' && inputs.source != ''"
+    env {
+      RELEASE_SOURCE = "${{ inputs.source }}"
+      GH_TOKEN = "${{ github.token }}"
+    }
+    run = #". "${{ env.VIZE_CI_FILES }}/check-out-the-requested-main-commit.sh""#
+  }
+  // The crate quota never refuses a cut; the post-build admission decides crates.
+  new Dynamic {
+    name = "Resolve the requested version with current workflow tooling"
+    id = "resolve"
+    `if` = "inputs.npm_resume_run == ''"
+    env { RELEASE_VERSION = "${{ inputs.version }}" }
+    run = #". "${{ env.VIZE_CI_FILES }}/resolve-the-requested-version-with-current-workflow-tooling.sh""#
+  }
+  new Dynamic {
+    name = "Stamp, commit and push the release candidate"
+    id = "cut"
+    `if` = "inputs.npm_resume_run == ''"
+    env { RELEASE_VERSION = "${{ steps.resolve.outputs.version }}" }
+    run = #". "${{ env.VIZE_CI_FILES }}/cut-release-candidate.sh""#
+  }
+  new Dynamic {
+    name = "Resolve the release channel"
+    id = "channel"
+    env { RELEASE_VERSION = "${{ steps.resume.outputs.version || steps.cut.outputs.version }}" }
+    run = #". "${{ env.VIZE_CI_FILES }}/resolve-the-release-channel.sh""#
+  }
+  new Dynamic {
+    name = "Emit the actual created candidate's original producer attestation"
+    `if` = "steps.cut.outputs.sha != ''"
+    env {
+      RELEASE_VERSION = "${{ steps.cut.outputs.version }}"
+      RELEASE_SHA = "${{ steps.cut.outputs.sha }}"
+    }
+    run = #"node "$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/producer_identity.ts" "$RELEASE_VERSION" "$RELEASE_SHA" "$RUNNER_TEMP/release-producer-source/producer-candidate.json""#
+  }
+  new Dynamic {
+    name = "Retain the original producer candidate artifact"
+    `if` = "steps.cut.outputs.sha != ''"
+    uses = ci.uploadArtifact
+    with {
+      name = "release-producer-source-${{ github.run_attempt }}"
+      path = "${{ runner.temp }}/release-producer-source/producer-candidate.json"
+      archive = true
+      `if-no-files-found` = "error"
+      `retention-days` = 90
+    }
+  }
+  new Dynamic {
+    name = "Select release platforms"
+    id = "platforms"
+    `if` = "steps.cut.outputs.ref != ''"
+    env {
+      RELEASE_TAG = "${{ steps.cut.outputs.tag }}"
+      VIZE_RELEASE_MACOS_RUNNER = "${{ vars.VIZE_RELEASE_MACOS_RUNNER }}"
+    }
+    run = #"node tools/support/github/release-platforms.ts github-output "$RELEASE_TAG""#
+  }
+}

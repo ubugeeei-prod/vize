@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"node "$VIZE_CI_FILES/inspect-normal-codegen.ts""#
+}

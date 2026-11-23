@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+target="$RUNNER_TEMP/expression-overlap-$ROLE-$SOURCE_SHA-tests"
+test ! -e "$target"
+filter=()
+if [[ "$ROLE" == baseline ]]; then filter=(expression_overlap_private_facts::observe_private_source_facts); fi
+CARGO_TARGET_DIR="$target" cargo +nightly-2026-10-23 test --locked -p vize_oxc_parser --profile ci "${filter[@]}" -- --nocapture 2>&1 | tee ../evidence/private-parser-tests.log

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+node tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen.ts --source-root "$RUNNER_TEMP/comparative/source" --binary "$RUNNER_TEMP/comparative/vize" --provider "$RUNNER_TEMP/comparative/provider" --out "$RUNNER_TEMP/comparative/observations"
+cat "$RUNNER_TEMP/comparative/observations/summary.md" >> "$GITHUB_STEP_SUMMARY"

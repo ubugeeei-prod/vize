@@ -8,6 +8,7 @@ on:
       - editors/vscode/src/extension-core.ts
       - tests/tooling/lsp-native-diagnostic-warmup.test.ts
       - .github/workflows/lsp-native-diagnostic-warmup.yml
+      - .github/scripts/workflows/lsp-native-diagnostic-warmup/**
 permissions:
   contents: read
 concurrency:
@@ -30,6 +31,19 @@ jobs:
       matrix:
         role: [baseline, candidate]
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/lsp-native-diagnostic-warmup/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -56,58 +70,20 @@ jobs:
           # Immutable pre-fix source: future rebases must still reproduce the original drop.
           BASE_SHA: 3a4bf713f85589a50da5d0a7aaf8ae33fdcdc004
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          source_root="$GITHUB_WORKSPACE"
-          source_sha="$HEAD_SHA"
-          if [ "$ROLE" = baseline ]; then
-            source_sha="$BASE_SHA"
-            source_root="$RUNNER_TEMP/native-diagnostics-baseline-$source_sha"
-            git worktree add --detach "$source_root" "$source_sha"
-            ln -s "$GITHUB_WORKSPACE/node_modules" "$source_root/node_modules"
-            ln -s "$GITHUB_WORKSPACE/tests/node_modules" "$source_root/tests/node_modules"
-          fi
-          target_dir="$RUNNER_TEMP/native-diagnostics-target-$ROLE-$source_sha"
-          test ! -e "$target_dir"
-          export CARGO_TARGET_DIR="$target_dir"
-          cd "$source_root"
-          cargo build --locked --profile ci -p vize
-          mkdir -p target/ci
-          cp "$target_dir/ci/vize" target/ci/vize
-          node tests/differential/build-receipt.ts
-          echo "VIZE_WARMUP_ROLE=$ROLE" >> "$GITHUB_ENV"
-          echo "VIZE_WARMUP_SOURCE_ROOT=$source_root" >> "$GITHUB_ENV"
-          echo "CARGO_TARGET_DIR=$target_dir" >> "$GITHUB_ENV"
-          echo "VIZE_LSP_BIN=$source_root/target/ci/vize" >> "$GITHUB_ENV"
+        run: . "${{ env.VIZE_CI_FILES }}/build-each-exact-source-in-its-own-initially-absent-role-and-sha-target.sh"
       - name: Reproduce the old drop or retain the complete real native answer
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
-        run: |
-          if [ "$VIZE_WARMUP_ROLE" = baseline ]; then
-            node --test --test-concurrency=1 tests/tooling/lsp-native-diagnostic-warmup.test.ts
-          else
-            # Exercise the editor initialization setting itself, without an env override.
-            env -u VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS node --test --test-concurrency=1 tests/tooling/lsp-native-diagnostic-warmup.test.ts
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/reproduce-the-old-drop-or-retain-the-complete-real-native-answer.sh"
       - name: Preserve source freshness, assembly oracles, recovery and editor controls
         if: ${{ !cancelled() && matrix.role == 'candidate' && steps.producer.outcome == 'success' }}
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
           VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS: "120000"
-        run: |
-          cargo test --locked --profile ci -p vize_maestro --lib server::initial_diagnostics::
-          cargo test --locked --profile ci -p vize_maestro --lib ide::diagnostics::native::timeout::
-          cargo test --locked --profile ci -p vize_maestro --lib server::diagnostic_publishing::
-          cargo test --locked --profile ci -p vize_maestro --lib ide::diagnostics::assembly_parity_tests::
-          cargo test --locked --profile ci -p vize_maestro --lib server::state::config_tests::
-          cargo clippy --locked --profile ci -p vize_maestro --all-targets -- -D warnings
-          node --test --test-concurrency=1 tests/tooling/lsp-initial-diagnostics-version.test.ts tests/tooling/lsp-responsive-lint-diagnostics.test.ts tests/tooling/vscode-extension-core-behavior.test.ts tests/tooling/vscode-extension-manifest.test.ts tests/tooling/lsp-startup-local-interactive.test.ts
+        run: . "${{ env.VIZE_CI_FILES }}/preserve-source-freshness-assembly-oracles-recovery-and-editor-controls.sh"
       - name: Stage each exact producer's receipt and actual raw stdio captures
         if: ${{ !cancelled() && steps.producer.outcome == 'success' }}
-        run: |
-          retained="$GITHUB_WORKSPACE/target/vize-tests/native-diagnostic-warmup-10604/$VIZE_WARMUP_ROLE-source"
-          mkdir -p "$retained"
-          cp "$VIZE_WARMUP_SOURCE_ROOT/target/ci/vize.differential-build.json" "$retained/"
-          cp -R "$VIZE_WARMUP_SOURCE_ROOT/target/differential/lsp-sessions" "$retained/"
+        run: . "${{ env.VIZE_CI_FILES }}/stage-each-exact-producer-s-receipt-and-actual-raw-stdio-captures.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

@@ -1,6 +1,6 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { UPSTREAM } from "../../tools/benchmarks/scripts/vue-benchmarks-replay-core.ts";
@@ -74,7 +74,7 @@ void test("the new pin retains historical results without promoting current or n
 void test("the existing disposable replay keeps its independent old pin and paths", () => {
   assert.equal(UPSTREAM.commit, "65c6102504b14cd49c0b03305be8dd0b9d208c59");
   assert.notEqual(UPSTREAM.commit, manifest.revision);
-  const workflow = readFileSync(".github/workflows/vue-benchmarks-replay.yml", "utf8");
+  const workflow = readAutomationPrograms(".github/workflows/vue-benchmarks-replay.yml");
   assert.equal(workflow.includes(fixture), false);
   assert.equal(workflow.includes("vue-benchmarks-replay.ts"), true);
 });

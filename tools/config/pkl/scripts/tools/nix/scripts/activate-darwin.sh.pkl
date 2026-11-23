@@ -1,0 +1,11 @@
+amends "../../../../ShellScript.pkl"
+
+interpreter = null
+
+commands {
+  #"""
+  export VIZE_DARWIN_LIBICONV_LIB="@LIBICONV@/lib"
+  export LIBRARY_PATH="$VIZE_DARWIN_LIBICONV_LIB${LIBRARY_PATH:+:$LIBRARY_PATH}"
+  export RUSTFLAGS="-L native=$VIZE_DARWIN_LIBICONV_LIB${RUSTFLAGS:+ $RUSTFLAGS}"
+  """#
+}

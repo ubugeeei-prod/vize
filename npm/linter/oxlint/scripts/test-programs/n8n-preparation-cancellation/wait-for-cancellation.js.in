@@ -1,0 +1,11 @@
+import { spawn } from "node:child_process";
+import fs from "node:fs";
+const [root, id] = process.argv.slice(2);
+const child = spawn(process.execPath, [@@CHILD_PROGRAM@@], { stdio: "ignore" });
+fs.writeSync(1, "whole stdout " + id + "\n");
+fs.writeSync(2, "whole stderr " + id + "\n");
+fs.writeFileSync(
+  root + "/" + id + ".ready.json",
+  JSON.stringify({ pid: process.pid, child: child.pid }),
+);
+setInterval(() => {}, 1000);

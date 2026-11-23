@@ -1,0 +1,9 @@
+amends "../../../../ShellScript.pkl"
+
+interpreter = null
+
+commands {
+  #"""
+  unset VIZE_TESTBOX_SHELL VIZE_BLACKSMITH_BIN
+  """#
+}

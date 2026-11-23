@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+git submodule update --init --depth 1 \
+  tests/_fixtures/_git/create-vue \
+  tests/_fixtures/_git/element-plus \
+  tests/_fixtures/_git/misskey \
+  tests/_fixtures/_git/mobile-web-best-practice \
+  tests/_fixtures/_git/nuxt-ui \
+  tests/_fixtures/_git/pinia \
+  tests/_fixtures/_git/reka-ui \
+  tests/_fixtures/_git/vue-router \
+  tests/_fixtures/_git/vue-element-admin \
+  tests/_fixtures/_git/vue2-elm \
+  tests/_fixtures/_git/vue-vben-admin \
+  tests/_fixtures/_git/vitepress
+vp install --frozen-lockfile --prefer-offline

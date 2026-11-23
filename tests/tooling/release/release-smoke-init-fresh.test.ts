@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -350,7 +351,7 @@ test("the smoke only passes init flags the guide documents", () => {
 
 /** Arguments of every release smoke installer step in a workflow. */
 function smokeInstallInvocations(workflow: string): string[][] {
-  const parsed = parse(readRepoFile(".github", "workflows", workflow)) as {
+  const parsed = parse(readAutomationPrograms(".github", "workflows", workflow)) as {
     jobs?: Record<string, { steps?: Array<{ run?: string }> }>;
   };
   const invocations: string[][] = [];
@@ -371,7 +372,9 @@ function smokeInstallInvocations(workflow: string): string[][] {
 /** Package directories named by a smoke invocation, including workflow env lists. */
 function smokedPackages(workflow: string, args: string[]): string[] {
   const env = (
-    parse(readRepoFile(".github", "workflows", workflow)) as { env?: Record<string, string> }
+    parse(readAutomationPrograms(".github", "workflows", workflow)) as {
+      env?: Record<string, string>;
+    }
   ).env;
   return args.includes('"${js[@]}"')
     ? [...args, ...(env?.RELEASE_JS_PACKAGES ?? "").split(" ")]
@@ -379,7 +382,7 @@ function smokedPackages(workflow: string, args: string[]): string[] {
 }
 
 function workflowSteps(workflow: string, jobName: string) {
-  const parsed = parse(readRepoFile(".github", "workflows", workflow)) as {
+  const parsed = parse(readAutomationPrograms(".github", "workflows", workflow)) as {
     jobs?: Record<
       string,
       {

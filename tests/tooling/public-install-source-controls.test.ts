@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 // Raw source-object and genuine committed manifest-shape rejection laws.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -87,7 +88,11 @@ function fixture(t: { after: (fn: () => void) => void }) {
   const fakeNode = (): { node: string; sentinel: string } => {
     const sentinel = path.join(root, "node-started");
     const node = path.join(root, "fake-node");
-    fs.writeFileSync(node, `#!/bin/sh\ntouch '${sentinel}'\nexit 99\n`, { mode: 0o700 });
+    fs.writeFileSync(
+      node,
+      readToolingProgram("commands/public-install-source-controls/node.sh", { SENTINEL: sentinel }),
+      { mode: 0o700 },
+    );
     return { node, sentinel };
   };
   const args = (head: string, tag: string, install: string, node: string): CollectArguments => ({

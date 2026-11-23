@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+vp run --filter @vizejs/musea-mcp-server build
+mkdir -p "$RUNNER_TEMP/qs-runtime-pack"
+vp exec pnpm --dir npm/mcp-musea pack --pack-destination "$RUNNER_TEMP/qs-runtime-pack"

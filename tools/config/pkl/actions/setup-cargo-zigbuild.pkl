@@ -1,0 +1,12 @@
+name = "Setup cargo-zigbuild"
+description = "Install a pinned, checksum-verified cargo-zigbuild release binary so Linux release builds link against the documented glibc floor (tools/support/github/glibc-floor.ts) without an unpinned `cargo install`."
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Install cargo-zigbuild 0.24.1"
+      shell = "bash"
+      run = #". "$GITHUB_ACTION_PATH/scripts/install-cargo-zigbuild-0-24-1.sh""#
+    }
+  }
+}

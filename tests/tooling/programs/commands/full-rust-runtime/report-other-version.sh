@@ -1,0 +1,2 @@
+#!/bin/sh
+printf 'Version 7.1.0-beta\n'

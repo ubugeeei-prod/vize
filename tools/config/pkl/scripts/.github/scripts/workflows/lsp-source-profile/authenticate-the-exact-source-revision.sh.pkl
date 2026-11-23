@@ -1,0 +1,7 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.requireCheckout("SOURCE_SHA")
+}

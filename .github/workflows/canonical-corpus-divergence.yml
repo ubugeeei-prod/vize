@@ -126,6 +126,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/canonical-corpus-divergence"
       OBSERVER: ${{ inputs.observer }}
     steps:
       - name: Checkout matrix commit
@@ -152,9 +153,4 @@ jobs:
       - name: File canonical divergence issue
         env: { GH_TOKEN: "${{ github.token }}" }
         shell: bash
-        run: |
-          args=(publish "$OBSERVER" "real-project-$OBSERVER-corpus" "real-project-$OBSERVER-reduction")
-          if [[ -s "real-project-$OBSERVER-promotion/promotion.json" ]]; then
-            args+=("real-project-$OBSERVER-promotion")
-          fi
-          node tools/support/compat/github/canonical-corpus-divergence-issue.mjs "${args[@]}"
+        run: . "${{ env.VIZE_CI_FILES }}/file-canonical-divergence-issue.sh"

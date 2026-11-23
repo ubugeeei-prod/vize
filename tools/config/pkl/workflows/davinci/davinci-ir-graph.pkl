@@ -1,0 +1,85 @@
+import "../../Actions.pkl" as ci
+
+name = "Davinci IR graph queries"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/davinci-ir-graph.yml"
+      "davinci/vize_l1/**"
+      "davinci/vize_l1_to_l2/**"
+      "davinci/vize_l2/**"
+      "davinci/vize_l2_to_l3/**"
+      "davinci/vize_l3/**"
+      "crates/vize_incremental/**"
+      "tests/formal/ir-graph/**"
+      ".github/scripts/workflows/davinci-ir-graph/**"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "ir-graph-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  graph {
+    name = "Directed queries, resident edits and pass composition"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("davinci-ir-graph")
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Qualify the real lowerer and exact resident snapshots"
+        run = #". "${{ env.VIZE_CI_FILES }}/qualify-the-real-lowerer-and-exact-resident-snapshots.sh""#
+      }
+    }
+  }
+  models {
+    name = "Reachability theory and snapshot publication"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("davinci-ir-graph")
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Install pinned standalone model checkers"
+        `working-directory` = "${{ runner.temp }}"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-standalone-model-checkers.sh""#
+      }
+      new Dynamic {
+        name = "Check resident template decisions across source edits"
+        `working-directory` = "tests/formal/ir-graph"
+        run = #". "${{ env.VIZE_CI_FILES }}/check-resident-template-decisions-across-source-edits.sh""#
+      }
+      new Dynamic {
+        name = "Check the unbounded theorem and bounded models"
+        `working-directory` = "tests/formal/ir-graph"
+        run = #". "${{ env.VIZE_CI_FILES }}/check-the-unbounded-theorem-and-bounded-models.sh""#
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+amends "../ShellScript.pkl"
+
+local workspaceFiles = List("pnpm-lock.yaml", "pnpm-workspace.yaml")
+
+commands {
+  "if has nix; then"
+  for (file in workspaceFiles) {
+    "  " + module.command("watch_file", List(file))
+  }
+  "  use flake"
+  "fi"
+}

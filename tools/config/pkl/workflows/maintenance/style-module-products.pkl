@@ -1,0 +1,167 @@
+import "../../Actions.pkl" as ci
+
+name = "Style module products"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/style-module-products.yml"
+      ".github/scripts/workflows/style-module-products/**"
+      "tools/benchmarks/crates/davinci_harness/src/paired.rs"
+      "davinci/vize_l1/Cargo.toml"
+      "davinci/vize_l1/src/container/lang.rs"
+      "davinci/vize_l1/src/css.rs"
+      "davinci/vize_l1/src/css/**"
+      "crates/vize_patina/Cargo.toml"
+      "crates/vize_patina/src/rules/css.rs"
+      "crates/vize_patina/src/rules/css/**"
+      "crates/vize_patina/src/linter/css_rules.rs"
+      "crates/vize_canon/Cargo.toml"
+      "crates/vize_canon/src/batch/virtual_project/build/css_modules.rs"
+      "crates/vize_canon/src/batch/virtual_project/build/css_modules/**"
+      "crates/vize_maestro/Cargo.toml"
+      "crates/vize_maestro/src/document/store.rs"
+      "crates/vize_maestro/src/ide/context.rs"
+      "crates/vize_maestro/src/ide/completion.rs"
+      "crates/vize_maestro/src/ide/completion/template.rs"
+      "crates/vize_maestro/src/ide/completion/template/css_modules.rs"
+      "crates/vize_maestro/src/ide/completion/template/css_modules/**"
+      "davinci/vize_l2/Cargo.toml"
+      "davinci/vize_l2/src/lang/mod.rs"
+      "davinci/vize_l2/src/lang/scss.rs"
+      "davinci/vize_l2/src/lang/scss/**"
+      "davinci/vize_l4/Cargo.toml"
+      "davinci/vize_l4/src/targets.rs"
+      "davinci/vize_l4/src/targets/scss.rs"
+      "crates/vize_atelier_sfc/Cargo.toml"
+      "crates/vize_atelier_sfc/src/lib.rs"
+      "crates/vize_atelier_sfc/src/scss.rs"
+      "crates/vize_atelier_sfc/src/scss/**"
+      "crates/vize_glyph/Cargo.toml"
+      "crates/vize_glyph/src/formatter/blocks.rs"
+      "crates/vize_glyph/src/formatter/blocks/style.rs"
+      "crates/vize_glyph/src/formatter/style_block.rs"
+      "crates/vize_glyph/tests/observed_style.rs"
+      "crates/vize_maestro/src/source_project/style_format.rs"
+      "crates/vize_maestro/src/source_project/style_format/**"
+      "crates/vize_atelier_sfc/src/native.rs"
+      "crates/vize_atelier_sfc/src/native/styles.rs"
+      "crates/vize_atelier_sfc/src/native_scoped_ssr.rs"
+      "crates/vize_atelier_sfc/tests/native_sfc_scss.rs"
+      "crates/vize_atelier_sfc/tests/component_scss/**"
+      "davinci/vize_l4/src/write/document.rs"
+      "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json"
+      "crates/vize_atelier_sfc/tests/scss_products.rs"
+      "crates/vize_atelier_sfc/tests/observed_scss/**"
+      "crates/vize_maestro/src/source_project.rs"
+      "crates/vize_maestro/src/source_project/scss.rs"
+      "crates/vize_maestro/src/source_project/scss/**"
+      "crates/vize/src/commands/build/runner/preprocess.mjs"
+      "npm/builder/parcel/package.json"
+      "tests/_fixtures/_projects/style-preprocessors/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "style-module-products-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `style-modules` {
+    name = "Style module products ${{ matrix.suite }}"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        suite = List("correctness", "performance")
+      }
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("style-module-products")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = ci.cache
+        with {
+          path = """
+          ~/.cargo/registry
+          ~/.cargo/git
+
+          """
+          key = "style-module-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}"
+        }
+      }
+      ci.command("Select original Vue sources", #". "${{ env.VIZE_CI_FILES }}/select-original-vue-sources.sh""#)
+      new Dynamic {
+        name = "Compare original checker options and completion responses"
+        `if` = "matrix.suite == 'correctness'"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-checker-options-and-completion-responses.sh""#
+      }
+      new Dynamic {
+        name = "Measure complete original and shared member requests"
+        `if` = "matrix.suite == 'performance'"
+        run = #". "${{ env.VIZE_CI_FILES }}/measure-complete-original-and-shared-member-requests.sh""#
+      }
+    }
+  }
+
+  `scss-products` {
+    name = "Original SCSS compilation and editor definitions"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("style-module-products")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Install the repository's pinned Sass implementation"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-s-pinned-sass-implementation.sh""#
+      }
+      new Dynamic {
+        name = "Compare the original preprocessor, shared products and authored editor locations"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-preprocessor-shared-products-and-authored-editor-locations.sh""#
+      }
+    }
+  }
+}

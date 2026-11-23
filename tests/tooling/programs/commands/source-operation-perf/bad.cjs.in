@@ -1,0 +1,7 @@
+#!@@NODE@@
+if (process.argv.includes("--version")) {
+  console.log("fixture-perf");
+} else {
+  console.error("usage: perf stat invalid option");
+  process.exit(129);
+}

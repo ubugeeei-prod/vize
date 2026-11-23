@@ -1,3 +1,4 @@
+import { workflowPredecessor } from "../../ci/workflow-program-history.ts";
 // A source-bound logical editor revision protocol, outside authored Batch rates.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -218,7 +219,11 @@ export function newLogicalWorkspaceProtocolCases(
   assert.deepEqual(row.tests, [
     { selector, source: observerPath, sha256: consumer.observer.sha256 },
   ]);
-  const job = read("head", workflow)?.toString("utf8") ?? "";
+  const bytes = read("head", workflow);
+  assert.ok(bytes);
+  const job = workflowPredecessor("native-beta-diagnostic-dto", bytes, (file) =>
+    read("head", file),
+  ).toString("utf8");
   assert.equal(authority.nativeRoles.length, 4);
   for (const marker of [
     "role: [before, after]",

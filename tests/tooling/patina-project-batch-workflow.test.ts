@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import fs from "node:fs";
@@ -5,10 +6,9 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { parse } from "yaml";
-import { readRepoFile } from "./support/github-workflows.ts";
 
 void test("type-aware batch qualification stays optional and reuses exact optimized binaries", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "benchmark.yml"));
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "benchmark.yml"));
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.patina_project_batch, {
     description: "Measure the frozen 1210-file type-aware project batch in deterministic shards",
     required: false,
@@ -57,7 +57,7 @@ void test("type-aware batch qualification stays optional and reuses exact optimi
 });
 
 void test("benchmark conflict guard rejects real markers without mistaking long license headings", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "benchmark.yml"));
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "benchmark.yml"));
   const source = workflow.jobs["pr-benchmark"].steps.find(
     (step: { name?: string }) => step.name === "Check base checkout",
   ).run;

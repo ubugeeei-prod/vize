@@ -291,9 +291,10 @@ mod tests {
         // authored and portable Rust-canonical aliases in the expected watch
         // set too. A Windows verbatim spelling must not leak into watches.
         let node_realpath = std::process::Command::new("node")
-            .arg("-e")
-            .arg("process.stdout.write(require('node:fs').realpathSync.native(process.argv[1]));")
-            .arg("--")
+            .arg(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/programs/resolve-native-realpath.cjs"
+            ))
             .arg(&path)
             .output()
             .unwrap();

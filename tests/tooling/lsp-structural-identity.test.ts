@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -20,7 +21,10 @@ test(
       const runtime = path.join(workspace, "unexpected-checker");
       fs.writeFileSync(
         runtime,
-        `#!${process.execPath}\nrequire('node:fs').writeFileSync(${JSON.stringify(marker)}, 'started'); process.exit(99);\n`,
+        readToolingProgram("commands/lsp-structural-identity/runtime.cjs.in", {
+          NODE: process.execPath,
+          MARKER: JSON.stringify(marker),
+        }),
         { mode: 0o755 },
       );
       writeVueConfigFixture(

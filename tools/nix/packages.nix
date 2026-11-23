@@ -1,5 +1,6 @@
 { inputs, ... }:
 let
+  renderScript = import ./render-script.nix;
   root = ../..;
 in
 {
@@ -36,26 +37,20 @@ in
         };
 
       checks.package = vize;
-      checks.embedded-source-assets = pkgs.runCommand "vize-embedded-source-assets" { } ''
-        cmp \
-          ${vize.src}/crates/vize/src/commands/inspector/official_compiler.ts \
-          ${root + /crates/vize/src/commands/inspector/official_compiler.ts}
-        cmp \
-          ${vize.src}/crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts \
-          ${root + /crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts}
-        cmp \
-          ${vize.src}/crates/vize_patina/src/html_content_model/whatwg.tsv \
-          ${root + /crates/vize_patina/src/html_content_model/whatwg.tsv}
-        cmp \
-          ${vize.src}/crates/vize_carton/src/config/loader/module-runtime.mjs \
-          ${root + /crates/vize_carton/src/config/loader/module-runtime.mjs}
-        cmp \
-          ${vize.src}/crates/vize_carton/src/config/loader/vite-runtime-validation.js \
-          ${root + /crates/vize_carton/src/config/loader/vite-runtime-validation.js}
-        test ! -e ${vize.src}/playground/package.json
-        test ! -e ${vize.src}/crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap
-        touch "$out"
-      '';
+      checks.embedded-source-assets = pkgs.runCommand "vize-embedded-source-assets" { } (
+        renderScript ./scripts/check-embedded-assets.sh {
+          SOURCE = "${vize.src}";
+          ORIGINAL_OFFICIAL_COMPILER = "${root + /crates/vize/src/commands/inspector/official_compiler.ts}";
+          ORIGINAL_PATTERN_MATCHING_D = "${
+            root + /crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts
+          }";
+          ORIGINAL_WHATWG = "${root + /crates/vize_patina/src/html_content_model/whatwg.tsv}";
+          ORIGINAL_MODULE_RUNTIME = "${root + /crates/vize_carton/src/config/loader/module-runtime.mjs}";
+          ORIGINAL_VITE_RUNTIME_VALIDATION = "${
+            root + /crates/vize_carton/src/config/loader/vite-runtime-validation.js
+          }";
+        }
+      );
     };
 
   # Downstream flakes take the CLI through the overlay rather than reaching
