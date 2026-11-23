@@ -309,8 +309,8 @@ pub fn normalize_path(path: &Path) -> PathBuf {
 /// directory under `**`) still lies under `<config dir>/src`, while a
 /// symlinked ancestor of the config directory, such as macOS `/var`,
 /// meets the canonical config spelling. The last spelling is the fully
-/// canonical one, which `files` entries use. Without symlinks this is one
-/// spelling, the source itself.
+/// canonical one, which `files` entries use. Windows also resolves 8.3
+/// aliases so a short source path matches a long config directory.
 pub fn source_spellings(source: &Path) -> Vec<PathBuf> {
     // A relative source is spelled from the working directory, as
     // canonicalization would resolve it.
@@ -336,6 +336,15 @@ pub fn source_spellings(source: &Path) -> Vec<PathBuf> {
         };
         if !spellings.contains(&spelling) {
             spellings.push(spelling);
+        }
+    }
+    #[cfg(windows)]
+    {
+        // Temp directories may use an 8.3 alias even when they contain no symlinks.
+        // Match the long, non-verbatim spelling used by the config's wildcard base.
+        let physical = crate::path::physical_path(&lexical);
+        if !spellings.contains(&physical) {
+            spellings.push(physical);
         }
     }
     spellings

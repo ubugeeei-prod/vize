@@ -111,6 +111,10 @@ fn checked_graph(
             let streamed = batch.reachable(query).unwrap();
             assert_eq!(saved.relative(), streamed.relative());
             let steps = saved.relative().steps();
+            assert_eq!(
+                batch.check_singleton(query),
+                check_reachability(ir, query, &steps[..1])
+            );
             assert_eq!(check_reachability(ir, query, steps), Ok(()));
             assert_eq!(steps, original.reach_with(query, |_| {}).unwrap());
             assert_eq!(saved.authored_spans().len(), steps.len());
