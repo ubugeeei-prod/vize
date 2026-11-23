@@ -118,7 +118,7 @@ jobs {
         run = "node npm/builder/vite/scripts/task-cache-source-cli.ts inspect"
       }
       new Dynamic {
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        uses = ci.downloadArtifact
         `if` = "${{ steps.source-cli.outputs.directory }}"
         with {
           `artifact-ids` = "${{ inputs.source_cli_artifact_id }}"

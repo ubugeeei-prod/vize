@@ -55,7 +55,7 @@ jobs {
       }
       new Dynamic {
         name = "Download canonical observer evidence"
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        uses = ci.downloadArtifact
         with {
           name = "${{ inputs.evidence }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
           path = "real-project-${{ inputs.observer }}-corpus"
@@ -156,7 +156,7 @@ jobs {
       }
       new Dynamic {
         name = "Download canonical reduction"
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        uses = ci.downloadArtifact
         with {
           name = "canonical-corpus-${{ inputs.observer }}-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
           path = "${{ env.REDUCTION_DIR }}"
@@ -214,7 +214,7 @@ jobs {
       }
       new Dynamic {
         name = "Download canonical observer evidence"
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        uses = ci.downloadArtifact
         with {
           name = "${{ inputs.evidence }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
           path = "real-project-${{ inputs.observer }}-corpus"
@@ -222,7 +222,7 @@ jobs {
       }
       new Dynamic {
         name = "Download canonical reduction"
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        uses = ci.downloadArtifact
         with {
           name = "canonical-corpus-${{ inputs.observer }}-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
           path = "real-project-${{ inputs.observer }}-reduction"
@@ -231,7 +231,7 @@ jobs {
       new Dynamic {
         name = "Download canonical fixture promotion"
         `continue-on-error` = true
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        uses = ci.downloadArtifact
         with {
           name = "canonical-corpus-${{ inputs.observer }}-promotion-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
           path = "real-project-${{ inputs.observer }}-promotion"

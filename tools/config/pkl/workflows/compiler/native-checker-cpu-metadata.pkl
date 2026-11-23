@@ -80,7 +80,7 @@ jobs {
         run = ci.workflowScript("install-offline-tools-and-the-fixed-public-sdk-image.sh")
       }
       new Dynamic {
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"
+        uses = ci.downloadArtifact
         with {
           `artifact-ids` = "${{ inputs.capture_artifact_id }}"
           `run-id` = "${{ inputs.capture_run_id }}"
