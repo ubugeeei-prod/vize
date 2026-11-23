@@ -191,7 +191,11 @@ fn check(editor: &Editor, width: usize, prior: &Products, current: &Products) {
     let formatted = GlyphFormatter::new(&settings, &arena)
         .format(source)
         .unwrap();
-    let expected_style = &formatted.code.as_str()[style_extent(&formatted.code)];
+    let expected_style = formatted
+        .code
+        .as_str()
+        .get(style_extent(&formatted.code))
+        .expect("the formatted style block has UTF-8 byte boundaries");
 
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(MaxTemplateComplexity));
