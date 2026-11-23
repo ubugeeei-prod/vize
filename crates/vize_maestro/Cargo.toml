@@ -38,6 +38,8 @@ experimental-versioned-fixes = [
 ]
 # Read one explicitly requested block stage from the open editor revision.
 experimental-resident-blocks = ["vize_incremental/open-block-queries"]
+# Read the paired compiler and lint template analysis from the open source revision.
+experimental-resident-template-passes = ["vize_incremental/resident-template-passes"]
 # Read both the editor outline and import specifiers from each original script.
 experimental-script-queries = ["vize_l1/authored-script-queries"]
 experimental-declaration-products = [

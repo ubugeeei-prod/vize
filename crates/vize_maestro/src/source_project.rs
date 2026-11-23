@@ -40,3 +40,8 @@ pub use script_queries::{ScriptModuleSpecifier, ScriptQueryProducts, ScriptQuery
 
 #[cfg(feature = "experimental-script-tools")]
 pub use script_queries::tools::{ScriptBlockLint, ScriptToolAnalysis, ScriptToolProducts};
+
+#[cfg(feature = "experimental-resident-template-passes")]
+mod template;
+#[cfg(feature = "experimental-resident-template-passes")]
+pub use template::TemplateRequestError;

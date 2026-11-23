@@ -60,6 +60,11 @@ impl SourceSnapshot {
         &self.source
     }
 
+    #[cfg(feature = "experimental-resident-template-passes")]
+    pub(super) fn source_owner(&self) -> &Arc<String> {
+        &self.source
+    }
+
     /// The real host language identifier captured with this source revision.
     #[must_use]
     pub fn language_id(&self) -> &str {
