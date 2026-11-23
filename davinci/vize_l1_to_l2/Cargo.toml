@@ -22,6 +22,8 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
+# Native L1/L2 views for explicit layered graph consumers.
+ir-views = ["vize_l1/ir-views", "vize_l2/ir-views"]
 # Share compiler and lint template analyses on an explicitly selected L2 owner.
 observed-template-passes = ["vize_l0/streamed-pass-groups", "vize_l2/composed-template-analysis"]
 # Admit Vue 3.4+ same-name binds with an authored identifier operand.

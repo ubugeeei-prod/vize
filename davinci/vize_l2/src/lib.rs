@@ -70,3 +70,7 @@ pub mod walk;
 
 #[cfg(feature = "module-ir")]
 pub mod module;
+
+/// Source-bound Vue/JS file semantics and its canonical component region.
+#[cfg(feature = "ir-views")]
+pub use file::FileArtifact as L2Ir;
