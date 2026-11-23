@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
-import { nativeLoaderScript } from "./support/native-config-script.ts";
+import { nativeLoaderPath } from "./support/native-config-script.ts";
 
 import {
   failedConfigModuleRequests,
@@ -15,7 +15,7 @@ import {
 
 const require = createRequire(import.meta.url);
 const vite = dirname(require.resolve("vite/package.json"));
-const embedded = await nativeLoaderScript();
+const runtimeFile = await nativeLoaderPath();
 
 test("Node retains the actual explicit import symlink route for retarget repair", async () => {
   const root = await realpath(await mkdtemp(join(tmpdir(), "vize-config-alias-")));
@@ -35,7 +35,7 @@ import vue from '../共有 policy.mjs';
 export default () => { appendFileSync(${JSON.stringify(counter)}, 'once\\n'); return { vue }; };`;
     await writeFile(selected, source);
     const invoke = () =>
-      spawnSync(process.execPath, ["--input-type=module", "-e", embedded, selected], {
+      spawnSync(process.execPath, [runtimeFile, selected], {
         cwd: app,
         encoding: "utf8",
       });
@@ -75,7 +75,7 @@ test("real Vite bundles retain canonical targets but do not expose symlink reque
     );
     await writeFile(selected, "import vue from '../policy.mjs'; export default { vue };");
     const invoke = () =>
-      spawnSync(process.execPath, ["--input-type=module", "-e", embedded, selected], {
+      spawnSync(process.execPath, [runtimeFile, selected], {
         cwd: app,
         encoding: "utf8",
       });
@@ -118,7 +118,7 @@ for (const installedVite of [false, true]) {
           `import vue from ${JSON.stringify(`../${policyName}`)}; export default { vue };`,
         );
         const invoke = () =>
-          spawnSync(process.execPath, ["--input-type=module", "-e", embedded, selected], {
+          spawnSync(process.execPath, [runtimeFile, selected], {
             cwd: app,
             encoding: "utf8",
           });
@@ -251,7 +251,7 @@ test("actual loader selection watches nearer installation and broken-present rep
     };`;
     await writeFile(selected, source);
     const invoke = () =>
-      spawnSync(process.execPath, ["--input-type=module", "-e", embedded, selected], {
+      spawnSync(process.execPath, [runtimeFile, selected], {
         cwd: app,
         encoding: "utf8",
       });
@@ -327,7 +327,7 @@ test("failed real Vite bundles retain repair targets without claiming their hidd
     await writeFile(bridge, "export { default } from './leaf.mjs';");
     await writeFile(leaf, "export { default } from './missing.mjs';");
     const invoke = () =>
-      spawnSync(process.execPath, ["--input-type=module", "-e", embedded, selected], {
+      spawnSync(process.execPath, [runtimeFile, selected], {
         cwd: app,
         encoding: "utf8",
       });

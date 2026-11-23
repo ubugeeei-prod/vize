@@ -1,3 +1,5 @@
+import { archivedWorkflow } from "./support/workflow-history.ts";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -231,7 +233,7 @@ test("timed identity projection changes only declared filenames and retains unkn
 test("paired dispatch is isolated and the complete full-default job remains byte-identical", () => {
   const file = ".github/workflows/cold-typechecker-scale.yml";
   const before = frozenColdSource("workflow", file).toString();
-  const after = fs.readFileSync(path.join(root, file), "utf8");
+  const after = archivedWorkflow(file);
   const condition = "    if: github.event_name != 'workflow_dispatch' || inputs.mode == 'full'\n";
   assert.equal(after.split(condition).length, 2);
   const fullJob = after.slice(after.indexOf("  profile:\n"));
@@ -329,9 +331,8 @@ test("the frozen provider survives artifact expiry without changing graph or ins
     packages["node_modules/vize/node_modules/@typescript/typescript-linux-x64"].version,
     "7.0.2",
   );
-  const workflow = fs.readFileSync(
+  const workflow = readAutomationPrograms(
     path.join(root, ".github/workflows/cold-typechecker-scale.yml"),
-    "utf8",
   );
   const verifyInstall = (source: string) => {
     const job = source.slice(

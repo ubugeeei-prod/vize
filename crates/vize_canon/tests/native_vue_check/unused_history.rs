@@ -14,7 +14,7 @@ fn owned_backend(root: &Path) -> (PathBuf, PathBuf) {
     std::fs::write(
         &wrapper,
         cstr!(
-            "#!/bin/sh\nif [ \"$1\" = \"--lsp\" ]; then echo \"$$\" > {}; fi\nexec {} \"$@\"\n",
+            include_str!("../programs/record-unused-history.sh.in"),
             quote(&pid),
             quote(&backend())
         ),

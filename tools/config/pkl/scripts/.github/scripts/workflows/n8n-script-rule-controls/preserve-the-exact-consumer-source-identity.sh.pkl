@@ -1,0 +1,14 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.requireCommitShas(List("SOURCE_SHA"))
+  #"""
+  [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+  git diff --exit-code HEAD --
+  mkdir -p "$RUNNER_TEMP/n8n-script-rule-workflow"
+  git rev-parse HEAD > "$RUNNER_TEMP/n8n-script-rule-workflow/source-sha.txt"
+  git rev-parse 'HEAD^{tree}' > "$RUNNER_TEMP/n8n-script-rule-workflow/source-tree.txt"
+  """#
+}

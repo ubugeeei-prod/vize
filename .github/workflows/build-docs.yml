@@ -9,6 +9,7 @@ on:
     # Other code-only pushes use nightly builds or exact-SHA release dispatches.
     paths:
       - ".github/workflows/build-docs.yml"
+      - ".github/scripts/workflows/build-docs/**"
       - "docs/**"
       - "!docs/davinci/decisions/**"
       - "npm/compose/core/examples/**"
@@ -43,6 +44,7 @@ jobs:
   build-docs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/build-docs"
       NODE_OPTIONS: "--max-old-space-size=8192"
       VIZE_DOCS_LINKS_ONLY: ${{ inputs.links-only && '1' || '0' }}
     steps:
@@ -76,36 +78,20 @@ jobs:
         run: node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
 
       - name: Install Japanese rendering fonts
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
-          fc-match --format '%{family}\n' ':lang=ja'
+        run: . "${{ env.VIZE_CI_FILES }}/install-japanese-rendering-fonts.sh"
 
       - name: Check preview resource readiness
         if: ${{ inputs.links-only != true }}
-        run: |
-          set -euo pipefail
-          vp node docs/scripts/ensure-browser.ts
-          mkdir -p docs-render-evidence/resource-readiness
-          node --test --test-reporter=tap tests/tooling/docs-preview-readiness-browser.test.ts 2>&1 | tee docs-render-evidence/resource-readiness/tests.tap
-          node tools/support/github/docs-preview-readiness.ts \
-            docs-render-evidence/resource-readiness/tests.tap \
-            docs-render-evidence/resource-readiness
+        run: . "${{ env.VIZE_CI_FILES }}/check-preview-resource-readiness.sh"
 
       - name: Build docs
         # The page manifest records this exact source SHA; do not replay an
         # earlier script result when only other source files changed.
-        run: |
-          vp run --no-cache --filter './docs' build
-          test -s docs-render-evidence/component-previews/browser-evidence.json
-          test -s docs-render-evidence/component-previews/unavailable-storage-evidence.json
+        run: . "${{ env.VIZE_CI_FILES }}/build-docs.sh"
 
       - name: Verify rendered navigation and Japanese reading paths
         if: ${{ inputs.links-only != true }}
-        run: |
-          ja_reading_routes=$(node --input-type=module -e 'import { defaultNavigationRenderRoutes } from "./docs/scripts/navigation-render-routes.ts"; process.stdout.write(defaultNavigationRenderRoutes.filter(route => route.startsWith("/ja/")).join(","))')
-          node docs/scripts/verify-navigation-render.ts --routes "$ja_reading_routes"
-          node docs/scripts/verify-ja-editorial-render.ts
+        run: . "${{ env.VIZE_CI_FILES }}/verify-rendered-navigation-and-japanese-reading-paths.sh"
 
       - name: Upload rendered docs screenshots
         if: ${{ always() }}

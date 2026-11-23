@@ -1,3 +1,4 @@
+import { archivedWorkflow } from "./support/workflow-history.ts";
 import assert from "node:assert/strict";
 import {
   mkdtempSync,
@@ -413,7 +414,7 @@ function requireRendererStep(workflow: string) {
   assert.equal(runnable.length, 1);
 }
 test("new closed choice preserves old602 and11317 workflow bodies byte-for-byte", () => {
-  const workflow = readFileSync(
+  const workflow = archivedWorkflow(
     fileURLToPath(
       new URL("../../.github/workflows/public-typechecker-consumer.yml", import.meta.url),
     ),

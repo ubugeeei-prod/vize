@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -90,25 +91,7 @@ test("explicit serialized PKL can amend the bundled schema without a project-lev
 
   try {
     fs.mkdirSync(binDir);
-    writeFakePkl(
-      binDir,
-      [
-        "#!/usr/bin/env node",
-        "const fs = require('node:fs');",
-        "if (process.argv.includes('--version')) process.exit(0);",
-        "const modulePath = process.argv[process.argv.length - 1];",
-        "const source = fs.readFileSync(modulePath, 'utf-8');",
-        "if (!source.includes('file://') || !source.includes('/pkl/vize.pkl')) {",
-        "  process.stderr.write(source);",
-        "  process.exit(1);",
-        "}",
-        "process.stdout.write(JSON.stringify({",
-        "  compiler: { sourceMap: true },",
-        "  vite: { scanPatterns: ['app/**/*.vue'] },",
-        "}));",
-        "",
-      ].join("\n"),
-    );
+    writeFakePkl(binDir, readToolingProgram("commands/config-loading/evaluate-pkl-config.cjs"));
     fs.writeFileSync(
       path.join(tempDir, "serialized-config.pkl"),
       [
@@ -148,16 +131,7 @@ test("explicit serialized PKL evaluation failures cannot fall through to a Vite 
 
   try {
     fs.mkdirSync(binDir);
-    writeFakePkl(
-      binDir,
-      [
-        "#!/usr/bin/env node",
-        "if (process.argv.includes('--version')) process.exit(0);",
-        "process.stderr.write('synthetic pkl failure');",
-        "process.exit(1);",
-        "",
-      ].join("\n"),
-    );
+    writeFakePkl(binDir, readToolingProgram("commands/config-loading/fail-pkl-evaluation.cjs"));
     fs.writeFileSync(path.join(tempDir, "serialized-config.pkl"), "invalid pkl");
     fs.writeFileSync(
       path.join(tempDir, "vite.config.mjs"),

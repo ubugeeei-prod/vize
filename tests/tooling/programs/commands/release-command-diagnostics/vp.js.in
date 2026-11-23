@@ -1,0 +1,13 @@
+const fs = require("node:fs");
+const args = process.argv.slice(2);
+fs.appendFileSync(@@LOG@@, args.join(" ") + "\n");
+if (args.includes("create-namespace")) {
+  if (process.env.NAMESPACE === "exists") {
+    console.error("  Namespace ubugeeei ALREADY Exists  ");
+    process.exit(1);
+  }
+  console.log(" out ");
+  console.error("denied\n");
+  process.exit(3);
+}
+process.exit(4);

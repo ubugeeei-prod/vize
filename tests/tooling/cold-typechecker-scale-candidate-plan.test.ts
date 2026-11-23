@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
@@ -186,9 +187,8 @@ test("pending CLI retains the exact literal plan and explicit zero-work refusal"
 });
 
 test("candidate route preserves source-first ordering, separate normal images and raw-only profile retention", () => {
-  const workflow = fs.readFileSync(
+  const workflow = readAutomationPrograms(
     new URL("../../.github/workflows/cold-typechecker-scale.yml", import.meta.url),
-    "utf8",
   );
   const check = (body: string) => {
     const order = [

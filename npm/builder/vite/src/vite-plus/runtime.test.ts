@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../../../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
@@ -44,11 +45,12 @@ void test("rule discovery uses a bounded owned cache without process-temporary f
   );
   fs.writeFileSync(
     binary,
-    'import fs from "node:fs";\n' +
-      'fs.appendFileSync(process.env.VIZE_RULE_CATALOG_TEST_COUNTER, "spawn\\n");\n' +
-      "process.stdout.write(JSON.stringify([" +
-      '{ scope: "vue", value: "no-v-html" }, ' +
-      '{ scope: "eslint", value: "eqeqeq" }]));\n',
+    readToolingProgram(
+      new URL(
+        "../../scripts/test-programs/vite-plus-runtime/list-vue-lint-rules.js",
+        import.meta.url,
+      ),
+    ),
   );
 
   const previous = {

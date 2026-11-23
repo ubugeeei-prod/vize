@@ -1,0 +1,22 @@
+
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { captureProjectCommand } from @@COMMAND_CAPTURE@@;
+import { runHostProcesses, requireSuccessfulHosts } from @@HOST_CONCURRENCY@@;
+import { runPreparationBranches } from @@OVERLAP@@;
+const f=@@PROJECT@@, waiting=@@WAITING@@;
+try {
+ await runPreparationBranches(f,{
+  mode:"overlap",
+  prepare:async()=>{
+   const result=await captureProjectCommand(process.execPath,[waiting,f.artifacts,"baseline"],{encoding:"utf8",timeout:6000,maxBuffer:1024*1024});
+   fs.writeFileSync(f.artifacts+"/baseline-process.json",JSON.stringify(result));
+   assert.equal(result.status,0);return f.replay;
+  },
+  runHosts:async()=>{
+   const results=await runHostProcesses(["first","second"].map(id=>({id,output:f.artifacts+"/"+id,command:process.execPath,args:[waiting,f.artifacts,id],timeoutMs:6000})),{workers:2});
+   fs.writeFileSync(f.artifacts+"/host-results.json",JSON.stringify(results));requireSuccessfulHosts(results);
+  },
+ });
+ process.exitCode=0;
+} catch {fs.writeFileSync(f.artifacts+"/exit-after-join","joined");process.exitCode=1;}

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -28,10 +30,12 @@ test("fresh-project native evidence identifies the binding that actually loaded"
   assertExpectedNativeBinding("/fresh/project", expectedPackage, runCommand);
   assert.equal(calls.length, 1);
   assert.equal(calls[0]?.command, process.execPath);
-  assert.deepEqual(calls[0]?.args.slice(0, 1), ["-e"]);
-  assert.equal(calls[0]?.args.at(-1), expectedPackage);
+  const probe = fileURLToPath(
+    new URL("../../../tools/support/compat/npm/smoke-loaded-native-package.cjs", import.meta.url),
+  );
+  assert.deepEqual(calls[0]?.args, [probe, expectedPackage]);
   assert.equal(calls[0]?.options?.cwd, "/fresh/project");
-  assert.match(calls[0]?.args[1] ?? "", /assert\.strictEqual\(native, selected/u);
+  assert.match(readFileSync(probe, "utf8"), /assert\.strictEqual\(native, selected/u);
 
   assertExpectedNativeBinding("/fresh/project", "", () => {
     throw new Error("an unset expected package must skip the native probe");

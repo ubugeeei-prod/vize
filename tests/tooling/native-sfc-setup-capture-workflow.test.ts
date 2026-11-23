@@ -1,5 +1,5 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import { test } from "node:test";
 import { nativeSetupCaptureRequired } from "../../tools/support/compat/github/native-setup-capture.mjs";
 import { planNativeRuntime } from "../../tools/support/compat/github/plan-native-runtime.ts";
@@ -50,7 +50,7 @@ test("a capture-only source change selects setup independently of ordinary tooli
 
 test("the required setup lane keeps complete capture and exact source artifacts", () => {
   assertNativeRuntimeHook("setup", "test-native-js-setup");
-  const action = fs.readFileSync(
+  const action = readAutomationPrograms(
     new URL("../../.github/actions/test-native-js-setup/action.yml", import.meta.url),
     "utf8",
   );

@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/client-server-decisions.yml"
+      - ".github/scripts/workflows/client-server-decisions/**"
       - "davinci/vize_l2/src/artifact*"
       - "davinci/vize_l2/src/walk*"
       - "davinci/vize_l2/src/walk/**"
@@ -33,6 +34,19 @@ jobs:
       RUST_MIN_STACK: "16777216"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/client-server-decisions/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -46,15 +60,4 @@ jobs:
             ~/.cargo/git
           key: target-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
       - name: Verify original artifacts, decisions, emitted bytes and authored links
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt)
-          for package in vize_l3 vize_l4; do
-            cargo clippy "${flags[@]}" -p "$package" --features client-server-decisions --lib --no-deps -- -D warnings
-          done
-          cargo test "${flags[@]}" -p vize_l4 --features client-server-decisions --test native_dom_file --test native_ssr --test native_selected_ssr --test native_selected_root_text --test native_selected_template_output
-          suite=(-p vize_atelier_sfc --features vize_l4/client-server-decisions --test client_server_decisions)
-          cargo clippy "${flags[@]}" "${suite[@]}" --no-deps -- -D warnings
-          export VIZE_CLIENT_SERVER_INPUTS="$RUNNER_TEMP/target-sources"
-          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_CLIENT_SERVER_INPUTS"
-          VIZE_CLIENT_SERVER_REQUIRE_OUTPUT=1 VIZE_CLIENT_SERVER_TIMINGS=1 cargo test "${flags[@]}" "${suite[@]}" -- --include-ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/verify-original-artifacts-decisions-emitted-bytes-and-authored-links.sh"

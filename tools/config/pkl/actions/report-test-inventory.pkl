@@ -1,0 +1,37 @@
+import "../Actions.pkl" as ci
+
+name = "Report test inventory"
+description = "Collect and upload the test inventory before aggregate verification"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Setup Vite+ and Node.js"
+      uses = ci.setupVp
+      with {
+        `node-version-file` = "package.json"
+        cache = true
+        `run-install` = false
+      }
+    }
+    new Dynamic {
+      name = "Install report dependencies"
+      shell = "bash"
+      run = "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts"
+    }
+    new Dynamic {
+      name = "Collect test inventory"
+      shell = "bash"
+      run = #"node tools/benchmarks/scripts/test-inventory.ts --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY""#
+    }
+    new Dynamic {
+      name = "Upload test inventory"
+      uses = ci.uploadArtifact
+      with {
+        name = "test-inventory"
+        path = "test-inventory.json"
+        `retention-days` = 14
+      }
+    }
+  }
+}

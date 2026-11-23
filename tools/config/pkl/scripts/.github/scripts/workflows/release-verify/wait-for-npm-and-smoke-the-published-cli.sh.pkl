@@ -1,0 +1,10 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  read -ra packages <<< "$RELEASE_PACKAGES"
+  node tools/support/release/verify_published/main.ts "$RELEASE_VERSION" "${packages[@]}"
+  """#
+}

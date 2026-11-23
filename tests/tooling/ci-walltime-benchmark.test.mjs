@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -10,9 +11,8 @@ import { stageProjectNative } from "../../npm/linter/oxlint/scripts/project-nati
 
 void test("walltime comparisons use the same source and runner without publishing authority", () => {
   const workflow = parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/workflows/ci-walltime-benchmark.yml", import.meta.url),
-      "utf8",
     ),
   );
   assert.deepEqual(workflow.permissions, { contents: "read" });
@@ -46,9 +46,8 @@ void test("walltime comparisons use the same source and runner without publishin
 
 void test("baseline input partitions are manual-only, build once and retain both strict controller arms", () => {
   const workflow = parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/workflows/ci-walltime-benchmark.yml", import.meta.url),
-      "utf8",
     ),
   );
   const input = workflow.on.workflow_dispatch.inputs.component;
@@ -131,9 +130,8 @@ void test("baseline input partitions are manual-only, build once and retain both
 
 void test("preparation overlap is an opt-in complete same-source comparison with unchanged baseline and host modes", () => {
   const workflow = parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/workflows/ci-walltime-benchmark.yml", import.meta.url),
-      "utf8",
     ),
   );
   const job = workflow.jobs["n8n-preparation"];
@@ -208,9 +206,8 @@ void test("both benchmark arms stage the same source bytes into distinct retaine
 
 void test("whole artifact payload trial is manual-only with a separate complete consumer", () => {
   const workflow = parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/workflows/ci-walltime-benchmark.yml", import.meta.url),
-      "utf8",
     ),
   );
   const producer = workflow.jobs["artifact-payload"];
@@ -229,9 +226,8 @@ void test("whole artifact payload trial is manual-only with a separate complete 
   assert.equal(consumer.needs, "artifact-payload");
   assert.equal(producer.steps.at(-1).uses, "./.github/actions/measure-artifact-payload");
   const action = parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/actions/measure-artifact-payload/action.yml", import.meta.url),
-      "utf8",
     ),
   );
   assert.equal(action.runs.using, "composite");
@@ -241,9 +237,8 @@ void test("whole artifact payload trial is manual-only with a separate complete 
   }
   const upload = action.runs.steps.find((step) => step.with?.["compression-level"] === 0);
   const restoreAction = parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/actions/restore-artifact-payload/action.yml", import.meta.url),
-      "utf8",
     ),
   );
   assert.equal(consumer.steps[1].uses, "./.github/actions/restore-artifact-payload");
@@ -274,9 +269,8 @@ void test("whole artifact payload trial is manual-only with a separate complete 
     PAYLOAD_SOURCE_SHA: "${{ inputs.artifact_source_sha }}",
   });
   const receiptAction = parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/actions/upload-artifact-payload-receipt/action.yml", import.meta.url),
-      "utf8",
     ),
   );
   assert.equal(consumer.steps.at(-1).uses, "./.github/actions/upload-artifact-payload-receipt");

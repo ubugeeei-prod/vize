@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createHash } from "node:crypto";
@@ -163,7 +164,9 @@ void test("both observed dev failures retain isolated packets across the origina
 
 void test("browser controls reuse the existing post-failure qualifier step and retain both failure statuses", () => {
   const { parse: parseYaml } = createRequire(new URL("../package.json", import.meta.url))("yaml");
-  const workflow = parseYaml(read(".github/workflows/vuefes-ssr-style-dependencies.yml"));
+  const workflow = parseYaml(
+    readAutomationPrograms(".github/workflows/vuefes-ssr-style-dependencies.yml"),
+  );
   const steps = workflow.jobs["vuefes-ssr-style-dependencies"].steps;
   const row = steps.find((step) => step.name === "Original full VueFes VRT, with one native build");
   assert.equal(row.uses, "./.github/actions/app-e2e-row");

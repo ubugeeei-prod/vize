@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p "$RUNNER_TEMP/instance-directives"
+[[ "$PR_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+read -r parent_base parent_head parent_extra < <(git show -s --format=%P HEAD)
+[[ "$parent_base" =~ ^[0-9a-f]{40}$ ]]
+[[ "$parent_head" == "$PR_HEAD_SHA" && -z "$parent_extra" ]]
+printf 'BASE_SHA=%s\n' "$parent_base" >> "$GITHUB_ENV"
+git rev-parse HEAD > "$RUNNER_TEMP/instance-directives/driver.sha"
+git show -s --format=fuller HEAD > "$RUNNER_TEMP/instance-directives/merge.txt"
+printf '%s\n' "$parent_base" > "$RUNNER_TEMP/instance-directives/base.sha"
+printf '%s\n' "$parent_head" > "$RUNNER_TEMP/instance-directives/authored-head.sha"
+rustc -vV > "$RUNNER_TEMP/instance-directives/rustc.txt"
+cargo -V > "$RUNNER_TEMP/instance-directives/cargo.txt"
+uname -a > "$RUNNER_TEMP/instance-directives/kernel.txt"

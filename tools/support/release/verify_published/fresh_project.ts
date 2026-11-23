@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 // Public fresh-project acceptance for #3956. The orchestration is read from the
 // selected source, but every product process and Vize dependency comes from npm.
 import assert from "node:assert/strict";
@@ -105,19 +106,9 @@ async function nativeIdentity(project: string, version: string): Promise<Record<
     "native identity probe",
     process.execPath,
     [
-      "-e",
-      [
-        'const assert = require("node:assert/strict");',
-        'const { createRequire } = require("node:module");',
-        "const expected = process.argv[1];",
-        'const fromVize = createRequire(require.resolve("vize"));',
-        'const native = fromVize("@vizejs/native");',
-        'const fromNative = createRequire(fromVize.resolve("@vizejs/native"));',
-        "const selected = fromNative(expected);",
-        'assert.strictEqual(native, selected, expected + " was installed but not loaded");',
-        "process.stdout.write(JSON.stringify({ package: expected, token: native.getNativeBuildToken() }));",
-      ].join("\n"),
+      fileURLToPath(new URL("../../compat/npm/smoke-loaded-native-package.cjs", import.meta.url)),
       expected,
+      "--identity-only",
     ],
     project,
   );

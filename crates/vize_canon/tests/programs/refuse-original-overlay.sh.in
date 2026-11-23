@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ "$1" = --lsp ]; then
+  echo "$$" > {pid}
+  if [ "{pause}" = true ]; then sleep 1; fi
+  exit 23
+fi
+exec {backend} "$@"

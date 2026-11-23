@@ -1,0 +1,18 @@
+#!@@NODE@@
+if (process.argv.includes("--version")) {
+  console.log("fixture-cargo 1");
+  process.exit(0);
+}
+const fs = require("node:fs"),
+  path = require("node:path");
+const binary = path.join(process.env.CARGO_TARGET_DIR, "ci-opt", "vize");
+fs.mkdirSync(path.dirname(binary), { recursive: true });
+fs.writeFileSync(binary, fs.readFileSync("crates/answer.rs"), { mode: 0o755 });
+console.log(
+  JSON.stringify({
+    reason: "compiler-artifact",
+    target: { name: "vize", kind: ["bin"] },
+    executable: binary,
+    fresh: false,
+  }),
+);

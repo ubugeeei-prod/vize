@@ -1,0 +1,7 @@
+#!@@NODE@@
+const fs = require("node:fs"),
+  a = process.argv.slice(2);
+fs.writeFileSync(a[a.indexOf("--tsBuildInfoFile") + 1], "current-run build info");
+process.stdout.write("native stdout 日本\n");
+process.stderr.write("native stderr\n");
+process.exit(2);

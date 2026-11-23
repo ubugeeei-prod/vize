@@ -1,0 +1,8 @@
+const fs = require("node:fs");
+const path = require("node:path");
+const args = process.argv.slice(2);
+fs.appendFileSync(process.env.CARGO_LOG, args.join(" ") + "\n");
+@@CHECK_MANIFEST@@
+if (args[0] === "publish" && args.at(-1) === "vize_l0") process.exit(1);
+if (args[0] === "publish" || args[0] === "info") process.exit(0);
+process.exit(1);

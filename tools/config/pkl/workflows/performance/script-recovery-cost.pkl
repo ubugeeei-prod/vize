@@ -1,0 +1,107 @@
+import "../../Actions.pkl" as ci
+
+name = "Script recovery cost"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/script-recovery-cost.yml"
+      ".github/scripts/workflows/script-recovery-cost/**"
+      ".github/scripts/workflows/shared/**"
+      "crates/vize_croquis/src/script_parser/recovery.rs"
+      "crates/vize_croquis/src/script_parser/recovery/**"
+      "davinci/vize_l0/examples/source_recovery_benchmark.rs"
+      "davinci/vize_l0/tests/source_probes/mod.rs"
+      "tools/benchmarks/scripts/recovery_cost_contract.ts"
+      "tools/benchmarks/scripts/compare_recovery_cost.ts"
+      "tools/benchmarks/scripts/profile-evidence-json.ts"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Immutable first-parent baseline commit"
+        type = "string"
+        required = true
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "script-recovery-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  compare {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 40
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/script-recovery-cost"
+      DECLARED_BASE_SHA = "${{ github.event.pull_request.base.sha || inputs.base_sha }}"
+      EVENT_KIND = "${{ github.event_name }}"
+      CARGO_INCREMENTAL = "0"
+      CARGO_TERM_COLOR = "never"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Reject invalid pinned recovery comparisons before building"
+        run = "node tools/benchmarks/scripts/recovery_cost_contract.ts"
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with { `node-version` = "26.6.0" }
+      }
+      new Dynamic { run = "rustup toolchain install 1.100.0 --profile minimal" }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "script-recovery-v1"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Preserve exact source identities and the shared benchmark carrier"
+        run = ci.workflowScript("preserve-exact-source-identities-and-the-shared-benchmark-carrier.sh")
+      }
+      new Dynamic {
+        name = "Compare complete parser packets and exact source counter controls"
+        run = ci.workflowScript("compare-complete-parser-packets-and-exact-source-counter-controls.sh")
+      }
+      new Dynamic {
+        name = "Build independent baseline and candidate targets with equal flags"
+        run = ci.workflowScript("build-independent-baseline-and-candidate-targets-with-equal-flags.sh")
+      }
+      new Dynamic {
+        name = "Measure normal processes and separate instrumented allocation windows"
+        run = ci.workflowScript("measure-normal-processes-and-separate-instrumented-allocation-windows.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "success()"
+        with {
+          name = "script-recovery-summary-${{ github.sha }}"
+          path = """
+          evidence/summary.json
+          evidence/identity.json
+
+          """
+          `if-no-files-found` = "error"
+        }
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "script-recovery-${{ github.sha }}"
+          path = "evidence/"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}

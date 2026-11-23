@@ -1,0 +1,86 @@
+import "../../Actions.pkl" as ci
+
+name = "LSP indexed scheduler source cost carrier"
+on {
+  workflow_dispatch = null
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/lsp-scheduler-cost-carrier.yml"
+      ".github/scripts/workflows/lsp-scheduler-cost-carrier/**"
+      ".github/scripts/workflows/shared/**"
+      "Cargo.toml"
+      "Cargo.lock"
+      "crates/vize_maestro/Cargo.toml"
+      "crates/vize_maestro/src/server.rs"
+      "crates/vize_maestro/src/server/**"
+      "davinci/vize_l0/Cargo.toml"
+      "davinci/vize_l0/src/profiler.rs"
+      "davinci/vize_l0/src/profiler/**"
+      "tools/benchmarks/crates/davinci_harness/**"
+      "tests/tooling/lsp-scheduler-cost-carrier.test.ts"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "lsp-indexed-scheduler-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  census {
+    name = "Actual untimed selector visits and synchronous allocations"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+
+      CARGO_TERM_COLOR = "never"
+      CARGO_BUILD_JOBS = "4"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = "true"
+      SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+      VIZE_SCHEDULER_COST_SOURCE = "${{ github.event.pull_request.head.sha || github.sha }}"
+      VIZE_SCHEDULER_COST_EVIDENCE = "${{ github.workspace }}/scheduler-evidence/indexed-scheduler-cost.json"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("lsp-scheduler-cost-carrier")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic { run = ci.workflowScript("census-rustup-toolchain-install-rustup-show-active-too.sh") }
+      new Dynamic {
+        name = "Preserve exact source and allocator custody"
+        run = ci.workflowScript("preserve-exact-source-and-allocator-custody.sh")
+      }
+      new Dynamic {
+        name = "Calibrate then count exactly one synchronous Rust carrier"
+        run = ci.workflowScript("calibrate-then-count-exactly-one-synchronous-rust-carrier.sh")
+      }
+      new Dynamic {
+        name = "Preserve all original twenty laws and indexed queue laws without profiling"
+        run = ci.workflowScript("preserve-all-original-twenty-laws-and-indexed-queue-laws-without-profili.sh")
+      }
+      new Dynamic {
+        name = "Compile normal library with test hooks and operands absent"
+        run = ci.workflowScript("compile-normal-library-with-test-hooks-and-operands-absent.sh")
+      }
+      new Dynamic {
+        name = "Check shipped library without lint exceptions"
+        run = ci.workflowScript("check-shipped-library-without-lint-exceptions.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "lsp-indexed-scheduler-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "scheduler-evidence/"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

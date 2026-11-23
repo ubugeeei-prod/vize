@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+sdk_root="$RUNNER_TEMP/native-dto-sdk-$SDK_VERSION"
+npm install --prefix "$sdk_root" --ignore-scripts --no-audit --no-fund "typescript@$SDK_VERSION"
+echo "SDK_ROOT=$sdk_root" >> "$GITHUB_ENV"
+command -v strace

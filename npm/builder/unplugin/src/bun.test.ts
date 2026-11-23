@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -21,27 +22,16 @@ void test(
     const entrypoint = resolveFixturePath("basic", "entry.ts");
     fs.writeFileSync(
       driver,
-      `import vize from ${JSON.stringify(plugin)};
-const result = await Bun.build({
-  entrypoints: [${JSON.stringify(entrypoint)}],
-  outdir: ${JSON.stringify(outdir)},
-  target: "browser",
-  format: "esm",
-  sourcemap: "external",
-  external: ["vue"],
-  plugins: [vize({ isProduction: true, root: ${JSON.stringify(root)} })],
-});
-await Bun.write(${JSON.stringify(report)}, JSON.stringify({
-  success: result.success,
-  logs: result.logs.map((log) => ({ level: log.level, message: log.message })),
-  outputs: await Promise.all(result.outputs.map(async (output) => ({
-    path: output.path,
-    kind: output.kind,
-    text: await output.text(),
-  }))),
-}, null, 2));
-if (!result.success) process.exitCode = 1;
-`,
+      readToolingProgram(
+        new URL("../scripts/test-programs/bun/build-with-bun.js.in", import.meta.url),
+        {
+          PLUGIN: JSON.stringify(plugin),
+          ENTRY: JSON.stringify(entrypoint),
+          OUTPUT_DIRECTORY: JSON.stringify(outdir),
+          PROJECT: JSON.stringify(root),
+          REPORT: JSON.stringify(report),
+        },
+      ),
     );
     const result = spawnSync("bun", ["run", driver], {
       cwd: root,

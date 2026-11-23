@@ -11,14 +11,15 @@
     "check:ui-docs": "node ./previews/ui/check-site.ts",
     "check:heading-links": "node ./scripts/check-heading-hash.ts",
     "generate:og-images": "node ./scripts/generate-og-images.ts",
-    "dev": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && pnpm generate:metadata && vp build && pnpm generate:og-images && vp preview",
-    "build": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && pnpm generate:metadata && vp build && node ./scripts/finish-build.ts",
+    "dev": "node ./scripts/package-tasks.cjs dev",
+    "build": "node ./scripts/package-tasks.cjs build",
     "preview": "vp preview"
   },
   "devDependencies": {
     "@ox-content/vite-plugin": "catalog:integrations",
     "@vizejs/vite-plugin": "workspace:*",
     "playwright": "catalog:testing",
+    "pythonia": "1.2.6",
     "three": "catalog:content",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",

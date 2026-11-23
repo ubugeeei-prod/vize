@@ -1,0 +1,6 @@
+name = "Select the Vite+ cache key"
+description = "Select the Vite+ cache key using the runner Node runtime"
+runs {
+  using = "node24"
+  main = "main.ts"
+}

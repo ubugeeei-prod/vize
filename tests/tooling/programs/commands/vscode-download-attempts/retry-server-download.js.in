@@ -1,0 +1,2 @@
+import { downloadAttempts } from @@HELPER@@;
+process.exitCode = await downloadAttempts(process.execPath, [@@SCRIPT@@]);

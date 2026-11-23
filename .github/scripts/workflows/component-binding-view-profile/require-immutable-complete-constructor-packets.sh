@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+evidence="$RUNNER_TEMP/component-binding-evidence"
+for role in base head; do
+  source_root="$GITHUB_WORKSPACE"
+  if [[ "$role" == base ]]; then source_root="$RUNNER_TEMP/component-binding-base"; fi
+  (cd "$source_root" && CARGO_TARGET_DIR="$RUNNER_TEMP/component-$role-profile-target" VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$evidence/$role-constructor.json" cargo test --locked --profile ci-opt -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$evidence/$role-constructor.stdout" 2> "$evidence/$role-constructor.stderr"
+done
+cmp "$evidence/base-constructor.json" "$evidence/head-constructor.json"

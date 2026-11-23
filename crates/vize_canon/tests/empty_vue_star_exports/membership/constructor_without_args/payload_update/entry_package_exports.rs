@@ -1,8 +1,8 @@
 //! Invert the focused entry package CLI exports before reading frozen history.
 
 use super::support;
+use crate::package_task_history;
 use serde_json::{Value, json};
-use std::fs;
 
 const MANIFEST: &str = "npm/cli/package.json";
 const BEFORE_BYTES: usize = 4_522;
@@ -24,6 +24,11 @@ pub(super) fn source_before(path: &str, current: String) -> String {
     if path != MANIFEST {
         return current;
     }
+    let current = if current.contains("node ./scripts/package-tasks.cjs ") {
+        package_task_history::restore(MANIFEST, current)
+    } else {
+        current
+    };
     let additions = current.matches(ADDED).count();
     if additions == 0 {
         return current;
@@ -38,7 +43,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn retain_provenance(manifest: &mut Value) {
-    let current = fs::read_to_string(support::repository().join(MANIFEST)).unwrap();
+    let current = package_task_history::read(MANIFEST).unwrap();
     let previous = source_before(MANIFEST, current.clone());
     manifest["provenance"]["currentEntryPackageCliExports"] = json!({
         "kind": "exact-entry-package-cli-export-source-inverse",
@@ -58,7 +63,7 @@ mod tests {
 
     #[test]
     fn current_cli_manifest_reconstructs_the_exact_previous_source() {
-        let current = fs::read_to_string(support::repository().join(MANIFEST)).unwrap();
+        let current = package_task_history::read(MANIFEST).unwrap();
         let previous = source_before(MANIFEST, current.clone());
         assert_eq!(previous.matches(ADDED).count(), 0);
         const ANCHOR: &str = "    \"./virtual-ts\": {";

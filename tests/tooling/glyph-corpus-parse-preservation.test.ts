@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 // Corpus-wide formatter semantic preservation. Native HTML uses the existing
 // Vue 3 structural comparator unless a project declares an exact dialect
 // partition; Pug remains owned by its independent pinned semantic oracle.
@@ -153,11 +154,7 @@ test("glyph corpus records unusable reference baselines without failing the prop
   const fakeFormatter = path.join(fakeDir, "fake-vize.mjs");
   fs.writeFileSync(
     fakeFormatter,
-    [
-      "#!/usr/bin/env node",
-      'process.stderr.write("Found 1 file(s)\\n\\nFormatted 1 file(s)\\n  1 file(s) already formatted\\n");',
-      "",
-    ].join("\n"),
+    readToolingProgram("commands/glyph-corpus-parse-preservation/fake-formatter.cjs"),
   );
   fs.chmodSync(fakeFormatter, 0o755);
   try {

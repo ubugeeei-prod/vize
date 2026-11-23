@@ -1,0 +1,12 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::seven_whole_original_setup_components_and_maps_are_captured -- --exact
+  vp node --test tests/tooling/native-selected-setup-sfc-dom-reference.test.ts
+  test -s "$VIZE_NATIVE_SELECTED_SETUP_SFC_DOM_CAPTURE"
+  test -s "$VIZE_NATIVE_SELECTED_SETUP_SFC_DOM_RUNTIME_CAPTURE"
+  """#
+}

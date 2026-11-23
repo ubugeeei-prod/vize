@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/vitest-module-cache.yml"
+      - ".github/scripts/workflows/vitest-module-cache/**"
       - "npm/builder/vite/**"
       - "npm/native/**"
       - "crates/vize_atelier_sfc/src/vite_plugin/**"
@@ -28,6 +29,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/vitest-module-cache/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1
@@ -49,10 +63,7 @@ jobs:
       - name: Install candidate workspace dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
       - name: Build the actual source addon and Vite adapter
-        run: |
-          vp run --workspace-root build:native:test
-          vp run --workspace-root build:vite-plugin
-          node npm/builder/vite/scripts/run-tests.ts --require-prepared
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-actual-source-addon-and-vite-adapter.sh"
       - name: Install the exact reported Vitest and official Vue control
         working-directory: tools/support/compat/vitest/fixtures/fs-module-cache
         run: npm ci --ignore-scripts --no-audit --no-fund

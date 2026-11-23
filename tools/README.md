@@ -24,6 +24,54 @@ Run `node tools/commands/ci/verify-tool-layout.ts` after adding or removing tool
 entrypoints. It verifies the stable Node command surface, prevents the remaining
 Rust Script budget from growing, and keeps retired command runners absent.
 
+## Editing repository workflows and scripts
+
+The Pkl modules in `tools/config/pkl/` own the repository's workflows, composite
+actions, shell entrypoints, pnpm workspace, and service configuration. The
+[workflow catalog](../.github/workflows/README.md) links to each workflow group.
+
+| To change                    | Edit under `tools/config/pkl/`      |
+| ---------------------------- | ----------------------------------- |
+| GitHub workflow              | `workflows/<area>/<workflow>.pkl`   |
+| Shared action or runner pin  | `Actions.pkl`                       |
+| Composite action             | `actions/<name>.pkl`                |
+| First-party shell entrypoint | `scripts/<output path>.pkl`         |
+| Multi-command package script | `package-tasks/<package>/tasks.pkl` |
+| Other YAML configuration     | `repository/<output path>.pkl`      |
+
+After installing workspace dependencies, regenerate the checked-in outputs and verify them:
+
+```sh
+node tools/commands/generate/repository-config.ts
+node tools/commands/generate/repository-config.ts --check
+```
+
+The command uses the workspace's pinned Pkl CLI on Linux and macOS. On Windows,
+install the same Pkl version on PATH. Evaluation uses local modules. The required
+`check-js` job verifies new files have a source, Actions values and step order
+match, other configurations retain key order, and shell text and executable modes
+match on Unix. The renderer keeps existing YAML comments and layout where possible.
+pnpm owns lockfiles. Upstream reproductions and historical fixture inputs keep
+their original bytes.
+
+Use `ci.workflowScript("build.sh")` for a staged workflow program and
+`ci.actionScript("build.sh")` for a composite action’s `scripts/build.sh`.
+WSL steps use `ci.wslScript("build.sh")` so Bash receives the translated path.
+
+Group workflows by purpose in the catalog. Dedicated benchmark workflows use the
+display name `Benchmark - <subject>`. Use `ShellScript.pkl` to quote command
+arguments and verify source revisions, for example `module.requireCheckout("SOURCE_SHA")`.
+When workflows use the same program, put it in `parts/shell/` and amend it from
+each entrypoint module. Put runtime logic that needs process I/O in a typed
+driver under `tools/` and call it from the recipe.
+
+The generator checks every first-party package script for inline commands.
+A multi-command package script invokes its generated `scripts/package-tasks.cjs` entrypoint.
+Declare each command's executable and argument list in the package's `tasks.pkl`.
+Use `directory` and `environment` for package-local setup. Root Vite+ sequences use
+`steps(...)` in `tools/config/vite-plus/tasks/`, and Nix shell hooks read the
+generated files under `tools/nix/scripts/`.
+
 ## Typecheck comparison evidence
 
 `tools/commands/fixtures/typecheck-divergence-report.rs` writes

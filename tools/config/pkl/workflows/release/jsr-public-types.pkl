@@ -1,0 +1,131 @@
+import "../../Actions.pkl" as ci
+
+name = "Public JSR types and runtime capabilities"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/jsr-public-types.yml"
+      ".github/scripts/workflows/jsr-public-types/**"
+      "tools/support/release/jsr/consumer-types.ts.fixture"
+      "tools/support/release/jsr/consumer.ts"
+      "tools/support/release/jsr/consumer-deno.json"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      version {
+        description = "An already published immutable JSR version (no publication)"
+        type = "string"
+        ["default"] = "0.571.0"
+        required = true
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+jobs {
+  consumer {
+    name = "Public JSR types and runtime (${{ matrix.runtime }})"
+    `runs-on` = "ubuntu-24.04"
+    `timeout-minutes` = 20
+    strategy {
+      `fail-fast` = false
+      matrix {
+        runtime = List("node", "deno", "bun")
+      }
+    }
+    env {
+
+      PUBLIC_JSR_VERSION = "${{ inputs.version || '0.571.0' }}"
+    }
+    defaults {
+      run { shell = "bash" }
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("jsr-public-types")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          `sparse-checkout` = """
+          tools/support/release/jsr
+
+          """
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        `if` = "matrix.runtime == 'deno'"
+        uses = "denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed"  // v2
+        with { `deno-version` = "2.9.7" }
+      }
+      new Dynamic {
+        `if` = "matrix.runtime == 'bun'"
+        uses = ci.setupBun
+        with { `bun-version` = "1.3.14" }
+      }
+      new Dynamic {
+        name = "Prepare the isolated public consumer"
+        `working-directory` = "${{ github.workspace }}"
+        run = ci.workflowScript("prepare-the-isolated-public-consumer.sh")
+      }
+      new Dynamic {
+        name = "Install the public JSR package (Node)"
+        `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
+        `if` = "matrix.runtime == 'node'"
+        run = ci.workflowScript("install-the-public-jsr-package-node.sh")
+      }
+      new Dynamic {
+        name = "Check the public types and execute every entry point (Node)"
+        `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
+        `if` = "matrix.runtime == 'node'"
+        run = ci.workflowScript("check-the-public-types-and-execute-every-entry-point-node.sh")
+      }
+      new Dynamic {
+        name = "Install the public JSR package (Bun)"
+        `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
+        `if` = "matrix.runtime == 'bun'"
+        run = ci.workflowScript("install-the-public-jsr-package-bun.sh")
+      }
+      new Dynamic {
+        name = "Check the public types and execute every entry point (Bun)"
+        `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
+        `if` = "matrix.runtime == 'bun'"
+        run = ci.workflowScript("check-the-public-types-and-execute-every-entry-point-bun.sh")
+      }
+      new Dynamic {
+        name = "Check the public types and execute every entry point (Deno)"
+        `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
+        `if` = "matrix.runtime == 'deno'"
+        run = ci.workflowScript("check-the-public-types-and-execute-every-entry-point-deno.sh")
+      }
+      new Dynamic {
+        name = "Preserve public metadata and dependency locks"
+        `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
+        `if` = "always()"
+        run = ci.workflowScript("preserve-public-metadata-and-dependency-locks.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "jsr-public-types-${{ matrix.runtime }}"
+          path = """
+          ${{ runner.temp }}/jsr-public-consumer/*.log
+          ${{ runner.temp }}/jsr-public-consumer/*.json
+          ${{ runner.temp }}/jsr-public-consumer/*.lock
+          ${{ runner.temp }}/jsr-public-consumer/*.txt
+
+          """
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}

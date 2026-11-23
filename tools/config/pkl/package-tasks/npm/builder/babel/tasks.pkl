@@ -1,0 +1,8 @@
+amends "../../../../PackageTasks.pkl"
+
+tasks {
+  ["check"] {
+    module.run("vp", List("check", "src", "vite.config.ts"))
+    module.run("tsc", List("-p", "test/tsconfig.json"))
+  }
+}

@@ -1,0 +1,14 @@
+#!@@NODE@@
+import {readdirSync,readFileSync} from 'node:fs';
+import {basename} from 'node:path';
+import {MINIMAL_PLANTS,CORPUS_PLANT_DIAGNOSTICS} from @@PLANTS@@;
+const files=readdirSync(process.cwd()).filter(f=>f.endsWith('.vue')).sort().map(file=>({file,diagnostics:[]}));
+let errors=0;
+for(const file of files){
+ const source=readFileSync(file.file,'utf8');
+ const plant=MINIMAL_PLANTS.find(p=>p.id===basename(process.cwd()));
+ if(plant && file.file===plant.expected.file && /not-a-number|disabledFlag: string|clickHandler = 123|variant="danger"/.test(source))file.diagnostics=[plant.expected.diagnostic];
+ if(file.file==='__CheckGatePlant.vue')file.diagnostics=CORPUS_PLANT_DIAGNOSTICS;
+ errors+=file.diagnostics.length;
+}
+console.log(JSON.stringify({files,fileCount:files.length,errorCount:errors,warningCount:0}));process.exitCode=errors?1:0;

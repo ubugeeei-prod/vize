@@ -1,3 +1,4 @@
+import { toolingProgram, readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import {
   spawnSync,
@@ -88,15 +89,12 @@ void test(
   withDirectory((directory) => {
     writeFileSync(
       path.join(directory, "a.test.ts"),
-      `import { describe, test } from "node:test";
-test("passes", () => {});
-test("fails", () => { throw new Error("no"); });
-test("skips", { skip: true }, () => {});
-test("todo", { todo: true }, () => {});
-describe("group", () => { test("inner", () => {}); });
-`,
+      readToolingProgram("commands/test-case-collection/describe-node-cases.js"),
     );
-    writeFileSync(path.join(directory, "b.test.ts"), `throw new Error("load");\n`);
+    writeFileSync(
+      path.join(directory, "b.test.ts"),
+      readToolingProgram("commands/test-case-collection/throw-on-load.js"),
+    );
     const out = path.join(directory, "packet.json");
     const reporter = path.join(root, "tools/support/compat/github/test-case-reporter.ts");
     // A nested run must not look like a subtest of this one.
@@ -399,18 +397,16 @@ void test(
 
     writeFileSync(
       path.join(directory, "a.test.ts"),
-      `import { test } from "node:test";
-test("passes", () => {});
-test("fails", () => { throw new Error("no"); });
-`,
+      readToolingProgram("commands/test-case-collection/one-failing-case.ts"),
     );
     writeFileSync(
       path.join(directory, "b.test.ts"),
-      `import { test } from "node:test";
-test("passes", () => {});
-`,
+      readToolingProgram("commands/test-case-collection/one-passing-case.ts"),
     );
-    writeFileSync(path.join(directory, "plain.mjs"), "process.stdout.write('plain\\n');\n");
+    writeFileSync(
+      path.join(directory, "plain.mjs"),
+      readToolingProgram("commands/test-case-collection/write-output.js"),
+    );
     const lib = path.join(directory, "lib");
     const tsxCli = path.join(directory, "tsx", "dist");
     const dotbin = path.join(directory, "node_modules", ".bin");
@@ -420,31 +416,26 @@ test("passes", () => {});
     const vpCli = path.join(lib, "vp");
     writeFileSync(
       vpCli,
-      `import { writeFileSync } from "node:fs";
-const output = process.argv.find((arg) => arg.startsWith("--outputFile.json="))?.slice("--outputFile.json=".length);
-if (!output) throw new Error("vitest json output was not requested");
-writeFileSync(output, JSON.stringify({
-  testResults: [{
-    name: ${JSON.stringify(path.join(directory, "npm/ui/src/one.test.ts"))},
-    status: "passed",
-    assertionResults: [{ ancestorTitles: ["one.test.ts"], title: "renders", status: "passed" }],
-  }],
-}));
-`,
+      readToolingProgram("commands/test-case-collection/report-vitest.js.in", {
+        TEST_FILE: JSON.stringify(path.join(directory, "npm/ui/src/one.test.ts")),
+      }),
     );
     writeFileSync(
       path.join(tsxCli, "cli.mjs"),
-      `import { spawnSync } from "node:child_process";
-const result = spawnSync(process.execPath, process.argv.slice(2), { stdio: "inherit", env: process.env });
-process.exit(result.status ?? 1);
-`,
+      readToolingProgram("commands/test-case-collection/run-tsx-cli.js"),
     );
-    writeFileSync(path.join(dotbin, "vp"), `#!/bin/sh\nexec node ${JSON.stringify(vpCli)} "$@"\n`, {
-      mode: 0o755,
-    });
+    writeFileSync(
+      path.join(dotbin, "vp"),
+      readToolingProgram("commands/test-case-collection/vp.sh", { VP_CLI: JSON.stringify(vpCli) }),
+      {
+        mode: 0o755,
+      },
+    );
     writeFileSync(
       path.join(dotbin, "tsx"),
-      `#!/bin/sh\nexec node ${JSON.stringify(path.join(tsxCli, "cli.mjs"))} "$@"\n`,
+      readToolingProgram("commands/test-case-collection/tsx.sh", {
+        CLI_MJS: JSON.stringify(path.join(tsxCli, "cli.mjs")),
+      }),
       { mode: 0o755 },
     );
     const out = path.join(directory, "captured.json");
@@ -457,8 +448,8 @@ process.exit(result.status ?? 1);
         "capture",
         "--",
         "bash",
-        "-c",
-        `export PATH=${JSON.stringify(dotbin)}:"$PATH"; node plain.mjs && node --test a.test.ts; status=$?; vp test run src/one.test.ts; tsx --test b.test.ts; exit $status`,
+        toolingProgram("workflow/collect-js-test-cases.sh"),
+        dotbin,
       ],
       {
         cwd: directory,

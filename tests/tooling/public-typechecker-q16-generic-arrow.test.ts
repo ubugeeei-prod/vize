@@ -1,3 +1,4 @@
+import { archivedWorkflow } from "./support/workflow-history.ts";
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -251,7 +252,7 @@ test("actual module lookup guard refuses scopes conditional exports and prioriti
     );
   }));
 test("stock runner adaptation is closed to the one new manual ref and preserves the entire historical workflow", () => {
-  const workflow = readFileSync(
+  const workflow = archivedWorkflow(
     new URL("../../.github/workflows/public-typechecker-consumer.yml", import.meta.url),
     "utf8",
   );

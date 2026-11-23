@@ -1,0 +1,3 @@
+const fs = require("node:fs");
+fs.appendFileSync(process.env.VP_ARGS_LOG, `curl ${process.argv.slice(2).join(" ")}\n`);
+process.stdout.write(@@VALIDATED@@);

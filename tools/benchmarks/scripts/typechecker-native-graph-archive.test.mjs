@@ -21,6 +21,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+import { toolingProgram } from "../../../tests/tooling/support/program-path.ts";
 import { createNativeGraphArchive } from "./typechecker-native-graph-archive.mjs";
 
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -280,35 +281,13 @@ await test("concurrent shard archives publish one completed shared content objec
   await withFixture(async (f) => {
     writeFileSync(f.first, Buffer.alloc(1024 * 1024, 0xa5));
     const helper = new URL("./typechecker-native-graph-archive.mjs", import.meta.url).href;
-    const source = `
-import { createNativeGraphArchive } from ${JSON.stringify(helper)};
-import { readFileSync, writeFileSync } from "node:fs";
-import { createHash } from "node:crypto";
-const options = JSON.parse(process.argv[1]);
-const path = process.argv[2];
-options.configBytes = readFileSync(options.config);
-const bytes = readFileSync(path);
-const members = [{ path, bytes: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") }];
-for (const phase of ["before", "after"]) {
-  writeFileSync(options.stem + ".membership-" + phase + ".stdout.txt", path + "\\n");
-  writeFileSync(options.stem + ".membership-" + phase + ".stderr.txt", "");
-}
-const archive = createNativeGraphArchive(options);
-archive.captureMembers(members);
-archive.finish(members);
-`;
+    const source = [toolingProgram("native/publish-native-graph-archive.js"), helper];
     await Promise.all(
       [0, 1, 2, 3].map(
         (index) =>
           new Promise((resolve, reject) => {
             const options = { ...f.options, stem: join(f.options.directory, `shard${index}`) };
-            const child = spawn(process.execPath, [
-              "--input-type=module",
-              "-e",
-              source,
-              JSON.stringify(options),
-              f.first,
-            ]);
+            const child = spawn(process.execPath, [...source, JSON.stringify(options), f.first]);
             let stderr = "";
             child.stderr.on("data", (bytes) => {
               stderr += bytes;

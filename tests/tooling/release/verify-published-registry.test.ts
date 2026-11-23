@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../support/program-path.ts";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -6,27 +7,16 @@ import { test } from "node:test";
 
 import { missingFromRegistry } from "../../../tools/support/release/verify_published/main.ts";
 import { writeFakeCommand } from "../support/fake-command.ts";
-import { fakeNpmArchiveSource } from "../support/fake-npm-registry.ts";
+import { fakeRegistryArchivePath } from "../support/fake-npm-registry.ts";
 
 // Serves the exact version with its archive; the expected channel comes from TEST_TAG.
 function fakeRegistry(bin: string): void {
   writeFakeCommand(
     bin,
     "curl",
-    [
-      fakeNpmArchiveSource,
-      "const url = new URL(process.argv.at(-1));",
-      "const [, encoded, version] = url.pathname.split('/');",
-      "const name = decodeURIComponent(encoded);",
-      "if (version !== undefined && version !== process.env.TEST_PUBLISHED) {",
-      "  process.stdout.write('{}VIZE_HTTP_STATUS:404');",
-      "  process.exit(0);",
-      "}",
-      "const body = version === undefined",
-      "  ? { name, 'dist-tags': { [process.env.TEST_TAG]: process.env.TEST_TAG_VERSION } }",
-      "  : { name, version, dist: fakeDist(name, version) };",
-      "process.stdout.write(`${JSON.stringify(body)}VIZE_HTTP_STATUS:200`);",
-    ].join("\n"),
+    readToolingProgram("commands/verify-published-registry/curl.js.in", {
+      ARCHIVE_MODULE: JSON.stringify(fakeRegistryArchivePath),
+    }),
   );
 }
 

@@ -1,0 +1,3 @@
+if (process.argv[2] === "install") {
+  @@SUCCESS_BODY@@;
+} else process.exit(9);

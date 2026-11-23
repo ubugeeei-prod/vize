@@ -1,0 +1,75 @@
+import "../../Actions.pkl" as ci
+
+name = "Shared client and server template decisions"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/client-server-decisions.yml"
+      ".github/scripts/workflows/client-server-decisions/**"
+      "davinci/vize_l2/src/artifact*"
+      "davinci/vize_l2/src/walk*"
+      "davinci/vize_l2/src/walk/**"
+      "davinci/vize_l2/src/lang/js/**"
+      "davinci/vize_l1_to_l2/src/native_file*"
+      "davinci/vize_l1_to_l2/src/native_file/**"
+      "davinci/vize_l3/Cargo.toml"
+      "davinci/vize_l3/src/decision/**"
+      "davinci/vize_l4/Cargo.toml"
+      "davinci/vize_l4/src/targets/dom*"
+      "davinci/vize_l4/src/targets/dom/**"
+      "davinci/vize_l4/src/targets/ssr*"
+      "davinci/vize_l4/src/targets/ssr/**"
+      "davinci/vize_l4/tests/fixtures/native-*"
+      "crates/vize_atelier_sfc/Cargo.toml"
+      "crates/vize_atelier_sfc/tests/client_server_decisions/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "client-server-decisions-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `target-products` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("client-server-decisions")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = ci.cache
+        with {
+          path = """
+          ~/.cargo/registry
+          ~/.cargo/git
+
+          """
+          key = "target-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}"
+        }
+      }
+      new Dynamic {
+        name = "Verify original artifacts, decisions, emitted bytes and authored links"
+        run = ci.workflowScript("verify-original-artifacts-decisions-emitted-bytes-and-authored-links.sh")
+      }
+    }
+  }
+}
