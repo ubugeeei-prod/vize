@@ -11,6 +11,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Checked primitive assignment judgments on the actual TypeScript AST.
 literal-assignments = ["script-declaration-queries"]
+# Name the original source/semantic view for explicit layered consumers.
+ir-views = []
 # Read authored props in source order from each resolved component operation.
 component-prop-queries = ["setup-component-imports"]
 setup-component-imports = []

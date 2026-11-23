@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import {
   retiredToolingLanguage,
   retiredToolingLanguages as languages,
+  independentGraphTheory,
   retiredToolingLedger as ledgerPath,
   type RetiredToolingLanguage as Language,
 } from "../../tools/support/retired-tooling-languages.ts";
@@ -95,6 +96,7 @@ function retiringFiles(ledger: Ledger, language: Language, tracked: readonly str
   return tracked
     .filter(
       (file) =>
+        file !== independentGraphTheory &&
         retiredToolingLanguage(file) === language &&
         !prefixes.some((prefix) => file.startsWith(prefix)),
     )
