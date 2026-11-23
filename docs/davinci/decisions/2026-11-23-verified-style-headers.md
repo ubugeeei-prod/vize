@@ -1,0 +1,9 @@
+# Preserving Vue style attributes across a formatter edit
+
+Formatting an original SCSS block may reorder its Vue attributes. Changing a `module` name would change its consumers. Dropping the value from `lang` can change how the replacement is parsed. The editor checks the prospective document before it offers a versioned edit.
+
+The checker reads ordered pairs of original attribute names and optional raw values from both L1IR style blocks. An identical sequence passes even when it contains duplicates or dynamic names. A different sequence passes only when it permutes unique `lang`, `scoped` and `module` attributes and preserves their values. A missing value differs from an empty value. The enclosing edit also checks the authored block extent, recompiles the candidate SCSS, compares its products and requires a second formatter application to return the same bytes.
+
+Rideau and Leroy place a checker after a transformation and verify what its acceptance implies. Rendel and Ostermann's work on invertible syntax describes how parsing and printing can share a specification. Here parsing supplies source spellings and editor ranges, while the header policy specifies which reorderings preserve a selected block. Formatting and reparsing the whole candidate also exercises the enclosing syntax. [Rideau and Leroy, *Validating Register Allocation and Spilling*](https://xavierleroy.org/publi/validation-regalloc.pdf) · [Rendel and Ostermann, *Invertible Syntax Descriptions*](https://www.informatik.uni-marburg.de/~rendel/unparse/)
+
+Kani compiles the same Rust predicate as the editor and compares it with an independent occurrence-count specification for zero to four attributes per side. The model has three recognized names, one other static name, one dynamic name and four optional value spellings. Editor tests independently obtain the two attribute sequences through the Vue descriptor, including duplicate flags, non-ASCII values and absent versus empty values.
