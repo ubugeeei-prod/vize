@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   closeSync,
+  copyFileSync,
   existsSync,
   globSync,
   lstatSync,
@@ -19,7 +20,6 @@ import {
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { controlProgram, gdbProgram } from "./native-ops-data.ts";
 
 interface RootExit {
   readonly pid: number;
@@ -54,7 +54,8 @@ interface ControlReceipt {
   readonly dataSHA256: string;
 }
 const driver = fileURLToPath(import.meta.url);
-const data = fileURLToPath(new URL("./native-ops-data.ts", import.meta.url));
+const observerFile = fileURLToPath(new URL("./native-ops/observer.gdb", import.meta.url));
+const controlFile = fileURLToPath(new URL("./native-ops/short-child.c", import.meta.url));
 const expectedSource = "710dfca619c82d76078a72ee64629632c798dea5";
 const expectedVp = "d824ad1a2f5080c71a4444444b26e0fde0fbc6ccc7e47054cd436f7f0b5fc572";
 const originalCommand = [
@@ -82,6 +83,9 @@ const secretKeys = [
 const digest = (value: Uint8Array | string): string =>
   createHash("sha256").update(value).digest("hex");
 const sha = (file: string): string => digest(readFileSync(file));
+function dataDigest(): string {
+  return digest(JSON.stringify([sha(observerFile), sha(controlFile)]));
+}
 function write(file: string, value: unknown): void {
   writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
 }
@@ -123,24 +127,15 @@ function run(command: readonly string[], output?: string): number {
 }
 function trace(command: readonly string[], output: string): number {
   mkdirSync(output);
-  const program = path.join(output, "gdb.py");
-  const launch = path.join(output, "launch.gdb");
-  writeFileSync(program, gdbProgram);
-  writeFileSync(
-    launch,
-    "python\nimport runpy\nrunpy.run_path(" +
-      JSON.stringify(program) +
-      ", init_globals={'NATIVE_OPS_OUTPUT': " +
-      JSON.stringify(output) +
-      "})\nend\n",
-  );
+  const program = path.join(output, "observer.gdb");
+  copyFileSync(observerFile, program);
   write(path.join(output, "invocation.json"), {
     qualified: false,
     command,
     cwd: process.cwd(),
     driverSHA256: sha(driver),
-    dataSHA256: sha(data),
-    gdbProgramSHA256: digest(gdbProgram),
+    dataSHA256: dataDigest(),
+    gdbProgramSHA256: sha(program),
     earlySettingsBeforeExecutableLoad: earlySettings,
     observer: "GNU GDB ptrace events; possible internal/software breakpoints",
     deliberateInferiorDataOrRegisterEdits: false,
@@ -159,7 +154,7 @@ function trace(command: readonly string[], output: string): number {
         "--batch",
         ...earlySettings.flatMap((setting) => ["-iex", setting]),
         "--command",
-        launch,
+        program,
         "--args",
         ...command,
       ],
@@ -189,7 +184,7 @@ function control(output: string): void {
   mkdirSync(output, { recursive: true });
   const source = path.join(output, "short-child.c");
   const binary = path.join(output, "short-child");
-  writeFileSync(source, controlProgram);
+  copyFileSync(controlFile, source);
   assert.equal(run(["cc", "-O0", "-g", "-pthread", source, "-o", binary]), 0);
   const first = path.join(output, "trace");
   assert.equal(childTrace(binary, first), 7);
@@ -279,7 +274,7 @@ function control(output: string): void {
     qualified: false,
     observerValidated: true,
     driverSHA256: sha(driver),
-    dataSHA256: sha(data),
+    dataSHA256: dataDigest(),
     originalParentExit: 7,
     originalChildSignal: "SIGABRT",
     observedChild: result,
@@ -325,7 +320,7 @@ function original(output: string, receiptPath: string): number {
   assert.equal(receipt.observerValidated, true);
   assert.equal(receipt.qualified, false);
   assert.equal(receipt.driverSHA256, sha(driver));
-  assert.equal(receipt.dataSHA256, sha(data));
+  assert.equal(receipt.dataSHA256, dataDigest());
   assert.equal(revision(), expectedSource);
   assert.equal(process.env.GITHUB_RUN_ATTEMPT, "1", "No workflow rerun replay");
   const tools = ["vp", "pnpm", "node", "rustc", "cargo"].map(tool);
