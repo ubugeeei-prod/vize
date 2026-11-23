@@ -20,6 +20,7 @@ readme = "README.md"
 
 [features]
 scoped-scss = ["scss-rules"]
+indexed-source-maps = []
 scss-rules = ["vize_l2/scss-rules"]
 original-style-bindings = ["vize_l1_to_l2/original-style-bindings"]
 # Explicit consumers of the same parsed TSRX module and sealed regions.
