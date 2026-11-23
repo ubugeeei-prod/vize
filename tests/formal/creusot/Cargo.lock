@@ -175,6 +175,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_l2_recovery_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
 name = "vize_l3_graph_proofs"
 version = "0.0.0"
 dependencies = [
