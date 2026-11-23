@@ -95,6 +95,8 @@ pub(super) struct SfcInspection {
 }
 
 pub(super) struct Control {
+    #[cfg(feature = "experimental-lexical-arrow-queries")]
+    pub(super) lexical_arrow_initializers: bool,
     retired: AtomicBool,
     finished: AtomicBool,
     #[cfg(test)]
@@ -151,6 +153,7 @@ impl NavigationWorker {
         snapshot: Arc<SourceSnapshot>,
         live: Arc<AtomicUsize>,
         profile: Profile,
+        #[cfg(feature = "experimental-lexical-arrow-queries")] lexical_arrow_initializers: bool,
     ) -> Result<Arc<Self>, NavigationRefusal> {
         let mut count = live.load(Ordering::Acquire);
         loop {
@@ -166,6 +169,8 @@ impl NavigationWorker {
         let slot = Slot(live);
         let (commands, receiver) = sync_channel(REQUEST_LIMIT);
         let control = Arc::new(Control {
+            #[cfg(feature = "experimental-lexical-arrow-queries")]
+            lexical_arrow_initializers,
             retired: AtomicBool::new(false),
             finished: AtomicBool::new(false),
             #[cfg(test)]

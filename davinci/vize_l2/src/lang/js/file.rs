@@ -57,6 +57,8 @@ pub struct ProgramInput<'p, 'a> {
     block: SourceBlock<'a>,
     index: u32,
     profile: ScriptProfile,
+    #[cfg(feature = "lexical-arrow-initializers")]
+    lexical_arrow_initializers: bool,
 }
 
 impl<'p, 'a> ProgramInput<'p, 'a> {
@@ -100,6 +102,8 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
             u32::try_from(container_index).map_err(|_| reject(FileIssueKind::BindingLimit))?;
         Ok(Self {
             references,
+            #[cfg(feature = "lexical-arrow-initializers")]
+            lexical_arrow_initializers: false,
             block,
             index,
             profile: ScriptProfile {
@@ -113,6 +117,8 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
 
 /// Sole source of file-local declarations from original admitted observations.
 pub struct FileProducer<'a> {
+    #[cfg(feature = "lexical-arrow-initializers")]
+    lexical_arrow_initializers: bool,
     builder: FileBuilder<'a>,
 }
 
@@ -120,6 +126,8 @@ impl<'a> FileProducer<'a> {
     pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, ArtifactError> {
         Ok(Self {
             builder: FileBuilder::new(allocator, source)?,
+            #[cfg(feature = "lexical-arrow-initializers")]
+            lexical_arrow_initializers: false,
         })
     }
 
@@ -144,6 +152,12 @@ impl<'a> FileProducer<'a> {
                 kind: FileIssueKind::InvalidSource,
             });
         }
+        #[cfg(feature = "lexical-arrow-initializers")]
+        let input = if self.lexical_arrow_initializers {
+            input.with_lexical_arrow_initializers()
+        } else {
+            input
+        };
         let Some((unit, lexical_scope)) = self.builder.facts.unit(
             input.index,
             input.block.span(),
@@ -162,6 +176,10 @@ impl<'a> FileProducer<'a> {
                 kind: FileIssueKind::InvalidSpan,
             });
         };
+        #[cfg(feature = "lexical-arrow-initializers")]
+        if input.lexical_arrow_initializers {
+            guard.facts().expressions.in_arena = true;
+        }
         if let Some(unit) = guard.facts().units.last() {
             observer.unit(unit);
         }
@@ -236,5 +254,34 @@ impl<'a> FileProducer<'a> {
             policy,
             builder.source,
         )))
+    }
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl ProgramInput<'_, '_> {
+    /// Request lexical arrow-initializer analysis during this original Program walk.
+    #[must_use]
+    pub fn with_lexical_arrow_initializers(mut self) -> Self {
+        self.lexical_arrow_initializers = true;
+        self
+    }
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl FileProducer<'_> {
+    /// Enable lexical arrow initializers in each admitted original Program of this file.
+    pub fn enable_lexical_arrow_initializers(&mut self) {
+        self.lexical_arrow_initializers = true;
+    }
+
+    /// Bounded capacity hints from the original surface. No nodes, issues or
+    /// resolution facts are created by this operation.
+    pub fn reserve_template_storage(&mut self, roots: usize, expressions: usize) {
+        let roots = roots.min(32);
+        let expressions = expressions.min(32);
+        self.builder
+            .canonical
+            .reserve_template_storage(roots, expressions);
+        self.builder.facts.expressions.reserve_if_empty(expressions);
     }
 }

@@ -12,6 +12,11 @@ use super::{
     coordinates::Coordinates,
 };
 
+#[cfg(feature = "retained-expressions")]
+mod sequence;
+#[cfg(feature = "retained-expressions")]
+pub use sequence::RetainedExpressionParser;
+
 /// The same arena root, authenticated by its original ordinary parser owner.
 pub struct RetainedExpression<'a> {
     grammar: Grammar,

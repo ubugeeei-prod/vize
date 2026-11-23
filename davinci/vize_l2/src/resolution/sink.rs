@@ -112,27 +112,18 @@ struct Immediate<'a, 'b, B> {
     occurrences: Vec<Occurrence<'a>>,
 }
 
+include!("sink/immediate.rs");
+
 impl<'a, B: BindingLookup> ReferenceSink<'a> for Immediate<'a, '_, B> {
     type Checkpoint = usize;
     fn checkpoint(&self) -> usize {
         self.occurrences.len()
     }
-    fn reference(&mut self, event: ReferenceEvent<'a>) -> Result<(), ResolutionErrorKind> {
-        let binding = self
-            .bindings
-            .lookup(event.name())
-            .ok_or(ResolutionErrorKind::MissingBinding)?;
-        self.occurrences.push(Occurrence {
-            span: event.span(),
-            name: event.name(),
-            binding,
-            usage: event.usage(),
-            shorthand: event.shorthand(),
-            constructor: event.constructor(),
-        });
-        Ok(())
-    }
+    immediate_reference!();
     fn rollback(&mut self, checkpoint: usize) {
         self.occurrences.truncate(checkpoint);
     }
 }
+
+#[cfg(feature = "lexical-arrow-initializers")]
+pub(crate) mod arena;

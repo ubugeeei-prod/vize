@@ -228,3 +228,47 @@ impl PendingNativeComponent<'_> {
         self.component.event_references = true;
     }
 }
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl PendingNativeComponent<'_> {
+    pub(crate) fn retain_expression_sequence(&mut self) {
+        self.component.retained_expressions = true;
+    }
+
+    /// Estimate just the first direct children. The hint changes capacity only;
+    /// genuinely constructed owners and facts still determine every length.
+    pub(crate) fn lexical_storage_hint(&mut self) -> Option<(usize, usize)> {
+        use vize_l1::markup::SurfaceChild;
+        if !self.component.retained_expressions {
+            return None;
+        }
+        let children = &self.component.carrier().tree.children;
+        let roots = children.len().min(32);
+        let mut expressions = 0;
+        for child in children.iter().take(roots) {
+            match child {
+                SurfaceChild::Interpolation(_) => expressions += 1,
+                SurfaceChild::Element(element) if !element.open.is_verbatim() => {
+                    expressions += element
+                        .open
+                        .attrs
+                        .iter()
+                        .take(32 - expressions)
+                        .filter(|attr| {
+                            attr.value.is_some()
+                                && (attr.name.text.starts_with([':', '@'])
+                                    || attr.name.text.starts_with("v-bind:")
+                                    || attr.name.text.starts_with("v-on:"))
+                        })
+                        .count();
+                }
+                _ => {}
+            }
+            if expressions == 32 {
+                break;
+            }
+        }
+        self.observations.embeds.reserve_exact(expressions);
+        Some((roots, expressions))
+    }
+}

@@ -305,3 +305,22 @@ impl<'a> RejectedVueFile<'a> {
         &self.issues
     }
 }
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl<'a> VueFileProducer<'a> {
+    pub(crate) fn for_lexical_initializers(
+        allocator: &'a Allocator,
+        source: &'a str,
+    ) -> Result<Self, ArtifactError> {
+        let mut producer = Self::new(allocator, source)?;
+        producer.producer.enable_lexical_arrow_initializers();
+        Ok(producer)
+    }
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl VueFileProducer<'_> {
+    pub(crate) fn reserve_template_storage(&mut self, roots: usize, expressions: usize) {
+        self.producer.reserve_template_storage(roots, expressions);
+    }
+}
