@@ -133,7 +133,7 @@ jobs:
         with:
           kani-version: "0.68.0"
           command: kani
-          args: tests/formal/template-lint/ranking.rs --output-format=terse
+          args: crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs --output-format=terse
   partition:
     name: Prove the Rust group cursor partitions every bounded plan
     runs-on: blacksmith-32vcpu-ubuntu-2404

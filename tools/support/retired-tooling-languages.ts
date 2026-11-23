@@ -9,7 +9,7 @@ export const independentGraphTheory = "tests/formal/ir-graph/Reach.lean";
 export const templateLabelRanking = {
   theorem: "tests/formal/template-lint/Selection.lean",
   kernel: "crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs",
-  harness: "tests/formal/template-lint/ranking.rs",
+  harness: "crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs",
 } as const;
 export const retiredToolingLedger = "tools/config/retired-tooling-languages.json";
 // A mathematical reference paired with the Rust coordinate kernel and Kani harness.

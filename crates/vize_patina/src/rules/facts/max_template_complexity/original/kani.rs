@@ -1,5 +1,4 @@
 //! Model-check the same safe Rust insertion that publishes Patina's labels.
-#[path = "../../../crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs"]
 mod window;
 
 #[kani::proof]
