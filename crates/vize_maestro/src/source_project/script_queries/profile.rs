@@ -88,6 +88,15 @@ fn combined_original_products() {
         "whitespace-only script setup",
         "<script setup lang='ts'>\n</script>",
     );
+    compare(
+        &state,
+        &uri,
+        "upstream empty TypeScript setup",
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3373/NavBar.vue"
+        )),
+    );
     for lang in ["js", "ts", "jsx", "tsx"] {
         for count in [1, 8, 64] {
             let mut source = vize_l0::cstr!(

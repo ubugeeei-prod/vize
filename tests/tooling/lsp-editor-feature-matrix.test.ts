@@ -301,12 +301,14 @@ test("editor integrations launch vize lsp by default", () => {
   // Execute the factory: a workspace Node bin needs an argv prefix, while a
   // native server retains exactly the same lsp/debug subcommand contract.
   for (const prefix of [[], ["/workspace 日本語/bin/vize.cjs"]]) {
-    const createOptions = new vm.Script(`${source}\ncreateServerOptions;`).runInNewContext({
+    const context = vm.createContext({
       serverInvocation: (command: string) => ({ command, args: prefix, env: {} }),
       serverProcessEnv: (env: unknown) => env,
       TransportKind: { stdio: "stdio" },
       process,
-    }) as (serverPath: string) => {
+    });
+    new vm.Script(source).runInContext(context);
+    const createOptions = context.createServerOptions as (serverPath: string) => {
       run: { command: string; args: string[]; transport: string };
       debug: { args: string[] };
     };

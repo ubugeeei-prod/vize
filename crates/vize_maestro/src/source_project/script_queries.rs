@@ -40,9 +40,9 @@ pub enum ScriptQueryRefusal {
 
 impl SourceSnapshot {
     /// Read the script outline and the file-rename module specifiers together.
-    /// The editor descriptor selects the physical blocks. Each original script
-    /// is parsed once with its original JS, JSX, TS or TSX grammar. Concurrent
-    /// edits can proceed during parsing and invalidate publication.
+    /// Empty blocks contribute their outline directly. Each nonempty block is
+    /// parsed once with its original JS, JSX, TS or TSX grammar. Concurrent edits
+    /// can proceed during the read and invalidate publication.
     pub fn script_query_products(
         &self,
         state: &ServerState,
@@ -133,6 +133,12 @@ impl ScriptQueryProducts {
         mut observe: impl FnMut(&AuthoredProgram<'_>) -> Result<(), ScriptQueryRefusal>,
     ) -> Result<(), ScriptQueryRefusal> {
         let (frame, prefix) = script_frame(root, block)?;
+        if frame.source().is_empty() && additional_profile.is_none() {
+            let symbol =
+                Self::script_block_symbol(name, block, &LineIndex::new(prefix), Vec::new());
+            self.push_script_symbol(symbol);
+            return Ok(());
+        }
         let editor_type = Self::script_type(block.lang.as_deref());
         let symbol = {
             let mut arena = Allocator::default();
