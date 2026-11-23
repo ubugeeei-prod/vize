@@ -62,41 +62,41 @@ jobs {
       new Dynamic {
         name = "Install only the pinned workflow parser"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-only-the-pinned-workflow-parser.sh""#
+        run = ci.workflowScript("install-only-the-pinned-workflow-parser.sh")
       }
       new Dynamic {
         name = "Verify exact source, observer laws and production projection"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-exact-source-observer-laws-and-production-projection.sh""#
+        run = ci.workflowScript("verify-exact-source-observer-laws-and-production-projection.sh")
       }
       new Dynamic {
         name = "Remove the workflow parser link"
         `if` = "always()"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/remove-the-workflow-parser-link.sh""#
+        run = ci.workflowScript("remove-the-workflow-parser-link.sh")
       }
       new Dynamic {
         name = "Install only the pinned public Vue checker and schema provider"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-only-the-pinned-public-vue-checker-and-schema-provider.sh""#
+        run = ci.workflowScript("install-only-the-pinned-public-vue-checker-and-schema-provider.sh")
       }
       ci.rust("1.100.0")
       ci.wild()
       new Dynamic {
         name = "Build one fresh profiling CLI and measure three paired repetitions"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-one-fresh-profiling-cli-and-measure-three-paired-repetitions.sh""#
+        run = ci.workflowScript("build-one-fresh-profiling-cli-and-measure-three-paired-repetitions.sh")
       }
       new Dynamic {
         name = "Run profiling-only identity and custody laws in the built target"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/run-profiling-only-identity-and-custody-laws-in-the-built-target.sh""#
+        run = ci.workflowScript("run-profiling-only-identity-and-custody-laws-in-the-built-target.sh")
       }
       new Dynamic {
         name = "Package bounded receipts apart from complete public evidence"
         `if` = "always()"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-bounded-receipts-apart-from-complete-public-evidence.sh""#
+        run = ci.workflowScript("package-bounded-receipts-apart-from-complete-public-evidence.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

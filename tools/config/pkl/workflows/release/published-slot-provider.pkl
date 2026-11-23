@@ -126,7 +126,7 @@ jobs {
       }
       new Dynamic {
         name = "Isolate immutable fixture inputs"
-        run = #". "${{ env.VIZE_CI_FILES }}/isolate-immutable-fixture-inputs.sh""#
+        run = ci.workflowScript("isolate-immutable-fixture-inputs.sh")
       }
       new Dynamic {
         name = "Fresh exact historical public package without source SDK substitutions"
@@ -141,7 +141,7 @@ jobs {
       new Dynamic {
         name = "Preserve every raw failure, input, VTS and installed SDK image"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-every-raw-failure-input-vts-and-installed-sdk-image.sh""#
+        run = ci.workflowScript("preserve-every-raw-failure-input-vts-and-installed-sdk-image.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

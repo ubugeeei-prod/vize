@@ -9,7 +9,7 @@ runs {
       name = "Capture and execute original selected-template literal modules"
       shell = "bash"
       env { VIZE_L4_SELECTED_LITERAL_CAPTURE = "${{ runner.temp }}/native-selected-template-literals.json" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-and-execute-original-selected-template-literal-modules.sh""#
+      run = ci.actionScript("capture-and-execute-original-selected-template-literal-modules.sh")
     }
     new Dynamic {
       name = "Retain the actual literal module, map and range capture"

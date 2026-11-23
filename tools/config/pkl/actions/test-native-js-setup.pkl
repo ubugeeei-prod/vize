@@ -28,7 +28,7 @@ runs {
         VIZE_NATIVE_SFC_ORDINARY_EMPTY_CAPTURE = "${{ runner.temp }}/native-sfc-ordinary-empty-capture.json"
         VIZE_NATIVE_SFC_ORDINARY_EMPTY_RUNTIME_CAPTURE = "${{ runner.temp }}/native-sfc-ordinary-empty-runtime.json"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/test-native-js-setup-modules-and-real-vue-runtime.sh""#
+      run = ci.actionScript("test-native-js-setup-modules-and-real-vue-runtime.sh")
     }
     new Dynamic {
       name = "Upload native JS setup module and runtime captures"

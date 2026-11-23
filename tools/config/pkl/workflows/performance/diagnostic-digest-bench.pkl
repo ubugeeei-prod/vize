@@ -86,7 +86,7 @@ jobs {
       new Dynamic {
         name = "Validate inputs"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-inputs.sh""#
+        run = ci.workflowScript("validate-inputs.sh")
       }
       new Dynamic {
         uses = ci.checkout
@@ -103,28 +103,28 @@ jobs {
       new Dynamic {
         name = "Build both commits"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-both-commits.sh""#
+        run = ci.workflowScript("build-both-commits.sh")
       }
       new Dynamic {
         name = "Install GNU time and perf"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-gnu-time-and-perf.sh""#
+        run = ci.workflowScript("install-gnu-time-and-perf.sh")
       }
       new Dynamic {
         name = "Fetch the pinned corpora"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/fetch-the-pinned-corpora.sh""#
+        run = ci.workflowScript("fetch-the-pinned-corpora.sh")
       }
       new Dynamic {
         name = "Measure"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure.sh""#
+        run = ci.workflowScript("measure.sh")
       }
       new Dynamic {
         name = "Summarize"
         `if` = "always()"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/summarize.sh""#
+        run = ci.workflowScript("summarize.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

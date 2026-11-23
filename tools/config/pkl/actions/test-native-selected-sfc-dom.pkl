@@ -14,7 +14,7 @@ runs {
         VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE = "${{ runner.temp }}/native-dom-static-class-runtime"
         VIZE_L4_DOM_STATIC_CLASS_REQUIRE_CAPTURE = "1"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/qualify-fresh-completed-lower-file-static-class-modules-in-both-runtime.sh""#
+      run = ci.actionScript("qualify-fresh-completed-lower-file-static-class-modules-in-both-runtime.sh")
     }
     new Dynamic {
       name = "Qualify whole public selected static class components in both runtime modes"
@@ -25,7 +25,7 @@ runs {
         VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE = "${{ runner.temp }}/native-selected-static-class-runtime"
         VIZE_NATIVE_SELECTED_STATIC_CLASS_REQUIRE_CAPTURE = "1"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/qualify-whole-public-selected-static-class-components-in-both-runtime-mo.sh""#
+      run = ci.actionScript("qualify-whole-public-selected-static-class-components-in-both-runtime-mo.sh")
     }
     new Dynamic {
       name = "Capture and execute source-built selected SFC components"
@@ -35,7 +35,7 @@ runs {
         VIZE_NATIVE_SELECTED_SFC_DOM_REQUIRE_CAPTURE = "1"
         VIZE_NATIVE_SELECTED_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-selected-sfc-dom-runtime.json"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-and-execute-source-built-selected-sfc-components.sh""#
+      run = ci.actionScript("capture-and-execute-source-built-selected-sfc-components.sh")
     }
     new Dynamic {
       name = "Capture and execute whole original selected setup components"
@@ -45,7 +45,7 @@ runs {
         VIZE_NATIVE_SELECTED_SETUP_SFC_DOM_REQUIRE_CAPTURE = "1"
         VIZE_NATIVE_SELECTED_SETUP_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-selected-setup-sfc-dom-runtime.json"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-and-execute-whole-original-selected-setup-components.sh""#
+      run = ci.actionScript("capture-and-execute-whole-original-selected-setup-components.sh")
     }
     new Dynamic {
       name = "Capture and execute whole original mutable For components"
@@ -55,7 +55,7 @@ runs {
         VIZE_NATIVE_ORIGINAL_FOR_SFC_DOM_REQUIRE_CAPTURE = "1"
         VIZE_NATIVE_ORIGINAL_FOR_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-for-sfc-dom-runtime.json"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-and-execute-whole-original-mutable-for-components.sh""#
+      run = ci.actionScript("capture-and-execute-whole-original-mutable-for-components.sh")
     }
     new Dynamic {
       name = "Capture and execute whole original For value components"
@@ -65,7 +65,7 @@ runs {
         VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_REQUIRE_CAPTURE = "1"
         VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-for-value-sfc-dom-runtime.json"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-and-execute-whole-original-for-value-components.sh""#
+      run = ci.actionScript("capture-and-execute-whole-original-for-value-components.sh")
     }
     new Dynamic {
       name = "Capture new original For key components and execute both primary runtime modes"
@@ -76,7 +76,7 @@ runs {
         VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-for-key-sfc-dom-primary"
         VIZE_NATIVE_ORIGINAL_FOR_KEY_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-for-key-sfc-dom-runtime"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-new-original-for-key-components-and-execute-both-primary-runtime.sh""#
+      run = ci.actionScript("capture-new-original-for-key-components-and-execute-both-primary-runtime.sh")
     }
     new Dynamic {
       name = "Capture and qualify original constant For components in both runtime modes"
@@ -86,7 +86,7 @@ runs {
         VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_REQUIRE_CAPTURE = "1"
         VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_RAW_CAPTURE = "${{ runner.temp }}/native-original-for-constant-sfc-dom-unqualified-attempts.json"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-and-qualify-original-constant-for-components-in-both-runtime-mod.sh""#
+      run = ci.actionScript("capture-and-qualify-original-constant-for-components-in-both-runtime-mod.sh")
     }
     new Dynamic {
       name = "Capture genuine original root If components in both explicit modes"
@@ -98,7 +98,7 @@ runs {
         VIZE_NATIVE_ORIGINAL_ROOT_IF_SFC_DOM_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-root-if-sfc-dom-primary"
         VIZE_NATIVE_ORIGINAL_ROOT_IF_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-root-if-sfc-dom-runtime"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-genuine-original-root-if-components-in-both-explicit-modes.sh""#
+      run = ci.actionScript("capture-genuine-original-root-if-components-in-both-explicit-modes.sh")
     }
     new Dynamic {
       name = "Capture genuine root If setup-binding text in both explicit modes"
@@ -110,7 +110,7 @@ runs {
         VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-root-if-text-sfc-dom-primary"
         VIZE_NATIVE_ORIGINAL_ROOT_IF_TEXT_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-root-if-text-sfc-dom-runtime"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-genuine-root-if-setup-binding-text-in-both-explicit-modes.sh""#
+      run = ci.actionScript("capture-genuine-root-if-setup-binding-text-in-both-explicit-modes.sh")
     }
     new Dynamic {
       name = "Capture genuine adjacent root If Else components in both explicit modes"
@@ -122,7 +122,7 @@ runs {
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-root-if-else-sfc-dom-primary"
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-root-if-else-sfc-dom-runtime"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-genuine-adjacent-root-if-else-components-in-both-explicit-modes.sh""#
+      run = ci.actionScript("capture-genuine-adjacent-root-if-else-components-in-both-explicit-modes.sh")
     }
     new Dynamic {
       name = "Capture genuine adjacent root If Else setup text in both explicit modes"
@@ -134,7 +134,7 @@ runs {
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-root-if-else-text-sfc-dom-primary"
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_TEXT_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-root-if-else-text-sfc-dom-runtime"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-genuine-adjacent-root-if-else-setup-text-in-both-explicit-modes.sh""#
+      run = ci.actionScript("capture-genuine-adjacent-root-if-else-setup-text-in-both-explicit-modes.sh")
     }
     new Dynamic {
       name = "Capture genuine paired original literal and setup text in both explicit modes"
@@ -146,7 +146,7 @@ runs {
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-root-if-else-composite-sfc-dom-primary"
         VIZE_NATIVE_ORIGINAL_ROOT_IF_ELSE_COMPOSITE_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-root-if-else-composite-sfc-dom-runtime"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-genuine-paired-original-literal-and-setup-text-in-both-explicit.sh""#
+      run = ci.actionScript("capture-genuine-paired-original-literal-and-setup-text-in-both-explicit.sh")
     }
     new Dynamic {
       name = "Capture genuine original input Models with actual DOM events and IME"
@@ -158,7 +158,7 @@ runs {
         VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-input-model-sfc-dom-primary"
         VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-input-model-sfc-dom-runtime"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-genuine-original-input-models-with-actual-dom-events-and-ime.sh""#
+      run = ci.actionScript("capture-genuine-original-input-models-with-actual-dom-events-and-ime.sh")
     }
     new Dynamic {
       name = "Upload complete selected SFC component and runtime captures"

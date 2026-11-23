@@ -58,7 +58,7 @@ jobs {
       ci.command("Install pinned stock and native providers", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Require real backends and preserve source identity"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-real-backends-and-preserve-source-identity.sh""#
+        run = ci.workflowScript("require-real-backends-and-preserve-source-identity.sh")
       }
       new Dynamic {
         name = "Verify original negative and configured reference positive whole packets"
@@ -72,12 +72,12 @@ jobs {
       new Dynamic {
         name = "Require every executed native stock and graph control"
         env { PACKETS = "${{ runner.temp }}/nuxt-membership-packets" }
-        run = #". "${{ env.VIZE_CI_FILES }}/require-every-executed-native-stock-and-graph-control.sh""#
+        run = ci.workflowScript("require-every-executed-native-stock-and-graph-control.sh")
       }
       new Dynamic {
         name = "Preserve actual executable and providers"
         `if` = "${{ always() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-actual-executable-and-providers.sh""#
+        run = ci.workflowScript("preserve-actual-executable-and-providers.sh")
       }
       new Dynamic {
         name = "Preserve every complete packet and original input"

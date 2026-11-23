@@ -64,21 +64,21 @@ jobs {
       new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
       new Dynamic {
         name = "Build and receipt the exact source CLI"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-exact-source-cli.sh""#
+        run = ci.workflowScript("build-and-receipt-the-exact-source-cli.sh")
       }
       new Dynamic {
         name = "Record the actual source and both provider identities"
-        run = #". "${{ env.VIZE_CI_FILES }}/record-the-actual-source-and-both-provider-identities.sh""#
+        run = ci.workflowScript("record-the-actual-source-and-both-provider-identities.sh")
       }
       new Dynamic {
         name = "Observe complete packets, authored controls and request latency"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/observe-complete-packets-authored-controls-and-request-latency.sh""#
+        run = ci.workflowScript("observe-complete-packets-authored-controls-and-request-latency.sh")
       }
       new Dynamic {
         name = "Verify original parse and walk reuse and asynchronous publication guards"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-original-parse-and-walk-reuse-and-asynchronous-publication-guards.sh""#
+        run = ci.workflowScript("verify-original-parse-and-walk-reuse-and-asynchronous-publication-guards.sh")
       }
       new Dynamic {
         name = "Retain owned complete observations and exact source receipt"

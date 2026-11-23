@@ -44,14 +44,14 @@ jobs {
       new Dynamic {
         name = "Refuse a stale or different dispatch source"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/refuse-a-stale-or-different-dispatch-source.sh""#
+        run = ci.workflowScript("refuse-a-stale-or-different-dispatch-source.sh")
       }
       ci.workspaceVp()
       ci.command("Install locked JavaScript and native TypeScript dependencies", "vp install --frozen-lockfile --prefer-offline")
       ci.command("Hydrate only the pinned Misskey fixture", "git submodule update --init --depth 1 tests/_fixtures/_git/misskey")
       new Dynamic {
         name = "Install repository Rust toolchain"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-repository-rust-toolchain.sh""#
+        run = ci.workflowScript("install-repository-rust-toolchain.sh")
       }
       ci.wild()
       new Dynamic {
@@ -63,7 +63,7 @@ jobs {
       }
       new Dynamic {
         name = "Build and receipt the exact current source server"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-exact-current-source-server.sh""#
+        run = ci.workflowScript("build-and-receipt-the-exact-current-source-server.sh")
       }
       new Dynamic {
         name = "Qualify pure observation and refusal laws"

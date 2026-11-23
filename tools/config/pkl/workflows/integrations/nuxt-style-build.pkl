@@ -48,7 +48,7 @@ jobs {
         env {
           BASE_SHA = "${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/select-changed-product-inputs.sh""#
+        run = ci.workflowScript("select-changed-product-inputs.sh")
       }
     }
   }
@@ -155,7 +155,7 @@ jobs {
           FIXTURE = "${{ matrix.fixture }}"
           PROOF = "${{ matrix.proof }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-the-exact-compared-javascript-adapters.sh""#
+        run = ci.workflowScript("retain-the-exact-compared-javascript-adapters.sh")
       }
       new Dynamic {
         name = "Upload build and SSR evidence"

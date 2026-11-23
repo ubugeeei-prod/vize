@@ -76,11 +76,11 @@ jobs {
       }
       new Dynamic {
         name = "Fetch the immutable capture-only source and pinned official compiler"
-        run = #". "${{ env.VIZE_CI_FILES }}/fetch-the-immutable-capture-only-source-and-pinned-official-compiler.sh""#
+        run = ci.workflowScript("fetch-the-immutable-capture-only-source-and-pinned-official-compiler.sh")
       }
       new Dynamic {
         name = "Build and capture both authenticated source states with the same recipe"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-capture-both-authenticated-source-states-with-the-same-recipe.sh""#
+        run = ci.workflowScript("build-and-capture-both-authenticated-source-states-with-the-same-recipe.sh")
       }
       new Dynamic {
         name = "Verify whole legacy slot binding producer handoff"
@@ -94,12 +94,12 @@ jobs {
       new Dynamic {
         name = "Retain whole default and legacy attribute entity parser captures"
         `if` = "${{ !cancelled() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-whole-default-and-legacy-attribute-entity-parser-captures.sh""#
+        run = ci.workflowScript("retain-whole-default-and-legacy-attribute-entity-parser-captures.sh")
       }
       new Dynamic {
         name = "Retain all authored physical declaration and invalid-window laws"
         `if` = "${{ !cancelled() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-all-authored-physical-declaration-and-invalid-window-laws.sh""#
+        run = ci.workflowScript("retain-all-authored-physical-declaration-and-invalid-window-laws.sh")
       }
       new Dynamic {
         name = "Install pinned TypeScript consumer for the original typed slot controls"
@@ -107,14 +107,14 @@ jobs {
       }
       new Dynamic {
         name = "Verify whole inline setup default parameters and original typed callback runtime laws"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-whole-inline-setup-default-parameters-and-original-typed-callback.sh""#
+        run = ci.workflowScript("verify-whole-inline-setup-default-parameters-and-original-typed-callback.sh")
       }
       new Dynamic {
         name = "Verify every n8n compiler regression and changed-source refusal"
         env {
           VIZE_N8N_CONTROL_PACKET_DIR = "${{ github.workspace }}/target/n8n-compiler-custody/${{ github.run_id }}-${{ github.run_attempt }}/authored"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-every-n8n-compiler-regression-and-changed-source-refusal.sh""#
+        run = ci.workflowScript("verify-every-n8n-compiler-regression-and-changed-source-refusal.sh")
       }
       new Dynamic {
         name = "Upload complete source, official modules, maps and diagnostic vectors"
@@ -202,7 +202,7 @@ jobs {
       ci.command("Install pinned source and typechecker dependencies", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Build and authenticate the current-source LSP"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-authenticate-the-current-source-lsp.sh""#
+        run = ci.workflowScript("build-and-authenticate-the-current-source-lsp.sh")
       }
       new Dynamic {
         name = "Preserve ordinary default-export navigation"
@@ -220,7 +220,7 @@ jobs {
       ci.command("Hydrate unchanged licensed n8n CLI inputs", "git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n")
       new Dynamic {
         name = "Verify current-source CLI configuration, entries and independent witnesses"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-current-source-cli-configuration-entries-and-independent-witnesse.sh""#
+        run = ci.workflowScript("verify-current-source-cli-configuration-entries-and-independent-witnesse.sh")
       }
       new Dynamic {
         name = "Verify both slot modifier options through whole source CLI and JSON-RPC packets"
@@ -228,7 +228,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify retained parameter grammar through whole source CLI and JSON-RPC packets"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-retained-parameter-grammar-through-whole-source-cli-and-json-rpc.sh""#
+        run = ci.workflowScript("verify-retained-parameter-grammar-through-whole-source-cli-and-json-rpc.sh")
       }
       new Dynamic {
         name = "Compare whole-corpus lint findings with eslint-plugin-vue"

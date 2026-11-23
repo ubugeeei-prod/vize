@@ -37,7 +37,7 @@ jobs {
       new Dynamic {
         name = "Preserve the exact consumer source identity"
         env { SOURCE_SHA = "${{ github.sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-exact-consumer-source-identity.sh""#
+        run = ci.workflowScript("preserve-the-exact-consumer-source-identity.sh")
       }
       ci.workspaceVp()
       // The existing restore contract authenticates the producer toolchain and
@@ -47,7 +47,7 @@ jobs {
       new Dynamic {
         name = "Install the pinned independent providers"
         id = "install"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-pinned-independent-providers.sh""#
+        run = ci.workflowScript("install-the-pinned-independent-providers.sh")
       }
       new Dynamic {
         uses = "./.github/actions/restore-source-cli"
@@ -56,18 +56,18 @@ jobs {
       }
       new Dynamic {
         name = "Preserve the original producer and consumer custody"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-original-producer-and-consumer-custody.sh""#
+        run = ci.workflowScript("preserve-the-original-producer-and-consumer-custody.sh")
       }
       new Dynamic {
         name = "Pack the source public config export"
         id = "pack"
         `working-directory` = "npm/cli"
-        run = #". "${{ env.VIZE_CI_FILES }}/pack-the-source-public-config-export.sh""#
+        run = ci.workflowScript("pack-the-source-public-config-export.sh")
       }
       new Dynamic {
         name = "Verify whole packet and independent coordinate contracts"
         id = "contracts"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-whole-packet-and-independent-coordinate-contracts.sh""#
+        run = ci.workflowScript("verify-whole-packet-and-independent-coordinate-contracts.sh")
       }
       new Dynamic {
         name = "Capture every control and research input before rejecting disagreement"
@@ -76,7 +76,7 @@ jobs {
           VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
           VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/capture-every-control-and-research-input-before-rejecting-disagreement.sh""#
+        run = ci.workflowScript("capture-every-control-and-research-input-before-rejecting-disagreement.sh")
       }
       new Dynamic {
         name = "Preserve workflow outcomes and failures without a second build"
@@ -88,7 +88,7 @@ jobs {
           CONTRACT_OUTCOME = "${{ steps.contracts.outcome }}"
           CONTROL_OUTCOME = "${{ steps.controls.outcome }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-workflow-outcomes-and-failures-without-a-second-build.sh""#
+        run = ci.workflowScript("preserve-workflow-outcomes-and-failures-without-a-second-build.sh")
       }
       new Dynamic {
         name = "Upload every whole provider, native process and research failure packet"

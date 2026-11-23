@@ -63,7 +63,7 @@ jobs {
       }
       new Dynamic {
         name = "Build the actual source addon and Vite adapter"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-actual-source-addon-and-vite-adapter.sh""#
+        run = ci.workflowScript("build-the-actual-source-addon-and-vite-adapter.sh")
       }
       new Dynamic {
         name = "Install the exact reported Vitest and official Vue control"

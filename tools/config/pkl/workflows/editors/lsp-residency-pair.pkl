@@ -67,7 +67,7 @@ jobs {
       }
       new Dynamic {
         name = "Authenticate the exact one-commit parent and immutable inputs"
-        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-the-exact-one-commit-parent-and-immutable-inputs.sh""#
+        run = ci.workflowScript("authenticate-the-exact-one-commit-parent-and-immutable-inputs.sh")
       }
       ci.workspaceVp()
       ci.command("Install exact JS dependencies", "vp install --frozen-lockfile --prefer-offline")
@@ -85,11 +85,11 @@ jobs {
       }
       new Dynamic {
         name = "Build and receipt the exact parent and candidate"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-exact-parent-and-candidate.sh""#
+        run = ci.workflowScript("build-and-receipt-the-exact-parent-and-candidate.sh")
       }
       new Dynamic {
         name = "Discard warmups and collect three fresh alternating pairs"
-        run = #". "${{ env.VIZE_CI_FILES }}/discard-warmups-and-collect-three-fresh-alternating-pairs.sh""#
+        run = ci.workflowScript("discard-warmups-and-collect-three-fresh-alternating-pairs.sh")
       }
       new Dynamic {
         name = "Require identical successful workloads and summarize medians"

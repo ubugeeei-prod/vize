@@ -53,7 +53,7 @@ jobs {
       }
       new Dynamic {
         name = "Run the bounded normal and source-counter carriers"
-        run = #". "${{ env.VIZE_CI_FILES }}/run-the-bounded-normal-and-source-counter-carriers.sh""#
+        run = ci.workflowScript("run-the-bounded-normal-and-source-counter-carriers.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -81,7 +81,7 @@ jobs {
       new Dynamic {
         name = "Install exact official SDK into an isolated consumer"
         `working-directory` = "${{ runner.temp }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-exact-official-sdk-into-an-isolated-consumer.sh""#
+        run = ci.workflowScript("install-exact-official-sdk-into-an-isolated-consumer.sh")
       }
       new Dynamic {
         name = "Pin before production bytes and identical observer separately"
@@ -94,7 +94,7 @@ jobs {
       new Dynamic {
         name = "Exercise same source and SDK error, repair, hover, refs and foreign-file control"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh""#
+        run = ci.workflowScript("exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh")
       }
       new Dynamic {
         name = "Verify closed raw native frames and exact per-file request shapes"
@@ -104,7 +104,7 @@ jobs {
       new Dynamic {
         name = "Keep strict known DTO, unknown fields, source ownership and both envelope controls"
         `if` = "${{ matrix.role == 'after' && matrix.sdk.version == '7.0.2' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/keep-strict-known-dto-unknown-fields-source-ownership-and-both-envelope.sh""#
+        run = ci.workflowScript("keep-strict-known-dto-unknown-fields-source-ownership-and-both-envelope.sh")
       }
       new Dynamic {
         uses = "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"  // v4

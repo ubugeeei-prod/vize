@@ -48,7 +48,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify the immutable release includes the merged source fix"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-the-immutable-release-includes-the-merged-source-fix.sh""#
+        run = ci.workflowScript("verify-the-immutable-release-includes-the-merged-source-fix.sh")
       }
       new Dynamic {
         name = "Install fresh registry packages and run the untouched reported browser consumer"

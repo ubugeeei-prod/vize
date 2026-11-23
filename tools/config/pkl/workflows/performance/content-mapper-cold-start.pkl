@@ -70,7 +70,7 @@ jobs {
       }
       new Dynamic {
         name = "Prepare the exact macOS Content Mapper host"
-        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-exact-macos-content-mapper-host.sh""#
+        run = ci.workflowScript("prepare-the-exact-macos-content-mapper-host.sh")
       }
       new Dynamic {
         name = "Capture the first post-build mapper process"

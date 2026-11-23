@@ -48,13 +48,13 @@ jobs {
       new Dynamic {
         name = "Build one fresh image, run 23 origin laws and two native API carriers"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-one-fresh-image-run-23-origin-laws-and-two-native-api-carriers.sh""#
+        run = ci.workflowScript("build-one-fresh-image-run-23-origin-laws-and-two-native-api-carriers.sh")
       }
       new Dynamic {
         name = "Package actual compiler and test receipts"
         `if` = "always()"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-actual-compiler-and-test-receipts.sh""#
+        run = ci.workflowScript("package-actual-compiler-and-test-receipts.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

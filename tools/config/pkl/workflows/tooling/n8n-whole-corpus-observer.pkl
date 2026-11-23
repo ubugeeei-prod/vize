@@ -32,7 +32,7 @@ jobs {
       new Dynamic {
         name = "Verify the immutable producer and observer checkout"
         env { SOURCE_SHA = "${{ github.sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-the-immutable-producer-and-observer-checkout.sh""#
+        run = ci.workflowScript("verify-the-immutable-producer-and-observer-checkout.sh")
       }
       ci.workspaceVp()
       new Dynamic {
@@ -51,28 +51,28 @@ jobs {
       new Dynamic {
         name = "Install pinned producer dependencies once"
         id = "install"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-producer-dependencies-once.sh""#
+        run = ci.workflowScript("install-pinned-producer-dependencies-once.sh")
       }
       new Dynamic {
         name = "Hydrate the licensed read-only n8n source fixture"
         id = "hydrate"
-        run = #". "${{ env.VIZE_CI_FILES }}/hydrate-the-licensed-read-only-n8n-source-fixture.sh""#
+        run = ci.workflowScript("hydrate-the-licensed-read-only-n8n-source-fixture.sh")
       }
       new Dynamic {
         name = "Build and authenticate the exact producer once"
         id = "build"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-authenticate-the-exact-producer-once.sh""#
+        run = ci.workflowScript("build-and-authenticate-the-exact-producer-once.sh")
       }
       new Dynamic {
         name = "Pack the producer public CLI config export"
         id = "pack"
         `working-directory` = "npm/cli"
-        run = #". "${{ env.VIZE_CI_FILES }}/pack-the-producer-public-cli-config-export.sh""#
+        run = ci.workflowScript("pack-the-producer-public-cli-config-export.sh")
       }
       new Dynamic {
         name = "Observe every licensed original in baseline and scoped modes"
         id = "observe"
-        run = #". "${{ env.VIZE_CI_FILES }}/observe-every-licensed-original-in-baseline-and-scoped-modes.sh""#
+        run = ci.workflowScript("observe-every-licensed-original-in-baseline-and-scoped-modes.sh")
       }
       new Dynamic {
         name = "Retain workflow identity and failures alongside complete observations"
@@ -84,7 +84,7 @@ jobs {
           PACK_OUTCOME = "${{ steps.pack.outcome }}"
           OBSERVE_OUTCOME = "${{ steps.observe.outcome }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-workflow-identity-and-failures-alongside-complete-observations.sh""#
+        run = ci.workflowScript("retain-workflow-identity-and-failures-alongside-complete-observations.sh")
       }
       new Dynamic {
         name = "Upload complete licensed inputs, provider packets and raw failures before gating"

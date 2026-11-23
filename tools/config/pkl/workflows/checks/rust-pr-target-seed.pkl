@@ -98,11 +98,11 @@ jobs {
       new Dynamic {
         name = "Build the merge-queue workspace producer"
         // The queue runs these two builds over the whole workspace.
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-merge-queue-workspace-producer.sh""#
+        run = ci.workflowScript("build-the-merge-queue-workspace-producer.sh")
       }
       new Dynamic {
         name = "Build the PR feature lanes"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-pr-feature-lanes.sh""#
+        run = ci.workflowScript("build-the-pr-feature-lanes.sh")
       }
       new Dynamic {
         name = "Seed native Program and Vue navigation"
@@ -239,7 +239,7 @@ jobs {
       new Dynamic {
         name = "Build the source CLI and SFC oracle like the producer"
         `if` = "${{ matrix.lane == 'source-cli' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-source-cli-and-sfc-oracle-like-the-producer.sh""#
+        run = ci.workflowScript("build-the-source-cli-and-sfc-oracle-like-the-producer.sh")
       }
       new Dynamic {
         name = "Install native package dependencies"
@@ -319,11 +319,11 @@ jobs {
       }
       new Dynamic {
         name = "Require the source and runtime identity used by Rust workers"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-the-source-and-runtime-identity-used-by-rust-workers.sh""#
+        run = ci.workflowScript("require-the-source-and-runtime-identity-used-by-rust-workers.sh")
       }
       new Dynamic {
         name = "Validate the complete frozen dependency store before saving"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-the-complete-frozen-dependency-store-before-saving.sh""#
+        run = ci.workflowScript("validate-the-complete-frozen-dependency-store-before-saving.sh")
       }
     }
   }

@@ -80,7 +80,7 @@ jobs {
       new Dynamic {
         name = "Select the exact locked platform native provider"
         env { EXPECTED_SOURCE = "${{ github.event.pull_request.head.sha || github.sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/select-the-exact-locked-platform-native-provider.sh""#
+        run = ci.workflowScript("select-the-exact-locked-platform-native-provider.sh")
       }
       new Dynamic {
         name = "Detach dangling mirror links from facts about the link itself"
@@ -98,7 +98,7 @@ jobs {
       }
       new Dynamic {
         name = "Check after a package is removed and lint include-only declarations"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-after-a-package-is-removed-and-lint-include-only-declarations.sh""#
+        run = ci.workflowScript("check-after-a-package-is-removed-and-lint-include-only-declarations.sh")
       }
     }
   }

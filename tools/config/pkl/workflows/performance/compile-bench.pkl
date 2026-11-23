@@ -72,15 +72,15 @@ jobs {
       ci.command("Generate benchmark corpus", #"node tools/benchmarks/scripts/generate.mjs "$COMPILE_BENCH_FILES""#)
       new Dynamic {
         name = "Fetch published natives"
-        run = #". "${{ env.VIZE_CI_FILES }}/fetch-published-natives.sh""#
+        run = ci.workflowScript("fetch-published-natives.sh")
       }
       new Dynamic {
         name = "Measure"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure.sh""#
+        run = ci.workflowScript("measure.sh")
       }
       new Dynamic {
         name = "Profile single-thread compile"
-        run = #". "${{ env.VIZE_CI_FILES }}/profile-single-thread-compile.sh""#
+        run = ci.workflowScript("profile-single-thread-compile.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -129,20 +129,20 @@ jobs {
           CARGO_PROFILE_RELEASE_DEBUG = "line-tables-only"
           CARGO_PROFILE_RELEASE_STRIP = "none"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/build-native-with-symbols.sh""#
+        run = ci.workflowScript("build-native-with-symbols.sh")
       }
       ci.command("Generate benchmark corpus", #"node tools/benchmarks/scripts/generate.mjs "$COMPILE_BENCH_FILES""#)
       new Dynamic {
         name = "Fetch latest published native"
-        run = #". "${{ env.VIZE_CI_FILES }}/fetch-latest-published-native.sh""#
+        run = ci.workflowScript("fetch-latest-published-native.sh")
       }
       new Dynamic {
         name = "Measure source against latest release"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-source-against-latest-release.sh""#
+        run = ci.workflowScript("measure-source-against-latest-release.sh")
       }
       new Dynamic {
         name = "Profile source compile"
-        run = #". "${{ env.VIZE_CI_FILES }}/profile-source-compile.sh""#
+        run = ci.workflowScript("profile-source-compile.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -181,25 +181,25 @@ jobs {
       ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Check out the merge base"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-out-the-merge-base.sh""#
+        run = ci.workflowScript("check-out-the-merge-base.sh")
       }
       // Separate target dirs: two checkouts sharing one overwrite each other.
       new Dynamic {
         name = "Build base and head natives"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-base-and-head-natives.sh""#
+        run = ci.workflowScript("build-base-and-head-natives.sh")
       }
       ci.command("Generate benchmark corpus", #"node tools/benchmarks/scripts/generate.mjs "$COMPILE_BENCH_FILES""#)
       new Dynamic {
         name = "Measure base against head"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-base-against-head.sh""#
+        run = ci.workflowScript("measure-base-against-head.sh")
       }
       new Dynamic {
         name = "Count instructions"
-        run = #". "${{ env.VIZE_CI_FILES }}/count-instructions.sh""#
+        run = ci.workflowScript("count-instructions.sh")
       }
       new Dynamic {
         name = "Require identical output"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-identical-output.sh""#
+        run = ci.workflowScript("require-identical-output.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

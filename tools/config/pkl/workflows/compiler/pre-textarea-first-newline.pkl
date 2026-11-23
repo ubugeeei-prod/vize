@@ -68,7 +68,7 @@ jobs {
           VIZE_FIRST_NEWLINE_BIN = "${{ github.workspace }}/target/ci/vize"
           VIZE_FIRST_NEWLINE_CAPTURE = "${{ runner.temp }}/first-newline-observations.json"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-actual-cli-and-run-source-bound-browser-observations.sh""#
+        run = ci.workflowScript("build-the-actual-cli-and-run-source-bound-browser-observations.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

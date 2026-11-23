@@ -53,7 +53,7 @@ jobs {
       ci.wild()
       new Dynamic {
         name = "Test the evidence oracle and build isolated before and after sources"
-        run = #". "${{ env.VIZE_CI_FILES }}/test-the-evidence-oracle-and-build-isolated-before-and-after-sources.sh""#
+        run = ci.workflowScript("test-the-evidence-oracle-and-build-isolated-before-and-after-sources.sh")
       }
       new Dynamic {
         name = "Compare complete packets and fresh process measurements"
@@ -62,7 +62,7 @@ jobs {
       new Dynamic {
         name = "Write every family result"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/write-every-family-result.sh""#
+        run = ci.workflowScript("write-every-family-result.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

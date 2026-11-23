@@ -52,15 +52,15 @@ jobs {
       }
       new Dynamic {
         name = "Preserve the original pinned Kit and Braces consumer graph"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-original-pinned-kit-and-braces-consumer-graph.sh""#
+        run = ci.workflowScript("preserve-the-original-pinned-kit-and-braces-consumer-graph.sh")
       }
       new Dynamic {
         name = "Require every original whole consumer packet after the explicit oracle move"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-every-original-whole-consumer-packet-after-the-explicit-oracle-m.sh""#
+        run = ci.workflowScript("require-every-original-whole-consumer-packet-after-the-explicit-oracle-m.sh")
       }
       new Dynamic {
         name = "Build the candidate Nuxt module"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-candidate-nuxt-module.sh""#
+        run = ci.workflowScript("build-the-candidate-nuxt-module.sh")
       }
       new Dynamic {
         name = "Pack the actual publishable manifest"

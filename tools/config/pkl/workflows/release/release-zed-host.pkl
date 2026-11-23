@@ -70,13 +70,13 @@ jobs {
           ZED_EXTENSION_CLI_SHA = "9ee3c503a4bbbc6b4a0f8a789acca4871d773223"
           ZED_EXTENSION_CLI_SHA256 = "a6fca5ef11ff23f0ef8b03bd2453270591c9fc6c03700c3c92017e5082ada757"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-pinned-zed-extension-packager.sh""#
+        run = ci.workflowScript("install-the-pinned-zed-extension-packager.sh")
       }
       new Dynamic {
         name = "Package the candidate Zed extension"
         `working-directory` = "editors/zed"
         env { VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS = "180" }
-        run = #". "${{ env.VIZE_CI_FILES }}/package-the-candidate-zed-extension.sh""#
+        run = ci.workflowScript("package-the-candidate-zed-extension.sh")
       }
       new Dynamic {
         name = "Install the pinned Zed editor"
@@ -84,16 +84,16 @@ jobs {
           ZED_VERSION = "1.27.0"
           ZED_SHA256 = "719f6bf649ea8d87961adbf728e178561bac3f598d72d7949558d1150cfc43dd"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-pinned-zed-editor.sh""#
+        run = ci.workflowScript("install-the-pinned-zed-editor.sh")
       }
       new Dynamic {
         name = "Prepare the release-shaped project"
-        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-release-shaped-project.sh""#
+        run = ci.workflowScript("prepare-the-release-shaped-project.sh")
       }
       ci.use("./.github/actions/setup-ubuntu-archive")
       new Dynamic {
         name = "Ensure xvfb is available"
-        run = #". "${{ env.VIZE_CI_FILES }}/ensure-xvfb-is-available.sh""#
+        run = ci.workflowScript("ensure-xvfb-is-available.sh")
       }
       new Dynamic {
         name = "Run the packaged extension in actual Zed"

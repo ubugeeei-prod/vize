@@ -126,7 +126,7 @@ jobs {
       new Dynamic {
         id = "plan"
         env { FIXTURES = "${{ inputs.fixtures || 'scale-1k scale-giant-sfc scale-monorepo' }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/plan.sh""#
+        run = ci.workflowScript("plan.sh")
       }
     }
   }
@@ -146,7 +146,7 @@ jobs {
       ci.checkoutAt("${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}")
       new Dynamic {
         name = "Install repository Rust toolchain"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-repository-rust-toolchain.sh""#
+        run = ci.workflowScript("install-repository-rust-toolchain.sh")
       }
       ci.wild()
       new Dynamic {
@@ -169,26 +169,26 @@ jobs {
       }
       new Dynamic {
         name = "Build this commit"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-this-commit.sh""#
+        run = ci.workflowScript("build-this-commit.sh")
       }
       new Dynamic {
         name = "Build the compare ref"
         `if` = "${{ env.COMPARE_REF != '' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-compare-ref.sh""#
+        run = ci.workflowScript("build-the-compare-ref.sh")
       }
       new Dynamic {
         name = "Install the repository's pinned Vue language tools and Corsa"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-s-pinned-vue-language-tools-and-corsa.sh""#
+        run = ci.workflowScript("install-the-repository-s-pinned-vue-language-tools-and-corsa.sh")
       }
       new Dynamic {
         name = "Stage the tsserver plugin row (this commit's plugin and native addon)"
         `if` = "${{ env.TSSERVER_PLUGIN == 'true' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/stage-the-tsserver-plugin-row-this-commit-s-plugin-and-native-addon.sh""#
+        run = ci.workflowScript("stage-the-tsserver-plugin-row-this-commit-s-plugin-and-native-addon.sh")
       }
       new Dynamic {
         name = "Install the content-mapper row (TypeScript native LSP + published vize mapper)"
         `if` = "${{ env.TSGO_MAPPER != '' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-content-mapper-row-typescript-native-lsp-published-vize-mapp.sh""#
+        run = ci.workflowScript("install-the-content-mapper-row-typescript-native-lsp-published-vize-mapp.sh")
       }
       new Dynamic {
         name = "Measure"
@@ -196,7 +196,7 @@ jobs {
           JOB = "${{ matrix.job.name }}"
           FIXTURE_IDS = "${{ matrix.job.ids }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/measure.sh""#
+        run = ci.workflowScript("measure.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

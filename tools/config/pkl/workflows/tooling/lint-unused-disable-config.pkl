@@ -44,7 +44,7 @@ jobs {
       new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
       new Dynamic {
         name = "Install pinned Pkl renderer for presence semantics"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-pkl-renderer-for-presence-semantics.sh""#
+        run = ci.workflowScript("install-pinned-pkl-renderer-for-presence-semantics.sh")
       }
       new Dynamic {
         uses = "./.github/actions/restore-source-cli"

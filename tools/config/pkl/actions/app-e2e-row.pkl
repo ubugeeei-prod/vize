@@ -72,7 +72,7 @@ runs {
         PLANNED_WORKTREE_ID = "${{ inputs.worktree-id }}"
         PLANNED_ARTIFACT_STEM = "${{ inputs.artifact-stem }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/validate-and-hydrate-planned-fixtures.sh""#
+      run = ci.actionScript("validate-and-hydrate-planned-fixtures.sh")
     }
     new Dynamic {
       name = "Setup Wild linker"
@@ -99,12 +99,12 @@ runs {
       name = "Provision Node 22 for authored Nuxt fixture preparation"
       `if` = "inputs.suite == 'check' || inputs.suite == 'build'"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/provision-node-22-for-authored-nuxt-fixture-preparation.sh""#
+      run = ci.actionScript("provision-node-22-for-authored-nuxt-fixture-preparation.sh")
     }
     new Dynamic {
       name = "Install JavaScript dependencies"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/install-javascript-dependencies.sh""#
+      run = ci.actionScript("install-javascript-dependencies.sh")
     }
     new Dynamic {
       name = "Prepare original pinned ReKa providers"
@@ -125,7 +125,7 @@ runs {
     new Dynamic {
       name = "Build local Vize packages"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/build-local-vize-packages.sh""#
+      run = ci.actionScript("build-local-vize-packages.sh")
     }
     new Dynamic {
       name = "Stabilize Ubuntu package archive"
@@ -169,7 +169,7 @@ runs {
         VIZE_TEST_WORKTREE_ID = "${{ inputs.worktree-id }}"
         VIZE_APP_CHECK_CAPTURE_DIR = "${{ github.workspace }}/target/app-e2e-logs/check-authority"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/run-planned-app-e2e-row.sh""#
+      run = ci.actionScript("run-planned-app-e2e-row.sh")
     }
     new Dynamic {
       name = "Upload App E2E row artifacts"
@@ -199,7 +199,7 @@ runs {
         ROW_OUTCOME = "${{ steps.run.outcome }}"
         ROW_ID = "${{ inputs.profile }}:${{ inputs.suite }}:${{ inputs.shard }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/report-app-e2e-row.sh""#
+      run = ci.actionScript("report-app-e2e-row.sh")
     }
   }
 }

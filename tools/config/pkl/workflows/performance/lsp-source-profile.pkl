@@ -58,14 +58,14 @@ jobs {
     steps = new Listing {
       ...ci.stageWorkflowScripts("lsp-source-profile")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
-      ci.command("Authenticate the exact source revision", #". "${{ env.VIZE_CI_FILES }}/authenticate-the-exact-source-revision.sh""#)
+      ci.command("Authenticate the exact source revision", ci.workflowScript("authenticate-the-exact-source-revision.sh"))
       ci.workspaceVp()
       ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Verify LSP resource evidence helpers"
         run = "vp exec node --test tests/tooling/lsp-resource-cancellation.test.ts tests/tooling/lsp-resource-corsa-gate.test.ts tests/tooling/lsp-resource-finalize.test.ts"
       }
-      ci.command("Install the repository Rust toolchain", #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh""#)
+      ci.command("Install the repository Rust toolchain", ci.workflowScript("install-the-repository-rust-toolchain.sh"))
       new Dynamic {
         uses = "./.github/actions/setup-rust-sticky-cache"
         with {
@@ -75,7 +75,7 @@ jobs {
       }
       new Dynamic {
         name = "Build the separately instrumented server"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-separately-instrumented-server.sh""#
+        run = ci.workflowScript("build-the-separately-instrumented-server.sh")
       }
       new Dynamic {
         name = "Verify real stdio profiling with the instrumented allocator"
@@ -87,12 +87,12 @@ jobs {
       }
       new Dynamic {
         name = "Collect the complete residency oracle and source profiles"
-        run = #". "${{ env.VIZE_CI_FILES }}/collect-the-complete-residency-oracle-and-source-profiles.sh""#
+        run = ci.workflowScript("collect-the-complete-residency-oracle-and-source-profiles.sh")
       }
       new Dynamic {
         name = "Summarize the scope of these observations"
         `if` = "${{ success() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/summarize-the-scope-of-these-observations.sh""#
+        run = ci.workflowScript("summarize-the-scope-of-these-observations.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

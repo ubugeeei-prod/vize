@@ -43,9 +43,8 @@ await test("restarted clients share one pair of file watchers until deactivation
   const body = stripTypeScriptTypes(source, { mode: "transform" })
     .replace(/^import[\s\S]*?;\n/gm, "")
     .replace(/^export /gm, "");
-  const control: ClientOptionsModule = new vm.Script(
-    `${body}\n({ createClientOptions, disposeClientFileEvents });`,
-  ).runInContext(context);
+  new vm.Script(body).runInContext(context);
+  const control = context as unknown as ClientOptionsModule;
   const options = Array.from({ length: 10 }, () =>
     control.createClientOptions({}, () => undefined, {}, {}),
   );

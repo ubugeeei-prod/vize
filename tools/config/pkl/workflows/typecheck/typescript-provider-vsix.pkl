@@ -75,7 +75,7 @@ jobs {
         name = "Read exact source toolchain and version"
         id = "source"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/read-exact-source-toolchain-and-version.sh""#
+        run = ci.workflowScript("read-exact-source-toolchain-and-version.sh")
       }
       new Dynamic {
         uses = ci.setupRust
@@ -120,7 +120,7 @@ jobs {
         name = "Match the existing Windows native release profile"
         `if` = "runner.os == 'Windows'"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/match-the-existing-windows-native-release-profile.sh""#
+        run = ci.workflowScript("match-the-existing-windows-native-release-profile.sh")
       }
       new Dynamic {
         name = "Use the canonical native producer with a same-invocation receipt"
@@ -134,7 +134,7 @@ jobs {
         name = "Collect only this image"
         shell = "bash"
         env { IMAGE_TARGET = "${{ matrix.target }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/collect-only-this-image.sh""#
+        run = ci.workflowScript("collect-only-this-image.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -164,7 +164,7 @@ jobs {
       ci.use("./.github/actions/setup-js-package-tests")
       ci.use("./.github/actions/setup-rust-script")
       new Dynamic {
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        uses = ci.downloadArtifact
         with {
           pattern = "typescript-provider-native-*-${{ github.event.pull_request.head.sha || github.sha }}"
           path = ".native-artifacts"
@@ -178,12 +178,12 @@ jobs {
       new Dynamic {
         name = "Preserve and qualify the universal metadata-only artifact"
         env { VIZE_TYPESCRIPT_PROVIDER_OUTPUT = "${{ runner.temp }}/typescript-provider-vsix" }
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-and-qualify-the-universal-metadata-only-artifact.sh""#
+        run = ci.workflowScript("preserve-and-qualify-the-universal-metadata-only-artifact.sh")
       }
       new Dynamic {
         name = "Package each corresponding same-source image"
         env { VIZE_TYPESCRIPT_PROVIDER_OUTPUT = "${{ runner.temp }}/typescript-provider-vsix" }
-        run = #". "${{ env.VIZE_CI_FILES }}/package-each-corresponding-same-source-image.sh""#
+        run = ci.workflowScript("package-each-corresponding-same-source-image.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -240,7 +240,7 @@ jobs {
       new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
       new Dynamic { run = "vp run --workspace-root check:vscode-extension" }
       new Dynamic {
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        uses = ci.downloadArtifact
         with {
           name = "typescript-provider-vsix-${{ github.event.pull_request.head.sha || github.sha }}"
           path = "editors/vscode/dist"
@@ -250,7 +250,7 @@ jobs {
         name = "Ensure the Linux virtual display"
         `if` = "runner.os == 'Linux'"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/ensure-the-linux-virtual-display.sh""#
+        run = ci.workflowScript("ensure-the-linux-virtual-display.sh")
       }
       new Dynamic {
         name = "Run the actual installed platform extension"
@@ -259,7 +259,7 @@ jobs {
           VIZE_TYPESCRIPT_PROVIDER_CAPTURE = "${{ runner.temp }}/typescript-provider-host"
         }
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/run-the-actual-installed-platform-extension.sh""#
+        run = ci.workflowScript("run-the-actual-installed-platform-extension.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

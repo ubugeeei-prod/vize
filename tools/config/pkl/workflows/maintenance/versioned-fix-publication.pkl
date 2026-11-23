@@ -57,7 +57,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare complete editor changes and every resulting authored byte"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-complete-editor-changes-and-every-resulting-authored-byte.sh""#
+        run = ci.workflowScript("compare-complete-editor-changes-and-every-resulting-authored-byte.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

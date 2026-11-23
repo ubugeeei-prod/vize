@@ -61,23 +61,23 @@ jobs {
       new Dynamic {
         name = "Install a fresh public 0.602 consumer"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-a-fresh-public-0-602-consumer.sh""#
+        run = ci.workflowScript("install-a-fresh-public-0-602-consumer.sh")
       }
       new Dynamic {
         name = "Verify the published standalone archive"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-the-published-standalone-archive.sh""#
+        run = ci.workflowScript("verify-the-published-standalone-archive.sh")
       }
       new Dynamic {
         name = "Run complete public mutation and repair packets"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/run-complete-public-mutation-and-repair-packets.sh""#
+        run = ci.workflowScript("run-complete-public-mutation-and-repair-packets.sh")
       }
       new Dynamic {
         name = "Package only owned evidence"
         `if` = "always()"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-only-owned-evidence.sh""#
+        run = ci.workflowScript("package-only-owned-evidence.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -138,7 +138,7 @@ jobs {
       new Dynamic {
         name = "Provision the reported npm version separately"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/provision-the-reported-npm-version-separately.sh""#
+        run = ci.workflowScript("provision-the-reported-npm-version-separately.sh")
       }
       new Dynamic {
         name = "Retain the original command and all nine JSON vectors for each public version"
@@ -149,7 +149,7 @@ jobs {
         name = "Package only owned data"
         `if` = "always()"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-only-owned-data.sh""#
+        run = ci.workflowScript("package-only-owned-data.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -220,7 +220,7 @@ jobs {
         name = "Package owned data after success or refusal"
         `if` = "always()"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-owned-data-after-success-or-refusal.sh""#
+        run = ci.workflowScript("package-owned-data-after-success-or-refusal.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -291,7 +291,7 @@ jobs {
         name = "Package only owned evidence after capture or refusal"
         `if` = "always()"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-only-owned-evidence-after-capture-or-refusal.sh""#
+        run = ci.workflowScript("package-only-owned-evidence-after-capture-or-refusal.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

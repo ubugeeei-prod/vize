@@ -60,7 +60,7 @@ jobs {
       new Dynamic {
         name = "Install the isolated Rspack 2 runtime from the HMR docs"
         `working-directory` = "npm/builder/rspack"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-isolated-rspack-2-runtime-from-the-hmr-docs.sh""#
+        run = ci.workflowScript("install-the-isolated-rspack-2-runtime-from-the-hmr-docs.sh")
       }
       new Dynamic {
         name = "Run browser HMR"

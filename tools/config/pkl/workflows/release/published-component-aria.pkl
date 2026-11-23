@@ -144,7 +144,7 @@ jobs {
       }
       new Dynamic {
         name = "Install unmodified public packages and exercise every original ARIA control"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-unmodified-public-packages-and-exercise-every-original-aria-cont.sh""#
+        run = ci.workflowScript("install-unmodified-public-packages-and-exercise-every-original-aria-cont.sh")
       }
       new Dynamic {
         name = "Retain original inputs, installed declaration bytes and every raw process"

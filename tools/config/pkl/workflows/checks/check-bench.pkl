@@ -90,9 +90,9 @@ jobs {
           VIZE_BENCHMARK_REVISION = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
           VIZE_BENCH_REF = "${{ github.ref_name }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/run-the-fail-closed-check-benchmark-gate.sh""#
+        run = ci.workflowScript("run-the-fail-closed-check-benchmark-gate.sh")
       }
-      ci.command("Write job summary", #". "${{ env.VIZE_CI_FILES }}/write-job-summary.sh""#)
+      ci.command("Write job summary", ci.workflowScript("write-job-summary.sh"))
       new Dynamic {
         name = "Upload check benchmark gate results"
         uses = ci.uploadArtifact

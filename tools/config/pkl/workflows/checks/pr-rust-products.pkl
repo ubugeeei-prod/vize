@@ -92,12 +92,12 @@ jobs {
       }
       new Dynamic {
         name = "Select Rust runtime envelope"
-        run = #". "${{ env.VIZE_CI_FILES }}/select-rust-runtime-envelope.sh""#
+        run = ci.workflowScript("select-rust-runtime-envelope.sh")
       }
       new Dynamic {
         name = "Prepare the mandatory full-profile Content Mapper host"
         `if` = "${{ env.NEXTEST_PROFILE == 'full' && matrix.cohort == 'cli-and-integrations' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-mandatory-full-profile-content-mapper-host.sh""#
+        run = ci.workflowScript("prepare-the-mandatory-full-profile-content-mapper-host.sh")
       }
       ci.command("Install Pkl CLI", "npm install --global @pkl-community/pkl@0.27.2")
       new Dynamic {
@@ -115,7 +115,7 @@ jobs {
           VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE = "${{ runner.temp }}/mounted-runtime-producer-failures"
           VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE_FAILURES_ONLY = "1"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-run-the-affected-rust-test-cohort.sh""#
+        run = ci.workflowScript("build-and-run-the-affected-rust-test-cohort.sh")
       }
       new Dynamic {
         name = "Retain the Content Mapper host proof"

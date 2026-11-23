@@ -54,7 +54,7 @@ jobs {
       ci.command("Build Vize CLI", "cargo build --profile ci -p vize")
       new Dynamic {
         name = "Replay the upstream corpus against current main"
-        run = #". "${{ env.VIZE_CI_FILES }}/replay-the-upstream-corpus-against-current-main.sh""#
+        run = ci.workflowScript("replay-the-upstream-corpus-against-current-main.sh")
       }
       new Dynamic {
         name = "Upload replay results"
@@ -91,7 +91,7 @@ jobs {
       }
       new Dynamic {
         name = "Replay the upstream corpus against the latest release"
-        run = #". "${{ env.VIZE_CI_FILES }}/replay-the-upstream-corpus-against-the-latest-release.sh""#
+        run = ci.workflowScript("replay-the-upstream-corpus-against-the-latest-release.sh")
       }
       new Dynamic {
         name = "Upload replay results"

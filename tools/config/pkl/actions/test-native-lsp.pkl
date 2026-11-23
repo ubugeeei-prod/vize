@@ -8,7 +8,7 @@ runs {
     new Dynamic {
       name = "Build the same-source CLI and record its identity"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/build-the-same-source-cli-and-record-its-identity.sh""#
+      run = ci.actionScript("build-the-same-source-cli-and-record-its-identity.sh")
     }
     new Dynamic {
       name = "Install the original Vue provider once"
@@ -31,7 +31,7 @@ runs {
         VIZE_EDITOR_CONFIG_CAPTURE = "${{ runner.temp }}/native-lsp/editor-config"
         VIZE_PRIVATE_IMPORT_CAPTURE = "${{ runner.temp }}/native-lsp/private-imports"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/require-complete-source-lsp-feature-and-project-responses.sh""#
+      run = ci.actionScript("require-complete-source-lsp-feature-and-project-responses.sh")
     }
     new Dynamic {
       name = "Preserve complete original template ref type admission"

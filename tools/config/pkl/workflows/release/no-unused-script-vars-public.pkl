@@ -96,7 +96,7 @@ jobs {
       }
       new Dynamic {
         name = "Authenticate the immutable release tag and successful producer"
-        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-the-immutable-release-tag-and-successful-producer.sh""#
+        run = ci.workflowScript("authenticate-the-immutable-release-tag-and-successful-producer.sh")
       }
       new Dynamic {
         name = "Install vize from public npm and require every reported packet under Bun"

@@ -55,7 +55,7 @@ jobs {
       }
       new Dynamic {
         name = "Fetch and authenticate the unchanged historical before-image"
-        run = #". "${{ env.VIZE_CI_FILES }}/fetch-and-authenticate-the-unchanged-historical-before-image.sh""#
+        run = ci.workflowScript("fetch-and-authenticate-the-unchanged-historical-before-image.sh")
       }
       ci.rust("stable")
       ci.wild()
@@ -68,15 +68,15 @@ jobs {
       }
       new Dynamic {
         name = "Compile separate exact source images and focused producer controls"
-        run = #". "${{ env.VIZE_CI_FILES }}/compile-separate-exact-source-images-and-focused-producer-controls.sh""#
+        run = ci.workflowScript("compile-separate-exact-source-images-and-focused-producer-controls.sh")
       }
       new Dynamic {
         name = "Install pinned actual native, mapper and reference providers"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-actual-native-mapper-and-reference-providers.sh""#
+        run = ci.workflowScript("install-pinned-actual-native-mapper-and-reference-providers.sh")
       }
       new Dynamic {
         name = "Capture both images and all actual provider vectors before assertions"
-        run = #". "${{ env.VIZE_CI_FILES }}/capture-both-images-and-all-actual-provider-vectors-before-assertions.sh""#
+        run = ci.workflowScript("capture-both-images-and-all-actual-provider-vectors-before-assertions.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

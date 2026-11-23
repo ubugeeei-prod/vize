@@ -40,7 +40,7 @@ jobs {
       ci.checkoutAt("${{ github.sha }}")
       new Dynamic {
         name = "Record exact source of both parser implementations"
-        run = #". "${{ env.VIZE_CI_FILES }}/record-exact-source-of-both-parser-implementations.sh""#
+        run = ci.workflowScript("record-exact-source-of-both-parser-implementations.sh")
       }
       new Dynamic {
         uses = ci.setupRust

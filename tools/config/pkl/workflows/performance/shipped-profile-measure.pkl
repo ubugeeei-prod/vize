@@ -91,7 +91,7 @@ jobs {
       }
       ci.use("./driver/.github/actions/setup-cargo-zigbuild")
       ci.command("Install pinned Rust", "rustup toolchain install 1.100.0 --profile minimal --target x86_64-unknown-linux-gnu")
-      ci.command("Install Callgrind", #". "${{ env.VIZE_CI_FILES }}/install-callgrind.sh""#)
+      ci.command("Install Callgrind", ci.workflowScript("install-callgrind.sh"))
       new Dynamic {
         uses = "./driver/.github/actions/setup-wild-http-recovery"
         with { `wild-version` = "0.9.0" }

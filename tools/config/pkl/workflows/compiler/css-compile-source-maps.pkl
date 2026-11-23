@@ -79,11 +79,11 @@ jobs {
       }
       new Dynamic {
         name = "Bind actual checkout to its PR merge or exact dispatch role"
-        run = #". "${{ env.VIZE_CI_FILES }}/bind-actual-checkout-to-its-pr-merge-or-exact-dispatch-role.sh""#
+        run = ci.workflowScript("bind-actual-checkout-to-its-pr-merge-or-exact-dispatch-role.sh")
       }
       new Dynamic {
         name = "Verify real writer coordinates and complete existing engine contracts"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-real-writer-coordinates-and-complete-existing-engine-contracts.sh""#
+        run = ci.workflowScript("verify-real-writer-coordinates-and-complete-existing-engine-contracts.sh")
       }
       ci.command("Build the exact source native API", "vp run --filter './npm/native' build:ci")
       new Dynamic {
@@ -131,7 +131,7 @@ jobs {
       }
       new Dynamic {
         name = "Validate immutable source roles before baseline checkout"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-immutable-source-roles-before-baseline-checkout.sh""#
+        run = ci.workflowScript("validate-immutable-source-roles-before-baseline-checkout.sh")
       }
       new Dynamic {
         uses = ci.checkout

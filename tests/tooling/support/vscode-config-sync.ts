@@ -3,6 +3,7 @@ import { stripTypeScriptTypes } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
+import { runVmProgram } from "./vm-programs.ts";
 
 // Runs the extension's real sync, discovery and setup sources against a
 // scripted VS Code surface, so lifecycle tests observe the actual ordering.
@@ -181,43 +182,11 @@ export function createSync(
       fs.readFileSync(path.join(root, "editors/vscode/src/extension-core.ts"), "utf8"),
       { mode: "transform" },
     ).replace(/^export /gm, "");
-    context.getInitializationOptions = new vm.Script(
-      `${core}\ngetInitializationOptions`,
-    ).runInNewContext();
+    const coreContext = vm.createContext({});
+    new vm.Script(core).runInContext(coreContext);
+    context.getInitializationOptions = coreContext.getInitializationOptions;
   }
-  const control: SyncControl = new vm.Script(`${body}\n
-    outputChannel = output;
-    client = activeClient;
-    if (client) activeInitializationOptions = getInitializationOptions(
-      policyConfiguration, { hasWorkspaceLspConfig: workspaceLspConfig.hasConfig });
-    updateStatusBar = (...args) => operations.push(["status", ...args]);
-    if (startup && policyRelease) {
-      findServerPath = async (_context, _config, _generation, _failure, probe) => {
-        operations.push(["find", probe]);
-        selectedServerCandidate = { path: "/test/vize", source: "release", version: "1.2.3",
-          ...(probe ? {} : { versionUnconfirmed: true }) };
-        return "/test/vize";
-      };
-    } else if (startup) {
-      findServerPath = async () => "/test/vize";
-    } else {
-      startClient = async (_context, _config, generation) => {
-        operations.push(["start", generation]); started.resolve();
-      };
-    }
-    ({ scheduleClientSync, syncClientToConfiguration: (extensionContext, reason) =>
-       syncClientToConfiguration({
-         extensionPath: "/test/extension",
-         globalStorageUri: { fsPath: "/test/global-storage" },
-         ...extensionContext,
-       }, reason), deactivate,
-       waitForConfigurationIdle: () => waitForConfigurationIdle(() => configurationSyncTimer !== undefined),
-       setClient: (value) => { client = value; activeInitializationOptions = getInitializationOptions(
-         policyConfiguration, { hasWorkspaceLspConfig: workspaceLspConfig.hasConfig }); },
-       setHasConfig: (value) => { workspaceLspConfig.hasConfig = value; },
-       getClient: () => client,
-       getCandidate: () => selectedServerCandidate && { ...selectedServerCandidate },
-       state: () => ({ generation: configurationSyncGeneration, hasClient: Boolean(client), starting: startingClientGeneration }) });
-  `).runInContext(context);
+  new vm.Script(body).runInContext(context);
+  const control: SyncControl = runVmProgram("extension-config-sync.js", context);
   return { control, operations, logs, timers, started, retained, initializations };
 }

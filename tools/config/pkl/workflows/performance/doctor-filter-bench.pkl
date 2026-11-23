@@ -49,7 +49,7 @@ jobs {
       new Dynamic {
         name = "Select the exact ancestor baseline"
         env { REQUESTED_BASE = "${{ inputs.base_sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/select-the-exact-ancestor-baseline.sh""#
+        run = ci.workflowScript("select-the-exact-ancestor-baseline.sh")
       }
       new Dynamic {
         uses = ci.checkout
@@ -65,7 +65,7 @@ jobs {
       // and this job checks the repository out under head/.
       new Dynamic {
         name = "Expose the nested target action at the workspace root"
-        run = #". "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh""#
+        run = ci.workflowScript("expose-the-nested-target-action-at-the-workspace-root.sh")
       }
       new Dynamic {
         uses = "./head/.github/actions/setup-rust-sticky-cache"
@@ -88,15 +88,15 @@ jobs {
       new Dynamic {
         name = "Verify filter semantics and lint contract"
         `working-directory` = "head"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-filter-semantics-and-lint-contract.sh""#
+        run = ci.workflowScript("verify-filter-semantics-and-lint-contract.sh")
       }
       new Dynamic {
         name = "Build identical public API probes against exact base and head"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-identical-public-api-probes-against-exact-base-and-head.sh""#
+        run = ci.workflowScript("build-identical-public-api-probes-against-exact-base-and-head.sh")
       }
       new Dynamic {
         name = "Compare planted verdicts and nine alternating measurement pairs"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-planted-verdicts-and-nine-alternating-measurement-pairs.sh""#
+        run = ci.workflowScript("compare-planted-verdicts-and-nine-alternating-measurement-pairs.sh")
       }
       new Dynamic {
         name = "Upload exact workloads and raw timings"

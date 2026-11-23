@@ -30,7 +30,7 @@ surfaces and are not routine CI-refactor targets.
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 43        |
-| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 26        |
+| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 27        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 24        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
@@ -307,11 +307,12 @@ Davinci migration, Canon ownership, Level lowering, and cross-file graph contrac
 | 07.19 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                       |
 | 07.20 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                           |
 | 07.21 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                             |
-| 07.22 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                 |
-| 07.23 | IR pass composition                           | [`ir-pass-composition.yml`](./ir-pass-composition.yml)                         |
-| 07.24 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)               |
-| 07.25 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                           |
-| 07.26 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)               |
+| 07.22 | Davinci authored source frames                | [`davinci-source-frames.yml`](./davinci-source-frames.yml)                     |
+| 07.23 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                 |
+| 07.24 | IR pass composition                           | [`ir-pass-composition.yml`](./ir-pass-composition.yml)                         |
+| 07.25 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)               |
+| 07.26 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                           |
+| 07.27 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)               |
 
 ## 08 Builders and framework integrations
 

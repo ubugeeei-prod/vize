@@ -91,7 +91,7 @@ jobs {
       new Dynamic {
         name = "Install the repository Rust toolchain"
         `if` = "${{ env.ORIGINAL_PUBLIC_REQUESTED != 'true' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh""#
+        run = ci.workflowScript("install-the-repository-rust-toolchain.sh")
       }
       new Dynamic {
         `if` = "${{ env.ORIGINAL_PUBLIC_REQUESTED != 'true' }}"
@@ -140,7 +140,7 @@ jobs {
           BASE_SHA = "${{ github.event.pull_request.base.sha }}"
           GH_TOKEN = "${{ github.token }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/bind-the-original-warm-request-pair-to-its-actual-source-baseline.sh""#
+        run = ci.workflowScript("bind-the-original-warm-request-pair-to-its-actual-source-baseline.sh")
       }
       new Dynamic {
         name = "Build the original baseline with the identical shipping release recipe"
@@ -155,7 +155,7 @@ jobs {
       new Dynamic {
         name = "Compare every original400 warm packet and invalidation control on this worker"
         `if` = "${{ github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-every-original400-warm-packet-and-invalidation-control-on-this-w.sh""#
+        run = ci.workflowScript("compare-every-original400-warm-packet-and-invalidation-control-on-this-w.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

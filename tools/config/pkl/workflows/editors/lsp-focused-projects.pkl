@@ -87,7 +87,7 @@ jobs {
       }
       new Dynamic {
         name = "Build and receipt one exact-source production server"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-one-exact-source-production-server.sh""#
+        run = ci.workflowScript("build-and-receipt-one-exact-source-production-server.sh")
       }
       new Dynamic {
         name = "Replay selected complete original LSP packets serially"
@@ -101,7 +101,7 @@ jobs {
           VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
           VIZE_LSP_BUILD_RECIPE = "cargo build --profile ci -p vize"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/replay-selected-complete-original-lsp-packets-serially.sh""#
+        run = ci.workflowScript("replay-selected-complete-original-lsp-packets-serially.sh")
       }
       new Dynamic {
         name = "Verify every source-bound raw session"

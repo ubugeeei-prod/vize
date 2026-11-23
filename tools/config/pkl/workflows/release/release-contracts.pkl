@@ -133,7 +133,7 @@ jobs {
       }
       new Dynamic {
         name = "Validate the explicit public candidate"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-the-explicit-public-candidate.sh""#
+        run = ci.workflowScript("validate-the-explicit-public-candidate.sh")
       }
       new Dynamic {
         name = "Install exact public packages in an independent fresh consumer"
@@ -150,7 +150,7 @@ jobs {
           GH_TOKEN = "${{ github.token }}"
           REQUIRED_ICON_SOURCE = "d38ab7e48514566f1776f25439e8777a9856b5a6"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-candidate-contains-the-required-icon-source.sh""#
+        run = ci.workflowScript("prove-the-candidate-contains-the-required-icon-source.sh")
       }
       new Dynamic {
         name = "Qualify independent published icon class packets"
@@ -206,11 +206,11 @@ jobs {
       new Dynamic {
         name = "Prove the immutable tag contains the merged public-instance change"
         env { GH_TOKEN = "${{ github.token }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-immutable-tag-contains-the-merged-public-instance-change.sh""#
+        run = ci.workflowScript("prove-the-immutable-tag-contains-the-merged-public-instance-change.sh")
       }
       new Dynamic {
         name = "Qualify fresh public custom properties and authored directive ownership"
-        run = #". "${{ env.VIZE_CI_FILES }}/qualify-fresh-public-custom-properties-and-authored-directive-ownership.sh""#
+        run = ci.workflowScript("qualify-fresh-public-custom-properties-and-authored-directive-ownership.sh")
       }
       new Dynamic {
         name = "Qualify independent published canonical SDK"
@@ -299,7 +299,7 @@ jobs {
           CAPABILITY_OBSERVERS = "${{ inputs.additional_observers }}"
           CAPABILITY_CPP = "${{ inputs.custom_properties }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-known-public-source-for-the-isolated-host-capability.sh""#
+        run = ci.workflowScript("prove-the-known-public-source-for-the-isolated-host-capability.sh")
       }
       new Dynamic {
         name = "Authenticate the existing public CLI and native TypeScript provider"

@@ -66,17 +66,17 @@ jobs {
       }
       new Dynamic {
         name = "Select original Vue and colocated gallery sources"
-        run = #". "${{ env.VIZE_CI_FILES }}/select-original-vue-and-colocated-gallery-sources.sh""#
+        run = ci.workflowScript("select-original-vue-and-colocated-gallery-sources.sh")
       }
       new Dynamic {
         name = "Compare original gallery records, generated modules, Markdown and public warnings"
         `if` = "matrix.suite == 'correctness'"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-gallery-records-generated-modules-markdown-and-public-w.sh""#
+        run = ci.workflowScript("compare-original-gallery-records-generated-modules-markdown-and-public-w.sh")
       }
       new Dynamic {
         name = "Measure descriptor and warning time, allocations and peak on an independent runner"
         `if` = "matrix.suite == 'performance'"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-descriptor-and-warning-time-allocations-and-peak-on-an-independe.sh""#
+        run = ci.workflowScript("measure-descriptor-and-warning-time-allocations-and-peak-on-an-independe.sh")
       }
     }
   }

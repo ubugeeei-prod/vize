@@ -48,7 +48,7 @@ jobs {
       }
       new Dynamic {
         name = "Refuse stale, foreign, ambiguous or conflicting dispatch"
-        run = #". "${{ env.VIZE_CI_FILES }}/refuse-stale-foreign-ambiguous-or-conflicting-dispatch.sh""#
+        run = ci.workflowScript("refuse-stale-foreign-ambiguous-or-conflicting-dispatch.sh")
       }
       new Dynamic {
         name = "Checkout immutable baseline"

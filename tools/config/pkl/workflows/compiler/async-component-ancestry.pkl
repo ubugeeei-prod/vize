@@ -82,29 +82,29 @@ jobs {
       new Dynamic {
         name = "Record the exact producer before execution"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/record-the-exact-producer-before-execution.sh""#
+        run = ci.workflowScript("record-the-exact-producer-before-execution.sh")
       }
       new Dynamic {
         name = "Install the independent pinned actual Vue runtime"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-independent-pinned-actual-vue-runtime.sh""#
+        run = ci.workflowScript("install-the-independent-pinned-actual-vue-runtime.sh")
       }
       new Dynamic {
         name = "Require each new precision control to fail at its pinned parent production"
         `if` = "matrix.role == 'candidate'"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/qualify-parent-precision-controls.sh""#
+        run = ci.workflowScript("qualify-parent-precision-controls.sh")
       }
       new Dynamic {
         name = "Require complete Croquis and cross-file unit suites"
         `if` = "matrix.role == 'candidate'"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-complete-croquis-and-cross-file-unit-suites.sh""#
+        run = ci.workflowScript("require-complete-croquis-and-cross-file-unit-suites.sh")
       }
       new Dynamic {
         name = "Build the exact source CLI and source NAPI image"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-exact-source-cli-and-source-napi-image.sh""#
+        run = ci.workflowScript("build-the-exact-source-cli-and-source-napi-image.sh")
       }
       new Dynamic {
         name = "Preserve every original file and full process, graph, Doctor and inspector packet"
@@ -112,7 +112,7 @@ jobs {
         env {
           VIZE_MATRIX_ROLE = "${{ matrix.role }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-every-original-file-and-full-process-graph-doctor-and-inspector.sh""#
+        run = ci.workflowScript("preserve-every-original-file-and-full-process-graph-doctor-and-inspector.sh")
       }
       new Dynamic {
         name = "Preserve complete evidence even on failure"

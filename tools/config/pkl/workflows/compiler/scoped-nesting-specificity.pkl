@@ -59,7 +59,7 @@ jobs {
       new Dynamic {
         name = "Compile current source and retain all prior scoped CSS oracles"
         env { VIZE_SCOPED_NESTING_CAPTURE = "${{ runner.temp }}/scoped-nesting-modules.json" }
-        run = #". "${{ env.VIZE_CI_FILES }}/compile-current-source-and-retain-all-prior-scoped-css-oracles.sh""#
+        run = ci.workflowScript("compile-current-source-and-retain-all-prior-scoped-css-oracles.sh")
       }
       new Dynamic {
         name = "Verify complete scoped CSS and real Chromium cascade and pixels"

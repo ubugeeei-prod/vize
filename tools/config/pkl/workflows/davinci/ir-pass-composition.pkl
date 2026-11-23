@@ -85,11 +85,11 @@ jobs {
       }
       new Dynamic {
         name = "Run the original catalogue, traces and allocation measurements"
-        run = #". "${{ env.VIZE_CI_FILES }}/run-the-original-catalogue-traces-and-allocation-measurements.sh""#
+        run = ci.workflowScript("run-the-original-catalogue-traces-and-allocation-measurements.sh")
       }
       new Dynamic {
         name = "Check original Vue templates against both passes and the independent CFG"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-original-vue-templates-against-both-passes-and-the-independent-cfg.sh""#
+        run = ci.workflowScript("check-original-vue-templates-against-both-passes-and-the-independent-cfg.sh")
       }
       new Dynamic {
         uses = ci.setupNode
@@ -97,12 +97,12 @@ jobs {
       }
       new Dynamic {
         name = "Check lossless template queries against Vue and existing Vize products"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-lossless-template-queries-against-vue-and-existing-vize-products.sh""#
+        run = ci.workflowScript("check-lossless-template-queries-against-vue-and-existing-vize-products.sh")
       }
       new Dynamic {
         name = "Compare complete original complexity diagnostics and compiler-plus-lint timing"
         env { VIZE_ORIGINAL_TEMPLATE_ORACLE = "${{ runner.temp }}/template-oracle.json" }
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-complete-original-complexity-diagnostics-and-compiler-plus-lint-timing.sh""#
+        run = ci.workflowScript("compare-complete-original-complexity-diagnostics-and-compiler-plus-lint-timing.sh")
       }
     }
   }
@@ -116,7 +116,7 @@ jobs {
       new Dynamic {
         name = "Check the prefix theorem with Lean"
         `working-directory` = "${{ runner.temp }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-the-prefix-theorem-with-lean.sh""#
+        run = ci.workflowScript("check-the-prefix-theorem-with-lean.sh")
       }
       new Dynamic {
         uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"
@@ -186,7 +186,7 @@ jobs {
       new Dynamic {
         name = "Compare the shipping entry points against the common base"
         env { GH_TOKEN = "${{ github.token }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-shipping-entry-points-against-the-common-base.sh""#
+        run = ci.workflowScript("compare-the-shipping-entry-points-against-the-common-base.sh")
       }
     }
   }

@@ -63,32 +63,32 @@ jobs {
       new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
       new Dynamic {
         name = "Build the actual source native addon and shared rule bridge"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-actual-source-native-addon-and-shared-rule-bridge.sh""#
+        run = ci.workflowScript("build-the-actual-source-native-addon-and-shared-rule-bridge.sh")
       }
       new Dynamic {
         name = "Preserve exact source and dependency authority"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-exact-source-and-dependency-authority.sh""#
+        run = ci.workflowScript("preserve-exact-source-and-dependency-authority.sh")
       }
       new Dynamic {
         name = "Qualify real flat-config consumers, source authority and call counts"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/qualify-real-flat-config-consumers-source-authority-and-call-counts.sh""#
+        run = ci.workflowScript("qualify-real-flat-config-consumers-source-authority-and-call-counts.sh")
       }
       new Dynamic {
         name = "Verify no physical SFC reads, including native code"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-no-physical-sfc-reads-including-native-code.sh""#
+        run = ci.workflowScript("verify-no-physical-sfc-reads-including-native-code.sh")
       }
       new Dynamic {
         name = "Qualify packed public entries in an isolated consumer"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/qualify-packed-public-entries-in-an-isolated-consumer.sh""#
+        run = ci.workflowScript("qualify-packed-public-entries-in-an-isolated-consumer.sh")
       }
       new Dynamic {
         name = "Stage the same source addon for supported Node and TypeScript consumers"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/stage-the-same-source-addon-for-supported-node-and-typescript-consumers.sh""#
+        run = ci.workflowScript("stage-the-same-source-addon-for-supported-node-and-typescript-consumers.sh")
       }
       new Dynamic {
         name = "Share packed exports and source addon without rebuilding native code"
@@ -146,7 +146,7 @@ jobs {
         }
       }
       new Dynamic {
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        uses = ci.downloadArtifact
         with {
           name = "eslint-packed-source-${{ env.SOURCE_SHA }}"
           path = "${{ runner.temp }}/eslint-packed-source"

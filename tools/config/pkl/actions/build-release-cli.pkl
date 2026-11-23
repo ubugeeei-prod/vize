@@ -52,7 +52,7 @@ runs {
       name = "Read the repository Rust toolchain"
       id = "rust-toolchain"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/read-the-repository-rust-toolchain.sh""#
+      run = ci.actionScript("read-the-repository-rust-toolchain.sh")
     }
     new Dynamic {
       name = "Setup Rust"
@@ -108,7 +108,7 @@ runs {
       name = "Tune Windows release profile"
       `if` = "runner.os == 'Windows'"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/tune-windows-release-profile.sh""#
+      run = ci.actionScript("tune-windows-release-profile.sh")
     }
     new Dynamic {
       name = "Build CLI"
@@ -117,7 +117,7 @@ runs {
         RELEASE_TARGET = "${{ inputs.target }}"
         VIZE_RELEASE_VERSION = "${{ inputs.release-version }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/build-cli.sh""#
+      run = ci.actionScript("build-cli.sh")
     }
     new Dynamic {
       name = "Create archive (Unix)"
@@ -127,7 +127,7 @@ runs {
         RELEASE_TARGET = "${{ inputs.target }}"
         RELEASE_ARCHIVE = "${{ inputs.archive }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/create-archive-unix.sh""#
+      run = ci.actionScript("create-archive-unix.sh")
     }
     new Dynamic {
       name = "Create archive (Windows)"

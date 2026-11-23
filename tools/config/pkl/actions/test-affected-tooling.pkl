@@ -50,12 +50,12 @@ runs {
         BASE_SHA = "${{ inputs.base }}"
         TOOLING_SHARD = "${{ inputs.shard }}/${{ inputs.total }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/select-the-same-affected-tooling-tests-as-the-planner.sh""#
+      run = ci.actionScript("select-the-same-affected-tooling-tests-as-the-planner.sh")
     }
     new Dynamic {
       name = "Hydrate CLI and fact corpus fixtures and install JS dependencies"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/hydrate-cli-and-fact-corpus-fixtures-and-install-js-dependencies.sh""#
+      run = ci.actionScript("hydrate-cli-and-fact-corpus-fixtures-and-install-js-dependencies.sh")
     }
     new Dynamic {
       uses = "./.github/actions/restore-source-cli"
@@ -95,7 +95,7 @@ runs {
         VIZE_TOOLING_TEST_PLAN = "${{ runner.temp }}/tooling-plan.json"
         VIZE_TOOLING_TEST_SHARD = "${{ inputs.shard }}/${{ inputs.total }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/test-affected-tooling-scripts.sh""#
+      run = ci.actionScript("test-affected-tooling-scripts.sh")
     }
     new Dynamic {
       name = "Upload tooling test cases"

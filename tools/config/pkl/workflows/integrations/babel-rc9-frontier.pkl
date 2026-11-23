@@ -52,11 +52,11 @@ jobs {
       ci.use("./.github/actions/setup-rust-script")
       new Dynamic {
         name = "Install frozen source and exact isolated host graphs"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-frozen-source-and-exact-isolated-host-graphs.sh""#
+        run = ci.workflowScript("install-frozen-source-and-exact-isolated-host-graphs.sh")
       }
       new Dynamic {
         name = "Build the actual source compiler and both public package entrypoints"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-actual-source-compiler-and-both-public-package-entrypoints.sh""#
+        run = ci.workflowScript("build-the-actual-source-compiler-and-both-public-package-entrypoints.sh")
       }
       new Dynamic {
         name = "Retain four strict unsupported rc9 functional frontier rows"
@@ -66,7 +66,7 @@ jobs {
           VIZE_BABEL_RUNTIME_OUTPUT = "${{ runner.temp }}/babel-plugin/runtime"
           VIZE_BABEL_RUNTIME_ROLE = "frontier"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-four-strict-unsupported-rc9-functional-frontier-rows.sh""#
+        run = ci.workflowScript("retain-four-strict-unsupported-rc9-functional-frontier-rows.sh")
       }
       new Dynamic {
         name = "Check package source and declarations"

@@ -55,11 +55,11 @@ jobs {
       }
       new Dynamic {
         name = "Check disabled and instrumented collector laws"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-disabled-and-instrumented-collector-laws.sh""#
+        run = ci.workflowScript("check-disabled-and-instrumented-collector-laws.sh")
       }
       new Dynamic {
         name = "Measure instrumentation overhead separately from product speed"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-instrumentation-overhead-separately-from-product-speed.sh""#
+        run = ci.workflowScript("measure-instrumentation-overhead-separately-from-product-speed.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

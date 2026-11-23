@@ -172,13 +172,10 @@ mod tests {
 
     fn case_dir(name: &str) -> PathBuf {
         let id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("target")
-            .join("vize-tests")
-            .join(&*cstr!(
-                "patina-corsa-paths-{name}-{}-{id}",
-                std::process::id()
-            ))
+        crate::linter::tests::scratch_project_root().join(&*cstr!(
+            "patina-corsa-paths-{name}-{}-{id}",
+            std::process::id()
+        ))
     }
 
     #[test]

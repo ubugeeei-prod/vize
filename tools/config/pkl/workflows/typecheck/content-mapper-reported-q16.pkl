@@ -47,7 +47,7 @@ jobs {
         name = "Initialize runner-local joint evidence paths"
         shell = "bash"
         env { Q16_REQUESTED_CASE_SET = "${{ fromJSON(inputs.request).reported-q16-cases }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/initialize-runner-local-joint-evidence-paths.sh""#
+        run = ci.workflowScript("initialize-runner-local-joint-evidence-paths.sh")
       }
       new Dynamic {
         name = "Setup repository build Node and Vite Plus"
@@ -91,7 +91,7 @@ jobs {
       new Dynamic {
         name = "Install the exact report host and oracle versions and retain the generated lock"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-exact-report-host-and-oracle-versions-and-retain-the-generat.sh""#
+        run = ci.workflowScript("install-the-exact-report-host-and-oracle-versions-and-retain-the-generat.sh")
       }
       new Dynamic {
         name = "Authenticate installed host roles before any report checks"
@@ -131,7 +131,7 @@ jobs {
       new Dynamic {
         name = "Require the exact requested source"
         env { EXPECTED_SOURCE_SHA = "${{ fromJSON(inputs.request).expected-source-sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/require-the-exact-requested-source.sh""#
+        run = ci.workflowScript("require-the-exact-requested-source.sh")
       }
       new Dynamic {
         name = "Setup Rust"
@@ -158,11 +158,11 @@ jobs {
       ci.command("Install frozen dependencies", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Install the pinned published mapper host"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-pinned-published-mapper-host.sh""#
+        run = ci.workflowScript("install-the-pinned-published-mapper-host.sh")
       }
       new Dynamic {
         name = "Build source CLI"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-source-cli.sh""#
+        run = ci.workflowScript("build-source-cli.sh")
       }
       new Dynamic {
         name = "Test immutable project context and batch preservation"
@@ -172,7 +172,7 @@ jobs {
           CORSA_PATH = "${{ runner.temp }}/router-mapper-host/node_modules/@typescript/typescript-linux-x64/lib/tsc"
           VIZE_TEST_REQUIRE_TSGO = "1"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/test-immutable-project-context-and-batch-preservation.sh""#
+        run = ci.workflowScript("test-immutable-project-context-and-batch-preservation.sh")
       }
       new Dynamic {
         name = "Profile one admission and repeated source projections in isolation"
@@ -211,7 +211,7 @@ jobs {
           SOURCE_PROFILE_OUTCOME = "${{ steps.source-profile.outcome }}"
           MAPPER_ORACLE_OUTCOME = "${{ steps.mapper-oracle.outcome }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/require-every-independent-router-qualification-result.sh""#
+        run = ci.workflowScript("require-every-independent-router-qualification-result.sh")
       }
     }
   }

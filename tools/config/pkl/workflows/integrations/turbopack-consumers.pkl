@@ -56,11 +56,11 @@ jobs {
       ci.command("Seal native image and source identity", "node npm/native/scripts/native-build-receipt.mjs")
       new Dynamic {
         name = "Check authored positions and existing Rspack behavior"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-authored-positions-and-existing-rspack-behavior.sh""#
+        run = ci.workflowScript("check-authored-positions-and-existing-rspack-behavior.sh")
       }
       new Dynamic {
         name = "Build both public adapters with bundled shared code"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-both-public-adapters-with-bundled-shared-code.sh""#
+        run = ci.workflowScript("build-both-public-adapters-with-bundled-shared-code.sh")
       }
       new Dynamic {
         name = "Prepare the actual browser"

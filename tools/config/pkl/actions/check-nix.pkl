@@ -1,3 +1,5 @@
+import "../Actions.pkl" as ci
+
 name = "Check Nix flake"
 description = "Qualify the locked flake and refresh a bounded store cache with current build dependencies"
 
@@ -43,7 +45,7 @@ runs {
       shell = "bash"
       // These outputs already passed flake check. Roots protect compiled Cargo
       // dependencies and shell tools; GC can discard older unrooted versions.
-      run = #". "$GITHUB_ACTION_PATH/scripts/keep-current-build-dependencies-through-cache-gc.sh""#
+      run = ci.actionScript("keep-current-build-dependencies-through-cache-gc.sh")
     }
   }
 }

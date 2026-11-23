@@ -59,7 +59,7 @@ jobs {
       ci.wild()
       new Dynamic {
         name = "Regenerate and verify the fixed normal source image"
-        run = #". "${{ env.VIZE_CI_FILES }}/regenerate-and-verify-the-fixed-normal-source-image.sh""#
+        run = ci.workflowScript("regenerate-and-verify-the-fixed-normal-source-image.sh")
       }
       new Dynamic {
         name = "Check out the reviewed helper harness"
@@ -90,16 +90,16 @@ jobs {
       }
       new Dynamic {
         name = "Install one pinned public helper provider and the integrated native backend"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-one-pinned-public-helper-provider-and-the-integrated-native-back.sh""#
+        run = ci.workflowScript("install-one-pinned-public-helper-provider-and-the-integrated-native-back.sh")
       }
       new Dynamic {
         name = "Run the proxy byte and classification controls"
-        run = #". "${{ env.VIZE_CI_FILES }}/run-the-proxy-byte-and-classification-controls.sh""#
+        run = ci.workflowScript("run-the-proxy-byte-and-classification-controls.sh")
       }
       new Dynamic {
         name = "Preserve the frozen public repro and independently poison inferred slot payloads"
         env { VIZE_SOURCE_SDK_ROOT = "${{ github.workspace }}/npm/cli" }
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-frozen-public-repro-and-independently-poison-inferred-slot.sh""#
+        run = ci.workflowScript("preserve-the-frozen-public-repro-and-independently-poison-inferred-slot.sh")
       }
       new Dynamic {
         name = "Capture actual CLI and source mapper packets with mutation and repair oracles"
@@ -107,12 +107,12 @@ jobs {
           VIZE_MATRIX_SFCS = "${{ matrix.sfcs }}"
           VIZE_SOURCE_SDK_ROOT = "${{ github.workspace }}/npm/cli"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/capture-actual-cli-and-source-mapper-packets-with-mutation-and-repair-or.sh""#
+        run = ci.workflowScript("capture-actual-cli-and-source-mapper-packets-with-mutation-and-repair-or.sh")
       }
       new Dynamic {
         name = "Package only bounded authored inputs and raw evidence"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-only-bounded-authored-inputs-and-raw-evidence.sh""#
+        run = ci.workflowScript("package-only-bounded-authored-inputs-and-raw-evidence.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

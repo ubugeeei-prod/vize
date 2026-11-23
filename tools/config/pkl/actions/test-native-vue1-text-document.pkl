@@ -16,7 +16,7 @@ runs {
       id = "select"
       shell = "bash"
       env { BASE_SHA = "${{ inputs.comparison-base }}" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/select-the-original-vue1-document-source-slice.sh""#
+      run = ci.actionScript("select-the-original-vue1-document-source-slice.sh")
     }
     new Dynamic {
       name = "Capture actual original callbacks and complete pinned getter outcomes"
@@ -28,7 +28,7 @@ runs {
         VIZE_GLYPH_VUE1_TEXT_REQUIRE_CAPTURE = "1"
         VIZE_GLYPH_VUE1_TEXT_SOURCE_HEAD = "${{ github.event.pull_request.head.sha || github.sha }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-actual-original-callbacks-and-complete-pinned-getter-outcomes.sh""#
+      run = ci.actionScript("capture-actual-original-callbacks-and-complete-pinned-getter-outcomes.sh")
     }
     new Dynamic {
       name = "Retain complete original Vue1 documents and primary observations"

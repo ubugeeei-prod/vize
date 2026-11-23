@@ -67,7 +67,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify observer bootstrap and source roles"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-observer-bootstrap-and-source-roles.sh""#
+        run = ci.workflowScript("verify-observer-bootstrap-and-source-roles.sh")
       }
       ci.rust("1.100.0")
       ci.wild()
@@ -84,12 +84,12 @@ jobs {
           SOURCE_ROLE = "${{ matrix.role }}"
           CARGO_TARGET_DIR = "${{ github.workspace }}/target"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-canonical-source-image.sh""#
+        run = ci.workflowScript("build-the-canonical-source-image.sh")
       }
       new Dynamic {
         name = "Seal each source role and capture complete API packets before comparisons"
         env { SOURCE_ROLE = "${{ matrix.role }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/seal-each-source-role-and-capture-complete-api-packets-before-comparison.sh""#
+        run = ci.workflowScript("seal-each-source-role-and-capture-complete-api-packets-before-comparison.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -121,14 +121,14 @@ jobs {
         run = "vp install --filter './tests' --frozen-lockfile --prefer-offline --ignore-scripts"
       }
       new Dynamic {
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        uses = ci.downloadArtifact
         with {
           name = "sfc-parse-attributes-${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}-base-${{ github.run_id }}-${{ github.run_attempt }}"
           path = "artifacts/base"
         }
       }
       new Dynamic {
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        uses = ci.downloadArtifact
         with {
           name = "sfc-parse-attributes-${{ env.VIZE_SFC_ATTRS_ACTOR_SHA }}-head-${{ github.run_id }}-${{ github.run_attempt }}"
           path = "artifacts/head"

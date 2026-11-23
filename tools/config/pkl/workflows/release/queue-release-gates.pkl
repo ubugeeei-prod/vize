@@ -39,7 +39,7 @@ jobs {
         name = "Plan release gates"
         id = "plan"
         env { BASE_SHA = "${{ github.event.merge_group.base_sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/plan-release-gates.sh""#
+        run = ci.workflowScript("plan-release-gates.sh")
       }
     }
   }

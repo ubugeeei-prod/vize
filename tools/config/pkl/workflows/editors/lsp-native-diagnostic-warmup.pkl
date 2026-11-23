@@ -75,14 +75,14 @@ jobs {
           BASE_SHA = "3a4bf713f85589a50da5d0a7aaf8ae33fdcdc004"
           HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/build-each-exact-source-in-its-own-initially-absent-role-and-sha-target.sh""#
+        run = ci.workflowScript("build-each-exact-source-in-its-own-initially-absent-role-and-sha-target.sh")
       }
       new Dynamic {
         name = "Reproduce the old drop or retain the complete real native answer"
         env {
           CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/reproduce-the-old-drop-or-retain-the-complete-real-native-answer.sh""#
+        run = ci.workflowScript("reproduce-the-old-drop-or-retain-the-complete-real-native-answer.sh")
       }
       new Dynamic {
         name = "Preserve source freshness, assembly oracles, recovery and editor controls"
@@ -91,12 +91,12 @@ jobs {
           CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
           VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS = "120000"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-source-freshness-assembly-oracles-recovery-and-editor-controls.sh""#
+        run = ci.workflowScript("preserve-source-freshness-assembly-oracles-recovery-and-editor-controls.sh")
       }
       new Dynamic {
         name = "Stage each exact producer's receipt and actual raw stdio captures"
         `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/stage-each-exact-producer-s-receipt-and-actual-raw-stdio-captures.sh""#
+        run = ci.workflowScript("stage-each-exact-producer-s-receipt-and-actual-raw-stdio-captures.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

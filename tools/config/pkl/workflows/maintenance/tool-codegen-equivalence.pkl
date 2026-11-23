@@ -73,11 +73,11 @@ jobs {
       }
       new Dynamic {
         name = "Verify comparison controls and fetch both commits"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-comparison-controls-and-fetch-both-commits.sh""#
+        run = ci.workflowScript("verify-comparison-controls-and-fetch-both-commits.sh")
       }
       new Dynamic {
         name = "Compare independently compiled products"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-independently-compiled-products.sh""#
+        run = ci.workflowScript("compare-independently-compiled-products.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -57,7 +57,7 @@ jobs {
       ci.command("Install frozen workspace tools", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Verify actual block grammars and binding owners"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-actual-block-grammars-and-binding-owners.sh""#
+        run = ci.workflowScript("verify-actual-block-grammars-and-binding-owners.sh")
       }
       ci.command("Build the existing actual WASM release configuration", "node tools/support/tasks/build-vize-wasm-package.ts")
       new Dynamic {

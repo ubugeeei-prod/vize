@@ -41,11 +41,11 @@ jobs {
       }
       new Dynamic {
         name = "Verify complete original component-handler production parity"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-complete-original-component-handler-production-parity.sh""#
+        run = ci.workflowScript("verify-complete-original-component-handler-production-parity.sh")
       }
       new Dynamic {
         name = "Hold complete committed-corpus parity, selection accounting and reach floors"
-        run = #". "${{ env.VIZE_CI_FILES }}/hold-complete-committed-corpus-parity-selection-accounting-and-reach-flo.sh""#
+        run = ci.workflowScript("hold-complete-committed-corpus-parity-selection-accounting-and-reach-flo.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

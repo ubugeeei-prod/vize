@@ -142,19 +142,19 @@ jobs {
           EXPECTED_SHA = "${{ github.sha }}"
           SOURCE_HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-readiness-merge-sha.sh""#
+        run = ci.workflowScript("verify-readiness-merge-sha.sh")
       }
       new Dynamic {
         name = "Plan readiness rows"
         `if` = "steps.changes.outputs.readiness == 'true'"
         id = "plan"
-        run = #". "${{ env.VIZE_CI_FILES }}/plan-readiness-rows.sh""#
+        run = ci.workflowScript("plan-readiness-rows.sh")
       }
       new Dynamic {
         name = "Write readiness plan evidence"
         `if` = "steps.changes.outputs.readiness == 'true'"
         env { E2E_SOURCE_HEAD_SHA = "${{ github.event.pull_request.head.sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/write-readiness-plan-evidence.sh""#
+        run = ci.workflowScript("write-readiness-plan-evidence.sh")
       }
       new Dynamic {
         name = "Upload readiness plan evidence"
@@ -187,7 +187,7 @@ jobs {
         name = "Verify producer SHA"
         env { EXPECTED_SHA = "${{ github.sha }}" }
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-producer-sha.sh""#
+        run = ci.workflowScript("verify-producer-sha.sh")
       }
       new Dynamic {
         uses = "./.github/actions/app-e2e-row"
@@ -248,7 +248,7 @@ jobs {
           REQUESTED_TARGET_SHA = "${{ inputs.target_sha }}"
           RUN_HEAD_SHA = "${{ github.sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-optional-target-sha.sh""#
+        run = ci.workflowScript("validate-optional-target-sha.sh")
       }
       new Dynamic {
         name = "Begin Testbox"
@@ -305,7 +305,7 @@ jobs {
           REQUESTED_TARGET_SHA = "${{ inputs.target_sha }}"
           RUN_HEAD_SHA = "${{ github.sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-target-sha.sh""#
+        run = ci.workflowScript("validate-target-sha.sh")
       }
       ci.checkoutAt("${{ env.E2E_TARGET_SHA }}")
       new Dynamic {
@@ -319,18 +319,18 @@ jobs {
         name = "Verify full App E2E SHA"
         env { EXPECTED_SHA = "${{ env.E2E_TARGET_SHA }}" }
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-producer-sha.sh""#
+        run = ci.workflowScript("verify-producer-sha.sh")
       }
       new Dynamic {
         name = "Plan full rows"
         id = "plan"
         env { REQUESTED_SUITE = "${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'all' }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/plan-full-rows.sh""#
+        run = ci.workflowScript("plan-full-rows.sh")
       }
       new Dynamic {
         name = "Write full plan evidence"
         env { REQUESTED_SUITE = "${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'all' }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/write-full-plan-evidence.sh""#
+        run = ci.workflowScript("write-full-plan-evidence.sh")
       }
       new Dynamic {
         name = "Upload full plan evidence"
@@ -361,7 +361,7 @@ jobs {
         name = "Verify producer SHA"
         env { EXPECTED_SHA = "${{ env.E2E_TARGET_SHA }}" }
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-producer-sha.sh""#
+        run = ci.workflowScript("verify-producer-sha.sh")
       }
       new Dynamic {
         uses = "./.github/actions/app-e2e-row"

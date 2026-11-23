@@ -49,7 +49,7 @@ jobs {
       new Dynamic {
         name = "Select the exact ancestor baseline"
         env { REQUESTED_BASE = "${{ inputs.base_sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/select-the-exact-ancestor-baseline.sh""#
+        run = ci.workflowScript("select-the-exact-ancestor-baseline.sh")
       }
       new Dynamic {
         uses = ci.checkout
@@ -68,7 +68,7 @@ jobs {
       // and this job checks the repository out under head/.
       new Dynamic {
         name = "Expose the nested target action at the workspace root"
-        run = #". "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh""#
+        run = ci.workflowScript("expose-the-nested-target-action-at-the-workspace-root.sh")
       }
       new Dynamic {
         uses = "./head/.github/actions/setup-rust-sticky-cache"
@@ -91,15 +91,15 @@ jobs {
       new Dynamic {
         name = "Verify scoped types, overlays, root edits and concurrent consumers"
         `working-directory` = "head"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-scoped-types-overlays-root-edits-and-concurrent-consumers.sh""#
+        run = ci.workflowScript("verify-scoped-types-overlays-root-edits-and-concurrent-consumers.sh")
       }
       new Dynamic {
         name = "Build identical public type-world probes at exact base and head"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-identical-public-type-world-probes-at-exact-base-and-head.sh""#
+        run = ci.workflowScript("build-identical-public-type-world-probes-at-exact-base-and-head.sh")
       }
       new Dynamic {
         name = "Compare complete module facts and nine alternating measurement pairs"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-complete-module-facts-and-nine-alternating-measurement-pairs.sh""#
+        run = ci.workflowScript("compare-complete-module-facts-and-nine-alternating-measurement-pairs.sh")
       }
       new Dynamic {
         name = "Upload input corpus, complete fact signatures and raw timings"
@@ -139,7 +139,7 @@ jobs {
       new Dynamic {
         name = "Select the exact ancestor baseline for the full CLI comparison"
         env { REQUESTED_BASE = "${{ inputs.base_sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/select-the-exact-ancestor-baseline-for-the-full-cli-comparison.sh""#
+        run = ci.workflowScript("select-the-exact-ancestor-baseline-for-the-full-cli-comparison.sh")
       }
       new Dynamic {
         uses = ci.checkout
@@ -158,7 +158,7 @@ jobs {
       // and this job checks the repository out under head/.
       new Dynamic {
         name = "Expose the nested target action at the workspace root"
-        run = #". "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh""#
+        run = ci.workflowScript("expose-the-nested-target-action-at-the-workspace-root.sh")
       }
       new Dynamic {
         uses = "./head/.github/actions/setup-rust-sticky-cache"
@@ -192,26 +192,26 @@ jobs {
         name = "Verify batch source snapshot integration and frozen prop metadata"
         `working-directory` = "head"
         env { VIZE_TEST_REQUIRE_TSGO = "1" }
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-batch-source-snapshot-integration-and-frozen-prop-metadata.sh""#
+        run = ci.workflowScript("verify-batch-source-snapshot-integration-and-frozen-prop-metadata.sh")
       }
       new Dynamic {
         name = "Preserve native alias selection and existing suffix laws"
         `working-directory` = "head"
         env { VIZE_TEST_REQUIRE_TSGO = "1" }
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-native-alias-selection-and-existing-suffix-laws.sh""#
+        run = ci.workflowScript("preserve-native-alias-selection-and-existing-suffix-laws.sh")
       }
       new Dynamic {
         name = "Build exact base and head CLIs with identical ci-opt settings"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-exact-base-and-head-clis-with-identical-ci-opt-settings.sh""#
+        run = ci.workflowScript("build-exact-base-and-head-clis-with-identical-ci-opt-settings.sh")
       }
       new Dynamic {
         name = "Qualify exact source alias diagnostics against stock TypeScript and native Corsa"
-        run = #". "${{ env.VIZE_CI_FILES }}/qualify-exact-source-alias-diagnostics-against-stock-typescript-and-nati.sh""#
+        run = ci.workflowScript("qualify-exact-source-alias-diagnostics-against-stock-typescript-and-nati.sh")
       }
       new Dynamic {
         name = "Gate the pinned corpora and compare max/1T with nine alternating pairs"
         env { RUNNER_LABEL = ci.linux }
-        run = #". "${{ env.VIZE_CI_FILES }}/gate-the-pinned-corpora-and-compare-max-1t-with-nine-alternating-pairs.sh""#
+        run = ci.workflowScript("gate-the-pinned-corpora-and-compare-max-1t-with-nine-alternating-pairs.sh")
       }
       new Dynamic {
         name = "Upload CLI inputs, every process report, profiles and provenance"

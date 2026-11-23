@@ -73,7 +73,7 @@ jobs {
       new Dynamic {
         name = "Compare the complete source maps, script exports and editor documents"
         `if` = "matrix.suite == 'correctness'"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-complete-source-maps-script-exports-and-editor-documents.sh""#
+        run = ci.workflowScript("compare-the-complete-source-maps-script-exports-and-editor-documents.sh")
       }
       new Dynamic {
         name = "Measure the complete checker and editor products on retained files"

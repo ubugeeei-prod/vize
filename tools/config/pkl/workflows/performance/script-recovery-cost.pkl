@@ -66,19 +66,19 @@ jobs {
       }
       new Dynamic {
         name = "Preserve exact source identities and the shared benchmark carrier"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-exact-source-identities-and-the-shared-benchmark-carrier.sh""#
+        run = ci.workflowScript("preserve-exact-source-identities-and-the-shared-benchmark-carrier.sh")
       }
       new Dynamic {
         name = "Compare complete parser packets and exact source counter controls"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-complete-parser-packets-and-exact-source-counter-controls.sh""#
+        run = ci.workflowScript("compare-complete-parser-packets-and-exact-source-counter-controls.sh")
       }
       new Dynamic {
         name = "Build independent baseline and candidate targets with equal flags"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-independent-baseline-and-candidate-targets-with-equal-flags.sh""#
+        run = ci.workflowScript("build-independent-baseline-and-candidate-targets-with-equal-flags.sh")
       }
       new Dynamic {
         name = "Measure normal processes and separate instrumented allocation windows"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-normal-processes-and-separate-instrumented-allocation-windows.sh""#
+        run = ci.workflowScript("measure-normal-processes-and-separate-instrumented-allocation-windows.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

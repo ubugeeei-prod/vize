@@ -52,6 +52,7 @@ on {
       "davinci/vize_l4/src/write/source_map.rs"
       "davinci/vize_l4/src/write/source_map/**"
       "tests/formal/source-map/**"
+      "tests/formal/style-format/**"
       "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json"
       "crates/vize_atelier_sfc/tests/scss_products.rs"
       "crates/vize_atelier_sfc/tests/observed_scss/**"
@@ -112,16 +113,16 @@ jobs {
           key = "style-module-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}"
         }
       }
-      ci.command("Select original Vue sources", #". "${{ env.VIZE_CI_FILES }}/select-original-vue-sources.sh""#)
+      ci.command("Select original Vue sources", ci.workflowScript("select-original-vue-sources.sh"))
       new Dynamic {
         name = "Compare original checker options and completion responses"
         `if` = "matrix.suite == 'correctness'"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-checker-options-and-completion-responses.sh""#
+        run = ci.workflowScript("compare-original-checker-options-and-completion-responses.sh")
       }
       new Dynamic {
         name = "Measure complete original and shared member requests"
         `if` = "matrix.suite == 'performance'"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-complete-original-and-shared-member-requests.sh""#
+        run = ci.workflowScript("measure-complete-original-and-shared-member-requests.sh")
       }
     }
   }
@@ -159,17 +160,17 @@ jobs {
       }
       new Dynamic {
         name = "Install the repository's pinned Sass implementation"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-s-pinned-sass-implementation.sh""#
+        run = ci.workflowScript("install-the-repository-s-pinned-sass-implementation.sh")
       }
       new Dynamic {
         name = "Compare the original preprocessor, shared products and authored editor locations"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-preprocessor-shared-products-and-authored-editor-locations.sh""#
+        run = ci.workflowScript("compare-the-original-preprocessor-shared-products-and-authored-editor-locations.sh")
       }
     }
   }
 
   `authored-coordinates` {
-    name = "Authored UTF-16 coordinate proofs"
+    name = "Authored coordinates and style header proofs"
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
@@ -183,9 +184,10 @@ jobs {
           args = "davinci/vize_l4/src/write/source_map/indexed/kani.rs --output-format=terse"
         }
       }
+      ci.command("Verify authored style attribute names, values and ordering", "kani crates/vize_maestro/src/source_project/style_format/kani.rs --output-format=terse")
       new Dynamic {
-        name = "Verify authored positions for arbitrary finite Unicode text"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-authored-positions-for-arbitrary-finite-unicode-text.sh""#
+        name = "Verify source positions and style attributes for arbitrary finite input"
+        run = ci.workflowScript("verify-source-coordinates-and-style-headers.sh")
       }
     }
   }

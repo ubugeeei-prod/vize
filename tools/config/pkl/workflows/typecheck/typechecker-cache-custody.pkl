@@ -72,19 +72,19 @@ jobs {
       new Dynamic {
         name = "Prepare the genuine public shipping baseline"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-genuine-public-shipping-baseline.sh""#
+        run = ci.workflowScript("prepare-the-genuine-public-shipping-baseline.sh")
       }
       new Dynamic {
         name = "Admit public actual cache boundaries at1/10/100SFCs"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/admit-public-actual-cache-boundaries-at1-10-100sfcs.sh""#
+        run = ci.workflowScript("admit-public-actual-cache-boundaries-at1-10-100sfcs.sh")
       }
       new Dynamic {
         name = "Reuse the immutable normal shipping-profile source checkpoint"
         `if` = "${{ github.event_name == 'workflow_dispatch' && inputs.full && inputs.source_mode == 'reuse-checkpoint' }}"
         env { GH_TOKEN = "${{ github.token }}" }
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/reuse-the-immutable-normal-shipping-profile-source-checkpoint.sh""#
+        run = ci.workflowScript("reuse-the-immutable-normal-shipping-profile-source-checkpoint.sh")
       }
       new Dynamic {
         uses = ci.setupRust
@@ -100,7 +100,7 @@ jobs {
         name = "Build one genuinely fresh normal shipping-profile source CLI"
         `if` = "${{ github.event_name == 'workflow_dispatch' && inputs.full && inputs.source_mode == 'build-current' }}"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-one-genuinely-fresh-normal-shipping-profile-source-cli.sh""#
+        run = ci.workflowScript("build-one-genuinely-fresh-normal-shipping-profile-source-cli.sh")
       }
       new Dynamic {
         name = "Full all-SFC coverage before absolute timing"
@@ -110,13 +110,13 @@ jobs {
         }
         `if` = "${{ github.event_name == 'workflow_dispatch' && inputs.full }}"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/full-all-sfc-coverage-before-absolute-timing.sh""#
+        run = ci.workflowScript("full-all-sfc-coverage-before-absolute-timing.sh")
       }
       new Dynamic {
         name = "Package metadata separately from replay images"
         `if` = "always()"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-metadata-separately-from-replay-images.sh""#
+        run = ci.workflowScript("package-metadata-separately-from-replay-images.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -16,7 +16,7 @@ runs {
       id = "select"
       shell = "bash"
       env { BASE_SHA = "${{ inputs.comparison-base }}" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/select-the-original-whole-vue2-sfc-source-slice.sh""#
+      run = ci.actionScript("select-the-original-whole-vue2-sfc-source-slice.sh")
     }
     new Dynamic {
       name = "Capture every complete original SFC Doc before judging the primary join"
@@ -27,7 +27,7 @@ runs {
         VIZE_GLYPH_VUE2_SFC_RUNTIME_CAPTURE = "${{ runner.temp }}/native-vue2-scriptless-sfc-runtime.json"
         VIZE_GLYPH_VUE2_SFC_SOURCE_HEAD = "${{ github.event.pull_request.head.sha || github.sha }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-every-complete-original-sfc-doc-before-judging-the-primary-join.sh""#
+      run = ci.actionScript("capture-every-complete-original-sfc-doc-before-judging-the-primary-join.sh")
     }
     new Dynamic {
       name = "Retain the actual whole Vue2 SFC output and source frames"

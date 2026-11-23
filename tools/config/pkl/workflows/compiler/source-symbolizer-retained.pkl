@@ -79,10 +79,10 @@ jobs {
       }
       new Dynamic {
         name = "Install offline tools only"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-offline-tools-only.sh""#
+        run = ci.workflowScript("install-offline-tools-only.sh")
       }
       new Dynamic {
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"
+        uses = ci.downloadArtifact
         with {
           `artifact-ids` = "12745086928"
           `run-id` = "40526358411"
@@ -91,7 +91,7 @@ jobs {
         }
       }
       new Dynamic {
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"
+        uses = ci.downloadArtifact
         with {
           `artifact-ids` = "12766658865"
           `run-id` = "40566229000"
@@ -101,7 +101,7 @@ jobs {
       }
       new Dynamic {
         name = "Restore byte-sealed images and decode existing data only"
-        run = #". "${{ env.VIZE_CI_FILES }}/restore-byte-sealed-images-and-decode-existing-data-only.sh""#
+        run = ci.workflowScript("restore-byte-sealed-images-and-decode-existing-data-only.sh")
       }
       new Dynamic {
         name = "Preserve raw frames, independent source witness, and exact census"
@@ -141,10 +141,10 @@ jobs {
           SOURCE_RUN = "${{ inputs.metadata_run_id }}"
           SOURCE_ARTIFACT = "${{ inputs.metadata_artifact_id }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/bind-the-requested-completed-artifact.sh""#
+        run = ci.workflowScript("bind-the-requested-completed-artifact.sh")
       }
       new Dynamic {
-        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"
+        uses = ci.downloadArtifact
         with {
           `artifact-ids` = "${{ inputs.metadata_artifact_id }}"
           `run-id` = "${{ inputs.metadata_run_id }}"
@@ -159,7 +159,7 @@ jobs {
           SOURCE_RUN = "${{ inputs.metadata_run_id }}"
           SOURCE_ARTIFACT = "${{ inputs.metadata_artifact_id }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/copy-allowlisted-text-from-one-archive-without-executing-it.sh""#
+        run = ci.workflowScript("copy-allowlisted-text-from-one-archive-without-executing-it.sh")
       }
       new Dynamic {
         name = "Preserve metadata and extraction custody"
@@ -175,7 +175,7 @@ jobs {
       new Dynamic {
         name = "Verify capsule custody and derive the bounded summary remotely"
         `if` = "${{ inputs.metadata_summary_only }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-capsule-custody-and-derive-the-bounded-summary-remotely.sh""#
+        run = ci.workflowScript("verify-capsule-custody-and-derive-the-bounded-summary-remotely.sh")
       }
       new Dynamic {
         name = "Preserve the small summary separately from raw metadata"

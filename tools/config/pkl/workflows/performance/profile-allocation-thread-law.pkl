@@ -52,7 +52,7 @@ jobs {
       }
       new Dynamic {
         name = "Check the small normal and instrumented allocation carriers"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-the-small-normal-and-instrumented-allocation-carriers.sh""#
+        run = ci.workflowScript("check-the-small-normal-and-instrumented-allocation-carriers.sh")
       }
       new Dynamic {
         name = "Check the same public-type snippet against old and new guards"
@@ -60,7 +60,7 @@ jobs {
       }
       new Dynamic {
         name = "Compile the profiling CLI after the carrier succeeds"
-        run = #". "${{ env.VIZE_CI_FILES }}/compile-the-profiling-cli-after-the-carrier-succeeds.sh""#
+        run = ci.workflowScript("compile-the-profiling-cli-after-the-carrier-succeeds.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

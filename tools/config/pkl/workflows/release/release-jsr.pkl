@@ -57,11 +57,11 @@ jobs {
       }
       new Dynamic {
         id = "channel"
-        run = #". "${{ env.VIZE_CI_FILES }}/channel.sh""#
+        run = ci.workflowScript("channel.sh")
       }
       new Dynamic {
         id = "packages"
-        run = #". "${{ env.VIZE_CI_FILES }}/packages.sh""#
+        run = ci.workflowScript("packages.sh")
       }
     }
   }
@@ -115,7 +115,7 @@ jobs {
         `if` = "needs.channel.outputs.enabled == 'true'"
         `working-directory` = "${{ runner.temp }}/jsr-package"
         env { JSR_VERSION = "${{ inputs.version }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/publish-through-the-repository-s-jsr-oidc-link.sh""#
+        run = ci.workflowScript("publish-through-the-repository-s-jsr-oidc-link.sh")
       }
       new Dynamic {
         name = "Wait for the immutable public JSR version"
@@ -183,7 +183,7 @@ jobs {
           JSR_PACKAGE = "${{ matrix.jsrName }}"
           JSR_VERSION = "${{ inputs.version }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/publish-through-the-package-s-repository-oidc-link.sh""#
+        run = ci.workflowScript("publish-through-the-package-s-repository-oidc-link.sh")
       }
       new Dynamic {
         name = "Wait for the immutable public JSR version"
@@ -280,25 +280,25 @@ jobs {
       }
       new Dynamic {
         name = "Create a fresh consumer project"
-        run = #". "${{ env.VIZE_CI_FILES }}/create-a-fresh-consumer-project.sh""#
+        run = ci.workflowScript("create-a-fresh-consumer-project.sh")
       }
       new Dynamic {
         name = "Install from JSR and import every entry point (Node)"
         `if` = "matrix.runtime == 'node'"
         `working-directory` = "${{ runner.temp }}/consumer"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-from-jsr-and-import-every-entry-point-node.sh""#
+        run = ci.workflowScript("install-from-jsr-and-import-every-entry-point-node.sh")
       }
       new Dynamic {
         name = "Install from JSR and import every entry point (Bun)"
         `if` = "matrix.runtime == 'bun'"
         `working-directory` = "${{ runner.temp }}/consumer"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-from-jsr-and-import-every-entry-point-bun.sh""#
+        run = ci.workflowScript("install-from-jsr-and-import-every-entry-point-bun.sh")
       }
       new Dynamic {
         name = "Import the published entry points (Deno)"
         `if` = "matrix.runtime == 'deno'"
         `working-directory` = "${{ runner.temp }}/consumer"
-        run = #". "${{ env.VIZE_CI_FILES }}/import-the-published-entry-points-deno.sh""#
+        run = ci.workflowScript("import-the-published-entry-points-deno.sh")
       }
     }
   }

@@ -117,17 +117,17 @@ jobs {
       }
       new Dynamic {
         name = "Select tracked original TypeScript declarations"
-        run = #". "${{ env.VIZE_CI_FILES }}/select-tracked-original-typescript-declarations.sh""#
+        run = ci.workflowScript("select-tracked-original-typescript-declarations.sh")
       }
       new Dynamic {
         name = "Compare the projected TypeScript, provider identity and workspace completion"
         `if` = "matrix.suite == 'correctness'"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-projected-typescript-provider-identity-and-workspace-complet.sh""#
+        run = ci.workflowScript("compare-the-projected-typescript-provider-identity-and-workspace-complet.sh")
       }
       new Dynamic {
         name = "Measure complete products for each original declaration"
         `if` = "matrix.suite == 'performance'"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-complete-products-for-each-original-declaration.sh""#
+        run = ci.workflowScript("measure-complete-products-for-each-original-declaration.sh")
       }
     }
   }
@@ -157,7 +157,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare original plain-script projections and editor links"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-plain-script-projections-and-editor-links.sh""#
+        run = ci.workflowScript("compare-original-plain-script-projections-and-editor-links.sh")
       }
     }
   }
@@ -200,7 +200,7 @@ jobs {
       }
       new Dynamic {
         name = "Check authored ambient components in live native editor sessions"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-authored-ambient-components-in-live-native-editor-sessions.sh""#
+        run = ci.workflowScript("check-authored-ambient-components-in-live-native-editor-sessions.sh")
       }
     }
   }
@@ -231,11 +231,11 @@ jobs {
       }
       new Dynamic {
         name = "Compare primitive types, lint and UTF-16 diagnostics with original tools"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-primitive-types-lint-and-utf-16-diagnostics-with-original-tools.sh""#
+        run = ci.workflowScript("compare-primitive-types-lint-and-utf-16-diagnostics-with-original-tools.sh")
       }
       new Dynamic {
         name = "Replay the complete typed hover through the ordinary editor"
-        run = #". "${{ env.VIZE_CI_FILES }}/replay-the-complete-typed-hover-through-the-ordinary-editor.sh""#
+        run = ci.workflowScript("replay-the-complete-typed-hover-through-the-ordinary-editor.sh")
       }
       new Dynamic {
         name = "Read original TypeScript 6.0.3 compiler and conformance fixtures"
@@ -262,7 +262,7 @@ jobs {
           VIZE_FIRST_OPEN_INPUT = "${{ runner.temp }}/upstream-broken-scripts.jsonl"
           NODE_PATH = "${{ runner.temp }}/checked-ts/node_modules"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-restored-document-cursors-and-broken-suffixes-with-typescript.sh""#
+        run = ci.workflowScript("compare-restored-document-cursors-and-broken-suffixes-with-typescript.sh")
       }
     }
   }
@@ -285,7 +285,7 @@ jobs {
       new Dynamic {
         name = "Check immutable binding traces and witness unsafe scopes"
         env { ALLOY_SHA256 = "6037cbeee0e8423c1c468447ed10f5fcf2f2743a2ffc39cb1c81f2905c0fdb9d" }
-        run = #". "${{ env.VIZE_CI_FILES }}/check-immutable-binding-traces-and-witness-unsafe-scopes.sh""#
+        run = ci.workflowScript("check-immutable-binding-traces-and-witness-unsafe-scopes.sh")
       }
       new Dynamic {
         name = "Verify source relocation for the full 32-bit byte domain"

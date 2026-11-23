@@ -91,15 +91,15 @@ jobs {
         env {
           VIZE_INPUTS_SFCS = "${{ inputs.sfcs }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/select-exact-product-sources-and-preserve-the-separate-controller-identi.sh""#
+        run = ci.workflowScript("select-exact-product-sources-and-preserve-the-separate-controller-identi.sh")
       }
       new Dynamic {
         name = "Install the exact source-pinned provider graph"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-exact-source-pinned-provider-graph.sh""#
+        run = ci.workflowScript("install-the-exact-source-pinned-provider-graph.sh")
       }
       new Dynamic {
         name = "Refuse changed inputs, native bytes and unsupported modes"
-        run = #". "${{ env.VIZE_CI_FILES }}/refuse-changed-inputs-native-bytes-and-unsupported-modes.sh""#
+        run = ci.workflowScript("refuse-changed-inputs-native-bytes-and-unsupported-modes.sh")
       }
       new Dynamic {
         name = "Authenticate complete frozen candidate sources before any image build"
@@ -111,17 +111,17 @@ jobs {
       }
       new Dynamic {
         name = "Build normal exact base and head with equal compiler settings"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-normal-exact-base-and-head-with-equal-compiler-settings.sh""#
+        run = ci.workflowScript("build-normal-exact-base-and-head-with-equal-compiler-settings.sh")
       }
       new Dynamic {
         name = "Build separate read-buffer instrumentation after normal image sealing"
         `if` = "env.PAIRED_ROUTE == 'legacy'"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-separate-read-buffer-instrumentation-after-normal-image-sealing.sh""#
+        run = ci.workflowScript("build-separate-read-buffer-instrumentation-after-normal-image-sealing.sh")
       }
       new Dynamic {
         name = "Build separate allocation and custody roles after both normal images are sealed"
         `if` = "env.PAIRED_ROUTE == 'candidate'"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-separate-allocation-and-custody-roles-after-both-normal-images-are.sh""#
+        run = ci.workflowScript("build-separate-allocation-and-custody-roles-after-both-normal-images-are.sh")
       }
       new Dynamic {
         uses = "actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c"
@@ -134,17 +134,17 @@ jobs {
       new Dynamic {
         name = "Require original controls and full output before eight candidate primaries and separate profile blocks"
         `if` = "env.PAIRED_ROUTE == 'candidate'"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-original-controls-and-full-output-before-eight-candidate-primari.sh""#
+        run = ci.workflowScript("require-original-controls-and-full-output-before-eight-candidate-primari.sh")
       }
       new Dynamic {
         name = "Require full output and read ownership observations before four balanced pairs"
         `if` = "env.PAIRED_ROUTE == 'legacy'"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-full-output-and-read-ownership-observations-before-four-balanced.sh""#
+        run = ci.workflowScript("require-full-output-and-read-ownership-observations-before-four-balanced.sh")
       }
       new Dynamic {
         name = "Preserve every raw pair, native observation, control and source receipt"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-every-raw-pair-native-observation-control-and-source-receipt.sh""#
+        run = ci.workflowScript("preserve-every-raw-pair-native-observation-control-and-source-receipt.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -206,38 +206,38 @@ jobs {
       ci.wild()
       new Dynamic {
         name = "Validate the full SFC cohort"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-the-full-sfc-cohort.sh""#
+        run = ci.workflowScript("validate-the-full-sfc-cohort.sh")
       }
       new Dynamic {
         name = "Install fixed comparison providers"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-fixed-comparison-providers.sh""#
+        run = ci.workflowScript("install-fixed-comparison-providers.sh")
       }
       new Dynamic {
         name = "Build the exact base and head with equal symbol settings"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-exact-base-and-head-with-equal-symbol-settings.sh""#
+        run = ci.workflowScript("build-the-exact-base-and-head-with-equal-symbol-settings.sh")
       }
       new Dynamic {
         name = "Compare fresh processes and independent authored diagnostic controls"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-fresh-processes-and-independent-authored-diagnostic-controls.sh""#
+        run = ci.workflowScript("compare-fresh-processes-and-independent-authored-diagnostic-controls.sh")
       }
       new Dynamic {
         name = "Build allocation instrumentation separately from timing binaries"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-allocation-instrumentation-separately-from-timing-binaries.sh""#
+        run = ci.workflowScript("build-allocation-instrumentation-separately-from-timing-binaries.sh")
       }
       new Dynamic {
         name = "Capture paired Rust allocation spans without CPU sampling overhead"
         `timeout-minutes` = 10
-        run = #". "${{ env.VIZE_CI_FILES }}/capture-paired-rust-allocation-spans-without-cpu-sampling-overhead.sh""#
+        run = ci.workflowScript("capture-paired-rust-allocation-spans-without-cpu-sampling-overhead.sh")
       }
       new Dynamic {
         name = "Capture direct normal-process PMU counters and bounded source stacks"
         `timeout-minutes` = 15
-        run = #". "${{ env.VIZE_CI_FILES }}/capture-direct-normal-process-pmu-counters-and-bounded-source-stacks.sh""#
+        run = ci.workflowScript("capture-direct-normal-process-pmu-counters-and-bounded-source-stacks.sh")
       }
       new Dynamic {
         name = "Package evidence without traversing workspace links"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-evidence-without-traversing-workspace-links.sh""#
+        run = ci.workflowScript("package-evidence-without-traversing-workspace-links.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

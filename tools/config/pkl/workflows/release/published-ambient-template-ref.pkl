@@ -100,7 +100,7 @@ jobs {
       new Dynamic {
         name = "Retain complete raw outcomes, original phase inputs and installed custody"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-complete-raw-outcomes-original-phase-inputs-and-installed-custody.sh""#
+        run = ci.workflowScript("retain-complete-raw-outcomes-original-phase-inputs-and-installed-custody.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

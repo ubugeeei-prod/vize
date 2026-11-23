@@ -39,7 +39,7 @@ jobs {
       }
       new Dynamic {
         name = "Build both source configuration adapters"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-both-source-configuration-adapters.sh""#
+        run = ci.workflowScript("build-both-source-configuration-adapters.sh")
       }
       new Dynamic {
         name = "Install the exact released reproduction"

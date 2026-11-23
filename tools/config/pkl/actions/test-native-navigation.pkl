@@ -1,3 +1,5 @@
+import "../Actions.pkl" as ci
+
 name = "Test native Program and Vue navigation"
 description = "Query actual retained native owners through source and complete RPC laws"
 runs {
@@ -6,7 +8,7 @@ runs {
     new Dynamic {
       name = "Test retained native navigation owners and responses"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/test-retained-native-navigation-owners-and-responses.sh""#
+      run = ci.actionScript("test-retained-native-navigation-owners-and-responses.sh")
     }
   }
 }

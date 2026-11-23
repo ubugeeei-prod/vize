@@ -50,6 +50,7 @@ on:
       - davinci/vize_l4/src/write/source_map.rs
       - davinci/vize_l4/src/write/source_map/**
       - tests/formal/source-map/**
+      - tests/formal/style-format/**
       - crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json
       - crates/vize_atelier_sfc/tests/scss_products.rs
       - crates/vize_atelier_sfc/tests/observed_scss/**
@@ -154,7 +155,7 @@ jobs:
       - name: Compare the original preprocessor, shared products and authored editor locations
         run: . "${{ env.VIZE_CI_FILES }}/compare-the-original-preprocessor-shared-products-and-authored-editor-locations.sh"
   authored-coordinates:
-    name: Authored UTF-16 coordinate proofs
+    name: Authored coordinates and style header proofs
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
@@ -180,5 +181,7 @@ jobs:
           kani-version: 0.68.0
           command: kani
           args: davinci/vize_l4/src/write/source_map/indexed/kani.rs --output-format=terse
-      - name: Verify authored positions for arbitrary finite Unicode text
-        run: . "${{ env.VIZE_CI_FILES }}/verify-authored-positions-for-arbitrary-finite-unicode-text.sh"
+      - name: Verify authored style attribute names, values and ordering
+        run: kani crates/vize_maestro/src/source_project/style_format/kani.rs --output-format=terse
+      - name: Verify source positions and style attributes for arbitrary finite input
+        run: . "${{ env.VIZE_CI_FILES }}/verify-source-coordinates-and-style-headers.sh"

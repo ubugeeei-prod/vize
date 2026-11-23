@@ -40,15 +40,15 @@ jobs {
       }
       new Dynamic {
         name = "Pin the original normal source and carrier without changing compiler flags"
-        run = #". "${{ env.VIZE_CI_FILES }}/pin-the-original-normal-source-and-carrier-without-changing-compiler-fla.sh""#
+        run = ci.workflowScript("pin-the-original-normal-source-and-carrier-without-changing-compiler-fla.sh")
       }
       new Dynamic {
         name = "Build fresh normal images and retain exact artifact manifests"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-fresh-normal-images-and-retain-exact-artifact-manifests.sh""#
+        run = ci.workflowScript("build-fresh-normal-images-and-retain-exact-artifact-manifests.sh")
       }
       new Dynamic {
         name = "Correlate normal allocator shims and recovery code without executing a timing window"
-        run = #". "${{ env.VIZE_CI_FILES }}/correlate-normal-allocator-shims-and-recovery-code-without-executing-a-t.sh""#
+        run = ci.workflowScript("correlate-normal-allocator-shims-and-recovery-code-without-executing-a-t.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

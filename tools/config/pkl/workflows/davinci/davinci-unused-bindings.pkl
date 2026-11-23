@@ -75,7 +75,7 @@ jobs {
       }
       new Dynamic {
         name = "Start fresh Cargo unit evidence"
-        run = #". "${{ env.VIZE_CI_FILES }}/start-fresh-cargo-unit-evidence.sh""#
+        run = ci.workflowScript("start-fresh-cargo-unit-evidence.sh")
       }
       new Dynamic {
         name = "Check independent specs and real rule dispatch"
@@ -83,7 +83,7 @@ jobs {
         env {
           VIZE_DAVINCI_FACT_CORPUS = "tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/check-independent-specs-and-real-rule-dispatch.sh""#
+        run = ci.workflowScript("check-independent-specs-and-real-rule-dispatch.sh")
       }
       new Dynamic {
         name = "Compare the same complete fact specs under both profiles"
@@ -95,11 +95,11 @@ jobs {
       }
       new Dynamic {
         name = "Build the real CLI"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-real-cli.sh""#
+        run = ci.workflowScript("build-the-real-cli.sh")
       }
       new Dynamic {
         name = "Recall every class-b mutation and reject wrong diagnostic identities"
-        run = #". "${{ env.VIZE_CI_FILES }}/recall-every-class-b-mutation-and-reject-wrong-diagnostic-identities.sh""#
+        run = ci.workflowScript("recall-every-class-b-mutation-and-reject-wrong-diagnostic-identities.sh")
       }
       new Dynamic {
         name = "Collect only emitted Cargo unit fingerprints"

@@ -66,7 +66,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare complete original projection outcomes and repeated queries"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-complete-original-projection-outcomes-and-repeated-queries.sh""#
+        run = ci.workflowScript("compare-complete-original-projection-outcomes-and-repeated-queries.sh")
       }
     }
   }

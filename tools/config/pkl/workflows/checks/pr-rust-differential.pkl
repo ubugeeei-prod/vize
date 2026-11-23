@@ -84,7 +84,7 @@ jobs {
       }
       new Dynamic {
         name = "Materialize affected Rust plan"
-        run = #". "${{ env.VIZE_CI_FILES }}/materialize-affected-rust-plan.sh""#
+        run = ci.workflowScript("materialize-affected-rust-plan.sh")
       }
       new Dynamic {
         name = "Run affected feature and production corpora"
@@ -110,7 +110,7 @@ jobs {
         name = "Require Rust differential test cases"
         id = "cases"
         `if` = "${{ !cancelled() && matrix.lane != 'none' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-differential-test-cases.sh""#
+        run = ci.workflowScript("require-differential-test-cases.sh")
       }
       new Dynamic {
         name = "Upload Rust differential test cases"

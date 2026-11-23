@@ -47,23 +47,23 @@ jobs {
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
       ci.workspaceVp()
       new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
-      new Dynamic { run = #". "${{ env.VIZE_CI_FILES }}/coverage-rustup-toolchain-install-rustup-show-active-too.sh""# }
+      new Dynamic { run = ci.workflowScript("coverage-rustup-toolchain-install-rustup-show-active-too.sh") }
       new Dynamic {
         name = "Verify exact token, version, UTF16 and duplicate controls"
         run = "vp exec node --test tests/tooling/lsp-diagnostic-capacity-oracle.test.ts tests/tooling/lsp-diagnostic-capacity-socket.test.ts tests/tooling/lsp-diagnostic-capacity-workflow.test.ts"
       }
       new Dynamic {
         name = "Prove the same conservation law fails on the original scheduler"
-        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-same-conservation-law-fails-on-the-original-scheduler.sh""#
+        run = ci.workflowScript("prove-the-same-conservation-law-fails-on-the-original-scheduler.sh")
       }
       new Dynamic {
         name = "Build the exact source once in its own target"
         env { SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-exact-source-once-in-its-own-target.sh""#
+        run = ci.workflowScript("build-the-exact-source-once-in-its-own-target.sh")
       }
       new Dynamic {
         name = "Preserve scheduler/version/cancellation laws"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-scheduler-version-cancellation-laws.sh""#
+        run = ci.workflowScript("preserve-scheduler-version-cancellation-laws.sh")
       }
       new Dynamic {
         name = "Observe all native errors, complete repairs and checked idle"

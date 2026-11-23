@@ -56,15 +56,15 @@ jobs {
       ci.command("Install frozen workspace tools", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Verify complete analyzer reset and file ID reuse"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-complete-analyzer-reset-and-file-id-reuse.sh""#
+        run = ci.workflowScript("verify-complete-analyzer-reset-and-file-id-reuse.sh")
       }
       new Dynamic {
         name = "Build and receipt the actual source CLI"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-actual-source-cli.sh""#
+        run = ci.workflowScript("build-and-receipt-the-actual-source-cli.sh")
       }
       new Dynamic {
         name = "Verify descriptor and complete report regressions"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-descriptor-and-complete-report-regressions.sh""#
+        run = ci.workflowScript("verify-descriptor-and-complete-report-regressions.sh")
       }
       new Dynamic {
         name = "Compare complete public and source CLI packets with the actual WASM reference"
@@ -72,7 +72,7 @@ jobs {
       }
       new Dynamic {
         name = "Build and observe the optimized source dependency phases"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-observe-the-optimized-source-dependency-phases.sh""#
+        run = ci.workflowScript("build-and-observe-the-optimized-source-dependency-phases.sh")
       }
       new Dynamic {
         name = "Preserve complete packets, provider identities and phase profiles"
@@ -122,7 +122,7 @@ jobs {
       ci.command("Install frozen workspace tools", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Verify actual block grammars and binding owners"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-actual-block-grammars-and-binding-owners.sh""#
+        run = ci.workflowScript("verify-actual-block-grammars-and-binding-owners.sh")
       }
       ci.command("Build the existing actual WASM release configuration", "node tools/support/tasks/build-vize-wasm-package.ts")
       new Dynamic {

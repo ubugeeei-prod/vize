@@ -79,7 +79,7 @@ jobs {
       new Dynamic {
         name = "Require the whole-module policy and preserve actual execution"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-the-whole-module-policy-and-preserve-actual-execution.sh""#
+        run = ci.workflowScript("require-the-whole-module-policy-and-preserve-actual-execution.sh")
       }
       new Dynamic {
         name = "Preserve complete authored inputs, modules, maps and free-reference results"
@@ -129,15 +129,15 @@ jobs {
       ci.command("Install the pinned workspace runtime providers", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Install the independent public Vue and Vize baseline"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-independent-public-vue-and-vize-baseline.sh""#
+        run = ci.workflowScript("install-the-independent-public-vue-and-vize-baseline.sh")
       }
       new Dynamic {
         name = "Build the exact candidate native compiler"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-exact-candidate-native-compiler.sh""#
+        run = ci.workflowScript("build-the-exact-candidate-native-compiler.sh")
       }
       new Dynamic {
         name = "Execute complete modules under the actual Vue runtimes"
-        run = #". "${{ env.VIZE_CI_FILES }}/execute-complete-modules-under-the-actual-vue-runtimes.sh""#
+        run = ci.workflowScript("execute-complete-modules-under-the-actual-vue-runtimes.sh")
       }
       new Dynamic {
         name = "Preserve complete public and candidate modules, graphs and actual runtime observations"

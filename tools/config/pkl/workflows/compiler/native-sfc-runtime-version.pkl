@@ -53,12 +53,12 @@ jobs {
       ci.command("Build the actual source-native package", "vp run --filter './npm/native' build:ci")
       new Dynamic {
         name = "Seal the selected image and exact source"
-        run = #". "${{ env.VIZE_CI_FILES }}/seal-the-selected-image-and-exact-source.sh""#
+        run = ci.workflowScript("seal-the-selected-image-and-exact-source.sh")
       }
       new Dynamic {
         name = "Verify runtime selectors, all native paths and whole outputs"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-runtime-selectors-all-native-paths-and-whole-outputs.sh""#
+        run = ci.workflowScript("verify-runtime-selectors-all-native-paths-and-whole-outputs.sh")
       }
       new Dynamic {
         name = "Preserve source identity and all observations"

@@ -15,7 +15,7 @@ runs {
       name = "Validate full JS partition"
       shell = "bash"
       env { VIZE_JS_PARTITION = "${{ inputs.partition }}" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/validate-full-js-partition.sh""#
+      run = ci.actionScript("validate-full-js-partition.sh")
     }
     // Composite success() scopes to this action; also retain the outer job guard.
     new Dynamic {

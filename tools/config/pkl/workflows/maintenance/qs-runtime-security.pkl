@@ -48,7 +48,7 @@ jobs {
       ci.command("Install exact source dependencies", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Build and pack the actual MCP server"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-pack-the-actual-mcp-server.sh""#
+        run = ci.workflowScript("build-and-pack-the-actual-mcp-server.sh")
       }
       new Dynamic {
         name = "Require original negative, repaired runtime, full upstream and fresh consumer contracts"
