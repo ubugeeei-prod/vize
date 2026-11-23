@@ -93,6 +93,11 @@ pub enum NativeSfcCompileError {
     Analysis(DecisionBuildError),
     Dom(DomError),
     Assembly(AssemblyError),
+    #[cfg(feature = "native-sfc-scss")]
+    Scss {
+        container_index: usize,
+        issue: vize_l2::lang::scss::ScssRefusal,
+    },
 }
 
 /// Complete emitted module and its full-file links, with an optional v3 map.
@@ -188,9 +193,19 @@ pub fn compile_native_sfc<'a>(
 ) -> NativeSfcCompilation<'a> {
     let observation = lower_sfc_native(allocator, source, options.descriptor);
     let result = if options.source_map {
-        emit::<Recorded>(&observation, options)
+        emit::<Recorded>(
+            &observation,
+            options,
+            #[cfg(feature = "native-sfc-scss")]
+            false,
+        )
     } else {
-        emit::<NoLinks>(&observation, options)
+        emit::<NoLinks>(
+            &observation,
+            options,
+            #[cfg(feature = "native-sfc-scss")]
+            false,
+        )
     };
     NativeSfcCompilation {
         observation,
@@ -201,6 +216,7 @@ pub fn compile_native_sfc<'a>(
 fn emit<L: LinkSink>(
     observation: &NativeSfcObservation<'_>,
     options: NativeSfcCompileOptions<'_>,
+    #[cfg(feature = "native-sfc-scss")] scss: bool,
 ) -> Result<NativeSfcOutput, NativeSfcCompileError> {
     // Refusal classification reads retained block metadata, never source text
     // or an external file. It grants no descriptor or compilation authority.
@@ -237,6 +253,8 @@ fn emit<L: LinkSink>(
         observation.style_syntax(),
         scope,
         options.style_trim,
+        #[cfg(feature = "native-sfc-scss")]
+        scss,
     )?;
     if let Some(script) = observation.scripts().first()
         && (observation.scripts().len() != 1
@@ -315,3 +333,24 @@ mod scoped_tests;
 #[cfg(test)]
 mod style_tests;
 pub(crate) mod styles;
+
+/// Compile a DOM component including unscoped inline SCSS in the supported
+/// original grammar. Scripts, template and CSS maps refer to this same file.
+#[cfg(feature = "native-sfc-scss")]
+#[must_use]
+pub fn compile_native_sfc_with_scss<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: NativeSfcCompileOptions<'_>,
+) -> NativeSfcCompilation<'a> {
+    let observation = lower_sfc_native(allocator, source, options.descriptor);
+    let result = if options.source_map {
+        emit::<Recorded>(&observation, options, true)
+    } else {
+        emit::<NoLinks>(&observation, options, true)
+    };
+    NativeSfcCompilation {
+        observation,
+        result,
+    }
+}

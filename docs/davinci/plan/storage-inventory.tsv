@@ -206,7 +206,7 @@ l3	analysis	davinci/vize_l3/src/decision/dom/vue.rs	1	1	0	0	0	0	0	0
 l2_to_l3	-	davinci/vize_l2_to_l3/src/partition.rs	0	0	0	0	1	2	0	0
 l2_to_l3	contract	davinci/vize_l2_to_l3/src/partition/dump.rs	1	1	0	0	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/css.rs	0	0	1	4	0	0	0	0
-l4	-	davinci/vize_l4/src/targets/scss.rs	0	0	1	2	0	0	0	0
+l4	-	davinci/vize_l4/src/targets/scss.rs	0	0	1	1	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact.rs	1	2	1	1	0	0	0	0
 l4	-	davinci/vize_l4/src/framework/vue/dom/budget/capture.rs	0	0	1	2	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/buf.rs	1	8	1	8	0	0	0	0

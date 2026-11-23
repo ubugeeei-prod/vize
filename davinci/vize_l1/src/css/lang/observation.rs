@@ -15,10 +15,16 @@ pub struct StyleObservation<'a> {
 #[derive(Clone, Copy)]
 pub struct OriginalStyleStructure<'s, 'a> {
     language: StyleLanguage,
+    block: SourceBlock<'a>,
     sheet: &'s StyleSheet<'a>,
 }
 
 impl<'s, 'a> OriginalStyleStructure<'s, 'a> {
+    /// The exact original block whose grammar produced this tree.
+    pub const fn block(self) -> SourceBlock<'a> {
+        self.block
+    }
+
     /// The original block's CSS dialect.
     pub const fn language(self) -> StyleLanguage {
         self.language
@@ -57,6 +63,7 @@ impl<'a> StyleObservation<'a> {
         let sheet = language.structure(block.source(), block.start());
         let product = visit(OriginalStyleStructure {
             language,
+            block,
             sheet: &sheet,
         });
         let classes = match language {
@@ -104,6 +111,7 @@ impl StyleLanguage {
         let sheet = self.structure(block.source(), block.start());
         visit(OriginalStyleStructure {
             language: self,
+            block,
             sheet: &sheet,
         })
     }
