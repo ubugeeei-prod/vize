@@ -48,6 +48,12 @@ On Apple arm64 a 256-sibling scan visited 32,896 rows. Memoizing each start and 
 
 On Linux x86-64 the same 32,896 results took 485,824 ns with memoization at every start and 379,985 ns with the batch reader. Peak bytes fell from 940,472 to 5,376 and allocation calls from 5,046 to 3,847. [Linux measurement and corpus checks](https://github.com/ubugeeei-prod/vize/actions/runs/45029702414/job/137230353875)
 
+## Recovery records at editor cursors
+
+A damaged template can retain overlapping primary diagnostics, secondary labels and zero-width insertion points. An editor can ask for any sorted batch of file-absolute UTF-8 offsets in the current block. The visitor projects each original record once, finds the contiguous range of matching cursor indices, and lends the original record and spelling to the caller. Holes precede diagnostics, and each diagnostic precedes its parts and witness links. Duplicate cursors share the projection and keep their original positions. Rejecting an invalid offset before visiting protects consumers that stop on their first answer.
+
+A nonempty range contains its start and excludes its end. A zero-width recovery site covers its insertion point, including one at the end of the source. Roslyn's position containment and rust-analyzer's separate half-open and inclusive containment operations informed this choice. The Lean theorem `recovery_cursor_window` proves that the two boundaries select the same ordered cursor list as independent containment checks, including duplicates. [Roslyn TextSpan](https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.text.textspan?view=roslyn-dotnet-5.0.0), [rust-analyzer TextRange](https://rust-lang.github.io/rust-analyzer/text_size/struct.TextRange.html).
+
 ## Typed two-edge patterns
 
 Both legs choose a direction and edge kinds. The shared adjacency lists yield the intermediate operation, then its eligible second edges, in original row order. A consumer can stop on its first match. A complete response can be independently checked against the Cartesian product of the original relationship rows, including unmatched or malformed endpoints. The checker is for qualification or consumers requiring certification. Enumerating matches only needs the adjacency index and constant additional space.
