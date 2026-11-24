@@ -56,6 +56,7 @@ on {
       "davinci/vize_l4/src/write/source_map/**"
       "tests/formal/source-map/**"
       "tests/formal/style-format/**"
+      "crates/vize_atelier_sfc/tests/fixtures/compile-history/cases.json"
       "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json"
       "crates/vize_atelier_sfc/tests/scss_products.rs"
       "crates/vize_atelier_sfc/tests/observed_scss/**"

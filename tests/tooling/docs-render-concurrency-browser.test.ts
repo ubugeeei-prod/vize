@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -53,6 +53,10 @@ async function prepareLocaleControls(dir: string) {
     await mkdir(path.dirname(destination), { recursive: true });
     await writeFile(destination, await readFile(path.join(root, "docs/theme", name)));
   }
+  await copyFile(
+    new URL("./fixtures/docs-locale-theme-toggle.js", import.meta.url),
+    path.join(dir, "locale-fixture/theme-toggle.js"),
+  );
   const html = `<!doctype html><html data-theme="light"><head><meta charset="utf-8"><title>Locale fixture</title>
     <link rel="stylesheet" href="/locale-fixture/i18n/locale-selector.css">
     <style>
@@ -75,11 +79,7 @@ async function prepareLocaleControls(dir: string) {
     </div></header><main class="content"><h1>Locale fixture</h1>
     <a href="/linked/#anchor">Linked page</a></main><button data-mobile-theme>Theme</button>
     ${scripts.map((name) => `<script src="/locale-fixture/${name}.js"></script>`).join("\n")}
-    <script>document.addEventListener("click", (event) => {
-      if (event.target.closest(".theme-toggle, [data-mobile-theme]"))
-        document.documentElement.dataset.theme =
-          document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-    });</script></body></html>`;
+    <script src="/locale-fixture/theme-toggle.js"></script></body></html>`;
   for (const locale of ["en", "ja", "zh-CN", "pt-BR", "fr"]) {
     const destination = path.join(dir, locale === "en" ? "" : locale, "getting-started");
     await mkdir(destination, { recursive: true });
