@@ -50,7 +50,8 @@ jobs {
         }
       }
       new Dynamic {
-        run = "vp install --filter vize-workspace --filter '@vize/tests' --filter '@vizejs/rspack-plugin...' --filter '@vizejs/turbopack-plugin...' --frozen-lockfile --prefer-offline"
+        name = "Install consumer dependencies"
+        run = ci.workflowScript("install-consumer-dependencies.sh")
       }
       ci.command("Build the actual source native image", "vp run --filter @vizejs/native build:ci")
       ci.command("Seal native image and source identity", "node npm/native/scripts/native-build-receipt.mjs")

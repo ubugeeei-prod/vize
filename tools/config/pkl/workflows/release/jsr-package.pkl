@@ -67,7 +67,7 @@ jobs {
       }
       new Dynamic {
         name = "Test package generation"
-        run = "node --test tests/tooling/jsr-package.test.ts tests/tooling/jsr-public-preview-consumers.test.ts tests/tooling/release-jsr-workflow.test.ts tests/tooling/jsr-fresh-provenance.test.ts"
+        run = ci.workflowScript("test-package-generation.sh")
       }
       new Dynamic {
         name = "Verify scoped dependency age with the actual Deno runtime"

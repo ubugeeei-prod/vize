@@ -194,7 +194,7 @@ jobs:
         run: xvfb-run -a node test/run-extension-host-real.mjs
       - name: Verify the full host used this source-built binary
         if: matrix.client == 'vscode'
-        run: node tests/editor-conformance/server-artifact.ts scorecard "${RUNNER_TEMP}/vize-server/server.json" "${RUNNER_TEMP}/vscode-full-host/host-result.json" "$GITHUB_SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/verify-the-full-host-used-this-source-built-binary.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() && matrix.client == 'vscode' }}
         with:

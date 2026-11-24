@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+node npm/native/scripts/test-preparation.mjs node npm/formatter/prettier/test/consumer.mjs \
+  --mode source-native \
+  --expected-node 24.14.0 \
+  --output "$RUNNER_TEMP/prettier-source-consumer"
