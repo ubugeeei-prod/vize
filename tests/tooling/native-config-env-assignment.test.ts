@@ -21,7 +21,7 @@ for (const initial of [undefined, "before"]) {
         config,
         `${assignment}\nexport default { vue: { formatter: { printWidth: process.env.${variable} === "after" ? 93 : 80 } } };\n`,
       );
-      const env = { ...process.env, VIZE_RECORD_CONFIG_INPUTS: "1" };
+      const env: NodeJS.ProcessEnv = { ...process.env, VIZE_RECORD_CONFIG_INPUTS: "1" };
       if (initial === undefined) delete env[variable];
       else env[variable] = initial;
       const result = spawnSync(process.execPath, [await nativeLoaderPath(), config], {
