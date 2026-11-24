@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-if [[ -d "$RUNNER_TEMP/slot-instance-public" ]]; then
-  tar --exclude=node_modules --exclude=registry-installation -czf "$RUNNER_TEMP/slot-instance-public.tgz" -C "$RUNNER_TEMP" slot-instance-public
-fi

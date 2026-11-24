@@ -18,7 +18,7 @@ type Context = {
 };
 const repository = "ubugeeei-prod/vize";
 const candidate = "6c1c5b386c56745fcb0e7e28feedb930b1a51606";
-const filenames = ["release-contracts.yml", "public-native-events.yml"] as const;
+const filenames = ["release-contracts.yml"] as const;
 const workflows = filenames.map((filename) => ({
   filename,
   workflow: parse(readAutomationPrograms(".github", "workflows", filename)) as Workflow,
@@ -179,9 +179,7 @@ test("ordinary PR and manual release-unit checks remain enabled", () => {
 });
 
 test("custom-property qualification requires the explicit main after request", () => {
-  const workflow = workflows.find(
-    (entry) => entry.filename === "public-native-events.yml",
-  )?.workflow;
+  const workflow = workflows.find((entry) => entry.filename === "release-contracts.yml")?.workflow;
   assert.ok(workflow);
   const job = workflow.jobs["public-custom-properties"];
   assert.ok(job);

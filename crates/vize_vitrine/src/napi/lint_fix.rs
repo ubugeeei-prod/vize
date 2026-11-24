@@ -56,6 +56,10 @@ pub(super) fn lint_source(
         linter.lint_standalone_html(source, filename)
     } else if FileKind::of_path(Path::new(filename)) == Some(FileKind::Tsrx) {
         linter.lint_tsrx(source, filename)
+    } else if filename.ends_with(".jsx") {
+        linter.lint_jsx(source, filename, vize_patina::JsxLang::Jsx)
+    } else if filename.ends_with(".tsx") {
+        linter.lint_jsx(source, filename, vize_patina::JsxLang::Tsx)
     } else if is_script_filename(filename) {
         linter.lint_script(source, filename)
     } else {
@@ -184,6 +188,43 @@ mod tests {
         assert_eq!(routed, rows(linter.lint_tsrx(source, "List.tsrx")));
         let rules: Vec<_> = routed.iter().map(|(rule, _, _)| *rule).collect();
         assert_eq!(rules, ["vue/require-v-for-key", "vue/no-multi-spaces"]);
+    }
+
+    #[test]
+    fn jsx_modules_share_markup_diagnostics_with_the_cli_linter() {
+        let source = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/native-jsx-routing-13540/BrokenMedia.tsx.txt"
+        ));
+        let linter = Linter::new();
+        for (filename, lang) in [
+            ("BrokenMedia.jsx", vize_patina::JsxLang::Jsx),
+            ("BrokenMedia.tsx", vize_patina::JsxLang::Tsx),
+        ] {
+            let rows = |result: vize_patina::LintResult| -> Vec<_> {
+                result
+                    .diagnostics
+                    .into_iter()
+                    .map(|diagnostic| {
+                        (
+                            diagnostic.rule_name,
+                            diagnostic.start,
+                            diagnostic.end,
+                            diagnostic.message,
+                        )
+                    })
+                    .collect()
+            };
+            let routed = rows(lint_source(&linter, source, filename));
+            assert_eq!(routed, rows(linter.lint_jsx(source, filename, lang)));
+            assert_eq!(
+                routed
+                    .iter()
+                    .map(|(rule, _, _, _)| *rule)
+                    .collect::<Vec<_>>(),
+                ["a11y/alt-text", "a11y/no-access-key", "a11y/no-autofocus"]
+            );
+        }
     }
 
     #[test]

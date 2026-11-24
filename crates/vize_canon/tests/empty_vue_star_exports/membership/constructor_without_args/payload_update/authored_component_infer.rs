@@ -32,7 +32,23 @@ fn read_source_record(bytes: &[u8], hash: &str, schema: &str, issue: u64) -> Val
     record
 }
 
+fn script_consumed_slots_record() -> &'static Value {
+    static RECORD: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
+    RECORD.get_or_init(|| {
+        read_source_record(
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/tooling/script-consumed-slots-13578.json"
+            )),
+            "87473c12da88cdefdadb4d3fac8e2ac97c61495e45896502783c2298e7a15314",
+            "vize.scriptConsumedSlotsSource.v1",
+            13578,
+        )
+    })
+}
+
 pub(super) fn before_metadata(path: &str, current: String) -> String {
+    let current = restore_producer(path, current, script_consumed_slots_record());
     static RECORDS: std::sync::OnceLock<(Value, Value)> = std::sync::OnceLock::new();
     let (metadata, default_expression) = RECORDS.get_or_init(|| {
         (
@@ -107,6 +123,33 @@ fn restore_producer(path: &str, current: String, record: &Value) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn script_consumed_slots_restore_only_the_exact_recorded_producers() {
+        let record = script_consumed_slots_record();
+        for file in record["files"].as_array().unwrap() {
+            let path = file["path"].as_str().unwrap();
+            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            assert!(is_after(&current, file), "{path}");
+            let previous = restore_producer(path, current.clone(), record);
+            assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);
+            assert_eq!(restore_producer(path, previous.clone(), record), previous);
+            assert_eq!(
+                restore_producer("other.rs", current.clone(), record),
+                current
+            );
+            for mutated in [format!("{current}{current}"), format!("{current}\n")] {
+                assert_eq!(restore_producer(path, mutated.clone(), record), mutated);
+                assert!(std::panic::catch_unwind(|| restore(&mutated, file)).is_err());
+            }
+            for hunk in file["hunks"].as_array().unwrap() {
+                let after = hunk["after"].as_str().unwrap();
+                let mutated = current.replacen(after, "", 1);
+                assert_eq!(restore_producer(path, mutated.clone(), record), mutated);
+                assert!(std::panic::catch_unwind(|| restore(&mutated, file)).is_err());
+            }
+        }
+    }
 
     #[test]
     fn recorded_producer_restores_its_exact_predecessor() {

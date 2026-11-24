@@ -114,8 +114,8 @@ const semanticObligations = [
     requirement: "Native attributes and events remain distinct from component props and emits.",
     issues: [11655, 13018],
     evidenceCandidates: [
-      ".github/workflows/public-native-events.yml",
       "crates/vize/tests/content_mapper_tsgo_cli/shared_helpers_performance/open_component_event_contracts.rs",
+      "crates/vize/tests/lsp_component_native_events_cli.rs",
     ],
   },
   {

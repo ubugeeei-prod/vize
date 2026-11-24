@@ -14,6 +14,7 @@ import {
   normalizePrecompileBatchSize,
 } from "./state.ts";
 import { CompiledModuleCache } from "./compiled-module-cache.ts";
+import { processFilesystemEpoch } from "./filesystem-epoch.ts";
 import { compileAll, PrecompileDiagnosticsError } from "./precompile-run.ts";
 import { precompileInputOwners } from "./precompile-owner.ts";
 import { resolveIdHook } from "./resolve.ts";
@@ -72,9 +73,10 @@ export function vize(
   const state: VizePluginState = {
     // Indexed maps: hot updates need the SFCs owning a changed `src` dependency
     // in constant time rather than by scanning both caches. See
-    // `compiled-module-cache.ts`.
-    cache: new CompiledModuleCache(),
-    ssrCache: new CompiledModuleCache(),
+    // `compiled-module-cache.ts`. Both resolve path identities in the process
+    // epoch, which the hooks below end on every sign of a filesystem change.
+    cache: new CompiledModuleCache(processFilesystemEpoch),
+    ssrCache: new CompiledModuleCache(processFilesystemEpoch),
     collectedCss: new Map(),
     precompileMetadata: new Map(),
     ssrPrecompileMetadata: new Map(),
@@ -139,6 +141,8 @@ export function vize(
     },
 
     async configResolved(resolvedConfig: ResolvedConfig) {
+      // A build or a dev server begins: nothing observed earlier is assumed.
+      processFilesystemEpoch.advance();
       precompileConfig = resolvedConfig;
       state.root = options.root ?? resolvedConfig.root;
       state.viteCacheDir = resolvedConfig.cacheDir;
@@ -285,11 +289,16 @@ export function vize(
 
     configureServer(devServer: ViteDevServer) {
       state.server = devServer;
+      // Vite forwards file events to `watchChange`, but not directory events,
+      // and a remounted workspace link is a directory event.
+      devServer.watcher.on("all", () => processFilesystemEpoch.advance());
       configBridge.configureServerCleanup(devServer);
       installDevMiddleware(devServer, state);
     },
 
     async buildStart() {
+      // Without a Vite config resolution (standalone Rolldown), a build begins here.
+      if (!state.initialized) processFilesystemEpoch.advance();
       resetTypeProjectWatches(state.cache);
       state.viteResolveCache?.clear();
       if (!state.scanPatterns || state.scanPatterns.length === 0) {
@@ -334,7 +343,12 @@ export function vize(
       });
     },
 
+    watchChange() {
+      processFilesystemEpoch.advance();
+    },
+
     async hotUpdate(options) {
+      processFilesystemEpoch.advance();
       return handleHotUpdateEnvironmentHook(state, this.environment, options);
     },
 
@@ -345,6 +359,7 @@ export function vize(
     // Vite 7.3+ prefers `hotUpdate` when both hooks exist. Keep this deprecated
     // shim for plugin-vue drop-in compatibility and older Vite integrations.
     async handleHotUpdate(ctx) {
+      processFilesystemEpoch.advance();
       const container =
         ctx.server.environments?.client?.pluginContainer ?? ctx.server.pluginContainer;
       return handleHotUpdateHook(state, ctx, {

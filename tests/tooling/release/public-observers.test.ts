@@ -23,7 +23,7 @@ type Workflow = {
   };
   jobs: Record<string, Job>;
 };
-const files = ["public-native-events.yml", "release-contracts.yml"] as const;
+const files = ["release-contracts.yml"] as const;
 const iconStep = "Qualify independent published icon class packets";
 const iconProof = "Prove the candidate contains the required icon source";
 const sdkStep = "Qualify independent published canonical SDK";
@@ -45,6 +45,16 @@ const workflows = files.map((file) => ({
     ),
   ) as Workflow,
 }));
+// The retired public-native-events workflow carried the original custom-properties job.
+const eventsBefore = parse(
+  readRepoFile(
+    "tests",
+    "tooling",
+    "fixtures",
+    "release-public-observers",
+    "public-native-events.before.yml.txt",
+  ),
+) as Workflow;
 
 function job(workflow: Workflow, name: string): Job {
   const result = workflow.jobs[name];
@@ -117,10 +127,6 @@ function retainedCore(file: (typeof files)[number], current: Workflow): Workflow
       .replace(testPath + " ", "")
       .replace("tests/tooling/release/public-type-admission.test.ts ", "")
       .replace("tests/tooling/release/public-type-admission-capability.test.ts ", "");
-  } else {
-    retained.jobs["public-custom-properties"] = withoutSDK(
-      job(retained, "public-custom-properties"),
-    );
   }
   return retained;
 }
@@ -161,12 +167,11 @@ test("optional observers retain every original and current core workflow contrac
   for (const { file, current, before } of workflows) {
     assert.deepEqual(retainedCore(file, current), currentCore(file, before), file);
   }
-  const wrapper = workflows[1];
-  const events = workflows[0];
-  assert.ok(wrapper && events);
+  const wrapper = workflows[0];
+  assert.ok(wrapper);
   assert.deepEqual(
     withoutSDK(job(wrapper.current, "public-custom-properties")),
-    job(events.before, "public-custom-properties"),
+    job(eventsBefore, "public-custom-properties"),
   );
 });
 
@@ -305,7 +310,7 @@ test("the actual embedded icon-source validator rejects unrelated comparisons", 
 });
 
 test("current core rejects missing, duplicated, or unrelated publication checks", () => {
-  const fixture = workflows[1];
+  const fixture = workflows[0];
   assert.ok(fixture);
   const { file, current, before } = fixture;
   for (const mutation of [

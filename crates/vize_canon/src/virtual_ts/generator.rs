@@ -122,14 +122,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
     let (template_usage_names, template_value_usage_names, has_template_scope) =
         template_usage(summary, template_ast, generation_options);
-    let inferred_slots = component_public_types::infers_slots(summary, template_ast, check_options);
-    let mut setup_imports = SetupImportPlan::new(
-        script_content,
-        summary,
-        template_ast,
-        inferred_slots,
-        check_options,
-    );
+    let mut setup_imports =
+        SetupImportPlan::new(script_content, summary, template_ast, check_options);
+    let inferred_slots = setup_imports.infers_slots();
     let lib_references = generation_options
         .lib_references
         .unwrap_or(DEFAULT_LIB_REFERENCES);
@@ -792,6 +787,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 && component_public_types::uses_module_scoped_authored_slots_binding(summary),
             options_api_slots: options_api && generation_options.projects_editor_component(),
             inferred_slots,
+            untyped_script_slots: setup_imports.has_untyped_script_slots(),
         },
     );
     let (has_exposed_type, exposed_is_generic) =

@@ -161,11 +161,6 @@ void test("Release-blocking observers and Fresco use the recovery adapter", () =
       local,
       ["published-sdk-packets", "unchanged-projection-packets"],
     ],
-    [
-      ".github/workflows/corsa-package-refresh.yml",
-      local,
-      ["attribution", "import-literal-geometry", "projection-import-geometry"],
-    ],
     [".github/workflows/cross-file-script-offset.yml", local, ["coordinates"]],
     [".github/workflows/davinci-plugin-sdk.yml", local, ["plugin-contracts"]],
     [".github/workflows/davinci-unused-bindings.yml", local, ["unused-bindings"]],

@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-node tools/support/release/public_native_events/verify.ts \
-  "$RUNNER_TEMP/public-event-consumer" "$PUBLIC_VERSION" "$PUBLIC_PHASE" \
-  "$RUNNER_TEMP/event-receipts/consumer.json" "$RUNNER_TEMP/event-receipts/release-identity.json"
