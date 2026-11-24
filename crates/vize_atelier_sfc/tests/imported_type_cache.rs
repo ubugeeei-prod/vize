@@ -11,7 +11,7 @@ use vize_atelier_sfc::{
     SfcCompileOptions, SfcCompileResult, SfcParseOptions, begin_type_resolution_batch, compile_sfc,
     parse_sfc,
 };
-use vize_l0::ToCompactString;
+use vize_l0::{ToCompactString, cstr};
 
 /// A batch is process-wide: a test that opens one, or that expects a compile
 /// outside every batch, must not overlap another.
@@ -98,14 +98,13 @@ fn write_shared_types_project(project: &Path) -> Vec<(PathBuf, String)> {
     .unwrap();
     let mut barrel = String::new();
     for index in 0..12 {
-        let model =
-            vize_l0::cstr!("export interface Model{index} {{\n  field{index}: string;\n}}\n");
+        let model = cstr!("export interface Model{index} {{\n  field{index}: string;\n}}\n");
         std::fs::write(
-            src.join(vize_l0::cstr!("models/Model{index}.ts").as_str()),
+            src.join(cstr!("models/Model{index}.ts").as_str()),
             model.as_str(),
         )
         .unwrap();
-        barrel.push_str(vize_l0::cstr!("export * from \"./Model{index}\";\n").as_str());
+        barrel.push_str(cstr!("export * from \"./Model{index}\";\n").as_str());
     }
     std::fs::write(src.join("models/index.ts"), barrel).unwrap();
     std::fs::write(
@@ -125,7 +124,7 @@ fn write_shared_types_project(project: &Path) -> Vec<(PathBuf, String)> {
     .unwrap();
 
     let component = |path: &str, script: &str| {
-        let source = vize_l0::cstr!(
+        let source = cstr!(
             "<script setup lang=\"ts\">\n{script}\n</script>\n\n<template><div /></template>\n"
         );
         let path = src.join(path);
@@ -135,16 +134,16 @@ fn write_shared_types_project(project: &Path) -> Vec<(PathBuf, String)> {
     let mut components = Vec::new();
     for index in 0..6 {
         components.push(component(
-            vize_l0::cstr!("components/Relative{index}.vue").as_str(),
+            cstr!("components/Relative{index}.vue").as_str(),
             "import type { ItemProps } from \"../types\";\nconst props = defineProps<ItemProps>();",
         ));
         components.push(component(
-            vize_l0::cstr!("components/Alias{index}.vue").as_str(),
+            cstr!("components/Alias{index}.vue").as_str(),
             "import type { ItemProps } from \"~/types\";\nconst props = defineProps<ItemProps>();",
         ));
         components.push(component(
-            vize_l0::cstr!("components/Barrel{index}.vue").as_str(),
-            vize_l0::cstr!(
+            cstr!("components/Barrel{index}.vue").as_str(),
+            cstr!(
                 "import type {{ Model{index} }} from \"../models\";\nconst props = defineProps<Model{index}>();"
             )
             .as_str(),
@@ -152,7 +151,7 @@ fn write_shared_types_project(project: &Path) -> Vec<(PathBuf, String)> {
     }
     for directory in ["left", "right"] {
         components.push(component(
-            vize_l0::cstr!("{directory}/Sibling.vue").as_str(),
+            cstr!("{directory}/Sibling.vue").as_str(),
             "import type { Props } from \"./types\";\nconst props = defineProps<Props>();",
         ));
     }
