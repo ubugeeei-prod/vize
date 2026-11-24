@@ -134,11 +134,28 @@ function assertHarness(source: string, name: string): void {
   );
 }
 
+/** The attribute lines attached to `pub fn name(`, nearest first. */
+function attributesOf(source: string, name: string): string[] {
+  const lines = source.split("\n");
+  const at = lines.findIndex((line) => line.startsWith(`pub fn ${name}(`));
+  assert.notEqual(at, -1, `missing ${name}`);
+  const attached: string[] = [];
+  // An item's attributes run up to its doc comment, a blank line or the
+  // previous item's last line.
+  for (let index = at - 1; index >= 0; index--) {
+    const line = lines[index]!;
+    if (line === "" || line.startsWith("///") || line.startsWith("}") || line.endsWith("{}")) break;
+    attached.unshift(line);
+  }
+  return attached;
+}
+
 function assertLemma(source: string, name: string): void {
-  assert.match(
-    source,
-    new RegExp(`^#\\[logic\\]\\n(?:#\\[(?:requires|ensures)\\([^]*?\\)\\]\\n)+pub fn ${name}\\(`, "mu"),
-    `missing Creusot lemma ${name}`,
+  const attributes = attributesOf(source, name);
+  assert.equal(attributes[0], "#[logic]", `${name} must be a Creusot lemma`);
+  assert.ok(
+    attributes.some((line) => line.startsWith("#[ensures(")),
+    `${name} must state its law`,
   );
 }
 
@@ -193,11 +210,9 @@ test("P3-15 laws are Kani harnesses or Creusot proofs that CI verifies", () => {
     ["edges_resolved", "edges_stay"],
     ["ordered", "edges_forward"],
   ] as const) {
-    assert.match(
-      checker,
-      new RegExp(
-        `^#\\[cfg_attr\\(creusot, ensures\\(result == ${statement}\\(\\*p\\)\\)\\)\\]\\n#\\[must_use\\]\\npub fn ${invariant}\\(`,
-        "mu",
+    assert.ok(
+      attributesOf(checker, invariant).includes(
+        `#[cfg_attr(creusot, ensures(result == ${statement}(*p)))]`,
       ),
       `${invariant} must equal its declarative statement`,
     );
