@@ -3,7 +3,7 @@ use vize_atelier_sfc::{
     NativeSfcCompileError, NativeStyleOptions, NativeStyleOutput, compile_native_styles,
 };
 use vize_l0::String;
-use vize_l1::container::vue::DescriptorObservation;
+use vize_l1::container::vue::L1Ir;
 use vize_l1_to_l2::pass::cfg::Contribution;
 use vize_maestro::source_project::SourceSnapshot;
 
@@ -14,7 +14,7 @@ struct Template {
     syntax_errors: usize,
 }
 
-fn template<'a>(arena: &'a Allocator, owner: &DescriptorObservation<'a>) -> Template {
+fn template<'a>(arena: &'a Allocator, owner: &L1Ir<'a>) -> Template {
     let selected = owner.admitted_template().unwrap().unwrap();
     let session = OriginalTemplate::analyze(arena, selected, &mut NoObserver).unwrap();
     let mut text = String::default();
@@ -26,10 +26,7 @@ fn template<'a>(arena: &'a Allocator, owner: &DescriptorObservation<'a>) -> Temp
     }
 }
 
-fn style(
-    owner: &DescriptorObservation<'_>,
-    map: bool,
-) -> Result<NativeStyleOutput, NativeSfcCompileError> {
+fn style(owner: &L1Ir<'_>, map: bool) -> Result<NativeStyleOutput, NativeSfcCompileError> {
     compile_native_styles(
         owner,
         NativeStyleOptions {
@@ -46,7 +43,7 @@ fn query<R>(
     docs: &DocumentStore,
     cache: &SourceSnapshotCache,
     uri: &Url,
-    compute: impl for<'a> FnOnce(&'a SourceSnapshot, &'a Allocator, &DescriptorObservation<'a>) -> R,
+    compute: impl for<'a> FnOnce(&'a SourceSnapshot, &'a Allocator, &L1Ir<'a>) -> R,
 ) -> SourceQueryResult<R> {
     let (query, _) = cache.begin_query(docs, uri).unwrap();
     let options = DescriptorOptions {

@@ -9,7 +9,7 @@ use vize_l0::{
 #[cfg(not(feature = "experimental-component-passes"))]
 use vize_l1::container::Vue;
 use vize_l1::{
-    container::vue::{DescriptorObservation, DescriptorOptions},
+    container::vue::{DescriptorOptions, L1Ir},
     markup::{SurfaceParseOptions, render},
 };
 use vize_l1_to_l2::pass::{cfg::DecisionKind, template::OriginalTemplate};
@@ -55,7 +55,7 @@ fn compute(
 fn template_response<'a>(
     snapshot: &SourceSnapshot,
     arena: &'a Allocator,
-    desc: &DescriptorObservation<'a>,
+    desc: &L1Ir<'a>,
 ) -> Response {
     let source = snapshot.source();
     let selected = desc.admitted_template().unwrap().unwrap();

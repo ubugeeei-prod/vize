@@ -18,9 +18,23 @@ impl TextLane {
         html: bool,
         opens_v_pre: bool,
     ) -> Self {
-        let mut lane = self.children_of(src, element, tag, html, opens_v_pre);
+        if !html {
+            // SVG and MathML inherit an enclosing HTML pre. Their own tag
+            // names never open an HTML pre or RCDATA element.
+            return Self {
+                whitespace: if self.in_pre {
+                    TextWhitespace::Pre
+                } else {
+                    TextWhitespace::Normal
+                },
+                ignore_newline_at: None,
+                frozen: self.frozen || opens_v_pre,
+                ..self
+            };
+        }
+        let mut lane = self.children_of(src, element, tag, true, opens_v_pre);
         // HTML title is RCDATA too. Unlike textarea it keeps its initial LF.
-        if html && tag == "title" {
+        if tag == "title" {
             lane.whitespace = TextWhitespace::Rcdata;
         }
         lane

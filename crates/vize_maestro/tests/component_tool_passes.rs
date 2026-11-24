@@ -15,7 +15,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::vue::{
-        DescriptorObservation, DescriptorOptions, ScriptRole,
+        DescriptorOptions, L1Ir, ScriptRole,
         boundary::{split_blocks, tag_name_eq},
     },
     markup::render,
@@ -68,7 +68,7 @@ impl Editor {
 
     fn request<R>(
         &self,
-        run: impl for<'a> FnOnce(&'a SourceSnapshot, &'a Allocator, &DescriptorObservation<'a>) -> R,
+        run: impl for<'a> FnOnce(&'a SourceSnapshot, &'a Allocator, &L1Ir<'a>) -> R,
     ) -> R {
         let (request, _) = self.cache.begin_query(&self.docs, &self.uri).unwrap();
         let options = DescriptorOptions {
@@ -83,14 +83,14 @@ impl Editor {
     }
 
     fn run(&self, shared: bool) -> Products {
-        let script = |snapshot: &SourceSnapshot, owner: &DescriptorObservation<'_>| {
+        let script = |snapshot: &SourceSnapshot, owner: &L1Ir<'_>| {
             snapshot
                 .prepare_literal_products(&self.docs, owner, ScriptRole::Setup)
                 .unwrap()
                 .publish(&self.docs, Some(self.binding))
                 .unwrap()
         };
-        let style = |snapshot: &SourceSnapshot, owner: &DescriptorObservation<'_>| {
+        let style = |snapshot: &SourceSnapshot, owner: &L1Ir<'_>| {
             let (selected, ()) = snapshot
                 .prepare_scss_with(&self.docs, owner, 0, |_| ())
                 .unwrap();
@@ -135,7 +135,7 @@ struct Template {
     warning: Option<LintDiagnostic>,
 }
 
-fn template<'a>(arena: &'a Allocator, owner: &DescriptorObservation<'a>) -> Template {
+fn template<'a>(arena: &'a Allocator, owner: &L1Ir<'a>) -> Template {
     let selected = owner.admitted_template().unwrap().unwrap();
     let pass = OriginalTemplate::analyze(arena, selected, &mut NoObserver).unwrap();
     let mut body = vize_l0::String::default();
