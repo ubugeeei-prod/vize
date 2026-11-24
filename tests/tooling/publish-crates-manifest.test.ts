@@ -31,6 +31,53 @@ test("publish manifest keeps the original final newline and spaced table headers
   assert.equal(publishManifestWithoutDevDependencies("a = 1\n"), "a = 1\n");
 });
 
+test("publish manifest drops feature entries that enable development-only dependencies", () => {
+  const original = [
+    "[features]",
+    'graph = ["shipped/views", "tests_only/views", "dep:tests_only", "tests_only?/extra"]',
+    "lexical = [",
+    '  "shipped/lexical",',
+    '  "tests_only/lexical",',
+    "]",
+    'both = ["shared/views"]',
+    "[dependencies]",
+    "shipped = { workspace = true }",
+    "[dependencies.shared]",
+    "workspace = true",
+    "[dev-dependencies]",
+    "tests_only = { workspace = true }",
+    'shared = { workspace = true, features = ["views"] }',
+    "",
+  ].join("\n");
+  const expected = [
+    "[features]",
+    'graph = ["shipped/views"]',
+    "lexical = [",
+    '  "shipped/lexical",',
+    "]",
+    'both = ["shared/views"]',
+    "[dependencies]",
+    "shipped = { workspace = true }",
+    "[dependencies.shared]",
+    "workspace = true",
+    "",
+  ].join("\n");
+
+  assert.equal(publishManifestWithoutDevDependencies(original), expected);
+});
+
+test("the L2-to-L3 graph feature keeps only its shipped dependencies when published", () => {
+  const manifest = fs.readFileSync(
+    new URL("../../davinci/vize_l2_to_l3/Cargo.toml", import.meta.url),
+    "utf8",
+  );
+  const features = publishManifestWithoutDevDependencies(manifest)
+    .split("\n")
+    .filter((line) => line.startsWith("graph-queries = "));
+
+  assert.deepEqual(features, ['graph-queries = ["vize_l3/graph-queries", "vize_l2/ir-views"]']);
+});
+
 test("crate manifests resolve vendor forks, Davinci levels, then legacy crates", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "release-crate-manifest-"));
   const cwd = process.cwd();

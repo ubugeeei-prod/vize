@@ -31,9 +31,9 @@ function isManifestSectionHeader(trimmed: string): boolean {
   return trimmed.startsWith("[") && trimmed.endsWith("]");
 }
 
-function isPublishStrippedSection(trimmed: string): boolean {
-  // Split table keys outside quotes: a target cfg string can itself contain dots
-  // or the spelling "dev-dependencies" without declaring a development table.
+// Split table keys outside quotes: a target cfg string can itself contain dots
+// or the spelling "dev-dependencies" without declaring a development table.
+function tableKeys(trimmed: string): string[] {
   const keys: string[] = [];
   let key = "";
   let quote: string | null = null;
@@ -60,25 +60,76 @@ function isPublishStrippedSection(trimmed: string): boolean {
     }
   }
   keys.push(moonTrim(key));
-  return (
-    keys[0] === "dev-dependencies" ||
-    (keys.length >= 3 && keys[0] === "target" && keys[2] === "dev-dependencies")
-  );
+  return keys;
+}
+
+type DependencyKind = "development" | "shipped";
+
+// Returns the dependency kind of a table and, for `[dependencies.name]`, the name it declares.
+function dependencyTable(keys: string[]): { kind: DependencyKind; name?: string } | null {
+  const offset = keys[0] === "target" && keys.length >= 3 ? 2 : 0;
+  const table = keys[offset];
+  if (offset === 0 && keys[0] === "target") return null;
+  const kind: DependencyKind | null =
+    table === "dev-dependencies"
+      ? "development"
+      : table === "dependencies" || table === "build-dependencies"
+        ? "shipped"
+        : null;
+  if (kind === null) return null;
+  return { kind, name: keys[offset + 1] };
+}
+
+const dependencyEntry = /^([A-Za-z0-9_-]+)\s*[=.]/u;
+
+function escapeExpression(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+// Feature entries that enable a development-only dependency name a crate the
+// published manifest no longer declares, so Cargo refuses to parse it.
+function withoutDevelopmentFeatureEntries(lines: string[], developmentOnly: Set<string>): string[] {
+  if (developmentOnly.size === 0) return lines;
+  const names = [...developmentOnly].map(escapeExpression).join("|");
+  const entry = new RegExp(`"(?:dep:(?:${names})|(?:${names})\\??/[^"]*)"\\s*,?\\s*`, "gu");
+  const kept: string[] = [];
+  let inFeatures = false;
+  for (const line of lines) {
+    const trimmed = moonTrim(line);
+    if (isManifestSectionHeader(trimmed)) inFeatures = tableKeys(trimmed).join(".") === "features";
+    if (!inFeatures || !entry.test(line)) {
+      kept.push(line);
+      continue;
+    }
+    entry.lastIndex = 0;
+    const edited = line
+      .replace(entry, "")
+      .replace(/,\s*\]/gu, "]")
+      .replace(/\[\s*,\s*/gu, "[");
+    if (moonTrim(edited) !== "") kept.push(edited.replace(/\s+$/u, ""));
+  }
+  return kept;
 }
 
 export function publishManifestWithoutDevDependencies(content: string): string {
   const kept: string[] = [];
-  let skipping = false;
+  const development = new Set<string>();
+  const shipped = new Set<string>();
+  let table: { kind: DependencyKind; name?: string } | null = null;
   for (const line of content.split("\n")) {
     const trimmed = moonTrim(line);
     if (isManifestSectionHeader(trimmed)) {
-      skipping = isPublishStrippedSection(trimmed);
+      table = dependencyTable(tableKeys(trimmed));
+      if (table?.name !== undefined)
+        (table.kind === "development" ? development : shipped).add(table.name);
+    } else if (table !== null && table.name === undefined) {
+      const name = dependencyEntry.exec(trimmed)?.[1];
+      if (name !== undefined) (table.kind === "development" ? development : shipped).add(name);
     }
-    if (!skipping) {
-      kept.push(line);
-    }
+    if (table?.kind !== "development") kept.push(line);
   }
-  const stripped = kept.join("\n");
+  const developmentOnly = new Set([...development].filter((name) => !shipped.has(name)));
+  const stripped = withoutDevelopmentFeatureEntries(kept, developmentOnly).join("\n");
   return content.endsWith("\n") && !stripped.endsWith("\n") ? `${stripped}\n` : stripped;
 }
 
