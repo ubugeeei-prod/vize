@@ -29,7 +29,17 @@ pub(super) fn without_transport(root: &Path, native: &Path) -> PathBuf {
     let quoted_captures = captures.to_string_lossy().replace('\'', "'\"'\"'");
     // Consume the actual bootstrap before denying it. Immediate process exit
     // races the writer against the reader and does not qualify one refusal.
-    fs::write(&wrapper, format!("#!/bin/sh\ncase \"$1\" in --api|--lsp) printf '%s\\n' \"$1\" >> '{quoted_attempts}'; exec node '{quoted_peer}' '{quoted_captures}' \"$@\";; esac\nexec '{quoted}' \"$@\"\n")).unwrap();
+    fs::write(
+        &wrapper,
+        format!(
+            include_str!("../programs/refuse-diagnostic-transport.sh.in"),
+            quoted_attempts = quoted_attempts,
+            quoted_peer = quoted_peer,
+            quoted_captures = quoted_captures,
+            quoted = quoted
+        ),
+    )
+    .unwrap();
     fs::set_permissions(&wrapper, fs::Permissions::from_mode(0o755)).unwrap();
     wrapper
 }

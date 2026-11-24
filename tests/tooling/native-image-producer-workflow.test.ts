@@ -1,3 +1,4 @@
+import { archivedWorkflow } from "./support/workflow-history.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -31,7 +32,7 @@ const before = parse(original.toString()) as {
   jobs: Record<string, Job>;
   on: { schedule: unknown };
 };
-const currentWorkflow = fs.readFileSync(
+const currentWorkflow = archivedWorkflow(
   path.join(root, ".github/workflows/native-smoke.yml"),
   "utf8",
 );

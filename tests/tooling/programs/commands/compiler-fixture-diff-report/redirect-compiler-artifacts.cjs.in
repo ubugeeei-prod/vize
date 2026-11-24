@@ -1,0 +1,5 @@
+const path = require("node:path");
+if (path.basename(process.argv[1] ?? "") === "inspector") {
+  process.stdout.write(@@REPORT@@);
+  process.exit(0);
+}

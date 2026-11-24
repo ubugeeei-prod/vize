@@ -81,6 +81,12 @@ pub(super) fn run(
     let Ok(program) = ProgramInput::checked(admitted, block, 0) else {
         return refused(receiver, &control, NavigationRefusal::Projection);
     };
+    #[cfg(feature = "experimental-lexical-arrow-queries")]
+    let program = if control.lexical_arrow_initializers && !options.jsx {
+        program.with_lexical_arrow_initializers()
+    } else {
+        program
+    };
     let Ok(mut producer) = FileProducer::new(&arena, snapshot.source()) else {
         return refused(receiver, &control, NavigationRefusal::Projection);
     };

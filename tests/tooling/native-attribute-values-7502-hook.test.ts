@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -115,7 +116,7 @@ test("prose, other fixtures and extension near misses do not admit native captur
 });
 
 test("the dedicated action preserves both failing processes and all evidence", () => {
-  const action = readFileSync(
+  const action = readAutomationPrograms(
     new URL("../../.github/actions/test-native-attribute-values-7502/action.yml", import.meta.url),
     "utf8",
   );

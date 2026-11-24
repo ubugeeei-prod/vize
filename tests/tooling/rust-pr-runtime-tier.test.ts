@@ -1,20 +1,22 @@
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import {
+  chmodSync,
   copyFileSync,
   existsSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
   rmSync,
-  writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { parse as parseToml } from "@iarna/toml";
 import { parse } from "yaml";
+import { installToolingProgram, toolingProgram } from "./support/program-path.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 const corsaDeferred = [
@@ -74,11 +76,11 @@ const canonDeferred = [
   },
 ];
 type Step = { name?: string; run?: string; if?: string; with?: Record<string, string> };
-const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-products.yml")) as {
+const workflow = parse(readAutomationPrograms(".github", "workflows", "pr-rust-products.yml")) as {
   jobs: Record<string, { steps: Step[]; env: Record<string, string> }>;
 };
 const sourceWorkflow = parse(
-  readRepoFile(".github", "workflows", "pr-rust-checks.yml"),
+  readAutomationPrograms(".github", "workflows", "pr-rust-checks.yml"),
 ) as typeof workflow;
 
 test("only the present audited real-TSGO cases leave the PR default filter", () => {
@@ -153,15 +155,10 @@ for (const event of ["merge_group", "pull_request"] as const) {
       const runtimeDir = join(cwd, "node_modules/@typescript/typescript-linux-x64/lib");
       mkdirSync(runtimeDir, { recursive: true });
       const nativeRuntime = join(runtimeDir, "tsc");
-      writeFileSync(nativeRuntime, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+      copyFileSync(toolingProgram("process/exit-success.sh"), nativeRuntime);
+      chmodSync(nativeRuntime, 0o755);
       const argv = join(cwd, "argv.json");
-      writeFileSync(
-        join(bin, "cargo"),
-        `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO"))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(process.env.CORSA_PATH!==process.env.EXPECTED_CORSA_PATH)process.exit(94);try{fs.accessSync(process.env.CORSA_PATH,fs.constants.X_OK)}catch{process.exit(95)}if(args.includes("--archive-file"))process.exit(91);fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
-`,
-        { mode: 0o755 },
-      );
+      installToolingProgram(join(bin, "cargo"), "workflow/record-nextest-invocation.cjs");
       const step = workflow.jobs["pr-rust-shard"].steps.find(
         (candidate) => candidate.name === stepName,
       );
@@ -193,6 +190,7 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
         ARGV: argv,
         RUNNER_TEMP: cwd,
         RUST_PLAN_JSON: JSON.stringify(plan),
+        VIZE_CI_FILES: dirname(automationShellPath(step.run, "pr-rust-products")),
       };
       // The PR step resolves the checked-out runner relative to the workspace.
       mkdirSync(join(cwd, "tools/support/compat/github"), { recursive: true });
@@ -216,8 +214,9 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
           "--norc",
           "-eo",
           "pipefail",
-          "-c",
-          `${runtime.run}\nset -a\nsource "$GITHUB_ENV"\nset +a\n${step.run}`,
+          toolingProgram("workflow/run-rust-cohort.sh"),
+          automationShellPath(runtime.run, "pr-rust-products"),
+          automationShellPath(step.run, "pr-rust-products"),
         ],
         {
           cwd,
@@ -275,11 +274,18 @@ test("only the typechecker cohort requires tsgo on pull_request", () => {
       const runtimeDir = join(cwd, "node_modules/@typescript/typescript-linux-x64/lib");
       mkdirSync(runtimeDir, { recursive: true });
       const nativeRuntime = join(runtimeDir, "tsc");
-      writeFileSync(nativeRuntime, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+      copyFileSync(toolingProgram("process/exit-success.sh"), nativeRuntime);
+      chmodSync(nativeRuntime, 0o755);
       const githubEnv = join(cwd, "github-env");
       const result: SpawnSyncReturns<string> = spawnSync(
         "/bin/bash",
-        ["--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        [
+          "--noprofile",
+          "--norc",
+          "-eo",
+          "pipefail",
+          automationShellPath(script, "pr-rust-products"),
+        ],
         {
           cwd,
           encoding: "utf8",
@@ -350,30 +356,17 @@ for (const mode of ["success", "bootstrap-failure", "missing-executable"] as con
     try {
       const bin = join(cwd, "bin");
       mkdirSync(bin);
-      // This shell stub tests wiring only: it performs no install or native execution.
-      writeFileSync(
-        join(bin, "node"),
-        `#!/bin/sh
-set -eu
-test "$#" = 3
-test "$1" = tools/support/release/type-admission-mapper-host.ts
-test "$2" = "$RUNNER_TEMP/mq-content-mapper-host"
-test "$3" = "$RUNNER_TEMP/mq-content-mapper-host-proof"
-${secrets.map((name) => `test -z "\${${name}+x}"`).join("\n")}
-if test "$MOCK_MODE" = bootstrap-failure; then exit 23; fi
-mkdir -p "$3"
-if test "$MOCK_MODE" = success; then
-  mkdir -p "$2/node_modules/@typescript/typescript-linux-x64/lib"
-  printf '#!/bin/sh\\nexit 0\\n' > "$2/node_modules/@typescript/typescript-linux-x64/lib/tsc"
-  chmod +x "$2/node_modules/@typescript/typescript-linux-x64/lib/tsc"
-fi
-`,
-        { mode: 0o755 },
-      );
+      installToolingProgram(join(bin, "node"), "workflow/stage-test-mapper-host.cjs");
       const githubEnv = join(cwd, "github-env");
       const result = spawnSync(
         "/bin/bash",
-        ["--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        [
+          "--noprofile",
+          "--norc",
+          "-eo",
+          "pipefail",
+          automationShellPath(script, "pr-rust-products"),
+        ],
         {
           cwd,
           encoding: "utf8",
@@ -384,6 +377,7 @@ fi
             RUNNER_TEMP: cwd,
             GITHUB_ENV: githubEnv,
             MOCK_MODE: mode,
+            MOCK_TSC: toolingProgram("process/exit-success.sh"),
           },
         },
       );

@@ -1,0 +1,6 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": { "vc_rebase": { "prover": "alt-ergo", "time": 0.007 } }
+  }
+}

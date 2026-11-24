@@ -8,6 +8,7 @@ on:
       - npm/mcp-musea/**
       - tools/support/security/qs-runtime-*.ts
       - .github/workflows/qs-runtime-security.yml
+      - .github/scripts/workflows/qs-runtime-security/**
   push:
     branches: [main]
     paths:
@@ -16,6 +17,7 @@ on:
       - npm/mcp-musea/**
       - tools/support/security/qs-runtime-*.ts
       - .github/workflows/qs-runtime-security.yml
+      - .github/scripts/workflows/qs-runtime-security/**
   workflow_dispatch:
 permissions:
   contents: read
@@ -27,6 +29,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/qs-runtime-security"
       EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -40,10 +43,7 @@ jobs:
       - name: Install exact source dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build and pack the actual MCP server
-        run: |
-          vp run --filter @vizejs/musea-mcp-server build
-          mkdir -p "$RUNNER_TEMP/qs-runtime-pack"
-          vp exec pnpm --dir npm/mcp-musea pack --pack-destination "$RUNNER_TEMP/qs-runtime-pack"
+        run: . "${{ env.VIZE_CI_FILES }}/build-and-pack-the-actual-mcp-server.sh"
       - name: Require original negative, repaired runtime, full upstream and fresh consumer contracts
         run: |
           node tools/support/security/qs-runtime-consumer.ts "$RUNNER_TEMP/qs-runtime-proof" "$RUNNER_TEMP"/qs-runtime-pack/*.tgz

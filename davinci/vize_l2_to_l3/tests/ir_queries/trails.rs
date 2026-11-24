@@ -102,6 +102,13 @@ fn every_kind_mask_and_direction_preserves_parallel_relationship_multiplicity() 
             .collect::<Vec<_>>(),
         [(0, 1, 0), (1, 0, 0)]
     );
+    let owned = graph.clone().into_owned();
+    let compare = |query, rows: &[TwoHopMatch]| {
+        let reference = check_two_hop_matches(&ir, query, rows);
+        assert_eq!(graph.check_two_hop(query, rows), reference);
+        assert_eq!(owned.check_two_hop(query, rows), reference);
+        reference
+    };
     for altered in [
         vec![rows[0]],
         vec![rows[1], rows[0]],
@@ -129,16 +136,13 @@ fn every_kind_mask_and_direction_preserves_parallel_relationship_multiplicity() 
         ],
     ] {
         assert!(matches!(
-            check_two_hop_matches(&ir, query, &altered),
+            compare(query, &altered),
             Err(TrailError::Mismatch { .. })
         ));
     }
     let mut extra = rows.clone();
     extra.push(rows[0]);
-    assert_eq!(
-        check_two_hop_matches(&ir, query, &extra),
-        Err(TrailError::Extra { at: 2 })
-    );
+    assert_eq!(compare(query, &extra), Err(TrailError::Extra { at: 2 }));
     let absent = TwoHopQuery {
         start: OpId::new(9),
         ..query
@@ -147,7 +151,15 @@ fn every_kind_mask_and_direction_preserves_parallel_relationship_multiplicity() 
         graph.visit_two_hop(absent, ControlFlow::Break),
         Err(GraphError::UnknownOp(absent.start))
     );
+    assert_eq!(
+        compare(absent, &[]),
+        Err(TrailError::Graph(GraphError::UnknownOp(absent.start)))
+    );
     let dangling = build(&a, &[0, 1], &[(1, 8, Effect)]);
+    assert_eq!(
+        check_two_hop_matches(&dangling, absent, &[]),
+        Err(TrailError::Graph(GraphError::UnknownOp(absent.start)))
+    );
     assert!(matches!(
         check_two_hop_matches(&dangling, query, &[]),
         Err(TrailError::Graph(GraphError::MissingEndpoint { .. }))

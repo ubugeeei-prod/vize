@@ -10,7 +10,9 @@ on:
       - "tests/tooling/release-jsr-workflow.test.ts"
       - "tests/tooling/jsr-fresh-provenance.test.ts"
       - ".github/workflows/jsr-package.yml"
+      - ".github/scripts/workflows/jsr-package/**"
       - ".github/workflows/release-jsr.yml"
+      - ".github/scripts/workflows/release-jsr/**"
   workflow_dispatch:
     inputs:
       published-version:
@@ -27,6 +29,8 @@ jobs:
     name: JSR publish dry-run
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/jsr-package"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -46,7 +50,7 @@ jobs:
         run: node tools/support/release/jsr/verify-consumer-age.mjs "$RUNNER_TEMP/jsr-consumer-age"
       - name: Resolve the latest immutable public preview version
         id: preview
-        run: echo "version=$(node tools/support/release/jsr/package.ts latest-public)" >> "$GITHUB_OUTPUT"
+        run: . "${{ env.VIZE_CI_FILES }}/resolve-the-latest-immutable-public-preview-version.sh"
       - name: Generate a PR preview from that public release
         env: { JSR_PREVIEW_VERSION: "${{ steps.preview.outputs.version }}" }
         run: node tools/support/release/jsr/package.ts prepare-preview-all "$RUNNER_TEMP/jsr-packages" "$JSR_PREVIEW_VERSION"

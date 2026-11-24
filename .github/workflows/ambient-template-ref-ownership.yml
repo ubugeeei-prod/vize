@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/ambient-template-ref-ownership.yml
+      - .github/scripts/workflows/ambient-template-ref-ownership/**
       - crates/vize/tests/content_mapper_tsgo_cli/support.rs
       - crates/vize/tests/content_mapper_tsgo_cli/support/ambient_template_ref.rs
       - crates/vize_canon/src/virtual_ts/generator.rs
@@ -28,6 +29,19 @@ jobs:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/ambient-template-ref-ownership/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
@@ -43,12 +57,7 @@ jobs:
             cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
           }
       - name: Install independent pinned framework and native providers
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          mkdir -p "$RUNNER_TEMP/ambient-ref-provider" "$RUNNER_TEMP/ambient-ref-evidence"
-          npm install --prefix "$RUNNER_TEMP/ambient-ref-provider" --ignore-scripts --no-audit --no-fund --save-exact vue@3.6.0-rc.13 vue-tsc@3.3.13 typescript@6.0.3 @typescript/typescript-linux-x64@7.1.0-beta
-          cp "$RUNNER_TEMP/ambient-ref-provider/package-lock.json" "$RUNNER_TEMP/ambient-ref-evidence/provider-lock.json"
+        run: . "${{ env.VIZE_CI_FILES }}/install-independent-pinned-framework-and-native-providers.sh"
       - name: Qualify independent framework original and repair packets
         run: node tools/support/compat/content-mapper/ambient-template-ref-oracle.ts --provider "$RUNNER_TEMP/ambient-ref-provider" --output "$RUNNER_TEMP/ambient-ref-evidence/framework" --source "$SOURCE_SHA"
       - name: Qualify original native CLI and mapper ownership through repairs
@@ -56,16 +65,7 @@ jobs:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/ambient-ref-provider/node_modules/@typescript/typescript-linux-x64/lib/tsc
           VIZE_TEST_CONTENT_MAPPER_VUE: ${{ runner.temp }}/ambient-ref-provider/node_modules/vue
           VIZE_AMBIENT_TEMPLATE_REF_CAPTURE: ${{ runner.temp }}/ambient-ref-evidence/source
-        run: |
-          set -euo pipefail
-          evidence="$RUNNER_TEMP/ambient-ref-evidence"
-          sha256sum "$VIZE_TEST_CONTENT_MAPPER_TSGO" > "$evidence/native.sha256"
-          "$VIZE_TEST_CONTENT_MAPPER_TSGO" --version > "$evidence/native.version"
-          cargo test --locked --profile ci -p vize --test integration content_mapper_tsgo_cli::support::ambient_template_ref:: -- --nocapture --test-threads=1 > "$evidence/test.stdout" 2> "$evidence/test.stderr"
-          grep -Fxq 'running 3 tests' "$evidence/test.stdout"
-          grep -Fq 'test result: ok. 3 passed; 0 failed; 0 ignored;' "$evidence/test.stdout"
-          sha256sum target/ci/vize > "$evidence/source-cli.sha256"
-          printf '%s\n' "$SOURCE_SHA" > "$evidence/source.sha"
+        run: . "${{ env.VIZE_CI_FILES }}/qualify-original-native-cli-and-mapper-ownership-through-repairs.sh"
       - name: Preserve complete packets
         if: always()
         run: tar --exclude=node_modules -czf "$RUNNER_TEMP/ambient-ref-evidence.tgz" -C "$RUNNER_TEMP" ambient-ref-evidence

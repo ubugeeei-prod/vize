@@ -58,6 +58,12 @@ pub struct NativeSfcIssue {
     pub kind: NativeSfcIssueKind,
 }
 
+macro_rules! create_producer {
+    ($allocator:expr, $source:expr) => {
+        crate::vue_file::VueFileProducer::new($allocator, $source)
+    };
+}
+
 /// Retain all original owners; only the private assembly check grants admission.
 pub fn lower_sfc_native<'a>(
     allocator: &'a Allocator,
@@ -86,6 +92,34 @@ mod operands;
 mod component_imports;
 #[cfg(feature = "setup-component-imports")]
 pub use component_imports::{ComponentImportRefusal, SetupComponentImports};
+
+/// Observe static event names and original method-reference expressions during File construction.
+#[cfg(feature = "component-listener-queries")]
+pub fn lower_sfc_with_listener_references<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DescriptorOptions,
+) -> NativeSfcObservation<'a> {
+    use template::prepare_listeners as prepare;
+    include!("native_file/assembly.rs")
+}
+
+/// Construct original script scopes together with the template's authored
+/// bindings and named event references for one semantic tool request.
+#[cfg(feature = "lexical-arrow-initializers")]
+pub fn lower_sfc_with_lexical_initializers<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DescriptorOptions,
+) -> NativeSfcObservation<'a> {
+    use template::prepare_lexical as prepare;
+    macro_rules! create_producer {
+        ($allocator:expr, $source:expr) => {
+            crate::vue_file::VueFileProducer::for_lexical_initializers($allocator, $source)
+        };
+    }
+    include!("native_file/assembly.rs")
+}
 
 #[cfg(feature = "ir-views")]
 mod ir_views;

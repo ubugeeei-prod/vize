@@ -110,9 +110,7 @@ fn write_package(root: &Path) {
 }
 
 fn case_dir(name: &str) -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("target")
-        .join("vize-tests")
+    crate::linter::tests::scratch_project_root()
         .join(cstr!("patina-corsa-pool-{name}-{}", std::process::id()).as_str())
 }
 

@@ -1,0 +1,13 @@
+
+import fs from "node:fs";
+import { runQualificationBranches } from @@QUALIFICATION@@;
+import { runHostProcesses, requireSuccessfulHosts } from @@CONCURRENCY@@;
+import { runMixedWorkers } from @@WORKERS@@;
+const f = @@PROJECT@@;
+try {
+ await runQualificationBranches([
+  {id:"mixedDirectory8507",run:()=>runMixedWorkers(f.mixedOptions)},
+  {id:"n8n",run:async()=>{const r=await runHostProcesses([f.remaining],{workers:1});requireSuccessfulHosts(r);return r;}},
+ ],f.outcomes);
+ process.exitCode=0;
+} catch {fs.writeFileSync(f.root+"/exit-after-join","joined");process.exitCode=1;}

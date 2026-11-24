@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/vscode-workspace-server.yml
+      - .github/scripts/workflows/vscode-workspace-server/**
       - editors/vscode/**
       - tests/tooling/vscode-workspace-server*.test.mjs
   workflow_dispatch:
@@ -24,6 +25,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/vscode-workspace-server/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
@@ -44,11 +58,7 @@ jobs:
       - name: Package and validate the production VSIX
         run: vp run --workspace-root package:vscode-extension
       - name: Ensure virtual display
-        run: |
-          if ! command -v xvfb-run >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y xvfb
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/ensure-virtual-display.sh"
       - name: Run installed VSIX with the pinned workspace engine
         run: xvfb-run -a vp node editors/vscode/test/run-workspace-server-host.mjs
       - name: Run installed VSIX in Restricted Mode

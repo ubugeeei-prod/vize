@@ -188,5 +188,6 @@ fn scanning_all_starts_keeps_only_the_graph_and_evicted_answers_recheck() {
 }
 
 mod incremental {
+    mod recovery;
     mod trails;
 }

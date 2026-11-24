@@ -1,0 +1,38 @@
+import "../../Actions.pkl" as ci
+
+steps = new Listing {
+  new Dynamic {
+    name = "Validate inputs"
+    shell = "bash"
+    run = #". "${{ env.VIZE_CI_FILES }}/validate-inputs.sh""#
+  }
+  new Dynamic {
+    uses = ci.checkout
+    with { `persist-credentials` = false }
+  }
+  new Dynamic {
+    name = "Setup MSVC toolchain"
+    `if` = "env.PAIR_OS == 'windows'"
+    uses = "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756"  // v1
+    with { arch = "amd64" }
+  }
+  ci.rust("1.100.0")
+  new Dynamic {
+    uses = ci.setupWild
+    `if` = "env.PAIR_OS == 'linux'"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    name = "Build both commits"
+    shell = "bash"
+    run = #". "${{ env.VIZE_CI_FILES }}/build-both-commits.sh""#
+  }
+  new Dynamic {
+    uses = ci.uploadArtifact
+    with {
+      name = "pair-bin-${{ env.PAIR_OS }}"
+      path = "pair-bin/"
+      `retention-days` = 7
+    }
+  }
+}

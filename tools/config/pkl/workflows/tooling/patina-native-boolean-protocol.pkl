@@ -1,0 +1,120 @@
+import "../../Actions.pkl" as ci
+
+name = "Patina native boolean protocols"
+on {
+  workflow_dispatch {}
+  pull_request {
+    paths = new Listing {
+      "crates/vize_patina/src/linter/corsa_session/**"
+      "crates/vize_patina/src/linter/corsa_session.rs"
+      "crates/vize_patina/src/linter/native_type_aware/**"
+      "crates/vize_patina/src/linter/native_type_aware.rs"
+      "crates/vize_patina/src/linter/engine/batch/projects.rs"
+      "crates/vize_patina/tests/fixtures/strict-boolean-nodes/**"
+      "crates/vize/tests/lint_strict_boolean_cli/**"
+      "crates/vize/tests/lint_strict_boolean_cli.rs"
+      ".github/workflows/patina-native-boolean-protocol.yml"
+      ".github/scripts/workflows/patina-native-boolean-protocol/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "patina-native-boolean-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `live-native` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    permissions {
+      contents = "read"
+      actions = "read"
+    }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/patina-native-boolean-protocol"
+      CARGO_BUILD_JOBS = "24"
+      RUST_TEST_THREADS = "4"
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_TEST_REQUIRE_TSRS = "1"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nextest-ci"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = true
+        }
+      }
+      new Dynamic {
+        name = "Install the exact reported project runtime independently"
+        `working-directory` = "${{ runner.temp }}"
+        run = ci.workflowScript("install-the-exact-reported-project-runtime-independently.sh")
+      }
+      new Dynamic {
+        name = "Keep captured AST refusal laws and runtime failure severity"
+        run = ci.workflowScript("keep-captured-ast-refusal-laws-and-runtime-failure-severity.sh")
+      }
+      new Dynamic {
+        name = "Preserve dynamic module namespaces beside component imports"
+        run = ci.workflowScript("preserve-dynamic-module-namespaces-beside-component-imports.sh")
+      }
+      new Dynamic {
+        name = "Preserve all complete boolean reports with the stable runtime"
+        env {
+          CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+          VIZE_SYMBOL_OWNER_CLI_CAPTURE = "${{ github.workspace }}/target/patina-native-boolean/stable-owner-cli.json"
+        }
+        run = ci.workflowScript("preserve-all-complete-boolean-reports-with-the-stable-runtime.sh")
+      }
+      new Dynamic {
+        name = "Preserve the same complete reports with the reported tsrs runtime"
+        env { VIZE_SYMBOL_OWNER_CLI_CAPTURE = "${{ github.workspace }}/target/patina-native-boolean/tsrs-owner-cli.json" }
+        run = ci.workflowScript("preserve-the-same-complete-reports-with-the-reported-tsrs-runtime.sh")
+      }
+      new Dynamic {
+        name = "Capture cold and materialized signature owners with the stable runtime"
+        `if` = "always()"
+        env {
+          CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+        }
+        run = ci.workflowScript("capture-cold-and-materialized-signature-owners-with-the-stable-runtime.sh")
+      }
+      new Dynamic {
+        name = "Capture the same signature owners with the reported tsrs runtime"
+        `if` = "always()"
+        run = ci.workflowScript("capture-the-same-signature-owners-with-the-reported-tsrs-runtime.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "patina-native-boolean-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/patina-native-boolean/"
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

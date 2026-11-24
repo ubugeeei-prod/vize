@@ -1,0 +1,11 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"source "$1""#
+  #"set -a"#
+  #"source "$GITHUB_ENV""#
+  #"set +a"#
+  #"source "$2""#
+}

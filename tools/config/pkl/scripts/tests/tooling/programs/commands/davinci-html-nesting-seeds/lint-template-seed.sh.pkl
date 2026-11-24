@@ -1,0 +1,10 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  [ "$1" = "--version" ] && echo vize && exit 0
+  echo "[]"
+  """#
+}

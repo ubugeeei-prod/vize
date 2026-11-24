@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/retained-tsrx.yml"
+      - ".github/scripts/workflows/retained-tsrx/**"
       - "davinci/vize_l1/src/markup/tsrx*"
       - "davinci/vize_l1/src/markup/tsrx/**"
       - "davinci/vize_l1_to_l2/Cargo.toml"
@@ -38,6 +39,19 @@ jobs:
       CARGO_INCREMENTAL: "0"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/retained-tsrx/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: ./.github/actions/cache-vp-bootstrap
@@ -58,18 +72,4 @@ jobs:
         with: { wild-version: "0.9.0" }
       - name: Compare retained and independent producers and the mounted reference
         shell: bash
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt)
-          for modes in retained-tsrx retained-tsrx,typescript; do
-            cargo test "${flags[@]}" -p vize_l4 --features "$modes" --test tsrx_retained
-          done
-          cargo test "${flags[@]}" -p vize_l4 --features typescript --test tsrx_dom
-          node --test tests/tooling/tsrx-oracle.test.ts tests/tooling/tsrx-mount.test.ts
-          suite=(-p vize_patina --features retained-tsrx,vize_l4/retained-tsrx)
-          cargo clippy "${flags[@]}" "${suite[@]}" --lib --test prepared_tsrx --no-deps -- -D warnings
-          cargo test "${flags[@]}" "${suite[@]}" --lib linter::engine::tsrx::tests
-          cargo test "${flags[@]}" "${suite[@]}" --test prepared_tsrx
-          export VIZE_TSRX_INPUTS="$RUNNER_TEMP/tsrx-originals"
-          git ls-files -z -- '*.tsrx' '*.tsrx.txt' > "$VIZE_TSRX_INPUTS"
-          cargo test "${flags[@]}" "${suite[@]}" --test prepared_tsrx -- --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/compare-retained-and-independent-producers-and-the-mounted-reference.sh"

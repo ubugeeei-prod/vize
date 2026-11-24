@@ -1,0 +1,19 @@
+#!@@NODE@@
+const fs = require("node:fs");
+const { execFileSync } = require("node:child_process");
+const mode = @@MODE@@;
+if (process.argv.includes("--list")) {
+  console.log(@@FILTER_LISTING@@);
+} else {
+  const assert = require("node:assert/strict");
+  assert.deepEqual(process.argv.slice(2), @@FILTER_ARGS@@);
+  assert.equal(process.env.INSTA_UPDATE, "new");
+  assert.equal(process.env.INSTA_FORCE_PASS, "1");
+  fs.writeFileSync(@@SNAPSHOT_PATH@@, "fresh observed body\n");
+  if (mode === "change-head") {
+    execFileSync("git", ["commit", "--allow-empty", "-qm", "changed source"]);
+  }
+  const counts =
+    mode === "ignored" ? "0 passed; 0 failed; 1 ignored;" : "1 passed; 0 failed; 0 ignored;";
+  console.log("test result: ok. " + counts);
+}

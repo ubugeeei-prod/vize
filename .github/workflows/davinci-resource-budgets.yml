@@ -34,6 +34,8 @@ jobs:
     name: TS-44 resource budgets (linux-x64-ci)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/davinci-resource-budgets"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -45,9 +47,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       # The runner's rustup installs the toolchain pinned in rust-toolchain.toml.
       - name: Install the repository Rust toolchain
-        run: |
-          rustup toolchain install || rustup show active-toolchain
-          cargo --version
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh"
       # No Wild: the server links with rust-lld like the shipped x86_64 Linux
       # CLI, so crates/vize/build.rs folds identical code and packs relocations.
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -58,12 +58,7 @@ jobs:
       # The optimized profile check-bench measures; shipped release binaries
       # use fat LTO and one codegen unit on top of it.
       - name: Build the measured server
-        run: >-
-          cargo build --profile ci-opt -p vize
-          --config 'profile.ci-opt.inherits="release"'
-          --config 'profile.ci-opt.lto="thin"'
-          --config 'profile.ci-opt.codegen-units=16'
-          --message-format=json-render-diagnostics > "${RUNNER_TEMP}/resource-build.jsonl"
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-measured-server.sh"
       - name: Record the measured binary and build identity
         run: >-
           vp exec node tools/support/compat/davinci/lsp-build-identity.ts
@@ -82,15 +77,7 @@ jobs:
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: |
-          set -euo pipefail
-          git fetch --no-tags --depth=1 origin "${BASE_SHA}"
-          # Resolve the base revision's path so the directory move itself can
-          # still compare against the pre-move budget registry.
-          BASE_BUDGET_PATH="$(git ls-tree -r --name-only "${BASE_SHA}" | rg '(^|/)plan/budgets[.]toml$')"
-          test -n "${BASE_BUDGET_PATH}"
-          git show "${BASE_SHA}:${BASE_BUDGET_PATH}" > "${RUNNER_TEMP}/base-budgets.toml"
-          rust-script tools/commands/davinci/resource-budgets.rs --ratchet "${RUNNER_TEMP}/base-budgets.toml"
+        run: . "${{ env.VIZE_CI_FILES }}/no-ceiling-is-loosened-against-the-base.sh"
       - name: The measurement holds every pinned ceiling
         if: ${{ !cancelled() }}
         run: >-
@@ -98,13 +85,7 @@ jobs:
           --measurement "${RUNNER_TEMP}/resource.json"
       - name: Summarize
         if: ${{ !cancelled() }}
-        run: |
-          {
-            echo "### TS-44 resource measurement (${RESOURCE_PRESET})"
-            echo '```json'
-            cat "${RUNNER_TEMP}/resource.json"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/summarize.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ !cancelled() }}
         with:
@@ -118,10 +99,12 @@ jobs:
     name: Synthetic 10k-file resident resources (P5-4b)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/davinci-resource-budgets"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install the repository Rust toolchain
-        run: rustup toolchain install || rustup show active-toolchain
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain-2.sh"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -142,13 +125,7 @@ jobs:
           --runs 3 --out "${RUNNER_TEMP}/resident-resource.json"
       - name: Summarize the isolated session
         if: ${{ !cancelled() }}
-        run: |
-          {
-            echo '### Synthetic resident database (fixture alpha inputs; no LSP or Corsa)'
-            echo '```json'
-            cat "${RUNNER_TEMP}/resident-resource.json"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/summarize-the-isolated-session.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ !cancelled() }}
         with:
@@ -161,6 +138,8 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/davinci-resource-budgets"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -171,7 +150,7 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Install the repository Rust toolchain
-        run: rustup toolchain install || rustup show active-toolchain
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain-2.sh"
       # No Wild: the server links with rust-lld like the shipped x86_64 Linux
       # CLI, so crates/vize/build.rs folds identical code and packs relocations.
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -204,15 +183,7 @@ jobs:
           --out "${RUNNER_TEMP}/lsp-resource.json"
       - name: Summarize the actual scope and every process
         if: ${{ !cancelled() }}
-        run: |
-          {
-            echo '### Production Maestro LSP: 10000 open SFCs, 16 metadata provider witnesses'
-            echo 'Maestro and all Corsa descendants are included; the Node harness is excluded.'
-            echo 'The isolated resident example and nine-file TS-44 baseline remain separate.'
-            echo '```json'
-            cat "${RUNNER_TEMP}/lsp-resource.json" || cat "${RUNNER_TEMP}/lsp-resource-smoke.json"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/summarize-the-actual-scope-and-every-process.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:

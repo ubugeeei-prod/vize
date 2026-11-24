@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -36,7 +37,7 @@ test("Zig musl wrappers use rust-lld for final links and normalize cc-rs flags",
 
   try {
     fs.mkdirSync(binDir, { recursive: true });
-    fs.writeFileSync(fakeZig, '#!/usr/bin/env bash\nprintf \'%s\\n\' "$@" > "$ZIG_ARGS_LOG"\n');
+    fs.writeFileSync(fakeZig, readToolingProgram("commands/github-zig-musl-linkers/fake-zig.sh"));
     fs.chmodSync(fakeZig, 0o755);
 
     const pathEnv = `${binDir}${path.delimiter}${process.env.PATH ?? ""}`;
@@ -98,25 +99,11 @@ test("musl CLI verifier rejects dynamic interpreters and glibc symbol requiremen
     fs.writeFileSync(binary, "");
     fs.writeFileSync(
       path.join(binDir, "file"),
-      "#!/usr/bin/env bash\nprintf 'ELF static-pie\\n'\n",
+      readToolingProgram("commands/github-zig-musl-linkers/file.sh"),
     );
     fs.writeFileSync(
       path.join(binDir, "readelf"),
-      [
-        "#!/usr/bin/env bash",
-        'if [[ "$1" == "--version-info" ]]; then',
-        '  if [[ "${VERIFY_MODE:-ok}" == "glibc" ]]; then',
-        "    printf 'GLIBC_2.39\\n'",
-        "  else",
-        "    printf 'No version information found in this file.\\n'",
-        "  fi",
-        'elif [[ "${VERIFY_MODE:-ok}" == "interpreter" ]]; then',
-        "  printf '[Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]\\n'",
-        "else",
-        "  printf 'Program Headers:\\n'",
-        "fi",
-        "",
-      ].join("\n"),
+      readToolingProgram("commands/github-zig-musl-linkers/readelf.sh"),
     );
     for (const command of ["file", "readelf"]) {
       fs.chmodSync(path.join(binDir, command), 0o755);

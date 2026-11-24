@@ -4,19 +4,14 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import vm from "node:vm";
 import { parse } from "yaml";
+import { runExtensionHost } from "../../editors/vscode/test/run-extension-host.mjs";
 import {
   retainHostOutput,
   retainHostOutputBeforeCleanup,
 } from "../../editors/vscode/test/host-output.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const runnerPath = path.join(root, "editors/vscode/test/run-extension-host.mjs");
-const runner = fs
-  .readFileSync(runnerPath, "utf8")
-  .replace(/^#![^\n]*\n/, "")
-  .replace(/^import[\s\S]*?;\n/gm, "");
 
 function nativeLog(profile, session = "20261011T101600", window = "window1") {
   return path.join(
@@ -107,38 +102,28 @@ await test("actual runner retains native output on success and failure while pre
       "<template/>",
     );
     write(path.join(extension, "package.json"), '{"version":"0.443.0"}');
-    const context = vm.createContext({
-      fs,
-      os: { ...os, tmpdir: () => temporary },
-      path,
-      process,
-      fileURLToPath: () => path.join(extension, "test/run-extension-host.mjs"),
-      retainHostOutputBeforeCleanup,
-      async runTests(options) {
-        assert.equal(options.version, process.env.VIZE_TEST_VSCODE_VERSION ?? "1.107.1");
-        assert.equal(options.extensionTestsEnv.VIZE_TEST_ENABLE_HOST_COMMANDS, "1");
-        assert.equal(options.launchArgs[options.launchArgs.indexOf("--log") + 1], "trace");
-        const userData = options.launchArgs.find((argument) =>
-          argument.startsWith("--user-data-dir="),
-        );
-        profile = path.dirname(userData.slice("--user-data-dir=".length));
-        write(nativeLog(profile), bytes);
-        write(
-          path.join(profile, "user-data/logs/session/sharedprocess.log"),
-          "complete native watcher registration\n",
-        );
-        if (mode === "retention-failure")
-          write(path.join(extension, ".vscode-test/host-smoke/output-channel"), "blocked");
-        if (mode !== "success") throw originalError;
-      },
-    });
-    // The actual runner body, including its original catch and finally, executes.
-    const execute = new vm.Script(
-      `(async () => {${runner.replaceAll("import.meta.url", '"runner"')}\n})()`,
-    );
+    async function runTests(options) {
+      assert.equal(options.version, process.env.VIZE_TEST_VSCODE_VERSION ?? "1.107.1");
+      assert.equal(options.extensionTestsEnv.VIZE_TEST_ENABLE_HOST_COMMANDS, "1");
+      assert.ok(fs.existsSync(options.extensionTestsEnv.VIZE_TEST_SERVER_PATH));
+      assert.equal(options.launchArgs[options.launchArgs.indexOf("--log") + 1], "trace");
+      const userData = options.launchArgs.find((argument) =>
+        argument.startsWith("--user-data-dir="),
+      );
+      profile = path.dirname(userData.slice("--user-data-dir=".length));
+      write(nativeLog(profile), bytes);
+      write(
+        path.join(profile, "user-data/logs/session/sharedprocess.log"),
+        "complete native watcher registration\n",
+      );
+      if (mode === "retention-failure")
+        write(path.join(extension, ".vscode-test/host-smoke/output-channel"), "blocked");
+      if (mode !== "success") throw originalError;
+    }
     try {
-      if (mode === "success") await execute.runInContext(context);
-      else await assert.rejects(execute.runInContext(context), (error) => error === originalError);
+      const result = runExtensionHost(extension, runTests);
+      if (mode === "success") await result;
+      else await assert.rejects(result, (error) => error === originalError);
       assert.equal(fs.existsSync(profile), false);
       if (mode !== "retention-failure") {
         const output = path.join(extension, ".vscode-test/host-smoke/output-channel");

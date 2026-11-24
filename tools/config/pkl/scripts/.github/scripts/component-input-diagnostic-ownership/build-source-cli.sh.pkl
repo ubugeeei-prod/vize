@@ -1,0 +1,10 @@
+amends "../../../../ShellScript.pkl"
+
+commands {
+  module.strictMode
+  #"""
+
+  [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+  """#
+  module.command("cargo", List("build", "--locked", "--profile", "ci", "-p", "vize", "--bin", "vize"))
+}

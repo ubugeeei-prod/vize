@@ -85,16 +85,20 @@ impl<'p> OpGraph<'p> {
         query: ReachQuery,
         steps: &[ReachStep],
     ) -> Result<(), super::CertificateError> {
-        super::check::check_rows(&self.ops, &self.edges, query, steps)
+        super::check::check_with_positions(&self.positions, &self.ops, &self.edges, query, steps)
     }
 
     /// Check a complete trail response against the original rows of this graph.
+    /// Construction validated every endpoint; the immutable rows retain that guarantee.
     pub fn check_two_hop(
         &self,
         query: super::TwoHopQuery,
         rows: &[super::TwoHopMatch],
     ) -> Result<(), super::TrailError> {
-        super::trail::check_rows(&self.ops, &self.edges, query, rows)
+        self.positions
+            .get(query.start)
+            .ok_or(super::TrailError::Graph(GraphError::UnknownOp(query.start)))?;
+        super::trail::check_matches(&self.edges, query, rows)
     }
 
     fn incident_at(
@@ -176,5 +180,12 @@ impl<'p> OpGraph<'p> {
             cursor += 1;
         }
         Ok(steps)
+    }
+
+    /// Check whether the seed alone is the complete reachable set. Self-loops
+    /// preserve the claim. The first selected edge to leave the seed supplies
+    /// its original ordinal on failure.
+    pub fn check_singleton(&self, query: ReachQuery) -> Result<(), super::CertificateError> {
+        super::check::check_singleton(&self.positions, &self.edges, query)
     }
 }

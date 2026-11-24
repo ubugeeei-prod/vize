@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 import YAML from "yaml";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -97,9 +98,9 @@ test("Musea Nuxt exposes one runtime subpath under its public package identity",
     execFileSync(
       process.execPath,
       [
-        "--input-type=module",
-        "--eval",
-        'console.log(JSON.stringify([import.meta.resolve("@vizejs/musea-nuxt"), import.meta.resolve("@vizejs/musea-nuxt/auto-imports")]))',
+        "--experimental-import-meta-resolve",
+        toolingProgram("runtime/resolve-musea-exports.js"),
+        pathToFileURL(path.join(owner, "package.json")).href,
       ],
       { cwd: owner, encoding: "utf8" },
     ),

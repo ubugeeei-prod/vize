@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createServer } from "node:http";
-import path from "node:path";
 import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { resolvePuppeteerExecutablePath } from "../browser-path.js";
 import {
@@ -80,43 +81,36 @@ export async function qualifyHeadingHashes(output: string, site?: string) {
     siteRoot = fixture.after;
     const page = await browser.newPage({ reducedMotion: "reduce" });
     page.on("pageerror", (error) => errors.push(String(error)));
-    await page.addInitScript(() => {
-      const runtime = window as typeof window & { headingScrolls: string[] };
-      runtime.headingScrolls = [];
-      const original = Reflect.get(Element.prototype, "scrollIntoView") as (
-        this: Element,
-        arg?: boolean | ScrollIntoViewOptions,
-      ) => void;
-      Element.prototype.scrollIntoView = function (...args) {
-        runtime.headingScrolls.push(this.id);
-        original.apply(this, args);
-      };
+    await page.addInitScript({
+      path: fileURLToPath(new URL("./observe-heading-scrolls.js", import.meta.url)),
     });
-    const reset = () =>
-      page.evaluate(() => {
-        (window as typeof window & { headingScrolls: string[] }).headingScrolls = [];
-      });
+    // The native core schedules smooth scrolling. Each gesture starts on a fresh
+    // document so a previous animation cannot move the viewport during the click.
+    async function openFixture(hash = "") {
+      await page.goto("about:blank");
+      await page.goto(`${origin}/index.html${hash}`);
+    }
     const observe = async (flow: string, hash: string, target: string | null) => {
       if (target) {
         await page
-          .waitForFunction(
-            (id) =>
-              (window as typeof window & { headingScrolls: string[] }).headingScrolls.includes(id),
-            target,
-          )
+          .waitForFunction((id) => {
+            const scrolls = (window as typeof window & { headingScrolls: string[] }).headingScrolls;
+            const top = document.getElementById(id)?.getBoundingClientRect().top;
+            return scrolls.includes(id) && top !== undefined && top >= -1 && top < 200;
+          }, target)
           .catch(async (cause: unknown) => {
-            const state = await page.evaluate(() => ({
-              hash: location.hash,
-              scrolls: (window as typeof window & { headingScrolls: string[] }).headingScrolls,
-            }));
+            const state = await page.evaluate(
+              (id) => ({
+                hash: location.hash,
+                top: document.getElementById(id)?.getBoundingClientRect().top,
+                scrolls: (window as typeof window & { headingScrolls: string[] }).headingScrolls,
+              }),
+              target,
+            );
             throw new Error(`${flow} ${hash}: ${JSON.stringify({ state, errors, observations })}`, {
               cause,
             });
           });
-        await page.waitForFunction((id) => {
-          const top = document.getElementById(id)!.getBoundingClientRect().top;
-          return top >= -1 && top < 200;
-        }, target);
       } else {
         await page.waitForTimeout(150);
         assert.deepEqual(
@@ -130,31 +124,26 @@ export async function qualifyHeadingHashes(output: string, site?: string) {
       observations.push({ flow, hash, target });
     };
     for (const [index, [id, hash]] of headingCases.entries()) {
-      await page.goto("about:blank");
-      await page.goto(`${origin}/index.html${hash}`);
+      await openFixture(hash);
       await observe("initial", hash, id);
-      await reset();
-      await page.evaluate(() => history.replaceState(null, "", location.pathname));
+      await openFixture();
       await page.evaluate((value) => {
         location.hash = value;
       }, hash);
       await observe("hashchange", hash, id);
-      await reset();
-      await page.evaluate(() => history.replaceState(null, "", location.pathname));
+      await openFixture();
       await page.locator(`[data-heading-case="${index}"]`).click();
       await observe("click", hash, id);
     }
     for (const hash of missingHashes) {
-      await page.goto("about:blank");
-      await page.goto(`${origin}/index.html${hash}`);
+      await openFixture(hash);
       await observe("missing-initial", hash, null);
-      await reset();
-      await page.evaluate(() => history.replaceState(null, "", location.pathname));
+      await openFixture();
       await page.evaluate((value) => {
         location.hash = value;
       }, hash);
       await observe("missing-hashchange", hash, null);
-      await reset();
+      await openFixture();
       await page.evaluate((value) => {
         const link = document.querySelector<HTMLAnchorElement>('[data-heading-case="0"]')!;
         link.setAttribute("href", value);
@@ -162,8 +151,7 @@ export async function qualifyHeadingHashes(output: string, site?: string) {
       await page.locator('[data-heading-case="0"]').click();
       await observe("missing-click", hash, null);
     }
-    await page.goto("about:blank");
-    await page.goto(`${origin}/index.html${headingCases[1][1]}`);
+    await openFixture(headingCases[1][1]);
     await observe("final-japanese", headingCases[1][1], headingCases[1][0]);
     await page.screenshot({ path: path.join(output, "japanese-anchor.png"), fullPage: false });
     await page.close();

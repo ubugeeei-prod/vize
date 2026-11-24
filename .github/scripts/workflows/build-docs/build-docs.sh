@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+vp run --no-cache --filter './docs' build
+test -s docs-render-evidence/component-previews/browser-evidence.json
+test -s docs-render-evidence/component-previews/unavailable-storage-evidence.json

@@ -2,7 +2,7 @@ use super::*;
 use davinci_harness::alloc;
 use std::{hint::black_box, time::Instant};
 
-fn measure(
+pub(super) fn measure(
     project: &NativeNavigationProject<'_>,
     uri: &Url,
     pos: Position,

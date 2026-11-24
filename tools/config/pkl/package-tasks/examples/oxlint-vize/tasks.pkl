@@ -1,0 +1,8 @@
+amends "../../../PackageTasks.pkl"
+
+tasks {
+  ["build:deps"] {
+    module.run("vp", List("run", "--workspace-root", "build:native"))
+    (module.run("vp", List("pack"))) { directory = "../../npm/linter/oxlint" }
+  }
+}

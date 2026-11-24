@@ -20,7 +20,8 @@
     "directory": "npm/builder/parcel"
   },
   "files": [
-    "dist"
+    "dist",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "main": "./dist/index.cjs",
@@ -46,7 +47,7 @@
     "build": "vp pack",
     "check": "vp check src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "pnpm build && node --test src/*.test.ts",
+    "test": "node ./scripts/package-tasks.cjs test",
     "test:host": "node ../../../tools/support/compat/parcel/run.ts",
     "test:recovery-frontier": "node ../../../tools/support/compat/parcel/run.ts --recovery-frontier"
   },

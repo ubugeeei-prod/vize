@@ -1,0 +1,1 @@
+amends "../../../../tests/tooling/programs/process/exit-success.sh.pkl"

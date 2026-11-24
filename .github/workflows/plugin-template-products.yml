@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/plugin-template-products.yml"
+      - ".github/scripts/workflows/plugin-template-products/**"
       - "crates/vize/Cargo.toml"
       - "crates/vize/src/plugin_template.rs"
       - "crates/vize/tests/plugin_template_products/**"
@@ -57,6 +58,19 @@ jobs:
       RUST_MIN_STACK: "16777216"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/plugin-template-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -70,36 +84,17 @@ jobs:
             ~/.cargo/git
           key: plugin-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
       - name: Select original Vue documents
-        run: git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/plugin-templates"
+        run: . "${{ env.VIZE_CI_FILES }}/select-original-vue-documents.sh"
       - name: Compare original SDK reports and Doctor component records
         if: matrix.suite == 'correctness'
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt)
-          suite=(-p vize --features plugin-project-facts --test plugin_template_products)
-          export VIZE_PLUGIN_TEMPLATE_INPUTS="$RUNNER_TEMP/plugin-templates"
-          cargo clippy "${flags[@]}" -p vize_patina --features plugin-template-facts --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" -p vize --features plugin-project-facts --lib --no-deps -- -D warnings
-          cargo test "${flags[@]}" -p vize_patina --features plugin-template-facts --lib plugin_batch::
-          cargo test "${flags[@]}" -p vize_doctor --features application-analysis --test application_complexity
-          cargo test "${flags[@]}" "${suite[@]}" -- --test-threads=1
-          cargo test "${flags[@]}" "${suite[@]}" original_packets_and_component_records_match -- --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/compare-original-sdk-reports-and-doctor-component-records.sh"
       - name: Measure complete plugin and Doctor responses
         if: matrix.suite == 'performance'
-        run: |
-          set -euo pipefail
-          export VIZE_PLUGIN_TEMPLATE_INPUTS="$RUNNER_TEMP/plugin-templates"
-          cargo test --locked --profile ci-opt -p vize --features plugin-project-facts --test plugin_template_products measure_complete_ -- --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/measure-complete-plugin-and-doctor-responses.sh"
 
       - name: Qualify standalone and composed static facts and complexity
         if: matrix.suite == 'correctness'
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt -p vize_l1_to_l2)
-          export VIZE_COMPOSED_TEMPLATE_FILES="$RUNNER_TEMP/authored-static-templates"
-          git ls-files -z -- '*.vue' > "$VIZE_COMPOSED_TEMPLATE_FILES"
-          cargo test "${flags[@]}" --test cfg_complexity_oracle composed:: -- --include-ignored --nocapture --test-threads=1
-          cargo test "${flags[@]}" --test composed_template_alloc
+        run: . "${{ env.VIZE_CI_FILES }}/qualify-standalone-and-composed-static-facts-and-complexity.sh"
 
   inspector-products:
     name: Inspector and Doctor template products
@@ -111,6 +106,19 @@ jobs:
       RUST_MIN_STACK: "16777216"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/plugin-template-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -118,11 +126,4 @@ jobs:
       - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Compare public stage feeds, Doctor component records and complete request costs
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt)
-          export VIZE_INSPECTOR_TEMPLATE_INPUTS="$RUNNER_TEMP/inspector-templates"
-          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_INSPECTOR_TEMPLATE_INPUTS"
-          cargo clippy "${flags[@]}" -p vize_curator --features inspector-template-products --lib --no-deps -- -D warnings
-          cargo test "${flags[@]}" -p vize_curator --features inspector-template-products --lib inspector:: -- --include-ignored --nocapture --test-threads=1
-          cargo test "${flags[@]}" -p vize --no-default-features --features inspector-template-products --test inspector_template_products -- --include-ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/compare-public-stage-feeds-doctor-component-records-and-complete-request.sh"

@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 
 const native = createRequire(import.meta.url)("../../npm/native/index.js");
 const source = '<main><button class="legacy-btn">é {{ label }}</button></main>';
@@ -158,15 +159,11 @@ test("persistent native edits survive a cold Node process", () => {
       cacheDir,
     });
     const nativePath = fileURLToPath(new URL("../../npm/native/index.js", import.meta.url));
-    const script = `
-      const native = require(${JSON.stringify(nativePath)});
-      const output = native.compileWithTransformPlugins(${JSON.stringify(source)}, [{
-        name: 'cold-transform', version: '1', fingerprint: 'design-system-static-class-v1',
-        cacheInputs: [], run() { throw new Error('persistent hit must not call JS'); }
-      }], { cache: true, cacheDir: ${JSON.stringify(cacheDir)} });
-      process.stdout.write(JSON.stringify(output));
-    `;
-    const child = spawnSync(process.execPath, ["-e", script], { encoding: "utf8" });
+    const script = [
+      toolingProgram("plugins/compile-with-cached-transform.cjs"),
+      JSON.stringify({ nativeLibrary: nativePath, source, cacheDirectory: cacheDir }),
+    ];
+    const child = spawnSync(process.execPath, [...script], { encoding: "utf8" });
     assert.equal(child.status, 0, child.stderr);
     const second = JSON.parse(child.stdout);
     assert.equal(second.plugins[0].cached, true);

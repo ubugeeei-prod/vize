@@ -5,11 +5,11 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { installToolingProgram, toolingProgram } from "./support/program-path.ts";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const helpers = path.join(root, ".github/actions/test-js-packages-with-history");
 const helper = pathToFileURL(path.join(helpers, "native-fault-evidence.ts")).href;
-const retention = pathToFileURL(path.join(helpers, "native-fault-retention.ts")).href;
 const commands = [
   ["vp", "run", "--filter", "./npm/native", "build:ci"],
   ["vp", "run", "--filter", "./npm/ui", "check"],
@@ -20,42 +20,12 @@ const commands = [
 function fixture(first: string, second = "0", setup = "", observed = true) {
   const directory = fs.mkdtempSync(path.join(tmpdir(), "vize-ui-phases-"));
   const outcome = path.join(directory, "js-native-fault-evidence-phases-1-ui/outcome.json");
-  fs.writeFileSync(
-    path.join(directory, "vp"),
-    `#!${process.execPath}
-const fs = require('node:fs');
-const first = process.argv[4] === './npm/native';
-const snapshot = fs.existsSync(process.env.PHASE_OUTCOME) ? JSON.parse(fs.readFileSync(process.env.PHASE_OUTCOME, 'utf8')) : null;
-fs.appendFileSync('calls.jsonl', JSON.stringify({ argv: process.argv.slice(2), cwd: process.cwd(), env: process.env, snapshot }) + '\\n');
-fs.writeSync(1, first ? 'build stdout\\n' : 'ui stdout\\n');
-fs.writeSync(2, first ? 'build stderr\\n' : 'ui stderr\\n');
-const result = first ? ${JSON.stringify(first)} : ${JSON.stringify(second)};
-if (result.startsWith('SIG')) process.kill(process.pid, result);
-else process.exit(Number(result));
-`,
-    { mode: 0o755 },
-  );
-  const source = `import fs from 'node:fs';
-import assert from 'node:assert/strict';
-const fault = await import(${JSON.stringify(helper)});
-const retention = await import(${JSON.stringify(retention)});
-fault.observers.privateGuest = () => ({ privateFirecrackerGuest: false });
-fault.observers.sourceSnapshot = () => ({ synthetic: true });
-let sharedSeen, sharedProviders, sequence = 0;
-fault.observers.observeDescendants = (pid, seen, providers, output, _proc, phase = 'interval') => {
-  if (sharedSeen) { assert.equal(seen, sharedSeen); assert.equal(providers, sharedProviders); }
-  sharedSeen = seen; sharedProviders = providers;
-  const attempt = retention.beginProcessObservation(seen, phase);
-  for (let index = 0; index < 80; index++) {
-    const next = sequence++;
-    retention.retainProcessPacket(seen, String(next), { pid, startTicks: '123', observedAt: next, tasks: [{ tid: next }] }, output, phase);
-  }
-  retention.finishProcessObservation(attempt);
-};
-${setup}
-process.exitCode = await fault.main(['--ui-conformance'], 'linux');`;
+  installToolingProgram(path.join(directory, "vp"), "workflow/mock-ui-task.cjs");
+
   const env = {
     PATH: directory,
+    UI_BUILD_OUTCOME: first,
+    UI_CHECK_OUTCOME: second,
     GITHUB_ACTIONS: String(observed),
     GITHUB_RUN_ID: "phases",
     GITHUB_RUN_ATTEMPT: "1",
@@ -64,17 +34,25 @@ process.exitCode = await fault.main(['--ui-conformance'], 'linux');`;
     PHASE_OUTCOME: outcome,
     VIZE_PHASE_NONCE: "space and 'quote'\nnewline",
   };
-  const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
-    cwd: directory,
-    env,
-    encoding: "utf8",
-  });
+  const result = spawnSync(
+    process.execPath,
+    [toolingProgram("workflow/observe-ui-phases.js"), setup],
+    {
+      cwd: directory,
+      env,
+      encoding: "utf8",
+    },
+  );
   // Compare the whole effective environment with an independent launch under
   // the same finite input. macOS adds its own text-encoding variable at launch.
-  const baseline = spawnSync(process.execPath, ["-p", "JSON.stringify(process.env)"], {
-    env,
-    encoding: "utf8",
-  });
+  const baseline = spawnSync(
+    process.execPath,
+    [toolingProgram("process/print-process-environment.js")],
+    {
+      env,
+      encoding: "utf8",
+    },
+  );
   assert.equal(baseline.status, 0, baseline.stderr);
   const calls = fs.existsSync(path.join(directory, "calls.jsonl"))
     ? fs
@@ -179,8 +157,8 @@ for (const [first, second, status, count] of [
 }
 
 for (const [code, status, setup] of [
-  ["ENOENT", 127, "fs.unlinkSync(process.env.PATH + '/vp');"],
-  ["EACCES", 126, "fs.chmodSync(process.env.PATH + '/vp', 0o644);"],
+  ["ENOENT", 127, "missing-command"],
+  ["EACCES", 126, "non-executable-command"],
 ] as const) {
   test(`UI shell launch refusal ${code} preserves ${status} and never starts phase two`, () => {
     const value = fixture("0", "0", setup);
@@ -210,13 +188,7 @@ for (const [code, status, setup] of [
 test("default single-command launch refusal retains its original exit1 behavior", () => {
   const result = spawnSync(
     process.execPath,
-    [
-      "--input-type=module",
-      "-e",
-      `
-const fault = await import(${JSON.stringify(helper)});
-await fault.main(['--', '/nonexistent-vize-pure-fixture-command'], 'linux');`,
-    ],
+    [toolingProgram("workflow/observe-missing-ui-command.js"), helper],
     {
       env: { PATH: "/nonexistent-vize-pure-fixture-path" },
       encoding: "utf8",
@@ -227,13 +199,7 @@ await fault.main(['--', '/nonexistent-vize-pure-fixture-command'], 'linux');`,
 });
 
 test("phase outcome I/O and setup refusal preserve the first product failure and execute it once", () => {
-  for (const setup of [
-    `const write = fs.writeFileSync; fs.writeFileSync = (filename, ...args) => {
-       if (String(filename).endsWith('/outcome.json')) throw new Error('synthetic evidence I/O failure');
-       return write(filename, ...args);
-     };`,
-    `fs.mkdirSync(process.env.RUNNER_TEMP + '/js-native-fault-evidence-phases-1-ui');`,
-  ]) {
+  for (const setup of ["unwritable-outcome", "occupied-directory"]) {
     const value = fixture("29", "0", setup);
     try {
       assert.equal(value.result.status, 29, value.result.stderr);
@@ -268,11 +234,8 @@ test("closed UI mode refuses extra options instead of accepting an arbitrary com
     const result = spawnSync(
       process.execPath,
       [
-        "--input-type=module",
-        "-e",
-        `
-const fault = await import(${JSON.stringify(helper)});
-await fault.main(${JSON.stringify(argv)}, 'linux');`,
+        toolingProgram("workflow/observe-ui-arguments.js"),
+        JSON.stringify({ observerModule: helper, args: argv }),
       ],
       { encoding: "utf8" },
     );

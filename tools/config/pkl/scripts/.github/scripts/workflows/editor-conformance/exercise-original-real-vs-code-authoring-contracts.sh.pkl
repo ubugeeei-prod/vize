@@ -1,0 +1,14 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  mkdir -p "${RUNNER_TEMP}/rich-host-evidence"
+  cp "${RUNNER_TEMP}/vize-server/vize-producer.txt" "${RUNNER_TEMP}/rich-host-evidence/"
+  sha256sum "${VIZE_SERVER_PATH}" > "${RUNNER_TEMP}/rich-host-evidence/consumed-server.sha256"
+  git rev-parse HEAD > "${RUNNER_TEMP}/rich-host-evidence/harness-sha.txt"
+  xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
+  """#
+}

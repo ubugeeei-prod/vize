@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -206,8 +207,14 @@ test("typecheck divergence report rejects invalid performance budgets", () => {
 
 test("typecheck divergence report rejects unsupported baseline exits and output", () => {
   for (const [body, message] of [
-    ["process.exit(3);", /unsupported status 3/],
-    ["process.stdout.write('prefix error TS1: bad\\n'); process.exit(2);", /unparseable/],
+    [
+      readToolingProgram("commands/typecheck-divergence-report-rejections/unsupported-exit.cjs"),
+      /unsupported status 3/,
+    ],
+    [
+      readToolingProgram("commands/typecheck-divergence-report-rejections/invalid-diagnostic.cjs"),
+      /unparseable/,
+    ],
   ] as const) {
     const fixture = setup();
     try {

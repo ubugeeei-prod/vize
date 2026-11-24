@@ -1,0 +1,88 @@
+import "../../Actions.pkl" as ci
+
+name = "Native navigation products"
+on {
+  pull_request {
+    paths = new Listing {
+      "davinci/vize_l2/src/query/**"
+      "davinci/vize_l1_to_l2/Cargo.toml"
+      "davinci/vize_l1_to_l2/src/native_file.rs"
+      "davinci/vize_l1_to_l2/src/native_file/**"
+      "crates/vize_maestro/Cargo.toml"
+      "crates/vize_maestro/src/source_project/navigation.rs"
+      "crates/vize_maestro/src/source_project/navigation/**"
+      ".github/workflows/native-navigation-products.yml"
+      ".github/scripts/workflows/native-navigation-products/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "native-navigation-products-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `navigation-products` {
+    name = "Native navigation ${{ matrix.suite }}"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        suite = List("correctness", "performance")
+      }
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("native-navigation-products")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupNode
+        `if` = "matrix.suite == 'correctness'"
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = ci.cache
+        with {
+          path = """
+          ~/.cargo/registry
+          ~/.cargo/git
+
+          """
+          key = "native-navigation-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}"
+        }
+      }
+      ci.command("Select tracked original Vue inputs", ci.workflowScript("select-tracked-original-vue-inputs.sh"))
+      new Dynamic {
+        name = "Check real File membership and complete editor responses"
+        `if` = "matrix.suite == 'correctness'"
+        run = ci.workflowScript("check-real-file-membership-and-complete-editor-responses.sh")
+      }
+      new Dynamic {
+        name = "Measure complete requests through the editor mailbox"
+        `if` = "matrix.suite == 'performance'"
+        run = ci.workflowScript("measure-complete-requests-through-the-editor-mailbox.sh")
+      }
+    }
+  }
+}

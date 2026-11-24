@@ -1,5 +1,5 @@
+import { readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -141,16 +141,13 @@ test("runs of one build that disagree always fail the cell", () => {
 });
 
 test("the workflow measures every filesystem from one build per platform", () => {
-  const workflow = readFileSync(
-    new URL("../../.github/workflows/content-mapper-pair.yml", import.meta.url),
-    "utf8",
-  );
+  const workflow = readWorkflowShell("content-mapper-pair");
   for (const label of ["linux-ext4", "wsl2-ext4", "wsl2-windows-mount", "windows-ntfs"]) {
     assert.match(workflow, new RegExp(label));
   }
   assert.match(
     workflow,
-    /WSLENV: SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u/,
+    /WSLENV: "SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u:VIZE_CI_FILES\/p"/,
   );
   assert.match(workflow, /cargo build --profile ci-opt -p vize --bin vize/);
   assert.match(workflow, /description: Balanced AB\+BA replicates per build/);

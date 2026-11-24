@@ -1,3 +1,4 @@
+import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
@@ -66,11 +67,14 @@ void test("docs builds publish a deterministic machine-readable endpoint", () =>
     scripts: Record<string, string>;
   };
   assert.equal(
-    packageJson.scripts["generate:metadata"],
+    packageScripts("docs", packageJson.scripts)["generate:metadata"],
     "node ./scripts/generate-contract-metadata.ts",
   );
   for (const script of ["dev", "build"]) {
-    assert.match(packageJson.scripts[script] ?? "", /pnpm generate:metadata/u);
+    assert.match(
+      packageScripts("docs", packageJson.scripts)[script] ?? "",
+      /pnpm generate:metadata/u,
+    );
   }
   assert.match(
     readFileSync(new URL("../../docs/.gitignore", import.meta.url), "utf8"),

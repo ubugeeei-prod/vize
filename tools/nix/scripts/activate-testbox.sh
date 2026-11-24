@@ -1,0 +1,6 @@
+@ACTIVATE_TESTBOX@
+echo "Blacksmith Testbox tools ready (CLI @BLACKSMITH_VERSION@)."
+echo "Pinned CLI: $VIZE_BLACKSMITH_BIN"
+echo 'First use: "$VIZE_BLACKSMITH_BIN" auth login'
+echo "After pushing the current HEAD, see .github/CONTRIBUTING.md for warmup and safe ID capture."
+echo "Then: vp build:testbox / vp test:testbox / vp lint:testbox; stop with vp testbox:stop"

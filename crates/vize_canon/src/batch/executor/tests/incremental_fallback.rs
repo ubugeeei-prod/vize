@@ -23,7 +23,7 @@ fn incremental_session_fallback_is_counted_per_check() {
     let tsgo = cache_dir.join("tsgo");
     fs::write(
         &tsgo,
-        "#!/bin/sh\nif [ \"$1\" = \"--api\" ]; then printf 'api unavailable'; exit 0; fi\nexit 0\n",
+        include_str!("../../../../tests/programs/reject-native-api.sh"),
     )
     .unwrap();
     fs::set_permissions(&tsgo, fs::Permissions::from_mode(0o755)).unwrap();

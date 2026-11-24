@@ -1,0 +1,164 @@
+import "../../Actions.pkl" as ci
+
+name = "Vite+ configuration consumers"
+
+on {
+  workflow_dispatch {
+    inputs {
+      mode {
+        type = "choice"
+        ["default"] = "source"
+        options = List("source", "published-startup-75-76")
+      }
+      version {
+        type = "string"
+        required = false
+      }
+      `authority-blob` {
+        type = "string"
+        required = false
+      }
+    }
+  }
+  pull_request {
+    paths = new Listing {
+      "tools/support/release/verify_published/vite_startup.ts"
+      "tools/support/release/verify_published/vite_startup_authority.ts"
+      "tools/support/release/verify_published/vite-startup-reports.json"
+      "tests/tooling/release/published-vite-startup.test.ts"
+      "crates/vize_carton/src/config/**"
+      "davinci/vize_l0/src/config/**"
+      "crates/vize/src/commands/fmt/**"
+      "crates/vize/src/commands/fmt.rs"
+      "npm/cli/pkl/**"
+      "npm/cli/schemas/vize.config.schema.json"
+      "tests/tooling/viteplus-formatter-*.test.*"
+      "tests/tooling/support/lsp/launch.ts"
+      "tests/differential/build-receipt.ts"
+      ".github/workflows/full-source-cli.yml"
+      ".github/scripts/workflows/full-source-cli/**"
+      ".github/actions/restore-source-cli/**"
+      ".github/workflows/viteplus-config-consumers.yml"
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "viteplus-config-consumers-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  cli {
+    `if` = "github.event_name != 'workflow_dispatch' || inputs.mode != 'published-startup-75-76'"
+    uses = "./.github/workflows/full-source-cli.yml"
+  }
+  consumers {
+    needs = "cli"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    env {
+      VIZE_SOURCE_CLI_RECEIPT_SHA256 = "${{ needs.cli.outputs.receipt-sha256 }}"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+      VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      ci.rust("stable")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        uses = "./.github/actions/restore-source-cli"
+        with { producer = "${{ toJSON(needs.cli.outputs) }}" }
+      }
+      new Dynamic {
+        name = "Verify source CLI configuration transport and file custody"
+        run = "node --test tests/tooling/viteplus-formatter-settings.test.ts tests/tooling/viteplus-formatter-cli.test.mjs"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "viteplus-config-consumers-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/differential/viteplus-formatter-settings"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+  `published-contracts` {
+    `if` = "github.event_name == 'pull_request' || inputs.mode == 'published-startup-75-76'"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "26.12.1"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Check the closed installed role without installing or executing product packages"
+        run = "node --test tests/tooling/release/published-vite-startup.test.ts"
+      }
+    }
+  }
+  `published-startup` {
+    `if` = "github.event_name == 'workflow_dispatch' && inputs.mode == 'published-startup-75-76'"
+    needs = "published-contracts"
+    permissions {
+      contents = "read"
+      actions = "read"
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "26.12.1"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Provision the explicit manager separately from original pnpm install"
+        run = #"npm install --prefix "$RUNNER_TEMP/vite-startup-manager" pnpm@12.16.1 --ignore-scripts --no-audit --no-fund"#
+      }
+      new Dynamic {
+        name = "Retain original and derived installed public build results before assessment"
+        env {
+          GITHUB_TOKEN = "${{ github.token }}"
+          STARTUP_VERSION = "${{ inputs.version }}"
+          STARTUP_AUTHORITY = "${{ inputs.authority-blob }}"
+        }
+        run = #"node tools/support/release/verify_published/vite_startup.ts "$STARTUP_VERSION" "$STARTUP_AUTHORITY" "$RUNNER_TEMP/vite-startup-manager/node_modules/pnpm""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "published-vite-startup-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/vite-startup-evidence-${{ github.run_id }}-${{ github.run_attempt }}"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

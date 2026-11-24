@@ -1,0 +1,129 @@
+import "../../Actions.pkl" as ci
+
+name = "LSP config startup diagnostics"
+`run-name` = "Vben startup trace @ ${{ github.event.pull_request.head.sha }}"
+
+// One instrumented original performance case, not full Check qualification.
+on {
+  pull_request {
+    types = List("opened", "synchronize", "reopened")
+    paths = new Listing {
+      ".github/workflows/lsp-config-diagnostics.yml"
+      ".github/scripts/workflows/lsp-config-diagnostics/**"
+      "tools/support/compat/github/run-lsp-config-diagnostics.ts"
+      "tests/tooling/lsp-config-diagnostics-workflow.test.ts"
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "lsp-config-diagnostics-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = false
+}
+
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  RAYON_NUM_THREADS = "4"
+  VIZE_PERF_BUDGET_SCALE = "1"
+  VIZE_TRACE_EDITOR_PREPARATION = "1"
+  VIZE_LSP_BIN = "target/ci/vize"
+  EXPECTED_SOURCE = "${{ github.event.pull_request.head.sha }}"
+}
+
+jobs {
+  `vben-startup` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("lsp-config-diagnostics")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      ci.workspaceVp()
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "vue-parity"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Hydrate only the original pinned Vben fixture"
+        run = "git submodule update --init --depth 1 tests/_fixtures/_git/vue-vben-admin"
+      }
+      ci.command("Install the frozen workspace dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Build and receipt the same Vue parity producer"
+        id = "producer"
+        run = ci.workflowScript("build-and-receipt-the-same-vue-parity-producer.sh")
+      }
+      new Dynamic {
+        name = "Run the unchanged original performance case with native phase tracing"
+        run = "node tools/support/compat/github/run-lsp-config-diagnostics.ts"
+      }
+      new Dynamic {
+        name = "Protect cold local responses and existing initial diagnostic controls"
+        `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
+        run = ci.workflowScript("protect-cold-local-responses-and-existing-initial-diagnostic-controls.sh")
+      }
+      new Dynamic {
+        name = "Verify native preparation and request freshness laws"
+        `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
+        run = ci.workflowScript("verify-native-preparation-and-request-freshness-laws.sh")
+      }
+      new Dynamic {
+        name = "Verify real union ownership and reverse open-order regressions"
+        `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
+        run = ci.workflowScript("verify-real-union-ownership-and-reverse-open-order-regressions.sh")
+      }
+      new Dynamic {
+        name = "Verify whole native views and issued candidate freshness with nonzero tests"
+        `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
+        run = ci.workflowScript("verify-whole-native-views-and-issued-candidate-freshness-with-nonzero-te.sh")
+      }
+      new Dynamic {
+        name = "Resolve the original native candidate after unchanged sibling diagnostics"
+        `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
+        run = ci.workflowScript("resolve-the-original-native-candidate-after-unchanged-sibling-diagnostic.sh")
+      }
+      new Dynamic {
+        name = "Preserve the original atomic rename and unsafe-name refusal contract"
+        `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
+        run = ci.workflowScript("preserve-the-original-atomic-rename-and-unsafe-name-refusal-contract.sh")
+      }
+      new Dynamic {
+        name = "Observe the original six symlink workspace layouts"
+        `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
+        run = ci.workflowScript("observe-the-original-six-symlink-workspace-layouts.sh")
+      }
+      new Dynamic {
+        name = "Retain source, binary, raw process output, native phases, and metrics"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "lsp-config-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}"
+          path = """
+          target/vize-tests/lsp-config-diagnostics/
+          target/vize-tests/metrics/vben-lsp-incremental/
+          target/ci/vize
+          target/ci/vize.differential-build.json
+
+          """
+          `include-hidden-files` = true
+          `if-no-files-found` = "error"
+          `retention-days` = 3
+        }
+      }
+    }
+  }
+}

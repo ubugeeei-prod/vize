@@ -1,13 +1,14 @@
+import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { runInNewContext } from "node:vm";
 
 import { parse } from "yaml";
 
+import { evaluateWorkflowExpression, selectedJobs } from "./support/content-mapper-campaign.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 import { installedIdentity } from "../../tools/support/compat/content-mapper/official-css-options.ts";
 
@@ -52,43 +53,6 @@ function jobSteps(workflow: string, jobName: string): WorkflowStep[] {
   return steps;
 }
 
-type CampaignInputs = Partial<
-  Record<
-    | "event-rename-only"
-    | "official-css-options-only"
-    | "published-defaults-only"
-    | "router-experimental-only",
-    boolean
-  >
->;
-
-// Evaluates a workflow expression for one trigger, as Actions would.
-function evaluateWorkflowExpression(
-  expression: string,
-  eventName: string,
-  inputs: CampaignInputs,
-): unknown {
-  return runInNewContext(
-    expression
-      .replace(/^\$\{\{\s*|\s*\}\}$/gu, "")
-      .replace(/\binputs\.([a-z-]+)/gu, 'inputs["$1"]'),
-    {
-      github: { event_name: eventName, event: { pull_request: {} }, ref: "refs/heads/main" },
-      inputs,
-    },
-  );
-}
-
-function selectedJobs(
-  jobs: Record<string, { if: string }>,
-  eventName: string,
-  inputs: CampaignInputs,
-): string[] {
-  return Object.entries(jobs)
-    .filter(([, job]) => evaluateWorkflowExpression(job.if, eventName, inputs))
-    .map(([name]) => name);
-}
-
 function stepsRunning(steps: WorkflowStep[], command: string): number[] {
   return steps.flatMap((step, index) => (step.run?.includes(command) ? [index] : []));
 }
@@ -104,7 +68,7 @@ function assertTriggerFilters(workflowConfig: WorkflowConfig): void {
 }
 
 test("Content Mapper conformance pins and runs the exact upstream project path", () => {
-  const workflow = readRepoFile(".github", "workflows", "content-mapper-conformance.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "content-mapper-conformance.yml");
   const workflowConfig = parse(workflow) as WorkflowConfig;
   const job = workflowJobBody(workflow, "exact-tsgo-project");
   const steps = jobSteps(workflow, "exact-tsgo-project");
@@ -222,40 +186,44 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   const stressSteps = steps.filter((step) => step.name === MAESTRO_STRESS);
   assert.equal(stressSteps.length, 1, "expected exactly one Maestro lifecycle stress step");
   const stressStep = stressSteps[0];
-  const stressRun = stressStep.run ?? "";
+  const stressRun = workflowProgram(
+    "content-mapper-conformance",
+    stressStep.run ?? "",
+    "stress-every-editor-case-against-its-exact-native-provider.ts",
+  );
   assert.equal(
     steps.some((step) => Object.hasOwn(step, "continue-on-error")),
     false,
     "every case now runs on its bound provider and every default-job failure must gate",
   );
-  assert.match(stressRun, /assert\.equal\(manifest\.version, '7\.0\.2'\)/);
-  assert.match(stressRun, /assert\.equal\(manifest\.name, '@typescript\/typescript-linux-x64'\)/);
+  assert.match(stressRun, /assert\.equal\(manifest\.version, "7\.0\.2"\)/);
+  assert.match(stressRun, /assert\.equal\(manifest\.name, "@typescript\/typescript-linux-x64"\)/);
   assert.ok(stressRun.includes(ORIGINAL_NATIVE_SHA));
   assert.match(stressRun, /Version 7\.0\.2\\n/);
   assert.match(
     stressRun,
-    /initializationEvidence: 'Fixture, source and startup configuration custody; not a raw RPC witness'/,
+    /initializationEvidence:\s+"Fixture, source and startup configuration custody; not a raw RPC witness"/,
   );
   assert.match(
     stressRun,
-    /CORSA_PATH: binary, TSGO_PATH: binary, VIZE_TEST_TSGO_PATH: binary, VIZE_TEST_REQUIRE_TSGO: '1'/,
+    /CORSA_PATH: binary,\s+TSGO_PATH: binary,\s+VIZE_TEST_TSGO_PATH: binary,\s+VIZE_TEST_REQUIRE_TSGO: "1"/,
   );
-  assert.match(stressRun, /'--ignored', '--list', '--format', 'terse'/);
-  assert.match(stressRun, /key: 'doctest:vize_maestro', selector: \['--doc'\]/);
+  assert.match(stressRun, /"--ignored", "--list", "--format", "terse"/);
+  assert.match(stressRun, /key: "doctest:vize_maestro", selector: \["--doc"\]/);
   assert.match(
     stressRun,
-    /assert\.deepEqual\(completed\.map\(identity\)\.sort\(\), receipt\.inventory\.map\(identity\)\.sort\(\)/,
+    /assert\.deepEqual\(\s*completed\.map\(identity\)\.sort\(\),\s*receipt\.inventory\.map\(identity\)\.sort\(\)/,
   );
   assert.match(stressRun, /assert\.equal\(receipt\.cycles\.length, 20\)/);
   assert.match(
     stressRun,
-    /assert\.equal\(fileHash\(target\.executable\), target\.executableSha256/,
+    /assert\.equal\(\s*fileHash\(target\.executable!\),\s*target\.executableSha256/,
   );
   assert.match(stressRun, /stdout\.bin/);
   assert.match(stressRun, /stderr\.bin/);
   assert.match(stressRun, /source: process\.env\.GITHUB_SHA/);
   assert.equal(
-    [...stressRun.matchAll(/'--no-run'/gu)].length,
+    [...stressRun.matchAll(/"--no-run"/gu)].length,
     1,
     "test executables must build once before provider splits",
   );
@@ -271,13 +239,13 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   );
   assert.match(
     stressRun,
-    /import \{ names, executions, reject \} from '\.\/tests\/tooling\/support\/content-mapper-editor-inventory\.ts';/,
+    /const \{ names, executions, reject \} = \(await import\(\s*pathToFileURL\(resolveWorkflowInput\("\.\/tests\/tooling\/support\/content-mapper-editor-inventory\.ts"\)\)/,
   );
 });
 
 test("manual focused campaigns preserve the full default and upload before gating", () => {
   const workflow = parse(
-    readRepoFile(".github", "workflows", "content-mapper-conformance.yml"),
+    readAutomationPrograms(".github", "workflows", "content-mapper-conformance.yml"),
   ) as {
     on: { workflow_dispatch: { inputs: Record<string, { type: string; default: boolean }> } };
     concurrency: { group: string };
@@ -374,7 +342,7 @@ test("manual focused campaigns preserve the full default and upload before gatin
 
 test("official TypeScript acceptance keeps the reported host and complete installed package evidence", () => {
   const workflow = parse(
-    readRepoFile(".github", "workflows", "content-mapper-conformance.yml"),
+    readAutomationPrograms(".github", "workflows", "content-mapper-conformance.yml"),
   ) as {
     jobs: Record<string, { if: string; steps: WorkflowStep[]; "timeout-minutes": number }>;
   };
@@ -560,7 +528,11 @@ test("official-host fixtures preserve every original reported input and referenc
 });
 
 test("experimental Router campaign preserves each independent outcome before its final gate", () => {
-  const workflow = readRepoFile(".github", "workflows", "content-mapper-reported-q16.yml");
+  const workflow = readAutomationPrograms(
+    ".github",
+    "workflows",
+    "content-mapper-reported-q16.yml",
+  );
   const steps = jobSteps(workflow, "router-experimental") as Array<
     WorkflowStep & { "continue-on-error"?: boolean }
   >;

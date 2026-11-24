@@ -1,0 +1,6 @@
+if (process.argv.includes("--listFilesOnly")) {
+  process.stdout.write(@@FILES_JOIN_N_N@@);
+  process.exit(0);
+}
+process.stdout.write(@@OUTPUT@@);
+process.exit(2);

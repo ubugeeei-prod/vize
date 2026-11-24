@@ -1,3 +1,6 @@
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
+import { taskCatalog } from "../../tools/config/vite-plus/task-groups.ts";
+import { packageCommands } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -48,30 +51,29 @@ test("VS Code extension installs the guarded TypeScript Vue plugin", () => {
   assert.equal(manifest.scripts?.build, "vp pack");
   assert.equal(manifest.scripts?.watch, "vp pack --watch");
   assert.equal(
-    manifest.scripts?.package,
+    packageCommands(root, "editors/vscode", manifest.scripts?.package, "package").join(" && "),
     "node ../../tools/commands/editors/vscode/sync-typescript-plugin.ts stage && vsce package --no-dependencies --out dist/vize.vsix && node ../../tools/commands/editors/vscode/sync-typescript-plugin.ts inject dist/vize.vsix",
   );
   assert.equal(
-    manifest.scripts?.["test:host"],
+    packageCommands(root, "editors/vscode", manifest.scripts?.["test:host"], "test:host").join(
+      " && ",
+    ),
     "node ../../tools/commands/editors/vscode/sync-typescript-plugin.ts stage && node test/run-extension-host.mjs",
   );
 
-  assert.match(
-    readFile("tools/config/vite-plus/tasks/build.ts"),
-    /nodeCommandFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
-  );
-  assert.match(
-    readFile("tools/config/vite-plus/tasks/build.ts"),
-    /rustToolFromVscodeExtension\(\s*"editors\/vscode\/assert-vsix-package"/,
-  );
-  assert.match(
-    readFile("tools/config/vite-plus/tasks/test-benchmark.ts"),
-    /nodeCommandFromVscodeExtension\(\s*"editors\/vscode\/sync-typescript-plugin"/,
-  );
-  assert.match(
-    readFile("tools/config/vite-plus/tasks/test-benchmark.ts"),
-    /rustToolFromVscodeExtension\(\s*"editors\/vscode\/assert-vsix-package"/,
-  );
+  for (const task of ["package:vscode-extension", "test:vscode-extension:host-real"] as const) {
+    const steps = workspaceTaskSteps(taskCatalog[task]);
+    const stage = steps.findIndex(
+      (step) =>
+        step.arguments?.includes("../../tools/commands/editors/vscode/sync-typescript-plugin.ts") &&
+        step.arguments.at(-1) === "stage",
+    );
+    const inject = steps.findIndex((step) => step.arguments?.includes("inject"));
+    const guard = steps.findIndex((step) =>
+      step.arguments?.includes("../../tools/commands/editors/vscode/assert-vsix-package.rs"),
+    );
+    assert.ok(stage >= 0 && stage < inject && inject < guard);
+  }
 
   assert.match(readFile("editors/vscode/.vscodeignore"), /^typescript-vue-plugin\/$/m);
   assert.ok(

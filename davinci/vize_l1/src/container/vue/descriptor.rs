@@ -444,3 +444,6 @@ pub(super) fn observe_template_only(source: &str) -> Option<TemplateOnlyDescript
 
 #[cfg(test)]
 mod template_only_tests;
+
+#[cfg(feature = "independent-template-block")]
+pub use template::CheckedTemplateBlock;

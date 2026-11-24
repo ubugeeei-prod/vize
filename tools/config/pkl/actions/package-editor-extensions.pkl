@@ -1,0 +1,44 @@
+import "../Actions.pkl" as ci
+
+name = "Package editor extensions"
+description = "Check and package the VS Code, Zed, Neovim, Vim, Helix, and Emacs extensions"
+
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Setup Vite+ and Node.js"
+      uses = ci.setupVp
+      with {
+        `node-version-file` = "package.json"
+        cache = true
+        `run-install` = false
+      }
+    }
+    new Dynamic {
+      name = "Setup Rust"
+      uses = ci.setupRust
+      with { toolchain = "stable" }
+    }
+    new Dynamic {
+      uses = "./.github/actions/setup-rust-sticky-cache"
+      with {
+        key = "editor-extensions"
+        `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+      }
+    }
+    ci.use("./.github/actions/setup-rust-script")
+    new Dynamic {
+      name = "Install JS dependencies"
+      shell = "bash"
+      env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+      run = "vp install --frozen-lockfile --prefer-offline"
+    }
+    new Dynamic {
+      name = "Check and package editor extensions"
+      shell = "bash"
+      env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+      run = "vp run --workspace-root package:editor-extensions"
+    }
+  }
+}

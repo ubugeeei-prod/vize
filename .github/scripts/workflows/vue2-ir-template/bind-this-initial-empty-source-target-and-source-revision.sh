@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+export CARGO_TARGET_DIR="$RUNNER_TEMP/vue2-ir-source-$SOURCE_SHA"
+printf 'CARGO_TARGET_DIR=%s\n' "$CARGO_TARGET_DIR" >> "$GITHUB_ENV"
+printf 'VIZE_VUE2_IR_ORACLES_ROOT=%s/vue2-ir-oracles\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+test ! -e "$CARGO_TARGET_DIR"
+mkdir -p target/vize-tests/vue2-ir
+git rev-parse HEAD HEAD^{tree} > target/vize-tests/vue2-ir/source.txt
+printf '%s\n' "$CARGO_TARGET_DIR" > target/vize-tests/vue2-ir/initial-empty-target.txt

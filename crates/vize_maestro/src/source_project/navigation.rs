@@ -78,6 +78,8 @@ struct CachedNavigation {
 /// Send/Sync or survive a snapshot replacement; active thread slots are bounded.
 pub struct NativeNavigationProject<'host> {
     source: SourceQueryProject<'host>,
+    #[cfg(feature = "experimental-lexical-arrow-queries")]
+    lexical_arrow_initializers: bool,
     workers: Mutex<FxHashMap<Url, CachedNavigation>>,
     selected_workers: Mutex<FxHashMap<Url, CachedNavigation>>,
     names_workers: Mutex<FxHashMap<Url, CachedNavigation>>,
@@ -90,6 +92,8 @@ impl<'host> NativeNavigationProject<'host> {
     pub fn new(source: SourceQueryProject<'host>) -> Self {
         Self {
             source,
+            #[cfg(feature = "experimental-lexical-arrow-queries")]
+            lexical_arrow_initializers: false,
             workers: Mutex::new(FxHashMap::default()),
             selected_workers: Mutex::new(FxHashMap::default()),
             names_workers: Mutex::new(FxHashMap::default()),
@@ -230,3 +234,15 @@ impl Drop for NativeNavigationProject<'_> {
 mod products;
 #[cfg(feature = "experimental-navigation-products")]
 pub use products::SymbolNavigationProducts;
+
+#[cfg(feature = "experimental-lexical-arrow-queries")]
+impl<'host> NativeNavigationProject<'host> {
+    /// Create an isolated worker pool that records lexical arrow initializers
+    /// on the open original Program. Every worker keeps the usual host revision,
+    /// configuration, cancellation and publication checks.
+    pub fn for_lexical_initializers(source: SourceQueryProject<'host>) -> Self {
+        let mut project = Self::new(source);
+        project.lexical_arrow_initializers = true;
+        project
+    }
+}

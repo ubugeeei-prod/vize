@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+for side in base head; do
+  sha=$BASE; [[ $side == head ]] && sha=$HEAD
+  git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
+  source="$RUNNER_TEMP/src-$side"
+  mkdir -p "$source"
+  git archive "$sha" editors/vscode | tar -x -C "$source"
+  # Both commits share this checkout's locked dependencies.
+  ln -s "$PWD/node_modules" "$source/node_modules"
+  ln -s "$PWD/editors/vscode/node_modules" "$source/editors/vscode/node_modules"
+  (cd "$source/editors/vscode" && vp pack)
+  out="ext-builds/$side"
+  mkdir -p "$out"
+  (cd "$source/editors/vscode" && cp -R package.json dist icons syntaxes language-configuration.json "$GITHUB_WORKSPACE/$out/")
+  node "$VIZE_CI_FILES/build-both-extension-commits.cjs" "$out/package.json" "$SERVER_VERSION"
+  sha256sum "$out/dist/extension.cjs"
+done

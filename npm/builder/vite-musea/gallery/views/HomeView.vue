@@ -215,15 +215,7 @@ const stats = computed(() => ({
   min-width: 0;
   flex-wrap: wrap;
   gap: 0.375rem;
-}
-
-.home-card-tag {
   overflow-wrap: anywhere;
-  font-size: 0.6875rem;
-  color: var(--musea-text-muted);
-  background: var(--musea-bg-tertiary);
-  padding: 0.125rem 0.375rem;
-  border-radius: 4px;
 }
 
 .home-empty {

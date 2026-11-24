@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
@@ -142,7 +143,7 @@ void test("the native runtime matrix requires SSR for affected sources and broad
       "utf8",
     ),
   );
-  const action = fs.readFileSync(
+  const action = readAutomationPrograms(
     new URL("../../.github/actions/test-native-ssr/action.yml", import.meta.url),
     "utf8",
   );
@@ -194,7 +195,9 @@ void test("the native runtime matrix requires SSR for affected sources and broad
 });
 
 void test("NativeSSR retains complete value-sensitive JSX modules and runtime outcomes", () => {
-  const action = parse(fs.readFileSync(".github/actions/test-native-ssr/action.yml", "utf8"));
+  const action = parse(
+    readAutomationPrograms(".github/actions/test-native-ssr/action.yml", "utf8"),
+  );
   const native = action.runs.steps.find((step: { id?: string }) => step.id === "native-ssr");
   assert.equal(
     native.env.VIZE_JSX_VALUE_CAPTURE,

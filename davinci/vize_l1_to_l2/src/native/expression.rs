@@ -79,6 +79,7 @@ impl<'a> Context<'_, 'a> {
         construct: impl FnOnce(&mut R, &'a JsExpr<'a>) -> Result<vize_l0::id::NodeId, ArtifactError>,
     ) {
         let source_span = source.span();
+        #[cfg(not(feature = "lexical-arrow-initializers"))]
         let syntax = parse_once(
             self.allocator,
             Embed {
@@ -89,18 +90,39 @@ impl<'a> Context<'_, 'a> {
                 source,
             },
         );
-        let retained = match syntax.into_expression() {
-            Ok(retained) => retained,
-            Err(syntax) => {
-                self.rejected_syntax.push(*syntax);
-                self.hole(
-                    region,
-                    NativeHoleKind::Embed(EmbedHole::UnsupportedShape),
-                    source_span,
-                );
-                return;
-            }
-        };
+        macro_rules! retained {
+            ($result:expr) => {
+                match $result {
+                    Ok(retained) => retained,
+                    Err(syntax) => {
+                        self.rejected_syntax.push(*syntax);
+                        self.hole(
+                            region,
+                            NativeHoleKind::Embed(EmbedHole::UnsupportedShape),
+                            source_span,
+                        );
+                        return;
+                    }
+                }
+            };
+        }
+        #[cfg(not(feature = "lexical-arrow-initializers"))]
+        let retained = retained!(syntax.into_expression());
+        #[cfg(feature = "lexical-arrow-initializers")]
+        let retained = retained!(match self.component.expressions.as_mut() {
+            Some(parser) => parser.parse(source, self.lang),
+            None => parse_once(
+                self.allocator,
+                Embed {
+                    grammar: Grammar {
+                        shape: Shape::Expr,
+                        lang: self.lang
+                    },
+                    source
+                }
+            )
+            .into_expression(),
+        });
         let expression = admit(&retained).and_then(|()| {
             retain_expression_in(self.allocator, self.block().root_source(), &retained).map_err(
                 |error| match error {

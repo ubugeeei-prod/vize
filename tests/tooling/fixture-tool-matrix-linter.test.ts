@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -246,7 +247,10 @@ test("fixture tool matrix records linter schema failures", () => {
   const executable = path.join(fakeDir, "fake-vize.mjs");
   fs.mkdirSync(path.join(fixtureDir, "src"), { recursive: true });
   fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
-  fs.writeFileSync(executable, '#!/usr/bin/env node\nprocess.stdout.write("[]");\n');
+  fs.writeFileSync(
+    executable,
+    readToolingProgram("commands/fixture-tool-matrix-linter/empty-lint-report.cjs"),
+  );
   fs.chmodSync(executable, 0o755);
 
   try {
@@ -289,24 +293,9 @@ test("fixture tool matrix isolates linter dependency resolution from repository 
   fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
   fs.writeFileSync(
     executable,
-    `#!/usr/bin/env node
-import fs from "node:fs";
-import path from "node:path";
-let directory = process.cwd();
-let leaked = false;
-for (;;) {
-  if (fs.existsSync(path.join(directory, "node_modules", "ancestor-only", "package.json"))) {
-    leaked = true;
-    break;
-  }
-  const parent = path.dirname(directory);
-  if (parent === directory) break;
-  directory = parent;
-}
-const messages = leaked ? [${JSON.stringify(diagnostic(1))}] : [];
-process.stdout.write(JSON.stringify([{ file: "src/App.vue", messages, errorCount: 0, warningCount: messages.length }]));
-process.exit(leaked ? 1 : 0);
-`,
+    readToolingProgram("commands/fixture-tool-matrix-linter/record-lint-inputs.js.in", {
+      DIAGNOSTIC_1: JSON.stringify(diagnostic(1)),
+    }),
   );
   fs.chmodSync(executable, 0o755);
 
@@ -340,10 +329,7 @@ test("fixture tool matrix preserves the zero-file linter contract", () => {
   const executable = path.join(fakeDir, "fake-vize.mjs");
   fs.writeFileSync(
     executable,
-    `#!/usr/bin/env node
-process.stdout.write("[]");
-process.stderr.write('No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, or .tsrx files found matching patterns: ["**/*.vue"]\\n');
-process.exit(2);\n`,
+    readToolingProgram("commands/fixture-tool-matrix-linter/empty-lint-report-with-error.cjs"),
   );
   fs.chmodSync(executable, 0o755);
 
@@ -386,8 +372,7 @@ test("fixture tool matrix rejects partial linter coverage", () => {
   fs.writeFileSync(path.join(fixtureDir, "src", "Card.vue"), "<template />\n");
   fs.writeFileSync(
     executable,
-    `#!/usr/bin/env node
-process.stdout.write(JSON.stringify([{ file: "src/App.vue", messages: [], errorCount: 0, warningCount: 0 }]));\n`,
+    readToolingProgram("commands/fixture-tool-matrix-linter/report-file-scoped-lint.cjs"),
   );
   fs.chmodSync(executable, 0o755);
 

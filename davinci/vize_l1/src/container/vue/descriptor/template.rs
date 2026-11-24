@@ -212,3 +212,9 @@ impl<'o, 'a> TemplateFrameNames<'o, 'a> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "independent-template-block")]
+mod independent;
+
+#[cfg(feature = "independent-template-block")]
+pub use independent::CheckedTemplateBlock;

@@ -26,11 +26,23 @@ const positionIndex = {
   kernel: "davinci/vize_l2/src/query/position/index/intervals.rs",
   harness: "davinci/vize_l2/src/query/position/index/intervals/tests.rs",
 } as const;
+export const templateLabelRanking = {
+  theorem: "tests/formal/template-lint/Selection.lean",
+  kernel: "crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs",
+  harness: "crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs",
+} as const;
+export const templateSpanProjection = {
+  theorem: "tests/formal/ir-graph/TemplateProjection.lean",
+  kernel: "crates/vize_incremental/src/template/projection.rs",
+  harness: "crates/vize_incremental/src/template/kani.rs",
+} as const;
 export const rustProofReferences = [
   sourceMapCoordinates,
   styleHeaderValidation,
   positionIndex,
   compilerStringLiterals,
+  templateLabelRanking,
+  templateSpanProjection,
 ] as const;
 
 export function checkedRustTheorems(paths: readonly string[]): Set<string> {

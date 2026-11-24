@@ -1,0 +1,246 @@
+import "../../Actions.pkl" as ci
+
+name = "V1 exact candidate admission"
+
+on {
+  workflow_call {
+    inputs {
+      candidate_sha {
+        description = "Exact 40-character source candidate to admit"
+        required = true
+        type = "string"
+      }
+      receipt_run_id {
+        description = "Actions run that owns the exact receipt bundle"
+        required = true
+        type = "string"
+      }
+      receipt_artifact {
+        description = "Artifact containing v1-exact-candidate-receipts.json"
+        required = true
+        type = "string"
+      }
+      enforce_complete {
+        description = "Reject any required host row without complete exact receipts"
+        required = false
+        ["default"] = true
+        type = "boolean"
+      }
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      candidate_sha {
+        description = "Exact 40-character source candidate to admit"
+        required = true
+        type = "string"
+      }
+      receipt_run_id {
+        description = "Actions run that owns the exact receipt bundle"
+        required = true
+        type = "string"
+      }
+      receipt_artifact {
+        description = "Artifact containing v1-exact-candidate-receipts.json"
+        required = true
+        type = "string"
+      }
+      enforce_complete {
+        description = "Reject any required host row without complete exact receipts"
+        required = false
+        ["default"] = true
+        type = "boolean"
+      }
+    }
+  }
+}
+
+permissions {
+  actions = "read"
+  contents = "read"
+}
+
+concurrency {
+  group = "v1-exact-candidate-${{ inputs.candidate_sha }}"
+  `cancel-in-progress` = false
+}
+
+jobs {
+  plan {
+    name = "Generate exact host plan"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    outputs {
+      hosts = "${{ steps.plan.outputs.hosts }}"
+      host_count = "${{ steps.plan.outputs.host_count }}"
+      row_count = "${{ steps.plan.outputs.row_count }}"
+      receipt_run = "${{ steps.receipt-run.outputs.run }}"
+      receipt_run_attempt = "${{ steps.receipt-run.outputs.attempt }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("v1-exact-candidate")
+      ci.checkoutAt("${{ inputs.candidate_sha }}")
+      new Dynamic {
+        name = "Verify the exact candidate checkout"
+        shell = "bash"
+        env { CANDIDATE_SHA = "${{ inputs.candidate_sha }}" }
+        run = ci.workflowScript("verify-the-exact-candidate-checkout.sh")
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Bind the receipt run to the exact candidate"
+        id = "receipt-run"
+        shell = "bash"
+        env {
+          GH_TOKEN = "${{ github.token }}"
+          CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
+          RECEIPT_RUN_ID = "${{ inputs.receipt_run_id }}"
+        }
+        run = ci.workflowScript("bind-the-receipt-run-to-the-exact-candidate.sh")
+      }
+      new Dynamic {
+        name = "Download the immutable receipt bundle"
+        uses = ci.downloadArtifact
+        with {
+          name = "${{ inputs.receipt_artifact }}"
+          path = ".qualification/receipts"
+          `github-token` = "${{ github.token }}"
+          repository = "${{ github.repository }}"
+          `run-id` = "${{ inputs.receipt_run_id }}"
+        }
+      }
+      ci.command("Require the canonical receipt bundle name", ci.workflowScript("require-candidate-receipt.sh"))
+      new Dynamic {
+        name = "Derive every host row from the committed manifest"
+        id = "plan"
+        env { CANDIDATE_SHA = "${{ inputs.candidate_sha }}" }
+        run = #"node tools/commands/release/v1-exact-candidate.ts plan --candidate "$CANDIDATE_SHA" --github-output"#
+      }
+      new Dynamic {
+        name = "Preserve the source receipt bundle for row admission"
+        uses = ci.uploadArtifact
+        with {
+          name = "v1-exact-candidate-receipt-bundle-${{ inputs.candidate_sha }}"
+          path = ".qualification/receipts/v1-exact-candidate-receipts.json"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  `validate-host` {
+    name = "Admit ${{ matrix.id }}"
+    needs = "plan"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    strategy {
+      `fail-fast` = false
+      matrix = "${{ fromJSON(needs.plan.outputs.hosts) }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("v1-exact-candidate")
+      ci.checkoutAt("${{ inputs.candidate_sha }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "v1-exact-candidate-receipt-bundle-${{ inputs.candidate_sha }}"
+          path = ".qualification/receipts"
+        }
+      }
+      new Dynamic {
+        name = "Admit exact positive, negative and qualification receipts"
+        shell = "bash"
+        env {
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN = "${{ needs.plan.outputs.receipt_run }}"
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT = "${{ needs.plan.outputs.receipt_run_attempt }}"
+          CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
+          HOST_ID = "${{ matrix.id }}"
+        }
+        run = ci.workflowScript("admit-exact-positive-negative-and-qualification-receipts.sh")
+      }
+      new Dynamic {
+        name = "Preserve immutable host admission"
+        uses = ci.uploadArtifact
+        with {
+          name = "v1-host-admission-${{ inputs.candidate_sha }}-${{ matrix.id }}"
+          path = ".qualification/admission/${{ inputs.candidate_sha }}-${{ matrix.id }}.json"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  admit {
+    name = "Enforce one exact candidate"
+    needs = List("plan", "validate-host")
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("v1-exact-candidate")
+      ci.checkoutAt("${{ inputs.candidate_sha }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Download every host admission from this run"
+        uses = ci.downloadArtifact
+        with {
+          pattern = "v1-host-admission-${{ inputs.candidate_sha }}-*"
+          path = ".qualification/admissions"
+          `merge-multiple` = true
+        }
+      }
+      new Dynamic {
+        name = "Assemble the exact-candidate manifest"
+        shell = "bash"
+        env {
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN = "${{ needs.plan.outputs.receipt_run }}"
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT = "${{ needs.plan.outputs.receipt_run_attempt }}"
+          CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
+        }
+        run = ci.workflowScript("assemble-the-exact-candidate-manifest.sh")
+      }
+      new Dynamic {
+        name = "Enforce complete exact-candidate host qualification"
+        `if` = "${{ inputs.enforce_complete }}"
+        shell = "bash"
+        env {
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN = "${{ needs.plan.outputs.receipt_run }}"
+          VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT = "${{ needs.plan.outputs.receipt_run_attempt }}"
+          CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
+        }
+        run = ci.workflowScript("enforce-complete-exact-candidate-host-qualification.sh")
+      }
+      new Dynamic {
+        name = "Preserve the admitted manifest"
+        `if` = "${{ always() && hashFiles('.qualification/v1-exact-candidate-manifest.json') != '' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "v1-exact-candidate-manifest-${{ inputs.candidate_sha }}"
+          path = ".qualification/v1-exact-candidate-manifest.json"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

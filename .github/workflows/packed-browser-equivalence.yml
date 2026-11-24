@@ -7,6 +7,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/packed-browser-equivalence.yml"
+      - ".github/scripts/workflows/packed-browser-equivalence/**"
       - "tools/commands/levels/packed-browser-equivalence.ts"
       - "tools/support/compat/npm/wasm-responses.ts"
       - "tests/tooling/packed-browser-equivalence.test.ts"
@@ -22,6 +23,19 @@ jobs:
       RUSTUP_TOOLCHAIN: "1.100.0"
       CARGO_BUILD_JOBS: "24"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/packed-browser-equivalence/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           {
@@ -35,13 +49,7 @@ jobs:
       - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1
         with: { tool: wasm-bindgen-cli@0.2.129 }
       - name: Compare immutable builds and execute the unpacked public APIs
-        run: |
-          set -euo pipefail
-          node --test tests/tooling/packed-browser-equivalence.test.ts
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          git fetch --no-tags --depth=1 origin "$BASE_SHA" "$HEAD_SHA"
-          node tools/commands/levels/packed-browser-equivalence.ts \
-            "$BASE_SHA" "$HEAD_SHA" "$RUNNER_TEMP/browser-package.json" | tee -a "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/compare-immutable-builds-and-execute-the-unpacked-public-apis.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
