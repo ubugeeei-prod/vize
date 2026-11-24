@@ -6,7 +6,7 @@
 //! names through the SFC's binding analysis. Where a fact is unavailable the
 //! whole block is left alone: no use can be ruled out.
 
-use oxc_ast::ast::Program;
+use oxc_ast::ast::{BindingIdentifier, Program};
 use oxc_semantic::{ReferenceId, Semantic, SymbolId};
 use oxc_syntax::reference::ReferenceFlags;
 use vize_l0::{CompactString, FxHashSet};
@@ -153,6 +153,36 @@ impl<'a> ComponentUses<'a> {
             uses.ty = self.generic_names(name);
         }
         uses
+    }
+
+    /// Changing this import to a value would change emitted decorator metadata.
+    pub(super) fn metadata_reads(&self, local: &BindingIdentifier<'_>, shared: bool) -> bool {
+        if !self.own.metadata.is_empty()
+            && local.symbol_id.get().is_none_or(|symbol| {
+                self.own
+                    .semantic()
+                    .scoping()
+                    .get_resolved_reference_ids(symbol)
+                    .iter()
+                    .any(|reference| self.own.metadata.contains(reference))
+            })
+        {
+            return true;
+        }
+        shared
+            && self.sibling.as_ref().is_some_and(|sibling| {
+                !sibling.metadata.is_empty()
+                    && sibling
+                        .semantic()
+                        .scoping()
+                        .root_unresolved_references()
+                        .get(local.name.as_str())
+                        .is_some_and(|references| {
+                            references
+                                .iter()
+                                .any(|reference| sibling.metadata.contains(reference))
+                        })
+            })
     }
 
     pub(super) fn semantic(&self) -> &Semantic<'a> {

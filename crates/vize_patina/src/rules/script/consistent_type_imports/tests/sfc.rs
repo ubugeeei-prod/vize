@@ -78,6 +78,23 @@ fn a_type_only_import_a_template_expression_evaluates_is_reported() {
 }
 
 #[test]
+fn a_template_read_reports_a_metadata_type_without_rewriting_its_import() {
+    let source = r#"<script setup lang="ts">
+import type { Example } from './example';
+@decorate class Service { constructor(example: Example) {} }
+</script>
+<template><p>{{ Example.name }}</p></template>"#;
+    assert_eq!(
+        vue(source),
+        [report(
+            2,
+            r#""Example" is imported as a type, but the template reads it as a value."#
+        )]
+    );
+    assert_eq!(super::fixed(source, "Service.vue", None), source);
+}
+
+#[test]
 fn a_style_bind_of_a_type_only_import_is_reported() {
     let source = "<script setup lang=\"ts\">\nimport type { Theme } from './theme';\ndefineProps<{ theme: Theme }>();\n</script>\n<template><p /></template>\n<style scoped>\np { color: v-bind('Theme.color'); }\n</style>\n";
     assert_eq!(
@@ -90,6 +107,30 @@ fn a_style_bind_of_a_type_only_import_is_reported() {
     assert_eq!(
         super::fixed(source, "Component.vue", None),
         source.replace("import type { Theme }", "import { Theme }")
+    );
+}
+
+#[test]
+fn a_style_read_is_reported_even_when_the_same_template_name_has_its_own_rule() {
+    let source = r#"<script setup lang="ts">
+import type { Theme } from './theme';
+</script>
+<template><p :title="Theme.name" /></template>
+<style>p { color: v-bind('Theme.color'); }</style>"#;
+    let both = crate::Linter::with_all().with_enabled_rules(Some(vec![
+        super::RULE.into(),
+        "vue/no-undefined-refs".into(),
+    ]));
+    let result = both.lint_sfc(source, "Component.vue");
+    let messages: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == super::RULE)
+        .map(|diagnostic| diagnostic.message.as_str())
+        .collect();
+    assert_eq!(
+        messages,
+        [r#""Theme" is imported as a type, but a `<style>` `v-bind()` reads it as a value."#]
     );
 }
 

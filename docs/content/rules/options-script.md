@@ -244,7 +244,9 @@ names and meanings.
 Lint does not read `tsconfig.json`. With the default `true`, a type that a decorated signature
 serializes (a decorated property's type, the parameter and return types of a decorated method, the
 constructor parameter types of a decorated class) counts as a value use, so the fix never changes
-emitted metadata. Set it to `false` when the project does not emit decorator metadata.
+emitted metadata. With `prefer: "no-type-imports"`, the rule reports these type imports and leaves
+their keywords in place for manual review. Set `emitDecoratorMetadata` to `false` when the project
+does not emit decorator metadata.
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";

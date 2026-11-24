@@ -233,8 +233,8 @@ impl TemplateSideReads<'_> {
         {
             return None;
         }
-        if reads.expression_reads(name) {
-            return (!undefined_refs_reported).then_some(UnboundRead::Template);
+        if !undefined_refs_reported && reads.expression_reads(name) {
+            return Some(UnboundRead::Template);
         }
         reads
             .style_bind_reads(name)

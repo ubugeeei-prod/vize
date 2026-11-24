@@ -47,6 +47,8 @@ fn a_template_value_use_keeps_the_import_a_value_import() {
         "<p ref=\"Foo\" />",
         // A destructuring default of a slot or `v-for` pattern reads the
         // outer binding.
+        "<Bar v-slot=\"value = Foo\">{{ value }}</Bar>",
+        "<p v-for=\"(value = Foo) in [item]\" :key=\"value\" />",
         "<Bar v-slot=\"{ value = Foo }\">{{ value }}</Bar>",
         "<Bar><template #row=\"{ value = Foo.fallback }\">{{ value }}</template></Bar>",
         "<p v-for=\"{ label = Foo } in [item]\" :key=\"label\">{{ label }}</p>",

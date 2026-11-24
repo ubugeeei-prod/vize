@@ -75,6 +75,50 @@ fn no_type_imports_removes_the_keyword_and_keeps_comments() {
 }
 
 #[test]
+fn type_keywords_used_by_decorator_metadata_are_reported_without_a_fix() {
+    let declaration = "import type { Foo, Other } from './types';";
+    let member = "@deco class Service { constructor(value: Foo) {} }";
+    let source = format!("{declaration}\n{member}\ntype T = Other;\n");
+    assert_eq!(
+        reports(&source, "module.ts", no_type_imports()),
+        [report(1, AVOID)]
+    );
+    assert_eq!(fixed(&source, "module.ts", no_type_imports()), source);
+
+    let inline = source.replace(
+        declaration,
+        "import { type Foo, type Other } from './types';",
+    );
+    assert_eq!(
+        reports(&inline, "module.ts", no_type_imports()),
+        [report(1, AVOID), report(1, AVOID)]
+    );
+    assert_eq!(
+        fixed(&inline, "module.ts", no_type_imports()),
+        inline.replace("type Other", "Other")
+    );
+    assert_eq!(
+        fixed(
+            &source,
+            "module.ts",
+            Some(json!({
+                "prefer": "no-type-imports", "emitDecoratorMetadata": false
+            }))
+        ),
+        source.replace("import type", "import")
+    );
+
+    let sibling = format!(
+        "<script lang=\"ts\">{declaration}</script>\n<script setup lang=\"ts\">{member}</script>"
+    );
+    assert_eq!(
+        reports(&sibling, "Service.vue", no_type_imports()),
+        [report(1, AVOID)]
+    );
+    assert_eq!(fixed(&sibling, "Service.vue", no_type_imports()), sibling);
+}
+
+#[test]
 fn import_type_annotations_are_reported_unless_allowed() {
     let source = "let foo: import /* T */ ('foo');\nlet bar: import('foo').Bar;\nconst lazy = () => import('foo');\n";
     assert_eq!(

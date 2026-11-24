@@ -179,9 +179,10 @@ impl Drawer {
             let Some(pattern) = pattern.filter(|pattern| pattern.contains(['=', '['])) else {
                 continue;
             };
-            // The assignment form reads a destructuring target's computed keys and defaults.
-            let assignment = vize_carton::cstr!("({pattern} = 0)");
-            let Some(names) = super::extract_identifiers_checked(&assignment) else {
+            // A Vue slot or loop alias is a parameter. Its default evaluates
+            // in a read position even when the alias is a single binding.
+            let parameters = vize_carton::cstr!("({pattern}) => 0");
+            let Some(names) = super::extract_identifiers_checked(&parameters) else {
                 reads.mark_incomplete();
                 continue;
             };

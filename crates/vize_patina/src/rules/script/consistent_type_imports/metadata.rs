@@ -3,8 +3,8 @@
 //! With `emitDecoratorMetadata`, a decorated declaration emits
 //! `design:type`, `design:paramtypes` and `design:returntype`, and the name of
 //! a type reference in one of those positions becomes a runtime expression.
-//! Converting that import to `import type` would change the emitted metadata
-//! to `Object`. The positions follow the TypeScript emitter: a decorated
+//! Changing whether that import exists at runtime can change the emitted
+//! constructor metadata. The positions follow the TypeScript emitter: a decorated
 //! property's type, the parameter and return types of a decorated method, the
 //! types of a decorated accessor pair, and the constructor parameter types of
 //! a decorated class. A parameter decorator decorates its function. Only the

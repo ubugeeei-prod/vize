@@ -73,9 +73,7 @@ pub(super) fn check<'a>(
     }
     let prefers_types = options.prefer == TypeImportPreference::TypeImports;
     let built = BlockSemantic::of(sfc.semantic_of(program), program, true);
-    let Some(mut uses) =
-        ComponentUses::new(built, sfc, prefers_types && options.emit_decorator_metadata)
-    else {
+    let Some(mut uses) = ComponentUses::new(built, sfc, options.emit_decorator_metadata) else {
         return;
     };
     if annotations {
@@ -92,8 +90,8 @@ pub(super) fn check<'a>(
         }
     }
     if !prefers_types {
-        for (declaration, _) in imports {
-            avoid_type_import(site, declaration, result);
+        for (declaration, shared) in imports {
+            avoid_type_import(site, declaration, shared, &uses, result);
         }
         return;
     }
@@ -156,6 +154,7 @@ fn prefer_type_import(
     // Type specifiers the template or a style `v-bind()` evaluates.
     let mut read_as_value: Vec<(&str, Span, UnboundRead)> = Vec::new();
     let mut keeps_runtime_specifier = false;
+    let mut changes_metadata = false;
     for specifier in specifiers {
         let local = specifier.local();
         let name = local.name.as_str();
@@ -165,6 +164,7 @@ fn prefer_type_import(
         );
         if declared_type || inline_type {
             if let Some(read) = uses.unbound_read(name).filter(|_| shared) {
+                changes_metadata |= uses.metadata_reads(local, shared);
                 read_as_value.push((name, local.span, read));
                 keeps_runtime_specifier = true;
                 placements.push(Placement::Value);
@@ -190,7 +190,11 @@ fn prefer_type_import(
     if type_only.is_empty() && read_as_value.is_empty() {
         return;
     }
-    let fixed = site.rewrite(declaration, &placements);
+    let fixed = if changes_metadata {
+        None
+    } else {
+        site.rewrite(declaration, &placements)
+    };
     // Import attributes cannot follow `import type`, so a declaration that
     // would become one whole is left as written.
     if !type_only.is_empty() && (keeps_runtime_specifier || declaration.with_clause.is_none()) {
@@ -259,6 +263,8 @@ fn some_are_types(names: &[&str]) -> String {
 fn avoid_type_import(
     site: Site<'_, '_>,
     declaration: &ImportDeclaration<'_>,
+    shared: bool,
+    uses: &ComponentUses<'_>,
     result: &mut ScriptLintResult,
 ) {
     const MESSAGE: &str = "Use an `import` instead of an `import type`.";
@@ -268,8 +274,15 @@ fn avoid_type_import(
         .as_ref()
         .map_or(&[][..], |specifiers| specifiers.as_slice());
     if declaration.import_kind.is_type() {
-        let placements = vec![Placement::Value; specifiers.len()];
         let diagnostic = site.warn(declaration.span, MESSAGE);
+        if specifiers
+            .iter()
+            .any(|specifier| uses.metadata_reads(specifier.local(), shared))
+        {
+            result.add_diagnostic(diagnostic);
+            return;
+        }
+        let placements = vec![Placement::Value; specifiers.len()];
         result.add_diagnostic(match site.rewrite(declaration, &placements) {
             Some(text) => diagnostic.with_fix(site.replacement(declaration.span, TITLE, text)),
             None => diagnostic,
@@ -284,6 +297,10 @@ fn avoid_type_import(
             continue;
         }
         let diagnostic = site.warn(named.span, MESSAGE);
+        if uses.metadata_reads(&named.local, shared) {
+            result.add_diagnostic(diagnostic);
+            continue;
+        }
         // One small edit per specifier, so a declaration is fixed in one pass.
         result.add_diagnostic(match inline_type_keyword(site.source, named.span) {
             Some(keyword) => {
