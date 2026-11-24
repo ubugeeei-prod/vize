@@ -26,7 +26,7 @@ on:
       - tests/davinci_test_support/src/l3_reference/schedule.rs
       - tests/davinci_test_support/src/l3_reference/trace.rs
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - ".github/workflows/davinci-creusot.yml"
       - "tools/nix/creusot/**"
