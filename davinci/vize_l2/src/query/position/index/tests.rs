@@ -18,30 +18,31 @@ pub(in crate::query) fn assert_equivalent(file: &FileArtifact<'_>) {
 fn compare(scan: Model<'_, '_>, indexed: IndexedModel<'_, '_>) {
     let file = scan.file();
     for byte in (0..=file.artifact().source().len() as u32).chain([u32::MAX]) {
-        assert_eq!(
-            scan.reference_at_offset(byte)
-                .map(|r| r.map(|x| ptr::from_ref(x.reference()))),
-            indexed
-                .reference_at_offset(byte)
-                .map(|r| r.map(|x| ptr::from_ref(x.reference()))),
-            "reference {byte}"
-        );
-        assert_eq!(
-            scan.binding_at_offset(byte)
-                .map(|r| r.map(|x| (ptr::from_ref(x.file()), x.id()))),
-            indexed
-                .binding_at_offset(byte)
-                .map(|r| r.map(|x| (ptr::from_ref(x.file()), x.id()))),
-            "binding {byte}"
-        );
-        assert_eq!(
-            scan.scope_at_offset(byte)
-                .map(|r| r.map(|x| ptr::from_ref(x.scope()))),
-            indexed
-                .scope_at_offset(byte)
-                .map(|r| r.map(|x| ptr::from_ref(x.scope()))),
-            "scope {byte}"
-        );
+        let combined = indexed.script_position_at_offset(byte);
+        for actual in [indexed.reference_at_offset(byte), combined.reference] {
+            assert_eq!(
+                scan.reference_at_offset(byte)
+                    .map(|r| r.map(|x| (ptr::from_ref(x.file()), ptr::from_ref(x.reference())))),
+                actual.map(|r| r.map(|x| (ptr::from_ref(x.file()), ptr::from_ref(x.reference())))),
+                "reference {byte}"
+            );
+        }
+        for actual in [indexed.binding_at_offset(byte), combined.binding] {
+            assert_eq!(
+                scan.binding_at_offset(byte)
+                    .map(|r| r.map(|x| (ptr::from_ref(x.file()), x.id()))),
+                actual.map(|r| r.map(|x| (ptr::from_ref(x.file()), x.id()))),
+                "binding {byte}"
+            );
+        }
+        for actual in [indexed.scope_at_offset(byte), combined.scope] {
+            assert_eq!(
+                scan.scope_at_offset(byte)
+                    .map(|r| r.map(|x| (ptr::from_ref(x.file()), ptr::from_ref(x.scope())))),
+                actual.map(|r| r.map(|x| (ptr::from_ref(x.file()), ptr::from_ref(x.scope())))),
+                "scope {byte}"
+            );
+        }
         match (
             scan.template_symbol_at_offset(byte),
             indexed.template_symbol_at_offset(byte),

@@ -11,6 +11,7 @@ commands {
   export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/expression-query-files"
   git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
   cargo test "${flags[@]}" --test expression_queries -- corpus::original_vue_files --exact --ignored --nocapture
+  cargo test "${flags[@]}" --test expression_queries -- script_positions::original_vue_files --exact --ignored --nocapture
   cargo test "${flags[@]}" --test expression_queries -- profile::paired_reference_queries --exact --ignored --nocapture
   cargo test "${flags[@]}" --test expression_queries -- operand::paired_operand_products --exact --ignored --nocapture --test-threads=1
   cargo test "${flags[@]}" --test expression_queries -- component_imports::original_vue_files --exact --ignored --nocapture --test-threads=1

@@ -172,3 +172,44 @@ fn overlapping_original_unit_observations_are_ambiguous_even_on_a_non_name_byte(
         ));
     }
 }
+
+#[test]
+fn joined_queries_preserve_independent_name_and_scope_answers() {
+    let arena = Allocator::default();
+    let source = "const seed = 1; seed; function left() {} function right() {} /*gap*/";
+    let mut owner = super::file(&arena, source, SourceType::mjs());
+    let at = offset(source, "seed;");
+    let span = owner
+        .references()
+        .iter()
+        .find(|r| r.span.start == at)
+        .unwrap()
+        .span;
+    owner
+        .facts
+        .declarations
+        .iter_mut()
+        .find(|r| r.name.as_str() == "seed")
+        .unwrap()
+        .span = span;
+    let gap = offset(source, "gap");
+    let unit_scope = owner.units()[0].scope;
+    let mut siblings = owner
+        .facts
+        .scopes
+        .iter_mut()
+        .filter(|s| s.parent == Some(unit_scope));
+    siblings.next().unwrap().span = Span::new(gap, gap + 3);
+    siblings.next().unwrap().span = Span::new(gap, gap + 3);
+
+    let index = Model::new(&owner).index_positions();
+    let ambiguous = index.model().script_position_at_offset(at);
+    assert!(ambiguous.reference.unwrap().is_some());
+    assert!(matches!(ambiguous.binding, Err(Error::AmbiguousSite)));
+    assert!(matches!(ambiguous.scope, Err(Error::AmbiguousSite)));
+    let between = index.model().script_position_at_offset(gap);
+    assert!(between.reference.unwrap().is_none());
+    assert!(between.binding.unwrap().is_none());
+    assert!(matches!(between.scope, Err(Error::AmbiguousSite)));
+    crate::query::position::index::tests::assert_equivalent(&owner);
+}
