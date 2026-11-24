@@ -1,6 +1,8 @@
 use super::{Direction, GraphError, L3Ir, Op, OpId, Positions, ReachQuery, ReachStep, StateEdge};
 use alloc::{borrow::Cow, vec, vec::Vec};
 
+pub(super) mod bounded;
+
 const END: u32 = u32::MAX;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
