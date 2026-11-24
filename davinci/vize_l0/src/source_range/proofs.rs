@@ -65,13 +65,14 @@ fn source_range_shifts_saturate_and_invert() {
     let range = any_range();
     let amount: i32 = kani::any();
     let shifted = range.offset(amount);
-    let fits =
-        |offset: u32| (0..=i64::from(u32::MAX)).contains(&(i64::from(offset) + i64::from(amount)));
+    // Each endpoint moves by `amount` in the integers, clamped into `u32`.
+    let moved = |offset: u32| i64::from(offset) + i64::from(amount);
+    let clamped = |offset: u32| moved(offset).clamp(0, i64::from(u32::MAX));
+    assert_eq!(i64::from(shifted.start), clamped(range.start));
+    assert_eq!(i64::from(shifted.end), clamped(range.end));
+    let fits = |offset: u32| moved(offset) == clamped(offset);
+    // Without saturation, the opposite shift restores the range.
     if fits(range.start) && fits(range.end) {
-        assert_eq!(
-            i64::from(shifted.start),
-            i64::from(range.start) + i64::from(amount)
-        );
         assert_eq!(shifted.len(), range.len());
         if let Some(back) = amount.checked_neg() {
             assert_eq!(shifted.offset(back), range);
@@ -80,8 +81,12 @@ fn source_range_shifts_saturate_and_invert() {
     let grown = range.extend(kani::any());
     assert!(encloses(grown, range));
     kani::cover!(
-        amount < 0 && shifted.start == 0 && range.start > 0,
+        amount < 0 && shifted.start == 0 && moved(range.start) < 0,
         "clamped at zero"
+    );
+    kani::cover!(
+        amount > 0 && shifted.end == u32::MAX && moved(range.end) > i64::from(u32::MAX),
+        "clamped at the top"
     );
     kani::cover!(
         amount == i32::MIN && fits(range.start),

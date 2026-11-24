@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { parse as parseToml } from "@iarna/toml";
 import { parse as parseYaml } from "yaml";
 
 // docs/davinci/decisions/2026-11-17-creusot-inventory.md: a law counts only
@@ -87,7 +88,7 @@ function kaniInvocations(): Invocation[] {
       for (const step of jobSteps ?? []) {
         const where = `${file} ${job}`;
         if (step.uses?.startsWith("model-checking/kani-github-action@")) {
-          const args = String(step.with?.args ?? "");
+          const args = typeof step.with?.args === "string" ? step.with.args : "";
           invocations.push(parseInvocation(where, args.split(/\s+/u).filter(Boolean)));
         }
         for (const line of (step.run ?? "").split("\n")) {
@@ -110,14 +111,68 @@ function kaniInvocations(): Invocation[] {
   return invocations;
 }
 
-type Gate = { tests: boolean; features: Set<string> };
+/** A build: whether tests are compiled, and the enabled features (`all` for every one). */
+type Gate = { tests: boolean; features: Set<string> | "all" };
 
-/** Whether the attributes in front of a `mod` keep it under this build. */
+/**
+ * Evaluate a `cfg` predicate under a Kani build: `kani` holds, `creusot` does
+ * not, `test` follows `--tests`, features follow `--features`, and
+ * `all`/`any`/`not` combine them. Platform predicates (`target_*`, `unix`)
+ * are taken as holding, since a module they gate is compiled on some runner.
+ */
+function cfgHolds(predicate: string, gate: Gate): boolean {
+  let at = 0;
+  const skipSpace = (): void => {
+    while (predicate[at] === " ") at += 1;
+  };
+  const term = (): boolean => {
+    skipSpace();
+    const name = /^\w+/u.exec(predicate.slice(at))?.[0];
+    assert.ok(name, `unsupported cfg predicate: ${predicate}`);
+    at += name.length;
+    skipSpace();
+    if (predicate[at] === "(") {
+      at += 1;
+      const values: boolean[] = [];
+      skipSpace();
+      while (predicate[at] !== ")") {
+        assert.ok(at < predicate.length, `unbalanced cfg predicate: ${predicate}`);
+        values.push(term());
+        skipSpace();
+        if (predicate[at] === ",") at += 1;
+        skipSpace();
+      }
+      at += 1;
+      if (name === "all") return values.every(Boolean);
+      if (name === "any") return values.some(Boolean);
+      assert.equal(name, "not", `unsupported cfg combinator: ${predicate}`);
+      assert.equal(values.length, 1, `not() takes one predicate: ${predicate}`);
+      return !values[0];
+    }
+    if (predicate[at] === "=") {
+      at += 1;
+      skipSpace();
+      const value = /^"([^"]*)"/u.exec(predicate.slice(at));
+      assert.ok(value, `unsupported cfg value: ${predicate}`);
+      at += value[0].length;
+      if (name === "feature") return gate.features === "all" || gate.features.has(value[1]!);
+      return true;
+    }
+    if (name === "test") return gate.tests;
+    if (name === "creusot") return false;
+    return true;
+  };
+  const value = term();
+  skipSpace();
+  assert.equal(at, predicate.length, `unsupported cfg predicate: ${predicate}`);
+  return value;
+}
+
+/** Whether the attributes in front of an item keep it under this build. */
 function enabled(attributes: string[], gate: Gate): boolean {
   return attributes.every((attribute) => {
-    if (/^#\[cfg\(test\)\]$/u.test(attribute)) return gate.tests;
-    const feature = attribute.match(/^#\[cfg\(feature = "([^"]+)"\)\]$/u)?.[1];
-    return feature === undefined || gate.features.has(feature);
+    const predicate = /^#\[cfg\((.*)\)\]$/u.exec(attribute)?.[1];
+    return predicate === undefined || cfgHolds(predicate, gate);
   });
 }
 
@@ -131,9 +186,10 @@ type Scan = {
 /**
  * Read a Rust file's module declarations and harnesses. `dir` is where its
  * child module files live: the file's own directory for a crate root or
- * `mod.rs`, otherwise the directory named after the file.
+ * `mod.rs`, otherwise the directory named after the file. Without `dir`,
+ * only the harnesses are read.
  */
-function scanFile(file: string, dir: string, gate: Gate): Scan {
+function scanFile(file: string, dir: string | undefined, gate: Gate): Scan {
   const scan: Scan = { modules: [], harnesses: [] };
   const inline: Array<{ name: string; depth: number; on: boolean }> = [];
   let depth = 0;
@@ -151,7 +207,7 @@ function scanFile(file: string, dir: string, gate: Gate): Scan {
     const live = inline.every((module) => module.on);
     if (declared?.[2] === "{") {
       inline.push({ name: declared[1]!, depth, on: enabled(attributes, gate) });
-    } else if (declared && live && enabled(attributes, gate)) {
+    } else if (declared && dir !== undefined && live && enabled(attributes, gate)) {
       const base = path.join(dir, ...prefix, declared[1]!);
       const target = [`${base}.rs`, path.join(base, "mod.rs")].find((candidate) =>
         fs.existsSync(candidate),
@@ -160,8 +216,10 @@ function scanFile(file: string, dir: string, gate: Gate): Scan {
       scan.modules.push(target);
     }
     const harness = line.match(/^(?:pub(?:\([^)]*\))? )?fn (\$?\w+)\s*\(/u);
-    if (proof && harness && live) {
-      scan.harnesses.push([...prefix, harness[1]!].join("::"));
+    if (proof && harness) {
+      if (live && enabled(attributes, gate)) {
+        scan.harnesses.push([...prefix, harness[1]!].join("::"));
+      }
       proof = false;
     }
     if (!line.startsWith("#[") && line.length > 0) attributes = [];
@@ -176,16 +234,19 @@ function scanFile(file: string, dir: string, gate: Gate): Scan {
   return scan;
 }
 
-/** Every file of a crate's module tree with its module path and harnesses. */
-function moduleTree(root: string, gate: Gate): Map<string, string[]> {
-  const harnesses = new Map<string, string[]>();
+/** One harness: its name within its file (inline modules included) and its full path. */
+type Harness = { local: string; qualified: string };
+
+/** Every file of a crate's module tree with its harnesses. */
+function moduleTree(root: string, gate: Gate): Map<string, Harness[]> {
+  const harnesses = new Map<string, Harness[]>();
   const visit = (file: string, modulePath: string[], isRoot: boolean): void => {
     const ownsDir = isRoot || path.basename(file) === "mod.rs";
     const dir = ownsDir ? path.dirname(file) : file.slice(0, -".rs".length);
     const scan = scanFile(file, dir, gate);
     harnesses.set(
       repoPath(file),
-      scan.harnesses.map((name) => [...modulePath, name].join("::")),
+      scan.harnesses.map((local) => ({ local, qualified: [...modulePath, local].join("::") })),
     );
     for (const child of scan.modules) {
       const name =
@@ -201,7 +262,7 @@ function moduleTree(root: string, gate: Gate): Map<string, string[]> {
   return harnesses;
 }
 
-/** Repository file → harness names some workflow verifies. */
+/** Repository file → in-file harness names some workflow verifies. */
 function verifiedHarnesses(): Map<string, Set<string>> {
   const verified = new Map<string, Set<string>>();
   const note = (file: string, name: string): void => {
@@ -216,14 +277,13 @@ function verifiedHarnesses(): Map<string, Set<string>> {
       : path.join(repoRoot, path.dirname(invocation.manifest!), "src", "lib.rs");
     assert.ok(fs.existsSync(root), `${invocation.where}: missing ${repoPath(root)}`);
     let selected = 0;
-    for (const [file, names] of moduleTree(root, gate)) {
-      for (const qualified of names) {
-        const short = qualified.split("::").at(-1)!;
+    for (const [file, harnesses] of moduleTree(root, gate)) {
+      for (const { local, qualified } of harnesses) {
         const chosen =
           invocation.filters.length === 0 ||
           invocation.filters.some((filter) => qualified.includes(filter));
         if (chosen) {
-          note(file, short);
+          note(file, local);
           selected += 1;
         }
       }
@@ -245,11 +305,14 @@ test("a Kani step of a generated workflow verifies every Kani harness", () => {
     .filter(Boolean);
   for (const file of harnessFiles) {
     const source = fs.readFileSync(path.join(repoRoot, file), "utf8");
-    for (const match of source.matchAll(
-      /^ *#\[kani::proof\]\n(?: *#\[[^\n]*\]\n)* *(?:pub(?:\([^)]*\))? )?fn (\$?\w+)\(/gmu,
-    )) {
+    // Every harness in the file, under a build that enables every gate.
+    const { harnesses } = scanFile(path.join(repoRoot, file), undefined, {
+      tests: true,
+      features: "all",
+    });
+    for (const local of harnesses) {
       total += 1;
-      if (!verified.get(file)?.has(match[1]!)) orphans.push(`${file} ${match[1]!}`);
+      if (!verified.get(file)?.has(local)) orphans.push(`${file} ${local}`);
     }
     assert.equal(
       [...source.matchAll(/^ *#\[kani::proof\]$/gmu)].length,
@@ -266,10 +329,11 @@ test("a Kani step of a generated workflow verifies every Kani harness", () => {
 });
 
 test("every Creusot proof package is a member of the replayed proof workspace", () => {
-  const workspace = fs.readFileSync(path.join(creusotDir, "Cargo.toml"), "utf8");
-  const members = [
-    ...(workspace.match(/^members = \[([^\]]*)\]$/mu)?.[1] ?? "").matchAll(/"([^"]+)"/gu),
-  ].map((member) => member[1]!);
+  const workspace = parseToml(fs.readFileSync(path.join(creusotDir, "Cargo.toml"), "utf8")) as {
+    workspace?: { members?: string[] };
+  };
+  const members = workspace.workspace?.members ?? [];
+  assert.ok(members.length > 0, "proof workspace members");
   const packages = fs
     .readdirSync(creusotDir, { withFileTypes: true })
     .filter(
@@ -280,8 +344,10 @@ test("every Creusot proof package is a member of the replayed proof workspace", 
   assert.deepEqual([...members].sort(), [...packages].sort());
 
   const libraries = members.map((member) => {
-    const manifest = fs.readFileSync(path.join(creusotDir, member, "Cargo.toml"), "utf8");
-    const lib = manifest.match(/^\[lib\]\npath = "([^"]+)"$/mu)?.[1];
+    const manifest = parseToml(
+      fs.readFileSync(path.join(creusotDir, member, "Cargo.toml"), "utf8"),
+    ) as { lib?: { path?: string } };
+    const lib = manifest.lib?.path;
     assert.ok(lib, `${member} names its library root`);
     return repoPath(path.resolve(creusotDir, member, lib));
   });
