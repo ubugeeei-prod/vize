@@ -50,11 +50,7 @@ pub(crate) fn select_ssr_lane(
     } else {
         SsrL4Selection::Legacy(LegacyReason::Options)
     };
-    // A direct attempt that does not emit is not this compile's lane: the
-    // full path follows and records its own selection.
-    if !request.direct || matches!(selection, SsrL4Selection::Emitted(_)) {
-        record_selection(&selection);
-    }
+    record_selection(&selection);
     selection
 }
 
@@ -63,43 +59,24 @@ fn lower_and_emit_plain(
     source: &str,
     request: &SsrL4Request<'_>,
 ) -> SsrL4Selection {
-    let (tree, surface_errors) = if request.direct {
-        // No legacy parser runs on the direct lane, so L1 also reports the
-        // structural recoveries that parser would have reported.
-        let (tree, _html_tree, errors) =
-            vize_l1::markup::parse_with_authored_diagnostics(allocator, source);
-        (tree, errors)
-    } else {
-        vize_l1::markup::parse_with_options(
-            allocator,
-            source,
-            SurfaceParseOptions {
-                experimental_in_tag_comments: request.options.experimental_in_tag_comments,
-                ..SurfaceParseOptions::default()
-            },
-        )
-    };
-    if request.direct && !surface_errors.is_empty() {
-        return SsrL4Selection::Legacy(LegacyReason::SurfaceSemantics);
-    }
+    let (tree, surface_errors) = vize_l1::markup::parse_with_options(
+        allocator,
+        source,
+        SurfaceParseOptions {
+            experimental_in_tag_comments: request.options.experimental_in_tag_comments,
+            ..SurfaceParseOptions::default()
+        },
+    );
     let lowered = lower_request(allocator, source, &tree, &surface_errors, request);
-    let mut s2 = match lowered {
+    let s2 = match lowered {
         Ok(lowered) => lowered,
         Err(message) => {
             return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
         }
     };
-    if request.direct && !s2.diagnostics.is_empty() {
-        return SsrL4Selection::Legacy(LegacyReason::SurfaceSemantics);
-    }
-    let frozen = match request.frozen {
-        Some((root, carrier)) => Some(FrozenTemplate::new(root, source, carrier)),
-        None if request.direct => Some(Ok(FrozenTemplate::unfrozen(source))),
-        None => None,
-    };
-    let frozen_slots = match frozen {
-        Some(template) => {
-            let facts = template
+    let frozen_slots = match request.frozen {
+        Some((root, carrier)) => {
+            let facts = FrozenTemplate::new(root, source, carrier)
                 .and_then(|template| FrozenSlotFacts::new(template, source, &s2.artifact.root));
             match facts {
                 Ok(facts) => Some(facts),
@@ -129,7 +106,7 @@ fn lower_and_emit_plain(
         .binding_metadata
         .as_ref()
         .map(crate::bindings::binding_table);
-    let selection = select::select_from_l2_plain(
+    select::select_from_l2_plain(
         allocator,
         &artifact,
         request.options,
@@ -163,9 +140,115 @@ fn lower_and_emit_plain(
                 request.options.inline,
             ))
         },
+    )
+}
+
+/// The direct lane: emit `source` from L1, L2 and the L4 plan with no parser
+/// bundle, or decline so the full path compiles it.
+///
+/// It emits only a template the legacy parser and transform would pass
+/// without a word. L1 parses with its authored diagnostics and any of them
+/// declines; lowering runs under empty frozen custody, which refuses a
+/// `v-pre` opening; any L2 diagnostic declines; and so do the `v-slot` and
+/// `v-model` passes and malformed slot props, which the legacy transform
+/// reports. A decline is not this compile's lane, so only an emitted
+/// selection is recorded. The shared lane above is left exactly as it was.
+pub(crate) fn select_ssr_lane_direct(
+    allocator: &Allocator,
+    source: &str,
+    request: &SsrL4Request<'_>,
+) -> SsrL4Selection {
+    if !bridge_supported(request) {
+        return SsrL4Selection::Legacy(LegacyReason::Options);
+    }
+    let selection = profile!(
+        "atelier.ssr.template.s4_direct",
+        lower_and_emit_direct(allocator, source, request)
     );
-    if request.direct
-        && matches!(selection, SsrL4Selection::Emitted(_))
+    if matches!(selection, SsrL4Selection::Emitted(_)) {
+        record_selection(&selection);
+    }
+    selection
+}
+
+fn lower_and_emit_direct(
+    allocator: &Allocator,
+    source: &str,
+    request: &SsrL4Request<'_>,
+) -> SsrL4Selection {
+    let (tree, _html_tree, surface_errors) =
+        vize_l1::markup::parse_with_authored_diagnostics(allocator, source);
+    if !surface_errors.is_empty() {
+        return SsrL4Selection::Legacy(LegacyReason::SurfaceSemantics);
+    }
+    let unfrozen = FrozenTemplate::unfrozen(source);
+    let contracts = &request.options.directive_contracts;
+    let mut s2 = match unfrozen.lower(allocator, &tree, &surface_errors, contracts) {
+        Ok(lowered) => lowered,
+        Err(message) => {
+            return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
+        }
+    };
+    if !s2.diagnostics.is_empty() {
+        return SsrL4Selection::Legacy(LegacyReason::SurfaceSemantics);
+    }
+    let frozen_slots = match FrozenSlotFacts::new(unfrozen, source, &s2.artifact.root) {
+        Ok(facts) => facts,
+        Err(message) => {
+            return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
+        }
+    };
+    let artifact = select::L2Artifact {
+        source,
+        root: &s2.artifact.root,
+        root_origin: None,
+        facts: emit::PlanFacts {
+            scopes: &s2.artifact.scopes,
+            texts: &s2.artifact.texts,
+            for_wrappers: &s2.artifact.loop_fragments,
+            wrappers: &s2.artifact.branch_fragments,
+            if_facts: &s2.artifact.if_facts,
+            frozen_slots: Some(frozen_slots),
+        },
+        diagnostics: 0,
+    };
+    let table = request
+        .options
+        .binding_metadata
+        .as_ref()
+        .map(crate::bindings::binding_table);
+    let selection = select::select_from_l2_plain(
+        allocator,
+        &artifact,
+        request.options,
+        request.experimental,
+        request.context,
+        request.runtime_module_name,
+        || {
+            if unprojectable_tables(request) {
+                return Err(LegacyReason::Croquis);
+            }
+            if !emission_supported(request) {
+                return Err(LegacyReason::Options);
+            }
+            if s2
+                .artifact
+                .provenance
+                .iter()
+                .any(|record| !admitted_rule(record) || drops_directive(record))
+                || surface_gate::slot_v_pre_interpolates(source, &s2.artifact.root.ops)
+            {
+                return Err(LegacyReason::SurfaceSemantics);
+            }
+            Ok(TransformExpressions::new(
+                source,
+                table.as_ref(),
+                request.options.is_ts,
+                request.options.inline,
+            ))
+        },
+    );
+    if matches!(selection, SsrL4Selection::Emitted(_))
         && !slot_and_model_passes_are_silent(&mut s2, request.options.is_ts)
     {
         return SsrL4Selection::Legacy(LegacyReason::SurfaceSemantics);
@@ -339,9 +422,6 @@ fn lower_request<'a>(
     match request.frozen {
         Some((root, carrier)) => FrozenTemplate::new(root, source, carrier)
             .and_then(|template| template.lower(allocator, tree, errors, contracts)),
-        None if request.direct => {
-            FrozenTemplate::unfrozen(source).lower(allocator, tree, errors, contracts)
-        }
         None if contracts.is_empty() => Ok(vize_l1_to_l2::lower(allocator, tree, errors)),
         None => Ok(vize_l1_to_l2::lower_with_directives(
             allocator, tree, errors, contracts,

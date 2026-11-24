@@ -304,7 +304,7 @@ pub(crate) fn emit_on_direct_lane(
     context: SsrSfcContext,
     runtime_module_name: &str,
 ) -> Option<SsrCodegenResult> {
-    let selection = l4::select_ssr_lane(
+    let selection = l4::select_ssr_lane_direct(
         allocator,
         source,
         &SsrL4Request {
@@ -315,7 +315,6 @@ pub(crate) fn emit_on_direct_lane(
             template_syntax,
             has_custom_elements: !custom_elements.is_empty(),
             frozen: None,
-            direct: true,
         },
     );
     let SsrL4Selection::Emitted(result) = selection else {
@@ -562,7 +561,6 @@ fn compile_ssr_on_lane_with_runtime<'a>(
                 template_syntax,
                 has_custom_elements: !custom_elements.is_empty(),
                 frozen: Some((&root, &frozen_elements)),
-                direct: false,
             },
         ),
         #[cfg(any(test, feature = "legacy-differential"))]

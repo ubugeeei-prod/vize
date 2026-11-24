@@ -31,7 +31,6 @@ fn select(source: &str, options: &SsrCompilerOptions) -> SsrL4Selection {
             has_custom_elements: false,
             context: crate::SsrSfcContext::new(true),
             frozen: Some((&root, &frozen)),
-            direct: false,
         },
     )
 }

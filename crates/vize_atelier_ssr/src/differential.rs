@@ -65,7 +65,6 @@ pub fn compare_ssr_lanes(
                 has_custom_elements: false,
                 context: crate::SsrSfcContext::new(true),
                 frozen: Some((&root, &frozen)),
-                direct: false,
             },
         );
         production::lane_label(&selection)

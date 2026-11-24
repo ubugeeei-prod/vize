@@ -41,11 +41,6 @@ pub(crate) struct SsrL4Request<'o> {
         &'o vize_relief::RootNode<'o>,
         &'o vize_armature::parser::FrozenElements<'o>,
     )>,
-    /// The direct lane: no parser bundle exists, and the lane emits only a
-    /// template the legacy parser and transform would pass without a word.
-    /// It lowers under empty frozen custody, which refuses any `v-pre`
-    /// opening, and it selects the legacy route on any L1 or L2 diagnostic.
-    pub(crate) direct: bool,
 }
 
 /// A selected legacy route is distinct from a failed compiler invariant.
@@ -163,8 +158,8 @@ const ADMITTED_RULES: &[&str] = &[
 ];
 
 mod source;
-pub(crate) use source::select_ssr_lane;
 pub(crate) use source::select_ssr_lane_captured;
+pub(crate) use source::{select_ssr_lane, select_ssr_lane_direct};
 
 /// Whether one L2 lowering rule is reproduced by the plan emitter.
 ///
