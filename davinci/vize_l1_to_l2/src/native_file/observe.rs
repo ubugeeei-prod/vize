@@ -2,7 +2,7 @@ use super::{NativeSfcIssue, NativeSfcIssueKind, NativeTemplateObservation};
 use crate::vue_file::{RejectedVueFile, VueFile, VueScriptReceipt};
 use alloc::vec::Vec;
 use vize_l0::SourceBlock;
-use vize_l1::container::vue::{DescriptorObservation, ScriptRole, ScriptView};
+use vize_l1::container::vue::{L1Ir, ScriptRole, ScriptView};
 use vize_l1::css::StyleSyntax;
 use vize_l1::embed::{Lang, syntax::EmbedSyntax};
 use vize_l2::file::ScriptUnitId;
@@ -90,7 +90,7 @@ impl<'a> NativeScriptObservation<'a> {
 /// }
 /// ```
 pub struct NativeSfcObservation<'a> {
-    descriptor: DescriptorObservation<'a>,
+    descriptor: L1Ir<'a>,
     scripts: Vec<NativeScriptObservation<'a>>,
     template: Option<NativeTemplateObservation<'a>>,
     file: Option<Result<VueFile<'a>, RejectedVueFile<'a>>>,
@@ -113,7 +113,7 @@ impl core::fmt::Debug for NativeSfcObservation<'_> {
 }
 impl<'a> NativeSfcObservation<'a> {
     pub(super) fn new(
-        descriptor: DescriptorObservation<'a>,
+        descriptor: L1Ir<'a>,
         scripts: Vec<NativeScriptObservation<'a>>,
         template: Option<NativeTemplateObservation<'a>>,
         file: Option<Result<VueFile<'a>, RejectedVueFile<'a>>>,
@@ -178,7 +178,7 @@ impl<'a> NativeSfcObservation<'a> {
         }
     }
     #[must_use]
-    pub fn descriptor(&self) -> &DescriptorObservation<'a> {
+    pub fn descriptor(&self) -> &L1Ir<'a> {
         &self.descriptor
     }
     #[must_use]

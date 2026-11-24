@@ -6,7 +6,7 @@ use tower_lsp::lsp_types::{DocumentLink, Range, Url};
 use vize_l0::{SourceBlock, Span, String};
 use vize_l1::embed::syntax::EmbedSyntax;
 use vize_l2::{
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{ModuleSourceError, OriginalModuleSources, ProgramInput, ProgramInputError},
 };
 
@@ -15,7 +15,7 @@ pub(super) type Admission<'f, 'p, 'a> = Result<RetainedSources<'f, 'p, 'a>, Modu
 /// The empty-operand case must retain the same original File join too.
 /// Fields are private; only the normally owned factory below pairs this view.
 pub(super) struct RetainedSources<'f, 'p, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     view: OriginalModuleSources<'f, 'p, 'a>,
 }
 
@@ -83,7 +83,7 @@ impl ModuleOperands {
 pub(super) fn admit<'f, 'p, 'a>(
     syntax: &'p EmbedSyntax<'a>,
     block: SourceBlock<'a>,
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
 ) -> Admission<'f, 'p, 'a> {
     let admitted = syntax
         .admitted_program()

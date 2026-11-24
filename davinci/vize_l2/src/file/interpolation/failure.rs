@@ -1,6 +1,6 @@
 //! Retain the whole preparation failure, including any returned stock syntax.
 
-use crate::file::{FileArtifact, RejectedFile};
+use crate::file::{L2Ir, RejectedFile};
 use vize_l0::Span;
 use vize_l1::markup::InterpolationFailure;
 
@@ -36,7 +36,7 @@ impl<'a> NativeFileInterpolationFailure<'a> {
     }
 }
 
-impl<'a> FileArtifact<'a> {
+impl<'a> L2Ir<'a> {
     #[must_use]
     pub fn native_interpolation_failures(&self) -> &[NativeFileInterpolationFailure<'a>] {
         &self.facts.native_interpolation_failures

@@ -103,39 +103,42 @@ Creusot accepts only with a trusted declaration, and the proofs admit none.
 
 ## HTML content-model kernel (`crates/vize_patina/src/html_content_model`)
 
-Kani file: `html_content_model/kani.rs`. Bound: up to 4 known frames, 2
-revealed ancestors, 3 namespaces and 4 dispatches. Creusot root:
-`html_content_model/creusot.rs`. `Tri::not`, `and`, `or` and `join` carry
-their soundness and Kleene truth-table contracts in `tri.rs`; the verdict-rule
-proof folds `join` over any number of dispatches.
+Kani file, deleted with its last harness: `html_content_model/kani.rs`. Its
+bound was up to 4 known frames, 2 revealed ancestors, 3 namespaces and 4
+dispatches. Creusot root: `html_content_model/creusot.rs`. `Tri::not`, `and`,
+`or` and `join` carry their soundness and Kleene truth-table contracts in
+`tri.rs`. `classify` and `walk` carry theirs in `walk.rs`, for any iterator of
+roles and any closure that yields one. The laws instantiate them with a frame
+modelled as its sequence of possible roles, any number of them, so they hold
+for chains of every length, under any number of revealed ancestors and for
+any number of dispatches.
 
-| Kani harness                                               | Law                                                                 | Kani bound           | Creusot replacement                                                                                     | Status |
-| ---------------------------------------------------------- | ------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------- | ------ |
-| `kleene_connectives_are_sound`                             | `not`, `and`, `or` are sound for every admitted value               | whole domain         | `content_model::kleene_connectives_are_sound` over `Tri::not`, `and`, `or`                              | proved |
-| `disjunction_is_the_de_morgan_dual_of_conjunction`         | `or` is the De Morgan dual of `and`                                 | whole domain         | `content_model::disjunction_is_the_de_morgan_dual_of_conjunction` over `Tri::not`, `and`, `or`          | proved |
-| `a_definite_fact_admits_exactly_one_value`                 | a definite fact admits one value                                    | whole domain         | `content_model::a_definite_fact_admits_exactly_one_value` over `Tri::admits`                            | proved |
-| `one_frame_decides_soundly_under_each_possible_namespace`  | one frame decides soundly under each namespace                      | 3 namespaces         | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
-| `a_frame_without_a_namespace_passes`                       | a frame without a namespace passes                                  | 3 namespaces         | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
-| `the_walk_is_sound_for_every_stack_the_chain_describes`    | the walk's verdict admits the parser's scan of every concrete stack | 4 frames, 2 revealed | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
-| `a_definite_truncated_verdict_survives_revealed_ancestors` | a definite truncated verdict survives revealed ancestors            | 4 frames, 2 revealed | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
-| `a_proven_violation_holds_for_every_dispatch`              | a proven violation holds for every dispatch                         | 4 dispatches         | `content_model::a_proven_violation_holds_for_every_dispatch` over `Tri::join`, any number of dispatches | proved |
+| Kani harness                                               | Law                                                                 | Kani bound           | Creusot replacement                                                                                      | Status |
+| ---------------------------------------------------------- | ------------------------------------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------- | ------ |
+| `kleene_connectives_are_sound`                             | `not`, `and`, `or` are sound for every admitted value               | whole domain         | `content_model::kleene_connectives_are_sound` over `Tri::not`, `and`, `or`                               | proved |
+| `disjunction_is_the_de_morgan_dual_of_conjunction`         | `or` is the De Morgan dual of `and`                                 | whole domain         | `content_model::disjunction_is_the_de_morgan_dual_of_conjunction` over `Tri::not`, `and`, `or`           | proved |
+| `a_definite_fact_admits_exactly_one_value`                 | a definite fact admits one value                                    | whole domain         | `content_model::a_definite_fact_admits_exactly_one_value` over `Tri::admits`                             | proved |
+| `one_frame_decides_soundly_under_each_possible_namespace`  | one frame decides soundly under each namespace                      | 3 namespaces         | `content_model::one_frame_decides_soundly_under_each_possible_namespace` over `classify`, any namespaces | proved |
+| `a_frame_without_a_namespace_passes`                       | a frame without a namespace passes                                  | 3 namespaces         | `content_model::a_frame_without_a_namespace_passes` over `classify`                                      | proved |
+| `the_walk_is_sound_for_every_stack_the_chain_describes`    | the walk's verdict admits the parser's scan of every concrete stack | 4 frames, 2 revealed | `content_model::the_walk_is_sound_for_every_stack_the_chain_describes` over `walk`, every length         | proved |
+| `a_definite_truncated_verdict_survives_revealed_ancestors` | a definite truncated verdict survives revealed ancestors            | 4 frames, 2 revealed | `content_model::a_definite_truncated_verdict_survives_revealed_ancestors` over `walk`, every length      | proved |
+| `a_proven_violation_holds_for_every_dispatch`              | a proven violation holds for every dispatch                         | 4 dispatches         | `content_model::a_proven_violation_holds_for_every_dispatch` over `Tri::join`, any number of dispatches  | proved |
 
-The four walk laws stay on their Kani harnesses. `walk.rs` uses two
-standard-library calls Creusot 0.14 has no specification for:
-`Iterator::any` in `classify` (it folds with `try_fold`, which has none
-either) and `frames.iter().enumerate().rev()` in `walk` (`Enumerate` has no
-`DoubleEndedIteratorSpec`). The `walk` loop can be written as
-`while let Some(frame) = rest.next_back()` with `rest.len()` as the index,
-and its release IR is then equal to the original up to the names of SSA values
-and blocks. Replacing `any` with a `for` loop over `next` changes the
-optimized code: in the release build of `vize_patina` (opt-level 3, one
-codegen unit) LLVM then outlines `Map::next` instead of the role closures of
-`Chain::in_scope` and `Chain::list_item_loop`, and the bodies of
-`Chain::in_scope`, `list_item_loop`, `anchor_after_marker` and `has_open`
-differ. The kernel is product code, so the rewrite is not zero-cost, and a
-specification of `any` written here would be a trusted declaration, which
-the proofs do not admit. The rows stay `owed` until one of the two is
-accepted.
+Creusot 0.14 has no spec for `Iterator::any` (or the `try_fold` it folds
+with), nor for a back-to-front `Enumerate`. So `classify` reads each role once
+in a single `next` loop that stops at the first disagreement, and `walk` reads
+frames with `next_back`. The maintainer waived IR identity for that rewrite on
+2026-11-24 in exchange for no regression on any metric. The pull request that
+made it carries the instruction counts, the A/B/A-A lint timings and the
+unchanged corpus and differential outputs.
+
+In an optimized build, a `next` loop over the old `Filter` on a namespace
+array executes about a third more instructions per scan than `any` did. So
+`NsSet::iter` now yields the set's bits directly, lowest first, and the
+rewritten scans cost no more than before. The namespace order is still HTML,
+SVG, MathML, so every verdict is unchanged. The proofs
+show that one element read backwards (`Seq::reverse`) is itself by the
+`compute_in_goal` tactic, which `why3find.json` now lists.
 
 ## Laws no harness states yet
 
@@ -190,6 +193,7 @@ Rust test.
 | `ReactivityClass::as_str`, `ReactivityClass::from_str`                   | byte-string matching (`str::as_bytes`)     | `vize_l3` `tests/lattice.rs` `reactivity_folio_roundtrips_canonical_text`                                                                                                                   |
 | `ReactivityClass`: derived `Debug`, `PartialOrd`, `Ord`, `Hash`          | discriminant intrinsics                    | `vize_l3` `tests/lattice.rs` `the_derived_order_is_the_join_order`                                                                                                                          |
 | `Tri`: derived `Debug`, `Hash`                                           | discriminant intrinsics                    | `vize_patina` `html_content_model::tri::tests::truth_tables_are_kleene`                                                                                                                     |
+| `Role`, `Step`: derived `Debug`                                          | discriminant intrinsics                    | none needed: no law, test or diagnostic reads it                                                                                                                                            |
 | L3 reference `Phase::parse`, `OpKind::parse`, `EdgeKind::parse`          | string matching (`str` equality)           | `vize_l2_to_l3` `tests/l3_reference_fixture` `committed_graphs_pass_the_independent_checker`, `schedule_contract_codes_match_the_independent_reference` (every committed graph page parses) |
 | L3 reference program and trace types: derived `Debug`, `PartialEq`, `Eq` | discriminant intrinsics; no law reads them | the same fixture tests compare traces and programs with them                                                                                                                                |
 

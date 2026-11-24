@@ -2,7 +2,7 @@
 //! and loop bodies. Every owner is accounted for exactly once.
 
 use vize_carton::{Allocator, Vec};
-use vize_l3::op::Program;
+use vize_l3::op::L3Ir;
 
 use super::super::{Content, Node};
 use super::{Result, Slots, at, at_mut};
@@ -12,7 +12,7 @@ use crate::l3::{AdmissionFailure, LegacyReason};
 /// their control node, whose body starts a separate template. Owned regions
 /// move their members into the owner; the unowned root region stays.
 pub(super) fn assemble<'a>(
-    program: &Program<'_>,
+    program: &L3Ir<'_>,
     nodes: &mut [Node<'a>],
     slots: &Slots,
     regions: &mut [Vec<'a, usize>],

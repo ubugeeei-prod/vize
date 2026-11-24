@@ -61,16 +61,13 @@ fn completed<'a>(
     }
     Ok(original.finish())
 }
-fn element<'f, 'a>(
-    file: &'f FileArtifact<'a>,
-    index: usize,
-) -> Result<&'f ElementOp<'a>, &'static str> {
+fn element<'f, 'a>(file: &'f L2Ir<'a>, index: usize) -> Result<&'f ElementOp<'a>, &'static str> {
     match file.artifact().root().ops.get(index) {
         Some(Op::Element(element)) => Ok(element),
         _ => Err("actual Element"),
     }
 }
-fn node(file: &FileArtifact<'_>, index: usize) -> Result<NodeId, &'static str> {
+fn node(file: &L2Ir<'_>, index: usize) -> Result<NodeId, &'static str> {
     match file
         .native_attribute_values()
         .get(index)

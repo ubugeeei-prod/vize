@@ -1,5 +1,5 @@
 use vize_l0::{Span, String, cstr};
-use vize_l2::file::FileArtifact;
+use vize_l2::file::L2Ir;
 use vize_l3::jsx::{JsxAnalysis, JsxDecisionKind};
 
 use super::{JsxEmitError, JsxEmitErrorKind};
@@ -30,7 +30,7 @@ pub(super) fn selected(analysis: &JsxAnalysis<'_>) -> Result<SelectedHelpers, Js
     Ok(SelectedHelpers { node, text })
 }
 
-fn one(file: &FileArtifact<'_>, name: &str) -> Result<SelectedHelper, JsxEmitError> {
+fn one(file: &L2Ir<'_>, name: &str) -> Result<SelectedHelper, JsxEmitError> {
     let runtime = vocabulary(Runtime::VueDom);
     let failure = || JsxEmitError {
         kind: JsxEmitErrorKind::RuntimeHelper,

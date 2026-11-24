@@ -1,6 +1,6 @@
 //! Independent original-source, canonical allocation and custody laws.
 
-use crate::file::{FileArtifact, NativeFileAttributeValueState as State};
+use crate::file::{L2Ir, NativeFileAttributeValueState as State};
 use crate::lang::js::{NativeTemplateFile, NativeTemplateIssueKind as Kind, NativeTemplateOwner};
 use crate::op::{ElementOp, Op};
 use vize_l0::{
@@ -87,10 +87,7 @@ fn lower_setup<'a>(
     }
     Ok(core::hint::black_box(original.finish()))
 }
-fn element<'f, 'a>(
-    file: &'f FileArtifact<'a>,
-    index: usize,
-) -> Result<&'f ElementOp<'a>, &'static str> {
+fn element<'f, 'a>(file: &'f L2Ir<'a>, index: usize) -> Result<&'f ElementOp<'a>, &'static str> {
     match file.artifact().root().ops.get(index) {
         Some(Op::Element(element)) => Ok(element),
         _ => Err("actual Element"),

@@ -1,6 +1,14 @@
 //! L3 - the Davinci reactivity IR (codename Impeto): the backend convergence
 //! layer for DOM and Vapor.
 //!
+//! # Start here
+//!
+//! - IR: [`L3Ir`], scheduled operations with explicit state, effect and data
+//!   edges.
+//! - Entry: built by `vize_l2_to_l3::lower_ir(allocator, &l2ir)`, or
+//!   `vize_l2_to_l3::lower(allocator, root)` from an L2 root region.
+//! - Next level: the Vapor emitter reads it; L4 has no IR type yet.
+//!
 //! **Experimental:** the stage API may change in any alpha release; record
 //! intentional breaking changes in the release notes.
 //!
@@ -41,8 +49,7 @@ pub mod values_dump;
 pub mod verify;
 
 /// Backend-neutral operations, regions, effects and directed state edges.
-#[cfg(feature = "graph-queries")]
-pub use op::Program as L3Ir;
+pub use op::L3Ir;
 
 #[cfg(feature = "graph-queries")]
 pub mod query;

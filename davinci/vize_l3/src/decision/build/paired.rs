@@ -12,7 +12,7 @@ use crate::decision::{
 use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{NativeTemplateFile, NativeTemplateIssue, NativeTemplateView},
     op::Op,
     walk::{NodeEvent, NodeRef},
@@ -21,7 +21,7 @@ use vize_l2::{
 /// Original SSR render facts and the selected File that owns their nodes and attributes.
 pub struct ServerRenderAnalysis<'owner, 'arena> {
     owner: &'owner NativeTemplateFile<'arena>,
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     attributes: OriginalAttributeFacts<'owner, 'arena>,
     facts: SsrFacts<'owner, 'arena>,
 }
@@ -29,7 +29,7 @@ impl<'owner, 'arena> ServerRenderAnalysis<'owner, 'arena> {
     pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
         self.owner
     }
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.file
     }
     pub fn original_attributes(&self) -> &OriginalAttributeFacts<'owner, 'arena> {
@@ -63,7 +63,7 @@ impl<'owner, 'arena> ClientServerDecisions<'owner, 'arena> {
 // Only this producer can associate a completed DOM table with the selected view.
 pub(in crate::decision) struct CompletedTarget<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     analysis: DecisionAnalysis<'owner, 'arena>,
 }
 impl<'owner, 'arena> CompletedTarget<'owner, 'arena> {
@@ -71,7 +71,7 @@ impl<'owner, 'arena> CompletedTarget<'owner, 'arena> {
         self,
     ) -> (
         NativeTemplateView<'owner, 'arena>,
-        &'owner FileArtifact<'arena>,
+        &'owner L2Ir<'arena>,
         DecisionAnalysis<'owner, 'arena>,
     ) {
         (self.view, self.file, self.analysis)
@@ -84,7 +84,7 @@ struct RenderPass<'owner, 'arena> {
     binding_owner: Option<(NodeId, BindingOwner)>,
 }
 impl<'owner, 'arena> RenderPass<'owner, 'arena> {
-    fn new(file: &'owner FileArtifact<'arena>) -> Result<Self, DecisionBuildError> {
+    fn new(file: &'owner L2Ir<'arena>) -> Result<Self, DecisionBuildError> {
         Ok(Self {
             server: SsrBuilder::new(),
             attributes: Some(OriginalAttributeCursor::new(file, file.artifact())?),
@@ -95,7 +95,7 @@ impl<'owner, 'arena> RenderPass<'owner, 'arena> {
     fn finish(
         self,
         owner: &'owner NativeTemplateFile<'arena>,
-        file: &'owner FileArtifact<'arena>,
+        file: &'owner L2Ir<'arena>,
     ) -> Result<ServerRenderAnalysis<'owner, 'arena>, DecisionBuildError> {
         let attributes = self
             .attributes
@@ -156,7 +156,7 @@ impl<'owner, 'arena> RenderPass<'owner, 'arena> {
 type ClientPass<'owner, 'arena> = Builder<'owner, 'owner, 'arena, LiteralExpressions, NoReads>;
 
 fn client_pass<'owner, 'arena>(
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
 ) -> Result<ClientPass<'owner, 'arena>, DecisionBuildError> {
     let artifact = file.artifact();
     Ok(Builder {
@@ -180,7 +180,7 @@ fn client_pass<'owner, 'arena>(
 fn finish_client<'owner, 'arena>(
     mut client: ClientPass<'owner, 'arena>,
     view: NativeTemplateView<'owner, 'arena>,
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
 ) -> Result<TemplateDomAnalysis<'owner, 'arena>, DecisionBuildError> {
     let original_attributes = client
         .original_attributes

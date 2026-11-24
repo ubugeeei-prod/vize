@@ -6,7 +6,7 @@ use vize_l0::{
 use vize_l1::{
     container::{
         Vue,
-        vue::{DescriptorObservation, DescriptorOptions},
+        vue::{DescriptorOptions, L1Ir},
     },
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
@@ -28,7 +28,7 @@ fn check(condition: bool) -> Result<(), &'static str> {
     }
 }
 
-fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> DescriptorObservation<'a> {
+fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> L1Ir<'a> {
     Vue.observe_descriptor(
         arena,
         source,
@@ -179,11 +179,7 @@ fn equal_source_foreign_child_cannot_reach_native_analysis() -> Result<(), &'sta
     }
     let output = original.finish();
     check(output.view().is_err())?;
-    check(
-        !output
-            .file()
-            .is_some_and(vize_l2::file::FileArtifact::is_complete),
-    )?;
+    check(!output.file().is_some_and(vize_l2::file::L2Ir::is_complete))?;
     Ok(())
 }
 
@@ -222,11 +218,7 @@ fn original_html_whitespace_refuses_before_native_decisions() -> Result<(), &'st
         }
         let output = original.finish();
         check(output.view().is_err())?;
-        check(
-            !output
-                .file()
-                .is_some_and(vize_l2::file::FileArtifact::is_complete),
-        )?;
+        check(!output.file().is_some_and(vize_l2::file::L2Ir::is_complete))?;
     }
     Ok(())
 }

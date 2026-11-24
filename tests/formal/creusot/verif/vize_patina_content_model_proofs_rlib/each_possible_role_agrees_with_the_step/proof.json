@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_each_possible_role_agrees_with_the_step": {
+        "prover": "alt-ergo",
+        "time": 0.018
+      }
+    }
+  }
+}

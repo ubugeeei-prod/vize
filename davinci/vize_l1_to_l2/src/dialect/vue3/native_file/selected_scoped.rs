@@ -6,7 +6,7 @@ use super::{
 };
 use vize_l0::{Allocator, Span};
 use vize_l1::{
-    container::vue::{DescriptorObservation, DescriptorOptions},
+    container::vue::{DescriptorOptions, L1Ir},
     css::StyleSyntax,
     markup::SurfaceParseOptions,
 };
@@ -109,7 +109,7 @@ pub fn lower_selected_scoped_sfc_native<'a>(
 }
 
 pub(super) fn observe<'a>(
-    original: &DescriptorObservation<'a>,
+    original: &L1Ir<'a>,
 ) -> Result<(StyleSyntax<'a>, Option<NativeSelectedSfcIssue>), NativeSelectedSfcIssue> {
     let options = original.options();
     let reject = |index, span, kind| NativeSelectedSfcIssue {

@@ -2,7 +2,7 @@
 
 use vize_l0::{Allocator, SourceFrameError, Span, Vec};
 use vize_l1::container::Vue;
-use vize_l1::container::vue::{AdmittedDescriptor, DescriptorObservation};
+use vize_l1::container::vue::{AdmittedDescriptor, L1Ir};
 use vize_l1::markup::SelectedTemplateComponent;
 
 use super::super::{Doc, NativeTemplateValuePolicy, observed_native_template_document_with_policy};
@@ -118,7 +118,7 @@ fn build<'a>(
 }
 
 fn refuse_other_roles(
-    descriptor: &DescriptorObservation<'_>,
+    descriptor: &L1Ir<'_>,
     admitted: AdmittedDescriptor<'_, '_>,
 ) -> Result<(), NativeSfcRefusal> {
     let candidates = [
@@ -163,7 +163,7 @@ fn refuse_other_roles(
 }
 
 fn frame<'a>(
-    descriptor: &DescriptorObservation<'a>,
+    descriptor: &L1Ir<'a>,
     selected: &SelectedTemplateComponent<'a>,
     index: usize,
     content: Span,

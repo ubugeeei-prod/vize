@@ -1,0 +1,25 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_single_element_reads_the_same_backwards_T": {
+        "tactic": "split_vc",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              {
+                "tactic": "compute_in_goal",
+                "children": [{ "prover": "alt-ergo", "time": 0.003 }]
+              },
+              {
+                "tactic": "compute_in_goal",
+                "children": [{ "prover": "alt-ergo", "time": 0.004 }]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
