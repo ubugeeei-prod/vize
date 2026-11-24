@@ -290,6 +290,7 @@ export interface LintRuleOptions {
     casing?: "PascalCase" | "kebab-case";
     registeredComponentsOnly?: boolean;
     globals?: string[];
+    ignores?: string[];
   };
   "script/custom-event-name-casing"?: {
     casing?: "lowercase" | "camelCase" | "kebab-case";
@@ -375,10 +376,28 @@ export interface LintRuleOptions {
   "vue/no-restricted-component-names"?: string | string[];
   "vue/no-restricted-component-options"?: string | string[];
   "vue/no-restricted-custom-event"?: string | string[];
-  "vue/no-restricted-html-elements"?: string | string[];
+  "vue/no-restricted-html-elements"?:
+    | string
+    | (
+        | string
+        | {
+            element: string | string[];
+            message?: string;
+          }
+      )[];
   "vue/no-restricted-props"?: string | string[];
   "vue/no-restricted-static-attribute"?: string | string[];
-  "vue/no-restricted-v-on"?: string | string[];
+  "vue/no-restricted-v-on"?:
+    | string
+    | (
+        | string
+        | {
+            argument: string;
+            modifiers?: string[];
+            element?: string;
+            message?: string;
+          }
+      )[];
   "vue/no-unsupported-features"?: {
     version?: string;
     ignores?: string[];
@@ -864,7 +883,15 @@ export interface LintRuleOptions {
         ignore?: string[];
         autofix?: boolean;
       };
-  "vue/v-bind-style"?: "shorthand" | "longform";
+  "vue/v-bind-style"?:
+    | ("shorthand" | "longform")
+    | ["shorthand" | "longform"]
+    | [
+        "shorthand" | "longform",
+        {
+          sameNameShorthand?: "always" | "never" | "ignore";
+        },
+      ];
   "vue/v-on-style"?: "shorthand" | "longform";
   "vue/v-slot-style"?:
     | ("shorthand" | "longform")

@@ -7,6 +7,7 @@ pub mod ecosystem;
 pub mod facts;
 pub mod html;
 pub mod musea;
+pub(crate) mod name_patterns;
 pub mod opinionated;
 pub mod petite_vue;
 pub(crate) mod props_shape;
