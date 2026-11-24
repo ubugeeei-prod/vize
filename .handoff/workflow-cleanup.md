@@ -57,7 +57,7 @@ Closed in favour of #13633, branches kept: #13605, #13610, #13606, #13609, #1360
   - `orphan-drivers.py`: lists unreachable drivers.
   - `refresh-history.py`: refreshes the byte pins.
   - `closure2.py`: deletion closure via git grep.
-  - `clean-index.py`, `resolve-rebase.sh`, `resolve-list-conflict.py`.
+  - `clean-index.py`, `resolve-rebase.sh.txt` (run with bash), `resolve-list-conflict.py`.
   - `kscan.ts`: the size-guard scan.
 - `tools-not-covered.tsv`: the one-off tools files left to the tools sweep.
 
