@@ -168,7 +168,7 @@ const slots = useSlots()
 __setup();
 
 export type Emits = {};
-type $Slots = Awaited<ReturnType<typeof __setup>>['__vize_template_slots'];
+type $Slots = Awaited<ReturnType<typeof __setup>>['__vize_template_slots'] & import('vue').Slots;
 export type { $Slots as Slots };
 
 // ========== Default Export ==========
