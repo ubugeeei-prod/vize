@@ -91,6 +91,15 @@ function ruleOptionsSchema(ruleName: string): unknown[] | Record<string, unknown
           ],
         },
       ];
+    case "script/consistent-type-imports":
+      return [
+        objectSchema({
+          prefer: { enum: ["type-imports", "no-type-imports"] },
+          fixStyle: { enum: ["separate-type-imports", "inline-type-imports"] },
+          disallowTypeAnnotations: { type: "boolean" },
+          emitDecoratorMetadata: { type: "boolean" },
+        }),
+      ];
     case "script/define-props-destructuring":
       return [objectSchema({ destructure: { enum: ["only-when-assigned", "always", "never"] } })];
     case "html/no-empty-palpable-content":

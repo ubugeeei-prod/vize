@@ -4,6 +4,11 @@ export const chineseRules2: Record<string, readonly [string, string, string]> = 
     "emits 声明将必须带引号的 `update:modelValue` 键与不带引号的 `close` 键混合使用。",
     "声明中的所有静态键都带引号，因为 `update:modelValue` 无法写成不带引号的 JavaScript 标识符。",
   ],
+  "script/consistent-type-imports": [
+    "统一类型导入的写法，并把模板中的使用计为值使用",
+    "`Foo` 以值的形式导入，但它只用作 `defineProps` 的类型参数。`Bar` 不会被报告：模板读取了 `Bar.label`，这属于值使用。",
+    "`Foo` 使用 `import type` 导入，因此该导入会在构建时被擦除。`Bar` 由模板求值，所以仍然是值导入。",
+  ],
   "script/custom-event-name-casing": [
     "要求发出的自定义事件名称使用配置的大小写形式",
     "发出的字符串 `my-event` 含有连字符，违反默认的 camelCase 事件命名策略。",

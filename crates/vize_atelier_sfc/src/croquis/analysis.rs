@@ -7,7 +7,9 @@ use super::drawer::{
 use super::resolved::{
     merge_resolved_props_into_croquis, merge_resolved_props_into_croquis_with_sources,
 };
-use super::{SfcCroquisAnalysis, SfcCroquisOptions, script_content_for_descriptor, unused};
+use super::{
+    SfcCroquisAnalysis, SfcCroquisOptions, script_content_for_descriptor, template_reads, unused,
+};
 use vize_atelier_core::RootNode;
 use vize_carton::profile;
 use vize_croquis::Drawer;
@@ -134,6 +136,10 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
         drawer
     };
     let mut drawer = apply_options_api_mode(drawer, mode.options_api, mode.legacy_vue2);
+    // In place: one more conditional move of the drawer costs a full copy.
+    if options.template_binding_reads {
+        drawer.demand_template_binding_reads();
+    }
     // Linting still needs declarations from explicitly authored deprecated
     // slot-scope syntax. Apply this after scripts were analyzed so it cannot
     // opt the component into Vue 2 Options API behavior.
@@ -166,6 +172,16 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
                 packet = None;
             }
         }
+    }
+    if options.template_binding_reads
+        && let Some(reads) = croquis.template_binding_reads_mut()
+    {
+        template_reads::complete(
+            reads,
+            descriptor,
+            template.is_some(),
+            options.template_is_derived,
+        );
     }
     if let Some(occurrences) = occurrences {
         *occurrences = packet;

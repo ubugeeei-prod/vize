@@ -16,12 +16,7 @@ use crate::rules::script::{
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::profile;
 
-fn descriptor_may_have_typed_macros(descriptor: &SfcDescriptor<'_>) -> bool {
-    descriptor.script_setup.as_ref().is_some_and(|block| {
-        let source = block.content.as_ref();
-        source.contains('<') && (source.contains("defineProps") || source.contains("defineEmits"))
-    })
-}
+mod analysis;
 
 /// Reuse the template pass's validated AST. A missing or fatally malformed
 /// template supplies `None`, so partial trees never become script-rule evidence.
@@ -267,26 +262,23 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         .as_deref()
         .and_then(crate::context::LintContext::analysis)
         .is_some();
-    let owned_type_analysis = (!has_context_analysis
-        && super::has_resolved_macro_type_demand(linter)
-        && descriptor_may_have_typed_macros(descriptor))
-    .then(|| {
-        crate::linter::engine::analyze_descriptor_for_lint(
-            scripts.parses(),
-            None,
-            Some(crate::linter::engine::MacroTypeResolution::new(
-                linter.type_sources.as_ref(),
-                result.filename.as_str(),
-            )),
-            false,
-            false,
-        )
-    });
+    let owned_type_analysis = (!has_context_analysis)
+        .then(|| analysis::owned(linter, descriptor, scripts, result.filename.as_str()))
+        .flatten();
     let resolved_type_world = template_context
         .as_deref()
         .and_then(crate::context::LintContext::analysis)
         .or(owned_type_analysis.as_ref())
         .and_then(|analysis| analysis.types.resolved_world());
+    // The pass's own analysis, whichever rule the template pass ran last.
+    let template_side = analysis::template_side(
+        linter,
+        descriptor,
+        template_context
+            .as_deref()
+            .and_then(|context| context.analysis)
+            .or(owned_type_analysis.as_ref()),
+    );
     let emits_module = match (inline_emits_blocks, script_source, script_parsed) {
         (false, _, _) => EmitsModuleScript::Unavailable,
         (true, None, _) => EmitsModuleScript::Absent,
@@ -352,6 +344,12 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         sibling_offset: None,
         resolved_type_world,
         scripts: Some(scripts),
+        template_side,
+        setup_generic: descriptor
+            .script_setup
+            .as_ref()
+            .and_then(|block| block.attrs.get("generic"))
+            .map(|generic| generic.as_ref()),
     };
 
     let setup_program = script_setup_parsed

@@ -9,6 +9,13 @@ use super::ScriptParseResult;
 
 mod generic_reads;
 
+/// The script names a `<script setup generic="...">` attribute reads in its
+/// constraints and defaults. `None` when the attribute does not parse.
+#[doc(hidden)]
+pub fn setup_generic_reads(generic: &str) -> Option<Vec<CompactString>> {
+    generic_reads::free_reads(generic)
+}
+
 pub(crate) fn unused_setup_bindings(
     program: &Program<'_>,
     result: &ScriptParseResult,

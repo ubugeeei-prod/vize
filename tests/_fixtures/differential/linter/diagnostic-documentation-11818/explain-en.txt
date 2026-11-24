@@ -1957,6 +1957,31 @@ valid:
     "aria-label": String,
     "disabled": Boolean,
   })
+=== script/consistent-type-imports
+script/consistent-type-imports · lint rule
+Enforce consistent usage of type imports, counting template uses as value uses
+
+tier: complete
+domain: import declarations of TypeScript modules and inline TypeScript SFC scripts, judged against every script, template and style v-bind use the binding analysis resolves; external blocks, eval, unparsed expressions and Musea variants are outside
+severity: warning
+category: script
+autofix: yes
+docs: docs/content/rules/reference/script-consistent-type-imports.md
+
+invalid:
+  <script setup lang="ts">
+  import { Foo } from "./foo";
+  defineProps<{ item: Foo }>();
+  </script>
+
+valid:
+  <script setup lang="ts">
+  import type { Foo } from "./foo";
+  import { Bar } from "./foo";
+  defineProps<{ item: Foo }>();
+  </script>
+  
+  <template>{{ Bar.label }} {{ item.label }}</template>
 === script/custom-event-name-casing
 script/custom-event-name-casing · lint rule
 Enforce configured casing for emitted custom event names

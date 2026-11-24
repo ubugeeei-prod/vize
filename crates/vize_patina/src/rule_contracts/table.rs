@@ -14,6 +14,9 @@ const UNUSED_SETUP: Domain = Domain::new(
     "valid inline script-setup declarations with no resolved script, template or style v-bind read; external blocks, eval and unsupported syntax are outside",
 );
 const BLOCKS: Domain = Domain::new("the SFC's top-level blocks, their order and their attributes");
+const IMPORT_KINDS: Domain = Domain::new(
+    "import declarations of TypeScript modules and inline TypeScript SFC scripts, judged against every script, template and style v-bind use the binding analysis resolves; external blocks, eval, unparsed expressions and Musea variants are outside",
+);
 const JADE_PROFILE: Domain = Domain::new(
     "a lang=\"jade\" template's lang value and the jade 1.x constructs the pug lowering reads under the jade profile",
 );
@@ -146,6 +149,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("petite-vue/valid-v-scope", Exact, DIRECTIVES, Error),
     row!("script/component-options-name-casing", Exact, OPTIONS, Error),
     row!("script/consistent-props-emits-key-quotes", Exact, STYLE, Error),
+    row!("script/consistent-type-imports", Complete, IMPORT_KINDS, Warning),
     row!("script/custom-event-name-casing", Complete, MACROS, Error),
     row!("script/define-emits-declaration", Complete, MACROS, Warning),
     row!("script/define-macros-order", Exact, MACROS, Warning),

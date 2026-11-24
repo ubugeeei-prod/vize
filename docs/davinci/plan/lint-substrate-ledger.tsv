@@ -75,6 +75,7 @@ petite-vue/valid-v-effect	L1 syntax	relief-visitor	legacy-rule	relief	-	petite_v
 petite-vue/valid-v-scope	L1 syntax	relief-visitor	legacy-rule	relief	-	petite_vue/valid_v_scope.rs
 script/component-options-name-casing	L1 script	script-oxc	legacy-engine	-	-	script/component_options_name_casing.rs
 script/consistent-props-emits-key-quotes	L1 script	script-oxc	legacy-engine	-	-	script/props_emits/consistent_key_quotes.rs
+script/consistent-type-imports	L2 semantic	script-oxc	legacy-rule	croquis	-	script/consistent_type_imports.rs
 script/custom-event-name-casing	L1 script	script-oxc	legacy-engine	-	-	script/custom_event_name_casing.rs
 script/define-emits-declaration	L1 script	script-oxc	legacy-engine	-	-	script/define_emits_declaration.rs
 script/define-macros-order	L1 script	script-oxc	legacy-engine	-	-	script/define_macros_order.rs

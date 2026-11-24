@@ -100,7 +100,7 @@ impl Drawer {
                 repaired,
                 source,
                 generic,
-                self.track_unused_bindings,
+                self.binding_demand.unused(),
                 !self.options.detect_undefined,
                 self.occurrence_capture.is_some(),
                 self.module_export_capture.as_mut(),
@@ -151,7 +151,7 @@ impl Drawer {
         );
 
         let mut result = result;
-        if self.track_unused_bindings {
+        if self.binding_demand.unused() {
             result.unused_bindings =
                 crate::script_parser::unused_setup_bindings(program, &result, generic);
         }
@@ -215,7 +215,7 @@ impl Drawer {
                 },
                 !self.options.detect_undefined,
                 self.occurrence_capture.is_some(),
-                self.track_unused_bindings,
+                self.binding_demand.unused(),
                 self.module_export_capture.as_mut(),
             )
         );

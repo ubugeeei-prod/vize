@@ -97,6 +97,13 @@ pub(crate) fn has_resolved_macro_type_demand(linter: &Linter) -> bool {
     active_builtin_script_rule_entries(linter, true).any(|entry| RULES.contains(&entry.rule_name))
 }
 
+/// Whether an active script rule reads which script names the template side
+/// uses. The SFC's binding analysis records them only on this demand.
+pub(crate) fn has_template_read_demand(linter: &Linter) -> bool {
+    const RULE: &str = "script/consistent-type-imports";
+    linter.script_rules.contains(&RULE) && linter.is_rule_enabled(RULE)
+}
+
 fn active_builtin_script_rule_entries(
     linter: &Linter,
     vapor_component: bool,

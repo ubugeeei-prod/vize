@@ -8,14 +8,10 @@ use vize_croquis::drawer::{extract_identifier_refs_with_witness, extract_identif
 #[cfg(test)]
 mod sibling_scripts;
 
-pub(super) fn apply_style_reads(
-    croquis: &mut Croquis,
-    descriptor: &SfcDescriptor<'_>,
-    derived: bool,
-    mut occurrences: Option<&mut BindingOccurrences>,
-) -> bool {
-    let mut packet_valid = true;
-    if descriptor
+/// Whether a block is external or in a language this analysis does not read.
+/// Such a block can contain reads nothing here sees.
+pub(super) fn has_opaque_blocks(descriptor: &SfcDescriptor<'_>, derived: bool) -> bool {
+    descriptor
         .script
         .iter()
         .chain(descriptor.script_setup.iter())
@@ -31,8 +27,16 @@ pub(super) fn apply_style_reads(
                 || (!derived && !vize_l1::container::lang::is_html_template(block.lang.as_deref()))
         })
         || descriptor.styles.iter().any(|style| style.src.is_some())
-    {
-        // External or unsupported blocks can contain reads we cannot see.
+}
+
+pub(super) fn apply_style_reads(
+    croquis: &mut Croquis,
+    descriptor: &SfcDescriptor<'_>,
+    derived: bool,
+    mut occurrences: Option<&mut BindingOccurrences>,
+) -> bool {
+    let mut packet_valid = true;
+    if has_opaque_blocks(descriptor, derived) {
         croquis.unused_bindings.clear();
         return false;
     }

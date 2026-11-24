@@ -9,8 +9,8 @@ import { after } from "node:test";
 // runtime_source unit. Both observers execute that same dependency-free body.
 const pins = {
   validator: "866f0e42210ce4264432883dcff21f855af86a04577945ef1a0167b0b57462c9",
-  runtime: "2c6bdafb73522064a780847c46e8f32a2f032e4bb952f50e6227804ddf8021bf",
-  assembled: "7d3fd3e7fbf8969d5aa13e76499e7c37561ca6a9fe50db8570caa4e2fe3924aa",
+  runtime: "ebd6691c8f36c4d57bbe067f59dd8430d7098e7fccbf0ce53ec8c854b0406fb1",
+  assembled: "091d5efd22624aa052b0010fbad1eddcee9e4c3b9236aae262536baee54176ba",
 } as const;
 // Statically spliced modules and the lazily imported config plugin host, in the
 // native config-runtime assembly order (runtime_source.rs `OWNED`, `PLUGIN_HOST`).

@@ -10,6 +10,7 @@ import { isOperationalDiagnosticReference } from "../../docs/scripts/rules/opera
 const configurableRuleOptions = [
   "html/no-empty-palpable-content",
   "musea/prefer-design-tokens",
+  "script/consistent-type-imports",
   "script/custom-event-name-casing",
   "script/define-macros-order",
   "script/define-props-destructuring",
@@ -189,6 +190,7 @@ test("strict boolean rows render within the complete option and type-aware table
     "script/define-macros-order",
     "vue/component-name-in-template-casing",
     "script/custom-event-name-casing",
+    "script/consistent-type-imports",
     "vue/prop-name-casing",
     "vue/slot-name-casing",
     "script/define-props-destructuring",

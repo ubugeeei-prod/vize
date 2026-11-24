@@ -12,6 +12,7 @@ mod resolved;
 mod script_demand;
 mod script_parses;
 mod source_offsets;
+mod template_reads;
 mod unused;
 
 use self::analysis::{
@@ -47,6 +48,9 @@ pub struct SfcCroquisOptions {
     pub merge_scripts: bool,
     /// Populate unused bindings only for a consumer that demands them.
     pub unused_bindings: bool,
+    /// Record the script names the template and `<style>` `v-bind()` read,
+    /// only for a consumer that demands them.
+    pub template_binding_reads: bool,
     /// The supplied template AST is a proven dialect-derived HTML view.
     pub template_is_derived: bool,
     /// Interpret authored Vue 2 slot-scope attributes during the template pass
@@ -62,6 +66,7 @@ impl SfcCroquisOptions {
             analyzer_options: DrawerOptions::full(),
             merge_scripts: true,
             unused_bindings: false,
+            template_binding_reads: false,
             template_is_derived: false,
             legacy_template_scopes: false,
         }
@@ -75,6 +80,7 @@ impl SfcCroquisOptions {
             analyzer_options: DrawerOptions::for_lint(),
             merge_scripts: true,
             unused_bindings: false,
+            template_binding_reads: false,
             template_is_derived: false,
             legacy_template_scopes: true,
         }
@@ -93,6 +99,7 @@ impl SfcCroquisOptions {
             analyzer_options: DrawerOptions::compile_demand(),
             merge_scripts: true,
             unused_bindings: false,
+            template_binding_reads: false,
             template_is_derived: false,
             legacy_template_scopes: false,
         }
@@ -113,6 +120,7 @@ impl SfcCroquisOptions {
             },
             merge_scripts: true,
             unused_bindings: false,
+            template_binding_reads: false,
             template_is_derived: false,
             legacy_template_scopes: false,
         }
@@ -121,6 +129,13 @@ impl SfcCroquisOptions {
     /// Demand setup binding usage; ordinary compiler routes leave it off.
     pub const fn with_unused_bindings(mut self) -> Self {
         self.unused_bindings = true;
+        self
+    }
+
+    /// Demand the template-side reads of script names
+    /// ([`vize_croquis::croquis::TemplateBindingReads`]).
+    pub const fn with_template_binding_reads(mut self) -> Self {
+        self.template_binding_reads = true;
         self
     }
 

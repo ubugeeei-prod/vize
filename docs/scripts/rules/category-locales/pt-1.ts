@@ -179,6 +179,11 @@ export const portugueseRules1: Record<string, readonly [string, string, string]>
     "A declaração de emits mistura a chave `update:modelValue`, que precisa de aspas, com a chave `close` sem aspas.",
     "Todas as chaves estáticas da declaração usam aspas, pois `update:modelValue` não pode ser escrito como um identificador JavaScript sem aspas.",
   ],
+  "script/consistent-type-imports": [
+    "Uniformizar o uso de imports de tipo, contando os usos no template como usos de valor",
+    "`Foo` é importado como valor, mas seu único uso é o argumento de tipo de `defineProps`. `Bar` não é relatado: o template lê `Bar.label`, que é um uso de valor.",
+    "`Foo` é importado com `import type`, portanto o import é removido na compilação. `Bar` continua sendo um import de valor porque o template o avalia.",
+  ],
   "script/custom-event-name-casing": [
     "Exigir a capitalização configurada nos nomes de eventos personalizados emitidos",
     "A string emitida `my-event` contém um hífen e viola a política padrão de nomes de eventos em camelCase.",

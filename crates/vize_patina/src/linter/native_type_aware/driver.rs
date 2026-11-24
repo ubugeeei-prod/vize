@@ -107,7 +107,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
                 .as_ref()
                 .and_then(|(l2, _, has_fatal)| (!*has_fatal).then_some(l2)),
             linter.macro_type_resolution(filename),
-            linter.has_unused_bindings_demand(),
+            linter.read_demand(),
             derived,
         )
     });

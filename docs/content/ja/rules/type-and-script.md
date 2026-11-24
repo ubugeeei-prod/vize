@@ -138,13 +138,14 @@ description: "`<script>` と `<script setup>` を検査します。コンパイ�
 | <span id="type-unbound-method"></span>[`type/unbound-method`](./reference/type-unbound-method.md) | レシーバーから切り離したメソッド参照を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="type-use-unknown-in-catch-callback-variable"></span>[`type/use-unknown-in-catch-callback-variable`](./reference/type-use-unknown-in-catch-callback-variable.md) | Promise の catch コールバック引数に unknown 注釈を必須にします。 | `nuxt`, `opinionated` |  |
 
-## 個別に有効化 (16)
+## 個別に有効化 (17)
 
 どのプリセットにも含まれません。`withVue` に渡す `linter.rules` でルール名を指定して有効にします。
 
 | ルール | 検出する内容 | 自動修正 |
 | --- | --- | --- |
 | <span id="script-consistent-props-emits-key-quotes"></span>[`script/consistent-props-emits-key-quotes`](./reference/script-consistent-props-emits-key-quotes.md) | props / emits 宣言で引用符が必須のキーがある場合、すべてのキーを引用符付きに揃えます。 |  |
+| <span id="script-consistent-type-imports"></span>[`script/consistent-type-imports`](./reference/script-consistent-type-imports.md) | 型としてしか使わないインポートを import type に揃えます。テンプレートでの使用は値の使用として数えます。 | ✓ |
 | <span id="script-no-next-tick"></span>[`script/no-next-tick`](./reference/script-no-next-tick.md) | Vapor 向けコンポーネントの nextTick() 使用を検出します。 |  |
 | <span id="script-no-reactive-destructure"></span>[`script/no-reactive-destructure`](./reference/script-no-reactive-destructure.md) | reactive オブジェクトを分割代入し、リアクティビティを失う箇所を検出します。 |  |
 | <span id="script-no-restricted-globals"></span>[`script/no-restricted-globals`](./reference/script-no-restricted-globals.md) | 設定で禁止した実行環境のグローバル参照を検出します。 |  |
