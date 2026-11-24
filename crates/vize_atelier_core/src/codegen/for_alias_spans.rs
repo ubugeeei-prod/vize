@@ -1,4 +1,4 @@
-//! Locations for `v-for` aliases, for a compile that records a map (#13547).
+//! Locations for `v-for` aliases, for a compile that records a map.
 //!
 //! The `v-for` step builds its alias nodes without a location: nothing but a
 //! source map reads one, and the step runs for every compile. A compile that

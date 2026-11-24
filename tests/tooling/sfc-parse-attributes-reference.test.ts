@@ -119,7 +119,7 @@ test("only the exact formatted compile packets advance to raw emitter references
   }
 });
 
-// #13547: the mappings of four attribute fixtures before the render mapped back
+// The mappings of four attribute fixtures before the render mapped back
 // to the template, and after. `null` is a packet without a map.
 const templateMapRows: [source: string, before: string | null, after: string][] = [
   ['<template lang="html"><p>🐱</p></template>', null, ";;AAAsB;UAAC,4BAAE"],

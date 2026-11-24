@@ -11,7 +11,7 @@ const EXPECTED: &str =
 /// The capture's counter mappings: the script's segments, and nothing for the
 /// render inlined after them.
 const SCRIPT_MAPPINGS: &str = ";;AAKA;;;;;;;AAEA,MAAM,MAAM,EAAE,GAAG,CAAC,CAAC;AACnB,SAAS,IAAI,CAAC,EAAE;EACd,KAAK,CAAC,MAAM,CAAC,EAAE;AACjB";
-/// #13547: the render maps back to the template. Its segments follow the
+/// The render maps back to the template. Its segments follow the
 /// script's on later lines, so the archived mappings stay as they were.
 const RENDER_MAPPINGS: &str = ";;;SATE,oCAAC,WAAQ,SAAO,yBAAS";
 

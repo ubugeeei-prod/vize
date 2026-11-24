@@ -415,7 +415,7 @@ await test("single and batch code, maps and all shared metadata remain equal", s
       if (row.options.sourceMap) {
         if (index === 0 && row.target === "vapor") {
           // Only a Vapor template records no authored link: the DOM and server
-          // renders map back to the template (#13547), script or not.
+          // renders map back to the template, script or not.
           assert.equal(result.map, undefined);
         } else assert.deepEqual(JSON.parse(result.map).sourcesContent, [sourceFiles[index]]);
       }

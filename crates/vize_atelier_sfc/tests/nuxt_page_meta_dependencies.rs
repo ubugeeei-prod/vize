@@ -100,14 +100,14 @@ fn whole_original_photo_metadata_has_no_unrelated_component_dependencies() {
     );
 }
 
-// #13547: the frozen packet predates template mappings, so its maps hold the
+// The frozen packet predates template mappings, so its maps hold the
 // script's segments only. Retain it and apply only the reviewed successor:
 // each mapped module whose lane records a template map (every shape but the
 // Vapor client) gains the render's segments in `map.mappings`. No code byte
 // and no other result field changes.
 fn current_template_maps(mut packet: serde_json::Value) -> serde_json::Value {
     let maps: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/differential/compiler/vuefes-page-meta-dependencies/template-maps-13547.json"
+        "../../../tests/_fixtures/differential/compiler/vuefes-page-meta-dependencies/template-maps.json"
     ))
     .expect("reviewed mappings of the eight template-mapped modules");
     let mut successors = 0;

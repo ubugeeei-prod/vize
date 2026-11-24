@@ -228,7 +228,7 @@ export function attributesPacketReference(
       reference = moduleShapeFactsReference(reference, parse);
     }
   }
-  // #13547: the map gains the render's template segments, and nothing else.
+  // The map gains the render's template segments, and nothing else.
   if (current?.kind === "return" && typeof current.json === "string") {
     reference = templateMapReference(reference, JSON.parse(current.json) as ExposurePacket, source);
   }

@@ -1,4 +1,4 @@
-//! #13547: the render code of a component that has a script maps back to its
+//! The render code of a component that has a script maps back to its
 //! template, and asking for the map leaves the module untouched.
 //!
 //! The component is the report's `Broken.vue`, whose template expression

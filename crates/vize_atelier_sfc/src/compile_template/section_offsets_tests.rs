@@ -111,7 +111,7 @@ fn test_slice_template_parts_matches_line_scanner() {
             );
 
             // The provenance the source map is composed through names
-            // exactly the bytes each part was cut from (#13547).
+            // exactly the bytes each part was cut from.
             let (_, _, preamble, render_body, _) = sliced;
             let (preamble_runs, body_runs) = slice_template_parts_runs(&result.code, &sections);
             assert_eq!(

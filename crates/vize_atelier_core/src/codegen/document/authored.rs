@@ -1,4 +1,4 @@
-//! Anchors for text an emitter writes without a location of its own (#13547).
+//! Anchors for text an emitter writes without a location of its own.
 //!
 //! A `v-for` alias is the case: its node has no span. Each entry point here
 //! makes the one recording check its plain counterpart makes and does all of

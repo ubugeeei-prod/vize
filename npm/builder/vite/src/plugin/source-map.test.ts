@@ -220,7 +220,7 @@ assert.deepEqual(
   },
   "the copied statement resolves to its authored line and column",
 );
-// The render maps back to the template too (#13547): a frame, a breakpoint or
+// The render maps back to the template too: a frame, a breakpoint or
 // a coverage range in a template expression is not left on generated code.
 assert.deepEqual(
   frameAfter(compiledMap, compiled.code, "_toDisplayString("),

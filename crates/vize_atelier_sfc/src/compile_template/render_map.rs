@@ -1,5 +1,5 @@
 //! A template backend's source map as provenance of the render module the
-//! SFC assembly splices into the component (#13547).
+//! SFC assembly splices into the component.
 //!
 //! The DOM and SSR backends record where each emitted token of the render
 //! function was authored and return those links as a Source Map v3 document

@@ -27,7 +27,7 @@ const plan = JSON.parse(bytes.toString("utf8")) as {
 };
 assert.equal(plan.schema, "vize.sfc-empty-compile-project-context-source-successor.v1");
 
-// #13547: the render block's template links join the component map. That edit
+// The render block's template links join the component map. That edit
 // of the pinned SFC compile source is kept as data, in the plan's own shape.
 const templateMapBytes = readFileSync(
   new URL("../fixtures/sfc/parsed-attributes/compile-template-map-successor.json", import.meta.url),
@@ -174,7 +174,7 @@ pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<V
   return reference;
 }
 
-/** The reviewed template-map edit (#13547) reversed to the bytes it was made on. */
+/** The reviewed template-map edit reversed to the bytes it was made on. */
 function withoutTemplateMap(file: string, bytes: Uint8Array): Uint8Array {
   if (file !== templateMap.path || blob(bytes) !== templateMap.currentBlob) return bytes;
   let text = Buffer.from(bytes).toString("utf8");

@@ -89,7 +89,7 @@ fn compile(source: &str, shape: &str, nuxt: bool, map: bool) -> SfcCompileResult
     assert!(result.errors.is_empty(), "{:?}", result.errors);
     assert!(result.warnings.is_empty(), "{shape}: {:?}", result.warnings);
     // Nuxt erases these scripts whole. Their render still maps to the
-    // template (#13547), except on the Vapor client lane, which records none.
+    // template, except on the Vapor client lane, which records none.
     let script_erased = nuxt && (source == source!("Page") || source == source!("global"));
     assert_eq!(
         result.map.is_some(),

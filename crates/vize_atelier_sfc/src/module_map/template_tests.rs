@@ -1,4 +1,4 @@
-//! Template code in the module map of a script-bearing SFC (#13547).
+//! Template code in the module map of a script-bearing SFC.
 //!
 //! The render code of a component with a `<script>` was emitted without any
 //! mapping, so a breakpoint, a stack frame or a coverage range inside it

@@ -380,7 +380,7 @@ function templateSegments(source: string): (segment: Segment) => boolean {
 
 /**
  * The candidate packet as its map was before the render mapped back to the
- * template (#13547): without the segments authored inside `<template>`, and
+ * template: without the segments authored inside `<template>`, and
  * without a map when none remain. The references above describe this view.
  */
 export function withoutTemplateSegments<T extends ErasedPacket>(current: T, source: string): T {
@@ -397,7 +397,7 @@ export function withoutTemplateSegments<T extends ErasedPacket>(current: T, sour
   return out;
 }
 
-// Advance one preserved packet by the reviewed template provenance (#13547):
+// Advance one preserved packet by the reviewed template provenance:
 // the render of a component maps back to its template. The candidate's map is
 // accepted only when it keeps every preserved segment and every other map
 // field, and each segment it gains is authored inside `<template>`. A packet

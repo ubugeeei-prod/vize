@@ -120,7 +120,7 @@ export function setupComponentBracketReference(
 
 // `erased` is the current row: a TypeScript source's packets advance by the
 // per-piece erasure only after its program, offsets and map check out, and
-// every packet's map by the template segments its render gained (#13547).
+// every packet's map by the template segments its render gained.
 export function advanceRuntimeOptionReference<T extends RuntimeOptionRow>(
   row: T,
   sourceFiles: readonly string[],

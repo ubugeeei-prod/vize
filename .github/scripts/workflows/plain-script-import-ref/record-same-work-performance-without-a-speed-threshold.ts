@@ -47,7 +47,7 @@ for (let i = 0; i < priorPackets.length; i++) {
     prior.case === "constant-controls" && prior.filename === "src/App.vue"
       ? assertSetupLiteralMovesIntoSetup
       : undefined;
-  // #13547: the render maps back to the template, so a map gains the segments
+  // The render maps back to the template, so a map gains the segments
   // authored there and a macro-only component gains its map. The erasure
   // reference reads the script's segments; the template reference then
   // accepts only what the candidate's map gained inside `<template>`.

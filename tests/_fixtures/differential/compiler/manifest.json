@@ -5205,7 +5205,7 @@
       "reference": {
         "path": "template-source-map-13547/module.expected.txt",
         "sha256": "3b9c8eca35d1097b064aba33e7a08e27eb93ea2cf79c38ffd530541fdb595cba",
-        "source": "crates/vize_atelier_sfc/tests/template_source_map_13547.rs:the_server_module_is_the_pinned_reference_with_or_without_a_map"
+        "source": "crates/vize_atelier_sfc/tests/template_source_maps.rs:the_server_module_is_the_pinned_reference_with_or_without_a_map"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",

@@ -148,7 +148,7 @@ try {
     assert.deepEqual(parsed.errors, []);
     const hasScript = Boolean(parsed.descriptor.script || parsed.descriptor.scriptSetup);
     assert.equal(hasScript, !scriptless.includes(file.name));
-    // The server render maps back to its template (#13547), so a component
+    // The server render maps back to its template, so a component
     // without a script is mapped as well.
     assert.ok(file.current.map && typeof file.current.map.mappings === "string");
     assert.deepEqual(file.current.map.sources, [`${file.name}.vue`]);

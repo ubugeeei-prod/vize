@@ -104,7 +104,7 @@ fn setup_statements_map_token_by_token() {
     let result = compile(source, false, true);
     let segments = render(&result.code, source, result.map.as_ref().unwrap());
     // The rebuilt import is anchored at its statement; the copied statement
-    // maps every token; the inlined render maps to the template (#13547).
+    // maps every token; the inlined render maps to the template.
     assert_eq!(
         segments,
         [

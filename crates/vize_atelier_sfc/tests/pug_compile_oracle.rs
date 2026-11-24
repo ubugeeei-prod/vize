@@ -286,7 +286,7 @@ fn plain_template_only_map_request_changes_only_the_map() {
     };
     let plain = serde_json::to_value(compile(false)).expect("plain whole packet");
     let mut requested = serde_json::to_value(compile(true)).expect("requested whole packet");
-    // A template without a script is mapped like one with a script (#13547):
+    // A template without a script is mapped like one with a script:
     // the request adds the map and changes no other field of the packet.
     let map = requested["map"].take();
     assert_eq!(

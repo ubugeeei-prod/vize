@@ -1,6 +1,6 @@
 //! The compiled template, cut into the parts the `<script setup>` assembly
 //! embeds, with each part's `.vue` provenance when the compile asked for a
-//! source map (#13547).
+//! source map.
 //!
 //! Split out of `super::compile_sfc_inner` so that function stays inside the
 //! per-file source-length budget.
