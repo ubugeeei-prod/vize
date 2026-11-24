@@ -1,7 +1,8 @@
 use std::path::Path;
 use vize_carton::{FxHashSet, String};
 
-use super::{FileTypeSummary, extract_file_summary, extract_script_summary, path_key};
+use super::resolution::path_key;
+use super::{FileTypeSummary, extract_file_summary, extract_script_summary};
 use crate::script::{ScriptCompileContext, TypeSourceSnapshot};
 
 impl ScriptCompileContext {

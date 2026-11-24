@@ -5,6 +5,7 @@ use std::sync::{LazyLock, RwLock};
 use vize_carton::{FxHashMap, String, ToCompactString};
 
 use super::super::batch_epoch::{NO_EPOCH, current_batch_epoch};
+use super::work::{Step, count};
 
 mod conditions;
 mod exports_patterns;
@@ -103,13 +104,18 @@ static RESOLVE_CACHE: LazyLock<RwLock<FxHashMap<ResolutionKey, CachedResolution>
 #[cfg(test)]
 pub(crate) fn resolve_import_path(current_file: &Path, specifier: &str) -> Option<PathBuf> {
     let project = project::for_file(current_file).ok()?;
-    resolve_import_path_with_project(current_file, specifier, project.as_deref())
+    let epoch = current_batch_epoch();
+    resolve_import_path_with_project(current_file, specifier, project.as_deref(), epoch)
 }
 
+/// Resolve `specifier` as written in `current_file`. `epoch` is the batch
+/// generation of the caller's stability window: a target confirmed in that
+/// generation is not probed again.
 pub(crate) fn resolve_import_path_with_project(
     current_file: &Path,
     specifier: &str,
     project: Option<&project::Project>,
+    epoch: u64,
 ) -> Option<PathBuf> {
     let dir = current_file.parent()?.to_path_buf();
     let key = (
@@ -118,7 +124,8 @@ pub(crate) fn resolve_import_path_with_project(
         specifier.to_compact_string(),
     );
     let revision = project.map(|project| project.revision);
-    let epoch = current_batch_epoch();
+    count(Step::Resolution, 1);
+    count(Step::SharedLock, 1);
     if let Ok(cache) = RESOLVE_CACHE.read()
         && let Some(entry) = cache.get(&key)
         && entry.revision == revision
@@ -135,6 +142,7 @@ pub(crate) fn resolve_import_path_with_project(
     }
 
     let resolved = resolve_import_path_uncached(current_file, specifier, project)?;
+    count(Step::SharedLock, 1);
     if let Ok(mut cache) = RESOLVE_CACHE.write() {
         cache.insert(
             key,
@@ -155,6 +163,7 @@ fn resolve_import_path_uncached(
     specifier: &str,
     project: Option<&project::Project>,
 ) -> Option<PathBuf> {
+    count(Step::Probe, 1);
     if !specifier.starts_with('.')
         && !Path::new(specifier).is_absolute()
         && let Some(project) = project

@@ -1,25 +1,28 @@
-use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{LazyLock, RwLock};
+use std::path::Path;
 use std::time::SystemTime;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use sha2::{Digest, Sha256};
-use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
+use vize_carton::{String, ToCompactString};
 
 use crate::parse_sfc;
 use crate::script::build_interface_type_source;
 use crate::types::SfcParseOptions;
 
 use super::ScriptCompileContext;
-use super::batch_epoch::NO_EPOCH;
 use super::helpers::is_import_type_only;
 
+mod closure;
+mod collect;
+mod modules;
 mod required;
+mod summary_cache;
 mod walk;
+pub(super) mod work;
+pub(super) use modules::retire as retire_shared_modules;
+use work::{Step, count};
 
 #[derive(Default)]
 pub(crate) struct ImportedTypes {
@@ -28,8 +31,7 @@ pub(crate) struct ImportedTypes {
 }
 pub(super) mod resolution;
 mod sources;
-use resolution::{canonical_base_file, path_key, project::Project};
-use walk::{RequestedExports, TypeDependency, TypeWalk};
+use walk::TypeDependency;
 
 #[derive(Clone, Debug, Default)]
 pub(super) struct FileTypeSummary {
@@ -43,64 +45,9 @@ pub(super) struct FileTypeSummary {
     imports: Vec<(String, String)>,
 }
 
-/// Metadata hints for configuration discovery. Imported module summaries below
+/// Metadata hints for configuration discovery. Imported module summaries
 /// validate strong source fingerprints instead of treating metadata as identity.
 type FileStamp = (Option<SystemTime>, u64);
-
-/// One transient read. Changed bytes and their digest move to the parser together.
-struct FileTypeSource {
-    text: String,
-    fingerprint: [u8; 32],
-}
-
-impl FileTypeSource {
-    fn read(path: &Path) -> Option<Self> {
-        let text = std::fs::read_to_string(path).ok()?;
-        let fingerprint = Sha256::digest(text.as_bytes()).into();
-        Some(Self {
-            text: text.into(),
-            fingerprint,
-        })
-    }
-}
-
-/// A parsed summary and a strong source digest, without retaining the whole file.
-struct CachedFileSummary {
-    fingerprint: [u8; 32],
-    validated_epoch: AtomicU64,
-    summary: FileTypeSummary,
-}
-
-impl CachedFileSummary {
-    /// A changed read is returned to the parser so it is never read twice.
-    fn revalidate(&self, path: &Path, epoch: u64) -> Result<(), Option<FileTypeSource>> {
-        if epoch != NO_EPOCH && self.validated_epoch.load(Ordering::Relaxed) == epoch {
-            return Ok(());
-        }
-        let source = FileTypeSource::read(path);
-        if source
-            .as_ref()
-            .is_some_and(|source| source.fingerprint == self.fingerprint)
-        {
-            self.validated_epoch.store(epoch, Ordering::Relaxed);
-            Ok(())
-        } else {
-            Err(source)
-        }
-    }
-}
-
-enum SummaryLookup {
-    Cached(Vec<TypeDependency>),
-    Reload(Option<FileTypeSource>),
-    Miss,
-}
-
-/// Shared AST summaries, revalidated once per file in each batch. Standalone
-/// compiles compare source digests on each request; metadata cannot prove that a
-/// same-length edit within filesystem timestamp granularity is unchanged.
-static FILE_TYPE_CACHE: LazyLock<RwLock<FxHashMap<PathBuf, CachedFileSummary>>> =
-    LazyLock::new(|| RwLock::new(FxHashMap::default()));
 
 fn file_stamp(path: &Path) -> FileStamp {
     match std::fs::metadata(path) {
@@ -116,6 +63,7 @@ fn build_file_summary(path: &Path) -> Option<FileTypeSummary> {
 }
 
 fn file_summary_from_source(path: &Path, content: &str) -> FileTypeSummary {
+    count(Step::SummaryParse, 1);
     let is_vue = path.extension().is_some_and(|ext| ext == "vue");
     let follows_value_imports = path.file_name().is_some_and(|name| {
         let name = name.to_string_lossy();
@@ -290,177 +238,6 @@ fn extract_script_summary(
                 });
             }
             _ => {}
-        }
-    }
-}
-
-impl ScriptCompileContext {
-    /// Walk the script's type-bearing imports/re-exports on disk and merge the
-    /// interfaces/type aliases they declare into this context.
-    ///
-    /// `is_ts` must reflect whether the script block is TypeScript
-    /// (`lang="ts"`/`"tsx"`, computed once per compile at the call site) — it
-    /// is the real signal, derived from the parsed SFC, that replaced the old
-    /// `source.contains("type")` substring pre-check. Imported *types* can only
-    /// be referenced from TypeScript (`defineProps<Props>()`), so for plain JS
-    /// the walk would only burn stat/realpath syscalls; the substring heuristic
-    /// misfired on JS object keys like `type: 'text'` next to any `import`,
-    /// which is exactly what the `is_ts` gate cuts off.
-    pub fn collect_imported_types_from_path(&mut self, source: &str, filename: &str, is_ts: bool) {
-        let _ = self.try_collect_imported_types_from_path(source, filename, is_ts, None);
-    }
-
-    pub(crate) fn try_collect_imported_types_from_path(
-        &mut self,
-        source: &str,
-        filename: &str,
-        is_ts: bool,
-        selected: Option<&Project>,
-    ) -> Result<ImportedTypes, String> {
-        if !is_ts {
-            return Ok(ImportedTypes::default());
-        }
-
-        // The root source lives in memory (possibly unsaved editor state), so
-        // parse it directly; only files read from disk go through the cache.
-        // The parsed specifier list is the precise "is there anything to
-        // follow?" signal — strictly tighter than the old substring guard, so
-        // no separate text pre-check is needed.
-        let mut root = FileTypeSummary::default();
-        extract_script_summary(source, &mut root, false);
-        if root.specifiers.is_empty() {
-            // Nothing to resolve — skip base-file canonicalization entirely
-            // (the common case: scripts with only runtime imports).
-            return Ok(ImportedTypes::default());
-        }
-
-        let owned_base = canonical_base_file(filename);
-        let base_file = owned_base.as_path();
-        let Some(base_dir) = base_file.parent() else {
-            return Ok(ImportedTypes::default());
-        };
-        if base_dir.as_os_str().is_empty() {
-            return Ok(ImportedTypes::default());
-        }
-
-        let discovered = if selected.is_none() {
-            resolution::project::for_file(base_file)?
-        } else {
-            None
-        };
-        let project = selected
-            .filter(|project| project.is_configured())
-            .or(discovered.as_deref());
-
-        let mut visited = FxHashSet::default();
-        let mut traversed = FxHashSet::default();
-        let mut imports = root.imports;
-        {
-            let mut walk = TypeWalk {
-                visited: &mut visited,
-                traversed: &mut traversed,
-                project,
-                imports: &mut imports,
-            };
-            for dependency in &root.dependencies {
-                self.collect_types_from_dependency(
-                    dependency,
-                    &RequestedExports::All,
-                    base_file,
-                    &mut walk,
-                );
-            }
-        }
-        let mut dependencies: Vec<String> = visited.into_iter().collect();
-        dependencies.extend(
-            Project::discovery_inputs(base_file)?
-                .iter()
-                .map(|path| path_key(path)),
-        );
-        if discovered.is_some() {
-            dependencies.extend(
-                Project::reference_inputs(base_file)?
-                    .iter()
-                    .map(|path| path_key(path)),
-            );
-        }
-        if let Some(project) = project {
-            dependencies.extend(project.inputs().iter().map(|path| path_key(path)));
-        }
-        dependencies.sort();
-        dependencies.dedup();
-        Ok(ImportedTypes {
-            imports,
-            dependencies,
-        })
-    }
-
-    fn cached_file_summary(
-        &mut self,
-        path: &Path,
-        epoch: u64,
-        imports: &mut Vec<(String, String)>,
-    ) -> SummaryLookup {
-        let Ok(cache) = FILE_TYPE_CACHE.read() else {
-            return SummaryLookup::Miss;
-        };
-        let Some(entry) = cache.get(path) else {
-            return SummaryLookup::Miss;
-        };
-        match entry.revalidate(path, epoch) {
-            Ok(()) => {
-                self.merge_file_summary(&entry.summary);
-                imports.extend(entry.summary.imports.iter().cloned());
-                SummaryLookup::Cached(entry.summary.dependencies.clone())
-            }
-            Err(source) => SummaryLookup::Reload(source),
-        }
-    }
-
-    fn merge_file_source(
-        &mut self,
-        path: &Path,
-        source: Option<FileTypeSource>,
-        epoch: u64,
-        imports: &mut Vec<(String, String)>,
-    ) -> Option<Vec<TypeDependency>> {
-        let source = source?;
-        let summary = file_summary_from_source(path, &source.text);
-        self.merge_file_summary(&summary);
-        imports.extend(summary.imports.iter().cloned());
-        let dependencies = summary.dependencies.clone();
-        if let Ok(mut cache) = FILE_TYPE_CACHE.write() {
-            cache.insert(
-                path.to_path_buf(),
-                CachedFileSummary {
-                    fingerprint: source.fingerprint,
-                    validated_epoch: AtomicU64::new(epoch),
-                    summary,
-                },
-            );
-        }
-        Some(dependencies)
-    }
-
-    fn merge_file_summary(&mut self, summary: &FileTypeSummary) {
-        // A name already declared in this SFC, in either map, is that
-        // binding. An imported `interface Props` must not shadow a local
-        // `type Props` (#12942).
-        for (name, body) in &summary.interfaces {
-            if self.type_aliases.contains_key(name) {
-                continue;
-            }
-            self.interfaces
-                .entry(name.clone())
-                .or_insert_with(|| body.clone());
-        }
-        for (name, body) in &summary.type_aliases {
-            if self.interfaces.contains_key(name) {
-                continue;
-            }
-            self.type_aliases
-                .entry(name.clone())
-                .or_insert_with(|| body.clone());
         }
     }
 }
