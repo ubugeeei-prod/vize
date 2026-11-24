@@ -1,87 +1,52 @@
 //! `sameNameShorthand`: one spelling for a binding that reads its own argument.
 //!
 //! `always` requires `:foo` where `:foo="foo"` is written, and `never` requires
-//! the written value. The policy is its own rule object, so `vue/v-bind-style`
-//! without the option runs exactly the code it ran before the option existed.
+//! the written value.
 
-use super::{META, VBindStyle};
+use super::META;
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, TextEdit};
 use crate::markup::{MarkupBinding, SameNameSpelling};
-use crate::rule::{Rule, RuleHooks, RuleMeta};
 use vize_l0::cstr;
-use vize_relief::{DirectiveNode, ElementNode};
+use vize_relief::DirectiveNode;
 
-/// `vue/v-bind-style` with `sameNameShorthand` set to `always` or `never`.
-struct VBindStyleSameName {
-    style: VBindStyle,
+/// Report `directive` when it is a same-name binding not written as `required`.
+pub(super) fn check(
+    ctx: &mut LintContext<'_>,
+    directive: &DirectiveNode<'_>,
     required: SameNameSpelling,
-}
-
-impl VBindStyle {
-    /// This style with `required` as the one spelling of same-name bindings.
-    pub(crate) fn requiring_same_name(self, required: SameNameSpelling) -> Box<dyn Rule> {
-        Box::new(VBindStyleSameName {
-            style: self,
-            required,
-        })
+) {
+    // Only the spelling the policy rejects is looked for.
+    let rejected = match required {
+        SameNameSpelling::Shorthand => SameNameSpelling::Explicit,
+        SameNameSpelling::Explicit => SameNameSpelling::Shorthand,
+    };
+    let Some(same_name) =
+        MarkupBinding::from_relief_directive(directive).same_name_binding_written(rejected)
+    else {
+        return;
+    };
+    let (start, end) = (directive.loc.span.start, directive.loc.span.end);
+    let (message, help, fix) = match required {
+        SameNameSpelling::Shorthand => (
+            "Expected same-name shorthand.",
+            "Use `:attr` instead of `:attr=\"attr\"`",
+            same_name_shorthand_fix(ctx.source, start, end),
+        ),
+        SameNameSpelling::Explicit => (
+            "Unexpected same-name shorthand.",
+            "Use `:attr=\"attr\"` instead of `:attr`",
+            Some(Fix::new(
+                "Write the bound value",
+                TextEdit::insert(end, cstr!("=\"{}\"", same_name.operand())),
+            )),
+        ),
+    };
+    let mut diagnostic = LintDiagnostic::warn(META.name, message, start, end).with_help(help);
+    if let Some(fix) = fix {
+        diagnostic = diagnostic.with_fix(fix);
     }
-}
-
-impl VBindStyleSameName {
-    fn check_same_name(&self, ctx: &mut LintContext<'_>, directive: &DirectiveNode<'_>) {
-        // Only the spelling the policy rejects is looked for.
-        let rejected = match self.required {
-            SameNameSpelling::Shorthand => SameNameSpelling::Explicit,
-            SameNameSpelling::Explicit => SameNameSpelling::Shorthand,
-        };
-        let Some(same_name) =
-            MarkupBinding::from_relief_directive(directive).same_name_binding_written(rejected)
-        else {
-            return;
-        };
-        let (start, end) = (directive.loc.span.start, directive.loc.span.end);
-        let (message, help, fix) = match self.required {
-            SameNameSpelling::Shorthand => (
-                "Expected same-name shorthand.",
-                "Use `:attr` instead of `:attr=\"attr\"`",
-                same_name_shorthand_fix(ctx.source, start, end),
-            ),
-            SameNameSpelling::Explicit => (
-                "Unexpected same-name shorthand.",
-                "Use `:attr=\"attr\"` instead of `:attr`",
-                Some(Fix::new(
-                    "Write the bound value",
-                    TextEdit::insert(end, cstr!("=\"{}\"", same_name.operand())),
-                )),
-            ),
-        };
-        let mut diagnostic = LintDiagnostic::warn(META.name, message, start, end).with_help(help);
-        if let Some(fix) = fix {
-            diagnostic = diagnostic.with_fix(fix);
-        }
-        ctx.report(diagnostic);
-    }
-}
-
-impl Rule for VBindStyleSameName {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
-    }
-
-    fn template_hooks(&self) -> RuleHooks {
-        RuleHooks::DIRECTIVE
-    }
-
-    fn check_directive<'a>(
-        &self,
-        ctx: &mut LintContext<'a>,
-        element: &ElementNode<'a>,
-        directive: &DirectiveNode<'a>,
-    ) {
-        self.check_same_name(ctx, directive);
-        self.style.check_directive(ctx, element, directive);
-    }
+    ctx.report(diagnostic);
 }
 
 /// Delete `="value"` from `:user-name="userName"`, leaving `:user-name`.
