@@ -63,7 +63,8 @@ jobs {
       }
       new Dynamic {
         name = "Verify in-memory, persistent and SSR precompile identities"
-        run = "node --test --test-concurrency=1 npm/builder/vite/src/plugin/compiled-module-cache.test.ts npm/builder/vite/src/plugin/precompile-cache-path.test.ts npm/builder/vite/src/plugin/precompile.test.ts"
+        env { VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/vite-precompile-cache" }
+        run = ci.workflowScript("verify-in-memory-persistent-and-ssr-precompile.sh")
       }
     }
   }

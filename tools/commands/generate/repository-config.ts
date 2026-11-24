@@ -13,16 +13,18 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  automationSizeViolations,
   validateAutomationSteps,
   validateShellProgram,
 } from "../../support/ci/automation-commands.ts";
+import { legacyLongSteps } from "../../support/ci/automation-size-legacy.ts";
 import {
   packageTaskRuntime,
   renderPackageTasks,
   validatePackageScripts,
 } from "../../support/ci/package-programs.ts";
 import { renderRepositoryYaml, type ConfigValue } from "../../support/ci/repository-yaml.ts";
-import { workflowNameViolations } from "../../support/ci/workflow-names.ts";
+import { protectedWorkflows, workflowNameViolations } from "../../support/ci/workflow-names.ts";
 import { readWorkflowEntries, renderWorkflowCatalog } from "../ci/workflow-catalog.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
@@ -227,6 +229,7 @@ async function main(): Promise<void> {
   const values = evaluate(products);
   const runtime = await packageTaskRuntime(root);
   const changes: { target: string; text: string; executable?: boolean }[] = [];
+  const sizeViolations: string[] = [];
   for (const [index, { target, kind }] of products.entries()) {
     const file = path.join(root, target);
     const current = readOutput(file);
@@ -256,10 +259,21 @@ async function main(): Promise<void> {
       }).stdout ??
       undefined;
     const action = target.startsWith(".github/workflows/") || target.startsWith(".github/actions/");
-    if (action) validateAutomationSteps(target, value);
+    if (action) {
+      validateAutomationSteps(target, value);
+      // Protected release files keep their reviewed commands.
+      if (!(path.posix.basename(target) in protectedWorkflows))
+        sizeViolations.push(
+          ...automationSizeViolations(target, value).filter(
+            (violation) => !legacyLongSteps.has(violation.slice(0, violation.lastIndexOf(": "))),
+          ),
+        );
+    }
     const text = renderRepositoryYaml(value, template, !action);
     if (text !== current) changes.push({ target, text });
   }
+  if (sizeViolations.length)
+    throw new Error(`Move long commands into named programs:\n${sizeViolations.join("\n")}`);
   if (check && changes.length) {
     throw new Error(
       `Regenerate Pkl outputs with \`node tools/commands/generate/repository-config.ts\`:\n${changes.map(({ target }) => target).join("\n")}`,

@@ -5,7 +5,7 @@ import { parse } from "yaml";
 
 void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU runner", () => {
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "typecheck-corpus-pair.yml"),
+    readAutomationPrograms(".github", "workflows", "typecheck-cold-pair.yml"),
   ) as {
     on: {
       workflow_dispatch: {
@@ -18,13 +18,16 @@ void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU
     >;
   };
   const inputs = workflow.on.workflow_dispatch.inputs;
-  assert.equal(inputs.base_sha?.required, true);
-  assert.equal(inputs.head_sha?.required, true);
+  assert.equal(inputs.base?.required, true);
+  assert.equal(inputs.head?.required, true);
   assert.equal(inputs.runs?.default, "5");
   assert.equal(inputs.workloads?.default, "");
-  const job = workflow.jobs.measure;
+  const job = workflow.jobs.corpus;
   assert.equal(job?.["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
-  const script = (job?.steps ?? []).map((step) => step.run ?? "").join("\n");
+  // Named programs wrap one argument group per line.
+  const script = (job?.steps ?? [])
+    .map((step) => (step.run ?? "").replaceAll(/ \\\n\s*/gu, " "))
+    .join("\n");
   assert.match(script, /npm ci --prefix tools\/benchmarks\/typecheck-hosts/u);
   assert.match(script, /npm ci --prefix tools\/benchmarks\/typecheck-corpora/u);
   // vue-tsc comes from the benchmark workspace's lockfile pin.
@@ -68,7 +71,7 @@ void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU
     "${{ !cancelled() && !inputs.owned_pair && steps.measure.outcome != 'skipped' }}",
   );
   assert.equal(
-    planted?.run,
+    planted?.run?.replaceAll(/ \\\n\s*/gu, " ").trimEnd(),
     'node tools/benchmarks/scripts/typecheck-corpus-mutations-run.ts --base "$RUNNER_TEMP/pair-base" --head "$RUNNER_TEMP/pair-head" --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out" --corpora "$CORPORA"',
   );
   assert.match(script, /tests\/tooling\/typecheck-corpus-mutations\.test\.ts/u);

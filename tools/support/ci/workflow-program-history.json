@@ -1,12 +1,14 @@
 {
   "content-mapper-conformance": {
     "before": "af3a0c9c81dd1a48f790ea66feced0945e59278eeb8f063a67b83cab62ef4cc1",
-    "workflow": "1549742526a4b5e568415fb0ad25d44ab4b8d99950b641a8ca78a7b43239bf44",
+    "workflow": "0ad2a9bab9cedcd7b1b07c61ff8d62a769df4f0092ffa192871740242e2175a7",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
       ".github/scripts/workflows/content-mapper-conformance/build-exact-upstream-tsgo.sh",
       ".github/scripts/workflows/content-mapper-conformance/build-packed-content-mapper-runtime.sh",
+      ".github/scripts/workflows/content-mapper-conformance/nuxt-membership-require-every-executed-native-stock-and-graph-control.sh",
+      ".github/scripts/workflows/content-mapper-conformance/nuxt-membership-verify-membership-controls.ts",
       ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.sh",
       ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.ts",
       ".github/scripts/workflows/content-mapper-conformance/run-authored-syntax-and-setup-binding-conformance.sh",
@@ -21,7 +23,7 @@
       ".github/scripts/workflows/content-mapper-conformance/verify-upstream-content-mapper-protocol-regressions.sh",
       ".github/scripts/workflows/shared/files.ts"
     ],
-    "closure": "156986ddedb06d69d44aa4df3e1ffa466082ada89c47afd0efaf14b2a8b236e7"
+    "closure": "c6ff746f584346737c9738cb3e68df2f420d1a2c19b3e58ff62b07364ff475e0"
   },
   "native-smoke": {
     "before": "dfcea2b5fd581d6e18d08cbefdbdbda26a46dd63df02dc672a7ae13cfcc7f9c0",
@@ -98,34 +100,5 @@
       ".github/scripts/workflows/typescript-provider-vsix/run-the-actual-installed-platform-extension.sh"
     ],
     "closure": "142b40f6f1c08d3c26c4daf3bdb8ff5e53a21f1aef72eee3bf81f6a1e913b3ce"
-  },
-  "cold-typechecker-scale": {
-    "before": "a66155dc3fc7db5823b480e5f2ae5492885948657c3d4cba158fd5db8b3eec2a",
-    "workflow": "3105a9444130ea813a3baeeaa818aa27a8b4b52f4fc1ede9f9ee6cc9299b4f53",
-    "programs": [
-      ".github/scripts/workflows/cold-typechecker-scale/build-allocation-instrumentation-separately-from-timing-binaries.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/build-normal-exact-base-and-head-with-equal-compiler-settings.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/build-separate-allocation-and-custody-roles-after-both-normal-images-are.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/build-separate-read-buffer-instrumentation-after-normal-image-sealing.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/build-the-exact-base-and-head-with-equal-symbol-settings.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/capture-direct-normal-process-pmu-counters-and-bounded-source-stacks.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/capture-paired-rust-allocation-spans-without-cpu-sampling-overhead.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/capture-paired-rust-allocation-spans-without-cpu-sampling-overhead.ts",
-      ".github/scripts/workflows/cold-typechecker-scale/compare-fresh-processes-and-independent-authored-diagnostic-controls.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/install-fixed-comparison-providers.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/install-the-exact-source-pinned-provider-graph.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/package-evidence-without-traversing-workspace-links.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/preserve-every-raw-pair-native-observation-control-and-source-receipt.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/refuse-changed-inputs-native-bytes-and-unsupported-modes.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/require-full-output-and-read-ownership-observations-before-four-balanced.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/require-original-controls-and-full-output-before-eight-candidate-primari.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/select-exact-product-sources-and-preserve-the-separate-controller-identi.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/validate-the-full-sfc-cohort.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/validate-the-full-sfc-cohort.ts",
-      ".github/scripts/workflows/shared/cpu-affinity.ts",
-      ".github/scripts/workflows/shared/files.ts",
-      ".github/scripts/workflows/shared/runner-resources.ts"
-    ],
-    "closure": "9079b3edfc0b180aeb5d14712be3ab6051936a091927dc077faf85417a5fd5ad"
   }
 }

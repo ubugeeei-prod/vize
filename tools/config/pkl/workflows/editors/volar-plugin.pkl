@@ -65,7 +65,7 @@ jobs {
       ci.command("Exercise actual Volar context and TypeScript language service", "node --test npm/volar/test/service.test.js")
       new Dynamic {
         name = "Check public package declarations"
-        run = #"node "$RUNNER_TEMP/volar-plugin-deps/node_modules/typescript/bin/tsc" --ignoreConfig --strict --noEmit --module NodeNext --moduleResolution NodeNext --target ESNext npm/volar/src/index.d.ts"#
+        run = ci.workflowScript("check-public-package-declarations.sh")
       }
       ci.command("Exercise fresh packed consumers without source loader overrides", "node npm/volar/test/packed-consumer.js")
       new Dynamic {

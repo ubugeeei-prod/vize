@@ -7,17 +7,20 @@ test("the shipping-profile supplement preserves the scheduled ci-opt campaign", 
   const main = parse(
     readAutomationPrograms(".github", "workflows", "davinci-resource-budgets.yml"),
   );
-  const release = parse(
-    readAutomationPrograms(".github", "workflows", "lsp-release-resources.yml"),
-  );
   assert.equal(main.on.workflow_dispatch.inputs.include_release.default, false);
   assert.equal(
     main.jobs["release-resource"].if,
     "github.event_name == 'workflow_dispatch' && inputs.include_release",
   );
-  assert.equal(main.jobs["release-resource"].uses, "./.github/workflows/lsp-release-resources.yml");
-  const steps = release.jobs.release.steps as Array<{ name?: string; run?: string; uses?: string }>;
-  const command = (name: string) => steps.find((step) => step.name === name)?.run ?? "";
+  assert.equal(main.jobs["release-resource"].uses, undefined);
+  const steps = main.jobs["release-resource"].steps as Array<{
+    name?: string;
+    run?: string;
+    uses?: string;
+  }>;
+  // Named programs wrap one argument group per line.
+  const command = (name: string) =>
+    (steps.find((step) => step.name === name)?.run ?? "").replaceAll(/ \\\n\s*/gu, " ");
   assert.match(
     command("Build the shipped Linux CLI recipe"),
     /cargo build --release -p vize --target x86_64-unknown-linux-gnu/u,

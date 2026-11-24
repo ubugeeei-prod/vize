@@ -88,8 +88,8 @@ test("the cold pair exposes the qualified runtime and checker-width matrix", () 
   assert.match(hosts.dependencies?.tsrs ?? "", /^\d+\.\d+\.\d+-ts\d+\.\d+\.\d+-beta$/u);
 
   const workflow = readWorkflowShell("typecheck-cold-pair");
-  assert.match(workflow, /options: \[tsgo, tsrs\]/u);
-  assert.match(workflow, /options: \["1", "8"\]/u);
+  assert.match(workflow, /options:\n\s+- tsgo\n\s+- tsrs\n/u);
+  assert.match(workflow, /options:\n\s+- "1"\n\s+- "8"\n/u);
   assert.match(workflow, /--runtime "\$RUNTIME" --checkers "\$CHECKERS"/u);
 });
 

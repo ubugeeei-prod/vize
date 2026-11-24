@@ -38,4 +38,5 @@ env {
 
 jobs {
   `exact-tsgo-project` = import("../../parts/content-mapper-conformance/exact-tsgo-project.pkl")
+  `nuxt-generated-membership` = import("../../parts/content-mapper-conformance/nuxt-generated-membership.pkl")
 }

@@ -1,14 +1,31 @@
 import "../../Actions.pkl" as ci
 
 name = "Type-check cold pair"
-`run-name` = "Type-check cold pair ${{ inputs.head }} vs ${{ inputs.base }} (${{ inputs.projects }})"
-// Two commits check the same generated projects cold on Linux, WSL2 (ext4 and
-// the Windows mount) and native Windows, alternating builds per run.
+`run-name` = "Type-check ${{ inputs.mode || 'content-mapper-replay' }} ${{ inputs.head || github.sha }} vs ${{ inputs.base || 'merge base' }}"
+// One base/head A/B host for type checking and the content mapper. Each mode
+// measures two commits with alternating builds:
+// - generated: cold checks of generated projects on Linux, WSL2 (ext4 and the
+//   Windows mount) and native Windows;
+// - corpus: pinned real corpora and owned workloads on Linux;
+// - content-mapper: one content-mapper request stream on every filesystem;
+// - content-mapper-replay: the request streams tsc sends for real corpora. A push
+//   to bench/content-mapper-replay/** measures the pushed commit against its
+//   merge base with main, or against the commit a `Replay-Base: <sha>` trailer of
+//   the pushed commit names, on every corpus with every option on.
 on {
+  push {
+    branches = List("bench/content-mapper-replay/**")
+  }
   workflow_dispatch {
     inputs {
+      mode {
+        description = "What to compare"
+        type = "choice"
+        options = List("generated", "corpus", "content-mapper", "content-mapper-replay")
+        ["default"] = "generated"
+      }
       base {
-        description = #"Full 40-hex commit measured first (the "before")"#
+        description = #"Full 40-hex commit measured first (the "before"; the head SHA again for an A/A run)"#
         type = "string"
         required = true
       }
@@ -17,58 +34,139 @@ on {
         type = "string"
         required = true
       }
-      projects {
-        description = "Comma-separated generated projects (vue:<sfcs> or monorepo:<sfcs>)"
-        type = "string"
-        ["default"] = "vue:1000,vue:5000,monorepo:5000"
-      }
       runs {
-        description = "Alternating recorded cold runs per build"
+        description = "Recorded runs per build (alternating cold runs, corpus lanes, AB+BA replicates or timed replays)"
         type = "string"
         ["default"] = "5"
       }
+      allow_output_change {
+        description = "Publish timing even when the builds report or answer differently"
+        type = "boolean"
+        ["default"] = false
+      }
+      projects {
+        description = "generated: comma-separated projects (vue:<sfcs> or monorepo:<sfcs>)"
+        type = "string"
+        ["default"] = "vue:1000,vue:5000,monorepo:5000"
+      }
       runtime {
-        description = "Native checker host used by both builds"
+        description = "generated: native checker host used by both builds"
         type = "choice"
         options = List("tsgo", "tsrs")
         ["default"] = "tsgo"
       }
       checkers {
-        description = "Explicit checker width used by both builds"
+        description = "generated: explicit checker width used by both builds"
         type = "choice"
         options = List("1", "8")
         ["default"] = "8"
       }
       strace {
-        description = "Attribute filesystem calls per process, syscall and path on Linux"
+        description = "generated: attribute filesystem calls per process, syscall and path on Linux"
         type = "boolean"
         ["default"] = true
       }
       platforms {
-        description = "Comma-separated measured cells (linux, wsl2, windows)"
+        description = "generated: comma-separated measured cells (linux, wsl2, windows)"
         type = "string"
         ["default"] = "linux,wsl2,windows"
       }
-      allow_output_change {
-        description = "Publish timing even when the builds report different diagnostics"
+      corpora {
+        description = "corpus, content-mapper-replay: comma-separated corpora (misskey, n8n, nuxt-ui, reka-ui); empty means all"
+        type = "string"
+        ["default"] = ""
+      }
+      owned_pair {
+        description = "corpus: lossless source pair including huge Vue/Nuxt, explicit widths and isolated caches"
         type = "boolean"
         ["default"] = false
       }
+      workloads {
+        description = "corpus: optional comma-separated owned workload IDs"
+        type = "string"
+        ["default"] = ""
+      }
+      lanes {
+        description = "corpus: optional comma-separated owned pair lane IDs"
+        type = "string"
+        ["default"] = ""
+      }
+      batch {
+        description = "corpus: also diff the head build's vize check against its mapper under tsc"
+        type = "boolean"
+        ["default"] = false
+      }
+      attribution {
+        description = "corpus: attribute tsc check time and types to helpers and projection families"
+        type = "boolean"
+        ["default"] = true
+      }
+      floors {
+        description = "corpus: also time the head build's floors (absolute, expressions-only, zero mapper wait)"
+        type = "boolean"
+        ["default"] = false
+      }
+      sizes {
+        description = "content-mapper: comma-separated SFC counts of the generated projects"
+        type = "string"
+        ["default"] = "1000,5000"
+      }
+      reference_mapper {
+        description = "content-mapper: also time @vue/content-mapper (pinned in tools/benchmarks/typecheck-hosts)"
+        type = "boolean"
+        ["default"] = false
+      }
+      syscall_census {
+        description = "content-mapper: also count the Linux filesystem syscalls per transform (strace)"
+        type = "boolean"
+        ["default"] = false
+      }
+      memory_probe {
+        description = "content-mapper: also time the head build's Linux burst peak RSS by worker count and mimalloc options"
+        type = "boolean"
+        ["default"] = false
+      }
+      windows_probe {
+        description = "content-mapper: also time the head build on Windows with stdout to NUL and a Defender exclusion"
+        type = "boolean"
+        ["default"] = false
+      }
+      launcher {
+        description = "content-mapper-replay: also replay through the npm launcher and a release @vizejs/native"
+        type = "boolean"
+        ["default"] = true
+      }
+      profile {
+        description = "content-mapper-replay: also perf-profile the head CLI and count allocations and syscalls"
+        type = "boolean"
+        ["default"] = true
+      }
+      host_runs {
+        description = "content-mapper-replay: alternating tsc and tsrs --fast runs per mapper through a timing proxy (0 skips)"
+        type = "string"
+        ["default"] = "3"
+      }
     }
   }
-  // Registers the dispatch-only workflow from its PR; only the tests run there.
+  // Registers the dispatch-only modes from their PRs; only the tests run there.
   pull_request {
     paths = new Listing {
       ".github/workflows/typecheck-cold-pair.yml"
       ".github/scripts/workflows/typecheck-cold-pair/**"
+      "tools/config/pkl/parts/typecheck-cold-pair/**"
       "tools/benchmarks/scripts/typecheck-cold-pair*.ts"
+      "tools/benchmarks/scripts/content-mapper-pair*.ts"
+      "tools/benchmarks/scripts/content-mapper-burst-windows.ps1"
+      "tools/benchmarks/scripts/content-mapper-replay*.ts"
       "tests/tooling/typecheck-cold-pair.test.ts"
+      "tests/tooling/content-mapper-pair*.test.ts"
+      "tests/tooling/content-mapper-replay*.test.ts"
     }
   }
 }
 permissions { contents = "read" }
 concurrency {
-  group = "typecheck-cold-pair-${{ github.event.pull_request.number || inputs.head }}-${{ inputs.base }}-${{ inputs.projects }}-${{ inputs.platforms }}-${{ inputs.runtime }}-${{ inputs.checkers }}"
+  group = "typecheck-cold-pair-${{ github.event.pull_request.number || github.ref }}-${{ inputs.mode }}-${{ inputs.head }}-${{ inputs.base }}-${{ inputs.projects }}-${{ inputs.platforms }}-${{ inputs.runtime }}-${{ inputs.checkers }}-${{ inputs.sizes }}-${{ inputs.corpora }}"
   `cancel-in-progress` = true
 }
 env {
@@ -92,13 +190,17 @@ jobs {
           `package-manager-cache` = false
         }
       }
-      new Dynamic { run = "node --test tests/tooling/typecheck-cold-pair.test.ts" }
+      new Dynamic {
+        name = "Test the pair planners"
+        env { VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/typecheck-cold-pair" }
+        run = ci.workflowScript("test-the-pair-planners.sh")
+      }
     }
   }
 
   // Each platform builds on its own, so Linux results do not wait for Windows.
   `build-linux` {
-    `if` = "github.event_name == 'workflow_dispatch' && (contains(format(',{0},', inputs.platforms), ',linux,') || contains(format(',{0},', inputs.platforms), ',wsl2,'))"
+    `if` = "github.event_name == 'workflow_dispatch' && inputs.mode == 'generated' && (contains(format(',{0},', inputs.platforms), ',linux,') || contains(format(',{0},', inputs.platforms), ',wsl2,'))"
     needs = "test"
     `runs-on` = ci.linux
     `timeout-minutes` = 90
@@ -150,7 +252,7 @@ jobs {
 
   // Each platform builds on its own, so Linux results do not wait for Windows.
   `build-windows` {
-    `if` = "github.event_name == 'workflow_dispatch' && contains(format(',{0},', inputs.platforms), ',windows,')"
+    `if` = "github.event_name == 'workflow_dispatch' && inputs.mode == 'generated' && contains(format(',{0},', inputs.platforms), ',windows,')"
     needs = "test"
     `runs-on` = ci.windows
     `timeout-minutes` = 90
@@ -361,4 +463,14 @@ jobs {
       }
     }
   }
+
+  corpus = import("../../parts/typecheck-cold-pair/corpus.pkl")
+  `mapper-build-linux` = import("../../parts/typecheck-cold-pair/mapper-build-linux.pkl")
+  `mapper-build-windows` = import("../../parts/typecheck-cold-pair/mapper-build-windows.pkl")
+  `mapper-linux` = import("../../parts/typecheck-cold-pair/mapper-linux.pkl")
+  `mapper-wsl2` = import("../../parts/typecheck-cold-pair/mapper-wsl2.pkl")
+  `mapper-windows` = import("../../parts/typecheck-cold-pair/mapper-windows.pkl")
+  `replay-resolve` = import("../../parts/typecheck-cold-pair/replay-resolve.pkl")
+  `replay-build` = import("../../parts/typecheck-cold-pair/replay-build.pkl")
+  replay = import("../../parts/typecheck-cold-pair/replay.pkl")
 }

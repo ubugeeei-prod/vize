@@ -182,3 +182,41 @@ export function validateAutomationSteps(file: string, document: ConfigValue): vo
     }
   }
 }
+
+// A step command longer than this belongs in a named program, where it can wrap.
+export const maxInlineCommandLength = 160;
+// Longer conditions belong in a planning step whose output the job reads.
+export const maxConditionLength = 200;
+const testFile = /\.test\.[cm]?[jt]s$/u;
+
+function stepName(step: Record<string, ConfigValue>): string {
+  if (typeof step.name === "string") return step.name;
+  return typeof step.id === "string" ? step.id : "unnamed step";
+}
+
+/** Inline commands and conditions that are too long to review in a workflow file. */
+export function automationSizeViolations(file: string, document: ConfigValue): string[] {
+  if (!record(document)) return [];
+  const violations: string[] = [];
+  const jobs = record(document.jobs) ? document.jobs : { action: document.runs };
+  for (const [job, data] of Object.entries(jobs)) {
+    if (!record(data)) continue;
+    if (typeof data.if === "string" && data.if.length > maxConditionLength)
+      violations.push(`${file} / ${job}: condition longer than ${maxConditionLength} characters`);
+    if (!Array.isArray(data.steps)) continue;
+    for (const step of data.steps) {
+      if (!record(step)) continue;
+      const where = `${file} / ${job} / ${stepName(step)}`;
+      if (typeof step.if === "string" && step.if.length > maxConditionLength)
+        violations.push(`${where}: condition longer than ${maxConditionLength} characters`);
+      if (typeof step.run !== "string") continue;
+      if (step.run.length > maxInlineCommandLength)
+        violations.push(`${where}: command longer than ${maxInlineCommandLength} characters`);
+      const words = invocationWords(step.run) ?? [];
+      if (words[0] === "node" && words.includes("--test"))
+        if (words.filter((word) => testFile.test(word)).length > 2)
+          violations.push(`${where}: more than two inline test files`);
+    }
+  }
+  return violations;
+}

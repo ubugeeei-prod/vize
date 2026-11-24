@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+node --test --test-concurrency=1 \
+  npm/builder/vite/src/plugin/compiled-module-cache.test.ts \
+  npm/builder/vite/src/plugin/precompile-cache-path.test.ts \
+  npm/builder/vite/src/plugin/precompile.test.ts

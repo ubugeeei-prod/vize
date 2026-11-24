@@ -50,8 +50,7 @@ jobs:
       - name: Prepare exact product and frozen provider
         run: . "${{ env.VIZE_CI_FILES }}/prepare-exact-product-and-frozen-provider.sh"
       - name: Build fixed normal product
-        run: |
-          node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/comparative/source" --target-dir "$RUNNER_TEMP/comparative/target" --binary "$RUNNER_TEMP/comparative/vize" --receipt "$RUNNER_TEMP/comparative/vize.build.json" --role normal
+        run: . "${{ env.VIZE_CI_FILES }}/build-fixed-normal-product.sh"
       - name: Measure
         run: . "${{ env.VIZE_CI_FILES }}/measure.sh"
       - name: Preserve all raw before any verdict

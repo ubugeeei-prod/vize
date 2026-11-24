@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+vp node \
+  --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation*.test.ts npm/framework/nuxt/src/builder.test.ts npm/framework/nuxt/src/lint/checker/setup.test.ts

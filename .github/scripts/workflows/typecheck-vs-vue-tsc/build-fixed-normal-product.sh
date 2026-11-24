@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+node tools/benchmarks/scripts/cold-typechecker-scale-build.ts \
+  --source-root "$RUNNER_TEMP/comparative/source" \
+  --target-dir "$RUNNER_TEMP/comparative/target" \
+  --binary "$RUNNER_TEMP/comparative/vize" \
+  --receipt "$RUNNER_TEMP/comparative/vize.build.json" \
+  --role normal
