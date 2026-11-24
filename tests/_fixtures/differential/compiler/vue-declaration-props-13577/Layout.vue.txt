@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import type { NavbarProps } from "component-library";
+const props = defineProps<NavbarProps>();
+</script>
+<template><p>{{ props.title }} {{ props.toggle }}</p></template>

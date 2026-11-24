@@ -311,3 +311,39 @@ function createEnvironment(name: string, clientModule?: EnvironmentModuleNode): 
   assert.equal(state.cache.get(vueFile), previous, "non-client hooks should not compile twice");
   assert.equal(read, false, "non-client hooks should leave source reads to the client hook");
 }
+
+// Eviction retains dependency routing until the owner is requested again, so
+// each environment must invalidate its own graph regardless of hook order.
+for (const order of [["client", "ssr"], ["ssr", "client"], ["ssr"], ["worker"]]) {
+  const state = createState();
+  const dependencyFile = "/src/types.ts";
+  const compiled = { ...state.cache.get(vueFile)!, dependencies: [dependencyFile] };
+  state.cache = new CompiledModuleCache();
+  state.ssrCache = new CompiledModuleCache();
+  if (order.includes("client")) state.cache.set(vueFile, compiled);
+  state.ssrCache.set(vueFile, compiled);
+  const invalidated: string[] = [];
+
+  for (const name of order) {
+    const module = {
+      id: toPluginVisibleVirtualId(vueFile),
+      url: toPluginVisibleVirtualId(vueFile),
+    } as EnvironmentModuleNode;
+    const environment = createEnvironment(name, module);
+    environment.moduleGraph.invalidateModule = (affected) => {
+      assert.equal(affected, module);
+      invalidated.push(name);
+    };
+    environment.moduleGraph.ensureEntryFromUrl = async () => {
+      throw new Error("loaded owners must already exist in their own environment");
+    };
+    assert.deepEqual(
+      await handleHotUpdateEnvironmentHook(state, environment, createOptions([], dependencyFile)),
+      [module],
+      `${name} must invalidate its dependency owner in ${order.join(" then ")} order`,
+    );
+  }
+  assert.deepEqual(invalidated, order);
+  assert.equal(state.cache.has(vueFile), false);
+  assert.equal(state.ssrCache.has(vueFile), false);
+}

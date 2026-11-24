@@ -214,6 +214,7 @@ fn resolves_javascript_specifiers_to_declaration_sources() {
         ("./index4.jsx", "index4.d.ts"),
         ("./index4.mjs", "index4.d.mts"),
         ("./index4.cjs", "index4.d.cts"),
+        ("./index4.vue", "index4.vue.d.ts"),
     ] {
         std::fs::write(dist.join(&specifier[2..]), "export {};\n").unwrap();
         let target = dist.join(declaration);
@@ -225,6 +226,105 @@ fn resolves_javascript_specifiers_to_declaration_sources() {
     }
 
     let _ = std::fs::remove_dir_all(project);
+}
+
+#[test]
+fn package_barrels_resolve_props_from_declarations_beside_compiled_vue_files() {
+    let project = tempfile::tempdir().unwrap();
+    let package = project.path().join("node_modules/component-library");
+    let components = package.join("dist/components");
+    std::fs::create_dir_all(&components).unwrap();
+    std::fs::write(
+        package.join("package.json"),
+        r#"{"exports":{".":{"types":"./dist/module.d.mts"}}}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        package.join("dist/module.d.mts"),
+        "export * from './index.js';",
+    )
+    .unwrap();
+    std::fs::write(
+        package.join("dist/index.d.ts"),
+        "export * from './components/Navbar.vue';",
+    )
+    .unwrap();
+    std::fs::write(
+        components.join("Navbar.vue"),
+        "<script setup>defineProps({ title: String })</script><template><div /></template>",
+    )
+    .unwrap();
+    let declaration = components.join("Navbar.vue.d.ts");
+    std::fs::write(
+        &declaration,
+        "export interface NavbarProps { title?: string; toggle?: boolean }",
+    )
+    .unwrap();
+    let filename = project.path().join("App.vue");
+    let script = "import type { NavbarProps } from 'component-library'; defineProps<NavbarProps>()";
+    let mut ctx = crate::script::ScriptCompileContext::new(script);
+    ctx.collect_imported_types_from_path(script, filename.to_str().unwrap(), true);
+    ctx.analyze();
+    assert_eq!(
+        ctx.resolve_type_props("NavbarProps")
+            .iter()
+            .map(|prop| prop.name.as_str())
+            .collect::<Vec<_>>(),
+        vec!["title", "toggle"],
+    );
+}
+
+#[test]
+fn compiles_the_pinned_vue_declaration_project() {
+    let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/_fixtures/differential/compiler/vue-declaration-props-13577");
+    let project = tempfile::tempdir().unwrap();
+    for (input, output) in [
+        ("Layout.vue.txt", "Layout.vue"),
+        (
+            "lib.package.json.txt",
+            "node_modules/component-library/package.json",
+        ),
+        (
+            "lib.module.d.mts.txt",
+            "node_modules/component-library/dist/module.d.mts",
+        ),
+        (
+            "lib.index.d.ts.txt",
+            "node_modules/component-library/dist/index.d.ts",
+        ),
+        (
+            "lib.Navbar.vue.txt",
+            "node_modules/component-library/dist/components/Navbar.vue",
+        ),
+        (
+            "lib.Navbar.vue.d.ts.txt",
+            "node_modules/component-library/dist/components/Navbar.vue.d.ts",
+        ),
+    ] {
+        let target = project.path().join(output);
+        std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+        std::fs::copy(fixture.join(input), target).unwrap();
+    }
+    let filename = project.path().join("Layout.vue");
+    let source = std::fs::read_to_string(&filename).unwrap();
+    let mut options = crate::SfcCompileOptions::default();
+    options.parse.filename = filename.to_str().unwrap().into();
+    options.template.ssr = true;
+    let descriptor = crate::parse_sfc(&source, options.parse.clone()).unwrap();
+    let result = crate::compile_sfc(&descriptor, options).unwrap();
+    assert_eq!(
+        serde_json::to_value(&result.errors).unwrap(),
+        serde_json::json!([])
+    );
+    assert_eq!(
+        serde_json::to_value(&result.warnings).unwrap(),
+        serde_json::json!([])
+    );
+    assert_eq!(
+        result.code.as_str(),
+        std::fs::read_to_string(fixture.join("module.expected.txt")).unwrap(),
+    );
 }
 
 #[test]

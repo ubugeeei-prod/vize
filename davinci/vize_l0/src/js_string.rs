@@ -44,13 +44,4 @@ fn push_control_escape(output: &mut String, byte: u8) {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn escapes_js_string_literal_controls() {
-        let mut output = String::default();
-        push_js_string_literal(&mut output, "a\"b\\c\n\u{01}");
-        assert_eq!(output.as_str(), r#""a\"b\\c\n\u0001""#);
-    }
-}
+mod tests;

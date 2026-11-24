@@ -1,0 +1,1 @@
+{"name":"component-library","exports":{".":{"types":"./dist/module.d.mts","import":"./dist/module.mjs"}}}

@@ -15,9 +15,7 @@ export async function handleHotUpdateEnvironmentHook(
   environment: DevEnvironment,
   options: HotUpdateOptions,
 ): Promise<EnvironmentModuleNode[] | void> {
-  if (environment.name !== "client" && environment.name !== "browser") {
-    return options.modules;
-  }
+  const isClient = environment.name === "client" || environment.name === "browser";
 
   const server = {
     moduleGraph: environment.moduleGraph,
@@ -30,9 +28,12 @@ export async function handleHotUpdateEnvironmentHook(
     state,
     { ...options, server } as unknown as HmrContext,
     {
-      ensureAcceptingClientModule: (vueFile) =>
-        environment.moduleGraph.ensureEntryFromUrl(toPluginVisibleVirtualId(vueFile), false),
-      requireAcceptingClientModule: true,
+      ensureAcceptingClientModule: isClient
+        ? (vueFile) =>
+            environment.moduleGraph.ensureEntryFromUrl(toPluginVisibleVirtualId(vueFile), false)
+        : undefined,
+      requireAcceptingClientModule: isClient,
+      recompileVueFile: isClient,
       resolve: (request, importer) => environment.pluginContainer.resolveId(request, importer),
       onRecompileError: () => {
         recompileFailed = true;
@@ -46,7 +47,12 @@ export async function handleHotUpdateEnvironmentHook(
     return undefined;
   }
 
-  if (modules === undefined && options.file.endsWith(".vue") && state.filter(options.file)) {
+  if (
+    isClient &&
+    modules === undefined &&
+    options.file.endsWith(".vue") &&
+    state.filter(options.file)
+  ) {
     return [];
   }
   return modules as EnvironmentModuleNode[] | void;
