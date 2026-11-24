@@ -1,0 +1,114 @@
+{
+  "schema": "vize.scriptConsumedSlotsSource.v1",
+  "issue": 13578,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator.rs",
+      "before": {
+        "bytes": 37961,
+        "sha256": "4427a0dd9815d6f3f3824c9ffcfaf31adaa7c706034b6d464fd5e3e3fa5e6608"
+      },
+      "after": {
+        "bytes": 37936,
+        "sha256": "0a348064a6fd157a9c4020f670c341da7a6d5a2122dcaf5736189d4621b9ba85"
+      },
+      "hunks": [
+        {
+          "before": "    let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;\n    let (template_usage_names, template_value_usage_names, has_template_scope) =\n        template_usage(summary, template_ast, generation_options);\n    let inferred_slots = component_public_types::infers_slots(summary, template_ast, check_options);\n    let mut setup_imports = SetupImportPlan::new(\n        script_content,\n        summary,\n        template_ast,\n        inferred_slots,\n        check_options,\n    );\n    let lib_references = generation_options\n        .lib_references\n        .unwrap_or(DEFAULT_LIB_REFERENCES);\n",
+          "after": "    let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;\n    let (template_usage_names, template_value_usage_names, has_template_scope) =\n        template_usage(summary, template_ast, generation_options);\n    let mut setup_imports =\n        SetupImportPlan::new(script_content, summary, template_ast, check_options);\n    let inferred_slots = setup_imports.infers_slots();\n    let lib_references = generation_options\n        .lib_references\n        .unwrap_or(DEFAULT_LIB_REFERENCES);\n"
+        },
+        {
+          "before": "                && component_public_types::uses_module_scoped_authored_slots_binding(summary),\n            options_api_slots: options_api && generation_options.projects_editor_component(),\n            inferred_slots,\n        },\n    );\n    let (has_exposed_type, exposed_is_generic) =\n",
+          "after": "                && component_public_types::uses_module_scoped_authored_slots_binding(summary),\n            options_api_slots: options_api && generation_options.projects_editor_component(),\n            inferred_slots,\n            untyped_script_slots: setup_imports.has_untyped_script_slots(),\n        },\n    );\n    let (has_exposed_type, exposed_is_generic) =\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/setup_imports.rs",
+      "before": {
+        "bytes": 11421,
+        "sha256": "20db38e51ef9d6b7b395b6b33083e53c802330c566f1d3180f08e7a45455148d"
+      },
+      "after": {
+        "bytes": 13249,
+        "sha256": "c91f5242ba4070613e20da1b8db353277b703f6442822a8887ba815da5dddf14"
+      },
+      "hunks": [
+        {
+          "before": "use std::ops::Range;\n\nuse oxc_allocator::Allocator;\nuse oxc_ast::ast::{ImportDeclarationSpecifier, ImportOrExportKind, Statement};\nuse oxc_semantic::SemanticBuilder;\nuse oxc_span::SourceType;\n",
+          "after": "use std::ops::Range;\n\nuse oxc_allocator::Allocator;\nuse oxc_ast::AstKind;\nuse oxc_ast::ast::{ImportDeclarationSpecifier, ImportOrExportKind, Statement};\nuse oxc_semantic::SemanticBuilder;\nuse oxc_span::SourceType;\n"
+        },
+        {
+          "before": "    attrs_type: Option<String>,\n    /// `<script setup>` binds `$slots` itself, which the template then reads.\n    authored_dollar_slots: bool,\n}\n\nstruct ImportSpec {\n",
+          "after": "    attrs_type: Option<String>,\n    /// `<script setup>` binds `$slots` itself, which the template then reads.\n    authored_dollar_slots: bool,\n    /// Script consumers can read slots which have no template outlet.\n    untyped_script_slots: bool,\n    inferred_slots: bool,\n}\n\nstruct ImportSpec {\n"
+        },
+        {
+          "before": "        script: Option<&str>,\n        summary: &vize_croquis::Croquis,\n        template: Option<&vize_relief::RootNode<'_>>,\n        inferred_slots: bool,\n        checks: crate::virtual_ts::types::VirtualTsCheckOptions,\n    ) -> Self {\n        let slots_type = checks.infer_template_dollar_slots.then(|| {\n            super::component_public_types::template_slots_type(summary, inferred_slots, script)\n        });\n",
+          "after": "        script: Option<&str>,\n        summary: &vize_croquis::Croquis,\n        template: Option<&vize_relief::RootNode<'_>>,\n        checks: crate::virtual_ts::types::VirtualTsCheckOptions,\n    ) -> Self {\n        let inferred_slots = super::component_public_types::infers_slots(summary, template, checks);\n        let slots_type = checks.infer_template_dollar_slots.then(|| {\n            super::component_public_types::template_slots_type(summary, inferred_slots, script)\n        });\n"
+        },
+        {
+          "before": "            slots_type,\n            attrs_type,\n            authored_dollar_slots,\n            ..Self::default()\n        };\n        let Some(script) = script else {\n",
+          "after": "            slots_type,\n            attrs_type,\n            authored_dollar_slots,\n            inferred_slots,\n            ..Self::default()\n        };\n        let Some(script) = script else {\n"
+        },
+        {
+          "before": "        };\n        let css = script.contains(\"useCssModule\");\n        let slots = plan.slots_type.is_some() && script.contains(\"useSlots\");\n        let attrs = plan.attrs_type.is_some() && script.contains(\"useAttrs\");\n        if !css && !slots && !attrs {\n            return plan;\n        }\n        let allocator = Allocator::default();\n",
+          "after": "        };\n        let css = script.contains(\"useCssModule\");\n        let slots = plan.slots_type.is_some() && script.contains(\"useSlots\");\n        let public_slots = summary.macros.define_slots().is_none() && script.contains(\"useSlots\");\n        let attrs = plan.attrs_type.is_some() && script.contains(\"useAttrs\");\n        if !css && !slots && !attrs && !public_slots {\n            return plan;\n        }\n        let allocator = Allocator::default();\n"
+        },
+        {
+          "before": "        if parsed.panicked {\n            return plan;\n        }\n        let built = SemanticBuilder::new().build(&parsed.program);\n        for statement in &parsed.program.body {\n            let Statement::ImportDeclaration(import) = statement else {\n                continue;\n",
+          "after": "        if parsed.panicked {\n            return plan;\n        }\n        let built = SemanticBuilder::new()\n            .with_build_nodes(public_slots)\n            .build(&parsed.program);\n        for statement in &parsed.program.body {\n            let Statement::ImportDeclaration(import) = statement else {\n                continue;\n"
+        },
+        {
+          "before": "                        (&specifier.local, false, true, false, false)\n                    }\n                    ImportDeclarationSpecifier::ImportSpecifier(specifier)\n                        if slots\n                            && specifier.imported.name() == \"useSlots\"\n                            && specifier.import_kind != ImportOrExportKind::Type =>\n                    {\n                        (&specifier.local, false, false, true, false)\n                    }\n                    ImportDeclarationSpecifier::ImportSpecifier(specifier)\n                        if attrs\n",
+          "after": "                        (&specifier.local, false, true, false, false)\n                    }\n                    ImportDeclarationSpecifier::ImportSpecifier(specifier)\n                        if (slots || public_slots)\n                            && specifier.imported.name() == \"useSlots\"\n                            && specifier.import_kind != ImportOrExportKind::Type =>\n                    {\n                        (&specifier.local, false, false, slots, false)\n                    }\n                    ImportDeclarationSpecifier::ImportSpecifier(specifier)\n                        if attrs\n"
+        },
+        {
+          "before": "                };\n                // An unused import must retain its authored unused diagnostic.\n                if built.semantic.symbol_references(symbol).next().is_none() {\n                    continue;\n                }\n                let span = local.span;\n",
+          "after": "                };\n                // An unused import must retain its authored unused diagnostic.\n                if built.semantic.symbol_references(symbol).next().is_none() {\n                    continue;\n                }\n                if public_slots && (namespace || (!css && !attrs)) {\n                    plan.untyped_script_slots |= built.semantic.symbol_references(symbol).any(|reference| {\n                            if !reference.is_read() || reference.flags().is_value_as_type() {\n                                return false;\n                            }\n                            if !namespace {\n                                return true;\n                            }\n                            match built.semantic.nodes().parent_kind(reference.node_id()) {\n                                AstKind::StaticMemberExpression(member) => member.property.name == \"useSlots\",\n                                AstKind::ComputedMemberExpression(member) => matches!(&member.expression, oxc_ast::ast::Expression::StringLiteral(name) if name.value == \"useSlots\"),\n                                _ => false,\n                            }\n                        });\n                }\n                if !css && !slots && !attrs {\n                    continue;\n                }\n                let span = local.span;\n"
+        },
+        {
+          "before": "\n    pub(super) fn has_own_slots(&self) -> bool {\n        self.slots_type.is_some()\n    }\n\n    pub(super) fn attrs_type(&self) -> Option<&str> {\n",
+          "after": "\n    pub(super) fn has_own_slots(&self) -> bool {\n        self.slots_type.is_some()\n    }\n\n    pub(super) fn has_untyped_script_slots(&self) -> bool {\n        self.untyped_script_slots\n    }\n\n    pub(super) fn infers_slots(&self) -> bool {\n        self.inferred_slots\n    }\n\n    pub(super) fn attrs_type(&self) -> Option<&str> {\n"
+        },
+        {
+          "before": "        {\n            ts.push_str(\"  type $UseSlots = () => \");\n            slots.emit(ts, mappings, source_offset);\n            ts.push_str(\";\\n\");\n        }\n        if self.imports.iter().any(|import| import.attrs)\n",
+          "after": "        {\n            ts.push_str(\"  type $UseSlots = () => \");\n            slots.emit(ts, mappings, source_offset);\n            if self.untyped_script_slots {\n                ts.push_str(\" & import('vue').Slots\");\n            }\n            ts.push_str(\";\\n\");\n        }\n        if self.imports.iter().any(|import| import.attrs)\n"
+        },
+        {
+          "before": "        ;\n    }\n}\n",
+          "after": "        ;\n    }\n}\n\n#[cfg(test)]\nmod tests;\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_public_types.rs",
+      "before": {
+        "bytes": 11039,
+        "sha256": "080d7d52db6cadbb9fc37251c6d619ec240b379c2aae88b1926289fb993eef2e"
+      },
+      "after": {
+        "bytes": 11227,
+        "sha256": "de5ddba4315b4348bf04963c270b9ace41d06b78de246c37813ce311c56fa8ad"
+      },
+      "hunks": [
+        {
+          "before": "    /// Keep an Options API `SlotsType<T>` contract (editor projections only).\n    pub options_api_slots: bool,\n    pub inferred_slots: bool,\n}\n\n/// Emit the private slot contract and preserve the public `Slots` export. When the slots type from\n",
+          "after": "    /// Keep an Options API `SlotsType<T>` contract (editor projections only).\n    pub options_api_slots: bool,\n    pub inferred_slots: bool,\n    pub untyped_script_slots: bool,\n}\n\n/// Emit the private slot contract and preserve the public `Slots` export. When the slots type from\n"
+        },
+        {
+          "before": "        authored_slots_binding,\n        options_api_slots,\n        inferred_slots,\n    } = options;\n    let slots_type_args = summary\n        .macros\n",
+          "after": "        authored_slots_binding,\n        options_api_slots,\n        inferred_slots,\n        untyped_script_slots,\n    } = options;\n    let slots_type_args = summary\n        .macros\n"
+        },
+        {
+          "before": "            .unwrap_or_default();\n        let setup = names::setup_return(&arguments);\n        ts! { &mut *ts =>\n            #(\"type \") #slots #declaration = #setup #(\"['__vize_template_slots']\");\n        }\n        generic_injection.is_some()\n    } else {\n        ts! { &mut *ts => #(\"type \") #slots = {}; }\n",
+          "after": "            .unwrap_or_default();\n        let setup = names::setup_return(&arguments);\n        ts! { &mut *ts =>\n            #(\"type \") #slots #declaration = #setup #(\"['__vize_template_slots']\")\n        }\n        if untyped_script_slots {\n            ts.push_str(\" & import('vue').Slots\");\n        }\n        ts.push_str(\";\\n\");\n        generic_injection.is_some()\n    } else {\n        ts! { &mut *ts => #(\"type \") #slots = {}; }\n"
+        }
+      ]
+    }
+  ]
+}

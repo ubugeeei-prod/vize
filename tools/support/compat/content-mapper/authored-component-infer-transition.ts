@@ -59,7 +59,20 @@ const defaultExpression = readSourceRecord(
   12985,
 );
 
+const scriptConsumedSlots = readSourceRecord(
+  "script-consumed-slots-13578",
+  "87473c12da88cdefdadb4d3fac8e2ac97c61495e45896502783c2298e7a15314",
+  "vize.scriptConsumedSlotsSource.v1",
+  13578,
+);
+
+/** Remove only the authenticated #13578 producer changes before historical custody. */
+export function beforeScriptConsumedSlots(file: string, current: string): string {
+  return restoreProducer(scriptConsumedSlots, file, current);
+}
+
 export function beforeComponentMetadata(file: string, current: string): string {
+  current = beforeScriptConsumedSlots(file, current);
   return restoreProducer(metadata, file, restoreProducer(defaultExpression, file, current));
 }
 
