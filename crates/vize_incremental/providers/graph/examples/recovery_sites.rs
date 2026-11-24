@@ -112,6 +112,14 @@ fn main() {
             panic!("expected retained recovery records");
         };
         positions::measure::<1>(&recovery, block.start(), width);
+        let first_hole = recovery
+            .source_site(recovery.holes()[0].span)
+            .unwrap()
+            .0
+            .start;
+        positions::measure::<2>(&recovery, first_hole, width);
+        positions::measure::<3>(&recovery, first_hole, width);
+        positions::measure::<5>(&recovery, first_hole, width);
         positions::measure::<4>(&recovery, block.start(), width);
         positions::measure::<16>(&recovery, block.start(), width);
         positions::measure::<64>(&recovery, block.start(), width);

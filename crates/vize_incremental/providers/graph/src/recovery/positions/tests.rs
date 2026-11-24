@@ -134,7 +134,14 @@ fn binary_windows_match_direct_containment_at_full_width_endpoints() {
                         .copied()
                         .filter(|&p| (start <= p && p < end) || (start == end && p == start))
                         .collect();
-                    assert_eq!(points[matching_positions(points, start, end)], expected);
+                    let hits = matching_positions(points, start, end);
+                    if points.len() <= 4 {
+                        assert_eq!(super::window::matching_short(points, start, end), hits);
+                    }
+                    if let [cursor] = *points {
+                        assert_eq!(super::window::matching_position(cursor, start, end), hits);
+                    }
+                    assert_eq!(points[hits], expected);
                 }
             }
         }

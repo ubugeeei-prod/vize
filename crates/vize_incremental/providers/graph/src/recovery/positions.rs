@@ -80,24 +80,70 @@ impl<'db> TemplateRecovery<'db> {
     pub fn visit_positions<B>(
         &self,
         positions: &[u32],
-        mut visit: impl FnMut(RecoveryMatch<'db>) -> ControlFlow<B>,
+        visit: impl FnMut(RecoveryMatch<'db>) -> ControlFlow<B>,
     ) -> Result<ControlFlow<B>, RecoveryPositionError> {
-        if positions.is_empty() {
+        let Some((&first, rest)) = positions.split_first() else {
             return Ok(ControlFlow::Continue(()));
+        };
+        self.validate_position(first)?;
+        if rest.is_empty() {
+            return self.visit_matching(
+                |span| window::matching_position(first, span.start, span.end),
+                visit,
+            );
         }
-        let mut previous = self.start;
-        for &next in positions {
-            if !next
-                .checked_sub(self.start)
-                .is_some_and(|local| self.text.is_char_boundary(local as usize))
-            {
-                return Err(RecoveryPositionError::OutsideSource(next));
+        let mut previous = first;
+        for &next in rest {
+            if next == previous {
+                continue;
             }
+            self.validate_position(next)?;
             if next < previous {
                 return Err(RecoveryPositionError::OutOfOrder { previous, next });
             }
             previous = next;
         }
+        match *positions {
+            [a, b] => self.visit_short([a, b], visit),
+            [a, b, c] => self.visit_short([a, b, c], visit),
+            [a, b, c, d] => self.visit_short([a, b, c, d], visit),
+            _ => self.visit_matching(
+                |span| matching_positions(positions, span.start, span.end),
+                visit,
+            ),
+        }
+    }
+
+    #[inline]
+    fn visit_short<const N: usize, B>(
+        &self,
+        points: [u32; N],
+        visit: impl FnMut(RecoveryMatch<'db>) -> ControlFlow<B>,
+    ) -> Result<ControlFlow<B>, RecoveryPositionError> {
+        self.visit_matching(
+            |span| window::matching_short(&points, span.start, span.end),
+            visit,
+        )
+    }
+
+    #[inline]
+    fn validate_position(&self, position: u32) -> Result<(), RecoveryPositionError> {
+        if position
+            .checked_sub(self.start)
+            .is_some_and(|local| self.text.is_char_boundary(local as usize))
+        {
+            Ok(())
+        } else {
+            Err(RecoveryPositionError::OutsideSource(position))
+        }
+    }
+
+    #[inline]
+    fn visit_matching<B>(
+        &self,
+        matches: impl Fn(Span) -> Range<usize>,
+        mut visit: impl FnMut(RecoveryMatch<'db>) -> ControlFlow<B>,
+    ) -> Result<ControlFlow<B>, RecoveryPositionError> {
         let holes = self.holes.iter().map(RecoveryRecord::Hole);
         let diagnostics = self
             .diagnostics
@@ -108,7 +154,7 @@ impl<'db> TemplateRecovery<'db> {
             let (authored, text) = self
                 .source_site(relative)
                 .map_err(|_| RecoveryPositionError::InvalidRecord(relative))?;
-            let hits = matching_positions(positions, authored.start, authored.end);
+            let hits = matches(authored);
             if !hits.is_empty()
                 && let ControlFlow::Break(value) = visit(RecoveryMatch {
                     record,
