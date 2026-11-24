@@ -2,7 +2,7 @@
 
 use crate::artifact::ArtifactError;
 use crate::file::{
-    FileArtifact, FileBuilder, FileIssueKind, RejectedFile, ScopeId, ScriptProfile, ScriptUnitId,
+    FileBuilder, FileIssueKind, L2Ir, RejectedFile, ScopeId, ScriptProfile, ScriptUnitId,
 };
 use crate::file::{TemplatePolicy, TemplateRegion, TemplateScope};
 use crate::resolution::source::ProgramReferenceSource;
@@ -200,7 +200,7 @@ impl<'a> FileProducer<'a> {
         Ok((unit, lexical_scope))
     }
 
-    pub fn finish(self) -> Result<FileArtifact<'a>, RejectedFile<'a>> {
+    pub fn finish(self) -> Result<L2Ir<'a>, RejectedFile<'a>> {
         self.builder.finish()
     }
 

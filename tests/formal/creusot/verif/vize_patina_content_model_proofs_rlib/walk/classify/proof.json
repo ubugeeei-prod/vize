@@ -1,0 +1,44 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_classify_I": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.008 },
+              { "prover": "z3", "time": 0.002 },
+              { "prover": "z3", "time": 0.002 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.002 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.008 },
+              { "prover": "z3", "time": 0.002 },
+              { "prover": "z3", "time": 0.002 },
+              { "prover": "z3", "time": 0.007 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.002 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.002 }
+            ]
+          }
+        ]
+      },
+      "vc_elim_Some": { "prover": "z3", "time": 0.002 },
+      "vc_ne_Role": { "prover": "z3", "time": 0.002 },
+      "vc_next_I": { "prover": "z3", "time": 0.002 }
+    }
+  }
+}

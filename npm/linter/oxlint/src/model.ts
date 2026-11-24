@@ -162,6 +162,7 @@ export interface VizeRuleOptions {
     casing?: ComponentNameInTemplateCasingOption;
     registeredComponentsOnly?: boolean;
     globals?: string[];
+    ignores?: string[];
   };
   "script/custom-event-name-casing"?: { casing?: CustomEventNameCasingOption };
   "vue/no-mutating-props"?: NoMutatingPropsOption;
@@ -173,6 +174,8 @@ export interface VizeRuleOptions {
   "vue/no-restricted-syntax"?: {
     selectors?: Array<string | { selector: string; message?: string }>;
   };
+  "vue/no-restricted-html-elements"?: string | RestrictedHtmlElementEntry[];
+  "vue/no-restricted-v-on"?: string | RestrictedVOnEntry[];
   "vue/quote-props"?: "as-needed";
   "vue/sort-keys"?: {
     order?: "asc" | "desc";
@@ -185,7 +188,7 @@ export interface VizeRuleOptions {
   "vue/html-quotes"?: HtmlQuotesConfig;
   "vue/mustache-interpolation-spacing"?: MustacheInterpolationSpacingStyle;
   "vue/v-on-event-hyphenation"?: HyphenationStyle | VOnEventHyphenationOptions;
-  "vue/v-bind-style"?: VBindStyle;
+  "vue/v-bind-style"?: VBindStyleConfig;
   "vue/v-on-style"?: VOnStyle;
   "vue/v-slot-style"?: VSlotStyle;
   "vue/attribute-hyphenation"?: HyphenationStyle | AttributeHyphenationOptions;
@@ -232,6 +235,15 @@ export type HtmlQuotesConfig = HtmlQuoteStyle | { style?: HtmlQuoteStyle; avoidE
 export type MustacheInterpolationSpacingStyle = "always" | "never";
 export type HyphenationStyle = "always" | "never";
 export type VBindStyle = "shorthand" | "longform";
+export interface VBindStyleOptions {
+  sameNameShorthand?: "always" | "never" | "ignore";
+}
+/** The style, or eslint-plugin-vue's `[style, options]` tuple. */
+export type VBindStyleConfig = VBindStyle | [VBindStyle] | [VBindStyle, VBindStyleOptions];
+export type RestrictedHtmlElementEntry = string | { element: string | string[]; message?: string };
+export type RestrictedVOnEntry =
+  | string
+  | { argument: string; modifiers?: string[]; element?: string; message?: string };
 export type VOnStyle = "shorthand" | "longform";
 export type VSlotUniformStyle = "shorthand" | "longform";
 export type VSlotStyleValue = VSlotUniformStyle | "v-slot";

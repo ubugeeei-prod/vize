@@ -12,7 +12,7 @@ use vize_l1::embed::{
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l2::{
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{FileProducer, ProgramInput, ProgramScope},
 };
 use vize_l4::targets::ts::ProjectionError;
@@ -29,15 +29,11 @@ mod required_named_exports_neutral;
 mod typed_parameters;
 mod unused_history;
 
-fn file<'a>(arena: &'a Allocator, source: &'a str, lang: Lang) -> FileArtifact<'a> {
+fn file<'a>(arena: &'a Allocator, source: &'a str, lang: Lang) -> L2Ir<'a> {
     file_options(arena, source, ProgramOptions::module(lang))
 }
 
-fn file_options<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-    options: ProgramOptions,
-) -> FileArtifact<'a> {
+fn file_options<'a>(arena: &'a Allocator, source: &'a str, options: ProgramOptions) -> L2Ir<'a> {
     let block = SourceRoot::new(source).unwrap().whole_block();
     let syntax = parse_program_once(
         arena,

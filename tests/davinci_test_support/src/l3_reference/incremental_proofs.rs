@@ -144,12 +144,7 @@ fn top_level_identities_are_retained_or_fresh() {
     let should_retain: bool = kani::any();
     let previous_address = if should_retain { 1 } else { 0 };
     let (tag, previous_identity, next) = (symbol(), identity(), identity());
-    let previous = [node(
-        previous_address,
-        previous_identity,
-        tag,
-        Vec::new(),
-    )];
+    let previous = [node(previous_address, previous_identity, tag, Vec::new())];
     let payload = kani::any();
     let desired = [View::Element {
         address: 1,

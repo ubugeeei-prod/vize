@@ -22,7 +22,7 @@ impl TemplatePolicy for DiagnosticValues {
     clippy::unwrap_used,
     reason = "invalid original dev fixture must fail construction"
 )]
-fn native_file<'a>(arena: &'a Allocator, source: &'a str) -> vize_l2::file::FileArtifact<'a> {
+fn native_file<'a>(arena: &'a Allocator, source: &'a str) -> vize_l2::file::L2Ir<'a> {
     let block = SourceRoot::new(source).unwrap().block(source, 0).unwrap();
     let component = NativeComponent::parse_in(arena, block).unwrap();
     let mut producer = FileProducer::new(arena, source).unwrap();

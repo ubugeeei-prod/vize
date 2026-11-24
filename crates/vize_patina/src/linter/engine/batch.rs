@@ -10,6 +10,7 @@ use super::super::{
     corsa_session::CorsaTypeAwareSession,
     native_type_aware::{self, PreparedSfc, TypeAwareFailure, plain_module::PreparedPlainModule},
 };
+use crate::context::ScriptSuppression;
 use vize_l0::{String, ToCompactString};
 
 /// Owned lint work; parsing arenas are released before checker publication.
@@ -23,8 +24,15 @@ enum Work {
     Sfc(Box<SfcWork>),
     Plain {
         plan: PreparedPlainModule,
-        source: Option<String>,
+        finish: PlainFinish,
     },
+}
+
+/// JSX only applies diagnostic policy. A script keeps directive state when the
+/// source actually has one, and otherwise keeps no copy of the source.
+enum PlainFinish {
+    Script(Option<ScriptSuppression>),
+    Markup,
 }
 
 // Keep the existing single SFC allocation while making every prepared-file
@@ -71,12 +79,13 @@ impl PreparedLint {
                 let SfcWork { plan, tail } = *work;
                 tail.finish(linter, plan.finish(linter, failure))
             }
-            Work::Plain { plan, source } => {
+            Work::Plain { plan, finish } => {
                 let result = plan.finish(linter, failure);
-                if let Some(source) = source {
-                    linter.finish_script_result(&source, result)
-                } else {
-                    linter.apply_diagnostic_policy(result)
+                match finish {
+                    PlainFinish::Script(suppression) => {
+                        linter.finish_script_result(suppression.as_ref(), result)
+                    }
+                    PlainFinish::Markup => linter.apply_diagnostic_policy(result),
                 }
             }
         }
@@ -107,7 +116,11 @@ impl Linter {
                 plan: native_type_aware::plain_module::prepare_plain_module(
                     self, source, filename, result,
                 ),
-                source: Some(source.to_compact_string()),
+                finish: PlainFinish::Script(
+                    (!self.no_inline_config)
+                        .then(|| ScriptSuppression::scan(source, filename))
+                        .flatten(),
+                ),
             },
         }
     }
@@ -129,7 +142,7 @@ impl Linter {
                 plan: native_type_aware::plain_module::prepare_plain_module(
                     self, source, filename, result,
                 ),
-                source: None,
+                finish: PlainFinish::Markup,
             },
         }
     }

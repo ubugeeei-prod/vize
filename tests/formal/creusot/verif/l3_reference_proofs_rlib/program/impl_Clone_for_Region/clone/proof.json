@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_clone_Option_u32": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_clone_Region": { "prover": "alt-ergo", "time": 0.029 },
+      "vc_clone_Span": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_clone_u32": { "prover": "alt-ergo", "time": 0.006 }
+    }
+  }
+}

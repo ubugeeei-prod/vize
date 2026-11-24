@@ -5,7 +5,7 @@ use alloc::vec::Vec;
 use vize_l0::{Span, line_index::utf16_offset};
 use vize_l1_to_l2::{native::NativeEmbed, native_file::NativeSfc};
 use vize_l2::{
-    expr::ExprRef, file::FileArtifact, lang::js::VueSetup, op::Op, resolution::Usage, walk::NodeRef,
+    expr::ExprRef, file::L2Ir, lang::js::VueSetup, op::Op, resolution::Usage, walk::NodeRef,
 };
 
 use super::{MappingError, SourceKind};
@@ -50,7 +50,7 @@ impl<'o, 'a> VueProjection<'o, 'a> {
     }
 
     #[must_use]
-    pub fn file(&self) -> &'o FileArtifact<'a> {
+    pub fn file(&self) -> &'o L2Ir<'a> {
         self.original.file().file()
     }
 

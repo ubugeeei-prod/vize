@@ -1,8 +1,7 @@
 //! Reuse the same interval search as script and handler positions. Keep only
 //! compact row indices, so a snapshot can move together with its File.
 use super::{
-    ExpressionReferenceRef, FileArtifact, NodeId, TemplateQueryError, check_template_offset,
-    visit_rows,
+    ExpressionReferenceRef, L2Ir, NodeId, TemplateQueryError, check_template_offset, visit_rows,
 };
 use crate::query::position::index::SiteIntervals;
 use core::{
@@ -21,18 +20,18 @@ pub struct ExpressionPositionIndex<F> {
     rows: OnceCell<Prepared>,
 }
 
-impl<'f, 'a> ExpressionPositionIndex<&'f FileArtifact<'a>> {
+impl<'f, 'a> ExpressionPositionIndex<&'f L2Ir<'a>> {
     /// Borrow one exact File, without inspecting its rows.
     #[must_use]
-    pub fn new(file: &'f FileArtifact<'a>) -> Self {
+    pub fn new(file: &'f L2Ir<'a>) -> Self {
         Self::attach(file)
     }
 }
 
-impl<'a> ExpressionPositionIndex<FileArtifact<'a>> {
+impl<'a> ExpressionPositionIndex<L2Ir<'a>> {
     /// Own the File and its index in one movable snapshot.
     #[must_use]
-    pub fn from_file(file: FileArtifact<'a>) -> Self {
+    pub fn from_file(file: L2Ir<'a>) -> Self {
         Self::attach(file)
     }
 }
@@ -57,7 +56,7 @@ impl<F> ExpressionPositionIndex<F> {
         offset: u32,
     ) -> Result<Option<ExpressionReferenceRef<'f, 'a>>, TemplateQueryError>
     where
-        F: Borrow<FileArtifact<'a>>,
+        F: Borrow<L2Ir<'a>>,
     {
         let file = self.owner.borrow();
         if !self.visited.replace(true) {
@@ -97,7 +96,7 @@ impl<F> ExpressionPositionIndex<F> {
     }
 }
 
-fn prepare(file: &FileArtifact<'_>) -> Prepared {
+fn prepare(file: &L2Ir<'_>) -> Prepared {
     // Count short tables as well: a single expression can contain many uses.
     const MIN_SITES: usize = 12;
     let count = file

@@ -7,8 +7,9 @@ name = "Level HTML content model"
 // current by `cargo test -p vize_patina --test integration html_content_model_differential::`
 // in the Check workflow) must agree exactly with Chromium's HTML parser.
 // Charter #36: the checker's walk and verdict rule are sound for every context
-// a truncated chain describes. Kani verifies the shipped kernel in the Davinci
-// Kani workflow (crates/vize_patina/src/html_content_model/kani.rs).
+// a truncated chain describes. Creusot proves the shipped kernel for chains of
+// every length in the Davinci Creusot workflow
+// (crates/vize_patina/src/html_content_model/creusot.rs).
 //
 on {
   push {

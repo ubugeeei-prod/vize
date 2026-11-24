@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_accepted_edges_stay_in_scope": {
+        "prover": "alt-ergo",
+        "time": 0.027
+      }
+    }
+  }
+}

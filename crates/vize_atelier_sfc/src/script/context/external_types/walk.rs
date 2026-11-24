@@ -200,28 +200,44 @@ impl<'a, V: Visit> Walk<'a, V> {
 
         let dependencies = facts.summary.dependencies.as_slice();
         // Every star re-export of a module is asked for the same names.
-        let mut star: Option<(RequestedExports, usize)> = None;
-        for (dependency, target) in dependencies.iter().zip(facts.targets.iter()) {
+        let star = dependencies
+            .iter()
+            .any(|dependency| matches!(dependency, TypeDependency::StarReexport { .. }))
+            .then(|| {
+                let star_requested = requested.without_named_reexports(dependencies);
+                let star_request = self.request(&star_requested);
+                (star_requested, star_request)
+            });
+        let mut followed = Vec::new();
+        for (dependency, edge) in dependencies.iter().zip(facts.edges.iter()) {
             count(Step::Edge, 1);
-            let (next, next_request) = if matches!(dependency, TypeDependency::StarReexport { .. })
-            {
-                let (star_requested, star_request) = star.get_or_insert_with(|| {
-                    let star_requested = requested.without_named_reexports(dependencies);
-                    let star_request = self.request(&star_requested);
-                    (star_requested, star_request)
-                });
-                let Some(next) = dependency.request(star_requested) else {
-                    continue;
-                };
-                (next, *star_request)
-            } else {
-                let Some(next) = dependency.request(requested) else {
-                    continue;
-                };
-                let next_request = self.request(&next);
-                (next, next_request)
+            let (next, next_request) = match (&star, dependency) {
+                (Some((star_requested, star_request)), TypeDependency::StarReexport { .. }) => {
+                    let Some(next) = dependency.request(star_requested) else {
+                        continue;
+                    };
+                    (next, *star_request)
+                }
+                _ => {
+                    let Some(next) = dependency.request(requested) else {
+                        continue;
+                    };
+                    let next_request = self.request(&next);
+                    (next, next_request)
+                }
             };
-            let Some(target) = graph.target(module, dependency, target, self.project) else {
+            followed.push((dependency, edge, next, next_request));
+        }
+        // Workers walking this module together read different targets instead
+        // of waiting one behind the other on each. The order of the walk
+        // below, and so of the merge, does not change.
+        if followed.len() > 1 && graph.is_shared() {
+            for (dependency, edge, ..) in &followed {
+                graph.read_ahead(module, dependency, edge, self.project);
+            }
+        }
+        for (dependency, edge, next, next_request) in followed {
+            let Some(target) = graph.target(module, dependency, edge, self.project) else {
                 continue;
             };
             self.resolved.insert(target);

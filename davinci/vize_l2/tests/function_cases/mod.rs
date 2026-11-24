@@ -9,7 +9,7 @@ mod unwind;
 use oxc_parser::{Parser, ProgramObservation};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock, SourceRoot};
-use vize_l2::file::FileArtifact;
+use vize_l2::file::L2Ir;
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
 fn parse<'a>(arena: &'a Allocator, source: &'a str) -> ProgramObservation<'a> {
@@ -19,7 +19,7 @@ fn parse<'a>(arena: &'a Allocator, source: &'a str) -> ProgramObservation<'a> {
 fn finish<'a>(
     arena: &'a Allocator,
     parsed: &ProgramObservation<'a>,
-) -> Result<FileArtifact<'a>, &'static str> {
+) -> Result<L2Ir<'a>, &'static str> {
     let admitted = parsed.admitted().ok_or("original Program admission")?;
     let source = admitted.source();
     let block = SourceRoot::new(source)
@@ -32,7 +32,7 @@ fn finish_block<'a>(
     arena: &'a Allocator,
     parsed: &ProgramObservation<'a>,
     block: SourceBlock<'a>,
-) -> Result<FileArtifact<'a>, &'static str> {
+) -> Result<L2Ir<'a>, &'static str> {
     let mut producer = FileProducer::new(arena, block.root_source()).map_err(|_| "file source")?;
     producer
         .program(

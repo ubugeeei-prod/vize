@@ -7,6 +7,12 @@ to the three theorem modules left in `tests/formal/impeto` after the
 `Impeto.ScheduleLaws` (11 theorems), `Impeto.CheckerLaws` (4), and
 `Impeto.IncrementalLaws` (9).
 
+Since 2026-11-24 the scheduling and checker laws are Creusot proofs for
+programs of any size, and their Kani harnesses (`schedule_proofs.rs`,
+`checker_proofs.rs`, `graphs.rs`) are deleted
+([Creusot inventory](./2026-11-17-creusot-inventory.md)). Kani still verifies
+the incremental update machine as described below.
+
 ## Decision
 
 The laws are proved about an independent Rust reference,

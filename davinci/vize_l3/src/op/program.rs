@@ -46,7 +46,7 @@ pub struct EffectScope {
 
 /// One L3 program artifact.
 #[derive(Debug)]
-pub struct Program<'a> {
+pub struct L3Ir<'a> {
     pub phase: Phase,
     pub regions: Vec<'a, Region>,
     pub ops: Vec<'a, Op>,
@@ -59,7 +59,7 @@ pub struct Program<'a> {
     pub placements: Vec<'a, PlacementRecord>,
 }
 
-impl<'a> Program<'a> {
+impl<'a> L3Ir<'a> {
     /// Empty program for `phase`.
     #[must_use]
     pub fn new(allocator: &'a Allocator, phase: Phase) -> Self {

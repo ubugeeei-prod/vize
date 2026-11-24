@@ -1,9 +1,15 @@
 //! P3-4 small-step trace semantics: each step executes the next op of the
 //! program and records one backend observation.
 
+#[cfg(creusot)]
+use creusot_std::prelude::Clone;
+#[cfg(creusot)]
+use creusot_std::prelude::*;
+
 use super::program::{Op, OpKind, Program};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(not(creusot), derive(Clone, Copy, Debug, PartialEq, Eq))]
+#[cfg_attr(creusot, derive(Clone, Copy))]
 pub enum Backend {
     Vdom,
     Vapor,
@@ -23,7 +29,8 @@ impl Backend {
 
 /// One observation. The label is a function of backend and op kind, so the
 /// event keeps the kind and compares without string contents.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(not(creusot), derive(Clone, Copy, Debug, PartialEq, Eq))]
+#[cfg_attr(creusot, derive(Clone, Copy))]
 pub struct TraceEvent {
     pub backend: Backend,
     pub op_id: u32,
@@ -85,6 +92,19 @@ fn vapor(kind: OpKind) -> &'static str {
     }
 }
 
+/// The observation of `op` under `backend` (Lean `interpret`): it names the op.
+#[cfg(creusot)]
+#[logic(open)]
+pub fn observe(backend: Backend, op: Op) -> TraceEvent {
+    TraceEvent {
+        backend,
+        op_id: op.id,
+        kind: op.kind,
+        effect: op.effect,
+    }
+}
+
+#[cfg_attr(creusot, ensures(result == observe(backend, *op)))]
 #[must_use]
 pub fn interpret(backend: Backend, op: &Op) -> TraceEvent {
     TraceEvent {
@@ -96,19 +116,32 @@ pub fn interpret(backend: Backend, op: &Op) -> TraceEvent {
 }
 
 /// Steps from `trace` until no op remains. Each iteration is one small
-/// step: it executes the next op and records its observation. The state stays
-/// in locals; CBMC pays heavily for a machine struct or a `&mut` trace.
+/// step: it executes the next op and records its observation, so the machine
+/// appends one event per op, in list order (Lean `runOps_eq`).
+#[cfg_attr(creusot, ensures(result@.len() == trace@.len() + ops@.len()))]
+#[cfg_attr(creusot, ensures(forall<i: Int> 0 <= i && i < trace@.len() ==> result@[i] == trace@[i]))]
+#[cfg_attr(creusot, ensures(forall<i: Int> 0 <= i && i < ops@.len()
+    ==> result@[trace@.len() + i] == observe(backend, ops@[i])))]
 #[must_use]
 pub fn run_ops(backend: Backend, ops: &[Op], trace: Vec<TraceEvent>) -> Vec<TraceEvent> {
     let mut trace = trace;
-    let mut remaining = ops;
-    while let Some((op, rest)) = remaining.split_first() {
+    #[cfg(creusot)]
+    let earlier = snapshot!(trace);
+    #[cfg_attr(creusot, invariant(trace@.len() == (*earlier)@.len() + produced.len()))]
+    #[cfg_attr(creusot, invariant(forall<i: Int> 0 <= i && i < (*earlier)@.len()
+        ==> trace@[i] == (*earlier)@[i]))]
+    #[cfg_attr(creusot, invariant(forall<i: Int> 0 <= i && i < produced.len()
+        ==> trace@[(*earlier)@.len() + i] == observe(backend, ops@[i])))]
+    for op in ops {
         trace.push(interpret(backend, op));
-        remaining = rest;
     }
     trace
 }
 
+/// The trace of the whole program: position `i` is op `i` (Lean `run_opId`).
+#[cfg_attr(creusot, ensures(result@.len() == program.ops@.len()))]
+#[cfg_attr(creusot, ensures(forall<i: Int> 0 <= i && i < result@.len()
+    ==> result@[i] == observe(backend, program.ops@[i])))]
 #[must_use]
 pub fn run(backend: Backend, program: &Program) -> Vec<TraceEvent> {
     run_ops(backend, &program.ops, Vec::new())

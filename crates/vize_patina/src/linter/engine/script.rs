@@ -26,14 +26,21 @@ impl Linter {
             filename,
             &mut result,
         );
-        self.finish_script_result(source, result)
+        let suppression = (!self.no_inline_config)
+            .then(|| crate::context::ScriptSuppression::scan(source, filename))
+            .flatten();
+        self.finish_script_result(suppression.as_ref(), result)
     }
 
-    pub(super) fn finish_script_result(&self, source: &str, mut result: LintResult) -> LintResult {
-        if !self.no_inline_config {
-            crate::context::retain_unless_source_suppressed(
-                source,
-                &result.filename,
+    pub(super) fn finish_script_result(
+        &self,
+        suppression: Option<&crate::context::ScriptSuppression>,
+        mut result: LintResult,
+    ) -> LintResult {
+        if !self.no_inline_config
+            && let Some(suppression) = suppression
+        {
+            suppression.apply(
                 &mut result.diagnostics,
                 self.can_report_unused_directives(),
                 |rule| self.can_report_suppression_rule(rule),

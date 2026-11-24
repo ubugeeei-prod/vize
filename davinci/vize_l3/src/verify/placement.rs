@@ -8,11 +8,11 @@ use alloc::vec::Vec;
 use vize_l0::{Span, String, cstr};
 
 use super::{Violation, ViolationCode};
-use crate::op::{Op, OpId, OpKind, Program};
+use crate::op::{L3Ir, Op, OpId, OpKind};
 use crate::placement::facts::{Index, contains};
 use crate::placement::{Placement, PlacementRecord};
 
-pub(super) fn check(program: &Program<'_>, out: &mut Vec<Violation>) {
+pub(super) fn check(program: &L3Ir<'_>, out: &mut Vec<Violation>) {
     if program.placements.is_empty() {
         return;
     }

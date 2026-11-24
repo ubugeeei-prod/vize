@@ -5,6 +5,7 @@
 //! and dependencies whichever walk resolved its types.
 
 use std::path::Path;
+use std::sync::Barrier;
 
 use vize_carton::{FxHashMap, String};
 
@@ -169,20 +170,41 @@ fn shared_walk_matches_the_reference_on_generated_graphs() {
             write_module(&mut rng, &dir, index, modules);
         }
         let shared = ModuleGraph::new(synthetic_epoch());
+        let mut components = Vec::new();
         for component in 0..8 {
             let mut script = std::string::String::new();
             while script.is_empty() {
                 edges(&mut rng, modules, &mut script);
             }
             let local_alias = (rng.below(4) == 0).then(|| name(&mut rng));
-            assert_same_outcome(
+            let base_file = dir.join(format!("Component{component}.vue"));
+            let expected = assert_same_outcome(
                 &format!("seed {seed}, component {component}"),
                 &script,
-                &dir.join(format!("Component{component}.vue")),
+                &base_file,
                 local_alias,
                 &shared,
             );
+            components.push((roots(&script), base_file, local_alias, expected));
         }
+
+        // The same components as the workers of one batch: they start
+        // together on a graph nobody has walked, so they walk the same
+        // modules, cycles included, at the same time.
+        let batch = ModuleGraph::new(synthetic_epoch());
+        let start = Barrier::new(components.len());
+        std::thread::scope(|scope| {
+            for (roots, base_file, local_alias, expected) in &components {
+                let (batch, start) = (&batch, &start);
+                scope.spawn(move || {
+                    start.wait();
+                    let together = outcome(*local_alias, |ctx| {
+                        ctx.walk_imported_modules(roots, base_file, None, Some(batch))
+                    });
+                    assert_eq!(together, *expected, "seed {seed}: workers together");
+                });
+            }
+        });
     }
 }
 

@@ -2,7 +2,7 @@
 
 use super::{FileProducer, ProgramInput, ProgramInputError, ProgramScope};
 use crate::artifact::ArtifactError;
-use crate::file::{FileArtifact, RejectedFile};
+use crate::file::{L2Ir, RejectedFile};
 use alloc::boxed::Box;
 use oxc_parser::ProgramObservation;
 use vize_l0::{Allocator, SourceBlock};
@@ -62,7 +62,7 @@ pub struct JsxFileProducer<'a> {
 /// ```
 pub struct JsxFile<'a> {
     observation: ProgramObservation<'a>,
-    file: FileArtifact<'a>,
+    file: L2Ir<'a>,
     records: alloc::vec::Vec<records::Record<'a>>,
 }
 
@@ -70,7 +70,7 @@ pub struct JsxFile<'a> {
 pub struct RejectedJsxFile<'a> {
     observation: ProgramObservation<'a>,
     error: JsxFileError,
-    file: Option<FileArtifact<'a>>,
+    file: Option<L2Ir<'a>>,
     rejected_file: Option<Box<RejectedFile<'a>>>,
     records: alloc::vec::Vec<records::Record<'a>>,
 }
@@ -207,7 +207,7 @@ impl<'a> JsxFile<'a> {
         &self.observation
     }
     #[must_use]
-    pub fn file(&self) -> &FileArtifact<'a> {
+    pub fn file(&self) -> &L2Ir<'a> {
         &self.file
     }
     #[must_use]
@@ -239,7 +239,7 @@ impl<'a> RejectedJsxFile<'a> {
         &self.observation
     }
     #[must_use]
-    pub fn file(&self) -> Option<&FileArtifact<'a>> {
+    pub fn file(&self) -> Option<&L2Ir<'a>> {
         self.file.as_ref()
     }
     #[must_use]

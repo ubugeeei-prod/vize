@@ -197,6 +197,8 @@ test("strict boolean rows render within the complete option and type-aware table
     "vue/no-use-v-if-with-v-for",
     "vue/enforce-style-attribute",
     "vue/no-restricted-syntax",
+    "vue/no-restricted-html-elements",
+    "vue/no-restricted-v-on",
     "vue/quote-props",
     "vue/sort-keys",
     "vue/warn-custom-directive",

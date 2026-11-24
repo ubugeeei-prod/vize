@@ -71,7 +71,7 @@ export default defineConfig({}).withVue({
 | `script/no-restricted-members` | `{ members?: Array<{ object: string; property: string; message?: string }> }` | `members` を設定し、ルールを有効にした場合だけ報告します。`message` を省略すると、共通の説明を表示します。 |
 | `script/define-macros-order` | `{ order?: string[]; defineExposeLast?: boolean }` | 既定は `["defineProps", "defineEmits"]` と `false` です。指定したマクロを import と型宣言の後に並べます。`defineExposeLast: true` では最後の直接の `defineExpose` を `<script setup>` の最終文にし、`order` から除外します。この指摘は手動で修正します。 |
 | `vue/valid-v-on` | `{ modifiers?: string[] }` | 既定は空の一覧です。大文字・小文字を区別する独自の名前を組み込みの修飾子に追加します。ルールを有効にしたり、ハンドラーの省略を許可したりする設定ではありません。範囲別の設定は継承した一覧を置き換え、`[]` で解除します。[修飾子の詳しい例](./reference/vue-valid-v-on.md)を参照してください。 |
-| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case" }` | 既定は `PascalCase` です。登録済みのコンポーネントだけを対象にし、追加のグローバル名は既定で空です。 |
+| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case", registeredComponentsOnly?: boolean, globals?: string[], ignores?: string[] }` | 既定は `PascalCase` です。登録済みのコンポーネントだけを対象にし、追加のグローバル名と除外する名前は既定で空です。`ignores` に指定したタグは、登録の有無にかかわらず検査しません。書かれたタグ名そのもの、または Rust の正規表現構文を使う `/pattern/flags` を指定します。 |
 | `script/custom-event-name-casing` | `{ casing?: "lowercase" \| "camelCase" \| "kebab-case" }` | 既定は `camelCase` です。 |
 | `vue/prop-name-casing` | `{ casing?: "camelCase" \| "snake_case" }` | 既定は `camelCase` です。宣言した props 名を検査します。ルールは別に有効にし、公開 API の名前は手動で変更してください。 |
 | `vue/slot-name-casing` | `"camelCase" \| "kebab-case" \| "singleword"` | 既定は `camelCase` です。描画される `<slot>` outlet の静的な名前を検査します。提供側の `v-slot` と `#name` 構文はこのルールの対象外です。 |
@@ -81,6 +81,8 @@ export default defineConfig({}).withVue({
 | `vue/no-use-v-if-with-v-for` | `{ allowUsingIterationVar?: boolean }` | 既定は `false` です。`true` では、同じ要素の `v-if` が `v-for` の反復変数を参照する場合だけ許可し、無関係な条件は引き続き報告します。 |
 | `vue/enforce-style-attribute` | `{ allow?: Array<"plain" \| "scoped" \| "module"> }` | 既定は `["scoped"]` です。許可する style ブロックのモードを指定します。 |
 | `vue/no-restricted-syntax` | `Array<string \| { selector: string, message?: string }>` または `{ selectors?: Array<string \| { selector: string, message?: string }> }` | 既定は `[]` です。eslint-plugin-vue 形式で、vue-eslint-parser のテンプレート AST と各式の TS-ESTree ノードに対する esquery セレクターを、任意のメッセージとともに指定します。[対応するセレクターのサブセット](#vue-no-restricted-syntax-selectors)を参照してください。範囲外のセレクターは設定エラーになります。 |
+| `vue/no-restricted-html-elements` | `string \| Array<string \| { element: string \| string[]; message?: string }>` | 設定するまで何も検査しません。指定した名前のネイティブ要素を報告します。エントリの `message` は既定の `Unexpected use of forbidden element <name>.` を置き換えます。同じ要素を複数のエントリが指定している場合は、最初のエントリのメッセージを使います。[禁止する要素](#vue-no-restricted-html-elements)を参照してください。 |
+| `vue/no-restricted-v-on` | `string \| Array<string \| { argument: string; modifiers?: string[]; element?: string; message?: string }>` | 設定するまで何も検査しません。名前を指定すると、そのイベントのリスナーをすべて禁止します。オブジェクトのエントリは、`modifiers` をすべて持つリスナーだけを対象にし、`element` を指定した場合はその要素に限定します。`message` で独自のメッセージを指定できます。名前はリテラルとして扱います。[禁止するリスナー](#vue-no-restricted-v-on)を参照してください。 |
 | `vue/quote-props` | `"as-needed"` | 保持されたテンプレート式にある不要な引用符付きオブジェクトキーを禁止します。 |
 | `vue/sort-keys` | `{ order?: "asc" \| "desc"; caseSensitive?: boolean; natural?: boolean }` | 既定は昇順・大文字小文字を区別する辞書順です。対応するコンポーネントオプション内のオブジェクトキーを検査します。 |
 | `vue/warn-custom-directive` | `{ ignore?: string[] }` | 既定は空のリストです。`ignore` の正確なディレクティブ名を登録済みとして扱います。 |
@@ -96,7 +98,7 @@ export default defineConfig({}).withVue({
 | `vue/mustache-interpolation-spacing` | `"always" \| "never"` | 既定は `"always"` です。`{{` と `}}` の直内側の空白を必須または禁止し、左右を個別に安全修正します。 |
 | `vue/v-on-event-hyphenation` | `"always" \| "never" \| { style?: "always" \| "never"; ignore?: string[] }` | 既定は `always` と空の除外リストです。大文字・小文字を区別する部分文字列を含むイベント名を除外します。 |
 | `vue/v-on-handler-style` | `Style \| { style?: Style; ignoreIncludesComment?: boolean }`（`Style` は `"method"`、`"inline"`、`"inline-function"`、`["method", "inline"]`、`["method", "inline-function"]`） | 既定は `"method"` で、メソッド参照だけを許可します。ほかの値は eslint-plugin-vue のもので、その既定は `["method", "inline-function"]` です。[ハンドラの書き方](./options-events.md#vue-v-on-handler-style)を参照してください。 |
-| `vue/v-bind-style` | `"shorthand" \| "longform"` | 既定は `"shorthand"` です。バインディングディレクティブを `:class` と `v-bind:class` のどちらで書くかを指定します。longform は `.title` を `v-bind:title.prop` に修正し、明示的な修飾子を保持します。`v-bind="attrs"` のようなオブジェクト形式は変更しません。 |
+| `vue/v-bind-style` | `"shorthand" \| "longform"` または `[style, { sameNameShorthand?: "always" \| "never" \| "ignore" }]` | 既定は `"shorthand"` です。バインディングディレクティブを `:class` と `v-bind:class` のどちらで書くかを指定します。longform は `.title` を `v-bind:title.prop` に修正し、明示的な修飾子を保持します。`v-bind="attrs"` のようなオブジェクト形式は変更しません。配列は eslint-plugin-vue の形式です。`sameNameShorthand: "always"` は `:title="title"` を `:title` と書くことを求め、`"never"` は値を書くことを求めます。既定の `"ignore"` はどちらも検査しません。[バインディングの表記](./options-vue.md#vue-v-bind-style)を参照してください。 |
 | `vue/v-on-style` | `"shorthand" \| "longform"` | 既定は `"shorthand"` です。イベントディレクティブを `@click` と `v-on:click` のどちらで書くかを指定します。`v-on="listeners"` のようなオブジェクト形式は変更しません。 |
 | `vue/v-slot-style` | `"shorthand" \| "longform"` または `{ atComponent?: SlotStyle; default?: SlotStyle; named?: "shorthand" \| "longform" }`（`SlotStyle` は `"v-slot"` も可） | 既定は `atComponent: "v-slot"`、`default: "shorthand"`、`named: "shorthand"` です。名前を消してしまうため、`named` では裸の `v-slot` を受け付けません。 |
 | `vue/attribute-hyphenation` | `"always" \| "never"` または `{ style?, ignore? }` | テンプレートのコンポーネントに渡す属性名の形式を指定します。[属性名のオプション](./options-attributes.md)を参照してください。 |
@@ -356,6 +358,76 @@ export default defineConfig({}).withVue({
 
 ```vue
 <MyButton />
+```
+
+## `vue/no-restricted-html-elements`
+
+各エントリには、要素名、または eslint-plugin-vue の `{ element, message }` オブジェクトを指定します。
+`element` には 1 つの名前か名前の配列を指定できます。`message` のないエントリは既定のメッセージで報告します。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/no-restricted-html-elements": "error" },
+    ruleOptions: {
+      "vue/no-restricted-html-elements": [
+        "marquee",
+        { element: ["a", "button"], message: "Use BaseLink or BaseButton." },
+      ],
+    },
+  },
+});
+```
+
+悪い（この設定で報告される例）: `<marquee>` は `Unexpected use of forbidden element marquee.`、
+`<a>` は `Use BaseLink or BaseButton.` と報告されます。
+
+```vue
+<template><marquee>News</marquee><a href="/">Home</a></template>
+```
+
+良い（この設定に沿った例）:
+
+```vue
+<template><p>News</p><BaseLink to="/">Home</BaseLink></template>
+```
+
+## `vue/no-restricted-v-on`
+
+各エントリには、イベント名、または eslint-plugin-vue の `{ argument, modifiers, element, message }`
+オブジェクトを指定します。`modifiers` を指定すると、そのすべてを持つリスナーだけを対象にします。
+`element` を指定すると、そのタグ名の要素にあるリスナーだけを対象にします。名前はリテラルとして扱い、
+`argument` に `null` は指定できません。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/no-restricted-v-on": "error" },
+    ruleOptions: {
+      "vue/no-restricted-v-on": [
+        { argument: "click", modifiers: ["stop"], message: "Handle the click in the child." },
+        { argument: "focus", element: "BaseInput" },
+      ],
+    },
+  },
+});
+```
+
+悪い（この設定で報告される例）: `@click.stop` はエントリのメッセージで、`<BaseInput>` の `@focus` は
+``Using `@focus` is not allowed on this <BaseInput>.`` と報告されます。
+
+```vue
+<template><div @click.stop="close"><BaseInput @focus="open" /></div></template>
+```
+
+良い（この設定に沿った例）:
+
+```vue
+<template><div @click="close"><input @focus="open" /></div></template>
 ```
 
 ## `vue/no-restricted-syntax` のセレクター {#vue-no-restricted-syntax-selectors}

@@ -2,7 +2,7 @@
 //! bindings, component contracts or instance options without a second AST walk.
 
 use super::{BindingRef, Model};
-use crate::file::{FileArtifact, Namespace, ScopeId, ScriptUnitId};
+use crate::file::{L2Ir, Namespace, ScopeId, ScriptUnitId};
 pub use crate::framework::vue::{
     CallContract, ComponentContract, ComponentOptions, ComponentShape, ContractSource, Emit,
     EmitsContract, MacroCall, MacroKind, ModelContract, ModelName, OptionKey, OptionMember,
@@ -60,12 +60,12 @@ struct OrdinaryFamilies {
 
 /// An immutable File plus the fact families requested from its own producer.
 pub struct VueFile<'a> {
-    file: FileArtifact<'a>,
+    file: L2Ir<'a>,
     facts: VueFacts,
 }
 impl<'a> VueFile<'a> {
     #[must_use]
-    pub fn file(&self) -> &FileArtifact<'a> {
+    pub fn file(&self) -> &L2Ir<'a> {
         &self.file
     }
     #[must_use]
@@ -76,7 +76,7 @@ impl<'a> VueFile<'a> {
         }
     }
     #[must_use]
-    pub fn into_file(self) -> FileArtifact<'a> {
+    pub fn into_file(self) -> L2Ir<'a> {
         self.file
     }
 }
