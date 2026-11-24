@@ -1,0 +1,96 @@
+rust token identity: 105 changed .rs files; 38 doc-only, 10 identical, 56 use-reordered, 1 moved; 100 comment(s) removed
+  doc-only crates/vize_armature/src/parser.rs (base 91:5 /// Template syntax compatibility mode. | head 91:5 template_syntax)
+  use-reordered crates/vize_armature/src/parser/attribute/head.rs
+  use-reordered crates/vize_armature/src/parser/attribute_entity_sink.rs
+  use-reordered crates/vize_armature/src/parser/attribute_entity_sink/tests.rs
+  use-reordered crates/vize_armature/src/parser/attribute_entity_sink/tests/recorder.rs
+  use-reordered crates/vize_armature/src/parser/attribute_entity_witness.rs
+  doc-only crates/vize_armature/src/parser/callbacks.rs (base 12:1 /// Parse directive name from raw attribute name | head 12:1 pub)
+  use-reordered crates/vize_armature/src/parser/compat_reference.rs
+  use-reordered crates/vize_armature/src/parser/constructor.rs
+  use-reordered crates/vize_armature/src/parser/delimiters.rs
+  use-reordered crates/vize_armature/src/parser/duplicate_dialect_tests.rs
+  doc-only crates/vize_armature/src/parser/element/errors.rs (base 130:5 /// messages constructed above must describe the same set of | head 130:5 /// messages constructed above must describe the same set of)
+  doc-only crates/vize_armature/src/parser/element/nesting.rs (base 27:1 /// was `fatal runtime error: stack overflow` — `SIGABRT`, n | head 27:1 /// was `fatal runtime error: stack overflow` — `SIGABRT`, n)
+  doc-only crates/vize_armature/src/parser/element/tags.rs (base 15:5 /// Process open tag name | head 15:5 pub)
+  doc-only crates/vize_armature/src/parser/element/text.rs (base 28:5 /// Append or merge text node | head 28:5 fn)
+  use-reordered crates/vize_armature/src/parser/experimental_tests.rs
+  use-reordered crates/vize_armature/src/parser/first_newline_tests.rs
+  use-reordered crates/vize_armature/src/parser/frozen.rs
+  use-reordered crates/vize_armature/src/parser/legacy_tests.rs
+  use-reordered crates/vize_armature/src/parser/native_adapter_tests.rs
+  use-reordered crates/vize_armature/src/parser/svg_title_tests.rs
+  doc-only crates/vize_armature/src/parser/table_component_tests.rs (base 1:1 //! Vue component nodes retain their authored table scope (# | head 1:1 //! Vue component nodes retain their authored table scope.)
+  use-reordered crates/vize_armature/src/parser/template_syntax/tests.rs
+  doc-only crates/vize_armature/src/parser/tests.rs (base 1713:1 /// Regression (#1065/#1090): a self-closing SVG child such  | head 1713:1 /// A self-closing SVG child such as `<path d="…" />`)
+  use-reordered crates/vize_armature/src/parser/tests/authored_structure.rs
+  use-reordered crates/vize_armature/src/parser/tests/document_repairs.rs
+  use-reordered crates/vize_armature/src/parser/tests/table_rows.rs
+  use-reordered crates/vize_armature/src/parser/tests/table_section_cells.rs
+  doc-only crates/vize_armature/src/parser/tokenizer_authored_structure_witness.rs (base 1:1 //! Five reviewed #13313 corrections to the immutable pre-re | head 1:1 //! Five reviewed corrections to the immutable pre-retiremen)
+  use-reordered crates/vize_armature/src/parser/tokenizer_contract_tests.rs
+  use-reordered crates/vize_armature/src/parser/tokenizer_empty_value_witness.rs
+  doc-only crates/vize_armature/src/parser/tokenizer_first_newline_witness.rs (base 1:1 //! Two reviewed #7889 corrections to the immutable pre-reti | head 1:1 //! Two reviewed corrections to the immutable pre-retirement)
+  use-reordered crates/vize_armature/src/parser/v_pre_tests.rs
+  doc-only crates/vize_armature/src/parser/whitespace.rs (base 264:1 /// elsewhere. `<pre>` and `<textarea>` keep their content ( | head 264:1 /// elsewhere. `<pre>` and `<textarea>` keep their content.)
+  doc-only crates/vize_armature/src/parser/whitespace/tests.rs (base 140:1 /// #8259. Expected values come from `@vue/compiler-sfc@2.7. | head 140:1 /// Expected values come from `@vue/compiler-sfc@2.7.16`)
+  use-reordered crates/vize_armature/src/patterns.rs
+  use-reordered crates/vize_armature/src/patterns/attribute.rs
+  use-reordered crates/vize_armature/src/patterns/tests.rs
+  doc-only crates/vize_armature/tests/markup_lex_parity.rs (base 1:1 //! Exact event and recovery parity while #6835 converges th | head 1:1 //! Exact event and recovery parity while the profile lexer )
+  moved crates/vize_armature/tests/sfc_attribute_boundary_11731.rs -> crates/vize_armature/tests/sfc_attribute_boundary.rs
+  use-reordered crates/vize_curator/src/complexity/tests.rs
+  use-reordered crates/vize_curator/src/inspector/payload.rs
+  use-reordered crates/vize_curator/src/inspector/stages/products.rs
+  use-reordered crates/vize_curator/src/inspector/stages/products/tests.rs
+  use-reordered crates/vize_curator/src/inspector/tests.rs
+  use-reordered crates/vize_curator/src/inspector/tests_semantic.rs
+  use-reordered crates/vize_curator/src/profile/tests.rs
+  use-reordered crates/vize_doctor/src/filter/tests.rs
+  doc-only crates/vize_fresco/src/component/box_node.rs (base 170:5 /// Build into a RenderNode. | head 170:5 pub)
+  doc-only crates/vize_fresco/src/component/input_node.rs (base 85:5 /// Build into a RenderNode. | head 85:5 pub)
+  doc-only crates/vize_fresco/src/component/text_node.rs (base 91:5 /// Build into a RenderNode. | head 91:5 pub)
+  doc-only crates/vize_fresco/src/input/event.rs (base 14:5 /// Mouse event | head 14:5 Mouse)
+  doc-only crates/vize_fresco/src/input/ime/candidate.rs (base 47:5 /// From user dictionary | head 47:5 UserDictionary)
+  doc-only crates/vize_fresco/src/input/ime/preedit.rs (base 90:5 /// Set segments. | head 90:5 pub)
+  doc-only crates/vize_fresco/src/input/ime/state.rs (base 48:5 /// Start composition. | head 48:5 pub)
+  doc-only crates/vize_fresco/src/input/keyboard.rs (base 127:5 /// Backspace | head 127:5 Backspace)
+  doc-only crates/vize_fresco/src/input/mouse.rs (base 21:5 /// Create a new mouse event. | head 21:5 pub)
+  doc-only crates/vize_fresco/src/layout/engine.rs (base 10:5 /// The taffy tree | head 10:5 tree)
+  doc-only crates/vize_fresco/src/layout/rect.rs (base 160:5 /// Offset the rectangle by (dx, dy). | head 160:5 pub)
+  use-reordered crates/vize_fresco/src/napi/layout.rs
+  use-reordered crates/vize_fresco/src/napi/render.rs
+  use-reordered crates/vize_fresco/src/napi/terminal.rs
+  doc-only crates/vize_fresco/src/render/node.rs (base 72:5 /// Add a child. | head 72:5 pub)
+  doc-only crates/vize_fresco/src/render/painter.rs (base 95:5 /// Paint a node's content. | head 95:5 fn)
+  doc-only crates/vize_fresco/src/render/tree.rs (base 12:5 /// Root node ID | head 12:5 root)
+  use-reordered crates/vize_fresco/src/terminal/backend/lifecycle/signal_hook/tests.rs
+  doc-only crates/vize_fresco/src/terminal/buffer.rs (base 287:5 /// Fill a rectangular area with a cell. | head 287:5 pub)
+  doc-only crates/vize_fresco/src/terminal/cursor.rs (base 14:5 /// Cursor shape | head 14:5 pub)
+  doc-only crates/vize_fresco/src/text/segment.rs (base 77:1 /// Segment and collect into a SmallVec. | head 77:1 pub)
+  doc-only crates/vize_fresco/src/text/width.rs (base 77:5 /// Pad string to specified width. | head 77:5 pub)
+  use-reordered crates/vize_fresco/src/text/wrap.rs
+  use-reordered crates/vize_musea/benches/art_parse.rs
+  use-reordered crates/vize_musea/src/autogen.rs
+  doc-only crates/vize_musea/src/autogen/strategy.rs (base 246:1 /// Format variant name from prop name and value. | head 247:1 fn)
+  doc-only crates/vize_musea/src/autogen/types.rs (base 97:5 /// Generated variants. | head 97:5 pub)
+  use-reordered crates/vize_musea/src/docs.rs
+  doc-only crates/vize_musea/src/docs/catalog.rs (base 174:1 /// Generate a tags index page. | head 175:1 pub)
+  doc-only crates/vize_musea/src/docs/markdown.rs (base 191:1 /// Format status as a badge. | head 192:1 fn)
+  use-reordered crates/vize_musea/src/palette/codegen.rs
+  use-reordered crates/vize_musea/src/palette/inference.rs
+  use-reordered crates/vize_musea/src/parse.rs
+  use-reordered crates/vize_musea/src/parse/art_block.rs
+  use-reordered crates/vize_musea/src/parse/divergence_tests.rs
+  use-reordered crates/vize_musea/src/parse/golden_tests.rs
+  use-reordered crates/vize_musea/src/parse/products.rs
+  use-reordered crates/vize_musea/src/parse/status.rs
+  use-reordered crates/vize_musea/src/parse/tests.rs
+  use-reordered crates/vize_musea/src/parse/variant.rs
+  use-reordered crates/vize_musea/src/parse/variant/values.rs
+  doc-only crates/vize_musea/src/transform/to_csf.rs (base 257:1 /// Convert a string to PascalCase. | head 256:1 fn)
+  use-reordered crates/vize_musea/src/transform/to_csf/tests.rs
+  doc-only crates/vize_musea/src/transform/to_vue.rs (base 160:1 /// Generate a render expression for a variant template. | head 161:1 fn)
+  doc-only crates/vize_musea/src/types.rs (base 114:5 /// Source location | head 114:5 pub)
+  use-reordered crates/vize_musea/src/vrt/preset.rs
+  use-reordered crates/vize_musea/tests/art_source_products/profile.rs
