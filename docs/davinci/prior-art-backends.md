@@ -315,15 +315,31 @@ the [no-regression rule](./charter.md).
 
 - **O-10 (open): SSR stops at L4 when L4 emitted.**
   `compile_ssr_on_lane_with_runtime` (`crates/vize_atelier_ssr/src/compile.rs`)
-  parses with the legacy parser,
-  lets `select_ssr_lane` parse again in L1, lower and emit, and then always
-  runs the legacy transform, even after `SsrL4Selection::Emitted`. The SFC
-  caller drops the transformed tree and keeps only the error list and the
-  code. Two jumps are owed. Skip the transform once L4 has emitted; that
-  needs proof that the transform reports nothing L4 did not. Then derive the
-  frozen-slot facts from L1, so the legacy parse goes too. This is a route
-  switch: default-off flag, full matrix, fix-history corpus. _Source:_ GCC
-  `gate`, LLVM "skip passes that just ran".
+  parses with the legacy parser, lets `select_ssr_lane` parse again in L1,
+  lower and emit, and then always runs the legacy transform, even after
+  `SsrL4Selection::Emitted`. The SFC caller drops the transformed tree and
+  keeps only the error list and the code.
+
+  The transform cannot be skipped yet, because it is still the lane's
+  diagnostic producer. An experiment on 2026-11-24 logged every SSR compile in
+  the `vize_atelier_ssr` and `vize_atelier_sfc` suites and the fix-history
+  corpus: of 3,826 compiles that L4 emitted, 35 (10 distinct inputs) carried a
+  fatal error that only the legacy transform reported. The classes were
+  `InvalidExpression` (slot parameters, TypeScript in a JavaScript template),
+  `VModelArgOnElement`, `VModelOnScope`, `VSlotMixedSlotUsage`,
+  `VSlotUnexpectedDirectiveOnSlotOutlet` and `ExtendPoint` (patterned
+  templates). The DOM route gets the slot and model errors from the L2
+  `v-slot` and `v-model` passes; the SSR L4 lane does not run them.
+
+  The order of work follows from that. First the SSR lane runs the same L2
+  mandatory passes and reports those classes itself, with identical codes and
+  spans. Then the differential harness asserts that an emitted compile has no
+  transform error. Then the transform is skipped behind a default-off flag,
+  checked on the full matrix and the fix-history corpus. Last, the frozen-slot
+  facts come from L1, so the legacy parse goes too. This is SIL's lesson in
+  part 2: diagnostics attach to mandatory passes on one path, not to a second
+  pipeline kept alive beside the first. _Source:_ GCC `gate`, LLVM "skip
+  passes that just ran", Swift SIL.
 
 O-5 to O-8 come from a code survey on 2026-11-24 that counted call sites and
 took no timings. Each needs a measurement before it is scheduled.
