@@ -56,6 +56,7 @@ test("iteration checks enforce the warning budget and the full repo check then c
   assert.deepEqual(workspaceTaskSteps(checkTasks["check:repo"]), [
     budget,
     { program: "node", arguments: ["tools/support/typescript/check-project.ts"] },
+    { program: "node", arguments: ["tools/commands/ci/readability-ratchet.ts", "--check"] },
   ]);
 });
 
