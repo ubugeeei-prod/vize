@@ -15,6 +15,20 @@
   },
   "cases": [
     {
+      "id": "explicit-template-inference",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Exact.vue",
+          "source": "Exact.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
       "id": "script-consumer",
       "inputs": [
         {
@@ -28,10 +42,6 @@
         {
           "file": "src/Parent.vue",
           "source": "Parent.vue.txt"
-        },
-        {
-          "file": "src/Exact.vue",
-          "source": "Exact.vue.txt"
         }
       ],
       "diagnostics": []

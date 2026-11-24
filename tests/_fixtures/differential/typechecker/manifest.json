@@ -69740,6 +69740,46 @@
       }
     },
     {
+      "id": "typechecker/script-consumed-slots-13578/explicit-template-inference",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::script_consumed_slots::script_consumed_slots_keep_public_inference_open",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "script-consumed-slots-13578/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
+        },
+        {
+          "file": "src/Exact.vue",
+          "path": "script-consumed-slots-13578/Exact.vue.txt",
+          "sha256": "4917b5f7d6868e522b6b2a592a6449c2549fd6d777f4fd697d22063de41c71fe"
+        },
+        {
+          "file": "cases.json",
+          "path": "script-consumed-slots-13578/cases.json",
+          "sha256": "9df537ee2b5400695bf466ce7de85562bf07f53677a28f1cf3632eb21303e0da"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::script_consumed_slots::script_consumed_slots_keep_public_inference_open; explicit inferTemplateDollarSlots retains exact useSlots and template $slots types, while an incompatible exactType assertion remains an error. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/script-consumed-slots-13578/script-consumer",
       "state": "active",
       "targets": [
@@ -69763,14 +69803,9 @@
           "sha256": "e642967db147aaba48d02f1966ef61725237e29ee2c37a9e4d1eec66764b6bf7"
         },
         {
-          "file": "src/Exact.vue",
-          "path": "script-consumed-slots-13578/Exact.vue.txt",
-          "sha256": "4917b5f7d6868e522b6b2a592a6449c2549fd6d777f4fd697d22063de41c71fe"
-        },
-        {
           "file": "cases.json",
           "path": "script-consumed-slots-13578/cases.json",
-          "sha256": "7b6be06fed5a40643d501e7b690cb0608d20b6393694059313cad7876699e96e"
+          "sha256": "9df537ee2b5400695bf466ce7de85562bf07f53677a28f1cf3632eb21303e0da"
         }
       ],
       "dialectCoverage": {
@@ -69784,7 +69819,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "batch::type_checker::tests::recent_issues::script_consumed_slots::script_consumed_slots_keep_public_inference_open; script-consumed slots remain open while explicit contracts and inferred payloads stay checked. Input-only registration; no native parity claim. Explicit inferTemplateDollarSlots keeps exact useSlots and $slots types; an incompatible exactType assertion remains an error."
+            "selector": "batch::type_checker::tests::recent_issues::script_consumed_slots::script_consumed_slots_keep_public_inference_open; script-consumed slots remain open while explicit contracts and inferred payloads stay checked. Input-only registration; no native parity claim."
           }
         ]
       }
