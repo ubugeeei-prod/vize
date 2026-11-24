@@ -116,7 +116,8 @@ export function readWorkflowEntries(root: string): readonly WorkflowEntry[] {
   const sources = path.join(root, "tools/config/pkl/workflows");
   const groupByName = new Map<string, WorkflowGroupId>();
   for (const group of groups) {
-    for (const source of readdirSync(path.join(sources, group.directory))) {
+    const groupSources = path.join(sources, group.directory);
+    for (const source of existsSync(groupSources) ? readdirSync(groupSources) : []) {
       if (!source.endsWith(".pkl")) continue;
       const name = path.basename(source, ".pkl");
       assert.ok(!groupByName.has(name), `Duplicate workflow source for ${name}`);
