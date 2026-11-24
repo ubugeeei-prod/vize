@@ -5,31 +5,36 @@ use crate::source_project::ScriptQueryProducts;
 use tower_lsp::lsp_types::Range;
 use vize_l1::embed::authored_program::AuthoredProgram;
 
+mod lines;
 mod ranges;
+use lines::BlockLines;
 use ranges::tag_ranges;
 
 #[cfg(feature = "experimental-checker-script-queries")]
 mod checker;
 
 impl ScriptQueryProducts {
+    /// `prefix` is the document up to the block's closing tag.
     pub(crate) fn script_symbol(
         name: &str,
         block: &SfcScriptBlock<'_>,
-        index: &LineIndex<'_>,
+        prefix: &str,
         syntax: &AuthoredProgram<'_>,
     ) -> DocumentSymbol {
         let parsed = syntax.parsed();
         let program =
             (!parsed.panicked && parsed.diagnostics.is_empty()).then_some(&parsed.program);
-        Self::symbol_from_program(name, block, index, program)
+        Self::symbol_from_program(name, block, prefix, program)
     }
 
     pub(crate) fn symbol_from_program(
         name: &str,
         block: &SfcScriptBlock<'_>,
-        index: &LineIndex<'_>,
+        prefix: &str,
         program: Option<&oxc_ast::ast::Program<'_>>,
     ) -> DocumentSymbol {
+        let lines = BlockLines::new(prefix, &block.loc);
+        let (index, loc) = (lines.index(), lines.relative(&block.loc));
         let mut symbols = Vec::new();
         if let Some(program) = program {
             for statement in &program.body {
@@ -38,11 +43,14 @@ impl ScriptQueryProducts {
                     other => other.as_declaration(),
                 };
                 if let Some(declaration) = declaration {
-                    collect(declaration, index, block.loc.start, &mut symbols);
+                    collect(declaration, index, loc.start, &mut symbols);
                 }
             }
         }
-        Self::script_block_symbol(name, block, index, symbols)
+        let ranges = block_ranges(index, &loc, "script");
+        let mut symbol = Self::module_symbol(name, block, ranges, symbols);
+        lines.place(&mut symbol);
+        symbol
     }
 
     /// Empty script blocks need only their authored tag positions.

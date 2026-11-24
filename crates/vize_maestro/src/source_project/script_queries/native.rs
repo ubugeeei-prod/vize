@@ -2,7 +2,7 @@
 use super::{ScriptQueryProducts, ScriptQueryRefusal, ServerState, SourceSnapshot, script_frame};
 use core::ops::ControlFlow;
 use vize_atelier_sfc::SfcScriptBlock;
-use vize_l0::{Allocator, SourceRoot, line_index::LineIndex};
+use vize_l0::{Allocator, SourceRoot};
 use vize_l1::embed::authored_program::AuthoredProgram;
 use vize_l1::{container::vue::ScriptRole, embed::syntax::EmbedSyntax};
 use vize_l1_to_l2::native_file::NativeSfcObservation;
@@ -49,14 +49,11 @@ impl SourceSnapshot {
                 && core::ptr::eq(frame.source(), syntax.source().text())
             {
                 let outline = syntax.diagnostics().next().is_none().then_some(program);
-                let symbol = ScriptQueryProducts::symbol_from_program(
-                    name,
-                    block,
-                    &LineIndex::new(prefix),
-                    outline,
-                );
+                let symbol = ScriptQueryProducts::symbol_from_program(name, block, prefix, outline);
                 out.push_script_symbol(symbol);
-                out.read_retained_specifiers(program, frame.start(), true);
+                let visit_nested = outline.is_none()
+                    || ScriptQueryProducts::has_specifier_argument_list(frame.source().as_bytes());
+                out.read_retained_specifiers(program, frame.start(), visit_nested);
                 return Ok(());
             }
             let symbol = {
@@ -66,12 +63,7 @@ impl SourceSnapshot {
                     frame,
                     ScriptQueryProducts::script_type(block.lang.as_deref()),
                 );
-                let symbol = ScriptQueryProducts::script_symbol(
-                    name,
-                    block,
-                    &LineIndex::new(prefix),
-                    &syntax,
-                );
+                let symbol = ScriptQueryProducts::script_symbol(name, block, prefix, &syntax);
                 out.read_authored_specifiers(&syntax);
                 symbol
             };
