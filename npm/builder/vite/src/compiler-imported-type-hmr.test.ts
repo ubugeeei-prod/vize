@@ -6,7 +6,7 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { setImmediate as nextTurn } from "node:timers/promises";
+import { setImmediate as nextTurn, setTimeout as pause } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { createServer } from "vite";
@@ -41,7 +41,9 @@ const props = defineProps<ItemProps>();
   );
   const urls = Array.from({ length: count }, (_, i) => `/Item${i}.vue`);
   for (const url of urls) fs.writeFileSync(path.join(root, url.slice(1)), component);
-  let update: { file: string; pending: Set<string>; resolve(): void } | undefined;
+  let update:
+    | { file: string; pending: Set<string>; watcherChanges: number; resolve(): void }
+    | undefined;
   const server = await createServer({
     root,
     configFile: false,
@@ -65,7 +67,19 @@ const props = defineProps<ItemProps>();
       ],
     },
     optimizeDeps: { noDiscovery: true, include: [] },
-    server: { host: "127.0.0.1", port: 0 },
+    server: {
+      host: "127.0.0.1",
+      port: 0,
+      watch: {
+        useFsEvents: false,
+        // A fast edit/undo can finish both hotUpdate hooks inside Chokidar's
+        // fs.watch change throttle. Emit each stable write before the next one.
+        awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 10 },
+      },
+    },
+  });
+  server.watcher.on("change", (file) => {
+    if (update?.file === file) update.watcherChanges++;
   });
   const environments = [server.environments.client, server.environments.ssr];
   const requestAll = async () => {
@@ -75,15 +89,36 @@ const props = defineProps<ItemProps>();
     }
     return results;
   };
+  const waitUntilWatched = async (file: string) => {
+    const deadline = Date.now() + 5_000;
+    while (!server.watcher.getWatched()[path.dirname(file)]?.includes(path.basename(file))) {
+      assert(Date.now() < deadline, `Vite must watch the file before editing it: ${file}`);
+      await pause(10);
+    }
+  };
   const change = async (file: string, source: string) => {
+    await waitUntilWatched(file);
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       const completed = new Promise<void>((resolve, reject) => {
-        update = { file, pending: new Set(["client", "ssr"]), resolve };
-        timer = setTimeout(() => reject(new Error(`Hot update did not finish: ${file}`)), 15_000);
+        update = { file, pending: new Set(["client", "ssr"]), watcherChanges: 0, resolve };
+        timer = setTimeout(
+          () =>
+            reject(
+              new Error(
+                `Hot update did not finish: ${JSON.stringify({
+                  file,
+                  watcherChanges: update?.watcherChanges,
+                  pending: [...(update?.pending ?? [])],
+                })}`,
+              ),
+            ),
+          15_000,
+        );
       });
       fs.writeFileSync(file, source);
       await completed;
+      assert(update && update.watcherChanges > 0, "the real watcher must deliver the edit");
       await nextTurn();
     } finally {
       clearTimeout(timer);
