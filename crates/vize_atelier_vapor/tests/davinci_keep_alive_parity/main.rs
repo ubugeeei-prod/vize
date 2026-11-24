@@ -1,5 +1,5 @@
-//! Isolated native, retained and official KeepAlive runtime comparisons.
-//! Retained compiles cannot change another binary's process-global walk probes.
+//! Native, retained and official KeepAlive runtime comparisons.
+//! Compilation is serialized because the walk counters are process-wide.
 
 #![expect(
     clippy::disallowed_macros,
@@ -15,12 +15,56 @@
 
 use serde_json::{Value, json};
 use vize_atelier_core::walk_probe::WalkCounts;
-use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
+use vize_atelier_vapor::{VaporCompileResult, VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
 mod trace;
 
 use trace::trace;
+
+fn compile_scenario(
+    source: &str,
+    first: &str,
+    second: &str,
+) -> ([VaporCompileResult; 3], VaporCompileResult) {
+    // A retained compile in the other test increments the same process-wide
+    // counters. Own only the compile window so mounted traces can run in parallel.
+    static COMPILE: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    let _guard = COMPILE.lock().unwrap();
+    let allocator = Allocator::new();
+    let options = VaporCompilerOptions {
+        prefix_identifiers: true,
+        ..Default::default()
+    };
+    let before = WalkCounts::snapshot();
+    let native = [source, first, second].map(|s| compile_vapor(&allocator, s, options.clone()));
+    assert_eq!(
+        WalkCounts::snapshot().since(before).total_walks(),
+        0,
+        "{source}: native L3"
+    );
+    for (template, result) in [source, first, second].into_iter().zip(&native) {
+        assert!(
+            result.error_messages.is_empty(),
+            "{template}: {:?}",
+            result.error_messages
+        );
+    }
+    let retained = compile_vapor(
+        &allocator,
+        source,
+        VaporCompilerOptions {
+            davinci_retained_lane: true,
+            ..options
+        },
+    );
+    assert!(
+        retained.error_messages.is_empty(),
+        "{source}: {:?}",
+        retained.error_messages
+    );
+    (native, retained)
+}
 
 fn view(child: &str, label: &str, id: u32, events: Value) -> Value {
     json!({
@@ -71,46 +115,14 @@ fn cache_policy_reuses_or_evicts_the_same_components_as_official_vapor() {
             view("second", "D", second_again, json!(["A", "B", "C", "D"])),
             json!({"tree": [], "events": ["A", "B", "C", "D"], "identities": []}),
         ];
-        let allocator = Allocator::new();
-        let options = VaporCompilerOptions {
-            prefix_identifiers: true,
-            ..Default::default()
-        };
-        let before = WalkCounts::snapshot();
-        let parent = compile_vapor(&allocator, &source, options.clone());
-        let first_code = compile_vapor(&allocator, first, options.clone());
-        let second_code = compile_vapor(&allocator, second, options);
-        for result in [&parent, &first_code, &second_code] {
-            assert!(
-                result.error_messages.is_empty(),
-                "{props}: {:?}",
-                result.error_messages
-            );
-        }
-        assert_eq!(
-            WalkCounts::snapshot().since(before).total_walks(),
-            0,
-            "{props}: native L3"
-        );
+        let ([parent, first_code, second_code], retained) =
+            compile_scenario(&source, first, second);
         let vize = trace(
             "davinci-mounted-trace.mjs",
             json!({
                 "backend": "vapor", "code": parent.code, "context": context, "steps": steps, "identities": true,
                 "components": {"First": {"code": first_code.code, "props": ["label"], "emits": ["send"]}, "Second": {"code": second_code.code, "props": ["label"], "emits": ["send"]}},
             }),
-        );
-        let retained = compile_vapor(
-            &allocator,
-            &source,
-            VaporCompilerOptions {
-                prefix_identifiers: true,
-                davinci_retained_lane: true,
-                ..Default::default()
-            },
-        );
-        assert!(
-            retained.error_messages.is_empty(),
-            "{props}: retained compile"
         );
         let retained_trace = trace(
             "davinci-mounted-trace.mjs",
@@ -197,40 +209,7 @@ fn computed_filter_key_removes_stale_policy_and_matches_official_vapor() {
         json!({"tree": [], "events": ["A", "B", "C", "D", "E", "F", "G", "H", "I"], "identities": []}),
     ];
 
-    let allocator = Allocator::new();
-    let options = VaporCompilerOptions {
-        prefix_identifiers: true,
-        ..Default::default()
-    };
-    let before = WalkCounts::snapshot();
-    let native = compile_vapor(&allocator, SOURCE, options.clone());
-    let first = compile_vapor(&allocator, FIRST, options.clone());
-    let second = compile_vapor(&allocator, SECOND, options.clone());
-    for result in [&native, &first, &second] {
-        assert!(
-            result.error_messages.is_empty(),
-            "native compile: {:?}",
-            result.error_messages
-        );
-    }
-    assert_eq!(
-        WalkCounts::snapshot().since(before).total_walks(),
-        0,
-        "computed KeepAlive filter key must stay on native L3"
-    );
-    let retained = compile_vapor(
-        &allocator,
-        SOURCE,
-        VaporCompilerOptions {
-            davinci_retained_lane: true,
-            ..options
-        },
-    );
-    assert!(
-        retained.error_messages.is_empty(),
-        "retained compile: {:?}",
-        retained.error_messages
-    );
+    let ([native, first, second], retained) = compile_scenario(SOURCE, FIRST, SECOND);
 
     for (lane, code) in [("native", native.code), ("retained", retained.code)] {
         let actual = trace(

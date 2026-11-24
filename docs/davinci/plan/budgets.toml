@@ -152,7 +152,7 @@ atelier_vapor_generate_stress-deep = { wall_p50_ns = 0, allocs = 164, rss_peak_b
 atelier_vapor_generate_stress-wide = { wall_p50_ns = 0, allocs = 29, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 atelier_vapor_generate_stress-interp = { wall_p50_ns = 0, allocs = 845, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 atelier_vapor_compile_small = { wall_p50_ns = 0, allocs = 73, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_vapor_compile_medium = { wall_p50_ns = 0, allocs = 515, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_vapor_compile_medium = { wall_p50_ns = 0, allocs = 477, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 atelier_vapor_compile_large = { wall_p50_ns = 0, allocs = 1003, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 atelier_vapor_compile_stress-deep = { wall_p50_ns = 0, allocs = 514, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 atelier_vapor_compile_stress-wide = { wall_p50_ns = 0, allocs = 261, rss_peak_bytes = 0, wall_tolerance = 0.05 }
