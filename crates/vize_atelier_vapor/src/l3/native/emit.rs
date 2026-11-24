@@ -276,18 +276,3 @@ impl<'a> Emitter<'a, '_> {
 fn take<'a, T>(allocator: &'a Allocator, list: &mut Vec<'a, T>) -> Vec<'a, T> {
     std::mem::replace(list, Vec::new_in(&allocator))
 }
-
-fn escaped(value: &str) -> String {
-    let mut output = String::with_capacity(value.len());
-    for ch in value.chars() {
-        match ch {
-            '&' => output.push_str("&amp;"),
-            '<' => output.push_str("&lt;"),
-            '>' => output.push_str("&gt;"),
-            '"' => output.push_str("&quot;"),
-            '\'' => output.push_str("&#39;"),
-            ch => output.push(ch),
-        }
-    }
-    output
-}

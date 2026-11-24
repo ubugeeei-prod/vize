@@ -4,6 +4,7 @@ use super::{
     BlockIRNode, Box, ElementNode, ElementType, ExpressionNode, OperationNode, PropNode,
     SetTemplateRefIRNode, SimpleExpressionNode, String, TemplateChildNode, TransformContext,
 };
+use crate::html::escape_html_text;
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::Span;
 use vize_carton::ensure_sufficient_stack;
@@ -186,22 +187,6 @@ fn push_escaped(template: &mut impl TemplateWriter, text: &str, authored: Span) 
     } else {
         template.push_linked(text, authored);
     }
-}
-
-/// Escape HTML special characters in text content (vuejs/core #14310)
-pub(crate) fn escape_html_text(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
-    for c in s.chars() {
-        match c {
-            '&' => result.push_str("&amp;"),
-            '<' => result.push_str("&lt;"),
-            '>' => result.push_str("&gt;"),
-            '"' => result.push_str("&quot;"),
-            '\'' => result.push_str("&#39;"),
-            _ => result.push(c),
-        }
-    }
-    result
 }
 
 /// Check if an element is static (no dynamic directives)

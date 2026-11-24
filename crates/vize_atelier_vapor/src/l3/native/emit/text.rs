@@ -6,7 +6,8 @@ use vize_atelier_core::{SimpleExpressionNode, codegen::document::EmitDocument};
 use vize_carton::{Box, Vec};
 
 use super::super::{AuthoredSpan, Content, TextPart};
-use super::{Emitter, escaped};
+use super::Emitter;
+use crate::html::escape_html_text;
 use crate::ir::{BlockIRNode, OperationNode, SetTextIRNode};
 
 type Values<'a> = Vec<'a, Box<'a, SimpleExpressionNode<'a>>>;
@@ -131,7 +132,12 @@ impl<'a> Emitter<'a, '_> {
                 template.push_char(' ');
             } else {
                 let text = part.value.text;
-                self.link(template, &escaped(text), Some(part.span), text.len());
+                self.link(
+                    template,
+                    &escape_html_text(text),
+                    Some(part.span),
+                    text.len(),
+                );
             }
         }
         if dynamic {

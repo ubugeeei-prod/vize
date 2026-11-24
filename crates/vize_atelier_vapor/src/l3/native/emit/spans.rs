@@ -9,7 +9,8 @@ use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{Span, String};
 
 use super::super::{AuthoredSpan, BindingKind, Content};
-use super::{Emitter, escaped};
+use super::Emitter;
+use crate::html::escape_html_text;
 
 impl Emitter<'_, '_> {
     /// Append `text` to a template, linked to the `authored_len` authored
@@ -52,7 +53,7 @@ impl Emitter<'_, '_> {
         let token = spelling.map(|(offset, _)| (span.0 + offset as u32, span.1));
         let encoded;
         let text = if special && !spelling.is_some_and(|(_, verbatim)| verbatim) {
-            encoded = escaped(value);
+            encoded = escape_html_text(value);
             &encoded
         } else {
             value

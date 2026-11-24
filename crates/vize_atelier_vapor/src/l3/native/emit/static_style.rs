@@ -4,7 +4,8 @@ use vize_atelier_core::{codegen::document::EmitDocument, literal_object_style};
 use vize_carton::{Span, String};
 
 use super::super::{AuthoredSpan, BindingKind, Content, Node};
-use super::{Emitter, escaped, spans::argument_offset};
+use super::{Emitter, spans::argument_offset};
+use crate::html::escape_html_text;
 
 pub(super) struct StaticStyle {
     css: String,
@@ -70,11 +71,11 @@ impl Emitter<'_, '_> {
         template.push_str("=\"");
         if self.source.is_some() {
             template.push_linked(
-                &escaped(&style.css),
+                &escape_html_text(&style.css),
                 Span::new(style.value.0, style.value.1),
             );
         } else {
-            template.push_str(&escaped(&style.css));
+            template.push_str(&escape_html_text(&style.css));
         }
         template.push_char('"');
     }

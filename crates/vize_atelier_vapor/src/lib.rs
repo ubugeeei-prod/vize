@@ -11,6 +11,7 @@
 pub mod compile;
 pub mod generate;
 pub mod generators;
+mod html;
 pub mod ir;
 #[doc(hidden)]
 pub mod l3;
