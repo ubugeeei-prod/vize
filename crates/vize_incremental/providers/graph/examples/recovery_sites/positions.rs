@@ -9,8 +9,11 @@ fn for_each<'a>(
     together: bool,
     mut consume: impl FnMut(usize, RecoveryRecord<'a>, Span, &'a str),
 ) {
+    // Editor callers pass a runtime-length cursor list. Hiding the length from
+    // both readers keeps a one-element slice from specializing only the
+    // separate reader, so the comparison measures the visitor itself.
     let mut scan = |points: &[u32], offset: usize| {
-        let result = recovery.visit_positions(points, |row| {
+        let result = recovery.visit_positions(black_box(points), |row| {
             for index in row.positions {
                 consume(offset + index, row.record, row.authored, row.text);
             }
