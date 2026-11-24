@@ -22,6 +22,7 @@ import {
   validatePackageScripts,
 } from "../../support/ci/package-programs.ts";
 import { renderRepositoryYaml, type ConfigValue } from "../../support/ci/repository-yaml.ts";
+import { workflowNameViolations } from "../../support/ci/workflow-names.ts";
 import { readWorkflowEntries, renderWorkflowCatalog } from "../ci/workflow-catalog.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
@@ -175,6 +176,31 @@ function verifyInventory(products: Product[]): void {
   if (missing.length) throw new Error(`Missing Pkl sources for:\n${missing.join("\n")}`);
 }
 
+// Shared helpers that belong to no single workflow.
+const workflowNeutralDirectories = new Map([
+  [".github/scripts/workflows", ["shared"]],
+  ["tools/config/pkl/scripts/.github/scripts/workflows", []],
+  ["tools/config/pkl/parts", ["shell", "test-native-canon"]],
+]);
+
+// One stem names a workflow's Pkl source, output, driver, script and part directories,
+// so a deleted or renamed workflow must not leave any of them behind.
+function verifyWorkflowStems(products: Product[]): void {
+  const workflows = products
+    .map(({ target }) => target)
+    .filter((target) => target.startsWith(".github/workflows/"))
+    .map((target) => path.posix.basename(target));
+  const violations = workflowNameViolations(workflows);
+  const stems = new Set(workflows.map((file) => file.slice(0, -".yml".length)));
+  for (const [directory, neutral] of workflowNeutralDirectories) {
+    for (const entry of readdirSync(path.join(root, directory), { withFileTypes: true })) {
+      if (entry.isDirectory() && !stems.has(entry.name) && !neutral.includes(entry.name))
+        violations.push(`${directory}/${entry.name}: no workflow has this stem`);
+    }
+  }
+  if (violations.length) throw new Error(`Workflow layout violations:\n${violations.join("\n")}`);
+}
+
 function readOutput(file: string): string | undefined {
   return existsSync(file) ? readFileSync(file, "utf8") : undefined;
 }
@@ -197,6 +223,7 @@ async function main(): Promise<void> {
   const check = args[0] === "--check";
   const products = listProducts();
   verifyInventory(products);
+  verifyWorkflowStems(products);
   const values = evaluate(products);
   const runtime = await packageTaskRuntime(root);
   const changes: { target: string; text: string; executable?: boolean }[] = [];

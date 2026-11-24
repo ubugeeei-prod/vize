@@ -200,7 +200,6 @@ export const toolingTestScopes = [
     input: "tooling",
     tests: [
       "tests/tooling/release/computed-event-release.test.ts",
-      "tests/tooling/release/published-vite-startup.test.ts",
       "tests/tooling/release/release-editor-host-workflow.test.ts",
       "tests/tooling/release/release-smoke-musl.test.ts",
       "tests/tooling/release/rolling-quota-ownership.test.ts",

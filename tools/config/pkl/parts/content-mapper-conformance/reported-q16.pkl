@@ -1,3 +1,0 @@
-`if` = "github.event_name == 'workflow_dispatch' && inputs.targeted-test == 'reported-q16'"
-uses = "./.github/workflows/content-mapper-reported-q16.yml"
-with { request = "${{ toJSON(inputs) }}" }

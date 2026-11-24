@@ -1,7 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #"node "$VIZE_CI_FILES/seal-the-actual-source-native-executable.ts""#
-}

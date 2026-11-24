@@ -163,8 +163,8 @@ pub(in crate::markup) fn find<'i, 'a>(
 
 #[cfg(test)]
 mod tests {
-    use super::super::L2Template;
     use super::super::surface::{element_at, element_with_v_pre_at, siblings_with_pre};
+    use crate::markup::L2Template;
     use vize_l0::Allocator;
     use vize_l1::markup::{Element, SurfaceChild};
 

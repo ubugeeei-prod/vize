@@ -4,7 +4,7 @@ use super::{
     Allocator, LintResult, Linter, TemplateAnalysis, TemplateRuleEnv, sfc, unused_directives,
 };
 use crate::context::LintContext;
-use crate::markup::L2Template;
+use crate::markup::LintInput;
 use vize_croquis::{Croquis, Drawer};
 use vize_l0::{ToCompactString, profile};
 use vize_relief::RootNode;
@@ -14,7 +14,7 @@ pub(super) struct TemplateExecution<'a> {
     pub source: &'a str,
     pub filename: &'a str,
     pub root: &'a RootNode<'a>,
-    pub l2: &'a L2Template<'a>,
+    pub l2: &'a LintInput<'a>,
     pub env: TemplateRuleEnv<'a>,
 }
 

@@ -14,26 +14,8 @@ on {
         required = true
         type = "string"
       }
-      sfc_optional_lifecycle_only {
-        description = "Qualify one historical public and fresh current-source native lifecycle without timing"
-        required = false
-        ["default"] = false
-        type = "boolean"
-      }
-      sfc_member_only {
-        description = "Profile only native SFC prop-member extraction with optimized source pairs"
-        required = false
-        ["default"] = false
-        type = "boolean"
-      }
       vapor_only {
         description = "Measure only the Davinci Vapor native/retained pairs"
-        required = false
-        ["default"] = false
-        type = "boolean"
-      }
-      historical_sfc_parse {
-        description = "Replay only the frozen issue 6189 SFC parse pair"
         required = false
         ["default"] = false
         type = "boolean"
@@ -54,7 +36,7 @@ on {
   }
 }
 concurrency {
-  group = "criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.production_only || false }}-${{ inputs.historical_sfc_parse || false }}-${{ inputs.level_memory_only || false }}-${{ inputs.sfc_member_only || false }}-${{ inputs.sfc_optional_lifecycle_only || false }}"
+  group = "criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.production_only || false }}-${{ inputs.level_memory_only || false }}"
   `cancel-in-progress` = true
 }
 env {
@@ -70,8 +52,5 @@ jobs {
   `dialect-guard` = import("../../parts/criterion-bench/dialect-guard.pkl")
   `production-pairs` = import("../../parts/criterion-bench/production-pairs.pkl")
   `production-summary` = import("../../parts/criterion-bench/production-summary.pkl")
-  `sfc-parse-replay` = import("../../parts/criterion-bench/sfc-parse-replay.pkl")
   `level-memory` = import("../../parts/criterion-bench/level-memory.pkl")
-  `sfc-members` = import("../../parts/criterion-bench/sfc-members.pkl")
-  `sfc-optional-lifecycle` = import("../../parts/criterion-bench/sfc-optional-lifecycle.pkl")
 }

@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_effect_union_preserves_the_class_floor": {
+        "prover": "z3",
+        "time": 0.04
+      }
+    }
+  }
+}

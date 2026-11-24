@@ -1,7 +1,6 @@
 //! Script modules without declaration children need only their two tag positions.
 use super::{
-    AuthoredProgram, DocumentSymbol, LineIndex, ScriptQueryProducts, SfcScriptBlock, Statement,
-    tag_ranges,
+    AuthoredProgram, DocumentSymbol, ScriptQueryProducts, SfcScriptBlock, Statement, tag_ranges,
 };
 
 impl ScriptQueryProducts {
@@ -21,7 +20,7 @@ impl ScriptQueryProducts {
         if !declarations && let Some((range, selection_range)) = tag_ranges(block, prefix) {
             return Self::module_symbol(name, block, (range, selection_range), Vec::new());
         }
-        Self::script_symbol(name, block, &LineIndex::new(prefix), syntax)
+        Self::script_symbol(name, block, prefix, syntax)
     }
 }
 

@@ -11,68 +11,11 @@ on {
       `targeted-test` {
         description = "Run the full suite or the original 16-state/four-host generic body-error cohort"
         type = "choice"
-        options = List("full", "generic-body-error", "reported-q16")
+        options = List("full", "generic-body-error")
         ["default"] = "full"
       }
-      `reported-q16-cases` {
-        description = "Closed source After case set; all retains the original six tests"
-        type = "choice"
-        options = List("all", "A", "A-with-declaration", "B", "C", "D", "11373")
-        ["default"] = "all"
-      }
-      `event-rename-only` {
-        description = "Qualify both Vize-owned event rename targets with exact upstream tsgo"
-        type = "boolean"
-        ["default"] = false
-      }
-      `router-experimental-only` {
-        description = "Qualify explicit experimental Router project context with the pinned published mapper host"
-        type = "boolean"
-        ["default"] = false
-      }
-      `official-css-options-only` {
-        description = "Qualify Escaton's CSS, component and flow cases with the official published TypeScript 7.1 host"
-        type = "boolean"
-        ["default"] = false
-      }
       `expected-source-sha` {
-        description = "Exact reviewed source for targeted or official modes"
-        type = "string"
-        required = false
-      }
-      `published-defaults-only` {
-        description = "Only published reporter fixtures"
-        type = "boolean"
-        ["default"] = false
-      }
-      `published-report` {
-        description = "Report"
-        type = "choice"
-        options = List("9499", "9498")
-        ["default"] = "9499"
-      }
-      cut {
-        description = "Published source cut C"
-        type = "string"
-        required = false
-      }
-      head {
-        description = "Published source H"
-        type = "string"
-        required = false
-      }
-      tag {
-        description = "Published stable minor tag"
-        type = "string"
-        required = false
-      }
-      source_pr {
-        description = "Published frozen source PR"
-        type = "string"
-        required = false
-      }
-      release_run {
-        description = "Successful official Release R"
+        description = "Exact reviewed source for the targeted mode"
         type = "string"
         required = false
       }
@@ -81,8 +24,8 @@ on {
 }
 
 concurrency {
-  group = "content-mapper-${{ inputs.published-defaults-only && github.run_id || github.event.pull_request.number || github.ref }}${{ inputs.published-defaults-only && '-published-defaults' || inputs.targeted-test == 'reported-q16' && '-reported-q16' || inputs.router-experimental-only && '-router-experimental' || inputs.official-css-options-only && '-official-css-options' || inputs.event-rename-only && '-event-rename' || '' }}"
-  `cancel-in-progress` = "${{ !inputs.published-defaults-only }}"
+  group = "content-mapper-${{ github.ref }}${{ inputs.targeted-test == 'generic-body-error' && '-generic-body-error' || '' }}"
+  `cancel-in-progress` = true
 }
 
 permissions { contents = "read" }
@@ -94,9 +37,5 @@ env {
 }
 
 jobs {
-  `reported-q16` = import("../../parts/content-mapper-conformance/reported-q16.pkl")
   `exact-tsgo-project` = import("../../parts/content-mapper-conformance/exact-tsgo-project.pkl")
-  `event-rename` = import("../../parts/content-mapper-conformance/event-rename.pkl")
-  `official-css-options` = import("../../parts/content-mapper-conformance/official-css-options.pkl")
-  `router-experimental` = import("../../parts/content-mapper-conformance/router-experimental.pkl")
 }

@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-vp install --frozen-lockfile --prefer-offline
-git worktree add --detach target/finalization-order-base "$BASE_SOURCE_SHA"
-for root in . target/finalization-order-base; do
-  mkdir -p "$root/crates/vize/examples/cross_file_finalization_order"
-  cp tests/tooling/support/cross-file-finalization-order/observer/*.rs "$root/crates/vize/examples/cross_file_finalization_order/"
-done

@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-nm --defined-only --numeric-sort "$1" |
-  awk -v symbol="$2" -f "$(dirname -- "${BASH_SOURCE[0]}")/source-symbolizer-matching-symbols.awk"

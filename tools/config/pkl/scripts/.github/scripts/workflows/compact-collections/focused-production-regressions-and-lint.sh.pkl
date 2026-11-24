@@ -1,9 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  module.command("cargo", List("test", "--locked", "-p", "vize_croquis", "-p", "vize_croquis_cf", "--lib"))
-  module.command("cargo", List("clippy", "--locked", "-p", "vize_croquis", "-p", "vize_croquis_cf", "--all-targets", "--", "-D", "warnings"))
-  module.command("cargo", List("check", "--locked", "-p", "vize_croquis", "-p", "vize_croquis_cf", "--target", "wasm32-unknown-unknown"))
-}

@@ -141,31 +141,6 @@ steps = new Listing {
     run = #". "${{ env.VIZE_CI_FILES }}/compare-base-and-head.sh""#
   }
   new Dynamic {
-    name = "Qualify type-aware project batching on existing optimized binaries"
-    `if` = "github.event_name == 'workflow_dispatch' && inputs.patina_project_batch && steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'"
-    run = #". "${{ env.VIZE_CI_FILES }}/qualify-type-aware-project-batching-on-existing-optimized-binaries.sh""#
-  }
-  new Dynamic {
-    name = "Retain type-aware batch evidence including failed observations"
-    `if` = "always() && github.event_name == 'workflow_dispatch' && inputs.patina_project_batch"
-    uses = ci.uploadArtifact
-    with {
-      name = "patina-project-batch"
-      path = """
-      patina-project-batch/*.json
-      patina-project-batch/*.jsonl
-      patina-project-batch/*.stdout
-      patina-project-batch/*.stderr
-      patina-project-batch/*.resource.txt
-      patina-project-batch/summary.md
-      patina-project-batch/dependency-install.log
-
-      """
-      `if-no-files-found` = "error"
-      `retention-days` = 14
-    }
-  }
-  new Dynamic {
     name = "Observe CSS completion and hover on existing base and head CLIs"
     `if` = "steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'"
     run = #"node head/tools/benchmarks/scripts/css-documentation.ts "$GITHUB_WORKSPACE/base/target/ci-opt/vize" "$GITHUB_WORKSPACE/head/target/ci-opt/vize" "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA" "$GITHUB_WORKSPACE/css-documentation-observations.json""#
@@ -174,29 +149,6 @@ steps = new Listing {
     name = "Record benchmark build provenance"
     `if` = "steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'"
     run = #". "${{ env.VIZE_CI_FILES }}/record-benchmark-build-provenance.sh""#
-  }
-  new Dynamic {
-    name = "Replay conditional native type packets after observations"
-    `if` = "github.event_name == 'workflow_dispatch' && inputs.patina_plain_type_packets && steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'"
-    run = #". "${{ env.VIZE_CI_FILES }}/replay-conditional-native-type-packets-after-observations.sh""#
-  }
-  new Dynamic {
-    name = "Retain complete native type packets and overlay custody"
-    `if` = "always() && github.event_name == 'workflow_dispatch' && inputs.patina_plain_type_packets"
-    uses = ci.uploadArtifact
-    with {
-      name = "patina-plain-type-packets"
-      path = """
-      patina-plain-type-packets/*.json
-      patina-plain-type-packets/*.stdout
-      patina-plain-type-packets/*.stderr
-      patina-plain-type-packets/*.rs
-      patina-plain-type-packets/summary.md
-
-      """
-      `if-no-files-found` = "error"
-      `retention-days` = 14
-    }
   }
   new Dynamic {
     name = "Write job summary"

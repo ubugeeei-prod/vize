@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-export VIZE_PLUGIN_TEMPLATE_INPUTS="$RUNNER_TEMP/plugin-templates"
-cargo test --locked --profile ci-opt -p vize --features plugin-project-facts --test plugin_template_products measure_complete_ -- --ignored --nocapture --test-threads=1

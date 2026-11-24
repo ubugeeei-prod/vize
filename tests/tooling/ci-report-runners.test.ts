@@ -14,7 +14,7 @@ const reports = [
   {
     file: ".github/workflows/pr-rust-products.yml",
     id: "rust-product-report",
-    needs: ["pr-rust-shard"],
+    needs: ["pr-rust-shard", "rust-feature-tests"],
     permissions: {
       contents: "read",
       actions: "read",
@@ -26,6 +26,7 @@ const reports = [
       name: "Require the complete Rust tier",
       env: {
         RUN_RUST: "${{ inputs.run-rust }}",
+        FEATURE_TESTS: "${{ fromJSON(inputs.rust-plan).featureTests }}",
         NEEDS_JSON: "${{ toJSON(needs) }}",
         GH_TOKEN: "${{ github.token }}",
       },
