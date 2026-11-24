@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_classification_reads_effect_membership_only": {
+        "prover": "z3",
+        "time": 0.026
+      }
+    }
+  }
+}

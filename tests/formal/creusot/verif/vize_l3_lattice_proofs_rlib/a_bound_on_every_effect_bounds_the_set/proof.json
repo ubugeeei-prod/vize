@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_bound_on_every_effect_bounds_the_set": {
+        "prover": "z3",
+        "time": 0.014
+      }
+    }
+  }
+}

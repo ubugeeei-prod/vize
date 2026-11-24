@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_clone_BindingOrigin": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}
