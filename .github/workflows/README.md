@@ -26,10 +26,10 @@ surfaces and are not routine CI-refactor targets.
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 22        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 17        |
-| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
-| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
+| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 42        |
+| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 18        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
-| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 43        |
+| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 41        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 28        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 24        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
@@ -130,20 +130,19 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 | 03.27 | Script recovery clone cost                          | [`script-recovery-clone-cost.yml`](./script-recovery-clone-cost.yml)                     |
 | 03.28 | Script recovery cost                                | [`script-recovery-cost.yml`](./script-recovery-cost.yml)                                 |
 | 03.29 | Setup binding anchor allocation profile             | [`setup-binding-anchor-profile.yml`](./setup-binding-anchor-profile.yml)                 |
-| 03.30 | Native SFC member phase comparison                  | [`sfc-member-profile.yml`](./sfc-member-profile.yml)                                     |
-| 03.31 | Shipped release-profile measure                     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)                           |
-| 03.32 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
-| 03.33 | Benchmark - String storage                          | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
-| 03.34 | Benchmark - UTF-8 file reads                        | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
-| 03.35 | Benchmark - Tool comparison                         | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
-| 03.36 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
-| 03.37 | Benchmark - Type source snapshots                   | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
-| 03.38 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
-| 03.39 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
-| 03.40 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
-| 03.41 | Benchmark - VS Code startup                         | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
-| 03.42 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
-| 03.43 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
+| 03.30 | Shipped release-profile measure                     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)                           |
+| 03.31 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
+| 03.32 | Benchmark - String storage                          | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
+| 03.33 | Benchmark - UTF-8 file reads                        | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
+| 03.34 | Benchmark - Tool comparison                         | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
+| 03.35 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
+| 03.36 | Benchmark - Type source snapshots                   | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
+| 03.37 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
+| 03.38 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
+| 03.39 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
+| 03.40 | Benchmark - VS Code startup                         | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
+| 03.41 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
+| 03.42 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
 
 ## 04 Type checking and content mapping
 
@@ -162,16 +161,15 @@ Typechecker, content-mapper, Corsa, and TypeScript-provider qualification.
 | 04.07 | Consumer instance globals capture         | [`content-mapper-instance-globals.yml`](./content-mapper-instance-globals.yml)               |
 | 04.08 | Content mapper pair                       | [`content-mapper-pair.yml`](./content-mapper-pair.yml)                                       |
 | 04.09 | Content mapper replay                     | [`content-mapper-replay.yml`](./content-mapper-replay.yml)                                   |
-| 04.10 | Content Mapper Source Case Jobs           | [`content-mapper-reported-q16.yml`](./content-mapper-reported-q16.yml)                       |
-| 04.11 | Vue component metadata                    | [`content-mapper-vue-component-meta.yml`](./content-mapper-vue-component-meta.yml)           |
-| 04.12 | Content Mapper worker stack               | [`content-mapper-worker-stack.yml`](./content-mapper-worker-stack.yml)                       |
-| 04.13 | Type-check corpus pair                    | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                                   |
-| 04.14 | Typecheck vs vue-tsc                      | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
-| 04.15 | WSL2 type-check qualification             | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
-| 04.16 | Typechecker cache custody                 | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                           |
-| 04.17 | Type checker native backend phases        | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
-| 04.18 | Native syntax and semantic completion     | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |
-| 04.19 | Platform VSIX native projection           | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                             |
+| 04.10 | Vue component metadata                    | [`content-mapper-vue-component-meta.yml`](./content-mapper-vue-component-meta.yml)           |
+| 04.11 | Content Mapper worker stack               | [`content-mapper-worker-stack.yml`](./content-mapper-worker-stack.yml)                       |
+| 04.12 | Type-check corpus pair                    | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                                   |
+| 04.13 | Typecheck vs vue-tsc                      | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
+| 04.14 | WSL2 type-check qualification             | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
+| 04.15 | Typechecker cache custody                 | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                           |
+| 04.16 | Type checker native backend phases        | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
+| 04.17 | Native syntax and semantic completion     | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |
+| 04.18 | Platform VSIX native projection           | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                             |
 
 ## 05 Language services and editors
 
@@ -244,19 +242,17 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 | 06.28 | Provide type assertion whole packets     | [`provide-type-assertion.yml`](./provide-type-assertion.yml)                   |
 | 06.29 | Recovery normal codegen                  | [`recovery-normal-codegen.yml`](./recovery-normal-codegen.yml)                 |
 | 06.30 | Scoped nesting specificity               | [`scoped-nesting-specificity.yml`](./scoped-nesting-specificity.yml)           |
-| 06.31 | Current native SFC lifecycle             | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
-| 06.32 | Native parsed SFC attributes             | [`sfc-parse-attributes.yml`](./sfc-parse-attributes.yml)                       |
-| 06.33 | Historical SFC Parse Replay              | [`sfc-parse-replay.yml`](./sfc-parse-replay.yml)                               |
-| 06.34 | Retained source-line replay              | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)           |
-| 06.35 | Source symbolizer smoke                  | [`source-symbolizer-smoke.yml`](./source-symbolizer-smoke.yml)                 |
-| 06.36 | Public mapper comparison                 | [`template-alias-paired-11822.yml`](./template-alias-paired-11822.yml)         |
-| 06.37 | Template expression queries              | [`template-expression-queries.yml`](./template-expression-queries.yml)         |
-| 06.38 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
-| 06.39 | Native template tool projections         | [`template-tool-projections.yml`](./template-tool-projections.yml)             |
-| 06.40 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
-| 06.41 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
-| 06.42 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
-| 06.43 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
+| 06.31 | Native parsed SFC attributes             | [`sfc-parse-attributes.yml`](./sfc-parse-attributes.yml)                       |
+| 06.32 | Retained source-line replay              | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)           |
+| 06.33 | Source symbolizer smoke                  | [`source-symbolizer-smoke.yml`](./source-symbolizer-smoke.yml)                 |
+| 06.34 | Public mapper comparison                 | [`template-alias-paired-11822.yml`](./template-alias-paired-11822.yml)         |
+| 06.35 | Template expression queries              | [`template-expression-queries.yml`](./template-expression-queries.yml)         |
+| 06.36 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
+| 06.37 | Native template tool projections         | [`template-tool-projections.yml`](./template-tool-projections.yml)             |
+| 06.38 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
+| 06.39 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
+| 06.40 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
+| 06.41 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
 
 ## 07 Davinci, Canon, and Level
 
