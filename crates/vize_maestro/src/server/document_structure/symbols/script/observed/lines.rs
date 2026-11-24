@@ -1,5 +1,6 @@
 //! Line positions for one script block without storing the lines before it.
 use super::{DocumentSymbol, LineIndex};
+use std::borrow::Cow;
 use vize_atelier_sfc::BlockLocation;
 
 /// The original reader indexed every line before the block's closing tag,
@@ -38,15 +39,19 @@ impl<'a> BlockLines<'a> {
         &self.index
     }
 
-    /// `loc` with offsets relative to the first indexed line.
-    pub(super) fn relative(&self, loc: &BlockLocation) -> BlockLocation {
-        BlockLocation {
+    /// `loc` with offsets relative to the first indexed line. A block on the
+    /// document's first line keeps its own location.
+    pub(super) fn relative<'l>(&self, loc: &'l BlockLocation) -> Cow<'l, BlockLocation> {
+        if self.start == 0 {
+            return Cow::Borrowed(loc);
+        }
+        Cow::Owned(BlockLocation {
             start: loc.start.saturating_sub(self.start),
             end: loc.end.saturating_sub(self.start),
             tag_start: loc.tag_start.saturating_sub(self.start),
             tag_end: loc.tag_end.saturating_sub(self.start),
             ..loc.clone()
-        }
+        })
     }
 
     /// Move a symbol tree read through [`Self::index`] onto document lines.
