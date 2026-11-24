@@ -1,3 +1,6 @@
+/// A worker that classified one huge file must not keep that allocation.
+const RETAINED_BUFFER_LIMIT: usize = 64 * 1024;
+
 pub(super) fn path_is_module_augmentation(path: &std::path::Path) -> bool {
     thread_local! {
         static BUFFER: std::cell::RefCell<Vec<u8>> = const { std::cell::RefCell::new(Vec::new()) };
@@ -5,18 +8,33 @@ pub(super) fn path_is_module_augmentation(path: &std::path::Path) -> bool {
     BUFFER.with(|buffer| {
         let mut buffer = buffer.borrow_mut();
         buffer.clear();
-        let mut file = std::fs::File::open(path).ok()?;
-        std::io::Read::read_to_end(&mut file, &mut buffer).ok()?;
-        // The exact single-space needles are the historical reject. A newline
-        // between `declare` and `module` is not a hit, matching `str::contains`.
-        if memchr::memmem::find(buffer.as_slice(), b"declare module").is_none()
-            && memchr::memmem::find(buffer.as_slice(), b"declare global").is_none()
-        {
-            return Some(false);
+        let found = augmentation_bytes_match(path, &mut buffer);
+        if buffer.capacity() > RETAINED_BUFFER_LIMIT {
+            buffer.clear();
+            buffer.shrink_to(RETAINED_BUFFER_LIMIT);
         }
-        let content = std::str::from_utf8(buffer.as_slice()).ok()?;
-        Some(is_module_augmentation(content))
-    }) == Some(true)
+        found
+    })
+}
+
+fn augmentation_bytes_match(path: &std::path::Path, buffer: &mut Vec<u8>) -> bool {
+    let Ok(mut file) = std::fs::File::open(path) else {
+        return false;
+    };
+    if std::io::Read::read_to_end(&mut file, buffer).is_err() {
+        return false;
+    }
+    // The exact single-space needles are the historical reject. A newline
+    // between `declare` and `module` is not a hit, matching `str::contains`.
+    if memchr::memmem::find(buffer.as_slice(), b"declare module").is_none()
+        && memchr::memmem::find(buffer.as_slice(), b"declare global").is_none()
+    {
+        return false;
+    }
+    let Ok(content) = std::str::from_utf8(buffer.as_slice()) else {
+        return false;
+    };
+    is_module_augmentation(content)
 }
 
 fn is_module_augmentation(content: &str) -> bool {

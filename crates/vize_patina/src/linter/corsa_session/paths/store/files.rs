@@ -67,12 +67,13 @@ impl<'a> ProgramRootSpelling<'a> {
 
     fn file_name(&self, path: &Path) -> String {
         // A real file already spelled under the session root does not need a
-        // realpath. Symlinks, including a linked project root's *file* that
-        // points outside the project, still canonicalize so #13077 keeps one
-        // module identity.
+        // realpath. A symlink at the leaf, or any symlinked directory below
+        // the project root, still canonicalizes so a target outside the
+        // project keeps one module identity (#13077). The project root itself
+        // may be the link (`/var`, a Windows junction); that link is the
+        // session spelling and must not be resolved.
         if let Ok(relative) = path.strip_prefix(self.project_root)
-            && std::fs::symlink_metadata(path)
-                .is_ok_and(|metadata| !metadata.file_type().is_symlink())
+            && ancestors_below_root_are_real(self.project_root, path)
         {
             return slash_path(&self.project_root.join(relative));
         }
@@ -94,6 +95,41 @@ fn owned_typescript_sources(project_root: &Path, tsconfig: &Path) -> Vec<PathBuf
         .into_iter()
         .filter(|path| ownership.project_owns_source(tsconfig, path, TsconfigSourceKind::Typed))
         .collect()
+}
+
+/// Every component strictly below `project_root` is a real file or directory.
+///
+/// Stopping at the root keeps a symlinked project root on the lexical
+/// spelling. A metadata error falls back to canonicalization.
+fn ancestors_below_root_are_real(project_root: &Path, path: &Path) -> bool {
+    let mut current = path;
+    while current != project_root {
+        match std::fs::symlink_metadata(current) {
+            Ok(metadata) if !metadata_is_link(&metadata) => {}
+            _ => return false,
+        }
+        match current.parent() {
+            Some(parent) if parent != current => current = parent,
+            _ => return false,
+        }
+    }
+    true
+}
+
+fn metadata_is_link(metadata: &std::fs::Metadata) -> bool {
+    if metadata.file_type().is_symlink() {
+        return true;
+    }
+    #[cfg(windows)]
+    {
+        // Directory junctions are not `is_symlink()` but still rename the
+        // canonical file, matching the pre-fast-path `canonicalize`.
+        use std::os::windows::fs::MetadataExt;
+        const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x400;
+        return metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0;
+    }
+    #[cfg(not(windows))]
+    false
 }
 
 fn is_typescript_source(path: &Path) -> bool {
@@ -333,6 +369,40 @@ mod tests {
             rendered
                 .iter()
                 .all(|path| !path.ends_with("/src/linked.ts")),
+            "{rendered:?}"
+        );
+    }
+
+    /// `include` of a symlinked directory follows the link while walking, but
+    /// the declaration's module identity is the canonical target. A leaf-only
+    /// symlink check would spell `project/types/env.d.ts` and attach the
+    /// augmentation to a different file than the one outside the project.
+    #[cfg(unix)]
+    #[test]
+    fn program_roots_follow_a_symlinked_include_directory_outside_the_project() {
+        let temp = tempfile::tempdir().unwrap();
+        let project = temp.path().join("project");
+        let outside = temp.path().join("outside");
+        write(&project, "tsconfig.json", r#"{"include":["types"]}"#);
+        write(&outside, "env.d.ts", "declare const build: string;\n");
+        std::os::unix::fs::symlink(&outside, project.join("types")).unwrap();
+
+        let files = ambient_program_files(&project, &project.join("tsconfig.json"));
+        let rendered = files
+            .iter()
+            .map(|path| path.replace('\\', "/"))
+            .collect::<Vec<_>>();
+
+        assert!(
+            rendered
+                .iter()
+                .any(|path| path.ends_with("/outside/env.d.ts")),
+            "{rendered:?}"
+        );
+        assert!(
+            rendered
+                .iter()
+                .all(|path| !path.ends_with("/types/env.d.ts")),
             "{rendered:?}"
         );
     }

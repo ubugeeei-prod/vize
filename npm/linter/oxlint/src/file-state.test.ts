@@ -81,6 +81,32 @@ it("unchanged source reuses revision-safe file work", () => {
   }
 });
 
+it("a same-size rewrite with a restored mtime does not reuse cached source", () => {
+  clearFileStateCache();
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-file-state-mtime-"));
+  const filename = path.join(root, "App.vue");
+  const firstSource = "<template><p>one</p></template>\n";
+  const secondSource = "<template><p>two</p></template>\n";
+  assert.equal(Buffer.byteLength(firstSource), Buffer.byteLength(secondSource));
+
+  try {
+    fs.writeFileSync(filename, firstSource);
+    const context = createContext(filename, "const one = 1;\n");
+    const first = getFileState(context);
+    const preserved = fs.statSync(filename);
+    fs.writeFileSync(filename, secondSource);
+    fs.utimesSync(filename, preserved.atime, preserved.mtime);
+    const changed = getFileState(context);
+
+    assert.notStrictEqual(changed, first);
+    assert.equal(changed.source, secondSource);
+    assert.equal(changed.partialDiagnosticsByRule.size, 0);
+  } finally {
+    clearFileStateCache();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 it("same filename with changed source starts a fresh reporting revision", () => {
   clearFileStateCache();
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-file-state-revision-"));

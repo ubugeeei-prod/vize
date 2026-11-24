@@ -45,9 +45,14 @@ interface SourceRevisionIdentity {
   // normal files physicalSource and state.source share the same string reference.
   readonly physicalSource: string;
   // Repeat visits of an unchanged file stat instead of reading the bytes again.
-  // mtimeNs + size is the same identity the active-rule pass already trusts.
-  readonly mtimeNs: bigint;
+  // dev, ino, size, mtimeNs, and ctimeNs are the identity the active-rule pass
+  // already trusts. A same-size edit still misses when a tool restores mtime,
+  // because the write or the timestamp restore updates ctime or the inode.
+  readonly dev: bigint;
+  readonly ino: bigint;
   readonly size: bigint;
+  readonly mtimeNs: bigint;
+  readonly ctimeNs: bigint;
 }
 
 interface CachedFileState {
@@ -286,15 +291,24 @@ function diagnosticIdentity(diagnostic: PatinaDiagnostic): string {
 
 function physicalRevisionUnchanged(filename: string, revision: SourceRevisionIdentity): boolean {
   const stat = fs.statSync(filename, { bigint: true });
-  return stat.mtimeNs === revision.mtimeNs && stat.size === revision.size;
+  return (
+    stat.dev === revision.dev &&
+    stat.ino === revision.ino &&
+    stat.size === revision.size &&
+    stat.mtimeNs === revision.mtimeNs &&
+    stat.ctimeNs === revision.ctimeNs
+  );
 }
 
 function readPhysicalRevision(filename: string): SourceRevisionIdentity {
   const stat = fs.statSync(filename, { bigint: true });
   return {
     physicalSource: fs.readFileSync(filename, "utf8"),
-    mtimeNs: stat.mtimeNs,
+    dev: stat.dev,
+    ino: stat.ino,
     size: stat.size,
+    mtimeNs: stat.mtimeNs,
+    ctimeNs: stat.ctimeNs,
   };
 }
 
