@@ -33,6 +33,23 @@ it("preserves the old style projection and carries both tuple fields into the na
   }
 });
 
+it("carries ignores as exact names and /pattern/flags entries in both option forms", () => {
+  for (const ignores of [[], ["primitive"], ["primitive", "/^Tres/", "/-icon$/i"]]) {
+    const policy = { ignores, registeredComponentsOnly: false };
+    const canonical = { casing: "PascalCase", ...policy };
+    for (const options of [["PascalCase", policy], [canonical]]) {
+      const before = structuredClone(options);
+      const projected = getRuleOptions(rule, options);
+      assert.deepEqual(projected, { ruleOptions: { [rule]: canonical } });
+      assert.notEqual(projected?.ruleOptions?.[rule]?.ignores, ignores);
+      assert.deepEqual(options, before);
+    }
+  }
+  assert.deepEqual(getRuleOptions(rule, [{ ignores: ["primitive"] }]), {
+    ruleOptions: { [rule]: { ignores: ["primitive"] } },
+  });
+});
+
 it("retains default/reset and disabled or unselected rule behavior", () => {
   assert.equal(getRuleOptions(rule, []), undefined);
   assert.deepEqual(getRuleOptions(rule, [{}]), { ruleOptions: { [rule]: {} } });
@@ -61,8 +78,11 @@ it("refuses unknown policies, invalid field types, ambiguous objects and extra t
     [{ casing: "camelCase" }],
     [{ registeredComponentsOnly: null }],
     [{ globals: [42] }],
-    [{ ignores: [] }],
-    ["PascalCase", { ignores: [] }],
+    [{ ignores: "primitive" }],
+    [{ ignores: [42] }],
+    [{ ignores: ["primitive", "primitive"] }],
+    ["PascalCase", { ignores: ["primitive", "primitive"] }],
+    ["PascalCase", { ignores: null }],
     ["PascalCase", { unknown: true }],
     ["PascalCase", { casing: "kebab-case" }],
     ["PascalCase", { globals: null }],
@@ -79,6 +99,7 @@ it("refuses unknown policies, invalid field types, ambiguous objects and extra t
   const properties = {
     registeredComponentsOnly: { type: "boolean" },
     globals: { type: "array", items: { type: "string" } },
+    ignores: { type: "array", items: { type: "string" }, uniqueItems: true },
   };
   assert.deepEqual(componentNameCasingSchema(), {
     type: "array",

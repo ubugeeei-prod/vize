@@ -71,6 +71,27 @@ function scanOwners(
 }
 
 {
+  // Evicted files await a recompile until something compiles or removes them.
+  const cache = new CompiledModuleCache();
+  for (const file of ["/src/A.vue", "/src/B.vue", "/src/C.vue", "/src/D.vue"]) {
+    cache.set(file, compiled(["/src/types.ts"]));
+  }
+  assert.deepEqual([...cache.evictedFiles()], []);
+
+  for (const file of ["/src/B.vue", "/src/A.vue", "/src/C.vue"]) cache.evict(file);
+  assert.equal(cache.evict("/src/Missing.vue"), false);
+  assert.equal(cache.evict("/src/A.vue"), false, "a second eviction finds nothing to evict");
+  assert.deepEqual([...cache.evictedFiles()], ["/src/B.vue", "/src/A.vue", "/src/C.vue"]);
+
+  cache.set("/src/A.vue", compiled([]));
+  cache.delete("/src/C.vue");
+  assert.deepEqual([...cache.evictedFiles()], ["/src/B.vue"]);
+
+  cache.clear();
+  assert.deepEqual([...cache.evictedFiles()], []);
+}
+
+{
   const cache = new CompiledModuleCache();
   cache.set("/src/App.vue", compiled(["/src/shared.css"]));
   cache.set("/src/Page.vue", compiled(["/src/shared.css"]));

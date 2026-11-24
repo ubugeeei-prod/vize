@@ -1,6 +1,7 @@
 //! Shared application of the public `linter.ruleOptions` shape.
 
 use super::config::Linter;
+use crate::rules::vue::ComponentNameInTemplateCasing;
 use crate::rules::{
     ComponentCasing, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
     HyphenationStyle, NoMutatingPropsOptions, SfcElementOrderGroup, SfcElementOrderOptions,
@@ -9,7 +10,7 @@ use crate::rules::{
 use vize_l0::config::{
     ConfigLintRuleOptions, CustomEventNameCasing, HtmlQuoteStyle as ConfigHtmlQuoteStyle,
     HtmlSelfClosingStyle as ConfigSelfClosingStyle, HyphenationStyle as ConfigHyphenationStyle,
-    TemplateComponentNameCasing, VBindStyle as ConfigVBindStyle, VOnStyle as ConfigVOnStyle,
+    TemplateComponentNameCasing, VOnStyle as ConfigVOnStyle,
     VSlotNamedStyle as ConfigVSlotNamedStyle, VSlotStyle as ConfigVSlotStyle,
     VSlotStyleValue as ConfigVSlotStyleValue, VSlotUniformStyle as ConfigVSlotUniformStyle,
 };
@@ -43,10 +44,11 @@ impl Linter {
             self = self.with_define_macros_order(value);
         }
         if let Some(value) = options.component_name_in_template_casing_options() {
-            self = self.with_component_name_in_template_casing_policy(
-                component_casing(value.casing),
-                value.registered_components_only,
-                value.globals.clone(),
+            self = self.with_component_name_in_template_casing_rule(
+                ComponentNameInTemplateCasing::new(component_casing(value.casing))
+                    .with_registered_components_only(value.registered_components_only)
+                    .with_globals(value.globals.clone())
+                    .with_ignores(&value.ignores),
             );
         }
         if let Some(value) = options.custom_event_name_casing() {
@@ -215,11 +217,8 @@ impl Linter {
         if let Some(value) = options.v_slot_style() {
             self = self.with_v_slot_style(v_slot_style(value));
         }
-        if let Some(value) = options.v_bind_style() {
-            self = self.with_v_bind_style(match value {
-                ConfigVBindStyle::Shorthand => crate::rules::vue::VBindStyleOption::Shorthand,
-                ConfigVBindStyle::Longform => crate::rules::vue::VBindStyleOption::Longform,
-            });
+        if let Some(value) = options.v_bind_style_config() {
+            self = v_bind_style::apply(self, value);
         }
         if let Some(value) = options.attribute_hyphenation() {
             let style = match value {
@@ -293,11 +292,14 @@ fn self_closing_style(value: ConfigSelfClosingStyle) -> HtmlSelfClosingStyle {
     }
 }
 mod block_lang;
+#[cfg(test)]
+mod component_name_casing;
 mod configured_vue;
 #[cfg(test)]
 mod macro_order;
 mod max_lines;
 mod max_lines_per_block;
+mod v_bind_style;
 
 #[cfg(test)]
 mod multi_word_component_names;

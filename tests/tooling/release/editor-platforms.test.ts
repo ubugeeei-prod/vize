@@ -105,6 +105,20 @@ test("platform providers publish after their packages without gating the release
   assert.match(github, /VIZE_EDITOR_PLATFORM_ARTIFACTS/);
 });
 
+test("queued platform providers retain their candidate after the tag deletes its ref", () => {
+  const release = parse(readAutomationPrograms(".github", "workflows", "release.yml"));
+  const job = release.jobs["build-editor-platforms"];
+  const checkout = job.steps.find((step: { uses?: string }) =>
+    step.uses?.startsWith("actions/checkout@"),
+  );
+  const packaging = job.steps.find(
+    (step: { name?: string }) => step.name === "Package the exact target provider",
+  );
+  assert.equal(checkout.with.ref, "${{ needs.version.outputs.sha }}");
+  assert.equal(packaging.env.VIZE_RELEASE_CANDIDATE_SHA, checkout.with.ref);
+  assert.ok(!release.jobs.tag.needs.includes("build-editor-platforms"));
+});
+
 test("platform providers install the extension's packager like the universal VSIX", () => {
   const release = parse(readAutomationPrograms(".github", "workflows", "release.yml"));
   type Step = { name?: string; uses?: string; run?: string };

@@ -466,9 +466,7 @@ fn collect_expression_query_sets(
             include_template_promise_queries,
         )
     );
-    // `call_ranges` owns every range (plain integers / bools) and borrows nothing
-    // from the arena, so the arena can be recycled before the ranges are consumed.
-    // Resetting here reuses the parse memory for the next template expression.
+    // `call_ranges` owns its ranges, so the arena can be reset before they are consumed.
     allocator.reset();
 
     if let Some(queries) = sinks.template_queries.as_deref_mut() {
@@ -486,6 +484,7 @@ fn collect_expression_query_sets(
                 source_end,
                 owner_start: source_start,
                 owner_end: source_end,
+                attrs_binding: source_text.trim() == "$attrs",
             });
         }
         for callee in call_ranges.callees {
@@ -513,6 +512,7 @@ fn collect_expression_query_sets(
                 source_end: callee_end,
                 owner_start: source_start,
                 owner_end: source_end,
+                attrs_binding: callee_source.trim() == "$attrs",
             });
         }
     }

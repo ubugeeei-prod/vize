@@ -1,12 +1,15 @@
-use super::walk::{glob_match, is_declaration_file, parse_jsonc, slash_path, walk_glob};
+use super::walk::{
+    collect_typescript_sources, glob_match, is_declaration_file, parse_jsonc, slash_path, walk_glob,
+};
 use super::{
     Path, PathBuf, String, ToCompactString, TsconfigOwnershipCache, TsconfigSourceKind, Value,
 };
 use rayon::prelude::*;
 
 mod augmentation;
+mod spelling;
 
-use augmentation::is_module_augmentation;
+use augmentation::path_is_module_augmentation;
 
 pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec<String> {
     let selection = configured_program_files(tsconfig);
@@ -28,8 +31,7 @@ pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec
             if !is_typescript_source(&path) {
                 return None;
             }
-            let content = std::fs::read_to_string(&path).ok()?;
-            is_module_augmentation(&content).then(|| spelling.file_name(&path))
+            path_is_module_augmentation(&path).then(|| spelling.file_name(&path))
         })
         .collect::<Vec<_>>();
     files.extend(augmentations);
@@ -65,6 +67,20 @@ impl<'a> ProgramRootSpelling<'a> {
     }
 
     fn file_name(&self, path: &Path) -> String {
+        // A real file already spelled under the session root does not need a
+        // realpath. A symlink at the leaf, or any symlinked directory below
+        // the project root, still canonicalizes so a target outside the
+        // project keeps one module identity (#13077). The project root itself
+        // may be the link (`/var`, a Windows junction); that link is the
+        // session spelling and must not be resolved.
+        if let Ok(relative) = path.strip_prefix(self.project_root)
+            && !relative
+                .components()
+                .any(|part| matches!(part, std::path::Component::ParentDir))
+            && spelling::ancestors_below_root_are_real(self.project_root, path)
+        {
+            return slash_path(&self.project_root.join(relative));
+        }
         let canonical = vize_l0::path::canonicalize_non_verbatim(path);
         match canonical.strip_prefix(&self.canonical_root) {
             Ok(relative) => slash_path(&self.project_root.join(relative)),
@@ -75,9 +91,7 @@ impl<'a> ProgramRootSpelling<'a> {
 
 fn owned_typescript_sources(project_root: &Path, tsconfig: &Path) -> Vec<PathBuf> {
     let mut candidates = Vec::new();
-    for pattern in ["*.ts", "*.tsx", "*.mts", "*.cts"] {
-        walk_glob(project_root, &["**", pattern], &mut candidates);
-    }
+    collect_typescript_sources(project_root, &mut candidates);
     candidates.sort();
     candidates.dedup();
     let mut ownership = TsconfigOwnershipCache::default();
@@ -289,6 +303,107 @@ mod tests {
         assert_eq!(
             relative_to(&linked, &files),
             vec!["src/augment.ts", "src/env.d.ts"]
+        );
+    }
+
+    /// A symlinked *file* whose target lives outside the project is a different
+    /// module from the link path. Spelling it through the project would make
+    /// Corsa treat the link and the target as two files.
+    #[cfg(unix)]
+    #[test]
+    fn program_roots_follow_a_symlinked_source_outside_the_project() {
+        let temp = tempfile::tempdir().unwrap();
+        let project = temp.path().join("project");
+        write(&project, "tsconfig.json", r#"{"include":["src/**/*.ts"]}"#);
+        write(&project, "src/env.d.ts", "declare const build: string;\n");
+        let outside = temp.path().join("outside.ts");
+        fs::write(
+            &outside,
+            "export {}; declare global { interface Window { outside: true } }\n",
+        )
+        .unwrap();
+        std::os::unix::fs::symlink(&outside, project.join("src/linked.ts")).unwrap();
+
+        let files = ambient_program_files(&project, &project.join("tsconfig.json"));
+        let mut expected = vec![
+            super::slash_path(&project.join("src/env.d.ts")),
+            super::slash_path(&vize_l0::path::canonicalize_non_verbatim(&outside)),
+        ];
+        expected.sort();
+        assert_eq!(files, expected);
+    }
+
+    /// `include` of a symlinked directory follows the link while walking, but
+    /// the declaration's module identity is the canonical target. A leaf-only
+    /// symlink check would spell `project/types/env.d.ts` and attach the
+    /// augmentation to a different file than the one outside the project.
+    #[cfg(unix)]
+    #[test]
+    fn program_roots_follow_a_symlinked_include_directory_outside_the_project() {
+        let temp = tempfile::tempdir().unwrap();
+        let project = temp.path().join("project");
+        let outside = temp.path().join("outside");
+        write(&project, "tsconfig.json", r#"{"include":["types"]}"#);
+        write(&outside, "env.d.ts", "declare const build: string;\n");
+        std::os::unix::fs::symlink(&outside, project.join("types")).unwrap();
+
+        let files = ambient_program_files(&project, &project.join("tsconfig.json"));
+        assert_eq!(
+            files,
+            vec![super::slash_path(
+                &vize_l0::path::canonicalize_non_verbatim(&outside.join("env.d.ts"),)
+            )]
+        );
+    }
+
+    /// `files` entries keep `..` until canonicalization. The lexical fast path
+    /// would emit `project/src/../env.d.ts`, a different module from
+    /// `project/env.d.ts`.
+    #[test]
+    fn program_roots_spell_parent_components_from_the_canonical_file() {
+        let temp = tempfile::tempdir().unwrap();
+        let project = temp.path().join("project");
+        write(
+            &project,
+            "tsconfig.json",
+            r#"{"files":["src/../env.d.ts"]}"#,
+        );
+        write(&project, "env.d.ts", "declare const build: string;\n");
+        // The `src` component must exist or the `..` lookup never reaches the file.
+        fs::create_dir(project.join("src")).unwrap();
+
+        let files = ambient_program_files(&project, &project.join("tsconfig.json"));
+        assert_eq!(files, vec![super::slash_path(&project.join("env.d.ts"))]);
+    }
+
+    #[test]
+    fn authoritative_scan_keeps_every_script_extension_and_skips_dependencies() {
+        let root = tempfile::tempdir().unwrap();
+        write(root.path(), "tsconfig.json", "{}");
+        let augmentation = "export {}; declare global { interface Window { extra: true } }\n";
+        write(root.path(), "src/component.ts", augmentation);
+        write(root.path(), "src/view.tsx", augmentation);
+        write(root.path(), "src/env.mts", augmentation);
+        write(root.path(), "src/legacy.cts", augmentation);
+        write(root.path(), "src/plain.ts", "export const value = 1;\n");
+        write(
+            root.path(),
+            "src/types/env.d.ts",
+            "declare const build: string;\n",
+        );
+        write(root.path(), "node_modules/pkg/index.ts", augmentation);
+
+        let files = ambient_program_files(root.path(), &root.path().join("tsconfig.json"));
+        let relative = relative_to(root.path(), &files);
+        assert_eq!(
+            relative,
+            vec![
+                "src/component.ts",
+                "src/env.mts",
+                "src/legacy.cts",
+                "src/types/env.d.ts",
+                "src/view.tsx",
+            ]
         );
     }
 }
