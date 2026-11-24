@@ -9,6 +9,11 @@ use vize_l0::{Lang, Span, cstr};
 use vize_l3::op::OpId;
 use vize_resident_graph::{TemplateGraphError, TemplateGraphObservation, TemplateQueries};
 
+mod recovery_sites {
+    pub(super) mod positions;
+}
+use recovery_sites::positions;
+
 #[global_allocator]
 static ALLOCATOR: CountingAllocator = CountingAllocator::mimalloc();
 
@@ -101,6 +106,15 @@ fn main() {
             .iter()
             .find(|block| block.kind() == &BlockKind::Template)
             .unwrap();
+        let TemplateGraphObservation::Incomplete(recovery) =
+            TemplateGraphObservation::read(block, Lang::Js).unwrap()
+        else {
+            panic!("expected retained recovery records");
+        };
+        positions::measure::<1>(&recovery, block.start(), width);
+        positions::measure::<4>(&recovery, block.start(), width);
+        positions::measure::<16>(&recovery, block.start(), width);
+        positions::measure::<64>(&recovery, block.start(), width);
         let collect = |observed| {
             let mut sites = Vec::new();
             source_sites(block, &text, observed, |span, spelling| {
