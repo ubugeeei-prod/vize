@@ -14,6 +14,7 @@ export interface RustToken {
   readonly kind: RustTokenKind;
   readonly text: string;
   readonly line: number;
+  /** One-based Unicode scalar column, as reported by Rust. */
   readonly column: number;
   /** UTF-16 offsets of the token in the source. */
   readonly start: number;
@@ -45,11 +46,11 @@ const isAsciiLetter = (char: string) =>
   (char >= "a" && char <= "z") || (char >= "A" && char <= "Z");
 const isIdentStart = (char: string) => {
   if (char.charCodeAt(0) < asciiEnd) return isAsciiLetter(char) || char === "_";
-  return /\p{L}/u.test(char);
+  return /\p{XID_Start}/u.test(char);
 };
 const isIdentContinue = (char: string) => {
   if (char.charCodeAt(0) < asciiEnd) return isAsciiLetter(char) || isDigit(char) || char === "_";
-  return /[\p{L}\p{N}]/u.test(char);
+  return /\p{XID_Continue}/u.test(char);
 };
 const isSpace = (char: string) =>
   char === " " ||
@@ -63,7 +64,7 @@ class RustLexer {
   readonly comments: RustComment[] = [];
   private index = 0;
   private line = 1;
-  private lineStart = 0;
+  private column = 1;
 
   private readonly source: string;
 
@@ -81,10 +82,17 @@ class RustLexer {
     return { tokens: this.tokens, comments: this.comments };
   }
 
+  private charAt(at: number): string {
+    const point = this.source.codePointAt(at);
+    return point !== undefined && point > lastBmpCodePoint
+      ? this.source.slice(at, at + 2)
+      : (this.source[at] ?? "");
+  }
+
   private step(): void {
-    const char = this.source[this.index];
-    const next = this.source[this.index + 1] ?? "";
-    if (isSpace(char)) this.advanceTo(this.index + 1);
+    const char = this.charAt(this.index);
+    const next = this.charAt(this.index + char.length);
+    if (isSpace(char)) this.advanceTo(this.index + char.length);
     else if (char === "/" && next === "/") this.lineComment();
     else if (char === "/" && next === "*") this.blockComment();
     else if (char === '"') this.push("literal", this.quotedEnd(this.index + 1, '"'));
@@ -94,7 +102,7 @@ class RustLexer {
     else if (isIdentStart(char)) this.push("ident", this.identEnd(this.index));
     // Unknown symbols are kept as punctuation so they can never hide.
     else
-      this.push("punct", this.index + 1, {
+      this.push("punct", this.index + char.length, {
         joint:
           punctuation.has(next) &&
           punctuation.has(char) &&
@@ -103,18 +111,20 @@ class RustLexer {
   }
 
   private advanceTo(end: number): void {
-    for (let at = this.index; at < end; at++)
-      if (this.source[at] === "\n") {
+    for (let at = this.index; at < end;) {
+      const char = this.charAt(at);
+      if (char === "\n") {
         this.line++;
-        this.lineStart = at + 1;
-      }
+        this.column = 1;
+      } else this.column++;
+      at += char.length;
+    }
     this.index = end;
   }
 
   private push(kind: RustTokenKind, end: number, extra?: { joint: boolean }): void {
-    const { index, line } = this;
+    const { index, line, column } = this;
     const text = this.source.slice(index, end);
-    const column = index - this.lineStart + 1;
     this.tokens.push({ kind, text, line, column, start: index, end, ...extra });
     this.advanceTo(end);
   }
@@ -165,7 +175,7 @@ class RustLexer {
     if (prefix.endsWith("r") && (source[after] === "#" || source[after] === '"')) {
       const end = this.rawEnd(after);
       if (end > 0) this.push("literal", end);
-      else if (prefix === "r" && isIdentStart(source[after + 1] ?? ""))
+      else if (prefix === "r" && isIdentStart(this.charAt(after + 1)))
         this.push("ident", this.identEnd(after + 1));
       return end > 0 || this.index !== index;
     }
@@ -178,9 +188,7 @@ class RustLexer {
 
   /** A character literal is `'x'` or an escape; anything else is a lifetime or label. */
   private quoteMark(next: string): boolean {
-    const point = this.source.codePointAt(this.index + 1);
-    const width = point !== undefined && point > lastBmpCodePoint ? 2 : 1;
-    if (next === "\\" || (next !== "" && this.source[this.index + 1 + width] === "'"))
+    if (next === "\\" || (next !== "" && this.source[this.index + 1 + next.length] === "'"))
       this.push("literal", this.quotedEnd(this.index + 1, "'"));
     else if (isIdentStart(next)) this.push("lifetime", this.identEnd(this.index + 1));
     else return false;
@@ -192,7 +200,7 @@ class RustLexer {
     let end = this.identEnd(index);
     if (/^0[xob]/iu.test(source.slice(index, index + 2))) return end;
     if (source[end] === "." && isDigit(source[end + 1] ?? "")) end = this.identEnd(end + 1);
-    else if (source[end] === "." && source[end + 1] !== "." && !isIdentStart(source[end + 1] ?? ""))
+    else if (source[end] === "." && source[end + 1] !== "." && !isIdentStart(this.charAt(end + 1)))
       end += 1;
     if (/[eE]$/u.test(source.slice(index, end)) && /^[+-]\d/u.test(source.slice(end, end + 2)))
       end = this.identEnd(end + 1);
@@ -221,12 +229,16 @@ class RustLexer {
   }
 
   private literalEnd(close: number): number {
-    return isIdentStart(this.source[close] ?? "") ? this.identEnd(close) : close;
+    return isIdentStart(this.charAt(close)) ? this.identEnd(close) : close;
   }
 
   private identEnd(start: number): number {
     let at = start;
-    while (at < this.source.length && isIdentContinue(this.source[at])) at++;
+    while (at < this.source.length) {
+      const char = this.charAt(at);
+      if (!isIdentContinue(char)) break;
+      at += char.length;
+    }
     return at;
   }
 }

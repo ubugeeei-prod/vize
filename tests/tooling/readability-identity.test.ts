@@ -7,6 +7,7 @@ import {
   normalizeLocations,
 } from "../../tools/commands/levels/ir-identity-locations.ts";
 import { compareRust } from "../../tools/commands/levels/rust-token-identity.ts";
+import { lexRust } from "../../tools/support/readability/rust-tokens.ts";
 
 const rustBase = [
   "/// Walks the tree.",
@@ -229,5 +230,21 @@ test("moving calls to local wrappers of position macros changes their result", (
       compareRust("a.rs", definitions + "// prose\n" + call, definitions + call).verdict,
       "position-sensitive",
     );
+  }
+});
+
+test("Rust column macros count Unicode scalars and token slices keep UTF-16 offsets", () => {
+  for (const name of ["here", "𐐀"]) {
+    const source = (comment: string) =>
+      `macro_rules! ${name} { () => { column!() } }\nconst C: u32 = /*${comment}*/ ${name}!();`;
+    const before = source("aa");
+    const after = source("😀");
+    assert.equal(compareRust("a.rs", before, after).verdict, "position-sensitive");
+    assert.equal(compareRust("a.rs", before, source("bb")).verdict, "identical");
+    const call = lexRust(after).tokens.find((token) => token.line === 2 && token.text === name);
+    assert.ok(call);
+    assert.equal(call.column, 22);
+    assert.equal(call.start, after.lastIndexOf(name));
+    assert.equal(after.slice(call.start, call.end), name);
   }
 });
