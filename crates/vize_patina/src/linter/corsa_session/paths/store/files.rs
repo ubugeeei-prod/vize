@@ -74,6 +74,9 @@ impl<'a> ProgramRootSpelling<'a> {
         // may be the link (`/var`, a Windows junction); that link is the
         // session spelling and must not be resolved.
         if let Ok(relative) = path.strip_prefix(self.project_root)
+            && !relative
+                .components()
+                .any(|part| matches!(part, std::path::Component::ParentDir))
             && spelling::ancestors_below_root_are_real(self.project_root, path)
         {
             return slash_path(&self.project_root.join(relative));
@@ -351,6 +354,26 @@ mod tests {
                 &vize_l0::path::canonicalize_non_verbatim(&outside.join("env.d.ts"),)
             )]
         );
+    }
+
+    /// `files` entries keep `..` until canonicalization. The lexical fast path
+    /// would emit `project/src/../env.d.ts`, a different module from
+    /// `project/env.d.ts`.
+    #[test]
+    fn program_roots_spell_parent_components_from_the_canonical_file() {
+        let temp = tempfile::tempdir().unwrap();
+        let project = temp.path().join("project");
+        write(
+            &project,
+            "tsconfig.json",
+            r#"{"files":["src/../env.d.ts"]}"#,
+        );
+        write(&project, "env.d.ts", "declare const build: string;\n");
+        // The `src` component must exist or the `..` lookup never reaches the file.
+        fs::create_dir(project.join("src")).unwrap();
+
+        let files = ambient_program_files(&project, &project.join("tsconfig.json"));
+        assert_eq!(files, vec![super::slash_path(&project.join("env.d.ts"))]);
     }
 
     #[test]
