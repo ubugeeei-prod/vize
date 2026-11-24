@@ -3,19 +3,19 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
+import {
+  validateAutomationSteps,
+  automationProgramReferences,
+} from "../../tools/support/ci/automation-commands.ts";
 
 import {
   githubHeadingAnchor,
   readWorkflowEntries,
   renderWorkflowCatalog,
-  workflowGroupId,
 } from "../../tools/commands/ci/workflow-catalog.ts";
 import { parseTapCounts } from "../../tools/support/github/docs-preview-readiness.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 import { plannedBusyRunner, plannedRunnerCondition } from "./support/planned-runner.ts";
-
-const embeddedProgram =
-  /(?:node|python\d*)\s+(?:--input-type=module\s+)?-\s+<<|(?:node|python\d*)\s+--input-type=module\s+<</g;
 
 const approvedRunnerLabels = new Set([
   "blacksmith-12vcpu-macos-15",
@@ -98,8 +98,7 @@ function workflowRunnerLabels(
 }
 
 test("the flat GitHub workflow directory has a generated navigation catalog", () => {
-  const directory = path.join(root, ".github/workflows");
-  const expected = renderWorkflowCatalog(readWorkflowEntries(directory));
+  const expected = renderWorkflowCatalog(readWorkflowEntries(root));
   assert.equal(readRepoFile(".github/workflows/README.md"), expected);
   const headingAnchors = new Set(
     [...expected.matchAll(/^## (.+)$/gmu)].map((match) => githubHeadingAnchor(match[1]!)),
@@ -109,47 +108,10 @@ test("the flat GitHub workflow directory has a generated navigation catalog", ()
   }
 });
 
-test("public unused script vars authenticates one release and runs the exact package under Bun", () => {
-  const workflow = parse(readRepoFile(".github/workflows/no-unused-script-vars-public.yml"));
-  assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), [
-    "version",
-    "candidate",
-    "source",
-    "producer_run",
-  ]);
-  const published = workflow.jobs.published;
-  assert.equal(
-    published.if,
-    "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'",
-  );
-  const setup = published.steps.find((step: { uses?: string }) =>
-    step.uses?.startsWith("oven-sh/setup-bun@"),
-  );
-  assert.ok(setup);
-  assert.match(setup.uses, /^oven-sh\/setup-bun@[0-9a-f]{40}$/u);
-  assert.equal(setup.with["bun-version"], "1.3.14");
-  const runner = published.steps.find((step: { name?: string }) =>
-    step.name?.includes("reported packet"),
-  );
-  assert.ok(runner);
-  assert.match(runner.run, /bun tools\/support\/release\/no_unused_script_vars_public\/run\.ts/u);
-
-  const authenticateStep = published.steps.find((step: { name?: string }) =>
-    step.name?.startsWith("Authenticate"),
-  );
-  assert.ok(authenticateStep);
-  assert.match(
-    authenticateStep.run,
-    /tools\/support\/release\/no_unused_script_vars_public\/authority\.ts/u,
-  );
-});
-
 test("non-release workflows use maximum Blacksmith runner classes", () => {
-  const workflows = path.join(root, ".github/workflows");
-  const violations = fs
-    .readdirSync(workflows)
-    .filter((file) => /\.ya?ml$/.test(file) && workflowGroupId(file) !== "02")
-    .flatMap((file) => {
+  const violations = readWorkflowEntries(root)
+    .filter(({ groupId }) => groupId !== "02")
+    .flatMap(({ file }) => {
       const source = readRepoFile(`.github/workflows/${file}`);
       return workflowRunnerLabels(source, hostedZeroComputeJobs[file], file)
         .filter((runner) => !approvedRunnerLabels.has(runner))
@@ -233,26 +195,40 @@ test("the extracted docs readiness driver preserves TAP totals", () => {
   );
 });
 
-test("embedded workflow programs only shrink", () => {
-  const debt = JSON.parse(readRepoFile("tools/config/workflow-inline-script-debt.json")) as Record<
-    string,
-    number
-  >;
-  const current: Record<string, number> = {};
+test("every action and workflow step invokes a named program", () => {
   for (const directory of [".github/workflows", ".github/actions"]) {
     const absolute = path.join(root, directory);
-    for (const entry of fs.readdirSync(absolute, { recursive: true })) {
-      if (typeof entry !== "string" || !/\.ya?ml$/.test(entry)) continue;
+    for (const entry of fs.readdirSync(absolute, { recursive: true, encoding: "utf8" })) {
+      if (!/\.ya?ml$/u.test(entry)) continue;
       const relative = path.join(directory, entry);
-      const count = [...readRepoFile(relative).matchAll(embeddedProgram)].length;
-      if (count > 0) current[relative] = count;
+      validateAutomationSteps(relative, parse(readRepoFile(relative)));
     }
   }
-  for (const [file, count] of Object.entries(current)) {
-    assert.ok(file in debt, `${file} introduced an embedded program; use a typed tools/ driver`);
-    assert.ok(
-      count <= debt[file]!,
-      `${file} increased embedded programs from ${debt[file]} to ${count}`,
-    );
+});
+
+test("every named automation program is available in the same checkout as its caller", () => {
+  function check(directory: string, source: string) {
+    for (const name of automationProgramReferences(source)) {
+      assert.match(name, /^(?:\.\.\/shared\/)?[\w.-]+$/u, name);
+      const program = path.join(directory, name);
+      assert.ok(fs.statSync(program, { throwIfNoEntry: false })?.isFile(), program);
+    }
+  }
+  const workflows = path.join(root, ".github/workflows");
+  for (const file of fs.readdirSync(workflows).filter((file) => file.endsWith(".yml"))) {
+    const directory = path.join(root, ".github/scripts/workflows", path.basename(file, ".yml"));
+    check(directory, fs.readFileSync(path.join(workflows, file), "utf8"));
+    if (fs.existsSync(directory))
+      for (const program of fs.readdirSync(directory))
+        check(directory, fs.readFileSync(path.join(directory, program), "utf8"));
+  }
+  const actions = path.join(root, ".github/actions");
+  for (const entry of fs.readdirSync(actions, { recursive: true, withFileTypes: true })) {
+    if (entry.name !== "action.yml") continue;
+    const directory = path.join(entry.parentPath, "scripts");
+    check(directory, fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8"));
+    if (fs.existsSync(directory))
+      for (const program of fs.readdirSync(directory))
+        check(directory, fs.readFileSync(path.join(directory, program), "utf8"));
   }
 });

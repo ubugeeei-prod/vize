@@ -33,9 +33,11 @@ const node = fs.realpathSync(process.argv[3]);
 const probe = spawnSync(
   node,
   [
-    "--input-type=module",
-    "--eval",
-    "console.log(JSON.stringify({version:process.version,execPath:process.execPath,platform:process.platform,arch:process.arch}))",
+    fileURLToPath(new URL("../../node-runtime-identity.cjs", import.meta.url)),
+    "version",
+    "execPath",
+    "platform",
+    "arch",
   ],
   { encoding: "utf8" },
 );

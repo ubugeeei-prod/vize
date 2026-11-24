@@ -3,6 +3,7 @@
 use std::ops::Range;
 
 use oxc_allocator::Allocator;
+use oxc_ast::AstKind;
 use oxc_ast::ast::{ImportDeclarationSpecifier, ImportOrExportKind, Statement};
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
@@ -24,6 +25,9 @@ pub(super) struct SetupImportPlan {
     attrs_type: Option<String>,
     /// `<script setup>` binds `$slots` itself, which the template then reads.
     authored_dollar_slots: bool,
+    /// Script consumers can read slots which have no template outlet.
+    untyped_script_slots: bool,
+    inferred_slots: bool,
 }
 
 struct ImportSpec {
@@ -40,9 +44,9 @@ impl SetupImportPlan {
         script: Option<&str>,
         summary: &vize_croquis::Croquis,
         template: Option<&vize_relief::RootNode<'_>>,
-        inferred_slots: bool,
         checks: crate::virtual_ts::types::VirtualTsCheckOptions,
     ) -> Self {
+        let inferred_slots = super::component_public_types::infers_slots(summary, template, checks);
         let slots_type = checks.infer_template_dollar_slots.then(|| {
             super::component_public_types::template_slots_type(summary, inferred_slots, script)
         });
@@ -64,6 +68,7 @@ impl SetupImportPlan {
             slots_type,
             attrs_type,
             authored_dollar_slots,
+            inferred_slots,
             ..Self::default()
         };
         let Some(script) = script else {
@@ -71,8 +76,13 @@ impl SetupImportPlan {
         };
         let css = script.contains("useCssModule");
         let slots = plan.slots_type.is_some() && script.contains("useSlots");
+        // `inferTemplateDollarSlots` retypes `useSlots()` to the exact template map, so a script
+        // consumer cannot read an undeclared slot and the public map stays closed.
+        let public_slots = plan.slots_type.is_none()
+            && summary.macros.define_slots().is_none()
+            && script.contains("useSlots");
         let attrs = plan.attrs_type.is_some() && script.contains("useAttrs");
-        if !css && !slots && !attrs {
+        if !css && !slots && !attrs && !public_slots {
             return plan;
         }
         let allocator = Allocator::default();
@@ -80,7 +90,9 @@ impl SetupImportPlan {
         if parsed.panicked {
             return plan;
         }
-        let built = SemanticBuilder::new().build(&parsed.program);
+        let built = SemanticBuilder::new()
+            .with_build_nodes(public_slots)
+            .build(&parsed.program);
         for statement in &parsed.program.body {
             let Statement::ImportDeclaration(import) = statement else {
                 continue;
@@ -97,11 +109,11 @@ impl SetupImportPlan {
                         (&specifier.local, false, true, false, false)
                     }
                     ImportDeclarationSpecifier::ImportSpecifier(specifier)
-                        if slots
+                        if (slots || public_slots)
                             && specifier.imported.name() == "useSlots"
                             && specifier.import_kind != ImportOrExportKind::Type =>
                     {
-                        (&specifier.local, false, false, true, false)
+                        (&specifier.local, false, false, slots, false)
                     }
                     ImportDeclarationSpecifier::ImportSpecifier(specifier)
                         if attrs
@@ -120,6 +132,24 @@ impl SetupImportPlan {
                 };
                 // An unused import must retain its authored unused diagnostic.
                 if built.semantic.symbol_references(symbol).next().is_none() {
+                    continue;
+                }
+                if public_slots && (namespace || (!css && !attrs)) {
+                    plan.untyped_script_slots |= built.semantic.symbol_references(symbol).any(|reference| {
+                            if !reference.is_read() || reference.flags().is_value_as_type() {
+                                return false;
+                            }
+                            if !namespace {
+                                return true;
+                            }
+                            match built.semantic.nodes().parent_kind(reference.node_id()) {
+                                AstKind::StaticMemberExpression(member) => member.property.name == "useSlots",
+                                AstKind::ComputedMemberExpression(member) => matches!(&member.expression, oxc_ast::ast::Expression::StringLiteral(name) if name.value == "useSlots"),
+                                _ => false,
+                            }
+                        });
+                }
+                if !css && !slots && !attrs {
                     continue;
                 }
                 let span = local.span;
@@ -154,6 +184,14 @@ impl SetupImportPlan {
 
     pub(super) fn has_own_slots(&self) -> bool {
         self.slots_type.is_some()
+    }
+
+    pub(super) fn has_untyped_script_slots(&self) -> bool {
+        self.untyped_script_slots
+    }
+
+    pub(super) fn infers_slots(&self) -> bool {
+        self.inferred_slots
     }
 
     pub(super) fn attrs_type(&self) -> Option<&str> {
@@ -311,3 +349,6 @@ fn emit_css_module_type(ts: &mut crate::virtual_ts::TextBuf, options: &VirtualTs
         ;
     }
 }
+
+#[cfg(test)]
+mod tests;

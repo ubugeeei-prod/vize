@@ -21,7 +21,8 @@
   },
   "files": [
     "dist",
-    "registry"
+    "registry",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "sideEffects": false,
@@ -973,11 +974,11 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack && vp exec node scripts/build-source-registry.ts",
+    "build": "node ./scripts/package-tasks.cjs build",
     "dev": "vp pack --watch",
-    "pretest": "vp pack && pnpm check:size",
+    "pretest": "node ./scripts/package-tasks.cjs pretest",
     "test": "vp exec node --test 'src/**/*.test.ts' 'scripts/**/*.test.ts'",
-    "check": "vp check src scripts vite.config.ts && pnpm check:types",
+    "check": "node ./scripts/package-tasks.cjs check",
     "check:fix": "vp check --fix src scripts vite.config.ts",
     "build:registry": "vp exec node scripts/build-source-registry.ts",
     "check:size": "node scripts/check-size.ts",

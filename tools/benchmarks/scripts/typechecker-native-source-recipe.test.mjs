@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import {
+  sourceFiles,
   declaredSourceRecipe,
   selectSourceRecipe,
   verifyVersionCut,
@@ -18,9 +19,10 @@ import {
   parse,
   hash,
   frozen,
+  workingSource,
+  namedRequiredRun,
   currentBytes,
   currentOriginalRun,
-  currentRequiredRun,
   jsxRequiredRun,
   bomRequiredRun,
   git,
@@ -77,9 +79,10 @@ await test("ordinary source retains the complete authored thirteen-target succes
       "native-phases"
     ].steps.find((s) => s.name === STEP).run;
     const run = parse(currentBytes).jobs["native-phases"].steps.find((s) => s.name === STEP).run;
-    const inline = declaredSourceRecipe(run).recipe.replace(/^  /gmu, "");
-    assert.equal(inline, currentRequiredRun);
-    assert.equal([...inline.split("\n")[3].matchAll(/ ([a-z0-9_]+)::(?= )/gu)].length, 13);
+    const dispatcher = workingSource(sourceFiles.driver);
+    const inline = declaredSourceRecipe(run, workingSource).recipe;
+    assert.equal(inline, namedRequiredRun);
+    assert.equal([...inline.split("\n")[4].matchAll(/ ([a-z0-9_]+)::(?= )/gu)].length, 13);
     assert.equal([...jsxRequiredRun.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 12);
     assert.equal([...bomRequiredRun.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 10);
     assert.equal(
@@ -89,11 +92,18 @@ await test("ordinary source retains the complete authored thirteen-target succes
     assert.ok(inline.includes(" lsp_bare_script_symbols_cli:: "));
     assert.equal([...inline.matchAll(/ check_jsx_slot_parameter_types_cli:: /gu)].length, 1);
     assert.equal([...inline.matchAll(/ check_canon_selected_alias_cli:: /gu)].length, 1);
-    assert.ok(run.includes('bash --noprofile --norc -e -o pipefail "$recipe"'));
-    assert.ok(run.includes("GITHUB_WORKFLOW_SHA"));
-    assert.equal([...run.matchAll(/ check_tsconfig_types_extends_cli:: /gu)].length, 1);
+    assert.ok(dispatcher.includes('bash --noprofile --norc -e -o pipefail "$recipe"'));
+    assert.ok(dispatcher.includes("GITHUB_WORKFLOW_SHA"));
+    assert.equal([...inline.matchAll(/ check_tsconfig_types_extends_cli:: /gu)].length, 1);
     for (const line of sourceRun.split("\n").slice(4).filter(Boolean))
-      assert.ok(run.includes(line), line);
+      assert.ok(
+        inline.includes(line) ||
+          (line.startsWith("export VIZE_TEST_TSGO_PATH=") &&
+            inline.includes(
+              `export VIZE_TEST_TSGO_PATH="$(node "$VIZE_NATIVE_RECIPE_FILES/resolve-native-binary.ts")"`,
+            )),
+        line,
+      );
   });
 });
 
@@ -143,7 +153,7 @@ await test("outside-checkout helper bytes must match immutable workflow SHA befo
     put(f.root, ".gitignore", "node_modules/\n");
     const source = commit(f.root);
     symlinkSync(
-      fileURLToPath(new URL("../../../node_modules", import.meta.url)),
+      fileURLToPath(new URL("../../../tests/node_modules", import.meta.url)),
       join(f.root, "node_modules"),
     );
     const temp = mkdtempSync(join(os.tmpdir(), "source-recipe-bootstrap-"));
@@ -324,17 +334,18 @@ await test("exact rewrite preserves benchmark, foreign dependency and non-versio
   );
 });
 
-await test("future version-only sources execute their complete inline commands once with authenticated source bytes", () => {
+await test("future version-only sources execute their named commands once with authenticated source bytes", () => {
   fixture(
     (f) => {
       const selected = selectSourceRecipe(f);
       const step = parse(currentBytes).jobs["native-phases"].steps.find((s) => s.name === STEP);
-      const declared = declaredSourceRecipe(step.run);
-      assert.equal(selected.recipeKind, "source-inline");
+      const declared = declaredSourceRecipe(step.run, workingSource);
+      assert.equal(selected.recipeKind, "source-file");
       assert.equal(selected.sourceStepSha256, hash(step.run));
       assert.equal(selected.recipeSha256, hash(declared.recipe));
       assert.equal(selected.recipe, declared.recipe);
-      assert.equal(selected.recipe.replace(/^  /gmu, ""), currentRequiredRun);
+      assert.equal(selected.recipe, namedRequiredRun);
+      assert.equal(selected.resolverSha256, hash(workingSource(sourceFiles.resolver)));
       assert.ok(!selected.recipe.includes("typechecker-native-source-recipe.mjs"));
       const syntax = spawnSync("bash", ["-n"], { input: selected.recipe, encoding: "utf8" });
       assert.equal(syntax.status, 0, syntax.stderr);
@@ -346,19 +357,24 @@ await test("future version-only sources execute their complete inline commands o
         step.env.VIZE_TSCONFIG_TYPES_CAPTURE,
       );
       for (const altered of [
-        step.run.replace("VIZE_NATIVE_SOURCE_INLINE_BEGIN", "VIZE_NATIVE_SOURCE_INLINE_END"),
-        step.run.replace(
-          "  # VIZE_NATIVE_SOURCE_INLINE_BEGIN",
-          "  # VIZE_NATIVE_SOURCE_INLINE_BEGIN\n  # VIZE_NATIVE_SOURCE_INLINE_BEGIN",
-        ),
-        step.run.replace(
-          "  # VIZE_NATIVE_SOURCE_INLINE_END",
-          "  # VIZE_NATIVE_SOURCE_INLINE_END\n  # VIZE_NATIVE_SOURCE_INLINE_END",
-        ),
-        step.run.replace('recipe="$(node', 'recipe="$(forged'),
-        step.run.replace("\nfi\n", "\nfi\necho forged\n"),
+        step.run.replace("/qualify-", "/../qualify-"),
+        step.run.replace("VIZE_CI_FILES", "GITHUB_WORKSPACE"),
+        step.run + "\necho forged",
       ])
-        assert.throws(() => declaredSourceRecipe(altered));
+        assert.throws(() => declaredSourceRecipe(altered, workingSource));
+      for (const file of Object.values(sourceFiles))
+        assert.throws(() =>
+          declaredSourceRecipe(step.run, (path) => {
+            if (path === file) throw new Error("missing " + path);
+            return workingSource(path);
+          }),
+        );
+      assert.throws(() =>
+        declaredSourceRecipe(
+          step.run,
+          (path) => workingSource(path) + (path === sourceFiles.driver ? "echo forged\n" : ""),
+        ),
+      );
       assert.throws(() =>
         selectSourceRecipe({ ...f, env: { ...f.env, MAIN_SOURCE_SHA: f.source } }),
       );
@@ -369,7 +385,7 @@ await test("future version-only sources execute their complete inline commands o
         (bytes) => bytes.replace(" check_tsconfig_ignore_cli::", ""),
       ]) {
         git(f.root, "checkout", "--detach", f.source);
-        put(f.root, WORKFLOW, change(currentBytes));
+        put(f.root, sourceFiles.recipe, change(workingSource(sourceFiles.recipe)));
         assert.throws(() => verifyVersionCut(f.root, f.cut, commit(f.root), "0.435.1", "0.436.0"));
       }
     },

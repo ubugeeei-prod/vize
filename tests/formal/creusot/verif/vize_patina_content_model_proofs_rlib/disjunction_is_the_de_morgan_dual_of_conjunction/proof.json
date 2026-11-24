@@ -1,0 +1,14 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_and": { "prover": "alt-ergo", "time": 0.004 },
+      "vc_disjunction_is_the_de_morgan_dual_of_conjunction": {
+        "prover": "alt-ergo",
+        "time": 0.008
+      },
+      "vc_not'": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_or": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}

@@ -36,42 +36,48 @@ whole. Creusot states each law for all values instead of enumerating them.
 
 ## L3 reference scheduling contract (`tests/davinci_test_support/src/l3_reference`)
 
-Kani file: `l3_reference/schedule_proofs.rs`. Bound (from the
+Kani file: `l3_reference/schedule_proofs.rs`, deleted. Bound it had (from the
 [L3 reference record](./2026-11-03-10825-l3-reference-laws-kani.md)): up to 3
-ops with ids below 3, 2 region slots, 1 effect slot and 1 edge.
+ops with ids below 3, 2 region slots, 1 effect slot and 1 edge. The Creusot
+proofs (package `tests/formal/creusot/reference`, root
+`l3_reference/creusot.rs`) hold for any number of ops, regions, effects and
+edges, and any ids. Contracts are on the shipped functions of `program.rs`,
+`schedule.rs` and `trace.rs`; lemmas are in `creusot.rs`.
 
-| Kani harness                                    | Law                                                                 | Kani bound          | Creusot replacement | Status |
-| ----------------------------------------------- | ------------------------------------------------------------------- | ------------------- | ------------------- | ------ |
-| `index_of_is_the_position_of_a_distinct_id`     | `index_of` returns the position of a distinct id                    | 4 ids               | owed                | owed   |
-| `no_duplicate_code_means_fresh_distinct_ids`    | no L3V001 means the ids are distinct and fresh                      | 2 seen, 3 ids       | owed                | owed   |
-| `the_machine_appends_each_op_in_list_order`     | `run_ops` appends one event per op, in order                        | 2 ops after 1 event | owed                | owed   |
-| `trace_positions_are_op_positions`              | trace position `i` is op `i`                                        | 3 ops               | owed                | owed   |
-| `an_accepted_scheduled_edge_points_forward`     | a scheduled edge without codes resolves and points forward          | schedule graphs     | owed                | owed   |
-| `acceptance_is_an_empty_verdict`                | `accepts` is exactly an empty `order_codes`                         | 2 ops, 1 edge       | owed                | owed   |
-| `acceptance_means_distinct_ops_and_clean_edges` | acceptance means distinct op ids and clean edges                    | schedule graphs     | owed                | owed   |
-| `accepted_schedule_orders_edges`                | acceptance orders every edge in the trace of both backends          | schedule graphs     | owed                | owed   |
-| `accepted_edges_stay_in_scope`                  | accepted effect-scoped edges stay in the effect's region            | schedule graphs     | owed                | owed   |
-| `accepted_regrouping_preserves_edges`           | an accepted regrouping is a permutation that keeps every edge order | 3 ops               | owed                | owed   |
+| Kani harness                                    | Law                                                                 | Kani bound          | Creusot replacement                                                                                     | Status |
+| ----------------------------------------------- | ------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------- | ------ |
+| `index_of_is_the_position_of_a_distinct_id`     | `index_of` returns the position of a distinct id                    | 4 ids               | contract of `program::index_of` (first position; for distinct ids, the id's position)                   | proved |
+| `no_duplicate_code_means_fresh_distinct_ids`    | no L3V001 means the ids are distinct and fresh                      | 2 seen, 3 ids       | contract of `schedule::duplicates` (zero exactly for distinct, fresh ids)                               | proved |
+| `the_machine_appends_each_op_in_list_order`     | `run_ops` appends one event per op, in order                        | 2 ops after 1 event | contracts of `trace::run_ops` and `trace::interpret` (`observe`)                                        | proved |
+| `trace_positions_are_op_positions`              | trace position `i` is op `i`                                        | 3 ops               | contract of `trace::run`                                                                                | proved |
+| `an_accepted_scheduled_edge_points_forward`     | a scheduled edge without codes resolves and points forward          | schedule graphs     | `reference::an_accepted_scheduled_edge_points_forward` over the contract of `schedule::edge_codes`      | proved |
+| `acceptance_is_an_empty_verdict`                | `accepts` is exactly an empty `order_codes`                         | 2 ops, 1 edge       | contracts of `schedule::accepts` and `schedule::order_codes`: both are `accepted`                       | proved |
+| `acceptance_means_distinct_ops_and_clean_edges` | acceptance means distinct op ids and clean edges                    | schedule graphs     | contract of `schedule::accepts`: `accepted` is distinct op ids and every edge `clean` (no `edge_codes`) | proved |
+| `accepted_schedule_orders_edges`                | acceptance orders every edge in the trace of both backends          | schedule graphs     | `reference::accepted_schedule_orders_edges` over the contracts of `trace::run` and `schedule::precedes` | proved |
+| `accepted_edges_stay_in_scope`                  | accepted effect-scoped edges stay in the effect's region            | schedule graphs     | `reference::accepted_edges_stay_in_scope` over the contract of `schedule::op_inside`                    | proved |
+| `accepted_regrouping_preserves_edges`           | an accepted regrouping is a permutation that keeps every edge order | 3 ops               | `reference::accepted_regrouping_preserves_edges`, any permutation of any number of ops                  | proved |
 
 ## L3 reference C-23 checker
 
-Kani file: `l3_reference/checker_proofs.rs`. Bound: 3 ops, 2 regions, 1 edge,
-1 effect, ids below 3. The three invariants that nest a parent walk run once
-per table size (`exact_at_sizes!`: 12 `l3v006_*`, 24 `l3v007_*` and 48
-`l3v004_*` harnesses).
+Kani file: `l3_reference/checker_proofs.rs`, deleted. Bound it had: 3 ops, 2
+regions, 1 edge, 1 effect, ids below 3, with the three invariants that nest a
+parent walk run once per table size (`exact_at_sizes!`: 12 `l3v006_*`, 24
+`l3v007_*` and 48 `l3v004_*` harnesses). Each checker function in
+`checker.rs` now has the declarative invariant (Lean `Impeto.Checker`) as its
+contract, for programs of any size.
 
-| Kani harness                                       | Law                                                       | Kani bound          | Creusot replacement | Status |
-| -------------------------------------------------- | --------------------------------------------------------- | ------------------- | ------------------- | ------ |
-| `the_checker_reports_codes_in_validator_order`     | `checks` lists the codes in validator order               | empty program       | owed                | owed   |
-| `l3v001_unique_ids_is_exact`                       | `unique_ids` equals the declarative L3V001                | checker graphs      | owed                | owed   |
-| `l3v002_rooted_is_exact`                           | `rooted` equals the declarative L3V002                    | checker graphs      | owed                | owed   |
-| `l3v005_resolved_is_exact`                         | `resolved` equals the declarative L3V005                  | checker graphs      | owed                | owed   |
-| `l3v003_ops_resolved_is_exact`                     | `ops_resolved` equals the declarative L3V003              | checker graphs      | owed                | owed   |
-| `l3v008_ordered_is_exact`                          | `ordered` equals the declarative L3V008                   | checker graphs      | owed                | owed   |
-| `l3v006_nested_at_*` (12)                          | `nested` equals the declarative L3V006                    | each size ≤ 3/2     | owed                | owed   |
-| `l3v007_scoped_at_*` (24)                          | `scoped` equals the declarative L3V007                    | each size ≤ 3/2/1   | owed                | owed   |
-| `l3v004_edges_resolved_at_*` (48)                  | `edges_resolved` equals the declarative L3V004            | each size ≤ 3/2/1/1 | owed                | owed   |
-| `a_well_formed_schedule_points_every_edge_forward` | a well-formed scheduled program points every edge forward | checker graphs      | owed                | owed   |
+| Kani harness                                       | Law                                                       | Kani bound          | Creusot replacement                                                                     | Status |
+| -------------------------------------------------- | --------------------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------- | ------ |
+| `the_checker_reports_codes_in_validator_order`     | `checks` lists the codes in validator order               | empty program       | contract of `checker::checks`; `checker::violations` is empty exactly for `well_formed` | proved |
+| `l3v001_unique_ids_is_exact`                       | `unique_ids` equals the declarative L3V001                | checker graphs      | contract of `checker::unique_ids` (`ids_unique`)                                        | proved |
+| `l3v002_rooted_is_exact`                           | `rooted` equals the declarative L3V002                    | checker graphs      | contract of `checker::rooted` (`has_root`)                                              | proved |
+| `l3v005_resolved_is_exact`                         | `resolved` equals the declarative L3V005                  | checker graphs      | contract of `checker::resolved` (`parents_resolve`)                                     | proved |
+| `l3v003_ops_resolved_is_exact`                     | `ops_resolved` equals the declarative L3V003              | checker graphs      | contract of `checker::ops_resolved` (`ops_live`)                                        | proved |
+| `l3v008_ordered_is_exact`                          | `ordered` equals the declarative L3V008                   | checker graphs      | contract of `checker::ordered` (`edges_forward`)                                        | proved |
+| `l3v006_nested_at_*` (12)                          | `nested` equals the declarative L3V006                    | each size ≤ 3/2     | contract of `checker::nested` (`spans_nest`, with `chain_ends` for `reaches_top`)       | proved |
+| `l3v007_scoped_at_*` (24)                          | `scoped` equals the declarative L3V007                    | each size ≤ 3/2/1   | contract of `checker::scoped` (`effects_scoped`: `effects_named` and `effects_placed`)  | proved |
+| `l3v004_edges_resolved_at_*` (48)                  | `edges_resolved` equals the declarative L3V004            | each size ≤ 3/2/1/1 | contract of `checker::edges_resolved` (`edges_stay`)                                    | proved |
+| `a_well_formed_schedule_points_every_edge_forward` | a well-formed scheduled program points every edge forward | checker graphs      | `reference::a_well_formed_schedule_points_every_edge_forward` over `checker::forward`   | proved |
 
 ## L3 reference incremental update machine
 
@@ -98,18 +104,38 @@ Creusot accepts only with a trusted declaration, and the proofs admit none.
 ## HTML content-model kernel (`crates/vize_patina/src/html_content_model`)
 
 Kani file: `html_content_model/kani.rs`. Bound: up to 4 known frames, 2
-revealed ancestors, 3 namespaces and 4 dispatches.
+revealed ancestors, 3 namespaces and 4 dispatches. Creusot root:
+`html_content_model/creusot.rs`. `Tri::not`, `and`, `or` and `join` carry
+their soundness and Kleene truth-table contracts in `tri.rs`; the verdict-rule
+proof folds `join` over any number of dispatches.
 
-| Kani harness                                               | Law                                                                 | Kani bound           | Creusot replacement | Status |
-| ---------------------------------------------------------- | ------------------------------------------------------------------- | -------------------- | ------------------- | ------ |
-| `kleene_connectives_are_sound`                             | `not`, `and`, `or` are sound for every admitted value               | whole domain         | owed                | owed   |
-| `disjunction_is_the_de_morgan_dual_of_conjunction`         | `or` is the De Morgan dual of `and`                                 | whole domain         | owed                | owed   |
-| `a_definite_fact_admits_exactly_one_value`                 | a definite fact admits one value                                    | whole domain         | owed                | owed   |
-| `one_frame_decides_soundly_under_each_possible_namespace`  | one frame decides soundly under each namespace                      | 3 namespaces         | owed                | owed   |
-| `a_frame_without_a_namespace_passes`                       | a frame without a namespace passes                                  | 3 namespaces         | owed                | owed   |
-| `the_walk_is_sound_for_every_stack_the_chain_describes`    | the walk's verdict admits the parser's scan of every concrete stack | 4 frames, 2 revealed | owed                | owed   |
-| `a_definite_truncated_verdict_survives_revealed_ancestors` | a definite truncated verdict survives revealed ancestors            | 4 frames, 2 revealed | owed                | owed   |
-| `a_proven_violation_holds_for_every_dispatch`              | a proven violation holds for every dispatch                         | 4 dispatches         | owed                | owed   |
+| Kani harness                                               | Law                                                                 | Kani bound           | Creusot replacement                                                                                     | Status |
+| ---------------------------------------------------------- | ------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------- | ------ |
+| `kleene_connectives_are_sound`                             | `not`, `and`, `or` are sound for every admitted value               | whole domain         | `content_model::kleene_connectives_are_sound` over `Tri::not`, `and`, `or`                              | proved |
+| `disjunction_is_the_de_morgan_dual_of_conjunction`         | `or` is the De Morgan dual of `and`                                 | whole domain         | `content_model::disjunction_is_the_de_morgan_dual_of_conjunction` over `Tri::not`, `and`, `or`          | proved |
+| `a_definite_fact_admits_exactly_one_value`                 | a definite fact admits one value                                    | whole domain         | `content_model::a_definite_fact_admits_exactly_one_value` over `Tri::admits`                            | proved |
+| `one_frame_decides_soundly_under_each_possible_namespace`  | one frame decides soundly under each namespace                      | 3 namespaces         | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
+| `a_frame_without_a_namespace_passes`                       | a frame without a namespace passes                                  | 3 namespaces         | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
+| `the_walk_is_sound_for_every_stack_the_chain_describes`    | the walk's verdict admits the parser's scan of every concrete stack | 4 frames, 2 revealed | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
+| `a_definite_truncated_verdict_survives_revealed_ancestors` | a definite truncated verdict survives revealed ancestors            | 4 frames, 2 revealed | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
+| `a_proven_violation_holds_for_every_dispatch`              | a proven violation holds for every dispatch                         | 4 dispatches         | `content_model::a_proven_violation_holds_for_every_dispatch` over `Tri::join`, any number of dispatches | proved |
+
+The four walk laws stay on their Kani harnesses. `walk.rs` uses two
+standard-library calls Creusot 0.14 has no specification for:
+`Iterator::any` in `classify` (it folds with `try_fold`, which has none
+either) and `frames.iter().enumerate().rev()` in `walk` (`Enumerate` has no
+`DoubleEndedIteratorSpec`). The `walk` loop can be written as
+`while let Some(frame) = rest.next_back()` with `rest.len()` as the index,
+and its release IR is then equal to the original up to the names of SSA values
+and blocks. Replacing `any` with a `for` loop over `next` changes the
+optimized code: in the release build of `vize_patina` (opt-level 3, one
+codegen unit) LLVM then outlines `Map::next` instead of the role closures of
+`Chain::in_scope` and `Chain::list_item_loop`, and the bodies of
+`Chain::in_scope`, `list_item_loop`, `anchor_after_marker` and `has_open`
+differ. The kernel is product code, so the rewrite is not zero-cost, and a
+specification of `any` written here would be a trusted declaration, which
+the proofs do not admit. The rows stay `owed` until one of the two is
+accepted.
 
 ## Laws no harness states yet
 
@@ -117,16 +143,55 @@ These are added where tractable, after the ports: lossless L1 render equals
 source, span monotonicity, and lowering totality. Each gets a row here when
 its proof or oracle lands.
 
+The coordinate kernels below are verified by Kani in `davinci-kani.yml`
+(`source-coordinates`), each against a spec written from the format's
+definition, not from the kernel. Where the bound is "whole domain", the
+harness has no loop over its input, or a loop Kani unwinds completely, so
+Kani checks every value of the domain and the check is exhaustive. Creusot
+does not reach these kernels without changing them: the UTF-16 and
+line-terminator kernels go through `str` APIs without a specification
+(`as_bytes`, `char_indices`, `is_char_boundary`), `span.rs` and
+`source_range.rs` derive `serde` and `Hash` and format through
+`fmt::Write`, and the VLQ writer appends to `CompactString`.
+
+The two `owed` rows are whole-string lookups. Kani harnesses for them
+(`LineIndex` over three to five bytes; the emitter's line table, lookup and
+segment resolution over three to six bytes) exceeded 8 GB in CBMC and are not
+kept: Kani is used here only for small models. They need a Creusot proof over
+a byte-slice kernel, or a Kani model of one line step at a time.
+`tests/tooling/formal-harness-coverage.test.ts` holds that a workflow runs
+every Kani harness in the repository.
+
+| Kani harness                                                        | Law                                                                                                                                                                      | Kani bound                                       | Creusot replacement | Status |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ | ------------------- | ------ |
+| `vlq_digits_decode_to_the_encoded_value`                            | the VLQ writer appends base64 digits only, sets the continuation bit on all but the last, is minimal and decodes back                                                    | whole domain (`i64` except `MIN`)                | none                | kani   |
+| `line_break_len_is_the_width_of_the_terminator_at_the_offset`       | the emitter's line step is 2 at CR LF, 1 at LF or a lone CR, 3 at LS or PS, and 0 anywhere else, including inside a scalar or past the end                               | 4 bytes, whole `usize` offset                    | none                | kani   |
+| `utf16_offset_is_the_boundary_with_that_many_units`                 | `utf16_offset` returns exactly the scalar boundary with that many UTF-16 units, and `None` for any other column                                                          | 4 bytes, whole `u32` column                      | none                | kani   |
+| `utf16_len_counts_the_units_of_every_scalar`                        | `utf16_len` counts two UTF-16 units for a four-byte scalar and one for any other                                                                                         | 4 bytes                                          | none                | kani   |
+| `utf16_prefix_counts_the_units_of_whole_scalars`                    | `prefix_len` counts the units of every scalar that starts before the offset, a mid-scalar offset counting that scalar whole, so it never panics and is monotone          | 4 bytes, whole `usize` offset                    | none                | kani   |
+| `span_length_counts_the_offsets_it_covers`                          | `Span::len` is the number of offsets in `[start, end)`, zero exactly when the span is empty                                                                              | whole domain                                     | none                | kani   |
+| `span_block_relative_form_ignores_where_the_block_starts`           | the block-relative span never grows, inverts the shift inside the block and is invariant under moving span and block                                                     | whole domain                                     | none                | kani   |
+| `source_range_union_is_the_least_enclosing_range`                   | `SourceRange::union` is commutative, associative, idempotent and the least range enclosing both                                                                          | whole domain                                     | none                | kani   |
+| `source_range_intersection_is_the_offsets_in_both`                  | `intersection` holds exactly the offsets in both, is `Some` exactly when they `intersects`, and is a semilattice meet                                                    | whole domain                                     | none                | kani   |
+| `source_range_shifts_saturate_and_invert`                           | `offset` moves each endpoint by the shift clamped into `u32`; without saturation the opposite shift restores the range; `extend` encloses the range                      | whole domain                                     | none                | kani   |
+| `source_mapping_carries_offsets_between_its_ranges`                 | a mapping carries offsets by their distance, clamped into the other range; an equal-length mapping is a bijection                                                        | whole domain                                     | none                | kani   |
+| `source_map_to_generated_uses_the_mapping_that_contains_the_offset` | `SourceMap::to_generated` translates through the mapping whose source range contains the offset, in any insertion order                                                  | 3 disjoint nonempty mappings, whole `u32` values | none                | kani   |
+| none                                                                | `LineIndex::line_col` is the LF count before the offset and the UTF-16 units from that line's start; `line_col_to_offset` is its inverse on scalar boundaries            | —                                                | owed                | owed   |
+| none                                                                | the emitter's line table starts a line after every terminator, and `resolve_in_table` and `resolve_positions` give each segment the line and UTF-16 column of its offset | —                                                | owed                | owed   |
+
 ## Kernel items outside the proof
 
 Compiled out of the proof crate with `cfg(not(creusot))` because they are not
 part of a law and Creusot cannot verify them. Each is covered by the named
 Rust test.
 
-| Item                                                            | Why it is outside                      | Rust oracle                                                               |
-| --------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------- |
-| `ReactivityClass::as_str`, `ReactivityClass::from_str`          | byte-string matching (`str::as_bytes`) | `vize_l3` `tests/lattice.rs` `reactivity_folio_roundtrips_canonical_text` |
-| `ReactivityClass`: derived `Debug`, `PartialOrd`, `Ord`, `Hash` | discriminant intrinsics                | `vize_l3` `tests/lattice.rs` `the_derived_order_is_the_join_order`        |
+| Item                                                                     | Why it is outside                          | Rust oracle                                                                                                                                                                                 |
+| ------------------------------------------------------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ReactivityClass::as_str`, `ReactivityClass::from_str`                   | byte-string matching (`str::as_bytes`)     | `vize_l3` `tests/lattice.rs` `reactivity_folio_roundtrips_canonical_text`                                                                                                                   |
+| `ReactivityClass`: derived `Debug`, `PartialOrd`, `Ord`, `Hash`          | discriminant intrinsics                    | `vize_l3` `tests/lattice.rs` `the_derived_order_is_the_join_order`                                                                                                                          |
+| `Tri`: derived `Debug`, `Hash`                                           | discriminant intrinsics                    | `vize_patina` `html_content_model::tri::tests::truth_tables_are_kleene`                                                                                                                     |
+| L3 reference `Phase::parse`, `OpKind::parse`, `EdgeKind::parse`          | string matching (`str` equality)           | `vize_l2_to_l3` `tests/l3_reference_fixture` `committed_graphs_pass_the_independent_checker`, `schedule_contract_codes_match_the_independent_reference` (every committed graph page parses) |
+| L3 reference program and trace types: derived `Debug`, `PartialEq`, `Eq` | discriminant intrinsics; no law reads them | the same fixture tests compare traces and programs with them                                                                                                                                |
 
 ## Trusted items
 

@@ -1,0 +1,140 @@
+import "../../Actions.pkl" as ci
+
+`if` = "github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && !inputs.router-experimental-only && (inputs.official-css-options-only || inputs.published-defaults-only)"
+`runs-on` = ci.linux
+`timeout-minutes` = 15
+env {
+
+  EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}"
+}
+steps = new Listing {
+  ...ci.stageWorkflowScripts("content-mapper-conformance")
+  new Dynamic {
+    name = "Require the explicit public scope and absent runtime overrides"
+    `if` = "inputs.published-defaults-only"
+    env { SOURCE_MODE = "${{ inputs.official-css-options-only }}" }
+    shell = "bash"
+    run = #". "${{ env.VIZE_CI_FILES }}/require-the-explicit-public-scope-and-absent-runtime-overrides.sh""#
+  }
+  new Dynamic {
+    name = "Require an unambiguous focused campaign"
+    env { EVENT_RENAME_ONLY = "${{ inputs.event-rename-only }}" }
+    run = #". "${{ env.VIZE_CI_FILES }}/require-an-unambiguous-focused-campaign.sh""#
+  }
+  new Dynamic {
+    name = "Checkout the reviewed Vize source"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    uses = ci.checkout
+    with { `persist-credentials` = false }
+  }
+  new Dynamic {
+    name = "Checkout the actual public validation actor"
+    `if` = "inputs.published-defaults-only"
+    uses = ci.checkout
+    with {
+      ref = "${{ github.workflow_sha }}"
+      `fetch-depth` = 0
+      `persist-credentials` = false
+    }
+  }
+  new Dynamic {
+    name = "Authenticate source and recipe before any build"
+    shell = "bash"
+    run = #". "${{ env.VIZE_CI_FILES }}/authenticate-source-and-recipe-before-any-build.sh""#
+  }
+  new Dynamic {
+    name = "Setup pinned Node and Vite Plus"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    uses = ci.setupVp121
+    with {
+      version = "latest"
+      `node-version-file` = "package.json"
+      cache = true
+      `cache-save` = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Setup pinned Node for public packages only"
+    `if` = "inputs.published-defaults-only"
+    uses = ci.setupNode
+    with {
+      `node-version-file` = "package.json"
+      `package-manager-cache` = false
+    }
+  }
+  new Dynamic {
+    name = "Setup repository Rust toolchain"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    uses = ci.setupRust
+    with { toolchain = "1.100.0" }
+  }
+  new Dynamic {
+    uses = ci.setupWild
+    `if` = "${{ !inputs.published-defaults-only }}"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    with {
+      key = "content-mapper-official-css-options"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    name = "Install frozen workspace dependencies"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    run = "vp install --frozen-lockfile --prefer-offline"
+  }
+  new Dynamic {
+    name = "Verify native legacy projection compatibility"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    env { VIZE_TEMPLATE_EMIT_TS40_CAPTURE = "${{ runner.temp }}/official-css-source/ts40-legacy" }
+    run = "cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture"
+  }
+  new Dynamic {
+    name = "Build the real packed mapper runtime"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    run = #". "${{ env.VIZE_CI_FILES }}/build-the-real-packed-mapper-runtime.sh""#
+  }
+  new Dynamic {
+    name = "Run original public failures and fresh packed official host controls"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    id = "official"
+    run = #"node tools/support/compat/content-mapper/official-css-options.ts --output "$RUNNER_TEMP/official-css-options" --fixture tests/_fixtures/content-mapper/escaton-component-events.json --fixture tests/_fixtures/content-mapper/escaton-component-props.json --fixture tests/_fixtures/content-mapper/escaton-nested-flow-9433.json --fixture tests/_fixtures/content-mapper/escaton-public-props-9498.json --fixture tests/_fixtures/content-mapper/nuxt-pattern-emit-10195.json"#
+  }
+  new Dynamic {
+    name = "Run exact published reporter fixtures"
+    `if` = "inputs.published-defaults-only"
+    env {
+      PUBLIC_REPORT = "${{ inputs.published-report }}"
+      PUBLIC_CUT = "${{ inputs.cut }}"
+      PUBLIC_HEAD = "${{ inputs.head }}"
+      PUBLIC_TAG = "${{ inputs.tag }}"
+      PUBLIC_SOURCE_PR = "${{ inputs.source_pr }}"
+      PUBLIC_RELEASE_RUN = "${{ inputs.release_run }}"
+      PUBLIC_ACTOR = "${{ github.workflow_sha }}"
+      PUBLIC_INPUTS = "${{ runner.temp }}/official-css-source/public-inputs.json"
+    }
+    shell = "bash"
+    run = #". "${{ env.VIZE_CI_FILES }}/run-exact-published-reporter-fixtures.sh""#
+  }
+  new Dynamic {
+    name = "Retain complete official compiler diagnostics and package evidence"
+    `if` = "always()"
+    uses = ci.uploadArtifact
+    with {
+      name = "official-css-options-${{ github.sha }}-${{ github.run_attempt }}"
+      `if-no-files-found` = "error"
+      `include-hidden-files` = true
+      path = """
+      ${{ runner.temp }}/official-css-source/
+      ${{ runner.temp }}/official-css-options/
+      !${{ runner.temp }}/official-css-options/**/node_modules
+      !${{ runner.temp }}/official-css-options/**/node_modules/**
+
+      """
+    }
+  }
+}

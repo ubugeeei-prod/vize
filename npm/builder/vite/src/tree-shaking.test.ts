@@ -101,12 +101,12 @@ void test("a template-only SFC imported for its global style keeps its CSS", asy
     );
     write("Used.vue", "<template><p>used-text</p></template>\n");
     write("Unused.vue", "<template><p>unused-text</p></template>\n");
-    for (const scanPatterns of [undefined, []]) {
+    for (const scanPatterns of [["**/*.vue"], []]) {
       const result = (await build({
         root,
         configFile: false,
         logLevel: "silent",
-        plugins: [vize({ configMode: false, ...(scanPatterns ? { scanPatterns } : {}) })],
+        plugins: [vize({ configMode: false, scanPatterns })],
         build: {
           write: false,
           minify: false,

@@ -1,0 +1,49 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_elim_Some": { "prover": "z3", "time": 0.003 },
+      "vc_elim_Some'0": { "prover": "z3", "time": 0.003 },
+      "vc_get_TraceEvent": { "prover": "z3", "time": 0.003 },
+      "vc_into_iter_Range_usize": { "prover": "alt-ergo", "time": 0.011 },
+      "vc_is_none_usize": { "prover": "z3", "time": 0.003 },
+      "vc_len_TraceEvent": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_next_Range_usize": { "prover": "z3", "time": 0.003 },
+      "vc_precedes": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.008 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.011 },
+              { "prover": "z3", "time": 0.012 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "cvc5", "time": 0.121 },
+              { "prover": "z3", "time": 0.046 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "cvc5", "time": 0.134 },
+              { "prover": "z3", "time": 0.015 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.034 },
+              { "prover": "z3", "time": 0.016 },
+              { "prover": "z3", "time": 0.009 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.009 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.004 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

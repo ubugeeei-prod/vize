@@ -3,6 +3,8 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
+
+import { toolingProgram } from "../support/program-path.ts";
 import { parse } from "yaml";
 import {
   buildEligibility,
@@ -26,7 +28,7 @@ type Workflow = {
   on: { workflow_dispatch: { inputs: Record<string, unknown> } };
   jobs: Record<string, Job>;
 };
-const workflows = ["public-native-events.yml", "release-contracts.yml"].map(
+const workflows = ["release-contracts.yml"].map(
   (name) =>
     parse(
       readFileSync(new URL("../../../.github/workflows/" + name, import.meta.url), "utf8"),
@@ -241,8 +243,7 @@ test("the actual verifier command removes credentials while retaining runtime ov
       [
         ...tokens.slice(1, nodeAt),
         process.execPath,
-        "-e",
-        "process.stdout.write(JSON.stringify([process.env.GH_TOKEN,process.env.GITHUB_TOKEN,process.env.NODE_AUTH_TOKEN,process.env.NPM_TOKEN,process.env.CORSA_PATH]))",
+        toolingProgram("release/print-sanitized-environment.js"),
       ],
       {
         encoding: "utf8",

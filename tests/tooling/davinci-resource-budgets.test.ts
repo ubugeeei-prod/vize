@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 // TS-44 baselines (Davinci P5-11a): `budgets.toml [resource]` and its gate,
 // `tools/commands/davinci/resource-budgets.rs`. The tool is exercised on the
 // committed file and on injected mutations: a number without methodology and
@@ -148,7 +149,9 @@ test("the measured server and the x86_64 gnu release CLI link without Wild", () 
   }
   // Release CLIs never use Wild: GNU targets link through cargo-zigbuild at the
   // glibc floor (zig's driver has no `--icf`), musl targets through rust-lld.
-  const cli = parse(readRepoFile(".github", "actions", "build-release-cli", "action.yml")) as any;
+  const cli = parse(
+    readAutomationPrograms(".github", "actions", "build-release-cli", "action.yml"),
+  ) as any;
   assert.deepEqual(wildSetup(cli.runs.steps), []);
   assert.equal(restorePinnedWildAction(cli.runs.steps), 0);
 });

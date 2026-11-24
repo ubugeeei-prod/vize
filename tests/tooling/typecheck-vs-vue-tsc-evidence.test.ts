@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import {
   chmodSync,
@@ -28,10 +30,7 @@ const vize: Tool = { label: "vize", kind: "vize", bin: "/unused", env: {} };
 const project = { id: "fixture", cwd: "/unused", tsconfig: "tsconfig.json" };
 
 test("Actions retains partial evidence after failure and records the source actually checked out", () => {
-  const workflow = readFileSync(
-    new URL("../../.github/workflows/typecheck-vs-vue-tsc.yml", import.meta.url),
-    "utf8",
-  );
+  const workflow = readWorkflowShell("typecheck-vs-vue-tsc");
   const upload = workflow
     .split(/^      - /m)
     .find((step) => step.startsWith("uses: actions/upload-artifact@"));
@@ -76,7 +75,11 @@ function fakeTool(root: string, stdout: string, stderr: string, status: number):
   const bin = join(root, "fixture checker.cjs");
   writeFileSync(
     bin,
-    `#!/usr/bin/env node\nprocess.stdout.write(${JSON.stringify(stdout)});\nprocess.stderr.write(${JSON.stringify(stderr)});\nprocess.exitCode = ${status};\n`,
+    readToolingProgram("commands/typecheck-vs-vue-tsc-evidence/bin.cjs.in", {
+      STDOUT: JSON.stringify(stdout),
+      STDERR: JSON.stringify(stderr),
+      STATUS: status,
+    }),
   );
   chmodSync(bin, 0o755);
   return { ...vize, bin };

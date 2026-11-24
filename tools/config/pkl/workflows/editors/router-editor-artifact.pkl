@@ -1,0 +1,92 @@
+import "../../Actions.pkl" as ci
+
+name = "Router installed editor artifact"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/router-editor-artifact.yml"
+      ".github/scripts/workflows/router-editor-artifact/**"
+      "editors/vscode/test/*router*.mjs"
+      "editors/vscode/test/suite/router-*.cjs"
+      "tests/fixtures/editor/experimental-router-5.4/**"
+      "tests/tooling/vscode-router-artifact-contract.test.ts"
+      "tests/tooling/router-host-compiler-capture.test.ts"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "router-editor-artifact-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+}
+jobs {
+  cli { uses = "./.github/workflows/full-source-cli.yml" }
+  `installed-editor` {
+    needs = "cli"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/router-editor-artifact"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Preserve the initial source authority before any qualification step"
+        run = ci.workflowScript("preserve-the-initial-source-authority-before-any-qualification-step.sh")
+      }
+      ci.workspaceVp()
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/restore-source-cli"
+        with { producer = "${{ toJSON(needs.cli.outputs) }}" }
+      }
+      new Dynamic {
+        name = "Retain the original producer and consumer receipts"
+        run = ci.workflowScript("retain-the-original-producer-and-consumer-receipts.sh")
+      }
+      ci.command("Install locked workspace dependencies", "vp install --frozen-lockfile --prefer-offline")
+      ci.use("./.github/actions/setup-rust-script")
+      ci.command("Package the actual VSIX and verify its contents", "vp run --workspace-root test:vscode-extension:vsix")
+      ci.use("./.github/actions/setup-ubuntu-archive")
+      new Dynamic {
+        name = "Prepare pinned VS Code"
+        env { VIZE_TEST_VSCODE_VERSION = "1.107.1" }
+        run = ci.workflowScript("prepare-pinned-vs-code.sh")
+      }
+      new Dynamic {
+        name = "Check artifact contracts"
+        run = "node --test tests/tooling/vscode-router-artifact-contract.test.ts tests/tooling/router-host-compiler-capture.test.ts"
+      }
+      new Dynamic {
+        name = "Exercise actual installed Vue and Art editor clients"
+        env {
+          VIZE_SERVER_PATH = "${{ github.workspace }}/target/ci/vize"
+          VIZE_TEST_VSCODE_VERSION = "1.107.1"
+          VIZE_ROUTER_HOST_ARTIFACT_DIR = "${{ runner.temp }}/router-editor-artifact"
+        }
+        run = "xvfb-run -a node editors/vscode/test/run-router-host-real.mjs"
+      }
+      new Dynamic {
+        name = "Retain full native, public editor, and artifact observations"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "router-installed-editor-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/router-editor-artifact"
+          `include-hidden-files` = true
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { after } from "node:test";
 
 // These complete postimages are independently required by Carton's native
 // runtime_source unit. Both observers execute that same dependency-free body.
 const pins = {
-  validator: "e7cd857464b449579d288fd20e75549875404389200fa40a1bd9517ec4e2ab83",
-  runtime: "0bb73d5f28813a5045f23cf739256ea408093218202596220b7f43639d9d7b0b",
-  assembled: "576e85b34362116ee8ab701ba4b8af7f475ce4067985e0c3194e1a3c761b465b",
+  validator: "866f0e42210ce4264432883dcff21f855af86a04577945ef1a0167b0b57462c9",
+  runtime: "2c6bdafb73522064a780847c46e8f32a2f032e4bb952f50e6227804ddf8021bf",
+  assembled: "7d3fd3e7fbf8969d5aa13e76499e7c37561ca6a9fe50db8570caa4e2fe3924aa",
 } as const;
 // Statically spliced modules and the lazily imported config plugin host, in the
 // native config-runtime assembly order (runtime_source.rs `OWNED`, `PLUGIN_HOST`).
@@ -58,18 +61,16 @@ function appendModule(
 }
 
 /** Read the actual native producer closure without installing a project helper. */
-export async function nativeLoaderScript(): Promise<string> {
+async function assembleRuntimeFile(): Promise<string> {
   const loader = new URL("../../../crates/vize_carton/src/config/loader/js.rs", import.meta.url);
   const source = await readFile(loader, "utf8");
   const includes = [...source.matchAll(/include_str!\("([^"]+)"\)/g)];
   assert.deepEqual(
     includes.map((match) => match[1]),
-    ["vite-runtime.mjs", "module-runtime.mjs", "config-inputs.mjs"],
+    ["vite-runtime.mjs", "module-runtime.mjs", "config-inputs.mjs", "evaluate-config.js"],
   );
   assert.match(source, /let vite_runtime = runtime_source::vite_runtime\(\)/u);
   assert.match(source, /let script = \[\s*vite_runtime\.as_str\(\),/u);
-  const scripts = [...source.matchAll(/r#"([\s\S]*?)"#/g)];
-  assert.equal(scripts.length, 1);
   const assembler = await readFile(new URL("js/runtime_source.rs", loader), "utf8");
   for (const name of [...owned, ...pluginHost])
     assert.match(assembler, new RegExp(`"\\./${name.replace(".", "\\.")}"`));
@@ -94,8 +95,26 @@ export async function nativeLoaderScript(): Promise<string> {
   const assembled =
     modules.map((module) => `${appendModule(module, owned, true, registry)}\n`).join("") + body;
   assert.equal(hash(assembled), pins.assembled);
-  const script = [assembled, ...bodies.slice(1), scripts[0]![1]].join("");
-  // Observers pass this body as one `node -e` argument; Linux caps one at 128 KiB.
-  assert.ok(Buffer.byteLength(script) < 128 * 1024, "the config runtime exceeds one argv string");
-  return script;
+  const directory = await mkdtemp(join(tmpdir(), "vize-test-config-runtime-"));
+  runtimeDirectory = directory;
+  const file = join(directory, "config-runtime.mjs");
+  // NodeRuntimeFile preserves the argument layout and source identity of the public loader.
+  const fileContents = [
+    "process.argv.splice(1, 1);\n",
+    assembled,
+    ...bodies.slice(1),
+    "\n//# sourceURL=vize:config-runtime\n",
+  ].join("");
+  await writeFile(file, fileContents, { mode: 0o600 });
+  return file;
+}
+
+let runtimeDirectory: string | undefined;
+let runtimeFile: Promise<string> | undefined;
+after(async () => {
+  if (runtimeDirectory) await rm(runtimeDirectory, { recursive: true, force: true });
+});
+
+export function nativeLoaderPath(): Promise<string> {
+  return (runtimeFile ??= assembleRuntimeFile());
 }

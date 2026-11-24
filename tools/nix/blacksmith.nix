@@ -7,6 +7,7 @@
       ...
     }:
     let
+      renderScript = import ./render-script.nix;
       # Blacksmith CLI (Testbox). Kept pinned to an exact release with
       # versioned artifact URLs — the vendor also publishes a moving `latest`
       # channel, and a fixed-output derivation pointed at it would silently
@@ -38,11 +39,7 @@
         src = pkgs.fetchurl { inherit (artifact) url hash; };
         dontUnpack = true;
         nativeBuildInputs = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.autoPatchelfHook ];
-        installPhase = ''
-          runHook preInstall
-          install -Dm755 $src $out/bin/blacksmith
-          runHook postInstall
-        '';
+        installPhase = builtins.readFile ./scripts/install-blacksmith.sh;
         meta = {
           description = "Blacksmith CLI (Testbox)";
           homepage = "https://docs.blacksmith.sh/blacksmith-testbox/overview";
@@ -54,26 +51,18 @@
       # The default shell must never look like the Testbox shell, so it clears
       # the markers rather than merely omitting them: `nix develop` entered
       # from inside `nix develop .#testbox` would otherwise inherit both.
-      clearTestboxEnvironment = ''
-        unset VIZE_TESTBOX_SHELL VIZE_BLACKSMITH_BIN
-      '';
-      activateTestboxEnvironment = ''
-        export VIZE_TESTBOX_SHELL=1
-        export VIZE_BLACKSMITH_BIN="${blacksmith}/bin/blacksmith"
-      '';
+      clearTestboxEnvironment = builtins.readFile ./scripts/clear-testbox.sh;
+      activateTestboxEnvironment = renderScript ./scripts/set-testbox.sh {
+        BLACKSMITH = "${blacksmith}";
+      };
 
-      testboxEnvironmentCheck = pkgs.runCommand "vize-testbox-environment" { } ''
-        export VIZE_TESTBOX_SHELL=inherited
-        export VIZE_BLACKSMITH_BIN=/host/blacksmith
-        ${clearTestboxEnvironment}
-        test -z "''${VIZE_TESTBOX_SHELL:-}"
-        test -z "''${VIZE_BLACKSMITH_BIN:-}"
-        ${activateTestboxEnvironment}
-        test "$VIZE_TESTBOX_SHELL" = 1
-        test "$VIZE_BLACKSMITH_BIN" = "${blacksmith}/bin/blacksmith"
-        test -x "$VIZE_BLACKSMITH_BIN"
-        touch "$out"
-      '';
+      testboxEnvironmentCheck = pkgs.runCommand "vize-testbox-environment" { } (
+        renderScript ./scripts/check-testbox.sh {
+          CLEAR_TESTBOX = clearTestboxEnvironment;
+          ACTIVATE_TESTBOX = activateTestboxEnvironment;
+          BLACKSMITH = "${blacksmith}";
+        }
+      );
     in
     {
       packages.blacksmith = blacksmith;

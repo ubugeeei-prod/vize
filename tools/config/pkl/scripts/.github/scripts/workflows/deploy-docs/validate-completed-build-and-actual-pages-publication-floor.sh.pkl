@@ -1,0 +1,15 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  # Preserve trusted main validators when the completed source is older.
+  validator="$RUNNER_TEMP/docs-deployment/compat/github"
+  mkdir -p "$validator" "$RUNNER_TEMP/docs-deployment/archive"
+  cp tools/support/compat/github/docs-deployment-*.ts "$validator/"
+  cp tools/support/archive/tar.ts tools/support/archive/zip.ts "$RUNNER_TEMP/docs-deployment/archive/"
+  vp node "$validator/docs-deployment-entry.ts" prepare
+  """#
+}

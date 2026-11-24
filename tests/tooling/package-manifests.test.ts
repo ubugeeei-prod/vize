@@ -1,3 +1,4 @@
+import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -326,9 +327,12 @@ test("editor extension manifests keep expected defaults and version alignment", 
     vscodePackage.contributes?.configuration?.properties?.["vize.formatting.enable"]?.default,
     false,
   );
-  assert.equal(vscodePackage.scripts?.check, "tsc --noEmit && vp check src vite.config.ts");
   assert.equal(
-    vscodePackage.scripts?.["check:fix"],
+    packageScripts("editors/vscode", vscodePackage.scripts)?.check,
+    "tsc --noEmit && vp check src vite.config.ts",
+  );
+  assert.equal(
+    packageScripts("editors/vscode", vscodePackage.scripts)?.["check:fix"],
     "vp check --fix src vite.config.ts && tsc --noEmit",
   );
 
@@ -348,11 +352,17 @@ test("workspace package builds do not nest pnpm run commands", () => {
   };
 
   assert.equal(
-    museaPackage.scripts?.build,
+    packageScripts("npm/builder/vite-musea", museaPackage.scripts)?.build,
     "vp pack && node scripts/assert-root-import-graph.ts && vp build --config gallery-vite.config.ts",
   );
-  assert.equal(museaPackage.scripts?.dev, "vp pack --watch");
-  assert.doesNotMatch(museaPackage.scripts?.build ?? "", /\bpnpm run\b/);
+  assert.equal(
+    packageScripts("npm/builder/vite-musea", museaPackage.scripts)?.dev,
+    "vp pack --watch",
+  );
+  assert.doesNotMatch(
+    packageScripts("npm/builder/vite-musea", museaPackage.scripts)?.build ?? "",
+    /\bpnpm run\b/,
+  );
 });
 
 test("vize package delegates rule type generation to the workspace task", () => {
@@ -365,11 +375,11 @@ test("vize package delegates rule type generation to the workspace task", () => 
 
   assert.equal(vizePackage.engines?.node, ">=22");
   assert.equal(
-    vizePackage.scripts?.["generate:rule-types"],
+    packageScripts("npm/cli", vizePackage.scripts)?.["generate:rule-types"],
     "vp run --workspace-root generate:rule-types",
   );
   assert.equal(
-    vizePackage.scripts?.build,
+    packageScripts("npm/cli", vizePackage.scripts)?.build,
     "vp run --workspace-root generate:rule-types && vp pack",
   );
 });
@@ -443,8 +453,8 @@ test("workspace TypeScript package builds use vp pack", () => {
   };
   assert.equal(oxlintPackage.engines?.node, "^22 || >= 24");
   assert.equal(
-    oxlintPackage.scripts?.test,
-    "vp pack && vp test run src/file-state.test.ts src/batched-rules.test.ts src/script-safe-source.test.ts src/active-rule-collection.test.ts src/v-on-event-options.test.ts src/v-on-event-tuple-options.test.ts src/prop-name-options.test.ts src/component-name-options.test.ts src/block-limit-options.test.ts && node src/test.ts && node src/script-location.test.ts && node src/casing-options.test.ts && node src/router-globals.test.ts && node src/plugin-rules.test.ts && node src/template-style-fixes.test.mjs && node src/html-binding.test.mjs && node --test src/component-name-source.test.ts src/eslint-source.test.ts src/attribute-options.test.ts src/attribute-ignore-tags.test.ts src/cli/files-dotfiles.test.ts src/cli/oxlint.test.ts src/cli/report-format.test.ts src/cli/type-aware-vue.test.ts && node src/eslint-acceptance.test.mjs && node src/v-on-event-autofix-host.test.ts && node src/v-on-event-tuple-eslint.test.ts && node src/attribute-eslint.test.ts && node src/prop-name-eslint.test.ts && node src/component-name-eslint.test.ts && node src/attribute-ignore-tags-eslint.test.ts && node src/attribute-ignore-tags-oxlint.test.ts",
+    packageScripts("npm/linter/oxlint", oxlintPackage.scripts)?.test,
+    "vp pack && vp test run src/file-state.test.ts src/batched-rules.test.ts src/script-safe-source.test.ts src/active-rule-collection.test.ts src/v-on-event-options.test.ts src/v-on-event-tuple-options.test.ts src/prop-name-options.test.ts src/component-name-options.test.ts src/option-extensions.test.ts src/block-limit-options.test.ts && node src/test.ts && node src/script-location.test.ts && node src/casing-options.test.ts && node src/router-globals.test.ts && node src/plugin-rules.test.ts && node src/template-style-fixes.test.mjs && node src/html-binding.test.mjs && node --test src/component-name-source.test.ts src/eslint-source.test.ts src/attribute-options.test.ts src/attribute-ignore-tags.test.ts src/cli/files-dotfiles.test.ts src/cli/oxlint.test.ts src/cli/report-format.test.ts src/cli/type-aware-vue.test.ts && node src/eslint-acceptance.test.mjs && node src/v-on-event-autofix-host.test.ts && node src/v-on-event-tuple-eslint.test.ts && node src/attribute-eslint.test.ts && node src/prop-name-eslint.test.ts && node src/component-name-eslint.test.ts && node src/attribute-ignore-tags-eslint.test.ts && node src/attribute-ignore-tags-oxlint.test.ts",
   );
   const rootTasks = readRepoFile("tools/config/vite-plus/tasks/build.ts");
   assert.match(rootTasks, /vscodeExtensionPackageBin\("vite-plus", "vp"\)[\s\S]*pack/);

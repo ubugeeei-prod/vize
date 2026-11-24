@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -32,7 +33,7 @@ function controlledRealpaths(realpaths) {
   )
     .replace(/^import[\s\S]*?;\n/gm, "")
     .replace(/^export /gm, "");
-  const discover = new vm.Script(`${source}\ndiscoverWorkspaceServers;`).runInNewContext({
+  const context = vm.createContext({
     path: path.win32,
     fs: {
       existsSync: (file) => files.has(file),
@@ -50,7 +51,8 @@ function controlledRealpaths(realpaths) {
       },
     },
   });
-  return discover(folders, true, "win32");
+  new vm.Script(source).runInContext(context);
+  return context.discoverWorkspaceServers(folders, true, "win32");
 }
 
 await test("the same Windows realpath with a drive-letter alias selects one engine", () => {
@@ -136,7 +138,9 @@ await test("actual case-sensitive Windows directories keep distinct same-version
     const binary = path.join(packageRoot, "vize.cjs");
     fs.writeFileSync(
       binary,
-      `#!/usr/bin/env node\n// Distinct engine build ${index}, both report vize 9.8.7.\n`,
+      readToolingProgram("commands/vscode-workspace-server-identity/binary.cjs.in", {
+        INDEX: index,
+      }),
     );
     return fs.realpathSync(binary);
   });

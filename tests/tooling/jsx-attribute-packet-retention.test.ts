@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -10,9 +11,8 @@ const rust = fs.readFileSync(
   ),
   "utf8",
 );
-const workflow = fs.readFileSync(
+const workflow = readAutomationPrograms(
   new URL("../../.github/workflows/pr-rust-products.yml", import.meta.url),
-  "utf8",
 );
 const digest = (text: string) => createHash("sha256").update(text).digest("hex");
 function section(text: string, from: string, to: string) {

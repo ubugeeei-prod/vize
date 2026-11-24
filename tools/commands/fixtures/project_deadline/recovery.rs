@@ -242,10 +242,10 @@ mod tests {
             let _ = self.0.wait();
         }
     }
-    fn node(source: &str) -> Command {
-        let mut c = Command::new("node");
-        c.args(["-e", source]);
-        c
+    fn node(program: &str) -> Command {
+        let mut command = Command::new("node");
+        command.arg(super::super::test_program(program));
+        command
     }
     fn supervise_ms(command: &mut Command, state: &Path, ms: u64) -> bool {
         let started = Instant::now();
@@ -260,9 +260,7 @@ mod tests {
     fn real_cpu_worker_is_stopped_and_both_raw_streams_survive() {
         let sandbox = Sandbox::new();
         let state = sandbox.state();
-        let mut command = node(
-            "process.stdout.write('CPU phase started\\n');process.stderr.write('raw diagnostic\\n');while(true){}",
-        );
+        let mut command = node("report-cpu-work.cjs");
         assert!(supervise_ms(&mut command, &state, 400));
         assert_eq!(
             fs::read(state.join("producer-stdout.bin")).unwrap(),
@@ -281,9 +279,7 @@ mod tests {
     fn sequential_real_children_share_one_parent_deadline() {
         let sandbox = Sandbox::new();
         let state = sandbox.state();
-        let mut command = node(
-            "const {spawnSync}=require('node:child_process');for(const [phase,delay] of [['first',200],['second',600]]){console.log(phase+' start');spawnSync(process.execPath,['-e','setTimeout(()=>{},'+delay+')'],{stdio:'inherit'});console.log(phase+' done');}",
-        );
+        let mut command = node("run-sequential-children.cjs");
         assert!(supervise_ms(&mut command, &state, 600));
         let output = fs::read_to_string(state.join("producer-stdout.bin")).unwrap();
         assert_eq!(output, "first start\nfirst done\nsecond start\n");
@@ -292,12 +288,11 @@ mod tests {
     fn separate_owned_process_groups_die_and_unrelated_sentinel_survives() {
         let sandbox = Sandbox::new();
         let state = sandbox.state();
-        let mut sentinel = Sentinel(node("setInterval(()=>{},1000)").spawn().unwrap());
+        let mut sentinel = Sentinel(node("keep-alive.cjs").spawn().unwrap());
         let mut command = Command::new("bash");
-        command.args([
-            "-c",
-            "set -m; node -e 'process.on(\"SIGTERM\",()=>{});setInterval(()=>{},1000)' & wait",
-        ]);
+        command
+            .arg(super::super::test_program("supervise-separate-group.sh"))
+            .arg(super::super::test_program("ignore-termination.cjs"));
         assert!(supervise_ms(&mut command, &state, 400));
         assert!(sentinel.0.try_wait().unwrap().is_none());
         let evidence: Value =
@@ -318,9 +313,7 @@ mod tests {
         let broken = b"<template>broken</template>\n";
         fs::write(&source, original).unwrap();
         MutationLease::begin(&state, &sandbox.0, &source, original, broken).unwrap();
-        let mut command = node(
-            "require('node:fs').writeFileSync(process.argv[1],'<template>broken</template>\\n');while(true){}",
-        );
+        let mut command = node("overwrite-and-spin.cjs");
         command.arg(&source);
         assert!(supervise_ms(&mut command, &state, 400));
         assert_eq!(fs::read(&source).unwrap(), original);
@@ -344,7 +337,9 @@ mod tests {
             fs::write(&source, b"broken").unwrap();
             let ready = directory.join("separate-writer.pid");
             let mut writer = Command::new("bash");
-            writer.args(["-c", "set -m; node -e 'const fs=require(\"node:fs\");fs.writeFileSync(process.argv[2],String(process.pid));setInterval(()=>fs.writeFileSync(process.argv[1],\"broken\"),10)' \"$1\" \"$2\" & wait", "owned-writer"]);
+            writer
+                .arg(super::super::test_program("supervise-separate-group.sh"))
+                .arg(super::super::test_program("repeat-source-write.cjs"));
             writer.arg(&source).arg(&ready).spawn().unwrap();
             let started = Instant::now();
             while !ready.exists() {
@@ -401,9 +396,7 @@ mod tests {
     fn normal_worker_keeps_complete_raw_bytes_and_does_not_become_a_timeout() {
         let sandbox = Sandbox::new();
         let state = sandbox.state();
-        let mut command = node(
-            "process.stdout.write('whole\\r\\noutput');process.stderr.write('whole error\\n')",
-        );
+        let mut command = node("write-complete-output.cjs");
         assert!(!supervise_ms(&mut command, &state, 3000));
         assert_eq!(
             fs::read(state.join("producer-stdout.bin")).unwrap(),
@@ -423,7 +416,7 @@ mod tests {
         MutationLease::begin(&state, &sandbox.0, &source, b"original", b"broken").unwrap();
         fs::write(&source, b"broken").unwrap();
         fs::create_dir(state.join("supervisor.json")).unwrap();
-        let mut command = node("while(true){}");
+        let mut command = node("spin.cjs");
         let start = Instant::now();
         assert!(supervise(&mut command, &state, start, Duration::from_millis(400)).is_err());
         assert_eq!(fs::read(source).unwrap(), b"original");

@@ -1,0 +1,13 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_deref_Vec_EffectScope_Global": {
+        "prover": "alt-ergo",
+        "time": 0.008
+      },
+      "vc_effect": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_lookup_EffectScope": { "prover": "alt-ergo", "time": 0.01 }
+    }
+  }
+}

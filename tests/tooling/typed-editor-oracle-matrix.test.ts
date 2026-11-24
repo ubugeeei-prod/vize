@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import { root } from "./support/lsp/paths.ts";
 import { matrix, rowsRequiringExecutedEvidence } from "./support/typed-editor-oracle-matrix.ts";
 
@@ -55,7 +56,11 @@ test("covered typed editor oracle matrix rows point at live gate files and CI ga
   for (const row of matrix) {
     for (const evidence of row.evidence) {
       if (evidence.kind !== "file" && evidence.kind !== "ci") continue;
-      const source = fs.readFileSync(path.join(root, evidence.path), "utf8");
+      const file = path.join(root, evidence.path);
+      const source =
+        evidence.kind === "ci" && /\.ya?ml$/u.test(file)
+          ? readAutomationPrograms(file)
+          : fs.readFileSync(file, "utf8");
       for (const text of evidence.requiredText) {
         assert.match(source, new RegExp(escapeRegExp(text)), `${row.id} missing ${text}`);
       }

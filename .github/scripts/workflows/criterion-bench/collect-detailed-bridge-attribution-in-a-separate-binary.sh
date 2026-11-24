@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+vp exec cargo clippy -p vize_l1_to_l2 --features davinci-benchmark-profile --lib -- -D warnings -D clippy::wildcard_imports
+vp exec cargo clippy -p vize_atelier_sfc --features davinci-production-profile --example davinci_production_perf -- -D warnings -D clippy::wildcard_imports
+vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features davinci-production-profile --example davinci_production_perf
+target/ci-opt/examples/davinci_production_perf production-perf/bridge-attribution.json --attribution-only

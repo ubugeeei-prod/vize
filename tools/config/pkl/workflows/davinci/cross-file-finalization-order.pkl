@@ -1,0 +1,142 @@
+import "../../Actions.pkl" as ci
+
+name = "Cross-file finalization order"
+`run-name` = "Cross-file exact incoming vectors @ ${{ github.event.pull_request.head.sha || github.sha }}"
+on {
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Exact combined integration base SHA with reset and stale-import fixes"
+        type = "string"
+        required = true
+      }
+    }
+  }
+  pull_request {
+    types = List("opened", "synchronize", "reopened")
+    paths = new Listing {
+      ".github/workflows/cross-file-finalization-order.yml"
+      ".github/scripts/workflows/cross-file-finalization-order/**"
+      ".github/scripts/cross-file-finalization-scope.ts"
+      ".github/scripts/cross-file-finalization-order-scope.ts"
+      "tests/tooling/cross-file-finalization-order-scope.test.ts"
+      "crates/vize_croquis_cf/src/graph.rs"
+      "crates/vize_croquis_cf/src/graph/order.rs"
+      "crates/vize_croquis_cf/src/graph/order/**"
+      "crates/vize_croquis_cf/src/analyzer/core/files.rs"
+      "tests/tooling/support/cross-file-finalization-order.ts"
+      "tests/tooling/support/cross-file-finalization-order/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "cross-file-finalization-order-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_INCREMENTAL = "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  EXPECTED_SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+  BASE_SOURCE_SHA = "${{ github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}"
+}
+jobs {
+  scope {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    outputs { run_comparison = "${{ steps.plan.outputs.run_comparison }}" }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-finalization-order")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Fetch the exact comparison base or fail"
+        run = ci.workflowScript("fetch-the-exact-comparison-base-or-fail.sh")
+      }
+      new Dynamic {
+        name = "Validate original and ordering scope selection laws"
+        run = "node --test tests/tooling/cross-file-finalization-scope.test.ts tests/tooling/cross-file-finalization-order-scope.test.ts"
+      }
+      new Dynamic {
+        name = "Record applicability without qualifying ordering measurements"
+        id = "plan"
+        run = "node .github/scripts/cross-file-finalization-order-scope.ts"
+      }
+      new Dynamic {
+        name = "Preserve source-scope evidence"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "cross-file-finalization-order-scope-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/vize-tests/cross-file-finalization-order-scope"
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+  `actual-ordered-source-states` {
+    needs = "scope"
+    `if` = "${{ needs.scope.outputs.run_comparison == 'true' }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-finalization-order")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      ci.workspaceVp()
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "cross-file-finalization-order-head"
+          `target-path` = "target/finalization-order-head-build"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+          `secondary-key` = "cross-file-finalization-order-base"
+          `secondary-target-path` = "target/finalization-order-base-build"
+          `secondary-cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Install frozen tools and prepare identical observer-only overlays"
+        run = ci.workflowScript("install-frozen-tools-and-prepare-identical-observer-only-overlays.sh")
+      }
+      new Dynamic {
+        name = "Verify linear ordering laws and complete raw node identity"
+        run = ci.workflowScript("verify-linear-ordering-laws-and-complete-raw-node-identity.sh")
+      }
+      new Dynamic {
+        name = "Compile actual base and head observers into isolated targets"
+        run = ci.workflowScript("compile-actual-base-and-head-observers-into-isolated-targets.sh")
+      }
+      new Dynamic {
+        name = "Compare one new pass with the old second and third passes"
+        run = "node tests/tooling/support/cross-file-finalization-order.ts"
+      }
+      new Dynamic {
+        name = "Preserve all original vectors, diagnostics, input bytes and provider identities"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "cross-file-finalization-order-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/vize-tests/cross-file-finalization-order"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

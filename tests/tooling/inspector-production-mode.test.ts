@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -29,9 +29,8 @@ assert.ok(
     'const OFFICIAL_COMPILER_NODE_SCRIPT: &str = include_str!("official_compiler.ts");',
   ),
 );
-const embedded = readFileSync(
+const compilerProgram = fileURLToPath(
   new URL("../../crates/vize/src/commands/inspector/official_compiler.ts", import.meta.url),
-  "utf8",
 );
 const cwd = fileURLToPath(new URL("../", import.meta.url));
 
@@ -39,17 +38,21 @@ function compare(target: "dom" | "ssr", parentMode: string | undefined): string 
   const env = { ...process.env };
   if (parentMode === undefined) delete env.NODE_ENV;
   else env.NODE_ENV = parentMode;
-  const result = spawnSync(process.execPath, ["--input-type=module", "-e", embedded], {
-    cwd,
-    env,
-    input: JSON.stringify({
-      target,
-      moduleRoot: cwd,
-      files: [{ path: origin.path, source, vizeCode: "" }],
-    }),
-    encoding: "utf8",
-    timeout: 30_000,
-  });
+  const result = spawnSync(
+    process.execPath,
+    ["--experimental-import-meta-resolve", compilerProgram],
+    {
+      cwd,
+      env,
+      input: JSON.stringify({
+        target,
+        moduleRoot: cwd,
+        files: [{ path: origin.path, source, vizeCode: "" }],
+      }),
+      encoding: "utf8",
+      timeout: 30_000,
+    },
+  );
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stderr, "");
@@ -216,16 +219,20 @@ void test("the reference formatter accepts CommonJS Prettier bundles exposed onl
     ]) {
       write(`node_modules/prettier/plugins/${name}.js`, umd(`{ name: "${name}", ${member}: {} }`));
     }
-    const result = spawnSync(process.execPath, ["--input-type=module", "-e", embedded], {
-      cwd: root,
-      input: JSON.stringify({
-        target: "dom",
-        moduleRoot: cwd,
-        files: [{ path: origin.path, source, vizeCode: "const value = 1;" }],
-      }),
-      encoding: "utf8",
-      timeout: 30_000,
-    });
+    const result = spawnSync(
+      process.execPath,
+      ["--experimental-import-meta-resolve", compilerProgram],
+      {
+        cwd: root,
+        input: JSON.stringify({
+          target: "dom",
+          moduleRoot: cwd,
+          files: [{ path: origin.path, source, vizeCode: "const value = 1;" }],
+        }),
+        encoding: "utf8",
+        timeout: 30_000,
+      },
+    );
     assert.ifError(result.error);
     assert.equal(result.status, 0, result.stderr);
     const [file] = JSON.parse(result.stdout).files;
@@ -236,4 +243,36 @@ void test("the reference formatter accepts CommonJS Prettier bundles exposed onl
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+void test("the standalone inspector resolves import-only exports in the inspected project", (t) => {
+  const project = mkdtempSync(path.join(tmpdir(), "vize-inspector-esm-"));
+  t.after(() => rmSync(project, { recursive: true, force: true }));
+  const vue = path.join(project, "node_modules", "vue");
+  mkdirSync(vue, { recursive: true });
+  writeFileSync(
+    path.join(vue, "package.json"),
+    JSON.stringify({ type: "module", exports: { "./compiler-sfc": { import: "./compiler.js" } } }),
+  );
+  copyFileSync(
+    new URL("./support/inspector-import-only.js", import.meta.url),
+    path.join(vue, "compiler.js"),
+  );
+  const child = spawnSync(
+    process.execPath,
+    ["--experimental-import-meta-resolve", compilerProgram],
+    {
+      cwd: project,
+      input: JSON.stringify({
+        target: "dom",
+        files: [{ path: "App.vue", source: "<template/>", vizeCode: "" }],
+      }),
+      encoding: "utf8",
+    },
+  );
+  assert.equal(child.status, 0, child.stderr);
+  assert.equal(
+    JSON.parse(child.stdout).files[0].official.error,
+    "loaded the project's import-only compiler",
+  );
 });

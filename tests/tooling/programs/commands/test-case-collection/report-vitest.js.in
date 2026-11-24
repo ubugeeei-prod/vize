@@ -1,0 +1,10 @@
+import { writeFileSync } from "node:fs";
+const output = process.argv.find((arg) => arg.startsWith("--outputFile.json="))?.slice("--outputFile.json=".length);
+if (!output) throw new Error("vitest json output was not requested");
+writeFileSync(output, JSON.stringify({
+  testResults: [{
+    name: @@TEST_FILE@@,
+    status: "passed",
+    assertionResults: [{ ancestorTitles: ["one.test.ts"], title: "renders", status: "passed" }],
+  }],
+}));

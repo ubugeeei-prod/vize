@@ -18,40 +18,12 @@ const sourceFiles = [
   "docs/theme/shaders/vein.frag",
   "docs/vite.config.ts",
   "docs/scripts/background-motion-qualifier.ts",
+  "docs/scripts/observe-background-renderer.js",
   "tests/tooling/docs-background-motion-browser.test.ts",
 ];
 const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 type Frame = { time: number; scroll: number; dark: number; mouse: number[]; velocity: number };
 type Observation = { frames: Frame[]; gpuDraws: number; width: number; height: number };
-// Observe the genuine renderer and native draw methods without replacing a draw.
-const observeRenderer = `
-window.__backgroundMotion = { frames: [], gpuDraws: 0 };
-for (const Context of [WebGLRenderingContext, WebGL2RenderingContext]) {
-  for (const name of ['drawArrays', 'drawElements']) {
-    if (!Object.hasOwn(Context.prototype, name)) continue;
-    const draw = Context.prototype[name];
-    Context.prototype[name] = function(...args) {
-      const result = draw.apply(this, args);
-      window.__backgroundMotion.gpuDraws++;
-      return result;
-    };
-  }
-}
-const Renderer = THREE.WebGLRenderer;
-THREE.WebGLRenderer = function(...args) {
-  const renderer = new Renderer(...args);
-  const render = renderer.render;
-  renderer.render = function(scene, camera) {
-    const result = render.call(this, scene, camera);
-    const u = scene.children[0].material.uniforms;
-    window.__backgroundMotion.frames.push({ time: u.u_time.value, scroll: u.u_scroll.value,
-      dark: u.u_dark.value, mouse: [u.u_mouse.value.x, u.u_mouse.value.y],
-      velocity: u.u_mouseVel.value });
-    return result;
-  };
-  return renderer;
-};`;
-
 async function observation(page: Page): Promise<Observation> {
   return page.evaluate(() => {
     const packet = (
@@ -117,11 +89,19 @@ export async function qualifyBackgroundMotion(output: string) {
   assert.equal(libraryResponse.status, 200, "actual production library is available");
   const library = Buffer.from(await libraryResponse.arrayBuffer());
   const background = buildDocsBackgroundScript(path.join(root, "docs/theme"));
+  const rendererObserver = await readFile(
+    new URL("./observe-background-renderer.js", import.meta.url),
+  );
+  const scripts = new Map<string, string | Buffer>([
+    ["/three.min.js", library],
+    ["/observe-background-renderer.js", rendererObserver],
+    ["/background.js", background],
+  ]);
   const html = `<!doctype html><html data-theme="light"><head><meta charset="utf-8">
     <title>Authored background motion control</title><style>body{margin:0;min-height:12000px}</style>
-    <script src="/three.min.js"></script><script>${observeRenderer}</script></head>
+    <script src="/three.min.js"></script><script src="/observe-background-renderer.js"></script></head>
     <body class="entry-page"><header class="header"></header>${createDocsBackgroundHtml()}
-    <main class="content"><h1>Background motion control</h1></main><script>${background}</script></body></html>`;
+    <main class="content"><h1>Background motion control</h1></main><script src="/background.js"></script></body></html>`;
   const receipt = {
     sourceHead: execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim(),
     sourceChanges: execFileSync("git", ["status", "--porcelain", "--", ...sourceFiles], {
@@ -145,12 +125,14 @@ export async function qualifyBackgroundMotion(output: string) {
   await Promise.all([
     writeFile(path.join(output, "production-three.min.js"), library),
     writeFile(path.join(output, "background.js"), background),
+    writeFile(path.join(output, "observe-background-renderer.js"), rendererObserver),
     writeFile(path.join(output, "fixture.html"), html),
   ]);
   const server = createServer((request, response) => {
-    if (request.url === "/three.min.js") {
+    const script = scripts.get(request.url ?? "");
+    if (script !== undefined) {
       response.writeHead(200, { "content-type": "text/javascript" });
-      response.end(library);
+      response.end(script);
     } else {
       response.writeHead(200, { "content-type": "text/html" });
       response.end(html);

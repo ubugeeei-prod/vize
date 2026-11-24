@@ -14,11 +14,13 @@ import {
   normalizePrecompileBatchSize,
 } from "./state.ts";
 import { CompiledModuleCache } from "./compiled-module-cache.ts";
+import { processFilesystemEpoch } from "./filesystem-epoch.ts";
 import { compileAll, PrecompileDiagnosticsError } from "./precompile-run.ts";
 import { precompileInputOwners } from "./precompile-owner.ts";
 import { resolveIdHook } from "./resolve.ts";
-import { loadHook, transformHook } from "./load.ts";
-import { getSfcModuleRequest, transformSfcModule } from "./sfc-module.ts";
+import { LOAD_ID_FILTER, TRANSFORM_ID_FILTER, loadHook, transformHook } from "./load.ts";
+import { getSfcModuleRequest, requestResolvedSfc, transformSfcModule } from "./sfc-module.ts";
+import { resetDemandCompiles, setCompileInputOwners } from "./demand-compile.ts";
 import {
   handleGenerateBundleHook,
   handleHotUpdateHook,
@@ -50,6 +52,7 @@ import { resolveVueFeatureDefines } from "./vue-feature-defines.ts";
 import { resetTypeProjectWatches } from "./type-project-watches.ts";
 import {
   aliasSortKey,
+  resolveBuildStartEnvironment,
   resolveBuildStartSsr,
   resolveHookSsr,
   shouldExtractCssForBuild,
@@ -69,12 +72,16 @@ export function vize(
   }
 
   let precompileConfig: ResolvedConfig | undefined;
+  // The environments that began a build since this instance's config was resolved.
+  const startedEnvironments = new Set<string>();
   const state: VizePluginState = {
     // Indexed maps: hot updates need the SFCs owning a changed `src` dependency
     // in constant time rather than by scanning both caches. See
-    // `compiled-module-cache.ts`.
-    cache: new CompiledModuleCache(),
-    ssrCache: new CompiledModuleCache(),
+    // `compiled-module-cache.ts`. Both resolve path identities in the process
+    // epoch, which the hooks below end on every sign of a filesystem change.
+    cache: new CompiledModuleCache(processFilesystemEpoch),
+    ssrCache: new CompiledModuleCache(processFilesystemEpoch),
+    filesystemEpoch: processFilesystemEpoch,
     collectedCss: new Map(),
     precompileMetadata: new Map(),
     ssrPrecompileMetadata: new Map(),
@@ -139,6 +146,9 @@ export function vize(
     },
 
     async configResolved(resolvedConfig: ResolvedConfig) {
+      // A build or a dev server begins: nothing observed earlier is assumed.
+      processFilesystemEpoch.advance();
+      startedEnvironments.clear();
       precompileConfig = resolvedConfig;
       state.root = options.root ?? resolvedConfig.root;
       state.viteCacheDir = resolvedConfig.cacheDir;
@@ -259,7 +269,9 @@ export function vize(
         state.scanPatterns = [];
       } else {
         state.filter = createFilter(state.mergedOptions.include, state.mergedOptions.exclude);
-        state.scanPatterns = state.mergedOptions.scanPatterns ?? ["**/*.vue"];
+        // The startup scan is opt-in: without configured patterns nothing is
+        // compiled before the module graph asks for it.
+        state.scanPatterns = state.mergedOptions.scanPatterns ?? [];
       }
       state.precompileBatchSize = normalizePrecompileBatchSize(
         state.mergedOptions.precompileBatchSize,
@@ -285,23 +297,38 @@ export function vize(
 
     configureServer(devServer: ViteDevServer) {
       state.server = devServer;
+      // Vite forwards file events to `watchChange`, but not directory events,
+      // and a remounted workspace link is a directory event.
+      devServer.watcher.on("all", () => processFilesystemEpoch.advance());
       configBridge.configureServerCleanup(devServer);
       installDevMiddleware(devServer, state);
     },
 
     async buildStart() {
+      const environment = resolveBuildStartEnvironment(this, precompileConfig);
+      // The environments configured together build one snapshot of the sources.
+      // A build with no Vite config resolution (standalone Rolldown), or of an
+      // environment that already built, starts after a gap nothing reported.
+      if (!state.initialized || startedEnvironments.has(environment)) {
+        processFilesystemEpoch.advance();
+        startedEnvironments.clear();
+      }
+      startedEnvironments.add(environment);
       resetTypeProjectWatches(state.cache);
       state.viteResolveCache?.clear();
+      const inputOwners = precompileInputOwners(this, precompileConfig);
+      setCompileInputOwners(state, inputOwners);
       if (!state.scanPatterns || state.scanPatterns.length === 0) {
-        // Running in standalone rolldown context (e.g., ox-content OG image)
-        // where configResolved is not called, or a framework integration has
-        // opted into on-demand compilation. Skip pre-compilation.
+        // No startup scan was asked for: each environment compiles the SFCs its
+        // module graph requests, in batches (`demand-compile.ts`). Also a
+        // standalone rolldown context (e.g., ox-content OG image) where
+        // configResolved is not called.
         return;
       }
       try {
         await compileAll(
           { ...state, extractCss: shouldExtractCssForBuild(state, this) },
-          precompileInputOwners(this, precompileConfig),
+          inputOwners,
           (request, importer) => this.resolve(request, importer, { skipSelf: true }),
           this.addWatchFile.bind(this),
           resolveBuildStartSsr(this, precompileConfig),
@@ -313,28 +340,46 @@ export function vize(
       state.logger.log("Cache keys:", [...state.cache.keys()].slice(0, 3));
     },
 
+    // No filter: an import from an SFC is resolved against the SFC's real path
+    // whatever its specifier is, and a hook filter cannot see the importer.
     resolveId(id, importer, options) {
-      return resolveIdHook(this, state, id, importer, {
-        ...options,
-        ssr: resolveHookSsr(this, options),
+      const ssr = resolveHookSsr(this, options);
+      const hookOptions: { ssr: boolean; scan?: boolean } = { ...options, ssr };
+      const resolving = resolveIdHook(this, state, id, importer, hookOptions);
+      // A dependency scan reads SFCs; it does not ask this environment to compile them.
+      if (hookOptions.scan || !id.includes(".vue")) return resolving;
+      return resolving.then((resolved) => {
+        requestResolvedSfc(state, resolved, ssr);
+        return resolved;
       });
     },
 
-    load(id, loadOptions) {
-      return loadHook(state, id, {
-        ssr: resolveHookSsr(this, loadOptions),
-        addWatchFile: (file) => this.addWatchFile(file),
-      });
+    load: {
+      filter: { id: LOAD_ID_FILTER },
+      handler(id, loadOptions) {
+        return loadHook(state, id, {
+          ssr: resolveHookSsr(this, loadOptions),
+          addWatchFile: (file) => this.addWatchFile(file),
+        });
+      },
     },
 
-    async transform(code, id, transformOptions) {
-      return transformHook(state, code, id, {
-        ...transformOptions,
-        ssr: resolveHookSsr(this, transformOptions),
-      });
+    transform: {
+      filter: { id: TRANSFORM_ID_FILTER },
+      async handler(code, id, transformOptions) {
+        return transformHook(state, code, id, {
+          ...transformOptions,
+          ssr: resolveHookSsr(this, transformOptions),
+        });
+      },
+    },
+
+    watchChange() {
+      processFilesystemEpoch.advance();
     },
 
     async hotUpdate(options) {
+      processFilesystemEpoch.advance();
       return handleHotUpdateEnvironmentHook(state, this.environment, options);
     },
 
@@ -345,6 +390,7 @@ export function vize(
     // Vite 7.3+ prefers `hotUpdate` when both hooks exist. Keep this deprecated
     // shim for plugin-vue drop-in compatibility and older Vite integrations.
     async handleHotUpdate(ctx) {
+      processFilesystemEpoch.advance();
       const container =
         ctx.server.environments?.client?.pluginContainer ?? ctx.server.pluginContainer;
       return handleHotUpdateHook(state, ctx, {
@@ -364,6 +410,7 @@ export function vize(
       if (state.server === null) {
         configBridge.unregisterBuild(this);
         clearBuildCaches(state);
+        resetDemandCompiles(state);
       }
     },
   };

@@ -27,9 +27,11 @@ assert.equal(sha256(process.execPath), process.env.VIZE_NUXT_SOURCE_NODE_SHA256)
 const runtimeProbe = spawnSync(
   runtimeNode,
   [
-    "--input-type=module",
-    "--eval",
-    "console.log(JSON.stringify({version:process.version,execPath:process.execPath,platform:process.platform,arch:process.arch}))",
+    fileURLToPath(new URL("../../node-runtime-identity.cjs", import.meta.url)),
+    "version",
+    "execPath",
+    "platform",
+    "arch",
   ],
   { encoding: "utf8" },
 );

@@ -73,6 +73,19 @@ jobs:
       editor_matrix: ${{ steps.platforms.outputs.editor_matrix }}
       editor_platform_artifacts: ${{ steps.resume.outputs.editor_platform_artifacts }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
@@ -91,46 +104,24 @@ jobs:
         env:
           RELEASE_SOURCE: ${{ inputs.source }}
           GH_TOKEN: ${{ github.token }}
-        run: |
-          # Only a commit already on main may be released.
-          status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$RELEASE_SOURCE...$GITHUB_SHA" --jq .status)
-          [[ "$status" == ahead || "$status" == identical ]]
-          git fetch --depth=1 origin "$RELEASE_SOURCE"
-          git checkout --detach FETCH_HEAD
+        run: . "${{ env.VIZE_CI_FILES }}/check-out-the-requested-main-commit.sh"
       # The crate quota never refuses a cut; the post-build admission decides crates.
       - name: Resolve the requested version with current workflow tooling
         id: resolve
         if: inputs.npm_resume_run == ''
         env:
           RELEASE_VERSION: ${{ inputs.version }}
-        run: |
-          mkdir -p "$RUNNER_TEMP/release-quota-tooling"
-          git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
-          quota_main="$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/main.ts"
-          version="$RELEASE_VERSION"
-          if [[ -z "$version" ]]; then
-            version="$(node "$quota_main" next)"
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+        run: . "${{ env.VIZE_CI_FILES }}/resolve-the-requested-version-with-current-workflow-tooling.sh"
       - name: Stamp, commit and push the release candidate
         id: cut
         if: inputs.npm_resume_run == ''
         env: { RELEASE_VERSION: "${{ steps.resolve.outputs.version }}" }
-        run: node tools/support/release/release/main.ts cut ${RELEASE_VERSION:+"$RELEASE_VERSION"}
+        run: . "${{ env.VIZE_CI_FILES }}/cut-release-candidate.sh"
       - name: Resolve the release channel
         id: channel
         env:
           RELEASE_VERSION: ${{ steps.resume.outputs.version || steps.cut.outputs.version }}
-        run: |
-          npm_tag="$(node tools/commands/release/npm/tag.ts "$RELEASE_VERSION")"
-          echo "npm_tag=$npm_tag" >> "$GITHUB_OUTPUT"
-          if [[ "$npm_tag" == "latest" ]]; then
-            echo "prerelease=false" >> "$GITHUB_OUTPUT"
-            echo "make_latest=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "prerelease=true" >> "$GITHUB_OUTPUT"
-            echo "make_latest=false" >> "$GITHUB_OUTPUT"
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/resolve-the-release-channel.sh"
       - name: Emit the actual created candidate's original producer attestation
         if: steps.cut.outputs.sha != ''
         env:
@@ -212,6 +203,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -232,9 +236,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", run-install: true }
       - name: Smoke @vizejs/wasm
-        run: |
-          node tools/commands/release/npm/smoke-wasm-package.ts npm/wasm
-          node tools/commands/release/npm/smoke-release-install.ts npm/wasm
+        run: . "${{ env.VIZE_CI_FILES }}/smoke-vizejs-wasm.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: npm-package-wasm
@@ -249,6 +251,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -265,14 +280,7 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
       - name: Package editor extensions
-        run: |
-          vp run --workspace-root package:vscode-extension
-          vp run --workspace-root check:zed-extension
-          vp run --workspace-root package:zed-extension
-          vp run --workspace-root package:nvim-extension
-          vp run --workspace-root package:vim-extension
-          vp run --workspace-root package:helix-extension
-          vp run --workspace-root package:emacs-extension
+        run: . "${{ env.VIZE_CI_FILES }}/package-editor-extensions.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: editor-extensions
@@ -293,6 +301,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -313,125 +334,7 @@ jobs:
         id: artifacts
         env:
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
-        run: |
-          set -euo pipefail
-          evidence="$RUNNER_TEMP/release-editor-evidence"
-          install_root="$RUNNER_TEMP/release-editor-install"
-          fresh="$RUNNER_TEMP/release-editor-fresh-project"
-          mkdir -p "$evidence" "$install_root/cli" "$install_root/npm" "$fresh/src" target/source-editors
-
-          tar -xzf "$RUNNER_TEMP/release-cli/vize-x86_64-unknown-linux-gnu.tar.gz" \
-            -C "$install_root/cli"
-          server="$install_root/cli/vize"
-          test -x "$server"
-          test "$("$server" --version)" = "vize $RELEASE_VERSION"
-
-          for editor in zed nvim vim helix emacs; do
-            mv "editors/$editor" "target/source-editors/$editor"
-            tar -xzf "$RUNNER_TEMP/release-editors/${editor}-vize-extension.tar.gz" \
-              -C editors
-            test -d "editors/$editor"
-          done
-          vsix="$RUNNER_TEMP/release-editors/editors/vscode/dist/vize.vsix"
-          test -s "$vsix"
-
-          test -f "$RUNNER_TEMP/release-npm/cli/package.json"
-          test "$(node -p "require('$RUNNER_TEMP/release-npm/cli/package.json').version")" = \
-            "$RELEASE_VERSION"
-          npm pack "$RUNNER_TEMP/release-npm/cli" \
-            --pack-destination "$install_root/npm" --ignore-scripts >/dev/null
-          cli_archive=$(find "$install_root/npm" -maxdepth 1 -type f -name '*.tgz' -print)
-          test "$(printf '%s\n' "$cli_archive" | wc -l)" -eq 1
-          mkdir -p "$install_root/npm/package"
-          tar -xzf "$cli_archive" -C "$install_root/npm/package" --strip-components=1
-          packaged_cli="$install_root/npm/package/bin/vize"
-          test -f "$packaged_cli"
-          test "$(node -p "require('$install_root/npm/package/package.json').version")" = \
-            "$RELEASE_VERSION"
-
-          node --input-type=module - "$fresh" <<'JS'
-          import fs from "node:fs";
-          import path from "node:path";
-          const root = process.argv[2];
-          fs.cpSync("editors/vscode/test-fixtures/extension-host/real-vue", root, {
-            recursive: true,
-          });
-          fs.writeFileSync(path.join(root, "package.json"), `${JSON.stringify({
-            name: "vize-release-editor-smoke",
-            version: "0.0.0",
-            private: true,
-            type: "module",
-            scripts: { dev: "vite", build: "vite build" },
-            dependencies: { vue: "3.5.34" },
-            devDependencies: {
-              typescript: "6.0.3",
-              "typescript-native": "npm:typescript@7.1.0-beta",
-              vite: "8.0.0",
-            },
-          }, null, 2)}\n`);
-          fs.writeFileSync(path.join(root, "src/Lint.vue"), `<script setup lang="ts">
-          const items = [1, 2]
-          </script>
-          <template><ul><li v-for="item in items">{{ item }}</li></ul></template>
-          `);
-          JS
-          node "$packaged_cli" init "$fresh" --yes --no-lint --vite --fmt --typecheck --editor --no-install \
-            | tee "$evidence/init.txt"
-          dependency_root="$RUNNER_TEMP/release-editor-dependencies"
-          mkdir -p "$dependency_root"
-          npm install --prefix "$dependency_root" --ignore-scripts --no-audit --no-fund \
-            --package-lock=false --save=false vue@3.5.34 typescript@6.0.3 \
-            typescript-native@npm:typescript@7.1.0-beta
-          mv "$dependency_root/node_modules" "$fresh/node_modules"
-          native_resolver="$fresh/node_modules/typescript-native/lib/getExePath.js"
-          test -f "$native_resolver"
-          native_checker=$(node --input-type=module -e \
-            'import {pathToFileURL} from "node:url";const {default:get}=await import(pathToFileURL(process.argv[1]).href);process.stdout.write(get());' \
-            "$native_resolver")
-          test -x "$native_checker"
-          fresh_real=$(readlink -f "$fresh")
-          case "$(readlink -f "$native_checker")" in
-            "$fresh_real/node_modules"/*) ;;
-            *)
-              echo "native checker escapes the fresh project: $native_checker" >&2
-              exit 1
-              ;;
-          esac
-          test -f "$fresh/.vscode/extensions.json"
-          grep -F 'ubugeeei.vize' "$fresh/.vscode/extensions.json"
-          set +e
-          "$server" lint "$fresh/src/Lint.vue" --format json --no-config \
-            > "$evidence/diagnostics.json"
-          lint_status=$?
-          set -e
-          test "$lint_status" -eq 1
-          grep -F 'vue/require-v-for-key' "$evidence/diagnostics.json"
-          find "$fresh" -type l -print > "$evidence/project-links.txt"
-          find "$fresh" -path "$fresh/node_modules" -prune -o -type l -print \
-            > "$evidence/project-links-outside-node-modules.txt"
-          test ! -s "$evidence/project-links-outside-node-modules.txt"
-          find "$fresh/node_modules" -type l -print > "$evidence/dependency-links.txt"
-          while IFS= read -r link; do
-            target=$(readlink -f "$link")
-            case "$target" in
-              "$fresh/node_modules"/*) ;;
-              *)
-                echo "installed dependency link escapes the fresh project: $link -> $target" >&2
-                exit 1
-                ;;
-            esac
-          done < "$evidence/dependency-links.txt"
-          if grep -R -F -n "$GITHUB_WORKSPACE" "$fresh" > "$evidence/workspace-links.txt"; then
-            echo "fresh release project refers to the source checkout" >&2
-            exit 1
-          fi
-          sha256sum "$server" "$vsix" "$RUNNER_TEMP/release-editors/"*.tar.gz \
-            > "$evidence/artifacts.sha256"
-          find "$fresh" -type f -print | LC_ALL=C sort > "$evidence/project-files.txt"
-          printf 'server=%s\n' "$server" >> "$GITHUB_OUTPUT"
-          printf 'vsix=%s\n' "$vsix" >> "$GITHUB_OUTPUT"
-          printf 'fresh=%s\n' "$fresh" >> "$GITHUB_OUTPUT"
-          printf 'evidence=%s\n' "$evidence" >> "$GITHUB_OUTPUT"
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-exact-release-artifacts-and-initialize-a-fresh-project.sh"
       - name: Launch the packaged editor hosts with the release binary
         uses: ./.github/actions/vscode-host-smoke
         with:
@@ -443,40 +346,12 @@ jobs:
           release-evidence: ${{ steps.artifacts.outputs.evidence }}
       - name: Require packaged hosts on the initialized release project
         env:
+          VIZE_STEPS_ARTIFACTS_OUTPUTS_EVIDENCE: "${{ steps.artifacts.outputs.evidence }}"
           VIZE_SERVER_PATH: ${{ steps.artifacts.outputs.server }}
           VIZE_TEST_HELIX_PATH: ${{ runner.temp }}/helix/hx
           VIZE_TS45_EXISTING_WORKSPACE: ${{ steps.artifacts.outputs.fresh }}
           VIZE_TS45_OUT: ${{ steps.artifacts.outputs.evidence }}/hosts
-        run: |
-          set -euo pipefail
-          mkdir -p "$VIZE_TS45_OUT"
-          node tests/editor-conformance/run.ts neovim --out "$VIZE_TS45_OUT"
-          node tests/editor-conformance/run.ts helix --out "$VIZE_TS45_OUT"
-          xvfb-run -a node tests/editor-conformance/run.ts vscode --out "$VIZE_TS45_OUT"
-          find "$VIZE_TS45_OUT" -type f -print | LC_ALL=C sort
-          find "$VIZE_TS45_EXISTING_WORKSPACE" -type l -print \
-            > "${{ steps.artifacts.outputs.evidence }}/project-links-after-hosts.txt"
-          find "$VIZE_TS45_EXISTING_WORKSPACE" \
-            -path "$VIZE_TS45_EXISTING_WORKSPACE/node_modules" -prune -o -type l -print \
-            > "${{ steps.artifacts.outputs.evidence }}/project-links-after-hosts-outside-node-modules.txt"
-          test ! -s "${{ steps.artifacts.outputs.evidence }}/project-links-after-hosts-outside-node-modules.txt"
-          find "$VIZE_TS45_EXISTING_WORKSPACE/node_modules" -type l -print \
-            > "${{ steps.artifacts.outputs.evidence }}/dependency-links-after-hosts.txt"
-          while IFS= read -r link; do
-            target=$(readlink -f "$link")
-            case "$target" in
-              "$VIZE_TS45_EXISTING_WORKSPACE/node_modules"/*) ;;
-              *)
-                echo "installed dependency link escapes the fresh project after host execution: $link -> $target" >&2
-                exit 1
-                ;;
-            esac
-          done < "${{ steps.artifacts.outputs.evidence }}/dependency-links-after-hosts.txt"
-          if grep -R -F -n "$GITHUB_WORKSPACE" "$VIZE_TS45_EXISTING_WORKSPACE" \
-            > "${{ steps.artifacts.outputs.evidence }}/workspace-links-after-hosts.txt"; then
-            echo "fresh release project refers to the source checkout after host execution" >&2
-            exit 1
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/require-packaged-hosts-on-the-initialized-release-project.sh"
       - name: Retain release artifact and fresh-project evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -500,7 +375,7 @@ jobs:
         settings: ${{ fromJSON(needs.version.outputs.editor_matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
+        with: { ref: "${{ needs.version.outputs.sha }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", cache: true, run-install: false }
       - name: Install packaging dependencies
@@ -549,6 +424,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
       - uses: ./.github/actions/setup-runtime-package-managers
@@ -557,10 +445,7 @@ jobs:
       - name: Smoke install release package tarballs
         env:
           VIZE_SMOKE_TIMING_FILE: ${{ runner.temp }}/packed-smoke-timing.jsonl
-        run: |
-          read -ra js <<< "$RELEASE_JS_PACKAGES"
-          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks \
-            npm/native npm/native/npm/* npm/fresco-native "${js[@]}"
+        run: . "${{ env.VIZE_CI_FILES }}/smoke-install-release-package-tarballs.sh"
       - name: Retain packed smoke timing
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -590,6 +475,19 @@ jobs:
             target: aarch64-unknown-linux-gnu
             platform: linux-arm64-gnu
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
       - uses: ./.github/actions/setup-runtime-package-managers
@@ -599,11 +497,7 @@ jobs:
         with: { name: "cli-${{ matrix.target }}", path: .artifacts/cli-archive }
       - name: Unpack the release CLI
         env: { TARGET: "${{ matrix.target }}", PLATFORM: "${{ matrix.platform }}" }
-        run: |
-          mkdir -p .artifacts/cli
-          tar -xzf ".artifacts/cli-archive/vize-$TARGET.tar.gz" -C .artifacts/cli
-          node tools/commands/ci/github/verify-glibc-symbols.ts .artifacts/cli/vize \
-            "npm/native/npm/$PLATFORM/vize-vitrine.$PLATFORM.node"
+        run: . "${{ env.VIZE_CI_FILES }}/unpack-the-release-cli.sh"
       - uses: ./.github/actions/smoke-glibc-floor-containers
         with: { platform: "${{ matrix.platform }}" }
       - uses: ./.github/actions/smoke-glibc-floor-containers
@@ -628,12 +522,23 @@ jobs:
       RELEASE_TAG: ${{ needs.version.outputs.tag }}
       RELEASE_CANDIDATE: ${{ needs.version.outputs.ref }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.ref }}" }
       - name: Push the tag and drop the candidate ref
-        run: |
-          git push origin "HEAD:refs/tags/$RELEASE_TAG"
-          git push origin ":$RELEASE_CANDIDATE"
+        run: . "${{ env.VIZE_CI_FILES }}/push-the-tag-and-drop-the-candidate-ref.sh"
       - name: Dispatch Parcel native publication from the immutable tag
         env: { GH_TOKEN: "${{ github.token }}" }
         run: gh workflow run parcel-transformer.yml --ref "$RELEASE_TAG" -f publish=true
@@ -691,6 +596,19 @@ jobs:
     outputs:
       packages: ${{ steps.publish.outputs.packages }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.npm_resume_run != '' && github.sha || needs.version.outputs.tag }}
@@ -715,15 +633,7 @@ jobs:
           repository: ${{ github.repository }}
       - name: Publish native platforms before dependent packages
         id: publish
-        run: |
-          read -ra js <<< "$RELEASE_JS_PACKAGES"
-          platforms=(npm/native/npm)
-          native=(npm/native)
-          dependents=(npm/fresco-native npm/wasm "${js[@]}")
-          node tools/support/release/publish_npm_package_dirs/main.ts "${platforms[@]}" --concurrency 8 --provenance
-          node tools/support/release/publish_npm_package_dirs/main.ts "${native[@]}" --concurrency 1 --provenance
-          node tools/support/release/publish_npm_package_dirs/main.ts "${dependents[@]}" --concurrency 16 --provenance --no-wait
-          echo "packages=$(node tools/support/release/publish_npm_package_dirs/main.ts --names "${platforms[@]}" "${native[@]}" "${dependents[@]}")" >> "$GITHUB_OUTPUT"
+        run: . "${{ env.VIZE_CI_FILES }}/publish-native-platforms-before-dependent-packages.sh"
 
   publish-crates:
     name: Publish crates
@@ -734,6 +644,19 @@ jobs:
     environment: crates-io
     permissions: { contents: read, actions: read, id-token: write }
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -753,11 +676,7 @@ jobs:
           RELEASE_SHA: ${{ needs.version.outputs.sha }}
           RELEASE_PRODUCER_RUN: ${{ inputs.npm_resume_run || github.run_id }}
           RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/crate-quota/report.json
-        run: |
-          git fetch --no-tags --depth=1 origin "$GITHUB_SHA"
-          mkdir -p "$RUNNER_TEMP/release-quota-tooling"
-          git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
-          node "$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/main.ts" quota "$RELEASE_VERSION"
+        run: . "${{ env.VIZE_CI_FILES }}/recheck-quota-before-any-new-crate-write-including-failed-job-recovery.sh"
       - uses: rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec # v1
         id: crates-io-auth
       - name: Publish to crates.io
@@ -893,6 +812,19 @@ jobs:
       # A failed platform build releases without its files rather than blocking.
       EDITOR_PLATFORMS: ${{ inputs.npm_resume_run != '' && needs.version.outputs.editor_platform_artifacts || needs.build-editor-platforms.result == 'success' && '1' || '0' }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ needs.version.outputs.tag }}", persist-credentials: false }
       - if: inputs.npm_resume_run == ''
@@ -953,12 +885,7 @@ jobs:
         env:
           COSIGN_YES: "true"
           VIZE_EDITOR_PLATFORM_ARTIFACTS: ${{ env.EDITOR_PLATFORMS }}
-        run: |
-          shopt -s nullglob
-          for artifact in cli-artifacts/*.tar.gz cli-artifacts/*.zip editor-extension-artifacts/editors/vscode/dist/*.vsix editor-extension-artifacts/platform/*.vsix editor-extension-artifacts/platform/*.receipt.json editor-extension-artifacts/*.tar.gz; do
-            ( cd "$(dirname "$artifact")" && sha256sum "$(basename "$artifact")" ) > "$artifact.sha256"
-          done
-          node tools/support/release/sign_release_artifacts.ts "$RELEASE_TAG"
+        run: . "${{ env.VIZE_CI_FILES }}/checksum-and-sign-release-artifacts.sh"
       - name: Generate release notes
         env:
           GH_TOKEN: ${{ github.token }}
@@ -1006,6 +933,19 @@ jobs:
     # whose actor is a scope member, never github-actions[bot].
     environment: release-operator
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Dispatch release-verify.yml
         env:
           GH_TOKEN: ${{ secrets.RELEASE_OPERATOR_TOKEN }}
@@ -1013,7 +953,4 @@ jobs:
           RELEASE_TAG: ${{ needs.version.outputs.tag }}
           RELEASE_SHA: ${{ needs.version.outputs.sha }}
           RELEASE_PACKAGES: ${{ needs.publish-npm.outputs.packages }}
-        run: |
-          gh workflow run release-verify.yml --repo "$GITHUB_REPOSITORY" --ref main \
-            -f version="$RELEASE_VERSION" -f tag="$RELEASE_TAG" -f sha="$RELEASE_SHA" \
-            -f packages="$RELEASE_PACKAGES"
+        run: . "${{ env.VIZE_CI_FILES }}/dispatch-release-verify-yml.sh"

@@ -1,10 +1,12 @@
-//! Kani checks the production HTML content-model kernel directly: the
-//! three-valued facts (`tri.rs`) and the stack-of-open-elements walk every
-//! scope and loop scan is built from (`walk.rs`).
+//! Kani checks the production stack-of-open-elements walk every scope and
+//! loop scan is built from (`walk.rs`) directly, for chains of up to four
+//! known frames and up to two ancestors a truncated context reveals.
 //!
 //! These harnesses replace the Lean package `tests/formal/html-content-model`.
 //! Each one names the Lean theorem it replaces. Unlike the Lean model, they
-//! verify the shipped Rust source, not a restatement of it.
+//! verify the shipped Rust source, not a restatement of it. The laws of the
+//! three-valued facts (`tri.rs`) are proved without a bound by Creusot
+//! (`creusot.rs` beside this file).
 
 extern crate core;
 
@@ -53,14 +55,6 @@ mod proofs {
                 1 => self.roles[1],
                 _ => self.roles[2],
             }
-        }
-    }
-
-    fn any_tri() -> Tri {
-        match kani::any::<u8>() % 3 {
-            0 => Tri::No,
-            1 => Tri::Maybe,
-            _ => Tri::Yes,
         }
     }
 
@@ -114,33 +108,6 @@ mod proofs {
             }
         }
         false
-    }
-
-    /// Lean `Tri.not_sound`, `Tri.and_sound` and `Tri.or_sound`.
-    #[kani::proof]
-    fn kleene_connectives_are_sound() {
-        let (left, right) = (any_tri(), any_tri());
-        let (a, b): (bool, bool) = (kani::any(), kani::any());
-        kani::assume(admits(left, a) && admits(right, b));
-        assert!(admits(left.not(), !a));
-        assert!(admits(left.and(right), a && b));
-        assert!(admits(left.or(right), a || b));
-    }
-
-    /// Lean `Tri.or_eq_not_and_not`.
-    #[kani::proof]
-    fn disjunction_is_the_de_morgan_dual_of_conjunction() {
-        let (left, right) = (any_tri(), any_tri());
-        assert_eq!(left.or(right), left.not().and(right.not()).not());
-    }
-
-    /// Lean `Tri.admits_unique`.
-    #[kani::proof]
-    fn a_definite_fact_admits_exactly_one_value() {
-        let fact = any_tri();
-        let (a, b): (bool, bool) = (kani::any(), kani::any());
-        kani::assume(fact != Tri::Maybe && admits(fact, a) && admits(fact, b));
-        assert_eq!(a, b);
     }
 
     /// The inductive step of Lean `walk_sound`, for a frame of any shape:
@@ -239,37 +206,5 @@ mod proofs {
         );
         assert_eq!(after, verdict);
         assert_eq!(after_by, decided_by.map(|index| index + more_len));
-    }
-
-    /// Lean `proven_sound`: a violation is proven when every possible parent
-    /// dispatch diverges, and then it holds for whichever dispatch the page
-    /// really takes. The checker folds the per-dispatch facts with
-    /// `Tri::join`; a frame has at most four dispatches.
-    #[kani::proof]
-    #[kani::unwind(6)]
-    fn a_proven_violation_holds_for_every_dispatch() {
-        const DISPATCHES: usize = 4;
-        let diverges = [any_tri(), any_tri(), any_tri(), any_tri()];
-        let concrete: [bool; DISPATCHES] = kani::any();
-        let len: usize = kani::any();
-        kani::assume(len <= DISPATCHES);
-
-        let mut outcome: Option<Tri> = None;
-        for index in 0..len {
-            kani::assume(admits(diverges[index], concrete[index]));
-            outcome = Some(outcome.map_or(diverges[index], |so_far| so_far.join(diverges[index])));
-        }
-        let proven = outcome.unwrap_or(Tri::No) == Tri::Yes;
-
-        let mut every_dispatch_diverges = len > 0;
-        for index in 0..len {
-            every_dispatch_diverges &= diverges[index] == Tri::Yes;
-        }
-        assert_eq!(proven, every_dispatch_diverges);
-        if proven {
-            for index in 0..len {
-                assert!(concrete[index]);
-            }
-        }
     }
 }

@@ -1,3 +1,5 @@
+import { packageScripts } from "./support/package-task-source.ts";
+import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -15,10 +17,17 @@ type WorkflowJob = {
 };
 
 test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () => {
-  const action = readRepoFile(".github", "actions", "setup-ubuntu-archive", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "setup-ubuntu-archive", "action.yml");
   assert.match(action, /\/etc\/apt\/blacksmith-ubuntu-mirrors\.txt/);
   assert.match(action, /https:\/\/archive\.ubuntu\.com\/ubuntu/);
-  assert.match(action, /https:\/\/security\.ubuntu\.com\/ubuntu/);
+  const mirrorFilter = "secure-ubuntu-mirrors.sed";
+  assert.ok(action.includes(' -f "$GITHUB_ACTION_PATH/scripts/' + mirrorFilter + '"'));
+  const rewrites = readRepoFile(".github/actions/setup-ubuntu-archive/scripts", mirrorFilter);
+  for (const host of ["archive.ubuntu.com", "security.ubuntu.com"]) {
+    assert.ok(
+      rewrites.split("\n").includes("s|http://" + host + "/ubuntu|https://" + host + "/ubuntu|g"),
+    );
+  }
   assert.match(action, /Acquire::Retries "5";/);
   assert.match(action, /Acquire::http::Timeout "30";/);
   assert.match(action, /Acquire::https::Timeout "30";/);
@@ -26,9 +35,12 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
   assert.match(action, /Acquire::http::Pipeline-Depth "0";/);
   assert.match(action, /Acquire::https::Pipeline-Depth "0";/);
   assert.match(action, /\/usr\/local\/bin\/vize-ci-apt-retry/);
-  assert.match(action, /VIZE_CI_APT_RETRIES:-4/);
+  assert.match(
+    readRepoFile(".github/actions/setup-ubuntu-archive/scripts/retry-apt.sh"),
+    /VIZE_CI_APT_RETRIES:-4/,
+  );
 
-  const row = readRepoFile(".github", "actions", "app-e2e-row", "action.yml");
+  const row = readAutomationPrograms(".github", "actions", "app-e2e-row", "action.yml");
   const rowSetup = row.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
   const rowApt = row.indexOf("playwright install-deps chromium");
   assert.ok(rowSetup >= 0 && rowSetup < rowApt);
@@ -37,7 +49,7 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
     /vize-ci-apt-retry vp exec --filter '\.\/tests' -- playwright install-deps chromium/,
   );
 
-  const editor = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const editor = readAutomationPrograms(".github", "actions", "vscode-host-smoke", "action.yml");
   const editorSetup = editor.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
   const editorApt = editor.indexOf("sudo apt-get update");
   assert.ok(editorSetup >= 0 && editorSetup < editorApt);
@@ -61,7 +73,7 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
 });
 
 test("deploy-docs deploy job sets up Node before running the site assembler", () => {
-  const workflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "deploy-docs.yml");
   const deployJob = workflow.slice(workflow.indexOf("\n  deploy:\n"));
   const setupIndex = deployJob.indexOf("uses: voidzero-dev/setup-vp@");
   const runIndex = deployJob.indexOf("run: node tools/support/github/create-site-structure.ts\n");
@@ -73,7 +85,7 @@ test("deploy-docs deploy job sets up Node before running the site assembler", ()
 });
 
 test("deploy-docs deploy job keeps a full checkout so local actions and scripts remain available", () => {
-  const workflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "deploy-docs.yml");
   const deployJob = workflow.slice(workflow.indexOf("\n  deploy:\n"));
 
   assert.match(deployJob, /uses: actions\/checkout@[0-9a-f]{40}\s*# v6/);
@@ -84,7 +96,7 @@ test("docs build isolates musea example cargo checks in a dedicated sticky disk"
   const manifest = JSON.parse(readRepoFile("examples", "vite-musea", "package.json")) as {
     scripts?: Record<string, string>;
   };
-  const checkScript = manifest.scripts?.check;
+  const checkScript = packageScripts("examples/vite-musea", manifest.scripts).check;
   assert.ok(checkScript, "examples/vite-musea/package.json must define a check script");
 
   assert.match(
@@ -93,7 +105,7 @@ test("docs build isolates musea example cargo checks in a dedicated sticky disk"
     "musea example check script must use the dedicated docs example target",
   );
 
-  const workflow = readRepoFile(".github", "workflows", "build-docs.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "build-docs.yml");
   const job = workflowJobBody(workflow, "build-playground");
   assert.match(job, /secondary-key: docs-example/);
   assert.match(job, /secondary-target-path: \.docs-example-target/);
@@ -145,7 +157,7 @@ test("WASM build jobs set up Node before invoking the TypeScript builders", () =
 });
 
 test("setup-rust-script pins Windows MSVC linkers before cargo install", () => {
-  const action = readRepoFile(".github", "actions", "setup-rust-script", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "setup-rust-script", "action.yml");
   const linkerIndex = action.indexOf("Configure Windows Rust linker");
   const installIndex = action.indexOf("Install rust-script");
 
@@ -159,7 +171,7 @@ test("setup-rust-script pins Windows MSVC linkers before cargo install", () => {
 });
 
 test("native smoke workflow covers host platforms before release tags", () => {
-  const workflow = readRepoFile(".github", "workflows", "native-smoke.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "native-smoke.yml");
   const job = workflowJobBody(workflow, "host-native-smoke");
 
   assert.match(workflow, /workflow_dispatch:/);
@@ -185,12 +197,15 @@ test("native smoke workflow covers host platforms before release tags", () => {
     job,
     /node tools\/commands\/ci\/github\/verify-glibc-symbols\.ts --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/,
   );
-  assert.match(job, /require\('\.\/npm\/native'\)/);
+  assert.match(
+    workflowProgram("native-smoke", job, "smoke-vizejs-native.cjs"),
+    /requireFromWorkspace\("\.\/npm\/native"\)/u,
+  );
   assert.match(job, /smoke-release-install\.ts --prepare-manifests npm\/native/);
 });
 
 test("native smoke workflow fresh-installs runtime tarballs across supported targets", () => {
-  const workflow = readRepoFile(".github", "workflows", "native-smoke.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "native-smoke.yml");
   const parsed = parse(workflow) as { jobs?: Record<string, WorkflowJob> };
   const parsedJob = parsed.jobs?.["fresh-install-smoke"];
   const job = workflowJobBody(workflow, "fresh-install-smoke");
@@ -215,7 +230,7 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   assert.match(job, /node tools\/support\/github\/stage-built-native-packages\.ts npm\/native/);
   assert.doesNotMatch(job, /napi pre-publish/);
   assert.match(
-    readRepoFile(".github", "actions", "release-npm-artifacts", "action.yml"),
+    readAutomationPrograms(".github", "actions", "release-npm-artifacts", "action.yml"),
     /vp exec napi artifacts --output-dir artifacts\n\s+vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish\n/,
   );
   assert.match(
@@ -225,7 +240,7 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
 });
 
 test("pkg.pr.new workflow publishes built npm packages from the lockfile", () => {
-  const workflow = readRepoFile(".github", "workflows", "pkg-pr-new.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "pkg-pr-new.yml");
   const job = workflowJobBody(workflow, "publish-preview");
 
   assert.match(job, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);

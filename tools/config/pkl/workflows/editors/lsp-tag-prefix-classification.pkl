@@ -1,0 +1,105 @@
+import "../../Actions.pkl" as ci
+
+name = "Tag prefix classification observations"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/lsp-tag-prefix-classification.yml"
+      ".github/scripts/workflows/lsp-tag-prefix-classification/**"
+      "crates/vize_maestro/src/ide/completion/template/tag_names.rs"
+      "crates/vize_maestro/src/ide/completion/template/tag_types.rs"
+      "crates/vize_maestro/src/ide/completion/template/tag_name_tests.rs"
+      "tests/tooling/lsp-tag-prefix-classification.test.ts"
+      "tests/tooling/lsp-template-completion.test.ts"
+      "tests/tooling/support/tag-prefix-classification-10622.ts"
+      "tests/_fixtures/differential/lsp/tag-prefix-classification-10622/**"
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "tag-prefix-classification-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  observations {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    env {
+
+      CARGO_BUILD_JOBS = "12"
+      CARGO_TERM_COLOR = "always"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+      RAYON_NUM_THREADS = "4"
+      SOURCE_SHA = "${{ github.event.pull_request.head.sha }}"
+      VIZE_LSP_BIN = "target/ci/vize"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+      VIZE_TEST_REQUIRE_TSGO = "1"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("lsp-tag-prefix-classification")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      ci.workspaceVp()
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "test-scripts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        name = "Check every referenced tooling TypeScript project"
+        shell = "bash"
+        run = ci.workflowScript("check-every-referenced-tooling-typescript-project.sh")
+      }
+      new Dynamic {
+        name = "Build and receipt the exact source CLI"
+        run = ci.workflowScript("build-and-receipt-the-exact-source-cli.sh")
+      }
+      new Dynamic {
+        name = "Record source and dependency identities"
+        run = ci.workflowScript("record-source-and-dependency-identities.sh")
+      }
+      new Dynamic {
+        name = "Verify complete native packets and requested binding positions"
+        shell = "bash"
+        run = ci.workflowScript("verify-complete-native-packets-and-requested-binding-positions.sh")
+      }
+      new Dynamic {
+        name = "Verify authored tag ranges and exact alias matching"
+        shell = "bash"
+        run = ci.workflowScript("verify-authored-tag-ranges-and-exact-alias-matching.sh")
+      }
+      new Dynamic {
+        name = "Retain complete observations and exact source receipt"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "tag-prefix-classification-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}"
+          path = """
+          target/vize-tests/tag-prefix-classification-10622/
+          target/differential/lsp-sessions/
+          target/ci/vize.differential-build.json
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

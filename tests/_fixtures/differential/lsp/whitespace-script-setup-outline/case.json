@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "id": "lsp/regression/whitespace-script-setup-outline",
+  "provenance": {
+    "fixCommit": "e8f38ba7eb2d21ee916769d6f2846a9ea0fab598",
+    "inputRevision": "b45ce028579370b97095df4c218c23549173ad98",
+    "inputPath": "tests/_fixtures/differential/typechecker/inline-arrow-event-handler-1141/WrongMember.vue.txt",
+    "witness": {
+      "path": "whitespace-script-setup-outline/WrongMember.vue.txt",
+      "sha256": "d58c99bd85f389f47b0f9984b81cb69fdc3e8aeb0607160705daa23b10005c99"
+    },
+    "contractOrigin": "Complete document symbols captured over stdio with the original Vue input before the editor path refactor."
+  },
+  "files": [
+    {
+      "source": "WrongMember.vue.txt",
+      "runtimePath": "WrongMember.vue",
+      "sha256": "d58c99bd85f389f47b0f9984b81cb69fdc3e8aeb0607160705daa23b10005c99"
+    }
+  ],
+  "entry": "WrongMember.vue",
+  "expected": {
+    "source": "outline.json",
+    "sha256": "116ac2c2379cb2f0819011b60822d3c5bac85e67fc9957d31d306e47391e1b34"
+  },
+  "method": "textDocument/documentSymbol",
+  "documentVersion": 1,
+  "hierarchicalDocumentSymbols": true,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  }
+}

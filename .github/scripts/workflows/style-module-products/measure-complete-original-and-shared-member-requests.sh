@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+export VIZE_STYLE_MODULE_INPUTS="$RUNNER_TEMP/style-module-sources"
+cargo test --locked --profile ci-opt -p vize_maestro --features experimental-style-lint-products,micro-profiling --lib paired_style_module_requests -- --ignored --nocapture --test-threads=1
+cargo test --locked --profile ci-opt -p vize_maestro --features experimental-style-lint-products,micro-profiling --lib paired_style_lint_requests -- --ignored --nocapture --test-threads=1

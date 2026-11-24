@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/rspack-src-block-ranges.yml"
+      - ".github/scripts/workflows/rspack-src-block-ranges/**"
       - "npm/builder/shared/**"
       - "npm/builder/rspack/**"
       - "npm/native/**"
@@ -19,6 +20,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/rspack-src-block-ranges/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
@@ -38,12 +52,6 @@ jobs:
       - name: Install the locked adapter and native dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter '@vizejs/rspack-plugin...' --filter '@vizejs/builder-shared...' --filter '@vizejs/native...'
       - name: Prepare the exact source native image
-        run: |
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          vp run --workspace-root build:native:test
+        run: . "${{ env.VIZE_CI_FILES }}/prepare-the-exact-source-native-image.sh"
       - name: Retain original src boundaries, complete modules and source maps
-        run: |
-          node npm/native/scripts/test-preparation.mjs node --test \
-            npm/builder/rspack/src/shared/src-blocks.test.ts \
-            npm/builder/rspack/src/shared/source-map.test.ts \
-            npm/builder/rspack/src/loader/index.test.ts
+        run: . "${{ env.VIZE_CI_FILES }}/retain-original-src-boundaries-complete-modules-and-source-maps.sh"

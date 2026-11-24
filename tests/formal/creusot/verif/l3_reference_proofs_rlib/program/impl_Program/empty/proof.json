@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_empty": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_new_EffectScope": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_new_Op": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_new_Region": { "prover": "alt-ergo", "time": 0.008 },
+      "vc_new_StateEdge": { "prover": "alt-ergo", "time": 0.011 }
+    }
+  }
+}

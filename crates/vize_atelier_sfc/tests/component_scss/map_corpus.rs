@@ -2,6 +2,8 @@ use super::*;
 use vize_l0::Span;
 use vize_l4::write::source_map::SourceMapIndex;
 
+mod history;
+
 #[test]
 fn value_links_follow_aliases_and_nested_declarations_in_source_order() {
     use vize_l0::SourceRoot;
@@ -94,7 +96,7 @@ fn raw_maps_match_on_original_components_and_positions_on_refused_sources() {
     let manifest =
         std::fs::read_to_string(std::env::var_os("VIZE_SCSS_MANIFEST").unwrap()).unwrap();
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let (mut files, mut stock_admitted, mut modules, mut styles) = (0, 0, 0, 0);
+    let mut coverage = MapCoverage::default();
     // Both controls must emit whole JS and CSS maps even when the supplied
     // upstream corpus contains no complete component in the supported SCSS subset.
     const REQUIRED: [(&str, &str); 2] = [
@@ -122,22 +124,57 @@ fn raw_maps_match_on_original_components_and_positions_on_refused_sources() {
             }
             Err(error) => panic!("{name}: {error}"),
         };
+        let required_css = REQUIRED
+            .iter()
+            .find(|(path, _)| *path == name)
+            .map(|(_, css)| *css);
+        coverage.compare(name, &source, required_css, |_, _| {});
+        required_scss += usize::from(required_css.is_some());
+    }
+    let MapCoverage {
+        files,
+        stock_admitted,
+        modules,
+        styles,
+    } = coverage;
+    assert_eq!(required_scss, REQUIRED.len());
+    assert!(files > 0 && stock_admitted > 0);
+    println!(
+        "source_map_corpus utf8={files} non_utf8={non_utf8} stock_admitted={stock_admitted} complete_js={modules} complete_css={styles} required_scss={required_scss} position_probes={files}"
+    );
+}
+
+#[derive(Default)]
+struct MapCoverage {
+    files: usize,
+    stock_admitted: usize,
+    modules: usize,
+    styles: usize,
+}
+
+impl MapCoverage {
+    fn compare(
+        &mut self,
+        name: &str,
+        source: &str,
+        required_css: Option<&str>,
+        mut check_map: impl FnMut(&EmitDocument, &str),
+    ) {
         let arena = Allocator::default();
-        let index = SourceMapIndex::new(&source);
+        let index = SourceMapIndex::new(source);
         let options = NativeSfcCompileOptions {
             filename: name,
             source_map: true,
             ..Default::default()
         };
-        let stock = compile_native_sfc(&arena, &source, options);
-        let native = compile_native_sfc_with_scss(&arena, &source, options);
-        if let Some((_, css)) = REQUIRED.iter().find(|(path, _)| *path == name) {
+        let stock = compile_native_sfc(&arena, source, options);
+        let native = compile_native_sfc_with_scss(&arena, source, options);
+        if let Some(css) = required_css {
             let output = native
                 .result()
                 .unwrap_or_else(|err| panic!("{name}: {err:?}"));
-            assert_eq!(output.css(), Some(*css), "{name}");
+            assert_eq!(output.css(), Some(css), "{name}");
             assert!(output.css_document().is_some(), "{name}");
-            required_scss += 1;
         }
         if let Ok(before) = stock.result() {
             let after = native.result().unwrap();
@@ -145,16 +182,24 @@ fn raw_maps_match_on_original_components_and_positions_on_refused_sources() {
             assert_eq!(after.css_document(), before.css_document(), "{name}");
             assert_eq!(after.source_map(), before.source_map(), "{name}");
             assert_eq!(after.css_source_map(), before.css_source_map(), "{name}");
-            stock_admitted += 1;
+            self.stock_admitted += 1;
         }
         if let Ok(product) = native.result() {
-            let js = product.document().source_map(name, &source);
-            assert_eq!(product.source_map(), Some(js.as_str()), "{name}");
-            modules += 1;
+            let js = product.source_map().unwrap();
+            assert_eq!(
+                js,
+                product.document().source_map(name, source).as_str(),
+                "{name}"
+            );
+            check_map(product.document(), js);
+            self.modules += 1;
             if let Some(doc) = product.css_document() {
-                let css = doc.source_map(name, &source);
-                assert_eq!(product.css_source_map(), Some(css.as_str()), "{name}");
-                styles += 1;
+                let css = product.css_source_map().unwrap();
+                assert_eq!(css, doc.source_map(name, source).as_str(), "{name}");
+                check_map(doc, css);
+                self.styles += 1;
+            } else {
+                assert!(product.css_source_map().is_none(), "{name}");
             }
         }
         // Broken and unsupported components still have original coordinates.
@@ -164,16 +209,9 @@ fn raw_maps_match_on_original_components_and_positions_on_refused_sources() {
             let at = u32::try_from(source.len() * i / 32).unwrap();
             probe.push_linked("雪🦀\r\nx", Span::new(at, at));
         }
-        assert_eq!(
-            index.source_map(&probe, name),
-            probe.source_map(name, &source),
-            "{name}"
-        );
-        files += 1;
+        let mapped = index.source_map(&probe, name);
+        assert_eq!(mapped, probe.source_map(name, source), "{name}");
+        check_map(&probe, &mapped);
+        self.files += 1;
     }
-    assert_eq!(required_scss, REQUIRED.len());
-    assert!(files > 0 && stock_admitted > 0);
-    println!(
-        "source_map_corpus utf8={files} non_utf8={non_utf8} stock_admitted={stock_admitted} complete_js={modules} complete_css={styles} required_scss={required_scss} position_probes={files}"
-    );
 }

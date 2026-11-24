@@ -13,6 +13,7 @@ import { hasDelegatedStyles } from "../utils/index.ts";
 import { type DynamicImportAliasRule } from "../virtual.ts";
 import { createLogger } from "../transform.ts";
 import type { HmrUpdateType } from "../hmr.ts";
+import type { FilesystemEpoch } from "./filesystem-epoch.ts";
 import type { PrecompileFileMetadata } from "./precompile.ts";
 import {
   resolvePluginVueCompileOptions,
@@ -36,6 +37,12 @@ export {
 export interface VizePluginState {
   cache: Map<string, CompiledModule>;
   ssrCache: Map<string, CompiledModule>;
+  /**
+   * The window in which the pre-compile's source snapshots hold (see
+   * `filesystem-epoch.ts`). Optional so a state literal without it keeps
+   * reading every source from the filesystem.
+   */
+  filesystemEpoch?: FilesystemEpoch;
   collectedCss: Map<string, string>;
   precompileMetadata: Map<string, PrecompileFileMetadata>;
   /** SSR scan metadata is separate because client and SSR outputs are distinct. */
@@ -91,6 +98,25 @@ export function getEnvironmentCache(
   ssr: boolean,
 ): Map<string, CompiledModule> {
   return ssr ? state.ssrCache : state.cache;
+}
+
+/**
+ * Whether this build already holds `file`, which makes probing for it
+ * redundant: it compiled the file, or an environment of the build took the
+ * file's source snapshot. A dev server always asks the filesystem instead: a
+ * file can be deleted while its module stays cached, and its import must then
+ * reach the host's resolver.
+ */
+export function isHeldByBuild(
+  state: Pick<VizePluginState, "cache" | "ssrCache" | "server" | "filesystemEpoch">,
+  file: string,
+): boolean {
+  if (state.server !== null) return false;
+  return (
+    state.cache.has(file) ||
+    state.ssrCache.has(file) ||
+    state.filesystemEpoch?.knownSource(file) !== undefined
+  );
 }
 
 export type CompileOptionsForRequest = {

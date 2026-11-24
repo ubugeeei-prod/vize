@@ -1,9 +1,10 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { mergePackets, playwrightCases } from "../../tools/support/compat/github/test-cases.ts";
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { root } from "./support/github-workflows.ts";
 
 type Step = {
   id?: string;
@@ -14,7 +15,9 @@ type Step = {
 };
 
 test("the playground job uploads browser and visual test cases", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"),
+  ) as {
     jobs: Record<string, { name?: string; steps: Step[] }>;
   };
   const playground = workflow.jobs["pr-playground-test"];

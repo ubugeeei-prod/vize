@@ -5,6 +5,7 @@ import { stripTypeScriptTypes } from "node:module";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
+import { runVmProgram, vmProgramSource } from "./support/vm-programs.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const source = fs.readFileSync(path.join(root, "editors/vscode/src/server-discovery.ts"), "utf8");
@@ -57,25 +58,11 @@ function createResolution(pauseAt, cachedCandidate) {
     extractReleaseArchive: () => operation("extract"),
     pruneDownloadedServerVersions: () => operation("prune", { removed: [], failed: [] }),
   });
-  const hooks = `
-    getReleaseServerTarget = () => ({ targetName: "native", archiveName: "native.tar.gz" });
-    inspectCachedReleaseServer = () => operation("cached", cachedCandidate);
-    createReleaseDownloadUrl = () => "https://github.com/release/native.tar.gz";
-    verifyArchiveChecksum = () => operation("verify");
-    inspectServerCandidate = () => operation("inspect", candidate);
-    updateStatusBar = (status) => operations.push(status);
-    return { resolve: () => resolveReleaseServerCandidate(
-         { globalStorageUri: { fsPath: "/storage" } }, "vize", "1.2.3", 1),
-       disable: () => { ++state.configurationSyncGeneration; operations.push("disabled"); } };
-  `;
+  const hooks = vmProgramSource("release-resolution-hooks.cjs");
   const marker = /return\s*\{\s*findServerPath\s*\};/gu;
   assert.equal([...body.matchAll(marker)].length, 1, "one actual factory dependency seam");
-  const control = new vm.Script(`${body.replace(marker, hooks)}\n
-    createServerDiscovery(
-      { configurationSyncGeneration: 1, outputChannel: { appendLine: () => {} } },
-      () => {}, () => {},
-    );
-  `).runInContext(context);
+  new vm.Script(body.replace(marker, () => hooks)).runInContext(context);
+  const control = runVmProgram("create-server-discovery.js", context);
   return { control, operations, entered, resumed, candidate };
 }
 

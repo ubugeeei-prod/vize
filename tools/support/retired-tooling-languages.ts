@@ -16,7 +16,40 @@ const nearestLineStarts = {
   kernel: "davinci/vize_l0/src/line_index/lsp_breaks.rs",
   harness: "davinci/vize_l0/src/line_index/lsp_breaks/kani.rs",
 } as const;
-export const rustProofReferences = [sourceMapCoordinates, nearestLineStarts] as const;
+export const styleHeaderValidation = {
+  theorem: "tests/formal/style-format/Header.lean",
+  kernel: "crates/vize_maestro/src/source_project/style_format/header.rs",
+  harness: "crates/vize_maestro/src/source_project/style_format/kani.rs",
+} as const;
+const compilerStringLiterals = {
+  theorem: "tests/formal/string-literal/Emission.lean",
+  kernel: "davinci/vize_l0/src/js_string.rs",
+  harness: "davinci/vize_l0/src/js_string_kani.rs",
+} as const;
+const positionIndex = {
+  theorem: "tests/formal/position-index/Intervals.lean",
+  kernel: "davinci/vize_l2/src/query/position/index/intervals.rs",
+  harness: "davinci/vize_l2/src/query/position/index/intervals/tests.rs",
+} as const;
+export const templateLabelRanking = {
+  theorem: "tests/formal/template-lint/Selection.lean",
+  kernel: "crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs",
+  harness: "crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs",
+} as const;
+export const templateSpanProjection = {
+  theorem: "tests/formal/ir-graph/TemplateProjection.lean",
+  kernel: "crates/vize_incremental/src/template/projection.rs",
+  harness: "crates/vize_incremental/src/template/kani.rs",
+} as const;
+export const rustProofReferences = [
+  sourceMapCoordinates,
+  nearestLineStarts,
+  styleHeaderValidation,
+  positionIndex,
+  compilerStringLiterals,
+  templateLabelRanking,
+  templateSpanProjection,
+] as const;
 
 export function checkedRustTheorems(paths: readonly string[]): Set<string> {
   return new Set(

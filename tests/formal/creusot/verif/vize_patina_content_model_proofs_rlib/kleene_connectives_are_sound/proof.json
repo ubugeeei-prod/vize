@@ -1,0 +1,14 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_and": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_kleene_connectives_are_sound": {
+        "prover": "alt-ergo",
+        "time": 0.01
+      },
+      "vc_not'": { "prover": "alt-ergo", "time": 0.004 },
+      "vc_or": { "prover": "alt-ergo", "time": 0.004 }
+    }
+  }
+}

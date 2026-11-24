@@ -1,3 +1,7 @@
+import {
+  readToolingProgram,
+  toolingProgram,
+} from "../../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -15,42 +19,32 @@ void test("real preparation cancellation joins baseline and both complete host p
   const waiting = path.join(f.artifacts, "waiting-child.mjs");
   fs.writeFileSync(
     waiting,
-    `
-import { spawn } from "node:child_process";
-import fs from "node:fs";
-const [root,id]=process.argv.slice(2);
-const child=spawn(process.execPath,["-e","process.on('SIGTERM',()=>{});setInterval(()=>{},1000)"],{stdio:"ignore"});
-fs.writeSync(1,"whole stdout "+id+"\\n");fs.writeSync(2,"whole stderr "+id+"\\n");
-fs.writeFileSync(root+"/"+id+".ready.json",JSON.stringify({pid:process.pid,child:child.pid}));
-setInterval(()=>{},1000);
-`,
+    readToolingProgram(
+      new URL(
+        "./test-programs/n8n-preparation-cancellation/wait-for-cancellation.js.in",
+        import.meta.url,
+      ),
+      {
+        CHILD_PROGRAM: JSON.stringify(toolingProgram("process/ignore-termination.js")),
+      },
+    ),
   );
   const driver = path.join(f.artifacts, "driver.mjs");
   fs.writeFileSync(
     driver,
-    `
-import assert from "node:assert/strict";
-import fs from "node:fs";
-import { captureProjectCommand } from ${url("./project-command-capture.mjs")};
-import { runHostProcesses, requireSuccessfulHosts } from ${url("./ci-host-concurrency.mjs")};
-import { runPreparationBranches } from ${url("./n8n-preparation-overlap.mjs")};
-const f=${JSON.stringify(f)}, waiting=${JSON.stringify(waiting)};
-try {
- await runPreparationBranches(f,{
-  mode:"overlap",
-  prepare:async()=>{
-   const result=await captureProjectCommand(process.execPath,[waiting,f.artifacts,"baseline"],{encoding:"utf8",timeout:6000,maxBuffer:1024*1024});
-   fs.writeFileSync(f.artifacts+"/baseline-process.json",JSON.stringify(result));
-   assert.equal(result.status,0);return f.replay;
-  },
-  runHosts:async()=>{
-   const results=await runHostProcesses(["first","second"].map(id=>({id,output:f.artifacts+"/"+id,command:process.execPath,args:[waiting,f.artifacts,id],timeoutMs:6000})),{workers:2});
-   fs.writeFileSync(f.artifacts+"/host-results.json",JSON.stringify(results));requireSuccessfulHosts(results);
-  },
- });
- process.exitCode=0;
-} catch {fs.writeFileSync(f.artifacts+"/exit-after-join","joined");process.exitCode=1;}
-`,
+    readToolingProgram(
+      new URL(
+        "./test-programs/n8n-preparation-cancellation/cancel-preparation.js.in",
+        import.meta.url,
+      ),
+      {
+        COMMAND_CAPTURE: url("./project-command-capture.mjs"),
+        HOST_CONCURRENCY: url("./ci-host-concurrency.mjs"),
+        OVERLAP: url("./n8n-preparation-overlap.mjs"),
+        PROJECT: JSON.stringify(f),
+        WAITING: JSON.stringify(waiting),
+      },
+    ),
   );
   const child = spawn(process.execPath, [driver], { stdio: "ignore" });
   t.after(() => {

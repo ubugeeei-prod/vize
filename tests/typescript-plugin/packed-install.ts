@@ -40,7 +40,11 @@ export function installPackedConsumer(
   function pack(name: string, packageJson: object, files: readonly [string, string][]): string {
     const stage = path.join(temporary, name);
     fs.mkdirSync(stage);
-    for (const [source, target] of files) fs.copyFileSync(source, path.join(stage, target));
+    for (const [source, target] of files) {
+      const destination = path.join(stage, target);
+      fs.mkdirSync(path.dirname(destination), { recursive: true });
+      fs.copyFileSync(source, destination);
+    }
     fs.writeFileSync(path.join(stage, "package.json"), JSON.stringify(packageJson, null, 2));
     const report = (
       JSON.parse(
@@ -50,9 +54,10 @@ export function installPackedConsumer(
     fs.writeFileSync(path.join(output, `${name}-pack.json`), JSON.stringify(report, null, 2));
     return path.join(output, report.filename);
   }
-  const nativeFiles = fs
+  const nativeImages = fs
     .readdirSync(path.join(root, "npm/native"))
-    .filter((name) => nativeManifest.files.includes(name) || name.endsWith(".node"));
+    .filter((name) => name.endsWith(".node"));
+  const nativeFiles = [...nativeManifest.files, ...nativeImages];
   assert(
     nativeFiles.some((name) => name.endsWith(".node")),
     "Build the exact-source native binary before this test",

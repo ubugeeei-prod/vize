@@ -13,6 +13,88 @@ restrictedNamesDef: JsonSchema = new JsonSchema {
   }
 }
 
+restrictedHtmlElementsDef: JsonSchema = new JsonSchema {
+  oneOf = new Listing {
+    new JsonSchema { type = "string" }
+    new JsonSchema {
+      type = "array"
+      items = new JsonSchema {
+        oneOf = new Listing {
+          new JsonSchema { type = "string" }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["element"] = restrictedNamesDef
+              ["message"] = new JsonSchema { type = "string" }
+            }
+            required = new Listing { "element" }
+            additionalProperties = false
+          }
+        }
+      }
+    }
+  }
+}
+
+restrictedVOnDef: JsonSchema = new JsonSchema {
+  oneOf = new Listing {
+    new JsonSchema { type = "string" }
+    new JsonSchema {
+      type = "array"
+      items = new JsonSchema {
+        oneOf = new Listing {
+          new JsonSchema { type = "string" }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["argument"] = new JsonSchema { type = "string" }
+              ["modifiers"] = new JsonSchema {
+                type = "array"
+                items = new JsonSchema { type = "string" }
+              }
+              ["element"] = new JsonSchema { type = "string" }
+              ["message"] = new JsonSchema { type = "string" }
+            }
+            required = new Listing { "argument" }
+            additionalProperties = false
+          }
+        }
+      }
+    }
+  }
+}
+
+local vBindStyleNameDef: JsonSchema = new JsonSchema {
+  type = "string"
+  enum = new Listing { "shorthand"; "longform" }
+}
+
+/// The style, or eslint-plugin-vue's `[style, { sameNameShorthand }]` tuple.
+vBindStyleDef: JsonSchema = new JsonSchema {
+  oneOf = new Listing {
+    vBindStyleNameDef
+    new JsonSchema {
+      type = "array"
+      items = new Listing {
+        vBindStyleNameDef
+        new JsonSchema {
+          type = "object"
+          properties {
+            ["sameNameShorthand"] = new JsonSchema {
+              type = "string"
+              enum = new Listing { "always"; "never"; "ignore" }
+              default = "ignore"
+            }
+          }
+          additionalProperties = false
+        }
+      }
+      minItems = 1
+      additionalItems = false
+    }
+  }
+}
+
 maxPropsDef: JsonSchema = new JsonSchema {
   type = "object"
   properties {

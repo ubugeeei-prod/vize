@@ -320,9 +320,12 @@ fn a_component_selector_keeps_the_text_policy_of_the_authored_html_tag() {
     // Vue 3.5.35 chooses whitespace from the original element before classifying it.
     for (tag, body, expected) in [
         ("pre", "a  b", "a  b"),
+        ("pre", "\r\nx", "x"),
+        ("pre", "\r\r\nx\r\ny", "x\ny"),
         ("div", "a  b", "a b"),
         ("title", "\n a  b ", "\n a  b "),
         ("textarea", "\r\n a  b ", " a  b "),
+        ("textarea", "\r\r\nx", "\r\r\nx"),
     ] {
         let a = Allocator::default();
         let template = alloc::format!(r#"<{tag} is="vue:CodeBlock">{body}</{tag}>"#);

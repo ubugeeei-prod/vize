@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+cargo build --locked --profile ci -p vize --bin vize
+sha256sum target/ci/vize > "$RUNNER_TEMP/router-experimental/source-cli.sha256"

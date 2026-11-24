@@ -1,8 +1,8 @@
 //! Collect compatible top-level declarations and static imports in one walk.
-use super::super::{block_ranges, collect};
+use super::super::{SymbolKind, block_ranges, collect};
 use super::{
     AuthoredProgram, DocumentSymbol, LineIndex, ScriptQueryProducts, SfcScriptBlock, Statement,
-    SymbolKind, tag_ranges,
+    tag_ranges,
 };
 
 impl ScriptQueryProducts {
@@ -48,7 +48,7 @@ impl ScriptQueryProducts {
             None => tag_ranges(block, prefix)
                 .unwrap_or_else(|| block_ranges(&LineIndex::new(prefix), &block.loc, "script")),
         };
-        self.symbols.push(DocumentSymbol {
+        self.push_script_symbol(DocumentSymbol {
             name: name.into(),
             kind: SymbolKind::MODULE,
             tags: None,

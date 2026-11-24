@@ -1,9 +1,14 @@
-import { compileBatch } from "../compiler.ts";
+import { compileBatch, type CompileBatchReporting } from "../compiler.ts";
 import { buildCompileBatchOptions } from "../compile-options.ts";
 import { getCompileOptionsForRequest, getEnvironmentCache, type VizePluginState } from "./state.ts";
 import type { BatchFileInput } from "../types.ts";
 
-export function compileScopedBatch(files: BatchFileInput[], state: VizePluginState, ssr = false) {
+export function compileScopedBatch(
+  files: BatchFileInput[],
+  state: VizePluginState,
+  ssr = false,
+  reporting?: CompileBatchReporting,
+) {
   const groups = new Map<
     string,
     { options: ReturnType<typeof getCompileOptionsForRequest>; files: BatchFileInput[] }
@@ -18,7 +23,12 @@ export function compileScopedBatch(files: BatchFileInput[], state: VizePluginSta
   const results: ReturnType<typeof compileBatch>["results"] = [];
   let timeMs = 0;
   for (const group of groups.values()) {
-    const result = compileBatch(group.files, getEnvironmentCache(state, ssr), group.options);
+    const result = compileBatch(
+      group.files,
+      getEnvironmentCache(state, ssr),
+      group.options,
+      reporting,
+    );
     results.push(...result.results);
     timeMs += result.timeMs;
   }

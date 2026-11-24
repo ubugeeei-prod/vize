@@ -1,0 +1,9 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"vp install --frozen-lockfile --prefer-offline"#
+  module.requireCommitShas(List("BASE_SOURCE_SHA"))
+  #"git worktree add --detach target/finalization-compare-base "$BASE_SOURCE_SHA""#
+}

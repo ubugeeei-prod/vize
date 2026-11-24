@@ -4,6 +4,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+
+import { toolingProgram } from "./support/program-path.ts";
 import { parse } from "yaml";
 
 import {
@@ -49,7 +51,9 @@ test("the Node job shim preserves PID and transport through filtered environment
       VIZE_TEST_CASES_ROOT: directory,
     };
     fs.writeFileSync(shim, jobTestShell("node", values), { mode: 0o755 });
-    const result = spawnSync(shim, ["-e", "process.stdout.write(String(process.ppid))"], {
+    const program = path.join(directory, "identity.cjs");
+    fs.copyFileSync(toolingProgram("process/print-parent-pid.js"), program);
+    const result = spawnSync(shim, [program], {
       encoding: "utf8",
       env: { PATH: process.env.PATH ?? "" },
     });

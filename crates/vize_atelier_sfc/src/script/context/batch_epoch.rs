@@ -69,15 +69,25 @@ impl Drop for TypeResolutionBatchGuard {
             next_batch_epoch(&mut state)
         };
         ACTIVE_BATCH_EPOCH.store(epoch, Ordering::Relaxed);
+        if epoch == NO_EPOCH {
+            // No window holds the files stable any more, so nothing keeps what
+            // the closed batches read. The state lock is still held: a batch
+            // that begins now starts after its predecessors' modules are gone.
+            super::external_types::retire_shared_modules();
+        }
     }
 }
 
 /// Open a scoped type-resolution batch.
 ///
 /// Keep the returned guard alive until all parallel work has joined. While it
-/// is alive, imported-type caches skip repeated metadata checks within the
-/// current generation. Single compiles do not open a batch and always observe
-/// current filesystem metadata.
+/// is alive, the compiles of the current generation share one view of the
+/// imported type modules: each file is read once and each import resolved
+/// once, whichever worker reaches it first.
+///
+/// The batch is process-wide: a compile on any thread joins the generation
+/// that is current while it runs, whoever opened it. A compile observes the
+/// current files on its own only while no batch is open.
 ///
 /// Bind the result to a named variable and keep it alive until all parallel
 /// work joins. `let _ = begin_type_resolution_batch();` drops it immediately.
@@ -99,13 +109,15 @@ pub(super) fn current_batch_epoch() -> u64 {
 }
 
 #[cfg(test)]
-mod tests {
+pub(super) mod tests {
     use super::{NO_EPOCH, begin_type_resolution_batch, current_batch_epoch};
     use std::sync::Mutex;
 
     static TEST_LOCK: Mutex<()> = Mutex::new(());
 
-    fn lock_epoch_state() -> std::sync::MutexGuard<'static, ()> {
+    /// Held by every test that opens a batch or reads what a batch's end
+    /// retires: both are process-wide.
+    pub(in crate::script::context) fn lock_epoch_state() -> std::sync::MutexGuard<'static, ()> {
         TEST_LOCK
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)

@@ -121,7 +121,11 @@ pub(super) fn binding(out: &mut String, binding: &MarkupBinding<'_>) {
     range(out, binding.range());
     out.push_str(" mods=[");
     binding.walk_modifiers(&mut |name| modifier(out, name));
-    out.push(']');
+    append!(
+        *out,
+        "] same_name={:?}",
+        binding.same_name_binding().map(|same| same.spelling)
+    );
 }
 
 pub(super) fn directive(out: &mut String, directive: &MarkupDirective<'_>) {

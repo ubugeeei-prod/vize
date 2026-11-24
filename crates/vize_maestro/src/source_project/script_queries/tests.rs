@@ -69,6 +69,8 @@ fn declaration_profiles_and_recovered_imports_match_both_original_readers() {
         "<script lang='ts'>const value = 1;\n<!-- HTML comment\nconst answer = value;</script>",
         "<script>const loaded = require('./one'); const other = import('./two');</script>",
         "<script></script><script setup>  </script><style>.a{}</style>",
+        "<!-- 🌱 -->\r\n<script lang='ts'></script>\r\n<script\nsetup lang='tsx'></script>",
+        "<script>import './ordinary'</script><script setup lang='ts'></script>",
         "<template><span/></template>",
         "<script>let a</script><script>let b</script>",
     ] {
@@ -78,6 +80,33 @@ fn declaration_profiles_and_recovered_imports_match_both_original_readers() {
         counts.responses >= 8 && counts.symbols >= 8 && counts.candidates >= 7,
         "{counts:?}"
     );
+}
+
+#[test]
+fn empty_blocks_preserve_requested_grammars_and_propagate_reader_errors() {
+    let state = ServerState::new();
+    let uri = Url::parse("file:///projects/Empty.vue").unwrap();
+    let text = "<script lang='ts' setup></script>";
+    state
+        .documents
+        .open(uri.clone(), text.into(), 1, "vue".into());
+    let snapshot = SourceSnapshotCache::default()
+        .capture(&state.documents, &uri)
+        .unwrap();
+    for profile in [
+        ScriptQueryProducts::script_type(Some("ts")),
+        SourceType::tsx(),
+    ] {
+        let mut visits = Vec::new();
+        let result = snapshot.with_script_blocks(&state, |products, root, name, block| {
+            products.read_script(root, name, block, Some(profile), |syntax| {
+                visits.push((name, syntax.source_type(), syntax.block().span()));
+                Err(ScriptQueryRefusal::Language)
+            })
+        });
+        assert_eq!(result, Err(ScriptQueryRefusal::Language));
+        assert_eq!(visits, [("script setup", profile, Span::new(24, 24))]);
+    }
 }
 
 #[test]
@@ -146,14 +175,13 @@ fn authored_candidates_identify_the_public_file_rename_edits() {
 }
 
 #[test]
-fn jsx_host_suffix_matches_the_editor_dispatcher() {
+fn jsx_hosts_use_the_standalone_editor_dispatcher() {
     for first in ["j", "J", "t", "T"] {
         for second in ["s", "S"] {
             for third in ["x", "X"] {
                 for prefix in ["", "/projects/雪🌱", "/projects/many.dots/App.vue"] {
                     let path = vize_l0::cstr!("{prefix}.{first}{second}{third}");
                     assert!(crate::utils::is_jsx_path(&path));
-                    assert!(is_jsx_host(&path));
                 }
             }
         }
@@ -171,19 +199,19 @@ fn jsx_host_suffix_matches_the_editor_dispatcher() {
         "A.jsxx",
         ".jsX\u{301}",
     ] {
-        assert_eq!(is_jsx_host(path), crate::utils::is_jsx_path(path), "{path}");
+        assert!(!crate::utils::is_jsx_path(path), "{path}");
     }
     let state = ServerState::new();
     let cache = SourceSnapshotCache::default();
     let text = "<script setup>import './leaf';</script>";
-    for name in [".JsX", "Leaf.tSX", "Leaf.tsx.vue"] {
+    for (name, standalone) in [(".JsX", true), ("Leaf.tSX", true), ("Leaf.tsx.vue", false)] {
         let uri = Url::parse(&vize_l0::cstr!("file:///projects/{name}")).unwrap();
         state
             .documents
             .open(uri.clone(), text.into(), 1, "vue".into());
         let snapshot = cache.capture(&state.documents, &uri).unwrap();
         let result = snapshot.script_query_products(&state);
-        if crate::utils::is_jsx_path(uri.path()) {
+        if standalone {
             assert_eq!(result, Err(ScriptQueryRefusal::Language));
         } else {
             assert_eq!(

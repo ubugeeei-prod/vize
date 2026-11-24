@@ -144,7 +144,11 @@ the cautionary tale for formalism as a lifestyle). The targets, in order:
    precision (zero FP/FN) is a provable property, not an aspiration.
 
 Rust-side proofs (e.g. Kani/Creusot on `unsafe` islands) are evaluated
-case-by-case where charter #22's complexity license gets exercised.
+case-by-case where charter #22's complexity license gets exercised. Every
+product `unsafe` site, its class and its verifier (a Kani harness, the Miri
+lane, a fuzz target or the out-of-scope reason) is a row of
+[the unsafe inventory](decisions/2026-11-24-unsafe-model-checking.md), and a
+tooling test refuses an unlisted site.
 
 ## 2. Edge cases must not exist — elimination by enumeration
 

@@ -1,0 +1,128 @@
+import "../../Actions.pkl" as ci
+
+name = "Generated VTS source census"
+`run-name` = "Exact 1/10/100 SFC source census at ${{ inputs.source_sha }}"
+
+// This exact-campaign workflow requires an immutable one-commit source/parent
+// pair and a complete instrumentation allowlist, so arbitrary PRs must not run it.
+on {
+  workflow_dispatch {
+    inputs {
+      source_sha {
+        description = "Immutable source commit to check out and measure"
+        type = "string"
+        required = true
+      }
+      source_parent {
+        description = "Immutable immediate production parent"
+        type = "string"
+        required = true
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "vts-source-census-${{ inputs.source_sha }}"
+  `cancel-in-progress` = false
+}
+
+jobs {
+  census {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 50
+    env {
+
+      CARGO_BUILD_JOBS = "4"
+      CARGO_INCREMENTAL = "0"
+      GOMAXPROCS = "4"
+      RAYON_NUM_THREADS = "4"
+      SOURCE_SHA = "${{ inputs.source_sha }}"
+      SOURCE_PARENT = "${{ inputs.source_parent }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("vts-source-census")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.SOURCE_SHA }}"
+          `persist-credentials` = false
+          `fetch-depth` = 2
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Install only the pinned workflow parser"
+        shell = "bash"
+        run = ci.workflowScript("install-only-the-pinned-workflow-parser.sh")
+      }
+      new Dynamic {
+        name = "Verify exact source, observer laws and production projection"
+        shell = "bash"
+        run = ci.workflowScript("verify-exact-source-observer-laws-and-production-projection.sh")
+      }
+      new Dynamic {
+        name = "Remove the workflow parser link"
+        `if` = "always()"
+        shell = "bash"
+        run = ci.workflowScript("remove-the-workflow-parser-link.sh")
+      }
+      new Dynamic {
+        name = "Install only the pinned public Vue checker and schema provider"
+        shell = "bash"
+        run = ci.workflowScript("install-only-the-pinned-public-vue-checker-and-schema-provider.sh")
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        name = "Build one fresh profiling CLI and measure three paired repetitions"
+        shell = "bash"
+        run = ci.workflowScript("build-one-fresh-profiling-cli-and-measure-three-paired-repetitions.sh")
+      }
+      new Dynamic {
+        name = "Run profiling-only identity and custody laws in the built target"
+        shell = "bash"
+        run = ci.workflowScript("run-profiling-only-identity-and-custody-laws-in-the-built-target.sh")
+      }
+      new Dynamic {
+        name = "Package bounded receipts apart from complete public evidence"
+        `if` = "always()"
+        shell = "bash"
+        run = ci.workflowScript("package-bounded-receipts-apart-from-complete-public-evidence.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "vts-source-census-small-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = """
+          ${{ runner.temp }}/census-evidence/summary.json
+          ${{ runner.temp }}/census-evidence/build.json
+          ${{ runner.temp }}/census-evidence/packets/*/source-identity.json
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "vts-source-census-raw-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/census-raw.tgz"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

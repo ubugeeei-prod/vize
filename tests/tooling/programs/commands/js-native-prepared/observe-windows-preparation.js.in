@@ -1,0 +1,17 @@
+
+import assert from 'node:assert/strict'; import fs from 'node:fs';
+import {withPreparedNative} from './@@HELPER_URL@@';
+import {runViteTests} from @@VITE_TEST_RUNNER@@;
+Object.defineProperty(process,'platform',{value:'win32'});
+let calls=0;
+const packageRun=(command,args,options)=>{
+  if(command===process.execPath) {
+    assert.ok(process.env.VIZE_TEST_CASES);
+    assert.equal(fs.realpathSync(args[0]),fs.realpathSync(@@CASE_REPORTER@@));
+    assert.deepEqual(args.slice(1),['capture','--','vp','run','test']);
+    assert.equal(options.shell,false);
+  } else { assert.ok(command==='vp'||command==='pnpm'); assert.equal(options.shell,true); }
+  assert.equal(options.env,process.env); calls++; return {status:0};
+};
+assert.equal(withPreparedNative(@@NATIVE_ROOT@@,'--native-test-owner=00000000-0000-0000-0000-000000000000','vp',['run','test'],packageRun),0);
+assert.equal(runViteTests(false,packageRun),0); assert.equal(calls,3);

@@ -8,7 +8,8 @@ use super::{SnapshotRefusal, SourceSnapshot};
 use crate::server::ServerState;
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::DocumentSymbol;
-use vize_atelier_sfc::SfcScriptBlock;
+use vize_atelier_sfc::{SfcDescriptor, SfcScriptBlock};
+use vize_incremental::SharedDescriptor;
 use vize_l0::{Allocator, SourceBlock, SourceFrameError, SourceRoot, Span, line_index::LineIndex};
 use vize_l1::embed::authored_program::AuthoredProgram;
 
@@ -40,9 +41,9 @@ pub enum ScriptQueryRefusal {
 
 impl SourceSnapshot {
     /// Read the script outline and the file-rename module specifiers together.
-    /// The editor descriptor selects the physical blocks. Each original script
-    /// is parsed once with its original JS, JSX, TS or TSX grammar. Concurrent
-    /// edits can proceed during parsing and invalidate publication.
+    /// Empty blocks contribute their outline directly. Each nonempty block is
+    /// parsed once with its original JS, JSX, TS or TSX grammar. Concurrent edits
+    /// can proceed during the read and invalidate publication.
     pub fn script_query_products(
         &self,
         state: &ServerState,
@@ -68,9 +69,37 @@ impl SourceSnapshot {
         Ok(result)
     }
 
+    fn with_current_script_descriptor<T>(
+        &self,
+        state: &ServerState,
+        read: impl FnOnce(Option<SharedDescriptor>) -> Result<T, ScriptQueryRefusal>,
+    ) -> Result<T, ScriptQueryRefusal> {
+        self.with_current(&state.documents, |_| {
+            if self.language_id() != "vue" || crate::utils::is_jsx_path(self.uri().path()) {
+                return Err(ScriptQueryRefusal::Language);
+            }
+            read(state.sfc_descriptor(self.uri(), self.source()))
+        })
+        .map_err(ScriptQueryRefusal::Host)?
+    }
+
     fn read_script_blocks(
         &self,
         state: &ServerState,
+        read: impl FnMut(
+            &mut ScriptQueryProducts,
+            SourceRoot<'_>,
+            &'static str,
+            &SfcScriptBlock<'_>,
+        ) -> Result<(), ScriptQueryRefusal>,
+    ) -> Result<Option<ScriptQueryProducts>, ScriptQueryRefusal> {
+        let parsed = self.with_current_script_descriptor(state, Ok)?;
+        self.read_descriptor_blocks(parsed.as_deref(), read)
+    }
+
+    fn read_descriptor_blocks(
+        &self,
+        descriptor: Option<&SfcDescriptor<'_>>,
         mut read: impl FnMut(
             &mut ScriptQueryProducts,
             SourceRoot<'_>,
@@ -78,15 +107,7 @@ impl SourceSnapshot {
             &SfcScriptBlock<'_>,
         ) -> Result<(), ScriptQueryRefusal>,
     ) -> Result<Option<ScriptQueryProducts>, ScriptQueryRefusal> {
-        let parsed = self
-            .with_current(&state.documents, |_| {
-                if self.language_id() != "vue" || is_jsx_host(self.uri().path()) {
-                    return Err(ScriptQueryRefusal::Language);
-                }
-                Ok(state.sfc_descriptor(self.uri(), self.source()))
-            })
-            .map_err(ScriptQueryRefusal::Host)??;
-        Ok(if let Some(descriptor) = parsed.as_deref() {
+        Ok(if let Some(descriptor) = descriptor {
             let root = SourceRoot::new(self.source()).map_err(ScriptQueryRefusal::Frame)?;
             let mut products = ScriptQueryProducts::default();
             for (name, block) in [
@@ -102,12 +123,6 @@ impl SourceSnapshot {
             None
         })
     }
-}
-
-fn is_jsx_host(path: &str) -> bool {
-    path.as_bytes().last_chunk::<4>().is_some_and(|suffix| {
-        suffix.eq_ignore_ascii_case(b".jsx") || suffix.eq_ignore_ascii_case(b".tsx")
-    })
 }
 
 fn script_frame<'a>(
@@ -139,6 +154,12 @@ impl ScriptQueryProducts {
         mut observe: impl FnMut(&AuthoredProgram<'_>) -> Result<(), ScriptQueryRefusal>,
     ) -> Result<(), ScriptQueryRefusal> {
         let (frame, prefix) = script_frame(root, block)?;
+        if frame.source().is_empty() && additional_profile.is_none() {
+            let symbol =
+                Self::script_block_symbol(name, block, &LineIndex::new(prefix), Vec::new());
+            self.push_script_symbol(symbol);
+            return Ok(());
+        }
         let editor_type = Self::script_type(block.lang.as_deref());
         let symbol = {
             let mut arena = Allocator::default();
@@ -154,7 +175,7 @@ impl ScriptQueryProducts {
                 let symbol = Self::script_symbol(name, block, &LineIndex::new(prefix), &syntax);
                 #[cfg(feature = "experimental-checker-script-queries")]
                 if additional_profile.is_some() {
-                    self.read_checker_specifiers(&syntax);
+                    self.read_selected_specifiers(&syntax);
                 } else {
                     self.read_specifiers(&syntax);
                 }
@@ -166,20 +187,30 @@ impl ScriptQueryProducts {
                 symbol
             };
             if let Some(profile) = additional_profile.filter(|profile| *profile != editor_type) {
-                // OXC reset keeps only its last chunk. Reserve the observed size
-                // for the other grammar if that chunk could not hold the first AST.
+                // OXC reset keeps only its last chunk. When that chunk cannot hold
+                // the first AST, grow a fresh arena as a separate read would. The
+                // other grammar can need a few more bytes, so reserving the observed
+                // size overflowed into a doubled chunk and raised the peak.
                 let used = arena.allocated_bytes();
                 arena.reset();
                 if arena.as_oxc().capacity() < used {
                     drop(arena);
-                    arena = Allocator::with_capacity(used);
+                    arena = Allocator::default();
                 }
                 observe(&AuthoredProgram::parse(&arena, frame, profile))?;
             }
             symbol
         };
-        self.symbols.push(symbol);
+        self.push_script_symbol(symbol);
         Ok(())
+    }
+
+    pub(crate) fn push_script_symbol(&mut self, symbol: DocumentSymbol) {
+        if self.symbols.is_empty() {
+            // An SFC has at most one ordinary script and one setup script.
+            self.symbols.reserve_exact(2);
+        }
+        self.symbols.push(symbol);
     }
 }
 
@@ -193,3 +224,5 @@ mod checker;
 
 #[cfg(feature = "experimental-script-tools")]
 pub(super) mod tools;
+
+mod native;

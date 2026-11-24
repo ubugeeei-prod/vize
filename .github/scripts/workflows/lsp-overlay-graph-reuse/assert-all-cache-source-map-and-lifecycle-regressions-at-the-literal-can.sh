@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+cargo test --locked --profile ci -p vize_canon --lib --no-run --message-format=json > "$OBSERVATION_ROOT/after-build.jsonl" 2> "$OBSERVATION_ROOT/after-build.stderr"
+cargo test --locked --profile ci -p vize_canon --lib -- corsa_bridge::vue_dependencies_alias::context::cache:: corsa_bridge::vue_document::build::host_edit:: corsa_bridge::vue_document::build::tests::native_union:: corsa_bridge::vue_document::build::tests::shared_payload:: corsa_bridge::vue_document_package_tests::union:: corsa_bridge::vue_document_package_tests::symlink_workspace:: corsa_bridge::source_catalog:: lsp_client::canon_file_cache:: lsp_client::tracked_documents:: lsp_client::immutable_batch:: --test-threads=1 > "$OBSERVATION_ROOT/cache.stdout" 2> "$OBSERVATION_ROOT/cache.stderr"
+node "$VIZE_CI_FILES/assert-all-cache-source-map-and-lifecycle-regressions-at-the-literal-can.ts"
+executable=$(cat "$OBSERVATION_ROOT/after-executable.txt")
+sha256sum "$executable" > "$OBSERVATION_ROOT/after-executable.sha256"
+for round in 1 2 3; do
+  VIZE_OVERLAY_PROFILE_OUTPUT="$OBSERVATION_ROOT/after-$round.json" "$executable" corsa_bridge::vue_dependencies_alias::context::cache::overlay_profile::profile_unrelated_overlays --exact --ignored --test-threads=1 > "$OBSERVATION_ROOT/after-$round.stdout" 2> "$OBSERVATION_ROOT/after-$round.stderr"
+done

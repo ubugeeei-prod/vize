@@ -1,4 +1,4 @@
-name: Rust frontend threads benchmark
+name: Benchmark - Rust frontend threads
 run-name: Rust frontend threads @ ${{ github.sha }}
 # Measures rustc's nightly parallel frontend (`--jobs-frontend=N`) against the
 # pinned stable toolchain on the CI runner class. Release builds stay on stable;
@@ -45,6 +45,8 @@ jobs:
           - { name: vize, scenario: "crate:vize", configs: "stable,j1,j2,j4,j8,j16,j32" }
           - { name: incremental, scenario: incremental, configs: "stable,j1,j2,j4,j8" }
           - { name: determinism, scenario: determinism, configs: "j8,j8,j1" }
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/rust-frontend-threads-bench"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -57,24 +59,17 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Require GNU time
-        run: test -x /usr/bin/time || { sudo apt-get update -qq && sudo apt-get install -y -qq time; }
+        run: . "${{ env.VIZE_CI_FILES }}/require-gnu-time.sh"
       - name: Measure
         env:
           BENCH_SCENARIO: ${{ matrix.scenario }}
           BENCH_CONFIGS: ${{ matrix.configs }}
           BENCH_NAME: ${{ matrix.name }}
-        run: >-
-          BENCH_TARGET_DIR="$RUNNER_TEMP/frontend-bench-target"
-          node tools/support/github/rust-frontend-threads-bench.ts run
-          --scenario "$BENCH_SCENARIO" --configs "$BENCH_CONFIGS" --rounds "$BENCH_ROUNDS"
-          --out "$RUNNER_TEMP/frontend-bench/$BENCH_NAME.json"
+        run: . "${{ env.VIZE_CI_FILES }}/measure.sh"
       - name: Summarize
         if: ${{ always() }}
         env: { BENCH_NAME: "${{ matrix.name }}" }
-        run: >-
-          test ! -s "$RUNNER_TEMP/frontend-bench/$BENCH_NAME.json" ||
-          node tools/support/github/rust-frontend-threads-bench.ts summarize
-          "$RUNNER_TEMP/frontend-bench/$BENCH_NAME.json" >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/summarize.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:
@@ -88,6 +83,8 @@ jobs:
     if: ${{ always() }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/rust-frontend-threads-bench"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -101,4 +98,4 @@ jobs:
             merge-multiple: true,
           }
       - name: Summarize
-        run: node tools/support/github/rust-frontend-threads-bench.ts summarize "$RUNNER_TEMP"/frontend-bench/*.json >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/summarize-2.sh"

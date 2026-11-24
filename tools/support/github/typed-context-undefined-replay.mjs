@@ -44,12 +44,13 @@ const embeddedHelpers = (root) =>
       path === null ? Buffer.from("\n") : readFileSync(join(root, path)),
     ),
   );
-const currentComponentConstructor = `type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
+const componentConstructorType = `type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : NoInfer<$ComponentInstanceFor<$ComponentInstance, {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
-}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>;`;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>>`;
+const mappedComponentConstructor = `${componentConstructorType} & ({ [key: string]: $ComponentInstance } & { input: unknown })[unknown extends $AuthoredProps ? unknown extends $JsxProps ? string : 'input' : 'input'];`;
 const overlap = (start, length, edit) => start < edit.end && edit.start < start + length;
 const point = (value, edits) => {
   assert(Number.isSafeInteger(value) && value >= 0);
@@ -115,13 +116,18 @@ const certifyMapperTransition = (beforePacket, afterPacket) => {
   for (const [oldValue, currentValue, label] of [
     [
       "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : __VizeReplaceComponentProps<__VizeComponentInstance, __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>>;",
-      currentComponentConstructor,
+      mappedComponentConstructor,
       "integrated generic component constructor",
     ],
     [
       'declare const __vize_component__: { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: __VizeUnownedComponentAttrs<Partial<__VizeNativeElement<"p">>, Props, {}>; } & __VizeComponentConstructor & __VizeVueComponentOptions;',
       'type RouteComponent = { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props; readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughSource?: Partial<$NativeElement<"p">>; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: $UnownedComponentAttrs<Partial<$NativeElement<"p">>, Props, {}>; } & $ComponentConstructor & $VueComponentOptions;\ndeclare const __vize_component__: RouteComponent;',
       "integrated named component surface",
+    ],
+    [
+      "export default Route;",
+      "export default Route as typeof Route;",
+      "mapped default component export",
     ],
   ]) {
     const start = uniqueOffset(before, Buffer.from(oldValue));
@@ -198,7 +204,7 @@ const certifyNativeTransition = (beforeText, afterText) => {
     {
       start: constructorStart,
       end: constructorEnd,
-      replacement: Buffer.from(currentComponentConstructor),
+      replacement: Buffer.from(`${componentConstructorType};`),
       label: "integrated generic component constructor",
     },
     ...dedentEdits(before, after),

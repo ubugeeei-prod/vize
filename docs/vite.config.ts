@@ -159,7 +159,7 @@ export default defineConfig({
               '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
               '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">',
               '<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>',
-              "<script>if(!localStorage.getItem('theme')){localStorage.setItem('theme','light')}</script>",
+              '<script src="/initialize-theme.js"></script>',
             ].join("\n"),
             headerAfter: createDocsBackgroundHtml(),
           },

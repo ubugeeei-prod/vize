@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+cargo build --profile ci -p vize && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle

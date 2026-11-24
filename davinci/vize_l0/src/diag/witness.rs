@@ -129,3 +129,24 @@ pub enum Witness {
     /// list rather than an absence.
     LegacyExempt(&'static Exemption),
 }
+
+#[cfg(feature = "diagnostic-span-projection")]
+impl super::Diagnostic {
+    /// Map every source location, preserving label order, severity, exemptions and proof keys.
+    /// The whole diagnostic is returned only if every location can be projected.
+    pub fn try_map_spans<E>(
+        mut self,
+        mut project: impl FnMut(Span) -> Result<Span, E>,
+    ) -> Result<Self, E> {
+        self.span = project(self.span)?;
+        for part in &mut self.parts {
+            part.span = project(part.span)?;
+        }
+        if let Some(Witness::Proven(chain)) = &mut self.witness {
+            for link in &mut chain.links {
+                link.span = project(link.span)?;
+            }
+        }
+        Ok(self)
+    }
+}

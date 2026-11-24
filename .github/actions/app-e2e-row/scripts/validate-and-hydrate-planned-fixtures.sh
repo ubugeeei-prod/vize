@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+planner=(node tools/commands/ci/github/app-e2e-plan.ts --profile "$PLAN_PROFILE" --suite "$PLAN_SUITE" --shard "$PLAN_SHARD")
+test "$("${planner[@]}" --field task)" = "$PLANNED_TASK"
+test "$("${planner[@]}" --field timeout)" = "$PLANNED_TIMEOUT"
+test "$("${planner[@]}" --field needs-playwright)" = "$PLANNED_BROWSER"
+test "$("${planner[@]}" --field cache-key)" = "$PLANNED_CACHE_KEY"
+test "$("${planner[@]}" --field worktree-id)" = "$PLANNED_WORKTREE_ID"
+test "$("${planner[@]}" --field artifact-stem)" = "$PLANNED_ARTIFACT_STEM"
+mapfile -t fixture_paths < <("${planner[@]}" --field fixtures)
+if (( ${#fixture_paths[@]} == 0 )); then
+  echo "::error title=Empty App E2E shard::planner selected no fixtures"
+  exit 1
+fi
+git submodule update --init --recursive --depth 1 -- "${fixture_paths[@]}"

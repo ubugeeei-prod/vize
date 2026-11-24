@@ -1,5 +1,14 @@
 //! Resident queries over the selected template's own source and expression
 //! language. Positions become document-absolute only through the current view.
+mod recovery;
+mod source_sites;
+
+pub use recovery::{
+    RecoveryMatch, RecoveryPositionError, RecoveryRecord, TemplateGraphObservation,
+    TemplateRecovery,
+};
+pub use source_sites::TemplateSourceSites;
+
 use std::{borrow::Borrow, ops::ControlFlow};
 use vize_incremental::{block_query::BlockView, db::Block};
 use vize_l0::{Allocator, Lang, Span, diag::Diagnostic};
@@ -8,7 +17,8 @@ use vize_l2::artifact::ArtifactError;
 use vize_l3::{
     op::OpId,
     query::{
-        CertificateError, GraphError, OpGraph, ReachQuery, ReachStep, TwoHopMatch, TwoHopQuery,
+        BoundedTrailQuery, CertificateError, GraphError, OpGraph, ReachQuery, ReachStep,
+        TrailMatch, TrailVisit, TrailWitnessError, TwoHopMatch, TwoHopQuery,
     },
 };
 
@@ -149,6 +159,28 @@ impl<'db> TemplateReachBatch<'db> {
             .map_err(TemplateGraphError::Graph)
     }
 
+    /// Visit bounded dependency trails from this snapshot. Each row's endpoint
+    /// can be projected through this same batch's current authored source site.
+    pub fn visit_bounded_trails<B>(
+        &self,
+        query: BoundedTrailQuery,
+        edge_budget: usize,
+        visit: impl FnMut(TrailMatch<'_>) -> ControlFlow<B>,
+    ) -> Result<TrailVisit<B>, TemplateGraphError> {
+        self.graph
+            .visit_bounded_trails(query, edge_budget, visit)
+            .map_err(TemplateGraphError::Graph)
+    }
+
+    /// Check a claimed trail against the original edges retained for this template.
+    pub fn check_bounded_trail(
+        &self,
+        query: BoundedTrailQuery,
+        row: TrailMatch<'_>,
+    ) -> Result<(), TrailWitnessError> {
+        self.graph.check_bounded_trail(query, row)
+    }
+
     /// Certify the entire ordered answer against this snapshot's retained L3 rows.
     pub fn check_two_hop(
         &self,
@@ -216,5 +248,12 @@ impl<'db> TemplateQueries<'db> for BlockView<'db> {
             view: self,
             graph: template_graph(db, block, lang).as_ref()?,
         })
+    }
+}
+
+impl TemplateReachBatch<'_> {
+    /// Certify a root-only claim on the current template's original edges.
+    pub fn check_singleton(&self, query: ReachQuery) -> Result<(), CertificateError> {
+        self.graph.check_singleton(query)
     }
 }

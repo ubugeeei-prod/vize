@@ -94,9 +94,8 @@ export function buildScriptShim(source: string): ScriptShim | null {
   const lineStarts = [0];
   for (let index = 0; index < source.length; index += 1)
     if (source.charCodeAt(index) === 10) lineStarts.push(index + 1);
-  const chars = source.replace(/[^\r\n]/gu, " ").split("");
+  const blocks: { start: number; content: string }[] = [];
   let lang = "";
-  let found = false;
   for (const block of extractSfcBlocks(source)) {
     if (block.kind !== "script" && block.kind !== "script-setup") continue;
     const start = lineStarts[block.contentStart.line - 1] + block.contentStart.column - 1;
@@ -104,14 +103,41 @@ export function buildScriptShim(source: string): ScriptShim | null {
     if (/\bsrc\s*=/u.test(openTag)) continue;
     const blockLang = /\blang\s*=\s*["']?([a-z]+)/iu.exec(openTag)?.[1]?.toLowerCase() ?? "js";
     if (lang === "" || blockLang.startsWith("t")) lang = blockLang;
-    for (let offset = 0; offset < block.content.length; offset += 1)
-      chars[start + offset] = block.content[offset];
-    found = true;
+    blocks.push({ start, content: block.content });
   }
-  if (!found) return null;
+  if (blocks.length === 0) return null;
+  blocks.sort((left, right) => left.start - right.start);
+  const parts: string[] = [];
+  let cursor = 0;
+  for (const block of blocks) {
+    parts.push(blankKeepingNewlines(source, cursor, block.start));
+    parts.push(block.content);
+    cursor = block.start + block.content.length;
+  }
+  parts.push(blankKeepingNewlines(source, cursor, source.length));
   const extension =
     lang === "tsx" ? ".tsx" : lang === "ts" ? ".ts" : lang === "jsx" ? ".jsx" : ".js";
-  return { text: chars.join(""), extension };
+  return { text: parts.join(""), extension };
+}
+
+/** One space per code unit, leaving `\r` and `\n` in place so columns stay put. */
+function blankKeepingNewlines(source: string, from: number, to: number): string {
+  let blank = "";
+  let run = 0;
+  for (let index = from; index < to; index += 1) {
+    const code = source.charCodeAt(index);
+    if (code === 10 || code === 13) {
+      if (run > 0) {
+        blank += " ".repeat(run);
+        run = 0;
+      }
+      blank += source[index] ?? "";
+    } else {
+      run += 1;
+    }
+  }
+  if (run > 0) blank += " ".repeat(run);
+  return blank;
 }
 
 /** The user's resolved config, reduced to its enabled type-aware rules. */

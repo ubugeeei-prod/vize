@@ -1,0 +1,4 @@
+#!@@NODE@@
+const fs = require("node:fs");
+fs.appendFileSync(process.env.CARGO_CALLS, JSON.stringify(process.argv.slice(2)) + "\n");
+process.stdout.write(fs.readFileSync(process.env.CARGO_METADATA, "utf8"));

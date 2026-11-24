@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+bun add vite@8 vue@3
+bunx jsr add "@vizejs/vize@${JSR_VERSION#v}"
+bun run consumer.ts @vizejs/vize --vite

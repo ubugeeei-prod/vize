@@ -10,55 +10,22 @@
       ...
     }:
     let
+      renderScript = import ./render-script.nix;
       nodejs = pkgs.nodejs_24;
       pnpm = pkgs.pnpm;
-      gauche =
-        assert lib.assertMsg (
-          pkgs.gauche.version == "0.9.15"
-        ) "Update the qualified Gauche version and tooling tests together";
-        pkgs.gauche;
-
-      gaucheToolingCheck =
-        pkgs.runCommand "vize-gauche-tooling"
-          {
-            nativeBuildInputs = [ gauche ];
-          }
-          ''
-            cd ${../..}
-            gosh -I tools/scheme tools/scheme/tests/process.scm
-            touch "$out"
-          '';
-
       # A Nix-provided Darwin stdenv has no Xcode behind it. Answer the two
       # queries the toolchain actually makes and defer the rest to the host
       # `xcrun` when the machine has one.
       workspaceXcrun = pkgs.writeShellApplication {
         name = "xcrun";
-        text = ''
-          if [ "$#" -eq 3 ] && [ "$1" = "--sdk" ] && [ "$2" = "macosx" ] && [ "$3" = "--show-sdk-path" ]; then
-            if [ -n "''${SDKROOT:-}" ]; then
-              printf '%s\n' "$SDKROOT"
-              exit 0
-            fi
-          fi
-
-          if [ "$#" -eq 2 ] && [ "$1" = "-f" ]; then
-            case "$2" in
-              clang | clang++)
-                command -v "$2"
-                exit $?
-                ;;
-            esac
-          fi
-
-          if [ -x /usr/bin/xcrun ]; then
-            exec /usr/bin/xcrun "$@"
-          fi
-
-          printf 'unsupported xcrun invocation: %s\n' "$*" >&2
-          exit 127
-        '';
+        text = builtins.readFile ./scripts/xcrun.sh;
       };
+
+      darwinEnvironment = lib.optionalString pkgs.stdenv.hostPlatform.isDarwin (
+        renderScript ./scripts/activate-darwin.sh {
+          LIBICONV = "${pkgs.libiconv}";
+        }
+      );
 
       devShell = pkgs.mkShell {
         packages = [
@@ -67,7 +34,6 @@
           config.packages.vp
           rustDevToolchain
           pkgs.git
-          gauche
           pkgs.rust-analyzer
           pkgs.wasm-pack
           pkgs.wasm-bindgen-cli
@@ -83,23 +49,11 @@
 
         RUST_SRC_PATH = "${rustDevToolchain}/lib/rustlib/src/rust/library";
 
-        shellHook = ''
-          ${clearTestboxEnvironment}
-          export VIZE_WORKSPACE_ROOT="$PWD"
-          export PATH="${config.packages.vp}/bin:$VIZE_WORKSPACE_ROOT/node_modules/.bin:$PATH"
-          export PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright"
-          export WASM_PACK_CACHE="$PWD/.cache/wasm-pack"
-          ${lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
-            export VIZE_DARWIN_LIBICONV_LIB="${pkgs.libiconv}/lib"
-            export LIBRARY_PATH="$VIZE_DARWIN_LIBICONV_LIB''${LIBRARY_PATH:+:$LIBRARY_PATH}"
-            export RUSTFLAGS="-L native=$VIZE_DARWIN_LIBICONV_LIB''${RUSTFLAGS:+ $RUSTFLAGS}"
-          ''}
-
-          echo "Vize dev shell ready."
-          echo "Nix provides Node, pnpm, Gauche, Rust, wasm-pack, wasm-bindgen, and binaryen."
-          echo "Run: vp install --frozen-lockfile"
-          echo "Local defaults: vp check / vp fmt / vp dev / vp build / vp test / vp lint"
-        '';
+        shellHook = renderScript ./scripts/activate-workspace.sh {
+          CLEAR_TESTBOX = clearTestboxEnvironment;
+          VP = "${config.packages.vp}";
+          DARWIN = darwinEnvironment;
+        };
       };
 
       testboxDevShell = devShell.overrideAttrs (previous: {
@@ -108,14 +62,12 @@
           pkgs.gh
           pkgs.rsync
         ];
-        shellHook = (previous.shellHook or "") + ''
-          ${activateTestboxEnvironment}
-          echo "Blacksmith Testbox tools ready (CLI ${config.packages.blacksmith.version})."
-          echo "Pinned CLI: $VIZE_BLACKSMITH_BIN"
-          echo 'First use: "$VIZE_BLACKSMITH_BIN" auth login'
-          echo "After pushing the current HEAD, see .github/CONTRIBUTING.md for warmup and safe ID capture."
-          echo "Then: vp build:testbox / vp test:testbox / vp lint:testbox; stop with vp testbox:stop"
-        '';
+        shellHook =
+          (previous.shellHook or "")
+          + (renderScript ./scripts/activate-testbox.sh {
+            ACTIVATE_TESTBOX = activateTestboxEnvironment;
+            BLACKSMITH_VERSION = config.packages.blacksmith.version;
+          });
       });
 
       # `nix develop .#parallel-frontend`: opt-in for local check/clippy/test
@@ -139,13 +91,8 @@
         ]
         ++ lib.remove rustDevToolchain (previous.nativeBuildInputs or [ ]);
         RUST_SRC_PATH = "${parallelFrontendToolchain}/lib/rustlib/src/rust/library";
-        shellHook = (previous.shellHook or "") + ''
-          export VIZE_JOBS_FRONTEND="''${VIZE_JOBS_FRONTEND:-8}"
-          export RUSTFLAGS="''${RUSTFLAGS:+$RUSTFLAGS }-Zunstable-options --jobs-frontend=$VIZE_JOBS_FRONTEND"
-          export CARGO_TARGET_DIR="''${CARGO_TARGET_DIR:-$VIZE_WORKSPACE_ROOT/target/nightly-frontend-j$VIZE_JOBS_FRONTEND}"
-          echo "Parallel frontend: $(rustc --version), --jobs-frontend=$VIZE_JOBS_FRONTEND, target $CARGO_TARGET_DIR"
-          echo "Not for CI, release builds or measurements; run the final clippy and tests in the default shell."
-        '';
+        shellHook =
+          (previous.shellHook or "") + (builtins.readFile ./scripts/activate-parallel-frontend.sh);
       });
     in
     {
@@ -156,7 +103,6 @@
       };
 
       checks = {
-        gauche-tooling = gaucheToolingCheck;
         shell = devShell.inputDerivation;
       };
     };

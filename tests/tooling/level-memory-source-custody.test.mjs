@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -156,7 +157,10 @@ await test("a refused own-source version retains all completed raw reports befor
   const stderr = `option 'reserve_os_memory': 131072 KiB\noption 'purge_delay': -1 \n${f.markers}\n`;
   fs.writeFileSync(
     executable,
-    `#!${process.execPath}\nprocess.stderr.write(${JSON.stringify(stderr)});\n`,
+    readToolingProgram("commands/level-memory-source-custody/emit-measured-stderr.cjs.in", {
+      NODE: process.execPath,
+      STDERR: JSON.stringify(stderr),
+    }),
   );
   fs.chmodSync(executable, 0o755);
   const suite = {

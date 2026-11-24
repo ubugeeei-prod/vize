@@ -3,7 +3,10 @@ use crate::linter::Linter;
 use crate::rule::RuleRegistry;
 use vize_l0::String;
 
-fn reported(entries: &[(&str, Option<&str>)], template: &str) -> Vec<(String, String)> {
+fn diagnostics(
+    entries: &[(&str, Option<&str>)],
+    template: &str,
+) -> Vec<crate::diagnostic::LintDiagnostic> {
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(NoRestrictedSyntax::new(
         entries
@@ -16,6 +19,10 @@ fn reported(entries: &[(&str, Option<&str>)], template: &str) -> Vec<(String, St
         .diagnostics;
     diagnostics.sort_by_key(|diagnostic| diagnostic.start);
     diagnostics
+}
+
+fn reported(entries: &[(&str, Option<&str>)], template: &str) -> Vec<(String, String)> {
+    diagnostics(entries, template)
         .iter()
         .map(|diagnostic| {
             let text = template
@@ -140,5 +147,87 @@ fn selectors_cover_combinators_pseudos_and_template_shapes() {
             String::from("f()"),
             String::from("Using 'CallExpression' is not allowed")
         )]
+    );
+}
+
+#[test]
+fn directive_modifier_selectors_preserve_authored_spans() {
+    let template = concat!(
+        "<div @click.stop v-on:keyup.stop.prevent />\n",
+        "<input v-model.trim=\"value\" :[name].camel=\"value\" />\n",
+    );
+    let found = |selector: &str| {
+        reported(&[(selector, None)], template)
+            .into_iter()
+            .map(|(text, _)| text)
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        found("VDirectiveKey > VIdentifier.modifiers"),
+        ["stop", "stop", "prevent", "trim", "camel"]
+    );
+    assert_eq!(
+        found("VDirectiveKey > VIdentifier[name='stop']"),
+        ["stop", "stop"]
+    );
+    assert_eq!(
+        found("VAttribute[key.modifiers.0.name='stop']"),
+        ["@click.stop", "v-on:keyup.stop.prevent"]
+    );
+    assert_eq!(
+        found("VDirectiveKey[modifiers.length=2]"),
+        ["v-on:keyup.stop.prevent"]
+    );
+    assert_eq!(found("VDirectiveKey[modifiers.2]"), Vec::<String>::new());
+    assert_eq!(found("VDirectiveKey[modifiers.00]"), Vec::<String>::new());
+}
+
+#[test]
+fn dot_shorthand_modifiers_match_the_parser_zero_width_convention() {
+    let template = "<div .foo.camel=\"x\" .[name].camel=\"x\" .bar.prop=\"x\" .baz />";
+    let found = |selector: &str| {
+        reported(&[(selector, None)], template)
+            .into_iter()
+            .map(|(text, _)| text)
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        found("VDirectiveKey > VIdentifier[name='prop']"),
+        ["", "", "prop", ""]
+    );
+    assert_eq!(
+        found("VDirectiveKey[modifiers.0.rawName='']"),
+        [".foo.camel", ".[name].camel", ".baz"]
+    );
+    assert_eq!(
+        found("VDirectiveKey[modifiers.length=1]"),
+        [".bar.prop", ".baz"]
+    );
+    assert_eq!(
+        diagnostics(&[("VIdentifier.modifiers[name='prop']", None)], template)
+            .iter()
+            .map(|diagnostic| (diagnostic.start, diagnostic.end))
+            .collect::<Vec<_>>(),
+        [(9, 9), (27, 27), (43, 47), (56, 56)]
+    );
+}
+
+#[test]
+fn modifier_names_keep_raw_case_and_key_ranges_exclude_value_spacing() {
+    let template = "<div @click.STOP = \"run\" :[name].Camel='value' />";
+    let found = |selector: &str| {
+        reported(&[(selector, None)], template)
+            .into_iter()
+            .map(|(text, _)| text)
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(found("VIdentifier[name='stop'][rawName='STOP']"), ["STOP"]);
+    assert_eq!(
+        found("VIdentifier[name='camel'][rawName='Camel']"),
+        ["Camel"]
+    );
+    assert_eq!(
+        found("VDirectiveKey[modifiers.length=1]"),
+        ["@click.STOP", ":[name].Camel"]
     );
 }

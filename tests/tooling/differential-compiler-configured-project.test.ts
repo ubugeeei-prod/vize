@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -203,12 +204,12 @@ test(
       // This executable checks process transport; it grants no compiler or native qualification.
       fs.writeFileSync(
         binaryPath,
-        `#!${process.execPath}\nconst fs=require('node:fs'),assert=require('node:assert/strict');
-if(process.argv[2]==='--version'){console.log('vize 0.0.0-dev');process.exit(0);}
-assert.deepEqual(process.argv.slice(2),${JSON.stringify(COMPILER_CONFIGURED_PROJECT_ARGV)});
-assert.deepEqual(fs.readdirSync('.').sort(),['Layout.vue','vite.config.mjs']);
-for(const [file,bytes] of ${JSON.stringify(expectedFiles)})assert.deepEqual(fs.readFileSync(file),Buffer.from(bytes,'base64'));
-fs.mkdirSync('out');fs.writeFileSync('out/Layout.json',JSON.stringify({filename:'Layout.vue',code:${JSON.stringify(expected)},css:null,errors:[],warnings:[],script_lang:'js',macro_artifacts:[]}));\n`,
+        readToolingProgram("commands/differential-compiler-configured-project/binary-path.cjs.in", {
+          NODE: process.execPath,
+          EXPECTED_FILES: JSON.stringify(expectedFiles),
+          EXPECTED: JSON.stringify(expected),
+          VALUE: JSON.stringify(COMPILER_CONFIGURED_PROJECT_ARGV),
+        }),
       );
       fs.chmodSync(binaryPath, 0o755);
       writeBuildReceipt(repo);

@@ -32,26 +32,7 @@ fn write_vite_bin(root: &Path) -> PathBuf {
 
     let bin = root.join("node_modules/.bin/vite");
     fs::create_dir_all(bin.parent().unwrap()).unwrap();
-    fs::write(
-        &bin,
-        r#"#!/bin/sh
-if [ "$1" != "build" ]; then
-  exit 9
-fi
-if [ "${VIZE_MUSEA_STATIC_BUILD:-}" != "1" ]; then
-  printf 'Could not resolve entry module "index.html"\n' >&2
-  exit 1
-fi
-printf 'vite stdout sentinel\n'
-printf 'vite stderr sentinel\n' >&2
-if [ "${VIZE_MUSEA_TEST_FAIL:-}" = "1" ]; then
-  exit 7
-fi
-mkdir -p dist/__musea__
-printf '<!doctype html><title>Musea</title>\n' > dist/__musea__/index.html
-"#,
-    )
-    .unwrap();
+    fs::write(&bin, include_str!("programs/build-static-musea.sh")).unwrap();
     fs::set_permissions(&bin, fs::Permissions::from_mode(0o755)).unwrap();
     bin
 }
@@ -62,21 +43,7 @@ fn write_vite_plus_bin(root: &Path) -> PathBuf {
 
     let bin = root.join("node_modules/.bin/vp");
     fs::create_dir_all(bin.parent().unwrap()).unwrap();
-    fs::write(
-        &bin,
-        r#"#!/bin/sh
-if [ "$1" != "build" ]; then
-  exit 9
-fi
-if [ "${VIZE_MUSEA_STATIC_BUILD:-}" != "1" ]; then
-  exit 1
-fi
-printf 'vite-plus stdout sentinel\n'
-mkdir -p dist/__musea__
-printf '<!doctype html><title>Musea</title>\n' > dist/__musea__/index.html
-"#,
-    )
-    .unwrap();
+    fs::write(&bin, include_str!("programs/build-relative-musea.sh")).unwrap();
     fs::set_permissions(&bin, fs::Permissions::from_mode(0o755)).unwrap();
     bin
 }
@@ -85,19 +52,7 @@ printf '<!doctype html><title>Musea</title>\n' > dist/__musea__/index.html
 fn write_vite_bin(root: &Path) -> PathBuf {
     let bin = root.join("node_modules/.bin/vite.cmd");
     fs::create_dir_all(bin.parent().unwrap()).unwrap();
-    fs::write(
-        &bin,
-        r#"@echo off
-if not "%1"=="build" exit /b 9
-if not "%VIZE_MUSEA_STATIC_BUILD%"=="1" exit /b 1
-echo vite stdout sentinel
-echo vite stderr sentinel 1>&2
-if "%VIZE_MUSEA_TEST_FAIL%"=="1" exit /b 7
-mkdir dist\__musea__
-echo ^<!doctype html^>^<title^>Musea^</title^> > dist\__musea__\index.html
-"#,
-    )
-    .unwrap();
+    fs::write(&bin, include_str!("programs/build-static-musea.cmd")).unwrap();
     bin
 }
 
@@ -105,17 +60,7 @@ echo ^<!doctype html^>^<title^>Musea^</title^> > dist\__musea__\index.html
 fn write_vite_plus_bin(root: &Path) -> PathBuf {
     let bin = root.join("node_modules/.bin/vp.cmd");
     fs::create_dir_all(bin.parent().unwrap()).unwrap();
-    fs::write(
-        &bin,
-        r#"@echo off
-if not "%1"=="build" exit /b 9
-if not "%VIZE_MUSEA_STATIC_BUILD%"=="1" exit /b 1
-echo vite-plus stdout sentinel
-mkdir dist\__musea__
-echo ^<!doctype html^>^<title^>Musea^</title^> > dist\__musea__\index.html
-"#,
-    )
-    .unwrap();
+    fs::write(&bin, include_str!("programs/build-relative-musea.cmd")).unwrap();
     bin
 }
 

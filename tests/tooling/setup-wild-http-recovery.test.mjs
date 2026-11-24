@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -30,7 +32,7 @@ void test("Wild adapter reverse expansion retains the whole pinned original acti
     "80d1b927f19f7df0e00d99b44361104c13f2221d630bbd080f7dc6eb066fe61a",
   );
   const before = parse(original),
-    after = parse(action),
+    after = parse(readAutomationPrograms(".github/actions/setup-wild-http-recovery/action.yml")),
     delegate = after.runs.steps.shift();
   assert.equal(delegate.uses, upstream);
   assert.deepEqual(delegate.with, {
@@ -95,7 +97,7 @@ void test("Wild delegation is complementary for every unsupported host or input"
         }
 });
 void test("Core PR and merge gates use the recovery adapter", () => {
-  const pr = parse(fs.readFileSync(".github/workflows/pr-source-checks.yml", "utf8"));
+  const pr = parse(readAutomationPrograms(".github/workflows/pr-source-checks.yml", "utf8"));
   const local = "./.github/actions/setup-wild-http-recovery";
   assert.equal(pr.jobs["pr-playground-test"].steps.filter((s) => s.uses === local).length, 1);
   assert.deepEqual(
@@ -103,14 +105,14 @@ void test("Core PR and merge gates use the recovery adapter", () => {
     new Set(["pr-native-runtime", "pr-playground-test"]),
   );
   assert.deepEqual(jobsUsingAction(pr.jobs, upstream), []);
-  const js = parse(fs.readFileSync(".github/workflows/pr-js-checks.yml", "utf8"));
+  const js = parse(readAutomationPrograms(".github/workflows/pr-js-checks.yml", "utf8"));
   assert.deepEqual(
     jobsUsingAction(js.jobs, local),
     Object.keys(js.jobs).filter((name) => name !== "pr-oxlint-windows-json-config"),
   );
   assert.deepEqual(jobsUsingAction(js.jobs, upstream), []);
   const canonical = parse(
-    fs.readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
+    readAutomationPrograms(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
   );
   const steps = canonical.jobs["canonical-observers"].steps;
   assert.deepEqual(
@@ -126,7 +128,7 @@ void test("Core PR and merge gates use the recovery adapter", () => {
     undefined,
   );
   const instructions = parse(
-    fs.readFileSync(".github/workflows/level-instruction-counts.yml", "utf8"),
+    readAutomationPrograms(".github/workflows/level-instruction-counts.yml", "utf8"),
   );
   assert.deepEqual(jobsUsingAction(instructions.jobs, local), ["instruction-counts", "sfc-parse"]);
   assert.deepEqual(jobsUsingAction(instructions.jobs, upstream), []);
@@ -135,7 +137,7 @@ void test("Release-blocking observers and Fresco use the recovery adapter", () =
   const local = "./.github/actions/setup-wild-http-recovery";
   const qualification = "./qualification/.github/actions/setup-wild-http-recovery";
   const asyncAncestry = parse(
-    fs.readFileSync(".github/workflows/async-component-ancestry.yml", "utf8"),
+    readAutomationPrograms(".github/workflows/async-component-ancestry.yml", "utf8"),
   );
   const asyncSteps = asyncAncestry.jobs["whole-project"].steps;
   const qualificationCheckout = asyncSteps.find(
@@ -158,11 +160,6 @@ void test("Release-blocking observers and Fresco use the recovery adapter", () =
       ".github/workflows/component-input-diagnostic-ownership.yml",
       local,
       ["published-sdk-packets", "unchanged-projection-packets"],
-    ],
-    [
-      ".github/workflows/corsa-package-refresh.yml",
-      local,
-      ["attribution", "import-literal-geometry", "projection-import-geometry"],
     ],
     [".github/workflows/cross-file-script-offset.yml", local, ["coordinates"]],
     [".github/workflows/davinci-plugin-sdk.yml", local, ["plugin-contracts"]],
@@ -343,9 +340,7 @@ void test("Exact context refusal and API nonzero status do not depend on inherit
       const p = spawnSync(
         "bash",
         [
-          "-c",
-          'set +e; . "$1" "$2" "$3" "$4"; printf AFTER_HELPER',
-          "law",
+          fileURLToPath(new URL("./programs/source-download-helper.sh", import.meta.url)),
           path.join(local, "download-linux-x64.sh"),
           path.join(root, "archive"),
           requested,

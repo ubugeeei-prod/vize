@@ -1,3 +1,4 @@
+import { readWorkflowShell, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -165,10 +166,7 @@ function assertNormalRoute(workflow: string, job: string, production: boolean) {
 }
 
 test("normal workflow exact-head and ancestry guards remain separate from historical routing", () => {
-  const workflow = readFileSync(
-    new URL("../../.github/workflows/criterion-bench.yml", import.meta.url),
-    "utf8",
-  );
+  const workflow = readWorkflowShell("criterion-bench");
   assert.equal(workflow.match(/\[\[ "\$HEAD_SHA" == "\$DISPATCH_SHA" \]\]/gu)?.length, 2);
   assertNormalRoute(workflow, "criterion-ab", false);
   assertNormalRoute(workflow, "production-pairs", true);
@@ -182,16 +180,20 @@ test("normal workflow exact-head and ancestry guards remain separate from histor
     }
   }
   assert.match(workflow, /uses: \.\/\.github\/workflows\/sfc-parse-replay.yml/u);
-  const replay = readFileSync(
-    new URL("../../.github/workflows/sfc-parse-replay.yml", import.meta.url),
-    "utf8",
-  );
+  const replay = readWorkflowShell("sfc-parse-replay");
   assert.ok(
     replay.indexOf("uses: voidzero-dev/setup-vp@") <
       replay.indexOf("- name: Validate frozen historical pair"),
   );
   assert.match(replay, /node-version-file: harness\/package\.json/u);
-  assert.match(replay, /sfc-parse-replay-contract\.ts/u);
+  assert.match(
+    workflowProgram(
+      "sfc-parse-replay",
+      replay,
+      "validate-frozen-historical-pair-before-checkout.ts",
+    ),
+    /sfc-parse-replay-contract\.ts/u,
+  );
 });
 
 type Operation = () => unknown;

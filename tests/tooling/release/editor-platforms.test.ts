@@ -1,3 +1,4 @@
+import { workspaceTaskSteps } from "../../../tools/config/vite-plus/task-plan.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -8,9 +9,8 @@ import {
   editorPlatformAssets,
   editorPlatformMatrix,
 } from "../../../tools/support/release/editor-platforms.ts";
-import { installVscodeExtensionDependencies } from "../../../tools/config/vite-plus/task-commands.ts";
 import { buildTasks } from "../../../tools/config/vite-plus/tasks/build.ts";
-import { readRepoFile } from "../support/github-workflows.ts";
+import { readAutomationPrograms } from "../support/automation-source.ts";
 
 test("all eight release providers match the packager and have distinct immutable artifacts", () => {
   const matrix = editorPlatformMatrix();
@@ -46,7 +46,7 @@ test("resume signs only a complete platform cohort and refuses foreign artifacts
 });
 
 test("platform providers publish after their packages without gating the release", () => {
-  const release = parse(readRepoFile(".github", "workflows", "release.yml"));
+  const release = parse(readAutomationPrograms(".github", "workflows", "release.yml"));
   const job = release.jobs["build-editor-platforms"];
   assert.deepEqual(job.needs, ["version", "build-native"]);
   assert.equal(job.strategy["fail-fast"], false);
@@ -105,8 +105,22 @@ test("platform providers publish after their packages without gating the release
   assert.match(github, /VIZE_EDITOR_PLATFORM_ARTIFACTS/);
 });
 
+test("queued platform providers retain their candidate after the tag deletes its ref", () => {
+  const release = parse(readAutomationPrograms(".github", "workflows", "release.yml"));
+  const job = release.jobs["build-editor-platforms"];
+  const checkout = job.steps.find((step: { uses?: string }) =>
+    step.uses?.startsWith("actions/checkout@"),
+  );
+  const packaging = job.steps.find(
+    (step: { name?: string }) => step.name === "Package the exact target provider",
+  );
+  assert.equal(checkout.with.ref, "${{ needs.version.outputs.sha }}");
+  assert.equal(packaging.env.VIZE_RELEASE_CANDIDATE_SHA, checkout.with.ref);
+  assert.ok(!release.jobs.tag.needs.includes("build-editor-platforms"));
+});
+
 test("platform providers install the extension's packager like the universal VSIX", () => {
-  const release = parse(readRepoFile(".github", "workflows", "release.yml"));
+  const release = parse(readAutomationPrograms(".github", "workflows", "release.yml"));
   type Step = { name?: string; uses?: string; run?: string };
   const steps = (job: string): Step[] => release.jobs[job].steps;
   const index = (job: string, match: (step: Step) => boolean) => steps(job).findIndex(match);
@@ -130,20 +144,16 @@ test("platform providers install the extension's packager like the universal VSI
     setup("build-editor-platforms", install),
     setup("build-editor-extensions", (step) => step.name === "Package editor extensions"),
   );
-  const command = (task: unknown) => {
-    assert.ok(task !== null && typeof task === "object" && "command" in task);
-    assert.equal(typeof task.command, "string");
-    return String(task.command);
-  };
-  assert.ok(
-    command(buildTasks["package:vscode-extension"]).startsWith(
-      `${installVscodeExtensionDependencies} && `,
-    ),
-  );
+  assert.deepEqual(workspaceTaskSteps(buildTasks["package:vscode-extension"])[0], {
+    program: "node",
+    arguments: ["tools/commands/editors/vscode/ensure-dependencies.ts"],
+  });
 });
 
 test("provider packaging keeps Rust setup for universal and host VSIX tasks", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "typescript-provider-vsix.yml"));
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "typescript-provider-vsix.yml"),
+  );
   type Step = { name?: string; uses?: string; run?: string };
   const packageSteps = workflow.jobs.package.steps as Step[];
   const rustScript = (step: Step) => step.uses === "./.github/actions/setup-rust-script";
@@ -165,7 +175,7 @@ test("provider packaging keeps Rust setup for universal and host VSIX tasks", ()
 });
 
 test("editor publishers outwait registry validation and Open VSX maintenance", () => {
-  const release = parse(readRepoFile(".github", "workflows", "release.yml"));
+  const release = parse(readAutomationPrograms(".github", "workflows", "release.yml"));
   const waitSeconds = (job: { env: Record<string, string> }) =>
     Number(job.env.PUBLISH_RESOLUTION_RETRY_LIMIT) * 10;
   // The Marketplace listed the 0.584.0 platform uploads 6.5-9 min after vsce exited.

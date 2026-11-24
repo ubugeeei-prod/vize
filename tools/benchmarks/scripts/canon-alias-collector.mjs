@@ -58,17 +58,36 @@ function mode(sources, sha256, label) {
   return matches[0][0];
 }
 
+export const aliasSourcePaths = Object.freeze({
+  resolver: "crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs",
+  collector: "crates/vize/src/commands/check/imports_aliases.rs",
+});
+
+export const directoryListingAliasSources = Object.freeze({
+  resolver: "57b08e173cf75f681e960076d6effe98d5807cfbcf3e0de19300fee8385ff779",
+  collector: "56913b7e329b98466a4b39c1c46de5023ef82db91a70c5ee31065ccb0f515239",
+});
+
 export function sourceContract(resolverSha256, collectorSha256, side) {
   assert(["base", "head"].includes(side), "Unknown source side");
   const resolverMode =
-    resolverSha256 === directoryModuleResolver.resolverSha256
+    resolverSha256 === directoryModuleResolver.resolverSha256 ||
+    resolverSha256 === directoryListingAliasSources.resolver
       ? "selected"
       : mode(successor.resolverSources, resolverSha256, "Canon resolver");
-  const collectorMode = mode(successor.collectorSources, collectorSha256, "CLI collector");
+  const collectorMode =
+    collectorSha256 === directoryListingAliasSources.collector
+      ? "selected"
+      : mode(successor.collectorSources, collectorSha256, "CLI collector");
   if (side === "head") {
     assert.equal(resolverMode, "selected", "Head must satisfy selected resolver semantics");
     assert.equal(collectorMode, "selected", "Head must satisfy selected CLI membership");
   }
+  assert.equal(
+    resolverSha256 === directoryListingAliasSources.resolver,
+    collectorSha256 === directoryListingAliasSources.collector,
+    "Unqualified directory-listing resolver and CLI collector pair",
+  );
   return { side, resolverSha256, collectorSha256, resolverMode, collectorMode };
 }
 

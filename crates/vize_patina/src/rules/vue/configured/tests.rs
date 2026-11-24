@@ -87,7 +87,10 @@ fn options() -> ConfigLintRuleOptions {
     .unwrap()
 }
 
-fn reports(source: &str, parsed: &ConfigLintRuleOptions) -> Vec<(u32, u32, String, String)> {
+pub(super) fn reports(
+    source: &str,
+    parsed: &ConfigLintRuleOptions,
+) -> Vec<(u32, u32, String, String)> {
     let result = Linter::with_preset(LintPreset::Incremental)
         .with_enabled_rules(Some(
             RULES.iter().copied().map(vize_l0::String::from).collect(),

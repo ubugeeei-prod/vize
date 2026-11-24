@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../support/program-path.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -16,6 +17,30 @@ const archive = path.join(
   root,
   "tests/_fixtures/differential/config/project-settings-8371/archives",
 );
+
+// Check the entire historical test, including the bytes now stored in named programs.
+function runtimeOracleSource(): string {
+  let source = fs.readFileSync(
+    path.join(root, "tests/tooling/release/release-smoke-runtime-oracle.test.ts"),
+    "utf8",
+  );
+  const importLine = 'import { readToolingProgram } from "../support/program-path.ts";\n';
+  assert.equal(source.split(importLine).length, 2);
+  source = source.replace(importLine, "");
+  for (const name of ["historical-false-clean-cli.cjs.in", "verify-fresh-init.js.in"]) {
+    const file = "commands/release-smoke-runtime-oracle/" + name;
+    const call = new RegExp(
+      'readToolingProgram\\(\\s*"' + file.replaceAll(".", "\\.") + '",?\\s*\\)',
+      "gu",
+    );
+    assert.equal([...source.matchAll(call)].length, 1, file);
+    const program = readToolingProgram(file);
+    const literal =
+      "`" + program.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("${", "\\${") + "`";
+    source = source.replace(call, () => literal);
+  }
+  return source;
+}
 
 function invertTypescriptDriverSuccessor(current: string, original: string): string {
   const replaceOnce = (successor: string, predecessor: string) => {
@@ -112,28 +137,9 @@ function installedPreludeFixture(t: TestContext, mode: string) {
   fs.mkdirSync(path.dirname(vizeBin), { recursive: true });
   fs.writeFileSync(
     vizeBin,
-    `const fs = require("node:fs");
-const path = require("node:path");
-const project = process.argv[3];
-const mode = ${JSON.stringify(mode)};
-const counter = path.join(project, ".fixture-init-count");
-const count = fs.existsSync(counter) ? Number(fs.readFileSync(counter, "utf8")) + 1 : 1;
-fs.writeFileSync(counter, String(count));
-const filename = path.join(project, "package.json");
-const manifest = JSON.parse(fs.readFileSync(filename, "utf8"));
-manifest.scripts = { "vize:check": "vize check" };
-if (mode === "second-package" && count === 2) manifest.changedOnRerun = true;
-fs.writeFileSync(filename, JSON.stringify(manifest));
-const js = !manifest.devDependencies.typescript;
-fs.writeFileSync(path.join(project, "tsconfig.json"), JSON.stringify({
-  compilerOptions: js ? { allowJs: true, checkJs: true } : {},
-  ...(mode === "second-tsconfig" && count === 2 ? { changedOnRerun: true } : {}),
-}));
-if ((mode === "first-config" && count === 1) || (mode === "second-config" && count === 2)) {
-  fs.writeFileSync(path.join(project, "vize.config.mjs"), "export default {};\\n");
-}
-fs.writeFileSync(path.join(project, "run"), 'console.log(JSON.stringify({ errorCount: 0, files: [] }));');
-`,
+    readToolingProgram("commands/release-smoke-init-typecheck/observe-init-typecheck.cjs.in", {
+      MODE: JSON.stringify(mode),
+    }),
   );
   const previousNpm = process.env.NPM_BIN;
   process.env.NPM_BIN = process.execPath;
@@ -260,13 +266,7 @@ test("the declared generated-file successor restores both entire archival source
     path.join(archive, "release-smoke-runtime-oracle.original.test.ts.txt"),
     "utf8",
   );
-  const currentOracle = invertTypescriptDriverSuccessor(
-    fs.readFileSync(
-      path.join(root, "tests/tooling/release/release-smoke-runtime-oracle.test.ts"),
-      "utf8",
-    ),
-    originalOracle,
-  );
+  const currentOracle = invertTypescriptDriverSuccessor(runtimeOracleSource(), originalOracle);
   assert.equal(
     createHash("sha256").update(originalOracle).digest("hex"),
     "ad5ef9636ea6310104c1dd6ecd43cd11b7a09ab8178a29145cd0b390d5edc8c0",
@@ -314,10 +314,7 @@ test("the driver successor inverse refuses undeclared dispatcher or invocation c
     path.join(archive, "release-smoke-runtime-oracle.original.test.ts.txt"),
     "utf8",
   );
-  const current = fs.readFileSync(
-    path.join(root, "tests/tooling/release/release-smoke-runtime-oracle.test.ts"),
-    "utf8",
-  );
+  const current = runtimeOracleSource();
   for (const [before, after] of [
     ["const command = process.execPath;", 'const command = "npm";'],
     ['[entry, "--runtime-checks", cli, platform]', "[entry, cli]"],

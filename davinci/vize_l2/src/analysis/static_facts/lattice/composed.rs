@@ -84,8 +84,7 @@ struct Walk<'s, P, R> {
 impl<P: ProvenanceSink, R: RemarkSink> Walk<'_, P, R> {
     fn publish(&mut self, id: Option<NodeId>, owner: &str, span: Span, fact: StaticFacts) {
         if let Some(id) = id {
-            let provenance = &mut self.provenance;
-            publication::record!(provenance, id, owner, span, fact);
+            publication::record(self.provenance, id, owner, span, fact);
             self.static_facts.insert(id, fact);
         }
     }

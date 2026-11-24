@@ -35,6 +35,8 @@ xxhash-rust = { workspace = true }
 [features]
 # Locate the nearest LSP line boundaries in borrowed source segments.
 lsp-line-break-search = []
+# Project diagnostics and their complete evidence into the current source frame.
+diagnostic-span-projection = []
 # Sequential pass-group traversal for explicit compiler and tool pipelines.
 streamed-pass-groups = []
 # Reuse global UTF-16 positions across diagnostic requests.

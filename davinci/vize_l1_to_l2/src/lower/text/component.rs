@@ -36,8 +36,14 @@ impl TextLane {
     ) -> Option<&'a str> {
         if self.whitespace != TextWhitespace::Normal {
             let text = if self.ignore_newline_at == Some(start) {
-                decoded
-                    .strip_prefix("\r\n")
+                // In preformatted text Vue normalizes CRLF first, so an
+                // authored CR followed by CRLF also forms one leading CRLF.
+                let normalized_prefix = match self.whitespace {
+                    TextWhitespace::Pre => decoded.strip_prefix("\r\r\n"),
+                    _ => None,
+                };
+                normalized_prefix
+                    .or_else(|| decoded.strip_prefix("\r\n"))
                     .or_else(|| decoded.strip_prefix('\n'))
                     .unwrap_or(decoded)
             } else {

@@ -1,0 +1,19 @@
+import "../Actions.pkl" as ci
+
+name = "Upload Davinci allocation bench reports"
+description = "Uploads allocation bench JSON reports for Davinci wall-budget baselines."
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Upload reports"
+      uses = ci.uploadArtifact
+      with {
+        name = "davinci-allocation-bench-reports"
+        path = "tools/benchmarks/results/davinci/*.json"
+        `if-no-files-found` = "error"
+        `retention-days` = 14
+      }
+    }
+  }
+}
