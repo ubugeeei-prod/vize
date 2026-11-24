@@ -105,7 +105,6 @@
       "tests/tooling/config-types.test.ts": 426,
       "tests/tooling/content-mapper-editor-inventory.test.ts": 69,
       "tests/tooling/content-mapper-instance-globals-10617.test.ts": 318288,
-      "tests/tooling/content-mapper-instance-globals-workflow.test.ts": 105,
       "tests/tooling/content-mapper-manifest.test.ts": 1675,
       "tests/tooling/content-mapper-package-contract.test.ts": 64,
       "tests/tooling/content-mapper-process-receipt.test.ts": 362,

@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-retained="$GITHUB_WORKSPACE/target/vize-tests/native-diagnostic-warmup-10604/$VIZE_WARMUP_ROLE-source"
-mkdir -p "$retained"
-cp "$VIZE_WARMUP_SOURCE_ROOT/target/ci/vize.differential-build.json" "$retained/"
-cp -R "$VIZE_WARMUP_SOURCE_ROOT/target/differential/lsp-sessions" "$retained/"

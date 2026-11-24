@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-test -x /usr/bin/prlimit
-test -x /usr/bin/time
-node tools/benchmarks/scripts/content-mapper-worker-stack.ts \
-  --binary "target/$BUILD_PROFILE/vize" \
-  --source-sha "$SOURCE_SHA" \
-  --profile "$BUILD_PROFILE" \
-  --fixed-worker-budget \
-  --out "$RUNNER_TEMP/worker-stack"

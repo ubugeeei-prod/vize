@@ -24,11 +24,11 @@ surfaces and are not routine CI-refactor targets.
 
 | Group | Area                                                                                   | Workflows |
 | ----- | -------------------------------------------------------------------------------------- | --------- |
-| 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 22        |
+| 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 21        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 37        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
-| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
-| 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
+| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 12        |
+| 05    | [Language services and editors](#05-language-services-and-editors)                     | 10        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 43        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 28        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 24        |
@@ -59,13 +59,12 @@ Start here for required checks, change planning, merge queues, and full qualific
 | 01.13 | Required Rust differential checks  | [`pr-rust-differential.yml`](./pr-rust-differential.yml)                         |
 | 01.14 | Rust product checks                | [`pr-rust-products.yml`](./pr-rust-products.yml)                                 |
 | 01.15 | PR source checks                   | [`pr-source-checks.yml`](./pr-source-checks.yml)                                 |
-| 01.16 | PR source CLI producer             | [`pr-source-cli.yml`](./pr-source-cli.yml)                                       |
-| 01.17 | Real Project Matrix differential   | [`real-project-matrix-differential.yml`](./real-project-matrix-differential.yml) |
-| 01.18 | Real Project Matrix                | [`real-project-matrix.yml`](./real-project-matrix.yml)                           |
-| 01.19 | Seed PR Rust target                | [`rust-pr-target-seed.yml`](./rust-pr-target-seed.yml)                           |
-| 01.20 | Title Policy                       | [`title-policy.yml`](./title-policy.yml)                                         |
-| 01.21 | V1 exact candidate admission       | [`v1-exact-candidate.yml`](./v1-exact-candidate.yml)                             |
-| 01.22 | V1 qualification manifest          | [`v1-supported-matrix.yml`](./v1-supported-matrix.yml)                           |
+| 01.16 | Real Project Matrix differential   | [`real-project-matrix-differential.yml`](./real-project-matrix-differential.yml) |
+| 01.17 | Real Project Matrix                | [`real-project-matrix.yml`](./real-project-matrix.yml)                           |
+| 01.18 | Seed PR Rust target                | [`rust-pr-target-seed.yml`](./rust-pr-target-seed.yml)                           |
+| 01.19 | Title Policy                       | [`title-policy.yml`](./title-policy.yml)                                         |
+| 01.20 | V1 exact candidate admission       | [`v1-exact-candidate.yml`](./v1-exact-candidate.yml)                             |
+| 01.21 | V1 qualification manifest          | [`v1-supported-matrix.yml`](./v1-supported-matrix.yml)                           |
 
 ## 02 Release and public acceptance
 
@@ -173,25 +172,18 @@ Typechecker, content-mapper, Corsa, and TypeScript-provider qualification.
 
 | ID    | Workflow                                  | File                                                                                         |
 | ----- | ----------------------------------------- | -------------------------------------------------------------------------------------------- |
-| 04.01 | Checker constructor emitter parity        | [`checker-constructor-emitter.yml`](./checker-constructor-emitter.yml)                       |
-| 04.02 | Checker diagnostic positions              | [`checker-diagnostic-positions.yml`](./checker-diagnostic-positions.yml)                     |
-| 04.03 | Checker projections for inline Vue styles | [`checker-styled-projections.yml`](./checker-styled-projections.yml)                         |
-| 04.04 | Component input diagnostic ownership      | [`component-input-diagnostic-ownership.yml`](./component-input-diagnostic-ownership.yml)     |
-| 04.05 | Component input projection packets        | [`component-input-projection-packets.yml`](./component-input-projection-packets.yml)         |
-| 04.06 | Content Mapper Conformance                | [`content-mapper-conformance.yml`](./content-mapper-conformance.yml)                         |
-| 04.07 | Consumer instance globals capture         | [`content-mapper-instance-globals.yml`](./content-mapper-instance-globals.yml)               |
-| 04.08 | Content mapper pair                       | [`content-mapper-pair.yml`](./content-mapper-pair.yml)                                       |
-| 04.09 | Content mapper replay                     | [`content-mapper-replay.yml`](./content-mapper-replay.yml)                                   |
-| 04.10 | Content Mapper Source Case Jobs           | [`content-mapper-reported-q16.yml`](./content-mapper-reported-q16.yml)                       |
-| 04.11 | Vue component metadata                    | [`content-mapper-vue-component-meta.yml`](./content-mapper-vue-component-meta.yml)           |
-| 04.12 | Content Mapper worker stack               | [`content-mapper-worker-stack.yml`](./content-mapper-worker-stack.yml)                       |
-| 04.13 | Type-check corpus pair                    | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                                   |
-| 04.14 | Typecheck vs vue-tsc                      | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
-| 04.15 | WSL2 type-check qualification             | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
-| 04.16 | Typechecker cache custody                 | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                           |
-| 04.17 | Type checker native backend phases        | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
-| 04.18 | Native syntax and semantic completion     | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |
-| 04.19 | Platform VSIX native projection           | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                             |
+| 04.01 | Checker diagnostic positions              | [`checker-diagnostic-positions.yml`](./checker-diagnostic-positions.yml)                     |
+| 04.02 | Checker projections for inline Vue styles | [`checker-styled-projections.yml`](./checker-styled-projections.yml)                         |
+| 04.03 | Content Mapper Conformance                | [`content-mapper-conformance.yml`](./content-mapper-conformance.yml)                         |
+| 04.04 | Content mapper pair                       | [`content-mapper-pair.yml`](./content-mapper-pair.yml)                                       |
+| 04.05 | Content mapper replay                     | [`content-mapper-replay.yml`](./content-mapper-replay.yml)                                   |
+| 04.06 | Content Mapper Source Case Jobs           | [`content-mapper-reported-q16.yml`](./content-mapper-reported-q16.yml)                       |
+| 04.07 | Type-check corpus pair                    | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                                   |
+| 04.08 | Typecheck vs vue-tsc                      | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
+| 04.09 | WSL2 type-check qualification             | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
+| 04.10 | Type checker native backend phases        | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
+| 04.11 | Native syntax and semantic completion     | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |
+| 04.12 | Platform VSIX native projection           | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                             |
 
 ## 05 Language services and editors
 
@@ -199,32 +191,18 @@ LSP behavior, editor packages, VSIX hosts, overlays, navigation, and hover check
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/editors/)
 
-| ID    | Workflow                                  | File                                                                         |
-| ----- | ----------------------------------------- | ---------------------------------------------------------------------------- |
-| 05.01 | Packaged CSS hover visual evidence        | [`css-hover-visual.yml`](./css-hover-visual.yml)                             |
-| 05.02 | Editor conformance                        | [`editor-conformance.yml`](./editor-conformance.yml)                         |
-| 05.03 | Authored editor script queries            | [`editor-script-queries.yml`](./editor-script-queries.yml)                   |
-| 05.04 | LSP config startup diagnostics            | [`lsp-config-diagnostics.yml`](./lsp-config-diagnostics.yml)                 |
-| 05.05 | Current-source LSP baseline               | [`lsp-current-baseline.yml`](./lsp-current-baseline.yml)                     |
-| 05.06 | Focused real-project LSP qualification    | [`lsp-focused-projects.yml`](./lsp-focused-projects.yml)                     |
-| 05.07 | JSX intrinsic hover observations          | [`lsp-jsx-intrinsic-hover.yml`](./lsp-jsx-intrinsic-hover.yml)               |
-| 05.08 | LSP native diagnostic coverage            | [`lsp-native-diagnostic-coverage.yml`](./lsp-native-diagnostic-coverage.yml) |
-| 05.09 | Native diagnostic warm-up                 | [`lsp-native-diagnostic-warmup.yml`](./lsp-native-diagnostic-warmup.yml)     |
-| 05.10 | Native LSP overlay custody                | [`lsp-overlay-custody.yml`](./lsp-overlay-custody.yml)                       |
-| 05.11 | LSP independent overlay graphs            | [`lsp-overlay-graph-reuse.yml`](./lsp-overlay-graph-reuse.yml)               |
-| 05.12 | LSP exact-parent residency pair           | [`lsp-residency-pair.yml`](./lsp-residency-pair.yml)                         |
-| 05.13 | LSP indexed scheduler source cost carrier | [`lsp-scheduler-cost-carrier.yml`](./lsp-scheduler-cost-carrier.yml)         |
-| 05.14 | Tag prefix classification observations    | [`lsp-tag-prefix-classification.yml`](./lsp-tag-prefix-classification.yml)   |
-| 05.15 | LSP vs Vue language tools                 | [`lsp-vs-volar.yml`](./lsp-vs-volar.yml)                                     |
-| 05.16 | Native named SFC value hover              | [`named-sfc-value-hover.yml`](./named-sfc-value-hover.yml)                   |
-| 05.17 | Router installed editor artifact          | [`router-editor-artifact.yml`](./router-editor-artifact.yml)                 |
-| 05.18 | Published router navigation matrix        | [`router-experimental-navigation.yml`](./router-experimental-navigation.yml) |
-| 05.19 | Router preview source provider            | [`router-preview-conformance.yml`](./router-preview-conformance.yml)         |
-| 05.20 | TypeScript plugin packed consumer         | [`typescript-plugin.yml`](./typescript-plugin.yml)                           |
-| 05.21 | Volar Plugin                              | [`volar-plugin.yml`](./volar-plugin.yml)                                     |
-| 05.22 | VS Code VSIX validation                   | [`vscode-vsix-validation.yml`](./vscode-vsix-validation.yml)                 |
-| 05.23 | VS Code workspace server                  | [`vscode-workspace-server.yml`](./vscode-workspace-server.yml)               |
-| 05.24 | Vue 2 editor diagnostic context           | [`vue2-editor-diagnostic-context.yml`](./vue2-editor-diagnostic-context.yml) |
+| ID    | Workflow                               | File                                                           |
+| ----- | -------------------------------------- | -------------------------------------------------------------- |
+| 05.01 | Editor conformance                     | [`editor-conformance.yml`](./editor-conformance.yml)           |
+| 05.02 | Authored editor script queries         | [`editor-script-queries.yml`](./editor-script-queries.yml)     |
+| 05.03 | LSP config startup diagnostics         | [`lsp-config-diagnostics.yml`](./lsp-config-diagnostics.yml)   |
+| 05.04 | Current-source LSP baseline            | [`lsp-current-baseline.yml`](./lsp-current-baseline.yml)       |
+| 05.05 | Focused real-project LSP qualification | [`lsp-focused-projects.yml`](./lsp-focused-projects.yml)       |
+| 05.06 | LSP vs Vue language tools              | [`lsp-vs-volar.yml`](./lsp-vs-volar.yml)                       |
+| 05.07 | TypeScript plugin packed consumer      | [`typescript-plugin.yml`](./typescript-plugin.yml)             |
+| 05.08 | Volar Plugin                           | [`volar-plugin.yml`](./volar-plugin.yml)                       |
+| 05.09 | VS Code VSIX validation                | [`vscode-vsix-validation.yml`](./vscode-vsix-validation.yml)   |
+| 05.10 | VS Code workspace server               | [`vscode-workspace-server.yml`](./vscode-workspace-server.yml) |
 
 ## 06 SFC, JSX, and compiler correctness
 
