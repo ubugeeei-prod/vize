@@ -45,6 +45,21 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     )
 }
 
+/// Whether a template source is one the shipped parser passes without a
+/// notice the native levels cannot reproduce, so a lane that skips that
+/// parser may compile it. This is the source test of the SFC fast path,
+/// shared with the SSR direct lane.
+pub(super) fn direct_template_source(
+    source: &str,
+    directive_contracts: &vize_l0::config::DirectiveContracts,
+) -> bool {
+    selector::l2_sfc_fast_path_supported_source(source)
+        && !stage_options::source_may_contain_patterned_template_syntax(source)
+        && !stage_options::source_may_contain_vize_directive_comment(source)
+        && !(!directive_contracts.is_empty()
+            && stage_options::source_may_bind_declared_directive(source, directive_contracts))
+}
+
 #[expect(
     clippy::too_many_arguments,
     reason = "independent compile inputs and capture"

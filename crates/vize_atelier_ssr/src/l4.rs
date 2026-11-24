@@ -158,8 +158,8 @@ const ADMITTED_RULES: &[&str] = &[
 ];
 
 mod source;
-pub(crate) use source::select_ssr_lane;
 pub(crate) use source::select_ssr_lane_captured;
+pub(crate) use source::{select_ssr_lane, select_ssr_lane_direct};
 
 /// Whether one L2 lowering rule is reproduced by the plan emitter.
 ///
@@ -216,9 +216,29 @@ fn emission_supported(request: &SsrL4Request<'_>) -> bool {
     !options.inline && options.dialect == VueVersion::V3 && !options.experimental_in_tag_comments
 }
 
+#[cfg(debug_assertions)]
+std::thread_local! {
+    /// Set while the direct lane's debug oracle recompiles on the full path.
+    /// That compile checks a selection; it is not one, so it counts nothing.
+    static ORACLE_RUN: core::cell::Cell<bool> = const { core::cell::Cell::new(false) };
+}
+
+/// Run the direct lane's debug oracle without recording its selection.
+#[cfg(debug_assertions)]
+pub(crate) fn as_oracle_run<R>(f: impl FnOnce() -> R) -> R {
+    let previous = ORACLE_RUN.with(|flag| flag.replace(true));
+    let result = f();
+    ORACLE_RUN.with(|flag| flag.set(previous));
+    result
+}
+
 pub(super) fn record_selection(selection: &SsrL4Selection) {
     let profiler = global_profiler();
     if !profiler.is_enabled() {
+        return;
+    }
+    #[cfg(debug_assertions)]
+    if ORACLE_RUN.with(core::cell::Cell::get) {
         return;
     }
     let counter = match selection {
@@ -238,6 +258,10 @@ pub(super) fn record_bridge_counters(
 ) {
     let profiler = global_profiler();
     if !profiler.is_enabled() {
+        return;
+    }
+    #[cfg(debug_assertions)]
+    if ORACLE_RUN.with(core::cell::Cell::get) {
         return;
     }
     profiler.record_counter_enabled("l4.ssr.files", 1);
