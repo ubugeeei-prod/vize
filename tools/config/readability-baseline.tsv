@@ -480,6 +480,7 @@ crates/vize/tests/lint_restricted_members_cli.rs	0	0	0	0	0	1	0
 crates/vize/tests/lint_router_app_reachability_cli.rs	0	0	1	0	0	1	0
 crates/vize/tests/lint_rpc_profile_cli.rs	0	0	0	0	0	1	0
 crates/vize/tests/lint_rule_execution_cli.rs	0	0	0	0	0	1	0
+crates/vize/tests/lint_rule_option_extensions_cli.rs	0	0	5	0	0	1	0
 crates/vize/tests/lint_rule_options_casing_cli.rs	597	0	0	0	0	1	0
 crates/vize/tests/lint_rule_options_real_project_cli.rs	0	0	0	0	0	1	0
 crates/vize/tests/lint_rule_options_slot_name_casing_cli.rs	0	0	0	0	0	1	0
@@ -2698,6 +2699,7 @@ crates/vize_carton/src/config/loader/module-runtime.mjs	0	1	0	0	0	0	0
 crates/vize_carton/src/config/loader/plugin-capabilities.js	0	0	0	0	0	1	0
 crates/vize_carton/src/config/loader/plugin_plan_tests.rs	0	0	1	0	0	0	0
 crates/vize_carton/src/config/loader/vite-runtime.mjs	0	0	0	0	0	1	0
+crates/vize_carton/src/config/loader/vite_projection.rs	0	1	0	0	0	0	0
 crates/vize_carton/src/config/loader/vite_projection/tests.rs	0	0	0	0	0	1	0
 crates/vize_carton/src/config/matcher.rs	523	0	0	0	0	1	0
 crates/vize_carton/src/config/plugin_plan/directives.rs	0	0	1	0	0	0	0
@@ -3912,12 +3914,15 @@ crates/vize_patina/src/linter/compatibility.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/linter/config.rs	0	0	1	0	1	1	0
 crates/vize_patina/src/linter/config_rule_options.rs	0	1	0	0	0	1	0
 crates/vize_patina/src/linter/config_rule_options/block_lang.rs	0	0	0	0	0	1	0
+crates/vize_patina/src/linter/config_rule_options/component_name_casing.rs	0	0	1	0	0	1	0
 crates/vize_patina/src/linter/config_rule_options/configured_vue.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/linter/config_rule_options/macro_order.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/linter/config_rule_options/max_lines.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/linter/config_rule_options/max_lines_per_block.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/linter/config_rule_options/multi_word_component_names.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/linter/config_rule_options/no_use_v_if_with_v_for.rs	0	0	0	0	0	1	0
+crates/vize_patina/src/linter/config_rule_options/v_bind_style.rs	0	0	0	0	0	1	0
+crates/vize_patina/src/linter/config_rule_options/v_bind_style/tests.rs	0	0	2	0	0	1	0
 crates/vize_patina/src/linter/corsa_session.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/linter/corsa_session/batch.rs	0	1	0	0	0	1	0
 crates/vize_patina/src/linter/corsa_session/boolean.rs	0	0	0	0	0	1	0
@@ -4140,6 +4145,7 @@ crates/vize_patina/src/markup/batch.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/markup/binding.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/markup/binding/argument.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/markup/binding/literal.rs	0	0	0	0	0	1	0
+crates/vize_patina/src/markup/binding/same_name.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/markup/branches.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/markup/context.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/markup/differential/battery.rs	0	0	1	0	0	1	0
@@ -4387,6 +4393,7 @@ crates/vize_patina/src/rules/opinionated/vue/this_in_template/origin.rs	0	0	0	0	
 crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs	0	0	0	0	1	1	0
 crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs	0	0	0	0	0	1	0
+crates/vize_patina/src/rules/opinionated/vue/v_bind_style/same_name.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation/autofix.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation/ignore.rs	0	0	0	0	0	1	0
@@ -4594,6 +4601,7 @@ crates/vize_patina/src/rules/vue/configured/max_template_depth.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/rules/vue/configured/mod.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/rules/vue/configured/restricted_class.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/rules/vue/configured/restricted_custom_event.rs	0	0	0	0	0	1	0
+crates/vize_patina/src/rules/vue/configured/restricted_entry_tests.rs	0	0	2	0	0	1	0
 crates/vize_patina/src/rules/vue/configured/restricted_html.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/rules/vue/configured/restricted_props.rs	0	0	0	0	0	1	0
 crates/vize_patina/src/rules/vue/configured/restricted_static_attribute.rs	0	0	0	0	0	1	0
@@ -6487,7 +6495,7 @@ npm/builder/vite/src/compiler-pug-includes.test.ts	0	0	1	0	0	0	0
 npm/builder/vite/src/compiler-src-imports.test.ts	0	0	1	0	0	1	0
 npm/builder/vite/src/compiler-ssr-style-dependencies.test.ts	0	0	0	0	0	1	0
 npm/builder/vite/src/compiler.test.ts	1009	0	0	0	0	0	0
-npm/builder/vite/src/compiler.ts	0	0	7	0	0	1	0
+npm/builder/vite/src/compiler.ts	0	1	7	0	0	1	0
 npm/builder/vite/src/config.ts	0	0	0	0	0	1	0
 npm/builder/vite/src/css-module-output.test.ts	0	0	1	0	0	0	0
 npm/builder/vite/src/experimental-options.ts	0	0	4	0	0	0	0
@@ -6508,11 +6516,14 @@ npm/builder/vite/src/plugin/compiler-scopes.ts	0	0	0	0	0	1	0
 npm/builder/vite/src/plugin/css-modules.test.ts	0	0	0	0	0	1	0
 npm/builder/vite/src/plugin/custom-block-hmr.test.ts	0	0	0	0	0	1	0
 npm/builder/vite/src/plugin/custom-block-load.ts	0	0	0	0	0	1	0
+npm/builder/vite/src/plugin/demand-compile-graph.test.ts	0	0	2	0	0	1	0
+npm/builder/vite/src/plugin/demand-compile.test.ts	0	0	1	0	0	1	0
+npm/builder/vite/src/plugin/demand-compile.ts	0	0	0	0	0	1	0
 npm/builder/vite/src/plugin/dependency-watches.test.ts	0	0	0	0	0	1	0
 npm/builder/vite/src/plugin/dev-middleware.ts	0	0	0	0	0	1	3
 npm/builder/vite/src/plugin/external-sfc-hmr.test.ts	0	0	0	0	0	1	0
 npm/builder/vite/src/plugin/filesystem-epoch.test.ts	0	0	2	0	0	1	0
-npm/builder/vite/src/plugin/filesystem-epoch.ts	0	0	2	0	0	0	0
+npm/builder/vite/src/plugin/filesystem-epoch.ts	0	0	3	0	0	0	0
 npm/builder/vite/src/plugin/hmr-module-graph.ts	0	0	0	0	0	1	0
 npm/builder/vite/src/plugin/hmr.test.ts	0	0	0	0	0	1	0
 npm/builder/vite/src/plugin/hmr.ts	0	0	1	0	0	1	0
@@ -6543,8 +6554,9 @@ npm/builder/vite/src/plugin/resolve-vue-runtime.test.ts	0	0	1	0	0	0	0
 npm/builder/vite/src/plugin/resolve.test.ts	1570	0	0	0	0	0	0
 npm/builder/vite/src/plugin/resolve.ts	1274	1	3	0	0	1	0
 npm/builder/vite/src/plugin/sfc-module.test.ts	0	0	0	1	0	0	0
-npm/builder/vite/src/plugin/sfc-module.ts	0	0	4	0	0	1	0
+npm/builder/vite/src/plugin/sfc-module.ts	0	0	4	0	0	0	0
 npm/builder/vite/src/plugin/source-map.test.ts	0	0	1	0	0	0	0
+npm/builder/vite/src/plugin/source-snapshots.test.ts	0	0	1	0	0	1	0
 npm/builder/vite/src/plugin/src-requests.ts	0	0	0	0	0	1	0
 npm/builder/vite/src/plugin/ssr-modules-load.test.ts	0	0	1	0	0	0	0
 npm/builder/vite/src/plugin/ssr-modules.test.ts	0	0	1	0	0	0	0
@@ -7199,9 +7211,10 @@ npm/linter/oxlint/src/mixed-directory-8507.test.mjs	0	0	0	1	0	1	0
 npm/linter/oxlint/src/model.ts	0	0	0	0	0	1	0
 npm/linter/oxlint/src/n8n-collected-cache-controls.ts	0	0	0	0	0	1	3
 npm/linter/oxlint/src/n8n-full-replay.test.ts	0	0	0	0	0	1	0
+npm/linter/oxlint/src/option-extensions.test.ts	0	0	1	0	0	1	0
 npm/linter/oxlint/src/plugin-rules.test.ts	0	0	1	0	0	0	0
 npm/linter/oxlint/src/plugin-rules.ts	0	0	1	0	0	0	0
-npm/linter/oxlint/src/plugin.ts	0	0	0	0	0	1	0
+npm/linter/oxlint/src/plugin.ts	0	1	0	0	0	1	0
 npm/linter/oxlint/src/prop-name-eslint.test.ts	0	0	0	0	0	1	0
 npm/linter/oxlint/src/prop-name-options.test.ts	0	0	0	0	0	1	0
 npm/linter/oxlint/src/reference-host-acceptance.mjs	0	1	0	0	0	1	13
