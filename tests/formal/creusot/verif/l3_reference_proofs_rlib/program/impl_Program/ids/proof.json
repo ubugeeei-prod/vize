@@ -1,0 +1,16 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_elim_Some": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_ids": { "prover": "alt-ergo", "time": 0.342 },
+      "vc_into_iter_ref_Vec_Op_Global": {
+        "prover": "alt-ergo",
+        "time": 0.009
+      },
+      "vc_new_u32": { "prover": "alt-ergo", "time": 0.008 },
+      "vc_next_Iter_Op": { "prover": "alt-ergo", "time": 0.011 },
+      "vc_push_u32": { "prover": "alt-ergo", "time": 0.01 }
+    }
+  }
+}

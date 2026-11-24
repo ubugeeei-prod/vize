@@ -16,16 +16,9 @@ on:
       - "davinci/vize_l3/src/query/check/kani.rs"
       - "davinci/vize_l3/src/query/check/rule.rs"
       - "davinci/vize_l3/src/lattice/classify_proofs.rs"
-      - "tests/davinci_test_support/src/l3_reference/checker.rs"
-      - "tests/davinci_test_support/src/l3_reference/checker_proofs.rs"
-      - "tests/davinci_test_support/src/l3_reference/graphs.rs"
       - "tests/davinci_test_support/src/l3_reference/incremental.rs"
       - "tests/davinci_test_support/src/l3_reference/incremental_proofs.rs"
       - "tests/davinci_test_support/src/l3_reference/kani.rs"
-      - "tests/davinci_test_support/src/l3_reference/program.rs"
-      - "tests/davinci_test_support/src/l3_reference/schedule.rs"
-      - "tests/davinci_test_support/src/l3_reference/schedule_proofs.rs"
-      - "tests/davinci_test_support/src/l3_reference/trace.rs"
       - "crates/vize_patina/src/html_content_model/tri.rs"
       - "crates/vize_patina/src/html_content_model/walk.rs"
       - "crates/vize_patina/src/html_content_model/kani.rs"
@@ -84,7 +77,7 @@ jobs:
           args: davinci/vize_l3/src/query/check/kani.rs --output-format=terse
 
   l3-reference:
-    name: L3 reference schedule, checker, and incremental laws
+    name: L3 reference incremental update laws
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:

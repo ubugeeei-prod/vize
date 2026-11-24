@@ -20,8 +20,13 @@ on:
       - "davinci/vize_l3/src/lattice/creusot.rs"
       - "davinci/vize_l3/src/query/check/creusot.rs"
       - "davinci/vize_l3/src/query/check/rule.rs"
+      - tests/davinci_test_support/src/l3_reference/checker.rs
+      - tests/davinci_test_support/src/l3_reference/creusot.rs
+      - tests/davinci_test_support/src/l3_reference/program.rs
+      - tests/davinci_test_support/src/l3_reference/schedule.rs
+      - tests/davinci_test_support/src/l3_reference/trace.rs
   push:
-    branches: [main]
+    branches: [ main ]
     paths:
       - ".github/workflows/davinci-creusot.yml"
       - "tools/nix/creusot/**"
@@ -34,6 +39,11 @@ on:
       - "davinci/vize_l3/src/lattice/creusot.rs"
       - "davinci/vize_l3/src/query/check/creusot.rs"
       - "davinci/vize_l3/src/query/check/rule.rs"
+      - tests/davinci_test_support/src/l3_reference/checker.rs
+      - tests/davinci_test_support/src/l3_reference/creusot.rs
+      - tests/davinci_test_support/src/l3_reference/program.rs
+      - tests/davinci_test_support/src/l3_reference/schedule.rs
+      - tests/davinci_test_support/src/l3_reference/trace.rs
   workflow_dispatch:
 
 permissions:
