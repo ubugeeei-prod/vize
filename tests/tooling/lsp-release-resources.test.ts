@@ -18,7 +18,9 @@ test("the shipping-profile supplement preserves the scheduled ci-opt campaign", 
     run?: string;
     uses?: string;
   }>;
-  const command = (name: string) => steps.find((step) => step.name === name)?.run ?? "";
+  // Named programs wrap one argument group per line.
+  const command = (name: string) =>
+    (steps.find((step) => step.name === name)?.run ?? "").replaceAll(/ \\\n\s*/gu, " ");
   assert.match(
     command("Build the shipped Linux CLI recipe"),
     /cargo build --release -p vize --target x86_64-unknown-linux-gnu/u,
