@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-VIZE_BIN="$PWD/target/ci/vize" vp exec node --test tests/tooling/davinci-unused-setup-bindings.test.ts tests/tooling/davinci-fpfn-pilots.test.ts

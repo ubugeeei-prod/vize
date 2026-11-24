@@ -19,8 +19,6 @@ on {
           "native"
           "release-builds"
           "nix"
-          "n8n-baseline"
-          "n8n-preparation"
           "artifact-payload"
         }
         ["default"] = "all"
@@ -51,12 +49,9 @@ jobs {
   `release-builds` = import("../../parts/ci-walltime-benchmark/release-builds.pkl")
   nix = import("../../parts/ci-walltime-benchmark/nix.pkl")
   js = import("../../parts/ci-walltime-benchmark/js.pkl")
-  `n8n-preparation` = import("../../parts/ci-walltime-benchmark/n8n-preparation.pkl")
   docs = import("../../parts/ci-walltime-benchmark/docs.pkl")
   rust = import("../../parts/ci-walltime-benchmark/rust.pkl")
   native = import("../../parts/ci-walltime-benchmark/native.pkl")
-  `n8n-baseline` = import("../../parts/ci-walltime-benchmark/n8n-baseline.pkl")
-  `js-native-fault-diagnostic` = import("../../parts/ci-walltime-benchmark/js-native-fault-diagnostic.pkl")
   `artifact-payload` = import("../../parts/ci-walltime-benchmark/artifact-payload.pkl")
   `artifact-payload-restore` = import("../../parts/ci-walltime-benchmark/artifact-payload-restore.pkl")
 }

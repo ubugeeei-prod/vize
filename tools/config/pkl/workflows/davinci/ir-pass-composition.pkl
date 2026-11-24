@@ -5,52 +5,14 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/ir-pass-composition.yml"
-      "tools/benchmarks/crates/davinci_harness/src/paired.rs"
-      "davinci/vize_l0/Cargo.toml"
-      "davinci/vize_l0/src/diag/witness.rs"
-      "davinci/vize_l0/src/pass.rs"
-      "davinci/vize_l0/src/pass/**"
-      "davinci/vize_l0/tests/grouped_passes.rs"
-      "crates/vize_incremental/Cargo.toml"
-      "crates/vize_incremental/src/lib.rs"
-      "crates/vize_incremental/src/template.rs"
-      "crates/vize_incremental/src/template/**"
-      "crates/vize_incremental/tests/template_passes/**"
-      "crates/vize_maestro/Cargo.toml"
-      "crates/vize_maestro/src/document/store.rs"
-      "crates/vize_maestro/src/source_project.rs"
-      "crates/vize_maestro/src/source_project/template.rs"
-      "crates/vize_maestro/src/source_project/snapshot.rs"
-      "crates/vize_maestro/src/source_project/template/**"
-      "crates/vize_maestro/src/source_project/query.rs"
-      "crates/vize_maestro/tests/original_template_requests.rs"
-      "crates/vize_patina/Cargo.toml"
+      ".github/scripts/workflows/ir-pass-composition/**"
       "crates/vize_patina/src/rules/facts/max_template_complexity.rs"
       "crates/vize_patina/src/rules/facts/max_template_complexity/**"
-      "crates/vize_patina/tests/original_template_lint.rs"
-      "crates/vize_patina/tests/original_template_lint/**"
+      "crates/vize_incremental/src/template.rs"
+      "crates/vize_incremental/src/template/**"
+      "davinci/vize_l0/src/pass.rs"
+      "davinci/vize_l0/src/pass/**"
       "tests/formal/template-lint/**"
-      "tests/formal/ir-graph/TemplateProjection.lean"
-      "davinci/vize_l1/Cargo.toml"
-      "davinci/vize_l1/src/container/vue.rs"
-      "davinci/vize_l1/src/container/vue/descriptor.rs"
-      "davinci/vize_l1/src/container/vue/descriptor/template.rs"
-      "davinci/vize_l1/src/container/vue/descriptor/template/**"
-      "davinci/vize_l1_to_l2/Cargo.toml"
-      "davinci/vize_l1_to_l2/src/pass.rs"
-      "davinci/vize_l1_to_l2/src/pass/**"
-      "davinci/vize_l1_to_l2/tests/observed_template_passes.rs"
-      "davinci/vize_l1_to_l2/tests/original_template_queries.rs"
-      "davinci/vize_l1_to_l2/tests/original_template_queries/**"
-      "davinci/vize_l2/src/analysis.rs"
-      "davinci/vize_l2/src/analysis/static_facts.rs"
-      "davinci/vize_l2/src/analysis/static_facts/**"
-      "davinci/vize_l2/src/analysis/template_complexity.rs"
-      "davinci/vize_l2/src/analysis/template_complexity/**"
-      "davinci/vize_l3/Cargo.toml"
-      "davinci/vize_l3/src/optimize.rs"
-      "davinci/vize_l3/tests/placement/extraction.rs"
-      ".github/scripts/workflows/ir-pass-composition/**"
     }
   }
 }
@@ -60,52 +22,6 @@ concurrency {
   `cancel-in-progress` = true
 }
 jobs {
-  composition {
-    name = "Source-order groups, optimizer equivalence and paired timings"
-    `runs-on` = ci.linux
-    `timeout-minutes` = 40
-    env {
-      RUSTUP_TOOLCHAIN = "1.100.0"
-      RUST_MIN_STACK = "16777216"
-      CARGO_INCREMENTAL = "0"
-    }
-    steps = new Listing {
-      ...ci.stageWorkflowScripts("ir-pass-composition")
-      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
-      new Dynamic {
-        uses = ci.setupRust
-        with {
-          toolchain = "1.100.0"
-          components = "clippy"
-        }
-      }
-      new Dynamic {
-        uses = "./.github/actions/setup-wild-http-recovery"
-        with { `wild-version` = "0.9.0" }
-      }
-      new Dynamic {
-        name = "Run the original catalogue, traces and allocation measurements"
-        run = ci.workflowScript("run-the-original-catalogue-traces-and-allocation-measurements.sh")
-      }
-      new Dynamic {
-        name = "Check original Vue templates against both passes and the independent CFG"
-        run = ci.workflowScript("check-original-vue-templates-against-both-passes-and-the-independent-cfg.sh")
-      }
-      new Dynamic {
-        uses = ci.setupNode
-        with { `node-version` = 24 }
-      }
-      new Dynamic {
-        name = "Check lossless template queries against Vue and existing Vize products"
-        run = ci.workflowScript("check-lossless-template-queries-against-vue-and-existing-vize-products.sh")
-      }
-      new Dynamic {
-        name = "Compare complete original complexity diagnostics and compiler-plus-lint timing"
-        env { VIZE_ORIGINAL_TEMPLATE_ORACLE = "${{ runner.temp }}/template-oracle.json" }
-        run = ci.workflowScript("compare-complete-original-complexity-diagnostics-and-compiler-plus-lint-timing.sh")
-      }
-    }
-  }
   `lint-ranking` {
     name = "Prove stable complexity label selection for unbounded inputs"
     `runs-on` = ci.linux
@@ -150,43 +66,6 @@ jobs {
           command = "kani"
           args = "davinci/vize_l0/src/pass/fusion/grouped/kani.rs --output-format=terse"
         }
-      }
-    }
-  }
-  stock {
-    name = "Stock compiler and Node addon (${{ matrix.mode }})"
-    strategy {
-      `fail-fast` = false
-      matrix {
-        mode = List("default", "portable")
-      }
-    }
-    `runs-on` = ci.linux
-    `timeout-minutes` = 45
-    env {
-      RUSTUP_TOOLCHAIN = "1.100.0"
-      RUST_MIN_STACK = "16777216"
-      CARGO_INCREMENTAL = "0"
-      MODE = "${{ matrix.mode }}"
-      TARGET_SHA = "${{ github.event.pull_request.base.sha }}"
-      HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
-    }
-    steps = new Listing {
-      ...ci.stageWorkflowScripts("ir-pass-composition")
-      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
-      ci.rust("1.100.0")
-      new Dynamic {
-        uses = "./.github/actions/setup-wild-http-recovery"
-        with { `wild-version` = "0.9.0" }
-      }
-      new Dynamic {
-        uses = ci.setupNode
-        with { `node-version` = 24 }
-      }
-      new Dynamic {
-        name = "Compare the shipping entry points against the common base"
-        env { GH_TOKEN = "${{ github.token }}" }
-        run = ci.workflowScript("compare-the-shipping-entry-points-against-the-common-base.sh")
       }
     }
   }

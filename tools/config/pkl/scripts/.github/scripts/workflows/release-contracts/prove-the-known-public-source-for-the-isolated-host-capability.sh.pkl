@@ -1,7 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #"node "$VIZE_CI_FILES/prove-the-known-public-source-for-the-isolated-host-capability.ts""#
-}

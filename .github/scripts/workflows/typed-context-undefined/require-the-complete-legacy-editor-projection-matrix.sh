@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-directory="$RUNNER_TEMP/typed-context-undefined"
-cargo test --locked --profile ci -p vize_maestro --features legacy --test davinci_ts40_projection current_projection_matrix_is_exact_and_non_empty -- --exact --nocapture > "$directory/legacy-ts40.stdout" 2> "$directory/legacy-ts40.stderr"

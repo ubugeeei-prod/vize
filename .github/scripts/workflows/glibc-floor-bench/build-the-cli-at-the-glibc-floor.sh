@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-cargo zigbuild --locked --release -p vize --target "$(node tools/support/github/glibc-floor.ts target x86_64-unknown-linux-gnu)"
-mkdir -p "$RUNNER_TEMP/floor" && cp target/x86_64-unknown-linux-gnu/release/vize "$RUNNER_TEMP/floor/vize"

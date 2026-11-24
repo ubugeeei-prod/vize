@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-npm install --prefix "$RUNNER_TEMP/async-component-runtime" --registry=https://registry.npmjs.org --no-audit --no-fund --save-exact vue@3.5.43 @vue/compiler-sfc@3.5.43
-echo "VIZE_ASYNC_RUNTIME_PACKAGE=$RUNNER_TEMP/async-component-runtime/package.json" >> "$GITHUB_ENV"

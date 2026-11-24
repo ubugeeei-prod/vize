@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-if [[ -f "$RUNNER_TEMP/component-casing-provider/package-lock.json" ]]; then
-  cp "$RUNNER_TEMP/component-casing-provider/package.json" "$RUNNER_TEMP/component-casing-provider/package-lock.json" "$RUNNER_TEMP/component-casing/"
-fi
-if [[ -d "$RUNNER_TEMP/component-casing" ]]; then
-  cd "$RUNNER_TEMP"
-  tar --exclude=node_modules -czf component-casing-raw.tgz component-casing
-fi

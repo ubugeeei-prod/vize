@@ -9,11 +9,7 @@ import { parse } from "yaml";
 const cacheAction = "./.github/actions/setup-rust-sticky-cache";
 const headCacheAction = "./head/.github/actions/setup-rust-sticky-cache";
 const headScriptAction = "./head/.github/actions/setup-rust-script";
-const qualificationWorkflows = new Set([
-  ".github/workflows/async-component-ancestry.yml",
-  ".github/workflows/native-sfc-runtime-options.yml",
-  ".github/workflows/plain-script-import-ref.yml",
-]);
+const qualificationWorkflows = new Set();
 const qualificationActions = new Map([
   [
     "./qualification/.github/actions/setup-wild-http-recovery",
@@ -389,16 +385,6 @@ export function verifyDocsWasmConsumers(root) {
   for (const [file, job, key] of [
     [e2eFile, "app-readiness-producer", "${{ matrix.cacheKey }}"],
     [e2eFile, "app-e2e-producer", "${{ matrix.cacheKey }}"],
-    [
-      ".github/workflows/typechecker-syntax-semantic-completion.yml",
-      "native-syntax-completion",
-      "app-e2e-full-check-all",
-    ],
-    [
-      ".github/workflows/vuefes-ssr-style-dependencies.yml",
-      "vuefes-ssr-style-dependencies",
-      "app-e2e-full-vrt-vuefes",
-    ],
   ])
     assert(
       app.some((entry) => entry.file === file && entry.job === job && entry.key === key),

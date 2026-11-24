@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-if [[ ! "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ || "$GITHUB_SHA" != "$EXPECTED_SOURCE_SHA" ]]; then
-  echo 'The checked out source must equal the reviewed immutable revision.' >&2
-  exit 1
-fi

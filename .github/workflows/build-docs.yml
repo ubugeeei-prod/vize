@@ -21,12 +21,7 @@ on:
       - "examples/vite-musea/**"
   schedule:
     - cron: "41 5 * * *"
-  workflow_dispatch:
-  # The merge queue builds the same site and checks the reviewed routes' links
-  # and anchors without the browser captures (Check / docs-build).
-  workflow_call:
-    inputs:
-      links-only: { type: boolean, default: false }
+  workflow_dispatch: # The merge queue builds the same site and checks the reviewed routes' links
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -46,7 +41,6 @@ jobs:
     env:
       VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/build-docs"
       NODE_OPTIONS: "--max-old-space-size=8192"
-      VIZE_DOCS_LINKS_ONLY: ${{ inputs.links-only && '1' || '0' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -81,7 +75,6 @@ jobs:
         run: . "${{ env.VIZE_CI_FILES }}/install-japanese-rendering-fonts.sh"
 
       - name: Check preview resource readiness
-        if: ${{ inputs.links-only != true }}
         run: . "${{ env.VIZE_CI_FILES }}/check-preview-resource-readiness.sh"
 
       - name: Build docs
@@ -90,7 +83,6 @@ jobs:
         run: . "${{ env.VIZE_CI_FILES }}/build-docs.sh"
 
       - name: Verify rendered navigation and Japanese reading paths
-        if: ${{ inputs.links-only != true }}
         run: . "${{ env.VIZE_CI_FILES }}/verify-rendered-navigation-and-japanese-reading-paths.sh"
 
       - name: Upload rendered docs screenshots
