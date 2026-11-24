@@ -55,4 +55,4 @@ Then run `vp run lint`.
 - [Vue rules](../vue.md)
 - [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L28)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L38)

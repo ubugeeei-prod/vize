@@ -583,6 +583,14 @@
               "items": {
                 "type": "string"
               }
+            },
+            "ignores": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
             }
           },
           "additionalProperties": false
@@ -1009,7 +1017,34 @@
             {
               "type": "array",
               "items": {
-                "type": "string"
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "element": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["element"]
+                  }
+                ]
               }
             }
           ]
@@ -1048,7 +1083,33 @@
             {
               "type": "array",
               "items": {
-                "type": "string"
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "argument": {
+                        "type": "string"
+                      },
+                      "modifiers": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "element": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["argument"]
+                  }
+                ]
               }
             }
           ]
@@ -2528,8 +2589,34 @@
           ]
         },
         "vue/v-bind-style": {
-          "type": "string",
-          "enum": ["shorthand", "longform"]
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["shorthand", "longform"]
+            },
+            {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string",
+                  "enum": ["shorthand", "longform"]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "sameNameShorthand": {
+                      "default": "ignore",
+                      "type": "string",
+                      "enum": ["always", "never", "ignore"]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ],
+              "additionalItems": false,
+              "minItems": 1
+            }
+          ]
         },
         "vue/v-on-style": {
           "type": "string",

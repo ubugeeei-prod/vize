@@ -6,6 +6,8 @@
 //!
 //! - `"shorthand"` (default): Prefer `:attr` over `v-bind:attr`
 //! - `"longform"`: Prefer `v-bind:attr` over `:attr`
+//! - `sameNameShorthand`: `"always"` requires `:attr` for `:attr="attr"`,
+//!   `"never"` requires the written value, `"ignore"` (default) checks neither
 //!
 //! ## Examples
 //!
@@ -25,8 +27,16 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::{String, cstr};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
+mod same_name;
+
+pub(crate) use same_name::VBindStyleSameName;
+pub(super) use same_name::same_name_shorthand_fix;
+
+/// The rule's name, for the rules that yield to its `sameNameShorthand`.
+pub(super) const V_BIND_STYLE: &str = "vue/v-bind-style";
+
 static META: RuleMeta = RuleMeta {
-    name: "vue/v-bind-style",
+    name: V_BIND_STYLE,
     description: "Enforce `v-bind` directive style",
     category: RuleCategory::StronglyRecommended,
     fixable: true,

@@ -230,14 +230,23 @@ impl Linter {
 
     /// Configure authored registration scope without enabling the rule.
     pub fn with_component_name_in_template_casing_policy(
-        mut self,
+        self,
         casing: ComponentCasing,
         registered_components_only: bool,
         globals: Vec<String>,
     ) -> Self {
-        let policy = ComponentNameInTemplateCasing::new(casing)
-            .with_registered_components_only(registered_components_only)
-            .with_globals(globals);
+        self.with_component_name_in_template_casing_rule(
+            ComponentNameInTemplateCasing::new(casing)
+                .with_registered_components_only(registered_components_only)
+                .with_globals(globals),
+        )
+    }
+
+    /// Install a completely configured `vue/component-name-in-template-casing`.
+    pub fn with_component_name_in_template_casing_rule(
+        mut self,
+        policy: ComponentNameInTemplateCasing,
+    ) -> Self {
         if matches!(self.preset, Some(LintPreset::Nuxt)) {
             self.registry
                 .replace(Box::new(ComponentNameInTemplateCasingNuxt::with_policy(

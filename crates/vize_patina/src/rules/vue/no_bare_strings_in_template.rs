@@ -47,9 +47,10 @@ use crate::markup::{
     MarkupText, MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::name_patterns::compile_pattern;
 use oxc_ast::ast::Expression;
 use regex::Regex;
-use vize_l0::{Span, String, cstr};
+use vize_l0::{Span, String};
 use vize_relief::{ElementNode, RootNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -312,24 +313,6 @@ fn compile_allowlist(entries: &[String]) -> BareStringAllowlist {
     BareStringAllowlist::Custom { literals, patterns }
 }
 
-fn compile_pattern(entry: &str) -> Option<Regex> {
-    if let Some((pattern, flags)) = javascript_regex(entry) {
-        let inline_flags: String = flags
-            .chars()
-            .filter(|flag| matches!(flag, 'i' | 'm' | 's'))
-            .collect();
-        let candidate = if inline_flags.is_empty() {
-            cstr!("(?:{pattern})")
-        } else {
-            cstr!("(?{inline_flags}:{pattern})")
-        };
-        if let Ok(pattern) = Regex::new(&candidate) {
-            return Some(pattern);
-        }
-    }
-    None
-}
-
 fn trim_javascript(value: &str) -> &str {
     value.trim_matches(is_javascript_whitespace)
 }
@@ -349,24 +332,6 @@ fn is_javascript_whitespace(character: char) -> bool {
             | '\u{3000}'
             | '\u{feff}'
     )
-}
-
-fn javascript_regex(value: &str) -> Option<(&str, &str)> {
-    if !value.starts_with('/') {
-        return None;
-    }
-    let end = value.rfind('/')?;
-    if end == 0 {
-        return None;
-    }
-    let flags = value.get(end + 1..)?;
-    if !flags
-        .chars()
-        .all(|flag| matches!(flag, 'd' | 'g' | 'i' | 'm' | 's' | 'u' | 'y'))
-    {
-        return None;
-    }
-    Some((value.get(1..end)?, flags))
 }
 
 fn value_range(source: &str, binding: MarkupBinding<'_>) -> ByteRange {

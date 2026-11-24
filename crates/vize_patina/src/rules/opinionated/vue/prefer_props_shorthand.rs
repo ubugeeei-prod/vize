@@ -31,13 +31,14 @@
 //! ```
 
 use crate::context::LintContext;
-use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::markup::{
-    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal,
+    MarkupBinding, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal, SameNameSpelling,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_croquis::naming::names_match;
 use vize_relief::ElementNode;
+
+use super::v_bind_style::{V_BIND_STYLE, same_name_shorthand_fix};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/prefer-props-shorthand",
@@ -49,26 +50,28 @@ static META: RuleMeta = RuleMeta {
 
 /// Prefer props shorthand rule
 #[derive(Default)]
-pub struct PreferPropsShorthand;
+pub struct PreferPropsShorthand {
+    /// `vue/v-bind-style` carries an explicit `sameNameShorthand` policy.
+    v_bind_style_decides: bool,
+}
 
 impl PreferPropsShorthand {
-    fn check_binding(ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
-        if binding.kind() != MarkupBindingKind::Bind || !binding.has_value() {
+    /// The instance that stays quiet while `vue/v-bind-style` enforces its own
+    /// `sameNameShorthand` policy, so one binding gets one report and one fix.
+    pub(crate) const fn deferring_to_v_bind_style() -> Self {
+        Self {
+            v_bind_style_decides: true,
+        }
+    }
+
+    fn check_binding(&self, ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
+        if binding
+            .same_name_binding()
+            .is_none_or(|same_name| same_name.spelling != SameNameSpelling::Explicit)
+        {
             return;
         }
-        let Some(prop_name) = binding.arg_name() else {
-            return;
-        };
-        if !binding.is_static_unqualified_arg_exact(prop_name) {
-            return;
-        }
-        let Some(value) = binding.expression() else {
-            return;
-        };
-        let is_simple_identifier = value
-            .chars()
-            .all(|character| character.is_alphanumeric() || character == '_');
-        if !is_simple_identifier || !names_match(prop_name, value) {
+        if self.v_bind_style_decides && ctx.is_rule_enabled(V_BIND_STYLE) {
             return;
         }
 
@@ -106,7 +109,7 @@ impl MarkupRule for PreferPropsShorthand {
         binding: &MarkupBinding<'a>,
     ) {
         if ctx.is_template() {
-            Self::check_binding(ctx.lint(), binding);
+            self.check_binding(ctx.lint(), binding);
         }
     }
 }
@@ -125,33 +128,8 @@ impl Rule for PreferPropsShorthand {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        MarkupElement::new(element)
-            .walk_bindings(&mut |binding| Self::check_binding(ctx, &binding));
+        MarkupElement::new(element).walk_bindings(&mut |binding| self.check_binding(ctx, &binding));
     }
-}
-
-/// Delete `="value"` from `:user-name="userName"`, leaving `:user-name`.
-fn same_name_shorthand_fix(source: &str, start: u32, end: u32) -> Option<Fix> {
-    let start = start as usize;
-    let end = end as usize;
-    let slice = source.get(start..end)?;
-    let eq = slice.find('=')?;
-    let mut trim = eq;
-    while trim > 0
-        && slice
-            .as_bytes()
-            .get(trim - 1)
-            .is_some_and(u8::is_ascii_whitespace)
-    {
-        trim -= 1;
-    }
-    if trim == 0 {
-        return None;
-    }
-    Some(Fix::new(
-        "Use shorthand prop syntax",
-        TextEdit::delete((start + trim) as u32, end as u32),
-    ))
 }
 
 #[cfg(test)]
@@ -163,7 +141,7 @@ mod tests {
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
-        registry.register(Box::new(PreferPropsShorthand));
+        registry.register(Box::new(PreferPropsShorthand::default()));
         Linter::with_registry(registry)
     }
 

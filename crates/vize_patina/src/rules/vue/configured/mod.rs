@@ -111,4 +111,6 @@ pub(super) fn report_template(
 }
 
 #[cfg(test)]
+mod restricted_entry_tests;
+#[cfg(test)]
 mod tests;

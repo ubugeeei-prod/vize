@@ -129,7 +129,10 @@ export default defineConfig({
 未登録のタグや、スクリプトのないテンプレートは対象外です。
 `registeredComponentsOnly: false` を指定すると、すべてのカスタムタグを検査します。
 グローバル登録したコンポーネントを明示するには、`globals: ["PrimaryButton"]` を使います。
-グローバル名は文字列で指定します。正規表現と ESLint の `ignores` オプションは未対応です。
+グローバル名は文字列で指定し、正規表現としては解釈しません。
+`ignores` に指定したタグは、登録の有無にかかわらず検査しません。`"primitive"` のように書かれたタグ名
+そのものを指定するか、`"/^Tres/"` のように Rust の正規表現構文を使う `/pattern/flags` を指定します。
+同じエントリを重複して指定することはできません。
 通常の HTML、SVG、MathML の要素、`slot` と動的な `component` タグは対象外です。
 
 ```ts
@@ -390,6 +393,14 @@ export default defineConfig({}).withVue({
 `:class` を要求し、`longform` は `v-bind:class` を要求します。どちらの設定でも修正時に
 引数・修飾子・値を保持します。longform は `.title` を `v-bind:title.prop` に修正し、明示的な
 修飾子とその順序を保持します。`v-bind="attrs"` のようなオブジェクト形式は変更しません。
+
+eslint-plugin-vue の配列形式では、`["shorthand", { sameNameShorthand: "always" }]` のように
+`sameNameShorthand` を指定できます。`always` は `:title="title"` を Vue 3.4 の省略記法 `:title` で
+書くことを求め、`never` は値を書くことを求めます。既定の `ignore` はどちらも検査しません。
+値が省略記法の読み取る識別子、つまりキャメルケースにした引数と一致するバインディングが対象です
+（例: `:aria-label="ariaLabel"`）。修飾子と `.title` 形式は保持し、動的引数は対象外です。
+`always` または `never` を指定すると、このルールが動作している間は `vue/prefer-props-shorthand` が
+報告を控えるため、1 つのバインディングに対する報告と修正は 1 つだけになります。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";

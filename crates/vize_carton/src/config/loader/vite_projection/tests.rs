@@ -116,6 +116,59 @@ fn uniqueness_is_exact_for_strings_and_unknown_array_shapes_decline() {
 }
 
 #[test]
+fn a_list_of_item_schemas_is_checked_by_position_like_the_node_validator() {
+    let style = json!({ "type": "string", "enum": ["shorthand", "longform"] });
+    let options = json!({
+        "type": "object",
+        "properties": { "sameNameShorthand": { "enum": ["always", "never", "ignore"] } },
+        "additionalProperties": false,
+    });
+    let closed = json!({ "type": "array", "items": [style, options], "additionalItems": false });
+    for (value, expected) in [
+        (json!([]), Some(true)),
+        (json!(["shorthand"]), Some(true)),
+        (json!(["longform", {}]), Some(true)),
+        (
+            json!(["shorthand", { "sameNameShorthand": "always" }]),
+            Some(true),
+        ),
+        (json!(["sometimes"]), Some(false)),
+        (json!([{ "sameNameShorthand": "always" }]), Some(false)),
+        (json!(["shorthand", "longform"]), Some(false)),
+        (
+            json!(["shorthand", { "sameNameShorthand": "sometimes" }]),
+            Some(false),
+        ),
+        (json!(["shorthand", { "sameName": "always" }]), Some(false)),
+        (json!(["shorthand", {}, {}]), Some(false)),
+    ] {
+        assert_eq!(check(&value, &closed, &closed), expected, "{value}");
+    }
+    let open = json!({ "type": "array", "items": [{ "type": "string" }] });
+    assert_eq!(check(&json!(["a", 1, {}]), &open, &open), Some(true));
+    assert_eq!(check(&json!([1]), &open, &open), Some(false));
+
+    // The generated schema keeps the tuple on the literal path.
+    let schema = schema().unwrap();
+    for (option, expected) in [
+        (json!("longform"), Some(true)),
+        (json!(["shorthand"]), Some(true)),
+        (
+            json!(["shorthand", { "sameNameShorthand": "never" }]),
+            Some(true),
+        ),
+        (
+            json!(["shorthand", { "sameNameShorthand": "never" }, {}]),
+            Some(false),
+        ),
+        (json!({ "sameNameShorthand": "never" }), Some(false)),
+    ] {
+        let value = json!({ "linter": { "ruleOptions": { "vue/v-bind-style": option } } });
+        assert_eq!(check(&value, schema, schema), expected, "{value}");
+    }
+}
+
+#[test]
 fn actual_pattern_values_decline_but_empty_and_legacy_options_keep_the_literal_path() {
     let schema = schema().unwrap();
     for (ignore, expected) in [

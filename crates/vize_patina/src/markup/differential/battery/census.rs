@@ -60,7 +60,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Native `is` attributes retain attribute-name validation.
         + 1
         // Duplicate-class report nodes add one multi-part literal fixture.
-        + 1,
+        + 1
+        // Same-name bindings add two literal fixtures: both spellings with a
+        // modifier, a property bind and a longform bind.
+        + 2,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -253,7 +256,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Duplicate-class report nodes add one literal call.
         + 1
         // Static-hidden focusability adds two loop-driven fixture calls.
-        + 2,
+        + 2
+        // Same-name bindings add two literal calls and one table-driven call.
+        + 3,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -315,7 +320,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // The upstream static-class node observation is a helper-driven skip.
         + 1
         // Static-hidden focusability loops remain explicit scanner skips.
-        + 2,
+        + 2
+        // The same-name binding tables are one helper-driven scanner skip.
+        + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
@@ -377,6 +384,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // to a parser-implied `tbody` or `tr`; every authored node is kept.
         - 18
         // The duplicate-class report-node fixture retains twenty trace lines.
+        + 20
+        // The two same-name binding fixtures retain twenty trace lines.
         + 20,
     restructured: 0,
     jsx: JsxComparison {
