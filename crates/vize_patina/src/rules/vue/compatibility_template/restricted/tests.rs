@@ -3,7 +3,10 @@ use crate::linter::Linter;
 use crate::rule::RuleRegistry;
 use vize_l0::String;
 
-fn reported(entries: &[(&str, Option<&str>)], template: &str) -> Vec<(String, String)> {
+fn diagnostics(
+    entries: &[(&str, Option<&str>)],
+    template: &str,
+) -> Vec<crate::diagnostic::LintDiagnostic> {
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(NoRestrictedSyntax::new(
         entries
@@ -16,6 +19,10 @@ fn reported(entries: &[(&str, Option<&str>)], template: &str) -> Vec<(String, St
         .diagnostics;
     diagnostics.sort_by_key(|diagnostic| diagnostic.start);
     diagnostics
+}
+
+fn reported(entries: &[(&str, Option<&str>)], template: &str) -> Vec<(String, String)> {
+    diagnostics(entries, template)
         .iter()
         .map(|diagnostic| {
             let text = template
@@ -171,6 +178,8 @@ fn directive_modifier_selectors_preserve_authored_spans() {
         found("VDirectiveKey[modifiers.length=2]"),
         ["v-on:keyup.stop.prevent"]
     );
+    assert_eq!(found("VDirectiveKey[modifiers.2]"), Vec::<String>::new());
+    assert_eq!(found("VDirectiveKey[modifiers.00]"), Vec::<String>::new());
 }
 
 #[test]
@@ -193,6 +202,13 @@ fn dot_shorthand_modifiers_match_the_parser_zero_width_convention() {
     assert_eq!(
         found("VDirectiveKey[modifiers.length=1]"),
         [".bar.prop", ".baz"]
+    );
+    assert_eq!(
+        diagnostics(&[("VIdentifier.modifiers[name='prop']", None)], template)
+            .iter()
+            .map(|diagnostic| (diagnostic.start, diagnostic.end))
+            .collect::<Vec<_>>(),
+        [(9, 9), (27, 27), (43, 47), (56, 56)]
     );
 }
 

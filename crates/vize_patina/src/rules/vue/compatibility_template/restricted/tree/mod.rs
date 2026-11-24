@@ -252,9 +252,15 @@ fn directive_node<'a>(ctx: &mut LintContext<'a>, directive: &DirectiveNode<'a>) 
                 )
             }
         });
+    let authored_prop = directive.modifiers.iter().any(|modifier| {
+        modifier.content.eq_ignore_ascii_case("prop") && modifier.loc.span.start as usize != start
+    });
     let modifiers = directive
         .modifiers
         .iter()
+        .filter(|modifier| {
+            !(shorthand == Some(".") && modifier.loc.span.start as usize == start && authored_prop)
+        })
         .map(|modifier| {
             let (modifier_start, modifier_end) = span(modifier.loc.span);
             if shorthand == Some(".") && modifier_start == start {
