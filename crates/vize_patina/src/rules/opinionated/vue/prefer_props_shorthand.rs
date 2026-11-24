@@ -66,8 +66,8 @@ impl PreferPropsShorthand {
 
     fn check_binding(&self, ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
         if binding
-            .same_name_binding()
-            .is_none_or(|same_name| same_name.spelling != SameNameSpelling::Explicit)
+            .same_name_binding_written(SameNameSpelling::Explicit)
+            .is_none()
         {
             return;
         }

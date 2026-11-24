@@ -25,13 +25,16 @@ impl VBindStyleSameName {
     }
 
     fn check_same_name(&self, ctx: &mut LintContext<'_>, directive: &DirectiveNode<'_>) {
-        let Some(same_name) = MarkupBinding::from_relief_directive(directive).same_name_binding()
+        // Only the spelling the policy rejects is looked for.
+        let rejected = match self.required {
+            SameNameSpelling::Shorthand => SameNameSpelling::Explicit,
+            SameNameSpelling::Explicit => SameNameSpelling::Shorthand,
+        };
+        let Some(same_name) =
+            MarkupBinding::from_relief_directive(directive).same_name_binding_written(rejected)
         else {
             return;
         };
-        if same_name.spelling == self.required {
-            return;
-        }
         let (start, end) = (directive.loc.span.start, directive.loc.span.end);
         let (message, help, fix) = match self.required {
             SameNameSpelling::Shorthand => (

@@ -37,25 +37,50 @@ impl<'a> MarkupBinding<'a> {
     /// Modifiers do not change the value a binding reads, so `:foo.prop` and
     /// `.foo` classify as `:foo` does. A dynamic argument has no name to read.
     pub fn same_name_binding(&self) -> Option<SameNameBinding<'a>> {
-        if self.kind() != MarkupBindingKind::Bind || !self.is_authored_directive() {
+        if self.kind() != MarkupBindingKind::Bind {
             return None;
         }
+        self.same_name_as(if self.has_value() {
+            SameNameSpelling::Explicit
+        } else {
+            SameNameSpelling::Shorthand
+        })
+    }
+
+    /// This binding as a same-name `v-bind` written as `spelling`.
+    ///
+    /// A binding written the other way is answered from its value alone, so a
+    /// rule that looks for one spelling does none of the other's work.
+    pub fn same_name_binding_written(
+        &self,
+        spelling: SameNameSpelling,
+    ) -> Option<SameNameBinding<'a>> {
+        if self.kind() != MarkupBindingKind::Bind
+            || self.has_value() != (spelling == SameNameSpelling::Explicit)
+        {
+            return None;
+        }
+        self.same_name_as(spelling)
+    }
+
+    /// The one detection: a static argument whose camelized form is the
+    /// identifier this `v-bind`, written as `spelling`, reads.
+    fn same_name_as(&self, spelling: SameNameSpelling) -> Option<SameNameBinding<'a>> {
         let argument = self.arg_name()?;
         if !self.is_static_unqualified_arg_exact(argument) {
             return None;
         }
-        let spelling = if self.has_value() {
-            let value = self.expression()?;
-            if !is_simple_identifier(value) || !reads_argument(argument, value) {
-                return None;
+        let reads_own_argument = match spelling {
+            SameNameSpelling::Explicit => {
+                let value = self.expression()?;
+                is_simple_identifier(value) && reads_argument(argument, value)
             }
-            SameNameSpelling::Explicit
-        } else if self.is_valueless() && is_simple_identifier(&camelize(argument)) {
-            SameNameSpelling::Shorthand
-        } else {
-            return None;
+            SameNameSpelling::Shorthand => {
+                self.is_valueless() && is_simple_identifier(&camelize(argument))
+            }
         };
-        Some(SameNameBinding { spelling, argument })
+        (reads_own_argument && self.is_authored_directive())
+            .then_some(SameNameBinding { spelling, argument })
     }
 
     /// Whether a Vue template spells this directive. An attribute lowered
@@ -95,7 +120,89 @@ fn reads_argument(argument: &str, value: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::reads_argument;
+    use super::{SameNameSpelling, reads_argument};
+    use crate::context::LintContext;
+    use crate::ir::TemplateSyntax;
+    use crate::markup::{
+        MarkupBinding, MarkupContext, MarkupDocument, MarkupElement, MarkupRule, MarkupTraversal,
+    };
+    use std::cell::RefCell;
+    use vize_l0::Allocator;
+
+    /// Records each binding's classification, after checking that the two
+    /// spelling-specific queries give the same answer.
+    #[derive(Default)]
+    struct Classified(RefCell<Vec<(std::string::String, Option<SameNameSpelling>)>>);
+
+    impl MarkupRule for Classified {
+        fn name(&self) -> &'static str {
+            "test/same-name"
+        }
+
+        fn traversal(&self) -> MarkupTraversal {
+            MarkupTraversal::Bindings
+        }
+
+        fn enter_binding<'a>(
+            &self,
+            _ctx: &mut MarkupContext<'_, 'a>,
+            _element: &MarkupElement<'a>,
+            binding: &MarkupBinding<'a>,
+        ) {
+            let classified = binding.same_name_binding().map(|same| same.spelling);
+            for spelling in [SameNameSpelling::Shorthand, SameNameSpelling::Explicit] {
+                assert_eq!(
+                    binding
+                        .same_name_binding_written(spelling)
+                        .map(|same| same.spelling),
+                    classified.filter(|found| *found == spelling)
+                );
+            }
+            self.0.borrow_mut().push((
+                binding.arg_name().unwrap_or_default().to_owned(),
+                classified,
+            ));
+        }
+    }
+
+    #[test]
+    fn one_detection_answers_the_classifier_and_both_spelling_queries() {
+        let source = r#"<div :a="a" :b-c="bC" :d :e-f :g.prop="g" .h="h" .i v-bind:j="j" v-bind:k :l="m" :n="n()" :o="" :[p]="p" :[q] v-bind="r" :1="1" s="s" @t="t" />"#;
+        let allocator = Allocator::with_capacity(source.len() * 4 + 1024);
+        let (root, _errors) = vize_armature::Parser::new(&allocator, source).parse();
+        let document = MarkupDocument::new(&root, TemplateSyntax::Vue);
+        let mut lint = LintContext::new(&allocator, source, "test.vue");
+        let mut ctx = MarkupContext::new(&mut lint, &document);
+        let classified = Classified::default();
+        document.visit_with(&classified, &mut ctx);
+
+        let explicit = Some(SameNameSpelling::Explicit);
+        let shorthand = Some(SameNameSpelling::Shorthand);
+        assert_eq!(
+            classified.0.into_inner(),
+            [
+                ("a", explicit),
+                ("b-c", explicit),
+                ("d", shorthand),
+                ("e-f", shorthand),
+                ("g", explicit),
+                ("h", explicit),
+                ("i", shorthand),
+                ("j", explicit),
+                ("k", shorthand),
+                ("l", None),
+                ("n", None),
+                ("o", None),
+                ("p", None),
+                ("q", None),
+                ("", None),
+                ("1", None),
+                ("s", None),
+                ("t", None),
+            ]
+            .map(|(argument, spelling)| (argument.to_owned(), spelling))
+        );
+    }
 
     #[test]
     fn a_value_reads_the_argument_only_as_its_camelized_name() {
