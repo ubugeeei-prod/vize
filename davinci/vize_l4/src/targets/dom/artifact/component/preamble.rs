@@ -2,19 +2,28 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_l0::ensure_sufficient_stack;
-use vize_l2::op::{Op, Region};
+use vize_l2::op::ComponentOp;
 
 use super::{Buf, EmitCx, builtin};
 use vize_l2::op::vue::asset_identifier;
 
-pub(in crate::targets::dom::artifact) fn collect_names<'a>(
-    root: &Region<'a>,
+/// Record `component` as a `resolveComponent` asset, in `generate_assets`
+/// order: first occurrence wins, reserved and dynamic tags never resolve.
+///
+/// The one home of the rule. The emitter applies it inside the helper
+/// preference walk (`helper_preference`), after the component's children,
+/// so the preamble costs no walk of its own.
+pub(in crate::targets::dom::artifact) fn note<'a>(
+    component: &ComponentOp<'a>,
     source: &str,
-) -> StdVec<&'a str> {
-    let mut names = StdVec::new();
-    collect_from(root, source, &mut names);
-    names
+    names: &mut StdVec<&'a str>,
+) {
+    if !builtin::is_reserved_name(component, source)
+        && !builtin::is_dynamic_component(component, source)
+        && !names.contains(&component.name)
+    {
+        names.push(component.name);
+    }
 }
 
 /// `generate_assets` over the components: tags that resolve to a script
@@ -60,34 +69,4 @@ fn is_self_reference(component: &str, own: &str) -> bool {
     }
     vize_l0::capitalize(&vize_l0::camelize(component))
         == vize_l0::capitalize(&vize_l0::camelize(own))
-}
-
-fn collect_from<'a>(region: &Region<'a>, source: &str, names: &mut StdVec<&'a str>) {
-    ensure_sufficient_stack(|| collect_from_guarded(region, source, names));
-}
-
-fn collect_from_guarded<'a>(region: &Region<'a>, source: &str, names: &mut StdVec<&'a str>) {
-    for op in region.ops.iter() {
-        match op {
-            Op::Element(element) => collect_from(&element.children, source, names),
-            Op::Component(component) => {
-                collect_from(&component.children, source, names);
-                if !builtin::is_reserved_name(component, source)
-                    && !builtin::is_dynamic_component(component, source)
-                    && !names.contains(&component.name)
-                {
-                    names.push(component.name);
-                }
-            }
-            Op::Slot(slot) => collect_from(&slot.fallback, source, names),
-            Op::If(if_op) => {
-                for branch in if_op.branches.iter() {
-                    collect_from(&branch.region, source, names);
-                }
-            }
-            Op::For(for_op) => collect_from(&for_op.region, source, names),
-            Op::OriginalFor(for_op) => collect_from(&for_op.region, source, names),
-            _ => {}
-        }
-    }
 }
