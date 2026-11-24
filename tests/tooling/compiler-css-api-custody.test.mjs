@@ -42,7 +42,12 @@ await test("closed actual CSS API inputs remain separate from compiler execution
     [{ id: domId, targets: ["dom"] }],
   );
   const ssrCases = loaded.cases.filter((row) => row.id !== domId);
-  assert.equal(ssrCases.length, 106);
+  // Compare every registered SSR identity so new regression fixtures cannot
+  // hide a missing row or let CSS API inputs acquire compiler execution credit.
+  assert.deepEqual(
+    ssrCases.map(({ id }) => id),
+    manifest.cases.filter((row) => row.targets.includes("ssr")).map(({ id }) => id),
+  );
   assert.ok(ssrCases.every((row) => row.targets.length === 1 && row.targets[0] === "ssr"));
   const report = compilerCssApiReport(loaded.cssApiCases);
   assert.deepEqual(

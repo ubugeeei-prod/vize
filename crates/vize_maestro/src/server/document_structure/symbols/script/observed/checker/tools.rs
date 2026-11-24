@@ -1,8 +1,8 @@
 //! Collect compatible top-level declarations and static imports in one walk.
-use super::super::{block_ranges, collect};
+use super::super::{SymbolKind, block_ranges, collect};
 use super::{
     AuthoredProgram, DocumentSymbol, LineIndex, ScriptQueryProducts, SfcScriptBlock, Statement,
-    SymbolKind, tag_ranges,
+    tag_ranges,
 };
 
 impl ScriptQueryProducts {

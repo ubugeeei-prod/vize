@@ -1,0 +1,4 @@
+<template>
+  <input aria-hidden="true" hidden />
+  <button aria-hidden="true" hidden="">Hidden</button>
+</template>

@@ -80,6 +80,13 @@ impl NodeRuntimeFile {
 
     pub(in crate::config::loader) fn command(&self, config_path: &Path) -> Command {
         let mut command = Command::new("node");
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            // The editor host has no console. Config evaluation must not open one.
+            const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+            command.creation_flags(CREATE_NO_WINDOW);
+        }
         command
             .arg(self.path())
             .arg(config_path)
