@@ -4,7 +4,7 @@ use super::VaporFacts;
 use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, build};
 use vize_l2::{
     artifact::Artifact,
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{NativeSelectedSetup, NativeTemplateFile, NativeTemplateView},
 };
 
@@ -43,7 +43,7 @@ impl<'view, 'owner, 'arena> SelectedSetupVaporAnalysis<'view, 'owner, 'arena> {
         self.template.owner()
     }
     #[must_use]
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.setup.file()
     }
     #[must_use]

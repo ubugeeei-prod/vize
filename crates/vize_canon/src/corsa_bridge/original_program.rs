@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use lsp_types::{DocumentDiagnosticReport, DocumentDiagnosticReportResult, Range};
 use sha2::{Digest, Sha256};
 use vize_l0::{Span, String, cstr, line_index::LineBreaks};
-use vize_l2::{file::FileArtifact, lang::js::JsxFile};
+use vize_l2::{file::L2Ir, lang::js::JsxFile};
 use vize_l4::targets::ts::{
     MappingError, ProgramProjection, ProjectionError, SourceKind, project_jsx_program,
     project_program,
@@ -45,8 +45,8 @@ impl std::error::Error for OriginalProgramError {}
 /// ```compile_fail
 /// use std::path::Path;
 /// use vize_canon::CorsaBridge;
-/// use vize_l2::{file::FileArtifact, lang::js::JsxFile};
-/// async fn discard(bridge: &CorsaBridge, file: FileArtifact<'_>, path: &Path) {
+/// use vize_l2::{file::L2Ir, lang::js::JsxFile};
+/// async fn discard(bridge: &CorsaBridge, file: L2Ir<'_>, path: &Path) {
 ///     let result = bridge.check_original_program(&file, path).await.unwrap();
 ///     drop(file);
 ///     let _ = result.report();
@@ -119,7 +119,7 @@ impl CorsaBridge {
     /// root config or genuine import/export facts. .mjs/.mts are intrinsic Modules.
     pub async fn check_original_program<'file, 'arena>(
         &self,
-        file: &'file FileArtifact<'arena>,
+        file: &'file L2Ir<'arena>,
         authored_path: &Path,
     ) -> Result<OriginalProgramCheck<'file, 'arena>, OriginalProgramError> {
         let projection = project_program(file).map_err(OriginalProgramError::Projection)?;

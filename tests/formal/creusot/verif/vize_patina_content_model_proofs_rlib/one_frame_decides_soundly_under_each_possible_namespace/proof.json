@@ -1,0 +1,24 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_classify_Possible": { "prover": "z3", "time": 0.002 },
+      "vc_one_frame_decides_soundly_under_each_possible_namespace": {
+        "tactic": "split_vc",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              {
+                "tactic": "compute_in_goal",
+                "children": [{ "prover": "z3", "time": 0.037 }]
+              },
+              { "prover": "z3", "time": 0.026 }
+            ]
+          }
+        ]
+      },
+      "vc_possible": { "prover": "z3", "time": 0.002 }
+    }
+  }
+}

@@ -5,7 +5,7 @@ use vize_l0::{
 use vize_l1::{
     container::{
         Vue,
-        vue::{DescriptorObservation, DescriptorOptions, ScriptView},
+        vue::{DescriptorOptions, L1Ir, ScriptView},
     },
     embed::{
         EmbedSource,
@@ -14,7 +14,7 @@ use vize_l1::{
     markup::SurfaceParseOptions,
 };
 use vize_l2::{
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{FileProducer, ProgramInput, ProgramScope, VueOrdinaryEmpty},
 };
 use vize_l4::{
@@ -25,7 +25,7 @@ use vize_l4::{
 mod module_ordinary_cases;
 
 struct Observed<'a> {
-    descriptor: DescriptorObservation<'a>,
+    descriptor: L1Ir<'a>,
     syntax: EmbedSyntax<'a>,
 }
 impl<'a> Observed<'a> {
@@ -58,7 +58,7 @@ impl<'a> Observed<'a> {
             .ordinary()
             .ok_or("actual ordinary")
     }
-    fn file(&self, arena: &'a Allocator) -> Result<FileArtifact<'a>, &'static str> {
+    fn file(&self, arena: &'a Allocator) -> Result<L2Ir<'a>, &'static str> {
         let script = self.script()?;
         let mut producer =
             FileProducer::new(arena, self.descriptor.source()).map_err(|_| "File")?;
@@ -77,7 +77,7 @@ impl<'a> Observed<'a> {
     }
     fn checked<'f>(
         &self,
-        file: &'f FileArtifact<'a>,
+        file: &'f L2Ir<'a>,
     ) -> Result<VueOrdinaryEmpty<'f, '_, '_, 'a>, &'static str> {
         VueOrdinaryEmpty::checked(
             file,

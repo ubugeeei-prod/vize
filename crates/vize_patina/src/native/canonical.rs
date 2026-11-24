@@ -6,7 +6,7 @@
 
 use vize_l0::{Span, diag::MessageLookup};
 use vize_l1_to_l2::native_file::NativeSfc;
-use vize_l2::{file::FileArtifact, lang::js::JsxMarkupFile, op::Op, walk::NodeRef};
+use vize_l2::{file::L2Ir, lang::js::JsxMarkupFile, op::Op, walk::NodeRef};
 
 use super::{NativeLintFinding, tabindex_no_positive};
 
@@ -44,14 +44,14 @@ pub enum NativeCanonicalLintRefusal {
 /// An actual native Vue/JSX owner's canonical File, never caller-joined parts.
 ///
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::file::L2Ir;
 /// use vize_patina::native::canonical::NativeCanonicalLint;
-/// fn forge<'a>(file: &FileArtifact<'a>) {
+/// fn forge<'a>(file: &L2Ir<'a>) {
 ///     let _ = NativeCanonicalLint { file };
 /// }
 /// ```
 pub struct NativeCanonicalLint<'o, 'a> {
-    file: &'o FileArtifact<'a>,
+    file: &'o L2Ir<'a>,
 }
 
 impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
@@ -89,7 +89,7 @@ impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
 
     /// Returns the authentic canonical file retained from the admitted owner.
     #[must_use]
-    pub fn file(&self) -> &'o FileArtifact<'a> {
+    pub fn file(&self) -> &'o L2Ir<'a> {
         self.file
     }
 
@@ -159,7 +159,7 @@ pub use accessibility::AccessibilityFindings;
 
 #[inline]
 fn visit_markup_nodes<'s, 'a>(
-    file: &'s FileArtifact<'a>,
+    file: &'s L2Ir<'a>,
     visit: &mut impl FnMut(vize_l0::id::NodeId, NodeRef<'s, 'a>),
 ) -> Result<(), vize_l2::walk::NodeLimit> {
     #[cfg(feature = "canonical-rule-group")]

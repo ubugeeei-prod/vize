@@ -1,7 +1,7 @@
 //! A short original setup/Program/unit join, without a second syntax walk.
 
 use super::{EmbedSyntax, NativeTemplateFile};
-use crate::file::{FileArtifact, ScopeId, ScriptUnit, ScriptUnitId};
+use crate::file::{L2Ir, ScopeId, ScriptUnit, ScriptUnitId};
 use oxc_parser::AdmittedProgram;
 use vize_l0::Span;
 use vize_l1::markup::ScriptSelection;
@@ -70,7 +70,7 @@ pub struct NativeSelectedSetup<'owner, 'arena> {
     selected: ScriptSelection<'owner, 'arena>,
     program: AdmittedProgram<'owner, 'arena>,
     unit: &'owner ScriptUnit,
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
 }
 impl<'owner, 'arena> NativeSelectedSetup<'owner, 'arena> {
     #[must_use]
@@ -102,7 +102,7 @@ impl<'owner, 'arena> NativeSelectedSetup<'owner, 'arena> {
         self.unit.scope
     }
     #[must_use]
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.file
     }
 }

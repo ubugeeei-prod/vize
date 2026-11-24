@@ -65,7 +65,7 @@ fn completed<'a>(
     }
     Ok(original.finish())
 }
-fn text<'f, 'a>(file: &'f crate::file::FileArtifact<'a>) -> Result<&'f TextOp<'a>, &'static str> {
+fn text<'f, 'a>(file: &'f crate::file::L2Ir<'a>) -> Result<&'f TextOp<'a>, &'static str> {
     let [Op::Text(text)] = file.artifact().root().ops.as_slice() else {
         return Err("one actual Text allocation");
     };

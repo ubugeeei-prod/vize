@@ -12,7 +12,7 @@ use vize_l0::dump::value::DumpValue;
 use vize_l0::dump::{Dump, Error as DumpError};
 use vize_l0::{Span, String, cstr};
 
-use crate::op::{EdgeKind, EffectId, OpId, OpKind, Program, RegionId};
+use crate::op::{EdgeKind, EffectId, L3Ir, OpId, OpKind, RegionId};
 
 /// Flat L3 document model.
 #[doc(alias = "ImpetoFolio")]
@@ -34,7 +34,7 @@ pub struct Page {
 impl Page {
     /// Mirror a live arena program into the owned document model.
     #[must_use]
-    pub fn of(program: &Program<'_>) -> Self {
+    pub fn of(program: &L3Ir<'_>) -> Self {
         Self {
             phase: String::from(program.phase.as_str()),
             regions: program.regions.iter().map(Region::from).collect(),
