@@ -11,7 +11,7 @@ import { parse as parseYaml } from "yaml";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const crateDir = path.join(repoRoot, "tests", "formal", "creusot");
-const workflowFile = path.join(repoRoot, ".github", "workflows", "davinci-creusot.yml");
+const workflowFile = path.join(repoRoot, ".github", "workflows", "davinci-kani.yml");
 const inventoryFile = path.join(
   repoRoot,
   "docs",
@@ -21,6 +21,8 @@ const inventoryFile = path.join(
 );
 
 type Step = {
+  id?: string;
+  with?: Record<string, unknown>;
   run?: string;
   if?: unknown;
   "continue-on-error"?: unknown;
@@ -32,7 +34,10 @@ type Workflow = {
     push: { branches: string[]; paths: string[] };
     workflow_dispatch: unknown;
   };
-  jobs: Record<string, { steps: Step[]; if?: unknown; "continue-on-error"?: unknown }>;
+  jobs: Record<
+    string,
+    { steps: Step[]; if?: unknown; needs?: unknown; "continue-on-error"?: unknown }
+  >;
 };
 
 /** Each proof package's library root, which sits next to its kernel. */
@@ -64,29 +69,37 @@ function includedKernels(): string[] {
   return [...kernels].sort();
 }
 
-test("the Creusot workflow replays every proof whenever a proved kernel changes", () => {
+test("the proofs workflow replays every Creusot proof whenever a proved kernel changes", () => {
   const workflow = parseYaml(fs.readFileSync(workflowFile, "utf8")) as Workflow;
   const kernels = includedKernels();
   assert.ok(kernels.length > 0);
   const own = [
-    ".github/workflows/davinci-creusot.yml",
+    ".github/workflows/davinci-kani.yml",
     "tools/nix/creusot/**",
     "tests/formal/creusot/**",
   ];
-  const expected = [...own, ...kernels];
-  assert.deepEqual([...workflow.on.pull_request.paths].sort(), [...expected].sort());
-  assert.deepEqual([...workflow.on.push.paths].sort(), [...expected].sort());
+  const expected = [...own, ...kernels].sort();
+  for (const entry of expected) assert.ok(workflow.on.pull_request.paths.includes(entry), entry);
+  assert.deepEqual([...workflow.on.push.paths].sort(), expected);
   assert.deepEqual(workflow.on.push.branches, ["main"]);
   assert.ok(Object.hasOwn(workflow.on, "workflow_dispatch"));
 
-  const runs = Object.values(workflow.jobs).flatMap((job) => {
-    assert.equal(job.if, undefined);
-    assert.ok(job["continue-on-error"] === undefined || job["continue-on-error"] === false);
-    return job.steps.flatMap((step) => {
-      assert.equal(step.if, undefined);
-      assert.ok(step["continue-on-error"] === undefined || step["continue-on-error"] === false);
-      return step.run ? [[step["working-directory"] ?? ".", step.run.trim()]] : [];
-    });
+  // Pull requests select the job through the same path list.
+  const select = workflow.jobs.changes!.steps.find((step) => step.id === "filter")!;
+  const filters = parseYaml(String(select.with?.filters)) as Record<string, string[]>;
+  assert.deepEqual([...filters.creusot!].sort(), expected);
+
+  const job = workflow.jobs.creusot!;
+  assert.equal(job.needs, "changes");
+  assert.equal(
+    job.if,
+    "${{ !cancelled() && (github.event_name != 'pull_request' || needs.changes.outputs.creusot == 'true') }}",
+  );
+  assert.ok(job["continue-on-error"] === undefined || job["continue-on-error"] === false);
+  const runs = job.steps.flatMap((step) => {
+    assert.equal(step.if, undefined);
+    assert.ok(step["continue-on-error"] === undefined || step["continue-on-error"] === false);
+    return step.run ? [[step["working-directory"] ?? ".", step.run.trim()]] : [];
   });
   assert.deepEqual(runs.at(-1), [
     "tests/formal/creusot",

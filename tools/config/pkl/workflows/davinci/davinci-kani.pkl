@@ -2,6 +2,10 @@ import "../../Actions.pkl" as ci
 
 name = "Davinci Kani"
 
+// Proofs: Kani harnesses, Creusot deductive proofs (see
+// docs/davinci/decisions/2026-11-17-creusot.md) and the authored source-frame
+// witnesses. Pull requests run the provers whose inputs changed; pushes to main
+// replay Creusot; a dispatch runs everything.
 on {
   pull_request {
     paths = new Listing {
@@ -45,6 +49,33 @@ on {
       "davinci/vize_l0/src/js_string_kani.rs"
       "davinci/vize_l0/tests/emitted_string_literals.rs"
       "tests/formal/string-literal/**"
+      "tools/nix/creusot/**"
+      "tests/formal/creusot/**"
+      "crates/vize_patina/src/html_content_model/creusot.rs"
+      "crates/vize_patina/src/html_content_model/tri.rs"
+      "davinci/vize_l2/src/query/script/assignments/prefix/frame.rs"
+      "davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs"
+      "davinci/vize_l3/src/lattice/creusot.rs"
+      "davinci/vize_l3/src/query/check/creusot.rs"
+      "davinci/vize_l0/src/source_frame.rs"
+      "davinci/vize_l0/src/source_frame/tests/proofs.rs"
+      "tests/formal/source-frames/coverage.jq"
+    }
+  }
+  push {
+    branches = List("main")
+    paths = new Listing {
+      "tools/nix/creusot/**"
+      "tests/formal/creusot/**"
+      "crates/vize_patina/src/html_content_model/creusot.rs"
+      "crates/vize_patina/src/html_content_model/tri.rs"
+      "davinci/vize_l2/src/query/script/assignments/prefix/frame.rs"
+      "davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs"
+      "davinci/vize_l3/src/lattice/class.rs"
+      "davinci/vize_l3/src/lattice/creusot.rs"
+      "davinci/vize_l3/src/query/check/creusot.rs"
+      "davinci/vize_l3/src/query/check/rule.rs"
+      ".github/workflows/davinci-kani.yml"
     }
   }
   workflow_dispatch = null
@@ -54,8 +85,85 @@ permissions { contents = "read" }
 env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
 
 jobs {
+  changes {
+    `if` = "github.event_name == 'pull_request'"
+    `runs-on` = "ubuntu-24.04"
+    `timeout-minutes` = 5
+    permissions {
+      contents = "read"
+      `pull-requests` = "read"
+    }
+    outputs {
+      kani = "${{ steps.filter.outputs.kani }}"
+      creusot = "${{ steps.filter.outputs.creusot }}"
+      `source-frames` = "${{ steps.filter.outputs.source-frames }}"
+    }
+    steps = new Listing {
+      new Dynamic {
+        name = "Select the provers whose inputs changed"
+        id = "filter"
+        uses = "dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706"  // v4.0.2
+        with {
+          filters = """
+          kani:
+            - '.github/scripts/workflows/davinci-kani/**'
+            - 'davinci/vize_l0/src/span.rs'
+            - 'davinci/vize_l2/src/query/position/index/intervals.rs'
+            - 'davinci/vize_l2/src/query/position/index/intervals/tests.rs'
+            - 'tests/formal/position-index/Intervals.lean'
+            - 'davinci/vize_l3/src/lattice/axis.rs'
+            - 'davinci/vize_l3/src/lattice/class.rs'
+            - 'davinci/vize_l3/src/lattice/effect.rs'
+            - 'davinci/vize_l3/src/lattice/kani.rs'
+            - 'davinci/vize_l3/src/query/check/kani.rs'
+            - 'davinci/vize_l3/src/query/check/rule.rs'
+            - 'davinci/vize_l3/src/lattice/classify_proofs.rs'
+            - 'tests/davinci_test_support/src/l3_reference/checker.rs'
+            - 'tests/davinci_test_support/src/l3_reference/checker_proofs.rs'
+            - 'tests/davinci_test_support/src/l3_reference/graphs.rs'
+            - 'tests/davinci_test_support/src/l3_reference/incremental.rs'
+            - 'tests/davinci_test_support/src/l3_reference/incremental_proofs.rs'
+            - 'tests/davinci_test_support/src/l3_reference/kani.rs'
+            - 'tests/davinci_test_support/src/l3_reference/program.rs'
+            - 'tests/davinci_test_support/src/l3_reference/schedule.rs'
+            - 'tests/davinci_test_support/src/l3_reference/schedule_proofs.rs'
+            - 'tests/davinci_test_support/src/l3_reference/trace.rs'
+            - 'crates/vize_patina/src/html_content_model/tri.rs'
+            - 'crates/vize_patina/src/html_content_model/walk.rs'
+            - 'crates/vize_patina/src/html_content_model/kani.rs'
+            - 'davinci/vize_l0/src/js_string.rs'
+            - 'davinci/vize_l0/src/js_string/tests.rs'
+            - 'davinci/vize_l0/src/js_string_kani.rs'
+            - 'davinci/vize_l0/tests/emitted_string_literals.rs'
+            - 'tests/formal/string-literal/**'
+            - '.github/workflows/davinci-kani.yml'
+          creusot:
+            - 'tools/nix/creusot/**'
+            - 'tests/formal/creusot/**'
+            - 'crates/vize_patina/src/html_content_model/creusot.rs'
+            - 'crates/vize_patina/src/html_content_model/tri.rs'
+            - 'davinci/vize_l2/src/query/script/assignments/prefix/frame.rs'
+            - 'davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs'
+            - 'davinci/vize_l3/src/lattice/class.rs'
+            - 'davinci/vize_l3/src/lattice/creusot.rs'
+            - 'davinci/vize_l3/src/query/check/creusot.rs'
+            - 'davinci/vize_l3/src/query/check/rule.rs'
+            - '.github/workflows/davinci-kani.yml'
+          source-frames:
+            - 'davinci/vize_l0/src/source_frame.rs'
+            - 'davinci/vize_l0/src/source_frame/tests/proofs.rs'
+            - 'davinci/vize_l0/src/span.rs'
+            - 'tests/formal/source-frames/coverage.jq'
+            - '.github/workflows/davinci-kani.yml'
+          """
+        }
+      }
+    }
+  }
   `l3-lattice` {
     name = "L3 lattice properties"
+    needs = "changes"
+    `if` = "${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.kani == 'true') }}"
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
@@ -76,6 +184,8 @@ jobs {
 
   `position-index` {
     name = "L2 position queries on original byte intervals"
+    needs = "changes"
+    `if` = "${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.kani == 'true') }}"
     `runs-on` = ci.linux
     `timeout-minutes` = 15
     steps = new Listing {
@@ -118,6 +228,8 @@ jobs {
 
   `graph-certificates` {
     name = "L3 reachability certificates"
+    needs = "changes"
+    `if` = "${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.kani == 'true') }}"
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
@@ -138,6 +250,8 @@ jobs {
 
   `l3-reference` {
     name = "L3 reference schedule, checker, and incremental laws"
+    needs = "changes"
+    `if` = "${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.kani == 'true') }}"
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     steps = new Listing {
@@ -158,6 +272,8 @@ jobs {
 
   `html-content-model` {
     name = "HTML content-model kernel properties"
+    needs = "changes"
+    `if` = "${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.kani == 'true') }}"
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
@@ -175,8 +291,11 @@ jobs {
       }
     }
   }
+
   `compiler-string-literals` {
     name = "Emitted compiler string literals"
+    needs = "changes"
+    `if` = "${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.kani == 'true') }}"
     `runs-on` = ci.linux
     `timeout-minutes` = 40
     steps = new Listing {
@@ -205,6 +324,72 @@ jobs {
           args = "davinci/vize_l0/src/js_string_kani.rs --harness compiler_emits_original_ascii --output-format=terse"
         }
       }
+    }
+  }
+
+  creusot {
+    name = "Creusot proofs"
+    needs = "changes"
+    `if` = "${{ !cancelled() && (github.event_name != 'pull_request' || needs.changes.outputs.creusot == 'true') }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 60
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = "cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3"  // v31
+        with {
+          extra_nix_config = """
+          keep-derivations = true
+          keep-outputs = true
+
+          """
+        }
+      }
+      new Dynamic {
+        name = "Cache the Creusot toolchain"
+        uses = "nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569"  // v7
+        with {
+          `primary-key` = "creusot-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/nix/creusot/flake.nix', 'tools/nix/creusot/flake.lock') }}"
+          `restore-prefixes-first-match` = "creusot-${{ runner.os }}-${{ runner.arch }}-"
+          `gc-max-store-size-linux` = "8G"
+        }
+      }
+      new Dynamic {
+        name = "Build the pinned toolchain"
+        run = #"nix build 'path:./tools/nix/creusot' --out-link "$RUNNER_TEMP/creusot" --print-build-logs"#
+      }
+      new Dynamic {
+        name = "Replay the proofs"
+        // --replay checks the committed proof certificates and never searches
+        // for new ones; why3find exits non-zero on any unproved goal.
+        `working-directory` = "tests/formal/creusot"
+        run = "nix develop 'path:../../../tools/nix/creusot' --command cargo creusot --replay -- --locked"
+      }
+    }
+  }
+
+  `source-frames` {
+    name = "UTF-8 span bytes and block-relative holes"
+    needs = "changes"
+    `if` = "${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.source-frames == 'true') }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"
+        with {
+          `kani-version` = "0.68.0"
+          args = "--manifest-path davinci/vize_l0/Cargo.toml --tests --lib --harness original_source_ --output-format=terse -Z unstable-options --export-json source-frames.json"
+        }
+      }
+      ci.command("Require witnesses in both source-frame proofs", "jq --exit-status --from-file tests/formal/source-frames/coverage.jq source-frames.json")
     }
   }
 }
