@@ -40,7 +40,7 @@ const approvedRunnerLabels = new Set([
 // sticky disk or build cache.
 const hostedZeroComputeJobs: Readonly<Record<string, readonly string[]>> = {
   "check.yml": ["iteration-plan", "test-report"],
-  "full-qualification.yml": ["rust-feature-plan"],
+  "01-rust-feature-tests.yml": ["rust-feature-plan"],
   "pr-rust-checks.yml": ["rust-source-report"],
   "pr-rust-products.yml": ["rust-product-report"],
   "pr-source-checks.yml": ["pr-source-plan", "affected-tooling-report", "source-report"],

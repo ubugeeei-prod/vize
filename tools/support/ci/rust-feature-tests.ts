@@ -479,7 +479,7 @@ export const rustFeatureLaneInputs: readonly string[] = [
   "tools/commands/ci/rust-feature-tests.ts",
   "tools/config/pkl/parts/rust-feature-tests/job.pkl",
   ".github/workflows/pr-rust-products.yml",
-  ".github/workflows/full-qualification.yml",
+  ".github/workflows/01-rust-feature-tests.yml",
 ];
 
 export interface RustFeatureMatrix {

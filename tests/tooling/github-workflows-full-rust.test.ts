@@ -275,12 +275,10 @@ void test("full-only extraction preserves all seventeen complete original job ob
   );
   delete original["branch-coverage"];
   // The experimental Cargo feature lane joined later with its own row contract.
-  assert.equal(
-    original["rust-feature-plan"].steps.at(-1).run,
-    "node tools/commands/ci/rust-feature-tests.ts matrix",
-  );
-  assert.equal(original["rust-feature-tests"].needs, "rust-feature-plan");
-  delete original["rust-feature-plan"];
+  assert.deepEqual(original["rust-feature-tests"], {
+    if: "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+    uses: "./.github/workflows/01-rust-feature-tests.yml",
+  });
   delete original["rust-feature-tests"];
   assert.deepEqual(original["v1-supported-matrix"], {
     if: "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",

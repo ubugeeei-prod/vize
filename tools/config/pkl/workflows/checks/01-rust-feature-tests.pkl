@@ -1,0 +1,43 @@
+import "../../Actions.pkl" as ci
+import "../../RustFeatureTests.pkl" as features
+
+// Every experimental Cargo feature row, for full qualification. Pull requests
+// run their affected rows inside pr-rust-products instead.
+name = "Rust feature tests"
+on {
+  workflow_call {}
+}
+permissions { contents = "read" }
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `rust-feature-plan` {
+    name = "Plan Rust feature tests"
+    `runs-on` = "ubuntu-24.04"
+    `timeout-minutes` = 5
+    outputs { matrix = "${{ steps.plan.outputs.matrix }}" }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "List every feature row"
+        id = "plan"
+        run = "node tools/commands/ci/rust-feature-tests.ts matrix"
+      }
+    }
+  }
+  `rust-feature-tests` = (features.job(
+    "${{ fromJSON(needs.rust-feature-plan.outputs.matrix) }}",
+    "${{ success() }}"
+  )) {
+    needs = "rust-feature-plan"
+  }
+}

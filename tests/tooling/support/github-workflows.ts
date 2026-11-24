@@ -91,7 +91,6 @@ jobs:
     "rust-davinci-allocations",
     "rust-native-differential",
     "clippy-and-test",
-    "rust-feature-plan",
     "rust-feature-tests",
     "playground-test",
     "editor-extensions",
