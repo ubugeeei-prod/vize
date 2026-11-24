@@ -37,6 +37,7 @@ impl NoAriaHiddenOnFocusable {
 
     fn check_hidden_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>, inert: bool) {
         if inert
+            || markup_helpers::has_static_hidden(element)
             || markup_helpers::is_statically_non_focusable(element)
             || !markup_helpers::is_focusable_markup_element(element)
         {
@@ -182,5 +183,35 @@ mod tests {
         let result =
             linter.lint_template(r#"<button aria-hidden="false">Click</button>"#, "test.vue");
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn statically_hidden_elements_are_not_focusable() {
+        let linter = create_linter();
+        for template in [
+            r#"<input aria-hidden="true" hidden />"#,
+            r#"<input aria-hidden="true" hidden="" />"#,
+            r#"<button aria-hidden="true" hidden="hidden">Hidden</button>"#,
+            r#"<a href="/" aria-hidden="true" hidden="HIDDEN">Hidden</a>"#,
+            r#"<div tabindex="0" aria-hidden="true" hidden />"#,
+        ] {
+            let result = linter.lint_template(template, "test.vue");
+            assert_eq!(result.error_count, 0, "{template}");
+        }
+    }
+
+    #[test]
+    fn potentially_revealed_elements_remain_checked() {
+        let linter = create_linter();
+        for template in [
+            r#"<input aria-hidden="true" />"#,
+            r#"<input aria-hidden="true" hidden="until-found" />"#,
+            r#"<input aria-hidden="true" :hidden="hidden" />"#,
+            r#"<input aria-hidden="true" hidden :hidden="hidden" />"#,
+            r#"<input aria-hidden="true" hidden v-bind="attrs" />"#,
+        ] {
+            let result = linter.lint_template(template, "test.vue");
+            assert_eq!(result.error_count, 1, "{template}");
+        }
     }
 }

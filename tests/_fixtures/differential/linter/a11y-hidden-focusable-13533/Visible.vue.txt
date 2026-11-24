@@ -1,0 +1,4 @@
+<template>
+  <input aria-hidden="true" />
+  <input aria-hidden="true" hidden="until-found" />
+</template>
