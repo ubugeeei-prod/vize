@@ -20,5 +20,8 @@ pub mod vue2;
 #[cfg(feature = "original-style-bindings")]
 pub mod css;
 
+#[cfg(feature = "expanded-css")]
+pub mod css_rules;
+
 #[cfg(feature = "scss-rules")]
-pub mod scss;
+pub use css_rules as scss;

@@ -5,6 +5,10 @@ export VIZE_SCSS_MANIFEST="$RUNNER_TEMP/scss-inputs"
 export VIZE_REQUIRE_REPOSITORY_SCSS=1
 git ls-files -z -- '*.vue' '*.vue.txt' '*.scss' > "$VIZE_SCSS_MANIFEST"
 flags=(--locked --profile ci-opt)
+cargo test "${flags[@]}" -p vize_l0 --features lsp-line-break-search --lib line_index::lsp_breaks
+cargo test "${flags[@]}" -p vize_l0 --features lsp-line-break-search --test lsp_line_breaks
+cargo test "${flags[@]}" -p vize_l4 --no-default-features --features expanded-css --test expanded_css
+cargo test "${flags[@]}" -p vize_l4 --no-default-features --features scoped-expanded-css --doc append_scoped
 host=(-p vize_atelier_sfc --features native-scoped-scss)
 editor=(-p vize_maestro --features experimental-scss-definitions)
 cargo clippy "${flags[@]}" -p vize_l1_to_l2 --features component-text-condense --lib --no-deps -- -D warnings

@@ -6,6 +6,12 @@ on {
     paths = new Listing {
       ".github/workflows/style-module-products.yml"
       ".github/scripts/workflows/style-module-products/**"
+      "davinci/vize_l0/Cargo.toml"
+      "davinci/vize_l0/src/line_index.rs"
+      "davinci/vize_l0/src/line_index/lsp_breaks.rs"
+      "davinci/vize_l0/src/line_index/lsp_breaks/**"
+      "davinci/vize_l0/src/line_index/line_breaks.rs"
+      "davinci/vize_l0/tests/lsp_line_breaks.rs"
       "davinci/vize_l1/Cargo.toml"
       "davinci/vize_l1/src/container/lang.rs"
       "davinci/vize_l1/src/css.rs"
@@ -26,10 +32,14 @@ on {
       "crates/vize_maestro/src/ide/completion/template/css_modules/**"
       "davinci/vize_l1_to_l2/**"
       "davinci/vize_l2/Cargo.toml"
+      "davinci/vize_l2/src/lib.rs"
+      "davinci/vize_l2/src/style.rs"
       "davinci/vize_l2/src/lang/mod.rs"
       "davinci/vize_l2/src/lang/scss.rs"
       "davinci/vize_l2/src/lang/scss/**"
       "davinci/vize_l4/Cargo.toml"
+      "davinci/vize_l4/src/targets/css_rules.rs"
+      "davinci/vize_l4/tests/expanded_css.rs"
       "davinci/vize_l4/src/targets.rs"
       "davinci/vize_l4/src/targets/scss.rs"
       "crates/vize_atelier_sfc/Cargo.toml"
@@ -192,6 +202,22 @@ jobs {
       new Dynamic {
         name = "Verify source positions and style attributes for arbitrary finite input"
         run = ci.workflowScript("verify-source-coordinates-and-style-headers.sh")
+      }
+    }
+  }
+
+  `nearest-line-starts` {
+    name = "Prove nearest LSP line starts on ARM64"
+    `runs-on` = "blacksmith-32vcpu-ubuntu-2404-arm"
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"
+        with {
+          `kani-version` = "0.68.0"
+          args = "--manifest-path davinci/vize_l0/Cargo.toml --features lsp-line-break-search --tests --lib --harness nearest_lsp_line_starts_match_every_short_byte_slice --output-format=terse"
+        }
       }
     }
   }

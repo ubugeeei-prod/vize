@@ -66,6 +66,11 @@ function workflowRunnerLabels(
   assert.ok(isRecord(workflow) && isRecord(workflow.jobs), "workflow must define jobs");
   return Object.entries(workflow.jobs).flatMap(([id, value]) => {
     assert.ok(isRecord(value), "workflow job must be a mapping");
+    if (file === "style-module-products.yml" && id === "nearest-line-starts") {
+      // Kani's ARM64 binary requires glibc 2.39. The x86 byte search uses CPUID.
+      assert.equal(value["runs-on"], "blacksmith-32vcpu-ubuntu-2404-arm", id);
+      return [];
+    }
     if (hostedJobs.includes(id)) {
       assert.equal(value["runs-on"], hostedZeroComputeRunner, id);
       return [];
@@ -138,6 +143,24 @@ jobs:
     workflowRunnerLabels(source).filter((runner) => !approvedRunnerLabels.has(runner)),
     ["blacksmith-8vcpu-ubuntu-2404"],
   );
+});
+
+test("the line-start proof requires its Linux ARM64 runner", () => {
+  const file = "style-module-products.yml";
+  const runner = "blacksmith-32vcpu-ubuntu-2404-arm";
+  const job = (id: string, label: string) => `jobs:\n  ${id}:\n    runs-on: ${label}\n`;
+  assert.deepEqual(workflowRunnerLabels(job("nearest-line-starts", runner), [], file), []);
+  assert.throws(
+    () => workflowRunnerLabels(job("nearest-line-starts", "ubuntu-22.04-arm"), [], file),
+    /nearest-line-starts/u,
+  );
+  for (const [filename, id] of [
+    [file, "scss-products"],
+    ["other.yml", "nearest-line-starts"],
+  ] as const) {
+    assert.deepEqual(workflowRunnerLabels(job(id, runner), [], filename), [runner]);
+  }
+  assert.equal(approvedRunnerLabels.has(runner), false);
 });
 
 test("only reviewed planner conditions may route a job to hosted Ubuntu", () => {

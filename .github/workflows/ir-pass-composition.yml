@@ -22,6 +22,9 @@ on:
       - crates/vize_maestro/src/source_project/template/**
       - crates/vize_maestro/src/source_project/query.rs
       - crates/vize_maestro/tests/original_template_requests.rs
+      - crates/vize_maestro/src/source_project/scoped_component.rs
+      - crates/vize_maestro/tests/original_template_requests/**
+      - crates/vize_maestro/tests/component_tool_passes.rs
       - crates/vize_patina/Cargo.toml
       - crates/vize_patina/src/rules/facts/max_template_complexity.rs
       - crates/vize_patina/src/rules/facts/max_template_complexity/**

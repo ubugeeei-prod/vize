@@ -127,10 +127,10 @@ pub(crate) fn emit<'o, 'a: 'o, L: LinkSink>(
             }
             #[cfg(feature = "native-scoped-scss")]
             if let Some(id) = scoped {
-                vize_l4::targets::scss::append_scoped(&mut output, program, id, trim);
+                vize_l4::targets::css_rules::append_scoped(&mut output, program, id, trim);
                 continue;
             }
-            vize_l4::targets::scss::append(&mut output, program);
+            vize_l4::targets::css_rules::append(&mut output, program);
             continue;
         }
         if original.attrs().iter().any(|attr| attr.name == "scoped") {

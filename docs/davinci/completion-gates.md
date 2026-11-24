@@ -142,3 +142,5 @@ are not committed here; the tool prints them.
 ## Supplemental mathematical reference, 2026-11-23
 
 The standalone UTF-16 theorem proves coordinate addition for finite sequences of Unicode scalar widths. The compiled Rust kernel owns the arithmetic and Kani checks it on machine words. The completion gate recognizes the exact theorem path only when both Rust files are present. The coordinate CI job executes both proofs. [Coordinate theorem](../../tests/formal/source-map/Coordinates.lean) · [Rust verification](../../davinci/vize_l4/src/write/source_map/indexed/kani.rs)
+
+For any finite sequence of byte classes, Lean proves that the forward and reverse searches return the first and last line starts after a line ending. This includes CRLF and excludes the iterator's initial zero. Kani checks both Rust searches on every byte slice up to length four and compares the LSP iterator on all valid UTF-8 slices within that bound. [Line-break theorems](../../tests/formal/source-map/LineBreaks.lean) · [Rust harness](../../davinci/vize_l0/src/line_index/lsp_breaks/kani.rs)
