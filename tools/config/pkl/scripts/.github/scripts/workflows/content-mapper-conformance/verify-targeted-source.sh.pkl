@@ -4,6 +4,6 @@ interpreter = "bash"
 
 commands {
   #"""
-  test "$TRANSACTIONS_OUTCOME" = success
+  test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
   """#
 }

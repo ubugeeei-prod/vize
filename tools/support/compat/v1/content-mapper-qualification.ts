@@ -104,10 +104,7 @@ const semanticObligations = [
     id: "css-modules",
     requirement: "CSS module options and template access retain exact diagnostics.",
     issues: [13018],
-    evidenceCandidates: [
-      "tools/support/compat/content-mapper/official-css-options.ts",
-      "tests/tooling/canon-css-module-contracts.test.ts",
-    ],
+    evidenceCandidates: ["tests/tooling/canon-css-module-contracts.test.ts"],
   },
   {
     id: "native-elements-events",

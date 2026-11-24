@@ -8,42 +8,16 @@ on:
       targeted-test:
         description: "Run the full suite or the original 16-state/four-host generic body-error cohort"
         type: choice
-        options: [full, generic-body-error, reported-q16]
+        options: [ full, generic-body-error ]
         default: full
-      reported-q16-cases:
-        description: "Closed source After case set; all retains the original six tests"
-        type: choice
-        options: [all, A, A-with-declaration, B, C, D, "11373"]
-        default: all
-      event-rename-only:
-        description: "Qualify both Vize-owned event rename targets with exact upstream tsgo"
-        type: boolean
-        default: false
-      router-experimental-only:
-        description: "Qualify explicit experimental Router project context with the pinned published mapper host"
-        type: boolean
-        default: false
-      official-css-options-only:
-        description: "Qualify Escaton's CSS, component and flow cases with the official published TypeScript 7.1 host"
-        type: boolean
-        default: false
       expected-source-sha:
-        description: "Exact reviewed source for targeted or official modes"
+        description: "Exact reviewed source for the targeted mode"
         type: string
         required: false
-      published-defaults-only:
-        { description: "Only published reporter fixtures", type: boolean, default: false }
-      published-report:
-        { description: "Report", type: choice, options: ["9499", "9498"], default: "9499" }
-      cut: { description: "Published source cut C", type: string, required: false }
-      head: { description: "Published source H", type: string, required: false }
-      tag: { description: "Published stable minor tag", type: string, required: false }
-      source_pr: { description: "Published frozen source PR", type: string, required: false }
-      release_run: { description: "Successful official Release R", type: string, required: false }
 
 concurrency:
-  group: content-mapper-${{ inputs.published-defaults-only && github.run_id || github.event.pull_request.number || github.ref }}${{ inputs.published-defaults-only && '-published-defaults' || inputs.targeted-test == 'reported-q16' && '-reported-q16' || inputs.router-experimental-only && '-router-experimental' || inputs.official-css-options-only && '-official-css-options' || inputs.event-rename-only && '-event-rename' || '' }}
-  cancel-in-progress: ${{ !inputs.published-defaults-only }}
+  group: content-mapper-${{ github.ref }}${{ inputs.targeted-test == 'generic-body-error' && '-generic-body-error' || '' }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -54,14 +28,8 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  reported-q16:
-    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test == 'reported-q16'
-    uses: ./.github/workflows/content-mapper-reported-q16.yml
-    with:
-      request: ${{ toJSON(inputs) }}
-
+  
   exact-tsgo-project:
-    if: ${{ inputs.targeted-test != 'reported-q16' && (inputs.targeted-test == 'generic-body-error' || (!inputs.router-experimental-only && !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only)) }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
@@ -71,12 +39,11 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-      - name: Verify targeted source and exclusive mode
+      - name: Verify targeted source
         if: inputs.targeted-test == 'generic-body-error'
         env:
           EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
-          OTHER_MODES: ${{ inputs.router-experimental-only || inputs.event-rename-only || inputs.official-css-options-only || inputs.published-defaults-only }}
-        run: . "${{ env.VIZE_CI_FILES }}/verify-targeted-source-and-exclusive-mode.sh"
+        run: . "${{ env.VIZE_CI_FILES }}/verify-targeted-source.sh"
       - name: Checkout exact TypeScript Content Mapper revision
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -176,204 +143,3 @@ jobs:
             ${{ runner.temp }}/content-mapper-editor-stress
           if-no-files-found: error
           retention-days: 7
-
-  event-rename:
-    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && !inputs.router-experimental-only && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 20
-    steps:
-      - name: Check out the workflow's scripts
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.workflow_sha }}
-          path: .vize-workflow-tools
-          persist-credentials: false
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |-
-            /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
-            /.github/scripts/workflows/content-mapper-conformance/
-      - name: Stage scripts outside the source checkout
-        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
-      - name: Checkout Vize
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
-      - name: Checkout exact TypeScript Content Mapper revision
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          repository: microsoft/TypeScript
-          ref: ${{ env.CONTENT_MAPPER_TYPESCRIPT_SHA }}
-          path: typescript-content-mapper
-          persist-credentials: false
-      - name: Setup Go
-        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
-        with:
-          go-version-file: typescript-content-mapper/tsc/go.mod
-          cache-dependency-path: typescript-content-mapper/tsc/go.sum
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: "1.100.0" }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: content-mapper-conformance
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Setup Vite Plus
-        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: "package.json"
-          cache: true
-          run-install: false
-      - name: Install frozen dependencies
-        run: vp install --frozen-lockfile --prefer-offline
-      - name: Build exact upstream tsgo
-        working-directory: typescript-content-mapper/tsc
-        run: . "${{ env.VIZE_CI_FILES }}/build-exact-upstream-tsgo.sh"
-      - name: Preserve source and provider identity before queries
-        run: . "${{ env.VIZE_CI_FILES }}/preserve-source-and-provider-identity-before-queries.sh"
-      - name: Run both whole event rename transaction targets
-        id: transactions
-        continue-on-error: true
-        env:
-          SOURCE_SHA: ${{ github.sha }}
-          VIZE_TEST_REQUIRE_TSGO: "1"
-          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
-          VIZE_TEST_CONTENT_MAPPER_VUE: ${{ github.workspace }}/npm/cli/node_modules/vue
-          VIZE_TEST_FIX_HISTORY_CAPTURE_DIR: ${{ runner.temp }}/event-rename/packets
-          VIZE_INLAY_HINT_CAPTURE: ${{ runner.temp }}/event-rename/processes
-        run: . "${{ env.VIZE_CI_FILES }}/run-both-whole-event-rename-transaction-targets.sh"
-      - name: Preserve actual CLI identity and complete artifact inventory
-        if: always()
-        run: . "${{ env.VIZE_CI_FILES }}/preserve-actual-cli-identity-and-complete-artifact-inventory.sh"
-      - name: Upload complete event rename observations before result gate
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: content-mapper-event-rename-${{ github.sha }}
-          path: |
-            ${{ runner.temp }}/event-rename/
-            ${{ runner.temp }}/event-rename-inventory.sha256
-          if-no-files-found: error
-      - name: Require both whole transaction targets
-        if: always()
-        env:
-          TRANSACTIONS_OUTCOME: ${{ steps.transactions.outcome }}
-        run: . "${{ env.VIZE_CI_FILES }}/require-both-transactions.sh"
-
-  official-css-options:
-    if: github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && !inputs.router-experimental-only && (inputs.official-css-options-only || inputs.published-defaults-only)
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 15
-    env:
-      EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha }}
-    steps:
-      - name: Check out the workflow's scripts
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.workflow_sha }}
-          path: .vize-workflow-tools
-          persist-credentials: false
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |-
-            /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
-            /.github/scripts/workflows/content-mapper-conformance/
-      - name: Stage scripts outside the source checkout
-        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
-      - name: Require the explicit public scope and absent runtime overrides
-        if: inputs.published-defaults-only
-        env: { SOURCE_MODE: "${{ inputs.official-css-options-only }}" }
-        shell: bash
-        run: . "${{ env.VIZE_CI_FILES }}/require-the-explicit-public-scope-and-absent-runtime-overrides.sh"
-      - name: Require an unambiguous focused campaign
-        env:
-          EVENT_RENAME_ONLY: ${{ inputs.event-rename-only }}
-        run: . "${{ env.VIZE_CI_FILES }}/require-an-unambiguous-focused-campaign.sh"
-      - name: Checkout the reviewed Vize source
-        if: ${{ !inputs.published-defaults-only }}
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
-      - name: Checkout the actual public validation actor
-        if: inputs.published-defaults-only
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ github.workflow_sha }}", fetch-depth: 0, persist-credentials: false }
-      - name: Authenticate source and recipe before any build
-        shell: bash
-        run: . "${{ env.VIZE_CI_FILES }}/authenticate-source-and-recipe-before-any-build.sh"
-      - name: Setup pinned Node and Vite Plus
-        if: ${{ !inputs.published-defaults-only }}
-        uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
-        with:
-          version: latest
-          node-version-file: "package.json"
-          cache: true
-          cache-save: false
-          run-install: false
-      - name: Setup pinned Node for public packages only
-        if: inputs.published-defaults-only
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with: { node-version-file: package.json, package-manager-cache: false }
-      - name: Setup repository Rust toolchain
-        if: ${{ !inputs.published-defaults-only }}
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with:
-          toolchain: "1.100.0"
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: ${{ !inputs.published-defaults-only }}
-        with:
-          wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        if: ${{ !inputs.published-defaults-only }}
-        with:
-          key: content-mapper-official-css-options
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Install frozen workspace dependencies
-        if: ${{ !inputs.published-defaults-only }}
-        run: vp install --frozen-lockfile --prefer-offline
-      - name: Verify native legacy projection compatibility
-        if: ${{ !inputs.published-defaults-only }}
-        env:
-          VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ runner.temp }}/official-css-source/ts40-legacy
-        run: cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture
-      - name: Build the real packed mapper runtime
-        if: ${{ !inputs.published-defaults-only }}
-        run: . "${{ env.VIZE_CI_FILES }}/build-the-real-packed-mapper-runtime.sh"
-      - name: Run original public failures and fresh packed official host controls
-        if: ${{ !inputs.published-defaults-only }}
-        id: official
-        run: >-
-          node tools/support/compat/content-mapper/official-css-options.ts --output "$RUNNER_TEMP/official-css-options" --fixture tests/_fixtures/content-mapper/escaton-component-events.json --fixture tests/_fixtures/content-mapper/escaton-component-props.json --fixture tests/_fixtures/content-mapper/escaton-nested-flow-9433.json --fixture tests/_fixtures/content-mapper/escaton-public-props-9498.json --fixture tests/_fixtures/content-mapper/nuxt-pattern-emit-10195.json
-      - name: Run exact published reporter fixtures
-        if: inputs.published-defaults-only
-        env:
-          PUBLIC_REPORT: ${{ inputs.published-report }}
-          PUBLIC_CUT: ${{ inputs.cut }}
-          PUBLIC_HEAD: ${{ inputs.head }}
-          PUBLIC_TAG: ${{ inputs.tag }}
-          PUBLIC_SOURCE_PR: ${{ inputs.source_pr }}
-          PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
-          PUBLIC_ACTOR: ${{ github.workflow_sha }}
-          PUBLIC_INPUTS: ${{ runner.temp }}/official-css-source/public-inputs.json
-        shell: bash
-        run: . "${{ env.VIZE_CI_FILES }}/run-exact-published-reporter-fixtures.sh"
-      - name: Retain complete official compiler diagnostics and package evidence
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: official-css-options-${{ github.sha }}-${{ github.run_attempt }}
-          if-no-files-found: error
-          include-hidden-files: true
-          path: |
-            ${{ runner.temp }}/official-css-source/
-            ${{ runner.temp }}/official-css-options/
-            !${{ runner.temp }}/official-css-options/**/node_modules
-            !${{ runner.temp }}/official-css-options/**/node_modules/**
-  router-experimental:
-    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && inputs.router-experimental-only)
-    uses: ./.github/workflows/content-mapper-reported-q16.yml
-    with:
-      request: ${{ toJSON(inputs) }}

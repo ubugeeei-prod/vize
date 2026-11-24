@@ -1,8 +1,2 @@
 #!/usr/bin/env bash
 cat benchmark-summary.md >> "$GITHUB_STEP_SUMMARY"
-if [[ -f patina-project-batch/summary.md ]]; then
-  cat patina-project-batch/summary.md >> "$GITHUB_STEP_SUMMARY"
-fi
-if [[ -f patina-plain-type-packets/summary.md ]]; then
-  cat patina-plain-type-packets/summary.md >> "$GITHUB_STEP_SUMMARY"
-fi

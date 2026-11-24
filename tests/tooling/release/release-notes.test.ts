@@ -295,8 +295,16 @@ test("the workflow publishes only the prepared body for the release tag commit",
     new URL("../../../.github/workflows/release-contracts.yml", import.meta.url),
     "utf8",
   );
-  assert.ok(preflight.includes("          tests/tooling/release/release-notes.test.ts\n"));
-  assert.ok(preflight.includes("          tests/tooling/drop-in-claim-scope.test.ts\n"));
+  const preflightTests = readFileSync(
+    new URL(
+      "../../../.github/scripts/workflows/release-contracts/test-release-pipeline.sh",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.ok(preflight.includes("test-release-pipeline.sh"));
+  assert.ok(preflightTests.includes("  tests/tooling/release/release-notes.test.ts \\\n"));
+  assert.ok(preflightTests.includes("  tests/tooling/drop-in-claim-scope.test.ts \\\n"));
   for (const input of [
     ".github/workflows/release*.yml",
     ".github/release-notes/drop-in-scope.md",

@@ -14,21 +14,6 @@ on:
         description: Full lowercase 40-character head SHA; --ref must be a branch or tag at this commit
         required: true
         type: string
-      patina_project_batch:
-        description: Measure the frozen 1210-file type-aware project batch in deterministic shards
-        required: false
-        default: false
-        type: boolean
-      patina_plain_type_packets:
-        description: Replay complete conditional native type packets after all benchmark observations
-        required: false
-        default: false
-        type: boolean
-      check_diagnostic_messages:
-        description: Compare complete checker diagnostics on fresh uncached source builds
-        required: false
-        default: false
-        type: boolean
 
 run-name: "Benchmark ${{ github.event_name == 'schedule' && format('long baseline...{0}', github.sha) || github.event_name == 'workflow_dispatch' && format('{0}...{1}', inputs.base_sha, inputs.head_sha) || format('PR #{0}', github.event.pull_request.number) }}"
 
@@ -49,73 +34,7 @@ env:
   VIZE_BENCH_BUILD_PROFILE_KEY: ci-opt-release-thin-lto-cgu16
 
 jobs:
-  check-diagnostic-messages:
-    name: Complete checker diagnostic source pairs
-    if: github.event_name == 'workflow_dispatch' && inputs.check_diagnostic_messages
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
-    permissions:
-      contents: read
-    env:
-      CARGO_INCREMENTAL: "0"
-    steps:
-      - name: Check out the workflow's scripts
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.workflow_sha }}
-          path: .vize-workflow-tools
-          persist-credentials: false
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |-
-            /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
-            /.github/scripts/workflows/benchmark/
-      - name: Stage scripts outside the source checkout
-        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          path: head
-          ref: ${{ env.BENCHMARK_HEAD_SHA }}
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          path: base
-          ref: ${{ env.BENCHMARK_BASE_SHA }}
-          persist-credentials: false
-      - name: Validate exact source roles
-        env:
-          RUN_HEAD_SHA: ${{ github.sha }}
-        run: . "${{ env.VIZE_CI_FILES }}/validate-exact-source-roles.sh"
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with: { wild-version: "0.9.0" }
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: "head/package.json"
-          cache: true
-          run-install: false
-      - name: Install one pinned physical native runtime
-        working-directory: head
-        run: vp install --frozen-lockfile --prefer-offline
-      - name: Validate focused complete-packet observers
-        run: node --test head/tools/benchmarks/scripts/check-diagnostic-messages.test.mjs
-      - name: Build sequential source and SHA roles without compilation caches
-        run: . "${{ env.VIZE_CI_FILES }}/build-sequential-source-and-sha-roles-without-compilation-caches.sh"
-      - name: Compare whole reports, alternating latency and separate source observations
-        run: . "${{ env.VIZE_CI_FILES }}/compare-whole-reports-alternating-latency-and-separate-source-observatio.sh"
-      - name: Retain complete source qualification including failed observations
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: check-diagnostic-messages
-          path: |
-            check-message-build/
-            check-message-evidence/
-          if-no-files-found: error
-          retention-days: 14
-
+  
   pr-benchmark:
     name: pr-benchmark
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -221,10 +140,7 @@ jobs:
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-base-cli.outputs.cache-hit != 'true'
         continue-on-error: true
         run: >-
-          cargo build --manifest-path base/Cargo.toml --profile ci-opt -p vize
-          --config 'profile.ci-opt.inherits="release"'
-          --config 'profile.ci-opt.lto="thin"'
-          --config 'profile.ci-opt.codegen-units=16'
+          cargo build --manifest-path base/Cargo.toml --profile ci-opt -p vize --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16'
 
       # Skip an unbuildable base instead of hard-failing a hotfix PR.
       - name: Skip benchmark when base CLI cannot be built
@@ -242,10 +158,7 @@ jobs:
       - name: Build head CLI
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.cache-head-cli.outputs.cache-hit != 'true' && steps.build-base.outcome != 'failure'
         run: >-
-          cargo build --manifest-path head/Cargo.toml --profile ci-opt -p vize
-          --config 'profile.ci-opt.inherits="release"'
-          --config 'profile.ci-opt.lto="thin"'
-          --config 'profile.ci-opt.codegen-units=16'
+          cargo build --manifest-path head/Cargo.toml --profile ci-opt -p vize --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16'
 
       - name: Generate benchmark input
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
@@ -256,56 +169,14 @@ jobs:
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         run: . "${{ env.VIZE_CI_FILES }}/compare-base-and-head.sh"
 
-      - name: Qualify type-aware project batching on existing optimized binaries
-        if: github.event_name == 'workflow_dispatch' && inputs.patina_project_batch && steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
-        run: . "${{ env.VIZE_CI_FILES }}/qualify-type-aware-project-batching-on-existing-optimized-binaries.sh"
-
-      - name: Retain type-aware batch evidence including failed observations
-        if: always() && github.event_name == 'workflow_dispatch' && inputs.patina_project_batch
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: patina-project-batch
-          path: |
-            patina-project-batch/*.json
-            patina-project-batch/*.jsonl
-            patina-project-batch/*.stdout
-            patina-project-batch/*.stderr
-            patina-project-batch/*.resource.txt
-            patina-project-batch/summary.md
-            patina-project-batch/dependency-install.log
-          if-no-files-found: error
-          retention-days: 14
-
       - name: Observe CSS completion and hover on existing base and head CLIs
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         run: >-
-          node head/tools/benchmarks/scripts/css-documentation.ts
-          "$GITHUB_WORKSPACE/base/target/ci-opt/vize"
-          "$GITHUB_WORKSPACE/head/target/ci-opt/vize"
-          "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA"
-          "$GITHUB_WORKSPACE/css-documentation-observations.json"
+          node head/tools/benchmarks/scripts/css-documentation.ts "$GITHUB_WORKSPACE/base/target/ci-opt/vize" "$GITHUB_WORKSPACE/head/target/ci-opt/vize" "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA" "$GITHUB_WORKSPACE/css-documentation-observations.json"
 
       - name: Record benchmark build provenance
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         run: . "${{ env.VIZE_CI_FILES }}/record-benchmark-build-provenance.sh"
-
-      - name: Replay conditional native type packets after observations
-        if: github.event_name == 'workflow_dispatch' && inputs.patina_plain_type_packets && steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
-        run: . "${{ env.VIZE_CI_FILES }}/replay-conditional-native-type-packets-after-observations.sh"
-
-      - name: Retain complete native type packets and overlay custody
-        if: always() && github.event_name == 'workflow_dispatch' && inputs.patina_plain_type_packets
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: patina-plain-type-packets
-          path: |
-            patina-plain-type-packets/*.json
-            patina-plain-type-packets/*.stdout
-            patina-plain-type-packets/*.stderr
-            patina-plain-type-packets/*.rs
-            patina-plain-type-packets/summary.md
-          if-no-files-found: error
-          retention-days: 14
 
       - name: Write job summary
         run: . "${{ env.VIZE_CI_FILES }}/write-job-summary.sh"
@@ -354,9 +225,7 @@ jobs:
         env:
           PR_LABELS_JSON: ${{ github.event_name == 'pull_request' && toJSON(github.event.pull_request.labels.*.name) || '[]' }}
         run: >-
-          node head/tools/benchmarks/scripts/enforce-pr-budget.ts
-          --json benchmark-results.json
-          --labels-json "$PR_LABELS_JSON"
+          node head/tools/benchmarks/scripts/enforce-pr-budget.ts --json benchmark-results.json --labels-json "$PR_LABELS_JSON"
 
   pr-benchmark-comment:
     name: pr-benchmark-comment

@@ -1,52 +1,27 @@
 {
   "content-mapper-conformance": {
     "before": "af3a0c9c81dd1a48f790ea66feced0945e59278eeb8f063a67b83cab62ef4cc1",
-    "workflow": "49691173b9e7115b74cb72915b0ebb1b335a17bdab96207cd30bf5b841c3fdae",
+    "workflow": "4ed94ca52b4acf15b1124410427c39b4a74b0cb7723c2b9a5936a01a059f2d40",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
-      ".github/scripts/workflows/content-mapper-conformance/authenticate-source-and-recipe-before-any-build.sh",
       ".github/scripts/workflows/content-mapper-conformance/build-exact-upstream-tsgo.sh",
       ".github/scripts/workflows/content-mapper-conformance/build-packed-content-mapper-runtime.sh",
-      ".github/scripts/workflows/content-mapper-conformance/build-the-real-packed-mapper-runtime.sh",
-      ".github/scripts/workflows/content-mapper-conformance/preserve-actual-cli-identity-and-complete-artifact-inventory.sh",
-      ".github/scripts/workflows/content-mapper-conformance/preserve-source-and-provider-identity-before-queries.sh",
-      ".github/scripts/workflows/content-mapper-conformance/require-an-unambiguous-focused-campaign.sh",
-      ".github/scripts/workflows/content-mapper-conformance/require-both-transactions.sh",
-      ".github/scripts/workflows/content-mapper-conformance/require-the-explicit-public-scope-and-absent-runtime-overrides.sh",
       ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.sh",
       ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.ts",
       ".github/scripts/workflows/content-mapper-conformance/run-authored-syntax-and-setup-binding-conformance.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-both-whole-event-rename-transaction-targets.sh",
       ".github/scripts/workflows/content-mapper-conformance/run-content-mapper-lsp-and-virtual-overlay-editor-checks.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-exact-published-reporter-fixtures.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-exact-published-reporter-fixtures.ts",
       ".github/scripts/workflows/content-mapper-conformance/run-importer-scoped-package-resolution-matrix.sh",
       ".github/scripts/workflows/content-mapper-conformance/run-standard-project-and-declaration-conformance.sh",
       ".github/scripts/workflows/content-mapper-conformance/run-standard-tsgo-through-fresh-installed-package-tarballs.sh",
       ".github/scripts/workflows/content-mapper-conformance/run-ts-40-current-projection-baselines.sh",
-      ".github/scripts/workflows/content-mapper-conformance/select-published-fixture.ts",
       ".github/scripts/workflows/content-mapper-conformance/stress-every-editor-case-against-its-exact-native-provider.sh",
       ".github/scripts/workflows/content-mapper-conformance/stress-every-editor-case-against-its-exact-native-provider.ts",
-      ".github/scripts/workflows/content-mapper-conformance/verify-targeted-source-and-exclusive-mode.sh",
+      ".github/scripts/workflows/content-mapper-conformance/verify-targeted-source.sh",
       ".github/scripts/workflows/content-mapper-conformance/verify-upstream-content-mapper-protocol-regressions.sh",
       ".github/scripts/workflows/shared/files.ts"
     ],
-    "closure": "8c654f2524bc121ffdbed715add903991c69ea499f6f9df9eb415cb2d3cdeaf2"
-  },
-  "content-mapper-reported-q16": {
-    "before": "bb8b00e008a1401a72d8993c56b1511e54d52e398106ed65fb7c12ff2877f904",
-    "workflow": "6099319a5bf1d33a94989b73f315fc78613dcb13d7ac8ddc60aa0df924d8073c",
-    "programs": [
-      ".github/scripts/workflows/content-mapper-reported-q16/build-source-cli.sh",
-      ".github/scripts/workflows/content-mapper-reported-q16/initialize-runner-local-joint-evidence-paths.sh",
-      ".github/scripts/workflows/content-mapper-reported-q16/install-the-exact-report-host-and-oracle-versions-and-retain-the-generat.sh",
-      ".github/scripts/workflows/content-mapper-reported-q16/install-the-pinned-published-mapper-host.sh",
-      ".github/scripts/workflows/content-mapper-reported-q16/require-every-independent-router-qualification-result.sh",
-      ".github/scripts/workflows/content-mapper-reported-q16/require-the-exact-requested-source.sh",
-      ".github/scripts/workflows/content-mapper-reported-q16/test-immutable-project-context-and-batch-preservation.sh"
-    ],
-    "closure": "4724abbdcdf29974d6e894acf3dcd49a7e1f41e34482ec7ae78df851de2be394"
+    "closure": "156986ddedb06d69d44aa4df3e1ffa466082ada89c47afd0efaf14b2a8b236e7"
   },
   "native-smoke": {
     "before": "dfcea2b5fd581d6e18d08cbefdbdbda26a46dd63df02dc672a7ae13cfcc7f9c0",
@@ -80,20 +55,12 @@
   },
   "release-contracts": {
     "before": "09b8a95b6712a565f5ce782707bf0409189aabf30127b968efcdfce76eac47c3",
-    "workflow": "346fd38408d7089310f59c5bb5f630920107ec95f43c8552cba6b10c7408b654",
+    "workflow": "dd4cfd52c62a1d5caf48fba5f1c199c671a4ff00c804e0bfef8a077255f7601b",
     "programs": [
-      ".github/scripts/workflows/release-contracts/prove-the-candidate-contains-the-required-icon-source.sh",
-      ".github/scripts/workflows/release-contracts/prove-the-candidate-contains-the-required-icon-source.ts",
-      ".github/scripts/workflows/release-contracts/prove-the-immutable-tag-contains-the-merged-public-instance-change.sh",
-      ".github/scripts/workflows/release-contracts/prove-the-immutable-tag-contains-the-merged-public-instance-change.ts",
-      ".github/scripts/workflows/release-contracts/prove-the-known-public-source-for-the-isolated-host-capability.sh",
-      ".github/scripts/workflows/release-contracts/prove-the-known-public-source-for-the-isolated-host-capability.ts",
-      ".github/scripts/workflows/release-contracts/qualify-fresh-public-custom-properties-and-authored-directive-ownership.sh",
-      ".github/scripts/workflows/release-contracts/validate-the-explicit-public-candidate.sh",
-      ".github/scripts/workflows/release-contracts/validate-the-explicit-public-candidate.ts",
+      ".github/scripts/workflows/release-contracts/test-release-pipeline.sh",
       ".github/scripts/workflows/shared/files.ts"
     ],
-    "closure": "079adba67440b7e3c7cac19da92188ccee8440de16bb74876b2c72788cc7be35"
+    "closure": "f178af2429deae6021cfce00adee6e2325448065df39e1b6a19efb2c4786f955"
   },
   "language-project-fixtures": {
     "before": "b65d5501a7657919f10949f6b721967460dfa76d1bc24c95d53cc2eaf153374a",
