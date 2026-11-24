@@ -11,6 +11,11 @@ import { vize } from "./plugin/index.ts";
 
 const require = createRequire(import.meta.url);
 
+// Every case starts its own server on the same default port. A kept-alive
+// connection would reach for the previous case's closed server, now that the
+// next one starts without compiling first.
+const freshConnection = { headers: { connection: "close" } };
+
 const scenarios = [
   { name: "template only", script: "", selfAccepting: false },
   {
@@ -46,6 +51,7 @@ for (const { dialect, scenario } of ["pug", "jade", "JADE"].flatMap((dialect) =>
         server: { host: "127.0.0.1", port: 0 },
       });
       let timer: ReturnType<typeof setTimeout> | undefined;
+      let retry: ReturnType<typeof setInterval> | undefined;
       let watcherChanged = false;
       const packets: HMRPayload[] = [];
       const onChange = (file: string) => {
@@ -57,7 +63,7 @@ for (const { dialect, scenario } of ["pug", "jade", "JADE"].flatMap((dialect) =>
         const address = server.httpServer?.address();
         assert(address && typeof address === "object");
         const url = `http://127.0.0.1:${address.port}/Card.vue`;
-        const first = await fetch(url);
+        const first = await fetch(url, freshConnection);
         assert.equal(first.status, 200);
         assert.match(await first.text(), /First/);
         const client = server.environments.client;
@@ -123,7 +129,14 @@ for (const { dialect, scenario } of ["pug", "jade", "JADE"].flatMap((dialect) =>
             if (matchesOwner(payload)) resolve(payload);
           };
         });
-        fs.writeFileSync(partial, "p.second Second\n");
+        // A watcher can list a file before its event stream delivers, and the
+        // server no longer compiles for a while before this edit. Write until
+        // the watcher reports it.
+        const edit = () => fs.writeFileSync(partial, "p.second Second\n");
+        edit();
+        retry = setInterval(() => {
+          if (!watcherChanged) edit();
+        }, 250);
         const packet = await update;
         if (scenario.selfAccepting) assert.equal(packet.type, "update");
         assert.equal(ownerInvalidated(), true, "the exact owning graph module must be invalidated");
@@ -147,13 +160,14 @@ for (const { dialect, scenario } of ["pug", "jade", "JADE"].flatMap((dialect) =>
           false,
         );
         assert.equal(watcherChanged, true, "the actual include watcher event must precede HMR");
-        const second = await fetch(url);
+        const second = await fetch(url, freshConnection);
         assert.equal(second.status, 200);
         const code = await second.text();
         assert.match(code, /Second/);
         assert.doesNotMatch(code, /First/);
       } finally {
         if (timer) clearTimeout(timer);
+        clearInterval(retry);
         server.watcher.off("change", onChange);
         await server.close();
         fs.rmSync(root, { recursive: true, force: true });

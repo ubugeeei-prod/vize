@@ -22,10 +22,22 @@ const missingBlock = [
 ];
 const repaired = "<template><p>implemented</p></template>\n";
 
+const everySfc = ["**/*.vue"];
+// The startup scan is opt-in. Without it, a file nothing imports is never compiled.
+const startupCases = (["build", "serve"] as const).flatMap((command) => [
+  { command, scanPatterns: everySfc },
+  { command, scanPatterns: undefined },
+]);
+
 void test("reported unimported SFC diagnostics defer in build and serve, imports remain strict", async () => {
-  for (const command of ["build", "serve"] as const) {
+  for (const { command, scanPatterns } of startupCases) {
     const project = reportedProject(11375);
-    const host = await startupHost(project.root, { plugins: vize({ configMode: false }) }, command);
+    const host = await startupHost(
+      project.root,
+      { plugins: vize({ configMode: false, scanPatterns }) },
+      command,
+    );
+    const label = scanPatterns ? command : `${command}-unscanned`;
     try {
       const start = await observeConsole(() => host.start());
       const imports = [
@@ -33,15 +45,20 @@ void test("reported unimported SFC diagnostics defer in build and serve, imports
         await observeConsole(() => host.load(project.file("src/Placeholder.vue"), true)),
       ];
       const app = await observeConsole(() => host.load(project.file("src/App.vue")));
-      retainObservation(command, { fixture: project.fixture, start, imports, app });
+      retainObservation(label, { fixture: project.fixture, start, imports, app });
       assert.equal(start.error, null);
       const message = formatCompileErrorMessage(project.file("src/Placeholder.vue"), missingBlock);
-      assert.deepEqual(start.calls.warn, [
-        [
-          "[vize]",
-          `[vize] Pre-compilation failed for 1 file(s).\n\n${message}\nStartup scan diagnostics are deferred until import.`,
-        ],
-      ]);
+      assert.deepEqual(
+        start.calls.warn,
+        scanPatterns
+          ? [
+              [
+                "[vize]",
+                `[vize] Pre-compilation failed for 1 file(s).\n\n${message}\nStartup scan diagnostics are deferred until import.`,
+              ],
+            ]
+          : [],
+      );
       for (const imported of imports) {
         assert.ok(imported.error instanceof VizeSfcCompileError);
         assert.equal(imported.error.message, message);
@@ -55,7 +72,7 @@ void test("reported unimported SFC diagnostics defer in build and serve, imports
         await observeConsole(() => host.load(project.file("src/Placeholder.vue"), false)),
         await observeConsole(() => host.load(project.file("src/Placeholder.vue"), true)),
       ];
-      retainObservation(`${command}-repair`, repairedImports);
+      retainObservation(`${label}-repair`, repairedImports);
       for (const imported of repairedImports) {
         assert.equal(imported.error, null);
         assert.ok(imported.value);
@@ -135,7 +152,7 @@ void test("SSR buildStart precompiles into the SSR cache and transform reuses it
     `<script setup>const message = "server"</script><template><p>{{ message }}</p></template>`,
   );
   const host = await startupHost(project.root, {
-    plugins: vize({ configMode: false, debug: true }),
+    plugins: vize({ configMode: false, debug: true, scanPatterns: everySfc }),
     build: { ssr: true },
   });
   try {
@@ -213,7 +230,7 @@ void test("startup preserves owner exceptions and missing external source failur
   };
   try {
     const host = await startupHost(project.root, {
-      plugins: [...vize({ configMode: false }), companion],
+      plugins: [...vize({ configMode: false, scanPatterns: everySfc }), companion],
     });
     const owner = await observeConsole(() => host.start());
     await host.close();
@@ -221,7 +238,9 @@ void test("startup preserves owner exceptions and missing external source failur
       project.file("src/Placeholder.vue"),
       '<template src="./missing.html"></template>\n',
     );
-    const missing = await startupHost(project.root, { plugins: vize({ configMode: false }) });
+    const missing = await startupHost(project.root, {
+      plugins: vize({ configMode: false, scanPatterns: everySfc }),
+    });
     const source = await observeConsole(() => missing.start());
     await missing.close();
     retainObservation("fatal-nondiagnostics", { owner, source });
@@ -267,7 +286,7 @@ void test("a read race mixed with known compiler diagnostics remains a fatal who
   };
   try {
     const host = await startupHost(project.root, {
-      plugins: [...vize({ configMode: false }), race],
+      plugins: [...vize({ configMode: false, scanPatterns: everySfc }), race],
     });
     const observed = await observeConsole(() => host.start());
     await host.close();

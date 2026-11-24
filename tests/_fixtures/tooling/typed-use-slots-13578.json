@@ -1,0 +1,32 @@
+{
+  "schema": "vize.typedUseSlotsSource.v1",
+  "issue": 13578,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/setup_imports.rs",
+      "before": {
+        "bytes": 13249,
+        "sha256": "c91f5242ba4070613e20da1b8db353277b703f6442822a8887ba815da5dddf14"
+      },
+      "after": {
+        "bytes": 13372,
+        "sha256": "d3b59b4556e49a6b4e3b2193832768bd768b901cc6c97f0602c90149ce34b9cd"
+      },
+      "hunks": [
+        {
+          "before": "        let public_slots = summary.macros.define_slots().is_none() && script.contains(\"useSlots\");\n",
+          "after": "        // `inferTemplateDollarSlots` retypes `useSlots()` to the exact template map, so a script\n        // consumer cannot read an undeclared slot and the public map stays closed.\n        let public_slots = plan.slots_type.is_none()\n            && summary.macros.define_slots().is_none()\n            && script.contains(\"useSlots\");\n"
+        },
+        {
+          "before": "            ts.push_str(\"  type $UseSlots = () => \");\n            slots.emit(ts, mappings, source_offset);\n            if self.untyped_script_slots {\n                ts.push_str(\" & import('vue').Slots\");\n            }\n            ts.push_str(\";\\n\");\n",
+          "after": "            ts.push_str(\"  type $UseSlots = () => \");\n            slots.emit(ts, mappings, source_offset);\n            ts.push_str(\";\\n\");\n"
+        }
+      ]
+    }
+  ]
+}

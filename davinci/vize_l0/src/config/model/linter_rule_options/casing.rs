@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use super::multi_word_component_names::deserialize_unique_ignores;
+
 /// Options for `vue/component-name-in-template-casing`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
@@ -7,6 +9,13 @@ pub struct ComponentNameInTemplateCasingOptions {
     pub casing: TemplateComponentNameCasing,
     pub registered_components_only: bool,
     pub globals: Vec<crate::String>,
+    /// Authored tag names the rule leaves alone: an exact name or a
+    /// `/pattern/flags` regular expression, as in eslint-plugin-vue.
+    #[serde(
+        deserialize_with = "deserialize_unique_ignores",
+        skip_serializing_if = "Vec::is_empty"
+    )]
+    pub ignores: Vec<crate::String>,
 }
 
 impl Default for ComponentNameInTemplateCasingOptions {
@@ -15,6 +24,7 @@ impl Default for ComponentNameInTemplateCasingOptions {
             casing: TemplateComponentNameCasing::default(),
             registered_components_only: true,
             globals: Vec::new(),
+            ignores: Vec::new(),
         }
     }
 }

@@ -1,10 +1,17 @@
 //! Read the original file-rename visitor's literals from retained syntax.
 use super::{ModuleSpecifierCollector, SourceType, Visit, script_source_type};
 use crate::source_project::{ScriptModuleSpecifier, ScriptQueryProducts};
+use memchr::memmem::Finder;
+use std::sync::LazyLock;
 use vize_l0::Span;
 use vize_l1::embed::authored_program::AuthoredProgram;
 
 mod authored;
+
+// `memmem::find` builds a searcher per call once the haystack reaches 64 bytes,
+// which costs more than visiting a small Program. Build each needle once.
+static ESCAPE: LazyLock<Finder<'static>> = LazyLock::new(|| Finder::new(br"\u"));
+static REQUIRE: LazyLock<Finder<'static>> = LazyLock::new(|| Finder::new(b"require"));
 
 impl ScriptQueryProducts {
     pub(crate) fn script_type(lang: Option<&str>) -> SourceType {
@@ -52,8 +59,8 @@ impl ScriptQueryProducts {
             && (memchr::memchr(b'(', bytes).is_none()
                 || (!syntax.source_type().is_typescript()
                     && parsed.module_record.dynamic_imports.is_empty()
-                    && memchr::memmem::find(bytes, br"\u").is_none()
-                    && memchr::memmem::find(bytes, b"require").is_none()))
+                    && ESCAPE.find(bytes).is_none()
+                    && REQUIRE.find(bytes).is_none()))
     }
 
     pub(crate) fn read_static_specifier(

@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_deref_Vec_Op_Global": { "prover": "alt-ergo", "time": 0.011 },
+      "vc_new_TraceEvent": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_run": { "prover": "alt-ergo", "time": 0.011 },
+      "vc_run_ops": { "prover": "alt-ergo", "time": 0.01 }
+    }
+  }
+}

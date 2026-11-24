@@ -185,10 +185,10 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["vue/no-restricted-component-names"] = ConfiguredVueRuleOptions.restrictedNamesDef
     ["vue/no-restricted-component-options"] = ConfiguredVueRuleOptions.restrictedNamesDef
     ["vue/no-restricted-custom-event"] = ConfiguredVueRuleOptions.restrictedNamesDef
-    ["vue/no-restricted-html-elements"] = ConfiguredVueRuleOptions.restrictedNamesDef
+    ["vue/no-restricted-html-elements"] = ConfiguredVueRuleOptions.restrictedHtmlElementsDef
     ["vue/no-restricted-props"] = ConfiguredVueRuleOptions.restrictedNamesDef
     ["vue/no-restricted-static-attribute"] = ConfiguredVueRuleOptions.restrictedNamesDef
-    ["vue/no-restricted-v-on"] = ConfiguredVueRuleOptions.restrictedNamesDef
+    ["vue/no-restricted-v-on"] = ConfiguredVueRuleOptions.restrictedVOnDef
     ["vue/no-unsupported-features"] = ConfiguredVueRuleOptions.unsupportedFeaturesDef
     ["type/await-thenable"] = TypeAwareRuleOptions.awaitThenableDef
     ["type/no-base-to-string"] = TypeAwareRuleOptions.noBaseToStringDef
@@ -338,10 +338,7 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
         }
       }
     }
-    ["vue/v-bind-style"] = new JsonSchema {
-      type = "string"
-      enum = new Listing { "shorthand"; "longform" }
-    }
+    ["vue/v-bind-style"] = ConfiguredVueRuleOptions.vBindStyleDef
     ["vue/v-on-style"] = new JsonSchema {
       type = "string"
       enum = new Listing { "shorthand"; "longform" }
@@ -455,6 +452,12 @@ componentNameInTemplateCasingOptionsDef: JsonSchema = new JsonSchema {
     ["globals"] = new JsonSchema {
       type = "array"
       items = new JsonSchema { type = "string" }
+      default = new Listing {}
+    }
+    ["ignores"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { type = "string" }
+      uniqueItems = true
       default = new Listing {}
     }
   }

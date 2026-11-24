@@ -1,0 +1,14 @@
+[package]
+name = "l3_reference_proofs"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "../../../davinci_test_support/src/l3_reference/creusot.rs"
+
+[dependencies]
+creusot-std = { workspace = true }
+
+[lints]
+workspace = true

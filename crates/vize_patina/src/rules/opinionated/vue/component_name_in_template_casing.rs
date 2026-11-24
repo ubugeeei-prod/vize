@@ -20,6 +20,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::name_patterns::NameMatcher;
 use vize_croquis::Croquis;
 use vize_croquis::croquis::TemplateComponentRegistrations;
 use vize_croquis::naming::{is_kebab_case_loose, is_pascal_case, to_pascal_case};
@@ -56,6 +57,8 @@ pub struct ComponentNameInTemplateCasing {
     pub registered_components_only: bool,
     /// Additional globally registered component names.
     pub globals: Vec<vize_l0::String>,
+    /// Authored tag names the rule leaves alone.
+    ignores: NameMatcher,
 }
 
 impl ComponentNameInTemplateCasing {
@@ -65,6 +68,7 @@ impl ComponentNameInTemplateCasing {
             casing,
             registered_components_only: true,
             globals: Vec::new(),
+            ignores: NameMatcher::empty(),
         }
     }
 
@@ -80,6 +84,13 @@ impl ComponentNameInTemplateCasing {
             .into_iter()
             .map(|name| to_pascal_case(&name))
             .collect();
+        self
+    }
+
+    /// Leave the named tags alone, registered or not. An entry is the exact
+    /// authored tag name or a `/pattern/flags` regular expression.
+    pub fn with_ignores(mut self, ignores: &[vize_l0::String]) -> Self {
+        self.ignores = NameMatcher::new(ignores);
         self
     }
 }
@@ -208,6 +219,9 @@ fn check_element<'a>(
         {
             return;
         }
+    }
+    if !policy.ignores.is_empty() && policy.ignores.matches(tag) {
+        return;
     }
     let (message, help) = match casing {
         ComponentCasing::PascalCase => (

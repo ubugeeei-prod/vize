@@ -14,6 +14,13 @@
 //! A graph keeps what it observed, not what went wrong: a module that could
 //! not be read is read again by the next walk that reaches it, and a walk
 //! that met such a module is not kept.
+//!
+//! No worker waits for another worker's walk. Workers that need the same walk
+//! at the same time all walk: every read and every resolution still happens
+//! once, in whichever worker takes it, and a module with many edges is split
+//! between the workers that reach it together. With one worker walking and
+//! the others waiting, the files of a batch would be read one after another
+//! however many threads the batch has.
 
 #![expect(
     clippy::disallowed_types,
@@ -21,7 +28,7 @@
 )]
 
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, LazyLock, Mutex, OnceLock, PoisonError};
 
 use vize_carton::{FxHashMap, String};
@@ -38,7 +45,7 @@ use super::{FileTypeSummary, summary_cache};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(super) struct ModuleId(u32);
 
-type ClosureCell = Arc<Attempted<Arc<TypeClosure>>>;
+type ClosureCell = Arc<OnceLock<Arc<TypeClosure>>>;
 type EntryCell = Arc<OnceLock<Option<ModuleId>>>;
 
 /// Module ids the kept walks of one graph may hold: 32 MB. Each walk holds
@@ -61,12 +68,12 @@ impl Module {
     pub(super) fn facts(&self) -> Option<&ModuleFacts> {
         let read = || {
             let summary = summary_cache::load(&self.path).ok_or(())?;
-            let targets = summary
+            let edges = summary
                 .dependencies
                 .iter()
-                .map(|_| OnceLock::new())
+                .map(|_| Edge::default())
                 .collect();
-            Ok::<_, ()>(ModuleFacts { summary, targets })
+            Ok::<_, ()>(ModuleFacts { summary, edges })
         };
         self.facts.get_or_attempt(read).ok()
     }
@@ -75,8 +82,17 @@ impl Module {
 /// What one read of a module's file established.
 pub(super) struct ModuleFacts {
     pub(super) summary: Arc<FileTypeSummary>,
-    /// The module each dependency of `summary` resolves to, found on first use.
-    pub(super) targets: Box<[OnceLock<Option<ModuleId>>]>,
+    /// One edge per dependency of `summary`, in the same order.
+    pub(super) edges: Box<[Edge]>,
+}
+
+/// An import or re-export of a module and the module it resolves to, found
+/// on first use.
+#[derive(Default)]
+pub(super) struct Edge {
+    /// Set by the worker that reads this edge's target ahead of its walk.
+    taken: AtomicBool,
+    target: OnceLock<Option<ModuleId>>,
 }
 
 /// Slots of the first chunk; each later chunk doubles the one before it.
@@ -213,14 +229,45 @@ impl ModuleGraph {
         &self,
         module: &Module,
         dependency: &TypeDependency,
-        target: &OnceLock<Option<ModuleId>>,
+        edge: &Edge,
         project: Option<&Project>,
     ) -> Option<ModuleId> {
-        *target.get_or_init(|| self.resolve(&module.path, dependency.specifier(), project))
+        *edge
+            .target
+            .get_or_init(|| self.resolve(&module.path, dependency.specifier(), project))
     }
 
-    /// The walk from `module` for `requested`, computed by the first worker
-    /// that asks for it and kept for the others. A walk waits on no other
+    /// Whether other workers may be walking this graph.
+    pub(super) fn is_shared(&self) -> bool {
+        self.epoch != NO_EPOCH
+    }
+
+    /// Resolve `edge` and read its target now, unless a worker already has or
+    /// is about to. A walk calls this for every edge it will follow from a
+    /// module before it follows the first, so the workers that walk the
+    /// module together each take other edges. The walk itself then finds its
+    /// targets read, or waits for the one worker reading them.
+    pub(super) fn read_ahead(
+        &self,
+        module: &Module,
+        dependency: &TypeDependency,
+        edge: &Edge,
+        project: Option<&Project>,
+    ) {
+        if edge.target.get().is_some() || edge.taken.swap(true, Ordering::AcqRel) {
+            return;
+        }
+        if let Some(target) = self
+            .target(module, dependency, edge, project)
+            .and_then(|id| self.module(id))
+        {
+            target.facts();
+        }
+    }
+
+    /// The walk from `module` for `requested`. Workers that ask before one
+    /// has finished all walk, sharing every read through the graph, and the
+    /// first finished walk is kept for the others. A walk waits on no other
     /// walk, so import cycles cannot make two workers wait on each other.
     ///
     /// A walk that met a module it could not read is used by its caller and
@@ -244,29 +291,22 @@ impl ModuleGraph {
                 None => Arc::clone(closures.entry(key).or_default()),
             }
         };
-        let walk = || {
-            let walked = Arc::new(TypeClosure::walk(self, module, requested, project));
-            if walked.complete && self.keeps(&walked) {
-                Ok(walked)
-            } else {
-                Err(walked)
-            }
-        };
-        Some(match cell.get_or_attempt(walk) {
-            Ok(kept) => Arc::clone(kept),
-            Err(unkept) => unkept,
-        })
-    }
-
-    /// Whether the graph has room to keep `closure`, which it then counts.
-    fn keeps(&self, closure: &TypeClosure) -> bool {
-        let ids = closure.modules.len() + closure.files.len();
-        let kept = self.kept_ids.fetch_add(ids, Ordering::Relaxed);
-        if kept.saturating_add(ids) <= self.kept_ids_limit {
-            return true;
+        if let Some(kept) = cell.get() {
+            return Some(Arc::clone(kept));
         }
-        self.kept_ids.fetch_sub(ids, Ordering::Relaxed);
-        false
+        let walked = Arc::new(TypeClosure::walk(self, module, requested, project));
+        if !walked.complete {
+            return Some(walked);
+        }
+        // Count the walk before keeping it; a worker whose equal walk was
+        // kept first gives its room back.
+        let ids = walked.modules.len() + walked.files.len();
+        let kept = self.kept_ids.fetch_add(ids, Ordering::Relaxed);
+        if kept.saturating_add(ids) > self.kept_ids_limit || cell.set(Arc::clone(&walked)).is_err()
+        {
+            self.kept_ids.fetch_sub(ids, Ordering::Relaxed);
+        }
+        Some(cell.get().map_or(walked, Arc::clone))
     }
 }
 

@@ -76,7 +76,11 @@ impl SetupImportPlan {
         };
         let css = script.contains("useCssModule");
         let slots = plan.slots_type.is_some() && script.contains("useSlots");
-        let public_slots = summary.macros.define_slots().is_none() && script.contains("useSlots");
+        // `inferTemplateDollarSlots` retypes `useSlots()` to the exact template map, so a script
+        // consumer cannot read an undeclared slot and the public map stays closed.
+        let public_slots = plan.slots_type.is_none()
+            && summary.macros.define_slots().is_none()
+            && script.contains("useSlots");
         let attrs = plan.attrs_type.is_some() && script.contains("useAttrs");
         if !css && !slots && !attrs && !public_slots {
             return plan;
@@ -230,9 +234,6 @@ impl SetupImportPlan {
         {
             ts.push_str("  type $UseSlots = () => ");
             slots.emit(ts, mappings, source_offset);
-            if self.untyped_script_slots {
-                ts.push_str(" & import('vue').Slots");
-            }
             ts.push_str(";\n");
         }
         if self.imports.iter().any(|import| import.attrs)

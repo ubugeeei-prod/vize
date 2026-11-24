@@ -217,15 +217,18 @@ export interface VizeOptions extends ExperimentalPluginOptions {
   ssrModuleIdRoot?: string;
 
   /**
-   * Glob patterns to scan for .vue files during pre-compilation
-   * Use an empty array to disable startup pre-compilation and compile on demand.
-   * @default ['**\/*.vue']
+   * Opt-in startup pre-compilation: glob patterns of .vue files to compile at
+   * build start, in every environment, before anything requests them.
+   *
+   * Unset (or empty) by default. Each environment then compiles the files its
+   * module graph imports, in native batches, and nothing else.
    */
   scanPatterns?: string[];
 
   /**
-   * Maximum number of Vue files to compile in a single native batch during
-   * pre-compilation. Lower values reduce peak V8 heap usage in large apps.
+   * Maximum number of Vue files to compile in a single native batch, both when
+   * the module graph requests them and during startup pre-compilation. Lower
+   * values reduce peak V8 heap usage in large apps.
    * @default 128
    */
   precompileBatchSize?: number;

@@ -317,8 +317,22 @@ fn check(value: &Value, schema: &Value, root: &Value) -> Option<bool> {
         return None;
     }
     if let (Value::Array(items), Some(rule)) = (value, schema.get("items")) {
-        for item in items {
-            if !check(item, rule, root)? {
+        // A list of schemas is a tuple: each item is checked by its position.
+        let tuple = rule.as_array();
+        if let Some(tuple) = tuple
+            && schema.get("additionalItems") == Some(&Value::Bool(false))
+            && items.len() > tuple.len()
+        {
+            return Some(false);
+        }
+        for (index, item) in items.iter().enumerate() {
+            let rule = match tuple {
+                Some(tuple) => tuple.get(index),
+                None => Some(rule),
+            };
+            if let Some(rule) = rule
+                && !check(item, rule, root)?
+            {
                 return Some(false);
             }
         }

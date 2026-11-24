@@ -4,7 +4,7 @@ import { runEntrypoint } from "../../support/command-runtime.ts";
 
 const LEGACY_COMMAND_MARKER = "legacy_command";
 const TOOL_HOST_MARKER = "tool_host";
-const RUST_SCRIPT_BUDGET = 59;
+const RUST_SCRIPT_BUDGET = 12;
 
 interface Token {
   value: string;

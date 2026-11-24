@@ -54,7 +54,7 @@ void test("buildNuxtCompilerOptions sets defaults and prepends the Takumi exclud
     devUrlBase: "/_nuxt/",
     handleNodeModulesVue: true,
     root: "/root",
-    scanPatterns: ["**/*.vue"],
+    scanPatterns: [],
     exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
   });
 });
@@ -74,7 +74,7 @@ void test("buildNuxtCompilerOptions with customRenderer:true and no exclude omit
     devUrlBase: "/_nuxt/",
     handleNodeModulesVue: true,
     root: "/root",
-    scanPatterns: ["**/*.vue"],
+    scanPatterns: [],
     customRenderer: true,
   });
 });

@@ -93,7 +93,7 @@ vize({
 | `templateSyntax`       | `vue.compiler.templateSyntax` ou `vize({ templateSyntax })` | Choisissez `"standard"`, `"strict"`ou `"quirks"` gestion de la syntaxe du modèle.                                                                       |
 | `include`              | `vue.vite.include` ou `vize({ include })`                   | Des fichiers que le plugin devrait compiler.                                                                                                            |
 | `exclude`              | `vue.vite.exclude` ou `vize({ exclude })`                   | Des fichiers que le plugin devrait ignorer.                                                                                                             |
-| `scanPatterns`         | `vue.vite.scanPatterns` ou `vize({ scanPatterns })`         | Des motifs glob utilisés pour la précompilation au démarrage.                                                                                           |
+| `scanPatterns`         | `vue.vite.scanPatterns` ou `vize({ scanPatterns })`         | Motifs glob à précompiler au démarrage (optionnel). Sans valeur, chaque environnement compile par lots ce que son graphe de modules importe.            |
 | `ignorePatterns`       | `vue.vite.ignorePatterns` ou `vize({ ignorePatterns })`     | Les motifs glob étaient sautés lors de la précompilation au démarrage.                                                                                  |
 | `configMode`           | `vize({ configMode })`                                      | Utilisez `"root"`, `"auto"`ou `false` pour le chargement de configuration partagé.                                                                      |
 | `configFile`           | `vize({ configFile })`                                      | Chargez un fichier de configuration spécifique.                                                                                                         |
@@ -136,9 +136,9 @@ propre compilateur de Nuxt 2 configurés normalement.
 
 Le plugin intercepte `.vue` requêtes de fichiers et les compile en utilisant le pipeline Rust-native de Vize via Node.js liaisons NAPI :
 
-1. **Pré-compilation** — À `buildStart`, le plugin découvre tous les fichiers `.vue` et les compile en batch à l’aide de `compileBatch`. Cela déclenche une compilation parallèle basée sur Rayon côté Rust, traitant tous les fichiers sur tous les cœurs CPU simultanément.
+1. **Lots guidés par le graphe de modules** — Chaque environnement compile les fichiers `.vue` que son graphe de modules importe, et aucun autre. Un bundler résout les imports d’un module avant de les charger : le premier composant demandé est donc compilé avec ceux que le même module importe, en un seul appel `compileBatch`, parallélisé par Rayon côté Rust. Un environnement qui n’importe aucun composant ne compile rien, et le serveur de développement démarre sans compiler.
 
-2. **Compilation à la demande** — Pendant le développement, si un fichier `.vue` est demandé et n’est pas dans le cache (par exemple, importé dynamiquement), il est compilé à la volée via `compileFile`.
+2. **Précompilation au démarrage (optionnelle)** — Avec `scanPatterns`, le plugin compile aussi par lots, à `buildStart`, tous les fichiers correspondants, avant toute requête.
 
 3. **HMR** — Lorsqu’un fichier `.vue` change, seul ce fichier est recompilé. Le plugin détecte si le changement est uniquement de style et applique une mise à jour HMR uniquement de style lorsque c’est possible, évitant ainsi un rerendu complet des composants.
 
@@ -177,10 +177,12 @@ La même couche d’analyse sémantique est réutilisée par le linting et la v�
 
 ### Précompilation par lots
 
-Contrairement à `@vitejs/plugin-vue`, qui compile chaque fichier `.vue` dès la première requête, Vize précompile tous les fichiers de `.vue` découverts au démarrage de la compilation en utilisant la compilation par lots multithread. Cela signifie :
+`@vitejs/plugin-vue` compile chaque fichier `.vue` séparément, à la première requête. Vize compile les mêmes fichiers, ceux qu’un graphe de modules importe, mais les confie au compilateur natif par lots multithread d’au plus `precompileBatchSize` fichiers :
 
-- **Démarrage du serveur de développement** — Tous les composants sont prêts avant le premier chargement de la page
-- **Constructions de production** — Parallélisme maximal dès le départ
+- **Serveur de développement** — Le serveur démarre sans compiler. Les composants d’une page sont compilés ensemble quand la page en demande un pour la première fois.
+- **Constructions de production** — Chaque environnement compile ce qu’il importe. Un composant que rien n’importe n’est jamais compilé.
+
+Pour compiler des fichiers avant toute requête, définissez `scanPatterns` : le plugin précompile alors tous les fichiers correspondants à `buildStart`, dans chaque environnement.
 
 ### Réécriture d’actifs statiques
 

@@ -17,15 +17,15 @@ fn digest(bytes: &[u8]) -> vize_l0::String {
 fn complete_product_sources_and_native_assembly_keep_their_exact_postimages() {
     assert_eq!(
         digest(VALIDATION.as_bytes()),
-        "e7cd857464b449579d288fd20e75549875404389200fa40a1bd9517ec4e2ab83"
+        "866f0e42210ce4264432883dcff21f855af86a04577945ef1a0167b0b57462c9"
     );
     assert_eq!(
         digest(super::super::VITE_RUNTIME.as_bytes()),
-        "0bb73d5f28813a5045f23cf739256ea408093218202596220b7f43639d9d7b0b"
+        "2c6bdafb73522064a780847c46e8f32a2f032e4bb952f50e6227804ddf8021bf"
     );
     assert_eq!(
         digest(vite_runtime().unwrap().as_bytes()),
-        "576e85b34362116ee8ab701ba4b8af7f475ce4067985e0c3194e1a3c761b465b"
+        "7d3fd3e7fbf8969d5aa13e76499e7c37561ca6a9fe50db8570caa4e2fe3924aa"
     );
 }
 

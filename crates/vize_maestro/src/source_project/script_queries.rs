@@ -187,13 +187,15 @@ impl ScriptQueryProducts {
                 symbol
             };
             if let Some(profile) = additional_profile.filter(|profile| *profile != editor_type) {
-                // OXC reset keeps only its last chunk. Reserve the observed size
-                // for the other grammar if that chunk could not hold the first AST.
+                // OXC reset keeps only its last chunk. When that chunk cannot hold
+                // the first AST, grow a fresh arena as a separate read would. The
+                // other grammar can need a few more bytes, so reserving the observed
+                // size overflowed into a doubled chunk and raised the peak.
                 let used = arena.allocated_bytes();
                 arena.reset();
                 if arena.as_oxc().capacity() < used {
                     drop(arena);
-                    arena = Allocator::with_capacity(used);
+                    arena = Allocator::default();
                 }
                 observe(&AuthoredProgram::parse(&arena, frame, profile))?;
             }

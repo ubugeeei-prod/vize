@@ -5,6 +5,7 @@ interface Policy {
   casing?: ComponentNameInTemplateCasingOption;
   registeredComponentsOnly?: boolean;
   globals?: string[];
+  ignores?: string[];
 }
 
 function isCasing(value: unknown): value is ComponentNameInTemplateCasingOption {
@@ -17,8 +18,8 @@ function isPolicy(value: unknown, canonical: boolean): value is Policy {
     hasOnlyKeys(
       value,
       canonical
-        ? ["casing", "registeredComponentsOnly", "globals"]
-        : ["registeredComponentsOnly", "globals"],
+        ? ["casing", "registeredComponentsOnly", "globals", "ignores"]
+        : ["registeredComponentsOnly", "globals", "ignores"],
     ) &&
     (value.casing === undefined || (canonical && isCasing(value.casing))) &&
     optionalBooleanField(value.registeredComponentsOnly) &&
@@ -26,7 +27,17 @@ function isPolicy(value: unknown, canonical: boolean): value is Policy {
       (Array.isArray(value.globals) &&
         value.globals.every(
           (name) => typeof name === "string" && (canonical || !/^\/(.+)\/(.*)$/u.test(name)),
-        )))
+        ))) &&
+    isIgnores(value.ignores)
+  );
+}
+
+/** Unique exact tag names or `/pattern/flags` entries, as in eslint-plugin-vue. */
+function isIgnores(value: unknown): value is string[] | undefined {
+  return (
+    value === undefined ||
+    (Array.isArray(value) &&
+      value.every((name, index) => typeof name === "string" && value.indexOf(name) === index))
   );
 }
 
@@ -58,6 +69,7 @@ export function componentNameCasingSchema(): Record<string, unknown> {
   const properties = {
     registeredComponentsOnly: { type: "boolean" },
     globals: { type: "array", items: { type: "string" } },
+    ignores: { type: "array", items: { type: "string" }, uniqueItems: true },
   };
   return {
     type: "array",
