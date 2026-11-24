@@ -1,7 +1,7 @@
 #![cfg(feature = "graph-queries")]
 
-#[path = "support/bounded_reference.rs"]
-mod bounded_reference;
+mod support;
+use support::bounded_reference;
 
 use std::collections::BTreeSet;
 use vize_l0::{Allocator, Span};

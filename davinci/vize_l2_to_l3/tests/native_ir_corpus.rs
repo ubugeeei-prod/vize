@@ -2,8 +2,8 @@
 //! corpus. Every queried result is checked against the original lowered rows.
 #![cfg(feature = "graph-queries")]
 
-#[path = "support/bounded_reference.rs"]
-mod bounded_reference;
+mod support;
+use support::bounded_reference;
 use vize_l0::{
     Allocator,
     config::{VueDialect, VueVersion},
