@@ -152,7 +152,7 @@ jobs:
     name: Stock compiler and Node addon (${{ matrix.mode }})
     strategy:
       fail-fast: false
-      matrix: { mode: [ default, portable ] }
+      matrix: { mode: [default, portable] }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     env:
