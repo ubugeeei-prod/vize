@@ -18,7 +18,7 @@ test("tool command surface prefers stable Node and bounds the Rust migration", (
     /\.(?:[cm]?js|ts)$/u.test(file),
   );
   assert.ok(nodeCommands.length >= 18, "expected a stable Node command surface");
-  assert.ok(rustCommands.length <= 59, "the Rust Script migration budget cannot grow");
+  assert.ok(rustCommands.length <= 12, "the Rust Script migration budget cannot grow");
 
   for (const command of rustCommands) {
     const relative = normalize(path.relative(root, command));
@@ -64,7 +64,7 @@ test("tool layout verifier rejects retired runners and Rust Script budget growth
       fs.rmSync(target, { recursive: true, force: true });
     }
 
-    for (let index = 0; index < 60; index++) {
+    for (let index = 0; index < 13; index++) {
       fs.writeFileSync(
         path.join(commands, `legacy-${index}.rs`),
         "#!/usr/bin/env rust-script\nfn main() {}\n",
@@ -72,7 +72,7 @@ test("tool layout verifier rejects retired runners and Rust Script budget growth
     }
     const overBudget = verify(fixture);
     assert.equal(overBudget.status, 1);
-    assert.match(overBudget.stderr, /Rust Script command budget grew from 59 to 60/);
+    assert.match(overBudget.stderr, /Rust Script command budget grew from 12 to 13/);
   } finally {
     fs.rmSync(fixture, { recursive: true, force: true });
   }
