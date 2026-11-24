@@ -9,6 +9,7 @@ mod duplicates;
 mod error_list;
 mod extraction;
 mod plugin_outputs;
+mod ssr_direct;
 mod string_tracking;
 mod vapor;
 
@@ -211,12 +212,7 @@ pub(crate) fn compile_template_block_with_capture(
                     );
                 (errors, result)
             } else {
-                let direct = vize_atelier_ssr::sfc_direct_lane_enabled()
-                    && vize_atelier_dom::sfc_template_source_is_direct(
-                        &template.content,
-                        &ssr_opts.directive_contracts,
-                    );
-                vize_atelier_ssr::compile_ssr_sfc_template(
+                ssr_direct::compile(
                     allocator,
                     &template.content,
                     ssr_opts,
@@ -225,7 +221,6 @@ pub(crate) fn compile_template_block_with_capture(
                     ssr_experimental_options,
                     ssr_context,
                     codegen_options,
-                    direct,
                 )
             }
         );
