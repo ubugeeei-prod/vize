@@ -1,8 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  module.command("node", List("--test", "tests/tooling/css-source-map-event.test.ts"))
-  module.command("node", List("tests/native/css-source-map-event.mjs"))
-}

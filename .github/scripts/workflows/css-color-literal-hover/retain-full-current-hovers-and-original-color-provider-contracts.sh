@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-mkdir -p target/vize-tests/css-color-literal-hover
-node --test tests/tooling/lsp-css-color-declaration-admission.test.ts tests/tooling/lsp-css-color-literal-hover.test.ts 2>&1 | tee target/vize-tests/css-color-literal-hover/protocol.log

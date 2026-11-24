@@ -29,7 +29,7 @@ surfaces and are not routine CI-refactor targets.
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
-| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 43        |
+| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 18        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 28        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 24        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
@@ -232,51 +232,26 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/compiler/)
 
-| ID    | Workflow                                 | File                                                                           |
-| ----- | ---------------------------------------- | ------------------------------------------------------------------------------ |
-| 06.01 | Ambient template ref ownership           | [`ambient-template-ref-ownership.yml`](./ambient-template-ref-ownership.yml)   |
-| 06.02 | SFC asset import bindings                | [`asset-import-bindings.yml`](./asset-import-bindings.yml)                     |
-| 06.03 | Async component render ancestry          | [`async-component-ancestry.yml`](./async-component-ancestry.yml)               |
-| 06.04 | Binding origin source laws               | [`binding-origin-laws.yml`](./binding-origin-laws.yml)                         |
-| 06.05 | Compiler options snapshot                | [`compiler-options-snapshot.yml`](./compiler-options-snapshot.yml)             |
-| 06.06 | Cross-file script coordinate packets     | [`cross-file-script-offset.yml`](./cross-file-script-offset.yml)               |
-| 06.07 | CSS color declaration admission          | [`css-color-declaration-admission.yml`](./css-color-declaration-admission.yml) |
-| 06.08 | CSS color literal hover                  | [`css-color-literal-hover.yml`](./css-color-literal-hover.yml)                 |
-| 06.09 | Native CSS source maps                   | [`css-compile-source-maps.yml`](./css-compile-source-maps.yml)                 |
-| 06.10 | CSS engine forks                         | [`css-engine-vendor-candidate.yml`](./css-engine-vendor-candidate.yml)         |
-| 06.11 | Optional inject fallback contracts       | [`defaulted-inject.yml`](./defaulted-inject.yml)                               |
-| 06.12 | Expression overlapping speculation audit | [`expression-overlap-audit.yml`](./expression-overlap-audit.yml)               |
-| 06.13 | Decoded loop bindings                    | [`for-bindings.yml`](./for-bindings.yml)                                       |
-| 06.14 | JSX authored native modules              | [`jsx-authored-native-modules.yml`](./jsx-authored-native-modules.yml)         |
-| 06.15 | JSX backend source origins               | [`jsx-backend-origins.yml`](./jsx-backend-origins.yml)                         |
-| 06.16 | L1 document special text                 | [`l1-document-special-text.yml`](./l1-document-special-text.yml)               |
-| 06.17 | Narrowed slot host guard                 | [`narrowed-slot-host-guard.yml`](./narrowed-slot-host-guard.yml)               |
-| 06.18 | Native beta diagnostic DTO               | [`native-beta-diagnostic-dto.yml`](./native-beta-diagnostic-dto.yml)           |
-| 06.19 | Native release token layout              | [`native-build-token-layout.yml`](./native-build-token-layout.yml)             |
-| 06.20 | Native checker CPU attribution           | [`native-checker-cpu-metadata.yml`](./native-checker-cpu-metadata.yml)         |
-| 06.21 | Native image-alt query source evidence   | [`native-image-alt-query.yml`](./native-image-alt-query.yml)                   |
-| 06.22 | Native navigation products               | [`native-navigation-products.yml`](./native-navigation-products.yml)           |
-| 06.23 | Native operational incident trace        | [`native-ops-incident.yml`](./native-ops-incident.yml)                         |
-| 06.24 | SFC runtime option transport             | [`native-sfc-runtime-options.yml`](./native-sfc-runtime-options.yml)           |
-| 06.25 | SFC runtime version selection            | [`native-sfc-runtime-version.yml`](./native-sfc-runtime-version.yml)           |
-| 06.26 | Native Smoke                             | [`native-smoke.yml`](./native-smoke.yml)                                       |
-| 06.27 | Leading newline runtime                  | [`pre-textarea-first-newline.yml`](./pre-textarea-first-newline.yml)           |
-| 06.28 | Provide type assertion whole packets     | [`provide-type-assertion.yml`](./provide-type-assertion.yml)                   |
-| 06.29 | Recovery normal codegen                  | [`recovery-normal-codegen.yml`](./recovery-normal-codegen.yml)                 |
-| 06.30 | Scoped nesting specificity               | [`scoped-nesting-specificity.yml`](./scoped-nesting-specificity.yml)           |
-| 06.31 | Current native SFC lifecycle             | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
-| 06.32 | Native parsed SFC attributes             | [`sfc-parse-attributes.yml`](./sfc-parse-attributes.yml)                       |
-| 06.33 | Historical SFC Parse Replay              | [`sfc-parse-replay.yml`](./sfc-parse-replay.yml)                               |
-| 06.34 | Retained source-line replay              | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)           |
-| 06.35 | Source symbolizer smoke                  | [`source-symbolizer-smoke.yml`](./source-symbolizer-smoke.yml)                 |
-| 06.36 | Public mapper comparison                 | [`template-alias-paired-11822.yml`](./template-alias-paired-11822.yml)         |
-| 06.37 | Template expression queries              | [`template-expression-queries.yml`](./template-expression-queries.yml)         |
-| 06.38 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
-| 06.39 | Native template tool projections         | [`template-tool-projections.yml`](./template-tool-projections.yml)             |
-| 06.40 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
-| 06.41 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
-| 06.42 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
-| 06.43 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
+| ID    | Workflow                               | File                                                                   |
+| ----- | -------------------------------------- | ---------------------------------------------------------------------- |
+| 06.01 | SFC asset import bindings              | [`asset-import-bindings.yml`](./asset-import-bindings.yml)             |
+| 06.02 | CSS engine forks                       | [`css-engine-vendor-candidate.yml`](./css-engine-vendor-candidate.yml) |
+| 06.03 | Decoded loop bindings                  | [`for-bindings.yml`](./for-bindings.yml)                               |
+| 06.04 | JSX authored native modules            | [`jsx-authored-native-modules.yml`](./jsx-authored-native-modules.yml) |
+| 06.05 | L1 document special text               | [`l1-document-special-text.yml`](./l1-document-special-text.yml)       |
+| 06.06 | Native beta diagnostic DTO             | [`native-beta-diagnostic-dto.yml`](./native-beta-diagnostic-dto.yml)   |
+| 06.07 | Native image-alt query source evidence | [`native-image-alt-query.yml`](./native-image-alt-query.yml)           |
+| 06.08 | Native navigation products             | [`native-navigation-products.yml`](./native-navigation-products.yml)   |
+| 06.09 | Native operational incident trace      | [`native-ops-incident.yml`](./native-ops-incident.yml)                 |
+| 06.10 | Native Smoke                           | [`native-smoke.yml`](./native-smoke.yml)                               |
+| 06.11 | Leading newline runtime                | [`pre-textarea-first-newline.yml`](./pre-textarea-first-newline.yml)   |
+| 06.12 | Scoped nesting specificity             | [`scoped-nesting-specificity.yml`](./scoped-nesting-specificity.yml)   |
+| 06.13 | Current native SFC lifecycle           | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)           |
+| 06.14 | Historical SFC Parse Replay            | [`sfc-parse-replay.yml`](./sfc-parse-replay.yml)                       |
+| 06.15 | Retained source-line replay            | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)   |
+| 06.16 | Source symbolizer smoke                | [`source-symbolizer-smoke.yml`](./source-symbolizer-smoke.yml)         |
+| 06.17 | Template expression queries            | [`template-expression-queries.yml`](./template-expression-queries.yml) |
+| 06.18 | Native template tool projections       | [`template-tool-projections.yml`](./template-tool-projections.yml)     |
 
 ## 07 Davinci, Canon, and Level
 
