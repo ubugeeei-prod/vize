@@ -117,6 +117,42 @@ These are added where tractable, after the ports: lossless L1 render equals
 source, span monotonicity, and lowering totality. Each gets a row here when
 its proof or oracle lands.
 
+The coordinate kernels below are verified by Kani in `davinci-kani.yml`
+(`source-coordinates`), each against a spec written from the format's
+definition, not from the kernel. Where the bound is "whole domain", the
+harness has no loop over its input, or a loop Kani unwinds completely, so
+Kani checks every value of the domain and the check is exhaustive. Creusot
+does not reach these kernels without changing them: the UTF-16 and
+line-terminator kernels go through `str` APIs without a specification
+(`as_bytes`, `char_indices`, `is_char_boundary`), `span.rs` and
+`source_range.rs` derive `serde` and `Hash` and format through
+`fmt::Write`, and the VLQ writer appends to `CompactString`.
+
+The two `owed` rows are whole-string lookups. Kani harnesses for them
+(`LineIndex` over three to five bytes; the emitter's line table, lookup and
+segment resolution over three to six bytes) exceeded 8 GB in CBMC and are not
+kept: Kani is used here only for small models. They need a Creusot proof over
+a byte-slice kernel, or a Kani model of one line step at a time.
+`tests/tooling/formal-harness-coverage.test.ts` holds that a workflow runs
+every Kani harness in the repository.
+
+| Kani harness                                                        | Law                                                                                                                                                                      | Kani bound                                       | Creusot replacement | Status |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ | ------------------- | ------ |
+| `vlq_digits_decode_to_the_encoded_value`                            | the VLQ writer appends base64 digits only, sets the continuation bit on all but the last, is minimal and decodes back                                                    | whole domain (`i64` except `MIN`)                | none                | kani   |
+| `line_break_len_is_the_width_of_the_terminator_at_the_offset`       | the emitter's line step is 2 at CR LF, 1 at LF or a lone CR, 3 at LS or PS, and 0 anywhere else, including inside a scalar or past the end                               | 4 bytes, whole `usize` offset                    | none                | kani   |
+| `utf16_offset_is_the_boundary_with_that_many_units`                 | `utf16_offset` returns exactly the scalar boundary with that many UTF-16 units, and `None` for any other column                                                          | 4 bytes, whole `u32` column                      | none                | kani   |
+| `utf16_len_counts_the_units_of_every_scalar`                        | `utf16_len` counts two UTF-16 units for a four-byte scalar and one for any other                                                                                         | 4 bytes                                          | none                | kani   |
+| `utf16_prefix_counts_the_units_of_whole_scalars`                    | `prefix_len` counts the units of every scalar that starts before the offset, a mid-scalar offset counting that scalar whole, so it never panics and is monotone          | 4 bytes, whole `usize` offset                    | none                | kani   |
+| `span_length_counts_the_offsets_it_covers`                          | `Span::len` is the number of offsets in `[start, end)`, zero exactly when the span is empty                                                                              | whole domain                                     | none                | kani   |
+| `span_block_relative_form_ignores_where_the_block_starts`           | the block-relative span never grows, inverts the shift inside the block and is invariant under moving span and block                                                     | whole domain                                     | none                | kani   |
+| `source_range_union_is_the_least_enclosing_range`                   | `SourceRange::union` is commutative, associative, idempotent and the least range enclosing both                                                                          | whole domain                                     | none                | kani   |
+| `source_range_intersection_is_the_offsets_in_both`                  | `intersection` holds exactly the offsets in both, is `Some` exactly when they `intersects`, and is a semilattice meet                                                    | whole domain                                     | none                | kani   |
+| `source_range_shifts_saturate_and_invert`                           | `offset` saturates instead of wrapping and is inverted by the opposite shift; `extend` encloses the range                                                                | whole domain                                     | none                | kani   |
+| `source_mapping_carries_offsets_between_its_ranges`                 | a mapping carries offsets by their distance, clamped into the other range; an equal-length mapping is a bijection                                                        | whole domain                                     | none                | kani   |
+| `source_map_to_generated_uses_the_mapping_that_contains_the_offset` | `SourceMap::to_generated` translates through the mapping whose source range contains the offset, in any insertion order                                                  | 3 disjoint nonempty mappings, whole `u32` values | none                | kani   |
+| none                                                                | `LineIndex::line_col` is the LF count before the offset and the UTF-16 units from that line's start; `line_col_to_offset` is its inverse on scalar boundaries            | —                                                | owed                | owed   |
+| none                                                                | the emitter's line table starts a line after every terminator, and `resolve_in_table` and `resolve_positions` give each segment the line and UTF-16 column of its offset | —                                                | owed                | owed   |
+
 ## Kernel items outside the proof
 
 Compiled out of the proof crate with `cfg(not(creusot))` because they are not
