@@ -74,12 +74,10 @@ pub fn assert_calibrated_paired_time(label: &str, iterations: u32, mut run: impl
             }
             start.elapsed().as_nanos()
         };
-        // Positions of (first baseline, candidate, second baseline) in a round.
         let mut round = |index: usize| {
-            let rotation = if reverse { 2 - index % 3 } else { index % 3 };
             let (mut first, mut candidate, mut second) = (0, 0, 0);
-            for slot in 0..3 {
-                match (slot + rotation) % 3 {
+            for arm in calibrated_order(index, reverse) {
+                match arm {
                     0 => first = sample(false),
                     1 => candidate = sample(true),
                     _ => second = sample(false),
@@ -127,4 +125,30 @@ pub fn assert_calibrated_paired_time(label: &str, iterations: u32, mut run: impl
         !(measure(iterations, false) && measure(iterations.saturating_mul(4), true)),
         "reproducible paired slowdown beyond the A/A spread for {label}"
     );
+}
+
+/// The two baseline reads have separate identities in the A/A comparison.
+fn calibrated_order(index: usize, reverse: bool) -> [usize; 3] {
+    let start = index % 3;
+    let mut order = [start, (start + 1) % 3, (start + 2) % 3];
+    if reverse {
+        order.reverse();
+    }
+    order
+}
+
+#[cfg(test)]
+mod tests {
+    use super::calibrated_order;
+
+    #[test]
+    fn confirmation_mirrors_the_three_reads_of_each_round() {
+        for (index, order) in [[0, 1, 2], [1, 2, 0], [2, 0, 1]].into_iter().enumerate() {
+            assert_eq!(calibrated_order(index, false), order);
+            assert_eq!(
+                calibrated_order(index, true),
+                [order[2], order[1], order[0]]
+            );
+        }
+    }
 }
