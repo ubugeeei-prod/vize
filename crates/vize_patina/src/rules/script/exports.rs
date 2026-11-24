@@ -1,4 +1,8 @@
 pub use super::component_options_name_casing::ComponentOptionsNameCasing;
+pub use super::consistent_type_imports::{
+    ConsistentTypeImports, ConsistentTypeImportsOptions, FixStyle as TypeImportFixStyle,
+    TypeImportPreference,
+};
 pub use super::custom_event_name_casing::{CustomEventNameCasing, EventNameCasing};
 pub use super::define_emits_declaration::DefineEmitsDeclaration;
 pub use super::define_macros_order::DefineMacrosOrder;

@@ -232,3 +232,76 @@ When migrating from ESLint, use the Vize rule ID and typed options separately:
 ```
 
 Place the added entries inside the `linter` object passed to `withVue` in the Vite+ config above.
+
+## `script/consistent-type-imports`
+
+Use this rule to require `import type` for imports that are only used as types. It reads the whole
+component, so an import that only the `<template>` or a `<style>` `v-bind()` uses stays a value
+import. The options `prefer`, `fixStyle` and `disallowTypeAnnotations` have the typescript-eslint
+names and meanings.
+
+`emitDecoratorMetadata` tells the rule whether the project compiles with that TypeScript option.
+Lint does not read `tsconfig.json`. With the default `true`, a type that a decorated signature
+serializes (a decorated property's type, the parameter and return types of a decorated method, the
+constructor parameter types of a decorated class) counts as a value use, so the fix never changes
+emitted metadata. Set it to `false` when the project does not emit decorator metadata.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "script/consistent-type-imports": "warn",
+    },
+    ruleOptions: {
+      "script/consistent-type-imports": {
+        prefer: "type-imports",
+        fixStyle: "inline-type-imports",
+        disallowTypeAnnotations: true,
+        emitDecoratorMetadata: false,
+      },
+    },
+  },
+});
+```
+
+Bad:
+
+```vue
+<script setup lang="ts">
+import Card, { Size } from "./Card.vue";
+
+defineProps<{ size: Size }>();
+</script>
+
+<template>
+  <Card :size="size" />
+</template>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+import Card, { type Size } from "./Card.vue";
+
+defineProps<{ size: Size }>();
+</script>
+
+<template>
+  <Card :size="size" />
+</template>
+```
+
+With the default `fixStyle: "separate-type-imports"` the fix writes
+`import type { Size } from "./Card.vue";` on its own line and leaves `import Card from "./Card.vue";`
+in place. `prefer: "no-type-imports"` reports every `import type` and inline `type` instead.
+
+When migrating from ESLint, use the Vize rule ID and typed options separately:
+
+```ts annotate="remove:1;add:2,3"
+ rules: { "@typescript-eslint/consistent-type-imports": ["warn", { fixStyle: "inline-type-imports" }] }
+ rules: { "script/consistent-type-imports": "warn" },
+ ruleOptions: { "script/consistent-type-imports": { fixStyle: "inline-type-imports" } }
+```

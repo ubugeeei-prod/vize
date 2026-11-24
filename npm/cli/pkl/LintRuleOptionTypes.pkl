@@ -263,6 +263,16 @@ class PreferConstOptions {
   ignoreReadBeforeAssign: Boolean? = null
 }
 
+/// `script/consistent-type-imports`, as typescript-eslint reads it.
+class ConsistentTypeImportsOptions {
+  prefer: ("type-imports" | "no-type-imports")? = null
+  fixStyle: ("separate-type-imports" | "inline-type-imports")? = null
+  disallowTypeAnnotations: Boolean? = null
+  /// Whether the project compiles with `emitDecoratorMetadata`. Lint does not
+  /// read `tsconfig.json`; the default `true` keeps decorated signatures safe.
+  emitDecoratorMetadata: Boolean? = null
+}
+
 /// `a11y/anchor-has-content` and `a11y/heading-has-content`, as
 /// eslint-plugin-vuejs-accessibility reads them.
 open class HasContentOptions {

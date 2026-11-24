@@ -101,5 +101,13 @@ pub(super) fn apply(mut linter: Linter, options: &ConfiguredVueRuleOptions) -> L
             .registry
             .replace(Box::new(HeadingHasContent::from_options(value)));
     }
+    if let Some(value) = &options.consistent_type_imports {
+        linter.script_rule_overrides.insert(
+            "script/consistent-type-imports",
+            Box::new(crate::rules::script::ConsistentTypeImports::from_options(
+                value,
+            )),
+        );
+    }
     linter
 }

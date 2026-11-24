@@ -84,6 +84,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
     "コンポーネントの name オプションを PascalCase に揃えます。",
   "script/consistent-props-emits-key-quotes":
     "props / emits 宣言で引用符が必須のキーがある場合、すべてのキーを引用符付きに揃えます。",
+  "script/consistent-type-imports":
+    "型としてしか使わないインポートを import type に揃えます。テンプレートでの使用は値の使用として数えます。",
   "script/custom-event-name-casing": "emit するカスタムイベント名を指定した形式に揃えます。",
   "script/define-emits-declaration": "defineEmits を型による宣言形式に揃えます。",
   "script/define-macros-order": "script setup のコンパイラーマクロを一定の順に宣言します。",

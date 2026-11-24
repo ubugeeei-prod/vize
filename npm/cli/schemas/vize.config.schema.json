@@ -2282,6 +2282,26 @@
           },
           "additionalProperties": false
         },
+        "script/consistent-type-imports": {
+          "type": "object",
+          "properties": {
+            "prefer": {
+              "type": "string",
+              "enum": ["type-imports", "no-type-imports"]
+            },
+            "fixStyle": {
+              "type": "string",
+              "enum": ["separate-type-imports", "inline-type-imports"]
+            },
+            "disallowTypeAnnotations": {
+              "type": "boolean"
+            },
+            "emitDecoratorMetadata": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/v-on-handler-style": {
           "oneOf": [
             {

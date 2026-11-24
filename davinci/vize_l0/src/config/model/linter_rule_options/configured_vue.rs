@@ -5,6 +5,9 @@
 
 use serde::{Deserialize, Serialize};
 
+pub use super::consistent_type_imports::{
+    ConsistentTypeImportsOptions, TypeImportFixStyle, TypeImportPreference,
+};
 use super::real_project_allowances::HeadingHasContentOptions;
 use super::script_unused::{NoUnusedScriptVarsOptions, PreferConstOptions};
 use super::v_on_handler_style::VOnHandlerStyleConfig;
@@ -214,6 +217,12 @@ pub struct ConfiguredVueRuleOptions {
         skip_serializing_if = "Option::is_none"
     )]
     pub heading_has_content: Option<HeadingHasContentOptions>,
+    /// `script/consistent-type-imports`.
+    #[serde(
+        rename = "script/consistent-type-imports",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub consistent_type_imports: Option<ConsistentTypeImportsOptions>,
 }
 
 impl ConfiguredVueRuleOptions {
@@ -236,6 +245,7 @@ impl ConfiguredVueRuleOptions {
             && self.prefer_const.is_none()
             && self.v_on_handler_style.is_none()
             && self.heading_has_content.is_none()
+            && self.consistent_type_imports.is_none()
     }
 
     /// Apply a later config layer.
@@ -290,6 +300,9 @@ impl ConfiguredVueRuleOptions {
         }
         if overlay.heading_has_content.is_some() {
             self.heading_has_content = overlay.heading_has_content.clone();
+        }
+        if overlay.consistent_type_imports.is_some() {
+            self.consistent_type_imports = overlay.consistent_type_imports;
         }
     }
 }

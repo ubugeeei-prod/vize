@@ -3,6 +3,7 @@ import { runtimeOverrides } from "./runtime-overrides.ts";
 import { verifiedOverrides } from "./verified-examples.ts";
 import { scopedOverrides } from "./scoped-examples.ts";
 import { catalogueAdditionExamples } from "./catalogue-addition-examples.ts";
+import { consistentTypeImportsNotes } from "./consistent-type-imports-notes.ts";
 
 const vue = (source: string): CodeExample => ({ language: "vue", source });
 const template = (source: string) => vue(`<template>\n${source}\n</template>`);
@@ -132,6 +133,16 @@ export const overrides: Record<string, RuleExample> = {
       noteJa:
         '## Formatter との併用\n\nこの lint ルールが宣言単位の引用符を管理します。ルールが必要とする引用符を整形時に削除しないよう、Prettier・Oxfmt・Vize formatter の `quoteProps` を `"preserve"` に設定してください。',
     },
+  ),
+  "script/consistent-type-imports": pair(
+    vue(
+      '<script setup lang="ts">\nimport { Bar } from "./Foo";\nimport { Foo } from "./Foo";\n\ndefineProps<{ item: Foo }>();\n</script>\n\n<template>\n  <p>{{ Bar.label }} {{ item.label }}</p>\n</template>',
+    ),
+    vue(
+      '<script setup lang="ts">\nimport { Bar } from "./Foo";\nimport type { Foo } from "./Foo";\n\ndefineProps<{ item: Foo }>();\n</script>\n\n<template>\n  <p>{{ Bar.label }} {{ item.label }}</p>\n</template>',
+    ),
+    "crates/vize_patina/src/rules/script/consistent_type_imports.rs",
+    consistentTypeImportsNotes,
   ),
   "nuxt/nuxt-config-keys-order": pair(
     script("export default defineNuxtConfig({ ssr: true, modules: [] });", false),

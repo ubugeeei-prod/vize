@@ -285,6 +285,7 @@ class LintRuleOptions {
   `type/unbound-method`: LintRuleOptionTypes.UnboundMethodOptions? = null
   `vue/no-unused-script-vars`: LintRuleOptionTypes.NoUnusedScriptVarsOptions? = null
   `vue/prefer-const`: LintRuleOptionTypes.PreferConstOptions? = null
+  `script/consistent-type-imports`: LintRuleOptionTypes.ConsistentTypeImportsOptions? = null
   `vue/v-on-handler-style`: (LintRuleOptionTypes.VOnHandlerStyle | LintRuleOptionTypes.VOnHandlerStyleOptions)? = null
   `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null
   `vue/no-restricted-syntax`: (Listing<RestrictedSyntaxEntry> | NoRestrictedSyntaxOptions)? = null

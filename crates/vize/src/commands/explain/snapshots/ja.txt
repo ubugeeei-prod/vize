@@ -1908,6 +1908,31 @@ props と emits の宣言で引用符付きキーを統一する
     "aria-label": String,
     "disabled": Boolean,
   })
+=== script/consistent-type-imports
+script/consistent-type-imports · lint ルール
+テンプレートでの使用を値の使用として数え、型インポートの書き方を統一する
+
+精度: complete
+対象: import declarations of TypeScript modules and inline TypeScript SFC scripts, judged against every script, template and style v-bind use the binding analysis resolves; external blocks, eval, unparsed expressions and Musea variants are outside
+重大度: 警告
+カテゴリー: script
+自動修正: あり
+ドキュメント: docs/content/rules/reference/script-consistent-type-imports.md
+
+不正な例:
+  <script setup lang="ts">
+  import { Foo } from "./foo";
+  defineProps<{ item: Foo }>();
+  </script>
+
+正しい例:
+  <script setup lang="ts">
+  import type { Foo } from "./foo";
+  import { Bar } from "./foo";
+  defineProps<{ item: Foo }>();
+  </script>
+  
+  <template>{{ Bar.label }} {{ item.label }}</template>
 === script/custom-event-name-casing
 script/custom-event-name-casing · lint ルール
 発行するカスタムイベント名を設定した形式に統一する

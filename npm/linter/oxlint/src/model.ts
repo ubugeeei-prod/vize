@@ -138,6 +138,12 @@ export interface PatinaRuleOptions {
 
 export interface VizeRuleOptions {
   "vue/prop-name-casing"?: PropNameCasingOptions;
+  "script/consistent-type-imports"?: {
+    prefer?: "type-imports" | "no-type-imports";
+    fixStyle?: "separate-type-imports" | "inline-type-imports";
+    disallowTypeAnnotations?: boolean;
+    emitDecoratorMetadata?: boolean;
+  };
   "script/define-props-destructuring"?: {
     destructure?: "only-when-assigned" | "always" | "never";
   };

@@ -168,6 +168,7 @@ export function getRuleOptions(
         },
       };
     }
+    case "script/consistent-type-imports":
     case "script/define-props-destructuring":
     case "html/no-empty-palpable-content":
     case "type/strict-boolean-expressions":

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { canonical, identity, jsonBytes, sha } from "./lint-preset-source-successors.ts";
+import { inverseConsistentTypeImports } from "./lint-preset-consistent-type-imports.ts";
 import { inverseEslintVueRulePort } from "./lint-preset-eslint-vue-port.ts";
 import { inverseJadeProfile } from "./lint-preset-jade-profile.ts";
 import { inverseMatrixRuleOptions12336 } from "./lint-matrix-rule-options-12336.ts";
@@ -135,7 +136,10 @@ export function inversePatinaCurrentSource(name: string, body: Buffer): Buffer {
               name,
               inverseRuleOptions12944(
                 name,
-                inverseMatrixRuleOptions12336(name, inverseJadeProfile(name, body)),
+                inverseMatrixRuleOptions12336(
+                  name,
+                  inverseJadeProfile(name, inverseConsistentTypeImports(name, body)),
+                ),
               ),
             ),
           ),

@@ -128,6 +128,44 @@ impl crate::linter::config::Linter {
         self.registry.has_rule("vue/no-unused-setup-bindings")
             && self.is_rule_enabled("vue/no-unused-setup-bindings")
     }
+
+    /// The demand-only relations this configuration's rules read.
+    pub(crate) fn read_demand(&self) -> ReadDemand {
+        ReadDemand {
+            unused: self.has_unused_bindings_demand(),
+            template_reads: crate::linter::script_rules::has_template_read_demand(self),
+        }
+    }
+}
+
+/// Relations the binding analysis populates only for a rule that reads them.
+#[derive(Clone, Copy, Default)]
+pub(crate) struct ReadDemand {
+    /// Setup bindings nothing reads (`vue/no-unused-setup-bindings`).
+    pub unused: bool,
+    /// Script names the template and `<style>` `v-bind()` read.
+    pub template_reads: bool,
+}
+
+impl ReadDemand {
+    fn options(self, derived: bool) -> SfcCroquisOptions {
+        let options = SfcCroquisOptions::lint_demand();
+        let options = if self.unused {
+            options.with_unused_bindings()
+        } else {
+            options
+        };
+        let options = if self.template_reads {
+            options.with_template_binding_reads()
+        } else {
+            options
+        };
+        if derived {
+            options.with_derived_template()
+        } else {
+            options
+        }
+    }
 }
 
 use crate::context::TemplateDocumentKind;
@@ -186,30 +224,20 @@ pub(crate) fn analyze_descriptor_for_lint(
     scripts: &SfcScripts<'_>,
     template: Option<&L2Template<'_>>,
     resolve: Option<MacroTypeResolution<'_>>,
-    unused: bool,
+    demand: ReadDemand,
     derived: bool,
 ) -> Croquis {
-    analyze_descriptor_for_lint_with_template(scripts, template, resolve, unused, derived)
+    analyze_descriptor_for_lint_with_template(scripts, template, resolve, demand, derived)
 }
 
 pub(crate) fn analyze_descriptor_for_lint_with_template(
     scripts: &SfcScripts<'_>,
     template: Option<&L2Template<'_>>,
     resolve: Option<MacroTypeResolution<'_>>,
-    unused: bool,
+    demand: ReadDemand,
     derived: bool,
 ) -> Croquis {
-    let options = SfcCroquisOptions::lint_demand();
-    let options = if unused {
-        options.with_unused_bindings()
-    } else {
-        options
-    };
-    let options = if derived {
-        options.with_derived_template()
-    } else {
-        options
-    };
+    let options = demand.options(derived);
     let template = template.map(crate::markup::L2Template::lint_template);
     match resolve {
         Some(resolve) => {
@@ -232,7 +260,7 @@ pub(super) fn analyze_descriptor_for_component_reads(
     scripts: &SfcScripts<'_>,
     template: Option<&L2Template<'_>>,
     resolve: Option<MacroTypeResolution<'_>>,
-    unused: bool,
+    demand: ReadDemand,
     derived: bool,
 ) -> Croquis {
     if scripts
@@ -248,20 +276,10 @@ pub(super) fn analyze_descriptor_for_component_reads(
         })
     {
         return analyze_descriptor_for_lint_with_template(
-            scripts, template, resolve, unused, derived,
+            scripts, template, resolve, demand, derived,
         );
     }
-    let options = SfcCroquisOptions::lint_demand();
-    let options = if unused {
-        options.with_unused_bindings()
-    } else {
-        options
-    };
-    let options = if derived {
-        options.with_derived_template()
-    } else {
-        options
-    };
+    let options = demand.options(derived);
     let template = template.map(crate::markup::L2Template::lint_template);
     let (mut analysis, packet) = match resolve {
         Some(resolve) => {

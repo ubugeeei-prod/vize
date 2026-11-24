@@ -211,6 +211,7 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["type/unbound-method"] = TypeAwareRuleOptionsPToU.unboundMethodDef
     ["vue/no-unused-script-vars"] = ConfiguredVueRuleOptions.noUnusedScriptVarsDef
     ["vue/prefer-const"] = ConfiguredVueRuleOptions.preferConstDef
+    ["script/consistent-type-imports"] = ConfiguredVueRuleOptions.consistentTypeImportsDef
     ["vue/v-on-handler-style"] = ConfiguredVueRuleOptions.vOnHandlerStyleDef
     ["vue/enforce-style-attribute"] = new JsonSchema {
       type = "object"
