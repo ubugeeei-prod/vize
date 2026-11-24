@@ -1,6 +1,6 @@
 //! Kani proves the laws of the L3 reference incremental update machine on its
-//! shipped Rust source. The maintainer kept Kani for this machine
-//! (docs/davinci/decisions/2026-11-17-creusot.md): its trees recurse through
+//! shipped Rust source. The maintainer kept Kani for this machine (the
+//! 2026-11-17 Creusot decision record): its trees recurse through
 //! `Vec`, which Creusot accepts only with a trusted declaration. The
 //! scheduling contract and the C-23 checker are proved by Creusot instead
 //! (`creusot.rs`), for programs of any size.

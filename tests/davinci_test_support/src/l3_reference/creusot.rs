@@ -12,8 +12,8 @@
 //! `run` the trace semantics, and every checker invariant equals its
 //! declarative statement. The lemmas below are the laws that compose those
 //! contracts. They replace the bounded Kani harnesses of the same names
-//! (docs/davinci/decisions/2026-11-17-creusot-inventory.md) and hold for
-//! programs of any size. The incremental update machine stays on Kani.
+//! (see the Creusot inventory decision record) and hold for programs of any
+//! size. The incremental update machine stays on Kani.
 
 pub mod checker;
 pub mod program;
