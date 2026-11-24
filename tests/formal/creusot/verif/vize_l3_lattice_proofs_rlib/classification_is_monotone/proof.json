@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_classification_is_monotone": { "prover": "z3", "time": 0.028 }
+    }
+  }
+}

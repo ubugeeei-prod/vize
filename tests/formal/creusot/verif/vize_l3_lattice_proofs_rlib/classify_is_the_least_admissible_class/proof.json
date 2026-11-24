@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_classify_is_the_least_admissible_class": {
+        "prover": "z3",
+        "time": 0.025
+      }
+    }
+  }
+}
