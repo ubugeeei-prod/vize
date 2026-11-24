@@ -40,6 +40,17 @@ void test("Elk setupSFC host options project in development and both build envir
   }
 });
 
+void test("Nuxt's imported Vue compiler stays on the host config", async () => {
+  const compiler = await import("vue/compiler-sfc");
+  const source = Object.freeze({ vue: Object.freeze({ script: {}, template: {}, compiler }) });
+  assert.equal(nativeProjectSource(source), source);
+  const view = nativeProjectSource(source, "nuxt");
+  assert.deepEqual(await projectViteConfigSource(view), { typeChecker: { jsxTypecheck: true } });
+  assert.equal(source.vue.compiler, compiler);
+  const nativeConfig = { vue: { compiler: { whitespace: "preserve" } } };
+  assert.equal(nativeProjectSource(nativeConfig, "nuxt"), nativeConfig);
+});
+
 void test("host filter forms retain their exact identities and are never interpreted as native settings", async () => {
   for (const filters of [
     { include: /\.vue$/, exclude: /\/vendor\// },

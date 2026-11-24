@@ -8,7 +8,18 @@ const hostVueFields = new Set([
   "features",
   "include",
   "exclude",
+  "compiler",
 ]);
+
+function isVueSfcCompiler(value: unknown): boolean {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    ["parse", "compileScript", "compileTemplate", "compileStyle"].every(
+      (name) => typeof Object.getOwnPropertyDescriptor(value, name)?.value === "function",
+    )
+  );
+}
 
 export function nativeProjectSource(source: unknown, hostContext?: "nuxt"): unknown {
   if (
@@ -41,6 +52,8 @@ export function nativeProjectSource(source: unknown, hostContext?: "nuxt"): unkn
   if (!keys.length || !keys.every((key) => typeof key === "string" && hostVueFields.has(key))) {
     return inspected;
   }
+  const compiler = Object.getOwnPropertyDescriptor(host, "compiler");
+  if (compiler && !isVueSfcCompiler(compiler.value)) return inspected;
   // Copy descriptors without evaluating hooks, getters or callbacks. The original
   // full host object stays on Vite's config, for Nuxt's own Vue plugin to consume.
   const descriptors = Object.getOwnPropertyDescriptors(source);

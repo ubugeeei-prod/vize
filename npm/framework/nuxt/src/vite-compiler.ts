@@ -8,11 +8,20 @@ type NuxtCompilerHost = {
   options: {
     srcDir?: string;
     buildDir?: string;
+    typesDir?: string;
     vue?: { compilerOptions?: Record<string, unknown> };
     vite?: { plugins?: unknown[] };
   };
   hook(name: string, callback: (...args: unknown[]) => unknown): void;
 };
+
+/** Nuxt may place its type configs outside the build cache after prepare. */
+export function nuxtTypeResolutionFallback(
+  host: Pick<NuxtCompilerHost["options"], "buildDir" | "typesDir">,
+) {
+  const directory = host.typesDir || host.buildDir;
+  return directory ? { typeResolutionFallbackTsconfig: resolve(directory, "tsconfig.json") } : {};
+}
 
 /**
  * Keep lazy plugin loading and native-only registration outside the module
@@ -38,11 +47,7 @@ export async function setupNuxtViteCompiler(
       ...explicit,
       nuxtPageMeta: true,
       ssrModuleIdRoot: host.srcDir,
-      // The generated root config exists across Nuxt generations. Native
-      // selection still prefers a governing user config for each source.
-      ...(host.buildDir
-        ? { typeResolutionFallbackTsconfig: resolve(host.buildDir, "tsconfig.json") }
-        : {}),
+      ...nuxtTypeResolutionFallback(host),
     },
     defaults,
     "nuxt",

@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 import { test } from "node:test";
+import { nuxtTypeResolutionFallback } from "./vite-compiler.ts";
 import {
   resolveNuxtCompilerOptions,
   splitNuxtCompilerDefaults,
@@ -204,4 +205,14 @@ const inherited: VizeNuxtCompilerOptions = { config: { extends: "./base" } };
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+});
+
+await test("Nuxt's project fallback follows the generated types across prepare and build", () => {
+  const typesDir = path.resolve("app", ".nuxt");
+  const buildDir = path.resolve("app", "node_modules", ".cache", "nuxt", ".nuxt");
+  const generated = { typeResolutionFallbackTsconfig: path.join(typesDir, "tsconfig.json") };
+  assert.deepEqual(nuxtTypeResolutionFallback({ typesDir, buildDir }), generated);
+  assert.deepEqual(nuxtTypeResolutionFallback({ typesDir }), generated);
+  assert.deepEqual(nuxtTypeResolutionFallback({ buildDir: typesDir }), generated);
+  assert.deepEqual(nuxtTypeResolutionFallback({}), {});
 });
