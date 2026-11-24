@@ -6,7 +6,7 @@
 
 use vize_l0::Span;
 
-use super::{EmitDocument, SpanLink, expression_links};
+use super::{EmitDocument, expression_links};
 
 /// Where `authored` starts in `source_text`, when it is a slice of it: the
 /// same bytes at the same addresses. A node holds such a slice until a
@@ -72,15 +72,4 @@ impl EmitDocument {
             None,
         );
     }
-}
-
-pub(super) fn append_member_links(links: &mut Vec<SpanLink>, text: &str, code: &str, start: u32) {
-    vize_l0::source_range::visit_static_member_spans(text, code, start, |generated, authored| {
-        links.push(SpanLink {
-            generated,
-            authored,
-            name: None,
-            segment: true,
-        });
-    });
 }

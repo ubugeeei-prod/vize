@@ -21,6 +21,7 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         true,
         false,
         false,
+        false,
     )
     .into_result()
 }
@@ -47,6 +48,7 @@ pub fn generate_with_merge_props(
         true,
         false,
         false,
+        false,
     )
     .into_result()
 }
@@ -67,6 +69,7 @@ pub fn generate_with_vnode_factory(
         CodegenExperimentalOptions::default(),
         false,
         true,
+        false,
         false,
         false,
     )
@@ -97,6 +100,7 @@ pub fn generate_with_vnode_factory_and_merge_props(
         true,
         false,
         false,
+        false,
     )
     .into_result()
 }
@@ -123,6 +127,7 @@ pub fn generate_with_vnode_factory_and_child_values(
         true,
         untracked_children,
         true,
+        false,
     )
     .into_result()
 }
@@ -141,6 +146,7 @@ pub fn generate_with_sections(
         CodegenExperimentalOptions::default(),
         false,
         true,
+        false,
         false,
         false,
     )
@@ -164,6 +170,7 @@ pub fn generate_with_experimental_options(
         true,
         false,
         false,
+        false,
     )
     .into_result()
 }
@@ -184,6 +191,7 @@ pub fn generate_with_sections_and_experimental_options(
         experimental_options,
         false,
         true,
+        false,
         false,
         false,
     )
@@ -215,6 +223,26 @@ pub fn generate_with_sections_and_experimental_options_slot_scope_and_environmen
     no_slotted: bool,
     development: bool,
 ) -> CodegenResultWithSections {
+    generate_with_sfc_member_columns(
+        root,
+        options,
+        experimental_options,
+        no_slotted,
+        development,
+        false,
+    )
+}
+
+/// Select the property columns needed when the SFC assembler composes a render map.
+#[doc(hidden)]
+pub fn generate_with_sfc_member_columns(
+    root: &RootNode<'_>,
+    options: CodegenOptions,
+    experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
+    development: bool,
+    sfc_member_columns: bool,
+) -> CodegenResultWithSections {
     generate_with_sections_and_options(
         root,
         options,
@@ -226,5 +254,6 @@ pub fn generate_with_sections_and_experimental_options_slot_scope_and_environmen
         development,
         false,
         false,
+        sfc_member_columns,
     )
 }

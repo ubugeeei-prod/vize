@@ -1,8 +1,7 @@
 use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::{
-        CodegenResult, CodegenResultWithSections,
-        generate_with_sections_and_experimental_options_slot_scope_and_environment,
+        CodegenResult, CodegenResultWithSections, generate_with_sfc_member_columns,
         locate_for_aliases,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
@@ -170,12 +169,13 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
             locate_for_aliases(&mut root, source);
             let compat = profile!(
                 "atelier.dom.template.codegen_sourcemap_compat",
-                generate_with_sections_and_experimental_options_slot_scope_and_environment(
+                generate_with_sfc_member_columns(
                     &root,
                     codegen_opts,
                     codegen_experimental_options,
                     no_slotted,
                     development,
+                    additive_source_map,
                 )
             );
             let mapped = source_map::with_verified_map(native, compat);
@@ -261,12 +261,13 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
             });
             profile!(
                 "atelier.dom.template.codegen_compat",
-                generate_with_sections_and_experimental_options_slot_scope_and_environment(
+                generate_with_sfc_member_columns(
                     &root,
                     codegen_opts,
                     codegen_experimental_options,
                     no_slotted,
                     development,
+                    additive_source_map,
                 )
             )
         }

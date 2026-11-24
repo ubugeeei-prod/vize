@@ -167,10 +167,19 @@ impl CodegenContext {
     }
 
     /// Serialize the document's links as a v3 map, when it records.
-    pub(super) fn source_map(&self, filename: &str, source: &str) -> Option<String> {
-        self.out
-            .is_recording()
-            .then(|| self.out.source_map(filename, source))
+    pub(super) fn source_map(
+        &self,
+        filename: &str,
+        source: &str,
+        sfc_member_columns: bool,
+    ) -> Option<String> {
+        self.out.is_recording().then(|| {
+            if sfc_member_columns {
+                self.out.sfc_source_map(filename, source)
+            } else {
+                self.out.source_map(filename, source)
+            }
+        })
     }
 
     /// Byte length of the code generated so far.

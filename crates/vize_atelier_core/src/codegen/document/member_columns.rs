@@ -1,13 +1,39 @@
-//! Source positions for static property reads in a mapped template expression.
+//! Static member positions for render maps composed into Vue files.
 
+use super::{EmitDocument, SourceMapBuilder, rewritten_identifier_spans};
 use oxc_syntax::identifier::is_identifier_name;
+use vize_l0::{Span, String};
 
-use crate::Span;
+impl EmitDocument {
+    /// Serialize the render map composed into a Vue file, including the
+    /// static properties of expressions whose complete rewrite we can verify.
+    pub fn sfc_source_map(&self, filename: &str, source: &str) -> String {
+        let mut builder = SourceMapBuilder::new();
+        self.write_segments(&mut builder);
+        for link in self.links().iter().filter(|link| link.name.is_none()) {
+            let Some(authored) =
+                source.get(link.authored.start as usize..link.authored.end as usize)
+            else {
+                continue;
+            };
+            let Some(emitted) = self
+                .as_str()
+                .get(link.generated.start as usize..link.generated.end as usize)
+            else {
+                continue;
+            };
+            visit_static_member_spans(authored, emitted, link.authored.start, |out, at| {
+                builder.add_raw((link.generated.start + out.start) as usize, at.start);
+            });
+        }
+        builder.finish(self.as_str(), filename, source)
+    }
+}
 
 /// Visit property names in a verified expression rewrite. A rewritten receiver
 /// can grow a context prefix or an unref call. Its entire static access suffix
 /// must survive byte for byte, including optional chaining and whitespace.
-pub fn visit_static_member_spans(
+fn visit_static_member_spans(
     authored: &str,
     emitted: &str,
     source_start: u32,
@@ -27,6 +53,7 @@ pub fn visit_static_member_spans(
         || !parts
             .clone()
             .all(|part| is_identifier_name(member_name(part)))
+        || (emitted != authored && rewritten_identifier_spans(authored, emitted).is_none())
     {
         return;
     }
@@ -52,8 +79,7 @@ fn member_name(part: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::visit_static_member_spans;
-    use crate::Span;
-    use alloc::vec::Vec;
+    use vize_l0::Span;
 
     #[test]
     fn properties_use_distinct_offsets_after_a_rewritten_receiver() {

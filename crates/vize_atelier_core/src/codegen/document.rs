@@ -19,6 +19,7 @@ use super::rewrite_spans::rewritten_identifier_spans;
 use super::source_map::SourceMapBuilder;
 
 mod authored;
+mod member_columns;
 pub use authored::authored_offset;
 
 /// One generated↔authored link.
@@ -318,9 +319,9 @@ pub fn expression_links(code: &str, span: Span, source_text: &str) -> Vec<SpanLi
         return Vec::new();
     }
     let authored = source_text.get(span.start as usize..span.end as usize);
-    let rewritten = authored.and_then(|text| rewritten_identifier_spans(text, code));
-    let verified = authored.filter(|_| rewritten.is_some());
-    let identifiers = rewritten.unwrap_or_default();
+    let identifiers = authored
+        .and_then(|authored| rewritten_identifier_spans(authored, code))
+        .unwrap_or_default();
     let covers_start = identifiers
         .first()
         .is_some_and(|identifier| identifier.emitted == 0 && identifier.authored == 0);
@@ -340,11 +341,7 @@ pub fn expression_links(code: &str, span: Span, source_text: &str) -> Vec<SpanLi
             segment: true,
         }
     });
-    let mut links: Vec<_> = core::iter::once(whole).chain(named).collect();
-    if let Some(text) = verified {
-        authored::append_member_links(&mut links, text, code, span.start);
-    }
-    links
+    core::iter::once(whole).chain(named).collect()
 }
 
 #[cfg(test)]

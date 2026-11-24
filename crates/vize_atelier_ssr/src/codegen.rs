@@ -45,6 +45,7 @@ pub struct SsrSfcContext {
     pub(crate) slotted: bool,
     pub(crate) development: bool,
     pub(crate) jsx_closure: bool,
+    sfc_member_columns: bool,
 }
 
 impl SsrSfcContext {
@@ -55,6 +56,7 @@ impl SsrSfcContext {
             slotted,
             development: false,
             jsx_closure: false,
+            sfc_member_columns: false,
         }
     }
 
@@ -63,6 +65,13 @@ impl SsrSfcContext {
     #[must_use]
     pub const fn with_jsx_closure(mut self) -> Self {
         self.jsx_closure = true;
+        self
+    }
+
+    /// Include static-property coordinates when composing a Vue SFC render map.
+    #[must_use]
+    pub const fn with_sfc_member_columns(mut self) -> Self {
+        self.sfc_member_columns = true;
         self
     }
 
@@ -116,6 +125,7 @@ pub struct SsrCodegenContext<'a> {
     pub(crate) source: &'a str,
     /// Filename recorded in the Source Map v3 `file` and `sources` fields.
     source_map_filename: String,
+    sfc_member_columns: bool,
     /// `_tempN` bindings allocated by merged-props elements.
     pub(crate) temps: u32,
     /// Where the render body starts, so temp declarations land there.
@@ -164,6 +174,7 @@ impl<'a> SsrCodegenContext<'a> {
             scoped_params: std::vec::Vec::new(),
             select_v_model_stack: std::vec::Vec::new(),
             source_map_filename,
+            sfc_member_columns: false,
             temps: 0,
             body_start: 0,
         }
@@ -177,6 +188,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.slotted = context.slotted;
         self.development = context.development;
         self.jsx_closure = context.jsx_closure;
+        self.sfc_member_columns = context.sfc_member_columns;
     }
 
     pub(crate) fn conditional_comment_vnode(&self) -> &'static str {
@@ -249,8 +261,13 @@ impl<'a> SsrCodegenContext<'a> {
         let preamble = self.build_preamble();
 
         let map = self.out.is_recording().then(|| {
-            self.out
-                .source_map(self.source_map_filename.as_str(), self.source)
+            if self.sfc_member_columns {
+                self.out
+                    .sfc_source_map(self.source_map_filename.as_str(), self.source)
+            } else {
+                self.out
+                    .source_map(self.source_map_filename.as_str(), self.source)
+            }
         });
         let code = self.out.into_string();
 
