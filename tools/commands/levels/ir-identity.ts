@@ -110,6 +110,10 @@ export function emitIr(checkout: string, pkg: string, targetDir: string): string
       "-p",
       pkg,
       "--lib",
+      // A crate that also builds a `cdylib` gets unhashed, uplifted artifact
+      // names; emitting it as a plain rlib keeps the hashed `.ll` beside it.
+      "--crate-type",
+      "rlib",
       "--message-format=json",
       "--",
       "--emit=llvm-ir,link",
