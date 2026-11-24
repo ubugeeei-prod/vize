@@ -3,7 +3,11 @@
 //! The style string is accepted as before. eslint-plugin-vue's tuple is
 //! accepted as written: `["shorthand", { sameNameShorthand: "always" }]`.
 
-use serde::{Deserialize, Deserializer, Serialize, de::Error};
+use std::fmt;
+
+use serde::de::value::MapAccessDeserializer;
+use serde::de::{Error, IgnoredAny, IntoDeserializer, MapAccess, SeqAccess, Visitor};
+use serde::{Deserialize, Deserializer, Serialize};
 
 use super::ConfigLintRuleOptions;
 
@@ -52,27 +56,50 @@ pub enum VBindStyleConfig {
 
 /// A list is the tuple and only an object is its options; a derived struct
 /// would also read a list such as `["always"]` positionally.
+///
+/// The value is read in place rather than buffered first, so an error names
+/// the position of the authored value, as the derived style enum always did.
 impl<'de> Deserialize<'de> for VBindStyleConfig {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let value = serde_json::Value::deserialize(deserializer)?;
-        let serde_json::Value::Array(items) = value else {
-            return VBindStyle::deserialize(value)
-                .map(Self::Style)
-                .map_err(D::Error::custom);
-        };
-        let mut items = items.into_iter();
-        let (Some(style), options, None) = (items.next(), items.next(), items.next()) else {
-            return Err(D::Error::custom(
+        deserializer.deserialize_any(VBindStyleConfigVisitor)
+    }
+}
+
+struct VBindStyleConfigVisitor;
+
+impl<'de> Visitor<'de> for VBindStyleConfigVisitor {
+    type Value = VBindStyleConfig;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a v-bind style or [style, { sameNameShorthand }]")
+    }
+
+    fn visit_str<E: Error>(self, value: &str) -> Result<Self::Value, E> {
+        VBindStyle::deserialize(value.into_deserializer()).map(VBindStyleConfig::Style)
+    }
+
+    fn visit_map<A: MapAccess<'de>>(self, map: A) -> Result<Self::Value, A::Error> {
+        VBindStyle::deserialize(MapAccessDeserializer::new(map)).map(VBindStyleConfig::Style)
+    }
+
+    fn visit_seq<A: SeqAccess<'de>>(self, mut items: A) -> Result<Self::Value, A::Error> {
+        let Some(style) = items.next_element::<VBindStyle>()? else {
+            return Err(A::Error::custom(
                 "a style list must be [style] or [style, { sameNameShorthand }]",
             ));
         };
-        let style = VBindStyle::deserialize(style).map_err(D::Error::custom)?;
+        let options = items.next_element::<serde_json::Value>()?;
+        if items.next_element::<IgnoredAny>()?.is_some() {
+            return Err(A::Error::custom(
+                "a style list must be [style] or [style, { sameNameShorthand }]",
+            ));
+        }
         match options {
-            None => Ok(Self::StyleTuple((style,))),
+            None => Ok(VBindStyleConfig::StyleTuple((style,))),
             Some(options) if options.is_object() => VBindStyleOptions::deserialize(options)
-                .map(|options| Self::Tuple(style, options))
-                .map_err(D::Error::custom),
-            Some(_) => Err(D::Error::custom(
+                .map(|options| VBindStyleConfig::Tuple(style, options))
+                .map_err(A::Error::custom),
+            Some(_) => Err(A::Error::custom(
                 "the second item of a style list must be an options object",
             )),
         }
@@ -122,11 +149,21 @@ mod tests {
     }
 
     #[test]
-    fn the_style_string_and_the_upstream_tuple_are_read() {
+    fn the_style_and_the_upstream_tuple_are_read() {
         for (json, style, same_name) in [
             (
                 r#"{"vue/v-bind-style":"longform"}"#,
                 VBindStyle::Longform,
+                VBindSameNameShorthand::Ignore,
+            ),
+            (
+                r#"{"vue/v-bind-style":{"longform":null}}"#,
+                VBindStyle::Longform,
+                VBindSameNameShorthand::Ignore,
+            ),
+            (
+                r#"{"vue/v-bind-style":{"shorthand":null}}"#,
+                VBindStyle::Shorthand,
                 VBindSameNameShorthand::Ignore,
             ),
             (
@@ -176,6 +213,23 @@ mod tests {
         assert_eq!(
             serde_json::from_str::<VBindStyleConfig>(r#"["longform",{}]"#).unwrap(),
             VBindStyleConfig::Tuple(VBindStyle::Longform, VBindStyleOptions::default())
+        );
+    }
+
+    #[test]
+    fn a_refused_style_is_located_at_its_authored_value() {
+        // `"invalid"` ends at column 29; the closing brace is column 30.
+        assert_eq!(
+            parse(r#"{"vue/v-bind-style":"invalid"}"#)
+                .unwrap_err()
+                .to_string(),
+            "unknown variant `invalid`, expected `shorthand` or `longform` at line 1 column 29"
+        );
+        assert_eq!(
+            parse(r#"{"vue/v-bind-style":["invalid"]}"#)
+                .unwrap_err()
+                .to_string(),
+            "unknown variant `invalid`, expected `shorthand` or `longform` at line 1 column 30"
         );
     }
 

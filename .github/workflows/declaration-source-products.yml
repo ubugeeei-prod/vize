@@ -51,11 +51,23 @@ on:
       - "crates/vize_maestro/src/ide/diagnostics/corsa/**"
       - "crates/vize_canon/src/corsa_bridge.rs"
       - "crates/vize_canon/src/corsa_bridge/bridge.rs"
+      - crates/vize_canon/src/corsa_bridge/vue_document.rs
+      - crates/vize_canon/src/corsa_bridge/vue_document/ambient_diagnostics.rs
+      - crates/vize_canon/src/lsp_client/diagnostics.rs
+      - crates/vize_canon/src/lsp_client/diagnostics/ambient.rs
+      - crates/vize_canon/src/lsp_client/initial_diagnostics.rs
+      - crates/vize_canon/src/lsp_client/initial_diagnostics/ambient_world.rs
+      - crates/vize_canon/src/lsp_client/tracked_documents.rs
+      - crates/vize_canon/src/lsp_client/tracked_documents/tests.rs
+      - crates/vize_canon/src/lsp_client/tracked_documents/ambient_revision.rs
+      - crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics.rs
       - "crates/vize_canon/src/batch/virtual_project.rs"
       - "crates/vize_canon/src/batch/virtual_project/ambient_declarations*"
       - "crates/vize_canon/src/corsa_bridge/editor_session.rs"
       - "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/build.rs"
       - "tests/_fixtures/differential/typechecker/ambient-global-slot-host-3011/**"
+      - tests/formal/ambient-diagnostics/**
+      - tools/benchmarks/scripts/compare-ambient-diagnostics.ts
       - "crates/vize_maestro/src/server/state/global_tag_names*"
       - "crates/vize_maestro/src/server/state/global_tag_names/**"
       - "crates/vize_maestro/src/source_project/snapshot.rs"
@@ -184,6 +196,21 @@ jobs:
           run-install: true
       - name: Check authored ambient components in live native editor sessions
         run: . "${{ env.VIZE_CI_FILES }}/check-authored-ambient-components-in-live-native-editor-sessions.sh"
+      - name: Model native acknowledgement and publication across edits
+        working-directory: tests/formal/ambient-diagnostics
+        run: . "${{ env.VIZE_CI_FILES }}/model-native-diagnostic-publication.sh"
+      - name: Compare cold and repeated diagnostics on both revisions
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: . "${{ env.VIZE_CI_FILES }}/compare-ambient-diagnostic-revisions.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: ambient-diagnostic-costs
+          path: ${{ runner.temp }}/ambient-diagnostics.json
+          if-no-files-found: ignore
+          retention-days: 7
 
   checked-literal-products:
     name: Original TypeScript assignments and checked tool products
