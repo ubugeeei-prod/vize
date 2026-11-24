@@ -116,6 +116,74 @@ theorem authored_slice {Byte : Type} (before block after : List Byte) (lo hi : N
 
 #print axioms authored_slice
 
+/-- A monotone cursor list has one prefix below a given boundary. -/
+private theorem cursor_prefix (limit : Nat) (points : List Nat)
+    (ordered : points.Pairwise (· ≤ ·)) :
+    points.takeWhile (fun p => decide (p < limit)) = points.filter (fun p => decide (p < limit)) := by
+  induction points with
+  | nil => rfl
+  | cons x xs ih =>
+    obtain ⟨least, tail⟩ := List.pairwise_cons.mp ordered
+    by_cases inside : x < limit
+    · simp [inside, ih tail]
+    · have empty : xs.filter (fun p => decide (p < limit)) = [] := by
+        apply List.filter_eq_nil_iff.mpr
+        intro y mem
+        have := least y mem
+        simpa using (show ¬y < limit by omega)
+      simp [inside, empty]
+
+private theorem cursor_suffix (start : Nat) (points : List Nat)
+    (ordered : points.Pairwise (· ≤ ·)) :
+    points.dropWhile (fun p => decide (p < start)) = points.filter (fun p => decide (start ≤ p)) := by
+  induction points with
+  | nil => rfl
+  | cons x xs ih =>
+    obtain ⟨least, tail⟩ := List.pairwise_cons.mp ordered
+    by_cases below : x < start
+    · simp [below, Nat.not_le_of_lt below, ih tail]
+    · have fromStart := Nat.le_of_not_lt below
+      have all : xs.filter (fun p => decide (start ≤ p)) = xs := by
+        apply List.filter_eq_self.mpr
+        intro y mem
+        exact decide_eq_true (Nat.le_trans fromStart (least y mem))
+      simp [below, fromStart, all]
+
+/-- Select authored half-open ranges, and retain every request at the insertion
+    point of a zero-width diagnostic. List equality includes duplicate cursors. -/
+theorem recovery_cursor_window (points : List Nat) (lo hi : Nat)
+    (ordered : points.Pairwise (· ≤ ·)) :
+    ((points.dropWhile fun p => decide (p < lo)).takeWhile fun p =>
+      if lo = hi then decide (p ≤ hi) else decide (p < hi)) =
+    points.filter (fun p => decide ((lo ≤ p ∧ p < hi) ∨ (lo = hi ∧ p = lo))) := by
+  rw [cursor_suffix lo _ ordered]
+  have sorted := ordered.filter (fun p => decide (lo ≤ p))
+  by_cases anchor : lo = hi
+  · subst hi
+    simp only [if_true, true_and, eq_self]
+    have upper : (fun p => decide (p ≤ lo)) = (fun p => decide (p < lo + 1)) := by
+      funext p
+      simp only [decide_eq_decide]
+      omega
+    rw [upper, cursor_prefix _ _ sorted, List.filter_filter]
+    apply List.filter_congr
+    intro p _
+    by_cases eq : p = lo
+    · simp [eq]
+    · by_cases lt : p < lo
+      · simp [lt, Nat.not_le_of_lt lt, eq]
+      · have after : ¬p < lo + 1 := by omega
+        simp [after, lt, eq]
+  · simp only [if_neg anchor]
+    rw [cursor_prefix _ _ sorted, List.filter_filter]
+    apply List.filter_congr
+    intro p _
+    simp [anchor, Bool.and_comm]
+
+/-- info: 'Davinci.recovery_cursor_window' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms recovery_cursor_window
+
 /-- Retained diagnostics, related labels and witness links may repeat or overlap.
     After projection their payloads, order, file ranges and exact spelling agree
     with directly reading every occurrence from the current document. -/

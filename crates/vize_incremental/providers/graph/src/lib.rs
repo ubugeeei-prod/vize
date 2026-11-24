@@ -3,7 +3,10 @@
 mod recovery;
 mod source_sites;
 
-pub use recovery::{TemplateGraphObservation, TemplateRecovery};
+pub use recovery::{
+    RecoveryMatch, RecoveryPositionError, RecoveryRecord, TemplateGraphObservation,
+    TemplateRecovery,
+};
 pub use source_sites::TemplateSourceSites;
 
 use std::{borrow::Borrow, ops::ControlFlow};
