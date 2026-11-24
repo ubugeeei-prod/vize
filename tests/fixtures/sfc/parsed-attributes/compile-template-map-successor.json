@@ -1,0 +1,70 @@
+{
+  "schema": "vize.sfc-compile-reviewed-successor.v1",
+  "issue": 13547,
+  "contract": "Reverse only the reviewed template-provenance integration of the SFC compile source (#13547: the render block's template links join the component map) back to the previously reviewed bytes, before the earlier successors and the original law are checked.",
+  "path": "crates/vize_atelier_sfc/src/compile.rs",
+  "referenceBlob": "b80c1e46486d2aaec325c748aae5b8791826daff",
+  "currentBlob": "22f66cb8bd969bc6d93b363c62a8294e31fc4a93",
+  "replacements": [
+    {
+      "reference": "",
+      "current": "mod template_parts;\n"
+    },
+    {
+      "reference": "use crate::compile_template::{\n    compile_template_block_vapor, compile_template_block_with_capture, extract_template_parts,\n    slice_template_parts, template_parts_full,\n};\n",
+      "current": "use crate::compile_template::{compile_template_block_vapor, compile_template_block_with_capture};\n"
+    },
+    {
+      "reference": "    append_component_render_export, append_css_modules_assignment, finalize_output_mode,\n    rewrite_client_render_for_sfc_main,\n",
+      "current": "    append_component_render_export, append_css_modules_assignment, finalize_output_mode,\n"
+    },
+    {
+      "reference": "        // Compile template if present\n",
+      "current": "        // Compile template if present. With a source map requested, `render_at`\n        // is where the render block lands in the module and what it maps to.\n        let mut render_at = None;\n"
+    },
+    {
+      "reference": "                    let template_code = template_output.code;\n",
+      "current": "                    let (template_code, map) = (template_output.code, template_output.map);\n"
+    },
+    {
+      "reference": "",
+      "current": "                        render_at = map.map(|map| (0, map));\n"
+    },
+    {
+      "reference": "                        let template_code = rewrite_client_render_for_sfc_main(&template_code);\n",
+      "current": "                        let (template_code, map) = module_trace::client_render(&template_code, map);\n                        render_at = map.map(|map| (final_script.len() + 1, map));\n"
+    },
+    {
+      "reference": "            map: module_trace::module_map(\n",
+      "current": "            map: module_trace::module_map_with_render(\n"
+    },
+    {
+      "reference": "",
+      "current": "                render_at,\n"
+    },
+    {
+      "reference": "    if let Some(Ok(template_output)) = &template_result {\n        warnings.extend(template_output.warnings.clone());\n    }\n\n    // Extract template parts for inline mode (imports, hoisted, preamble, render_body)\n    let (\n        template_imports,\n        template_hoisted,\n        template_render_fn,\n        template_render_fn_name,\n        template_preamble,\n        render_body,\n    ) = match &template_result {\n",
+      "current": "    // Cut the template into the parts the setup assembly embeds: the whole\n    // render function for SSR, Vapor and separate output (named `_sfc_render`\n    // on the client), or the inline render's preamble and return expression.\n    let separate = script_output.separates_template();\n    let mut setup_template = match &template_result {\n"
+    },
+    {
+      "reference": "            let template_code = &template_output.code;\n            if is_vapor || options.template.ssr || script_output.separates_template() {\n                let (imports, hoisted, render_fn, render_fn_name) = profile!(\n                    \"atelier.sfc.template.extract_parts_full\",\n                    template_parts_full(template_output)\n                );\n                (\n                    imports,\n                    hoisted,\n                    render_fn,\n                    render_fn_name,\n                    String::default(),\n                    String::default(),\n                )\n            } else {\n                let (imports, hoisted, preamble, body, render_fn_name) = profile!(\n                    \"atelier.sfc.template.extract_parts\",\n                    match &template_output.sections {\n                        // Emission-recorded offsets: slice the sections out\n                        // directly instead of re-scanning the module.\n                        Some(sections) => slice_template_parts(template_code, sections),\n                        None => extract_template_parts(template_code),\n                    }\n                );\n                (\n                    imports,\n                    hoisted,\n                    String::default(),\n                    render_fn_name,\n                    preamble,\n                    body,\n                )\n            }\n",
+      "current": "            warnings.extend(template_output.warnings.clone());\n            template_parts::cut(\n                template_output,\n                is_vapor || options.template.ssr || separate,\n                separate && !is_vapor && !options.template.ssr,\n            )\n"
+    },
+    {
+      "reference": "            (\n                String::default(),\n                String::default(),\n                String::default(),\n                \"\",\n                String::default(),\n                String::default(),\n            )\n",
+      "current": "            template_parts::SetupTemplate::default()\n"
+    },
+    {
+      "reference": "        None => (\n            String::default(),\n            String::default(),\n            String::default(),\n            \"\",\n            String::default(),\n            String::default(),\n        ),\n    };\n\n    // In separate client output the template function shares module scope with\n    // the user's imports and declarations. Keep its name distinct from common\n    // script bindings such as `import { render } from \"./lib\"`.\n    let (template_render_fn, template_render_fn_name) = if script_output.separates_template()\n        && !is_vapor\n        && !options.template.ssr\n        && !template_render_fn.is_empty()\n    {\n        (\n            rewrite_client_render_for_sfc_main(&template_render_fn),\n            \"_sfc_render\",\n        )\n    } else {\n        (template_render_fn, template_render_fn_name)\n",
+      "current": "        None => template_parts::SetupTemplate::default(),\n"
+    },
+    {
+      "reference": "    let mut setup_trace = setup_runs.map(|runs| SetupTrace::new(runs, normal_runs));\n",
+      "current": "    let template_trace = std::mem::take(&mut setup_template.trace);\n    let mut setup_trace = setup_runs.map(|runs| SetupTrace::new(runs, normal_runs, template_trace));\n"
+    },
+    {
+      "reference": "                imports: &template_imports,\n                hoisted: &template_hoisted,\n                render_fn: &template_render_fn,\n                render_fn_name: template_render_fn_name,\n                preamble: &template_preamble,\n                render_body: &render_body,\n",
+      "current": "                imports: &setup_template.imports,\n                hoisted: &setup_template.hoisted,\n                render_fn: &setup_template.render_fn,\n                render_fn_name: setup_template.render_fn_name,\n                preamble: &setup_template.preamble,\n                render_body: &setup_template.render_body,\n"
+    }
+  ]
+}

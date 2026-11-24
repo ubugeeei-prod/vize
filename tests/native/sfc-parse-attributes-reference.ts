@@ -9,7 +9,9 @@ import {
   isTypeScriptSource,
   moduleShapeFactsReference,
   type ParseModule,
+  templateMapReference,
   typescriptErasureReference,
+  withoutTemplateSegments,
 } from "../tooling/support/typescript-erasure-reference.ts";
 import { emptyCompilePacketReference } from "./sfc-parse-attributes-empty-component.ts";
 
@@ -217,10 +219,18 @@ export function attributesPacketReference(
       assert(
         currentValue !== null && typeof currentValue === "object" && !Array.isArray(currentValue),
       );
-      reference = typescriptErasureReference(reference, currentValue as ExposurePacket, parse);
+      reference = typescriptErasureReference(
+        reference,
+        withoutTemplateSegments(currentValue as ExposurePacket, source),
+        parse,
+      );
     } else {
       reference = moduleShapeFactsReference(reference, parse);
     }
+  }
+  // #13547: the map gains the render's template segments, and nothing else.
+  if (current?.kind === "return" && typeof current.json === "string") {
+    reference = templateMapReference(reference, JSON.parse(current.json) as ExposurePacket, source);
   }
   return { ...packet, json: JSON.stringify(reference) };
 }

@@ -292,3 +292,166 @@ function anchors(map: string, code: string, parsed: BabelFile) {
   });
   return result;
 }
+
+type Segment = { column: number; authored?: [number, number, number]; name?: number };
+
+/** Every generated line's segments, with absolute positions. */
+function decodeMappings(mappings: string): Segment[][] {
+  let sourceIndex = 0,
+    sourceLine = 0,
+    sourceColumn = 0,
+    nameIndex = 0;
+  return mappings.split(";").map((line) => {
+    let column = 0;
+    return line
+      .split(",")
+      .filter(Boolean)
+      .map((text) => {
+        const fields = vlq(text);
+        column += fields[0];
+        if (fields.length === 1) return { column };
+        assert(fields.length === 4 || fields.length === 5);
+        sourceIndex += fields[1];
+        sourceLine += fields[2];
+        sourceColumn += fields[3];
+        const segment: Segment = { column, authored: [sourceIndex, sourceLine, sourceColumn] };
+        if (fields.length === 5) {
+          nameIndex += fields[4];
+          segment.name = nameIndex;
+        }
+        return segment;
+      });
+  });
+}
+
+function encodeMappings(lines: Segment[][]): string {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  const field = (value: number) => {
+    let rest = value < 0 ? -value * 2 + 1 : value * 2;
+    let out = "";
+    do {
+      const digit = rest % 32;
+      rest = Math.floor(rest / 32);
+      out += alphabet[rest > 0 ? digit + 32 : digit];
+    } while (rest > 0);
+    return out;
+  };
+  let sourceIndex = 0,
+    sourceLine = 0,
+    sourceColumn = 0,
+    nameIndex = 0;
+  const encoded = lines.map((line) => {
+    let column = 0;
+    return line
+      .map((segment) => {
+        let out = field(segment.column - column);
+        column = segment.column;
+        if (!segment.authored) return out;
+        const [index, authoredLine, authoredColumn] = segment.authored;
+        out += field(index - sourceIndex);
+        out += field(authoredLine - sourceLine);
+        out += field(authoredColumn - sourceColumn);
+        [sourceIndex, sourceLine, sourceColumn] = segment.authored;
+        if (segment.name !== undefined) {
+          out += field(segment.name - nameIndex);
+          nameIndex = segment.name;
+        }
+        return out;
+      })
+      .join(",");
+  });
+  return encoded.join(";").replace(/;+$/, "");
+}
+
+/** Whether a segment is authored inside the SFC's `<template>` block. */
+function templateSegments(source: string): (segment: Segment) => boolean {
+  const start = source.search(/<template\b/i);
+  const end = [...source.matchAll(/<\/template\s*>/gi)].at(-1)?.index ?? -1;
+  const lineStarts = [0];
+  for (const match of source.matchAll(/\r\n|[\n\r]/g)) {
+    lineStarts.push(match.index + match[0].length);
+  }
+  return ({ authored }) => {
+    if (!authored || authored[0] !== 0 || start < 0 || end <= start) return false;
+    const offset = lineStarts[authored[1]] + authored[2];
+    return offset > start && offset <= end;
+  };
+}
+
+/**
+ * The candidate packet as its map was before the render mapped back to the
+ * template (#13547): without the segments authored inside `<template>`, and
+ * without a map when none remain. The references above describe this view.
+ */
+export function withoutTemplateSegments<T extends ErasedPacket>(current: T, source: string): T {
+  if (current.map == null) return current;
+  assert.equal(typeof current.map, "string", "maps are serialized");
+  const map = JSON.parse(current.map as string) as { mappings: string };
+  const inTemplate = templateSegments(source);
+  const all = decodeMappings(map.mappings);
+  const lines = all.map((line) => line.filter((segment) => !inTemplate(segment)));
+  if (lines.every((line, index) => line.length === all[index].length)) return current;
+  const out = structuredClone(current);
+  if (lines.every((line) => line.length === 0)) delete out.map;
+  else out.map = JSON.stringify({ ...map, mappings: encodeMappings(lines) });
+  return out;
+}
+
+// Advance one preserved packet by the reviewed template provenance (#13547):
+// the render of a component maps back to its template. The candidate's map is
+// accepted only when it keeps every preserved segment and every other map
+// field, and each segment it gains is authored inside `<template>`. A packet
+// whose script emitted no segment gains its map, where the candidate lists it.
+// Every other field stays the preserved producer's.
+export function templateMapReference<T extends ErasedPacket>(
+  preserved: T,
+  current: ErasedPacket | undefined,
+  source: string,
+): T {
+  if (current?.map == null || current.map === preserved.map) return preserved;
+  assert.equal(typeof current.map, "string", "maps are serialized");
+  const { mappings, ...fields } = JSON.parse(current.map as string) as {
+    mappings: string;
+    sourcesContent?: unknown;
+  };
+  let kept = "";
+  if (preserved.map == null) {
+    assert.deepEqual(fields.sourcesContent, [source], "a gained map describes this source");
+  } else {
+    assert.equal(typeof preserved.map, "string", "maps are serialized");
+    const { mappings: before, ...preservedFields } = JSON.parse(preserved.map as string);
+    assert.deepEqual(fields, preservedFields, "the map keeps every other field");
+    kept = before;
+  }
+  const key = (line: number, { column, authored, name }: Segment) =>
+    `${line}:${column}>${authored?.join(":") ?? ""}#${name ?? ""}`;
+  const gained = new Map<string, Segment>();
+  decodeMappings(mappings).forEach((line, index) => {
+    for (const segment of line) gained.set(key(index, segment), segment);
+  });
+  decodeMappings(kept).forEach((line, index) => {
+    for (const segment of line) {
+      assert(gained.delete(key(index, segment)), "the map keeps every preserved segment");
+    }
+  });
+  assert(gained.size > 0, "a changed map gains template segments");
+  const inTemplate = templateSegments(source);
+  for (const [position, segment] of gained) {
+    assert(inTemplate(segment), `${position}: a gained segment is authored in the template`);
+  }
+  const out: ErasedPacket = structuredClone(preserved);
+  if (preserved.map != null) {
+    out.map = current.map;
+    return out as T;
+  }
+  // The gained map takes the place the candidate packet lists it in.
+  const names = Object.keys(current);
+  const previous = names[names.indexOf("map") - 1];
+  const placed: Record<string, unknown> = {};
+  for (const [name, value] of Object.entries(out)) {
+    if (name !== "map") placed[name] = value;
+    if (name === previous) placed.map = current.map;
+  }
+  placed.map ??= current.map;
+  return placed as T;
+}

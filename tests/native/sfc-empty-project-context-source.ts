@@ -27,6 +27,23 @@ const plan = JSON.parse(bytes.toString("utf8")) as {
 };
 assert.equal(plan.schema, "vize.sfc-empty-compile-project-context-source-successor.v1");
 
+// #13547: the render block's template links join the component map. That edit
+// of the pinned SFC compile source is kept as data, in the plan's own shape.
+const templateMapBytes = readFileSync(
+  new URL("../fixtures/sfc/parsed-attributes/compile-template-map-successor.json", import.meta.url),
+);
+assert.equal(
+  createHash("sha256").update(templateMapBytes).digest("hex"),
+  "a0c1c24540e0aa3aa7123a2fcf14cfef9e609aeb28c547fac8e3ba63e0335a0a",
+  "the reviewed template-map successor must remain complete",
+);
+const templateMap = JSON.parse(templateMapBytes.toString("utf8")) as SourceChange & {
+  schema: string;
+};
+assert.equal(templateMap.schema, "vize.sfc-compile-reviewed-successor.v1");
+assert.equal(templateMap.path, "crates/vize_atelier_sfc/src/compile.rs");
+assert.equal(templateMap.referenceBlob, "b80c1e46486d2aaec325c748aae5b8791826daff");
+
 export const emptyProjectContextSupportingBlobs = plan.supportingSources;
 
 function blob(bytes: Uint8Array): string {
@@ -157,8 +174,22 @@ pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<V
   return reference;
 }
 
+/** The reviewed template-map edit (#13547) reversed to the bytes it was made on. */
+function withoutTemplateMap(file: string, bytes: Uint8Array): Uint8Array {
+  if (file !== templateMap.path || blob(bytes) !== templateMap.currentBlob) return bytes;
+  let text = Buffer.from(bytes).toString("utf8");
+  for (const edit of [...templateMap.replacements].reverse()) {
+    assert.equal(text.split(edit.current).length, 2, "unique reviewed template-map edit");
+    text = text.replace(edit.current, () => edit.reference);
+  }
+  const reference = Buffer.from(text);
+  assert.equal(blob(reference), templateMap.referenceBlob);
+  return reference;
+}
+
 /** Later reviewed edits to an integrated source, removed before its law is checked. */
-function reviewedSourceSuccessor(file: string, bytes: Uint8Array): Uint8Array {
+function reviewedSourceSuccessor(file: string, current: Uint8Array): Uint8Array {
+  const bytes = withoutTemplateMap(file, current);
   // The levels name the component render binding by concept (`_sfc_render` is
   // unchanged): `RenderFunctionName::SfcRender` became `ComponentRender`.
   if (
