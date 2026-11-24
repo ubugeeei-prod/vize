@@ -11,10 +11,13 @@ support modules.
 ## Layout
 
 - `tools/commands/agents`: agent-facing local automation.
+- `tools/commands/benchmarks`: benchmark workflow dispatch.
 - `tools/commands/ci`: GitHub Actions, fuzz, and hosted verification helpers.
 - `tools/commands/davinci`: Davinci roadmap, matrix, corpus, and budget commands.
 - `tools/commands/editors`: editor extension packaging and real-server checks.
 - `tools/commands/fixtures`: real-project and generated fixture orchestration.
+- `tools/commands/generate`: generators for checked-in repository configuration and rule types.
+- `tools/commands/levels`: codegen, IR, and package identity checks between revisions.
 - `tools/commands/release`: release and npm publication commands.
 - `tools/support`: shared command support modules grouped by use case.
 - `tools/support/github` and `tools/support/tasks`: strictly typed TypeScript commands for

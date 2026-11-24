@@ -180,3 +180,6 @@ fn fill(spare: &mut [MaybeUninit<u8>], parts: &[TextPart]) -> usize {
     }
     written
 }
+
+#[cfg(test)]
+mod kani;

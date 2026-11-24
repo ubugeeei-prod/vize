@@ -576,7 +576,6 @@
       "tools/benchmarks/scripts/published-snapshot-validation.mjs",
       "tools/benchmarks/scripts/render-results.mjs",
       "tools/benchmarks/scripts/sfc-member-fixtures.mjs",
-      "tools/benchmarks/scripts/sfc-readonly-counters.mjs",
       "tools/benchmarks/scripts/type-snapshot-cli-corpus.mjs",
       "tools/benchmarks/scripts/type-snapshot-cli-leaf-corpus.mjs",
       "tools/benchmarks/scripts/type-snapshot-cli-leaf-parity.mjs",
