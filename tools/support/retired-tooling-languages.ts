@@ -5,11 +5,28 @@ import { join } from "node:path";
 // The ledger lists every file still waiting for its port; its test is the ratchet.
 // This file is an executable proof specification outside the product tooling.
 export const independentGraphTheory = "tests/formal/ir-graph/Reach.lean";
+// UTF-16 source map coordinate conversion.
+export const sourceMapCoordinates = {
+  theorem: "tests/formal/source-map/Coordinates.lean",
+  kernel: "davinci/vize_l4/src/write/source_map/indexed/geometry.rs",
+  harness: "davinci/vize_l4/src/write/source_map/indexed/kani.rs",
+} as const;
+const nearestLineStarts = {
+  theorem: "tests/formal/source-map/LineBreaks.lean",
+  kernel: "davinci/vize_l0/src/line_index/lsp_breaks.rs",
+  harness: "davinci/vize_l0/src/line_index/lsp_breaks/kani.rs",
+} as const;
+export const rustProofReferences = [sourceMapCoordinates, nearestLineStarts] as const;
+
+export function checkedRustTheorems(paths: readonly string[]): Set<string> {
+  return new Set(
+    rustProofReferences
+      .filter(({ kernel, harness }) => paths.includes(kernel) && paths.includes(harness))
+      .map(({ theorem }) => theorem),
+  );
+}
+
 export const retiredToolingLedger = "tools/config/retired-tooling-languages.json";
-// A mathematical reference paired with the Rust coordinate kernel and Kani harness.
-export const coordinateTheory = "tests/formal/source-map/Coordinates.lean";
-export const coordinateKernel = "davinci/vize_l4/src/write/source_map/indexed/geometry.rs";
-export const coordinateProof = "davinci/vize_l4/src/write/source_map/indexed/kani.rs";
 export const retiredToolingLedgerTest = "tests/tooling/retired-tooling-languages.test.ts";
 export const retiredToolingLanguages = ["py", "lean", "mbt", "mjs"] as const;
 export type RetiredToolingLanguage = (typeof retiredToolingLanguages)[number];
@@ -31,10 +48,17 @@ function record(value: unknown): Readonly<Record<string, unknown>> | undefined {
 // An unreadable ledger keeps the test selected so it reports the damage.
 export function retiredToolingDrift(paths: readonly string[], cwd: string): boolean {
   const changed = paths.flatMap((path) => {
-    if (path === independentGraphTheory || path === coordinateTheory) return [];
+    if (path === independentGraphTheory) return [];
     const language = retiredToolingLanguage(path);
     return language ? [{ path, language }] : [];
   });
+  if (
+    rustProofReferences.some(
+      ({ kernel, harness }) => paths.includes(kernel) || paths.includes(harness),
+    )
+  ) {
+    return true;
+  }
   if (changed.length === 0) return false;
   let ledger: Readonly<Record<string, unknown>> | undefined;
   try {
