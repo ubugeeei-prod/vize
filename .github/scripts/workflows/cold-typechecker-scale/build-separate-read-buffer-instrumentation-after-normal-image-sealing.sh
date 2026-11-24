@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-for role in base head; do
-  source_sha="$BASE_SHA"
-  if [[ "$role" == head ]]; then source_sha="$HEAD_SHA"; fi
-  node tools/benchmarks/scripts/cold-typechecker-scale-read-buffer.ts "$RUNNER_TEMP/cold-paired-$role" "$source_sha" "$RUNNER_TEMP/cold-read-probe-$role" "$RUNNER_TEMP/cold-paired/instrumented/$role"
-done

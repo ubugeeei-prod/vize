@@ -5,7 +5,7 @@ import { parse } from "yaml";
 
 void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU runner", () => {
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "typecheck-corpus-pair.yml"),
+    readAutomationPrograms(".github", "workflows", "typecheck-cold-pair.yml"),
   ) as {
     on: {
       workflow_dispatch: {
@@ -18,11 +18,11 @@ void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU
     >;
   };
   const inputs = workflow.on.workflow_dispatch.inputs;
-  assert.equal(inputs.base_sha?.required, true);
-  assert.equal(inputs.head_sha?.required, true);
+  assert.equal(inputs.base?.required, true);
+  assert.equal(inputs.head?.required, true);
   assert.equal(inputs.runs?.default, "5");
   assert.equal(inputs.workloads?.default, "");
-  const job = workflow.jobs.measure;
+  const job = workflow.jobs.corpus;
   assert.equal(job?.["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   const script = (job?.steps ?? []).map((step) => step.run ?? "").join("\n");
   assert.match(script, /npm ci --prefix tools\/benchmarks\/typecheck-hosts/u);

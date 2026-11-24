@@ -25253,7 +25253,7 @@
         "scales": [1000, 5000, 20000],
         "issues": [10620, 12102, 12109],
         "evidenceCandidates": [
-          ".github/workflows/content-mapper-replay.yml",
+          ".github/workflows/typecheck-cold-pair.yml",
           ".github/workflows/content-mapper-cold-start.yml"
         ],
         "packetIdentity": "required",

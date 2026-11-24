@@ -1,0 +1,57 @@
+import "../../Actions.pkl" as ci
+
+// cli: the shipped CLI profile. alloc: the same with --features profiling,
+// which counts allocations. perf: head only, with line tables, symbols and
+// frame pointers (C dependencies included) for perf's frame-pointer unwinder.
+needs = "replay-resolve"
+`runs-on` = ci.linux
+`timeout-minutes` = 90
+strategy {
+  matrix {
+    variant = List("cli", "alloc", "perf")
+  }
+}
+env {
+
+  BASE = "${{ needs.replay-resolve.outputs.base }}"
+  HEAD = "${{ needs.replay-resolve.outputs.head }}"
+  RUSTUP_TOOLCHAIN = "1.100.0"
+  VARIANT = "${{ matrix.variant }}"
+  PROFILE_INPUT = "${{ github.event_name == 'push' || inputs.profile }}"
+}
+steps = new Listing {
+  ...ci.stageWorkflowScripts("typecheck-cold-pair")
+  new Dynamic {
+    name = "Validate inputs"
+    run = ci.workflowScript("replay-validate-inputs.sh")
+  }
+  new Dynamic {
+    uses = ci.checkout
+    `if` = "env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'"
+    with { `persist-credentials` = false }
+  }
+  new Dynamic {
+    uses = ci.setupRust
+    `if` = "env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'"
+    with { toolchain = "1.100.0" }
+  }
+  new Dynamic {
+    uses = ci.setupWild
+    `if` = "env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    name = "Build"
+    `if` = "env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'"
+    run = ci.workflowScript("replay-build.sh")
+  }
+  new Dynamic {
+    uses = ci.uploadArtifact
+    `if` = "env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'"
+    with {
+      name = "replay-bin-${{ matrix.variant }}"
+      path = "replay-bin/"
+      `retention-days` = 7
+    }
+  }
+}

@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-mkdir "$RUNNER_TEMP/cold-paired/allocation"
-for role in base head; do
-  node tools/benchmarks/scripts/cold-typechecker-scale-candidate-prepare.ts --stage allocation --plan tools/benchmarks/scripts/cold-typechecker-scale-candidate-cases.json --base "$RUNNER_TEMP/cold-paired-base" --head "$RUNNER_TEMP/cold-paired-head" --provider "$RUNNER_TEMP/provider" --out "$RUNNER_TEMP/cold-paired" --role "$role"
-  source_sha="$BASE_SHA"
-  if [[ "$role" == head ]]; then source_sha="$HEAD_SHA"; fi
-  node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/cold-paired-$role" --target-dir "$RUNNER_TEMP/cold-candidate-custody-target-$role" --binary "$RUNNER_TEMP/cold-paired/custody-images/$role/vize" --receipt "$RUNNER_TEMP/cold-paired/builds/custody-$role.json" --role "custody-$role" --observer-source-sha "$source_sha"
-done

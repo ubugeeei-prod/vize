@@ -293,7 +293,7 @@ export function buildContentMapperV1Qualification(root: string, requiredCases: r
         scales: [1_000, 5_000, 20_000],
         issues: [10620, 12102, 12109],
         evidenceCandidates: [
-          ".github/workflows/content-mapper-replay.yml",
+          ".github/workflows/typecheck-cold-pair.yml",
           ".github/workflows/content-mapper-cold-start.yml",
         ],
         packetIdentity: "required",
