@@ -136,11 +136,6 @@ void test("Core PR and merge gates use the recovery adapter", () => {
 void test("Release-blocking observers and Fresco use the recovery adapter", () => {
   const local = "./.github/actions/setup-wild-http-recovery";
   const workflows = [
-    [
-      ".github/workflows/component-input-diagnostic-ownership.yml",
-      local,
-      ["published-sdk-packets", "unchanged-projection-packets"],
-    ],
     [".github/workflows/davinci-plugin-sdk.yml", local, ["plugin-contracts"]],
     [".github/workflows/jsx-authored-native-modules.yml", local, ["authored-modules"]],
     [".github/workflows/build-docs.yml", local, ["build-docs", "build-playground"]],

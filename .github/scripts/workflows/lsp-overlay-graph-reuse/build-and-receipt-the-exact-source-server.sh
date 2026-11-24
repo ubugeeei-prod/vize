@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-cargo build --locked --profile ci -p vize
-node tests/differential/build-receipt.ts
-npm install --prefix "$RUNNER_TEMP/native-lsp-provider" --ignore-scripts --no-package-lock --no-audit --no-fund vue@3.5.43

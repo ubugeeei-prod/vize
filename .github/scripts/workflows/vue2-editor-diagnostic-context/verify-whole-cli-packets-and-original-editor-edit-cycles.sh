@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-node --test --test-concurrency=1 \
-  tests/tooling/vue2-rename-context-custody.test.mjs \
-  tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts \
-  tests/snapshots/check/vue-element-admin-unmapped-diagnostic-oracle.ts
