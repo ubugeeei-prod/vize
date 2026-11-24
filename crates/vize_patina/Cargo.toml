@@ -120,10 +120,6 @@ required-features = ["legacy-differential"]
 name = "davinci_authored_markup_budget"
 harness = false
 
-[[test]]
-name = "davinci_lint_template_budget"
-harness = false
-
 # The custody-pinned native-phase workflow runs this binary by name.
 [[test]]
 name = "documented_rule_examples"
