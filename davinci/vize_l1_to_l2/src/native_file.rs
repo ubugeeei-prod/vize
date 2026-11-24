@@ -122,3 +122,14 @@ pub fn lower_sfc_with_lexical_initializers<'a>(
 }
 #[cfg(feature = "ir-views")]
 mod ir_views;
+
+/// Keep the full original surface and apply Vue text condensation during File construction.
+#[cfg(feature = "component-text-condense")]
+pub fn lower_sfc_with_condensed_text<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DescriptorOptions,
+) -> NativeSfcObservation<'a> {
+    use template::prepare_condensed as prepare;
+    include!("native_file/assembly.rs")
+}

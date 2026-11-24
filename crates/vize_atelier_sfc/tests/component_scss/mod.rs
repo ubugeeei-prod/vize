@@ -7,6 +7,10 @@ use vize_l4::{targets::scss, write::EmitDocument};
 
 mod map_corpus;
 mod prepared;
+#[cfg(feature = "native-scoped-scss")]
+mod scoped;
+#[cfg(feature = "native-scoped-scss")]
+mod style_only;
 
 #[global_allocator]
 static ALLOCATOR: CountingAllocator<System> = CountingAllocator::system();

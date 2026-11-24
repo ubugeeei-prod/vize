@@ -74,7 +74,7 @@ impl<'a> ScssProducts<'a> {
     }
 
     pub fn css(&self) -> Result<String, ScssRefusal> {
-        self.program().map(vize_l4::targets::scss::emit)
+        self.program().map(vize_l4::targets::css_rules::emit)
     }
 
     pub fn classes(&self) -> Option<&AuthoredClasses> {

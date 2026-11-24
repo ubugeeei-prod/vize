@@ -1,10 +1,7 @@
 //! Emit a genuine source-owned plain CSS family; no legacy compiler helper.
 
 use vize_l0::Span;
-use vize_l1::{
-    container::vue::{AdmittedDescriptor, StyleView},
-    css::StyleSyntax,
-};
+use vize_l1::{container::vue::StyleView, css::StyleSyntax};
 use vize_l4::module::ScopeId;
 use vize_l4::write::{EmitDocument, LinkSink};
 
@@ -63,15 +60,22 @@ impl<'o, 'a> PlainStyle<'o, 'a> {
     }
 }
 
-pub(crate) fn emit<L: LinkSink>(
-    descriptor: AdmittedDescriptor<'_, '_>,
+pub(crate) fn emit<'o, 'a: 'o, L: LinkSink>(
+    #[cfg(not(feature = "native-scoped-scss"))]
+    descriptor: vize_l1::container::vue::AdmittedDescriptor<'o, 'a>,
+    #[cfg(feature = "native-scoped-scss")] descriptor: impl Into<
+        vize_l1::container::vue::CheckedStyleBlocks<'o, 'a>,
+    >,
     syntax: &[StyleSyntax<'_>],
     scope_id: Option<ScopeId<'_>>,
     trim: bool,
     #[cfg(feature = "native-sfc-scss")] scss: Option<
         &mut dyn Iterator<Item = &crate::scss::ScssProducts<'_>>,
     >,
+    #[cfg(feature = "native-scoped-scss")] scoped_scss: bool,
 ) -> Result<Option<EmitDocument>, NativeSfcCompileError> {
+    #[cfg(feature = "native-scoped-scss")]
+    let descriptor = descriptor.into();
     let mut output = EmitDocument::new(L::RECORDING);
     #[cfg(feature = "native-sfc-scss")]
     let enabled = scss.is_some();
@@ -79,12 +83,28 @@ pub(crate) fn emit<L: LinkSink>(
     let mut prepared = scss.into_iter().flatten().peekable();
     for original in descriptor.styles() {
         #[cfg(feature = "native-sfc-scss")]
-        if enabled
-            && let [lang] = original.attrs()
-            && lang.name == "lang"
-            && vize_l1::container::lang::style_lang(lang.value)
-                == Ok(vize_l1::css::lang::StyleLanguage::Scss)
-        {
+        let is_scss = |lang: &vize_l1::container::BlockAttr<'_>| {
+            lang.name == "lang"
+                && vize_l1::container::lang::style_lang(lang.value)
+                    == Ok(vize_l1::css::lang::StyleLanguage::Scss)
+        };
+        #[cfg(feature = "native-scoped-scss")]
+        let scoped = match original.attrs() {
+            [a, b]
+                if scoped_scss
+                    && ((a.name == "scoped" && is_scss(b))
+                        || (b.name == "scoped" && is_scss(a))) =>
+            {
+                scope_id
+            }
+            _ => None,
+        };
+        #[cfg(feature = "native-sfc-scss")]
+        let accepted = matches!(original.attrs(), [lang] if is_scss(lang));
+        #[cfg(feature = "native-scoped-scss")]
+        let accepted = accepted || scoped.is_some();
+        #[cfg(feature = "native-sfc-scss")]
+        if enabled && accepted {
             use vize_l1::css::lang::StyleLanguage;
             use vize_l2::lang::scss::ScssProgram;
             let block = original.block();
@@ -105,7 +125,12 @@ pub(crate) fn emit<L: LinkSink>(
             if !output.is_empty() {
                 output.push_str("\n");
             }
-            vize_l4::targets::scss::append(&mut output, program);
+            #[cfg(feature = "native-scoped-scss")]
+            if let Some(id) = scoped {
+                vize_l4::targets::css_rules::append_scoped(&mut output, program, id, trim);
+                continue;
+            }
+            vize_l4::targets::css_rules::append(&mut output, program);
             continue;
         }
         if original.attrs().iter().any(|attr| attr.name == "scoped") {

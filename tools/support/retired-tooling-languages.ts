@@ -11,6 +11,11 @@ export const sourceMapCoordinates = {
   kernel: "davinci/vize_l4/src/write/source_map/indexed/geometry.rs",
   harness: "davinci/vize_l4/src/write/source_map/indexed/kani.rs",
 } as const;
+const nearestLineStarts = {
+  theorem: "tests/formal/source-map/LineBreaks.lean",
+  kernel: "davinci/vize_l0/src/line_index/lsp_breaks.rs",
+  harness: "davinci/vize_l0/src/line_index/lsp_breaks/kani.rs",
+} as const;
 export const styleHeaderValidation = {
   theorem: "tests/formal/style-format/Header.lean",
   kernel: "crates/vize_maestro/src/source_project/style_format/header.rs",
@@ -38,6 +43,7 @@ export const templateSpanProjection = {
 } as const;
 export const rustProofReferences = [
   sourceMapCoordinates,
+  nearestLineStarts,
   styleHeaderValidation,
   positionIndex,
   compilerStringLiterals,

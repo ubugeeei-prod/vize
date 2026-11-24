@@ -75,40 +75,66 @@ fn paired_retained_styles_and_complete_components() {
                 "<style lang=scss>$ink:red;.c{i}{{color:$ink;.child{{width:1px}}}}</style>"
             ));
         }
-        for mapped in [false, true] {
-            let options = NativeSfcCompileOptions {
-                source_map: mapped,
-                ..Default::default()
-            };
-            let run = |shared| {
-                let arena = Allocator::default();
-                let session = NativeScssSession::new(&arena, black_box(&source), options);
-                let descriptor = session.observation().descriptor().admitted().unwrap();
-                let products: Vec<_> = descriptor
-                    .styles()
-                    .map(|style| ScssProducts::from_style(style).unwrap())
-                    .collect();
-                let output = if shared {
-                    session.emit(&products)
-                } else {
-                    session.emit([])
-                }
-                .unwrap();
-                assert!(
-                    products
-                        .iter()
-                        .all(|p| p.classes().unwrap().names().len() == 2)
-                );
-                drop(black_box(output));
-            };
-            let (separate, shared) = paired(
-                &format!("retained-component styles={count} mapped={mapped}"),
-                run,
-            );
+        measure_session("retained-component", &source, count, |a, s, o| {
+            NativeScssSession::new(a, s, o)
+        });
+    }
+}
+
+pub(super) fn measure_session(
+    label: &str,
+    source: &str,
+    count: usize,
+    create: impl for<'a> Fn(
+        &'a Allocator,
+        &'a str,
+        NativeSfcCompileOptions<'static>,
+    ) -> NativeScssSession<'a, 'static>,
+) {
+    for mapped in [false, true] {
+        let options = NativeSfcCompileOptions {
+            source_map: mapped,
+            ..Default::default()
+        };
+        let arena = Allocator::default();
+        let session = create(&arena, source, options);
+        let prepared: Vec<_> = session
+            .observation()
+            .descriptor()
+            .admitted()
+            .unwrap()
+            .styles()
+            .map(|style| ScssProducts::from_style(style).unwrap())
+            .collect();
+        let expected = session.emit([]).unwrap();
+        let actual = session.emit(&prepared).unwrap();
+        assert_eq!(actual.document(), expected.document());
+        assert_eq!(actual.css_document(), expected.css_document());
+        assert_eq!(actual.source_map(), expected.source_map());
+        assert_eq!(actual.css_source_map(), expected.css_source_map());
+        let run = |shared| {
+            let arena = Allocator::default();
+            let session = create(&arena, black_box(source), options);
+            let descriptor = session.observation().descriptor().admitted().unwrap();
+            let products: Vec<_> = descriptor
+                .styles()
+                .map(|style| ScssProducts::from_style(style).unwrap())
+                .collect();
+            let output = if shared {
+                session.emit(&products)
+            } else {
+                session.emit([])
+            }
+            .unwrap();
             assert!(
-                shared <= separate,
-                "styles={count} mapped={mapped} ns={separate}/{shared}"
+                products
+                    .iter()
+                    .all(|p| p.classes().unwrap().names().len() == 2)
             );
-        }
+            drop(black_box(output));
+        };
+        let label = format!("{label} styles={count} mapped={mapped}");
+        let (separate, shared) = paired(&label, run);
+        assert!(shared <= separate, "{label} ns={separate}/{shared}");
     }
 }

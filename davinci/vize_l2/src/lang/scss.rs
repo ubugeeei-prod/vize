@@ -1,6 +1,8 @@
 //! Source-resolved SCSS variables, nested selectors and ordered declarations.
+use crate::style::{ExpandedRules, ScopeAtSelectorEnd, sealed};
+pub use crate::style::{Property, RuleRun};
 use alloc::vec::Vec;
-use vize_l0::{SourceBlock, Span, String};
+use vize_l0::{SourceBlock, Span, line_index::lsp_breaks};
 use vize_l1::css::lang::OriginalStyleStructure;
 
 mod lower;
@@ -14,22 +16,6 @@ pub struct ScssProgram<'a> {
     runs: Vec<RuleRun<'a>>,
     variables: Vec<Variable<'a>>,
     uses: Vec<VariableUse>,
-}
-
-#[derive(Debug)]
-pub struct RuleRun<'a> {
-    pub selector: String,
-    pub selector_span: Span,
-    pub group: usize,
-    pub declarations: Vec<Property<'a>>,
-}
-
-#[derive(Debug)]
-pub struct Property<'a> {
-    pub name: &'a str,
-    pub value: String,
-    pub name_span: Span,
-    pub value_span: Span,
 }
 
 #[derive(Debug)]
@@ -113,3 +99,40 @@ impl<'a> ScssProgram<'a> {
         Some(expression)
     }
 }
+
+impl<'a> ExpandedRules<'a> for ScssProgram<'a> {
+    fn runs(&self) -> &[RuleRun<'a>] {
+        self.runs()
+    }
+
+    #[inline]
+    fn value_links(&self) -> impl FnMut(&Property<'a>) -> Option<Span> {
+        let bytes = self.block.root_source().as_bytes();
+        let end = self.block.end() as usize;
+        let mut line = self.block.start() as usize..self.block.start() as usize;
+        move |property| {
+            let origin = self.value_origin(property.value_span)?;
+            let name = property.name_span.start as usize;
+            let at = origin.start as usize;
+            if line.contains(&name) {
+                return (!line.contains(&at)).then_some(origin);
+            }
+            if origin.start >= property.name_span.end {
+                // A literal or a list follows its name. These gaps are disjoint.
+                let gap = bytes.get(property.name_span.end as usize..at)?;
+                return lsp_breaks::first_start(gap).map(|_| origin);
+            }
+            // Aliases can point far back. Cache the complete name line, then
+            // search only the bytes beyond that line when a later name misses.
+            let before = bytes.get(line.end..name)?;
+            let start = lsp_breaks::last_start(before).map_or(line.end, |offset| line.end + offset);
+            let after = bytes.get(name..end)?;
+            let next = lsp_breaks::first_start(after).map_or(end, |offset| name + offset);
+            line = start..next;
+            (at < start).then_some(origin)
+        }
+    }
+}
+
+impl sealed::ScopeAtSelectorEnd for ScssProgram<'_> {}
+impl<'a> ScopeAtSelectorEnd<'a> for ScssProgram<'a> {}

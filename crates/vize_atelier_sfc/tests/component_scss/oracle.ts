@@ -7,6 +7,7 @@ import { join, resolve } from "node:path";
 import { text } from "node:stream/consumers";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { scopedBlock, scopeId } from "./scoped-oracle.ts";
+import { compareRender, scopedSass } from "./scoped-sass-oracle.ts";
 
 const require = createRequire(import.meta.url);
 const { decode, encode } = require("@jridgewell/sourcemap-codec");
@@ -25,15 +26,14 @@ const preprocess = fileURLToPath(
 type Point = [number, number];
 type Segment = [number, number, number, number, number?];
 type Scene = {
+  scopedScss?: boolean;
   name: string;
   filename: string;
   source: string;
   trim: boolean;
-  code: string;
-  map: object;
   css: string | null;
   cssMap: object | null;
-};
+} & ({ stylesOnly: true } | { stylesOnly?: false; code: string; map: object });
 const rows: Scene[] = JSON.parse(await text(process.stdin));
 
 function starts(text: string, breaks = /\r\n|[\r\n\u2028\u2029]/g): number[] {
@@ -49,13 +49,14 @@ const jobs: { file: string; lang: string; source: string }[] = [];
 const expectedBlocks: { css: string }[] = [];
 let anchors = 0;
 let modules = 0;
+let renders = 0;
 for (const row of rows) {
   const { descriptor, errors } = parse(row.source, {
     filename: row.filename,
     sourceMap: false,
     ignoreEmpty: false,
   });
-  assert.deepEqual(errors, [], row.name);
+  if (!row.stylesOnly) assert.deepEqual(errors, [], row.name);
   const inputLines = starts(row.source);
   let css = "";
   const links: Point[] = [];
@@ -64,7 +65,7 @@ for (const row of rows) {
     const start = block.loc.start.offset;
     assert.equal(row.source.slice(start, block.loc.end.offset), block.content);
     if (block.lang?.toLowerCase() === "scss") {
-      assert.ok(!block.scoped && !block.module && !block.src, row.name);
+      assert.ok((!block.scoped || row.scopedScss) && !block.module && !block.src, row.name);
       const file = resolve(row.name);
       const result = sass.compileString(block.content, {
         url: pathToFileURL(file),
@@ -73,15 +74,26 @@ for (const row of rows) {
       jobs.push({ file, lang: "scss", source: block.content });
       expectedBlocks.push({ css: result.css });
       const inLines = starts(block.content, /\r\n|[\r\n]/g);
-      const outLines = starts(result.css);
+      const scoped = block.scoped
+        ? scopedSass(block.content, result.css, row.filename, row.trim)
+        : null;
+      const output = scoped?.css ?? result.css;
+      const outLines = starts(output);
       const map: Segment[][] = decode(result.sourceMap.mappings);
       for (const [line, segments] of map.entries()) {
         for (const [col, sourceIndex, sourceLine, sourceCol] of segments) {
           assert.equal(sourceIndex, 0);
-          links.push([css.length + outLines[line] + col, start + inLines[sourceLine] + sourceCol]);
+          const target = scoped ? scoped.lines[line] : line;
+          assert.ok(target >= 0, row.name);
+          if (scoped)
+            assert.equal(scoped.scoped[target].slice(0, col), scoped.unscoped[line].slice(0, col));
+          links.push([
+            css.length + outLines[target] + col,
+            start + inLines[sourceLine] + sourceCol,
+          ]);
         }
       }
-      css += result.css;
+      css += output;
     } else {
       assert.ok(!block.module && !block.src, row.name);
       const raw: string = block.content;
@@ -104,6 +116,10 @@ for (const row of rows) {
     }
   }
   const generated = starts(css);
+  if (!row.stylesOnly && row.scopedScss && descriptor.template) {
+    await compareRender(descriptor, row.code, row.filename);
+    renders++;
+  }
   const mapped: Segment[][] = [];
   for (const [target, source] of links) {
     const [line, col] = point(generated, target);
@@ -127,6 +143,7 @@ for (const row of rows) {
       : null,
     row.name,
   );
+  if (row.stylesOnly) continue;
   for (const fixture of frozen.fixtures) {
     const prefix = row.source.indexOf(fixture.source);
     if (prefix < 0) continue;
@@ -174,7 +191,8 @@ try {
 } finally {
   fs.rmSync(scratch, { recursive: true });
 }
-assert.ok(anchors && modules && jobs.length);
+assert.ok(anchors && jobs.length);
+if (rows.some((row) => !row.stylesOnly)) assert.ok(modules);
 console.log(
-  `whole SCSS styles=${jobs.length} CSS anchors=${anchors} frozen JS modules and maps=${modules} Sass=${sass.info.split("\n")[0]}`,
+  `whole SCSS styles=${jobs.length} CSS anchors=${anchors} frozen JS modules and maps=${modules} Vue render comparisons=${renders} Sass=${sass.info.split("\n")[0]}`,
 );

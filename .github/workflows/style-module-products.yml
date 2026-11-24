@@ -4,6 +4,34 @@ on:
     paths:
       - ".github/workflows/style-module-products.yml"
       - ".github/scripts/workflows/style-module-products/**"
+      - davinci/vize_l0/Cargo.toml
+      - davinci/vize_l0/src/line_index.rs
+      - davinci/vize_l0/src/line_index/lsp_breaks.rs
+      - davinci/vize_l0/src/line_index/lsp_breaks/**
+      - davinci/vize_l0/src/line_index/line_breaks.rs
+      - davinci/vize_l0/tests/lsp_line_breaks.rs
+      - davinci/vize_l1/src/container/vue/descriptor/style_blocks.rs
+      - davinci/vize_l1_to_l2/src/lower/text/component.rs
+      - davinci/vize_l1_to_l2/src/native/text.rs
+      - davinci/vize_l2/src/style.rs
+      - davinci/vize_l2/src/lang/scss.rs
+      - davinci/vize_l2/src/lang/scss/**
+      - davinci/vize_l4/src/targets/css_rules.rs
+      - davinci/vize_l4/src/targets/scss.rs
+      - crates/vize_atelier_sfc/src/native.rs
+      - crates/vize_atelier_sfc/src/native/scope.rs
+      - crates/vize_atelier_sfc/src/native/styles.rs
+      - crates/vize_atelier_sfc/src/native/style_products.rs
+      - crates/vize_atelier_sfc/tests/component_scss/**
+      - crates/vize_atelier_sfc/tests/native_sfc_scss.rs
+      - crates/vize_atelier_sfc/tests/bundler_toolchain_session.rs
+      - crates/vize_maestro/src/source_project/scoped_component.rs
+      - crates/vize_maestro/src/source_project/toolchain_session.rs
+      - crates/vize_maestro/src/source_project/toolchain_session/**
+      - crates/vize_incremental/providers/graph/tests/incremental.rs
+      - crates/vize_incremental/providers/graph/tests/incremental/**
+      - tests/fixtures/shared-toolchain/**
+      - npm/builder/parcel/package.json
       - davinci/vize_l4/src/write/source_map/indexed.rs
       - davinci/vize_l4/src/write/source_map/indexed/**
       - crates/vize_maestro/src/source_project/style_format.rs
@@ -47,3 +75,55 @@ jobs:
         run: kani crates/vize_maestro/src/source_project/style_format/kani.rs --output-format=terse
       - name: Verify source positions and style attributes for arbitrary finite input
         run: . "${{ env.VIZE_CI_FILES }}/verify-source-coordinates-and-style-headers.sh"
+  nearest-line-starts:
+    name: Prove nearest LSP line starts on ARM64
+    runs-on: blacksmith-32vcpu-ubuntu-2404-arm
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
+        with:
+          kani-version: 0.68.0
+          args: --manifest-path davinci/vize_l0/Cargo.toml --features lsp-line-break-search --tests --lib --harness nearest_lsp_line_starts_match_every_short_byte_slice --output-format=terse
+  scoped-components:
+    name: Scoped compiler output and editor revisions
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUST_MIN_STACK: "16777216"
+      RUSTUP_TOOLCHAIN: 1.100.0
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/style-module-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with:
+          wild-version: 0.9.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - name: Compare scoped output to Vue and replay the editor revisions
+        run: . "${{ env.VIZE_CI_FILES }}/check-scoped-components.sh"

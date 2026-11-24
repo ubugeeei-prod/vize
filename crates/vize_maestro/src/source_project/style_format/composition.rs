@@ -208,9 +208,6 @@ fn a_style_lowering_refusal_preserves_rules_and_a_superseded_snapshot_skips_the_
 #[test]
 #[ignore = "paired optimized style tool timing with allocation measurement"]
 fn measure_shared_style_queries() {
-    use davinci_harness::alloc;
-    use std::{hint::black_box, time::Instant};
-    alloc::mark_installed();
     for count in [1, 8, 48] {
         let mut body = String::from("$ink:red;");
         for i in 0..count {
@@ -223,45 +220,52 @@ fn measure_shared_style_queries() {
         }
         paired(&body, |run| {
             compare(run);
-            let fresh = alloc::measure(|| run(false)).unwrap();
-            let shared = alloc::measure(|| run(true)).unwrap();
-            let elapsed = |mode| {
-                let start = Instant::now();
-                for _ in 0..8 {
-                    black_box(run(black_box(mode)));
-                }
-                start.elapsed().as_nanos() / 8
-            };
-            let mut separate = Vec::new();
-            let mut fused = Vec::new();
-            for round in 0..35 {
-                let (a, b) = if round % 2 == 0 {
-                    (elapsed(false), elapsed(true))
-                } else {
-                    let b = elapsed(true);
-                    (elapsed(false), b)
-                };
-                if round >= 4 {
-                    separate.push(a);
-                    fused.push(b);
-                }
-            }
-            separate.sort_unstable();
-            fused.sort_unstable();
-            println!(
-                "composed style rules={count} separate_ns={} shared_ns={} allocations={}/{} peak={}/{}",
-                separate[15],
-                fused[15],
-                fresh.calls,
-                shared.calls,
-                fresh.peak_bytes_over_start,
-                shared.peak_bytes_over_start
-            );
-            assert!(
-                shared.calls < fresh.calls
-                    && shared.peak_bytes_over_start <= fresh.peak_bytes_over_start
-            );
-            assert!(fused[15] <= separate[15]);
+            compare_costs(&format!("composed style rules={count}"), run);
         });
     }
+}
+
+#[cfg(feature = "micro-profiling")]
+pub(in crate::source_project) fn compare_costs<T>(label: &str, run: impl Fn(bool) -> T) {
+    use davinci_harness::alloc;
+    use std::{hint::black_box, time::Instant};
+    alloc::mark_installed();
+    let fresh = alloc::measure(|| run(false)).unwrap();
+    let shared = alloc::measure(|| run(true)).unwrap();
+    let elapsed = |mode| {
+        let start = Instant::now();
+        for _ in 0..8 {
+            black_box(run(black_box(mode)));
+        }
+        start.elapsed().as_nanos() / 8
+    };
+    let mut separate = Vec::new();
+    let mut fused = Vec::new();
+    for round in 0..35 {
+        let (a, b) = if round % 2 == 0 {
+            (elapsed(false), elapsed(true))
+        } else {
+            let b = elapsed(true);
+            (elapsed(false), b)
+        };
+        if round >= 4 {
+            separate.push(a);
+            fused.push(b);
+        }
+    }
+    separate.sort_unstable();
+    fused.sort_unstable();
+    println!(
+        "{label} separate_ns={} shared_ns={} allocations={}/{} peak={}/{}",
+        separate[15],
+        fused[15],
+        fresh.calls,
+        shared.calls,
+        fresh.peak_bytes_over_start,
+        shared.peak_bytes_over_start
+    );
+    assert!(
+        shared.calls < fresh.calls && shared.peak_bytes_over_start <= fresh.peak_bytes_over_start
+    );
+    assert!(fused[15] <= separate[15]);
 }
