@@ -28,7 +28,7 @@ type Workflow = {
   on: { workflow_dispatch: { inputs: Record<string, unknown> } };
   jobs: Record<string, Job>;
 };
-const workflows = ["public-native-events.yml", "release-contracts.yml"].map(
+const workflows = ["release-contracts.yml"].map(
   (name) =>
     parse(
       readFileSync(new URL("../../../.github/workflows/" + name, import.meta.url), "utf8"),

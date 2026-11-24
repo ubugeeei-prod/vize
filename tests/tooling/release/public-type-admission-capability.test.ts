@@ -17,7 +17,7 @@ type Step = {
 type Job = { if?: string; steps: Step[] };
 type Workflow = { jobs: Record<string, Job> };
 const observerName = "Qualify independent published template type admission";
-const workflows = ["public-native-events.yml", "release-contracts.yml"].map(
+const workflows = ["release-contracts.yml"].map(
   (name) => parse(readAutomationPrograms(".github", "workflows", name)) as Workflow,
 );
 function job(workflow: Workflow, name: string): Job {
@@ -53,7 +53,7 @@ test("the isolated host bootstrap stays after original CPP restoration and befor
 });
 
 test("capability mode is manual source proof and preserves every ordinary unit selection", () => {
-  const wrapper = workflows[1];
+  const wrapper = workflows[0];
   assert.ok(wrapper);
   const capability = job(wrapper, "type-admission-source-capability");
   const units = job(wrapper, "contracts");
@@ -90,7 +90,7 @@ test("capability mode is manual source proof and preserves every ordinary unit s
 });
 
 test("the actual source-capability proof rejects mixed or false public identities before install", async () => {
-  const wrapper = workflows[1];
+  const wrapper = workflows[0];
   assert.ok(wrapper);
   const proof = job(wrapper, "type-admission-source-capability").steps.find(
     (step) => step.name === "Prove the known public source for the isolated host capability",
@@ -217,7 +217,7 @@ test("full admission and source preflight preserve original CPP custody even on 
         /type-admission-cpp-custody.ts "\$RUNNER_TEMP\/public-custom-properties-consumer" "\$PUBLIC_VERSION" (?:before|after) "\$RUNNER_TEMP\/public-type-admission-cpp-custody.json"/,
       );
   }
-  const wrapper = workflows[1];
+  const wrapper = workflows[0];
   assert.ok(wrapper);
   const capability = job(wrapper, "type-admission-source-capability");
   const before = capability.steps.findIndex(

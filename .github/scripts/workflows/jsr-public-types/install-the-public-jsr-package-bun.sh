@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-bun add --ignore-scripts --exact typescript@6.0.3 @types/node@25.9.2 vite@8.2.4 vue@3.5.42 2>&1 | tee install.log
-bunx --bun jsr@0.14.3 add "@vizejs/vize@$PUBLIC_JSR_VERSION" 2>&1 | tee jsr-add.log
