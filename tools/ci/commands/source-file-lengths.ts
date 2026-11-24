@@ -60,6 +60,7 @@ function isExcluded(file: string, generated: ReadonlySet<string>): boolean {
     file.endsWith(".lock") ||
     file.startsWith("tools/benchmarks/results/") ||
     file.startsWith("tools/commands/") ||
+    file.startsWith("tools/ci/commands/") ||
     file.startsWith("tools/support/") ||
     file.startsWith("upstream/forks/") ||
     file === "npm/cli/schemas/vize.config.schema.json" ||
@@ -173,6 +174,7 @@ function moduleLayoutFailures(paths: readonly string[]): string[] {
   for (const file of paths.filter((candidate) => candidate.endsWith(".rs"))) {
     if (
       !file.startsWith("tools/commands/") &&
+      !file.startsWith("tools/ci/commands/") &&
       ["fixtures", "_fixtures", "__fixtures__"].some((segment) => hasSegment(file, segment))
     ) {
       continue;
@@ -297,7 +299,7 @@ function main(): number {
       reference = value;
     } else if (argument === "--help") {
       console.log(
-        "Usage: node tools/commands/ci/source-file-lengths.ts [--check --base-ref <ref>] [--max-lines 500] [--limit 50]",
+        "Usage: node tools/ci/commands/source-file-lengths.ts [--check --base-ref <ref>] [--max-lines 500] [--limit 50]",
       );
       return 0;
     } else throw new Error(`Unknown argument: ${argument}`);

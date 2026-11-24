@@ -1,3 +1,4 @@
+import { restoreCiLibraryPaths, restoreCiLibraryValue } from "./support/ci-library-paths.ts";
 import { automationShellPath } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -167,8 +168,8 @@ test("parallel Rust jobs preserve setup and apply the reviewed Clippy and TS-24 
   const currentPortability = tasks.find((step) => step.name === portabilityStep);
   assert.ok(currentPortability);
   assert.equal(normalizePortabilityRun(currentPortability.run), portabilityRun);
-  portability.run = currentPortability.run;
-  assert.deepEqual(tasks, expectedTasks);
+  portability.run = restoreCiLibraryPaths(currentPortability.run);
+  assert.deepEqual(restoreCiLibraryValue(tasks), expectedTasks);
   const aggregate = jobs["clippy-and-test"];
   assert.deepEqual(aggregate.needs, producers);
   assert.equal(

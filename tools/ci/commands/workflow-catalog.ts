@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -122,6 +122,14 @@ export function readWorkflowEntries(root: string): readonly WorkflowEntry[] {
       assert.ok(!groupByName.has(name), `Duplicate workflow source for ${name}`);
       groupByName.set(name, group.id);
     }
+  }
+  // Moved workflows own tools/ci/workflows/<stem>/; their group comes from the name alone.
+  const moved = path.join(root, "tools/ci/workflows");
+  for (const name of existsSync(moved) ? readdirSync(moved) : []) {
+    const groupId = workflowPrefixGroup(`${name}.yml`) ?? protectedWorkflows[`${name}.yml`];
+    assert.ok(groupId, `${name} must be named NN-<subject>`);
+    assert.ok(!groupByName.has(name), `Duplicate workflow source for ${name}`);
+    groupByName.set(name, groupId);
   }
   return readdirSync(directory)
     .filter((file) => /\.ya?ml$/.test(file))

@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Install CSS formatter reference browser"
 description = "Provision the Chromium owned by the selected tests package"

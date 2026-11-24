@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Type-check scaling"
 `run-name` = "Type-check scaling ${{ inputs.base_sha && format('{0} -> {1}', inputs.base_sha, inputs.sha) || inputs.sha }} (${{ inputs.sizes }}; tools ${{ inputs.tools || 'default' }}; giant ${{ inputs.giant_blocks }}; monorepo ${{ inputs.monorepo_sfcs }}; nuxt ${{ inputs.nuxt_sizes }})"

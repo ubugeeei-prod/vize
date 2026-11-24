@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Affected tooling (${{ matrix.name }})"
 needs = List("pr-source-plan", "affected-tooling-cli")

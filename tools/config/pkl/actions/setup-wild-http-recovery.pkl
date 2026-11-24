@@ -1,5 +1,5 @@
-import "../Actions.pkl" as ci
-import "../BootstrapAssets.pkl" as assets
+import "../../../ci/lib/Actions.pkl" as ci
+import "../../../ci/lib/BootstrapAssets.pkl" as assets
 
 name = "wild"
 description = "Use the Wild linker when building Rust code"

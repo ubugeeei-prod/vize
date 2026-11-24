@@ -1,4 +1,4 @@
-import { requiredEnv } from "../shared/files.ts";
+import { requiredEnv } from "../../../../tools/ci/lib/scripts/files.ts";
 import assert from "node:assert/strict";
 import { copyFileSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";

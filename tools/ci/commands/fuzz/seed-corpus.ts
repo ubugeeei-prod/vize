@@ -100,7 +100,7 @@ export function extractTemplateBlock(source: string): string | undefined {
 export function seedFuzzCorpus(arguments_: readonly string[]): number {
   if (arguments_.length > 0) {
     throw new Error(
-      `Usage: node tools/commands/ci/fuzz/seed-corpus.ts; unexpected argument ${arguments_[0]}`,
+      `Usage: node tools/ci/commands/fuzz/seed-corpus.ts; unexpected argument ${arguments_[0]}`,
     );
   }
   const root = repositoryRoot();

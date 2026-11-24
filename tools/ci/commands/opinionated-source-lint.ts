@@ -27,7 +27,7 @@ if (process.argv.includes("--list-files")) {
     [
       "lint",
       "--config",
-      "tools/commands/ci/opinionated-source-lint.config.ts",
+      "tools/ci/commands/opinionated-source-lint.config.ts",
       "--preset",
       "opinionated",
       "--max-warnings",

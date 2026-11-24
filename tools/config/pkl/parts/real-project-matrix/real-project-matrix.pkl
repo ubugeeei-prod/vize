@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "real projects (${{ matrix.name }})"
 needs = "plan-projects"
@@ -201,7 +201,7 @@ steps = new Listing {
     name = "Publish shard summary"
     `if` = "${{ always() }}"
     shell = "bash"
-    run = "node tools/commands/ci/github/publish-real-project-shard-summary.ts"
+    run = "node tools/ci/commands/github/publish-real-project-shard-summary.ts"
   }
   new Dynamic {
     name = "Upload shard report"

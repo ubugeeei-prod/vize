@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Nuxt 2 module build"
 `run-name` = "Nuxt 2 host runtime @ ${{ github.event.pull_request.head.sha || github.sha }}"

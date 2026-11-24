@@ -198,7 +198,9 @@ function relative(root: string, filename: string): string {
 
 function verifyLayout(): { nodeCommands: number; rustScripts: number } {
   const root = repositoryRoot();
-  const commandFiles = collectFiles(path.join(root, "tools/commands"));
+  const commandFiles = ["tools/commands", "tools/ci/commands"].flatMap((directory) =>
+    collectFiles(path.join(root, directory)),
+  );
   const rustFiles = commandFiles.filter((file) => file.endsWith(".rs"));
   const nodeFiles = commandFiles.filter((file) => /\.(?:[cm]?js|ts)$/u.test(file));
   const errors: string[] = [];

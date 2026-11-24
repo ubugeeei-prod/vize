@@ -326,7 +326,7 @@ function run(args: readonly string[]): void {
   const [packageName, destinationInput, ...base] = args;
   if (packageName === undefined || destinationInput === undefined) {
     throw new Error(
-      "Usage: node tools/commands/ci/github/semver-baseline.ts <package> <empty-directory> [actual-base-revision]",
+      "Usage: node tools/ci/commands/github/semver-baseline.ts <package> <empty-directory> [actual-base-revision]",
     );
   }
   if (base.length > 1) throw new Error("expected at most one actual base revision");

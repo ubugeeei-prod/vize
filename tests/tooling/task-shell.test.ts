@@ -46,7 +46,7 @@ test("iteration checks enforce the warning budget and the full repo check then c
   const budget = {
     program: "node",
     arguments: [
-      "tools/commands/ci/check-warning-budget.ts",
+      "tools/ci/commands/check-warning-budget.ts",
       "--",
       "./node_modules/.bin/vp",
       "check",

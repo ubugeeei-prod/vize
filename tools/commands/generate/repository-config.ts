@@ -31,7 +31,7 @@ import {
 import { listPklProducts, type PklProduct } from "../../support/ci/pkl-products.ts";
 import { renderRepositoryYaml, type ConfigValue } from "../../support/ci/repository-yaml.ts";
 import { protectedWorkflows, workflowNameViolations } from "../../support/ci/workflow-names.ts";
-import { readWorkflowEntries, renderWorkflowCatalog } from "../ci/workflow-catalog.ts";
+import { readWorkflowEntries, renderWorkflowCatalog } from "../../ci/commands/workflow-catalog.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const sources = path.join(root, "tools/config/pkl");
@@ -55,7 +55,7 @@ function evaluate(products: Product[]): ConfigValue[] {
       "--color",
       "never",
       "--root-dir",
-      sources,
+      path.join(root, "tools"),
       "--allowed-modules",
       "pkl:,file:",
       "--allowed-resources",

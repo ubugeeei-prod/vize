@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Nuxt scoped style build"
 // #6830: off the PR tier; main runs it per commit and nightly.

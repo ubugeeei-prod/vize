@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Canonical corpus objects"
 // Seeds the immutable fixture object cache that the PR and queue canonical

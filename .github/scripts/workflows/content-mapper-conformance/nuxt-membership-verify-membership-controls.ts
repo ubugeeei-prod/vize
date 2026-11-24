@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { join } from "node:path";
-import { readJson, requiredEnv } from "../shared/files.ts";
+import { readJson, requiredEnv } from "../../../../tools/ci/lib/scripts/files.ts";
 
 import { readdirSync, statSync } from "node:fs";
 const root = requiredEnv("PACKETS");

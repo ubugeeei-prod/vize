@@ -9,7 +9,7 @@ function run(): number {
   if (args[0] === "--") args.shift();
   const command = args.shift();
   if (!command) {
-    console.error("Usage: node tools/commands/ci/check-warning-budget.ts -- <command> [args...]");
+    console.error("Usage: node tools/ci/commands/check-warning-budget.ts -- <command> [args...]");
     return 2;
   }
 

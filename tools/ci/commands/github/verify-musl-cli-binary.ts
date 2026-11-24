@@ -21,7 +21,7 @@ export function glibcRequirementLines(text: string): string[] {
 
 export function verifyMuslCliBinary(arguments_: readonly string[]): number {
   if (arguments_.length !== 1) {
-    throw new Error("Usage: node tools/commands/ci/github/verify-musl-cli-binary.ts <rust-target>");
+    throw new Error("Usage: node tools/ci/commands/github/verify-musl-cli-binary.ts <rust-target>");
   }
   const binary = path.join("target", arguments_[0]!, "release", "vize");
   const fileStatus = spawnSync("file", [binary], { stdio: "inherit" });

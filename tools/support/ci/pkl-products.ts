@@ -7,7 +7,7 @@ const areas = ["workflows", "actions", "repository", "scripts", "package-tasks"]
 
 /**
  * Every file the repository generates from Pkl, keyed by its repository-relative target.
- * `source` is the absolute path of the Pkl module under `<root>/tools/config/pkl`.
+ * `source` is the absolute path of its Pkl module, under `tools/config/pkl` or `tools/ci/workflows`.
  */
 export function listPklProducts(root: string): PklProduct[] {
   const sources = path.join(root, "tools/config/pkl");
@@ -28,6 +28,26 @@ export function listPklProducts(root: string): PklProduct[] {
         source,
         target,
         kind: area === "scripts" ? "shell" : area === "package-tasks" ? "package" : "yaml",
+      });
+    }
+  }
+  // Each workflow owns tools/ci/workflows/<file stem>/: workflow.pkl, jobs/ and scripts/.
+  const ciWorkflows = path.join(root, "tools/ci/workflows");
+  for (const workflow of existsSync(ciWorkflows) ? readdirSync(ciWorkflows) : []) {
+    const home = path.join(ciWorkflows, workflow);
+    products.push({
+      source: path.join(home, "workflow.pkl"),
+      target: `.github/workflows/${workflow}.yml`,
+      kind: "yaml",
+    });
+    const scripts = path.join(home, "scripts");
+    for (const name of existsSync(scripts) ? readdirSync(scripts) : []) {
+      if (!name.endsWith(".pkl")) continue;
+      const target = path.relative(root, path.join(scripts, name.slice(0, -4)));
+      products.push({
+        source: path.join(scripts, name),
+        target: target.split(path.sep).join("/"),
+        kind: "shell",
       });
     }
   }
