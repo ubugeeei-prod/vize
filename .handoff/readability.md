@@ -42,7 +42,7 @@ Evidence so far (`readability/token-identity.txt`, `counts.txt`, `test-summary.t
 ## Resume steps
 
 1. **IR identity: done, clean.** Release profile with locations normalized: all six crates identical (fresco 586, musea 467, doctor 742, marquette 529, curator 451, armature 235 functions; 541 panic locations normalized; path-string bytes +0). It needed the `--crate-type rlib` fix in `ir-identity.ts`, which is folded into #13638.
-2. **Release size.** Run 45402779037 (`shipped-profile-measure.yml`, base `baddbe9417`, head `7e9f977c1e`, twins off) is in flight; read its summary. The `vize` CLI and `vize_vitrine` bytes must be identical.
+2. **Release size: done, clean.** Run 45402779037: `vize` 65,975,064 B and `vize_vitrine` 76,508,592 B on both sides (0); release instruction rows 110 identical. See `readability/release-size-summary.md`.
 3. **After #13638 merges.** Rebase this branch, delete `.handoff/`, run `node tools/commands/ci/readability-ratchet.ts --write` (it lowers the six areas), squash, fill the `<IR>`, `<SIZE>` and `<TESTS>` cells of `pr-bodies/pr3-pilot.md`, open the PR, and enable auto-merge only once the evidence is clean.
 4. **Next PR (pilot part 2).** Move the 30 sibling `*_tests.rs` / `tests_*.rs` files and the 2 `mod.rs` files to `foo/tests.rs` / `foo.rs`. The `super::` paths change, `parser/tests.rs` is over the limit (don't let it grow), and the moves need test-list parity.
 5. Keep at most one PR in CI. Check `/bin/df -g /Users` ≥ 60 before cargo. Never admin-merge.

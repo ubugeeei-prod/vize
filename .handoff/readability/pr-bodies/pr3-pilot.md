@@ -1,6 +1,6 @@
 ## What
 
-This is the readability pilot (lanes L4a, plus one L3 rename) on six quiet crates: `vize_fresco`, `vize_musea`, `vize_doctor`, `vize_marquette`, `vize_curator` and `vize_armature`. When it was opened, no open PR touched any of them. Every edit is mechanical or a reviewed deletion, and the house-style rules it applies are in `docs/project/source-style.md` (#<PR2>).
+This is the readability pilot (lanes L4a, plus one L3 rename) on six quiet crates: `vize_fresco`, `vize_musea`, `vize_doctor`, `vize_marquette`, `vize_curator` and `vize_armature`. When it was opened, no open PR touched any of them. Every edit is mechanical or a reviewed deletion, and the house-style rules it applies are in `docs/project/source-style.md` (#13640).
 
 | Rule | Change | Count |
 | --- | --- | ---: |
@@ -26,9 +26,9 @@ Not in this PR: moving the 30 sibling `*_tests.rs` / `tests_*.rs` files and the 
 | Check | Result |
 | --- | --- |
 | Rust token identity, 105 changed `.rs` files (`rust-token-identity.ts --base origin/main`) | 10 identical, 56 `use-reordered`, 38 `doc-only` (none on clap/napi/wasm-bindgen items), 1 moved (the test rename), 0 different; 100 comments removed |
-| IR identity with panic locations normalized (`ir-identity-locations.ts`, release profile, 6 crates) | <IR> |
-| Release size, `shipped-profile-measure.yml` base/head (`vize` CLI and `vize_vitrine` N-API) | <SIZE> |
-| Tests `cargo test -p <6 crates>` / CI clippy `--profile ci -D warnings -D clippy::wildcard_imports` | <TESTS> |
+| IR identity with panic locations normalized (`ir-identity-locations.ts`, release profile, 6 crates) | **identical**: fresco 586, musea 467, doctor 742, marquette 529, curator 451, armature 235 functions; 541 panic locations normalized (line/col only); location path-string bytes +0 in every crate |
+| Release size, `shipped-profile-measure.yml` base/head (`vize` CLI and `vize_vitrine` N-API) | run 45402779037, base `baddbe9417` / head `7e9f977c1e`: `vize` 65,975,064 / 65,975,064 B (0); `vize_vitrine` 76,508,592 / 76,508,592 B (0); release-profile instruction rows 0 moved, 0 up, 110 identical |
+| Tests `cargo test -p <6 crates>` / CI clippy `--profile ci -D warnings -D clippy::wildcard_imports` | 823 passed, 0 failed, 2 ignored (41 binaries) / clean |
 | Test-list parity | the rename keeps every `#[test]` name; only the integration-test binary name changes |
 | `cargo fmt --check` | clean |
 | `source-file-lengths.ts --check --base-ref origin/main` | no new or grown file over 500 |
