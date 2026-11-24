@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_closure0": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_deref_Vec_Region_Global": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_lookup_Region": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_map_ref_Region": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_region_parent": { "prover": "alt-ergo", "time": 0.035 }
+    }
+  }
+}

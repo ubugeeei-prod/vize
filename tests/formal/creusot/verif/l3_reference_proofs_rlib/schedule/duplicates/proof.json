@@ -1,0 +1,56 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_duplicates_T": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.003 },
+              { "prover": "z3", "time": 0.008 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.009 },
+              { "prover": "z3", "time": 0.017 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.012 },
+              { "prover": "z3", "time": 0.011 },
+              { "prover": "z3", "time": 0.012 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.011 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.012 },
+              { "prover": "z3", "time": 0.013 },
+              { "prover": "z3", "time": 0.026 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.013 },
+              { "prover": "z3", "time": 0.013 },
+              { "prover": "z3", "time": 0.013 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "z3", "time": 0.013 },
+                  { "prover": "z3", "time": 0.013 },
+                  { "prover": "z3", "time": 0.023 }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "vc_elim_Some": { "prover": "z3", "time": 0.003 },
+      "vc_elim_Some'0": { "prover": "z3", "time": 0.004 },
+      "vc_get_T": { "prover": "z3", "time": 0.003 },
+      "vc_index_of_T": { "prover": "z3", "time": 0.003 },
+      "vc_index_of_u32": { "prover": "z3", "time": 0.003 },
+      "vc_into_iter_Range_usize": { "prover": "alt-ergo", "time": 0.008 },
+      "vc_is_some_usize": { "prover": "z3", "time": 0.003 },
+      "vc_key_T'0": { "prover": "z3", "time": 0.003 },
+      "vc_len_T": { "prover": "alt-ergo", "time": 0.008 },
+      "vc_ne_Option_usize": { "prover": "z3", "time": 0.003 },
+      "vc_next_Range_usize": { "prover": "z3", "time": 0.003 }
+    }
+  }
+}

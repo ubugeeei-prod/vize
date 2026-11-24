@@ -604,7 +604,6 @@
       "tools/benchmarks/scripts/sfc-member-worker.mjs",
       "tools/benchmarks/scripts/sfc-optional-lifecycle.mjs",
       "tools/benchmarks/scripts/sfc-parse-replay.mjs",
-      "tools/benchmarks/scripts/sfc-readonly-counters.mjs",
       "tools/benchmarks/scripts/type-snapshot-cli-corpus.mjs",
       "tools/benchmarks/scripts/type-snapshot-cli-leaf-corpus.mjs",
       "tools/benchmarks/scripts/type-snapshot-cli-leaf-parity.mjs",

@@ -150,6 +150,7 @@ const tasks = {
         "src/v-on-event-tuple-options.test.ts",
         "src/prop-name-options.test.ts",
         "src/component-name-options.test.ts",
+        "src/option-extensions.test.ts",
         "src/block-limit-options.test.ts"
       ]
     },

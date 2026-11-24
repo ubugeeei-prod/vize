@@ -20,15 +20,16 @@ pub(super) fn walk_glob(dir: &Path, parts: &[&str], out: &mut Vec<PathBuf>) {
         return;
     };
     for entry in entries.flatten() {
-        let Ok(name) = entry.file_name().into_string() else {
+        let file_name = entry.file_name();
+        let Some(name) = file_name.to_str() else {
             continue;
         };
-        if !segment_match(head, &name) {
+        if !segment_match(head, name) {
             continue;
         }
         let path = entry.path();
         if rest.is_empty() {
-            if path.is_file() {
+            if entry_names_file(&entry) {
                 out.push(path);
             }
             continue;
@@ -39,6 +40,46 @@ pub(super) fn walk_glob(dir: &Path, parts: &[&str], out: &mut Vec<PathBuf>) {
     }
 }
 
+/// One directory walk for every TypeScript extension the authoritative scan accepts.
+///
+/// `**/*.{ts,tsx,mts,cts}` used to walk the tree once per extension, and each
+/// `**` read every directory a second time. `.d.ts` stays included because its
+/// extension is `ts`.
+pub(super) fn collect_typescript_sources(dir: &Path, out: &mut Vec<PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        if is_walkable_dir(&entry) {
+            collect_typescript_sources(&entry.path(), out);
+            continue;
+        }
+        if !entry_names_file(&entry) || !is_typescript_file_name(&entry.file_name()) {
+            continue;
+        }
+        out.push(entry.path());
+    }
+}
+
+fn entry_names_file(entry: &std::fs::DirEntry) -> bool {
+    match entry.file_type() {
+        Ok(file_type) if file_type.is_file() => true,
+        Ok(file_type) if file_type.is_symlink() => entry.path().is_file(),
+        Ok(_) => false,
+        Err(_) => entry.path().is_file(),
+    }
+}
+
+fn is_typescript_file_name(name: &std::ffi::OsStr) -> bool {
+    let Some(name) = name.to_str() else {
+        return false;
+    };
+    let Some((_, extension)) = name.rsplit_once('.') else {
+        return false;
+    };
+    matches!(extension, "ts" | "tsx" | "mts" | "cts")
+}
+
 fn is_walkable_dir(entry: &std::fs::DirEntry) -> bool {
     let Ok(file_type) = entry.file_type() else {
         return false;
@@ -46,11 +87,16 @@ fn is_walkable_dir(entry: &std::fs::DirEntry) -> bool {
     if !file_type.is_dir() {
         return false;
     }
-    let Ok(name) = entry.file_name().into_string() else {
+    let file_name = entry.file_name();
+    let Some(name) = file_name.to_str() else {
         return false;
     };
-    !matches!(
-        name.as_str(),
+    !is_skipped_dir_name(name)
+}
+
+fn is_skipped_dir_name(name: &str) -> bool {
+    matches!(
+        name,
         "node_modules"
             | "bower_components"
             | "jspm_packages"
@@ -112,32 +158,35 @@ fn segment_match_bytes(pattern: &[u8], name: &[u8]) -> bool {
 }
 
 pub(super) fn glob_match(pattern: &str, relative: &str) -> bool {
-    let pattern = pattern.trim_start_matches("./");
-    let pattern_parts: Vec<&str> = pattern.split('/').filter(|part| !part.is_empty()).collect();
-    let name_parts: Vec<&str> = relative
-        .split('/')
-        .filter(|part| !part.is_empty())
-        .collect();
-    glob_parts(&pattern_parts, &name_parts)
+    glob_match_parts(pattern.trim_start_matches("./"), relative)
 }
 
-fn glob_parts(pattern: &[&str], name: &[&str]) -> bool {
-    let Some((head, pattern_rest)) = pattern.split_first() else {
-        return name.is_empty();
+fn glob_match_parts(pattern: &str, name: &str) -> bool {
+    let Some((head, pattern_rest)) = next_segment(pattern) else {
+        return next_segment(name).is_none();
     };
-    if *head == "**" {
-        if glob_parts(pattern_rest, name) {
+    if head == "**" {
+        if glob_match_parts(pattern_rest, name) {
             return true;
         }
-        return match name.split_first() {
-            Some((_, name_rest)) => glob_parts(pattern, name_rest),
-            None => false,
+        let Some((_, name_rest)) = next_segment(name) else {
+            return false;
         };
+        return glob_match_parts(pattern, name_rest);
     }
-    let Some((name_head, name_rest)) = name.split_first() else {
+    let Some((name_head, name_rest)) = next_segment(name) else {
         return false;
     };
-    segment_match(head, name_head) && glob_parts(pattern_rest, name_rest)
+    segment_match(head, name_head) && glob_match_parts(pattern_rest, name_rest)
+}
+
+/// Next non-empty `/` segment. `a//b` matches `a/b`, and `**` may match empty.
+fn next_segment(path: &str) -> Option<(&str, &str)> {
+    let path = path.trim_start_matches('/');
+    if path.is_empty() {
+        return None;
+    }
+    Some(path.split_once('/').unwrap_or((path, "")))
 }
 
 pub(super) fn slash_path(path: &Path) -> String {
@@ -283,9 +332,82 @@ fn strip_trailing_commas(content: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{String, push_program_prefix, slash_path};
+    use super::{String, glob_match, push_program_prefix, slash_path};
     use std::ffi::OsStr;
     use std::path::{Path, Prefix};
+
+    fn reference_glob_match(pattern: &str, relative: &str) -> bool {
+        let pattern = pattern.trim_start_matches("./");
+        let pattern_parts: Vec<&str> = pattern.split('/').filter(|part| !part.is_empty()).collect();
+        let name_parts: Vec<&str> = relative
+            .split('/')
+            .filter(|part| !part.is_empty())
+            .collect();
+        reference_glob_parts(&pattern_parts, &name_parts)
+    }
+
+    fn reference_glob_parts(pattern: &[&str], name: &[&str]) -> bool {
+        let Some((head, pattern_rest)) = pattern.split_first() else {
+            return name.is_empty();
+        };
+        if *head == "**" {
+            if reference_glob_parts(pattern_rest, name) {
+                return true;
+            }
+            return match name.split_first() {
+                Some((_, name_rest)) => reference_glob_parts(pattern, name_rest),
+                None => false,
+            };
+        }
+        let Some((name_head, name_rest)) = name.split_first() else {
+            return false;
+        };
+        super::segment_match(head, name_head) && reference_glob_parts(pattern_rest, name_rest)
+    }
+
+    #[test]
+    fn glob_match_agrees_with_the_allocating_segment_lists() {
+        let patterns = [
+            "node_modules",
+            "src/**/*.ts",
+            "**/*.d.ts",
+            "tests/**",
+            "./src/**",
+            "*",
+            "a/**/b",
+            "**",
+            "src/*",
+            "*.d.ts",
+            "a//b",
+            "././src/**/*.ts",
+        ];
+        let names = [
+            "node_modules",
+            "src/node_modules/pkg/index.ts",
+            "src/a.ts",
+            "src/a.d.ts",
+            "src/nested/env.d.ts",
+            "a/x/y/b",
+            "a/b",
+            "a//b",
+            "src/file.ts",
+            "src/dir/file.ts",
+            "tests/a.ts",
+            "other.ts",
+            "",
+            "src",
+            "src/a/b",
+        ];
+        for pattern in patterns {
+            for name in names {
+                assert_eq!(
+                    glob_match(pattern, name),
+                    reference_glob_match(pattern, name),
+                    "{pattern} vs {name}"
+                );
+            }
+        }
+    }
 
     fn rendered(kind: Prefix<'_>, raw: &str) -> String {
         let mut rendered = String::new("");

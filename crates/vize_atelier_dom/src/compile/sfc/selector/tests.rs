@@ -20,6 +20,17 @@ fn stray_end_tag_requires_parser_diagnostics() {
 }
 
 #[test]
+fn only_an_unquoted_trailing_slash_closes_an_opening_tag() {
+    for source in [
+        r#"<div title='/>'>x</div>"#,
+        r#"<Widget title=">/" /><div>x</div>"#,
+    ] {
+        assert!(l2_sfc_fast_path_supported_source(source), "{source}");
+    }
+    assert!(!l2_sfc_fast_path_supported_source(r#"<div title=">" / >"#));
+}
+
+#[test]
 fn duplicate_attributes_require_parser_warnings() {
     for source in [
         r#"<h4 :class="premium" class="" class="shop_title">Shop</h4>"#,

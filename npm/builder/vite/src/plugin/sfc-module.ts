@@ -5,7 +5,6 @@
  * reach the source, and those after it see the compiled module.
  */
 
-import fs from "node:fs";
 import { classifyVitePluginRequest } from "@vizejs/native";
 
 import type { HostResolve } from "../../../shared/sfc-src.ts";
@@ -19,9 +18,13 @@ import {
 import { getLoadableVueSfcPath, shouldLoadCompiledVueSfcPath } from "./load-sfc.ts";
 import { normalizeStyleVirtualId } from "./style-request.ts";
 import { registerSfcModule, normalizeVueServerRendererImport } from "./ssr-modules.ts";
-import { prepareSfcSrcRequests } from "./src-requests.ts";
 import { createDependencyWatch } from "./dependency-watches.ts";
-import { compileFile } from "../compiler.ts";
+import {
+  compileRequestedSfc,
+  readSfcSource,
+  reportBatchedWarnings,
+  requestSfcCompile,
+} from "./demand-compile.ts";
 import { embedsInlineCss, generateOutputWithMap, hasDelegatedStyles } from "../utils/index.ts";
 import { identitySourceMap, MappedModule, type SourceMapV3 } from "../utils/source-map.ts";
 import { resolveCssImports } from "../utils/css.ts";
@@ -102,6 +105,26 @@ export function getSfcModuleRequest(state: VizePluginState, id: string): SfcModu
   return { realPath, ssrId: false, virtual: false, nullPrefixed };
 }
 
+/** Queue `sfc` for its environment's next batch, unless a placeholder stands in for it. */
+function requestSfc(state: VizePluginState, sfc: SfcModuleRequest, ssr: boolean): void {
+  if (getBoundaryPlaceholderCode(sfc.realPath, ssr)) return;
+  requestSfcCompile(getEnvironmentCache(state, sfc.ssrId || ssr), sfc.realPath);
+}
+
+/**
+ * Tell the compile queue that an environment resolved `id`, when the id is an
+ * SFC main module this environment compiles. See `demand-compile.ts`.
+ */
+export function requestResolvedSfc(
+  state: VizePluginState,
+  resolved: string | { id: string; external?: unknown } | null | undefined,
+  ssr: boolean,
+): void {
+  if (!resolved || (typeof resolved !== "string" && resolved.external)) return;
+  const sfc = getSfcModuleRequest(state, typeof resolved === "string" ? resolved : resolved.id);
+  if (sfc) requestSfc(state, sfc, ssr);
+}
+
 /**
  * The SFC text a main module request starts the pipeline with, mapped to its
  * file when the compile emits a map.
@@ -111,13 +134,18 @@ export function loadSfcModuleSource(
   sfc: SfcModuleRequest,
   ssr: boolean,
 ): string | { code: string; map: SourceMapV3 } | null {
+  // A build compiles one snapshot of each source: what its first reader took
+  // (a pre-compile, a batch, another environment's load) is what the module
+  // loads. A dev server reads the file on every request.
   let source: string;
   try {
-    source = fs.readFileSync(sfc.realPath, "utf-8");
+    source = readSfcSource(state, sfc.realPath);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw error;
   }
+  // A load is a request too: a rebuild can load a module it resolved in an earlier build.
+  requestSfc(state, sfc, ssr);
   if (!compileOptions(state, sfc.ssrId || ssr, sfc.realPath).sourceMap) return source;
   return { code: source, map: identitySourceMap(sfc.realPath, source) };
 }
@@ -156,16 +184,19 @@ export async function transformSfcModule(
   const cache = getEnvironmentCache(state, isSsr);
   const customElement = isPluginVueCustomElement(state.mergedOptions, realPath);
   const extractCss = shouldExtractCssForRequest(state, isSsr) && !customElement;
-  const compile = async () => {
+  const logWarnings = shouldLogSfcWarnings(state, realPath);
+  const compile = () => {
     state.logger.log(`transform: compiling ${realPath}`);
-    if (options.resolve) await prepareSfcSrcRequests(state, options.resolve, realPath, code);
-    return compileFile(realPath, cache, compileOptions(state, isSsr, realPath), code, {
-      logWarnings: shouldLogSfcWarnings(state, realPath),
+    return compileRequestedSfc(state, realPath, code, isSsr, {
+      resolve: options.resolve,
+      logWarnings,
     });
   };
   const watchDependency = createDependencyWatch(state.server, options.addWatchFile);
   const cached = cache.get(realPath);
   const reused = cached?.source === code ? cached : undefined;
+  // Another file's batch may have compiled this one; its warnings belong here.
+  if (reused) reportBatchedWarnings(cache, realPath, code, logWarnings);
   let compiled = reused ?? (await compile());
   let typeProjectCurrent = watchTypeProject(state.cache, compiled.typeProject, watchDependency);
   // A cached compile (the `buildStart` pre-compile, or an earlier request)

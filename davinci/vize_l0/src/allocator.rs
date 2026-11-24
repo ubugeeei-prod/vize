@@ -247,4 +247,6 @@ impl<'a> GetAllocator<'a> for &'a Allocator {
 }
 
 #[cfg(test)]
+mod kani;
+#[cfg(test)]
 mod tests;

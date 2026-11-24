@@ -1,0 +1,14 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_edge_codes": { "prover": "cvc5", "time": 0.061 },
+      "vc_is_none_usize": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_is_some_usize": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_op_index": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_order_code": { "prover": "alt-ergo", "time": 0.011 },
+      "vc_scope_code": { "prover": "alt-ergo", "time": 0.012 },
+      "vc_then_some_ref_str": { "prover": "alt-ergo", "time": 0.01 }
+    }
+  }
+}

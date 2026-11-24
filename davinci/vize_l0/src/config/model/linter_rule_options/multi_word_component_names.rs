@@ -18,7 +18,7 @@ impl ConfigLintRuleOptions {
     }
 }
 
-fn deserialize_unique_ignores<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+pub(super) fn deserialize_unique_ignores<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
 where
     D: Deserializer<'de>,
 {

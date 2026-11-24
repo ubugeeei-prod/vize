@@ -106,8 +106,8 @@ impl ScriptCompileContext {
     ///
     /// In a batch, `shared` is the graph of the batch's stability window. Each
     /// root import then contributes the closure of the module it resolves to,
-    /// which the graph computes once for all components, and this component
-    /// merges the closure's modules in their walk order. One walk over all
+    /// which the graph keeps for all components, and this component merges
+    /// the closure's modules in their walk order. One walk over all
     /// roots visits the same modules: a module an earlier root already walked
     /// is skipped together with everything it reaches, and what is left keeps
     /// its order, so every name keeps the same first declaration.

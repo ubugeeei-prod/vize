@@ -36,6 +36,7 @@ import type { HostResolve } from "../../../shared/sfc-src.ts";
 import { prepareSfcSrcRequests } from "./src-requests.ts";
 import type { PrecompileInputOwner } from "./precompile-owner.ts";
 import { watchTypeProject } from "./type-project-watches.ts";
+import { statSourceFile } from "./filesystem-epoch.ts";
 
 /** Known SFC diagnostics from speculative startup compilation, without I/O failures. */
 export class PrecompileDiagnosticsError extends Error {
@@ -93,14 +94,12 @@ export async function compileAll(
   });
   const sfcFiles = files.filter(isPrecompileSfcPath);
 
+  // Another environment of this build may already have looked at these files.
+  const epoch = state.filesystemEpoch;
   const currentMetadata = new Map<string, PrecompileFileMetadata>();
   for (const file of sfcFiles) {
     try {
-      const stat = fs.statSync(file);
-      currentMetadata.set(file, {
-        mtimeMs: stat.mtimeMs,
-        size: stat.size,
-      });
+      currentMetadata.set(file, epoch ? epoch.sourceMetadata(file) : statSourceFile(file));
     } catch (e) {
       state.logger.error(`Failed to stat ${file}:`, e);
     }
@@ -169,7 +168,7 @@ export async function compileAll(
     for (const file of chunk) {
       let source: string;
       try {
-        source = fs.readFileSync(file, "utf-8");
+        source = epoch ? epoch.readSource(file) : fs.readFileSync(file, "utf-8");
       } catch (e) {
         failedCount++;
         hasReadFailure = true;
@@ -256,6 +255,7 @@ export async function compileAll(
         state.collectedCss.delete(fileResult.path);
         state.precompileMetadata.delete(fileResult.path);
         state.ssrPrecompileMetadata?.delete(fileResult.path);
+        epoch?.forgetSource(fileResult.path);
         cache.delete(fileResult.path);
         precompileFailures.push(formatCompileErrorMessage(fileResult.path, fileResult.errors));
         continue;
