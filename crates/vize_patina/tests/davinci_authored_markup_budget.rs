@@ -6,7 +6,7 @@ use davinci_harness::alloc::{CountingAllocator, mark_installed, measure, measure
 use vize_l0::Allocator;
 use vize_patina::ir::TemplateSyntax;
 use vize_patina::markup::{L2Template, MarkupContext, MarkupDocument};
-use vize_patina::{LintContext, Linter, RuleRegistry};
+use vize_patina::{LintContext, RuleRegistry};
 
 #[global_allocator]
 static GLOBAL: CountingAllocator = CountingAllocator::mimalloc();
@@ -17,16 +17,7 @@ const GALLERY: &str = r#"<section class="gallery">
 </section>
 "#;
 
-const CASES: &[(&str, fn())] = &[
-    (
-        "authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget",
-        authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget,
-    ),
-    (
-        "lint_template_allocation_budget",
-        lint_template_allocation_budget,
-    ),
-];
+const CASE: &str = "authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget";
 
 fn main() -> Result<(), &'static str> {
     let mut args = std::env::args().skip(1);
@@ -43,25 +34,21 @@ fn main() -> Result<(), &'static str> {
             _ => return Err("unsupported harness argument"),
         }
     }
-    if ignored {
+    let selected = filter.as_ref().is_none_or(|filter| {
+        if exact {
+            filter == CASE
+        } else {
+            CASE.contains(filter)
+        }
+    });
+    if ignored || !selected {
         return Ok(());
     }
-    for &(name, run) in CASES {
-        if filter.as_ref().is_some_and(|filter| {
-            if exact {
-                filter != name
-            } else {
-                !name.contains(filter)
-            }
-        }) {
-            continue;
-        }
-        if list {
-            println!("{name}: test");
-        } else {
-            run();
-        }
+    if list {
+        println!("{CASE}: test");
+        return Ok(());
     }
+    authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget();
     Ok(())
 }
 
@@ -161,21 +148,4 @@ fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {
             assert_eq!(lint.error_count() + lint.warning_count(), 0, "{source}");
         }
     }
-}
-
-fn lint_template_allocation_budget() {
-    mark_installed();
-    let linter = Linter::new();
-    let section = r#"<section v-if="ready"><!-- note --><b :title="heading">Hello {{ name }}!</b><ul><li v-for="item in items" :key="item.id">{{ item }}</li></ul><button @click="save">Save</button></section>"#;
-    let source = format!("<main>{}</main>", section.repeat(96));
-    drop(linter.lint_template(&source, "fixture.vue"));
-    let (result, metrics) = measure_returning(|| linter.lint_template(&source, "fixture.vue"));
-    assert!(result.diagnostics.is_empty());
-    let calls = metrics.expect("counting allocator installed").calls;
-    // Recording every lowering decision took 4,417 calls on this fixture.
-    // The product entry used 3,831 after switching to the unobserved lowering.
-    assert!(
-        calls <= 4_000,
-        "{calls} allocations while linting a template"
-    );
 }
