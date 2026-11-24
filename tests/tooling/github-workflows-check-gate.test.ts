@@ -371,7 +371,7 @@ test("full JS qualification retains independent native builds and strictly gates
   }
 });
 test("slow suites use schedules or explicit dispatch without starting on PRs", () => {
-  const pushOrDispatch = ["level-html-content-model.yml", "davinci-incremental.yml"];
+  const pushOrDispatch = ["davinci-incremental.yml"];
   const scheduledOrDispatch = [
     "benchmark.yml",
     "check-bench.yml",
@@ -402,5 +402,22 @@ test("slow suites use schedules or explicit dispatch without starting on PRs", (
       assert.equal(Object.hasOwn(events, "schedule"), true, name);
     if (scheduledOrDispatch.includes(name) || name === "pkg-pr-new.yml")
       assert.equal(Object.hasOwn(events, "push"), false, name);
+  }
+  // The browser-oracle host takes pull requests only for its path-selected
+  // oracles; the full parser oracle stays on pushes and dispatch.
+  const oracles = parse(readRepoFile(".github", "workflows", "level-html-content-model.yml")) as {
+    on: Record<string, unknown>;
+    jobs: Record<string, { if?: string; needs?: string }>;
+  };
+  assert.equal(Object.hasOwn(oracles.on, "push"), true);
+  assert.equal(Object.hasOwn(oracles.on, "workflow_dispatch"), true);
+  assert.equal(oracles.jobs["chromium-oracle"]?.if, "github.event_name != 'pull_request'");
+  for (const job of ["special-text", "first-newline", "scoped-cascade"]) {
+    assert.equal(oracles.jobs[job]?.needs, "changes", job);
+    assert.match(
+      oracles.jobs[job]?.if ?? "",
+      new RegExp(`needs\\.changes\\.outputs\\.${job} == 'true'`),
+      job,
+    );
   }
 });

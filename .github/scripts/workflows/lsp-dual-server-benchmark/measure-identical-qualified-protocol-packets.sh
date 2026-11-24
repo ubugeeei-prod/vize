@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-test -x "$CORSA_PATH"
-test -x "$VIZE_LSP_BIN"
-vp exec node tests/performance/lsp-dual-server-benchmark.ts \
-  --fresh 100 --warm 100 --out "$RUNNER_TEMP/lsp-dual-server"
