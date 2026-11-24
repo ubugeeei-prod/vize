@@ -8,7 +8,7 @@ use vize_l0::Allocator;
 use vize_l0::id::NodeId;
 use vize_l1_to_l2::Lowered;
 use vize_l2::op::Op;
-use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
+use vize_l2::provenance::ProvenanceRecord;
 
 pub(super) fn decode(json: &str) -> Result<Reply> {
     if json.len() > 1_048_576 {
@@ -95,14 +95,10 @@ pub(super) struct Applied {
 }
 
 /// Called only after all edits validate, so a rejected reply leaves L2 intact.
-pub(super) fn apply(
-    lowered: &mut Lowered<'_, impl ProvenanceSink>,
-    reply: &Reply,
-    plugin: &str,
-) -> Vec<Applied> {
+pub(super) fn apply(lowered: &mut Lowered<'_>, reply: &Reply, plugin: &str) -> Vec<Applied> {
     let allocator = lowered.allocator;
     let mut applied = Vec::new();
-    let provenance = &mut lowered.artifact.provenance;
+    let mut records = Vec::new();
     let mut count = 0;
     walk::visit(&mut lowered.artifact.root, &mut count, &mut |id, op| {
         let Op::Element(owner) = op else {
@@ -113,12 +109,12 @@ pub(super) fn apply(
                 continue;
             }
             if let Some(attr) = owner.attributes.iter_mut().find(|attr| attr.name == name) {
-                let before = attr.value;
+                let before = format!("{}={:?}", attr.name, attr.value);
                 attr.value = value.as_deref().map(|value| encoded(allocator, value));
-                provenance.record(|| ProvenanceRecord {
+                records.push(ProvenanceRecord {
                     rule: format!("plugin.transform:{plugin}").into(),
                     node: NodeId::from_index(id),
-                    before: format!("{}={before:?}", attr.name).into(),
+                    before: before.into(),
                     after: format!("{}={:?}", attr.name, attr.value).into(),
                     span: attr.span,
                 });
@@ -134,5 +130,6 @@ pub(super) fn apply(
         count, lowered.op_count,
         "transform reader's page numbering diverged"
     );
+    lowered.artifact.provenance.extend(records);
     applied
 }

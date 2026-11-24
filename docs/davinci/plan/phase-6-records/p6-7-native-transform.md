@@ -59,8 +59,7 @@ The input and output attribute values are semantic text. The host decodes the
 original S2 spelling for the reader, encodes new values into the S2 arena, and
 the ordinary canonical consumer decodes them once. `null` means a bare static
 attribute; `value` is required. Original owner/attribute spans and node IDs are
-preserved. When recording is enabled, each edit appends a
-`plugin.transform:<name>` provenance record with the before and after spellings.
+preserved. Each edit adds a `plugin.transform:<name>` provenance record.
 
 ## Validation and failure
 
