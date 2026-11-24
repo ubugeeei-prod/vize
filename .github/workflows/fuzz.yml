@@ -24,10 +24,6 @@ on:
     # Daily long-run fuzz at 04:23 UTC; reproducers are uploaded as artifacts
     # so a regression triage can grab the failing input without re-running.
     - cron: "23 4 * * *"
-  # The merge queue replays the corpus for Rust changes (Check / fuzz-replay).
-  workflow_call:
-    inputs:
-      mode: { type: string, default: replay }
 run-name: Fuzz ${{ github.event_name == 'workflow_dispatch' && (inputs.mode == 'replay' && 'replay' || format('{0}s', inputs.max-total-time)) || github.event_name }} @ ${{ github.sha }}
 
 concurrency:
@@ -56,19 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target:
-          [
-            sfc_parse,
-            template_lexer,
-            js_ts_expression,
-            l1_program,
-            css_parse,
-            template_compile,
-            l1_lowering,
-            l2_to_l3_lowering,
-            text_rebuild,
-            folio_parse,
-          ]
+        target: [ sfc_parse, template_lexer, js_ts_expression, l1_program, css_parse, template_compile, l1_lowering, l2_to_l3_lowering, text_rebuild, folio_parse ]
     env:
       VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/fuzz"
     steps:

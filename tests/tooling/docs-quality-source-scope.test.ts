@@ -69,7 +69,7 @@ void test("the actual reader remains Node-only and Docs checks do not build the 
     .split("      - name: ")
     .find((step) => step.startsWith("Verify rendered navigation and Japanese reading paths\n"));
   assert.ok(japaneseReading, "the reviewed Japanese browser checks remain enrolled");
-  assert.match(japaneseReading, /if: \$\{\{ inputs\.links-only != true \}\}/);
+  assert.doesNotMatch(japaneseReading, /\n {8}if: /);
   assert.ok(
     workflowProgram(
       "build-docs",

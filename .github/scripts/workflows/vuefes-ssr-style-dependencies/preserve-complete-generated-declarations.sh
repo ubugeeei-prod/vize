@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-cp npm/native/index.d.ts target/vuefes-ssr-style-dependencies/generated-index.d.ts
-git diff --binary -- npm/native/index.d.ts > target/vuefes-ssr-style-dependencies/generated-index.diff

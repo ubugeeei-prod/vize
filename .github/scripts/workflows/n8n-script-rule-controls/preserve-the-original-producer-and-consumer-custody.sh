@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-cp target/ci/vize.differential-build.json "$RUNNER_TEMP/n8n-script-rule-workflow/producer-build.json"
-cp target/ci/vize.source-build.json "$RUNNER_TEMP/n8n-script-rule-workflow/producer-transport.json"
-cp target/ci/vize.source-use.json "$RUNNER_TEMP/n8n-script-rule-workflow/consumer-use.json"
