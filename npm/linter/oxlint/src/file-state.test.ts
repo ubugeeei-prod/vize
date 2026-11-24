@@ -21,6 +21,27 @@ import {
 } from "./file-state.ts";
 import { appendScriptlessWorkaround, resolveWorkaroundSource } from "./workaround.ts";
 
+function restoredMtimeWithNewCtime(
+  filename: string,
+  seconds: number,
+  previousCtime: bigint,
+): fs.BigIntStats {
+  // Coarse timestamp filesystems can report the same ctime for two updates in
+  // one tick. Wait until a restore actually moves ctime, then the cache miss
+  // is from that field rather than from mtimeNs.
+  const deadline = Date.now() + 2_500;
+  let stat: fs.BigIntStats;
+  do {
+    fs.utimesSync(filename, seconds, seconds);
+    stat = fs.statSync(filename, { bigint: true });
+    if (stat.ctimeNs !== previousCtime) {
+      return stat;
+    }
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50);
+  } while (Date.now() < deadline);
+  return assert.fail("filesystem ctime did not advance after restoring mtime");
+}
+
 function createContext(filename: string, extractedScript: string): Context {
   return {
     filename,
@@ -98,10 +119,8 @@ it("a same-size rewrite with a restored mtime does not reuse cached source", () 
     const context = createContext(filename, "const one = 1;\n");
     const first = getFileState(context);
     fs.writeFileSync(filename, secondSource);
-    fs.utimesSync(filename, restoredSeconds, restoredSeconds);
-    const restored = fs.statSync(filename, { bigint: true });
+    const restored = restoredMtimeWithNewCtime(filename, restoredSeconds, first.revision.ctimeNs);
     assert.equal(restored.mtimeNs, first.revision.mtimeNs);
-    assert.notEqual(restored.ctimeNs, first.revision.ctimeNs);
     const changed = getFileState(context);
 
     assert.notStrictEqual(changed, first);
