@@ -1,11 +1,11 @@
 #![expect(clippy::indexing_slicing, reason = "tests assert by panicking")]
 use vize_l0::{Allocator, Span, cstr};
-use vize_l3::op::{Op, OpId, OpKind, Phase, Program, Region, RegionId};
+use vize_l3::op::{L3Ir, Op, OpId, OpKind, Phase, Region, RegionId};
 use vize_l3::operand::{Operand, OperandRole as Role, OperandValue, ValueKind};
 use vize_l3::verify::{ViolationCode, verify};
 
-fn program(arena: &Allocator) -> Program<'_> {
-    let mut program = Program::new(arena, Phase::Built);
+fn program(arena: &Allocator) -> L3Ir<'_> {
+    let mut program = L3Ir::new(arena, Phase::Built);
     program.push_region(Region::root(Span::new(0, 100)));
     for (id, kind, span) in [
         (0, OpKind::If, Span::new(0, 100)),

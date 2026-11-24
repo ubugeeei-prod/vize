@@ -9,7 +9,7 @@ use oxc_span::SourceType;
 use tower_lsp::lsp_types::{Hover, Position, Range};
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span};
 use vize_l1::{
-    container::vue::{DescriptorObservation, ScriptRole},
+    container::vue::{L1Ir, ScriptRole},
     embed::{Lang, authored_program::AuthoredProgram},
 };
 use vize_l2::query::script::assignments::{
@@ -54,7 +54,7 @@ pub struct RecoveredCursor {
 
 fn selected<'s>(
     snap: &'s SourceSnapshot,
-    owner: &DescriptorObservation<'_>,
+    owner: &L1Ir<'_>,
     role: ScriptRole,
 ) -> Result<(SourceBlock<'s>, Option<ScriptRole>), RecoveredScriptError> {
     if snap.language_id() != "vue" {
@@ -90,7 +90,7 @@ impl SourceSnapshot {
     pub fn open_literal_prefix<'s>(
         &'s self,
         docs: &DocumentStore,
-        owner: &DescriptorObservation<'_>,
+        owner: &L1Ir<'_>,
         role: ScriptRole,
     ) -> Result<PreviousScript<'s>, RecoveredScriptError> {
         self.check_current(docs)
@@ -113,7 +113,7 @@ impl SourceSnapshot {
     pub fn retain_literal_prefix<'s>(
         &'s self,
         docs: &DocumentStore,
-        owner: &DescriptorObservation<'_>,
+        owner: &L1Ir<'_>,
         role: ScriptRole,
     ) -> Result<PreviousScript<'s>, RecoveredScriptError> {
         self.check_current(docs)
@@ -140,7 +140,7 @@ impl PreviousScript<'_> {
         &'idx self,
         docs: &DocumentStore,
         current: &'s SourceSnapshot,
-        owner: &DescriptorObservation<'_>,
+        owner: &L1Ir<'_>,
     ) -> Result<RecoveredScript<'idx, 's>, RecoveredScriptError> {
         current
             .check_current(docs)

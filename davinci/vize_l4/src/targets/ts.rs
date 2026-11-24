@@ -8,7 +8,7 @@
 
 use crate::write::{EmitDocument, LinkSink, NoLinks, Recorded, Writer};
 use vize_l0::Span;
-use vize_l2::file::{FileArtifact, ScriptUnit};
+use vize_l2::file::{L2Ir, ScriptUnit};
 use vize_l2::lang::js::JsxFile;
 
 #[cfg(feature = "component-projection")]
@@ -64,24 +64,24 @@ pub enum ProjectionError {
 ///
 /// A detached document cannot construct a projection:
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::file::L2Ir;
 /// use vize_l4::{targets::ts::ProgramProjection, write::EmitDocument};
-/// fn forge(file: &FileArtifact<'_>, document: EmitDocument) {
+/// fn forge(file: &L2Ir<'_>, document: EmitDocument) {
 ///     let _ = ProgramProjection { file, document };
 /// }
 /// ```
 /// The actual File cannot be dropped while the projection is live:
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::file::L2Ir;
 /// use vize_l4::targets::ts::project_program;
-/// fn discard(file: FileArtifact<'_>) {
+/// fn discard(file: L2Ir<'_>) {
 ///     let projection = project_program(&file).unwrap();
 ///     drop(file);
 ///     let _ = projection.document();
 /// }
 /// ```
 pub struct ProgramProjection<'file, 'arena> {
-    file: &'file FileArtifact<'arena>,
+    file: &'file L2Ir<'arena>,
     unit: &'file ScriptUnit,
     kind: SourceKind,
     document: EmitDocument,
@@ -89,7 +89,7 @@ pub struct ProgramProjection<'file, 'arena> {
 
 impl<'file, 'arena> ProgramProjection<'file, 'arena> {
     #[must_use]
-    pub fn file(&self) -> &'file FileArtifact<'arena> {
+    pub fn file(&self) -> &'file L2Ir<'arena> {
         self.file
     }
 
@@ -111,14 +111,14 @@ impl<'file, 'arena> ProgramProjection<'file, 'arena> {
 
 /// Produce a recording checker document; all authored Program bytes stay exact.
 pub fn project_program<'file, 'arena>(
-    file: &'file FileArtifact<'arena>,
+    file: &'file L2Ir<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
     project::<Recorded, false>(file)
 }
 
 /// Identical output without links. Diagnostic mapping explicitly refuses it.
 pub fn project_program_no_links<'file, 'arena>(
-    file: &'file FileArtifact<'arena>,
+    file: &'file L2Ir<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
     project::<NoLinks, false>(file)
 }
@@ -128,9 +128,9 @@ pub fn project_program_no_links<'file, 'arena>(
 ///
 /// A separately supplied File cannot establish JSX ownership:
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::file::L2Ir;
 /// use vize_l4::targets::ts::project_jsx_program;
-/// fn forge(file: &FileArtifact<'_>) { let _ = project_jsx_program(file); }
+/// fn forge(file: &L2Ir<'_>) { let _ = project_jsx_program(file); }
 /// ```
 /// The original owning body cannot be dropped while its projection is live:
 /// ```compile_fail
@@ -158,7 +158,7 @@ pub fn project_jsx_program_no_links<'file, 'arena>(
 // Only the two concrete built-in sinks can mint this result. A caller-defined
 // LinkSink cannot substitute arbitrary output through into_document().
 fn project<'file, 'arena, L: LinkSink, const JSX: bool>(
-    file: &'file FileArtifact<'arena>,
+    file: &'file L2Ir<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
     if !file.is_complete() {
         return Err(ProjectionError::IncompleteFile);

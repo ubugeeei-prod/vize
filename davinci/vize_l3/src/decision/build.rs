@@ -20,7 +20,7 @@ use super::{
     policy::{BindingOwner, TargetPolicy},
 };
 use vize_l0::{id::NodeId, side_table::SideTable};
-use vize_l2::{artifact::Artifact, file::FileArtifact, lang::js::NativeSelectedSetup};
+use vize_l2::{artifact::Artifact, file::L2Ir, lang::js::NativeSelectedSetup};
 
 /// Compute conservative shared facts for every canonical L2 node.
 ///
@@ -47,7 +47,7 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
     artifact: &'owner Artifact<'arena>,
     policy: TargetPolicy,
     expressions: &impl DomExpressionFacts,
-    file: Option<&'owner FileArtifact<'arena>>,
+    file: Option<&'owner L2Ir<'arena>>,
     reads: &impl FileReads<'owner, 'arena>,
 ) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     build_with_context(
@@ -61,7 +61,7 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
 }
 
 pub(in crate::decision) fn build_with_original<'owner, 'arena>(
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     policy: TargetPolicy,
     expressions: &impl DomExpressionFacts,
     reads: &impl FileReads<'owner, 'arena>,
@@ -123,7 +123,7 @@ fn build_with_context<'owner, 'arena>(
     artifact: &'owner Artifact<'arena>,
     policy: TargetPolicy,
     expressions: &impl DomExpressionFacts,
-    file: Option<&'owner FileArtifact<'arena>>,
+    file: Option<&'owner L2Ir<'arena>>,
     reads: &impl FileReads<'owner, 'arena>,
     context: BuildContext<'_, 'owner, 'arena>,
 ) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
@@ -184,7 +184,7 @@ fn build_with_context<'owner, 'arena>(
 struct BuildContext<'facts, 'owner, 'arena> {
     ssr_setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
     vapor_setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
-    original_file: Option<&'owner FileArtifact<'arena>>,
+    original_file: Option<&'owner L2Ir<'arena>>,
 }
 
 struct Builder<'facts, 'owner, 'arena, F, R> {

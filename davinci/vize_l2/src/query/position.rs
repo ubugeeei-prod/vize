@@ -5,7 +5,7 @@
 
 use super::Model;
 use crate::file::{
-    BindingRef, FileArtifact, Namespace, Reference, ReferenceTarget, Scope, ScopeId, ScriptUnit,
+    BindingRef, L2Ir, Namespace, Reference, ReferenceTarget, Scope, ScopeId, ScriptUnit,
 };
 use vize_l0::Span;
 
@@ -22,14 +22,14 @@ pub enum PositionQueryError {
 /// An original use row and its actual File owner stay borrowed together.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::FileArtifact, query::ReferenceRef};
-/// fn substitute<'f, 'a>(file: &'f FileArtifact<'a>, row: ReferenceRef<'f, 'a>) {
+/// use vize_l2::{file::L2Ir, query::ReferenceRef};
+/// fn substitute<'f, 'a>(file: &'f L2Ir<'a>, row: ReferenceRef<'f, 'a>) {
 ///     let _ = ReferenceRef { file, reference: row.reference() };
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l2::{file::FileArtifact, query::Model};
-/// fn discard(file: FileArtifact<'_>, offset: u32) {
+/// use vize_l2::{file::L2Ir, query::Model};
+/// fn discard(file: L2Ir<'_>, offset: u32) {
 ///     let row = Model::new(&file).reference_at_offset(offset).unwrap().unwrap();
 ///     drop(file);
 ///     let _ = row.binding();
@@ -37,13 +37,13 @@ pub enum PositionQueryError {
 /// ```
 #[derive(Clone, Copy)]
 pub struct ReferenceRef<'file, 'arena> {
-    file: &'file FileArtifact<'arena>,
+    file: &'file L2Ir<'arena>,
     reference: &'file Reference,
 }
 
 impl<'file, 'arena> ReferenceRef<'file, 'arena> {
     #[must_use]
-    pub fn file(self) -> &'file FileArtifact<'arena> {
+    pub fn file(self) -> &'file L2Ir<'arena> {
         self.file
     }
 
@@ -65,20 +65,20 @@ impl<'file, 'arena> ReferenceRef<'file, 'arena> {
 /// A recorded scope with lookup constrained to the same completed File.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::FileArtifact, query::ScopeRef};
-/// fn substitute<'f, 'a>(file: &'f FileArtifact<'a>, row: ScopeRef<'f, 'a>) {
+/// use vize_l2::{file::L2Ir, query::ScopeRef};
+/// fn substitute<'f, 'a>(file: &'f L2Ir<'a>, row: ScopeRef<'f, 'a>) {
 ///     let _ = ScopeRef { file, scope: row.scope() };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct ScopeRef<'file, 'arena> {
-    file: &'file FileArtifact<'arena>,
+    file: &'file L2Ir<'arena>,
     scope: &'file Scope,
 }
 
 impl<'file, 'arena> ScopeRef<'file, 'arena> {
     #[must_use]
-    pub fn file(self) -> &'file FileArtifact<'arena> {
+    pub fn file(self) -> &'file L2Ir<'arena> {
         self.file
     }
 
@@ -222,7 +222,7 @@ impl<'f, 'a> Model<'f, 'a> {
 }
 
 fn query_unit<'f>(
-    file: &'f FileArtifact<'_>,
+    file: &'f L2Ir<'_>,
     offset: u32,
 ) -> Result<Option<&'f ScriptUnit>, PositionQueryError> {
     if !file.is_complete() {
@@ -243,7 +243,7 @@ fn query_unit<'f>(
 }
 
 fn query_reference<'f, 'a>(
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     unit: &ScriptUnit,
     offset: u32,
 ) -> Result<Option<ReferenceRef<'f, 'a>>, PositionQueryError> {
@@ -256,7 +256,7 @@ fn query_reference<'f, 'a>(
 }
 
 fn query_declaration<'f, 'a>(
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     unit: &ScriptUnit,
     offset: u32,
 ) -> Result<Option<BindingRef<'f, 'a>>, PositionQueryError> {
@@ -269,7 +269,7 @@ fn query_declaration<'f, 'a>(
     .map(|row| row.and_then(|declaration| file.binding(declaration.id)))
 }
 
-fn scope_descends(file: &FileArtifact<'_>, mut scope: ScopeId, ancestor: ScopeId) -> bool {
+fn scope_descends(file: &L2Ir<'_>, mut scope: ScopeId, ancestor: ScopeId) -> bool {
     // Parents are recorded before their children by the existing factory.
     // A bounded read also prevents malformed ancestry from looping.
     for _ in 0..file.facts.scopes.len() {
@@ -310,7 +310,7 @@ pub(in crate::query) mod index;
 
 #[cfg(feature = "template-operand-queries")]
 impl<'f, 'a> ScopeRef<'f, 'a> {
-    pub(super) fn from_id(file: &'f FileArtifact<'a>, id: ScopeId) -> Option<Self> {
+    pub(super) fn from_id(file: &'f L2Ir<'a>, id: ScopeId) -> Option<Self> {
         let scope = file.scopes().get(id.index() as usize)?;
         (scope.id == id).then_some(Self { file, scope })
     }

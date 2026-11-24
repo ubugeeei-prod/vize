@@ -28,7 +28,7 @@ use std::borrow::Cow;
 
 use vize_carton::{Allocator, Vec};
 use vize_l3::{
-    op::{EdgeKind, OpId, OpKind, Phase, Program, RegionId},
+    op::{EdgeKind, L3Ir, OpId, OpKind, Phase, RegionId},
     operand::{Operand, OperandRole as Role},
 };
 
@@ -43,7 +43,7 @@ type Result<T> = core::result::Result<T, AdmissionFailure>;
 type Slots = [Option<(usize, RegionId)>];
 
 pub(super) fn admit<'a>(
-    program: &Program<'a>,
+    program: &L3Ir<'a>,
     retained: &Retained<'_, 'a>,
     loops: &[TemplateLoop<'a>],
     source: &str,
@@ -201,7 +201,7 @@ pub(super) fn admit<'a>(
 /// Operands grouped by op in authored order: the program's own storage when
 /// the producer already emitted them by op, else a counting sort.
 fn by_op<'p, 'a>(
-    program: &'p Program<'a>,
+    program: &'p L3Ir<'a>,
     alloc: &'a Allocator,
 ) -> Result<(Cow<'p, [Operand<'a>]>, Vec<'a, usize>)> {
     let mut starts = filled(alloc, 0_usize, program.ops.len() + 1);

@@ -1,8 +1,6 @@
 //! Authentic setup declaration membership; runtime decisions belong to L3.
 
-use super::{
-    BindingRef, DeclarationKind, FileArtifact, Namespace, ScopeId, ScriptProfile, ScriptUnitId,
-};
+use super::{BindingRef, DeclarationKind, L2Ir, Namespace, ScopeId, ScriptProfile, ScriptUnitId};
 use oxc_parser::{AdmittedProgram, ParseOptions};
 use vize_l0::Span;
 use vize_l1::container::vue::{ScriptRole, ScriptView};
@@ -42,11 +40,11 @@ pub struct ExposureIssue {
 /// fn copy(view: VueExposure<'_, '_, '_, '_>) { let _ = view.clone(); }
 /// ```
 /// ```compile_fail
-/// use vize_l2::file::{FileArtifact, vue::VueExposure};
-/// fn forge(file: &FileArtifact<'_>) { let _ = VueExposure { file }; }
+/// use vize_l2::file::{L2Ir, vue::VueExposure};
+/// fn forge(file: &L2Ir<'_>) { let _ = VueExposure { file }; }
 /// ```
 pub struct VueExposure<'f, 'd, 'p, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     script: ScriptView<'d, 'a>,
     program: AdmittedProgram<'p, 'a>,
     unit: ScriptUnitId,
@@ -55,7 +53,7 @@ pub struct VueExposure<'f, 'd, 'p, 'a> {
 
 impl<'f, 'd, 'p, 'a> VueExposure<'f, 'd, 'p, 'a> {
     pub fn checked(
-        file: &'f FileArtifact<'a>,
+        file: &'f L2Ir<'a>,
         script: ScriptView<'d, 'a>,
         program: AdmittedProgram<'p, 'a>,
     ) -> Result<Self, ExposureIssue> {
@@ -130,7 +128,7 @@ impl<'f, 'd, 'p, 'a> VueExposure<'f, 'd, 'p, 'a> {
     }
 
     #[must_use]
-    pub fn file(&self) -> &'f FileArtifact<'a> {
+    pub fn file(&self) -> &'f L2Ir<'a> {
         self.file
     }
 

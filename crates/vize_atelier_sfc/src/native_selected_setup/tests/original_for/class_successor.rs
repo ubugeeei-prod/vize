@@ -3,7 +3,7 @@ use super::*;
 use serde_json::{Value, json};
 use vize_l0::Span;
 use vize_l1::markup::AttributeValueOperand;
-use vize_l2::file::FileArtifact;
+use vize_l2::file::L2Ir;
 use vize_l2::file::NativeFileAttributeValueState;
 use vize_l3::decision::dom::{DomRejection, DomUnsupported};
 use vize_l4::{
@@ -138,7 +138,7 @@ fn span(span: Span) -> serde_json::Value {
 fn debug_rows<T: std::fmt::Debug>(rows: &[T]) -> Vec<std::string::String> {
     rows.iter().map(|row| format!("{row:#?}")).collect()
 }
-fn file_observation(file: &FileArtifact<'_>, source: &str) -> Value {
+fn file_observation(file: &L2Ir<'_>, source: &str) -> Value {
     let artifact = file.artifact();
     let provenance: Vec<_> = artifact.provenance().iter().map(|record|json!({
         "rule":record.rule.as_str(),"node":record.node.map(|node|node.index()),

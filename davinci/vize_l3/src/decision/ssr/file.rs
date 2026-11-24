@@ -4,7 +4,7 @@ use super::SsrFacts;
 use crate::decision::{
     DecisionAnalysis, DecisionBuildError, DecisionTables, build_decisions, policy::TargetPolicy,
 };
-use vize_l2::{artifact::Artifact, file::FileArtifact};
+use vize_l2::{artifact::Artifact, file::L2Ir};
 
 /// Completed SSR analysis retains its actual immutable file owner.
 ///
@@ -15,22 +15,22 @@ use vize_l2::{artifact::Artifact, file::FileArtifact};
 /// ```
 /// The owner cannot be discarded while its result is live:
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::ssr::build_ssr_file_decisions;
-/// fn discard(file: FileArtifact<'_>) {
+/// fn discard(file: L2Ir<'_>) {
 ///     let analysis = build_ssr_file_decisions(&file).unwrap();
 ///     drop(file);
 ///     let _ = analysis.file();
 /// }
 /// ```
 pub struct SsrFileAnalysis<'owner, 'arena> {
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
 impl<'owner, 'arena> SsrFileAnalysis<'owner, 'arena> {
     #[must_use]
-    pub const fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub const fn file(&self) -> &'owner L2Ir<'arena> {
         self.file
     }
     #[must_use]
@@ -57,7 +57,7 @@ impl<'owner, 'arena> SsrFileAnalysis<'owner, 'arena> {
 /// Reject incomplete or interrupted file admission before the sole decision walk.
 /// This proves native file completion, not original SFC custody or product parity.
 pub fn build_ssr_file_decisions<'owner, 'arena>(
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
 ) -> Result<SsrFileAnalysis<'owner, 'arena>, DecisionBuildError> {
     if !file.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
@@ -68,7 +68,7 @@ pub fn build_ssr_file_decisions<'owner, 'arena>(
 
 // Called only after the real selected template entry derives its own File.
 pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
 ) -> Result<SsrFileAnalysis<'owner, 'arena>, DecisionBuildError> {
     let analysis = crate::decision::build::build_with_original(
         file,

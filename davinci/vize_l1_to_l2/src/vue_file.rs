@@ -3,7 +3,7 @@
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Allocator, Span};
 use vize_l2::artifact::ArtifactError;
-use vize_l2::file::{BindingRef, FileArtifact, RejectedFile, ScriptUnitId};
+use vize_l2::file::{BindingRef, L2Ir, RejectedFile, ScriptUnitId};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
 mod ordinary;
@@ -191,7 +191,7 @@ impl<'a> VueFileProducer<'a> {
 /// Completeness of the admitted Vue file family; descriptor membership remains
 /// the native SFC assembler's checked obligation.
 pub struct VueFile<'a> {
-    file: FileArtifact<'a>,
+    file: L2Ir<'a>,
     ordinary: Option<VueScriptReceipt>,
     setup: Option<VueScriptReceipt>,
     declarations: Vec<VueDeclaration>,
@@ -207,7 +207,7 @@ impl core::fmt::Debug for VueFile<'_> {
 }
 impl<'a> VueFile<'a> {
     #[must_use]
-    pub fn file(&self) -> &FileArtifact<'a> {
+    pub fn file(&self) -> &L2Ir<'a> {
         &self.file
     }
     #[must_use]
@@ -263,7 +263,7 @@ impl<'f, 'a> VueExposure<'f, 'a> {
 
 /// Both canonical and semantic partial owners survive failure.
 pub struct RejectedVueFile<'a> {
-    file: Box<Result<FileArtifact<'a>, RejectedFile<'a>>>,
+    file: Box<Result<L2Ir<'a>, RejectedFile<'a>>>,
     ordinary: Option<VueScriptReceipt>,
     setup: Option<VueScriptReceipt>,
     declarations: Vec<VueDeclaration>,
@@ -281,7 +281,7 @@ impl core::fmt::Debug for RejectedVueFile<'_> {
 }
 impl<'a> RejectedVueFile<'a> {
     #[must_use]
-    pub fn file(&self) -> Option<&FileArtifact<'a>> {
+    pub fn file(&self) -> Option<&L2Ir<'a>> {
         self.file.as_ref().as_ref().ok()
     }
     #[must_use]

@@ -4,7 +4,7 @@ use super::*;
 use crate::query::{TemplateSiteRef, TemplateSiteScope};
 use core::ptr;
 
-pub(in crate::query) fn assert_equivalent(file: &FileArtifact<'_>) {
+pub(in crate::query) fn assert_equivalent(file: &L2Ir<'_>) {
     let scan = Model::new(file);
     let mut index = scan.index_positions();
     compare(scan, index.model());
