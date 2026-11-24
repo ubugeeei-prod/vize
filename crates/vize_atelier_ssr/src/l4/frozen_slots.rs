@@ -32,6 +32,13 @@ impl<'a> FrozenTemplate<'a> {
         Ok(Self { source, spans })
     }
 
+    /// Custody for a template with no frozen opening. Lowering under it
+    /// refuses a `v-pre` opening, so it needs no parser sidecar and yields
+    /// what the parser's own empty sidecar yields.
+    pub(super) fn unfrozen(source: &'a str) -> Self {
+        Self { source, spans: &[] }
+    }
+
     pub(super) fn lower(
         self,
         allocator: &'a vize_l0::Allocator,

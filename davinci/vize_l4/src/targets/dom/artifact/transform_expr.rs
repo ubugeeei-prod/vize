@@ -208,6 +208,14 @@ impl<'b> TransformExpressions<'b> {
             .unwrap_or_else(|| String::from(params))
     }
 
+    /// Whether slot props are a well-formed binding pattern. A lane that
+    /// runs without the shipped parser refuses a malformed one, so that
+    /// parser can report it.
+    #[must_use]
+    pub fn slot_params_are_valid(params: &str, is_ts: bool) -> bool {
+        prefix::slot_params_syntax_valid(params, is_ts)
+    }
+
     /// Whether processed handler text is a function or a callable reference.
     #[must_use]
     pub fn handler_is_callable(text: &str) -> bool {
