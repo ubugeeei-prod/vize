@@ -59,3 +59,11 @@ pub mod recovered_script;
 mod template;
 #[cfg(feature = "experimental-resident-template-passes")]
 pub use template::TemplateRequestError;
+
+#[cfg(all(
+    test,
+    feature = "experimental-recovered-literal-prefix",
+    feature = "experimental-verified-style-format",
+    feature = "experimental-style-lint-products"
+))]
+mod toolchain_session;

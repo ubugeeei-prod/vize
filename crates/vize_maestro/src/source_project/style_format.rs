@@ -225,4 +225,4 @@ mod tests;
 mod corpus;
 
 #[cfg(all(test, feature = "experimental-style-lint-products"))]
-mod composition;
+pub(in crate::source_project) mod composition;

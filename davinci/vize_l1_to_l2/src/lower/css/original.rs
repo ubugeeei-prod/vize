@@ -17,10 +17,21 @@ impl<'a> OriginalStyleBindings<'a> {
 
     /// Lower a style already selected by the compiler's L1 container parser.
     #[must_use]
+    #[inline]
     pub fn from_block(allocator: &'a Allocator, block: SourceBlock<'a>) -> Self {
-        let mut bindings = Vec::new_in(&allocator);
-        for call in vize_l1::css::bind::binding_calls_in(block) {
-            bindings.push(BindingOp::VueCssBind(Box::new_in(
+        let mut style = Self {
+            block,
+            bindings: Vec::new_in(&allocator),
+        };
+        if !block.source().is_empty() {
+            style.read_calls(allocator);
+        }
+        style
+    }
+
+    fn read_calls(&mut self, allocator: &'a Allocator) {
+        for call in vize_l1::css::bind::binding_calls_in(self.block) {
+            self.bindings.push(BindingOp::VueCssBind(Box::new_in(
                 VueCssBindOp {
                     value: css_bind_expr(allocator, call.expression, call.argument),
                     span: call.call,
@@ -28,12 +39,17 @@ impl<'a> OriginalStyleBindings<'a> {
                 &allocator,
             )));
         }
-        Self { block, bindings }
     }
 
     #[must_use]
     pub fn block(&self) -> SourceBlock<'a> {
         self.block
+    }
+
+    /// Whether this block contributed a completed binding, including a recovered prefix.
+    #[must_use]
+    pub fn has_calls(&self) -> bool {
+        !self.bindings.is_empty()
     }
 
     pub fn calls(&self) -> impl Iterator<Item = &VueCssBindOp<'a>> {

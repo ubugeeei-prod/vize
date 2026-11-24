@@ -92,7 +92,7 @@ fn paired(body: &str, inspect: impl FnOnce(&dyn Fn(bool) -> Outputs)) {
     inspect(&run);
 }
 
-fn diagnostics(lint: &CssLintResult) -> serde_json::Value {
+pub(in crate::source_project) fn diagnostics(lint: &CssLintResult) -> serde_json::Value {
     let rows = lint
         .diagnostics
         .iter()

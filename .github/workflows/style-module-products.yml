@@ -4,7 +4,6 @@ on:
     paths:
       - ".github/workflows/style-module-products.yml"
       - ".github/scripts/workflows/style-module-products/**"
-      - tools/benchmarks/crates/davinci_harness/src/paired.rs
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/container/lang.rs"
       - "davinci/vize_l1/src/css.rs"
