@@ -9,10 +9,13 @@ on:
       - "davinci/vize_l2_to_l3/**"
       - "davinci/vize_l3/**"
       - "crates/vize_incremental/**"
+      - crates/vize_maestro/src/document/store.rs
+      - crates/vize_maestro/src/source_project/query.rs
+      - crates/vize_maestro/src/source_project/scoped_component.rs
+      - crates/vize_maestro/src/source_project/snapshot.rs
       - "tests/formal/ir-graph/**"
       - tests/formal/position-index/**
       - .github/scripts/workflows/davinci-ir-graph/**
-  workflow_dispatch:
 permissions: { contents: read }
 concurrency:
   group: ir-graph-${{ github.event.pull_request.number || github.ref }}
