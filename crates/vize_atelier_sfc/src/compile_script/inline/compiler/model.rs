@@ -2,7 +2,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{Statement, TSType, TSTypeName};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{String, ToCompactString, cstr};
+use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
 use crate::script::{ScriptCompileContext, define_model_metadata, model_modifiers_binding_name};
 
@@ -37,17 +37,17 @@ fn model_runtime_type(ctx: &ScriptCompileContext, type_arg: &str) -> (String, bo
         js_type
     };
     let (js_type, skip_check) = split_skip_check(&js_type);
-    let nullable = model_type_accepts_null(ctx, type_arg, &mut Vec::new());
+    let nullable = model_type_accepts_null(ctx, type_arg, &mut FxHashSet::default());
     (add_null_to_runtime_type(&js_type, nullable), skip_check)
 }
 
 /// Null in an array element, object member, or function return does not make
 /// the model itself nullable. Parse the type so only root unions, parentheses,
 /// and local aliases contribute, with cycle protection for recursive aliases.
-fn model_type_accepts_null(
-    ctx: &ScriptCompileContext,
+fn model_type_accepts_null<'ctx>(
+    ctx: &'ctx ScriptCompileContext,
     source: &str,
-    seen: &mut Vec<String>,
+    seen: &mut FxHashSet<&'ctx str>,
 ) -> bool {
     let source = cstr!("type __Model = {source};");
     let allocator = Allocator::default();
@@ -61,10 +61,10 @@ fn model_type_accepts_null(
     model_type_node_accepts_null(ctx, &alias.type_annotation, seen)
 }
 
-fn model_type_node_accepts_null(
-    ctx: &ScriptCompileContext,
+fn model_type_node_accepts_null<'ctx>(
+    ctx: &'ctx ScriptCompileContext,
     ty: &TSType<'_>,
-    seen: &mut Vec<String>,
+    seen: &mut FxHashSet<&'ctx str>,
 ) -> bool {
     match ty {
         TSType::TSNullKeyword(_) => true,
@@ -79,17 +79,12 @@ fn model_type_node_accepts_null(
             let TSTypeName::IdentifierReference(name) = &reference.type_name else {
                 return false;
             };
-            let name = name.name.as_str();
-            let Some(body) = ctx.type_aliases.get(name) else {
+            let Some((name, body)) = ctx.type_aliases.get_key_value(name.name.as_str()) else {
                 return false;
             };
-            if seen.iter().any(|seen| seen == name) {
-                return false;
-            }
-            seen.push(name.into());
-            let nullable = model_type_accepts_null(ctx, body, seen);
-            seen.pop();
-            nullable
+            // This query stops at the first reachable null. Each alias body
+            // contributes its outgoing references once, even across a cycle.
+            seen.insert(name.as_str()) && model_type_accepts_null(ctx, body, seen)
         }
         _ => false,
     }

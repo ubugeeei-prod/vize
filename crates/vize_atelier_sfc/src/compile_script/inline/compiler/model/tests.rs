@@ -1,4 +1,4 @@
-use super::model_value_prop;
+use super::{model_type_accepts_null, model_value_prop};
 use crate::script::ScriptCompileContext;
 use crate::{
     SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode, compile_sfc_for_adapter, parse_sfc,
@@ -39,6 +39,29 @@ fn model_runtime_types_preserve_top_level_null() {
         ),
         "{ type: [Number, null], ...{ required: true } }"
     );
+}
+
+#[test]
+fn model_nullability_follows_shared_and_recursive_aliases() {
+    let mut ctx = ScriptCompileContext::new("");
+    for (name, body) in [
+        ("Model", "Left | Right"),
+        ("Left", "Shared"),
+        ("Right", "Shared | Left"),
+        ("Shared", "Left"),
+    ] {
+        ctx.type_aliases.insert(name.into(), body.into());
+    }
+    let mut visited = vize_carton::FxHashSet::default();
+    assert!(!model_type_accepts_null(&ctx, "Model", &mut visited));
+    assert_eq!(visited.len(), 4);
+    ctx.type_aliases
+        .insert("Shared".into(), "Left | null".into());
+    assert!(model_type_accepts_null(
+        &ctx,
+        "Model",
+        &mut Default::default()
+    ));
 }
 
 #[test]
