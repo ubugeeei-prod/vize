@@ -34,6 +34,9 @@ commands {
     [[ "${#exe[@]}" == 1 ]]
     cp "${exe[0]}" "$RUNNER_TEMP/ambient-$side"
   done
+  phase_test=ide::diagnostics::corsa::ambient_project::tests::repeated::alternating_hosts_and_raw_reads_keep_the_current_native_answer
+  "$RUNNER_TEMP/ambient-head" --list | grep -Fx "$phase_test: test"
+  "$RUNNER_TEMP/ambient-head" --exact --ignored "$phase_test"
   node tools/benchmarks/scripts/compare-ambient-diagnostics.ts "$RUNNER_TEMP/ambient-base" "$RUNNER_TEMP/ambient-head" "$RUNNER_TEMP/ambient-diagnostics.json" | tee -a "$GITHUB_STEP_SUMMARY"
   """#
 }
