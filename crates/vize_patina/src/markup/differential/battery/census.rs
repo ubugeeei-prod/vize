@@ -251,7 +251,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Upstream static-class node coverage adds one helper-driven call.
         + 1
         // Duplicate-class report nodes add one literal call.
-        + 1,
+        + 1
+        // Static-hidden focusability adds two loop-driven fixture calls.
+        + 2,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -311,7 +313,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // The v-on-handler-style option observation is a helper-driven skip.
         + 1
         // The upstream static-class node observation is a helper-driven skip.
-        + 1,
+        + 1
+        // Static-hidden focusability loops remain explicit scanner skips.
+        + 2,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
