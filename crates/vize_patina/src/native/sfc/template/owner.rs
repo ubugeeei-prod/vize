@@ -8,7 +8,7 @@ use vize_l0::{
 use vize_l1::{
     container::{
         Vue,
-        vue::{DescriptorObservation, DescriptorOptions},
+        vue::{DescriptorOptions, L1Ir},
     },
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
@@ -26,7 +26,7 @@ use vize_l1::{
 /// cloneable::<NativeSfcTemplateOwner<'static>>();
 /// ```
 pub struct NativeSfcTemplateOwner<'a> {
-    descriptor: DescriptorObservation<'a>,
+    descriptor: L1Ir<'a>,
     template: SelectedTemplateComponent<'a>,
 }
 
@@ -73,7 +73,7 @@ impl<'a> NativeSfcTemplateOwner<'a> {
 
     /// Returns the original descriptor observation.
     #[must_use]
-    pub fn descriptor(&self) -> &DescriptorObservation<'a> {
+    pub fn descriptor(&self) -> &L1Ir<'a> {
         &self.descriptor
     }
 

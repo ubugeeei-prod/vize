@@ -4,7 +4,7 @@ use super::VaporFacts;
 use crate::decision::{
     DecisionAnalysis, DecisionBuildError, DecisionTables, build_decisions, policy::TargetPolicy,
 };
-use vize_l2::{artifact::Artifact, file::FileArtifact};
+use vize_l2::{artifact::Artifact, file::L2Ir};
 
 /// Target input retains its original completed immutable File owner.
 ///
@@ -15,22 +15,22 @@ use vize_l2::{artifact::Artifact, file::FileArtifact};
 /// ```
 /// Original ownership remains live through the borrowed output:
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::vapor::build_vapor_file_decisions;
-/// fn discard(file: FileArtifact<'_>) {
+/// fn discard(file: L2Ir<'_>) {
 ///     let analysis = build_vapor_file_decisions(&file).unwrap();
 ///     drop(file);
 ///     let _ = analysis.file();
 /// }
 /// ```
 pub struct VaporFileAnalysis<'owner, 'arena> {
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
 impl<'owner, 'arena> VaporFileAnalysis<'owner, 'arena> {
     #[must_use]
-    pub const fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub const fn file(&self) -> &'owner L2Ir<'arena> {
         self.file
     }
     #[must_use]
@@ -57,7 +57,7 @@ impl<'owner, 'arena> VaporFileAnalysis<'owner, 'arena> {
 /// Incomplete original file admission fails before any decision traversal.
 /// This is completed File admission, not whole SFC custody or product parity.
 pub fn build_vapor_file_decisions<'owner, 'arena>(
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
 ) -> Result<VaporFileAnalysis<'owner, 'arena>, DecisionBuildError> {
     if !file.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
@@ -68,7 +68,7 @@ pub fn build_vapor_file_decisions<'owner, 'arena>(
 
 // Called only after the real selected template entry derives its own File.
 pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
 ) -> Result<VaporFileAnalysis<'owner, 'arena>, DecisionBuildError> {
     let analysis = crate::decision::build::build_with_original(
         file,

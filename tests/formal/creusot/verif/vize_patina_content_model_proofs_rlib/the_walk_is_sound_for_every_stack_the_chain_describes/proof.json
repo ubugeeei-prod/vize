@@ -1,0 +1,43 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_possible": { "prover": "z3", "time": 0.002 },
+      "vc_the_walk_is_sound_for_every_stack_the_chain_describes": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.013 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "z3", "time": 0.02 },
+                  { "prover": "z3", "time": 0.015 }
+                ]
+              },
+              { "prover": "z3", "time": 0.011 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "z3", "time": 0.012 },
+                  { "prover": "z3", "time": 0.011 }
+                ]
+              },
+              { "prover": "z3", "time": 0.009 },
+              { "prover": "z3", "time": 0.009 },
+              { "prover": "z3", "time": 0.012 },
+              { "prover": "z3", "time": 0.013 },
+              { "prover": "z3", "time": 0.012 },
+              { "prover": "z3", "time": 0.012 },
+              { "prover": "z3", "time": 0.014 },
+              { "prover": "z3", "time": 0.016 }
+            ]
+          }
+        ]
+      },
+      "vc_walk_ref_slice_Role": { "prover": "z3", "time": 0.002 }
+    }
+  }
+}

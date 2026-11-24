@@ -9,7 +9,7 @@ use vize_l0::{
 use vize_l1::{
     container::{
         Vue,
-        vue::{DescriptorObservation, DescriptorOptions, ScriptRole, ScriptView},
+        vue::{DescriptorOptions, L1Ir, ScriptRole, ScriptView},
     },
     embed::{
         EmbedSource,
@@ -27,7 +27,7 @@ const ALL: VueDemand = VueDemand {
 };
 
 struct Parsed<'a> {
-    descriptor: DescriptorObservation<'a>,
+    descriptor: L1Ir<'a>,
     ordinary: Option<EmbedSyntax<'a>>,
     setup: Option<EmbedSyntax<'a>>,
 }

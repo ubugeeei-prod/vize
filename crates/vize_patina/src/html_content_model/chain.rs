@@ -44,13 +44,35 @@ impl NsSet {
         self.0 == 1 << ns as u8
     }
 
-    /// The possible namespaces.
+    /// The possible namespaces, in namespace order.
     pub fn iter(self) -> impl Iterator<Item = Ns> {
-        [Ns::Html, Ns::Svg, Ns::MathMl]
-            .into_iter()
-            .filter(move |ns| self.has(*ns))
+        NsIter(self.0 & Self::ALL.0)
     }
 }
+
+/// The namespaces left in a set, lowest bit first: HTML, SVG, MathML.
+#[derive(Debug, Clone, Copy)]
+struct NsIter(u8);
+
+impl Iterator for NsIter {
+    type Item = Ns;
+
+    #[inline]
+    fn next(&mut self) -> Option<Ns> {
+        if self.0 == 0 {
+            return None;
+        }
+        let ns = match self.0.trailing_zeros() {
+            0 => Ns::Html,
+            1 => Ns::Svg,
+            _ => Ns::MathMl,
+        };
+        self.0 &= self.0 - 1;
+        Some(ns)
+    }
+}
+
+impl core::iter::FusedIterator for NsIter {}
 
 /// How the tree-construction dispatcher treats a start tag whose adjusted
 /// current node is a given element (§13.2.6, "tree construction dispatcher").

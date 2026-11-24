@@ -7,12 +7,12 @@
 
 use alloc::vec::Vec;
 
-use crate::op::{EdgeKind, Op, OpId, OpKind, Program, Region, RegionId};
+use crate::op::{EdgeKind, L3Ir, Op, OpId, OpKind, Region, RegionId};
 use crate::operand::{Operand, OperandRole as Role, ValueKind};
 
 /// Sorted lookup tables over one program.
 pub(crate) struct Index<'p, 'a> {
-    pub(crate) program: &'p Program<'a>,
+    pub(crate) program: &'p L3Ir<'a>,
     ops: Vec<(OpId, u32)>,
     regions: Vec<(RegionId, u32)>,
     operands: Vec<(OpId, u32)>,
@@ -49,7 +49,7 @@ fn all<K: Ord + Copy, V: Copy>(table: &[(K, V)], key: K) -> impl Iterator<Item =
 }
 
 impl<'p, 'a> Index<'p, 'a> {
-    pub(crate) fn new(program: &'p Program<'a>) -> Self {
+    pub(crate) fn new(program: &'p L3Ir<'a>) -> Self {
         let mut effect_preds: Vec<(OpId, OpId)> = program
             .edges
             .iter()

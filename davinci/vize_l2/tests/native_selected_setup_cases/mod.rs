@@ -5,7 +5,7 @@ use vize_l0::{
 use vize_l1::{
     container::{
         Vue,
-        vue::{DescriptorObservation, DescriptorOptions},
+        vue::{DescriptorOptions, L1Ir},
     },
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
@@ -14,7 +14,7 @@ mod accepted;
 mod primitive_strings;
 mod refusal;
 
-fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> DescriptorObservation<'a> {
+fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> L1Ir<'a> {
     Vue.observe_descriptor(
         arena,
         source,

@@ -22,9 +22,6 @@ on:
       - tests/davinci_test_support/src/l3_reference/incremental.rs
       - tests/davinci_test_support/src/l3_reference/incremental_proofs.rs
       - tests/davinci_test_support/src/l3_reference/kani.rs
-      - crates/vize_patina/src/html_content_model/tri.rs
-      - crates/vize_patina/src/html_content_model/walk.rs
-      - crates/vize_patina/src/html_content_model/kani.rs
       - davinci/vize_l0/src/js_string.rs
       - davinci/vize_l0/src/js_string/tests.rs
       - davinci/vize_l0/src/js_string_kani.rs
@@ -99,19 +96,6 @@ jobs:
           kani-version: 0.68.0
           command: kani
           args: tests/davinci_test_support/src/l3_reference/kani.rs --output-format=terse --jobs 2
-  html-content-model:
-    name: HTML content-model kernel properties
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
-        with:
-          kani-version: 0.68.0
-          command: kani
-          args: crates/vize_patina/src/html_content_model/kani.rs --output-format=terse
   compiler-string-literals:
     name: Emitted compiler string literals
     runs-on: blacksmith-32vcpu-ubuntu-2404

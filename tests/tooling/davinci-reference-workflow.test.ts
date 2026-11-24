@@ -134,17 +134,17 @@ function assertHarness(source: string, name: string): void {
   );
 }
 
-/** The attribute lines attached to `pub fn name(`, nearest first. */
+/** The attribute lines attached to `pub fn name(`, in declaration order. */
 function attributesOf(source: string, name: string): string[] {
   const lines = source.split("\n");
   const at = lines.findIndex((line) => line.startsWith(`pub fn ${name}(`));
   assert.notEqual(at, -1, `missing ${name}`);
   const attached: string[] = [];
-  // An item's attributes run up to its doc comment, a blank line or the
-  // previous item's last line.
+  // Blank lines and other outer attributes may separate a law from its declaration.
   for (let index = at - 1; index >= 0; index--) {
     const line = lines[index]!;
-    if (line === "" || line.startsWith("///") || line.startsWith("}") || line.endsWith("{}")) break;
+    if (line.startsWith("}") || line.endsWith("{}") || line.endsWith(";")) break;
+    if (!line.trim() || line.trimStart().startsWith("//")) continue;
     attached.unshift(line);
   }
   return attached;
@@ -152,7 +152,7 @@ function attributesOf(source: string, name: string): string[] {
 
 function assertLemma(source: string, name: string): void {
   const attributes = attributesOf(source, name);
-  assert.equal(attributes[0], "#[logic]", `${name} must be a Creusot lemma`);
+  assert.ok(attributes.includes("#[logic]"), `${name} must be a Creusot lemma`);
   assert.ok(
     attributes.some((line) => line.startsWith("#[ensures(")),
     `${name} must state its law`,

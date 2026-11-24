@@ -9,7 +9,7 @@ use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId, side_table::SideTable};
 use vize_l2::{
     expr::ExprRef,
-    file::FileArtifact,
+    file::L2Ir,
     op::{Namespace, Op},
     walk::NodeRef,
 };
@@ -26,7 +26,7 @@ use super::vue::policy::FileReads;
 pub(in crate::decision) struct DomBuilder<'facts, 'owner, 'arena, F, R> {
     expressions: &'facts F,
     reads: &'facts R,
-    file: Option<&'owner FileArtifact<'arena>>,
+    file: Option<&'owner L2Ir<'arena>>,
     frames: Vec<(NodeId, DomFrame<'owner, 'arena>)>,
     facts: DomFacts<'owner, 'arena>,
     root_count: usize,
@@ -48,7 +48,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
     pub(in crate::decision) fn new(
         expressions: &'facts F,
         root_count: usize,
-        file: Option<&'owner FileArtifact<'arena>>,
+        file: Option<&'owner L2Ir<'arena>>,
         reads: &'facts R,
     ) -> Self {
         Self {
