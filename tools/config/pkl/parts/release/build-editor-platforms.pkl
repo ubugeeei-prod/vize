@@ -10,7 +10,9 @@ strategy {
   matrix { settings = "${{ fromJSON(needs.version.outputs.editor_matrix) }}" }
 }
 steps = new Listing {
-  ci.checkoutAt("${{ needs.version.outputs.ref }}")
+  // Tagging can delete the candidate ref before a queued provider starts.
+  // Use the same immutable candidate SHA that the native receipt must match.
+  ci.checkoutAt("${{ needs.version.outputs.sha }}")
   ci.workspaceVp()
   ci.command("Install packaging dependencies", "vp install --workspace-root --frozen-lockfile --prefer-offline")
   ci.rust("stable")
