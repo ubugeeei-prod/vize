@@ -1,5 +1,12 @@
 //! L1 — the lossless Vue-template surface tree (codename Sinopia, Davinci P2-7).
 //!
+//! # Start here
+//!
+//! - IR: [`L1Ir`], one original file: its source, container segments,
+//!   selected blocks and recovery issues.
+//! - Entry: `container::Vue.observe_descriptor(allocator, source, options)`.
+//! - Next level: `vize_l1_to_l2::lower_sfc_native` builds a `vize_l2::L2Ir`.
+//!
 //! **Experimental:** the stage API may change in any alpha release; record
 //! intentional breaking changes in the release notes.
 //!
@@ -74,5 +81,4 @@ pub mod registry;
 mod slice;
 
 /// Original Vue file syntax, including selected blocks, recovery diagnostics and exact source.
-#[cfg(feature = "ir-views")]
-pub use container::vue::DescriptorObservation as L1Ir;
+pub use container::vue::L1Ir;

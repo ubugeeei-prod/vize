@@ -1,7 +1,7 @@
 use vize_l0::{Allocator, SourceBlock, Span};
 use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
-use vize_l2::file::FileArtifact;
+use vize_l2::file::L2Ir;
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
 pub fn syntax<'a>(
@@ -16,7 +16,7 @@ pub fn syntax<'a>(
     ))
 }
 
-pub fn file<'a>(arena: &'a Allocator, source: &'a str, lang: Lang) -> Option<FileArtifact<'a>> {
+pub fn file<'a>(arena: &'a Allocator, source: &'a str, lang: Lang) -> Option<L2Ir<'a>> {
     let block = vize_l0::SourceRoot::new(source).ok()?.whole_block();
     let syntax = syntax(arena, block, lang)?;
     let mut producer = FileProducer::new(arena, source).ok()?;

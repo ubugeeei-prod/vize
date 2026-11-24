@@ -12,7 +12,7 @@ over the sealed canonical L2 artifact; it does not finish #6839.
 | Static, dynamic-binding, placement and control decisions | `vize_l3::decision`                            | Conservative facts; placement always Inline          |
 | Per-target eligibility criteria                          | `vize_l3::decision::policy::{dom, ssr, vapor}` | Cloak/event filtering only; full criteria unfinished |
 | Borrowed L2 to shared L3 decisions                       | `vize_l3::decision::build_decisions`           | Owner-bound result; conversion edge re-exports       |
-| Flat reactive program                                    | `vize_l3::op::Program`                         | Existing artifact; demand-only split unfinished      |
+| Flat reactive program                                    | `vize_l3::L3Ir`                                | Existing artifact; demand-only split unfinished      |
 | Decision encoding, helper numbering and emission         | Future `vize_l4`                               | Separate #6840 ownership work; not implemented here  |
 
 `NativeAnalysis` retains the actual immutable L2 artifact borrow and exposes

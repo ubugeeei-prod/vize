@@ -5,8 +5,8 @@ mod intervals;
 use intervals::Intervals;
 
 use super::{
-    BindingRef, FileArtifact, Model, PositionQueryError, ReferenceRef, ScopeRef, ScriptUnit,
-    contains, query_declaration, query_reference, scope_descends, unique,
+    BindingRef, L2Ir, Model, PositionQueryError, ReferenceRef, ScopeRef, ScriptUnit, contains,
+    query_declaration, query_reference, scope_descends, unique,
 };
 use crate::query::template::index::TemplatePositions;
 use crate::query::{TemplateQueryError, TemplateSiteRef};
@@ -19,10 +19,10 @@ pub struct PositionIndex<F> {
     rows: Rows,
 }
 
-impl<'a> PositionIndex<FileArtifact<'a>> {
+impl<'a> PositionIndex<L2Ir<'a>> {
     /// Take ownership of a finished File. Moving the snapshot preserves every row identity.
     #[must_use]
-    pub fn from_file(file: FileArtifact<'a>) -> Self {
+    pub fn from_file(file: L2Ir<'a>) -> Self {
         let rows = Rows::new(&file);
         Self { owner: file, rows }
     }
@@ -34,7 +34,7 @@ impl<'a> PositionIndex<FileArtifact<'a>> {
 
     /// Drop the index and recover the original File.
     #[must_use]
-    pub fn into_file(self) -> FileArtifact<'a> {
+    pub fn into_file(self) -> L2Ir<'a> {
         self.owner
     }
 }
@@ -42,7 +42,7 @@ impl<'a> PositionIndex<FileArtifact<'a>> {
 impl<'f, 'a> Model<'f, 'a> {
     /// Build a reusable index at the caller's first demand for position queries.
     #[must_use]
-    pub fn index_positions(self) -> PositionIndex<&'f FileArtifact<'a>> {
+    pub fn index_positions(self) -> PositionIndex<&'f L2Ir<'a>> {
         PositionIndex {
             owner: self.file,
             rows: Rows::new(self.file),
@@ -50,7 +50,7 @@ impl<'f, 'a> Model<'f, 'a> {
     }
 }
 
-impl<'a> PositionIndex<&FileArtifact<'a>> {
+impl<'a> PositionIndex<&L2Ir<'a>> {
     #[must_use]
     pub fn model(&self) -> IndexedModel<'_, 'a> {
         self.rows.model(self.owner)
@@ -69,7 +69,7 @@ struct Rows {
 }
 
 impl Rows {
-    fn new(file: &FileArtifact<'_>) -> Self {
+    fn new(file: &L2Ir<'_>) -> Self {
         if !file.is_complete() {
             return Self::default();
         }
@@ -92,7 +92,7 @@ impl Rows {
         rows
     }
 
-    fn index_script(&mut self, file: &FileArtifact<'_>) {
+    fn index_script(&mut self, file: &L2Ir<'_>) {
         self.units = Intervals::from_rows(file.units(), |row| row.span);
         self.declarations = Intervals::from_rows(&file.facts.declarations, |row| row.span);
         self.references = Intervals::from_rows(file.references(), |row| row.span);
@@ -100,7 +100,7 @@ impl Rows {
         self.indexed_script = true;
     }
 
-    fn model<'f, 'a>(&'f self, file: &'f FileArtifact<'a>) -> IndexedModel<'f, 'a> {
+    fn model<'f, 'a>(&'f self, file: &'f L2Ir<'a>) -> IndexedModel<'f, 'a> {
         IndexedModel {
             scan: Model::new(file),
             rows: self,

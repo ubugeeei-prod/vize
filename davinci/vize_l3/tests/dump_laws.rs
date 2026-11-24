@@ -2,7 +2,7 @@ use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Span};
 use vize_l3::dump::Page as L3Page;
 use vize_l3::op::{
-    EdgeKind, EffectId, EffectScope, Op, OpId, OpKind, Phase, Program, Region, RegionId, StateEdge,
+    EdgeKind, EffectId, EffectScope, L3Ir, Op, OpId, OpKind, Phase, Region, RegionId, StateEdge,
 };
 
 const CANONICAL: &str = "\
@@ -26,8 +26,8 @@ id=0 owner=1 region=1 span=10:30
 
 ";
 
-fn program<'a>(allocator: &'a Allocator) -> Program<'a> {
-    let mut program = Program::new(allocator, Phase::Scheduled);
+fn program<'a>(allocator: &'a Allocator) -> L3Ir<'a> {
+    let mut program = L3Ir::new(allocator, Phase::Scheduled);
     program.push_region(Region::root(Span::new(0, 80)));
     program.push_op(Op::new(
         OpId::new(0),

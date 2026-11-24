@@ -1,6 +1,17 @@
 //! L2 - the Davinci semantic IR (codename Disegno): the pivot stage and the
 //! primary consumer surface.
 //!
+//! # Start here
+//!
+//! - IR: [`L2Ir`], one native file: the sealed template artifact plus the
+//!   script facts (bindings, references, units).
+//! - Entry: built by `vize_l1_to_l2::lower_sfc_native(allocator, source, options)`
+//!   from an `L1Ir`; this crate defines the IR and its queries, not a producer.
+//! - Next level: `vize_l2_to_l3::lower_ir(allocator, &l2ir)` builds a `vize_l3::L3Ir`.
+//! - The DOM and SSR compile paths still read `artifact::ArtifactParts`
+//!   through `vize_l1_to_l2::Lowered` instead of an `L2Ir`
+//!   (`docs/davinci/decisions/2026-11-24-level-ir-names.md`).
+//!
 //! **Experimental:** the stage API may change in any alpha release; record
 //! intentional breaking changes in the release notes.
 //!
@@ -72,8 +83,7 @@ pub mod walk;
 pub mod module;
 
 /// Source-bound Vue/JS file semantics and its canonical component region.
-#[cfg(feature = "ir-views")]
-pub use file::FileArtifact as L2Ir;
+pub use file::L2Ir;
 
 #[cfg(feature = "expanded-css")]
 pub mod style;

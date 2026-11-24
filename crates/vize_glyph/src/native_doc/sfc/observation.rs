@@ -1,6 +1,6 @@
 //! Private complete/refused outcomes retain genuine original owners.
 
-use vize_l1::container::vue::DescriptorObservation;
+use vize_l1::container::vue::L1Ir;
 use vize_l1::markup::{
     AttributeBindingExpression, AttributeExpression, AttributeExpressionFailure,
     InterpolationFailure, InterpolationOperand, SelectedTemplateComponent,
@@ -26,7 +26,7 @@ pub(super) enum Outcome<'a> {
 /// }
 /// ```
 pub struct NativeSfcObservation<'a> {
-    pub(super) descriptor: DescriptorObservation<'a>,
+    pub(super) descriptor: L1Ir<'a>,
     pub(super) selected: Option<SelectedTemplateComponent<'a>>,
     pub(super) operands: std::vec::Vec<InterpolationOperand<'a>>,
     pub(super) interpolation_failure: Option<InterpolationFailure<'a>>,
@@ -69,7 +69,7 @@ impl<'a> NativeSfcObservation<'a> {
         self.options
     }
     /// Borrow the original descriptor observation and all of its evidence.
-    pub fn descriptor(&self) -> &DescriptorObservation<'a> {
+    pub fn descriptor(&self) -> &L1Ir<'a> {
         &self.descriptor
     }
     /// Borrow the original selected template, if selection succeeded.

@@ -13,7 +13,7 @@ use vize_l1::embed::{
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l2::{
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{FileProducer, ProgramInput, ProgramScope},
     query::{BindingRef, Model},
 };
@@ -275,7 +275,7 @@ struct Original {
 
 struct RetainedNavigation<'file, 'arena> {
     snapshot: &'file SourceSnapshot,
-    file: &'file FileArtifact<'arena>,
+    file: &'file L2Ir<'arena>,
     lines: &'file [usize],
     native: Option<vize_l1_to_l2::native_file::NativeSfc<'file, 'arena>>,
     intrinsic_tags: &'file [(&'arena str, Span)],

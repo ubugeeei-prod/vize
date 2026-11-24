@@ -2,7 +2,7 @@
 use crate::LintDiagnostic;
 use oxc_ast::ast::VariableDeclarationKind;
 use vize_l0::{FxHashSet, cstr};
-use vize_l1::container::{ContainerSegment, vue::DescriptorObservation};
+use vize_l1::container::{ContainerSegment, vue::L1Ir};
 use vize_l2::query::script::assignments::CheckedAssignments;
 
 /// Identifier used by the stock Patina rule and its diagnostics.
@@ -30,7 +30,7 @@ pub enum PreferConstRefusal {
 /// Requiring one actual script and whitespace around it also excludes sibling
 /// reads/writes, template directives and file-level lint suppressions.
 pub fn default_prefer_const(
-    owner: &DescriptorObservation<'_>,
+    owner: &L1Ir<'_>,
     checked: &CheckedAssignments<'_, '_, '_>,
     mut report: impl FnMut(LintDiagnostic),
 ) -> Result<(), PreferConstRefusal> {

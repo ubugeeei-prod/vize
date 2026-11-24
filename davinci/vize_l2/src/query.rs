@@ -1,12 +1,12 @@
 //! The one semantic query surface products read (#6871).
 //!
-//! A [`Model`] borrows one completed [`FileArtifact`] and answers position,
+//! A [`Model`] borrows one completed [`L2Ir`] and answers position,
 //! resolution and scope-chain questions over its original rows
 //! (`docs/davinci/decisions/2026-11-19-6871-query-model.md`). Answers are
 //! borrowed handles or visitors over existing rows: no query parses, indexes
 //! or allocates, and a refusal is a typed error, never a name fallback.
 
-use crate::file::FileArtifact;
+use crate::file::L2Ir;
 
 mod position;
 mod template;
@@ -24,8 +24,8 @@ pub use template::{
 /// Handles borrow the File, not the model, so they outlive a temporary
 /// model but never the File:
 /// ```compile_fail
-/// use vize_l2::{file::FileArtifact, query::Model};
-/// fn discard(file: FileArtifact<'_>, offset: u32) {
+/// use vize_l2::{file::L2Ir, query::Model};
+/// fn discard(file: L2Ir<'_>, offset: u32) {
 ///     let binding = Model::new(&file).binding_at_offset(offset).unwrap().unwrap();
 ///     drop(file);
 ///     let _ = binding.declaration();
@@ -33,18 +33,18 @@ pub use template::{
 /// ```
 #[derive(Clone, Copy)]
 pub struct Model<'f, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
 }
 
 impl<'f, 'a> Model<'f, 'a> {
     #[must_use]
-    pub const fn new(file: &'f FileArtifact<'a>) -> Self {
+    pub const fn new(file: &'f L2Ir<'a>) -> Self {
         Self { file }
     }
 
     /// The File every answer of this model borrows.
     #[must_use]
-    pub const fn file(self) -> &'f FileArtifact<'a> {
+    pub const fn file(self) -> &'f L2Ir<'a> {
         self.file
     }
 }

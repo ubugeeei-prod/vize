@@ -1,12 +1,12 @@
 //! Structural tooling can use one unambiguous original HTML template even
 //! when a sibling needs another language or an external source.
-use super::{DescriptorObservation, TemplateFrameNameRefusal, TemplateView};
+use super::{L1Ir, TemplateFrameNameRefusal, TemplateView};
 use crate::container::ContainerErrorCode;
 use crate::container::vue::{DescriptorIssueCode as Code, DescriptorRefusal};
 use crate::markup::SurfaceParseOptions;
 use vize_l0::{SourceBlock, Span};
 
-impl<'a> DescriptorObservation<'a> {
+impl<'a> L1Ir<'a> {
     /// Borrow the original HTML template, or report its genuine absence.
     /// A framing error anywhere in the document or an ambiguous template
     /// keeps the splitter and policy diagnostics available to the caller.

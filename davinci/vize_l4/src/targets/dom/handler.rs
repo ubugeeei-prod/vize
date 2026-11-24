@@ -3,12 +3,12 @@
 use super::{DomError, DomErrorKind};
 use crate::write::{LinkSink, Writer};
 use vize_l0::{Span, id::NodeId};
-use vize_l2::{file::FileArtifact, op::OnOp};
+use vize_l2::{file::L2Ir, op::OnOp};
 use vize_l3::decision::dom::{DomFacts, PropertyRole};
 
 pub(super) fn write<L: LinkSink>(
     writer: &mut Writer<L>,
-    file: &FileArtifact<'_>,
+    file: &L2Ir<'_>,
     facts: Option<&DomFacts<'_, '_>>,
     node: NodeId,
     on: &OnOp<'_>,

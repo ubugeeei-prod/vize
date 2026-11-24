@@ -4,7 +4,7 @@ use super::{DomBuilder, DomExpressionFacts};
 use crate::decision::dom::{DomUnsupported, for_head::DomFileForHead, vue::policy::FileReads};
 use vize_l0::id::NodeId;
 use vize_l2::{
-    file::{BindingRef, FileArtifact, ScopeId},
+    file::{BindingRef, L2Ir, ScopeId},
     op::OriginalForOp,
     resolution::ForAliasDeclaration,
     scope::{ScopeBinding, ScopeOrigin},
@@ -45,7 +45,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
 }
 
 fn join<'owner, 'arena>(
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     node: NodeId,
     original: &'owner OriginalForOp<'arena>,
 ) -> Result<DomFileForHead<'owner, 'arena>, DomUnsupported> {
@@ -135,7 +135,7 @@ fn canonical_alias(binding: &ScopeBinding, expected: &ForAliasDeclaration<'_, '_
 fn alias(
     binding: Option<BindingRef<'_, '_>>,
     expected: &ForAliasDeclaration<'_, '_>,
-    file: &FileArtifact<'_>,
+    file: &L2Ir<'_>,
     origin: vize_l2::op::OriginalForId,
     scope: ScopeId,
 ) -> bool {

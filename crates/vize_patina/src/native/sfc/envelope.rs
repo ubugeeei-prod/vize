@@ -3,11 +3,11 @@
 use super::NativeSfcLintRefusal as Refusal;
 use vize_l0::{SourceRoot, Span};
 use vize_l1::{
-    container::{Block, vue::DescriptorObservation},
+    container::{Block, vue::L1Ir},
     embed::Lang,
 };
 
-pub(super) fn check(descriptor: &DescriptorObservation<'_>) -> Result<(), Refusal> {
+pub(super) fn check(descriptor: &L1Ir<'_>) -> Result<(), Refusal> {
     let admitted = descriptor.admitted().map_err(|error| Refusal::Descriptor {
         issues: error.issues().to_vec(),
         errors: error.errors().to_vec(),
@@ -47,7 +47,7 @@ pub(super) fn check(descriptor: &DescriptorObservation<'_>) -> Result<(), Refusa
 /// A separate original envelope; the setup host's two-block contract above is
 /// unchanged. No script, style, custom block, src or template attribute is
 /// supplied by this first template-only capability.
-pub(super) fn check_template_only(descriptor: &DescriptorObservation<'_>) -> Result<(), Refusal> {
+pub(super) fn check_template_only(descriptor: &L1Ir<'_>) -> Result<(), Refusal> {
     let admitted = descriptor.admitted().map_err(|error| Refusal::Descriptor {
         issues: error.issues().to_vec(),
         errors: error.errors().to_vec(),

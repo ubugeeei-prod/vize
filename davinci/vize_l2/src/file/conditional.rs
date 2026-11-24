@@ -1,6 +1,6 @@
 //! Whole original conditional inputs, attached only at their actual If factory.
 
-use super::{FileArtifact, RejectedFile, ScopeId};
+use super::{L2Ir, RejectedFile, ScopeId};
 use crate::lang::js::{NativeConditionalInput, NativeTemplateIssueKind};
 use crate::{
     op::{ElementOp, IfOp},
@@ -116,7 +116,7 @@ impl<'a> NativeFileConditional<'a> {
     }
 }
 
-impl<'a> FileArtifact<'a> {
+impl<'a> L2Ir<'a> {
     #[must_use]
     pub fn native_conditionals(&self) -> &[NativeFileConditional<'a>] {
         self.facts.native_conditionals()
