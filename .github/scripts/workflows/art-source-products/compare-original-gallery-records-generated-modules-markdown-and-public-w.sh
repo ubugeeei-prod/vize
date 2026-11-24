@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-flags=(--locked --profile ci-opt -p vize_musea)
-cargo test "${flags[@]}" --lib
-cargo clippy "${flags[@]}" --features art-source-products --lib --no-deps -- -D warnings
-suite=(--features art-source-products --test art_source_products)
-export VIZE_ART_SOURCE_INPUTS="$RUNNER_TEMP/gallery-sources"
-cargo test "${flags[@]}" "${suite[@]}"
-cargo test "${flags[@]}" "${suite[@]}" descriptor_warnings_and_complete_gallery_products_on_original_files -- --ignored --nocapture --test-threads=1

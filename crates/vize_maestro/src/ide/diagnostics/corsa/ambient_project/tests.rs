@@ -13,6 +13,9 @@ use std::{
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 use vize_canon::CorsaBridgeConfig;
 
+mod cost;
+mod repeated;
+
 fn workspace() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }

@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-cargo build --profile ci -p vize
-node tests/differential/build-receipt.ts
-node "$VIZE_CI_FILES/build-and-receipt-the-exact-source-cli.ts"

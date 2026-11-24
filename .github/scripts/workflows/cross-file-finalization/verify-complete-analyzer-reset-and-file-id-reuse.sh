@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-mkdir -p target/vize-tests/cross-file-clear-template-facts
-cargo test --locked --profile ci -p vize_croquis_cf --lib -- analyzer::core::accessors::clear_tests:: --nocapture > target/vize-tests/cross-file-clear-template-facts/rust.stdout 2> target/vize-tests/cross-file-clear-template-facts/rust.stderr
-cat target/vize-tests/cross-file-clear-template-facts/rust.stdout
-node "$VIZE_CI_FILES/verify-complete-analyzer-reset-and-file-id-reuse.ts"

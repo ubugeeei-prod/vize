@@ -5,7 +5,7 @@
 //! input matrix. `davinci_test_support::l3_reference::lattice` re-enumerates the
 //! same matrix, parses this page without `vize_l3` and recomputes every class
 //! from the declarative rule table. The lattice laws themselves are
-//! verified on this evaluator by `davinci/vize_l3/src/lattice/kani.rs`. Regenerate
+//! proved on this evaluator by `davinci/vize_l3/src/lattice/creusot.rs`. Regenerate
 //! the page with `VIZE_UPDATE_LATTICE_REFERENCE_FIXTURE=1` only when the rule
 //! spec changes.
 

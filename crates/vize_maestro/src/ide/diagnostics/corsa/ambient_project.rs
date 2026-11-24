@@ -3,7 +3,7 @@
     clippy::disallowed_types,
     reason = "retain this editor owner across native requests"
 )]
-use super::collect_virtual::{CorsaDocument, assemble_corsa_diagnostics, finished_from_phased_lsp};
+use super::collect_virtual::{CorsaDocument, assemble_corsa_diagnostics};
 use crate::{
     server::ServerState,
     source_project::{SnapshotRefusal, SourceSnapshot},
@@ -13,12 +13,19 @@ use std::{io, path::PathBuf, sync::Arc};
 use tower_lsp::lsp_types::Diagnostic;
 use vize_canon::{CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaVueWorkspaceRequest};
 
+mod positions;
+
 /// An explicitly started native session. Its requests serialize only with each other.
 pub struct AmbientComponentProject {
     state: Arc<ServerState>,
     root: PathBuf,
     bridge: CorsaBridge,
-    transaction: Mutex<Option<vize_canon::lsp_client::AmbientDiagnosticSnapshot>>,
+    transaction: Mutex<Option<PublishedDiagnostics>>,
+}
+
+struct PublishedDiagnostics {
+    read: vize_canon::corsa_bridge::AmbientVueDiagnosticRead<Vec<Diagnostic>>,
+    revision: u64,
 }
 
 #[derive(Debug)]
@@ -99,7 +106,11 @@ impl AmbientComponentProject {
             return Err(AmbientProjectError::UnsupportedDocument);
         }
         let overlays = state.corsa_overlays();
-        let (options, declarations) = state
+        let prior = previous
+            .take()
+            .filter(|last| last.revision == snapshot.revision())
+            .map(|last| last.read);
+        let (options, mut declarations) = state
             .ambient_declaration_inputs(&self.root, &overlays)
             .await
             .map_err(AmbientProjectError::Declaration)?;
@@ -139,35 +150,43 @@ impl AmbientComponentProject {
         current()?;
         let document = self
             .bridge
-            .read_ambient_vue_diagnostics(
-                &path,
-                snapshot.source(),
-                document_options,
-                &borrowed(&overlays),
-                &options,
-                &borrowed(&declarations),
-                previous.take(),
+            .read_ambient_vue_diagnostic_batch(
+                vize_canon::corsa_bridge::AmbientVueDiagnosticRequest {
+                    source_path: &path,
+                    content: snapshot.source(),
+                    options: document_options,
+                    overlays: &borrowed(&overlays),
+                    virtual_ts_options: &options,
+                    requested_sources: &take_paths_with_text(&mut declarations),
+                },
+                prior,
             )
             .await
             .map_err(AmbientProjectError::Native)?;
         current()?;
-        let projection = CorsaDocument {
-            code: document.code,
-            mapping: document.mapping,
-            import_source_map: document.import_source_map,
-        };
-        let finished = document
-            .diagnostics
-            .into_iter()
-            .filter_map(|row| finished_from_phased_lsp(&projection.code, row, 0))
-            .collect();
-        let response = assemble_corsa_diagnostics(snapshot.source(), &[projection], finished)
-            .into_iter()
-            .map(|row| row.diagnostic)
-            .collect();
+        let response = document.map(|host, rows| {
+            let finished = positions::finish(&host.code, rows);
+            // Empty compiler rows can still yield unused authored expectations.
+            let projection = (!finished.is_empty()).then(|| CorsaDocument {
+                code: host.code.clone(),
+                mapping: host.mapping.clone(),
+                import_source_map: host.import_source_map.clone(),
+            });
+            assemble_corsa_diagnostics(snapshot.source(), projection.as_slice(), finished)
+                .into_iter()
+                .map(|row| row.diagnostic)
+                .collect()
+        });
         current()?;
-        *previous = document.snapshot;
-        Ok(response)
+        if response.has_native_snapshot() {
+            let returned = response.value().clone();
+            *previous = Some(PublishedDiagnostics {
+                read: response,
+                revision: snapshot.revision(),
+            });
+            return Ok(returned);
+        }
+        Ok(response.into_value())
     }
 
     pub async fn shutdown(self) -> Result<(), CorsaBridgeError> {
@@ -176,7 +195,18 @@ impl AmbientComponentProject {
     }
 }
 
-fn borrowed(entries: &[(PathBuf, Arc<String>)]) -> Vec<(PathBuf, &str)> {
+// The native read is the last consumer of these paths. The input buffers stay
+// alive until the bridge has consumed all of the borrowed source texts.
+fn take_paths_with_text(
+    entries: &mut [(PathBuf, Arc<String>)],
+) -> vize_l0::SmallVec<[(PathBuf, &str); 4]> {
+    entries
+        .iter_mut()
+        .map(|(path, text)| (std::mem::take(path), text.as_str()))
+        .collect()
+}
+
+fn borrowed(entries: &[(PathBuf, Arc<String>)]) -> vize_l0::SmallVec<[(PathBuf, &str); 4]> {
     entries
         .iter()
         .map(|(path, text)| (path.clone(), text.as_str()))

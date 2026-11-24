@@ -42,12 +42,7 @@ function requireIndependentObservation(candidate: ObservationWorkflow): void {
 
 test("every PR gets an independent read-only observation without a performance budget gate", () => {
   requireIndependentObservation(workflow);
-  for (const file of [
-    "check.yml",
-    "pr-source-checks.yml",
-    "queue-release-gates.yml",
-    "release.yml",
-  ]) {
+  for (const file of ["check.yml", "pr-source-checks.yml", "release.yml"]) {
     const existing = readAutomationPrograms(
       new URL(`../../.github/workflows/${file}`, import.meta.url),
     );

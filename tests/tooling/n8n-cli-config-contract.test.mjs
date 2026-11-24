@@ -15,7 +15,7 @@ void test("complete n8n custody remains a scheduled and manual campaign", () => 
   assert.match(workflow, /^  schedule:\n/mu);
   assert.match(workflow, /^  workflow_dispatch:/mu);
   assert.doesNotMatch(workflow, /^  (pull_request|merge_group):/mu);
-  for (const job of ["fixture", "compiler-custody", "authored-editor"]) {
+  for (const job of ["fixture", "authored-editor"]) {
     assert.match(workflow, new RegExp(`^  ${job}:`, "mu"));
   }
 });

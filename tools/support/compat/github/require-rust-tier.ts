@@ -5,7 +5,7 @@ import { aggregateNeedsResults } from "./require-needs-success.ts";
 import type { GateReport } from "./require-needs-success.ts";
 
 type Tier = "all" | "source" | "products";
-const productJobs = ["pr-rust-shard"];
+const productJobs = ["pr-rust-shard", "rust-feature-tests"];
 const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
 
 function context(event: unknown, runRust: unknown, needs: unknown) {
@@ -27,6 +27,7 @@ export function requireRustTier(
   runRust: unknown,
   needs: unknown,
   tier: Tier = "all",
+  featureTests: unknown = "true",
 ): GateReport {
   const jobs = context(event, runRust, needs);
   if (!["all", "source", "products"].includes(tier)) throw new Error("Unknown Rust tier mode");
@@ -44,12 +45,13 @@ export function requireRustTier(
     selected[job] = jobs[job];
   }
   if (tier !== "all") assert.deepEqual(Object.keys(jobs).sort(), [...required].sort());
-  return aggregateNeedsResults(
-    selected,
-    tier === "source" && event === "pull_request"
-      ? { "merge-rust-differential": "merge-group only" }
-      : {},
-  );
+  const skippable: Record<string, string> = {};
+  if (tier === "source" && event === "pull_request")
+    skippable["merge-rust-differential"] = "merge-group only";
+  // The planner skips the feature lane only when no row's crates are affected.
+  if (tier === "products" && featureTests === "false")
+    skippable["rust-feature-tests"] = "no affected feature rows";
+  return aggregateNeedsResults(selected, skippable);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -58,7 +60,13 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const needs: unknown = JSON.parse(String(process.env.NEEDS_JSON));
   const result =
     args[0] === "--products"
-      ? requireRustTier(process.env.GITHUB_EVENT_NAME, process.env.RUN_RUST, needs, "products")
+      ? requireRustTier(
+          process.env.GITHUB_EVENT_NAME,
+          process.env.RUN_RUST,
+          needs,
+          "products",
+          process.env.FEATURE_TESTS,
+        )
       : requireRustTier(
           process.env.GITHUB_EVENT_NAME,
           process.env.RUN_RUST,

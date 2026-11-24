@@ -132,7 +132,7 @@ impl crate::linter::config::Linter {
 
 use crate::context::TemplateDocumentKind;
 use crate::linter::sfc_scripts::SfcScripts;
-use crate::markup::L2Template;
+use crate::markup::LintInput;
 use vize_atelier_sfc::croquis::SfcCroquisOptions;
 use vize_croquis::Croquis;
 use vize_l0::dialect::VueDialect;
@@ -184,7 +184,7 @@ impl<'a> MacroTypeResolution<'a> {
 
 pub(crate) fn analyze_descriptor_for_lint(
     scripts: &SfcScripts<'_>,
-    template: Option<&L2Template<'_>>,
+    template: Option<&LintInput<'_>>,
     resolve: Option<MacroTypeResolution<'_>>,
     unused: bool,
     derived: bool,
@@ -194,7 +194,7 @@ pub(crate) fn analyze_descriptor_for_lint(
 
 pub(crate) fn analyze_descriptor_for_lint_with_template(
     scripts: &SfcScripts<'_>,
-    template: Option<&L2Template<'_>>,
+    template: Option<&LintInput<'_>>,
     resolve: Option<MacroTypeResolution<'_>>,
     unused: bool,
     derived: bool,
@@ -210,7 +210,7 @@ pub(crate) fn analyze_descriptor_for_lint_with_template(
     } else {
         options
     };
-    let template = template.map(crate::markup::L2Template::lint_template);
+    let template = template.map(crate::markup::LintInput::lint_template);
     match resolve {
         Some(resolve) => {
             vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_resolved(
@@ -230,7 +230,7 @@ pub(crate) fn analyze_descriptor_for_lint_with_template(
 /// Request positive authored reads within the existing single descriptor draw.
 pub(super) fn analyze_descriptor_for_component_reads(
     scripts: &SfcScripts<'_>,
-    template: Option<&L2Template<'_>>,
+    template: Option<&LintInput<'_>>,
     resolve: Option<MacroTypeResolution<'_>>,
     unused: bool,
     derived: bool,
@@ -262,7 +262,7 @@ pub(super) fn analyze_descriptor_for_component_reads(
     } else {
         options
     };
-    let template = template.map(crate::markup::L2Template::lint_template);
+    let template = template.map(crate::markup::LintInput::lint_template);
     let (mut analysis, packet) = match resolve {
         Some(resolve) => {
             vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_and_occurrences_resolved(

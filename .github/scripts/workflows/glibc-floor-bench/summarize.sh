@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-test ! -s "$RUNNER_TEMP/glibc-floor-bench.json" || node tools/support/github/glibc-floor-bench.ts summarize "$RUNNER_TEMP/glibc-floor-bench.json" >> "$GITHUB_STEP_SUMMARY"

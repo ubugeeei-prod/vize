@@ -17,8 +17,10 @@ use crate::{SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions
 
 mod production;
 
+#[cfg(debug_assertions)]
+pub(crate) use production::unrecorded;
 pub use production::{on_both_lanes, record_lanes, with_legacy_lane};
-pub(crate) use production::{production_lane, record_verdict};
+pub(crate) use production::{production_lane, record_emitted, record_verdict};
 
 /// One compile's output on one lane.
 #[derive(Debug)]

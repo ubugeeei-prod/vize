@@ -245,7 +245,7 @@ mod tests {
                 .expect("sfc");
         let template = descriptor.template.as_ref().expect("template");
         let allocator = vize_l0::Allocator::new();
-        let l2 = crate::markup::L2Template::lower(&allocator, template.content.as_ref());
+        let l2 = crate::markup::LintInput::lower(&allocator, template.content.as_ref());
         let script = descriptor.script_setup.as_ref().expect("script");
         let document = project_type_aware(
             &descriptor,
@@ -268,7 +268,7 @@ mod tests {
                 .expect("sfc");
         let template = descriptor.template.as_ref().expect("template");
         let allocator = vize_l0::Allocator::new();
-        let l2 = crate::markup::L2Template::lower(&allocator, template.content.as_ref());
+        let l2 = crate::markup::LintInput::lower(&allocator, template.content.as_ref());
         let script = descriptor.script_setup.as_ref().expect("script");
         let document = project_type_aware(
             &descriptor,
@@ -323,7 +323,7 @@ mod tests {
                 .expect("sfc");
         let template = descriptor.template.as_ref().expect("template");
         let allocator = vize_l0::Allocator::new();
-        let l2 = crate::markup::L2Template::lower(&allocator, template.content.as_ref());
+        let l2 = crate::markup::LintInput::lower(&allocator, template.content.as_ref());
         let script = descriptor.script_setup.as_ref().expect("script setup");
         let document = project_type_aware(
             &descriptor,

@@ -132,6 +132,21 @@ fn authored_literal_visits_match_the_original_rename_visitor_in_source_order() {
 }
 
 #[test]
+fn empty_script_tag_ranges_follow_utf16_and_multiline_closing_tags() {
+    let state = ServerState::new();
+    let uri = Url::parse("file:///editor/Empty.vue").unwrap();
+    let mut counts = Coverage::default();
+    for source in [
+        "<!-- 🌸 --><script></script>",
+        "<!-- 🌸 --><script></script\n>",
+        "<!-- 🌸 -->\r\n<script\n setup></script>",
+    ] {
+        compare(&state, &uri, source, "empty script tag ranges", &mut counts);
+    }
+    assert_eq!(counts.responses, 3);
+}
+
+#[test]
 fn current_intact_siblings_supply_their_own_programs_during_recovery() {
     let state = ServerState::new();
     let uri = Url::parse("file:///editor/Sibling.vue").unwrap();

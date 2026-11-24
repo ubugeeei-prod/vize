@@ -91,3 +91,39 @@ impl CorsaBridge {
 
 #[cfg(all(test, unix))]
 mod tests;
+
+#[cfg(feature = "ambient-project-declarations")]
+impl CorsaBridge {
+    pub(in crate::corsa_bridge) async fn confirm_ambient_owner(
+        &self,
+        previous: Option<crate::lsp_client::AmbientDiagnosticSnapshot>,
+    ) -> (Option<crate::lsp_client::AmbientDiagnosticSnapshot>, bool) {
+        let Some(previous) = previous else {
+            return (None, false);
+        };
+        if previous.has_empty_native_rows() {
+            // Zero rows have little projection work. Start their owner request
+            // after construction, alongside native file synchronization.
+            return (Some(previous), false);
+        }
+        self.probe_ambient_owner(previous).await
+    }
+
+    pub(in crate::corsa_bridge) async fn probe_ambient_owner(
+        &self,
+        previous: crate::lsp_client::AmbientDiagnosticSnapshot,
+    ) -> (Option<crate::lsp_client::AmbientDiagnosticSnapshot>, bool) {
+        // This worker owns the immutable snapshot throughout the blocking RPC.
+        // A cancelled or unavailable probe supplies no evidence to the editor.
+        self.initial_diagnostics_worker
+            .submit_async(
+                Duration::from_millis(self.config.timeout_ms.max(1)),
+                move |_| {
+                    let (receipt, confirmed) = previous.confirm_owner();
+                    (Some(receipt), confirmed)
+                },
+            )
+            .await
+            .unwrap_or((None, false))
+    }
+}

@@ -10,6 +10,7 @@ import { planNativeRuntime } from "./plan-native-runtime.ts";
 import { differentialMatrix } from "./rust-differential-lanes.ts";
 import { rustTestMatrix } from "./rust-test-cohorts.ts";
 import { selectPrTier } from "./select-pr-tier.ts";
+import { selectRustFeatureRows } from "../../ci/rust-feature-tests.ts";
 
 type Request = {
   paths: readonly string[];
@@ -56,9 +57,13 @@ export function planPrChecks({ paths, eventName, labels, workspace, cargoMetadat
   if (!cargoMetadata) throw new Error("Rust checks require Cargo workspace metadata");
   const affectedRust = source.rust ? planAffectedRust(cargoMetadata, paths, eventName) : undefined;
   const requiredRust = requiredRustPlan(cargoMetadata, affectedRust, eventName);
+  // Feature rows follow the actual change, not the queue's whole-workspace scope.
+  const featureMatrix = selectRustFeatureRows(paths, affectedRust?.packages);
   const rust = {
     ...requiredRust,
     testMatrix: rustTestMatrix(cargoMetadata, requiredRust.packages),
+    featureTests: featureMatrix.include.length > 0,
+    featureMatrix,
   };
   const js = planAffectedJs(workspace, paths, affectedRust);
   const tier = selectPrTier({ paths, eventName, labels });

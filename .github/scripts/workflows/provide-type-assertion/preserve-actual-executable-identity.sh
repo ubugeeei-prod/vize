@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-binary="${CARGO_TARGET_DIR:-target}/ci/vize"
-test -f "$binary"
-if [[ -f "$binary" ]]; then
-  sha256sum "$binary" > "$RUNNER_TEMP/provide-assertion-packets/binary-sha256.txt"
-  "$binary" --version > "$RUNNER_TEMP/provide-assertion-packets/binary-version.txt"
-fi

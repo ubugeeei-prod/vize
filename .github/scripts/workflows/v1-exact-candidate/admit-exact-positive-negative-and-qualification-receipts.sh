@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-mkdir -p .qualification/admission
-node tools/commands/release/v1-exact-candidate.ts validate-host \
-  --candidate "$CANDIDATE_SHA" \
-  --host "$HOST_ID" \
-  --run "${VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN}" \
-  --run-attempt "${VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT}" \
-  --receipts .qualification/receipts/v1-exact-candidate-receipts.json \
-  --output ".qualification/admission/$CANDIDATE_SHA-$HOST_ID.json"

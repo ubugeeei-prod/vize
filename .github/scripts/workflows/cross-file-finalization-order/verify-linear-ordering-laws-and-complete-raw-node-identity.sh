@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-mkdir -p target/vize-tests/cross-file-finalization-order
-cargo test --locked --profile ci -p vize_croquis_cf --target-dir target/finalization-order-head-build --lib -- graph::order::tests:: --nocapture > target/vize-tests/cross-file-finalization-order/rust.stdout 2> target/vize-tests/cross-file-finalization-order/rust.stderr
-cat target/vize-tests/cross-file-finalization-order/rust.stdout
-node "$VIZE_CI_FILES/verify-linear-ordering-laws-and-complete-raw-node-identity.ts"

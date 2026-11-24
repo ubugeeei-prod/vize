@@ -1,7 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  "sudo apt-get update -qq && sudo apt-get install -y valgrind"
-}

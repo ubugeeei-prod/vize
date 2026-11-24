@@ -1,9 +1,9 @@
 //! Collect compatible top-level declarations and static imports in one walk.
-use super::super::{SymbolKind, block_ranges, collect};
+use super::super::{BlockLines, SymbolKind, block_ranges, collect};
 use super::{
-    AuthoredProgram, DocumentSymbol, LineIndex, ScriptQueryProducts, SfcScriptBlock, Statement,
-    tag_ranges,
+    AuthoredProgram, DocumentSymbol, ScriptQueryProducts, SfcScriptBlock, Statement, tag_ranges,
 };
+use vize_l0::line_index::LineIndex;
 
 impl ScriptQueryProducts {
     pub(crate) fn read_tool_editor_products(
@@ -14,15 +14,21 @@ impl ScriptQueryProducts {
         syntax: &AuthoredProgram<'_>,
     ) {
         let parsed = syntax.parsed();
-        let mut index = None;
+        let mut lines = None;
         let mut children = Vec::new();
         let static_only = Self::static_specifiers_only(syntax);
         if static_only {
             // Requested modules count distinct static sources. Repeated imports
-            // can still grow the vector through the ordinary push path.
+            // can still grow the vector through the ordinary push path. Reserve
+            // the capacity that path's doubling would reach, so a later block
+            // grows from it as the separate readers' vector does: an exact
+            // reservation of 5 made the next push double it to 10.
             let sources = parsed.module_record.requested_modules.len();
             if sources > 4 {
-                self.module_specifiers.reserve(sources);
+                let len = self.module_specifiers.len();
+                let target = len.saturating_add(sources).next_power_of_two();
+                self.module_specifiers
+                    .reserve_exact(target.saturating_sub(len));
             }
         } else {
             self.read_specifiers(syntax);
@@ -38,17 +44,21 @@ impl ScriptQueryProducts {
                     other => other.as_declaration(),
                 };
                 if let Some(declaration) = declaration {
-                    let index = index.get_or_insert_with(|| LineIndex::new(prefix));
-                    collect(declaration, index, block.loc.start, &mut children);
+                    let lines = lines.get_or_insert_with(|| {
+                        let lines = BlockLines::new(prefix, &block.loc);
+                        let loc = lines.relative(&block.loc);
+                        (lines, loc)
+                    });
+                    collect(declaration, lines.0.index(), lines.1.start, &mut children);
                 }
             }
         }
-        let (range, selection_range) = match index {
-            Some(index) => block_ranges(&index, &block.loc, "script"),
+        let (range, selection_range) = match &lines {
+            Some((lines, loc)) => block_ranges(lines.index(), loc, "script"),
             None => tag_ranges(block, prefix)
                 .unwrap_or_else(|| block_ranges(&LineIndex::new(prefix), &block.loc, "script")),
         };
-        self.push_script_symbol(DocumentSymbol {
+        let mut symbol = DocumentSymbol {
             name: name.into(),
             kind: SymbolKind::MODULE,
             tags: None,
@@ -57,6 +67,10 @@ impl ScriptQueryProducts {
             selection_range,
             detail: block.lang.as_deref().map(Into::into),
             children: (!children.is_empty()).then_some(children),
-        });
+        };
+        if let Some((lines, _)) = &lines {
+            lines.place(&mut symbol);
+        }
+        self.push_script_symbol(symbol);
     }
 }

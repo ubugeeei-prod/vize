@@ -169,10 +169,10 @@ impl ScriptQueryProducts {
                 let symbol = if additional_profile.is_some() {
                     Self::checker_script_symbol(name, block, prefix, &syntax)
                 } else {
-                    Self::script_symbol(name, block, &LineIndex::new(prefix), &syntax)
+                    Self::script_symbol(name, block, prefix, &syntax)
                 };
                 #[cfg(not(feature = "experimental-checker-script-queries"))]
-                let symbol = Self::script_symbol(name, block, &LineIndex::new(prefix), &syntax);
+                let symbol = Self::script_symbol(name, block, prefix, &syntax);
                 #[cfg(feature = "experimental-checker-script-queries")]
                 if additional_profile.is_some() {
                     self.read_selected_specifiers(&syntax);

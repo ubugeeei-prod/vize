@@ -9,6 +9,7 @@ mod duplicates;
 mod error_list;
 mod extraction;
 mod plugin_outputs;
+mod ssr_direct;
 mod string_tracking;
 mod vapor;
 
@@ -194,22 +195,24 @@ pub(crate) fn compile_template_block_with_capture(
         let ssr_context =
             vize_atelier_ssr::SsrSfcContext::new(slotted).with_development(!options.is_prod);
 
-        let (_, errors, result) = profile!(
+        let (errors, result) = profile!(
             "atelier.sfc.template.ssr",
             if let Some(capture) = capture {
-                vize_atelier_ssr::compile_ssr_with_sfc_context_codegen_options_and_capture(
-                    allocator,
-                    &template.content,
-                    ssr_opts,
-                    template_syntax,
-                    custom_elements.clone(),
-                    ssr_experimental_options,
-                    ssr_context,
-                    codegen_options,
-                    capture,
-                )
+                let (_, errors, result) =
+                    vize_atelier_ssr::compile_ssr_with_sfc_context_codegen_options_and_capture(
+                        allocator,
+                        &template.content,
+                        ssr_opts,
+                        template_syntax,
+                        custom_elements.clone(),
+                        ssr_experimental_options,
+                        ssr_context,
+                        codegen_options,
+                        capture,
+                    );
+                (errors, result)
             } else {
-                vize_atelier_ssr::compile_ssr_with_sfc_context_and_codegen_options(
+                ssr_direct::compile(
                     allocator,
                     &template.content,
                     ssr_opts,

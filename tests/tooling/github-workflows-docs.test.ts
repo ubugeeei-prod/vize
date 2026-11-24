@@ -63,12 +63,7 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
   };
 
   assert.equal(workflow.name, "Docs build");
-  assert.deepEqual(Object.keys(events).sort(), [
-    "push",
-    "schedule",
-    "workflow_call",
-    "workflow_dispatch",
-  ]);
+  assert.deepEqual(Object.keys(events).sort(), ["push", "schedule", "workflow_dispatch"]);
   assert.deepEqual(events.push?.branches, ["main"]);
   assert.deepEqual(events.push?.paths, [
     ".github/workflows/build-docs.yml",
@@ -134,7 +129,7 @@ test("full Docs checks real preview resources before building and retains the ra
   const job = workflowJob(readWorkflow("build-docs.yml"), "build-docs");
   const readiness = namedStep(job, "Check preview resource readiness");
   const steps = job.steps!;
-  assert.equal(readiness.if, "${{ inputs.links-only != true }}");
+  assert.equal(readiness.if, undefined);
   assert(steps.indexOf(readiness) > steps.indexOf(namedStep(job, "Install JS dependencies")));
   assert(
     steps.indexOf(readiness) > steps.indexOf(namedStep(job, "Install Japanese rendering fonts")),
@@ -153,7 +148,7 @@ test("full Docs checks real preview resources before building and retains the ra
     /"receipt\.json"/,
   );
   const reading = namedStep(job, "Verify rendered navigation and Japanese reading paths");
-  assert.equal(reading.if, "${{ inputs.links-only != true }}");
+  assert.equal(reading.if, undefined);
   assert.equal(
     reading.run,
     [

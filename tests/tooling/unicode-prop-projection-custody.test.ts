@@ -292,38 +292,3 @@ test("Unicode source custody retains the existing Rust and Cargo input authoriti
     assert.equal(isProjectionSourcePath(file), true);
   assert.equal(isProjectionSourcePath("unrelated-history.txt"), false);
 });
-
-test("Unicode workflow registers the exact certificate, assets and refusal tests", () => {
-  const workflow = readFileSync(
-    path.join(root, ".github/workflows/unicode-prop-projection.yml"),
-    "utf8",
-  );
-  for (const file of [
-    "tools/support/compat/content-mapper/constructor-projection-parity.ts",
-    "tools/support/compat/content-mapper/constructor-helper-assets.ts",
-    "tools/support/compat/content-mapper/constructor-projection-receipt.ts",
-    "tools/support/compat/content-mapper/projection-byte-relocation.ts",
-    "tools/support/compat/content-mapper/owned-emit-overload-transition.ts",
-    "tools/support/compat/content-mapper/component-constructor-transition.ts",
-    "tools/support/compat/content-mapper/component-export-transition.ts",
-    "tools/support/compat/content-mapper/canonical-helper-transition.ts",
-    "tools/support/compat/content-mapper/producer-unmapped-ignores.ts",
-    "crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",
-    "crates/vize_canon/src/virtual_ts/generator/component_constructors/generic_function.rs",
-    "tests/tooling/constructor-projection-parity.test.ts",
-    "tests/tooling/runtime-prop-projection-certificate.test.ts",
-    "tests/tooling/unicode-prop-projection-custody.test.ts",
-    ...assets,
-  ])
-    assert.ok(workflow.includes(`      - ${file}\n`), `missing path registration: ${file}`);
-  const tests = workflow.indexOf(
-    "node --test tests/tooling/constructor-projection-parity.test.ts tests/tooling/unicode-prop-projection-custody.test.ts",
-  );
-  const capture = workflow.indexOf(
-    "run: node tools/support/compat/github/unicode-prop-projection-custody.mjs",
-  );
-  assert.ok(
-    tests >= 0 && capture > tests,
-    "refusal controls must run before both fresh source builds",
-  );
-});

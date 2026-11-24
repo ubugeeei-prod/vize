@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_class_floor": { "prover": "alt-ergo", "time": 0.004 },
+      "vc_class_floor'0": { "prover": "alt-ergo", "time": 0.004 },
+      "vc_class_floor'1": { "prover": "alt-ergo", "time": 0.004 },
+      "vc_classify": { "prover": "z3", "time": 0.006 },
+      "vc_join'0": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}

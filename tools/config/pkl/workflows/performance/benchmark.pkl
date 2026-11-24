@@ -19,24 +19,6 @@ on {
         required = true
         type = "string"
       }
-      patina_project_batch {
-        description = "Measure the frozen 1210-file type-aware project batch in deterministic shards"
-        required = false
-        ["default"] = false
-        type = "boolean"
-      }
-      patina_plain_type_packets {
-        description = "Replay complete conditional native type packets after all benchmark observations"
-        required = false
-        ["default"] = false
-        type = "boolean"
-      }
-      check_diagnostic_messages {
-        description = "Compare complete checker diagnostics on fresh uncached source builds"
-        required = false
-        ["default"] = false
-        type = "boolean"
-      }
     }
   }
 }
@@ -62,7 +44,6 @@ env {
 }
 
 jobs {
-  `check-diagnostic-messages` = import("../../parts/benchmark/check-diagnostic-messages.pkl")
   `pr-benchmark` = import("../../parts/benchmark/pr-benchmark.pkl")
   `pr-benchmark-budget` = import("../../parts/benchmark/pr-benchmark-budget.pkl")
   `pr-benchmark-comment` = import("../../parts/benchmark/pr-benchmark-comment.pkl")

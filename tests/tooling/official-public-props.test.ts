@@ -1,4 +1,3 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -86,24 +85,6 @@ test("public-prop reproduction changes only the listener or the invalid prop val
   assert.deepEqual(strictAttrs.codes, [2353]);
   assert.equal(strictAttrs.status, 2);
   assert.equal(officialCases(fixture).length, 11);
-  const workflow = readAutomationPrograms(
-    new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
-  );
-  const fixturePath = "tests/_fixtures/content-mapper/escaton-public-props-9498.json";
-  assert.equal(workflow.split(fixturePath).length - 1, 2);
-  const selected = execFileSync(
-    process.execPath,
-    [
-      path.join(
-        root,
-        ".github/scripts/workflows/content-mapper-conformance/select-published-fixture.ts",
-      ),
-      "9498",
-    ],
-    { encoding: "utf8" },
-  );
-  assert.equal(selected.trimEnd(), fixturePath);
-  assert.ok(workflow.includes(`--fixture ${fixturePath}`));
 });
 
 test("public9498 retains the canonical eleven-case selection without default suites", () => {

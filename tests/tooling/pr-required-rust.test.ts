@@ -291,7 +291,7 @@ test("the real CLI reads offline metadata for docs PRs and emits mandatory PR/MQ
 
 const results = (jobs: string[], result = "success") =>
   Object.fromEntries(jobs.map((job) => [job, { result, outputs: {} }]));
-const productJobs = ["pr-rust-shard"];
+const productJobs = ["pr-rust-shard", "rust-feature-tests"];
 const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
 
 test("source and product modes strictly require all actual jobs, including failures and unknown results", () => {
@@ -320,6 +320,12 @@ test("source and product modes strictly require all actual jobs, including failu
         requireRustTier(event, "true", { ...needs, unknown: { result: "success" } }, mode),
       );
     }
+  // The feature lane may skip only when the planner selected no rows.
+  for (const event of ["pull_request", "merge_group"]) {
+    const skipped = { ...results(productJobs), "rust-feature-tests": { result: "skipped" } };
+    assert.equal(requireRustTier(event, "true", skipped, "products", "false").exitCode, 0);
+    assert.equal(requireRustTier(event, "true", skipped, "products", "true").exitCode, 1);
+  }
   assert.throws(() =>
     requireRustTier("merge_group", "true", results(sourceJobs), "unknown" as "source"),
   );

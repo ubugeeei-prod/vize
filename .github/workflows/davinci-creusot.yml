@@ -17,8 +17,10 @@ on:
       - crates/vize_patina/src/html_content_model/walk.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/frame.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs
+      - davinci/vize_l3/src/lattice/axis.rs
       - "davinci/vize_l3/src/lattice/class.rs"
       - "davinci/vize_l3/src/lattice/creusot.rs"
+      - davinci/vize_l3/src/lattice/effect.rs
       - "davinci/vize_l3/src/query/check/creusot.rs"
       - "davinci/vize_l3/src/query/check/rule.rs"
       - tests/davinci_test_support/src/l3_reference/checker.rs
@@ -37,8 +39,10 @@ on:
       - crates/vize_patina/src/html_content_model/walk.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/frame.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs
+      - davinci/vize_l3/src/lattice/axis.rs
       - "davinci/vize_l3/src/lattice/class.rs"
       - "davinci/vize_l3/src/lattice/creusot.rs"
+      - davinci/vize_l3/src/lattice/effect.rs
       - "davinci/vize_l3/src/query/check/creusot.rs"
       - "davinci/vize_l3/src/query/check/rule.rs"
       - tests/davinci_test_support/src/l3_reference/checker.rs

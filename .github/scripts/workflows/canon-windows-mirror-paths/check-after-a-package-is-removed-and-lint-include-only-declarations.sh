@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-cargo test --locked --profile ci -p vize --test integration -- --exact --nocapture \
-  check_removed_node_modules_package_cli::removing_a_package_between_checks_drops_its_stale_mirror_link \
-  lint_solution_tsconfig_cli::included_declarations_and_unimported_module_augmentations_join_the_lint_program \
-  lint_solution_tsconfig_cli::alias_augmentations_and_referencing_ambient_declarations_join_the_lint_program

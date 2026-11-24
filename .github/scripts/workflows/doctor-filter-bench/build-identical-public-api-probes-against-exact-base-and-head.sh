@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-[[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
-[[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
-mkdir -p base/crates/vize_doctor/examples
-cp -R head/crates/vize_doctor/examples/filter_patterns_bench base/crates/vize_doctor/examples/
-diff -r head/crates/vize_doctor/examples/filter_patterns_bench base/crates/vize_doctor/examples/filter_patterns_bench
-cargo build --locked --manifest-path base/Cargo.toml --profile ci-opt -p vize_doctor --example filter_patterns_bench
-cargo build --locked --manifest-path head/Cargo.toml --profile ci-opt -p vize_doctor --example filter_patterns_bench
