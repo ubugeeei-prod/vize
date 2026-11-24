@@ -9,7 +9,7 @@ use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{Span, String};
 
 use super::super::{AuthoredSpan, BindingKind, Content};
-use super::Emitter;
+use super::{Emitter, escaped};
 
 impl Emitter<'_, '_> {
     /// Append `text` to a template, linked to the `authored_len` authored
@@ -28,6 +28,36 @@ impl Emitter<'_, '_> {
             }
             None => template.push_str(text),
         }
+    }
+
+    pub(super) fn link_attribute_value(
+        &self,
+        template: &mut EmitDocument,
+        span: AuthoredSpan,
+        name: &str,
+        value: &str,
+    ) {
+        let special = value
+            .bytes()
+            .any(|byte| matches!(byte, b'&' | b'<' | b'>' | b'"' | b'\''));
+        if !special && self.source.is_none() {
+            template.push_str(value);
+            return;
+        }
+        let spelling = self
+            .ir
+            .source
+            .get(span.0 as usize..span.1 as usize)
+            .and_then(|raw| attribute_spelling(raw, name, value));
+        let token = spelling.map(|(offset, _)| (span.0 + offset as u32, span.1));
+        let encoded;
+        let text = if special && !spelling.is_some_and(|(_, verbatim)| verbatim) {
+            encoded = escaped(value);
+            &encoded
+        } else {
+            value
+        };
+        self.link(template, text, token, value.len());
     }
 
     /// The token `locate` finds inside the authored text of `span`.
@@ -129,19 +159,17 @@ pub(super) fn tag_offset(raw: &str, tag: &str) -> Option<usize> {
     raw.strip_prefix('<')?.starts_with(tag).then_some(1)
 }
 
-/// Authored bytes after the attribute assignment, including its delimiters.
-pub(super) fn attribute_value<'s>(raw: &'s str, name: &str) -> Option<&'s str> {
-    raw.strip_prefix(name)?
+/// The value's byte offset and whether its authored double quotes can be copied.
+fn attribute_spelling(raw: &str, name: &str, value: &str) -> Option<(usize, bool)> {
+    let assignment = raw
+        .strip_prefix(name)?
         .trim_start()
-        .strip_prefix('=')
-        .map(str::trim_start)
-}
-
-/// Offset of a literal attribute value in `name = "value"` authored text.
-pub(super) fn value_offset(raw: &str, name: &str, value: &str) -> Option<usize> {
-    let rest = attribute_value(raw, name)?;
-    let rest = rest.strip_prefix(['"', '\'']).unwrap_or(rest);
-    rest.starts_with(value).then(|| raw.len() - rest.len())
+        .strip_prefix('=')?
+        .trim_start();
+    let text = assignment.strip_prefix(['"', '\'']).unwrap_or(assignment);
+    let trailing = text.strip_prefix(value)?;
+    let verbatim = assignment.starts_with('"') && trailing == "\"" && !value.contains('"');
+    Some((raw.len() - text.len(), verbatim))
 }
 
 /// Offset of a literal or bracketed computed slot name in authored text.

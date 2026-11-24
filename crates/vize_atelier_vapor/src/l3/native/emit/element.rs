@@ -6,9 +6,9 @@
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{Vec, ensure_sufficient_stack};
 
-use super::super::{AuthoredSpan, BindingKind, Content};
-use super::spans::{attribute_value, tag_offset, value_offset};
-use super::{Emitter, escaped, take};
+use super::super::{BindingKind, Content};
+use super::spans::tag_offset;
+use super::{Emitter, take};
 use crate::ir::{BlockIRNode, InsertionAnchor};
 
 impl<'a> Emitter<'a, '_> {
@@ -107,12 +107,7 @@ impl<'a> Emitter<'a, '_> {
                 self.link(template, name, name_token, name.len());
                 if let Some(value) = value {
                     template.push_str("=\"");
-                    let value_token = self.token(span, |raw| value_offset(raw, name, value));
-                    if attribute_needs_escaping(self.ir.source, span, name, value) {
-                        self.link(template, &escaped(value), value_token, value.len());
-                    } else {
-                        self.link(template, value, value_token, value.len());
-                    }
+                    self.link_attribute_value(template, span, name, value);
                     template.push_char('"');
                 }
             }
@@ -268,22 +263,4 @@ impl<'a> Emitter<'a, '_> {
         template.push_str("<!---->");
         InsertionAnchor::Node(self.child(parent, offset, block))
     }
-}
-
-/// A literal copied from a double-quoted HTML value can use its authored bytes
-/// inside the emitted double quotes. Other spellings need HTML serialization.
-fn attribute_needs_escaping(source: &str, span: AuthoredSpan, name: &str, value: &str) -> bool {
-    if !value
-        .bytes()
-        .any(|byte| matches!(byte, b'&' | b'<' | b'>' | b'"' | b'\''))
-    {
-        return false;
-    }
-    let authored = source
-        .get(span.0 as usize..span.1 as usize)
-        .and_then(|raw| attribute_value(raw, name))
-        .and_then(|rest| rest.strip_prefix('"'))
-        .and_then(|rest| rest.split_once('"'))
-        .and_then(|(text, trailing)| trailing.is_empty().then_some(text));
-    authored != Some(value)
 }
