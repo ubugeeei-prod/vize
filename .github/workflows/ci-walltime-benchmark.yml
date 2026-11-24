@@ -8,19 +8,7 @@ on:
       component:
         description: Compare serial and concurrent execution on the same source
         type: choice
-        options:
-          [
-            all,
-            js,
-            docs,
-            rust,
-            native,
-            release-builds,
-            nix,
-            n8n-baseline,
-            n8n-preparation,
-            artifact-payload,
-          ]
+        options: [all, js, docs, rust, native, release-builds, nix, artifact-payload]
         default: all
       artifact_id:
         description: Existing same-repository artifact for the manual transport trial
@@ -73,41 +61,6 @@ jobs:
           path: |
             target/ci-walltime/
             target/oxlint-original-project-transport/
-          if-no-files-found: error
-          retention-days: 14
-  n8n-preparation:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'n8n-preparation' }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 60
-    env:
-      {
-        VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/ci-walltime-benchmark",
-        CARGO_BUILD_JOBS: "12",
-        VIZE_N8N_BASELINE_MODE: partitioned,
-      }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ github.sha }}" }
-      - uses: ./.github/actions/setup-js-package-tests
-      - name: Build the same source native binary and bridge once
-        run: . "${{ env.VIZE_CI_FILES }}/build-the-same-source-native-binary-and-bridge-once.sh"
-      - name: Sequential preparation with unchanged concurrent project hosts
-        run: node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --preparation-mode sequential --phase-walltime target/ci-walltime/n8n-preparation-sequential.json
-      - name: Overlapping preparation with unchanged concurrent project hosts
-        if: ${{ !cancelled() }}
-        run: node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --preparation-mode overlap --phase-walltime target/ci-walltime/n8n-preparation-overlap.json
-      - name: Preserve both complete preparation campaigns and the one native build
-        if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ci-walltime-n8n-preparation-${{ github.sha }}
-          path: |
-            target/ci-walltime/
-            target/oxlint-original-project-transport/
-            npm/native/.artifacts/native/formatter-history/build-receipt.json
-            npm/native/.artifacts/native/formatter-history/build-process.json
-            npm/native/.artifacts/native/formatter-history/cargo.stdout.bin
-            npm/native/.artifacts/native/formatter-history/cargo.stderr.bin
           if-no-files-found: error
           retention-days: 14
   docs:
@@ -210,105 +163,6 @@ jobs:
         with:
           name: ci-walltime-native-${{ github.sha }}
           path: target/ci-walltime/
-          if-no-files-found: error
-          retention-days: 14
-  n8n-baseline:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'n8n-baseline' }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 60
-    env:
-      {
-        VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/ci-walltime-benchmark",
-        CARGO_BUILD_JOBS: "12",
-      }
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ github.sha }}" }
-      - uses: ./.github/actions/setup-js-package-tests
-      - name: Build the same source native binary and bridge once
-        run: . "${{ env.VIZE_CI_FILES }}/build-the-same-source-native-binary-and-bridge-once.sh"
-      - name: Serial baseline with unchanged concurrent project hosts
-        env: { VIZE_N8N_BASELINE_MODE: serial }
-        run: node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-serial.json
-      - name: Partitioned baseline with unchanged concurrent project hosts
-        if: ${{ !cancelled() }}
-        env: { VIZE_N8N_BASELINE_MODE: partitioned }
-        run: node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-partitioned.json
-      - name: Preserve both complete baseline campaigns and the one native build
-        if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ci-walltime-n8n-baseline-${{ github.sha }}
-          path: |
-            target/ci-walltime/
-            target/oxlint-original-project-transport/
-            npm/native/.artifacts/native/formatter-history/build-receipt.json
-            npm/native/.artifacts/native/formatter-history/build-process.json
-            npm/native/.artifacts/native/formatter-history/cargo.stdout.bin
-            npm/native/.artifacts/native/formatter-history/cargo.stderr.bin
-          if-no-files-found: error
-          retention-days: 14
-  js-native-fault-diagnostic:
-    if: ${{ github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'ci-native-fault-diagnostic' }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 35
-    env:
-      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-      CARGO_BUILD_JOBS: "12"
-    steps:
-      - name: Check out the workflow's scripts
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.workflow_sha }}
-          path: .vize-workflow-tools
-          persist-credentials: false
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |-
-            /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
-            /.github/scripts/workflows/ci-walltime-benchmark/
-      - name: Stage scripts outside the source checkout
-        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ github.sha }}", persist-credentials: false }
-      - name: Retain diagnostic orchestration before checking out the failed source
-        run: . "${{ env.VIZE_CI_FILES }}/retain-diagnostic-orchestration-before-checking-out-the-failed-source.sh"
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: 0b82a31fc9dd8634786fc17ec3bd3eeb8427ae6e
-          persist-credentials: false
-      - name: Authenticate the exact physical failed source
-        run: . "${{ env.VIZE_CI_FILES }}/authenticate-the-exact-physical-failed-source.sh"
-      - uses: ./.github/actions/cache-vp-bootstrap
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
-        with:
-          # Pin the `latest` image used by the retained 2026-11-03 run.
-          version: 1.4.0
-          node-version-file: package.json
-          cache: true
-          cache-save: false
-          run-install: false
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with: { wild-version: "0.9.0" }
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: test-js-packages
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Install the unchanged builders dependencies
-        run: node tools/support/compat/github/install-js-checks.ts builders
-      - name: Observe the original mandatory JS command once
-        run: node "$RUNNER_TEMP/native-fault-evidence.ts" -- vp run --workspace-root test:js:builders
-      - name: Preserve bounded diagnostics and original native build receipts
-        if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: js-native-fault-controlled-${{ github.sha }}-${{ github.run_attempt }}
-          path: |
-            ${{ runner.temp }}/js-native-fault-evidence-*/**/*.json
-            npm/native/.artifacts/native/formatter-history/*.json
-            npm/native/.artifacts/native/formatter-history/*.log
           if-no-files-found: error
           retention-days: 14
   artifact-payload:

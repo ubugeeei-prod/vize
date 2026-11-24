@@ -1,6 +1,5 @@
 import "../../Actions.pkl" as ci
 
-`if` = "${{ inputs.targeted-test != 'reported-q16' && (inputs.targeted-test == 'generic-body-error' || (!inputs.router-experimental-only && !inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only)) }}"
 `runs-on` = ci.linux
 `timeout-minutes` = 35
 env {
@@ -13,13 +12,12 @@ steps = new Listing {
     with { `persist-credentials` = false }
   }
   new Dynamic {
-    name = "Verify targeted source and exclusive mode"
+    name = "Verify targeted source"
     `if` = "inputs.targeted-test == 'generic-body-error'"
     env {
       EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}"
-      OTHER_MODES = "${{ inputs.router-experimental-only || inputs.event-rename-only || inputs.official-css-options-only || inputs.published-defaults-only }}"
     }
-    run = #". "${{ env.VIZE_CI_FILES }}/verify-targeted-source-and-exclusive-mode.sh""#
+    run = #". "${{ env.VIZE_CI_FILES }}/verify-targeted-source.sh""#
   }
   new Dynamic {
     name = "Checkout exact TypeScript Content Mapper revision"
