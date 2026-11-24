@@ -56,11 +56,16 @@ impl ScriptQueryProducts {
         let bytes = syntax.block().source().as_bytes();
         parsed.diagnostics.is_empty()
             && !parsed.panicked
-            && (memchr::memchr(b'(', bytes).is_none()
+            && (!Self::has_specifier_argument_list(bytes)
                 || (!syntax.source_type().is_typescript()
                     && parsed.module_record.dynamic_imports.is_empty()
                     && ESCAPE.find(bytes).is_none()
                     && REQUIRE.find(bytes).is_none()))
+    }
+
+    /// A dynamic import, type import query or require call has a parenthesized argument.
+    pub(crate) fn has_specifier_argument_list(source: &[u8]) -> bool {
+        memchr::memchr(b'(', source).is_some()
     }
 
     pub(crate) fn read_static_specifier(
