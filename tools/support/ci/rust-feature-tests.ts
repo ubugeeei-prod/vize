@@ -109,6 +109,7 @@ export const rustFeatureRows: readonly RustFeatureRow[] = [
       "clippy -p vize_canon --features ambient-project-declarations --lib --no-deps",
       "clippy -p vize_maestro --features experimental-ambient-project --lib --no-deps",
       "test -p vize_canon --features ambient-project-declarations --lib virtual_project::ambient_declarations::",
+      "test -p vize_canon --features ambient-project-declarations --lib tracked_documents::tests::",
       "test -p vize_maestro --features experimental-ambient-project --lib corsa::ambient_project:: -- --test-threads=1",
       "clippy -p vize_canon --lib --features plain-script-bridges --no-deps",
       "test -p vize_canon --lib --features plain-script-bridges plain_exports::observed:: -- --test-threads=1",
