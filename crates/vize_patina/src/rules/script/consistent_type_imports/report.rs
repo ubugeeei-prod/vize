@@ -67,19 +67,19 @@ pub(super) fn check<'a>(
         offset,
     };
     let imports = imports(program);
-    let annotations = options.disallow_type_annotations && has_import_call(source);
+    let annotations = options.disallow_type_annotations && source.contains("import");
+    if imports.is_empty() && !annotations {
+        return;
+    }
     let prefers_types = options.prefer == TypeImportPreference::TypeImports;
-    let binds_a_name = prefers_types
-        && imports.iter().any(|(declaration, _)| {
-            declaration
-                .specifiers
-                .as_ref()
-                .is_some_and(|specifiers| !specifiers.is_empty())
-        });
-    let built = (annotations || binds_a_name)
-        .then(|| BlockSemantic::of(sfc.semantic_of(program), program, true));
-    if annotations && let Some(built) = &built {
-        for node in built.semantic.nodes().iter() {
+    let built = BlockSemantic::of(sfc.semantic_of(program), program, true);
+    let Some(mut uses) =
+        ComponentUses::new(built, sfc, prefers_types && options.emit_decorator_metadata)
+    else {
+        return;
+    };
+    if annotations {
+        for node in uses.semantic().nodes().iter() {
             if let AstKind::TSImportType(annotation) = node.kind() {
                 result.add_diagnostic(
                     site.warn(
@@ -97,12 +97,6 @@ pub(super) fn check<'a>(
         }
         return;
     }
-    let Some(built) = built.filter(|_| binds_a_name) else {
-        return;
-    };
-    let Some(mut uses) = ComponentUses::new(built, sfc, options.emit_decorator_metadata) else {
-        return;
-    };
     for (declaration, shared) in imports {
         prefer_type_import(
             options.fix_style,
@@ -137,15 +131,6 @@ fn imports<'p, 'a>(program: &'p Program<'a>) -> Vec<(&'p ImportDeclaration<'a>, 
         }
     }
     found
-}
-
-/// `import(` with optional whitespace: a dynamic import or a type annotation.
-fn has_import_call(source: &str) -> bool {
-    source.match_indices("import").any(|(index, keyword)| {
-        source
-            .get(index + keyword.len()..)
-            .is_some_and(|rest| rest.trim_start().starts_with('('))
-    })
 }
 
 /// `prefer: "type-imports"`: one declaration against the component's uses.

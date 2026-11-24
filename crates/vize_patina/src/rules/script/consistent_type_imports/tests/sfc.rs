@@ -186,6 +186,7 @@ fn decorator_metadata_positions_are_value_uses() {
         "import Foo from 'foo';\nclass A {\n  @deco\n  foo: Foo | null;\n}\n",
         "import Foo from 'foo';\nclass A {\n  @deco\n  accessor foo: Foo;\n}\n",
         "import Foo from 'foo';\nclass A {\n  @deco\n  get foo(): Foo {}\n}\n",
+        "import Foo from 'foo';\nclass A {\n  @deco\n  get 0x10() {}\n  set 16(value: Foo) {}\n}\n",
         // A rest parameter serializes its element type.
         "import Foo from 'foo';\nclass A {\n  @deco\n  foo(...rest: Foo[]) {}\n}\n",
         "import Foo from 'foo';\n@deco\nclass A {\n  constructor(...rest: Array<Foo>) {}\n}\n",

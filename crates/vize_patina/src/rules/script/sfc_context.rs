@@ -193,6 +193,14 @@ pub(crate) enum UnboundRead {
 }
 
 impl TemplateSideReads<'_> {
+    pub(crate) fn is_complete(self) -> bool {
+        match self {
+            Self::Unknown => false,
+            Self::Nothing => true,
+            Self::Analyzed { reads, .. } => reads.is_complete(),
+        }
+    }
+
     /// Whether the template side may read the script binding `name`.
     pub(crate) fn may_read(self, name: &str) -> bool {
         match self {
@@ -216,7 +224,8 @@ impl TemplateSideReads<'_> {
         else {
             return None;
         };
-        if !bindings_complete
+        if !reads.is_complete()
+            || !bindings_complete
             || name.starts_with('$')
             || bindings.contains(name)
             || vize_croquis::builtins::is_js_global(name)

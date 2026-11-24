@@ -11,7 +11,7 @@ Uniformizar o uso de imports de tipo, contando os usos no template como usos de 
 | --- | --- | --- | --- |
 | `warning` | Nenhuma | Sim | [Opções das regras](/rules/options.md) |
 
-Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup.
+A regra verifica scripts de SFCs Vue e módulos TypeScript independentes (`.ts`).
 
 ## O que conta como uso de valor
 
@@ -29,7 +29,7 @@ Um nome importado com `import type` que uma expressão do template ou um `v-bind
 
 ## A correção
 
-A correção substitui apenas a declaração relatada, e um especificador de valor que permanece mantém sua posição; assim, a ordem de avaliação dos módulos não muda. Uma declaração que precisa ser dividida e contém um comentário ou atributos de import é relatada sem correção.
+Quando a divisão mantém uma importação de valor, sua ordem de avaliação é preservada. Converter toda a declaração em `import type` pode eliminar a inicialização do módulo com `verbatimModuleSyntax`. Uma declaração que precisa ser dividida e contém um comentário ou atributos de import é relatada sem correção.
 
 ## Incorreto
 

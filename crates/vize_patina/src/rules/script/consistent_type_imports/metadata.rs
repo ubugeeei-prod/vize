@@ -13,8 +13,8 @@
 
 use oxc_ast::AstKind;
 use oxc_ast::ast::{
-    Class, ClassElement, FormalParameters, MethodDefinition, MethodDefinitionKind, PropertyKey,
-    TSType, TSTypeAnnotation, TSTypeName,
+    Class, ClassElement, FormalParameters, MethodDefinition, MethodDefinitionKind, TSType,
+    TSTypeAnnotation, TSTypeName,
 };
 use oxc_semantic::{ReferenceId, Semantic};
 use vize_l0::FxHashSet;
@@ -58,13 +58,13 @@ fn note_class(class: &Class<'_>, found: &mut FxHashSet<ReferenceId>) {
                 MethodDefinitionKind::Get | MethodDefinitionKind::Set => {
                     // Decorators sit on one accessor of a pair and describe both.
                     let pair_is_decorated = is_decorated(method)
-                        || static_key(method).is_some_and(|key| {
+                        || method.key.static_name().is_some_and(|key| {
                             methods().any(|other| {
                                 matches!(
                                     other.kind,
                                     MethodDefinitionKind::Get | MethodDefinitionKind::Set
                                 ) && other.r#static == method.r#static
-                                    && static_key(other) == Some(key)
+                                    && other.key.is_specific_static_name(&key)
                                     && is_decorated(other)
                             })
                         });
@@ -102,15 +102,6 @@ fn has_decorated_parameter(parameters: &FormalParameters<'_>) -> bool {
             .rest
             .as_ref()
             .is_some_and(|rest| !rest.decorators.is_empty())
-}
-
-/// A key two accessors can be matched by: an identifier or a string literal.
-fn static_key<'a>(method: &'a MethodDefinition<'_>) -> Option<&'a str> {
-    match &method.key {
-        PropertyKey::StaticIdentifier(name) if !method.computed => Some(name.name.as_str()),
-        PropertyKey::StringLiteral(name) => Some(name.value.as_str()),
-        _ => None,
-    }
 }
 
 fn note_parameters(parameters: &FormalParameters<'_>, found: &mut FxHashSet<ReferenceId>) {

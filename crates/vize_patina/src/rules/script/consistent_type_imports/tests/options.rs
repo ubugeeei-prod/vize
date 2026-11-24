@@ -76,8 +76,7 @@ fn no_type_imports_removes_the_keyword_and_keeps_comments() {
 
 #[test]
 fn import_type_annotations_are_reported_unless_allowed() {
-    let source =
-        "let foo: import('foo');\nlet bar: import('foo').Bar;\nconst lazy = () => import('foo');\n";
+    let source = "let foo: import /* T */ ('foo');\nlet bar: import('foo').Bar;\nconst lazy = () => import('foo');\n";
     assert_eq!(
         reports(source, "module.ts", None),
         [report(1, ANNOTATION), report(2, ANNOTATION)]
@@ -102,6 +101,15 @@ fn import_type_annotations_are_reported_unless_allowed() {
         ),
         [report(2, ANNOTATION)]
     );
+}
+
+#[test]
+fn unresolved_direct_eval_suppresses_all_reports() {
+    let source =
+        r#"import type { A } from './a'; type B = import /* type */ ('./b').B; \u0065val('A');"#;
+    for options in [None, no_type_imports()] {
+        assert_eq!(reports(source, "module.ts", options), nothing());
+    }
 }
 
 #[test]

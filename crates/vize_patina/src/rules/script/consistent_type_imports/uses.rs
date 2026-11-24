@@ -39,14 +39,12 @@ impl<'a> Block<'a> {
         }
         let source = built.semantic.source_text();
         // Direct `eval` can read any binding of the module.
-        if source.contains("eval") {
-            let scoping = built.semantic.scoping();
-            if scoping
-                .scope_descendants_from_root()
-                .any(|scope| scoping.scope_flags(scope).contains_direct_eval())
-            {
-                return None;
-            }
+        let scoping = built.semantic.scoping();
+        if scoping
+            .scope_descendants_from_root()
+            .any(|scope| scoping.scope_flags(scope).contains_direct_eval())
+        {
+            return None;
         }
         let metadata = if emit_decorator_metadata && source.contains('@') {
             metadata::references(&built.semantic)
@@ -125,6 +123,9 @@ impl<'a> ComponentUses<'a> {
         } else {
             TemplateSideReads::Nothing
         };
+        if !template.is_complete() {
+            return None;
+        }
         Some(Self {
             own,
             sibling,
@@ -152,6 +153,10 @@ impl<'a> ComponentUses<'a> {
             uses.ty = self.generic_names(name);
         }
         uses
+    }
+
+    pub(super) fn semantic(&self) -> &Semantic<'a> {
+        self.own.semantic()
     }
 
     /// The template or style read of `name` that no runtime binding of that

@@ -50,6 +50,8 @@ fn a_template_value_use_keeps_the_import_a_value_import() {
         "<Bar v-slot=\"{ value = Foo }\">{{ value }}</Bar>",
         "<Bar><template #row=\"{ value = Foo.fallback }\">{{ value }}</template></Bar>",
         "<p v-for=\"{ label = Foo } in [item]\" :key=\"label\">{{ label }}</p>",
+        "<Bar v-slot=\"{ [Foo.field]: value }\">{{ value }}</Bar>",
+        "<p v-for=\"{ [Foo.field]: value } in [item]\" :key=\"value\" />",
         // An alias in a sibling does not shadow this read.
         "<p v-for=\"Foo in [1]\" :key=\"Foo\" /><p>{{ Foo }}</p>",
     ] {

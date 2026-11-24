@@ -160,7 +160,7 @@ impl Drawer {
         }
     }
 
-    /// A destructuring default of a `v-for` or slot pattern (`{ item = Fallback }`)
+    /// A computed key or default of a `v-for` or slot pattern (`{ item = Fallback }`)
     /// evaluates in the scope around the pattern. The expression walk never
     /// visits a pattern, so a read demand joins those defaults from the
     /// scopes the walk recorded.
@@ -176,10 +176,10 @@ impl Drawer {
                 ScopeData::VSlot(data) => data.props_pattern.as_deref(),
                 _ => None,
             };
-            let Some(pattern) = pattern.filter(|pattern| pattern.contains('=')) else {
+            let Some(pattern) = pattern.filter(|pattern| pattern.contains(['=', '['])) else {
                 continue;
             };
-            // The assignment form reads a destructuring target's defaults.
+            // The assignment form reads a destructuring target's computed keys and defaults.
             let assignment = vize_carton::cstr!("({pattern} = 0)");
             let Some(names) = super::extract_identifiers_checked(&assignment) else {
                 reads.mark_incomplete();

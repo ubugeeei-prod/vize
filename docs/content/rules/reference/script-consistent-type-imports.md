@@ -11,7 +11,7 @@ Enforce consistent usage of type imports, counting template uses as value uses.
 | --- | --- | --- | --- |
 | `warning` | None | Yes | [Rule options](../options.md) |
 
-Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
+The rule checks Vue SFC scripts and standalone TypeScript (`.ts`) modules.
 
 ## What counts as a value use
 
@@ -29,7 +29,7 @@ A name imported with `import type` that a template expression or a `<style>` `v-
 
 ## The fix
 
-The fix replaces only the reported declaration, and a value specifier that remains keeps its position, so module evaluation order does not change. A declaration that must split and contains a comment or import attributes is reported without a fix.
+A split that keeps a value import preserves its evaluation order. Converting the whole declaration to `import type` can remove module initialization under `verbatimModuleSyntax`. A declaration that must split and contains a comment or import attributes is reported without a fix.
 
 ## Bad
 
