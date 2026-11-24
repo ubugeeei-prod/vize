@@ -1,5 +1,6 @@
 import * as native from "@vizejs/native";
 import type { TypeProjectContext } from "../sfc-types.ts";
+import { CompiledModuleCache } from "./compiled-module-cache.ts";
 import { filesystemPathIdentities, withoutVerbatimPrefix } from "./path-identity.ts";
 
 interface ProjectWatchApi {
@@ -54,7 +55,12 @@ export function typeProjectDependencyRoots(
 ): string[] {
   if (!watched.has(cache)) return [];
   const owners = new Set<string>();
-  for (const identity of filesystemPathIdentities(file)) {
+  // The plugin's cache answers from the epoch its own index was built in.
+  const identities =
+    cache instanceof CompiledModuleCache
+      ? cache.pathIdentities(file)
+      : filesystemPathIdentities(file);
+  for (const identity of identities) {
     for (const owner of api.typeProjectOwners(identity)) owners.add(owner);
   }
   return [...owners];
