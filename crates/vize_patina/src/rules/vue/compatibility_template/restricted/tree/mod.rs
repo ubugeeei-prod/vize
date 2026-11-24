@@ -252,6 +252,32 @@ fn directive_node<'a>(ctx: &mut LintContext<'a>, directive: &DirectiveNode<'a>) 
                 )
             }
         });
+    let modifiers = directive
+        .modifiers
+        .iter()
+        .map(|modifier| {
+            let (modifier_start, modifier_end) = span(modifier.loc.span);
+            if shorthand == Some(".") && modifier_start == start {
+                // vue-eslint-parser places the implicit `.foo` prop modifier
+                // after the argument, with an empty authored range/name.
+                let argument_end = directive.arg.as_ref().map_or(start + 1, |argument| {
+                    let end = expression::expression_span(argument).1;
+                    match argument {
+                        ExpressionNode::Simple(simple) if simple.is_static => end,
+                        _ => end + 1,
+                    }
+                });
+                node(
+                    "VIdentifier",
+                    argument_end,
+                    argument_end,
+                    [("name", json!("prop")), ("rawName", json!(""))],
+                )
+            } else {
+                identifier(modifier.content, modifier_start, modifier_end)
+            }
+        })
+        .collect();
     let value = directive.exp.as_ref().map_or(Value::Null, |expression| {
         let (value_start, value_end) = quoted(ctx.source, expression::expression_span(expression));
         let expression = expression::expression_value(
@@ -267,13 +293,7 @@ fn directive_node<'a>(ctx: &mut LintContext<'a>, directive: &DirectiveNode<'a>) 
             [("expression", expression)],
         )
     });
-    let key_end = directive
-        .exp
-        .as_ref()
-        .map_or(end, |expression| {
-            expression::expression_span(expression).0.saturating_sub(2)
-        })
-        .max(start);
+    let key_end = start + raw.len();
     node(
         "VAttribute",
         start,
@@ -300,6 +320,7 @@ fn directive_node<'a>(ctx: &mut LintContext<'a>, directive: &DirectiveNode<'a>) 
                             ),
                         ),
                         ("argument", argument),
+                        ("modifiers", Value::Array(modifiers)),
                     ],
                 ),
             ),
