@@ -54,6 +54,8 @@ A damaged template can retain overlapping primary diagnostics, secondary labels 
 
 A nonempty range contains its start and excludes its end. A zero-width recovery site covers its insertion point, including one at the end of the source. Roslyn's position containment and rust-analyzer's separate half-open and inclusive containment operations informed this choice. The Lean theorem `recovery_cursor_window` proves that the two boundaries select the same ordered cursor list as independent containment checks, including duplicates. [Roslyn TextSpan](https://learn.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.text.textspan?view=roslyn-dotnet-5.0.0), [rust-analyzer TextRange](https://rust-lang.github.io/rust-analyzer/text_size/struct.TextRange.html).
 
+Kani checks the Rust binary searches used by the visitor against direct containment on up to five sorted, arbitrary 32-bit offsets. The proof includes subranges with repeated cursors, the maximum 32-bit insertion point, and empty requests. The bounded check exercises the implementation and its index arithmetic alongside the unbounded Lean specification.
+
 ## Typed two-edge patterns
 
 Both legs choose a direction and edge kinds. The shared adjacency lists yield the intermediate operation, then its eligible second edges, in original row order. A consumer can stop on its first match. A complete response can be independently checked against the Cartesian product of the original relationship rows, including unmatched or malformed endpoints. The checker is for qualification or consumers requiring certification. Enumerating matches only needs the adjacency index and constant additional space.

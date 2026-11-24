@@ -134,10 +134,7 @@ fn binary_windows_match_direct_containment_at_full_width_endpoints() {
                         .copied()
                         .filter(|&p| (start <= p && p < end) || (start == end && p == start))
                         .collect();
-                    assert_eq!(
-                        points[matching_positions(points, Span::new(start, end))],
-                        expected
-                    );
+                    assert_eq!(points[matching_positions(points, start, end)], expected);
                 }
             }
         }

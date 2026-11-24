@@ -1,5 +1,7 @@
 //! Match retained recovery records to sorted original byte positions.
 use super::TemplateRecovery;
+
+mod window;
 use core::{
     iter,
     ops::{ControlFlow, Range},
@@ -9,6 +11,7 @@ use vize_l0::{
     diag::{Diagnostic, DiagnosticPart, WitnessLink},
 };
 use vize_l1_to_l2::native::NativeHole;
+use window::matching_positions;
 
 /// Each value borrows the original lowering, including the parent of a related site.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -105,7 +108,7 @@ impl<'db> TemplateRecovery<'db> {
             let (authored, text) = self
                 .source_site(relative)
                 .map_err(|_| RecoveryPositionError::InvalidRecord(relative))?;
-            let hits = matching_positions(positions, authored);
+            let hits = matching_positions(positions, authored.start, authored.end);
             if !hits.is_empty()
                 && let ControlFlow::Break(value) = visit(RecoveryMatch {
                     record,
@@ -119,17 +122,6 @@ impl<'db> TemplateRecovery<'db> {
         }
         Ok(ControlFlow::Continue(()))
     }
-}
-
-fn matching_positions(positions: &[u32], span: Span) -> Range<usize> {
-    let first = positions.partition_point(|&p| p < span.start);
-    let rest = &positions[first..];
-    let count = if span.start == span.end {
-        rest.partition_point(|&p| p <= span.end)
-    } else {
-        rest.partition_point(|&p| p < span.end)
-    };
-    first..first + count
 }
 
 #[cfg(test)]
