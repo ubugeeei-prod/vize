@@ -45,6 +45,8 @@ on:
       - tests/formal/string-literal/**
       - tools/nix/creusot/**
       - tests/formal/creusot/**
+      - crates/vize_patina/src/html_content_model/creusot.rs
+      - crates/vize_patina/src/html_content_model/tri.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/frame.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs
       - davinci/vize_l3/src/lattice/creusot.rs
@@ -58,6 +60,8 @@ on:
     paths:
       - tools/nix/creusot/**
       - tests/formal/creusot/**
+      - crates/vize_patina/src/html_content_model/creusot.rs
+      - crates/vize_patina/src/html_content_model/tri.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/frame.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs
       - davinci/vize_l3/src/lattice/class.rs
@@ -126,6 +130,8 @@ jobs:
             creusot:
               - 'tools/nix/creusot/**'
               - 'tests/formal/creusot/**'
+              - 'crates/vize_patina/src/html_content_model/creusot.rs'
+              - 'crates/vize_patina/src/html_content_model/tri.rs'
               - 'davinci/vize_l2/src/query/script/assignments/prefix/frame.rs'
               - 'davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs'
               - 'davinci/vize_l3/src/lattice/class.rs'

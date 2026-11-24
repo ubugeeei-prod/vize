@@ -72,7 +72,7 @@ jobs {
       }
       new Dynamic {
         name = "Record the measured binary and build identity"
-        run = #"vp exec node tools/support/compat/davinci/lsp-build-identity.ts target/ci-opt/vize ci-opt "${RUNNER_TEMP}/resource-build.jsonl" "${RUNNER_TEMP}/resource-build-identity.json""#
+        run = ci.workflowScript("record-the-measured-binary-and-build-identity.sh")
       }
       new Dynamic {
         name = "Measure the resident server"
@@ -191,11 +191,11 @@ jobs {
       }
       new Dynamic {
         name = "Verify the protocol and controlled edit oracle"
-        run = #"vp exec node tools/support/compat/davinci/lsp-resources.ts --server target/ci-opt/vize --files 2 --runs 1 --idle-seconds 10 --build "ci-opt: release, thin LTO, 16 codegen units" --out "${RUNNER_TEMP}/lsp-resource-smoke.json""#
+        run = ci.workflowScript("verify-the-protocol-and-controlled-edit-oracle.sh")
       }
       new Dynamic {
         name = "Measure 10000 open buffers, 16 production providers, and Corsa"
-        run = #"timeout --signal=TERM --kill-after=30s 45m vp exec node tools/support/compat/davinci/lsp-resources.ts --server target/ci-opt/vize --files 10000 --warm-providers 16 --runs 1 --idle-seconds 10 --build "ci-opt: release, thin LTO, 16 codegen units" --out "${RUNNER_TEMP}/lsp-resource.json""#
+        run = ci.workflowScript("measure-10000-open-buffers-16-production-providers-and.sh")
       }
       new Dynamic {
         name = "Summarize the actual scope and every process"
@@ -249,11 +249,11 @@ jobs {
       }
       new Dynamic {
         name = "Record the measured binary and build identity"
-        run = #"vp exec node tools/support/compat/davinci/lsp-build-identity.ts target/x86_64-unknown-linux-gnu/release/vize release "${RUNNER_TEMP}/release-build.jsonl" "${RUNNER_TEMP}/release-build-identity.json""#
+        run = ci.workflowScript("record-the-measured-binary-and-build-identity-2.sh")
       }
       new Dynamic {
         name = "Measure the complete TS-44 campaign with the shipped profile"
-        run = #"rust-script tools/commands/davinci/resource-budgets.rs --measure --preset linux-x64-ci --runs 3 --keystrokes 20 --idle-seconds 60 --server target/x86_64-unknown-linux-gnu/release/vize --out "${RUNNER_TEMP}/release-resource.json""#
+        run = ci.workflowScript("measure-the-complete-ts-44-campaign-with-the-shipped.sh")
       }
       new Dynamic {
         name = "Apply every unchanged TS-44 ceiling to this additional build"
@@ -261,11 +261,11 @@ jobs {
       }
       new Dynamic {
         name = "Verify the protocol and controlled edit oracle"
-        run = #"vp exec node tools/support/compat/davinci/lsp-resources.ts --server target/x86_64-unknown-linux-gnu/release/vize --build "release: fat LTO, one codegen unit" --files 2 --runs 1 --idle-seconds 10 --out "${RUNNER_TEMP}/release-lsp-resource-smoke.json""#
+        run = ci.workflowScript("verify-the-protocol-and-controlled-edit-oracle-2.sh")
       }
       new Dynamic {
         name = "Measure 10000 open buffers, 16 production providers, and Corsa"
-        run = #"timeout --signal=TERM --kill-after=30s 45m vp exec node tools/support/compat/davinci/lsp-resources.ts --server target/x86_64-unknown-linux-gnu/release/vize --build "release: fat LTO, one codegen unit" --files 10000 --warm-providers 16 --runs 1 --idle-seconds 10 --out "${RUNNER_TEMP}/release-lsp-resource.json""#
+        run = ci.workflowScript("measure-10000-open-buffers-16-production-providers-and-2.sh")
       }
       new Dynamic {
         name = "Summarize the separate release measurements"

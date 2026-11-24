@@ -52,7 +52,7 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Execute cold, warm, warm again, failure and source-change controls"
-    run = "node npm/native/scripts/test-preparation.mjs node tools/support/compat/vitest-module-cache.ts --candidate npm/builder/vite/dist/index.mjs --output target/vitest-module-cache"
+    run = ci.workflowScript("execute-cold-warm-warm-again-failure-and-source-change.sh")
   }
   new Dynamic {
     name = "Retain successful and failed cache observations"

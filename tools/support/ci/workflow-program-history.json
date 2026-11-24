@@ -1,12 +1,14 @@
 {
   "content-mapper-conformance": {
     "before": "af3a0c9c81dd1a48f790ea66feced0945e59278eeb8f063a67b83cab62ef4cc1",
-    "workflow": "1549742526a4b5e568415fb0ad25d44ab4b8d99950b641a8ca78a7b43239bf44",
+    "workflow": "0ad2a9bab9cedcd7b1b07c61ff8d62a769df4f0092ffa192871740242e2175a7",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
       ".github/scripts/workflows/content-mapper-conformance/build-exact-upstream-tsgo.sh",
       ".github/scripts/workflows/content-mapper-conformance/build-packed-content-mapper-runtime.sh",
+      ".github/scripts/workflows/content-mapper-conformance/nuxt-membership-require-every-executed-native-stock-and-graph-control.sh",
+      ".github/scripts/workflows/content-mapper-conformance/nuxt-membership-verify-membership-controls.ts",
       ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.sh",
       ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.ts",
       ".github/scripts/workflows/content-mapper-conformance/run-authored-syntax-and-setup-binding-conformance.sh",
@@ -21,7 +23,7 @@
       ".github/scripts/workflows/content-mapper-conformance/verify-upstream-content-mapper-protocol-regressions.sh",
       ".github/scripts/workflows/shared/files.ts"
     ],
-    "closure": "156986ddedb06d69d44aa4df3e1ffa466082ada89c47afd0efaf14b2a8b236e7"
+    "closure": "c6ff746f584346737c9738cb3e68df2f420d1a2c19b3e58ff62b07364ff475e0"
   },
   "native-smoke": {
     "before": "dfcea2b5fd581d6e18d08cbefdbdbda26a46dd63df02dc672a7ae13cfcc7f9c0",

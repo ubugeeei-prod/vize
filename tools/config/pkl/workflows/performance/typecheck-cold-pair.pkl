@@ -191,7 +191,9 @@ jobs {
         }
       }
       new Dynamic {
-        run = "node --test tests/tooling/typecheck-cold-pair.test.ts tests/tooling/content-mapper-pair.test.ts tests/tooling/content-mapper-replay.test.ts"
+        name = "Test the pair planners"
+        env { VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/typecheck-cold-pair" }
+        run = ci.workflowScript("test-the-pair-planners.sh")
       }
     }
   }

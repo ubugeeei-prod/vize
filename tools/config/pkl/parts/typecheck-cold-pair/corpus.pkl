@@ -40,7 +40,7 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Test the pair parsers and the byte probe"
-    run = "node --test tests/tooling/typecheck-corpus-pair.test.ts tests/tooling/typecheck-corpus-pair-corpora.test.ts tests/tooling/typecheck-corpus-pair-cold.test.ts tests/tooling/typecheck-corpus-pair-floors.test.ts tests/tooling/typecheck-owned-pair.test.ts tests/tooling/typecheck-corpus-mutations.test.ts"
+    run = ci.workflowScript("test-the-pair-parsers-and-the-byte-probe.sh")
   }
   new Dynamic {
     name = "Test the opt-in Linux raw runner"
@@ -73,7 +73,7 @@ steps = new Listing {
   new Dynamic {
     name = "Check planted diagnostics in the planted corpora"
     `if` = "${{ !cancelled() && !inputs.owned_pair && steps.measure.outcome != 'skipped' }}"
-    run = #"node tools/benchmarks/scripts/typecheck-corpus-mutations-run.ts --base "$RUNNER_TEMP/pair-base" --head "$RUNNER_TEMP/pair-head" --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out" --corpora "$CORPORA""#
+    run = ci.workflowScript("check-planted-diagnostics-in-the-planted-corpora.sh")
   }
   new Dynamic {
     name = "Write job summary"
