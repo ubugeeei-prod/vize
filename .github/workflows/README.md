@@ -30,8 +30,8 @@ surfaces and are not routine CI-refactor targets.
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 43        |
-| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 28        |
-| 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 24        |
+| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 26        |
+| 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 20        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
 | 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 22        |
@@ -281,19 +281,17 @@ Davinci migration, Canon ownership, Level lowering, and cross-file graph contrac
 | 07.13 | Cross-file retained import updates            | [`cross-file-source-updates.yml`](./cross-file-source-updates.yml)               |
 | 07.14 | Cross-file WASM effect grammars               | [`cross-file-wasm-effects.yml`](./cross-file-wasm-effects.yml)                   |
 | 07.15 | Canonical Davinci corpus                      | [`davinci-canonical-corpus.yml`](./davinci-canonical-corpus.yml)                 |
-| 07.16 | Davinci Creusot                               | [`davinci-creusot.yml`](./davinci-creusot.yml)                                   |
-| 07.17 | Davinci Incremental                           | [`davinci-incremental.yml`](./davinci-incremental.yml)                           |
-| 07.18 | Davinci IR graph queries                      | [`davinci-ir-graph.yml`](./davinci-ir-graph.yml)                                 |
-| 07.19 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                         |
-| 07.20 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                             |
-| 07.21 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                               |
-| 07.22 | Shared toolchain session                      | [`davinci-shared-toolchain-session.yml`](./davinci-shared-toolchain-session.yml) |
-| 07.23 | Davinci authored source frames                | [`davinci-source-frames.yml`](./davinci-source-frames.yml)                       |
-| 07.24 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                   |
-| 07.25 | IR pass composition                           | [`ir-pass-composition.yml`](./ir-pass-composition.yml)                           |
-| 07.26 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)                 |
-| 07.27 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                             |
-| 07.28 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)                 |
+| 07.16 | Davinci Incremental                           | [`davinci-incremental.yml`](./davinci-incremental.yml)                           |
+| 07.17 | Davinci IR graph queries                      | [`davinci-ir-graph.yml`](./davinci-ir-graph.yml)                                 |
+| 07.18 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                         |
+| 07.19 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                             |
+| 07.20 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                               |
+| 07.21 | Shared toolchain session                      | [`davinci-shared-toolchain-session.yml`](./davinci-shared-toolchain-session.yml) |
+| 07.22 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                   |
+| 07.23 | IR pass composition                           | [`ir-pass-composition.yml`](./ir-pass-composition.yml)                           |
+| 07.24 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)                 |
+| 07.25 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                             |
+| 07.26 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)                 |
 
 ## 08 Builders and framework integrations
 
@@ -315,18 +313,14 @@ Babel, Nuxt, Parcel, Rspack, Turbopack, Vite, Vitest, and consumer hosts.
 | 08.10 | Parcel transformer                     | [`parcel-transformer.yml`](./parcel-transformer.yml)                       |
 | 08.11 | Plain-script import ref runtime        | [`plain-script-import-ref.yml`](./plain-script-import-ref.yml)             |
 | 08.12 | Rspack SFC HMR                         | [`rspack-hmr.yml`](./rspack-hmr.yml)                                       |
-| 08.13 | Rspack external block ranges           | [`rspack-src-block-ranges.yml`](./rspack-src-block-ranges.yml)             |
-| 08.14 | Turbopack consumers                    | [`turbopack-consumers.yml`](./turbopack-consumers.yml)                     |
-| 08.15 | Vite+ Type Compatibility               | [`vite-plus-type-compat.yml`](./vite-plus-type-compat.yml)                 |
-| 08.16 | Vite precompile cache identities       | [`vite-precompile-cache.yml`](./vite-precompile-cache.yml)                 |
-| 08.17 | Vite relative style origins            | [`vite-style-relative-imports.yml`](./vite-style-relative-imports.yml)     |
-| 08.18 | Vite+ configuration consumers          | [`viteplus-config-consumers.yml`](./viteplus-config-consumers.yml)         |
-| 08.19 | Vite+ lint configuration consumers     | [`viteplus-lint-consumers.yml`](./viteplus-lint-consumers.yml)             |
-| 08.20 | Vite+ task cache consumers             | [`viteplus-task-cache.yml`](./viteplus-task-cache.yml)                     |
-| 08.21 | Vitest persistent Vue modules          | [`vitest-module-cache.yml`](./vitest-module-cache.yml)                     |
-| 08.22 | Vitest project configuration consumers | [`vitest-project-extends.yml`](./vitest-project-extends.yml)               |
-| 08.23 | Void build                             | [`void-build.yml`](./void-build.yml)                                       |
-| 08.24 | VueFes SSR style dependencies          | [`vuefes-ssr-style-dependencies.yml`](./vuefes-ssr-style-dependencies.yml) |
+| 08.13 | Turbopack consumers                    | [`turbopack-consumers.yml`](./turbopack-consumers.yml)                     |
+| 08.14 | Vite+ Type Compatibility               | [`vite-plus-type-compat.yml`](./vite-plus-type-compat.yml)                 |
+| 08.15 | Vite precompile cache identities       | [`vite-precompile-cache.yml`](./vite-precompile-cache.yml)                 |
+| 08.16 | Vite relative style origins            | [`vite-style-relative-imports.yml`](./vite-style-relative-imports.yml)     |
+| 08.17 | Vite+ configuration consumers          | [`viteplus-config-consumers.yml`](./viteplus-config-consumers.yml)         |
+| 08.18 | Vitest project configuration consumers | [`vitest-project-extends.yml`](./vitest-project-extends.yml)               |
+| 08.19 | Void build                             | [`void-build.yml`](./void-build.yml)                                       |
+| 08.20 | VueFes SSR style dependencies          | [`vuefes-ssr-style-dependencies.yml`](./vuefes-ssr-style-dependencies.yml) |
 
 ## 09 Lint, format, and developer tooling
 
