@@ -22,11 +22,24 @@ impl EmitDocument {
             else {
                 continue;
             };
+            // Text and static attribute links can cover only the contents of a
+            // generated string. A dot there belongs to the literal value.
+            if emitted == authored && self.is_string_content(link.generated) {
+                continue;
+            }
             visit_static_member_spans(authored, emitted, link.authored.start, |out, at| {
                 builder.add_raw((link.generated.start + out.start) as usize, at.start);
             });
         }
         builder.finish(self.as_str(), filename, source)
+    }
+
+    fn is_string_content(&self, span: Span) -> bool {
+        let text = self.as_str().as_bytes();
+        let before = (span.start as usize)
+            .checked_sub(1)
+            .and_then(|i| text.get(i));
+        matches!(before, Some(b'\'' | b'"' | b'`')) && before == text.get(span.end as usize)
     }
 }
 
@@ -78,8 +91,30 @@ fn member_name(part: &str) -> &str {
 
 #[cfg(test)]
 mod tests {
-    use super::visit_static_member_spans;
+    use super::{EmitDocument, visit_static_member_spans};
     use vize_l0::Span;
+
+    #[test]
+    fn a_literal_with_a_dot_keeps_its_existing_map() {
+        let text = "photo.description";
+        let span = Span::new(0, text.len() as u32);
+        for quote in ['\'', '"', '`'] {
+            let mut doc = EmitDocument::default();
+            doc.push_char(quote);
+            doc.push_linked(text, span);
+            doc.push_char(quote);
+            assert_eq!(
+                doc.sfc_source_map("a.vue", text),
+                doc.source_map("a.vue", text)
+            );
+        }
+        let mut read = EmitDocument::default();
+        read.push_expression(text, span, text);
+        assert_ne!(
+            read.sfc_source_map("a.vue", text),
+            read.source_map("a.vue", text)
+        );
+    }
 
     #[test]
     fn properties_use_distinct_offsets_after_a_rewritten_receiver() {
