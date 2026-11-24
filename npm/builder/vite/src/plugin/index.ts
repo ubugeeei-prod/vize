@@ -19,7 +19,8 @@ import { compileAll, PrecompileDiagnosticsError } from "./precompile-run.ts";
 import { precompileInputOwners } from "./precompile-owner.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { LOAD_ID_FILTER, TRANSFORM_ID_FILTER, loadHook, transformHook } from "./load.ts";
-import { getSfcModuleRequest, transformSfcModule } from "./sfc-module.ts";
+import { getSfcModuleRequest, requestResolvedSfc, transformSfcModule } from "./sfc-module.ts";
+import { resetDemandCompiles, setCompileInputOwners } from "./demand-compile.ts";
 import {
   handleGenerateBundleHook,
   handleHotUpdateHook,
@@ -268,7 +269,9 @@ export function vize(
         state.scanPatterns = [];
       } else {
         state.filter = createFilter(state.mergedOptions.include, state.mergedOptions.exclude);
-        state.scanPatterns = state.mergedOptions.scanPatterns ?? ["**/*.vue"];
+        // The startup scan is opt-in: without configured patterns nothing is
+        // compiled before the module graph asks for it.
+        state.scanPatterns = state.mergedOptions.scanPatterns ?? [];
       }
       state.precompileBatchSize = normalizePrecompileBatchSize(
         state.mergedOptions.precompileBatchSize,
@@ -313,16 +316,19 @@ export function vize(
       startedEnvironments.add(environment);
       resetTypeProjectWatches(state.cache);
       state.viteResolveCache?.clear();
+      const inputOwners = precompileInputOwners(this, precompileConfig);
+      setCompileInputOwners(state, inputOwners);
       if (!state.scanPatterns || state.scanPatterns.length === 0) {
-        // Running in standalone rolldown context (e.g., ox-content OG image)
-        // where configResolved is not called, or a framework integration has
-        // opted into on-demand compilation. Skip pre-compilation.
+        // No startup scan was asked for: each environment compiles the SFCs its
+        // module graph requests, in batches (`demand-compile.ts`). Also a
+        // standalone rolldown context (e.g., ox-content OG image) where
+        // configResolved is not called.
         return;
       }
       try {
         await compileAll(
           { ...state, extractCss: shouldExtractCssForBuild(state, this) },
-          precompileInputOwners(this, precompileConfig),
+          inputOwners,
           (request, importer) => this.resolve(request, importer, { skipSelf: true }),
           this.addWatchFile.bind(this),
           resolveBuildStartSsr(this, precompileConfig),
@@ -337,9 +343,14 @@ export function vize(
     // No filter: an import from an SFC is resolved against the SFC's real path
     // whatever its specifier is, and a hook filter cannot see the importer.
     resolveId(id, importer, options) {
-      return resolveIdHook(this, state, id, importer, {
-        ...options,
-        ssr: resolveHookSsr(this, options),
+      const ssr = resolveHookSsr(this, options);
+      const hookOptions: { ssr: boolean; scan?: boolean } = { ...options, ssr };
+      const resolving = resolveIdHook(this, state, id, importer, hookOptions);
+      // A dependency scan reads SFCs; it does not ask this environment to compile them.
+      if (hookOptions.scan || !id.includes(".vue")) return resolving;
+      return resolving.then((resolved) => {
+        requestResolvedSfc(state, resolved, ssr);
+        return resolved;
       });
     },
 
@@ -399,6 +410,7 @@ export function vize(
       if (state.server === null) {
         configBridge.unregisterBuild(this);
         clearBuildCaches(state);
+        resetDemandCompiles(state);
       }
     },
   };

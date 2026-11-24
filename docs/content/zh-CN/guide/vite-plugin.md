@@ -94,7 +94,7 @@ vize({
 | `templateSyntax`       | `compiler.templateSyntax`或`vize({ templateSyntax })` | 选择`"standard"`、`"strict"`或`"quirks"`模板语法处理。                                             |
 | `include`              | `vite.include`或`vize({ include })`                   | 插件应该编译的文件。                                                                               |
 | `exclude`              | `vite.exclude`或`vize({ exclude })`                   | 这些文件是插件应该忽略的。                                                                         |
-| `scanPatterns`         | `vite.scanPatterns`或`vize({ scanPatterns })`         | 用于启动预编译的球状模式。                                                                         |
+| `scanPatterns`         | `vite.scanPatterns`或`vize({ scanPatterns })`         | 可选：启动时预编译的 glob 模式。默认不设置，各环境只批量编译其模块图导入的组件。                   |
 | `ignorePatterns`       | `vite.ignorePatterns`或`vize({ ignorePatterns })`     | 启动前编译时，球状模式跳过。                                                                       |
 | `configMode`           | `vize({ configMode })`                                | 使用`"root"`、`"auto"`或`false`来实现共享配置加载。                                                |
 | `configFile`           | `vize({ configFile })`                                | 加载一个特定的配置文件。                                                                           |
@@ -137,9 +137,9 @@ vize({ vueVersion: 2 });
 
 该插件拦截`.vue`文件请求，并通过Vize的Rust原生流水线通过Node.js NAPI绑定进行编译：
 
-1.**预编译**— 在`buildStart`时，插件会发现所有`.vue`文件并使用`compileBatch`批量编译。这会触发基于Rayon的Rust端并行编译，同时处理所有CPU核心上的所有文件。
+1.**按模块图批量编译**— 每个环境只编译其模块图导入的 `.vue` 文件。打包器会先解析一个模块的全部导入，再加载它们，因此第一个被请求的组件会与同一模块导入的其他组件一起，在一次 `compileBatch` 调用中编译，由 Rust 端的 Rayon 并行处理。不导入任何组件的环境不会编译任何文件，开发服务器无需等待编译即可启动。
 
-2.**按需编译**— 开发过程中，如果请求的缓存中不存在的 `.vue` 文件（例如动态导入），则通过 `compileFile` 实时编译。
+2.**启动时预编译（可选）**— 设置 `scanPatterns` 后，插件还会在 `buildStart` 时批量编译所有匹配的文件，而不等待请求。
 
 3.**HMR**— 当`.vue`文件发生变化时，只有该文件会被重新编译。插件检测该更改是否仅样式，并在可能的情况下应用仅样式的HMR更新，避免了整个组件的重新渲染。
 
@@ -178,10 +178,12 @@ vize({ vueVersion: 2 });
 
 ### 批次预编译
 
-与`@vitejs/plugin-vue`在首次请求时编译每个`.vue`文件不同，Vize在构建开始时通过多线程批处理编译对发现的所有`.vue`文件进行预编译。这意味着：
+`@vitejs/plugin-vue` 在首次请求时逐个编译每个 `.vue` 文件。Vize 编译的同样是模块图导入的文件，但会把最多 `precompileBatchSize` 个文件作为一批交给多线程的原生编译器：
 
-- **开发服务器启动**— 所有组件在第一个页面加载前已准备好
-- **生产构建**— 从一开始就实现最大并行性
+- **开发服务器**— 服务器无需编译即可启动。页面首次请求某个组件时，该页面的组件会一起编译。
+- **生产构建**— 每个环境只编译自己导入的文件。没有被导入的组件不会被编译。
+
+如需在请求之前编译文件，请设置 `scanPatterns`：插件会在每个环境的 `buildStart` 时预编译所有匹配的文件。
 
 ### 静态资产重写
 

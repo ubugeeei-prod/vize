@@ -41,7 +41,7 @@ assert.deepStrictEqual(
     exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
     handleNodeModulesVue: true,
     root: "/repo/app",
-    scanPatterns: ["**/*.vue"],
+    scanPatterns: [],
   },
   "Nuxt compiler options should use on-demand compilation to avoid retaining every SFC in large Nuxt apps",
 );
@@ -97,7 +97,7 @@ assert.deepStrictEqual(
     exclude: /\.custom-renderer-only\.vue$/,
     handleNodeModulesVue: true,
     root: "/repo/app",
-    scanPatterns: ["**/*.vue"],
+    scanPatterns: [],
   },
   "custom renderer Nuxt compiler options should preserve explicit excludes without adding Takumi defaults",
 );

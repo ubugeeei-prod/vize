@@ -13,7 +13,8 @@ import {
 } from "./state.ts";
 import { getLoadableVueSfcPath } from "./load-sfc.ts";
 import { normalizeVueServerRendererImport } from "./ssr-modules.ts";
-import { compileFile, compileJsxModule } from "../compiler.ts";
+import { compileJsxModule } from "../compiler.ts";
+import { compileRequestedSfcNow } from "./demand-compile.ts";
 import { resolveCssImports } from "../utils/css.ts";
 import type { SourceMapV3 } from "../utils/source-map.ts";
 import { fromPluginVisibleVirtualId, LEGACY_VIZE_PREFIX, RESOLVED_CSS_MODULE } from "../virtual.ts";
@@ -61,8 +62,8 @@ function findMacroArtifactModule(
   let compiled = cache.get(realPath) ?? state.cache.get(realPath) ?? state.ssrCache.get(realPath);
 
   if (!compiled && fs.existsSync(realPath)) {
-    const source = fs.readFileSync(realPath, "utf-8");
-    compiled = compileFile(realPath, cache, compileOptions(state, ssr, realPath), source);
+    // A router imports every page's macro module before any page is requested.
+    compiled = compileRequestedSfcNow(state, realPath, fs.readFileSync(realPath, "utf-8"), ssr);
   }
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
 

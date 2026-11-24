@@ -134,7 +134,7 @@ vize({
 | `experimentals`                     | `vue.experimentals` or `vize({ experimentals })`                                            | Fully opt-in Vue RFC and backend experiments. Missing keys, `false`, and `null` are off.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `include`                           | `vue.vite.include` or `vize({ include })`                                                   | Files that the plugin should compile.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `exclude`                           | `vue.vite.exclude` or `vize({ exclude })`                                                   | Files that the plugin should ignore.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `scanPatterns`                      | `vue.vite.scanPatterns` or `vize({ scanPatterns })`                                         | Glob patterns used for startup pre-compilation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `scanPatterns`                      | `vue.vite.scanPatterns` or `vize({ scanPatterns })`                                         | Opt-in startup pre-compilation: glob patterns compiled at `buildStart`. Unset by default: each environment compiles the components its module graph imports, in batches.                                                                                                                                                                                                                                                                                                                                                                                         |
 | `ignorePatterns`                    | `vue.vite.ignorePatterns` or `vize({ ignorePatterns })`                                     | Glob patterns skipped during startup pre-compilation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `configMode`                        | `vize({ configMode })`                                                                      | Use `"root"`, `"auto"`, or `false` for shared config loading.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `configFile`                        | `vize({ configFile })`                                                                      | Load a specific config file.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -180,9 +180,9 @@ own compiler configured normally.
 
 The plugin intercepts `.vue` file requests and compiles them using Vize's Rust-native pipeline through Node.js NAPI bindings:
 
-1. **Pre-compilation** — At `buildStart`, the plugin discovers all `.vue` files and compiles them in batch using `compileBatch`. This triggers Rayon-based parallel compilation on the Rust side, processing all files across all CPU cores simultaneously.
+1. **Graph-driven batches** — Each environment compiles the `.vue` files its module graph imports, and no others. A bundler resolves a module's imports before it loads them, so the first component a module requests is compiled together with its siblings in one `compileBatch` call. That call runs Rayon-based parallel compilation on the Rust side. An environment that imports no component (a worker, Nuxt's Nitro pass) compiles nothing, and the dev server starts without compiling.
 
-2. **On-demand compilation** — During development, if a `.vue` file is requested that isn't in the cache (e.g., dynamically imported), it's compiled on-the-fly via `compileFile`.
+2. **Startup pre-compilation (opt-in)** — With `scanPatterns` set, the plugin also compiles every matching file in batches at `buildStart`, before anything is requested.
 
 3. **HMR** — When a `.vue` file changes, only that file is recompiled. The plugin detects whether the change is style-only and applies a style-only HMR update when possible, avoiding a full component re-render.
 
@@ -213,19 +213,21 @@ The same semantic analysis layer is reused by linting and type checking. See
 | CSS Scoping           | Yes                     | Yes                                                                                                    |
 | SSR Support           | Yes                     | Yes                                                                                                    |
 | HMR                   | Yes                     | Yes (style-only optimization)                                                                          |
-| Batch Pre-compilation | No                      | Yes (parallel via Rayon)                                                                               |
+| Batch Compilation     | No                      | Yes (parallel via Rayon)                                                                               |
 | CSS Extraction        | Per-component           | Merged single file                                                                                     |
 | Vapor Mode            | Experimental            | Yes, experimental                                                                                      |
 | Plugin Options        | Full documented surface | `include` / `exclude` / `isProduction`; see [#3227](https://github.com/ubugeeei-prod/vize/issues/3227) |
 
 ## Advanced Features
 
-### Batch Pre-compilation
+### Batch Compilation
 
-Unlike `@vitejs/plugin-vue`, which compiles each `.vue` file on first request, Vize pre-compiles all discovered `.vue` files at build start using multi-threaded batch compilation. This means:
+`@vitejs/plugin-vue` compiles each `.vue` file by itself on first request. Vize compiles the same files, the ones a module graph imports, but hands them to the native compiler in multi-threaded batches of up to `precompileBatchSize` files:
 
-- **Dev server startup** — All components are ready before the first page load
-- **Production builds** — Maximum parallelism from the start
+- **Dev server** — The server starts without compiling. A page's components are compiled together when the page first asks for one of them, and the components a hot update invalidates are compiled together when they are requested again.
+- **Production builds** — Each environment compiles what it imports. A component nothing imports is never read.
+
+To compile files before anything requests them, set `scanPatterns`. The plugin then pre-compiles every matching file at `buildStart`, in every environment, and keeps the results in `node_modules/.vize` for the next run.
 
 ### Static Asset Rewriting
 
