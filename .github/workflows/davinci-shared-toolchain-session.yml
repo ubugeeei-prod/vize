@@ -8,6 +8,7 @@ on:
       - crates/vize_maestro/src/source_project/toolchain_session.rs
       - crates/vize_maestro/src/source_project/toolchain_session/**
       - crates/vize_incremental/providers/graph/tests/incremental.rs
+      - crates/vize_incremental/providers/graph/tests/incremental/**
       - crates/vize_atelier_sfc/tests/bundler_toolchain_session.rs
       - crates/vize_atelier_sfc/src/native.rs
       - crates/vize_atelier_sfc/src/native/styles.rs
