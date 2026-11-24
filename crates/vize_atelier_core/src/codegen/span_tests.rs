@@ -97,7 +97,6 @@ fn branches_loops_slots_and_their_text_map_byte_exactly() {
             r#"13:64 "No\")),⏎ " -> "No</li><""#,
             r#"14:6 "(_openBl" -> "<i v-for""#,
             r#"14:74 "_ctx.xs," -> "xs\">{{ x" [xs]"#,
-            r#"14:84 "x) => {⏎" -> "x in xs\"""#,
             r#"15:51 "i\", null" -> "i v-for=""#,
             r#"15:78 "x), 1 /*" -> "x }}</i>""#,
         ]

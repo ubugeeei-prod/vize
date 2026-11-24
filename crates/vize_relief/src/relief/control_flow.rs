@@ -93,12 +93,6 @@ pub struct ForParseResult<'a> {
     pub value: Option<ExpressionNode<'a>>,
     pub key: Option<ExpressionNode<'a>>,
     pub index: Option<ExpressionNode<'a>>,
-    /// How many bytes before `source` the value, key and index aliases were
-    /// authored, or 0 for an alias that is absent or was not located. The
-    /// alias nodes carry no location of their own, so this is what a source
-    /// map anchors them at (see [`Self::alias_start`]); the distances fit the
-    /// struct's padding, so locating aliases does not grow a node.
-    pub alias_back: [u16; 3],
     pub finalized: bool,
     /// Internal lexical scope introduced by patterned-template lowering (RFC
     /// 823): the single-item source binds its aliases once. Code generation
@@ -119,21 +113,9 @@ impl<'a> ForParseResult<'a> {
             value,
             key,
             index,
-            alias_back: [0; 3],
             finalized: false,
             match_scope: false,
         }
-    }
-
-    /// The authored first byte of the value (0), key (1) or index (2) alias,
-    /// when the parser located it and `source` kept its authored span.
-    pub fn alias_start(&self, alias: usize) -> Option<u32> {
-        let back = u32::from(*self.alias_back.get(alias)?);
-        let source = self.source.loc().span;
-        if back == 0 || source.is_empty() {
-            return None;
-        }
-        source.start.checked_sub(back)
     }
 }
 

@@ -123,7 +123,6 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         }
         self.ctx.push_indent();
         self.ctx.push_mapped("_ssrRenderList(", for_op.span.start);
-        self.push_expression(&source, expression_span(&binding.source));
         let mark = self.enter_for_bindings(for_op, [Some(value), key, index], fact);
         let aliases = match self.for_alias_texts([Some(value), key, index]) {
             Ok(aliases) => aliases,
@@ -133,23 +132,15 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 return Err(error);
             }
         };
+        // The source is written once its aliases are spelled: with a map
+        // requested, its recording check is where they are anchored.
+        self.push_for_source(&source, binding, [Some(value), key, index], &aliases);
         self.ctx.push(", (");
-        // Like the walker, anchor each alias at the authored alias it binds.
-        let authored = [
-            Some(&binding.value),
-            binding.key.as_ref(),
-            binding.index.as_ref(),
-        ];
-        let mut written = false;
-        for (alias, authored) in aliases.iter().zip(authored) {
-            let Some(alias) = alias else {
-                continue;
-            };
-            if written {
+        // No check here: `push_for_source` anchored what the walker anchors.
+        for (index, alias) in aliases.iter().flatten().enumerate() {
+            if index > 0 {
                 self.ctx.push(", ");
             }
-            written = true;
-            self.ctx.anchor(authored.map(|alias| alias.span().start));
             self.ctx.push(alias);
         }
         self.ctx.push(") => {\n");
@@ -183,6 +174,42 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             Kind::CloseFor,
             |source| matches!(source, Source::For(open) if core::ptr::eq(*open, for_op)),
         )
+    }
+
+    /// Write a `v-for` source, as [`Self::push_expression`] does. With a map
+    /// requested, the check that anchors the source also anchors each alias
+    /// written after it at the alias the loop authored, like the walker: an
+    /// alias spelled as authored maps to its own bytes, a rewritten one to
+    /// nothing.
+    fn push_for_source(
+        &mut self,
+        code: &str,
+        binding: &l2::ForBinding<'_>,
+        authored: [Option<&str>; 3],
+        aliases: &[Option<vize_l0::String>; 3],
+    ) {
+        let Some(span) = expression_span(&binding.source) else {
+            self.ctx.push(code);
+            return;
+        };
+        self.ctx.push_expression_text_then(code, span, |out, end| {
+            let spans = [
+                Some(binding.value.span()),
+                binding.key.as_ref().map(|alias| alias.span()),
+                binding.index.as_ref().map(|alias| alias.span()),
+            ];
+            // `, (` follows the source and `, ` separates the aliases.
+            let mut at = end + 3;
+            for ((alias, authored), span) in aliases.iter().zip(authored).zip(spans) {
+                let Some(alias) = alias else {
+                    continue;
+                };
+                if let Some(span) = span.filter(|_| authored == Some(alias.as_str())) {
+                    out.anchor_ahead(at, span.start);
+                }
+                at += alias.len() as u32 + 2;
+            }
+        });
     }
 
     /// Write an emitted expression, anchored at its authored `span`.

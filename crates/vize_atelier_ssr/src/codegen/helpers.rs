@@ -214,25 +214,19 @@ impl<'a> SsrCodegenContext<'a> {
         self.push_expression(&for_node.source);
         self.push(", (");
 
-        // Each alias is anchored at the authored alias the binder located.
-        let [value_at, key_at, index_at] =
-            [0, 1, 2].map(|alias| for_node.parse_result.alias_start(alias));
         // Value alias
         if let Some(value) = &for_node.value_alias {
-            self.anchor(value_at);
-            self.push_expression(value);
+            self.push_for_alias(value);
         }
         // Key alias
         if let Some(key) = &for_node.key_alias {
             self.push(", ");
-            self.anchor(key_at);
-            self.push_expression(key);
+            self.push_for_alias(key);
         }
         // Index alias
         if let Some(index) = &for_node.object_index_alias {
             self.push(", ");
-            self.anchor(index_at);
-            self.push_expression(index);
+            self.push_for_alias(index);
         }
 
         self.push(") => {\n");
@@ -258,6 +252,20 @@ impl<'a> SsrCodegenContext<'a> {
         if !disable_nested_fragments {
             self.push_indent();
             self.push("_push(`<!--]-->`)\n");
+        }
+    }
+
+    /// Push a `v-for` alias. Its node has no location, so with a map
+    /// requested an alias written unchanged maps to the slice of the template
+    /// it was parsed from. It makes the one recording check
+    /// [`Self::push_expression`] makes and nothing else without a map.
+    fn push_for_alias(&mut self, alias: &vize_atelier_core::ExpressionNode) {
+        match alias {
+            vize_atelier_core::ExpressionNode::Simple(simple) => {
+                let content = self.strip_ctx_for_scoped_params(simple.content);
+                self.push_authored_text(&content, simple.content);
+            }
+            vize_atelier_core::ExpressionNode::Compound(_) => self.push_expression(alias),
         }
     }
 

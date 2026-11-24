@@ -62,7 +62,6 @@ pub(in crate::lane) fn transform_for_scope<'a>(
         _ => return None,
     };
 
-    let alias_back = parse_result.alias_back;
     let mut source = parse_result.source;
     let mut value_alias = parse_result.value;
     let mut key_alias = parse_result.key;
@@ -137,7 +136,6 @@ pub(in crate::lane) fn transform_for_scope<'a>(
         index_alias.as_ref().map(clone),
     );
     parse_result.match_scope = match_scope;
-    parse_result.alias_back = alias_back;
 
     let for_node = ForNode {
         source,

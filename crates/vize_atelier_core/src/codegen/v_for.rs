@@ -95,9 +95,7 @@ fn generate_for_inner(
     let mut callback_params: Vec<String> = Vec::new();
 
     // Value alias
-    let authored = &for_node.parse_result;
     if let Some(value) = &for_node.value_alias {
-        ctx.anchor_alias(authored.alias_start(0));
         generate_expression(ctx, value);
         extract_for_params(value, &mut callback_params);
     } else {
@@ -107,7 +105,6 @@ fn generate_for_inner(
     // Key alias
     if let Some(key) = &for_node.key_alias {
         ctx.push(", ");
-        ctx.anchor_alias(authored.alias_start(1));
         generate_expression(ctx, key);
         extract_for_params(key, &mut callback_params);
     }
@@ -115,7 +112,6 @@ fn generate_for_inner(
     // Index alias
     if let Some(index) = &for_node.object_index_alias {
         ctx.push(", ");
-        ctx.anchor_alias(authored.alias_start(2));
         generate_expression(ctx, index);
         extract_for_params(index, &mut callback_params);
     }

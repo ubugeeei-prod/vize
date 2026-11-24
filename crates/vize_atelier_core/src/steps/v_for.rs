@@ -171,17 +171,7 @@ pub fn parse_for_expression_with_options<'a>(
         .get(2)
         .and_then(|alias| bindings::alias_node(allocator, alias));
 
-    let mut parsed = ForParseResult::new(source, value, key, index);
-    if !loc.span.is_empty() {
-        // Each alias is a slice of `content` ahead of the source expression.
-        for (back, alias) in parsed.alias_back.iter_mut().zip(&aliases) {
-            let start = (alias.as_ptr() as usize).wrapping_sub(content.as_ptr() as usize);
-            if !alias.is_empty() && start < source_start {
-                *back = u16::try_from(source_start - start).unwrap_or(0);
-            }
-        }
-    }
-    Some(parsed)
+    Some(ForParseResult::new(source, value, key, index))
 }
 
 fn find_for_separator(content: &str) -> Option<(usize, usize)> {

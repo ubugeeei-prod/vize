@@ -24,12 +24,10 @@ impl SsrCodegenContext<'_> {
         self.out.push_mapped(text, source);
     }
 
-    /// Anchor the text written next at the authored byte `source`, when there
-    /// is one: a `v-for` alias, which the binder locates but no node spans.
-    pub(crate) fn anchor(&mut self, source: Option<u32>) {
-        if let Some(source) = source {
-            self.out.anchor(source);
-        }
+    /// Write `code` directly from the node text `authored`: unchanged from a
+    /// slice of the template, it is anchored where that slice was authored.
+    pub(crate) fn push_authored_text(&mut self, code: &str, authored: &str) {
+        self.out.push_authored(code, authored, self.source);
     }
 
     /// Write `text` directly, anchored at `source` when there is one.
@@ -54,6 +52,18 @@ impl SsrCodegenContext<'_> {
     /// Write an emitted expression authored at `span` directly.
     pub(crate) fn push_expression_text(&mut self, code: &str, span: Span) {
         self.out.push_expression(code, span, self.source);
+    }
+
+    /// [`Self::push_expression_text`], then `follow` with the document and
+    /// the offset the expression ends at, inside the same recording check.
+    pub(crate) fn push_expression_text_then(
+        &mut self,
+        code: &str,
+        span: Span,
+        follow: impl FnOnce(&mut EmitDocument, u32),
+    ) {
+        self.out
+            .push_expression_then(code, span, self.source, follow);
     }
 
     /// An emitted expression authored at `span`, anchored when maps are on.

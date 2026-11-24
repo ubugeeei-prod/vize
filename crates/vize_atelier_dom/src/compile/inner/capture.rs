@@ -3,6 +3,7 @@ use vize_atelier_core::{
     codegen::{
         CodegenResult, CodegenResultWithSections,
         generate_with_sections_and_experimental_options_slot_scope_and_environment,
+        locate_for_aliases,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::TemplateSyntaxMode,
@@ -103,10 +104,7 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     });
     let use_l2_emit = l2_refusal.is_none();
     let l2_custom_elements = custom_elements.clone();
-    // An additive mapped compile makes the plain compile's L2 attempt, so the
-    // module it keeps is the plain compile's.
-    let mut native = None;
-    if use_l2_emit && (!codegen_opts.source_map || additive_source_map) {
+    if use_l2_emit && !codegen_opts.source_map {
         if let Some(result) = stage_options::try_emit_l2_captured(
             allocator,
             source,
@@ -124,17 +122,69 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         ) {
             selection::record(Ok(()));
             capture.finish(|| CaptureOutcome::Accepted);
-            if !codegen_opts.source_map {
-                return (root, errors.to_vec(), result);
-            }
-            native = Some(result);
-        } else {
-            selection::record(Err(DomLegacyReason::EmitRefused));
+            return (root, errors.to_vec(), result);
         }
+        selection::record(Err(DomLegacyReason::EmitRefused));
     } else if let Some(reason) = l2_refusal {
         selection::record(Err(reason));
+    } else if additive_source_map {
+        // Only a mapped compile whose L2 emit is not refused reaches this arm:
+        // the two above take every compile without a map. The map is composed
+        // into a module it must not change, so this makes the plain compile's
+        // L2 attempt and keeps its module and its diagnostics. The shipped
+        // transform and the compatibility generator then run only to supply
+        // the map.
+        if let Some(native) = stage_options::try_emit_l2_captured(
+            allocator,
+            source,
+            template_syntax,
+            &options,
+            &codegen_opts,
+            &l2_custom_elements,
+            hoisted_scope_id.as_deref(),
+            codegen_experimental_options.component_name.as_deref(),
+            None,
+            strict_slot_params,
+            no_slotted,
+            development,
+            capture,
+        ) {
+            selection::record(Ok(()));
+            capture.finish(|| CaptureOutcome::Accepted);
+            let transform_opts = stage_options::transform_options(&options);
+            let script_tables = options
+                .script_tables
+                .map(|tables| allocator.alloc_owned(tables));
+            profile!(
+                "atelier.dom.template.transform",
+                transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+                    allocator,
+                    &mut root,
+                    transform_opts,
+                    script_tables,
+                    custom_elements,
+                    template_syntax_quirks,
+                    hoisted_scope_id,
+                )
+            );
+            locate_for_aliases(&mut root, source);
+            let compat = profile!(
+                "atelier.dom.template.codegen_sourcemap_compat",
+                generate_with_sections_and_experimental_options_slot_scope_and_environment(
+                    &root,
+                    codegen_opts,
+                    codegen_experimental_options,
+                    no_slotted,
+                    development,
+                )
+            );
+            let mapped = source_map::with_verified_map(native, compat);
+            return (root, errors.to_vec(), mapped);
+        }
+        selection::record(Err(DomLegacyReason::EmitRefused));
     }
 
+    // An additive mapped compile attempted L2 above, as a plain compile does.
     let l2_emit_after_transform = (use_l2_emit && codegen_opts.source_map && !additive_source_map)
         .then(|| (options.clone(), hoisted_scope_id.clone()));
     let experimental_component_name = codegen_experimental_options.component_name.clone();
@@ -163,21 +213,6 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     // parse errors instead of dropping them — the official compiler reports
     // both through the same `errors` channel.
     let mut errors = errors.to_vec();
-    if let Some(native) = native {
-        // The module and its diagnostics are the plain compile's. The shipped
-        // transform ran only so the compatibility generator can supply a map.
-        let compat = profile!(
-            "atelier.dom.template.codegen_sourcemap_compat",
-            generate_with_sections_and_experimental_options_slot_scope_and_environment(
-                &root,
-                codegen_opts,
-                codegen_experimental_options,
-                no_slotted,
-                development,
-            )
-        );
-        return (root, errors, source_map::with_verified_map(native, compat));
-    }
     errors.extend(transform_errors);
 
     let l2_emit = l2_emit_after_transform.and_then(|(options, hoisted_scope_id)| {
@@ -208,8 +243,13 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         )
         .finish(capture),
         None => {
-            if use_l2_emit && codegen_opts.source_map && !additive_source_map {
-                selection::record(Err(DomLegacyReason::EmitRefused));
+            if codegen_opts.source_map {
+                if additive_source_map {
+                    // Its L2 attempt recorded the refusal before the transform.
+                    locate_for_aliases(&mut root, source);
+                } else if use_l2_emit {
+                    selection::record(Err(DomLegacyReason::EmitRefused));
+                }
             }
             capture.finish(|| {
                 CaptureOutcome::Legacy(String::from(

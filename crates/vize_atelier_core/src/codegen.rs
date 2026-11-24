@@ -11,6 +11,8 @@ pub(crate) use element::helpers::is_dynamic_component;
 mod emit;
 mod entry;
 mod expression;
+mod for_alias_spans;
+pub use for_alias_spans::locate_for_aliases;
 mod generate;
 mod helpers;
 mod node;

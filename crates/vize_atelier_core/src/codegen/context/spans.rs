@@ -61,17 +61,6 @@ impl CodegenContext {
         self.push_linked(el.tag, Span::new(start, start + el.tag.len() as u32));
     }
 
-    /// Push a component tag that resolves to a setup binding, anchored at the
-    /// authored tag name; `false` when it is not a binding. A resolved asset
-    /// is anchored where it is resolved ([`Self::push_component_name`]), but
-    /// a binding is read in place and has no other token to carry its tag.
-    pub(in crate::codegen) fn push_component_binding(&mut self, el: &ElementNode<'_>) -> bool {
-        if self.out.is_recording() && self.is_component_in_bindings(el.tag) {
-            self.out.anchor(el.loc.span.start + 1);
-        }
-        self.push_component_binding_tag(el.tag)
-    }
-
     /// Push a text node's content as JavaScript string contents, anchored at
     /// the authored text.
     #[inline]
@@ -95,15 +84,6 @@ impl CodegenContext {
     pub(in crate::codegen) fn push_slot_function(&mut self, unit_start: u32) {
         self.use_helper(RuntimeHelper::WithCtx);
         self.push_mapped(self.helper(RuntimeHelper::WithCtx), unit_start);
-    }
-
-    /// Anchor a `v-for` alias written next at the authored alias, when the
-    /// parser located it.
-    #[inline]
-    pub(in crate::codegen) fn anchor_alias(&mut self, authored: Option<u32>) {
-        if let Some(start) = authored {
-            self.out.anchor(start);
-        }
     }
 
     /// Push a resolved component name anchored at the first element that

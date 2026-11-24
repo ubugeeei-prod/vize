@@ -18,6 +18,9 @@ use vize_l0::{Span, String};
 use super::rewrite_spans::rewritten_identifier_spans;
 use super::source_map::SourceMapBuilder;
 
+mod authored;
+pub use authored::authored_offset;
+
 /// One generated↔authored link.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpanLink {

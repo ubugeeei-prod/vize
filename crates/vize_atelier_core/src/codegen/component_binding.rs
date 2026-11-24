@@ -1,5 +1,5 @@
 use crate::options::BindingType;
-use crate::{CodegenContext, RuntimeHelper};
+use crate::{CodegenContext, ElementNode, RuntimeHelper};
 use vize_l0::{String, ToCompactString, camelize, capitalize};
 
 struct ComponentBinding {
@@ -34,7 +34,26 @@ impl CodegenContext {
         let Some(binding) = self.resolve_component_binding(component) else {
             return false;
         };
+        self.push_resolved_component_binding(binding);
+        true
+    }
 
+    /// Push an element's tag as the setup binding it resolves to; `false`
+    /// when it is not a binding. A resolved asset is anchored where it is
+    /// resolved, but a binding is read in place, so with a map requested the
+    /// read maps to the authored tag name. Nothing else runs without one.
+    pub(in crate::codegen) fn push_component_binding(&mut self, el: &ElementNode<'_>) -> bool {
+        let Some(binding) = self.resolve_component_binding(el.tag) else {
+            return false;
+        };
+        if self.out.is_recording() {
+            self.out.anchor(el.loc.span.start + 1);
+        }
+        self.push_resolved_component_binding(binding);
+        true
+    }
+
+    fn push_resolved_component_binding(&mut self, binding: ComponentBinding) {
         let needs_unref = self.options.inline
             && matches!(
                 binding.binding_type,
@@ -62,7 +81,6 @@ impl CodegenContext {
             self.push(".");
             self.push(suffix.as_str());
         }
-        true
     }
 
     fn resolve_component_binding(&self, component: &str) -> Option<ComponentBinding> {
