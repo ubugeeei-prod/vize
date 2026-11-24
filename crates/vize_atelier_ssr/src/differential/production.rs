@@ -62,6 +62,25 @@ pub(crate) fn record_verdict(selection: &SsrL4Selection) {
     });
 }
 
+/// Run `f` without recording lane verdicts: the direct lane's debug oracle
+/// recompiles on the full path, and that compile is not a production one.
+#[cfg(debug_assertions)]
+pub(crate) fn unrecorded<R>(f: impl FnOnce() -> R) -> R {
+    let previous = VERDICTS.with(|verdicts| verdicts.replace(None));
+    let result = f();
+    VERDICTS.with(|verdicts| verdicts.replace(previous));
+    result
+}
+
+/// Record the verdict of a compile the direct lane emitted.
+pub(crate) fn record_emitted() {
+    VERDICTS.with(|verdicts| {
+        if let Some(verdicts) = verdicts.borrow_mut().as_mut() {
+            verdicts.push("s4");
+        }
+    });
+}
+
 /// `s4` when the plan emitted, `legacy.<reason>` for a selected legacy
 /// route, `rejected` for a broken plan invariant.
 pub(crate) fn lane_label(selection: &SsrL4Selection) -> &'static str {

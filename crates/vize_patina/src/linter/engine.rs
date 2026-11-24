@@ -62,7 +62,7 @@ pub(crate) struct SfcTemplateLintInput<'a> {
     pub filename: &'a str,
     pub template: &'a vize_atelier_sfc::SfcTemplateBlock<'a>,
     pub allocator: &'a Allocator,
-    pub l2: &'a crate::markup::L2Template<'a>,
+    pub l2: &'a crate::markup::LintInput<'a>,
     pub descriptor: &'a vize_atelier_sfc::SfcDescriptor<'a>,
     pub analysis: TemplateAnalysis<'a>,
 }
@@ -442,7 +442,7 @@ impl Linter {
     ) -> LintResult {
         let l2 = profile!(
             "patina.template.l1_parse_lower",
-            crate::markup::L2Template::lower_for(allocator, source, env.document_kind)
+            crate::markup::LintInput::lower_for(allocator, source, env.document_kind)
         );
         let has_fatal_parse_errors = self.has_fatal_template_parse_errors(&l2);
 

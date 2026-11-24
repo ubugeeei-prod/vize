@@ -25,7 +25,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     descriptor: &SfcDescriptor<'a>,
     scripts: &ScriptSemantics<'_, '_>,
     result: &mut LintResult,
-    template_ast: Option<(&crate::markup::L2Template<'_>, u32)>,
+    template_ast: Option<(&crate::markup::LintInput<'_>, u32)>,
 ) {
     append_builtin_script_diagnostics_with_template_context(
         linter,
@@ -42,7 +42,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
     descriptor: &SfcDescriptor<'a>,
     scripts: &ScriptSemantics<'_, '_>,
     result: &mut LintResult,
-    template_ast: Option<(&crate::markup::L2Template<'_>, u32)>,
+    template_ast: Option<(&crate::markup::LintInput<'_>, u32)>,
     mut template_context: Option<&mut crate::context::LintContext<'_>>,
 ) {
     let registered_scripts = registered_sfc::has_active(linter);

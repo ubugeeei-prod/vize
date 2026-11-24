@@ -7,7 +7,7 @@ use super::{
 };
 use crate::linter::config::{LintResult, Linter};
 use crate::linter::sfc_scripts::{ScriptParses, ScriptSemantics, lint_scripts};
-use crate::markup::L2Template;
+use crate::markup::LintInput;
 use vize_l0::dialect::VueDialect;
 use vize_l0::{Allocator, ToCompactString, profile};
 
@@ -89,7 +89,7 @@ impl Linter {
             Allocator::with_capacity((template.content.len() * 4).max(self.initial_capacity));
         let l2 = profile!(
             "patina.sfc.descriptor.template_l1_parse_lower",
-            L2Template::lower(&allocator, &template.content)
+            LintInput::lower(&allocator, &template.content)
         );
         let has_fatal_parse_errors = self.has_fatal_template_parse_errors(&l2);
         let analysis = if !has_fatal_parse_errors

@@ -84,9 +84,9 @@ fn l1_in_dom(source: &str) -> Vec<Observed> {
 fn observe(source: &str, in_dom: bool) -> Vec<Observed> {
     let allocator = Allocator::new();
     let parsed = if in_dom {
-        crate::markup::L2Template::lower_in_dom(&allocator, source)
+        crate::markup::LintInput::lower_in_dom(&allocator, source)
     } else {
-        crate::markup::L2Template::lower(&allocator, source)
+        crate::markup::LintInput::lower(&allocator, source)
     };
     let linter = Linter::new().with_enabled_rules(Some(vec![TEMPLATE_PARSE_RULE.into()]));
     let mut result = linter.l1_template_parse_lint_result("diagnostics.vue", source, &parsed);
@@ -223,7 +223,7 @@ fn a_vue_template_reports_what_vue_reports() {
 fn a_duplicate_attribute_is_an_error_in_every_vue_dialect() {
     let source = "<div first=one FIRST=two></div>";
     let allocator = Allocator::new();
-    let parsed = crate::markup::L2Template::lower(&allocator, source);
+    let parsed = crate::markup::LintInput::lower(&allocator, source);
     for version in [None, Some(vize_l0::config::VueVersion::V2)] {
         let linter = Linter::new().with_vue_version(version);
         let result = linter.l1_template_parse_lint_result("diagnostics.vue", source, &parsed);

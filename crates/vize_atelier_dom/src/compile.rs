@@ -30,6 +30,18 @@ use crate::options::DomCompilerOptions;
 use inner::{compile_template_inner, compile_template_inner_with_sections};
 use pipeline::DomCompilePipelineOptions;
 
+/// Whether an SFC template source may be compiled by a lane that skips the
+/// shipped parser: it holds none of the markup that parser reports on or
+/// recovers from, and no syntax only the compatibility lane handles.
+#[doc(hidden)]
+#[must_use]
+pub fn sfc_template_source_is_direct(
+    source: &str,
+    directive_contracts: &vize_l0::config::DirectiveContracts,
+) -> bool {
+    sfc::direct_template_source(source, directive_contracts)
+}
+
 /// Compile a Vue template for DOM with default options
 pub fn compile_template<'a>(
     allocator: &'a Allocator,
