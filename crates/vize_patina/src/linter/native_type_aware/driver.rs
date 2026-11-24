@@ -341,7 +341,6 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
         result,
         Some(SfcQueryPlan {
             content: virtual_ts.content,
-            source: source.to_compact_string(),
             script_offset,
             macros: macro_queries,
             templates: template_queries,

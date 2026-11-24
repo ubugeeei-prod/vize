@@ -43,6 +43,8 @@ export interface FileState {
 interface SourceRevisionIdentity {
   // Exact text avoids hash collisions and per-rule digest allocations. For
   // normal files physicalSource and state.source share the same string reference.
+  // Metadata is not enough: a same-size rewrite can land in the same timestamp
+  // tick, and the cache would then keep the previous source and diagnostics.
   readonly physicalSource: string;
 }
 

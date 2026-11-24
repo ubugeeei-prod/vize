@@ -1,6 +1,6 @@
 //! Whole original heads and declarations stay beside their checked File node.
 
-use super::{BindingRef, FileArtifact, ScopeId};
+use super::{BindingRef, L2Ir, ScopeId};
 use crate::lang::js::{NativeForInput, RejectedNativeForInput};
 use crate::op::{OriginalForId, OriginalForOp};
 use crate::resolution::{
@@ -78,21 +78,21 @@ impl<'f, 'a> TemplateDeclaration<'f, 'a> {
 
 /// The exact normally owned File remains borrowed beside the declaration row.
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
-/// fn discard(file: FileArtifact<'_>) {
+/// use vize_l2::file::L2Ir;
+/// fn discard(file: L2Ir<'_>) {
 ///     let original = file.template_declarations().next().unwrap();
 ///     drop(file);
 ///     let _ = original.declaration().original();
 /// }
 /// ```
 pub struct FileTemplateDeclaration<'f, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     declaration: TemplateDeclaration<'f, 'a>,
 }
 
 impl<'f, 'a> FileTemplateDeclaration<'f, 'a> {
     #[must_use]
-    pub const fn file(&self) -> &'f FileArtifact<'a> {
+    pub const fn file(&self) -> &'f L2Ir<'a> {
         self.file
     }
     #[must_use]
@@ -108,11 +108,11 @@ impl<'f, 'a> FileTemplateDeclaration<'f, 'a> {
 /// Numeric lookup is File-local; `for_head_for` joins an actual arena allocation.
 #[derive(Clone, Copy)]
 pub struct FileForHead<'f, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     id: OriginalForId,
 }
 
-impl<'a> FileArtifact<'a> {
+impl<'a> L2Ir<'a> {
     /// Borrow genuine alias rows from this File; no script-unit is invented.
     pub fn template_declarations(&self) -> impl Iterator<Item = FileTemplateDeclaration<'_, 'a>> {
         self.facts.template_declarations.iter().filter_map(|row| {
@@ -160,7 +160,7 @@ impl<'a> FileArtifact<'a> {
 
 impl<'f, 'a> FileForHead<'f, 'a> {
     #[must_use]
-    pub const fn file(self) -> &'f FileArtifact<'a> {
+    pub const fn file(self) -> &'f L2Ir<'a> {
         self.file
     }
     #[must_use]

@@ -2,7 +2,7 @@
 //! silently. An admitted source skips the legacy parser, so it has none.
 
 use vize_l3::{
-    op::{OpKind, Program},
+    op::{L3Ir, OpKind},
     operand::OperandRole,
 };
 
@@ -20,7 +20,7 @@ pub(crate) const SELF_CLOSING_RECOVERY: &str = "Invalid self-closing syntax on n
 pub(super) fn self_closing_recoveries(
     allocator: &vize_carton::Allocator,
     source: &str,
-    program: &Program<'_>,
+    program: &L3Ir<'_>,
 ) -> Result<std::vec::Vec<(u32, u32)>, LegacyReason> {
     // `v-pre` freezes some self-closed tags without a report.
     if source.contains("v-pre") {
@@ -54,7 +54,7 @@ pub(super) fn self_closing_recoveries(
 
 /// Whether an element carries a static attribute that native admission
 /// rejects as a binding (`ref="r"` on a `<div>`).
-fn unsupported_attribute(program: &Program<'_>) -> bool {
+fn unsupported_attribute(program: &L3Ir<'_>) -> bool {
     program.operands.iter().any(|operand| {
         operand.role == OperandRole::Attribute
             && (program.ops.get(operand.op.index() as usize))
@@ -112,7 +112,7 @@ fn structural(name: &str) -> bool {
 pub(super) fn legacy_diagnosed(
     allocator: &vize_carton::Allocator,
     source: &str,
-    program: &Program<'_>,
+    program: &L3Ir<'_>,
 ) -> bool {
     scan(allocator, source, program, |_, _| false)
 }
@@ -122,7 +122,7 @@ pub(super) fn legacy_diagnosed(
 fn scan(
     allocator: &vize_carton::Allocator,
     source: &str,
-    program: &Program<'_>,
+    program: &L3Ir<'_>,
     mut reproduced: impl FnMut(&vize_l3::op::Op, &str) -> bool,
 ) -> bool {
     let mut bindings = vize_carton::Vec::with_capacity_in(program.ops.len(), &allocator);

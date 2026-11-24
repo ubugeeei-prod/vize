@@ -1,6 +1,6 @@
 //! Original Model inputs, sealed only by their normally closed Element factory.
 
-use super::{FileArtifact, RejectedFile, ScopeId};
+use super::{L2Ir, RejectedFile, ScopeId};
 use crate::lang::js::{NativeModelInput, NativeTemplateIssueKind};
 use crate::op::{ElementOp, ModelOp};
 use crate::resolution::BindingId;
@@ -108,7 +108,7 @@ impl<'a> NativeFileModel<'a> {
     }
 }
 
-impl<'a> FileArtifact<'a> {
+impl<'a> L2Ir<'a> {
     #[must_use]
     pub fn native_models(&self) -> &[NativeFileModel<'a>] {
         self.facts.native_models()

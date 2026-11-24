@@ -5,7 +5,7 @@ use vize_l0::{Allocator, Span};
 use vize_l1::{
     container::{
         Vue,
-        vue::{DescriptorObservation, DescriptorOptions, ScriptRole},
+        vue::{DescriptorOptions, L1Ir, ScriptRole},
     },
     css::StyleSyntax,
     markup::{ComponentSourceError, InterpolationFailure, SelectedTemplateComponent},
@@ -56,7 +56,7 @@ pub struct NativeSelectedSfcIssue {
 /// }
 /// ```
 pub struct NativeSelectedSfcObservation<'a> {
-    descriptor: DescriptorObservation<'a>,
+    descriptor: L1Ir<'a>,
     template: Option<NativeTemplateFile<'a>>,
     style: Option<StyleSyntax<'a>>,
     rejected_creation: Option<Box<RejectedNativeTemplateOwner<'a>>>,
@@ -78,7 +78,7 @@ impl core::fmt::Debug for NativeSelectedSfcObservation<'_> {
 
 impl<'a> NativeSelectedSfcObservation<'a> {
     #[must_use]
-    pub fn descriptor(&self) -> &DescriptorObservation<'a> {
+    pub fn descriptor(&self) -> &L1Ir<'a> {
         &self.descriptor
     }
     #[must_use]

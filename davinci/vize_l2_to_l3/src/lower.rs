@@ -1,7 +1,7 @@
 use vize_l0::{Allocator, Span, ensure_sufficient_stack};
 use vize_l2::op as l2;
 use vize_l3::op::{
-    EdgeKind, EffectId, EffectScope, Op, OpId, OpKind, Phase, Program, Region, RegionId, StateEdge,
+    EdgeKind, EffectId, EffectScope, L3Ir, Op, OpId, OpKind, Phase, Region, RegionId, StateEdge,
 };
 
 use crate::{PartitionFact, PartitionFacts, PartitionKind};
@@ -15,7 +15,7 @@ use classify::{binding_kind, binding_partition, binding_span, region_span};
 #[derive(Debug)]
 pub struct Lowered<'a> {
     /// Flat L3 program in the `built` phase.
-    pub program: Program<'a>,
+    pub program: L3Ir<'a>,
     /// Static/dynamic partition facts exported beside the program.
     pub partition: PartitionFacts<'a>,
 }
@@ -28,7 +28,7 @@ pub fn lower<'a>(allocator: &'a Allocator, root: &l2::Region<'_>) -> Lowered<'a>
 
 struct Cx<'a> {
     allocator: &'a Allocator,
-    program: Program<'a>,
+    program: L3Ir<'a>,
     partition: PartitionFacts<'a>,
     next_op: u32,
     next_region: u32,
@@ -40,7 +40,7 @@ impl<'a> Cx<'a> {
     fn new(allocator: &'a Allocator) -> Self {
         Self {
             allocator,
-            program: Program::new(allocator, Phase::Built),
+            program: L3Ir::new(allocator, Phase::Built),
             partition: PartitionFacts::new(allocator),
             next_op: 0,
             next_region: 0,

@@ -17,14 +17,14 @@ pub use edge::{EdgeKind, StateEdge};
 pub use id::{EffectId, OpId, RegionId};
 pub use kind::OpKind;
 pub use phase::Phase;
-pub use program::{EffectScope, Op, Program};
+pub use program::{EffectScope, L3Ir, Op};
 pub use region::Region;
 
 const _: () = assert!(!core::mem::needs_drop::<Op>());
 const _: () = assert!(!core::mem::needs_drop::<Region>());
 const _: () = assert!(!core::mem::needs_drop::<StateEdge>());
 const _: () = assert!(!core::mem::needs_drop::<EffectScope>());
-const _: () = assert!(!core::mem::needs_drop::<Program<'static>>());
+const _: () = assert!(!core::mem::needs_drop::<L3Ir<'static>>());
 
 #[cfg(target_pointer_width = "64")]
 const _: () = {

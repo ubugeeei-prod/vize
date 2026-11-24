@@ -101,10 +101,12 @@ enum Walker<'a> {
 }
 
 /// Resolve every component as a batch's pool would: `threads` workers start
-/// together and each takes every `threads`-th component.
-fn run_batch(reproduction: &Reproduction, threads: usize, walker: Walker<'_>) -> Work {
+/// together and each takes every `threads`-th component. Returns the work of
+/// all workers and the largest number of files one of them read.
+fn run_batch(reproduction: &Reproduction, threads: usize, walker: Walker<'_>) -> (Work, usize) {
     let start = Barrier::new(threads);
     let mut total = Work::default();
+    let mut busiest = 0;
     std::thread::scope(|scope| {
         let workers: Vec<_> = (0..threads)
             .map(|worker| {
@@ -134,16 +136,18 @@ fn run_batch(reproduction: &Reproduction, threads: usize, walker: Walker<'_>) ->
             })
             .collect();
         for worker in workers {
-            total.add(worker.join().unwrap());
+            let work = worker.join().unwrap();
+            busiest = busiest.max(work.source_reads);
+            total.add(work);
         }
     });
-    total
+    (total, busiest)
 }
 
-fn row(walk: &str, batch: &str, shape: (usize, usize, usize), work: Work) {
+fn row(walk: &str, batch: &str, shape: (usize, usize, usize), (work, busiest): (Work, usize)) {
     let (components, modules, threads) = shape;
     println!(
-        "| {walk} | {batch} | {components} | {modules} | {threads} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
+        "| {walk} | {batch} | {components} | {modules} | {threads} | {} | {busiest} | {} | {} | {} | {} | {} | {} | {} | {} |",
         work.source_reads,
         work.summary_parses,
         work.probes,
@@ -158,10 +162,10 @@ fn row(walk: &str, batch: &str, shape: (usize, usize, usize), work: Work) {
 
 fn header() {
     println!(
-        "| walk | batch | N | M | threads | files read | parses | probes | resolutions | edges | modules walked | locks | declarations merged | dependency names |"
+        "| walk | batch | N | M | threads | files read | most by one worker | parses | probes | resolutions | edges | modules walked | locks | declarations merged | dependency names |"
     );
     println!(
-        "| :-- | :-- | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: |"
+        "| :-- | :-- | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: | --: |"
     );
 }
 
@@ -184,7 +188,7 @@ fn shared_walk_work_is_modules_plus_components() {
                 let work = run_batch(&reproduction, 1, Walker::Reference(synthetic_epoch()));
                 row("reference", batch, shape, work);
                 assert_eq!(
-                    work,
+                    work.0,
                     Work {
                         source_reads: files,
                         summary_parses: parses,
@@ -207,13 +211,13 @@ fn shared_walk_work_is_modules_plus_components() {
                 let graph = ModuleGraph::new(synthetic_epoch());
                 let work = run_batch(&reproduction, 1, Walker::Shared(&graph));
                 row("shared", batch, shape, work);
-                assert_eq!(work, shared_work(components, modules, parses));
+                assert_eq!(work.0, shared_work(components, modules, parses));
             }
         }
     }
 }
 
-/// The work of one batch over a shared graph, whatever the thread count.
+/// The work of one batch over a shared graph when one worker walks.
 fn shared_work(components: usize, modules: usize, parses: usize) -> Work {
     let files = modules + 2;
     Work {
@@ -234,12 +238,18 @@ fn shared_work(components: usize, modules: usize, parses: usize) -> Work {
     }
 }
 
-/// Workers that reach a shared type together read each file once: the first
-/// one walks, the others take its result. The reference walk reads a file
-/// once per worker that reaches it before another worker has validated it,
-/// so its counts depend on scheduling and are only printed.
+/// Workers that reach a shared type together all walk it, and the graph
+/// gives each read and each resolution to one of them: the files read, the
+/// probes and the locks of a batch are the same at every thread count. Only
+/// the walk over modules already in memory is repeated, by the workers that
+/// started before a result existed.
+///
+/// The reference walk reads a file once per worker that reaches it before
+/// another worker has validated it, so its counts depend on scheduling and
+/// are only printed. So is the largest number of files one worker read: how
+/// the shared reads split between workers is up to the scheduler.
 #[test]
-fn shared_walk_work_does_not_depend_on_threads() {
+fn shared_walk_reads_do_not_depend_on_threads() {
     let (components, modules) = (64, 100);
     header();
     for threads in [1, 4, 16] {
@@ -261,9 +271,20 @@ fn shared_walk_work_does_not_depend_on_threads() {
         let reproduction = write_reproduction(dir.path(), components, modules);
         for (batch, parses) in [("first", modules + 2), ("later", 0), ("later", 0)] {
             let graph = ModuleGraph::new(synthetic_epoch());
-            let work = run_batch(&reproduction, threads, Walker::Shared(&graph));
-            row("shared", batch, shape, work);
-            assert_eq!(work, shared_work(components, modules, parses));
+            let (work, busiest) = run_batch(&reproduction, threads, Walker::Shared(&graph));
+            row("shared", batch, shape, (work, busiest));
+            let alone = shared_work(components, modules, parses);
+            let unwalked = |work: Work| Work {
+                modules: 0,
+                edges: 0,
+                ..work
+            };
+            assert_eq!(unwalked(work), unwalked(alone));
+            let walked_edges = work.edges - components;
+            assert!(work.modules >= alone.modules, "{work:?}");
+            assert!(work.modules <= threads * alone.modules, "{work:?}");
+            assert!(walked_edges > modules, "{work:?}");
+            assert!(walked_edges <= threads * (modules + 1), "{work:?}");
         }
     }
 }
@@ -280,7 +301,7 @@ fn a_graph_without_room_repeats_walks_but_not_reads() {
 
     let crowded = ModuleGraph::keeping(synthetic_epoch(), 0);
     assert_eq!(
-        run_batch(&reproduction, 1, Walker::Shared(&crowded)),
+        run_batch(&reproduction, 1, Walker::Shared(&crowded)).0,
         Work {
             modules: components * files,
             edges: components * (modules + 1) + components,
@@ -291,7 +312,7 @@ fn a_graph_without_room_repeats_walks_but_not_reads() {
     // A walk holds each module it reached twice: in walk order and by name.
     let roomy = ModuleGraph::keeping(synthetic_epoch(), 2 * files);
     assert_eq!(
-        run_batch(&reproduction, 1, Walker::Shared(&roomy)),
+        run_batch(&reproduction, 1, Walker::Shared(&roomy)).0,
         shared_work(components, modules, 0)
     );
 }

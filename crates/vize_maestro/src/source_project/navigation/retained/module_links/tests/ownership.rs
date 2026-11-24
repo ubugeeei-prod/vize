@@ -132,12 +132,11 @@ fn module_link_no_source_collection_still_observes_final_cancellation() {
 fn module_link_local_borrowed_join_and_sendable_operands_have_bounded_storage() {
     use super::super::{ModuleOperands, Operand, RetainedSources};
     use core::mem::size_of;
-    use vize_l2::{file::FileArtifact, lang::js::OriginalModuleSources};
+    use vize_l2::{file::L2Ir, lang::js::OriginalModuleSources};
 
     assert_eq!(
         size_of::<RetainedSources<'static, 'static, 'static>>(),
-        size_of::<OriginalModuleSources<'static, 'static, 'static>>()
-            + size_of::<&FileArtifact<'static>>()
+        size_of::<OriginalModuleSources<'static, 'static, 'static>>() + size_of::<&L2Ir<'static>>()
     );
     assert_eq!(size_of::<ModuleOperands>(), size_of::<Vec<Operand>>());
     fn require_send<T: Send>() {}

@@ -8,7 +8,7 @@ use vize_l0::dump::value::DumpValue;
 use vize_l0::dump::{Dump, Error as DumpError};
 use vize_l0::{Span, String, cstr};
 
-use crate::op::Program;
+use crate::op::L3Ir;
 use crate::operand::{OperandRole, OperandValue, ValueKind};
 
 /// op, role, target, region, attribute name, kind, text, qualifier, start, end.
@@ -36,7 +36,7 @@ pub struct Page {
 
 impl Page {
     #[must_use]
-    pub fn of(program: &Program<'_>) -> Self {
+    pub fn of(program: &L3Ir<'_>) -> Self {
         Self {
             operands: program
                 .operands

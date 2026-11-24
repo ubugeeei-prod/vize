@@ -3,7 +3,7 @@
 use core::cell::Cell;
 
 use vize_l0::id::NodeId;
-use vize_l2::file::FileArtifact;
+use vize_l2::file::L2Ir;
 use vize_l2::{expr::ExprRef, resolution::Occurrence};
 use vize_l3::decision::{
     dom::{
@@ -92,7 +92,7 @@ enum VueRows<'read, 'view, 'owner, 'descriptor, 'program, 'arena> {
     Selected(&'read SelectedSetupDomAnalysis<'view, 'owner, 'arena>),
 }
 impl<'owner, 'arena> VueRows<'_, '_, 'owner, '_, '_, 'arena> {
-    fn file(&self) -> &'owner FileArtifact<'arena> {
+    fn file(&self) -> &'owner L2Ir<'arena> {
         match self {
             Self::Ordinary(a) => a.file(),
             Self::Selected(a) => a.file(),

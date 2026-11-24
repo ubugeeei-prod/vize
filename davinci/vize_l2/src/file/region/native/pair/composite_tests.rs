@@ -12,7 +12,7 @@ use super::Kind;
 use super::tests::{completed, owner};
 use crate::expr::ExprRef;
 use crate::file::{
-    FileArtifact, Namespace as BindingNamespace, NativeFileConditionalState,
+    L2Ir, Namespace as BindingNamespace, NativeFileConditionalState,
     NativeFileInterpolationState as State,
 };
 use crate::lang::js::NativeTemplateFile;
@@ -24,7 +24,7 @@ use vize_l1::markup::SurfaceChild;
 
 mod refusal;
 
-fn node<'a>(file: &FileArtifact<'a>, target: &Op<'a>) -> NodeId {
+fn node<'a>(file: &L2Ir<'a>, target: &Op<'a>) -> NodeId {
     let mut found = None;
     file.artifact()
         .visit_nodes(&mut |id, actual| {

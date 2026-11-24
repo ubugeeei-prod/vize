@@ -375,7 +375,7 @@ jobs:
         settings: ${{ fromJSON(needs.version.outputs.editor_matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
+        with: { ref: "${{ needs.version.outputs.sha }}", persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: "package.json", cache: true, run-install: false }
       - name: Install packaging dependencies

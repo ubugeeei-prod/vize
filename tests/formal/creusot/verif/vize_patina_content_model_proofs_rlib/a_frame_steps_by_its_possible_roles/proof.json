@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_frame_steps_by_its_possible_roles": {
+        "prover": "z3",
+        "time": 0.028
+      },
+      "vc_possible": { "prover": "z3", "time": 0.002 }
+    }
+  }
+}

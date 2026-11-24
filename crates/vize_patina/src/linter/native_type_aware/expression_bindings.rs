@@ -81,14 +81,10 @@ pub(super) fn hoist_type_imports(document: &mut TypeAwareDocument, script: &str)
 }
 
 pub(super) fn template_binding_is_unsafe(
-    source: &str,
     query: &super::template_queries::TemplateQuery,
     probe: Option<&super::TypeProbe>,
 ) -> bool {
-    if source
-        .get(query.source_start as usize..query.source_end as usize)
-        .is_some_and(|text| text.trim() == "$attrs")
-    {
+    if query.attrs_binding {
         return false;
     }
     if super::has_unsafe_template_type(probe) {

@@ -6,7 +6,7 @@ use alloc::vec::Vec;
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::Artifact,
-    file::{BindingRef, FileArtifact, FileResolution, vue::VueExposure},
+    file::{BindingRef, FileResolution, L2Ir, vue::VueExposure},
     resolution::Occurrence,
 };
 
@@ -128,7 +128,7 @@ pub struct VueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena> {
 
 impl<'owner, 'arena> VueRenderAnalysis<'_, 'owner, '_, '_, 'arena> {
     #[must_use]
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.exposure.file()
     }
 
