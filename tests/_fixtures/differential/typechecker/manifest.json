@@ -78389,6 +78389,41 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/script-consumed-slots-13578/script-consumer",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "test": "script_consumed_slots_keep_public_inference_open",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "script-consumed-slots-13578/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "script-consumed-slots-13578/Child.vue.txt",
+          "sha256": "189634abdcc7caf930c70c4ca28c604e5aa10516415ab14d7800993cff27a0fa"
+        },
+        {
+          "file": "src/Parent.vue",
+          "path": "script-consumed-slots-13578/Parent.vue.txt",
+          "sha256": "e642967db147aaba48d02f1966ef61725237e29ee2c37a9e4d1eec66764b6bf7"
+        }
+      ],
+      "pack": "script-consumed-slots-13578",
+      "case": "script-consumer",
+      "packReference": {
+        "path": "script-consumed-slots-13578/cases.json",
+        "sha256": "a344eb85d680e96cc419506a240f080f49579dd9d9285219d1d6d26a26bb3677"
+      }
     }
   ],
   "protocolCases": [
