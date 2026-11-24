@@ -10,7 +10,9 @@ Delete `.handoff/` before this branch merges.
 | PR 2 (L1): house source style | `docs/house-source-style` | **#13640** open. Held for the maintainer's review: no auto-merge. |
 | PR 3 (pilot): fresco, musea, doctor, marquette, curator, armature | `refactor/house-style-quiet-crates` (this branch) | pushed, **no PR yet**. Waits for #13638 to merge, plus the IR identity and release-size evidence. |
 
-### Main-merge rule for #13638
+**Ownership (coordinator decision, 2026-11-25 03:40 JST): #13638 is now owned by Codex**, which is actively revising the checkers on `test/readability-ratchet`. Do not push to that branch; my reseed was dropped. The `emitIr` `--crate-type rlib` fix goes out as its own PR (`fix/ir-identity-cdylib`). Hold the pilot until #13638 merges with Codex's checker version, then redo the baseline lowering against that version.
+
+### Main-merge rule for #13638 (now Codex's call)
 
 Every merge to main can add issue-number comments and push #13638's merge group over its baseline (for example, #13616 added 11).
 - Before queueing, and after each main merge, run `sweep/reseed-pr1.sh` from `rd-l0`. It merges `origin/main`, reseeds both TSVs and runs the tests. Then commit and push. Do not force-push.
