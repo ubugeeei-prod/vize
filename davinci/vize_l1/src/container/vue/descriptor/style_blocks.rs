@@ -1,15 +1,15 @@
 //! A style consumer needs trustworthy block boundaries and attributes. The
 //! syntax or source selection of a sibling script or template is independent.
 use super::{
-    AdmittedDescriptor, DescriptorIssue, DescriptorIssueCode as Code, DescriptorObservation,
-    DescriptorRefusal, StyleView,
+    AdmittedDescriptor, DescriptorIssue, DescriptorIssueCode as Code, DescriptorRefusal, L1Ir,
+    StyleView,
 };
 use crate::container::ContainerErrorCode;
 
 /// Original style selections in authored order, with their descriptor and source.
 #[derive(Debug, Clone, Copy)]
 pub struct CheckedStyleBlocks<'o, 'a> {
-    owner: &'o DescriptorObservation<'a>,
+    owner: &'o L1Ir<'a>,
 }
 
 impl<'o, 'a> From<AdmittedDescriptor<'o, 'a>> for CheckedStyleBlocks<'o, 'a> {
@@ -36,7 +36,7 @@ impl<'o, 'a> CheckedStyleBlocks<'o, 'a> {
     }
 }
 
-impl<'a> DescriptorObservation<'a> {
+impl<'a> L1Ir<'a> {
     /// Check the independently selected styles. A duplicate script or template
     /// has a trustworthy envelope. All framing errors invalidate the view.
     pub fn admitted_styles(&self) -> Result<CheckedStyleBlocks<'_, 'a>, DescriptorRefusal<'_>> {
