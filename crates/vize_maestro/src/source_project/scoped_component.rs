@@ -6,7 +6,7 @@ use vize_atelier_sfc::{NativeScssSession, NativeSfcCompileOptions};
 use vize_l0::Allocator;
 use vize_l1::container::{
     Vue,
-    vue::{DescriptorObservation, DescriptorOptions},
+    vue::{DescriptorOptions, L1Ir},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -21,7 +21,7 @@ impl SourceQuery {
         self,
         documents: &DocumentStore,
         options: DescriptorOptions,
-        compute: impl FnOnce(&SourceSnapshot, &DescriptorObservation<'_>) -> R,
+        compute: impl FnOnce(&SourceSnapshot, &L1Ir<'_>) -> R,
     ) -> Result<SourceQueryResult<R>, ScopedComponentQueryError> {
         self.run_vue(documents, |snapshot, arena| {
             let descriptor = Vue.observe_descriptor(arena, snapshot.source(), options);

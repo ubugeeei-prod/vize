@@ -4,7 +4,7 @@ use super::{NativeScssSession, NativeSfcCompileError, NativeSfcCompileOptions, s
 use crate::scss::ScssProducts;
 use vize_l0::String;
 use vize_l1::{
-    container::vue::{DescriptorIssueCode, DescriptorObservation},
+    container::vue::{DescriptorIssueCode, L1Ir},
     css::StyleSyntax,
 };
 use vize_l4::{
@@ -56,7 +56,7 @@ impl NativeStyleOutput {
 /// Compile styles directly from an original L1 descriptor. The owner supplies
 /// every block and mapping coordinate. Prepared SCSS must belong to this source.
 pub fn compile_native_styles<'p, 's: 'p>(
-    owner: &DescriptorObservation<'_>,
+    owner: &L1Ir<'_>,
     options: NativeStyleOptions<'_>,
     prepared: impl IntoIterator<Item = &'p ScssProducts<'s>>,
 ) -> Result<NativeStyleOutput, NativeSfcCompileError> {
@@ -85,7 +85,7 @@ impl NativeScssSession<'_, '_> {
 }
 
 fn emit<'p, 's: 'p>(
-    owner: &DescriptorObservation<'_>,
+    owner: &L1Ir<'_>,
     retained: Option<&[StyleSyntax<'_>]>,
     options: NativeStyleOptions<'_>,
     prepared: &mut dyn Iterator<Item = &'p ScssProducts<'s>>,
