@@ -1,0 +1,30 @@
+import { useModel as _useModel } from 'vue'
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.count ?? 'none')} ${_ssrInterpolate($setup.time ?? 'none')}</p>`)
+}
+
+export default {
+  __name: 'Layout',
+  props: {
+    "count": { type: [Number, null], ...{ required: true } },
+    "countModifiers": {},
+    "time": { type: [String, null] },
+    "timeModifiers": {},
+  },
+  emits: ["update:count", "update:time"],
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+const count = _useModel(__props, "count")
+const time = _useModel(__props, "time")
+
+const __returned__ = { count, time }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

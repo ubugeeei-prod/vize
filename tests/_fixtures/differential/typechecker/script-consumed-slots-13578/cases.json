@@ -6,16 +6,43 @@
     "positionBase": 1,
     "positions": "authored UTF16 start",
     "comparison": "all production diagnostics in returned order",
-    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
     "native": "unsupported"
   },
   "cases": [
     {
+      "id": "explicit-template-inference",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Exact.vue",
+          "source": "Exact.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
       "id": "script-consumer",
       "inputs": [
-        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
-        { "file": "src/Child.vue", "source": "Child.vue.txt" },
-        { "file": "src/Parent.vue", "source": "Parent.vue.txt" }
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        }
       ],
       "diagnostics": []
     }

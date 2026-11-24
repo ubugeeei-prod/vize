@@ -7,6 +7,9 @@ const CHILD: &str = include_str!(
 const PARENT: &str = include_str!(
     "../../../../../../../tests/_fixtures/differential/typechecker/script-consumed-slots-13578/Parent.vue.txt"
 );
+const EXACT: &str = include_str!(
+    "../../../../../../../tests/_fixtures/differential/typechecker/script-consumed-slots-13578/Exact.vue.txt"
+);
 
 #[test]
 fn script_consumed_slots_keep_public_inference_open() {
@@ -15,11 +18,34 @@ fn script_consumed_slots_keep_public_inference_open() {
     }
     let root = create_project_case(
         "script-consumed-slots",
-        &[("src/Child.vue", CHILD), ("src/Parent.vue", PARENT)],
+        &[
+            ("src/Child.vue", CHILD),
+            ("src/Parent.vue", PARENT),
+            ("src/Exact.vue", EXACT),
+        ],
     );
     let diagnostics = snapshot_project_diagnostics(&root);
     std::fs::remove_dir_all(root).unwrap();
     assert_eq!(diagnostics, Some(Vec::new()));
+}
+
+#[test]
+fn script_consumed_slots_preserve_explicit_inference_assertions() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let invalid = EXACT.replace(
+        "exactType(slots, {} as Slots)",
+        "exactType(slots, {} as { missing(): unknown })",
+    );
+    let root = create_project_case("explicit-slot-inference", &[("src/Exact.vue", &invalid)]);
+    let diagnostics = snapshot_project_diagnostics(&root).unwrap();
+    std::fs::remove_dir_all(root).unwrap();
+    let codes: Vec<_> = diagnostics
+        .into_iter()
+        .map(|(file, code, _)| (file, code))
+        .collect();
+    assert_eq!(codes, vec![("src/Exact.vue".into(), Some(2345))]);
 }
 
 #[test]

@@ -5,6 +5,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { verifyNativeAddons } from "../../../commands/levels/native-addon-identity.ts";
+import { verifyStockRuntimeImages } from "./stock-addon-qualification.ts";
 
 interface Products {
   styles: unknown[];
@@ -20,13 +21,16 @@ interface Binding {
   inspectSfcBundlerBlocks(source: string, file?: string): Products;
 }
 const requireNative = createRequire(import.meta.url);
-const stock = process.argv[2] === "--stock";
+const stockRuntime = process.argv[2] === "--stock-runtime";
+const stock = stockRuntime || process.argv[2] === "--stock";
 function loadBindings(): [Binding, Binding] {
   if (!stock) {
     const candidate = requireNative(path.resolve(process.argv[2])) as Binding;
     return [candidate, candidate];
   }
-  const images = verifyNativeAddons(process.argv[3]);
+  const images = stockRuntime
+    ? verifyStockRuntimeImages(process.argv[3], process.argv[4])
+    : verifyNativeAddons(process.argv[3]);
   const load = (file: string) => {
     const name = file + ".node";
     if (!fs.existsSync(name)) fs.linkSync(file, name);
@@ -106,7 +110,7 @@ for (const [file, source] of cases) {
   if (!stock) assert.ok(!(bench(source, file, 96, false) && bench(source, file, 384, true)), file);
 }
 
-const manifestFile = process.argv[stock ? 4 : 3];
+const manifestFile = process.argv[stockRuntime ? 5 : stock ? 4 : 3];
 const manifest = manifestFile
   ? fs.readFileSync(manifestFile)
   : execFileSync("git", ["ls-files", "-z", "--", "*.vue", "*.vue.txt"], {

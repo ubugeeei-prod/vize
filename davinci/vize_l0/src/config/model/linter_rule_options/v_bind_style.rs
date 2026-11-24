@@ -5,8 +5,7 @@
 
 use std::fmt;
 
-use serde::de::value::MapAccessDeserializer;
-use serde::de::{Error, IgnoredAny, IntoDeserializer, MapAccess, SeqAccess, Visitor};
+use serde::de::{Error, IgnoredAny, IntoDeserializer, MapAccess, SeqAccess, Unexpected, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
 
 use super::ConfigLintRuleOptions;
@@ -78,8 +77,18 @@ impl<'de> Visitor<'de> for VBindStyleConfigVisitor {
         VBindStyle::deserialize(value.into_deserializer()).map(VBindStyleConfig::Style)
     }
 
-    fn visit_map<A: MapAccess<'de>>(self, map: A) -> Result<Self::Value, A::Error> {
-        VBindStyle::deserialize(MapAccessDeserializer::new(map)).map(VBindStyleConfig::Style)
+    fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+        let invalid_map = || A::Error::invalid_value(Unexpected::Map, &"map with a single key");
+        if map.size_hint().is_some_and(|entries| entries != 1) {
+            return Err(invalid_map());
+        }
+        let (style, ()) = map
+            .next_entry::<VBindStyle, ()>()?
+            .ok_or_else(invalid_map)?;
+        if map.next_key::<IgnoredAny>()?.is_some() {
+            return Err(invalid_map());
+        }
+        Ok(VBindStyleConfig::Style(style))
     }
 
     fn visit_seq<A: SeqAccess<'de>>(self, mut items: A) -> Result<Self::Value, A::Error> {
@@ -194,9 +203,72 @@ mod tests {
         ] {
             let options = parse(json).unwrap();
             let config = options.v_bind_style_config().unwrap();
+            let from_value: ConfigLintRuleOptions =
+                serde_json::from_value(serde_json::from_str(json).unwrap()).unwrap();
+            assert_eq!(from_value.v_bind_style_config(), Some(config), "{json}");
             assert_eq!(config.style(), style, "{json}");
             assert_eq!(config.same_name_shorthand(), same_name, "{json}");
             assert_eq!(options.v_bind_style(), Some(style), "{json}");
+        }
+    }
+
+    #[test]
+    fn a_tagged_style_object_requires_exactly_one_key() {
+        let reason = "invalid value: map, expected map with a single key";
+        for (json, column) in [
+            (
+                r#"{"vue/v-bind-style":{"shorthand":null,"sameNameShorthand":"always"}}"#,
+                57,
+            ),
+            (
+                r#"{"vue/v-bind-style":{"longform":null,"shorthand":null}}"#,
+                48,
+            ),
+        ] {
+            let error = parse(json).unwrap_err();
+            assert_eq!(
+                error.to_string(),
+                format!("{reason} at line 1 column {column}")
+            );
+            let value = serde_json::from_str(json).unwrap();
+            assert_eq!(
+                serde_json::from_value::<ConfigLintRuleOptions>(value)
+                    .unwrap_err()
+                    .to_string(),
+                reason
+            );
+        }
+        assert_eq!(
+            serde_json::from_value::<VBindStyleConfig>(serde_json::json!({}))
+                .unwrap_err()
+                .to_string(),
+            reason
+        );
+    }
+
+    #[test]
+    fn invalid_style_strings_keep_the_original_enum_error_position() {
+        #[derive(Debug, serde::Deserialize)]
+        struct OriginalOptions {
+            #[serde(rename = "vue/v-bind-style")]
+            _style: VBindStyle,
+        }
+
+        for json in [
+            r#"{"vue/v-bind-style":"invalid"}"#,
+            r#"{
+  "vue/v-bind-style": "invalid"
+}"#,
+            r#"{"vue/v-bind-style":"invalid"   }"#,
+            r#"{"vue/v-bind-style":"invalid","vue/v-on-style":"shorthand"}"#,
+        ] {
+            let original = serde_json::from_str::<OriginalOptions>(json).unwrap_err();
+            let current = parse(json).unwrap_err();
+            assert_eq!(current.to_string(), original.to_string(), "{json}");
+            assert_eq!(
+                (current.line(), current.column()),
+                (original.line(), original.column())
+            );
         }
     }
 
