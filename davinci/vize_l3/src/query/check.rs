@@ -40,6 +40,7 @@ pub(super) fn check_rows(
     steps: &[ReachStep],
 ) -> Result<(), CertificateError> {
     let positions = Positions::read(ops, edges)?;
+    let endpoints_validated = false;
     include!("check/witness.rs")
 }
 
@@ -50,6 +51,7 @@ pub(super) fn check_with_positions(
     query: ReachQuery,
     steps: &[ReachStep],
 ) -> Result<(), CertificateError> {
+    let endpoints_validated = true;
     include!("check/witness.rs")
 }
 

@@ -44,6 +44,11 @@
         let parent = *seen
             .get(positions.endpoint(ordinal, from)?)
             .ok_or(GraphError::UnknownOp(from))?;
+        // OpGraph verified both endpoints when it retained the original edges.
+        // An edge from an unreached parent imposes no closure obligation.
+        if endpoints_validated && !parent {
+            continue;
+        }
         let child = *seen
             .get(positions.endpoint(ordinal, to)?)
             .ok_or(GraphError::UnknownOp(to))?;

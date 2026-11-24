@@ -16,6 +16,7 @@ on:
       - "tests/formal/ir-graph/**"
       - tests/formal/position-index/**
       - .github/scripts/workflows/davinci-ir-graph/**
+  workflow_dispatch: null
 permissions: { contents: read }
 concurrency:
   group: ir-graph-${{ github.event.pull_request.number || github.ref }}
