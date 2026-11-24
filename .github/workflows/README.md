@@ -24,17 +24,17 @@ surfaces and are not routine CI-refactor targets.
 
 | Group | Area                                                                                   | Workflows |
 | ----- | -------------------------------------------------------------------------------------- | --------- |
-| 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 22        |
-| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 17        |
-| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
-| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
+| 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 21        |
+| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 15        |
+| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 40        |
+| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 18        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
-| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 43        |
-| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 28        |
-| 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 24        |
-| 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
+| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 38        |
+| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 27        |
+| 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 22        |
+| 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 12        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
-| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 22        |
+| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 21        |
 
 ## 01 Pull request orchestration
 
@@ -64,8 +64,7 @@ Start here for required checks, change planning, merge queues, and full qualific
 | 01.18 | Real Project Matrix                | [`real-project-matrix.yml`](./real-project-matrix.yml)                           |
 | 01.19 | Seed PR Rust target                | [`rust-pr-target-seed.yml`](./rust-pr-target-seed.yml)                           |
 | 01.20 | Title Policy                       | [`title-policy.yml`](./title-policy.yml)                                         |
-| 01.21 | V1 exact candidate admission       | [`v1-exact-candidate.yml`](./v1-exact-candidate.yml)                             |
-| 01.22 | V1 qualification manifest          | [`v1-supported-matrix.yml`](./v1-supported-matrix.yml)                           |
+| 01.21 | V1 qualification manifest          | [`v1-supported-matrix.yml`](./v1-supported-matrix.yml)                           |
 
 ## 02 Release and public acceptance
 
@@ -73,25 +72,23 @@ Publication, registry, and installed-consumer evidence. Trusted-publishing workf
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/release/)
 
-| ID    | Workflow                                 | File                                                                                       |
-| ----- | ---------------------------------------- | ------------------------------------------------------------------------------------------ |
-| 02.01 | JSR package checks                       | [`jsr-package.yml`](./jsr-package.yml)                                                     |
-| 02.02 | Shipped Linux LSP resource comparison    | [`lsp-release-resources.yml`](./lsp-release-resources.yml)                                 |
-| 02.03 | Nuxt and Vite release products           | [`nuxt-vite-release-products.yml`](./nuxt-vite-release-products.yml)                       |
-| 02.04 | pkg.pr.new                               | [`pkg-pr-new.yml`](./pkg-pr-new.yml)                                                       |
-| 02.05 | Published plain-script import acceptance | [`plain-script-import-public-acceptance.yml`](./plain-script-import-public-acceptance.yml) |
-| 02.06 | Published fresh project                  | [`published-fresh-project.yml`](./published-fresh-project.yml)                             |
-| 02.07 | Queue release gates                      | [`queue-release-gates.yml`](./queue-release-gates.yml)                                     |
-| 02.08 | Release build cache                      | [`release-build-cache.yml`](./release-build-cache.yml)                                     |
-| 02.09 | Release cadence                          | [`release-cadence.yml`](./release-cadence.yml)                                             |
-| 02.10 | Release contracts                        | [`release-contracts.yml`](./release-contracts.yml)                                         |
-| 02.11 | Release glibc floor                      | [`release-glibc-floor.yml`](./release-glibc-floor.yml)                                     |
-| 02.12 | Release JSR                              | [`release-jsr.yml`](./release-jsr.yml)                                                     |
-| 02.13 | Prepare npm first-publish handoff        | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)                                 |
-| 02.14 | Release smoke contracts                  | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
-| 02.15 | Release verify                           | [`release-verify.yml`](./release-verify.yml)                                               |
-| 02.16 | Release Zed host                         | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
-| 02.17 | Release                                  | [`release.yml`](./release.yml)                                                             |
+| ID    | Workflow                              | File                                                                 |
+| ----- | ------------------------------------- | -------------------------------------------------------------------- |
+| 02.01 | JSR package checks                    | [`jsr-package.yml`](./jsr-package.yml)                               |
+| 02.02 | Shipped Linux LSP resource comparison | [`lsp-release-resources.yml`](./lsp-release-resources.yml)           |
+| 02.03 | Nuxt and Vite release products        | [`nuxt-vite-release-products.yml`](./nuxt-vite-release-products.yml) |
+| 02.04 | pkg.pr.new                            | [`pkg-pr-new.yml`](./pkg-pr-new.yml)                                 |
+| 02.05 | Published fresh project               | [`published-fresh-project.yml`](./published-fresh-project.yml)       |
+| 02.06 | Release build cache                   | [`release-build-cache.yml`](./release-build-cache.yml)               |
+| 02.07 | Release cadence                       | [`release-cadence.yml`](./release-cadence.yml)                       |
+| 02.08 | Release contracts                     | [`release-contracts.yml`](./release-contracts.yml)                   |
+| 02.09 | Release glibc floor                   | [`release-glibc-floor.yml`](./release-glibc-floor.yml)               |
+| 02.10 | Release JSR                           | [`release-jsr.yml`](./release-jsr.yml)                               |
+| 02.11 | Prepare npm first-publish handoff     | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)           |
+| 02.12 | Release smoke contracts               | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)       |
+| 02.13 | Release verify                        | [`release-verify.yml`](./release-verify.yml)                         |
+| 02.14 | Release Zed host                      | [`release-zed-host.yml`](./release-zed-host.yml)                     |
+| 02.15 | Release                               | [`release.yml`](./release.yml)                                       |
 
 ## 03 Benchmarks and profiling
 
@@ -110,40 +107,37 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 | 03.07 | Content Mapper Cold Start                           | [`content-mapper-cold-start.yml`](./content-mapper-cold-start.yml)                       |
 | 03.08 | Content mapper span allocation                      | [`content-mapper-span-allocation.yml`](./content-mapper-span-allocation.yml)             |
 | 03.09 | Benchmark - Criterion suites                        | [`criterion-bench.yml`](./criterion-bench.yml)                                           |
-| 03.10 | Davinci Canon distinct-host scaling                 | [`davinci-canon-scaling.yml`](./davinci-canon-scaling.yml)                               |
-| 03.11 | Davinci resource budgets                            | [`davinci-resource-budgets.yml`](./davinci-resource-budgets.yml)                         |
-| 03.12 | Benchmark - Diagnostic digest                       | [`diagnostic-digest-bench.yml`](./diagnostic-digest-bench.yml)                           |
-| 03.13 | Benchmark - Doctor filters                          | [`doctor-filter-bench.yml`](./doctor-filter-bench.yml)                                   |
-| 03.14 | Document snapshot source profile                    | [`document-snapshot-source-profile.yml`](./document-snapshot-source-profile.yml)         |
-| 03.15 | Benchmark - Fresco dimensions                       | [`fresco-dimension-bench.yml`](./fresco-dimension-bench.yml)                             |
-| 03.16 | Expression slow unit 10401 profile                  | [`fuzz-expression-10401-profile.yml`](./fuzz-expression-10401-profile.yml)               |
-| 03.17 | Benchmark - glibc compatibility                     | [`glibc-floor-bench.yml`](./glibc-floor-bench.yml)                                       |
-| 03.18 | Level instruction counts                            | [`level-instruction-counts.yml`](./level-instruction-counts.yml)                         |
-| 03.19 | Benchmark - Level memory                            | [`level-memory-bench.yml`](./level-memory-bench.yml)                                     |
-| 03.20 | Benchmark - LSP server comparison                   | [`lsp-dual-server-benchmark.yml`](./lsp-dual-server-benchmark.yml)                       |
-| 03.21 | LSP marker scan allocation and residency comparison | [`lsp-marker-scan-scale.yml`](./lsp-marker-scan-scale.yml)                               |
-| 03.22 | LSP source operations and allocations               | [`lsp-source-profile.yml`](./lsp-source-profile.yml)                                     |
-| 03.23 | Partition weight work                               | [`partition-weight-work.yml`](./partition-weight-work.yml)                               |
-| 03.24 | Persistent batch storage                            | [`persistent-batch-storage.yml`](./persistent-batch-storage.yml)                         |
-| 03.25 | Profile allocation thread law                       | [`profile-allocation-thread-law.yml`](./profile-allocation-thread-law.yml)               |
-| 03.26 | Benchmark - Rust frontend threads                   | [`rust-frontend-threads-bench.yml`](./rust-frontend-threads-bench.yml)                   |
-| 03.27 | Script recovery clone cost                          | [`script-recovery-clone-cost.yml`](./script-recovery-clone-cost.yml)                     |
-| 03.28 | Script recovery cost                                | [`script-recovery-cost.yml`](./script-recovery-cost.yml)                                 |
-| 03.29 | Setup binding anchor allocation profile             | [`setup-binding-anchor-profile.yml`](./setup-binding-anchor-profile.yml)                 |
-| 03.30 | Native SFC member phase comparison                  | [`sfc-member-profile.yml`](./sfc-member-profile.yml)                                     |
-| 03.31 | Shipped release-profile measure                     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)                           |
-| 03.32 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
-| 03.33 | Benchmark - String storage                          | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
-| 03.34 | Benchmark - UTF-8 file reads                        | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
-| 03.35 | Benchmark - Tool comparison                         | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
-| 03.36 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
-| 03.37 | Benchmark - Type source snapshots                   | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
-| 03.38 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
-| 03.39 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
-| 03.40 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
-| 03.41 | Benchmark - VS Code startup                         | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
-| 03.42 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
-| 03.43 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
+| 03.10 | Davinci resource budgets                            | [`davinci-resource-budgets.yml`](./davinci-resource-budgets.yml)                         |
+| 03.11 | Benchmark - Diagnostic digest                       | [`diagnostic-digest-bench.yml`](./diagnostic-digest-bench.yml)                           |
+| 03.12 | Document snapshot source profile                    | [`document-snapshot-source-profile.yml`](./document-snapshot-source-profile.yml)         |
+| 03.13 | Benchmark - Fresco dimensions                       | [`fresco-dimension-bench.yml`](./fresco-dimension-bench.yml)                             |
+| 03.14 | Expression slow unit 10401 profile                  | [`fuzz-expression-10401-profile.yml`](./fuzz-expression-10401-profile.yml)               |
+| 03.15 | Benchmark - glibc compatibility                     | [`glibc-floor-bench.yml`](./glibc-floor-bench.yml)                                       |
+| 03.16 | Level instruction counts                            | [`level-instruction-counts.yml`](./level-instruction-counts.yml)                         |
+| 03.17 | Benchmark - Level memory                            | [`level-memory-bench.yml`](./level-memory-bench.yml)                                     |
+| 03.18 | Benchmark - LSP server comparison                   | [`lsp-dual-server-benchmark.yml`](./lsp-dual-server-benchmark.yml)                       |
+| 03.19 | LSP marker scan allocation and residency comparison | [`lsp-marker-scan-scale.yml`](./lsp-marker-scan-scale.yml)                               |
+| 03.20 | LSP source operations and allocations               | [`lsp-source-profile.yml`](./lsp-source-profile.yml)                                     |
+| 03.21 | Partition weight work                               | [`partition-weight-work.yml`](./partition-weight-work.yml)                               |
+| 03.22 | Persistent batch storage                            | [`persistent-batch-storage.yml`](./persistent-batch-storage.yml)                         |
+| 03.23 | Profile allocation thread law                       | [`profile-allocation-thread-law.yml`](./profile-allocation-thread-law.yml)               |
+| 03.24 | Script recovery clone cost                          | [`script-recovery-clone-cost.yml`](./script-recovery-clone-cost.yml)                     |
+| 03.25 | Script recovery cost                                | [`script-recovery-cost.yml`](./script-recovery-cost.yml)                                 |
+| 03.26 | Setup binding anchor allocation profile             | [`setup-binding-anchor-profile.yml`](./setup-binding-anchor-profile.yml)                 |
+| 03.27 | Native SFC member phase comparison                  | [`sfc-member-profile.yml`](./sfc-member-profile.yml)                                     |
+| 03.28 | Shipped release-profile measure                     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)                           |
+| 03.29 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
+| 03.30 | Benchmark - String storage                          | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
+| 03.31 | Benchmark - UTF-8 file reads                        | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
+| 03.32 | Benchmark - Tool comparison                         | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
+| 03.33 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
+| 03.34 | Benchmark - Type source snapshots                   | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
+| 03.35 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
+| 03.36 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
+| 03.37 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
+| 03.38 | Benchmark - VS Code startup                         | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
+| 03.39 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
+| 03.40 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
 
 ## 04 Type checking and content mapping
 
@@ -151,27 +145,26 @@ Typechecker, content-mapper, Corsa, and TypeScript-provider qualification.
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/typecheck/)
 
-| ID    | Workflow                                  | File                                                                                         |
-| ----- | ----------------------------------------- | -------------------------------------------------------------------------------------------- |
-| 04.01 | Checker constructor emitter parity        | [`checker-constructor-emitter.yml`](./checker-constructor-emitter.yml)                       |
-| 04.02 | Checker diagnostic positions              | [`checker-diagnostic-positions.yml`](./checker-diagnostic-positions.yml)                     |
-| 04.03 | Checker projections for inline Vue styles | [`checker-styled-projections.yml`](./checker-styled-projections.yml)                         |
-| 04.04 | Component input diagnostic ownership      | [`component-input-diagnostic-ownership.yml`](./component-input-diagnostic-ownership.yml)     |
-| 04.05 | Component input projection packets        | [`component-input-projection-packets.yml`](./component-input-projection-packets.yml)         |
-| 04.06 | Content Mapper Conformance                | [`content-mapper-conformance.yml`](./content-mapper-conformance.yml)                         |
-| 04.07 | Consumer instance globals capture         | [`content-mapper-instance-globals.yml`](./content-mapper-instance-globals.yml)               |
-| 04.08 | Content mapper pair                       | [`content-mapper-pair.yml`](./content-mapper-pair.yml)                                       |
-| 04.09 | Content mapper replay                     | [`content-mapper-replay.yml`](./content-mapper-replay.yml)                                   |
-| 04.10 | Content Mapper Source Case Jobs           | [`content-mapper-reported-q16.yml`](./content-mapper-reported-q16.yml)                       |
-| 04.11 | Vue component metadata                    | [`content-mapper-vue-component-meta.yml`](./content-mapper-vue-component-meta.yml)           |
-| 04.12 | Content Mapper worker stack               | [`content-mapper-worker-stack.yml`](./content-mapper-worker-stack.yml)                       |
-| 04.13 | Type-check corpus pair                    | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                                   |
-| 04.14 | Typecheck vs vue-tsc                      | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
-| 04.15 | WSL2 type-check qualification             | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
-| 04.16 | Typechecker cache custody                 | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                           |
-| 04.17 | Type checker native backend phases        | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
-| 04.18 | Native syntax and semantic completion     | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |
-| 04.19 | Platform VSIX native projection           | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                             |
+| ID    | Workflow                                  | File                                                                                     |
+| ----- | ----------------------------------------- | ---------------------------------------------------------------------------------------- |
+| 04.01 | Checker constructor emitter parity        | [`checker-constructor-emitter.yml`](./checker-constructor-emitter.yml)                   |
+| 04.02 | Checker diagnostic positions              | [`checker-diagnostic-positions.yml`](./checker-diagnostic-positions.yml)                 |
+| 04.03 | Checker projections for inline Vue styles | [`checker-styled-projections.yml`](./checker-styled-projections.yml)                     |
+| 04.04 | Component input diagnostic ownership      | [`component-input-diagnostic-ownership.yml`](./component-input-diagnostic-ownership.yml) |
+| 04.05 | Component input projection packets        | [`component-input-projection-packets.yml`](./component-input-projection-packets.yml)     |
+| 04.06 | Content Mapper Conformance                | [`content-mapper-conformance.yml`](./content-mapper-conformance.yml)                     |
+| 04.07 | Consumer instance globals capture         | [`content-mapper-instance-globals.yml`](./content-mapper-instance-globals.yml)           |
+| 04.08 | Content mapper pair                       | [`content-mapper-pair.yml`](./content-mapper-pair.yml)                                   |
+| 04.09 | Content mapper replay                     | [`content-mapper-replay.yml`](./content-mapper-replay.yml)                               |
+| 04.10 | Content Mapper Source Case Jobs           | [`content-mapper-reported-q16.yml`](./content-mapper-reported-q16.yml)                   |
+| 04.11 | Vue component metadata                    | [`content-mapper-vue-component-meta.yml`](./content-mapper-vue-component-meta.yml)       |
+| 04.12 | Content Mapper worker stack               | [`content-mapper-worker-stack.yml`](./content-mapper-worker-stack.yml)                   |
+| 04.13 | Type-check corpus pair                    | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                               |
+| 04.14 | Typecheck vs vue-tsc                      | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                 |
+| 04.15 | WSL2 type-check qualification             | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                             |
+| 04.16 | Typechecker cache custody                 | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                       |
+| 04.17 | Type checker native backend phases        | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                       |
+| 04.18 | Platform VSIX native projection           | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                         |
 
 ## 05 Language services and editors
 
@@ -215,48 +208,43 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 | ID    | Workflow                                 | File                                                                           |
 | ----- | ---------------------------------------- | ------------------------------------------------------------------------------ |
 | 06.01 | Ambient template ref ownership           | [`ambient-template-ref-ownership.yml`](./ambient-template-ref-ownership.yml)   |
-| 06.02 | SFC asset import bindings                | [`asset-import-bindings.yml`](./asset-import-bindings.yml)                     |
-| 06.03 | Async component render ancestry          | [`async-component-ancestry.yml`](./async-component-ancestry.yml)               |
-| 06.04 | Binding origin source laws               | [`binding-origin-laws.yml`](./binding-origin-laws.yml)                         |
-| 06.05 | Compiler options snapshot                | [`compiler-options-snapshot.yml`](./compiler-options-snapshot.yml)             |
-| 06.06 | Cross-file script coordinate packets     | [`cross-file-script-offset.yml`](./cross-file-script-offset.yml)               |
-| 06.07 | CSS color declaration admission          | [`css-color-declaration-admission.yml`](./css-color-declaration-admission.yml) |
-| 06.08 | CSS color literal hover                  | [`css-color-literal-hover.yml`](./css-color-literal-hover.yml)                 |
-| 06.09 | Native CSS source maps                   | [`css-compile-source-maps.yml`](./css-compile-source-maps.yml)                 |
-| 06.10 | CSS engine forks                         | [`css-engine-vendor-candidate.yml`](./css-engine-vendor-candidate.yml)         |
-| 06.11 | Optional inject fallback contracts       | [`defaulted-inject.yml`](./defaulted-inject.yml)                               |
-| 06.12 | Expression overlapping speculation audit | [`expression-overlap-audit.yml`](./expression-overlap-audit.yml)               |
-| 06.13 | Decoded loop bindings                    | [`for-bindings.yml`](./for-bindings.yml)                                       |
-| 06.14 | JSX authored native modules              | [`jsx-authored-native-modules.yml`](./jsx-authored-native-modules.yml)         |
-| 06.15 | JSX backend source origins               | [`jsx-backend-origins.yml`](./jsx-backend-origins.yml)                         |
-| 06.16 | L1 document special text                 | [`l1-document-special-text.yml`](./l1-document-special-text.yml)               |
-| 06.17 | Narrowed slot host guard                 | [`narrowed-slot-host-guard.yml`](./narrowed-slot-host-guard.yml)               |
-| 06.18 | Native beta diagnostic DTO               | [`native-beta-diagnostic-dto.yml`](./native-beta-diagnostic-dto.yml)           |
-| 06.19 | Native release token layout              | [`native-build-token-layout.yml`](./native-build-token-layout.yml)             |
-| 06.20 | Native checker CPU attribution           | [`native-checker-cpu-metadata.yml`](./native-checker-cpu-metadata.yml)         |
-| 06.21 | Native image-alt query source evidence   | [`native-image-alt-query.yml`](./native-image-alt-query.yml)                   |
-| 06.22 | Native navigation products               | [`native-navigation-products.yml`](./native-navigation-products.yml)           |
-| 06.23 | Native operational incident trace        | [`native-ops-incident.yml`](./native-ops-incident.yml)                         |
-| 06.24 | SFC runtime option transport             | [`native-sfc-runtime-options.yml`](./native-sfc-runtime-options.yml)           |
-| 06.25 | SFC runtime version selection            | [`native-sfc-runtime-version.yml`](./native-sfc-runtime-version.yml)           |
-| 06.26 | Native Smoke                             | [`native-smoke.yml`](./native-smoke.yml)                                       |
-| 06.27 | Leading newline runtime                  | [`pre-textarea-first-newline.yml`](./pre-textarea-first-newline.yml)           |
-| 06.28 | Provide type assertion whole packets     | [`provide-type-assertion.yml`](./provide-type-assertion.yml)                   |
-| 06.29 | Recovery normal codegen                  | [`recovery-normal-codegen.yml`](./recovery-normal-codegen.yml)                 |
-| 06.30 | Scoped nesting specificity               | [`scoped-nesting-specificity.yml`](./scoped-nesting-specificity.yml)           |
-| 06.31 | Current native SFC lifecycle             | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
-| 06.32 | Native parsed SFC attributes             | [`sfc-parse-attributes.yml`](./sfc-parse-attributes.yml)                       |
-| 06.33 | Historical SFC Parse Replay              | [`sfc-parse-replay.yml`](./sfc-parse-replay.yml)                               |
-| 06.34 | Retained source-line replay              | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)           |
-| 06.35 | Source symbolizer smoke                  | [`source-symbolizer-smoke.yml`](./source-symbolizer-smoke.yml)                 |
-| 06.36 | Public mapper comparison                 | [`template-alias-paired-11822.yml`](./template-alias-paired-11822.yml)         |
-| 06.37 | Template expression queries              | [`template-expression-queries.yml`](./template-expression-queries.yml)         |
-| 06.38 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
-| 06.39 | Native template tool projections         | [`template-tool-projections.yml`](./template-tool-projections.yml)             |
-| 06.40 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
-| 06.41 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
-| 06.42 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
-| 06.43 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
+| 06.02 | Async component render ancestry          | [`async-component-ancestry.yml`](./async-component-ancestry.yml)               |
+| 06.03 | Binding origin source laws               | [`binding-origin-laws.yml`](./binding-origin-laws.yml)                         |
+| 06.04 | Compiler options snapshot                | [`compiler-options-snapshot.yml`](./compiler-options-snapshot.yml)             |
+| 06.05 | Cross-file script coordinate packets     | [`cross-file-script-offset.yml`](./cross-file-script-offset.yml)               |
+| 06.06 | CSS color declaration admission          | [`css-color-declaration-admission.yml`](./css-color-declaration-admission.yml) |
+| 06.07 | CSS color literal hover                  | [`css-color-literal-hover.yml`](./css-color-literal-hover.yml)                 |
+| 06.08 | Native CSS source maps                   | [`css-compile-source-maps.yml`](./css-compile-source-maps.yml)                 |
+| 06.09 | CSS engine forks                         | [`css-engine-vendor-candidate.yml`](./css-engine-vendor-candidate.yml)         |
+| 06.10 | Optional inject fallback contracts       | [`defaulted-inject.yml`](./defaulted-inject.yml)                               |
+| 06.11 | Expression overlapping speculation audit | [`expression-overlap-audit.yml`](./expression-overlap-audit.yml)               |
+| 06.12 | JSX authored native modules              | [`jsx-authored-native-modules.yml`](./jsx-authored-native-modules.yml)         |
+| 06.13 | JSX backend source origins               | [`jsx-backend-origins.yml`](./jsx-backend-origins.yml)                         |
+| 06.14 | L1 document special text                 | [`l1-document-special-text.yml`](./l1-document-special-text.yml)               |
+| 06.15 | Narrowed slot host guard                 | [`narrowed-slot-host-guard.yml`](./narrowed-slot-host-guard.yml)               |
+| 06.16 | Native beta diagnostic DTO               | [`native-beta-diagnostic-dto.yml`](./native-beta-diagnostic-dto.yml)           |
+| 06.17 | Native release token layout              | [`native-build-token-layout.yml`](./native-build-token-layout.yml)             |
+| 06.18 | Native checker CPU attribution           | [`native-checker-cpu-metadata.yml`](./native-checker-cpu-metadata.yml)         |
+| 06.19 | Native image-alt query source evidence   | [`native-image-alt-query.yml`](./native-image-alt-query.yml)                   |
+| 06.20 | Native navigation products               | [`native-navigation-products.yml`](./native-navigation-products.yml)           |
+| 06.21 | SFC runtime option transport             | [`native-sfc-runtime-options.yml`](./native-sfc-runtime-options.yml)           |
+| 06.22 | SFC runtime version selection            | [`native-sfc-runtime-version.yml`](./native-sfc-runtime-version.yml)           |
+| 06.23 | Native Smoke                             | [`native-smoke.yml`](./native-smoke.yml)                                       |
+| 06.24 | Leading newline runtime                  | [`pre-textarea-first-newline.yml`](./pre-textarea-first-newline.yml)           |
+| 06.25 | Provide type assertion whole packets     | [`provide-type-assertion.yml`](./provide-type-assertion.yml)                   |
+| 06.26 | Recovery normal codegen                  | [`recovery-normal-codegen.yml`](./recovery-normal-codegen.yml)                 |
+| 06.27 | Scoped nesting specificity               | [`scoped-nesting-specificity.yml`](./scoped-nesting-specificity.yml)           |
+| 06.28 | Current native SFC lifecycle             | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
+| 06.29 | Native parsed SFC attributes             | [`sfc-parse-attributes.yml`](./sfc-parse-attributes.yml)                       |
+| 06.30 | Historical SFC Parse Replay              | [`sfc-parse-replay.yml`](./sfc-parse-replay.yml)                               |
+| 06.31 | Public mapper comparison                 | [`template-alias-paired-11822.yml`](./template-alias-paired-11822.yml)         |
+| 06.32 | Template expression queries              | [`template-expression-queries.yml`](./template-expression-queries.yml)         |
+| 06.33 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
+| 06.34 | Native template tool projections         | [`template-tool-projections.yml`](./template-tool-projections.yml)             |
+| 06.35 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
+| 06.36 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
+| 06.37 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
+| 06.38 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
 
 ## 07 Davinci, Canon, and Level
 
@@ -273,27 +261,26 @@ Davinci migration, Canon ownership, Level lowering, and cross-file graph contrac
 | 07.05 | Canon slot constructor admission              | [`canon-slot-constructor.yml`](./canon-slot-constructor.yml)                     |
 | 07.06 | Canon slot provider ownership                 | [`canon-slot-provider-any.yml`](./canon-slot-provider-any.yml)                   |
 | 07.07 | Windows project mirror and lint program paths | [`canon-windows-mirror-paths.yml`](./canon-windows-mirror-paths.yml)             |
-| 07.08 | Compact Collections                           | [`compact-collections.yml`](./compact-collections.yml)                           |
-| 07.09 | Cross-file finalization work comparison       | [`cross-file-finalization-compare.yml`](./cross-file-finalization-compare.yml)   |
-| 07.10 | Cross-file finalization order                 | [`cross-file-finalization-order.yml`](./cross-file-finalization-order.yml)       |
-| 07.11 | Cross-file dependency profiling               | [`cross-file-finalization.yml`](./cross-file-finalization.yml)                   |
-| 07.12 | Cross-file SFC effect graphs                  | [`cross-file-sfc-effects.yml`](./cross-file-sfc-effects.yml)                     |
-| 07.13 | Cross-file retained import updates            | [`cross-file-source-updates.yml`](./cross-file-source-updates.yml)               |
-| 07.14 | Cross-file WASM effect grammars               | [`cross-file-wasm-effects.yml`](./cross-file-wasm-effects.yml)                   |
-| 07.15 | Canonical Davinci corpus                      | [`davinci-canonical-corpus.yml`](./davinci-canonical-corpus.yml)                 |
-| 07.16 | Davinci Creusot                               | [`davinci-creusot.yml`](./davinci-creusot.yml)                                   |
-| 07.17 | Davinci Incremental                           | [`davinci-incremental.yml`](./davinci-incremental.yml)                           |
-| 07.18 | Davinci IR graph queries                      | [`davinci-ir-graph.yml`](./davinci-ir-graph.yml)                                 |
-| 07.19 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                         |
-| 07.20 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                             |
-| 07.21 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                               |
-| 07.22 | Shared toolchain session                      | [`davinci-shared-toolchain-session.yml`](./davinci-shared-toolchain-session.yml) |
-| 07.23 | Davinci authored source frames                | [`davinci-source-frames.yml`](./davinci-source-frames.yml)                       |
-| 07.24 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                   |
-| 07.25 | IR pass composition                           | [`ir-pass-composition.yml`](./ir-pass-composition.yml)                           |
-| 07.26 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)                 |
-| 07.27 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                             |
-| 07.28 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)                 |
+| 07.08 | Cross-file finalization work comparison       | [`cross-file-finalization-compare.yml`](./cross-file-finalization-compare.yml)   |
+| 07.09 | Cross-file finalization order                 | [`cross-file-finalization-order.yml`](./cross-file-finalization-order.yml)       |
+| 07.10 | Cross-file dependency profiling               | [`cross-file-finalization.yml`](./cross-file-finalization.yml)                   |
+| 07.11 | Cross-file SFC effect graphs                  | [`cross-file-sfc-effects.yml`](./cross-file-sfc-effects.yml)                     |
+| 07.12 | Cross-file retained import updates            | [`cross-file-source-updates.yml`](./cross-file-source-updates.yml)               |
+| 07.13 | Cross-file WASM effect grammars               | [`cross-file-wasm-effects.yml`](./cross-file-wasm-effects.yml)                   |
+| 07.14 | Canonical Davinci corpus                      | [`davinci-canonical-corpus.yml`](./davinci-canonical-corpus.yml)                 |
+| 07.15 | Davinci Creusot                               | [`davinci-creusot.yml`](./davinci-creusot.yml)                                   |
+| 07.16 | Davinci Incremental                           | [`davinci-incremental.yml`](./davinci-incremental.yml)                           |
+| 07.17 | Davinci IR graph queries                      | [`davinci-ir-graph.yml`](./davinci-ir-graph.yml)                                 |
+| 07.18 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                         |
+| 07.19 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                             |
+| 07.20 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                               |
+| 07.21 | Shared toolchain session                      | [`davinci-shared-toolchain-session.yml`](./davinci-shared-toolchain-session.yml) |
+| 07.22 | Davinci authored source frames                | [`davinci-source-frames.yml`](./davinci-source-frames.yml)                       |
+| 07.23 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                   |
+| 07.24 | IR pass composition                           | [`ir-pass-composition.yml`](./ir-pass-composition.yml)                           |
+| 07.25 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)                 |
+| 07.26 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                             |
+| 07.27 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)                 |
 
 ## 08 Builders and framework integrations
 
@@ -301,32 +288,30 @@ Babel, Nuxt, Parcel, Rspack, Turbopack, Vite, Vitest, and consumer hosts.
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/integrations/)
 
-| ID    | Workflow                               | File                                                                       |
-| ----- | -------------------------------------- | -------------------------------------------------------------------------- |
-| 08.01 | Babel plugin host contracts            | [`babel-plugin-hosts.yml`](./babel-plugin-hosts.yml)                       |
-| 08.02 | Babel rc9 ABI frontier                 | [`babel-rc9-frontier.yml`](./babel-rc9-frontier.yml)                       |
-| 08.03 | Bundler block products                 | [`bundler-block-products.yml`](./bundler-block-products.yml)               |
-| 08.04 | JS install dependency closure          | [`js-install-closure.yml`](./js-install-closure.yml)                       |
-| 08.05 | Nuxt generated declaration membership  | [`nuxt-generated-membership.yml`](./nuxt-generated-membership.yml)         |
-| 08.06 | Nuxt scoped style build                | [`nuxt-style-build.yml`](./nuxt-style-build.yml)                           |
-| 08.07 | Nuxt 2 Bridge host runtimes            | [`nuxt2-bridge-module-build.yml`](./nuxt2-bridge-module-build.yml)         |
-| 08.08 | Nuxt 2 module build                    | [`nuxt2-module-build.yml`](./nuxt2-module-build.yml)                       |
-| 08.09 | Nuxt 3 module build                    | [`nuxt3-module-build.yml`](./nuxt3-module-build.yml)                       |
-| 08.10 | Parcel transformer                     | [`parcel-transformer.yml`](./parcel-transformer.yml)                       |
-| 08.11 | Plain-script import ref runtime        | [`plain-script-import-ref.yml`](./plain-script-import-ref.yml)             |
-| 08.12 | Rspack SFC HMR                         | [`rspack-hmr.yml`](./rspack-hmr.yml)                                       |
-| 08.13 | Rspack external block ranges           | [`rspack-src-block-ranges.yml`](./rspack-src-block-ranges.yml)             |
-| 08.14 | Turbopack consumers                    | [`turbopack-consumers.yml`](./turbopack-consumers.yml)                     |
-| 08.15 | Vite+ Type Compatibility               | [`vite-plus-type-compat.yml`](./vite-plus-type-compat.yml)                 |
-| 08.16 | Vite precompile cache identities       | [`vite-precompile-cache.yml`](./vite-precompile-cache.yml)                 |
-| 08.17 | Vite relative style origins            | [`vite-style-relative-imports.yml`](./vite-style-relative-imports.yml)     |
-| 08.18 | Vite+ configuration consumers          | [`viteplus-config-consumers.yml`](./viteplus-config-consumers.yml)         |
-| 08.19 | Vite+ lint configuration consumers     | [`viteplus-lint-consumers.yml`](./viteplus-lint-consumers.yml)             |
-| 08.20 | Vite+ task cache consumers             | [`viteplus-task-cache.yml`](./viteplus-task-cache.yml)                     |
-| 08.21 | Vitest persistent Vue modules          | [`vitest-module-cache.yml`](./vitest-module-cache.yml)                     |
-| 08.22 | Vitest project configuration consumers | [`vitest-project-extends.yml`](./vitest-project-extends.yml)               |
-| 08.23 | Void build                             | [`void-build.yml`](./void-build.yml)                                       |
-| 08.24 | VueFes SSR style dependencies          | [`vuefes-ssr-style-dependencies.yml`](./vuefes-ssr-style-dependencies.yml) |
+| ID    | Workflow                               | File                                                                   |
+| ----- | -------------------------------------- | ---------------------------------------------------------------------- |
+| 08.01 | Babel plugin host contracts            | [`babel-plugin-hosts.yml`](./babel-plugin-hosts.yml)                   |
+| 08.02 | Bundler block products                 | [`bundler-block-products.yml`](./bundler-block-products.yml)           |
+| 08.03 | JS install dependency closure          | [`js-install-closure.yml`](./js-install-closure.yml)                   |
+| 08.04 | Nuxt generated declaration membership  | [`nuxt-generated-membership.yml`](./nuxt-generated-membership.yml)     |
+| 08.05 | Nuxt scoped style build                | [`nuxt-style-build.yml`](./nuxt-style-build.yml)                       |
+| 08.06 | Nuxt 2 Bridge host runtimes            | [`nuxt2-bridge-module-build.yml`](./nuxt2-bridge-module-build.yml)     |
+| 08.07 | Nuxt 2 module build                    | [`nuxt2-module-build.yml`](./nuxt2-module-build.yml)                   |
+| 08.08 | Nuxt 3 module build                    | [`nuxt3-module-build.yml`](./nuxt3-module-build.yml)                   |
+| 08.09 | Parcel transformer                     | [`parcel-transformer.yml`](./parcel-transformer.yml)                   |
+| 08.10 | Plain-script import ref runtime        | [`plain-script-import-ref.yml`](./plain-script-import-ref.yml)         |
+| 08.11 | Rspack SFC HMR                         | [`rspack-hmr.yml`](./rspack-hmr.yml)                                   |
+| 08.12 | Rspack external block ranges           | [`rspack-src-block-ranges.yml`](./rspack-src-block-ranges.yml)         |
+| 08.13 | Turbopack consumers                    | [`turbopack-consumers.yml`](./turbopack-consumers.yml)                 |
+| 08.14 | Vite+ Type Compatibility               | [`vite-plus-type-compat.yml`](./vite-plus-type-compat.yml)             |
+| 08.15 | Vite precompile cache identities       | [`vite-precompile-cache.yml`](./vite-precompile-cache.yml)             |
+| 08.16 | Vite relative style origins            | [`vite-style-relative-imports.yml`](./vite-style-relative-imports.yml) |
+| 08.17 | Vite+ configuration consumers          | [`viteplus-config-consumers.yml`](./viteplus-config-consumers.yml)     |
+| 08.18 | Vite+ lint configuration consumers     | [`viteplus-lint-consumers.yml`](./viteplus-lint-consumers.yml)         |
+| 08.19 | Vite+ task cache consumers             | [`viteplus-task-cache.yml`](./viteplus-task-cache.yml)                 |
+| 08.20 | Vitest persistent Vue modules          | [`vitest-module-cache.yml`](./vitest-module-cache.yml)                 |
+| 08.21 | Vitest project configuration consumers | [`vitest-project-extends.yml`](./vitest-project-extends.yml)           |
+| 08.22 | Void build                             | [`void-build.yml`](./void-build.yml)                                   |
 
 ## 09 Lint, format, and developer tooling
 
@@ -343,13 +328,11 @@ ESLint, Oxlint, Prettier, formatter, doctor, configuration, and tooling contract
 | 09.05 | Lint reference coverage contracts  | [`lint-reference-coverage-contracts.yml`](./lint-reference-coverage-contracts.yml)           |
 | 09.06 | Lint unused disable configuration  | [`lint-unused-disable-config.yml`](./lint-unused-disable-config.yml)                         |
 | 09.07 | n8n adoption fixture               | [`n8n-adoption.yml`](./n8n-adoption.yml)                                                     |
-| 09.08 | n8n script rule CLI controls       | [`n8n-script-rule-controls.yml`](./n8n-script-rule-controls.yml)                             |
-| 09.09 | n8n whole corpus observer          | [`n8n-whole-corpus-observer.yml`](./n8n-whole-corpus-observer.yml)                           |
-| 09.10 | Attribute ignoreTags reference     | [`patina-attribute-ignore-tags-reference.yml`](./patina-attribute-ignore-tags-reference.yml) |
-| 09.11 | Patina native boolean protocols    | [`patina-native-boolean-protocol.yml`](./patina-native-boolean-protocol.yml)                 |
-| 09.12 | Prettier plugin consumer           | [`prettier-plugin.yml`](./prettier-plugin.yml)                                               |
-| 09.13 | Windows dynamic config consumer    | [`windows-config-consumer.yml`](./windows-config-consumer.yml)                               |
-| 09.14 | Workspace route identity admission | [`workspace-route-identity.yml`](./workspace-route-identity.yml)                             |
+| 09.08 | Attribute ignoreTags reference     | [`patina-attribute-ignore-tags-reference.yml`](./patina-attribute-ignore-tags-reference.yml) |
+| 09.09 | Patina native boolean protocols    | [`patina-native-boolean-protocol.yml`](./patina-native-boolean-protocol.yml)                 |
+| 09.10 | Prettier plugin consumer           | [`prettier-plugin.yml`](./prettier-plugin.yml)                                               |
+| 09.11 | Windows dynamic config consumer    | [`windows-config-consumer.yml`](./windows-config-consumer.yml)                               |
+| 09.12 | Workspace route identity admission | [`workspace-route-identity.yml`](./workspace-route-identity.yml)                             |
 
 ## 10 Applications and UI packages
 
@@ -392,5 +375,4 @@ Security audits, dependency upkeep, scheduled maintenance, docs, and repository 
 | 11.18 | Style module products                       | [`style-module-products.yml`](./style-module-products.yml)                 |
 | 11.19 | Tool codegen equivalence                    | [`tool-codegen-equivalence.yml`](./tool-codegen-equivalence.yml)           |
 | 11.20 | Versioned diagnostic fix publication        | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
-| 11.21 | Generated VTS source census                 | [`vts-source-census.yml`](./vts-source-census.yml)                         |
-| 11.22 | Zizmor                                      | [`zizmor.yml`](./zizmor.yml)                                               |
+| 11.21 | Zizmor                                      | [`zizmor.yml`](./zizmor.yml)                                               |
