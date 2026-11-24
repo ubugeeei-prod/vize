@@ -166,6 +166,17 @@ export interface CustodyReport {
   readonly next: readonly CustodyRow[];
 }
 
+// Historical admissions keep their original bytes after the live implementation moves on.
+function hasFrozenCopy(root: string, tracked: readonly string[], row: CustodyRow): boolean {
+  const fixture = `tests/_fixtures/byte-custody/${row.path}`;
+  if (!tracked.includes(fixture)) return false;
+  const file = path.join(root, fixture);
+  if (!fs.lstatSync(file, { throwIfNoEntry: false })?.isFile()) return false;
+
+  const { sha256, blob } = digestsOf(fs.readFileSync(file));
+  return row.digests.every((digest) => digest === `sha256:${sha256}` || digest === `blob:${blob}`);
+}
+
 /** Compare the registry with the tree. `classes` seeds the class of new rows. */
 export function checkCustody(
   root: string,
@@ -174,7 +185,8 @@ export function checkCustody(
   options: { readonly owners?: boolean } = {},
 ): CustodyReport {
   const spelled = spelledDigests(root);
-  const current = sourceDigests(root, gitTrackedFiles(root));
+  const tracked = gitTrackedFiles(root);
+  const current = sourceDigests(root, tracked);
   const pinned = new Map<string, string[]>();
   for (const [file, { sha256, blob }] of current) {
     const hits = [
@@ -195,10 +207,14 @@ export function checkCustody(
     const recorded = row.digests.map((digest) => digest.split(":")[1]);
     const unchanged = recorded.includes(now.sha256) || recorded.includes(now.blob);
     if (!unchanged && row.class === "enforced" && !pinned.has(row.path)) {
+      if (hasFrozenCopy(root, tracked, row)) {
+        stale.push(`${row.path}: its historical bytes are frozen; its live row will be dropped`);
+        continue;
+      }
       unresolved.push(row.path);
       problems.push(
         `${row.path}: its bytes are pinned by ${row.owners.join(", ") || "a test"} and changed. ` +
-          "Release the pin through the custody procedure (freeze it under tests/_fixtures) " +
+          "Release the pin through the custody procedure (freeze it under tests/_fixtures/byte-custody) " +
           `or re-pin it, then run --write to update ${registryPath}.`,
       );
     } else if (!unchanged || !pinned.has(row.path))

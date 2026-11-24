@@ -110,3 +110,46 @@ test("the registry rejects malformed rows", () => {
     /class must be enforced or record-only/,
   );
 });
+
+test("freezing requires a tracked regular fixture with every recorded digest", (t) => {
+  const source = "crates/a/src/example.rs";
+  const bytes = "pub fn original() {}\n";
+  const digests = digestsOf(Buffer.from(bytes));
+  const root = repository({
+    [source]: bytes,
+    "tests/tooling/authority.ts": JSON.stringify(digests),
+  });
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const original = checkCustody(root, new Map()).next;
+  const registry = new Map(original.map((row) => [row.path, row]));
+  assert.deepEqual(original[0].digests, [`sha256:${digests.sha256}`, `blob:${digests.blob}`]);
+  fs.writeFileSync(path.join(root, source), "pub fn current() {}\n");
+
+  const fixture = path.join(root, "tests/_fixtures/byte-custody", source);
+  fs.mkdirSync(path.dirname(fixture), { recursive: true });
+  fs.writeFileSync(fixture, bytes);
+  assert.deepEqual(checkCustody(root, registry).unresolved, [source]);
+  execFileSync("git", ["add", "--", fixture], { cwd: root });
+  fs.writeFileSync(fixture, "changed\n");
+  assert.deepEqual(checkCustody(root, registry).unresolved, [source]);
+  fs.unlinkSync(fixture);
+  const copy = path.join(root, "stand-in.rs");
+  fs.writeFileSync(copy, bytes);
+  fs.symlinkSync(copy, fixture);
+  assert.deepEqual(checkCustody(root, registry).unresolved, [source]);
+  fs.unlinkSync(fixture);
+  fs.writeFileSync(fixture, bytes);
+
+  const partial = {
+    ...original[0],
+    digests: [`sha256:${digests.sha256}`, `blob:${"0".repeat(40)}`],
+  };
+  assert.deepEqual(checkCustody(root, new Map([[source, partial]])).unresolved, [source]);
+  const frozen = checkCustody(root, registry);
+  assert.deepEqual(frozen.problems, []);
+  assert.deepEqual(frozen.next, []);
+  fs.mkdirSync(path.join(root, "tools/config"), { recursive: true });
+  fs.writeFileSync(path.join(root, registryPath), renderRegistry(original));
+  assert.equal(custodyMain(["--write"], root), 0);
+  assert.equal(parseRegistry(fs.readFileSync(path.join(root, registryPath), "utf8")).size, 0);
+});
