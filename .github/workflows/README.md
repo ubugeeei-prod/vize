@@ -25,9 +25,9 @@ surfaces and are not routine CI-refactor targets.
 | Group | Area                                                                                   | Workflows |
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 22        |
-| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 17        |
-| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
-| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
+| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 16        |
+| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 41        |
+| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 16        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 43        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 28        |
@@ -76,22 +76,21 @@ Publication, registry, and installed-consumer evidence. Trusted-publishing workf
 | ID    | Workflow                                 | File                                                                                       |
 | ----- | ---------------------------------------- | ------------------------------------------------------------------------------------------ |
 | 02.01 | JSR package checks                       | [`jsr-package.yml`](./jsr-package.yml)                                                     |
-| 02.02 | Shipped Linux LSP resource comparison    | [`lsp-release-resources.yml`](./lsp-release-resources.yml)                                 |
-| 02.03 | Nuxt and Vite release products           | [`nuxt-vite-release-products.yml`](./nuxt-vite-release-products.yml)                       |
-| 02.04 | pkg.pr.new                               | [`pkg-pr-new.yml`](./pkg-pr-new.yml)                                                       |
-| 02.05 | Published plain-script import acceptance | [`plain-script-import-public-acceptance.yml`](./plain-script-import-public-acceptance.yml) |
-| 02.06 | Published fresh project                  | [`published-fresh-project.yml`](./published-fresh-project.yml)                             |
-| 02.07 | Queue release gates                      | [`queue-release-gates.yml`](./queue-release-gates.yml)                                     |
-| 02.08 | Release build cache                      | [`release-build-cache.yml`](./release-build-cache.yml)                                     |
-| 02.09 | Release cadence                          | [`release-cadence.yml`](./release-cadence.yml)                                             |
-| 02.10 | Release contracts                        | [`release-contracts.yml`](./release-contracts.yml)                                         |
-| 02.11 | Release glibc floor                      | [`release-glibc-floor.yml`](./release-glibc-floor.yml)                                     |
-| 02.12 | Release JSR                              | [`release-jsr.yml`](./release-jsr.yml)                                                     |
-| 02.13 | Prepare npm first-publish handoff        | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)                                 |
-| 02.14 | Release smoke contracts                  | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
-| 02.15 | Release verify                           | [`release-verify.yml`](./release-verify.yml)                                               |
-| 02.16 | Release Zed host                         | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
-| 02.17 | Release                                  | [`release.yml`](./release.yml)                                                             |
+| 02.02 | Nuxt and Vite release products           | [`nuxt-vite-release-products.yml`](./nuxt-vite-release-products.yml)                       |
+| 02.03 | pkg.pr.new                               | [`pkg-pr-new.yml`](./pkg-pr-new.yml)                                                       |
+| 02.04 | Published plain-script import acceptance | [`plain-script-import-public-acceptance.yml`](./plain-script-import-public-acceptance.yml) |
+| 02.05 | Published fresh project                  | [`published-fresh-project.yml`](./published-fresh-project.yml)                             |
+| 02.06 | Queue release gates                      | [`queue-release-gates.yml`](./queue-release-gates.yml)                                     |
+| 02.07 | Release build cache                      | [`release-build-cache.yml`](./release-build-cache.yml)                                     |
+| 02.08 | Release cadence                          | [`release-cadence.yml`](./release-cadence.yml)                                             |
+| 02.09 | Release contracts                        | [`release-contracts.yml`](./release-contracts.yml)                                         |
+| 02.10 | Release glibc floor                      | [`release-glibc-floor.yml`](./release-glibc-floor.yml)                                     |
+| 02.11 | Release JSR                              | [`release-jsr.yml`](./release-jsr.yml)                                                     |
+| 02.12 | Prepare npm first-publish handoff        | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)                                 |
+| 02.13 | Release smoke contracts                  | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
+| 02.14 | Release verify                           | [`release-verify.yml`](./release-verify.yml)                                               |
+| 02.15 | Release Zed host                         | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
+| 02.16 | Release                                  | [`release.yml`](./release.yml)                                                             |
 
 ## 03 Benchmarks and profiling
 
@@ -99,51 +98,49 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/performance/)
 
-| ID    | Workflow                                            | File                                                                                     |
-| ----- | --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| 03.01 | Benchmark - Source comparison                       | [`benchmark.yml`](./benchmark.yml)                                                       |
-| 03.02 | Benchmark - CI wall time                            | [`ci-walltime-benchmark.yml`](./ci-walltime-benchmark.yml)                               |
-| 03.03 | Cold typechecker scale                              | [`cold-typechecker-scale.yml`](./cold-typechecker-scale.yml)                             |
-| 03.04 | Benchmark - SFC compilation                         | [`compile-bench.yml`](./compile-bench.yml)                                               |
-| 03.05 | Component binding view allocation profile           | [`component-binding-view-profile.yml`](./component-binding-view-profile.yml)             |
-| 03.06 | Component scope binding allocation profile          | [`component-scope-binding.yml`](./component-scope-binding.yml)                           |
-| 03.07 | Content Mapper Cold Start                           | [`content-mapper-cold-start.yml`](./content-mapper-cold-start.yml)                       |
-| 03.08 | Content mapper span allocation                      | [`content-mapper-span-allocation.yml`](./content-mapper-span-allocation.yml)             |
-| 03.09 | Benchmark - Criterion suites                        | [`criterion-bench.yml`](./criterion-bench.yml)                                           |
-| 03.10 | Davinci Canon distinct-host scaling                 | [`davinci-canon-scaling.yml`](./davinci-canon-scaling.yml)                               |
-| 03.11 | Davinci resource budgets                            | [`davinci-resource-budgets.yml`](./davinci-resource-budgets.yml)                         |
-| 03.12 | Benchmark - Diagnostic digest                       | [`diagnostic-digest-bench.yml`](./diagnostic-digest-bench.yml)                           |
-| 03.13 | Benchmark - Doctor filters                          | [`doctor-filter-bench.yml`](./doctor-filter-bench.yml)                                   |
-| 03.14 | Document snapshot source profile                    | [`document-snapshot-source-profile.yml`](./document-snapshot-source-profile.yml)         |
-| 03.15 | Benchmark - Fresco dimensions                       | [`fresco-dimension-bench.yml`](./fresco-dimension-bench.yml)                             |
-| 03.16 | Expression slow unit 10401 profile                  | [`fuzz-expression-10401-profile.yml`](./fuzz-expression-10401-profile.yml)               |
-| 03.17 | Benchmark - glibc compatibility                     | [`glibc-floor-bench.yml`](./glibc-floor-bench.yml)                                       |
-| 03.18 | Level instruction counts                            | [`level-instruction-counts.yml`](./level-instruction-counts.yml)                         |
-| 03.19 | Benchmark - Level memory                            | [`level-memory-bench.yml`](./level-memory-bench.yml)                                     |
-| 03.20 | Benchmark - LSP server comparison                   | [`lsp-dual-server-benchmark.yml`](./lsp-dual-server-benchmark.yml)                       |
-| 03.21 | LSP marker scan allocation and residency comparison | [`lsp-marker-scan-scale.yml`](./lsp-marker-scan-scale.yml)                               |
-| 03.22 | LSP source operations and allocations               | [`lsp-source-profile.yml`](./lsp-source-profile.yml)                                     |
-| 03.23 | Partition weight work                               | [`partition-weight-work.yml`](./partition-weight-work.yml)                               |
-| 03.24 | Persistent batch storage                            | [`persistent-batch-storage.yml`](./persistent-batch-storage.yml)                         |
-| 03.25 | Profile allocation thread law                       | [`profile-allocation-thread-law.yml`](./profile-allocation-thread-law.yml)               |
-| 03.26 | Benchmark - Rust frontend threads                   | [`rust-frontend-threads-bench.yml`](./rust-frontend-threads-bench.yml)                   |
-| 03.27 | Script recovery clone cost                          | [`script-recovery-clone-cost.yml`](./script-recovery-clone-cost.yml)                     |
-| 03.28 | Script recovery cost                                | [`script-recovery-cost.yml`](./script-recovery-cost.yml)                                 |
-| 03.29 | Setup binding anchor allocation profile             | [`setup-binding-anchor-profile.yml`](./setup-binding-anchor-profile.yml)                 |
-| 03.30 | Native SFC member phase comparison                  | [`sfc-member-profile.yml`](./sfc-member-profile.yml)                                     |
-| 03.31 | Shipped release-profile measure                     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)                           |
-| 03.32 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
-| 03.33 | Benchmark - String storage                          | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
-| 03.34 | Benchmark - UTF-8 file reads                        | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
-| 03.35 | Benchmark - Tool comparison                         | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
-| 03.36 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
-| 03.37 | Benchmark - Type source snapshots                   | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
-| 03.38 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
-| 03.39 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
-| 03.40 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
-| 03.41 | Benchmark - VS Code startup                         | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
-| 03.42 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
-| 03.43 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
+| ID    | Workflow                                            | File                                                                             |
+| ----- | --------------------------------------------------- | -------------------------------------------------------------------------------- |
+| 03.01 | Benchmark - Source comparison                       | [`benchmark.yml`](./benchmark.yml)                                               |
+| 03.02 | Benchmark - CI wall time                            | [`ci-walltime-benchmark.yml`](./ci-walltime-benchmark.yml)                       |
+| 03.03 | Benchmark - SFC compilation                         | [`compile-bench.yml`](./compile-bench.yml)                                       |
+| 03.04 | Component binding view allocation profile           | [`component-binding-view-profile.yml`](./component-binding-view-profile.yml)     |
+| 03.05 | Component scope binding allocation profile          | [`component-scope-binding.yml`](./component-scope-binding.yml)                   |
+| 03.06 | Content Mapper Cold Start                           | [`content-mapper-cold-start.yml`](./content-mapper-cold-start.yml)               |
+| 03.07 | Content mapper span allocation                      | [`content-mapper-span-allocation.yml`](./content-mapper-span-allocation.yml)     |
+| 03.08 | Benchmark - Criterion suites                        | [`criterion-bench.yml`](./criterion-bench.yml)                                   |
+| 03.09 | Davinci Canon distinct-host scaling                 | [`davinci-canon-scaling.yml`](./davinci-canon-scaling.yml)                       |
+| 03.10 | Davinci resource budgets                            | [`davinci-resource-budgets.yml`](./davinci-resource-budgets.yml)                 |
+| 03.11 | Benchmark - Diagnostic digest                       | [`diagnostic-digest-bench.yml`](./diagnostic-digest-bench.yml)                   |
+| 03.12 | Benchmark - Doctor filters                          | [`doctor-filter-bench.yml`](./doctor-filter-bench.yml)                           |
+| 03.13 | Document snapshot source profile                    | [`document-snapshot-source-profile.yml`](./document-snapshot-source-profile.yml) |
+| 03.14 | Benchmark - Fresco dimensions                       | [`fresco-dimension-bench.yml`](./fresco-dimension-bench.yml)                     |
+| 03.15 | Expression slow unit 10401 profile                  | [`fuzz-expression-10401-profile.yml`](./fuzz-expression-10401-profile.yml)       |
+| 03.16 | Benchmark - glibc compatibility                     | [`glibc-floor-bench.yml`](./glibc-floor-bench.yml)                               |
+| 03.17 | Level instruction counts                            | [`level-instruction-counts.yml`](./level-instruction-counts.yml)                 |
+| 03.18 | Benchmark - Level memory                            | [`level-memory-bench.yml`](./level-memory-bench.yml)                             |
+| 03.19 | Benchmark - LSP server comparison                   | [`lsp-dual-server-benchmark.yml`](./lsp-dual-server-benchmark.yml)               |
+| 03.20 | LSP marker scan allocation and residency comparison | [`lsp-marker-scan-scale.yml`](./lsp-marker-scan-scale.yml)                       |
+| 03.21 | LSP source operations and allocations               | [`lsp-source-profile.yml`](./lsp-source-profile.yml)                             |
+| 03.22 | Partition weight work                               | [`partition-weight-work.yml`](./partition-weight-work.yml)                       |
+| 03.23 | Persistent batch storage                            | [`persistent-batch-storage.yml`](./persistent-batch-storage.yml)                 |
+| 03.24 | Profile allocation thread law                       | [`profile-allocation-thread-law.yml`](./profile-allocation-thread-law.yml)       |
+| 03.25 | Benchmark - Rust frontend threads                   | [`rust-frontend-threads-bench.yml`](./rust-frontend-threads-bench.yml)           |
+| 03.26 | Script recovery clone cost                          | [`script-recovery-clone-cost.yml`](./script-recovery-clone-cost.yml)             |
+| 03.27 | Script recovery cost                                | [`script-recovery-cost.yml`](./script-recovery-cost.yml)                         |
+| 03.28 | Setup binding anchor allocation profile             | [`setup-binding-anchor-profile.yml`](./setup-binding-anchor-profile.yml)         |
+| 03.29 | Native SFC member phase comparison                  | [`sfc-member-profile.yml`](./sfc-member-profile.yml)                             |
+| 03.30 | Shipped release-profile measure                     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)                   |
+| 03.31 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                 |
+| 03.32 | Benchmark - String storage                          | [`string-storage-bench.yml`](./string-storage-bench.yml)                         |
+| 03.33 | Benchmark - UTF-8 file reads                        | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                           |
+| 03.34 | Benchmark - Tool comparison                         | [`tool-benchmark.yml`](./tool-benchmark.yml)                                     |
+| 03.35 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                         |
+| 03.36 | Benchmark - Type source snapshots                   | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                           |
+| 03.37 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                           |
+| 03.38 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                               |
+| 03.39 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                               |
+| 03.40 | Benchmark - VS Code startup                         | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                         |
+| 03.41 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                       |
 
 ## 04 Type checking and content mapping
 
@@ -160,18 +157,15 @@ Typechecker, content-mapper, Corsa, and TypeScript-provider qualification.
 | 04.05 | Component input projection packets        | [`component-input-projection-packets.yml`](./component-input-projection-packets.yml)         |
 | 04.06 | Content Mapper Conformance                | [`content-mapper-conformance.yml`](./content-mapper-conformance.yml)                         |
 | 04.07 | Consumer instance globals capture         | [`content-mapper-instance-globals.yml`](./content-mapper-instance-globals.yml)               |
-| 04.08 | Content mapper pair                       | [`content-mapper-pair.yml`](./content-mapper-pair.yml)                                       |
-| 04.09 | Content mapper replay                     | [`content-mapper-replay.yml`](./content-mapper-replay.yml)                                   |
-| 04.10 | Content Mapper Source Case Jobs           | [`content-mapper-reported-q16.yml`](./content-mapper-reported-q16.yml)                       |
-| 04.11 | Vue component metadata                    | [`content-mapper-vue-component-meta.yml`](./content-mapper-vue-component-meta.yml)           |
-| 04.12 | Content Mapper worker stack               | [`content-mapper-worker-stack.yml`](./content-mapper-worker-stack.yml)                       |
-| 04.13 | Type-check corpus pair                    | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                                   |
-| 04.14 | Typecheck vs vue-tsc                      | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
-| 04.15 | WSL2 type-check qualification             | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
-| 04.16 | Typechecker cache custody                 | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                           |
-| 04.17 | Type checker native backend phases        | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
-| 04.18 | Native syntax and semantic completion     | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |
-| 04.19 | Platform VSIX native projection           | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                             |
+| 04.08 | Content Mapper Source Case Jobs           | [`content-mapper-reported-q16.yml`](./content-mapper-reported-q16.yml)                       |
+| 04.09 | Vue component metadata                    | [`content-mapper-vue-component-meta.yml`](./content-mapper-vue-component-meta.yml)           |
+| 04.10 | Content Mapper worker stack               | [`content-mapper-worker-stack.yml`](./content-mapper-worker-stack.yml)                       |
+| 04.11 | Typecheck vs vue-tsc                      | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
+| 04.12 | WSL2 type-check qualification             | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
+| 04.13 | Typechecker cache custody                 | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                           |
+| 04.14 | Type checker native backend phases        | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
+| 04.15 | Native syntax and semantic completion     | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |
+| 04.16 | Platform VSIX native projection           | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                             |
 
 ## 05 Language services and editors
 

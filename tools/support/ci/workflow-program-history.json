@@ -131,34 +131,5 @@
       ".github/scripts/workflows/typescript-provider-vsix/run-the-actual-installed-platform-extension.sh"
     ],
     "closure": "142b40f6f1c08d3c26c4daf3bdb8ff5e53a21f1aef72eee3bf81f6a1e913b3ce"
-  },
-  "cold-typechecker-scale": {
-    "before": "a66155dc3fc7db5823b480e5f2ae5492885948657c3d4cba158fd5db8b3eec2a",
-    "workflow": "3105a9444130ea813a3baeeaa818aa27a8b4b52f4fc1ede9f9ee6cc9299b4f53",
-    "programs": [
-      ".github/scripts/workflows/cold-typechecker-scale/build-allocation-instrumentation-separately-from-timing-binaries.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/build-normal-exact-base-and-head-with-equal-compiler-settings.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/build-separate-allocation-and-custody-roles-after-both-normal-images-are.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/build-separate-read-buffer-instrumentation-after-normal-image-sealing.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/build-the-exact-base-and-head-with-equal-symbol-settings.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/capture-direct-normal-process-pmu-counters-and-bounded-source-stacks.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/capture-paired-rust-allocation-spans-without-cpu-sampling-overhead.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/capture-paired-rust-allocation-spans-without-cpu-sampling-overhead.ts",
-      ".github/scripts/workflows/cold-typechecker-scale/compare-fresh-processes-and-independent-authored-diagnostic-controls.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/install-fixed-comparison-providers.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/install-the-exact-source-pinned-provider-graph.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/package-evidence-without-traversing-workspace-links.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/preserve-every-raw-pair-native-observation-control-and-source-receipt.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/refuse-changed-inputs-native-bytes-and-unsupported-modes.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/require-full-output-and-read-ownership-observations-before-four-balanced.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/require-original-controls-and-full-output-before-eight-candidate-primari.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/select-exact-product-sources-and-preserve-the-separate-controller-identi.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/validate-the-full-sfc-cohort.sh",
-      ".github/scripts/workflows/cold-typechecker-scale/validate-the-full-sfc-cohort.ts",
-      ".github/scripts/workflows/shared/cpu-affinity.ts",
-      ".github/scripts/workflows/shared/files.ts",
-      ".github/scripts/workflows/shared/runner-resources.ts"
-    ],
-    "closure": "9079b3edfc0b180aeb5d14712be3ab6051936a091927dc077faf85417a5fd5ad"
   }
 }
