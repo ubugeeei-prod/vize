@@ -1,0 +1,6 @@
+<template>
+  <div @click.stop v-on:keyup.stop.prevent />
+  <input v-model.trim="value" :[name].camel="value" />
+  <div .foo.camel="x" .[name].camel="x" .bar.prop="x" .baz />
+  <div @click.STOP = "run" :[name].Camel='value' />
+</template>

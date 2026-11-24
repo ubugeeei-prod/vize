@@ -3,6 +3,7 @@
 use oxc_syntax::number::ToJsString;
 use regex::Regex;
 use serde_json::Value;
+use std::borrow::Cow;
 use vize_l0::config::esquery::{Combinator, Operator, Selector, Simple, Value as Expected};
 use vize_l0::{FxHashMap, String};
 
@@ -126,12 +127,12 @@ impl<'v> Tree<'v> {
             Simple::Wildcard => true,
             Simple::Type(name) => kind.eq_ignore_ascii_case(name),
             Simple::Attribute(path, test) => {
-                let found = path
-                    .iter()
-                    .try_fold(this.value, |value, key| value.get(key.as_str()));
+                let found = attribute(this.value, path);
                 match test {
                     None => found.is_some_and(|value| !value.is_null()),
-                    Some((operator, expected)) => compare(found, *operator, expected, regexes),
+                    Some((operator, expected)) => {
+                        compare(found.as_deref(), *operator, expected, regexes)
+                    }
                 }
             }
             Simple::Field(path) => {
@@ -198,6 +199,27 @@ pub(super) fn node_type(value: &Value) -> &str {
         .get("type")
         .and_then(Value::as_str)
         .unwrap_or_default()
+}
+
+/// Follow JavaScript property paths, including array indices and length.
+fn attribute<'a>(mut value: &'a Value, path: &[String]) -> Option<Cow<'a, Value>> {
+    for (at, key) in path.iter().enumerate() {
+        value = if let Value::Array(items) = value {
+            if key == "length" && at + 1 == path.len() {
+                return Some(Cow::Owned(Value::from(items.len())));
+            }
+            // Non-canonical numeric keys such as `01` are not array indices.
+            if (key.starts_with('0') && key != "0")
+                || !key.bytes().all(|byte| byte.is_ascii_digit())
+            {
+                return None;
+            }
+            items.get(key.parse::<usize>().ok()?)?
+        } else {
+            value.get(key.as_str())?
+        };
+    }
+    Some(Cow::Borrowed(value))
 }
 
 /// esquery's attribute test: `${expected}` === `${found}`, a regex test of a
