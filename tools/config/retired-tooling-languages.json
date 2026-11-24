@@ -555,10 +555,6 @@
       "tests/tooling/vuefes-failure-transport.test.mjs",
       "tools/benchmarks/scripts/benchmark-binary.mjs",
       "tools/benchmarks/scripts/benchmark-provenance.mjs",
-      "tools/benchmarks/scripts/canon-alias-collector.mjs",
-      "tools/benchmarks/scripts/canon-alias-collector.test.mjs",
-      "tools/benchmarks/scripts/canon-alias-corpus.mjs",
-      "tools/benchmarks/scripts/canon-alias-native.mjs",
       "tools/benchmarks/scripts/check-diagnostic-messages.mjs",
       "tools/benchmarks/scripts/check-diagnostic-messages.test.mjs",
       "tools/benchmarks/scripts/check-gate-env.mjs",
@@ -722,7 +718,6 @@
       "tools/support/compat/parcel/native-target.mjs",
       "tools/support/compat/parcel/native-target.test.mjs",
       "tools/support/compat/parcel/profile.mjs",
-      "tools/support/compat/vite-style-relative-imports.mjs",
       "tools/support/compat/vuefes/passive-failure-sidecar.browser.test.mjs",
       "tools/support/github/typed-context-undefined-replay.mjs",
       "tools/support/release/jsr/verify-consumer-age.mjs"

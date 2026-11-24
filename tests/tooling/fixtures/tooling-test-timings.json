@@ -2246,7 +2246,6 @@
       "tests/tooling/typed-editor-oracle-matrix.test.ts": 40,
       "tests/tooling/typescript-ci-gates.test.ts": 603,
       "tests/tooling/typescript-tooling-project.test.ts": 349,
-      "tests/tooling/unused-bindings-profiles.test.ts": 82,
       "tests/tooling/vapor-allocation-nextest-protocol.test.ts": 119,
       "tests/tooling/vapor-keyed-fragment-expectations.test.mjs": 26,
       "tests/tooling/vapor-next-hydration.test.ts": 3204,

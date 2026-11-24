@@ -12,7 +12,6 @@ const headScriptAction = "./head/.github/actions/setup-rust-script";
 const qualificationWorkflows = new Set([
   ".github/workflows/async-component-ancestry.yml",
   ".github/workflows/native-sfc-runtime-options.yml",
-  ".github/workflows/plain-script-import-ref.yml",
 ]);
 const qualificationActions = new Map([
   [

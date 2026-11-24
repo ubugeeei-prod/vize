@@ -92,7 +92,7 @@ test("fresco platform suites run nightly or by explicit dispatch", () => {
   assert.equal(Object.hasOwn(workflow.on, "workflow_dispatch"), true);
 });
 
-test("repeated Fresco and storage measurements stay outside ordinary PR and queue checks", () => {
+test("repeated Fresco measurements stay outside ordinary PR and queue checks", () => {
   const fresco = parse(
     readAutomationPrograms(".github", "workflows", "fresco-dimension-bench.yml"),
   );
@@ -103,33 +103,6 @@ test("repeated Fresco and storage measurements stay outside ordinary PR and queu
     workflowStep(fresco.jobs.dimensions, "Compare actual parsing and 1k/10k node layout workloads")
       .run,
     "cargo test --locked --profile ci-opt -p vize_fresco --lib paired_parse_and_layout -- --ignored --test-threads=1",
-  );
-  const storage = parse(readAutomationPrograms(".github", "workflows", "string-storage-bench.yml"));
-  assert.deepEqual(Object.keys(storage.on), ["workflow_dispatch"]);
-  for (const sha of ["base_sha", "head_sha"]) {
-    assert.equal(storage.on.workflow_dispatch.inputs[sha].required, true);
-    assert.equal(storage.on.workflow_dispatch.inputs[sha].type, "string");
-  }
-  assert.deepEqual(storage.jobs["bounded-storage"].strategy.matrix.repetition, [1, 2, 3]);
-  const checkout = workflowUsesStep(storage.jobs["bounded-storage"], "actions/checkout@");
-  assert.equal(checkout.with?.ref, "${{ github.sha }}");
-  assert.equal(checkout.with?.path, "head");
-  const validate = workflowStep(
-    storage.jobs["bounded-storage"],
-    "Validate exact commits and use identical benchmark harness",
-  );
-  assert.equal(validate.run, "node head/tools/benchmarks/scripts/string-storage.ts prepare");
-  assert.deepEqual(validate.env, {
-    BASE_SHA: "${{ inputs.base_sha }}",
-    HEAD_SHA: "${{ inputs.head_sha }}",
-    DISPATCH_SHA: "${{ github.sha }}",
-  });
-  assert.equal(
-    workflowStep(
-      storage.jobs["bounded-storage"],
-      "Compare controlled production storage and traversal",
-    ).run,
-    "node head/tools/benchmarks/scripts/string-storage.ts measure",
   );
 });
 
