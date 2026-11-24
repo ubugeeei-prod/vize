@@ -3,7 +3,10 @@
 //! The style string is accepted as before. eslint-plugin-vue's tuple is
 //! accepted as written: `["shorthand", { sameNameShorthand: "always" }]`.
 
-use serde::{Deserialize, Deserializer, Serialize, de::Error};
+use serde::{
+    Deserialize, Deserializer, Serialize,
+    de::{Error, SeqAccess, Visitor, value::SeqAccessDeserializer, value::StrDeserializer},
+};
 
 use super::ConfigLintRuleOptions;
 
@@ -54,28 +57,45 @@ pub enum VBindStyleConfig {
 /// would also read a list such as `["always"]` positionally.
 impl<'de> Deserialize<'de> for VBindStyleConfig {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let value = serde_json::Value::deserialize(deserializer)?;
-        let serde_json::Value::Array(items) = value else {
-            return VBindStyle::deserialize(value)
-                .map(Self::Style)
-                .map_err(D::Error::custom);
-        };
-        let mut items = items.into_iter();
-        let (Some(style), options, None) = (items.next(), items.next(), items.next()) else {
-            return Err(D::Error::custom(
-                "a style list must be [style] or [style, { sameNameShorthand }]",
-            ));
-        };
-        let style = VBindStyle::deserialize(style).map_err(D::Error::custom)?;
-        match options {
-            None => Ok(Self::StyleTuple((style,))),
-            Some(options) if options.is_object() => VBindStyleOptions::deserialize(options)
-                .map(|options| Self::Tuple(style, options))
-                .map_err(D::Error::custom),
-            Some(_) => Err(D::Error::custom(
-                "the second item of a style list must be an options object",
-            )),
+        struct StyleVisitor;
+
+        impl<'de> Visitor<'de> for StyleVisitor {
+            type Value = VBindStyleConfig;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a style string or a style list")
+            }
+
+            fn visit_str<E: Error>(self, style: &str) -> Result<Self::Value, E> {
+                // Reject an unknown string while the input still points at it.
+                // Buffering it as Value defers its position until the outer map ends.
+                VBindStyle::deserialize(StrDeserializer::new(style)).map(VBindStyleConfig::Style)
+            }
+
+            fn visit_seq<A: SeqAccess<'de>>(self, items: A) -> Result<Self::Value, A::Error> {
+                let items =
+                    Vec::<serde_json::Value>::deserialize(SeqAccessDeserializer::new(items))?;
+                let mut items = items.into_iter();
+                let (Some(style), options, None) = (items.next(), items.next(), items.next())
+                else {
+                    return Err(A::Error::custom(
+                        "a style list must be [style] or [style, { sameNameShorthand }]",
+                    ));
+                };
+                let style = VBindStyle::deserialize(style).map_err(A::Error::custom)?;
+                match options {
+                    None => Ok(VBindStyleConfig::StyleTuple((style,))),
+                    Some(options) if options.is_object() => VBindStyleOptions::deserialize(options)
+                        .map(|options| VBindStyleConfig::Tuple(style, options))
+                        .map_err(A::Error::custom),
+                    Some(_) => Err(A::Error::custom(
+                        "the second item of a style list must be an options object",
+                    )),
+                }
+            }
         }
+
+        deserializer.deserialize_any(StyleVisitor)
     }
 }
 
@@ -157,9 +177,38 @@ mod tests {
         ] {
             let options = parse(json).unwrap();
             let config = options.v_bind_style_config().unwrap();
+            let from_value: ConfigLintRuleOptions =
+                serde_json::from_value(serde_json::from_str(json).unwrap()).unwrap();
+            assert_eq!(from_value.v_bind_style_config(), Some(config), "{json}");
             assert_eq!(config.style(), style, "{json}");
             assert_eq!(config.same_name_shorthand(), same_name, "{json}");
             assert_eq!(options.v_bind_style(), Some(style), "{json}");
+        }
+    }
+
+    #[test]
+    fn invalid_style_strings_keep_the_original_enum_error_position() {
+        #[derive(Debug, serde::Deserialize)]
+        struct OriginalOptions {
+            #[serde(rename = "vue/v-bind-style")]
+            _style: VBindStyle,
+        }
+
+        for json in [
+            r#"{"vue/v-bind-style":"invalid"}"#,
+            r#"{
+  "vue/v-bind-style": "invalid"
+}"#,
+            r#"{"vue/v-bind-style":"invalid"   }"#,
+            r#"{"vue/v-bind-style":"invalid","vue/v-on-style":"shorthand"}"#,
+        ] {
+            let original = serde_json::from_str::<OriginalOptions>(json).unwrap_err();
+            let current = parse(json).unwrap_err();
+            assert_eq!(current.to_string(), original.to_string(), "{json}");
+            assert_eq!(
+                (current.line(), current.column()),
+                (original.line(), original.column())
+            );
         }
     }
 
