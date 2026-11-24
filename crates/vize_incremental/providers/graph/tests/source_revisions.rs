@@ -17,8 +17,10 @@ use vize_resident_graph::{
     TemplateRecovery, TemplateSourceSites,
 };
 
-#[path = "source_revisions/positions.rs"]
-mod positions;
+mod source_revisions {
+    pub(super) mod positions;
+}
+use source_revisions::positions;
 
 #[derive(Debug, Default, PartialEq, Eq)]
 struct Counts {

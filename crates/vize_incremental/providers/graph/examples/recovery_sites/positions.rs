@@ -27,7 +27,7 @@ fn for_each<'a>(
     }
 }
 
-pub(super) fn measure<const N: usize>(recovery: &TemplateRecovery<'_>, first: u32, width: usize) {
+pub(crate) fn measure<const N: usize>(recovery: &TemplateRecovery<'_>, first: u32, width: usize) {
     // Include the start, interior and right endpoint of the damaged fragments.
     let mut sites = vec![first];
     for hole in recovery.holes() {

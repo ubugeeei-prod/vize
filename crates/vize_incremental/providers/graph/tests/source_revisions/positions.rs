@@ -1,9 +1,9 @@
 //! Independent per-record scan of authored cursor requests on all original revisions.
-use super::{BlockView, Span, TemplateRecovery};
+use crate::{BlockView, Span, TemplateRecovery};
 use core::ops::ControlFlow;
 use vize_resident_graph::RecoveryRecord;
 
-pub(super) fn check(recovery: &TemplateRecovery<'_>, source: &str, block: BlockView<'_>) -> usize {
+pub(crate) fn check(recovery: &TemplateRecovery<'_>, source: &str, block: BlockView<'_>) -> usize {
     let mut source_rows = Vec::new();
     for hole in recovery.holes() {
         source_rows.push(RecoveryRecord::Hole(hole));

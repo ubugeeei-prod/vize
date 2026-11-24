@@ -9,8 +9,10 @@ use vize_l0::{Lang, Span, cstr};
 use vize_l3::op::OpId;
 use vize_resident_graph::{TemplateGraphError, TemplateGraphObservation, TemplateQueries};
 
-#[path = "recovery_sites/positions.rs"]
-mod positions;
+mod recovery_sites {
+    pub(super) mod positions;
+}
+use recovery_sites::positions;
 
 #[global_allocator]
 static ALLOCATOR: CountingAllocator = CountingAllocator::mimalloc();
