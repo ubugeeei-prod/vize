@@ -1,74 +1,85 @@
 use super::*;
-use davinci_harness::alloc;
-use std::{fmt::Write, hint::black_box, time::Instant};
+use davinci_harness::{alloc, paired::assert_paired_time};
+use std::{fmt::Write, hint::black_box, sync::Arc};
 
-fn compare(state: &ServerState, uri: &Url, name: &str, source: &str, failures: &mut Vec<String>) {
+fn run(snapshot: &SourceSnapshot, state: &ServerState, joined: bool) -> Option<Products> {
+    if joined {
+        black_box(snapshot)
+            .script_query_products_with_diagnostics(black_box(state))
+            .unwrap()
+    } else {
+        separate(black_box(snapshot), black_box(state))
+    }
+}
+
+/// Compare both responses and their deterministic heap use. Return the
+/// snapshot when it publishes an outline, so its time can be paired too.
+fn compare(
+    state: &ServerState,
+    uri: &Url,
+    name: &str,
+    source: &str,
+    failures: &mut Vec<String>,
+) -> Option<Arc<SourceSnapshot>> {
     state
         .documents
         .open(uri.clone(), source.into(), 1, "vue".into());
     let snapshot = SourceSnapshotCache::default()
         .capture(&state.documents, uri)
         .unwrap();
-    let run = |joined| {
-        if joined {
-            black_box(&snapshot)
-                .script_query_products_with_diagnostics(black_box(state))
-                .unwrap()
-        } else {
-            separate(black_box(&snapshot), black_box(state))
-        }
-    };
-    let old = run(false);
-    same(run(true).as_ref(), old.as_ref(), name);
+    let old = run(&snapshot, state, false);
+    same(run(&snapshot, state, true).as_ref(), old.as_ref(), name);
     if old
         .as_ref()
         .is_none_or(|(editor, _)| editor.symbols.is_empty())
     {
-        return;
+        return None;
     }
-    let before = alloc::measure(|| run(false)).unwrap();
-    let after = alloc::measure(|| run(true)).unwrap();
-    let time = |joined| {
-        let start = Instant::now();
-        for _ in 0..12 {
-            drop(black_box(run(joined)));
-        }
-        start.elapsed().as_nanos() / 12
-    };
-    let mut pairs = Vec::new();
-    for round in 0..35 {
-        let first = round % 2 != 0;
-        let a = time(first);
-        let b = time(!first);
-        if round >= 4 {
-            pairs.push(if first { (b, a) } else { (a, b) });
-        }
-    }
+    let before = alloc::measure(|| run(&snapshot, state, false)).unwrap();
+    let after = alloc::measure(|| run(&snapshot, state, true)).unwrap();
     eprintln!(
-        "checker_product_time {name} calls={}/{} peak={}/{} ns={pairs:?}",
+        "checker_product_heap {name} calls={}/{} peak={}/{}",
         before.calls, after.calls, before.peak_bytes_over_start, after.peak_bytes_over_start
     );
-
-    let median = |mut samples: Vec<u128>| {
-        samples.sort_unstable();
-        samples[samples.len() / 2]
-    };
-    let (baseline, composed) = pairs.into_iter().unzip();
-    if after.calls > before.calls
-        || after.peak_bytes_over_start > before.peak_bytes_over_start
-        || median(composed) > median(baseline)
-    {
+    if after.calls > before.calls || after.peak_bytes_over_start > before.peak_bytes_over_start {
         failures.push(name.to_owned());
     }
+    Some(snapshot)
 }
 
+/// Named originals keep their own paired time. A JavaScript block parses with
+/// two grammars, so the shared read saves no parse there and must not lose time.
+fn timed_alone(name: &str) -> bool {
+    name.contains("document-symbol-outline")
+        || name.ends_with("/ScriptEnd.vue.txt")
+        || name.ends_with("/template-context-undefined-10667/sources/javascript.vue.txt")
+}
+
+// Every original input is compared and its heap use checked, so a new fixture
+// never shifts which inputs are measured. Wall time is paired per controlled or
+// named input and once over all other originals. A strict median per file made
+// equal-cost reads (both sides parse twice) fail at random.
 #[test]
 #[ignore = "paired complete responses over controlled grammars and original Vue inputs"]
 fn shared_and_distinct_checking_grammars() {
     alloc::mark_installed();
     let mut failures = Vec::new();
+    let mut timed = Vec::new();
     let state = ServerState::new();
-    let uri = Url::parse("file:///checker/Measure.vue").unwrap();
+    // A distinct URI per input keeps every retained snapshot current.
+    let mut uris = 0..;
+    let mut uri = || {
+        Url::parse(&vize_l0::cstr!(
+            "file:///checker/{}.vue",
+            uris.next().unwrap()
+        ))
+        .unwrap()
+    };
+    let mut controlled = |name: &str, source: &str, failures: &mut Vec<String>| {
+        if let Some(snapshot) = compare(&state, &uri(), name, source, failures) {
+            timed.push((name.to_owned(), snapshot));
+        }
+    };
     for lang in ["js", "ts", "jsx", "tsx"] {
         for count in [1, 8, 64] {
             let mut source = vize_l0::cstr!(
@@ -82,13 +93,7 @@ fn shared_and_distinct_checking_grammars() {
                 .unwrap();
             }
             source.push_str("</script><template><span/></template>");
-            compare(
-                &state,
-                &uri,
-                &vize_l0::cstr!("{lang}-{count}"),
-                &source,
-                &mut failures,
-            );
+            controlled(&vize_l0::cstr!("{lang}-{count}"), &source, &mut failures);
         }
     }
     for (name, source) in [
@@ -112,15 +117,31 @@ fn shared_and_distinct_checking_grammars() {
             "<script>const first = 1;</script><script setup lang='tsx'>const node = <div/>;</script>",
         ),
     ] {
-        compare(&state, &uri, name, source, &mut failures);
+        controlled(name, source, &mut failures);
     }
-    for_originals(|index, name, source| {
-        if index % 67 == 0
-            || name.contains("document-symbol-outline")
-            || name.ends_with("/ScriptEnd.vue.txt")
-        {
-            compare(&state, &uri, name, source, &mut failures);
+    let mut corpus = Vec::new();
+    for_originals(|_, name, source| {
+        let Some(snapshot) = compare(&state, &uri(), name, source, &mut failures) else {
+            return;
+        };
+        if timed_alone(name) {
+            timed.push((name.to_owned(), snapshot));
+        } else {
+            corpus.push(snapshot);
         }
     });
-    assert!(failures.is_empty(), "regressions on {failures:?}");
+    assert!(failures.is_empty(), "heap regressions on {failures:?}");
+    assert!(!corpus.is_empty(), "no original inputs");
+    for (name, snapshot) in &timed {
+        assert_paired_time(name, 12, |joined| drop(run(snapshot, &state, joined)));
+    }
+    assert_paired_time(
+        &vize_l0::cstr!("{} other original inputs", corpus.len()),
+        1,
+        |joined| {
+            for snapshot in &corpus {
+                drop(run(snapshot, &state, joined));
+            }
+        },
+    );
 }

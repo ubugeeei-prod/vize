@@ -1,6 +1,6 @@
 //! Normal File storage for the original whole input and actual node outcome.
 
-use super::{FileArtifact, RejectedFile};
+use super::{L2Ir, RejectedFile};
 use crate::lang::js::{NativeInterpolationInput, NativeTemplateIssueKind};
 use vize_l0::id::NodeId;
 
@@ -32,7 +32,7 @@ impl<'a> NativeFileInterpolation<'a> {
     }
 }
 
-impl<'a> FileArtifact<'a> {
+impl<'a> L2Ir<'a> {
     /// Whole original inputs remain owned across normal admission or refusal.
     #[must_use]
     pub fn native_interpolations(&self) -> &[NativeFileInterpolation<'a>] {

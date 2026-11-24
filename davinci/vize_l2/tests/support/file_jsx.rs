@@ -1,7 +1,7 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::file::{FileArtifact, FileIssueKind};
+use vize_l2::file::{FileIssueKind, L2Ir};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
 pub type LawResult<T = ()> = Result<T, &'static str>;
@@ -24,7 +24,7 @@ pub fn lower<'a>(
     file: &'a str,
     content: Span,
     profile: SourceType,
-) -> LawResult<FileArtifact<'a>> {
+) -> LawResult<L2Ir<'a>> {
     let raw = file
         .get(content.start as usize..content.end as usize)
         .required()?;

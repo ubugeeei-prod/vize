@@ -15,7 +15,6 @@ use vize_l0::String;
 
 pub(super) struct SfcQueryPlan {
     pub content: String,
-    pub source: String,
     pub script_offset: u32,
     pub macros: Vec<MacroQuery>,
     pub templates: Vec<TemplateQuery>,
@@ -63,7 +62,6 @@ impl PreparedSfc {
             session,
             ProbeBatch {
                 content: &plan.content,
-                source: &plan.source,
                 script_offset: plan.script_offset,
                 macros: &plan.macros,
                 templates: &plan.templates,

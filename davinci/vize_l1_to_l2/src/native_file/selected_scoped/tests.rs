@@ -12,7 +12,7 @@ use vize_l0::{
 use vize_l1::{
     container::{
         Vue,
-        vue::{DescriptorObservation, DescriptorOptions},
+        vue::{DescriptorOptions, L1Ir},
     },
     css::StyleSyntax,
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
@@ -26,7 +26,7 @@ fn options() -> DescriptorOptions {
         template: SurfaceParseOptions::default(),
     }
 }
-fn syntax<'a>(original: &DescriptorObservation<'a>) -> StyleSyntax<'a> {
+fn syntax<'a>(original: &L1Ir<'a>) -> StyleSyntax<'a> {
     StyleSyntax::observe(original.admitted().unwrap().styles().next().unwrap())
 }
 

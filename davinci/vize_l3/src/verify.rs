@@ -8,7 +8,7 @@ use alloc::vec::Vec;
 
 use vize_l0::{Span, cstr};
 
-use crate::op::{Phase, Program, RegionId};
+use crate::op::{L3Ir, Phase, RegionId};
 use lookup::{
     Tables, contains, effect_scope, op, op_index, op_inside_region, region, region_has_cycle,
     region_is_or_descendant,
@@ -23,7 +23,7 @@ pub use violation::{Violation, ViolationCode};
 
 /// Validate all invariants required by the artifact's current phase.
 #[must_use]
-pub fn verify(program: &Program<'_>) -> Vec<Violation> {
+pub fn verify(program: &L3Ir<'_>) -> Vec<Violation> {
     let program = &Tables::new(program);
     let mut out = Vec::new();
     check_duplicates(program, &mut out);

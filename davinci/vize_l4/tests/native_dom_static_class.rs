@@ -23,7 +23,7 @@ impl TemplatePolicy for DiagnosticValues {
     }
 }
 
-fn file<'a>(arena: &'a Allocator, source: &'a str) -> vize_l2::file::FileArtifact<'a> {
+fn file<'a>(arena: &'a Allocator, source: &'a str) -> vize_l2::file::L2Ir<'a> {
     let block = SourceRoot::new(source).unwrap().block(source, 0).unwrap();
     let native = NativeComponent::parse_in(arena, block).unwrap();
     let mut producer = FileProducer::new(arena, source).unwrap();

@@ -5,7 +5,7 @@ use vize_l0::{Span, String, cstr};
 use vize_l1::markup::AttributeValueOperand;
 use vize_l1_to_l2::native_file::{NativeSelectedSfcIssueKind, NativeSelectedSfcObservation};
 use vize_l2::{
-    file::{FileArtifact, NativeFileAttributeValueState},
+    file::{L2Ir, NativeFileAttributeValueState},
     op::Op,
     walk::NodeRef,
 };
@@ -66,7 +66,7 @@ pub fn observation(original: &NativeSelectedSfcObservation<'_>, source: &str) ->
     })
 }
 
-fn file_observation(file: &FileArtifact<'_>, source: &str) -> Value {
+fn file_observation(file: &L2Ir<'_>, source: &str) -> Value {
     let artifact = file.artifact();
     let provenance: Vec<_> = artifact.provenance().iter().map(|record|json!({
         "rule":record.rule.as_str(),"node":record.node.map(|node|node.index()),

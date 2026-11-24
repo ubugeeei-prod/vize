@@ -1,7 +1,7 @@
 //! Borrowed queries over the checked expression tables of one File.
 use super::{Model, PositionQueryError, TemplateQueryError, template::check_template_offset};
 use crate::{
-    file::{BindingRef, FileArtifact, ScopeId},
+    file::{BindingRef, L2Ir, ScopeId},
     resolution::Occurrence,
 };
 use vize_l0::{Span, id::NodeId};
@@ -81,7 +81,7 @@ impl<'f, 'a> Model<'f, 'a> {
 }
 
 fn scan_at<'f, 'a>(
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     offset: u32,
 ) -> Result<Option<ExpressionReferenceRef<'f, 'a>>, TemplateQueryError> {
     let mut found = None;
@@ -101,7 +101,7 @@ fn scan_at<'f, 'a>(
 }
 
 fn visit_rows<'f, 'a>(
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     mut visit: impl FnMut(usize, ExpressionReferenceRef<'f, 'a>) -> Result<(), TemplateQueryError>,
 ) -> Result<(), TemplateQueryError> {
     for (node, resolved) in file.facts.expressions.iter() {

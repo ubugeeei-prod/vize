@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { useSlots } from 'vue'
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
+const slots = useSlots()
+const exact: Equal<keyof typeof slots, 'submit-status'> = true
+</script>
+<template><div><slot name="submit-status" :value="'ready'" /></div></template>

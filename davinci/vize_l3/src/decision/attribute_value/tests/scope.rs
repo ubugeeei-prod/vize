@@ -11,7 +11,7 @@ fn genuine_js_ts_setup_for_alias_and_original_handler_scopes_survive_value_consu
         let mut original = owner(&arena, &source)?;
         original
             .parse_setup_program()
-            .map_err(|_| "whole original Program")?;
+            .map_err(|_| "whole original L3Ir")?;
         {
             let mut walk = original
                 .begin_setup()
@@ -67,7 +67,7 @@ fn genuine_js_ts_setup_for_alias_and_original_handler_scopes_survive_value_consu
         check(resolution.input().operand().raw_value() == "$event.count++")?;
         check(core::ptr::eq(
             setup.syntax(),
-            original.retained_setup().ok_or("retained whole Program")?,
+            original.retained_setup().ok_or("retained whole L3Ir")?,
         ))?;
         // Original custody never lifts the existing attribute-bearing For target
         // refusal. Its eventual bounded runtime family remains attribute-free.

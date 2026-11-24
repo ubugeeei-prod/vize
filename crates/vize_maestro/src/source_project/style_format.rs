@@ -9,7 +9,7 @@ use vize_atelier_sfc::scss::{ScssMismatch, ScssProducts, ScssRefusal};
 use vize_glyph::{FormatError, GlyphFormatter};
 use vize_l0::{Allocator, Span, String};
 use vize_l1::{
-    container::vue::{DescriptorObservation, StyleView, Vue},
+    container::vue::{L1Ir, StyleView, Vue},
     css::lang::OriginalStyleStructure,
 };
 
@@ -39,7 +39,7 @@ pub struct VerifiedStyleFormat<'s> {
 /// revision. The descriptor borrow keeps the original style identity private.
 pub struct PreparedScss<'s, 'o, 'a> {
     snapshot: &'s SourceSnapshot,
-    descriptor: &'o DescriptorObservation<'a>,
+    descriptor: &'o L1Ir<'a>,
     ordinal: usize,
     original: StyleView<'o, 'a>,
     products: ScssProducts<'a>,
@@ -49,7 +49,7 @@ impl SourceSnapshot {
     pub fn verified_style_format<'s>(
         &'s self,
         documents: &DocumentStore,
-        descriptor: &DescriptorObservation<'_>,
+        descriptor: &L1Ir<'_>,
         ordinal: usize,
         formatter: &GlyphFormatter<'_>,
     ) -> Result<VerifiedStyleFormat<'s>, StyleFormatError> {
@@ -62,7 +62,7 @@ impl SourceSnapshot {
     pub fn prepare_scss_with<'s, 'o, 'a, R>(
         &'s self,
         documents: &DocumentStore,
-        descriptor: &'o DescriptorObservation<'a>,
+        descriptor: &'o L1Ir<'a>,
         ordinal: usize,
         visit: impl FnOnce(OriginalStyleStructure<'_, 'a>) -> R,
     ) -> Result<(PreparedScss<'s, 'o, 'a>, R), StyleFormatError> {
@@ -175,7 +175,7 @@ impl<'s, 'a> PreparedScss<'s, '_, 'a> {
 include!("style_format/header.rs");
 
 fn style_at<'o, 'a>(
-    descriptor: &'o DescriptorObservation<'a>,
+    descriptor: &'o L1Ir<'a>,
     ordinal: usize,
 ) -> Result<StyleView<'o, 'a>, StyleFormatError> {
     descriptor

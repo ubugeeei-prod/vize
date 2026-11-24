@@ -3,7 +3,7 @@
 use super::FileProducer;
 use crate::artifact::ArtifactError;
 use crate::file::region::native::NativeTemplateWalk;
-use crate::file::{FileArtifact, FileIssueKind, RejectedFile, ScriptUnitId};
+use crate::file::{FileIssueKind, L2Ir, RejectedFile, ScriptUnitId};
 use vize_l0::Span;
 use vize_l1::{embed::syntax::EmbedSyntax, markup::SelectedTemplateComponent};
 
@@ -207,8 +207,8 @@ impl<'a> NativeTemplateOwner<'a> {
 
 /// Keep original Component and canonical File together across movement/failure.
 /// ```compile_fail
-/// use vize_l2::{file::FileArtifact, lang::js::NativeTemplateFile};
-/// fn replace<'a>(owner: &mut NativeTemplateFile<'a>, file: FileArtifact<'a>) {
+/// use vize_l2::{file::L2Ir, lang::js::NativeTemplateFile};
+/// fn replace<'a>(owner: &mut NativeTemplateFile<'a>, file: L2Ir<'a>) {
 ///     owner.outcome = Ok(file);
 /// }
 /// ```
@@ -220,7 +220,7 @@ impl<'a> NativeTemplateOwner<'a> {
 /// ```
 pub struct NativeTemplateFile<'a> {
     selected: SelectedTemplateComponent<'a>,
-    outcome: Result<FileArtifact<'a>, RejectedFile<'a>>,
+    outcome: Result<L2Ir<'a>, RejectedFile<'a>>,
     state: NativeRouteState,
     retained_setup: Option<alloc::boxed::Box<EmbedSyntax<'a>>>,
 }
@@ -230,7 +230,7 @@ impl<'a> NativeTemplateFile<'a> {
         &self.selected
     }
     #[must_use]
-    pub fn file(&self) -> Option<&FileArtifact<'a>> {
+    pub fn file(&self) -> Option<&L2Ir<'a>> {
         self.outcome.as_ref().ok()
     }
     #[must_use]
@@ -239,7 +239,7 @@ impl<'a> NativeTemplateFile<'a> {
     }
     pub fn view(&self) -> Result<NativeTemplateView<'_, 'a>, NativeTemplateIssue> {
         if matches!(self.state, NativeRouteState::Complete)
-            && self.file().is_some_and(FileArtifact::is_complete)
+            && self.file().is_some_and(L2Ir::is_complete)
         {
             return Ok(NativeTemplateView { owner: self });
         }
@@ -267,7 +267,7 @@ impl<'f, 'a> NativeTemplateView<'f, 'a> {
         self.owner
     }
     #[must_use]
-    pub fn file(&self) -> Option<&'f FileArtifact<'a>> {
+    pub fn file(&self) -> Option<&'f L2Ir<'a>> {
         self.owner.file()
     }
 }

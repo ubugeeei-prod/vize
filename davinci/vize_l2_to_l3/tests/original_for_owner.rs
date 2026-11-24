@@ -22,7 +22,7 @@ use vize_l1::{
 };
 use vize_l2::{
     dump::{Op as DumpOp, Page},
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{NativeTemplateFile, NativeTemplateOwner},
     op::{Op, OriginalForOp},
 };
@@ -93,14 +93,14 @@ fn original_file(arena: &Allocator) -> Result<NativeTemplateFile<'_>, &'static s
     Ok(output)
 }
 
-fn original_for<'f, 'a>(file: &'f FileArtifact<'a>) -> Result<&'f OriginalForOp<'a>, &'static str> {
+fn original_for<'f, 'a>(file: &'f L2Ir<'a>) -> Result<&'f OriginalForOp<'a>, &'static str> {
     let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
         return Err("real original For root");
     };
     Ok(original)
 }
 
-fn assert_original_custody(file: &FileArtifact<'_>) -> Result<(), &'static str> {
+fn assert_original_custody(file: &L2Ir<'_>) -> Result<(), &'static str> {
     let original = original_for(file)?;
     let head = file
         .for_head_for(original)

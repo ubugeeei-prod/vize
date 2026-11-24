@@ -1,7 +1,7 @@
 //! Existing normally attached rows are the only query authority.
 
 use super::{
-    FileArtifact, FileForHead, FileHandler, HandlerLocalRef, Origin, TemplateQueryError as Error,
+    FileForHead, FileHandler, HandlerLocalRef, L2Ir, Origin, TemplateQueryError as Error,
     TemplateSiteRef, TemplateSiteScope, TemplateSymbolRef,
 };
 use crate::op::{HandlerId, OriginalForId};
@@ -9,7 +9,7 @@ use crate::resolution::{HandlerBindingRef, HandlerLocalId, HandlerScopeId};
 use vize_l0::Span;
 
 pub(super) fn visit<'f, 'a>(
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     mut visit: impl FnMut(TemplateSiteRef<'f, 'a>),
 ) -> Result<(), Error> {
     for (node, _) in file.facts.handlers.iter() {
@@ -168,7 +168,7 @@ fn for_head<'f, 'a>(
     Ok(())
 }
 
-fn checked_span(file: &FileArtifact<'_>, span: Span) -> Result<(), Error> {
+fn checked_span(file: &L2Ir<'_>, span: Span) -> Result<(), Error> {
     if span.start >= span.end
         || file
             .artifact()

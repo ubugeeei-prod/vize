@@ -119,7 +119,7 @@ fn compare_file<'a>(
         "{path:?}"
     );
     // Include all original lexical rows and their targets, even on refused Files.
-    let rows = |f: &FileArtifact<'_>| {
+    let rows = |f: &L2Ir<'_>| {
         std::format!(
             "{:?}{:?}{:?}{:?}{:?}{:?}{:?}",
             f.units(),
