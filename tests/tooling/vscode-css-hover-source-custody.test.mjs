@@ -364,6 +364,15 @@ await test("historical anchors and the pinned integrated product tree remain qua
   assert.equal(report.reviewedCssChanges.length, 16);
   assert.equal(report.mergedMain.integrationLayer.changes.length, 34);
   assert.equal(report.successorMain.integrationLayer.changes.length, 122);
+  const source = "crates/vize_croquis/src/setup_context/ssr.rs";
+  const frozen = path.join(root, "tests/_fixtures/byte-custody", source);
+  const reviewed = report.successorMain.integrationLayer.changes.find(
+    (change) => change.path === source,
+  );
+  assert.equal(
+    execFileSync("git", ["hash-object", "--no-filters", frozen], { encoding: "utf8" }).trim(),
+    reviewed.after.oid,
+  );
   assert.equal(report.currentContracts.changes.length, 1);
   assert.deepEqual(
     report.currentCheckoutLayers.map((layer) => layer.changes.length),
