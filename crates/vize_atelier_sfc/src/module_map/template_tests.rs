@@ -233,11 +233,14 @@ fn expressions_after_accented_and_astral_text_keep_utf16_columns() {
     let source = BROKEN.replace("<p>{{ trip", "<p>é🌸{{ trip");
     let result = compile(&source, SEPARATE);
     assert_eq!(resolve(&result, "$setup.trip.title"), Some((9, 11)));
-    assert!(
-        template_segments(&result, &source)
-            .iter()
-            .any(|segment| segment.contains("9:11"))
-    );
+    let generated = result.code.find("$setup.trip.title").unwrap();
+    let authored = source.find("trip.title").unwrap();
+    let origins: Vec<_> = decode(result.map.as_ref().unwrap())
+        .into_iter()
+        .filter(|&(line, column, _, _)| offset(&result.code, line, column) == generated)
+        .map(|(_, _, line, column)| (line + 1, column, offset(&source, line, column)))
+        .collect();
+    assert_eq!(origins, [(9, 11, authored)]);
 }
 
 #[test]
