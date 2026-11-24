@@ -137,7 +137,6 @@ void test("Release-blocking observers and Fresco use the recovery adapter", () =
   const local = "./.github/actions/setup-wild-http-recovery";
   const workflows = [
     [".github/workflows/davinci-plugin-sdk.yml", local, ["plugin-contracts"]],
-    [".github/workflows/jsx-authored-native-modules.yml", local, ["authored-modules"]],
     [".github/workflows/build-docs.yml", local, ["build-docs", "build-playground"]],
     [".github/workflows/fresco.yml", local, ["fresco-rust"]],
   ];

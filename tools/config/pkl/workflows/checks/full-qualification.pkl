@@ -36,6 +36,10 @@ jobs {
   `rust-davinci-allocations` = import("../../parts/full-qualification/rust-davinci-allocations.pkl")
   `rust-native-differential` = import("../../parts/full-qualification/rust-native-differential.pkl")
   `clippy-and-test` = import("../../parts/full-qualification/clippy-and-test.pkl")
+  `rust-feature-tests` {
+    `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+    uses = "./.github/workflows/01-rust-feature-tests.yml"
+  }
   `playground-test` = import("../../parts/full-qualification/playground-test.pkl")
   `editor-extensions` = import("../../parts/full-qualification/editor-extensions.pkl")
   `editor-host-smoke` = import("../../parts/full-qualification/editor-host-smoke.pkl")
