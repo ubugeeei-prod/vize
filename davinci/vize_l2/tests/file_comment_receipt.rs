@@ -3,7 +3,7 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l2::file::{FileArtifact, ScriptUnit};
+use vize_l2::file::{L2Ir, ScriptUnit};
 use vize_l2::lang::js::{
     CallEvent, DeclaredEvent, FileObserver, FileProducer, ProgramInput, ProgramScope,
     StatementEvent,
@@ -43,7 +43,7 @@ fn observe<'a>(
     source: &'a str,
     source_type: SourceType,
     interrupt: bool,
-) -> Result<(FileArtifact<'a>, bool, bool), &'static str> {
+) -> Result<(L2Ir<'a>, bool, bool), &'static str> {
     let parsed = Parser::new(arena, source, source_type).parse_observed();
     let admitted = parsed.admitted().ok_or("actual stock Program admission")?;
     let expected = !admitted.program().comments.is_empty();

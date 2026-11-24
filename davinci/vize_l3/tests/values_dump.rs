@@ -2,7 +2,7 @@ use serde_json::json;
 use vize_l0::dump::value::DumpValue;
 use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{Allocator, Span, String, cstr};
-use vize_l3::op::{OpId, Phase, Program, RegionId};
+use vize_l3::op::{L3Ir, OpId, Phase, RegionId};
 use vize_l3::operand::{Operand, OperandRole, OperandValue, ValueKind};
 use vize_l3::values_dump::{Operand as DumpOperand, OperandRow, Page as ValuesPage};
 
@@ -13,7 +13,7 @@ fn parse_row(json: &str, line: usize) -> Result<DumpOperand, DumpError> {
 #[test]
 fn every_role_and_value_kind_round_trips_without_losing_escaped_text() {
     let arena = Allocator::default();
-    let mut program = Program::new(&arena, Phase::Built);
+    let mut program = L3Ir::new(&arena, Phase::Built);
     for role in OperandRole::ALL {
         for kind in ValueKind::ALL
             .into_iter()

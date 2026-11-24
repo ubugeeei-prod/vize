@@ -3,7 +3,7 @@
 use super::NativeSfc;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{BindingRef, FileArtifact, FileResolution, Reference, ReferenceTarget, ScopeId},
+    file::{BindingRef, FileResolution, L2Ir, Reference, ReferenceTarget, ScopeId},
     query::{Model, PositionQueryError},
     resolution::{Occurrence, Usage},
 };
@@ -44,7 +44,7 @@ pub struct NativeReferenceRef<'o, 'a> {
 
 impl<'o, 'a> NativeReferenceRef<'o, 'a> {
     #[must_use]
-    pub fn file(self) -> &'o FileArtifact<'a> {
+    pub fn file(self) -> &'o L2Ir<'a> {
         self.binding.file()
     }
     #[must_use]

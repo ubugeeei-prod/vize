@@ -4,7 +4,7 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock};
 use vize_l2::{
-    file::{FileArtifact, ReferenceTarget},
+    file::{L2Ir, ReferenceTarget},
     resolution::Usage,
 };
 
@@ -66,7 +66,7 @@ pub(super) fn with_oxc(
     rows.sorted()
 }
 
-pub(super) fn file(file: &FileArtifact<'_>) -> Symbols {
+pub(super) fn file(file: &L2Ir<'_>) -> Symbols {
     let mut rows = Symbols::default();
     for binding in file.bindings() {
         let decl = binding.declaration().unwrap();

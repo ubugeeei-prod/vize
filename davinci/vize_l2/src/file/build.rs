@@ -1,9 +1,9 @@
 //! Crate-private construction capability fed only by real language events.
 
 use super::{
-    Declaration, DeclarationKind, Export, FileArtifact, FileIssue, FileIssueKind, Import,
-    InitializerKind, Namespace, Reference, ReferenceTarget, RejectedFile, Scope, ScopeId,
-    ScriptProfile, ScriptUnit, ScriptUnitId, TemplateIssue, records::ProgramOrigin,
+    Declaration, DeclarationKind, Export, FileIssue, FileIssueKind, Import, InitializerKind, L2Ir,
+    Namespace, Reference, ReferenceTarget, RejectedFile, Scope, ScopeId, ScriptProfile, ScriptUnit,
+    ScriptUnitId, TemplateIssue, records::ProgramOrigin,
 };
 use crate::artifact::{ArtifactError, Builder};
 use crate::resolution::{BindingId, ResolutionTable};
@@ -79,9 +79,9 @@ impl<'a> FileBuilder<'a> {
     }
 
     /// Transfer factory-checked fields; no second tree/count/validation walk.
-    pub fn finish(self) -> Result<FileArtifact<'a>, RejectedFile<'a>> {
+    pub fn finish(self) -> Result<L2Ir<'a>, RejectedFile<'a>> {
         match self.canonical.finish() {
-            Ok(artifact) => Ok(FileArtifact::from_producer(artifact, self.facts)),
+            Ok(artifact) => Ok(L2Ir::from_producer(artifact, self.facts)),
             Err(artifact) => Err(RejectedFile {
                 artifact,
                 facts: Box::new(self.facts),

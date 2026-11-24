@@ -20,7 +20,7 @@ use vize_l1::{
     markup::SurfaceParseOptions,
 };
 use vize_l2::{
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{FileProducer, ProgramInput, ProgramScope},
 };
 
@@ -30,7 +30,7 @@ fn lexical<'a>(
     arena: &'a Allocator,
     block: SourceBlock<'a>,
     syntax: &EmbedSyntax<'a>,
-) -> Option<FileArtifact<'a>> {
+) -> Option<L2Ir<'a>> {
     let mut file = FileProducer::new(arena, block.root_source()).unwrap();
     file.program(
         ProgramInput::checked(syntax.admitted_program()?, block, 0)
@@ -41,7 +41,7 @@ fn lexical<'a>(
     Some(file.finish().unwrap())
 }
 
-fn rows(file: &FileArtifact<'_>) -> String {
+fn rows(file: &L2Ir<'_>) -> String {
     let units: Vec<_> = file
         .units()
         .iter()

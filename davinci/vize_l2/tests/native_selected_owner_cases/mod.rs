@@ -5,7 +5,7 @@ use vize_l0::{
 use vize_l1::{
     container::{
         Vue,
-        vue::{DescriptorObservation, DescriptorOptions},
+        vue::{DescriptorOptions, L1Ir},
     },
     embed::{
         EmbedSource,
@@ -27,7 +27,7 @@ fn check(condition: bool) -> Result<(), &'static str> {
 fn equal<T: PartialEq>(actual: T, expected: T) -> Result<(), &'static str> {
     check(actual == expected)
 }
-fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> DescriptorObservation<'a> {
+fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> L1Ir<'a> {
     Vue.observe_descriptor(
         arena,
         source,
@@ -65,7 +65,7 @@ fn kind<T>(result: Result<T, NativeTemplateIssue>) -> Result<Kind, &'static str>
 }
 fn syntax<'a>(
     arena: &'a Allocator,
-    view: &DescriptorObservation<'a>,
+    view: &L1Ir<'a>,
     setup: bool,
 ) -> Result<EmbedSyntax<'a>, &'static str> {
     let admitted = view.admitted().map_err(|_| "descriptor")?;

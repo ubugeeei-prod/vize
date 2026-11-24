@@ -30,7 +30,7 @@ use alloc::vec::Vec;
 
 use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 
-use crate::op::Program;
+use crate::op::L3Ir;
 use crate::placement::facts::Index;
 use crate::placement::{Placement, PlacementRecord};
 use measure::{Choice, Model};
@@ -48,7 +48,7 @@ pub const EXTRACT: PassDesc = PassDesc::new(
 ///
 /// Expects placements that `annotate` recorded or that `L3V010` accepts;
 /// records whose op does not resolve are left alone.
-pub fn extract(program: &mut Program<'_>, tier: OptTier) -> Extraction {
+pub fn extract(program: &mut L3Ir<'_>, tier: OptTier) -> Extraction {
     let (chosen, extraction) = plan(&Index::new(program), tier);
     for (record, chosen) in program.placements.iter_mut().zip(chosen) {
         record.chosen = chosen;
