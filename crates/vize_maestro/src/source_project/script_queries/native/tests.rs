@@ -85,6 +85,53 @@ fn compare(state: &ServerState, uri: &Url, source: &str, name: &str, counts: &mu
 }
 
 #[test]
+fn authored_literal_visits_match_the_original_rename_visitor_in_source_order() {
+    for (lang, body) in [
+        (
+            "js",
+            "import('./first'); export * from './static'; import(\"./二\");",
+        ),
+        (
+            "js",
+            "const a = import('./a'); const b = import('./b', {with: {type: 'json'}});",
+        ),
+        (
+            "js",
+            r"const a = import('./\u0061'); const b = import('./a\'b');",
+        ),
+        ("js", "import('./left' + './right'); import('./next');"),
+        ("js", "import(('./parenthesized')); import(`./template`);"),
+        (
+            "js",
+            "const a = import('./outer', {with: {value: import('./inner')}});",
+        ),
+        ("js", r"import('./a'); req\u0075ire('./b'); require('./c');"),
+        ("js", "import('./a'); const x = ; import('./b');"),
+        ("jsx", "const t = <X value={import('./jsx')}/>;"),
+        (
+            "ts",
+            "type T = import('./types').T; const p = import('./runtime');",
+        ),
+    ] {
+        let source = vize_l0::cstr!("π\r\n{body}");
+        let start = source.len() - body.len();
+        let root = SourceRoot::new(&source).unwrap();
+        let frame = root.block(&source[start..], start as u32).unwrap();
+        let arena = Allocator::default();
+        let syntax =
+            AuthoredProgram::parse(&arena, frame, ScriptQueryProducts::script_type(Some(lang)));
+        let mut authored = ScriptQueryProducts::default();
+        let mut original = ScriptQueryProducts::default();
+        authored.read_authored_specifiers(&syntax);
+        original.read_specifiers(&syntax);
+        assert_eq!(
+            authored.module_specifiers, original.module_specifiers,
+            "{body}"
+        );
+    }
+}
+
+#[test]
 fn current_intact_siblings_supply_their_own_programs_during_recovery() {
     let state = ServerState::new();
     let uri = Url::parse("file:///editor/Sibling.vue").unwrap();

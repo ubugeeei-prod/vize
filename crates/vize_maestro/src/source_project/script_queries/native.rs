@@ -56,7 +56,7 @@ impl SourceSnapshot {
                     outline,
                 );
                 out.push_script_symbol(symbol);
-                out.read_program_specifiers(program, frame.start());
+                out.read_retained_specifiers(program, frame.start(), true);
                 return Ok(());
             }
             let symbol = {
@@ -72,7 +72,7 @@ impl SourceSnapshot {
                     &LineIndex::new(prefix),
                     &syntax,
                 );
-                out.read_selected_specifiers(&syntax);
+                out.read_authored_specifiers(&syntax);
                 symbol
             };
             out.push_script_symbol(symbol);

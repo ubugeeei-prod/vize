@@ -4,22 +4,17 @@ use crate::source_project::{ScriptModuleSpecifier, ScriptQueryProducts};
 use vize_l0::Span;
 use vize_l1::embed::authored_program::AuthoredProgram;
 
+mod authored;
+
 impl ScriptQueryProducts {
     pub(crate) fn script_type(lang: Option<&str>) -> SourceType {
         script_source_type(lang)
     }
 
     pub(crate) fn read_specifiers(&mut self, syntax: &AuthoredProgram<'_>) {
-        self.read_program_specifiers(&syntax.parsed().program, syntax.block().start());
-    }
-
-    pub(crate) fn read_program_specifiers(
-        &mut self,
-        program: &oxc_ast::ast::Program<'_>,
-        base: u32,
-    ) {
         let mut collector = ModuleSpecifierCollector::default();
-        collector.visit_program(program);
+        collector.visit_program(&syntax.parsed().program);
+        let base = syntax.block().start();
         self.module_specifiers
             .extend(
                 collector
@@ -37,6 +32,7 @@ impl ScriptQueryProducts {
     /// Static module declarations are already ordered by the Program. A clean
     /// JavaScript tree can add nested literals only through dynamic import or
     /// a call to require. Escaped identifiers and recovered trees keep the visitor.
+    #[cfg(feature = "experimental-checker-script-queries")]
     pub(crate) fn read_selected_specifiers(&mut self, syntax: &AuthoredProgram<'_>) {
         if !Self::static_specifiers_only(syntax) {
             self.read_specifiers(syntax);
