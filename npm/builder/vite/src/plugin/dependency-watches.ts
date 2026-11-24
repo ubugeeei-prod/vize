@@ -25,12 +25,15 @@ export function createDependencyWatch(
       }
     : addWatchFile;
   if (!watch) return undefined;
-  let watched = server ? serverWatches.get(server.watcher) : undefined;
-  if (!watched) {
-    watched = new Set<string>();
-    if (server) serverWatches.set(server.watcher, watched);
-  }
+  let watched: Set<string> | undefined;
   return (file) => {
+    if (!watched) {
+      watched = server ? serverWatches.get(server.watcher) : undefined;
+      if (!watched) {
+        watched = new Set<string>();
+        if (server) serverWatches.set(server.watcher, watched);
+      }
+    }
     const plain = withoutVerbatimPrefix(file);
     if (watched.has(plain)) return;
     watched.add(plain);
