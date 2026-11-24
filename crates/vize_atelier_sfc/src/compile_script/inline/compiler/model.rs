@@ -1,10 +1,14 @@
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Statement, TSType, TSTypeName};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString, cstr};
 
 use crate::script::{ScriptCompileContext, define_model_metadata, model_modifiers_binding_name};
 
 use super::super::super::props::{
-    WithDefaultsValues, extract_emit_names_from_type, resolve_prop_js_type, split_skip_check,
-    ts_type_to_js_type,
+    WithDefaultsValues, add_null_to_runtime_type, extract_emit_names_from_type,
+    resolve_prop_js_type, split_skip_check, ts_type_to_js_type,
 };
 use super::super::type_handling::resolve_type_args;
 use super::props::build_user_props_decl;
@@ -32,7 +36,63 @@ fn model_runtime_type(ctx: &ScriptCompileContext, type_arg: &str) -> (String, bo
     } else {
         js_type
     };
-    split_skip_check(&js_type)
+    let (js_type, skip_check) = split_skip_check(&js_type);
+    let nullable = model_type_accepts_null(ctx, type_arg, &mut Vec::new());
+    (add_null_to_runtime_type(&js_type, nullable), skip_check)
+}
+
+/// Null in an array element, object member, or function return does not make
+/// the model itself nullable. Parse the type so only root unions, parentheses,
+/// and local aliases contribute, with cycle protection for recursive aliases.
+fn model_type_accepts_null(
+    ctx: &ScriptCompileContext,
+    source: &str,
+    seen: &mut Vec<String>,
+) -> bool {
+    let source = cstr!("type __Model = {source};");
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, &source, SourceType::ts()).parse();
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
+        return false;
+    }
+    let Some(Statement::TSTypeAliasDeclaration(alias)) = parsed.program.body.first() else {
+        return false;
+    };
+    model_type_node_accepts_null(ctx, &alias.type_annotation, seen)
+}
+
+fn model_type_node_accepts_null(
+    ctx: &ScriptCompileContext,
+    ty: &TSType<'_>,
+    seen: &mut Vec<String>,
+) -> bool {
+    match ty {
+        TSType::TSNullKeyword(_) => true,
+        TSType::TSUnionType(union) => union
+            .types
+            .iter()
+            .any(|ty| model_type_node_accepts_null(ctx, ty, seen)),
+        TSType::TSParenthesizedType(paren) => {
+            model_type_node_accepts_null(ctx, &paren.type_annotation, seen)
+        }
+        TSType::TSTypeReference(reference) => {
+            let TSTypeName::IdentifierReference(name) = &reference.type_name else {
+                return false;
+            };
+            let name = name.name.as_str();
+            let Some(body) = ctx.type_aliases.get(name) else {
+                return false;
+            };
+            if seen.iter().any(|seen| seen == name) {
+                return false;
+            }
+            seen.push(name.into());
+            let nullable = model_type_accepts_null(ctx, body, seen);
+            seen.pop();
+            nullable
+        }
+        _ => false,
+    }
 }
 
 /// Render the runtime prop-options object for a single defineModel, mirroring
@@ -225,3 +285,6 @@ pub(super) fn collect_model_infos(ctx: &ScriptCompileContext) -> Vec<ModelInfo> 
         })
         .collect()
 }
+
+#[cfg(test)]
+mod tests;
