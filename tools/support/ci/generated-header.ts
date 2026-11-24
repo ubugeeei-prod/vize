@@ -31,18 +31,20 @@ export function withGeneratedHeader(text: string, style: CommentStyle, source: s
   const header = notice(source)
     .map((line) => comment(style, line) + "\n")
     .join("");
-  return lead + header + text.slice(lead.length);
+  // Markdown formatters keep a blank line between an HTML comment block and the next heading.
+  const separator = style === "html" ? "\n" : "";
+  return lead + header + separator + text.slice(lead.length);
 }
 
 export function withoutGeneratedHeader(text: string, style: CommentStyle): string {
   const lead = leadingLine(style, text);
   const lines = text.slice(lead.length).split("\n");
   const [first, second] = notice("").map((line) => comment(style, line));
-  const sourcePrefix = first!.slice(0, first!.indexOf(" Generated from ") + " Generated from ".length);
-  if (lines[0]?.startsWith(sourcePrefix) && lines[1] === second) {
-    return lead + lines.slice(2).join("\n");
-  }
-  return text;
+  const marker = " Generated from ";
+  const sourcePrefix = first!.slice(0, first!.indexOf(marker) + marker.length);
+  if (!lines[0]?.startsWith(sourcePrefix) || lines[1] !== second) return text;
+  const bodyStart = style === "html" && lines[2] === "" ? 3 : 2;
+  return lead + lines.slice(bodyStart).join("\n");
 }
 
 export function commentStyle(target: string): CommentStyle {

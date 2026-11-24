@@ -47,6 +47,13 @@ test("removing the notice restores the body even after the source moves", () => 
   assert.equal(withoutGeneratedHeader(body, "hash"), body);
 });
 
+test("an HTML notice keeps a blank line before the document and strips with it", () => {
+  const text = withGeneratedHeader("# Catalog\n", "html", "tools/config/pkl/workflows");
+
+  assert.equal(text.split("\n")[2], "");
+  assert.equal(withoutGeneratedHeader(text, "html"), "# Catalog\n");
+});
+
 test("comment style follows the output's language", () => {
   assert.deepEqual(
     ["a.yml", "a.sh", "a.ps1", ".envrc", "a.cmd", "scripts/package-tasks.cjs", "README.md"].map(
