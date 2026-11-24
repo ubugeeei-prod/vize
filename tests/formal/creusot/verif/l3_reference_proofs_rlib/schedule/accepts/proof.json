@@ -1,0 +1,40 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_accepts": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.014 },
+              { "prover": "z3", "time": 0.016 },
+              { "prover": "z3", "time": 0.017 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.018 },
+              { "prover": "z3", "time": 0.016 },
+              { "prover": "z3", "time": 0.05 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.013 }
+            ]
+          }
+        ]
+      },
+      "vc_deref_Vec_Op_Global": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_deref_Vec_StateEdge_Global": { "prover": "z3", "time": 0.003 },
+      "vc_duplicates_Op": { "prover": "alt-ergo", "time": 0.011 },
+      "vc_edge_codes": { "prover": "z3", "time": 0.003 },
+      "vc_elim_Some": { "prover": "z3", "time": 0.003 },
+      "vc_elim_Some'0": { "prover": "z3", "time": 0.003 },
+      "vc_get_StateEdge": { "prover": "z3", "time": 0.003 },
+      "vc_into_iter_Range_usize": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_len_StateEdge": { "prover": "alt-ergo", "time": 0.011 },
+      "vc_next_Range_usize": { "prover": "z3", "time": 0.003 },
+      "vc_no_code": { "prover": "z3", "time": 0.003 }
+    }
+  }
+}
