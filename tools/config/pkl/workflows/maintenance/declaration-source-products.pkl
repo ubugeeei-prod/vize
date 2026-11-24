@@ -55,6 +55,7 @@ on {
       "crates/vize_canon/src/corsa_bridge/bridge.rs"
       "crates/vize_canon/src/corsa_bridge/vue_document.rs"
       "crates/vize_canon/src/corsa_bridge/vue_document/ambient_diagnostics.rs"
+      "crates/vize_canon/src/lsp_client/diagnostics.rs"
       "crates/vize_canon/src/lsp_client/diagnostics/ambient.rs"
       "crates/vize_canon/src/lsp_client/initial_diagnostics.rs"
       "crates/vize_canon/src/lsp_client/initial_diagnostics/ambient_world.rs"
