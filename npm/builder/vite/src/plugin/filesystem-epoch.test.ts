@@ -301,6 +301,9 @@ void test("every sign of a filesystem change ends the process epoch", async (t) 
   await host.start();
   await host.close();
   assert.deepEqual(await asked(), new Map());
+  // The same environment building again comes after a gap nothing reported.
+  await host.start();
+  assert.deepEqual(await asked(), once([file]));
 });
 
 void test("the environments of one app build ask about each path once, and the next build asks again", async (t) => {
