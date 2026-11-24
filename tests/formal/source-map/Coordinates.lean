@@ -47,4 +47,52 @@ theorem column_exact (lineStart column startCheckpoint startTail endCheckpoint e
   omega
 
 #print axioms column_exact
+
+-- Lines include their terminator bytes. The column reader receives the source
+-- from its chosen line and can reject positions inside a surrogate pair or
+-- beyond the line, as the LSP decoder does.
+private def positionOffset {α : Type} (width : α → Nat) (column : List α → Nat → Option Nat) :
+    List α → Nat → Nat → Option Nat
+  | [], _, _ => none
+  | l :: ls, 0, c => column (l :: ls) c
+  | l :: ls, n + 1, c => (positionOffset width column ls n c).map (width l + ·)
+
+private theorem positionOffset_append {α : Type} (width : α → Nat)
+    (column : List α → Nat → Option Nat) (before suffix : List α) (line c : Nat) :
+    positionOffset width column (before ++ suffix) (before.length + line) c =
+      (positionOffset width column suffix line c).map ((before.map width).sum + ·) := by
+  induction before with
+  | nil => simp
+  | cons l ls ih =>
+    simp only [List.cons_append, List.length_cons, Nat.succ_add, positionOffset, ih,
+      List.map_cons, List.sum_cons]
+    cases positionOffset width column suffix line c <;> simp [Nat.add_assoc]
+
+-- The editor drops an invalid start and falls back to one byte past a valid
+-- start when the end is invalid. Either endpoint may come first.
+private def diagnosticRange (start stop : Option Nat) : Option (Nat × Nat) :=
+  start.map fun s => (s, stop.getD (s + 1))
+
+theorem diagnostic_range_rebased {α : Type} (width : α → Nat)
+    (column : List α → Nat → Option Nat) (before suffix : List α)
+    (startLine startColumn stopLine stopColumn : Nat)
+    (anchor : before.length = min startLine stopLine) :
+    diagnosticRange (positionOffset width column (before ++ suffix) startLine startColumn)
+        (positionOffset width column (before ++ suffix) stopLine stopColumn) =
+      (diagnosticRange
+        (positionOffset width column suffix (startLine - before.length) startColumn)
+        (positionOffset width column suffix (stopLine - before.length) stopColumn)).map
+          (fun r => ((before.map width).sum + r.1, (before.map width).sum + r.2)) := by
+  have startAt : before.length + (startLine - before.length) = startLine := by omega
+  have stopAt : before.length + (stopLine - before.length) = stopLine := by omega
+  have startEq := positionOffset_append width column before suffix (startLine - before.length) startColumn
+  have stopEq := positionOffset_append width column before suffix (stopLine - before.length) stopColumn
+  rw [startAt] at startEq
+  rw [stopAt] at stopEq
+  rw [startEq, stopEq]
+  cases positionOffset width column suffix (startLine - before.length) startColumn <;>
+    cases positionOffset width column suffix (stopLine - before.length) stopColumn <;>
+    simp [diagnosticRange, Nat.add_assoc]
+
+#print axioms diagnostic_range_rebased
 end Davinci.SourceMap

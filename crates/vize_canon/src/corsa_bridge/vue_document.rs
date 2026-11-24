@@ -360,4 +360,7 @@ use generate::generate_vue_document_with_options;
 #[cfg(feature = "ambient-project-declarations")]
 mod ambient_diagnostics;
 #[cfg(feature = "ambient-project-declarations")]
-pub use ambient_diagnostics::AmbientVueDiagnostics;
+pub use ambient_diagnostics::{
+    AmbientVueDiagnosticBatch, AmbientVueDiagnosticRead, AmbientVueDiagnosticRequest,
+    AmbientVueDiagnostics,
+};
