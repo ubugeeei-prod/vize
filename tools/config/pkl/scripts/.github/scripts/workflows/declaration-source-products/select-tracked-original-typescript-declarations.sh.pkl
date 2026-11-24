@@ -1,7 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #"git ls-files -z -- '*.d.ts' '*.d.mts' '*.d.cts' > "$RUNNER_TEMP/declaration-inputs""#
-}

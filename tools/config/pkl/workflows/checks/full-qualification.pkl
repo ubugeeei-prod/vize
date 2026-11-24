@@ -1,4 +1,5 @@
 import "../../Actions.pkl" as ci
+import "../../RustFeatureTests.pkl" as features
 
 name = "Full qualification"
 on {
@@ -36,6 +37,13 @@ jobs {
   `rust-davinci-allocations` = import("../../parts/full-qualification/rust-davinci-allocations.pkl")
   `rust-native-differential` = import("../../parts/full-qualification/rust-native-differential.pkl")
   `clippy-and-test` = import("../../parts/full-qualification/clippy-and-test.pkl")
+  `rust-feature-plan` = import("../../parts/full-qualification/rust-feature-plan.pkl")
+  `rust-feature-tests` = (features.job(
+    "${{ fromJSON(needs.rust-feature-plan.outputs.matrix) }}",
+    "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+  )) {
+    needs = "rust-feature-plan"
+  }
   `playground-test` = import("../../parts/full-qualification/playground-test.pkl")
   `editor-extensions` = import("../../parts/full-qualification/editor-extensions.pkl")
   `editor-host-smoke` = import("../../parts/full-qualification/editor-host-smoke.pkl")

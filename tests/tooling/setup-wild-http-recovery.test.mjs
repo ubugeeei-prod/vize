@@ -169,7 +169,6 @@ void test("Release-blocking observers and Fresco use the recovery adapter", () =
     [".github/workflows/cross-file-script-offset.yml", local, ["coordinates"]],
     [".github/workflows/davinci-plugin-sdk.yml", local, ["plugin-contracts"]],
     [".github/workflows/davinci-unused-bindings.yml", local, ["unused-bindings"]],
-    [".github/workflows/jsx-authored-native-modules.yml", local, ["authored-modules"]],
     [".github/workflows/patina-native-boolean-protocol.yml", local, ["live-native"]],
     [
       ".github/workflows/unicode-prop-projection.yml",

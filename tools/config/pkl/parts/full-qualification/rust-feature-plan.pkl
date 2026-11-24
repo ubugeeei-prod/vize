@@ -1,0 +1,22 @@
+import "../../Actions.pkl" as ci
+
+name = "Plan Rust feature tests"
+`runs-on` = "ubuntu-24.04"
+`if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+`timeout-minutes` = 5
+outputs { matrix = "${{ steps.plan.outputs.matrix }}" }
+steps = new Listing {
+  ci.use(ci.checkout)
+  new Dynamic {
+    uses = ci.setupNode
+    with {
+      `node-version-file` = "package.json"
+      `package-manager-cache` = false
+    }
+  }
+  new Dynamic {
+    name = "List every feature row"
+    id = "plan"
+    run = "node tools/commands/ci/rust-feature-tests.ts matrix"
+  }
+}

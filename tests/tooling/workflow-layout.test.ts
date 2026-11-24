@@ -40,6 +40,7 @@ const approvedRunnerLabels = new Set([
 // sticky disk or build cache.
 const hostedZeroComputeJobs: Readonly<Record<string, readonly string[]>> = {
   "check.yml": ["iteration-plan", "test-report"],
+  "full-qualification.yml": ["rust-feature-plan"],
   "pr-rust-checks.yml": ["rust-source-report"],
   "pr-rust-products.yml": ["rust-product-report"],
   "pr-source-checks.yml": ["pr-source-plan", "affected-tooling-report", "source-report"],
@@ -84,7 +85,7 @@ function workflowRunnerLabels(
       const resolved = matrixKeys.flatMap((key) => valuesForMatrixKey(strategy.matrix, key));
       if (resolved.length === 0 && typeof strategy.matrix === "string") {
         // Generated matrices are validated by their typed planner contract.
-        assert.match(strategy.matrix, /^\$\{\{\s*fromJSON\(.+\)\s*\}\}$/u);
+        assert.match(strategy.matrix, /^\$\{\{\s*fromJSON\(.+\)(?:\.[\w-]+)*\s*\}\}$/u);
         return [];
       }
       assert.ok(resolved.length > 0, `cannot resolve runner matrix expression: ${runner}`);

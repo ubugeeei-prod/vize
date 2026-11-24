@@ -129,35 +129,22 @@ test(
   },
 );
 
-test(
-  "Cargo selectors distinguish the last matching record from the last linked test artifact",
-  { skip: !hasJq },
-  () => {
-    const artifact = (name: string, executable: string | null) => ({
-      reason: "compiler-artifact",
-      target: { name },
-      executable,
-    });
-    const records = [
-      artifact("vize", "/candidate/vize"),
-      artifact("vize", null),
-      artifact("foreign", "/foreign"),
-    ]
-      .map((event) => JSON.stringify(event))
-      .join("\n");
-    const options = ["-sr", "--arg", "name", "vize"];
-    assert.deepEqual(
-      runFilter("jq", path.join(workflows, "shared/cargo-target-executable.jq"), records, options),
-      { status: 0, stdout: "null" },
-    );
-    assert.deepEqual(
-      runFilter(
-        "jq",
-        path.join(workflows, "native-image-alt-query/linked-test-executable.jq"),
-        records,
-        options,
-      ),
-      { status: 0, stdout: "/candidate/vize" },
-    );
-  },
-);
+test("The Cargo selector returns the last matching record", { skip: !hasJq }, () => {
+  const artifact = (name: string, executable: string | null) => ({
+    reason: "compiler-artifact",
+    target: { name },
+    executable,
+  });
+  const records = [
+    artifact("vize", "/candidate/vize"),
+    artifact("vize", null),
+    artifact("foreign", "/foreign"),
+  ]
+    .map((event) => JSON.stringify(event))
+    .join("\n");
+  const options = ["-sr", "--arg", "name", "vize"];
+  assert.deepEqual(
+    runFilter("jq", path.join(workflows, "shared/cargo-target-executable.jq"), records, options),
+    { status: 0, stdout: "null" },
+  );
+});

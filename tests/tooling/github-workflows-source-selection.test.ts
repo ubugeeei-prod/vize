@@ -240,7 +240,10 @@ test("the Rust report waits for the builder and every named test cohort", () => 
     "merge-rust-differential",
     "pr-rust-build",
   ]);
-  assert.deepEqual(products.jobs["rust-product-report"].needs, ["pr-rust-shard"]);
+  assert.deepEqual(products.jobs["rust-product-report"].needs, [
+    "pr-rust-shard",
+    "rust-feature-tests",
+  ]);
   assert.equal(
     products.jobs["rust-product-report"].if,
     "${{ always() && !contains(needs.*.result, 'cancelled') }}",
@@ -277,6 +280,7 @@ test("the Rust report waits for the builder and every named test cohort", () => 
   );
   assert.deepEqual(reportSteps[gate].env, {
     RUN_RUST: "${{ inputs.run-rust }}",
+    FEATURE_TESTS: "${{ fromJSON(inputs.rust-plan).featureTests }}",
     NEEDS_JSON: "${{ toJSON(needs) }}",
     GH_TOKEN: "${{ github.token }}",
   });
