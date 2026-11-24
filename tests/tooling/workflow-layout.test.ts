@@ -13,6 +13,10 @@ import {
   readWorkflowEntries,
   renderWorkflowCatalog,
 } from "../../tools/commands/ci/workflow-catalog.ts";
+import {
+  legacyWorkflowNames,
+  workflowNameViolations,
+} from "../../tools/support/ci/workflow-names.ts";
 import { parseTapCounts } from "../../tools/support/github/docs-preview-readiness.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 import { plannedBusyRunner, plannedRunnerCondition } from "./support/planned-runner.ts";
@@ -208,4 +212,48 @@ test("every named automation program is available in the same checkout as its ca
       for (const program of fs.readdirSync(directory))
         check(directory, fs.readFileSync(path.join(directory, program), "utf8"));
   }
+});
+
+test("workflow files follow the group-prefixed naming rules", () => {
+  const files = fs
+    .readdirSync(path.join(root, ".github/workflows"))
+    .filter((file) => file.endsWith(".yml"));
+  assert.deepEqual(workflowNameViolations(files), []);
+  for (const { file, groupId } of readWorkflowEntries(root)) {
+    const prefix = /^(\d\d)-/u.exec(file)?.[1];
+    if (prefix != null) assert.equal(groupId, prefix, file);
+  }
+});
+
+test("workflow naming rules reject unprefixed, investigative and duplicate names", () => {
+  const violations = workflowNameViolations([
+    ...legacyWorkflowNames,
+    "release.yml",
+    "release-jsr.yml",
+    "release-verify.yml",
+    "release-cadence.yml",
+    "release-npm-bootstrap.yml",
+    "pkg-pr-new.yml",
+    "published-fresh-project.yml",
+    "parcel-transformer.yml",
+    "deploy-docs.yml",
+    "01-check.yml",
+    "lsp-check.yml",
+    "05-lsp-public-replay.yml",
+    "06-template-alias-11822.yml",
+    "03-compile-bench.yml",
+    "11-sticky-disk.yml",
+    "08-sticky-disk.yml",
+    "08-deploy-docs.yml",
+    "03-vue-benchmarks.yml",
+  ]);
+  assert.deepEqual(violations, [
+    "lsp-check.yml: name must be NN-<subject>.yml",
+    '05-lsp-public-replay.yml: "public" names an investigation',
+    '05-lsp-public-replay.yml: "replay" names an investigation',
+    '06-template-alias-11822.yml: "11822" is an issue or version number',
+    '03-compile-bench.yml: group 03 already implies "bench"',
+    "08-sticky-disk.yml: subject is already used by 11-sticky-disk.yml",
+    "08-deploy-docs.yml: subject is already used by deploy-docs.yml",
+  ]);
 });
