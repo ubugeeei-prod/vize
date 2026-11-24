@@ -1,4 +1,25 @@
-pub(super) fn is_module_augmentation(content: &str) -> bool {
+pub(super) fn path_is_module_augmentation(path: &std::path::Path) -> bool {
+    thread_local! {
+        static BUFFER: std::cell::RefCell<Vec<u8>> = const { std::cell::RefCell::new(Vec::new()) };
+    }
+    BUFFER.with(|buffer| {
+        let mut buffer = buffer.borrow_mut();
+        buffer.clear();
+        let mut file = std::fs::File::open(path).ok()?;
+        std::io::Read::read_to_end(&mut file, &mut buffer).ok()?;
+        // The exact single-space needles are the historical reject. A newline
+        // between `declare` and `module` is not a hit, matching `str::contains`.
+        if memchr::memmem::find(buffer.as_slice(), b"declare module").is_none()
+            && memchr::memmem::find(buffer.as_slice(), b"declare global").is_none()
+        {
+            return Some(false);
+        }
+        let content = std::str::from_utf8(buffer.as_slice()).ok()?;
+        Some(is_module_augmentation(content))
+    }) == Some(true)
+}
+
+fn is_module_augmentation(content: &str) -> bool {
     if !content.contains("declare module") && !content.contains("declare global") {
         return false;
     }

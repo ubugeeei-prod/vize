@@ -44,6 +44,10 @@ interface SourceRevisionIdentity {
   // Exact text avoids hash collisions and per-rule digest allocations. For
   // normal files physicalSource and state.source share the same string reference.
   readonly physicalSource: string;
+  // Repeat visits of an unchanged file stat instead of reading the bytes again.
+  // mtimeNs + size is the same identity the active-rule pass already trusts.
+  readonly mtimeNs: bigint;
+  readonly size: bigint;
 }
 
 interface CachedFileState {
@@ -58,11 +62,10 @@ let fileStateCacheClock = 0;
 
 export function getFileState(context: Context): FileState {
   const settings = getVizeSettings(context);
-  const physicalSource = fs.readFileSync(context.physicalFilename, "utf8");
   const ruleSelection = parseRuleSelection(settings.rules);
   const cacheKey = getCacheKey(context.physicalFilename, settings, ruleSelection);
   const cached = fileStateCache.get(cacheKey);
-  if (cached && cached.state.revision.physicalSource === physicalSource) {
+  if (cached && physicalRevisionUnchanged(context.physicalFilename, cached.state.revision)) {
     validateWorkaroundAuthority(cached.state, context.physicalFilename);
     if (cached.state.extractedScript !== context.sourceCode.text) {
       // A dual-script SFC is visited with multiple extracted programs for the
@@ -75,15 +78,14 @@ export function getFileState(context: Context): FileState {
     return cached.state;
   }
 
+  const revision = readPhysicalRevision(context.physicalFilename);
   const resolvedSource = resolveWorkaroundSource(
-    physicalSource,
+    revision.physicalSource,
     context.physicalFilename,
     readOriginalWorkaroundSource,
   );
   const state: FileState = {
-    revision: {
-      physicalSource,
-    },
+    revision,
     filename: resolvedSource.filename,
     source: resolvedSource.source,
     extractedScript: context.sourceCode.text,
@@ -280,6 +282,20 @@ function diagnosticIdentity(diagnostic: PatinaDiagnostic): string {
     end.column,
     end.offset,
   ].join("\0");
+}
+
+function physicalRevisionUnchanged(filename: string, revision: SourceRevisionIdentity): boolean {
+  const stat = fs.statSync(filename, { bigint: true });
+  return stat.mtimeNs === revision.mtimeNs && stat.size === revision.size;
+}
+
+function readPhysicalRevision(filename: string): SourceRevisionIdentity {
+  const stat = fs.statSync(filename, { bigint: true });
+  return {
+    physicalSource: fs.readFileSync(filename, "utf8"),
+    mtimeNs: stat.mtimeNs,
+    size: stat.size,
+  };
 }
 
 function nextFileStateCacheClock(): number {

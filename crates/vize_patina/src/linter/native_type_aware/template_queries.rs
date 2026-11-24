@@ -33,6 +33,9 @@ pub(super) struct TemplateQuery {
     pub source_end: u32,
     pub owner_start: u32,
     pub owner_end: u32,
+    /// `source[source_start..source_end].trim() == "$attrs"`. Recorded while the
+    /// SFC text is still alive so the plan does not keep that text.
+    pub attrs_binding: bool,
 }
 
 pub(super) struct TemplatePromiseQuery {

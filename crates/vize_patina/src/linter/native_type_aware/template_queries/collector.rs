@@ -486,6 +486,7 @@ fn collect_expression_query_sets(
                 source_end,
                 owner_start: source_start,
                 owner_end: source_end,
+                attrs_binding: source_text.trim() == "$attrs",
             });
         }
         for callee in call_ranges.callees {
@@ -513,6 +514,7 @@ fn collect_expression_query_sets(
                 source_end: callee_end,
                 owner_start: source_start,
                 owner_end: source_end,
+                attrs_binding: callee_source.trim() == "$attrs",
             });
         }
     }
