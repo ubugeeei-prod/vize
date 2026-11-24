@@ -1,7 +1,8 @@
 //! Whole public callback vectors used only by the private consumer tests.
 
-use crate::tokenizer::{Callbacks, QuoteType};
 use vize_l0::ErrorCode;
+
+use crate::tokenizer::{Callbacks, QuoteType};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) enum Event {

@@ -24,8 +24,8 @@ use super::super::Parser;
 /// This used to be 256, chosen for the stack the recursive later passes needed:
 /// 256 was exactly the depth a debug build survived on Rust's default 2 MiB
 /// thread stack, and one level past whatever the constant said, the failure mode
-/// was `fatal runtime error: stack overflow` — `SIGABRT`, not a diagnostic
-/// (#3480). Those passes now grow onto the heap when the stack runs low
+/// was `fatal runtime error: stack overflow` — `SIGABRT`, not a diagnostic.
+/// Those passes now grow onto the heap when the stack runs low
 /// (`vize_l0::recursion`), so nesting depth no longer costs stack and the
 /// limit is free to be chosen for what it actually bounds: output size.
 ///

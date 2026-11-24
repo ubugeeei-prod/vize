@@ -6,6 +6,7 @@
 //! scope, and nested compiles restore the previous value on exit.
 
 use std::cell::Cell;
+
 use vize_relief::WhitespaceStrategy;
 
 std::thread_local! {

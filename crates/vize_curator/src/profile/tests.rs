@@ -1,10 +1,12 @@
-use super::{ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, render_profile_report};
 use std::path::PathBuf;
 use std::time::Duration;
+
 use vize_l0::String;
 use vize_l0::profiler::{
     AllocationSnapshot, CounterEntry, CounterSummary, ProfileEntry, ProfileSummary,
 };
+
+use super::{ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, render_profile_report};
 
 #[test]
 #[expect(

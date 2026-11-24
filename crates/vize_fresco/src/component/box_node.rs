@@ -167,7 +167,6 @@ impl BoxNode {
         self
     }
 
-    /// Build into a RenderNode.
     pub fn build(self, id: u64) -> RenderNode {
         RenderNode::new(id, NodeKind::Box)
             .with_style(self.style)

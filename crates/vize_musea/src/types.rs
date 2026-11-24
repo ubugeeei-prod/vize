@@ -111,7 +111,6 @@ pub struct ArtScriptBlock<'a> {
     /// Whether this is a setup script
     pub setup: bool,
 
-    /// Source location
     pub loc: Option<SourceLocation>,
 }
 
@@ -127,7 +126,6 @@ pub struct ArtStyleBlock<'a> {
     /// Whether scoped
     pub scoped: bool,
 
-    /// Source location
     pub loc: Option<SourceLocation>,
 }
 
@@ -163,7 +161,6 @@ pub struct ArtParseOptions {
     pub filename: String,
 }
 
-/// Parse result containing descriptor or errors.
 pub type ArtParseResult<'a> = Result<ArtDescriptor<'a>, ArtParseError>;
 
 /// Error type for Art parsing.

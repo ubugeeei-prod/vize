@@ -2,8 +2,9 @@
 //!
 //! Common device viewport configurations.
 
-use serde::{Deserialize, Serialize};
 use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
 
 use crate::types::ViewportConfig;
 

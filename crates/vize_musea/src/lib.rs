@@ -173,11 +173,9 @@ defineArtMeta({
         assert!(art.script_setup.is_some());
         assert_eq!(art.styles.len(), 1);
 
-        // Transform to CSF
         let csf = transform_to_csf(&art);
         insta::assert_debug_snapshot!(csf);
 
-        // Transform to Vue
         let vue = transform_to_vue(&art);
         insta::assert_debug_snapshot!(vue);
     }

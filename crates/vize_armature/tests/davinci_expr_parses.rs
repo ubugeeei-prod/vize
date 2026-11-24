@@ -164,7 +164,7 @@ fn template_parse_retains_each_expression_ast_exactly_once() {
         Expression::StaticMemberExpression(_)
     ));
 
-    // A pathologically nested expression (the #956 stack-overflow shape) is
+    // A pathologically nested expression (the stack-overflow shape) is
     // refused by the shared nesting guard before oxc ever runs: no crash, no
     // retained AST, and no counter increment — the same refusal every legacy
     // parse site applies before creating its parse arena, so "parsed at most

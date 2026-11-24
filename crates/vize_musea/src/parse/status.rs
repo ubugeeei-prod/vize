@@ -1,7 +1,8 @@
 //! Shared classification for `defineArt` / `<art status>` values.
 
-use crate::types::ArtStatus;
 use vize_l0::{Allocator, cstr};
+
+use crate::types::ArtStatus;
 
 #[inline]
 pub(crate) fn classify_status(value: &str) -> ArtStatus {

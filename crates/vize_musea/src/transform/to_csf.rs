@@ -3,9 +3,10 @@
 //! This module generates Storybook-compatible Component Story Format (CSF) files
 //! from Art descriptors.
 
+use vize_l0::{String, ToCompactString, append, cstr};
+
 use super::to_csf_script::{ScriptSetupCsf, extract_script_setup_for_csf};
 use crate::types::{ArtDescriptor, ArtVariant, CsfOutput};
-use vize_l0::{String, ToCompactString, append, cstr};
 
 const COMPONENT_BINDING: &str = "__museaComponent";
 const META_BINDING: &str = "__museaMeta";
@@ -38,7 +39,6 @@ pub fn transform_to_csf(art: &ArtDescriptor<'_>) -> CsfOutput {
         .map(|script| extract_script_setup_for_csf(script.content))
         .unwrap_or_default();
 
-    // Generate imports
     output.push_str(&generate_imports(art, &script));
     output.push('\n');
 
@@ -152,7 +152,6 @@ fn generate_story(
 ) -> String {
     let mut story = String::default();
 
-    // Convert variant name to PascalCase for export name
     let export_name = to_pascal_case(variant.name);
 
     append!(story, "export const {export_name}: {STORY_TYPE} = {{\n");
@@ -254,7 +253,6 @@ fn component_alias_from_path(path: &str) -> Option<String> {
     (!alias.is_empty()).then_some(alias)
 }
 
-/// Convert a string to PascalCase.
 fn to_pascal_case(s: &str) -> String {
     let mut result = String::default();
     for part in s

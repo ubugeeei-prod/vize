@@ -21,12 +21,13 @@
 
 use std::path::{Path, PathBuf};
 
+use vize_l0::{Allocator, String, append};
+
 use super::{art_status_warnings, parse_art};
 use crate::docs::{CatalogEntry, DocOptions, generate_component_doc};
 use crate::palette::{PaletteOptions, generate_palette};
 use crate::types::{ArtParseOptions, ArtParseResult};
 use crate::{transform_to_csf, transform_to_vue};
-use vize_l0::{Allocator, String, append};
 
 /// Committed corpus size (`tests/fixtures/differential`, excluding the
 /// manifests). Changing the corpus means changing this number.

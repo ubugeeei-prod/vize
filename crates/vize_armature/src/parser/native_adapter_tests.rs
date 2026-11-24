@@ -5,10 +5,11 @@
     reason = "compare complete debug ASTs in the test oracle"
 )]
 
-use super::Parser;
-use super::compat_reference::parse_with_compat as parse_with_adapter;
 use vize_l0::Allocator;
 use vize_relief::options::ParserOptions;
+
+use super::Parser;
+use super::compat_reference::parse_with_compat as parse_with_adapter;
 
 fn assert_parser_parity_with_options(source: &str, document: bool, options: ParserOptions) {
     let old_allocator = Allocator::new();

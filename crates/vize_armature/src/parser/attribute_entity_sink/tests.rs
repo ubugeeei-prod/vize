@@ -2,12 +2,13 @@
 
 mod recorder;
 
-use super::OriginalFirstScalarSink;
-use recorder::{Event, FullRecorder, Recorder};
 use vize_l1::markup::{
     Component, Delimiters, Document, LexErrorCode, LexMode, LexOptions, Lexer, Profile, QuoteType,
     Sink, entity::DecodedEntity, htmlish::lex::compat::adapter::CompatSink,
 };
+
+use super::OriginalFirstScalarSink;
+use recorder::{Event, FullRecorder, Recorder};
 
 fn public_events<P: Profile>(source: &str, options: LexOptions<'_>, verbatim: bool) -> Vec<Event> {
     let mut lexer = Lexer::<P, _>::new(

@@ -5,8 +5,9 @@
 //! - Value patterns (color codes, dates, etc.)
 //! - Multiple values across variants (for select inference)
 
-use super::{ControlKind, PaletteOptions, RangeConfig, SelectOption};
 use vize_l0::{FxHashSet, String};
+
+use super::{ControlKind, PaletteOptions, RangeConfig, SelectOption};
 
 /// Infer control type from a single value.
 #[inline]

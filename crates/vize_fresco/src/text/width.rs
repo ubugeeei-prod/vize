@@ -74,7 +74,6 @@ impl TextWidth {
         out
     }
 
-    /// Pad string to specified width.
     pub fn pad_right(s: &str, target_width: usize) -> CompactString {
         let current_width = Self::width(s);
         if current_width >= target_width {

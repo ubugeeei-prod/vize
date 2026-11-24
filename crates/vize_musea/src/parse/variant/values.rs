@@ -2,8 +2,9 @@
 //! `viewport`). They read one attribute value L1 already delimited; nothing
 //! here scans the file.
 
-use crate::types::ViewportConfig;
 use vize_l0::{Allocator, FxHashMap};
+
+use crate::types::ViewportConfig;
 
 /// Parse args JSON string into a map with arena-allocated keys.
 /// HTML entities are decoded before parsing.

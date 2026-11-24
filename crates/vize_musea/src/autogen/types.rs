@@ -94,7 +94,6 @@ pub struct GeneratedVariant {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AutogenOutput {
-    /// Generated variants.
     pub variants: Vec<GeneratedVariant>,
     /// Generated `.art.vue` file content.
     pub art_file_content: String,

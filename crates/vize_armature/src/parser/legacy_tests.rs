@@ -1,8 +1,9 @@
 //! Parser behaviour under the opt-in legacy Vue dialects.
 
-use super::parse_with_options;
 use vize_l0::Allocator;
 use vize_relief::{ExpressionNode, TemplateChildNode, options::ParserOptions};
+
+use super::parse_with_options;
 
 #[test]
 fn triple_mustache_under_v1_lowers_to_raw_html_interpolation() {

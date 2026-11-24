@@ -3,16 +3,16 @@
 //! Note: `format!` is used throughout this module because napi `Error::new`
 //! requires `std::string::String`.
 
-use napi::bindgen_prelude::*;
-use napi_derive::napi;
 use std::sync::Mutex;
 
-use crate::terminal::{Backend, TerminalCapabilities, TerminalOptions};
+use napi::bindgen_prelude::*;
+use napi_derive::napi;
 
 use super::{
     frame_output::FrameOutputTelemetryNapi,
     terminal_types::{TerminalInfoNapi, TerminalOptionsNapi},
 };
+use crate::terminal::{Backend, TerminalCapabilities, TerminalOptions};
 
 // Global terminal backend (lazy initialized)
 static BACKEND: Mutex<Option<Backend>> = Mutex::new(None);

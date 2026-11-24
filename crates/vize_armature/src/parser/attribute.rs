@@ -200,7 +200,7 @@ impl<'a> Parser<'a> {
             // repeat. So we KEEP both in `props` and emit a
             // *recoverable* diagnostic; downstream pipelines treat it
             // as non-fatal so a `<div id=a id=b>` no longer yields a
-            // 0-byte module marked as success. (#958)
+            // 0-byte module marked as success.
             let mut message = String::with_capacity(attr.name.len() + 79);
             appends!(
                 message,

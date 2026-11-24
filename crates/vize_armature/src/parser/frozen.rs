@@ -1,8 +1,9 @@
 //! Compiler-only custody of authored elements frozen by own or inherited v-pre.
 
-use super::Parser;
 use vize_l0::{Span, Vec};
 use vize_relief::{RootNode, errors::CompilerError};
+
+use super::Parser;
 
 /// Provenance from one existing parser walk, bound to its exact source buffer.
 ///

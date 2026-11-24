@@ -44,15 +44,12 @@ pub enum CandidateKind {
     /// Normal conversion
     #[default]
     Normal,
-    /// From user dictionary
     UserDictionary,
     /// Learning/history based
     Learned,
-    /// Prediction
     Prediction,
     /// Symbol or special character
     Symbol,
-    /// Emoji
     Emoji,
 }
 
@@ -199,7 +196,6 @@ impl CandidateList {
         }
     }
 
-    /// Set candidates.
     pub fn set_candidates(&mut self, candidates: impl IntoIterator<Item = Candidate>) {
         self.candidates = candidates.into_iter().collect();
         self.selected = 0;
@@ -213,7 +209,6 @@ impl CandidateList {
         self.page_start = 0;
     }
 
-    /// Add a candidate.
     pub fn add(&mut self, candidate: Candidate) {
         self.candidates.push(candidate);
     }

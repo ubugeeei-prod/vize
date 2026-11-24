@@ -69,12 +69,10 @@ impl RenderNode {
         self
     }
 
-    /// Add a child.
     pub fn add_child(&mut self, child_id: NodeId) {
         self.children.push(child_id);
     }
 
-    /// Remove a child.
     pub fn remove_child(&mut self, child_id: NodeId) {
         if let Some(pos) = self.children.iter().position(|&id| id == child_id) {
             self.children.remove(pos);
@@ -86,7 +84,6 @@ impl RenderNode {
         self.dirty = true;
     }
 
-    /// Mark as clean.
     pub fn mark_clean(&mut self) {
         self.dirty = false;
     }
@@ -97,7 +94,6 @@ impl RenderNode {
 pub enum NodeKind {
     /// Container box
     Box,
-    /// Text content
     Text(TextContent),
     /// Text input
     Input(InputContent),
@@ -108,7 +104,6 @@ pub enum NodeKind {
 /// Text content for text nodes.
 #[derive(Debug, Clone, Default)]
 pub struct TextContent {
-    /// The text string
     pub text: CompactString,
     /// Whether text should wrap
     pub wrap: bool,
@@ -230,7 +225,6 @@ pub struct Appearance {
     pub hidden: bool,
     /// Strikethrough text
     pub strikethrough: bool,
-    /// Border style
     pub border: Option<BorderStyle>,
 }
 

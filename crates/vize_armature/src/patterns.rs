@@ -12,9 +12,10 @@ mod parser;
 mod tests;
 mod tokens;
 
-pub use attribute::{attribute_source_offset, attribute_source_span, parse_match_attribute};
 use oxc_span::Span;
 use vize_l0::String;
+
+pub use attribute::{attribute_source_offset, attribute_source_span, parse_match_attribute};
 
 /// A fully parsed arm. No JavaScript expressions are evaluated by this parser.
 #[derive(Debug, Clone, PartialEq, Eq)]

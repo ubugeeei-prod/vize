@@ -1,6 +1,7 @@
-use super::{find_element, parse, parse_document};
 use vize_l0::Allocator;
 use vize_relief::TemplateChildNode;
+
+use super::{find_element, parse, parse_document};
 
 const DIRECT_SECTION_CELLS: &str = "<table><thead><th>Name</th><th>Grade</th></thead></table>";
 

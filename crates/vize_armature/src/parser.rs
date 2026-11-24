@@ -88,7 +88,6 @@ pub struct Parser<'a> {
     source: &'a str,
     options: ParserOptions,
     custom_elements: CustomElementMatcher,
-    /// Template syntax compatibility mode.
     template_syntax: TemplateSyntaxMode,
     /// Per-compile atoms for the computed names the parser synthesizes
     /// (camelized shorthand arguments, reconstructed `v-pre` attribute
@@ -115,7 +114,6 @@ pub struct Parser<'a> {
     /// reached. Their later end tags are redundant recovery fallout, not a new
     /// parser failure.
     implicitly_closed_tags: Vec<'a, ImplicitlyClosedTag<'a>>,
-    /// Root node
     root: Option<RootNode<'a>>,
     /// Current element being parsed
     current_element: Option<CurrentElement<'a>>,
@@ -234,7 +232,6 @@ impl<'a> Parser<'a> {
         // Freeze the last text run before anything walks the finished tree.
         self.flush_pending_text();
 
-        // Handle any unclosed elements
         self.handle_unclosed_elements();
 
         if let Some(ref mut root) = self.root {
@@ -281,7 +278,6 @@ impl<'a> Parser<'a> {
         offset
     }
 
-    /// Create a source location
     fn create_loc(&self, start: usize, end: usize) -> SourceLocation {
         let (start, end) = self.normalize_span(start, end);
         SourceLocation::new(start as u32, end as u32)

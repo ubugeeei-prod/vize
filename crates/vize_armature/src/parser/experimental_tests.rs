@@ -1,6 +1,7 @@
-use super::{parse, parse_with_options};
 use vize_l0::{Allocator, ErrorCode};
 use vize_relief::{CommentKind, PropNode, TemplateChildNode, options::ParserOptions};
+
+use super::{parse, parse_with_options};
 
 #[test]
 fn test_parse_experimental_in_tag_comments() {

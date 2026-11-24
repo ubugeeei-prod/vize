@@ -1,10 +1,11 @@
 //! The producer owns syntax, source maps and explicit refusals together.
 
-use super::*;
 use oxc_ast::ast::{Expression, Statement};
 use oxc_span::GetSpan;
 use vize_l0::Allocator;
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
+
+use super::*;
 
 fn value<'n, 'a>(root: &'n RootNode<'a>, index: usize) -> &'n SimpleExpressionNode<'a> {
     let TemplateChildNode::Element(element) = &root.children[0] else {

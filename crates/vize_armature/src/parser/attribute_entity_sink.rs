@@ -5,11 +5,12 @@
 //! callback override, so BEFORE never silently inherits the new AFTER policy.
 //! All other compatibility operations remain delegated to the original sink.
 
-use crate::tokenizer::Callbacks;
 use vize_l1::markup::{
     LexErrorCode, LexMode, QuoteType, Sink, entity::DecodedEntity,
     htmlish::lex::compat::adapter::CompatSink,
 };
+
+use crate::tokenizer::Callbacks;
 
 pub(super) struct OriginalFirstScalarSink<C> {
     compat: CompatSink<C>,

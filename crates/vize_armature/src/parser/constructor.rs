@@ -1,6 +1,7 @@
-use super::Parser;
 use vize_l0::{Allocator, Vec, interner::Interner};
 use vize_relief::options::{CustomElementMatcher, ParserOptions, TemplateSyntaxMode};
+
+use super::Parser;
 
 impl<'a> Parser<'a> {
     /// Create a new parser.

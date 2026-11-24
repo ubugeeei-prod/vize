@@ -1,8 +1,9 @@
 //! Text wrapping utilities.
 
+use compact_str::CompactString;
+
 use super::segment::segment;
 use super::width::TextWidth;
-use compact_str::CompactString;
 
 /// Text wrapping mode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]

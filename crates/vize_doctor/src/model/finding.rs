@@ -270,6 +270,7 @@ mod tests {
 
         assert_eq!(decoded.suppression, SuppressionPolicy::ReasonRequired);
     }
+
     #[test]
     fn new_findings_have_an_explicit_unavailable_fix() {
         let finding = finding();

@@ -1,5 +1,6 @@
-use super::*;
 use vize_croquis_cf::{ComplexityDimensionScores, FileId};
+
+use super::*;
 
 #[test]
 fn complexity_markdown_explains_dimensions_and_hotspots() {

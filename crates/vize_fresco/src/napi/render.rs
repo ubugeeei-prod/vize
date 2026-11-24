@@ -1,9 +1,9 @@
 //! Render NAPI bindings.
 
-use crate::layout::dimensions::{parse_dimension, parse_length_percentage_auto};
+use std::cell::RefCell;
+
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use std::cell::RefCell;
 
 use super::render_node::create_render_node;
 use super::render_payload::{
@@ -13,6 +13,7 @@ use super::render_style::{convert_style, parse_color};
 use super::terminal::with_backend;
 use super::types::{LayoutResultNapi, RenderNodeNapi, StyleNapi};
 use crate::layout::Rect;
+use crate::layout::dimensions::{parse_dimension, parse_length_percentage_auto};
 
 thread_local! {
     static LAST_RENDER_LAYOUTS: RefCell<Vec<LayoutResultNapi>> = const { RefCell::new(Vec::new()) };

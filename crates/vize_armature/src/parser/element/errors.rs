@@ -28,7 +28,7 @@ impl<'a> Parser<'a> {
     fn recovery_error_message(&self, code: ErrorCode) -> Option<String> {
         // `RECOVERED_PARSE_CODES` (vize_relief) is the single source of truth
         // for which defects the parser recovers from, and patina keys its
-        // analysis gating off the same classification (#3294). Consulting it
+        // analysis gating off the same classification. Consulting it
         // here means the message table below cannot claim a recovery the
         // classification does not know about.
         if !code.has_documented_parse_recovery() {
@@ -127,8 +127,8 @@ mod tests {
     use crate::parser::Parser;
 
     /// `CompilerError::is_recovered_parse` (vize_relief) and the recovery
-    /// messages constructed above must describe the same set of defects
-    /// (#3294). Both sides now read the shared `RECOVERED_PARSE_CODES`
+    /// messages constructed above must describe the same set of defects.
+    /// Both sides now read the shared `RECOVERED_PARSE_CODES`
     /// classification rather than keeping their own copies, so this pins every
     /// classified code to a real message: adding a recovery message means
     /// adding the code to that list, and adding it to the list without a

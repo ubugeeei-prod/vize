@@ -88,7 +88,6 @@ impl TextNode {
         self
     }
 
-    /// Build into a RenderNode.
     pub fn build(self, id: u64) -> RenderNode {
         let content = TextContent {
             text: self.text,

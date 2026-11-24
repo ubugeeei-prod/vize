@@ -3,8 +3,9 @@
 //! This module generates Vue components that can be used to render
 //! Art variants in the Musea gallery.
 
-use crate::types::ArtDescriptor;
 use vize_l0::{String, append, cstr};
+
+use crate::types::ArtDescriptor;
 
 /// Output of Vue transformation.
 #[derive(Debug, Clone)]
@@ -157,7 +158,6 @@ fn generate_main_component(art: &ArtDescriptor<'_>) -> String {
     code
 }
 
-/// Generate a render expression for a variant template.
 fn generate_render_expression(template: &str, art: &ArtDescriptor<'_>) -> String {
     // For now, we'll create a simple render using the template as a component
     // In a real implementation, this would compile the template to a render function
@@ -180,7 +180,6 @@ fn generate_render_expression(template: &str, art: &ArtDescriptor<'_>) -> String
     }
 }
 
-/// Generate metadata JSON for the Art.
 fn generate_metadata_json(art: &ArtDescriptor<'_>) -> String {
     let mut json = String::default();
     json.push_str("{\n");
@@ -271,7 +270,6 @@ fn status_to_string(status: crate::types::ArtStatus) -> &'static str {
     }
 }
 
-/// Convert string to PascalCase.
 fn to_pascal_case(s: &str) -> String {
     let mut result = String::default();
     for part in s

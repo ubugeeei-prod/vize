@@ -284,7 +284,6 @@ impl Buffer {
         }
     }
 
-    /// Fill a rectangular area with a cell.
     pub fn fill_cell(&mut self, area: Rect, cell: Cell) {
         for y in area.y..area.y.saturating_add(area.height) {
             for x in area.x..area.x.saturating_add(area.width) {

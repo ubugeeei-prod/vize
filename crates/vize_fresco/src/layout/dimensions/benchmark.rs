@@ -22,9 +22,11 @@ impl Parser for Standard {
     fn dimension(value: &str) -> Dimension {
         reference::dimension(value)
     }
+
     fn length(value: &str) -> LengthPercentageAuto {
         reference::length(value)
     }
+
     fn input_width(value: &str) -> Option<usize> {
         reference::positive_width(value)
     }
@@ -34,9 +36,11 @@ impl Parser for Candidate {
     fn dimension(value: &str) -> Dimension {
         parse_dimension(value)
     }
+
     fn length(value: &str) -> LengthPercentageAuto {
         parse_length_percentage_auto(value)
     }
+
     fn input_width(value: &str) -> Option<usize> {
         parse_positive_point_width(value)
     }

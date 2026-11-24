@@ -1,7 +1,5 @@
 //! Test-only original first-scalar Armature consumer on the public compatibility sink.
 
-use super::attribute_entity_sink::OriginalFirstScalarSink;
-use super::{Parser, callbacks::ParserCallbacks, current_whitespace_strategy};
 use vize_l0::{Allocator, Vec};
 use vize_l1::markup::{Component, Delimiters, Document, LexOptions, Lexer};
 use vize_relief::{
@@ -9,6 +7,9 @@ use vize_relief::{
     errors::CompilerError,
     options::{ParserOptions, WhitespaceStrategy},
 };
+
+use super::attribute_entity_sink::OriginalFirstScalarSink;
+use super::{Parser, callbacks::ParserCallbacks, current_whitespace_strategy};
 
 pub(super) fn parse_with_compat<'a>(
     mut parser: Parser<'a>,
@@ -35,6 +36,7 @@ pub(super) fn parse_with_compat<'a>(
                 crate::legacy::LegacyDialectCapabilities::for_dialect(parser.options.dialect)
                     .raw_html_interpolation
             }
+
             #[cfg(not(feature = "legacy"))]
             {
                 false

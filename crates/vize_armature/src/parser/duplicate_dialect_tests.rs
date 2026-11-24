@@ -1,8 +1,9 @@
 //! Repeated attributes: Vue 3 keeps the first value, Vue 2 the last.
 
-use super::parse_with_options;
 use vize_l0::{Allocator, ErrorCode, String, config::VueVersion};
 use vize_relief::{PropNode, TemplateChildNode, options::ParserOptions};
+
+use super::parse_with_options;
 
 fn class_values(
     allocator: &Allocator,

@@ -1,5 +1,6 @@
-use super::{PatternBinding, PatternExpression, PatternKind, parse_match_pattern};
 use oxc_span::Span;
+
+use super::{PatternBinding, PatternExpression, PatternKind, parse_match_pattern};
 
 #[test]
 fn pattern_spans_exclude_trailing_trivia() {

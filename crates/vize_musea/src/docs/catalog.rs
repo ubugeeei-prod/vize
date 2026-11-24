@@ -1,9 +1,10 @@
 //! Catalog and index generation for Art collections.
 
-use super::{CatalogOutput, DocOptions};
-use crate::types::{ArtDescriptor, ArtStatus};
 use serde::{Deserialize, Serialize};
 use vize_l0::{FxHashMap, String, ToCompactString, append, cstr};
+
+use super::{CatalogOutput, DocOptions};
+use crate::types::{ArtDescriptor, ArtStatus};
 
 /// Entry in a component catalog.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -171,13 +172,11 @@ pub fn generate_category_index(
     }
 }
 
-/// Generate a tags index page.
 pub fn generate_tags_index(entries: &[CatalogEntry], _options: &DocOptions) -> CatalogOutput {
     let mut md = String::with_capacity(4096);
 
     md.push_str("# Tags Index\n\n");
 
-    // Group by tag
     let by_tag = group_by_tag(entries);
     let mut tags: Vec<_> = by_tag.keys().collect();
     tags.sort();
@@ -300,7 +299,6 @@ fn collect_tags_from_entries(entries: &[&CatalogEntry]) -> Vec<String> {
     tags
 }
 
-/// Group entries by category.
 fn group_by_category(entries: &[CatalogEntry]) -> FxHashMap<&str, Vec<&CatalogEntry>> {
     let mut map: FxHashMap<&str, Vec<&CatalogEntry>> = FxHashMap::default();
     for entry in entries {
@@ -311,7 +309,6 @@ fn group_by_category(entries: &[CatalogEntry]) -> FxHashMap<&str, Vec<&CatalogEn
     map
 }
 
-/// Group entries by tag.
 fn group_by_tag(entries: &[CatalogEntry]) -> FxHashMap<&str, Vec<&CatalogEntry>> {
     let mut map: FxHashMap<&str, Vec<&CatalogEntry>> = FxHashMap::default();
     for entry in entries {

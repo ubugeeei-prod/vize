@@ -27,11 +27,11 @@
 mod catalog;
 mod markdown;
 
-pub use catalog::{CatalogEntry, generate_catalog, generate_category_index, generate_tags_index};
-pub use markdown::{generate_component_doc, generate_variant_doc};
-
 use serde::{Deserialize, Serialize};
 use vize_l0::String;
+
+pub use catalog::{CatalogEntry, generate_catalog, generate_category_index, generate_tags_index};
+pub use markdown::{generate_component_doc, generate_variant_doc};
 
 /// Options for documentation generation.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

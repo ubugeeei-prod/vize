@@ -5,9 +5,10 @@
     reason = "`format!` builds std String output here"
 )]
 
+use vize_l0::{String, ToCompactString, append, cstr};
+
 use super::{DocOptions, DocOutput};
 use crate::types::{ArtDescriptor, ArtStatus, ArtVariant};
-use vize_l0::{String, ToCompactString, append, cstr};
 
 /// Generate Markdown documentation for a single Art component.
 ///
@@ -188,7 +189,6 @@ fn generate_toc(variants: &[ArtVariant<'_>]) -> String {
     md
 }
 
-/// Format status as a badge.
 fn format_status_badge(status: ArtStatus) -> String {
     match status {
         ArtStatus::Draft => "> **Status:** 🚧 Draft".to_compact_string(),

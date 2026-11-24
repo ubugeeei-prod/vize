@@ -2,9 +2,10 @@
 //! it: no implied end tags, nested form/anchor/button repair, adoption agency
 //! or foster parenting. Documents and `html_tree_construction` keep them.
 
-use super::{parse, parse_with_options};
 use vize_l0::{Allocator, ErrorCode, String};
 use vize_relief::{TemplateChildNode, options::ParserOptions};
+
+use super::{parse, parse_with_options};
 
 /// The element tree as `tag(children)`, text as its content.
 fn shape(children: &[TemplateChildNode<'_>]) -> String {

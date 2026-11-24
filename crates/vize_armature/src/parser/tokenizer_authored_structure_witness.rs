@@ -1,4 +1,4 @@
-//! Five reviewed #13313 corrections to the immutable pre-retirement witness.
+//! Five reviewed corrections to the immutable pre-retirement witness.
 //!
 //! A component (SFC) template now keeps its authored structure, as Vue 3.5
 //! does. The frozen digests of these five cases recorded the HTML tree
@@ -7,9 +7,10 @@
 //! proves that lane still reproduces the frozen digest exactly, and pins the
 //! authored digest the default lane produces.
 
-use super::Parser;
 use vize_l0::{Allocator, cstr, hash::StableHasher128};
 use vize_relief::options::ParserOptions;
+
+use super::Parser;
 
 struct Correction {
     index: usize,

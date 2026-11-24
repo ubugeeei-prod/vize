@@ -9,11 +9,8 @@ use crate::layout::{FlexStyle, LayoutEngine};
 pub struct RenderTree {
     /// All nodes by ID
     nodes: FxHashMap<NodeId, RenderNode>,
-    /// Root node ID
     root: Option<NodeId>,
-    /// Layout engine
     layout: LayoutEngine,
-    /// Next available node ID
     next_id: NodeId,
     /// Mapping from our IDs to layout IDs
     layout_ids: FxHashMap<NodeId, u64>,
@@ -47,14 +44,12 @@ impl RenderTree {
         id
     }
 
-    /// Insert a node as root.
     pub fn insert_root(&mut self, node: RenderNode) -> NodeId {
         let id = self.insert(node);
         self.set_root(id);
         id
     }
 
-    /// Set the root node.
     pub fn set_root(&mut self, id: NodeId) {
         self.root = Some(id);
         if let Some(&layout_id) = self.layout_ids.get(&id) {
@@ -62,22 +57,18 @@ impl RenderTree {
         }
     }
 
-    /// Get the root node ID.
     pub fn root(&self) -> Option<NodeId> {
         self.root
     }
 
-    /// Get a node by ID.
     pub fn get(&self, id: NodeId) -> Option<&RenderNode> {
         self.nodes.get(&id)
     }
 
-    /// Get a mutable node by ID.
     pub fn get_mut(&mut self, id: NodeId) -> Option<&mut RenderNode> {
         self.nodes.get_mut(&id)
     }
 
-    /// Add a child to a parent node.
     pub fn add_child(&mut self, parent_id: NodeId, child_id: NodeId) {
         // Update render tree
         if let Some(parent) = self.nodes.get_mut(&parent_id) {
@@ -93,7 +84,6 @@ impl RenderTree {
         }
     }
 
-    /// Remove a child from a parent node.
     pub fn remove_child(&mut self, parent_id: NodeId, child_id: NodeId) {
         // Update render tree
         if let Some(parent) = self.nodes.get_mut(&parent_id) {
@@ -123,7 +113,6 @@ impl RenderTree {
         }
     }
 
-    /// Collect a node and all its descendants.
     fn collect_descendants(&self, id: NodeId) -> Vec<NodeId> {
         let mut result = vec![id];
         let mut stack = vec![id];
@@ -173,7 +162,6 @@ impl RenderTree {
             .map(|(&id, _)| id)
     }
 
-    /// Mark all nodes as clean.
     pub fn mark_all_clean(&mut self) {
         for node in self.nodes.values_mut() {
             node.mark_clean();

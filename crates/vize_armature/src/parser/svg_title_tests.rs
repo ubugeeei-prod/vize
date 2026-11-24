@@ -5,9 +5,10 @@
     reason = "independent complete authored parser corpus"
 )]
 
-use super::parse;
 use vize_l0::Allocator;
 use vize_relief::{ExpressionNode, TemplateChildNode};
+
+use super::parse;
 
 fn observe(children: &[TemplateChildNode<'_>], values: &mut Vec<String>) {
     for child in children {

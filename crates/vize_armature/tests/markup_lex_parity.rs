@@ -1,4 +1,4 @@
-//! Exact event and recovery parity while #6835 converges the profile lexer.
+//! Exact event and recovery parity while the profile lexer converges.
 //!
 //! Opt in with `--features native-lex-parity`; the compiler still uses the
 //! moved tokenizer through Armature's existing public path.
@@ -23,66 +23,85 @@ macro_rules! event_methods {
         fn on_text(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("text:{start}..{end}"));
         }
+
         fn on_text_entity(&mut self, ch: char, start: usize, end: usize) {
             self.0
                 .events
                 .push(cstr!("text-entity:{ch:?}:{start}..{end}"));
         }
+
         fn on_interpolation(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("interpolation:{start}..{end}"));
         }
+
         fn on_raw_interpolation(&mut self, start: usize, end: usize) {
             self.0
                 .events
                 .push(cstr!("raw-interpolation:{start}..{end}"));
         }
+
         fn on_open_tag_name(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("open-name:{start}..{end}"));
         }
+
         fn on_open_tag_end(&mut self, end: usize) {
             self.0.events.push(cstr!("open-end:{end}"));
         }
+
         fn on_self_closing_tag(&mut self, end: usize) {
             self.0.events.push(cstr!("self-close:{end}"));
         }
+
         fn on_close_tag(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("close-name:{start}..{end}"));
         }
+
         fn on_attrib_data(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("attr-data:{start}..{end}"));
         }
+
         fn on_attrib_entity(&mut self, ch: char, start: usize, end: usize) {
             self.0
                 .events
                 .push(cstr!("attr-entity:{ch:?}:{start}..{end}"));
         }
+
         fn on_attrib_end(&mut self, quote: $quote, end: usize) {
             self.0.events.push(cstr!("attr-end:{quote:?}:{end}"));
         }
+
         fn on_attrib_name(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("attr-name:{start}..{end}"));
         }
+
         fn on_attrib_name_end(&mut self, end: usize) {
             self.0.events.push(cstr!("attr-name-end:{end}"));
         }
+
         fn on_dir_name(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("dir-name:{start}..{end}"));
         }
+
         fn on_dir_arg(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("dir-arg:{start}..{end}"));
         }
+
         fn on_dir_modifier(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("dir-modifier:{start}..{end}"));
         }
+
         fn on_comment(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("comment:{start}..{end}"));
         }
+
         fn on_cdata(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("cdata:{start}..{end}"));
         }
+
         fn on_processing_instruction(&mut self, start: usize, end: usize) {
             self.0.events.push(cstr!("pi:{start}..{end}"));
         }
+
         fn on_end(&mut self) {
             self.0.events.push(cstr!("end"));
         }
@@ -151,6 +170,7 @@ fn compatibility_quote_type_is_the_l1_vocabulary() {
     fn through_native(quote: NativeQuote) -> CompatQuote {
         quote
     }
+
     fn through_compatibility(quote: CompatQuote) -> NativeQuote {
         quote
     }

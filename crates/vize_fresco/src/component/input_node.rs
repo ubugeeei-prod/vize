@@ -82,7 +82,6 @@ impl InputNode {
         self
     }
 
-    /// Build into a RenderNode.
     pub fn build(self, id: u64) -> RenderNode {
         let content = InputContent {
             value: self.value,

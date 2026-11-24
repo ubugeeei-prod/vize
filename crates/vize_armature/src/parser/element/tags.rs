@@ -12,7 +12,6 @@ use super::is_html_tree_element;
 use super::nesting::MAX_ELEMENT_NESTING_DEPTH;
 
 impl<'a> Parser<'a> {
-    /// Process open tag name
     pub(in crate::parser) fn on_open_tag_name_impl(&mut self, start: usize, end: usize) {
         let tag = self.get_source_retained(start, end);
         let parent = self.stack.last().map(|e| e.element.tag);
@@ -44,7 +43,6 @@ impl<'a> Parser<'a> {
         });
     }
 
-    /// Process open tag end
     pub(in crate::parser) fn on_open_tag_end_impl(&mut self, end: usize) {
         if let Some(current) = self.current_element.take() {
             let inherited_v_pre = self.in_v_pre;
@@ -56,7 +54,6 @@ impl<'a> Parser<'a> {
             element.is_self_closing = current.is_self_closing;
             element.props = current.props;
 
-            // Determine element type
             element.tag_type = self.determine_element_type(&element);
 
             if self.should_ignore_start_tag(&element) {
@@ -204,7 +201,6 @@ impl<'a> Parser<'a> {
                 } else {
                     StackInsertion::Normal
                 };
-                // Push to stack
                 self.push_stack_entry(ParserStackEntry {
                     element,
                     in_pre: self.in_pre,
@@ -219,7 +215,6 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Process self-closing tag
     pub(in crate::parser) fn on_self_closing_tag_impl(&mut self, _end: usize) {
         if let Some(ref mut current) = self.current_element {
             current.is_self_closing = true;

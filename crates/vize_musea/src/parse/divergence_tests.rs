@@ -5,9 +5,10 @@
 //! substring scanner read something other than what the SFC/HTML syntax
 //! says — the L0/L1 reading is the authored structure.
 
+use vize_l0::Allocator;
+
 use super::parse_art;
 use crate::types::{ArtDescriptor, ArtParseError, ArtParseOptions};
-use vize_l0::Allocator;
 
 fn parse<'a>(
     allocator: &'a Allocator,

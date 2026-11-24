@@ -92,7 +92,6 @@ impl<'a> Painter<'a> {
         self.buffer.set_string_clipped(x, y, text, style, self.clip);
     }
 
-    /// Paint a node's content.
     fn paint_node_content(&mut self, node: &RenderNode, layout: Rect) {
         let style = node.appearance.to_style();
 
@@ -301,7 +300,6 @@ impl<'a> Painter<'a> {
         }
     }
 
-    /// Clear an area.
     pub fn clear(&mut self, area: Rect) {
         self.buffer.clear_area(area.intersection(&self.clip));
     }

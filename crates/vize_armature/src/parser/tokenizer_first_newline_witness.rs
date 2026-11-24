@@ -1,4 +1,4 @@
-//! Two reviewed #7889 corrections to the immutable pre-retirement witness.
+//! Two reviewed corrections to the immutable pre-retirement witness.
 //! Authority: first_newline_parser_witness.json and the exact whole AST files.
 
 use vize_l0::{config::VueVersion, hash::StableHasher128};

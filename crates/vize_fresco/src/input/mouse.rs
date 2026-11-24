@@ -18,7 +18,6 @@ pub struct MouseEvent {
 }
 
 impl MouseEvent {
-    /// Create a new mouse event.
     pub fn new(kind: MouseEventKind, column: u16, row: u16, modifiers: KeyModifiers) -> Self {
         Self {
             kind,
@@ -90,13 +89,9 @@ pub enum MouseEventKind {
     Drag(MouseButton),
     /// Mouse moved (no button)
     Moved,
-    /// Scroll up
     ScrollUp,
-    /// Scroll down
     ScrollDown,
-    /// Scroll left
     ScrollLeft,
-    /// Scroll right
     ScrollRight,
 }
 

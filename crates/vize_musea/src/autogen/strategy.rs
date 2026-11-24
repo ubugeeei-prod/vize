@@ -3,9 +3,10 @@
 //! Instead of cartesian product (which explodes combinatorially),
 //! we use intelligent strategies that produce meaningful variants.
 
-use super::types::{AutogenConfig, GeneratedVariant, PropDefinition};
 use serde_json::{Map, Value, json};
 use vize_l0::{FxHashSet, String, ToCompactString, cstr};
+
+use super::types::{AutogenConfig, GeneratedVariant, PropDefinition};
 
 /// Generate variants from prop definitions using the configured strategy.
 pub fn generate_variants(
@@ -243,7 +244,6 @@ fn infer_number_boundaries(prop: &PropDefinition) -> Vec<(String, Value)> {
     ]
 }
 
-/// Format variant name from prop name and value.
 fn format_variant_name(prop_name: &str, value: &Value) -> String {
     match value {
         Value::String(s) => to_pascal_case(s),
@@ -259,7 +259,6 @@ fn format_variant_name(prop_name: &str, value: &Value) -> String {
     }
 }
 
-/// Convert a string to PascalCase.
 fn to_pascal_case(s: &str) -> String {
     let mut result = String::default();
     for word in s.split(['-', '_', ' ']).filter(|w| !w.is_empty()) {

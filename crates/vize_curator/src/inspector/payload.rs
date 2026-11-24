@@ -1,14 +1,15 @@
 //! Inspector payload, agent report, and playground URL helpers.
 
 use std::fmt::Write as _;
-use vize_l0::{String, ToCompactString};
 
-use super::graph::{InspectorGraph, build_graph, line_count};
 use vize_atelier_core::Allocator;
 use vize_atelier_sfc::{
     SfcParseOptions, croquis::SfcCroquisOptions, croquis::analyze_sfc_descriptor, parse_sfc,
 };
 use vize_croquis::{CroquisSemanticSnapshot, CroquisSemanticSummary};
+use vize_l0::{String, ToCompactString};
+
+use super::graph::{InspectorGraph, build_graph, line_count};
 
 #[derive(Debug, Clone, Copy, serde::Serialize)]
 #[serde(rename_all = "kebab-case")]

@@ -3,13 +3,12 @@
 //! Contains the `ParserCallbacks` struct that bridges the tokenizer
 //! with the parser by implementing the `Callbacks` trait.
 
-use crate::tokenizer::{Callbacks, QuoteType};
 use vize_l0::ErrorCode;
 use vize_l1::markup::entity::DecodedEntity;
 
 use super::Parser;
+use crate::tokenizer::{Callbacks, QuoteType};
 
-/// Parse directive name from raw attribute name
 pub(super) fn parse_directive_name(raw: &str) -> &str {
     // Handle shorthand
     match raw.chars().next() {

@@ -6,15 +6,16 @@ mod document_repairs;
 mod document_tail;
 mod table_rows;
 mod table_section_cells;
-use super::{
-    parse, parse_document, parse_document_with_options, parse_with_options,
-    parse_with_options_and_template_syntax,
-};
 use vize_l0::{Allocator, ErrorCode, String, ToCompactString};
 use vize_relief::{
     ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
     errors::CompilerError,
     options::{ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
+};
+
+use super::{
+    parse, parse_document, parse_document_with_options, parse_with_options,
+    parse_with_options_and_template_syntax,
 };
 
 fn recovery_snapshot(src: &str, errors: &[CompilerError]) -> Vec<(ErrorCode, String, String)> {
@@ -98,7 +99,6 @@ fn test_parse_less_than_before_non_tag_start_inside_element_has_no_error() {
 
 #[test]
 fn test_parse_condense_whitespace_collapses_runs_inside_text_nodes() {
-    // Regression for #960: condense whitespace like `@vue/compiler-sfc`.
     let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div>x   y\n   z</div>");
     assert!(errors.is_empty(), "{errors:?}");
@@ -672,7 +672,7 @@ fn test_vue2_migration_line_break_after_interpolation() {
 
 #[test]
 fn test_vue2_migration_line_break_inside_static_text_before_element() {
-    // #7046. The break before an element is inside the static text node, so
+    // The break before an element is inside the static text node, so
     // the whitespace-only migration pass never sees it. `<pre>` keeps remaining bytes.
     let sources = [
         "<p>\n  Label\n  <i />\n</p>",
@@ -821,7 +821,7 @@ fn test_parse_error_missing_end_tag() {
 #[test]
 fn test_parse_error_duplicate_attribute() {
     // A duplicate attribute is recorded as a recoverable diagnostic
-    // (#958). Both occurrences remain in the AST so linters can warn
+    // Both occurrences remain in the AST so linters can warn
     // about the repeat; downstream codegen treats the diagnostic as
     // non-fatal and emits valid render code for the first occurrence.
     let allocator = Allocator::new();
@@ -1710,7 +1710,7 @@ fn test_parse_directive_value_entity_is_decoded() {
     }
 }
 
-/// Regression (#1065/#1090): a self-closing SVG child such as `<path d="…" />`
+/// A self-closing SVG child such as `<path d="…" />`
 /// inside `<svg>` must NOT be flagged as an invalid self-closing non-void HTML
 /// element. This holds even with the default, namespace-unaware
 /// `get_namespace` callback used by the `vize_canon` virtual-TS path — the
@@ -1765,7 +1765,7 @@ fn test_parse_foreign_object_resets_namespace_for_self_closing_check() {
     assert!(errors.iter().all(CompilerError::is_recoverable));
 }
 
-/// Regression (#1065/#1090): HTML `<p>` auto-closing must not leak across an
+/// HTML `<p>` auto-closing must not leak across an
 /// intervening `<template>` block. `<p><template>…<p>…</p></template></p>` is
 /// accepted by `@vue/compiler-sfc`; vize must not emit a false `InvalidEndTag`
 /// for the outer `</p>`.

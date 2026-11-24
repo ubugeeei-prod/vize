@@ -5,12 +5,13 @@
 //! tag's attribute tokens, and variants are the tree's `<variant>` elements
 //! (see [`super::variant`]) — no byte re-scan of the block.
 
+use vize_l0::Allocator;
+use vize_l1::markup::{Element, OpenTag, SurfaceChild, SurfaceTree};
+
 use super::DefineArtMetadata;
 use super::attrs::{attr_value, has_attr};
 use super::status::{classify_status, is_unknown_status, unknown_status_warning};
 use crate::types::{ArtMetadata, ArtParseError, ArtStatus};
-use vize_l0::Allocator;
-use vize_l1::markup::{Element, OpenTag, SurfaceChild, SurfaceTree};
 
 /// The `<art>` element at the root of the block's L1 tree.
 ///

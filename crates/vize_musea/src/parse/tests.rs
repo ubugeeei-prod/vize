@@ -1,6 +1,7 @@
+use vize_l0::Allocator;
+
 use super::parse_art;
 use crate::types::{ArtParseError, ArtParseOptions, ArtStatus};
-use vize_l0::Allocator;
 
 #[test]
 fn test_parse_simple_art() {

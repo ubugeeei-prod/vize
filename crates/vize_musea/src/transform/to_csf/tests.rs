@@ -1,7 +1,8 @@
+use vize_l0::Allocator;
+
 use super::{escape_string, escape_template, to_pascal_case, transform_to_csf};
 use crate::parse::parse_art;
 use crate::types::ArtParseOptions;
-use vize_l0::Allocator;
 
 #[test]
 fn test_transform_simple() {

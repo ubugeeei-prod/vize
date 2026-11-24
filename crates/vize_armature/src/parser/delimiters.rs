@@ -1,11 +1,12 @@
 //! Interpolation delimiter validation and tokenizer setup.
 
-use super::{Parser, callbacks::ParserCallbacks};
 use vize_l0::{ErrorCode, Vec};
 use vize_l1::framework::vue::VueTemplate;
 use vize_l1::markup::htmlish::lex::compat::adapter::CompatSink;
 use vize_l1::markup::{Component, Delimiters, Document, LexOptions, Lexer};
 use vize_relief::{RootNode, errors::CompilerError, options::ParseMode};
+
+use super::{Parser, callbacks::ParserCallbacks};
 
 impl<'a> Parser<'a> {
     pub(super) fn tokenize_template(&mut self) -> bool {
@@ -37,6 +38,7 @@ impl<'a> Parser<'a> {
                 {
                     self.raw_html_interpolation_enabled()
                 }
+
                 #[cfg(not(feature = "legacy"))]
                 {
                     false

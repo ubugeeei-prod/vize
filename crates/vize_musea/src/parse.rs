@@ -24,8 +24,9 @@ mod divergence_tests;
 #[cfg(test)]
 mod golden_tests;
 
-use crate::types::{ArtDescriptor, ArtParseError, ArtParseOptions, ArtParseResult, SourceLocation};
 use vize_l0::Allocator;
+
+use crate::types::{ArtDescriptor, ArtParseError, ArtParseOptions, ArtParseResult, SourceLocation};
 
 /// Parse an Art file (*.art.vue) into an ArtDescriptor.
 ///

@@ -3,9 +3,9 @@
 use compact_str::CompactString;
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
+use vize_l0::cstr;
 
 use crate::text::{SegmentedText, TextWidth};
-use vize_l0::cstr;
 
 /// Preedit text with cursor and segments.
 #[derive(Debug, Clone, Default)]
@@ -87,12 +87,10 @@ impl Preedit {
         &self.segments
     }
 
-    /// Set segments.
     pub fn set_segments(&mut self, segments: impl IntoIterator<Item = PreeditSegment>) {
         self.segments = segments.into_iter().collect();
     }
 
-    /// Add a segment.
     pub fn add_segment(&mut self, segment: PreeditSegment) {
         self.segments.push(segment);
     }
@@ -188,7 +186,6 @@ pub struct PreeditSegment {
     pub start: usize,
     /// End index (grapheme, exclusive)
     pub end: usize,
-    /// Segment style
     pub style: SegmentStyle,
 }
 

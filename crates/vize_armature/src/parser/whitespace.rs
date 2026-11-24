@@ -182,7 +182,7 @@ fn condense_whitespace_in<'a>(
                 // collapse internal whitespace runs to a single U+0020 too,
                 // matching Vue's `condense` strategy. Without this `x   y\n
                 // z` would keep its raw whitespace and diverge from
-                // `@vue/compiler-sfc`. (#960)
+                // `@vue/compiler-sfc`.
                 if let Some(TemplateChildNode::Text(text)) = children.get_mut(i)
                     && let Some(condensed) =
                         condense_internal_whitespace(allocator, text.content, legacy_line_breaks)
@@ -261,7 +261,7 @@ pub(super) fn preserve_whitespace<'a>(
 /// keeps every whitespace character as written, including at the start or end
 /// of an element. A run that is only whitespace sits between elements: it is
 /// dropped at either edge of the child list and condensed to one space
-/// elsewhere. `<pre>` and `<textarea>` keep their content (#8259).
+/// elsewhere. `<pre>` and `<textarea>` keep their content.
 fn preserve_whitespace_vue2<'a>(
     allocator: &'a Allocator,
     children: &mut Vec<'a, TemplateChildNode<'a>>,

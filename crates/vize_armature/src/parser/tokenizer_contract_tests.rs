@@ -5,12 +5,13 @@
 //! Options6/9 retain named BEFORE history and require separate full production
 //! AFTER witnesses for the declared complete-attribute correction.
 
+use vize_l0::{Allocator, config::VueVersion, cstr, hash::StableHasher128};
+use vize_relief::options::ParserOptions;
+
 use super::tokenizer_authored_structure_witness as authored;
 use super::tokenizer_empty_value_witness as empty_value;
 use super::tokenizer_first_newline_witness as correction;
 use super::{Parser, WhitespaceStrategy};
-use vize_l0::{Allocator, config::VueVersion, cstr, hash::StableHasher128};
-use vize_relief::options::ParserOptions;
 
 struct Oracle {
     expected: &'static [u8],
@@ -170,6 +171,7 @@ fn write_capture(file: &mut std::fs::File, index: u64, fields: &[&[u8]]) {
         file.write_all(bytes).unwrap();
     }
 }
+
 fn feed(hash: &mut StableHasher128, bytes: &[u8]) {
     hash.update(&(bytes.len() as u64).to_le_bytes());
     hash.update(bytes);

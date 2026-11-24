@@ -2,9 +2,10 @@
 //! them as authored (Vue's compiler emits `table > tr`); a document and an
 //! explicit `html_tree_construction` parse get the HTML parser's owners.
 
-use super::{find_element, parse, parse_document, parse_with_options};
 use vize_l0::Allocator;
 use vize_relief::{ElementNode, TemplateChildNode, options::ParserOptions};
+
+use super::{find_element, parse, parse_document, parse_with_options};
 
 const DIRECT_ROWS: &str = "<table><tr><td>x</td></tr><tr><td>y</td></tr></table>";
 const DIRECT_CELLS: &str = "<table><td>x</td><th>y</th></table>";
@@ -88,7 +89,7 @@ fn html_tree_construction_restore_the_html_owners() {
     let row = find_element(&tbody.children, "tr").expect("implicit row");
     assert_eq!(child_tags(row), ["td", "th"]);
 
-    // Cells under an authored section stay direct, as before (#12387).
+    // Cells under an authored section stay direct.
     let (root, errors) = parse_with_options(
         &allocator,
         "<table><thead><th>Name</th></thead></table>",

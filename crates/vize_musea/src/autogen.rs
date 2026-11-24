@@ -12,11 +12,12 @@
 pub mod strategy;
 pub mod types;
 
+use std::path::Path;
+
+use vize_l0::{String, ToCompactString, append};
+
 pub use strategy::generate_variants;
 pub use types::{AutogenConfig, AutogenOutput, GeneratedVariant, PropDefinition};
-
-use std::path::Path;
-use vize_l0::{String, ToCompactString, append};
 
 /// Generate an `.art.vue` file from prop definitions.
 pub fn generate_art_file(

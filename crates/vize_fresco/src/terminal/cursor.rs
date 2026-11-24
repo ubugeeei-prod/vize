@@ -11,7 +11,6 @@ pub struct Cursor {
     pub y: u16,
     /// Whether cursor is visible
     pub visible: bool,
-    /// Cursor shape
     pub shape: CursorShape,
     /// Whether cursor is blinking
     pub blinking: bool,

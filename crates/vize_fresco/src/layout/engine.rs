@@ -7,7 +7,6 @@ use super::{flex::FlexStyle, rect::Rect};
 
 /// Layout engine powered by taffy.
 pub struct LayoutEngine {
-    /// The taffy tree
     tree: TaffyTree<()>,
     /// Node ID mapping (our IDs to taffy NodeIds)
     node_map: FxHashMap<u64, NodeId>,
@@ -82,7 +81,6 @@ impl LayoutEngine {
         self.root
     }
 
-    /// Add a child to a parent node.
     pub fn add_child(&mut self, parent: u64, child: u64) {
         if let (Some(&parent_id), Some(&child_id)) =
             (self.node_map.get(&parent), self.node_map.get(&child))
@@ -93,7 +91,6 @@ impl LayoutEngine {
         }
     }
 
-    /// Remove a child from a parent node.
     pub fn remove_child(&mut self, parent: u64, child: u64) {
         if let (Some(&parent_id), Some(&child_id)) =
             (self.node_map.get(&parent), self.node_map.get(&child))

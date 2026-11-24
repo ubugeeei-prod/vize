@@ -11,13 +11,10 @@ use super::mouse::MouseEvent;
 pub enum Event {
     /// Keyboard event
     Key(KeyEvent),
-    /// Mouse event
     Mouse(MouseEvent),
     /// Terminal resize
     Resize(u16, u16),
-    /// Focus gained
     FocusGained,
-    /// Focus lost
     FocusLost,
     /// Paste event (bracketed paste)
     Paste(CompactString),
@@ -69,7 +66,6 @@ impl From<crossterm::event::Event> for Event {
     }
 }
 
-/// Poll for events with a timeout.
 pub fn poll(timeout_ms: u64) -> std::io::Result<Option<Event>> {
     use crossterm::event::{poll, read};
     use std::time::Duration;

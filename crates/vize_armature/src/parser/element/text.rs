@@ -25,7 +25,6 @@ impl<'a> Parser<'a> {
         self.append_or_merge_text(decoded, start, end);
     }
 
-    /// Append or merge text node
     fn append_or_merge_text(&mut self, content: &'a str, start: usize, end: usize) {
         let split_after_comment = core::mem::take(&mut self.split_text_after_removed_comment);
         if self.should_foster_text(content) {

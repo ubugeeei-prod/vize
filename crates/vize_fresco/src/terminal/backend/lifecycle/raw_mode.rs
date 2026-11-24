@@ -7,6 +7,7 @@ mod windows;
 
 #[cfg(not(any(unix, windows)))]
 pub(super) use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+
 #[cfg(unix)]
 pub(super) use unix::{
     disable_raw_mode, emergency_restore_raw_mode, enable_raw_mode, raw_mode_requires_restoration,

@@ -74,14 +74,12 @@ pub fn segment(s: &str) -> TextSegmentIter<'_> {
     TextSegmentIter::new(s)
 }
 
-/// Segment and collect into a SmallVec.
 pub fn segment_vec(s: &str) -> SmallVec<[TextSegment; 16]> {
     segment(s).collect()
 }
 
 /// Calculate display properties of segmented text.
 pub struct SegmentedText {
-    /// The segments
     pub segments: SmallVec<[TextSegment; 16]>,
     /// Total display width
     pub total_width: usize,
@@ -103,7 +101,6 @@ impl SegmentedText {
         }
     }
 
-    /// Get segment at grapheme index.
     pub fn get(&self, index: usize) -> Option<&TextSegment> {
         self.segments.get(index)
     }

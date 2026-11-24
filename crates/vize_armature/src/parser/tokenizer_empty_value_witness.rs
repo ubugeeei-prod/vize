@@ -5,9 +5,10 @@
 //! digest. This never executes current compatibility code as historical code,
 //! projects actual trees, or admits cases outside the declared 66 contexts.
 
-use super::tokenizer_first_newline_witness;
 use vize_l0::{config::VueVersion, cstr, hash::StableHasher128};
 use vize_relief::options::{ParseMode, ParserOptions, WhitespaceStrategy};
+
+use super::tokenizer_first_newline_witness;
 
 const CAPTURE: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),

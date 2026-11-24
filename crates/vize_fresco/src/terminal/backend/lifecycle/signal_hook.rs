@@ -216,6 +216,7 @@ fn signal_name(signal: i32) -> &'static str {
             return "SIGQUIT";
         }
     }
+
     #[cfg(windows)]
     {
         use windows_sys::Win32::System::Console::{

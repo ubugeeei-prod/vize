@@ -168,8 +168,8 @@ fn parse_retained<'a>(
 ) -> Option<RetainedJsAst<'a>> {
     // The guard shared by every oxc entry point (see
     // `vize_l0::expression_guard`): oxc's recursive parser cannot be
-    // depth-limited, so pathologically nested or unbalanced text (#956,
-    // #2944, #3712) must be refused before parsing, here exactly as at the
+    // depth-limited, so pathologically nested or unbalanced text must be
+    // refused before parsing, here exactly as at the
     // transform/codegen sites.
     if !expression_is_safe_to_parse(raw) {
         return None;

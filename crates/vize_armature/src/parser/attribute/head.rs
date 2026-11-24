@@ -1,9 +1,10 @@
 //! Completed authored attribute heads, including opaque v-pre spellings.
 
-use super::super::{CurrentDirective, Parser};
 use vize_l0::ErrorCode;
 use vize_l1::framework::vue::directive::frozen_attribute_name;
 use vize_relief::{DirectiveNode, ElementNode, PropNode, SourceLocation, errors::CompilerError};
+
+use super::super::{CurrentDirective, Parser};
 
 impl<'a> Parser<'a> {
     pub(in crate::parser) fn report_head_custody_error(

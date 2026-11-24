@@ -137,7 +137,7 @@ fn vue2_preserve_children_with_comments(
         .collect()
 }
 
-/// #8259. Expected values come from `@vue/compiler-sfc@2.7.16`
+/// Expected values come from `@vue/compiler-sfc@2.7.16`
 /// `compileTemplate({ compilerOptions: { whitespace: "preserve" } })`, which
 /// merges each text/interpolation run into one `_v(...)` text node.
 #[test]

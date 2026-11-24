@@ -1,9 +1,10 @@
 //! Palette code generation from Art descriptors.
 
+use vize_l0::{FxHashMap, String, ToCompactString, cstr};
+
 use super::inference::infer_control_from_values;
 use super::{Palette, PaletteOptions, PaletteOutput, PropControl};
 use crate::types::ArtDescriptor;
-use vize_l0::{FxHashMap, String, ToCompactString, cstr};
 
 /// Generate palette configuration from an Art descriptor.
 ///
@@ -51,7 +52,6 @@ pub fn generate_palette(art: &ArtDescriptor<'_>, options: &PaletteOptions) -> Pa
             },
         };
 
-        // Add group if grouping by type
         if options.group_by_type {
             control.group = Some(cstr!("{:?}", control.control));
         }

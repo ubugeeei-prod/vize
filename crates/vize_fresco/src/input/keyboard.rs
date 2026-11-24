@@ -124,7 +124,6 @@ pub enum Key {
     Char(char),
     /// Function key (F1-F12)
     F(u8),
-    /// Backspace
     Backspace,
     /// Enter/Return
     Enter,
@@ -136,33 +135,21 @@ pub enum Key {
     Up,
     /// Down arrow
     Down,
-    /// Home
     Home,
-    /// End
     End,
-    /// Page up
     PageUp,
-    /// Page down
     PageDown,
-    /// Tab
     Tab,
     /// Shift+Tab (backtab)
     BackTab,
-    /// Delete
     Delete,
-    /// Insert
     Insert,
     /// Escape
     Esc,
-    /// Caps lock
     CapsLock,
-    /// Scroll lock
     ScrollLock,
-    /// Num lock
     NumLock,
-    /// Print screen
     PrintScreen,
-    /// Pause
     Pause,
     /// Menu key
     Menu,

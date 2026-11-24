@@ -3,9 +3,10 @@
 //! (`tests::authored_structure`).
 #![expect(clippy::disallowed_macros, reason = "fixtures are built with format!")]
 
-use super::parse_document;
 use vize_l0::Allocator;
 use vize_relief::TemplateChildNode;
+
+use super::parse_document;
 
 #[test]
 fn test_parse_in_body_omits_p_and_li_end_tags() {

@@ -8,12 +8,13 @@
 
 mod values;
 
+use vize_l0::{Allocator, SourceBlock, ToCompactString};
+use vize_l1::markup::{Element, ElementClose, SurfaceChild};
+
 use super::attrs::{attr_value, has_attr};
 use super::{calculate_location_with_line, line_of};
 use crate::types::{ArtParseError, ArtVariant};
 use values::{parse_args_json, parse_viewport};
-use vize_l0::{Allocator, SourceBlock, ToCompactString};
-use vize_l1::markup::{Element, ElementClose, SurfaceChild};
 
 /// Collect every `<variant>` element under `children` (the `<art>`
 /// element's contents), in document order.

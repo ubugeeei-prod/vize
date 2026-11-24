@@ -1,9 +1,10 @@
 //! Rebase decoded pattern spans through the same entity decoder as HTML attributes.
 
-use super::{MatchArm, MatchPattern, PatternKind, PatternSyntaxError, parse_match_pattern};
 use oxc_span::Span;
 use vize_l0::String;
 use vize_l1::markup::entity::{EntityContext, decode_one};
+
+use super::{MatchArm, MatchPattern, PatternKind, PatternSyntaxError, parse_match_pattern};
 
 struct Attribute {
     text: String,

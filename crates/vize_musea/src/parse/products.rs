@@ -1,7 +1,8 @@
 //! A single original container and Art tree serve both gallery queries.
+use vize_l0::{Allocator, Vec};
+
 use super::{art_block, attrs, blocks, infer_art_target, parse_art_macro_metadata, variant};
 use crate::{ArtDescriptor, ArtParseError, ArtParseOptions, ArtParseResult};
-use vize_l0::{Allocator, Vec};
 
 /// The gallery's complete descriptor result and the public status warnings.
 /// A variant or target inference error can coexist with a warning on the opening tag.

@@ -1,8 +1,9 @@
-//! Vue component nodes retain their authored table scope (#11728).
+//! Vue component nodes retain their authored table scope.
 
-use super::{Parser, parse, parse_with_options};
 use vize_l0::Allocator;
 use vize_relief::{ElementType, ParserOptions, TemplateChildNode};
+
+use super::{Parser, parse, parse_with_options};
 
 #[test]
 fn dynamic_component_stays_inside_its_authored_table_loop() {

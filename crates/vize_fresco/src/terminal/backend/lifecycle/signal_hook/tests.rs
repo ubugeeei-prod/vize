@@ -1,6 +1,4 @@
 #![expect(clippy::unreachable, reason = "tests assert by panicking")]
-use super::*;
-
 #[cfg(unix)]
 use std::{
     io,
@@ -11,6 +9,7 @@ use std::{
     sync::atomic::{AtomicI32, AtomicUsize, Ordering},
 };
 
+use super::*;
 #[cfg(unix)]
 use crate::terminal::backend::lifecycle::{
     panic_hook::PRESENTATION_RESETS, pty_test_support::PtyFixture,

@@ -5,9 +5,10 @@
 //! AFTER. Current production captures must equal every expected field, and
 //! complete errors/raw spans stay exact. Original frozen bins remain history.
 
-use super::{Parser, compat_reference::parse_with_compat};
 use vize_l0::{Allocator, String, cstr};
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode, options::ParserOptions};
+
+use super::{Parser, compat_reference::parse_with_compat};
 
 #[derive(Clone, Copy)]
 pub(super) struct Change {

@@ -157,7 +157,6 @@ impl Rect {
         )
     }
 
-    /// Offset the rectangle by (dx, dy).
     pub fn offset(&self, dx: i16, dy: i16) -> Rect {
         Rect::new(
             (self.x as i32 + dx as i32).max(0) as u16,

@@ -1,7 +1,8 @@
 //! A preserved comment is a first child; a dropped comment is not.
-use super::{ParserOptions, parse_with_options};
 use vize_l0::Allocator;
 use vize_relief::{TemplateChildNode, options::WhitespaceStrategy};
+
+use super::{ParserOptions, parse_with_options};
 
 #[test]
 fn first_visible_child_respects_comments_in_both_whitespace_modes() {

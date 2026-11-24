@@ -2,12 +2,14 @@
     clippy::unwrap_used,
     reason = "read original input and compare complete serializations"
 )]
+use std::{fs, path::Path};
+
+use vize_l0::String;
+
 use super::{InspectorSourceFile, TemplateComplexity, inspect_template_products};
 use crate::inspector::{
     InspectorOptions, InspectorTarget, InspectorTemplateSyntax, build_payload, serialize_payload,
 };
-use std::{fs, path::Path};
-use vize_l0::String;
 
 fn original(files: &[InspectorSourceFile]) -> (serde_json::Value, Vec<Option<TemplateComplexity>>) {
     let feed = super::super::payload_stage_feed(files);

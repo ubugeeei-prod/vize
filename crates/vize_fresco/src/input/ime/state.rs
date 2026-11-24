@@ -45,19 +45,16 @@ impl ImeState {
         self.mode = mode;
     }
 
-    /// Start composition.
     pub fn start_composition(&mut self) {
         self.composing = true;
     }
 
-    /// End composition.
     pub fn end_composition(&mut self) {
         self.composing = false;
         self.preedit.clear();
         self.candidates.clear();
     }
 
-    /// Update preedit text.
     pub fn update_preedit(&mut self, text: &str, cursor: usize) {
         self.preedit.set_text(text);
         self.preedit.set_cursor(cursor);
@@ -139,7 +136,6 @@ pub enum ImeEvent {
     Disabled,
     /// Input mode changed
     ModeChanged(ImeMode),
-    /// Composition started
     CompositionStart,
     /// Preedit text updated
     PreeditUpdate {
@@ -150,7 +146,6 @@ pub enum ImeEvent {
     },
     /// Text was committed
     Commit(CompactString),
-    /// Composition ended
     CompositionEnd,
     /// Candidate list updated
     CandidatesUpdate {

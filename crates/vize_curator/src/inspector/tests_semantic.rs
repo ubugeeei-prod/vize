@@ -1,8 +1,9 @@
+use vize_l0::{FxHashSet, String, cstr};
+
 use super::{
     InspectorOptions, InspectorSourceFile, InspectorTarget, InspectorTemplateSyntax,
     build_agent_report, build_payload, serialize_agent_report,
 };
-use vize_l0::{FxHashSet, String, cstr};
 
 #[test]
 fn agent_report_preserves_semantic_scope_references() {

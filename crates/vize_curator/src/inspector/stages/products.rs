@@ -1,11 +1,12 @@
 //! A shared original template for the inspector and the project health report.
-use super::{InspectorSourceFile, StagePage, StageRemark, stage_feed_value_with_remarks};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_croquis_cf::TemplateComplexity;
 use vize_l0::{
     Allocator, String, cstr,
     pass::{RemarkCollector, observer::RecordedRemark},
 };
+
+use super::{InspectorSourceFile, StagePage, StageRemark, stage_feed_value_with_remarks};
 
 /// Build the inspector's serializable stage feed and visit Doctor's component
 /// record for each input in order. Inspector remarks stay relative to the

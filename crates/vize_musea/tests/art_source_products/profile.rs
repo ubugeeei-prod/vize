@@ -1,6 +1,8 @@
-use super::*;
-use davinci_harness::alloc::{self, CountingAllocator};
 use std::{hint::black_box, time::Instant};
+
+use davinci_harness::alloc::{self, CountingAllocator};
+
+use super::*;
 
 #[global_allocator]
 static ALLOCATOR: CountingAllocator = CountingAllocator::mimalloc();

@@ -1,13 +1,13 @@
 //! Layout NAPI bindings.
 
-use crate::layout::dimensions::{parse_dimension, parse_length_percentage_auto};
-use napi::bindgen_prelude::*;
-use napi_derive::napi;
 use std::cell::RefCell;
 
-use crate::layout::{FlexStyle, LayoutEngine};
+use napi::bindgen_prelude::*;
+use napi_derive::napi;
 
 use super::types::{FlexStyleNapi, LayoutResultNapi};
+use crate::layout::dimensions::{parse_dimension, parse_length_percentage_auto};
+use crate::layout::{FlexStyle, LayoutEngine};
 
 thread_local! {
     // Taffy's tree is not Send, so keep the native layout state scoped to the
