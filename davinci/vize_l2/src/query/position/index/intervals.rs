@@ -140,3 +140,6 @@ impl<T> Intervals<T> {
         Ok(Self::sorted(entries))
     }
 }
+
+#[cfg(test)]
+mod tests;
