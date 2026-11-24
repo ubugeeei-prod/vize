@@ -68,14 +68,24 @@ pub(super) fn check_singleton(
     if query.kinds == super::EdgeKinds::NONE {
         return Ok(());
     }
-    if let Some(ordinal) = edges.iter().position(|edge| {
-        let (from, to) = query.direction.endpoints(edge);
-        !rule::closed(
-            from == query.start,
-            query.kinds.contains(edge.kind),
-            to == query.start,
-        )
-    }) {
+    let first_open = |direction: super::Direction| {
+        if query.kinds == super::EdgeKinds::ALL {
+            return edges.iter().position(|edge| {
+                let (from, to) = direction.endpoints(edge);
+                !rule::closed(from == query.start, true, to == query.start)
+            });
+        }
+        edges.iter().position(|edge| {
+            let (from, to) = direction.endpoints(edge);
+            from == query.start
+                && !rule::closed(true, query.kinds.contains(edge.kind), to == query.start)
+        })
+    };
+    let ordinal = match query.direction {
+        super::Direction::Forward => first_open(super::Direction::Forward),
+        super::Direction::Reverse => first_open(super::Direction::Reverse),
+    };
+    if let Some(ordinal) = ordinal {
         return Err(CertificateError::OpenEdge(ordinal as u32));
     }
     Ok(())
