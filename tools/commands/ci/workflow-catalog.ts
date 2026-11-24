@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  legacyWorkflowNames,
+  protectedWorkflows,
+  workflowPrefixGroup,
+  type WorkflowGroupId,
+} from "../../support/ci/workflow-names.ts";
 
 interface WorkflowEntry {
   readonly file: string;
@@ -10,7 +16,7 @@ interface WorkflowEntry {
 }
 
 interface WorkflowGroup {
-  readonly id: string;
+  readonly id: WorkflowGroupId;
   readonly directory: string;
   readonly title: string;
   readonly description: string;
@@ -94,8 +100,6 @@ const groups = [
   },
 ] as const satisfies readonly WorkflowGroup[];
 
-type WorkflowGroupId = (typeof groups)[number]["id"];
-
 const startHere = [
   ["01", "check.yml", "Top-level required-check fan-out and final gate"],
   ["02", "pr-source-checks.yml", "Source-change planner and affected qualification"],
@@ -126,8 +130,15 @@ export function readWorkflowEntries(root: string): readonly WorkflowEntry[] {
       const source = readFileSync(path.join(directory, file), "utf8");
       const name = /^name:\s*(.+?)\s*$/m.exec(source)?.[1];
       assert.ok(name != null && name !== "", `${file} must declare a workflow name`);
-      const groupId = groupByName.get(path.basename(file, path.extname(file)));
-      assert.ok(groupId, `Missing Pkl workflow source for ${file}`);
+      const sourceGroup = groupByName.get(path.basename(file, path.extname(file)));
+      assert.ok(sourceGroup, `Missing Pkl workflow source for ${file}`);
+      // The file name owns the group; legacy names fall back to their Pkl directory.
+      const groupId =
+        workflowPrefixGroup(file) ??
+        protectedWorkflows[file] ??
+        (legacyWorkflowNames.has(file) ? sourceGroup : undefined);
+      assert.ok(groupId, `${file} must be named NN-<subject>.yml`);
+      assert.equal(sourceGroup, groupId, `${file} belongs in the group ${groupId} Pkl directory`);
       return { file, groupId, name };
     });
 }
