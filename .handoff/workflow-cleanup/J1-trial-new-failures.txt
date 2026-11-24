@@ -1,0 +1,46 @@
+✖ actual complete consumers retain the sole WASM producer and separate NAPI recipes
+✖ actual matrix planner and workflow producers cannot introduce new dynamic keys
+✖ actual native-smoke and release files bind the registered successor
+✖ both complete documents restore the same original provenance input
+✖ current complete sources reconstruct their exact predecessors without rewriting base reads
+✖ demanded SFC sources compose complete independent predecessors without replacing existing custody
+✖ every original input, before witness, producer and target remains checked
+✖ explicit test Promise disposition preserves the whole original assertions and actual test entry
+✖ first successor mutations reach each specific post-hash record validation branch
+✖ lazy SFC replay requires its successor, archives and immutable predecessor custody
+✖ lazy SFC source successors refuse missing, partial, duplicate, future and repinned producers
+✖ live runtime successors preserve seven original consumers and leave base and unrelated reads actual
+✖ local action wrappers cannot hide a Docs WASM consumer outside scanned metadata
+✖ maximum non-release runners preserve every original job contract
+✖ metadata instrumentation retains whole predecessor custody and refuses unregistered edits
+✖ missing or changed custody and every archived body prevent historical replay
+✖ mixed and future Canon changes retain their ordinary input requirement
+✖ new helper and input paths select the existing jobs and cannot be removed alone
+✖ ordinary literal roles and reviewed non-Docs dynamic prefixes remain eligible
+✖ package versions may advance while changed native or secondary scripts are refused
+✖ passive native LSP capture retains the complete original Matrix workflow
+✖ post-integrity validators consume the genuine complete records without weakening authenticated intake
+✖ process budgets and benchmark reports retain their units, columns and row limits
+✖ retired readiness inputs cannot return or hide unrelated producer changes
+✖ reviewed command source and its ancestors must remain physical
+✖ runtime mutations reach specific schema, transition, predecessor, input and consumer branches after the custody gate
+✖ selection covers pinned inputs, drivers and real producers in both contexts
+✖ smoke rollback or Babel publication rollback cannot reuse historical admission
+✖ tests/tooling/native-image-producer-workflow.test.ts
+✖ tests/tooling/nuxt-cli-browser-setup.test.ts
+✖ the actual development install shell retains npm failure and its raw log
+✖ the actual frozen install shell preserves npm failure through raw log capture
+✖ the actual native unit capture propagates a failing producer through tee
+✖ the benchmark reads the same exact package keys and pins as the workspace catalog
+✖ the canonical call path and every local action it uses select the corpus
+✖ the complete workflow retains the original setup and token-law provenance
+✖ the development command uses the captured producer and forwards the consumer
+✖ the exact reviewed transition consumes a separate complete language-project protocol case
+✖ the historical source remains intact while its exact successor and complete consumers are authenticated
+✖ the Nuxt controller uses the source runtime while forwarding the consumer executable
+✖ the pinned classification input replays complete genuine TypeScript packets through the current producer
+✖ the report admits only the complete language-project registration outside ordinary cases
+✖ the separately registered lazy SFC sources reconstruct their complete original manifest producers
+✖ the three reviewed CSS slots preserve the sole WASM and separate NAPI roles
+✖ timing observation cannot alter commands, selectors, retention, or unrelated fields
+✖ workflow naming rules reject unprefixed, investigative and duplicate names

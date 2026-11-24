@@ -1,0 +1,72 @@
+J plan (revised for the tools/ci layout), 2026-11-24 17:10 JST.  Starts only after the drain PRs and B–I land.
+
+Target layout
+  tools/ci/workflows/NN-name/workflow.pkl      Pkl source (was tools/config/pkl/workflows/<area>/<stem>.pkl)
+  tools/ci/workflows/NN-name/jobs/*.pkl        that workflow's parts (was tools/config/pkl/parts/<stem>/)
+  tools/ci/workflows/NN-name/scripts/*.sh.pkl  shell recipes (was tools/config/pkl/scripts/.github/scripts/workflows/<stem>/)
+  tools/ci/workflows/NN-name/scripts/*.sh      generated recipes, next to their source (were .github/scripts/workflows/<stem>/)
+  tools/ci/workflows/NN-name/scripts/*.ts|jq   hand-written drivers (were .github/scripts/workflows/<stem>/)
+  tools/ci/workflows/release/ ...              protected files: directory = output name (release, release-jsr, deploy-docs, ...)
+  tools/ci/actions/<name>/action.pkl (+scripts/*.pkl)  composite actions; outputs stay .github/actions/<name>/action.yml
+                                               and .github/actions/<name>/scripts/* because $GITHUB_ACTION_PATH must hold them
+  tools/ci/lib/   Actions.pkl ShellScript.pkl NativeChecks.pkl BootstrapAssets.pkl MapperSdks.pkl, parts/{shell,test-native-canon},
+                  scripts/ (was .github/scripts/workflows/shared), Products.pkl (glob root for workflows/actions)
+  tools/ci/commands/   was tools/commands/ci (catalog, verify-tool-layout, source-file-lengths, ...)
+  tools/config/        non-CI only: pkl/repository, pkl/package-tasks, non-CI pkl/scripts (crates/, tests/, tools/), vite-plus, json
+  .github/workflows/*.yml, .github/actions/**   generated output only; .github/scripts/ disappears
+  Deleting tools/ci/workflows/NN-name/ removes everything the workflow owned.
+  Choice to confirm: per-workflow parts go to the workflow's jobs/ (not lib/parts), so "delete the directory" stays true;
+  only the two shared part sets (shell, test-native-canon) live in lib/parts.
+
+Mechanics that change
+  - generator listProducts: tools/ci/workflows/<dir>/workflow.pkl -> .github/workflows/<dir>.yml;
+    tools/ci/workflows/<dir>/scripts/<x>.sh.pkl -> tools/ci/workflows/<dir>/scripts/<x>.sh;
+    tools/ci/actions/<name>/action.pkl -> .github/actions/<name>/action.yml (+scripts). Pkl --root-dir becomes tools/,
+    evaluation reads tools/config/pkl/RepositoryProducts.pkl and tools/ci/lib/Products.pkl. Stem invariant becomes
+    "every tools/ci/workflows/<dir> has workflow.pkl and its name passes workflowNameViolations"; the legacy name list goes.
+  - verifyInventory: generated .sh now live under tools/ci; drivers there are hand-written unless a .sh.pkl sibling exists.
+  - ci.workflowScript(file) still expands to . "${{ env.VIZE_CI_FILES }}/file"; VIZE_CI_FILES literals become
+    ${{ github.workspace }}/tools/ci/workflows/<dir>/scripts.
+  - stageWorkflowScripts(dir): sparse-checkout /tools/ci/workflows/<dir>/scripts/ and /tools/ci/lib/scripts/ (+ the stage action);
+    stage.ts looks under tools/ci/workflows and exports VIZE_CI_FILES=<staged>/<dir>/scripts. Drivers reach shared helpers via
+    $VIZE_CI_FILES/../../../lib/scripts/ (automationProgramReferences must accept that prefix instead of ../shared/).
+  - plan-tooling-tests.mjs owner mapping: ^tools/ci/workflows/([\w-]+)/ -> .github/workflows/$1.yml.
+  - workflow-catalog.ts: group from prefix or protected allowlist only (Pkl group directories disappear); links to tools/ci/workflows/.
+  - verify-tool-layout.ts: scan tools/ci/commands; new rules: nothing under .github/scripts, every tools/ci/workflows/<dir>
+    matches the naming rule, no file under tools/ci/workflows/<a>/ imported from tools/ci/workflows/<b>/.
+  - tests: automation-source.ts (readWorkflowShell, workflowProgram path), workflow-stage.ts, workflow-layout.test.ts,
+    the ~200 tests that read .github/scripts/workflows/<stem>/ paths (rewritten by the script).
+  - run lookups by path (cadence.ts, consumer_recovery, canonical-corpus-workers.mjs dual-accept, .jq files,
+    legacy-deletion-guard.ts) move with J2 as planned.
+  - byte-pin custody: re-pin (keep the mechanism) workflow-program-history.json, language-project-classification-runtime.ts
+    chain (typescript-plugin, typescript-provider-vsix, language-project-fixtures), native-smoke babel inventory.
+
+PR split
+  J0  ci: move the CI library to tools/ci (no rename, no workflow move)
+      lib + commands move, generator understands both layouts (old tools/config/pkl/workflows and new tools/ci/workflows),
+      stage action/stage.ts/automation-source accept both driver roots, import paths in the ~1,700 Pkl modules rewritten
+      (Actions.pkl/ShellScript.pkl), tools/commands/ci references rewritten. YAML outputs byte-identical except the
+      shared-driver staging path. Conflicts with every open workflow PR, so it lands in a quiet window right after the drain.
+  J1  ci: move and rename the benchmark-to-app workflows (groups 03–11, ~60, script: move-rename-workflows.py)
+  J2  ci: move and rename the check and qualification workflows (group 01 + level-deletion-readiness; run-lookup sites;
+      seed runs after merge: push run of 01-check.yml on main, dispatch 07-level-deletion-readiness)
+  J3  ci: move the release workflows (6 renames in group 02 + sources of the 9 protected files; outputs keep their names)
+  J4  ci: move composite actions to tools/ci/actions and drop the old-layout support from the generator
+  L   docs ride with J1/J2 (CONTRIBUTING, living docs + translations, catalog descriptions, tools/ci/README.md)
+  The generated-file header PR (ci/generated-file-headers) should land before J0 so J moves headed files once.
+
+Scripts (scratchpad)
+  move-rename-workflows.py  map.tsv [old…]  one-pass move+rename (written for the post-J0 layout; untested until J0 exists)
+  rename-workflows.py       rename-only variant, trial-run on main (findings in J-notes.txt)
+  rename-map.tsv            89 rows; J1-map.tsv = J1 subset
+
+Status 2026-11-24 20:05 JST
+- J0 is ready locally on branch ci/move-ci-library (worktree workflow-cleanup-j0), stacked on the second combined branch:
+  lib modules + shared parts -> tools/ci/lib, shared programs -> tools/ci/lib/scripts, tools/commands/ci -> tools/ci/commands,
+  generator/RepositoryProducts/stage action/catalog/planner/test helpers understand tools/ci/workflows/<name>/.
+  Outputs unchanged except moved paths; frozen-record tests compare via tests/tooling/support/ci-library-paths.ts.
+  Local: generator --check, vp check, verify-tool-layout, 165 tooling files: no new failures vs its parent.
+- move-rename-workflows.py now uses pkl_move.py (generic relative-import rewriter) and removes emptied directories.
+  Trial of J1 (64 workflows) on J0: generator --check passes; 47 test cases in 29 files fail and need the J1 hand work
+  (custody re-pins, successor chains, naming-rule test list, fmt of re-wrapped lines): J1-trial-failing-files.txt,
+  J1-trial-new-failures.txt.
