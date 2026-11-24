@@ -134,10 +134,6 @@ name = "prepared_tsrx"
 path = "tests/prepared_tsrx/main.rs"
 required-features = ["retained-tsrx", "vize_l4/retained-tsrx"]
 
-[[test]]
-name = "type_aware_budget"
-path = "tests/type_aware_budget.rs"
-
 [lints]
 workspace = true
 

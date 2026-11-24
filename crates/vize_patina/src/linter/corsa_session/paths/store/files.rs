@@ -356,21 +356,12 @@ mod tests {
         std::os::unix::fs::symlink(&outside, project.join("src/linked.ts")).unwrap();
 
         let files = ambient_program_files(&project, &project.join("tsconfig.json"));
-        let rendered = files
-            .iter()
-            .map(|path| path.replace('\\', "/"))
-            .collect::<Vec<_>>();
-
-        assert!(
-            rendered.iter().any(|path| path.ends_with("/outside.ts")),
-            "{rendered:?}"
-        );
-        assert!(
-            rendered
-                .iter()
-                .all(|path| !path.ends_with("/src/linked.ts")),
-            "{rendered:?}"
-        );
+        let mut expected = vec![
+            super::slash_path(&project.join("src/env.d.ts")),
+            super::slash_path(&vize_l0::path::canonicalize_non_verbatim(&outside)),
+        ];
+        expected.sort();
+        assert_eq!(files, expected);
     }
 
     /// `include` of a symlinked directory follows the link while walking, but
@@ -388,22 +379,11 @@ mod tests {
         std::os::unix::fs::symlink(&outside, project.join("types")).unwrap();
 
         let files = ambient_program_files(&project, &project.join("tsconfig.json"));
-        let rendered = files
-            .iter()
-            .map(|path| path.replace('\\', "/"))
-            .collect::<Vec<_>>();
-
-        assert!(
-            rendered
-                .iter()
-                .any(|path| path.ends_with("/outside/env.d.ts")),
-            "{rendered:?}"
-        );
-        assert!(
-            rendered
-                .iter()
-                .all(|path| !path.ends_with("/types/env.d.ts")),
-            "{rendered:?}"
+        assert_eq!(
+            files,
+            vec![super::slash_path(
+                &vize_l0::path::canonicalize_non_verbatim(&outside.join("env.d.ts"),)
+            )]
         );
     }
 

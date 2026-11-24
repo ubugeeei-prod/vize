@@ -43,16 +43,9 @@ export interface FileState {
 interface SourceRevisionIdentity {
   // Exact text avoids hash collisions and per-rule digest allocations. For
   // normal files physicalSource and state.source share the same string reference.
+  // Metadata is not enough: a same-size rewrite can land in the same timestamp
+  // tick, and the cache would then keep the previous source and diagnostics.
   readonly physicalSource: string;
-  // Repeat visits of an unchanged file stat instead of reading the bytes again.
-  // dev, ino, size, mtimeNs, and ctimeNs are the identity the active-rule pass
-  // already trusts. A same-size edit still misses when a tool restores mtime,
-  // because the write or the timestamp restore updates ctime or the inode.
-  readonly dev: bigint;
-  readonly ino: bigint;
-  readonly size: bigint;
-  readonly mtimeNs: bigint;
-  readonly ctimeNs: bigint;
 }
 
 interface CachedFileState {
@@ -67,10 +60,11 @@ let fileStateCacheClock = 0;
 
 export function getFileState(context: Context): FileState {
   const settings = getVizeSettings(context);
+  const physicalSource = fs.readFileSync(context.physicalFilename, "utf8");
   const ruleSelection = parseRuleSelection(settings.rules);
   const cacheKey = getCacheKey(context.physicalFilename, settings, ruleSelection);
   const cached = fileStateCache.get(cacheKey);
-  if (cached && physicalRevisionUnchanged(context.physicalFilename, cached.state.revision)) {
+  if (cached && cached.state.revision.physicalSource === physicalSource) {
     validateWorkaroundAuthority(cached.state, context.physicalFilename);
     if (cached.state.extractedScript !== context.sourceCode.text) {
       // A dual-script SFC is visited with multiple extracted programs for the
@@ -83,14 +77,15 @@ export function getFileState(context: Context): FileState {
     return cached.state;
   }
 
-  const revision = readPhysicalRevision(context.physicalFilename);
   const resolvedSource = resolveWorkaroundSource(
-    revision.physicalSource,
+    physicalSource,
     context.physicalFilename,
     readOriginalWorkaroundSource,
   );
   const state: FileState = {
-    revision,
+    revision: {
+      physicalSource,
+    },
     filename: resolvedSource.filename,
     source: resolvedSource.source,
     extractedScript: context.sourceCode.text,
@@ -287,29 +282,6 @@ function diagnosticIdentity(diagnostic: PatinaDiagnostic): string {
     end.column,
     end.offset,
   ].join("\0");
-}
-
-function physicalRevisionUnchanged(filename: string, revision: SourceRevisionIdentity): boolean {
-  const stat = fs.statSync(filename, { bigint: true });
-  return (
-    stat.dev === revision.dev &&
-    stat.ino === revision.ino &&
-    stat.size === revision.size &&
-    stat.mtimeNs === revision.mtimeNs &&
-    stat.ctimeNs === revision.ctimeNs
-  );
-}
-
-function readPhysicalRevision(filename: string): SourceRevisionIdentity {
-  const stat = fs.statSync(filename, { bigint: true });
-  return {
-    physicalSource: fs.readFileSync(filename, "utf8"),
-    dev: stat.dev,
-    ino: stat.ino,
-    size: stat.size,
-    mtimeNs: stat.mtimeNs,
-    ctimeNs: stat.ctimeNs,
-  };
 }
 
 function nextFileStateCacheClock(): number {
