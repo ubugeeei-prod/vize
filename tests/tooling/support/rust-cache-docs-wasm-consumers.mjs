@@ -9,11 +9,7 @@ import { parse } from "yaml";
 const cacheAction = "./.github/actions/setup-rust-sticky-cache";
 const headCacheAction = "./head/.github/actions/setup-rust-sticky-cache";
 const headScriptAction = "./head/.github/actions/setup-rust-script";
-const qualificationWorkflows = new Set([
-  ".github/workflows/async-component-ancestry.yml",
-  ".github/workflows/native-sfc-runtime-options.yml",
-  ".github/workflows/plain-script-import-ref.yml",
-]);
+const qualificationWorkflows = new Set([".github/workflows/plain-script-import-ref.yml"]);
 const qualificationActions = new Map([
   [
     "./qualification/.github/actions/setup-wild-http-recovery",

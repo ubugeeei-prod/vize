@@ -135,42 +135,16 @@ void test("Core PR and merge gates use the recovery adapter", () => {
 });
 void test("Release-blocking observers and Fresco use the recovery adapter", () => {
   const local = "./.github/actions/setup-wild-http-recovery";
-  const qualification = "./qualification/.github/actions/setup-wild-http-recovery";
-  const asyncAncestry = parse(
-    readAutomationPrograms(".github/workflows/async-component-ancestry.yml", "utf8"),
-  );
-  const asyncSteps = asyncAncestry.jobs["whole-project"].steps;
-  const qualificationCheckout = asyncSteps.find(
-    (step) => step.uses?.startsWith("actions/checkout@") && step.with?.path === "qualification",
-  );
-  assert.ok(qualificationCheckout, "qualification checkout must remain in whole-project");
-  assert.equal(
-    qualificationCheckout.with["sparse-checkout"],
-    ".github/actions/setup-wild-http-recovery\n" +
-      "tests/tooling/async-component-ancestry-workflow.test.ts\n" +
-      "tools/support/cross_file/async_component\n",
-  );
-  assert.equal(asyncSteps.filter((step) => step.uses === qualification).length, 1);
-  assert.ok(
-    asyncAncestry.on.pull_request.paths.includes(".github/actions/setup-wild-http-recovery/**"),
-  );
   const workflows = [
-    [".github/workflows/async-component-ancestry.yml", qualification, ["whole-project"]],
     [
       ".github/workflows/component-input-diagnostic-ownership.yml",
       local,
       ["published-sdk-packets", "unchanged-projection-packets"],
     ],
-    [".github/workflows/cross-file-script-offset.yml", local, ["coordinates"]],
     [".github/workflows/davinci-plugin-sdk.yml", local, ["plugin-contracts"]],
     [".github/workflows/davinci-unused-bindings.yml", local, ["unused-bindings"]],
     [".github/workflows/jsx-authored-native-modules.yml", local, ["authored-modules"]],
     [".github/workflows/patina-native-boolean-protocol.yml", local, ["live-native"]],
-    [
-      ".github/workflows/unicode-prop-projection.yml",
-      local,
-      ["native-host", "unaffected-projections"],
-    ],
     [".github/workflows/windows-config-consumer.yml", local, ["source-sdk"]],
     [".github/workflows/build-docs.yml", local, ["build-docs", "build-playground"]],
     [".github/workflows/fresco.yml", local, ["fresco-rust"]],

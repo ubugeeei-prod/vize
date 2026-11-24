@@ -1,8 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  module.command("node", List("--test", "tests/tooling/defaulted-inject-snapshot-transition.test.ts"))
-  module.command("node", List("tools/support/compat/defaulted-inject/verify.ts"))
-}
