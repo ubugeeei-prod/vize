@@ -8,7 +8,7 @@
 use vize_atelier_core::steps::expression::is_template_global;
 use vize_carton::{Allocator, Box, Span, Vec};
 use vize_l3::{
-    op::{OpId, OpKind, Program, RegionId},
+    op::{L3Ir, OpId, OpKind, RegionId},
     operand::{Operand, OperandRole as Role, OperandValue, ValueKind},
 };
 
@@ -160,7 +160,7 @@ fn alias(kind: ValueKind, text: &str) -> Result<Option<&str>> {
 /// must agree. The verifier rejects duplicate ids, so ids below the region
 /// count index a dense table.
 pub(super) fn controlled_regions<'a>(
-    program: &Program<'_>,
+    program: &L3Ir<'_>,
     alloc: &'a Allocator,
 ) -> Result<Vec<'a, bool>> {
     let count = program.regions.len();

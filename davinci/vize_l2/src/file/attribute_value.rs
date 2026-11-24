@@ -1,6 +1,6 @@
 //! Whole original value preparation sealed only to its actual canonical slot.
 
-use super::{FileArtifact, RejectedFile};
+use super::{L2Ir, RejectedFile};
 use crate::lang::js::NativeTemplateIssueKind;
 use crate::op::{Attribute, ElementOp};
 use core::ptr::NonNull;
@@ -47,20 +47,20 @@ impl<'a> NativeFileAttributeValue<'a> {
 /// A short actual File + Element allocation + canonical attribute slot join.
 /// Numeric row lookup or equal name/value/spans cannot construct this view.
 /// ```compile_fail
-/// use vize_l2::file::{FileArtifact, FileAttributeValue};
+/// use vize_l2::file::{L2Ir, FileAttributeValue};
 /// use vize_l2::op::ElementOp;
-/// fn forge<'f,'a>(file: &'f FileArtifact<'a>, element: &'f ElementOp<'a>) {
+/// fn forge<'f,'a>(file: &'f L2Ir<'a>, element: &'f ElementOp<'a>) {
 ///     let _ = FileAttributeValue { file, element, index: 0, slot: 0 };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct FileAttributeValue<'f, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     element: &'f ElementOp<'a>,
     index: usize,
     slot: usize,
 }
-impl<'a> FileArtifact<'a> {
+impl<'a> L2Ir<'a> {
     #[must_use]
     pub fn native_attribute_values(&self) -> &[NativeFileAttributeValue<'a>] {
         &self.facts.native_attribute_values
@@ -101,7 +101,7 @@ impl<'a> RejectedFile<'a> {
 }
 impl<'f, 'a> FileAttributeValue<'f, 'a> {
     #[must_use]
-    pub const fn file(self) -> &'f FileArtifact<'a> {
+    pub const fn file(self) -> &'f L2Ir<'a> {
         self.file
     }
     #[must_use]

@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_assert_fields_are_eq_Step": { "prover": "alt-ergo", "time": 0.003 }
+    }
+  }
+}

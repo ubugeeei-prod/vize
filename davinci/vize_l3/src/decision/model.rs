@@ -4,8 +4,8 @@ use vize_l0::id::NodeId;
 use vize_l2::{
     expr::ExprRef,
     file::{
-        DeclarationKind, FileArtifact, FileResolution, InitializerKind, Namespace,
-        NativeFileModelKind, NativeFileModelState,
+        DeclarationKind, FileResolution, InitializerKind, L2Ir, Namespace, NativeFileModelKind,
+        NativeFileModelState,
     },
     op::{BindingOp, ElementOp, ModelOp},
     resolution::Usage,
@@ -14,7 +14,7 @@ use vize_l2::{
 /// Authenticate the normally completed original factory, not numeric IDs alone.
 /// Callers separately establish their canonical root/target event and exposure.
 pub(super) fn checked<'owner, 'arena>(
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     element_node: NodeId,
     element: &'owner ElementOp<'arena>,
     node: NodeId,

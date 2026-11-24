@@ -1,7 +1,7 @@
 //! Shared backend decisions keyed by the owning L2 artifact's node ids.
 //!
 //! This is the native decision boundary for issue #6839. It is separate
-//! from the flat [`crate::op::Program`]: DOM and SSR consume these facts
+//! from the flat [`crate::op::L3Ir`]: DOM and SSR consume these facts
 //! beside L2, while Vapor requests the program separately. The borrowed
 //! producer computes conservative static/binding/control facts;
 //! placement analysis and production selection remain unfinished.

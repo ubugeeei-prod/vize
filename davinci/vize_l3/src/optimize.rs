@@ -9,7 +9,7 @@
 use vize_l0::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline_remarked};
 
 use crate::extract::{EXTRACT, Extraction, OptTier, extract};
-use crate::op::Program;
+use crate::op::L3Ir;
 use crate::placement::{ANNOTATE, annotate};
 
 /// The stage name L3 pipelines print and remark under.
@@ -30,7 +30,7 @@ pub const OPTIMIZE: Pipeline = Pipeline::new(L3_STAGE, OPTIMIZE_PASSES);
 /// Returns the pass manager's failure. The catalogue below is closed over the
 /// const pipeline, so a failure here is a compiler bug, not an input property.
 pub fn optimize<O: PassObserver>(
-    program: &mut Program<'_>,
+    program: &mut L3Ir<'_>,
     tier: OptTier,
     observer: &mut O,
 ) -> Result<Extraction, PassFailure> {

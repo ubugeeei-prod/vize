@@ -6,7 +6,7 @@
 use super::{JsxFileProducer, JsxMarkupIssue, JsxMarkupIssueKind};
 use crate::{
     analysis::template_complexity,
-    file::FileArtifact,
+    file::L2Ir,
     op::{Namespace, Op},
 };
 use alloc::{vec, vec::Vec};
@@ -75,7 +75,7 @@ fn producer<'a>(
     Ok(producer)
 }
 
-fn facts(file: &FileArtifact<'_>) -> vize_l0::String {
+fn facts(file: &L2Ir<'_>) -> vize_l0::String {
     let units: Vec<_> = file
         .units()
         .iter()

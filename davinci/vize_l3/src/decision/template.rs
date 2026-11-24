@@ -11,7 +11,7 @@ use super::{
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::Artifact,
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{NativeTemplateFile, NativeTemplateView},
 };
 
@@ -53,9 +53,9 @@ use vize_l2::{
 /// ```
 /// A complete neutral File is not a template completion capability:
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::template::build_template_dom_decisions;
-/// fn promote(file: &FileArtifact<'_>) { let _ = build_template_dom_decisions(file); }
+/// fn promote(file: &L2Ir<'_>) { let _ = build_template_dom_decisions(file); }
 /// ```
 pub struct TemplateDomAnalysis<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,
@@ -70,7 +70,7 @@ impl<'owner, 'arena> TemplateDomAnalysis<'owner, 'arena> {
     }
 
     #[must_use]
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.analysis.file()
     }
 

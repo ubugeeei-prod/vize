@@ -6,7 +6,7 @@
 
 use vize_carton::{Allocator, Span};
 use vize_l2::analysis::fragment_facts::FragmentKey;
-use vize_l3::op::{OpId, OpKind, Program};
+use vize_l3::op::{L3Ir, OpId, OpKind};
 
 use super::{LegacyReason, native::validate::reference, retained::Retained};
 
@@ -17,7 +17,7 @@ pub(super) fn collect<'a>(
     allocator: &'a Allocator,
     source: &str,
     s2: &vize_l1_to_l2::Lowered<'_>,
-    program: &Program<'a>,
+    program: &L3Ir<'a>,
     retained: &mut Retained<'_, 'a>,
 ) -> Result<std::vec::Vec<TemplateLoop<'a>>, LegacyReason> {
     if s2

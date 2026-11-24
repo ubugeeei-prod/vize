@@ -5,7 +5,7 @@
 
 use super::{JsxFile, JsxFileError, JsxFileProducer, RejectedJsxFile};
 use crate::artifact::ArtifactError;
-use crate::file::FileArtifact;
+use crate::file::L2Ir;
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Span, profile};
 
@@ -53,7 +53,7 @@ impl<'a> JsxMarkupFile<'a> {
     }
 
     #[must_use]
-    pub fn file(&self) -> &FileArtifact<'a> {
+    pub fn file(&self) -> &L2Ir<'a> {
         self.owner.file()
     }
 

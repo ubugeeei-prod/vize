@@ -1,6 +1,6 @@
 //! Normally owned original preparation, joined only to its real Text mint.
 
-use super::{FileArtifact, RejectedFile};
+use super::{L2Ir, RejectedFile};
 use crate::{lang::js::NativeTemplateIssueKind, op::TextOp};
 use core::ptr::NonNull;
 use vize_l0::id::NodeId;
@@ -61,19 +61,19 @@ impl<'a> NativeFileTextValue<'a> {
 /// Same actual File, NodeId and arena Text allocation, with whole preparation.
 /// Equal bytes, a numeric node or a copied Text cannot construct this view.
 /// ```compile_fail
-/// use vize_l2::{file::{FileArtifact, FileTextValue}, op::TextOp};
+/// use vize_l2::{file::{L2Ir, FileTextValue}, op::TextOp};
 /// use vize_l0::id::NodeId;
-/// fn forge<'f, 'a>(file: &'f FileArtifact<'a>, text: &'f TextOp<'a>) {
+/// fn forge<'f, 'a>(file: &'f L2Ir<'a>, text: &'f TextOp<'a>) {
 ///     let _ = FileTextValue { file, text, node: NodeId::FIRST };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct FileTextValue<'f, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     text: &'f TextOp<'a>,
     node: NodeId,
 }
-impl<'a> FileArtifact<'a> {
+impl<'a> L2Ir<'a> {
     #[must_use]
     pub fn native_text_values(&self) -> &[NativeFileTextValue<'a>] {
         &self.facts.native_text_values
@@ -115,7 +115,7 @@ impl<'a> RejectedFile<'a> {
 }
 impl<'f, 'a> FileTextValue<'f, 'a> {
     #[must_use]
-    pub const fn file(self) -> &'f FileArtifact<'a> {
+    pub const fn file(self) -> &'f L2Ir<'a> {
         self.file
     }
     #[must_use]

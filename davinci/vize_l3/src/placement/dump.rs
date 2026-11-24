@@ -14,7 +14,7 @@ use vize_l0::dump::value::DumpValue;
 use vize_l0::dump::{Dump, Error as DumpError};
 
 use super::{Placement, PlacementRecord, PlacementSet};
-use crate::op::{OpId, Program};
+use crate::op::{L3Ir, OpId};
 
 /// Placement records in program order.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
@@ -26,7 +26,7 @@ pub struct Page {
 impl Page {
     /// Mirror the live placement overlay into the owned document model.
     #[must_use]
-    pub fn of(program: &Program<'_>) -> Self {
+    pub fn of(program: &L3Ir<'_>) -> Self {
         Self {
             placements: program
                 .placements
