@@ -291,20 +291,11 @@ test("the workflow publishes only the prepared body for the release tag commit",
   assert.equal(steps[create]?.with?.body_path, "${{ runner.temp }}/release-notes.md");
   assert.equal(steps[create]?.with?.generate_release_notes, false);
   assert.ok(node >= 0 && node < notes && notes < create);
-  const preflight = readFileSync(
-    new URL("../../../.github/workflows/release-contracts.yml", import.meta.url),
-    "utf8",
-  );
-  const preflightTests = readFileSync(
-    new URL(
-      "../../../.github/scripts/workflows/release-contracts/test-release-pipeline.sh",
-      import.meta.url,
-    ),
-    "utf8",
-  );
-  assert.ok(preflight.includes("test-release-pipeline.sh"));
-  assert.ok(preflightTests.includes("  tests/tooling/release/release-notes.test.ts \\\n"));
-  assert.ok(preflightTests.includes("  tests/tooling/drop-in-claim-scope.test.ts \\\n"));
+  const read = (file: string) => readFileSync(new URL(`../../../${file}`, import.meta.url), "utf8");
+  const preflight = read(".github/workflows/release-contracts.yml");
+  const tests = read(".github/scripts/workflows/release-contracts/test-release-pipeline.sh");
+  for (const file of ["release/release-notes", "drop-in-claim-scope"])
+    assert.ok(tests.includes(`  tests/tooling/${file}.test.ts \\\n`), file);
   for (const input of [
     ".github/workflows/release*.yml",
     ".github/release-notes/drop-in-scope.md",
