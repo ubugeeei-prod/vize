@@ -252,27 +252,31 @@ fn directive_node<'a>(ctx: &mut LintContext<'a>, directive: &DirectiveNode<'a>) 
                 )
             }
         });
+    let argument_end = directive.arg.as_ref().map_or(start + raw.len(), |argument| {
+        let end = expression::expression_span(argument).1;
+        match argument {
+            ExpressionNode::Simple(simple) if simple.is_static => end,
+            _ => end + 1,
+        }
+    });
+    let is_implicit_prop = |modifier: &vize_relief::SimpleExpressionNode<'_>| {
+        let (modifier_start, modifier_end) = span(modifier.loc.span);
+        shorthand == Some(".")
+            && modifier.content == "prop"
+            && (modifier_start == modifier_end || modifier_start == start)
+    };
     let authored_prop = directive.modifiers.iter().any(|modifier| {
-        modifier.content.eq_ignore_ascii_case("prop") && modifier.loc.span.start as usize != start
+        modifier.content.eq_ignore_ascii_case("prop") && !is_implicit_prop(modifier)
     });
     let modifiers = directive
         .modifiers
         .iter()
-        .filter(|modifier| {
-            !(shorthand == Some(".") && modifier.loc.span.start as usize == start && authored_prop)
-        })
+        .filter(|modifier| !(is_implicit_prop(modifier) && authored_prop))
         .map(|modifier| {
             let (modifier_start, modifier_end) = span(modifier.loc.span);
-            if shorthand == Some(".") && modifier_start == start {
+            if is_implicit_prop(modifier) {
                 // vue-eslint-parser places the implicit `.foo` prop modifier
                 // after the argument, with an empty authored range/name.
-                let argument_end = directive.arg.as_ref().map_or(start + 1, |argument| {
-                    let end = expression::expression_span(argument).1;
-                    match argument {
-                        ExpressionNode::Simple(simple) if simple.is_static => end,
-                        _ => end + 1,
-                    }
-                });
                 node(
                     "VIdentifier",
                     argument_end,
@@ -299,7 +303,13 @@ fn directive_node<'a>(ctx: &mut LintContext<'a>, directive: &DirectiveNode<'a>) 
             [("expression", expression)],
         )
     });
-    let key_end = start + raw.len();
+    // Compatibility nodes retain only the directive prefix in raw_name.
+    // The argument and authored modifier spans delimit the complete key.
+    let key_end = directive
+        .modifiers
+        .iter()
+        .map(|modifier| modifier.loc.span.end as usize)
+        .fold(argument_end, usize::max);
     node(
         "VAttribute",
         start,
