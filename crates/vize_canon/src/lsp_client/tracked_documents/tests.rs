@@ -32,6 +32,37 @@ fn equal_text_does_not_dirty_the_owner() {
     assert_eq!(source.acknowledge(), checkpoint);
 }
 
+#[cfg(feature = "ambient-project-declarations")]
+#[test]
+fn ambient_source_revisions_track_exact_bytes_through_restores_and_counter_wrap() {
+    let mut source = source();
+    let first = source.ambient_revision();
+    source.share_equal("file:///a.ts", "file:///a.ts".into());
+    source.insert("file:///b.ts".into(), "file:///b.ts".into());
+    source.remove("file:///missing");
+    source.acknowledge();
+    assert!(source.has_ambient_revision(&first));
+    let other = source.clone();
+    let independent = other.ambient_revision();
+    assert!(!source.has_ambient_revision(&independent));
+    assert!(!other.has_ambient_revision(&first));
+
+    source.revision.number = u64::MAX;
+    source.insert("file:///a.ts".into(), "temporary".into());
+    assert_eq!(source.revision.number, 0);
+    source.insert("file:///a.ts".into(), "file:///a.ts".into());
+    assert!(!source.has_ambient_revision(&first));
+    let restored = source.ambient_revision();
+    source.remove("file:///a.ts");
+    assert!(!source.has_ambient_revision(&restored));
+    let after_removal = source.ambient_revision();
+    source.clear();
+    assert!(!source.has_ambient_revision(&after_removal));
+    let empty = source.ambient_revision();
+    source.clear();
+    assert!(source.has_ambient_revision(&empty));
+}
+
 #[test]
 fn renamed_and_encoded_uris_remain_distinct() {
     let mut source = source();

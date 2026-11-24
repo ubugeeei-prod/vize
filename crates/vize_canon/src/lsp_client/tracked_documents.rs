@@ -1,7 +1,7 @@
 //! Mutation-owned editor deltas; read-only map access cannot bypass tracking.
 
-use std::ops::Deref;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::{borrow::Borrow, ops::Deref};
 
 use serde::{Serialize, Serializer};
 use sha2::{Digest, Sha256};
@@ -24,7 +24,7 @@ pub(super) struct TrackedDocumentTexts {
     #[cfg(test)]
     digest_computations: usize,
     owner: u64,
-    revision: u64,
+    revision: TrackedRevision,
     baseline: u64,
     baseline_len: usize,
     /// None means that only a complete map reconciliation is authoritative.
@@ -56,7 +56,7 @@ impl From<FxHashMap<String, RetainedText>> for TrackedDocumentTexts {
             #[cfg(test)]
             digest_computations: 0,
             owner: NEXT_OWNER.fetch_add(1, Ordering::Relaxed),
-            revision: 0,
+            revision: TrackedRevision::default(),
             baseline: 0,
             baseline_len: 0,
             pending: None,
@@ -68,7 +68,7 @@ impl TrackedDocumentTexts {
     pub(super) fn checkpoint(&self) -> DocumentCheckpoint {
         DocumentCheckpoint {
             owner: self.owner,
-            revision: self.revision,
+            revision: *self.revision.borrow(),
         }
     }
 
@@ -160,12 +160,12 @@ impl TrackedDocumentTexts {
 
     /// Called only after every selected overlay operation has succeeded.
     pub(super) fn acknowledge(&mut self) -> DocumentCheckpoint {
-        self.baseline = self.revision;
+        self.baseline = *self.revision.borrow();
         self.baseline_len = self.documents.len();
         self.pending = Some(FxHashSet::default());
         DocumentCheckpoint {
             owner: self.owner,
-            revision: self.revision,
+            revision: *self.revision.borrow(),
         }
     }
 
@@ -245,3 +245,10 @@ mod tests;
 
 #[cfg(test)]
 mod digest_tests;
+
+#[cfg(not(feature = "ambient-project-declarations"))]
+type TrackedRevision = u64;
+#[cfg(feature = "ambient-project-declarations")]
+use ambient_revision::TrackedRevision;
+#[cfg(feature = "ambient-project-declarations")]
+mod ambient_revision;

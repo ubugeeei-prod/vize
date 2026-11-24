@@ -50,11 +50,22 @@ on:
       - "crates/vize_maestro/src/ide/diagnostics/corsa/**"
       - "crates/vize_canon/src/corsa_bridge.rs"
       - "crates/vize_canon/src/corsa_bridge/bridge.rs"
+      - "crates/vize_canon/src/corsa_bridge/vue_document.rs"
+      - "crates/vize_canon/src/corsa_bridge/vue_document/ambient_diagnostics.rs"
+      - "crates/vize_canon/src/lsp_client/diagnostics/ambient.rs"
+      - "crates/vize_canon/src/lsp_client/initial_diagnostics.rs"
+      - "crates/vize_canon/src/lsp_client/initial_diagnostics/ambient_world.rs"
+      - "crates/vize_canon/src/lsp_client/tracked_documents.rs"
+      - "crates/vize_canon/src/lsp_client/tracked_documents/tests.rs"
+      - "crates/vize_canon/src/lsp_client/tracked_documents/ambient_revision.rs"
+      - "crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics.rs"
       - "crates/vize_canon/src/batch/virtual_project.rs"
       - "crates/vize_canon/src/batch/virtual_project/ambient_declarations*"
       - "crates/vize_canon/src/corsa_bridge/editor_session.rs"
       - "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/build.rs"
       - "tests/_fixtures/differential/typechecker/ambient-global-slot-host-3011/**"
+      - "tests/formal/ambient-diagnostics/**"
+      - "tools/benchmarks/scripts/compare-ambient-diagnostics.ts"
       - "crates/vize_maestro/src/server/state/global_tag_names*"
       - "crates/vize_maestro/src/server/state/global_tag_names/**"
       - "crates/vize_maestro/src/source_project/snapshot.rs"
@@ -172,7 +183,71 @@ jobs:
           cargo clippy --locked --profile ci-opt -p vize_canon --features ambient-project-declarations --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" --no-deps -- -D warnings
           cargo test --locked --profile ci-opt -p vize_canon --features ambient-project-declarations --lib virtual_project::ambient_declarations::
+          cargo test --locked --profile ci-opt -p vize_canon --features ambient-project-declarations --lib tracked_documents::tests::
           cargo test "${flags[@]}" corsa::ambient_project:: -- --include-ignored --nocapture --test-threads=1
+
+      - name: Model native acknowledgement and publication across edits
+        working-directory: tests/formal/ambient-diagnostics
+        run: |
+          set -euo pipefail
+          jar="$RUNNER_TEMP/ambient-tlc.jar"
+          curl -fsSL --retry 3 -o "$jar" https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar
+          echo "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88  $jar" | sha256sum -c -
+          tlc=(java -cp "$jar" tlc2.TLC -workers 1)
+          "${tlc[@]}" -metadir "$RUNNER_TEMP/ambient-model" -config Publication.cfg Publication.tla
+          for fault in ack native doc sources host revision publish; do
+            cfg="$RUNNER_TEMP/ambient-$fault.cfg"
+            sed "s/Fault = \"none\"/Fault = \"$fault\"/" Publication.cfg > "$cfg"
+            result=0
+            "${tlc[@]}" -metadir "$RUNNER_TEMP/ambient-$fault" -config "$cfg" Publication.tla > "$RUNNER_TEMP/ambient-$fault.log" 2>&1 || result=$?
+            test "$result" = 12
+            grep -F 'Invariant ExactPublication is violated' "$RUNNER_TEMP/ambient-$fault.log"
+          done
+
+      - name: Compare cold and repeated diagnostics on both revisions
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          work="$RUNNER_TEMP/ambient-read-checkout"
+          suite=crates/vize_maestro/src/ide/diagnostics/corsa/ambient_project
+          export CARGO_TARGET_DIR="$GITHUB_WORKSPACE/target"
+          for side in base head; do
+            revision="$BASE_SHA"
+            if [[ "$side" == head ]]; then
+              git worktree remove --force "$work"
+              revision="$HEAD_SHA"
+            fi
+            git worktree add --quiet --detach "$work" "$revision"
+            for dir in node_modules playground/node_modules; do
+              if [[ -d "$GITHUB_WORKSPACE/$dir" ]]; then ln -s "$GITHUB_WORKSPACE/$dir" "$work/$dir"; fi
+            done
+            # Instrument only the test module on the parent. Both executables
+            # embed the same manifest path and run with the same pinned SDK.
+            if [[ "$side" == base ]]; then
+              cp "$GITHUB_WORKSPACE/$suite/tests/cost.rs" "$work/$suite/tests/cost.rs"
+              if ! grep -Fxq 'mod cost;' "$work/$suite/tests.rs"; then
+                echo 'mod cost;' >> "$work/$suite/tests.rs"
+              fi
+            fi
+            cmp "$GITHUB_WORKSPACE/$suite/tests/cost.rs" "$work/$suite/tests/cost.rs"
+            (cd "$work" && cargo test --locked --profile ci-opt -p vize_maestro --lib --features experimental-ambient-project,micro-profiling --no-run --message-format=json) > "$RUNNER_TEMP/ambient-$side.jsonl"
+            mapfile -t exe < <(jq -r 'select(.reason == "compiler-artifact" and .target.name == "vize_maestro" and .executable != null) | .executable' "$RUNNER_TEMP/ambient-$side.jsonl")
+            [[ "${#exe[@]}" == 1 ]]
+            cp "${exe[0]}" "$RUNNER_TEMP/ambient-$side"
+          done
+          node tools/benchmarks/scripts/compare-ambient-diagnostics.ts "$RUNNER_TEMP/ambient-base" "$RUNNER_TEMP/ambient-head" "$RUNNER_TEMP/ambient-diagnostics.json" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: ambient-diagnostic-costs
+          path: ${{ runner.temp }}/ambient-diagnostics.json
+          if-no-files-found: ignore
+          retention-days: 7
 
   checked-literal-products:
     name: Original TypeScript assignments and checked tool products

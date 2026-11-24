@@ -49,6 +49,7 @@ on:
       - "davinci/vize_l4/src/write/source_map.rs"
       - "davinci/vize_l4/src/write/source_map/**"
       - "tests/formal/source-map/**"
+      - "crates/vize_maestro/src/ide/diagnostics/corsa/ambient_project/positions.rs"
       - "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json"
       - "crates/vize_atelier_sfc/tests/scss_products.rs"
       - "crates/vize_atelier_sfc/tests/observed_scss/**"
@@ -186,3 +187,4 @@ jobs:
           tar --zstd -xf lean.tar.zst
           lean-4.33.1-linux/bin/lean -DwarningAsError=true "$GITHUB_WORKSPACE/tests/formal/source-map/Coordinates.lean" | tee theorem.log
           grep -Fx "'Davinci.SourceMap.column_exact' depends on axioms: [propext, Quot.sound]" theorem.log
+          grep -Fx "'Davinci.SourceMap.diagnostic_range_rebased' depends on axioms: [propext, Quot.sound]" theorem.log

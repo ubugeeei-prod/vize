@@ -251,4 +251,7 @@ impl CorsaBridge {
 }
 
 #[cfg(feature = "ambient-project-declarations")]
-pub use vue_document::AmbientVueDiagnostics;
+pub use vue_document::{
+    AmbientVueDiagnosticBatch, AmbientVueDiagnosticRead, AmbientVueDiagnosticRequest,
+    AmbientVueDiagnostics,
+};
