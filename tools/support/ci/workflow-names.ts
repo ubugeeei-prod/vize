@@ -45,7 +45,8 @@ const bannedSubjectWords = new Set([
 
 // Words the group heading already says.
 const groupImpliedWords: Partial<Record<WorkflowGroupId, readonly string[]>> = {
-  "03": ["bench", "benchmark", "benchmarks"],
+  // `vue-benchmarks` names the upstream corpus, so only the generic words are implied.
+  "03": ["bench", "benchmark"],
   "11": ["maintenance"],
 };
 
@@ -335,7 +336,10 @@ export function workflowPrefixGroup(file: string): WorkflowGroupId | undefined {
 export function workflowNameViolations(files: readonly string[]): string[] {
   const violations: string[] = [];
   const present = new Set(files);
-  const subjects = new Map<string, string>();
+  // Protected names keep their subjects, so no prefixed file may reuse one.
+  const subjects = new Map<string, string>(
+    files.filter((file) => file in protectedWorkflows).map((file) => [file.slice(0, -4), file]),
+  );
   for (const file of files) {
     if (file in protectedWorkflows || legacyWorkflowNames.has(file)) continue;
     const match = prefixedName.exec(file);
