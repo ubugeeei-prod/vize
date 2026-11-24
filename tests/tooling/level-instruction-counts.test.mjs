@@ -22,6 +22,7 @@ import {
   ALLOCATOR_PROTOCOL,
   LIBC_DISPATCH,
   GUEST_ENVIRONMENT,
+  BUILD_SOURCE_DATE_EPOCH,
 } from "../../tools/benchmarks/scripts/instruction-counts-lib.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -317,4 +318,14 @@ void test("guest environment has no inherited variable CI context", () => {
   ]);
   assert.equal(GUEST_ENVIRONMENT.GLIBC_TUNABLES, LIBC_DISPATCH);
   assert.equal(GUEST_ENVIRONMENT.LC_ALL, "C");
+});
+
+void test("benchmark builds pin a clock whose banner date and time end in neither 0 nor 1", () => {
+  const instant = new Date(Number(BUILD_SOURCE_DATE_EPOCH) * 1000);
+  const date = `${instant.toLocaleString("en-US", { month: "short", timeZone: "UTC" })} ${String(
+    instant.getUTCDate(),
+  ).padStart(2, " ")} ${instant.getUTCFullYear()}`;
+  const time = instant.toISOString().slice(11, 19);
+  assert.deepEqual([date, time], ["Nov 24 2026", "15:02:24"]);
+  for (const banner of [date, time]) assert.doesNotMatch(banner, /[01]$/);
 });
