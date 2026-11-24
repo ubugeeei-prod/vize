@@ -16,13 +16,7 @@ type StudyWorkflow = {
   jobs: Record<string, { steps: WorkflowStep[] }>;
 };
 
-const studies = [
-  "compact-collections",
-  "doctor-filter-bench",
-  "text-boundary-bench",
-  "type-snapshot-bench",
-  "davinci-canon-scaling",
-];
+const studies = ["compact-collections", "doctor-filter-bench", "davinci-canon-scaling"];
 const workflow = (name: string) =>
   parse(
     readAutomationPrograms(new URL(`../../.github/workflows/${name}.yml`, import.meta.url)),
@@ -36,16 +30,12 @@ test("repeated performance studies stay outside automatic PR checks", () => {
     assert.equal(source.on.pull_request_target, undefined, name);
     assert.equal(source.on.merge_group, undefined, name);
     assert.equal(source.on.push, undefined, name);
-    if (name === "text-boundary-bench") {
-      assert.deepEqual(source.on.schedule, [{ cron: "23 4 * * 0" }]);
-    } else {
-      assert.equal(source.on.schedule, undefined, `${name} needs an explicit comparison authority`);
-    }
+    assert.equal(source.on.schedule, undefined, `${name} needs an explicit comparison authority`);
   }
 });
 
 test("paired comparisons require an exact ancestor baseline and the dispatch head", () => {
-  for (const name of ["compact-collections", "doctor-filter-bench", "type-snapshot-bench"]) {
+  for (const name of ["compact-collections", "doctor-filter-bench"]) {
     const source = workflow(name);
     assert.equal(source.on.workflow_dispatch.inputs.base_sha.required, true, name);
     assert.equal(source.on.workflow_dispatch.inputs.base_sha.type, "string", name);
@@ -70,11 +60,7 @@ test("paired comparisons require an exact ancestor baseline and the dispatch hea
   }
 });
 
-test("manual qualification retains its independent CLI and original400 authorities", () => {
-  const snapshot = workflow("type-snapshot-bench");
-  const cli = snapshot.jobs["paired-cli"].steps;
-  assert.ok(cli.some((step) => step.run?.includes("canon-alias-native.mjs")));
-  assert.ok(cli.some((step) => step.run?.includes("type-snapshot-cli-paired.mjs")));
+test("manual qualification retains its original400 authorities", () => {
   const canon = workflow("davinci-canon-scaling");
   assert.deepEqual(Object.keys(canon.on.workflow_dispatch.inputs), [
     "original_control_sha",

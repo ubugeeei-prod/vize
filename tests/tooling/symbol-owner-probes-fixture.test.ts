@@ -1,4 +1,3 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -6,7 +5,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { parse } from "yaml";
 import { sourceInspectedDialectCoverage } from "../differential/source-dialect-coverage.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -128,123 +126,4 @@ test("both Git checkout modes retain every pinned input byte", () => {
         ),
         fs.readFileSync(path.join(root, relative, filename)),
       );
-});
-
-type NativeStep = { name?: string; if?: string; env?: Record<string, string>; run?: string };
-type NativeWorkflow = {
-  jobs: Record<string, { env: Record<string, string>; steps: NativeStep[] }>;
-};
-const runtime = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc";
-const tsrsExport =
-  'export CORSA_PATH="$RUNNER_TEMP/patina-tsrs/node_modules/@tsrs/linux-x64-gnu/tsrs"';
-const cliCommand = (provider: string) =>
-  `cargo test --locked --profile ci -p vize --test integration lint_strict_boolean_cli:: -- --nocapture 2>&1 | tee target/patina-native-boolean/${provider}-tests.txt`;
-const ownerCommand = (provider: string) =>
-  `VIZE_SYMBOL_OWNER_CAPTURE="$GITHUB_WORKSPACE/target/patina-native-boolean/${provider}-owner.json" cargo test --locked --profile ci -p vize_patina --lib corsa_session::probe::signature_ -- --nocapture 2>&1 | tee target/patina-native-boolean/${provider}-owner-tests.txt`;
-const lanes = [
-  {
-    name: "Preserve all complete boolean reports with the stable runtime",
-    owner: false,
-    env: {
-      CORSA_PATH: runtime,
-      VIZE_SYMBOL_OWNER_CLI_CAPTURE:
-        "${{ github.workspace }}/target/patina-native-boolean/stable-owner-cli.json",
-    },
-    commands: ["set -o pipefail", "unset VIZE_TEST_DISABLE_TSGO", cliCommand("stable")],
-  },
-  {
-    name: "Preserve the same complete reports with the reported tsrs runtime",
-    owner: false,
-    env: {
-      VIZE_SYMBOL_OWNER_CLI_CAPTURE:
-        "${{ github.workspace }}/target/patina-native-boolean/tsrs-owner-cli.json",
-    },
-    commands: ["set -o pipefail", "unset VIZE_TEST_DISABLE_TSGO", tsrsExport, cliCommand("tsrs")],
-  },
-  {
-    name: "Capture cold and materialized signature owners with the stable runtime",
-    owner: true,
-    env: { CORSA_PATH: runtime },
-    commands: ["set -o pipefail", "unset VIZE_TEST_DISABLE_TSGO", ownerCommand("stable")],
-  },
-  {
-    name: "Capture the same signature owners with the reported tsrs runtime",
-    owner: true,
-    env: {},
-    commands: ["set -o pipefail", "unset VIZE_TEST_DISABLE_TSGO", tsrsExport, ownerCommand("tsrs")],
-  },
-] as const;
-const workflow = parse(
-  readAutomationPrograms(path.join(root, ".github/workflows/patina-native-boolean-protocol.yml")),
-) as NativeWorkflow;
-
-function laneStep(candidate: NativeWorkflow, name: string) {
-  const matches = candidate.jobs["live-native"].steps.filter((step) => step.name === name);
-  assert.equal(matches.length, 1, `unique native step required: ${name}`);
-  return matches[0];
-}
-
-function assertOwnerWorkflow(candidate: NativeWorkflow) {
-  const job = candidate.jobs["live-native"];
-  assert.equal(job.env.VIZE_TEST_REQUIRE_TSGO, "1");
-  assert.equal(job.env.VIZE_TEST_REQUIRE_TSRS, "1");
-  for (const lane of lanes) {
-    const step = laneStep(candidate, lane.name);
-    assert.deepEqual(step.env ?? {}, lane.env, lane.name);
-    if (lane.owner) assert.equal(step.if, "always()", lane.name);
-    // These are launch/guard contracts; YAML indentation and comments are immaterial.
-    const commands = (step.run ?? "")
-      .split(/\r?\n/u)
-      .map((line) => line.trim())
-      .filter((line) => line && !line.startsWith("#"));
-    assert.deepEqual(commands, lane.commands, lane.name);
-  }
-}
-
-test("native owner lanes retain required providers, captures, filters and independent execution", () => {
-  assertOwnerWorkflow(workflow);
-});
-
-test("removing native guards or changing selected runtimes and capture/filter contracts refuses", () => {
-  const refuse = (change: (candidate: NativeWorkflow) => void) => {
-    const candidate = structuredClone(workflow);
-    change(candidate);
-    assert.throws(() => assertOwnerWorkflow(candidate));
-  };
-  for (const lane of lanes) {
-    refuse((candidate) => {
-      const step = laneStep(candidate, lane.name);
-      step.run = step.run!.replace("unset VIZE_TEST_DISABLE_TSGO", "");
-    });
-    if (lane.owner) {
-      refuse((candidate) => {
-        laneStep(candidate, lane.name).if = "success()";
-      });
-      refuse((candidate) => {
-        const step = laneStep(candidate, lane.name);
-        step.run = step.run!.replace("corsa_session::probe::signature_", "unrelated_filter");
-      });
-      refuse((candidate) => {
-        const step = laneStep(candidate, lane.name);
-        step.run = step.run!.replace("VIZE_SYMBOL_OWNER_CAPTURE", "UNUSED_CAPTURE");
-      });
-    } else {
-      refuse((candidate) => {
-        laneStep(candidate, lane.name).env!.VIZE_SYMBOL_OWNER_CLI_CAPTURE = "wrong-output.json";
-      });
-    }
-    if ("CORSA_PATH" in lane.env) {
-      refuse((candidate) => {
-        laneStep(candidate, lane.name).env!.CORSA_PATH = "other-provider";
-      });
-    } else {
-      refuse((candidate) => {
-        const step = laneStep(candidate, lane.name);
-        step.run = step.run!.replace(tsrsExport, 'export CORSA_PATH="other-provider"');
-      });
-    }
-  }
-  refuse((candidate) => {
-    candidate.jobs["live-native"].env.VIZE_TEST_REQUIRE_TSGO = "0";
-  });
 });

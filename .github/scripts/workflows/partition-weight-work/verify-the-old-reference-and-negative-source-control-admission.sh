@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-mkdir "$RUNNER_TEMP/partition-weight"
-git fetch --no-tags --depth=1 origin b6127a994f7e2a75eb2c89de44d54cf8a0f17fcd
-node tools/benchmarks/scripts/partition-weight-control.ts > "$RUNNER_TEMP/partition-weight/control.json"
-node --test tests/tooling/partition-weight-cli.test.ts
-git rev-parse HEAD > "$RUNNER_TEMP/partition-weight/source.sha"
-rustc -vV > "$RUNNER_TEMP/partition-weight/rustc.txt"
-cargo -V > "$RUNNER_TEMP/partition-weight/cargo-version.txt"
