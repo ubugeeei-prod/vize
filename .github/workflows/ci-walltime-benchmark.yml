@@ -2,13 +2,13 @@ name: Benchmark - CI wall time
 run-name: CI walltime comparison @ ${{ github.sha }}
 on:
   pull_request:
-    types: [ opened, reopened, labeled ]
+    types: [opened, reopened, labeled]
   workflow_dispatch:
     inputs:
       component:
         description: Compare serial and concurrent execution on the same source
         type: choice
-        options: [ all, js, docs, rust, native, release-builds, nix, artifact-payload ]
+        options: [all, js, docs, rust, native, release-builds, nix, artifact-payload]
         default: all
       artifact_id:
         description: Existing same-repository artifact for the manual transport trial

@@ -34,7 +34,6 @@ env:
   VIZE_BENCH_BUILD_PROFILE_KEY: ci-opt-release-thin-lto-cgu16
 
 jobs:
-  
   pr-benchmark:
     name: pr-benchmark
     runs-on: blacksmith-32vcpu-ubuntu-2404

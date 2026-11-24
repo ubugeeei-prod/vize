@@ -8,7 +8,7 @@ on:
       targeted-test:
         description: "Run the full suite or the original 16-state/four-host generic body-error cohort"
         type: choice
-        options: [ full, generic-body-error ]
+        options: [full, generic-body-error]
         default: full
       expected-source-sha:
         description: "Exact reviewed source for the targeted mode"
@@ -28,7 +28,6 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  
   exact-tsgo-project:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
