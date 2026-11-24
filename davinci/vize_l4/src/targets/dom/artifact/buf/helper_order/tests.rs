@@ -103,10 +103,10 @@ fn one_scan_orders_generated_modules_as_per_alias_scans_do() {
     let mut orders_with_alias_keys = 0_usize;
     for _ in 0..4_000 {
         let mut buf = Buf::new(false);
-        let mut chosen = std::vec::Vec::new();
+        let mut alias_keys = 0;
         for _ in 0..next(14) {
             let helper = Helper::ALL[next(Helper::ALL.len())];
-            chosen.push(helper);
+            alias_keys += usize::from(matches!(helper.rank(), 2 | 5));
             match next(5) {
                 0 => buf.prefer(helper),
                 1 => {
@@ -139,13 +139,7 @@ fn one_scan_orders_generated_modules_as_per_alias_scans_do() {
             "{:?}",
             buf.code
         );
-        orders_with_alias_keys += usize::from(
-            chosen
-                .iter()
-                .filter(|helper| matches!(helper.rank(), 2 | 5))
-                .count()
-                > 1,
-        );
+        orders_with_alias_keys += usize::from(alias_keys > 1);
     }
     // The corpus is not vacuous: many modules need alias positions.
     assert!(orders_with_alias_keys > 1_000, "{orders_with_alias_keys}");
