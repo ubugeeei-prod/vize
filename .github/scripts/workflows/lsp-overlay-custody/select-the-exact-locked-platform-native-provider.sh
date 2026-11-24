@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
-# The receipt describes this literal checkout, while the later CLI
-# receipt separately retains the actual PR event/merge SHA.
-node "$VIZE_CI_FILES/select-the-exact-locked-platform-native-provider.ts"
-GITHUB_SHA="$EXPECTED_SOURCE" vp exec node tools/support/compat/github/full-rust-runtime.ts

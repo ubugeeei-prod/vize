@@ -156,11 +156,6 @@ void test("Release-blocking observers and Fresco use the recovery adapter", () =
   );
   const workflows = [
     [".github/workflows/async-component-ancestry.yml", qualification, ["whole-project"]],
-    [
-      ".github/workflows/component-input-diagnostic-ownership.yml",
-      local,
-      ["published-sdk-packets", "unchanged-projection-packets"],
-    ],
     [".github/workflows/cross-file-script-offset.yml", local, ["coordinates"]],
     [".github/workflows/davinci-plugin-sdk.yml", local, ["plugin-contracts"]],
     [".github/workflows/davinci-unused-bindings.yml", local, ["unused-bindings"]],

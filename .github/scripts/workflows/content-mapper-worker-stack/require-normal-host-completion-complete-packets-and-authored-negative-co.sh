@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-cpu="$(node "$VIZE_CI_FILES/require-normal-host-completion-complete-packets-and-authored-negative-co.cjs")"
-taskset -c "$cpu" node tools/support/compat/content-mapper/admission-hosts.ts \
-  --source "$GITHUB_WORKSPACE" --source-sha "$SOURCE_SHA" \
-  --provider "$RUNNER_TEMP/admission-provider" \
-  --output "$RUNNER_TEMP/mapper-admission/hosts" --token "$ADMISSION_NATIVE_TOKEN"
