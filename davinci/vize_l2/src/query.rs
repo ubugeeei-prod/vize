@@ -49,8 +49,10 @@ impl<'f, 'a> Model<'f, 'a> {
     }
 }
 
+#[cfg(any(test, feature = "composed-script-positions"))]
+pub use position::index::ScriptPosition;
 #[cfg(any(test, feature = "position-index"))]
-pub use position::index::{IndexedModel, PositionIndex, ScriptPosition};
+pub use position::index::{IndexedModel, PositionIndex};
 
 #[cfg(feature = "script-declaration-queries")]
 pub mod script;

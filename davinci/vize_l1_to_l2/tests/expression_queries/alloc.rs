@@ -12,6 +12,7 @@ use vize_l2::query::{ExpressionPositionIndex, Model};
 #[cfg(feature = "setup-component-imports")]
 mod component_projection;
 mod input;
+#[cfg(feature = "composed-script-positions")]
 mod script_position_costs;
 
 #[global_allocator]
@@ -19,6 +20,7 @@ static ALLOCATOR: CountingAllocator<System> = CountingAllocator::system();
 
 fn main() {
     mark_installed();
+    #[cfg(feature = "composed-script-positions")]
     script_position_costs::run();
     #[cfg(feature = "lexical-arrow-initializers")]
     lexical_requests::run();

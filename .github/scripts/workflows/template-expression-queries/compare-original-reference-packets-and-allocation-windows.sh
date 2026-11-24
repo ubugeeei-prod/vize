@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-flags=(--locked --profile ci-opt -p vize_l1_to_l2 --features template-operand-queries,setup-component-imports,vize_l2/position-index)
+flags=(--locked --profile ci-opt -p vize_l1_to_l2 --features template-operand-queries,setup-component-imports,composed-script-positions)
 cargo clippy --locked --profile ci-opt -p vize_l2 -p vize_l1_to_l2 --features vize_l1_to_l2/setup-component-imports --lib --no-deps -- -D warnings
 cargo test "${flags[@]}" --test expression_queries --test expression_query_alloc
 export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/expression-query-files"

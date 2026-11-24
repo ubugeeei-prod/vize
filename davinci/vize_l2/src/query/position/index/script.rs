@@ -16,7 +16,7 @@ pub struct ScriptPosition<'file, 'arena> {
 }
 
 #[derive(Clone, Copy)]
-pub(super) enum NameSite<D, R> {
+enum NameSite<D, R> {
     Vacant,
     Declaration(D),
     Reference(R),
@@ -36,7 +36,7 @@ impl<D, R> NameSite<D, R> {
 
 impl<'f, 'a> NameSite<BindingRef<'f, 'a>, ReferenceRef<'f, 'a>> {
     #[inline]
-    pub(super) fn binding(self) -> Option<BindingRef<'f, 'a>> {
+    fn binding(self) -> Option<BindingRef<'f, 'a>> {
         match self {
             Self::Declaration(binding) => Some(binding),
             Self::Reference(reference) => reference.binding(),
@@ -45,7 +45,7 @@ impl<'f, 'a> NameSite<BindingRef<'f, 'a>, ReferenceRef<'f, 'a>> {
     }
 
     #[inline]
-    pub(super) fn scope(self) -> Option<ScopeId> {
+    fn scope(self) -> Option<ScopeId> {
         match self {
             Self::Declaration(binding) => binding.declaration().map(|row| row.scope),
             Self::Reference(reference) => Some(reference.reference.scope),
@@ -79,19 +79,7 @@ impl<'f, 'a> IndexedModel<'f, 'a> {
     }
 
     #[inline]
-    pub(super) fn name_site(
-        self,
-        unit: &ScriptUnit,
-        offset: u32,
-    ) -> Result<NameSite<BindingRef<'f, 'a>, ReferenceRef<'f, 'a>>, PositionQueryError> {
-        NameSite::select(
-            self.declaration(unit, offset)?,
-            self.reference(unit, offset)?,
-        )
-    }
-
-    #[inline]
-    pub(super) fn scope_from_site(
+    fn scope_from_site(
         self,
         unit: &ScriptUnit,
         offset: u32,

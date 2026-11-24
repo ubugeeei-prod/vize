@@ -5,6 +5,10 @@ grep -Fx "'Davinci.exact_answer' does not depend on any axioms" "$RUNNER_TEMP/th
 "$RUNNER_TEMP/lean-4.33.1-linux/bin/lean" -DwarningAsError=true ../position-index/Intervals.lean > "$RUNNER_TEMP/positions"
 grep -Fx "'Davinci.PositionIndex.point_eq_scan' depends on axioms: [propext, Classical.choice, Quot.sound]" "$RUNNER_TEMP/positions"
 grep -Fx "'Davinci.PositionIndex.selected_rows' depends on axioms: [propext, Classical.choice, Quot.sound]" "$RUNNER_TEMP/positions"
+"$RUNNER_TEMP/lean-4.33.1-linux/bin/lean" -DwarningAsError=true ../position-index/ScriptPosition.lean > "$RUNNER_TEMP/script-positions"
+for theorem in select_original all_products collision_preserves_reference; do
+  grep -Fx "'Davinci.ScriptPosition.$theorem' does not depend on any axioms" "$RUNNER_TEMP/script-positions"
+done
 grep -Fx "'Davinci.authored_slice' depends on axioms: [propext, Quot.sound]" "$RUNNER_TEMP/theorem"
 grep -Fx "'Davinci.recovery_sites_exact' depends on axioms: [propext, Quot.sound]" "$RUNNER_TEMP/theorem"
 java -Djava.awt.headless=true -jar "$RUNNER_TEMP/alloy.jar" exec -q -c '*' -t none -o "$RUNNER_TEMP/instance" Reach.als

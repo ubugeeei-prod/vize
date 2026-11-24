@@ -24,6 +24,7 @@ mod input;
 mod operand;
 mod owner;
 mod profile;
+#[cfg(feature = "composed-script-positions")]
 mod script_positions;
 
 fn observe<'a>(arena: &'a Allocator, source: &'a str) -> NativeSfcObservation<'a> {

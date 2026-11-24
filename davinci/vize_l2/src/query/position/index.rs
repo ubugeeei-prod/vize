@@ -2,8 +2,10 @@
 //! Only row locations are cached. Handles always borrow the original File.
 
 mod intervals;
+#[cfg(any(test, feature = "composed-script-positions"))]
 mod script;
 use intervals::Intervals;
+#[cfg(any(test, feature = "composed-script-positions"))]
 pub use script::ScriptPosition;
 
 use super::{
@@ -213,7 +215,14 @@ impl<'f, 'a> IndexedModel<'f, 'a> {
         let Some(unit) = self.unit(offset)? else {
             return Ok(None);
         };
-        self.name_site(unit, offset).map(script::NameSite::binding)
+        match (
+            self.declaration(unit, offset)?,
+            self.reference(unit, offset)?,
+        ) {
+            (Some(_), Some(_)) => Err(PositionQueryError::AmbiguousSite),
+            (Some(binding), None) => Ok(Some(binding)),
+            (None, reference) => Ok(reference.and_then(ReferenceRef::binding)),
+        }
     }
 
     /// The original name-site scope or deepest comparable containing scope.
@@ -228,8 +237,37 @@ impl<'f, 'a> IndexedModel<'f, 'a> {
         let Some(unit) = self.unit(offset)? else {
             return Ok(None);
         };
-        let site = self.name_site(unit, offset)?;
-        self.scope_from_site(unit, offset, site.scope())
+        let file = self.scan.file;
+        let site = match (
+            self.declaration(unit, offset)?,
+            self.reference(unit, offset)?,
+        ) {
+            (Some(_), Some(_)) => return Err(PositionQueryError::AmbiguousSite),
+            (Some(binding), None) => binding.declaration().map(|row| row.scope),
+            (None, reference) => reference.map(|row| row.reference.scope),
+        };
+        let Some(mut scope) = file
+            .scopes()
+            .get(site.unwrap_or(unit.scope).index() as usize)
+        else {
+            return Ok(None);
+        };
+        if site.is_none() {
+            self.rows.scopes.visit(offset, &mut |_, index| {
+                let Some(candidate) = file.scopes().get(*index) else {
+                    return Err(PositionQueryError::IncompleteFile);
+                };
+                if scope_descends(file, candidate.id, unit.scope) {
+                    if scope_descends(file, candidate.id, scope.id) {
+                        scope = candidate;
+                    } else if !scope_descends(file, scope.id, candidate.id) {
+                        return Err(PositionQueryError::AmbiguousSite);
+                    }
+                }
+                Ok(())
+            })?;
+        }
+        Ok(Some(ScopeRef { file, scope }))
     }
 
     /// The unique checked handler or loop-alias site at this byte.

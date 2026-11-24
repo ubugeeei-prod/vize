@@ -47,6 +47,8 @@ original-style-bindings = ["vize_l1/original-style-bindings"]
 setup-component-imports = ["vize_l2/setup-component-imports"]
 native-navigation-products = []
 template-operand-queries = ["vize_l2/template-operand-queries"]
+# Forward the joined script-position operator for explicitly selected consumers.
+composed-script-positions = ["vize_l2/composed-script-positions"]
 # Retain the source Program alongside its canonical region lowering.
 retained-tsrx = []
 # Prepare input-neutral modules for explicit analysis and projection.

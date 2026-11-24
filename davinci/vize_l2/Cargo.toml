@@ -30,6 +30,8 @@ scss-rules = ["vize_l1/observed-styles"]
 component-sites = ["module-ir", "vize_l1/component-sites"]
 # Build position indexes on explicit demand in resident analysis tools.
 position-index = []
+# Combine the original use, binding and scope in a single editor request.
+composed-script-positions = ["position-index"]
 # Read the sealed occurrence tables for all admitted template expressions.
 expression-queries = []
 # Observe expression roles and lexical scopes at their original resolution factories.
