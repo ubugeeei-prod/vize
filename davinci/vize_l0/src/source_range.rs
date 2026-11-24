@@ -316,6 +316,9 @@ impl SourceMap {
     }
 }
 
+#[cfg(kani)]
+mod proofs;
+
 #[cfg(test)]
 mod tests {
     use super::{SourceMap, SourceMapping, SourceRange};
