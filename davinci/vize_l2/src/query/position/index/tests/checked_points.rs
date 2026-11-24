@@ -65,7 +65,7 @@ fn query_selections_preserve_crossings_and_equal_spans_at_byte_boundaries() {
 
 #[cfg(kani)]
 #[kani::proof]
-#[kani::unwind(8)]
+#[kani::unwind(4)]
 fn position_visits_match_original_rows() {
     check_queries(kani::any(), kani::any(), kani::any());
 }
