@@ -40,7 +40,7 @@ fn script_consumed_slots_record() -> &'static Value {
                 env!("CARGO_MANIFEST_DIR"),
                 "/../../tests/_fixtures/tooling/script-consumed-slots-13578.json"
             )),
-            "87473c12da88cdefdadb4d3fac8e2ac97c61495e45896502783c2298e7a15314",
+            "8b6794567259acb6b220fb84ea4b622c16b5674f837c751adbeb4010d6ffb848",
             "vize.scriptConsumedSlotsSource.v1",
             13578,
         )

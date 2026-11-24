@@ -12,7 +12,7 @@ const identity = (text: string) => ({
 const raw = readFileSync(new URL("tests/_fixtures/tooling/script-consumed-slots-13578.json", root));
 assert.equal(
   createHash("sha256").update(raw).digest("hex"),
-  "87473c12da88cdefdadb4d3fac8e2ac97c61495e45896502783c2298e7a15314",
+  "8b6794567259acb6b220fb84ea4b622c16b5674f837c751adbeb4010d6ffb848",
 );
 const record = JSON.parse(raw.toString("utf8"));
 

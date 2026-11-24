@@ -35,8 +35,8 @@
         "sha256": "20db38e51ef9d6b7b395b6b33083e53c802330c566f1d3180f08e7a45455148d"
       },
       "after": {
-        "bytes": 13249,
-        "sha256": "c91f5242ba4070613e20da1b8db353277b703f6442822a8887ba815da5dddf14"
+        "bytes": 13137,
+        "sha256": "a28d9d311de17049cc0232bf069380e00417d2207fb82767392f57e5d3568734"
       },
       "hunks": [
         {
@@ -74,10 +74,6 @@
         {
           "before": "\n    pub(super) fn has_own_slots(&self) -> bool {\n        self.slots_type.is_some()\n    }\n\n    pub(super) fn attrs_type(&self) -> Option<&str> {\n",
           "after": "\n    pub(super) fn has_own_slots(&self) -> bool {\n        self.slots_type.is_some()\n    }\n\n    pub(super) fn has_untyped_script_slots(&self) -> bool {\n        self.untyped_script_slots\n    }\n\n    pub(super) fn infers_slots(&self) -> bool {\n        self.inferred_slots\n    }\n\n    pub(super) fn attrs_type(&self) -> Option<&str> {\n"
-        },
-        {
-          "before": "        {\n            ts.push_str(\"  type $UseSlots = () => \");\n            slots.emit(ts, mappings, source_offset);\n            ts.push_str(\";\\n\");\n        }\n        if self.imports.iter().any(|import| import.attrs)\n",
-          "after": "        {\n            ts.push_str(\"  type $UseSlots = () => \");\n            slots.emit(ts, mappings, source_offset);\n            if self.untyped_script_slots {\n                ts.push_str(\" & import('vue').Slots\");\n            }\n            ts.push_str(\";\\n\");\n        }\n        if self.imports.iter().any(|import| import.attrs)\n"
         },
         {
           "before": "        ;\n    }\n}\n",

@@ -61,7 +61,7 @@ const defaultExpression = readSourceRecord(
 
 const scriptConsumedSlots = readSourceRecord(
   "script-consumed-slots-13578",
-  "87473c12da88cdefdadb4d3fac8e2ac97c61495e45896502783c2298e7a15314",
+  "8b6794567259acb6b220fb84ea4b622c16b5674f837c751adbeb4010d6ffb848",
   "vize.scriptConsumedSlotsSource.v1",
   13578,
 );

@@ -230,9 +230,6 @@ impl SetupImportPlan {
         {
             ts.push_str("  type $UseSlots = () => ");
             slots.emit(ts, mappings, source_offset);
-            if self.untyped_script_slots {
-                ts.push_str(" & import('vue').Slots");
-            }
             ts.push_str(";\n");
         }
         if self.imports.iter().any(|import| import.attrs)

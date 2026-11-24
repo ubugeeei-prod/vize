@@ -1,0 +1,14 @@
+<!-- @inferTemplateDollarSlots true -->
+<script setup lang="ts">
+import { useSlots } from 'vue'
+type IfEquals<T, U, Y = unknown, N = never> = (<G>() => G extends T ? 1 : 2) extends (<G>() => G extends U ? 1 : 2) ? Y : N
+declare function exactType<T, U>(draft: T & IfEquals<T, U>, expected: U & IfEquals<T, U>): IfEquals<T, U>
+type Slots = { bar?: (props: { str: string; num: number }) => any } & { baz?: (props: { str: string; num: number }) => any }
+const slots = useSlots()
+exactType(slots, {} as Slots)
+</script>
+<template>
+  <slot name="bar" str="str" :num="1" />
+  <slot name="baz" str="str" :num="1" />
+  {{ exactType($slots, {} as Slots) }}
+</template>

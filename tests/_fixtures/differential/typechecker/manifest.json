@@ -69763,9 +69763,14 @@
           "sha256": "e642967db147aaba48d02f1966ef61725237e29ee2c37a9e4d1eec66764b6bf7"
         },
         {
+          "file": "src/Exact.vue",
+          "path": "script-consumed-slots-13578/Exact.vue.txt",
+          "sha256": "4917b5f7d6868e522b6b2a592a6449c2549fd6d777f4fd697d22063de41c71fe"
+        },
+        {
           "file": "cases.json",
           "path": "script-consumed-slots-13578/cases.json",
-          "sha256": "a344eb85d680e96cc419506a240f080f49579dd9d9285219d1d6d26a26bb3677"
+          "sha256": "7b6be06fed5a40643d501e7b690cb0608d20b6393694059313cad7876699e96e"
         }
       ],
       "dialectCoverage": {
@@ -69779,7 +69784,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "batch::type_checker::tests::recent_issues::script_consumed_slots::script_consumed_slots_keep_public_inference_open; script-consumed slots remain open while explicit contracts and inferred payloads stay checked. Input-only registration; no native parity claim."
+            "selector": "batch::type_checker::tests::recent_issues::script_consumed_slots::script_consumed_slots_keep_public_inference_open; script-consumed slots remain open while explicit contracts and inferred payloads stay checked. Input-only registration; no native parity claim. Explicit inferTemplateDollarSlots keeps exact useSlots and $slots types; an incompatible exactType assertion remains an error."
           }
         ]
       }
