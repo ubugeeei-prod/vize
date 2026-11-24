@@ -1,0 +1,6 @@
+// The release SBOMs describe the shipped workspace, not test fixtures or the separately
+// published Zed extension.
+exclude = new Listing {
+  "./tests/**"
+  "./editors/zed/**"
+}

@@ -364,6 +364,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
 
     const info = await processMuseaArtFile(filePath, {
       root: config.root,
+      scanRoots,
       command: config.command,
     });
     if (info) {

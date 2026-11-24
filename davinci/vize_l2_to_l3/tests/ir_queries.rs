@@ -1,5 +1,8 @@
 #![cfg(feature = "graph-queries")]
 
+mod support;
+use support::bounded_reference;
+
 use std::collections::BTreeSet;
 use vize_l0::{Allocator, Span};
 use vize_l3::{
@@ -299,5 +302,6 @@ fn original_l1_round_trips_recovered_source_and_only_admitted_l2_supplies_the_gr
 }
 
 mod ir_queries {
+    mod bounded;
     mod trails;
 }

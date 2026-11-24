@@ -1,0 +1,4 @@
+<script setup>
+defineProps({ title: String, toggle: Boolean });
+</script>
+<template><nav /></template>

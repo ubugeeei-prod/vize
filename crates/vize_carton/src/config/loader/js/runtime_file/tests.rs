@@ -11,6 +11,8 @@ use std::{
 
 mod benchmark;
 mod execution;
+#[cfg(windows)]
+mod windows_console;
 
 const SHARED_PROCESS_SCRIPT: &str = "process.stdout.write('shared process');";
 const SYMLINK_PROCESS_SCRIPT: &str = "process.stdout.write('owned');";

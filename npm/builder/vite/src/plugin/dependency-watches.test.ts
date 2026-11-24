@@ -113,3 +113,29 @@ void test("Windows verbatim dependencies are watched once in their plain spellin
     ]);
   }
 });
+
+void test("shared inputs are watched once per server across client and SSR transforms", () => {
+  const watched: string[] = [];
+  const server = { watcher: { add: (file: string) => watched.push(file) } };
+  const inputs = ["/project/types.ts", "/project/models/index.ts", "/project/tsconfig.json"];
+  for (let module = 0; module < 1000; module += 1) {
+    for (const environment of ["client", "ssr"]) {
+      const watch = createDependencyWatch(server, () => assert.fail(environment));
+      for (const input of inputs) watch!(input);
+    }
+  }
+  assert.deepEqual(watched, inputs);
+  const restarted = { watcher: { add: (file: string) => watched.push(file) } };
+  for (const input of inputs) createDependencyWatch(restarted, undefined)!(input);
+  assert.deepEqual(watched, [...inputs, ...inputs]);
+});
+
+void test("separate build modules each retain their own watch dependencies", () => {
+  const watched: string[][] = [[], []];
+  for (const module of watched) {
+    const watch = createDependencyWatch(null, (file) => module.push(file));
+    watch!("/project/types.ts");
+    watch!("/project/types.ts");
+  }
+  assert.deepEqual(watched, [["/project/types.ts"], ["/project/types.ts"]]);
+});

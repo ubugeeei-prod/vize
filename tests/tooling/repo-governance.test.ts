@@ -56,6 +56,12 @@ test("CodeRabbit reviews run in strict mode with actionable workflow context", (
   assert.match(coderabbit, /workflow-shape tests cover the changed behavior/);
 });
 
+test("release SBOM scans exclude test fixtures and the Zed extension", () => {
+  const syft = readRepoFile(".syft.yaml");
+
+  assert.equal(syft, "exclude:\n  - ./tests/**\n  - ./editors/zed/**\n");
+});
+
 test("socket.dev configuration scopes dependency and workflow scans", () => {
   const socket = readRepoFile("socket.yml");
 

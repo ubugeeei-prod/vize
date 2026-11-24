@@ -421,10 +421,10 @@ pub(super) fn resolve_at_src_alias(current_file: &Path, specifier: &str) -> Opti
 }
 
 fn resolve_candidate_path(candidate: PathBuf) -> Option<PathBuf> {
-    // This resolver only serves type-bearing imports. For JS-shaped
+    // This resolver only serves type-bearing imports. For runtime
     // specifiers, prefer the TypeScript/declaration counterpart even when the
     // published runtime file exists beside it.
-    if let Some(ts_source_path) = resolve_ts_source_path_for_js_specifier(&candidate) {
+    if let Some(ts_source_path) = resolve_ts_source_path_for_runtime_specifier(&candidate) {
         return Some(ts_source_path);
     }
 
@@ -453,13 +453,14 @@ fn resolve_candidate_path(candidate: PathBuf) -> Option<PathBuf> {
     None
 }
 
-fn resolve_ts_source_path_for_js_specifier(candidate: &Path) -> Option<PathBuf> {
+fn resolve_ts_source_path_for_runtime_specifier(candidate: &Path) -> Option<PathBuf> {
     let extension = candidate.extension()?.to_str()?;
     let source_extensions: &[&str] = match extension {
         "js" => &["ts", "tsx", "d.ts"],
         "jsx" => &["tsx", "ts", "d.ts"],
         "mjs" => &["mts", "d.mts", "ts", "d.ts"],
         "cjs" => &["cts", "d.cts", "ts", "d.ts"],
+        "vue" => &["vue.d.ts"],
         _ => return None,
     };
 
