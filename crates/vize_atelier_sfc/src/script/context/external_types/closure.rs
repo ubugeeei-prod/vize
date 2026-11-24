@@ -16,6 +16,9 @@ pub(super) struct TypeClosure {
     /// Every module the walk resolved, in the order of their dependency
     /// names.
     pub(super) files: Vec<ModuleId>,
+    /// Whether every resolved module could be read. A walk that met an
+    /// unreadable one says nothing about the next attempt.
+    pub(super) complete: bool,
 }
 
 impl TypeClosure {
@@ -28,8 +31,12 @@ impl TypeClosure {
         let mut modules = Vec::new();
         let mut walk = Walk::new(graph, project, &mut modules);
         walk.enter(module, requested);
-        let files = walk.finish();
-        Self { modules, files }
+        let (files, complete) = walk.finish();
+        Self {
+            modules,
+            files,
+            complete,
+        }
     }
 }
 

@@ -14,6 +14,7 @@ use crate::types::SfcParseOptions;
 use super::ScriptCompileContext;
 use super::helpers::is_import_type_only;
 
+mod attempt;
 mod closure;
 mod collect;
 mod modules;

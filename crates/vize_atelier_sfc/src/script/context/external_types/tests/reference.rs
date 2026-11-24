@@ -144,7 +144,7 @@ fn collect_types_from_specifier(
 
     let key = path_key(&resolved_path);
     walk.visited.insert(key.clone());
-    let traversal_key = vize_carton::cstr!("{key}\0{}", requested.cache_key());
+    let traversal_key = vize_carton::cstr!("{key}\0{}", cache_key(requested));
     if !walk.traversed.insert(traversal_key) {
         return;
     }
@@ -179,6 +179,18 @@ fn collect_types_from_specifier(
             requested
         };
         collect_types_from_dependency(ctx, dependency, requested, &resolved_path, walk);
+    }
+}
+
+fn cache_key(requested: &RequestedExports) -> String {
+    match requested {
+        RequestedExports::All => String::from("*"),
+        RequestedExports::Names(names) => {
+            let mut names = names.clone();
+            names.sort();
+            names.dedup();
+            String::from(names.join("\0"))
+        }
     }
 }
 

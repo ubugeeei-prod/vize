@@ -83,8 +83,11 @@ impl Drop for TypeResolutionBatchGuard {
 /// Keep the returned guard alive until all parallel work has joined. While it
 /// is alive, the compiles of the current generation share one view of the
 /// imported type modules: each file is read once and each import resolved
-/// once, whichever worker reaches it first. Single compiles do not open a
-/// batch and always observe the current files.
+/// once, whichever worker reaches it first.
+///
+/// The batch is process-wide: a compile on any thread joins the generation
+/// that is current while it runs, whoever opened it. A compile observes the
+/// current files on its own only while no batch is open.
 ///
 /// Bind the result to a named variable and keep it alive until all parallel
 /// work joins. `let _ = begin_type_resolution_batch();` drops it immediately.

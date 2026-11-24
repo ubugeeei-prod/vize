@@ -69,21 +69,24 @@ impl TypeDependency {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub(super) enum RequestedExports {
     All,
     Names(Vec<String>),
 }
 
 impl RequestedExports {
-    pub(super) fn cache_key(&self) -> String {
+    /// The same request with its names in one order, each once: two requests
+    /// ask for the same exports exactly when these are equal. A namespace
+    /// request stays apart from every list of names, `"*"` included.
+    pub(super) fn canonical(&self) -> Self {
         match self {
-            Self::All => String::from("*"),
+            Self::All => Self::All,
             Self::Names(names) => {
                 let mut names = names.clone();
                 names.sort();
                 names.dedup();
-                String::from(names.join("\0"))
+                Self::Names(names)
             }
         }
     }
@@ -129,7 +132,9 @@ pub(super) struct Walk<'a, V> {
     /// walked for.
     traversed: FxHashSet<(ModuleId, usize)>,
     /// The requested export sets this walk has met, numbered.
-    requests: FxHashMap<String, usize>,
+    requests: FxHashMap<RequestedExports, usize>,
+    /// Whether an edge resolved to a module that could not be read.
+    unread: bool,
 }
 
 impl<'a, V: Visit> Walk<'a, V> {
@@ -146,6 +151,7 @@ impl<'a, V: Visit> Walk<'a, V> {
             visited: FxHashSet::default(),
             traversed: FxHashSet::default(),
             requests: FxHashMap::default(),
+            unread: false,
         }
     }
 
@@ -157,20 +163,22 @@ impl<'a, V: Visit> Walk<'a, V> {
     }
 
     /// Every module an edge resolved to, in the order of their dependency
-    /// names. A module that could not be read is still a dependency.
-    pub(super) fn finish(self) -> Vec<ModuleId> {
+    /// names, and whether all of them could be read. A module that could not
+    /// be read is still a dependency.
+    pub(super) fn finish(self) -> (Vec<ModuleId>, bool) {
         let mut resolved: Vec<_> = self
             .resolved
             .iter()
             .filter_map(|id| Some((self.graph.module(*id)?.key.as_str(), *id)))
             .collect();
         resolved.sort_unstable();
-        resolved.into_iter().map(|(_, id)| id).collect()
+        let resolved = resolved.into_iter().map(|(_, id)| id).collect();
+        (resolved, !self.unread)
     }
 
     fn request(&mut self, requested: &RequestedExports) -> usize {
         let next = self.requests.len();
-        *self.requests.entry(requested.cache_key()).or_insert(next)
+        *self.requests.entry(requested.canonical()).or_insert(next)
     }
 
     fn walk(&mut self, id: ModuleId, requested: &RequestedExports, request: usize) {
@@ -182,6 +190,7 @@ impl<'a, V: Visit> Walk<'a, V> {
             return;
         };
         let Some(facts) = module.facts() else {
+            self.unread = true;
             return;
         };
         if self.visited.insert(id) {

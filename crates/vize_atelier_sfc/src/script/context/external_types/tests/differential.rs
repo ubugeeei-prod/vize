@@ -133,13 +133,14 @@ fn outcome(
 
 /// The reference walk, a walk over a graph of its own, and a walk over
 /// `shared`, which earlier components of the same project already used.
+/// Returns what every walk must produce.
 fn assert_same_outcome(
     label: &str,
     script: &str,
     base_file: &Path,
     local_alias: Option<&str>,
     shared: &ModuleGraph,
-) {
+) -> Outcome {
     let roots = roots(script);
     let expected = outcome(local_alias, |ctx| {
         reference::collect(ctx, &roots, base_file, None, NO_EPOCH)
@@ -154,6 +155,7 @@ fn assert_same_outcome(
         });
         assert_eq!(batch, expected, "{label}: shared graph\n{script}");
     }
+    expected
 }
 
 #[test]
@@ -221,4 +223,98 @@ fn a_cycle_keeps_the_order_of_the_module_it_was_entered_from() {
     assert_eq!(through_a, declares("{ w: string }"));
     assert_eq!(through_x, declares("{ z: string }"));
     assert_eq!(through_a_again, declares("{ w: string }"));
+}
+
+/// A module that resolves but cannot be read is a failed attempt, not a fact
+/// about the batch: the component that met it goes without, and the next one
+/// reads again. What a batch did read stays as it was read.
+#[test]
+fn an_unreadable_module_is_read_again_by_the_next_component() {
+    let dir = tempfile::tempdir().unwrap();
+    let dir = dir.path().canonicalize().unwrap();
+    std::fs::write(
+        dir.join("barrel.ts"),
+        "export * from './a'\nexport * from './b'\n",
+    )
+    .unwrap();
+    std::fs::write(dir.join("a.ts"), "export interface A { a: string }\n").unwrap();
+    std::fs::write(dir.join("b.ts"), [0xff_u8, 0xfe]).unwrap();
+    let roots = roots("import type * as Types from './barrel'\n");
+    let base_file = dir.join("Component.vue");
+    let shared = ModuleGraph::new(synthetic_epoch());
+    let generation = synthetic_epoch();
+    let reference = || {
+        outcome(None, |ctx| {
+            reference::collect(ctx, &roots, &base_file, None, generation)
+        })
+    };
+    let batch = || {
+        outcome(None, |ctx| {
+            ctx.walk_imported_modules(&roots, &base_file, None, Some(&shared))
+        })
+    };
+    let declares = |names: &[(&str, &str)]| -> FxHashMap<String, String> {
+        names
+            .iter()
+            .map(|(name, body)| (String::from(*name), String::from(*body)))
+            .collect()
+    };
+
+    let unread = batch();
+    assert_eq!(unread, reference());
+    assert_eq!(unread.interfaces, declares(&[("A", "{ a: string }")]));
+
+    std::fs::write(dir.join("b.ts"), "export interface B { b: string }\n").unwrap();
+    let read = batch();
+    assert_eq!(read, reference());
+    assert_eq!(
+        read.interfaces,
+        declares(&[("A", "{ a: string }"), ("B", "{ b: string }")])
+    );
+    assert_eq!(read.files, unread.files);
+
+    std::fs::write(dir.join("b.ts"), "export interface B { c: string }\n").unwrap();
+    assert_eq!(batch(), read);
+    assert_eq!(reference(), read);
+}
+
+/// `import * as` asks for a whole module; `import { "*" as }` asks for the
+/// one export named `*`. Components of one batch that ask for each get their
+/// own walk, in either order.
+#[test]
+fn a_namespace_import_and_an_export_named_star_are_different_requests() {
+    let dir = tempfile::tempdir().unwrap();
+    let dir = dir.path().canonicalize().unwrap();
+    std::fs::write(
+        dir.join("barrel.ts"),
+        "export { Other } from './other'\nexport { Star as \"*\" } from './star'\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("other.ts"),
+        "export interface Other { other: string }\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("star.ts"),
+        "export interface Star { star: string }\n",
+    )
+    .unwrap();
+    let base_file = dir.join("Component.vue");
+    let namespace = "import type * as Types from './barrel'\n";
+    let named = "import type { \"*\" as Star } from './barrel'\n";
+    let file = |name: &str| super::super::resolution::path_key(&dir.join(name));
+
+    for order in [[named, namespace], [namespace, named]] {
+        let shared = ModuleGraph::new(synthetic_epoch());
+        for script in order {
+            let walked = assert_same_outcome("star", script, &base_file, None, &shared);
+            let expected = if script == namespace {
+                vec![file("barrel.ts"), file("other.ts"), file("star.ts")]
+            } else {
+                vec![file("barrel.ts"), file("star.ts")]
+            };
+            assert_eq!(walked.files, expected, "{script}");
+        }
+    }
 }

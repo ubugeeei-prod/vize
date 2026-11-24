@@ -4,7 +4,7 @@ use std::path::Path;
 
 use vize_carton::String;
 
-use super::super::batch_epoch::current_batch_epoch;
+use super::super::batch_epoch::{NO_EPOCH, current_batch_epoch};
 use super::modules::{self, ModuleGraph, ModuleId};
 use super::resolution::{canonical_base_file, path_key, project::Project};
 use super::walk::{RequestedExports, TypeDependency, Visit, Walk};
@@ -133,14 +133,14 @@ impl ScriptCompileContext {
         };
         let name = |graph: &ModuleGraph, id: &ModuleId| Some(graph.module(*id)?.key.clone());
         let Some(graph) = shared else {
-            let graph = ModuleGraph::default();
+            let graph = ModuleGraph::new(NO_EPOCH);
             let mut walk = Walk::new(&graph, project, &mut merge);
             for (specifier, requested) in requests {
                 if let Some(module) = graph.resolve(base_file, specifier, project) {
                     walk.enter(module, &requested);
                 }
             }
-            let files = walk.finish();
+            let (files, _) = walk.finish();
             count(Step::Dependency, files.len());
             let files = files.iter().filter_map(|id| name(&graph, id)).collect();
             return (merge.imports, files);

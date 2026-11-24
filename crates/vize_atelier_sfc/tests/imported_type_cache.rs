@@ -210,8 +210,8 @@ fn compile_batch(components: &[(PathBuf, String)], threads: usize) -> Vec<Compil
 #[test]
 fn batch_workers_share_imported_types_without_changing_any_component() {
     let _exclusive = exclusive_batches();
-    let project = temp_project_dir();
-    let components = write_shared_types_project(&project);
+    let project = tempfile::tempdir().unwrap();
+    let components = write_shared_types_project(project.path());
 
     // Outside a batch every component walks its imports on its own.
     let alone: Vec<Compiled> = components
@@ -236,16 +236,14 @@ fn batch_workers_share_imported_types_without_changing_any_component() {
             assert_eq!(compile_batch(&components, threads), alone);
         }
     }
-
-    let _ = std::fs::remove_dir_all(project);
 }
 
 #[test]
 fn each_batch_reads_a_shared_type_as_it_is_when_the_batch_begins() {
     let _exclusive = exclusive_batches();
-    let project = temp_project_dir();
-    let components = write_shared_types_project(&project);
-    let model = project.join("src/models/Model0.ts");
+    let project = tempfile::tempdir().unwrap();
+    let components = write_shared_types_project(project.path());
+    let model = project.path().join("src/models/Model0.ts");
 
     let before = compile_batch(&components, 4);
     // Same length: only the bytes tell the two revisions apart.
@@ -259,6 +257,4 @@ fn each_batch_reads_a_shared_type_as_it_is_when_the_batch_begins() {
     assert_eq!(after, alone);
     assert_ne!(before[0].0, after[0].0);
     assert_eq!(before[0].1, after[0].1);
-
-    let _ = std::fs::remove_dir_all(project);
 }

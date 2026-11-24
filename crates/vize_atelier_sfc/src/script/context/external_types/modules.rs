@@ -10,6 +10,10 @@
 //! selected project and the revision of its options. Nothing in it depends on
 //! the importing component. A compile outside a batch walks a graph of its
 //! own, so it observes the files as they are at that moment.
+//!
+//! A graph keeps what it observed, not what went wrong: a module that could
+//! not be read is read again by the next walk that reaches it, and a walk
+//! that met such a module is not kept.
 
 #![expect(
     clippy::disallowed_types,
@@ -17,11 +21,13 @@
 )]
 
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, LazyLock, Mutex, OnceLock, PoisonError};
 
 use vize_carton::{FxHashMap, String};
 
 use super::super::batch_epoch::NO_EPOCH;
+use super::attempt::Attempted;
 use super::closure::TypeClosure;
 use super::resolution::{path_key, project::Project, resolve_import_path_with_project};
 use super::walk::{RequestedExports, TypeDependency};
@@ -32,32 +38,37 @@ use super::{FileTypeSummary, summary_cache};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(super) struct ModuleId(u32);
 
-type ClosureCell = Arc<OnceLock<Arc<TypeClosure>>>;
+type ClosureCell = Arc<Attempted<Arc<TypeClosure>>>;
 type EntryCell = Arc<OnceLock<Option<ModuleId>>>;
+
+/// Module ids the kept walks of one graph may hold: 32 MB. Each walk holds
+/// two ids per module it reached, so many different requests into a wide
+/// barrel add up. Past this the graph still serves every read and every
+/// resolution from memory; only the walks over them are repeated.
+const KEPT_WALK_IDS: usize = (32 << 20) / size_of::<ModuleId>();
 
 pub(super) struct Module {
     path: PathBuf,
     /// The name of this module in dependency lists.
     pub(super) key: String,
-    facts: OnceLock<Option<ModuleFacts>>,
+    facts: Attempted<ModuleFacts>,
     /// Finished walks from this module, by requested exports.
-    closures: Mutex<FxHashMap<String, ClosureCell>>,
+    closures: Mutex<FxHashMap<RequestedExports, ClosureCell>>,
 }
 
 impl Module {
     /// Read this module once: later walks of its graph reuse the summary.
     pub(super) fn facts(&self) -> Option<&ModuleFacts> {
-        self.facts
-            .get_or_init(|| {
-                let summary = summary_cache::load(&self.path)?;
-                let targets = summary
-                    .dependencies
-                    .iter()
-                    .map(|_| OnceLock::new())
-                    .collect();
-                Some(ModuleFacts { summary, targets })
-            })
-            .as_ref()
+        let read = || {
+            let summary = summary_cache::load(&self.path).ok_or(())?;
+            let targets = summary
+                .dependencies
+                .iter()
+                .map(|_| OnceLock::new())
+                .collect();
+            Ok::<_, ()>(ModuleFacts { summary, targets })
+        };
+        self.facts.get_or_attempt(read).ok()
     }
 }
 
@@ -113,12 +124,21 @@ pub(super) struct ModuleGraph {
     /// The module a component's own import resolves to, by importing
     /// directory and then specifier.
     entries: Mutex<FxHashMap<PathBuf, FxHashMap<String, EntryCell>>>,
+    /// Module ids the kept walks hold, and how many they may hold.
+    kept_ids: AtomicUsize,
+    kept_ids_limit: usize,
 }
 
 impl ModuleGraph {
     pub(super) fn new(epoch: u64) -> Self {
+        Self::keeping(epoch, KEPT_WALK_IDS)
+    }
+
+    /// A graph whose kept walks hold at most `kept_ids_limit` module ids.
+    pub(super) fn keeping(epoch: u64, kept_ids_limit: usize) -> Self {
         Self {
             epoch,
+            kept_ids_limit,
             ..Self::default()
         }
     }
@@ -129,7 +149,7 @@ impl ModuleGraph {
 
     /// The summary a walk of this graph already read for `id`.
     pub(super) fn summary(&self, id: ModuleId) -> Option<&FileTypeSummary> {
-        Some(&self.module(id)?.facts.get()?.as_ref()?.summary)
+        Some(&self.module(id)?.facts.get()?.summary)
     }
 
     fn intern(&self, path: PathBuf) -> Option<ModuleId> {
@@ -144,7 +164,7 @@ impl ModuleGraph {
             Module {
                 key: path_key(&path),
                 path: path.clone(),
-                facts: OnceLock::new(),
+                facts: Attempted::default(),
                 closures: Mutex::default(),
             },
         )?;
@@ -200,15 +220,18 @@ impl ModuleGraph {
     }
 
     /// The walk from `module` for `requested`, computed by the first worker
-    /// that asks for it. A walk waits on no other walk, so import cycles
-    /// cannot make two workers wait on each other.
+    /// that asks for it and kept for the others. A walk waits on no other
+    /// walk, so import cycles cannot make two workers wait on each other.
+    ///
+    /// A walk that met a module it could not read is used by its caller and
+    /// not kept, and neither is a walk the graph has no room for.
     pub(super) fn closure(
         &self,
         module: ModuleId,
         requested: &RequestedExports,
         project: Option<&Project>,
     ) -> Option<Arc<TypeClosure>> {
-        let key = requested.cache_key();
+        let key = requested.canonical();
         let cell = {
             count(Step::SharedLock, 1);
             let mut closures = self
@@ -221,9 +244,29 @@ impl ModuleGraph {
                 None => Arc::clone(closures.entry(key).or_default()),
             }
         };
-        Some(Arc::clone(cell.get_or_init(|| {
-            Arc::new(TypeClosure::walk(self, module, requested, project))
-        })))
+        let walk = || {
+            let walked = Arc::new(TypeClosure::walk(self, module, requested, project));
+            if walked.complete && self.keeps(&walked) {
+                Ok(walked)
+            } else {
+                Err(walked)
+            }
+        };
+        Some(match cell.get_or_attempt(walk) {
+            Ok(kept) => Arc::clone(kept),
+            Err(unkept) => unkept,
+        })
+    }
+
+    /// Whether the graph has room to keep `closure`, which it then counts.
+    fn keeps(&self, closure: &TypeClosure) -> bool {
+        let ids = closure.modules.len() + closure.files.len();
+        let kept = self.kept_ids.fetch_add(ids, Ordering::Relaxed);
+        if kept.saturating_add(ids) <= self.kept_ids_limit {
+            return true;
+        }
+        self.kept_ids.fetch_sub(ids, Ordering::Relaxed);
+        false
     }
 }
 

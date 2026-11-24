@@ -268,6 +268,34 @@ fn shared_walk_work_does_not_depend_on_threads() {
     }
 }
 
+/// A graph with no room to keep walks keeps none: every component walks, but
+/// over modules the graph read and resolved once. With room for one walk the
+/// work is the usual one.
+#[test]
+fn a_graph_without_room_repeats_walks_but_not_reads() {
+    let (components, modules) = (8, 25);
+    let files = modules + 2;
+    let dir = tempfile::tempdir().unwrap();
+    let reproduction = write_reproduction(dir.path(), components, modules);
+
+    let crowded = ModuleGraph::keeping(synthetic_epoch(), 0);
+    assert_eq!(
+        run_batch(&reproduction, 1, Walker::Shared(&crowded)),
+        Work {
+            modules: components * files,
+            edges: components * (modules + 1) + components,
+            ..shared_work(components, modules, files)
+        }
+    );
+
+    // A walk holds each module it reached twice: in walk order and by name.
+    let roomy = ModuleGraph::keeping(synthetic_epoch(), 2 * files);
+    assert_eq!(
+        run_batch(&reproduction, 1, Walker::Shared(&roomy)),
+        shared_work(components, modules, 0)
+    );
+}
+
 /// Module ids stay valid while the table grows past its first chunks.
 #[test]
 fn modules_keep_their_ids_as_a_graph_grows() {
