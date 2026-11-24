@@ -1,7 +1,7 @@
 {
   "content-mapper-conformance": {
     "before": "af3a0c9c81dd1a48f790ea66feced0945e59278eeb8f063a67b83cab62ef4cc1",
-    "workflow": "49691173b9e7115b74cb72915b0ebb1b335a17bdab96207cd30bf5b841c3fdae",
+    "workflow": "ba22e4b10ec213c7dde48636f152775a7bf49c80dfb2f73951be199740486197",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
@@ -9,6 +9,8 @@
       ".github/scripts/workflows/content-mapper-conformance/build-exact-upstream-tsgo.sh",
       ".github/scripts/workflows/content-mapper-conformance/build-packed-content-mapper-runtime.sh",
       ".github/scripts/workflows/content-mapper-conformance/build-the-real-packed-mapper-runtime.sh",
+      ".github/scripts/workflows/content-mapper-conformance/nuxt-membership-require-every-executed-native-stock-and-graph-control.sh",
+      ".github/scripts/workflows/content-mapper-conformance/nuxt-membership-verify-membership-controls.ts",
       ".github/scripts/workflows/content-mapper-conformance/preserve-actual-cli-identity-and-complete-artifact-inventory.sh",
       ".github/scripts/workflows/content-mapper-conformance/preserve-source-and-provider-identity-before-queries.sh",
       ".github/scripts/workflows/content-mapper-conformance/require-an-unambiguous-focused-campaign.sh",
@@ -32,7 +34,7 @@
       ".github/scripts/workflows/content-mapper-conformance/verify-upstream-content-mapper-protocol-regressions.sh",
       ".github/scripts/workflows/shared/files.ts"
     ],
-    "closure": "8c654f2524bc121ffdbed715add903991c69ea499f6f9df9eb415cb2d3cdeaf2"
+    "closure": "db676dc98e7afd32ac22a748491bbd14fcb280ca04b11f36c3b4c91482c08f30"
   },
   "content-mapper-reported-q16": {
     "before": "bb8b00e008a1401a72d8993c56b1511e54d52e398106ed65fb7c12ff2877f904",

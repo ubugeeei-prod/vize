@@ -3,5 +3,5 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
-  module.requireCheckout("EXPECTED_SOURCE")
+  #"node "$VIZE_CI_FILES/nuxt-membership-verify-membership-controls.ts""#
 }

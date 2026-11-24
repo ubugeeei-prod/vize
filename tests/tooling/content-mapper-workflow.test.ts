@@ -281,10 +281,12 @@ test("manual focused campaigns preserve the full default and upload before gatin
     assert.deepEqual(selectedJobs(workflow.jobs, "workflow_dispatch", inputs), [job]);
   }
   assert.equal(new Set(groups).size, 4, "all four campaigns must run without canceling each other");
-  // Scheduled runs keep the default project and add the Router campaign.
+  // Scheduled runs keep the default project and add the Router campaign and
+  // the Nuxt membership controls.
   assert.deepEqual(selectedJobs(workflow.jobs, "schedule", {}), [
     "exact-tsgo-project",
     "router-experimental",
+    "nuxt-generated-membership",
   ]);
   assert.deepEqual(selectedJobs(workflow.jobs, "pull_request", {}), ["exact-tsgo-project"]);
   // The Router input wins over any other focused input.

@@ -26,12 +26,12 @@ surfaces and are not routine CI-refactor targets.
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 22        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 17        |
-| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
+| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 42        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
-| 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
-| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 43        |
+| 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
+| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 40        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 28        |
-| 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 24        |
+| 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
 | 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 22        |
@@ -120,30 +120,29 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 | 03.17 | Benchmark - glibc compatibility                     | [`glibc-floor-bench.yml`](./glibc-floor-bench.yml)                                       |
 | 03.18 | Level instruction counts                            | [`level-instruction-counts.yml`](./level-instruction-counts.yml)                         |
 | 03.19 | Benchmark - Level memory                            | [`level-memory-bench.yml`](./level-memory-bench.yml)                                     |
-| 03.20 | Benchmark - LSP server comparison                   | [`lsp-dual-server-benchmark.yml`](./lsp-dual-server-benchmark.yml)                       |
-| 03.21 | LSP marker scan allocation and residency comparison | [`lsp-marker-scan-scale.yml`](./lsp-marker-scan-scale.yml)                               |
-| 03.22 | LSP source operations and allocations               | [`lsp-source-profile.yml`](./lsp-source-profile.yml)                                     |
-| 03.23 | Partition weight work                               | [`partition-weight-work.yml`](./partition-weight-work.yml)                               |
-| 03.24 | Persistent batch storage                            | [`persistent-batch-storage.yml`](./persistent-batch-storage.yml)                         |
-| 03.25 | Profile allocation thread law                       | [`profile-allocation-thread-law.yml`](./profile-allocation-thread-law.yml)               |
-| 03.26 | Benchmark - Rust frontend threads                   | [`rust-frontend-threads-bench.yml`](./rust-frontend-threads-bench.yml)                   |
-| 03.27 | Script recovery clone cost                          | [`script-recovery-clone-cost.yml`](./script-recovery-clone-cost.yml)                     |
-| 03.28 | Script recovery cost                                | [`script-recovery-cost.yml`](./script-recovery-cost.yml)                                 |
-| 03.29 | Setup binding anchor allocation profile             | [`setup-binding-anchor-profile.yml`](./setup-binding-anchor-profile.yml)                 |
-| 03.30 | Native SFC member phase comparison                  | [`sfc-member-profile.yml`](./sfc-member-profile.yml)                                     |
-| 03.31 | Shipped release-profile measure                     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)                           |
-| 03.32 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
-| 03.33 | Benchmark - String storage                          | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
-| 03.34 | Benchmark - UTF-8 file reads                        | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
-| 03.35 | Benchmark - Tool comparison                         | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
-| 03.36 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
-| 03.37 | Benchmark - Type source snapshots                   | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
-| 03.38 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
-| 03.39 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
-| 03.40 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
-| 03.41 | Benchmark - VS Code startup                         | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
-| 03.42 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
-| 03.43 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
+| 03.20 | LSP marker scan allocation and residency comparison | [`lsp-marker-scan-scale.yml`](./lsp-marker-scan-scale.yml)                               |
+| 03.21 | LSP source operations and allocations               | [`lsp-source-profile.yml`](./lsp-source-profile.yml)                                     |
+| 03.22 | Partition weight work                               | [`partition-weight-work.yml`](./partition-weight-work.yml)                               |
+| 03.23 | Persistent batch storage                            | [`persistent-batch-storage.yml`](./persistent-batch-storage.yml)                         |
+| 03.24 | Profile allocation thread law                       | [`profile-allocation-thread-law.yml`](./profile-allocation-thread-law.yml)               |
+| 03.25 | Benchmark - Rust frontend threads                   | [`rust-frontend-threads-bench.yml`](./rust-frontend-threads-bench.yml)                   |
+| 03.26 | Script recovery clone cost                          | [`script-recovery-clone-cost.yml`](./script-recovery-clone-cost.yml)                     |
+| 03.27 | Script recovery cost                                | [`script-recovery-cost.yml`](./script-recovery-cost.yml)                                 |
+| 03.28 | Setup binding anchor allocation profile             | [`setup-binding-anchor-profile.yml`](./setup-binding-anchor-profile.yml)                 |
+| 03.29 | Native SFC member phase comparison                  | [`sfc-member-profile.yml`](./sfc-member-profile.yml)                                     |
+| 03.30 | Shipped release-profile measure                     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)                           |
+| 03.31 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
+| 03.32 | Benchmark - String storage                          | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
+| 03.33 | Benchmark - UTF-8 file reads                        | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
+| 03.34 | Benchmark - Tool comparison                         | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
+| 03.35 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
+| 03.36 | Benchmark - Type source snapshots                   | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
+| 03.37 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
+| 03.38 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
+| 03.39 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
+| 03.40 | Benchmark - VS Code startup                         | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
+| 03.41 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
+| 03.42 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
 
 ## 04 Type checking and content mapping
 
@@ -186,25 +185,24 @@ LSP behavior, editor packages, VSIX hosts, overlays, navigation, and hover check
 | 05.03 | Authored editor script queries            | [`editor-script-queries.yml`](./editor-script-queries.yml)                   |
 | 05.04 | LSP config startup diagnostics            | [`lsp-config-diagnostics.yml`](./lsp-config-diagnostics.yml)                 |
 | 05.05 | Current-source LSP baseline               | [`lsp-current-baseline.yml`](./lsp-current-baseline.yml)                     |
-| 05.06 | Focused real-project LSP qualification    | [`lsp-focused-projects.yml`](./lsp-focused-projects.yml)                     |
-| 05.07 | JSX intrinsic hover observations          | [`lsp-jsx-intrinsic-hover.yml`](./lsp-jsx-intrinsic-hover.yml)               |
-| 05.08 | LSP native diagnostic coverage            | [`lsp-native-diagnostic-coverage.yml`](./lsp-native-diagnostic-coverage.yml) |
-| 05.09 | Native diagnostic warm-up                 | [`lsp-native-diagnostic-warmup.yml`](./lsp-native-diagnostic-warmup.yml)     |
-| 05.10 | Native LSP overlay custody                | [`lsp-overlay-custody.yml`](./lsp-overlay-custody.yml)                       |
-| 05.11 | LSP independent overlay graphs            | [`lsp-overlay-graph-reuse.yml`](./lsp-overlay-graph-reuse.yml)               |
-| 05.12 | LSP exact-parent residency pair           | [`lsp-residency-pair.yml`](./lsp-residency-pair.yml)                         |
-| 05.13 | LSP indexed scheduler source cost carrier | [`lsp-scheduler-cost-carrier.yml`](./lsp-scheduler-cost-carrier.yml)         |
-| 05.14 | Tag prefix classification observations    | [`lsp-tag-prefix-classification.yml`](./lsp-tag-prefix-classification.yml)   |
-| 05.15 | LSP vs Vue language tools                 | [`lsp-vs-volar.yml`](./lsp-vs-volar.yml)                                     |
-| 05.16 | Native named SFC value hover              | [`named-sfc-value-hover.yml`](./named-sfc-value-hover.yml)                   |
-| 05.17 | Router installed editor artifact          | [`router-editor-artifact.yml`](./router-editor-artifact.yml)                 |
-| 05.18 | Published router navigation matrix        | [`router-experimental-navigation.yml`](./router-experimental-navigation.yml) |
-| 05.19 | Router preview source provider            | [`router-preview-conformance.yml`](./router-preview-conformance.yml)         |
-| 05.20 | TypeScript plugin packed consumer         | [`typescript-plugin.yml`](./typescript-plugin.yml)                           |
-| 05.21 | Volar Plugin                              | [`volar-plugin.yml`](./volar-plugin.yml)                                     |
-| 05.22 | VS Code VSIX validation                   | [`vscode-vsix-validation.yml`](./vscode-vsix-validation.yml)                 |
-| 05.23 | VS Code workspace server                  | [`vscode-workspace-server.yml`](./vscode-workspace-server.yml)               |
-| 05.24 | Vue 2 editor diagnostic context           | [`vue2-editor-diagnostic-context.yml`](./vue2-editor-diagnostic-context.yml) |
+| 05.06 | JSX intrinsic hover observations          | [`lsp-jsx-intrinsic-hover.yml`](./lsp-jsx-intrinsic-hover.yml)               |
+| 05.07 | LSP native diagnostic coverage            | [`lsp-native-diagnostic-coverage.yml`](./lsp-native-diagnostic-coverage.yml) |
+| 05.08 | Native diagnostic warm-up                 | [`lsp-native-diagnostic-warmup.yml`](./lsp-native-diagnostic-warmup.yml)     |
+| 05.09 | Native LSP overlay custody                | [`lsp-overlay-custody.yml`](./lsp-overlay-custody.yml)                       |
+| 05.10 | LSP independent overlay graphs            | [`lsp-overlay-graph-reuse.yml`](./lsp-overlay-graph-reuse.yml)               |
+| 05.11 | LSP exact-parent residency pair           | [`lsp-residency-pair.yml`](./lsp-residency-pair.yml)                         |
+| 05.12 | LSP indexed scheduler source cost carrier | [`lsp-scheduler-cost-carrier.yml`](./lsp-scheduler-cost-carrier.yml)         |
+| 05.13 | Tag prefix classification observations    | [`lsp-tag-prefix-classification.yml`](./lsp-tag-prefix-classification.yml)   |
+| 05.14 | LSP vs Vue language tools                 | [`lsp-vs-volar.yml`](./lsp-vs-volar.yml)                                     |
+| 05.15 | Native named SFC value hover              | [`named-sfc-value-hover.yml`](./named-sfc-value-hover.yml)                   |
+| 05.16 | Router installed editor artifact          | [`router-editor-artifact.yml`](./router-editor-artifact.yml)                 |
+| 05.17 | Published router navigation matrix        | [`router-experimental-navigation.yml`](./router-experimental-navigation.yml) |
+| 05.18 | Router preview source provider            | [`router-preview-conformance.yml`](./router-preview-conformance.yml)         |
+| 05.19 | TypeScript plugin packed consumer         | [`typescript-plugin.yml`](./typescript-plugin.yml)                           |
+| 05.20 | Volar Plugin                              | [`volar-plugin.yml`](./volar-plugin.yml)                                     |
+| 05.21 | VS Code VSIX validation                   | [`vscode-vsix-validation.yml`](./vscode-vsix-validation.yml)                 |
+| 05.22 | VS Code workspace server                  | [`vscode-workspace-server.yml`](./vscode-workspace-server.yml)               |
+| 05.23 | Vue 2 editor diagnostic context           | [`vue2-editor-diagnostic-context.yml`](./vue2-editor-diagnostic-context.yml) |
 
 ## 06 SFC, JSX, and compiler correctness
 
@@ -229,34 +227,31 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 | 06.13 | Decoded loop bindings                    | [`for-bindings.yml`](./for-bindings.yml)                                       |
 | 06.14 | JSX authored native modules              | [`jsx-authored-native-modules.yml`](./jsx-authored-native-modules.yml)         |
 | 06.15 | JSX backend source origins               | [`jsx-backend-origins.yml`](./jsx-backend-origins.yml)                         |
-| 06.16 | L1 document special text                 | [`l1-document-special-text.yml`](./l1-document-special-text.yml)               |
-| 06.17 | Narrowed slot host guard                 | [`narrowed-slot-host-guard.yml`](./narrowed-slot-host-guard.yml)               |
-| 06.18 | Native beta diagnostic DTO               | [`native-beta-diagnostic-dto.yml`](./native-beta-diagnostic-dto.yml)           |
-| 06.19 | Native release token layout              | [`native-build-token-layout.yml`](./native-build-token-layout.yml)             |
-| 06.20 | Native checker CPU attribution           | [`native-checker-cpu-metadata.yml`](./native-checker-cpu-metadata.yml)         |
-| 06.21 | Native image-alt query source evidence   | [`native-image-alt-query.yml`](./native-image-alt-query.yml)                   |
-| 06.22 | Native navigation products               | [`native-navigation-products.yml`](./native-navigation-products.yml)           |
-| 06.23 | Native operational incident trace        | [`native-ops-incident.yml`](./native-ops-incident.yml)                         |
-| 06.24 | SFC runtime option transport             | [`native-sfc-runtime-options.yml`](./native-sfc-runtime-options.yml)           |
-| 06.25 | SFC runtime version selection            | [`native-sfc-runtime-version.yml`](./native-sfc-runtime-version.yml)           |
-| 06.26 | Native Smoke                             | [`native-smoke.yml`](./native-smoke.yml)                                       |
-| 06.27 | Leading newline runtime                  | [`pre-textarea-first-newline.yml`](./pre-textarea-first-newline.yml)           |
-| 06.28 | Provide type assertion whole packets     | [`provide-type-assertion.yml`](./provide-type-assertion.yml)                   |
-| 06.29 | Recovery normal codegen                  | [`recovery-normal-codegen.yml`](./recovery-normal-codegen.yml)                 |
-| 06.30 | Scoped nesting specificity               | [`scoped-nesting-specificity.yml`](./scoped-nesting-specificity.yml)           |
-| 06.31 | Current native SFC lifecycle             | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
-| 06.32 | Native parsed SFC attributes             | [`sfc-parse-attributes.yml`](./sfc-parse-attributes.yml)                       |
-| 06.33 | Historical SFC Parse Replay              | [`sfc-parse-replay.yml`](./sfc-parse-replay.yml)                               |
-| 06.34 | Retained source-line replay              | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)           |
-| 06.35 | Source symbolizer smoke                  | [`source-symbolizer-smoke.yml`](./source-symbolizer-smoke.yml)                 |
-| 06.36 | Public mapper comparison                 | [`template-alias-paired-11822.yml`](./template-alias-paired-11822.yml)         |
-| 06.37 | Template expression queries              | [`template-expression-queries.yml`](./template-expression-queries.yml)         |
-| 06.38 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
-| 06.39 | Native template tool projections         | [`template-tool-projections.yml`](./template-tool-projections.yml)             |
-| 06.40 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
-| 06.41 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
-| 06.42 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
-| 06.43 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
+| 06.16 | Narrowed slot host guard                 | [`narrowed-slot-host-guard.yml`](./narrowed-slot-host-guard.yml)               |
+| 06.17 | Native beta diagnostic DTO               | [`native-beta-diagnostic-dto.yml`](./native-beta-diagnostic-dto.yml)           |
+| 06.18 | Native release token layout              | [`native-build-token-layout.yml`](./native-build-token-layout.yml)             |
+| 06.19 | Native checker CPU attribution           | [`native-checker-cpu-metadata.yml`](./native-checker-cpu-metadata.yml)         |
+| 06.20 | Native image-alt query source evidence   | [`native-image-alt-query.yml`](./native-image-alt-query.yml)                   |
+| 06.21 | Native navigation products               | [`native-navigation-products.yml`](./native-navigation-products.yml)           |
+| 06.22 | Native operational incident trace        | [`native-ops-incident.yml`](./native-ops-incident.yml)                         |
+| 06.23 | SFC runtime option transport             | [`native-sfc-runtime-options.yml`](./native-sfc-runtime-options.yml)           |
+| 06.24 | SFC runtime version selection            | [`native-sfc-runtime-version.yml`](./native-sfc-runtime-version.yml)           |
+| 06.25 | Native Smoke                             | [`native-smoke.yml`](./native-smoke.yml)                                       |
+| 06.26 | Provide type assertion whole packets     | [`provide-type-assertion.yml`](./provide-type-assertion.yml)                   |
+| 06.27 | Recovery normal codegen                  | [`recovery-normal-codegen.yml`](./recovery-normal-codegen.yml)                 |
+| 06.28 | Current native SFC lifecycle             | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
+| 06.29 | Native parsed SFC attributes             | [`sfc-parse-attributes.yml`](./sfc-parse-attributes.yml)                       |
+| 06.30 | Historical SFC Parse Replay              | [`sfc-parse-replay.yml`](./sfc-parse-replay.yml)                               |
+| 06.31 | Retained source-line replay              | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)           |
+| 06.32 | Source symbolizer smoke                  | [`source-symbolizer-smoke.yml`](./source-symbolizer-smoke.yml)                 |
+| 06.33 | Public mapper comparison                 | [`template-alias-paired-11822.yml`](./template-alias-paired-11822.yml)         |
+| 06.34 | Template expression queries              | [`template-expression-queries.yml`](./template-expression-queries.yml)         |
+| 06.35 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
+| 06.36 | Native template tool projections         | [`template-tool-projections.yml`](./template-tool-projections.yml)             |
+| 06.37 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
+| 06.38 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
+| 06.39 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
+| 06.40 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
 
 ## 07 Davinci, Canon, and Level
 
@@ -307,26 +302,25 @@ Babel, Nuxt, Parcel, Rspack, Turbopack, Vite, Vitest, and consumer hosts.
 | 08.02 | Babel rc9 ABI frontier                 | [`babel-rc9-frontier.yml`](./babel-rc9-frontier.yml)                       |
 | 08.03 | Bundler block products                 | [`bundler-block-products.yml`](./bundler-block-products.yml)               |
 | 08.04 | JS install dependency closure          | [`js-install-closure.yml`](./js-install-closure.yml)                       |
-| 08.05 | Nuxt generated declaration membership  | [`nuxt-generated-membership.yml`](./nuxt-generated-membership.yml)         |
-| 08.06 | Nuxt scoped style build                | [`nuxt-style-build.yml`](./nuxt-style-build.yml)                           |
-| 08.07 | Nuxt 2 Bridge host runtimes            | [`nuxt2-bridge-module-build.yml`](./nuxt2-bridge-module-build.yml)         |
-| 08.08 | Nuxt 2 module build                    | [`nuxt2-module-build.yml`](./nuxt2-module-build.yml)                       |
-| 08.09 | Nuxt 3 module build                    | [`nuxt3-module-build.yml`](./nuxt3-module-build.yml)                       |
-| 08.10 | Parcel transformer                     | [`parcel-transformer.yml`](./parcel-transformer.yml)                       |
-| 08.11 | Plain-script import ref runtime        | [`plain-script-import-ref.yml`](./plain-script-import-ref.yml)             |
-| 08.12 | Rspack SFC HMR                         | [`rspack-hmr.yml`](./rspack-hmr.yml)                                       |
-| 08.13 | Rspack external block ranges           | [`rspack-src-block-ranges.yml`](./rspack-src-block-ranges.yml)             |
-| 08.14 | Turbopack consumers                    | [`turbopack-consumers.yml`](./turbopack-consumers.yml)                     |
-| 08.15 | Vite+ Type Compatibility               | [`vite-plus-type-compat.yml`](./vite-plus-type-compat.yml)                 |
-| 08.16 | Vite precompile cache identities       | [`vite-precompile-cache.yml`](./vite-precompile-cache.yml)                 |
-| 08.17 | Vite relative style origins            | [`vite-style-relative-imports.yml`](./vite-style-relative-imports.yml)     |
-| 08.18 | Vite+ configuration consumers          | [`viteplus-config-consumers.yml`](./viteplus-config-consumers.yml)         |
-| 08.19 | Vite+ lint configuration consumers     | [`viteplus-lint-consumers.yml`](./viteplus-lint-consumers.yml)             |
-| 08.20 | Vite+ task cache consumers             | [`viteplus-task-cache.yml`](./viteplus-task-cache.yml)                     |
-| 08.21 | Vitest persistent Vue modules          | [`vitest-module-cache.yml`](./vitest-module-cache.yml)                     |
-| 08.22 | Vitest project configuration consumers | [`vitest-project-extends.yml`](./vitest-project-extends.yml)               |
-| 08.23 | Void build                             | [`void-build.yml`](./void-build.yml)                                       |
-| 08.24 | VueFes SSR style dependencies          | [`vuefes-ssr-style-dependencies.yml`](./vuefes-ssr-style-dependencies.yml) |
+| 08.05 | Nuxt scoped style build                | [`nuxt-style-build.yml`](./nuxt-style-build.yml)                           |
+| 08.06 | Nuxt 2 Bridge host runtimes            | [`nuxt2-bridge-module-build.yml`](./nuxt2-bridge-module-build.yml)         |
+| 08.07 | Nuxt 2 module build                    | [`nuxt2-module-build.yml`](./nuxt2-module-build.yml)                       |
+| 08.08 | Nuxt 3 module build                    | [`nuxt3-module-build.yml`](./nuxt3-module-build.yml)                       |
+| 08.09 | Parcel transformer                     | [`parcel-transformer.yml`](./parcel-transformer.yml)                       |
+| 08.10 | Plain-script import ref runtime        | [`plain-script-import-ref.yml`](./plain-script-import-ref.yml)             |
+| 08.11 | Rspack SFC HMR                         | [`rspack-hmr.yml`](./rspack-hmr.yml)                                       |
+| 08.12 | Rspack external block ranges           | [`rspack-src-block-ranges.yml`](./rspack-src-block-ranges.yml)             |
+| 08.13 | Turbopack consumers                    | [`turbopack-consumers.yml`](./turbopack-consumers.yml)                     |
+| 08.14 | Vite+ Type Compatibility               | [`vite-plus-type-compat.yml`](./vite-plus-type-compat.yml)                 |
+| 08.15 | Vite precompile cache identities       | [`vite-precompile-cache.yml`](./vite-precompile-cache.yml)                 |
+| 08.16 | Vite relative style origins            | [`vite-style-relative-imports.yml`](./vite-style-relative-imports.yml)     |
+| 08.17 | Vite+ configuration consumers          | [`viteplus-config-consumers.yml`](./viteplus-config-consumers.yml)         |
+| 08.18 | Vite+ lint configuration consumers     | [`viteplus-lint-consumers.yml`](./viteplus-lint-consumers.yml)             |
+| 08.19 | Vite+ task cache consumers             | [`viteplus-task-cache.yml`](./viteplus-task-cache.yml)                     |
+| 08.20 | Vitest persistent Vue modules          | [`vitest-module-cache.yml`](./vitest-module-cache.yml)                     |
+| 08.21 | Vitest project configuration consumers | [`vitest-project-extends.yml`](./vitest-project-extends.yml)               |
+| 08.22 | Void build                             | [`void-build.yml`](./void-build.yml)                                       |
+| 08.23 | VueFes SSR style dependencies          | [`vuefes-ssr-style-dependencies.yml`](./vuefes-ssr-style-dependencies.yml) |
 
 ## 09 Lint, format, and developer tooling
 

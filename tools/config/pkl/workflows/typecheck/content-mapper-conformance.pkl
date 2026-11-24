@@ -99,4 +99,5 @@ jobs {
   `event-rename` = import("../../parts/content-mapper-conformance/event-rename.pkl")
   `official-css-options` = import("../../parts/content-mapper-conformance/official-css-options.pkl")
   `router-experimental` = import("../../parts/content-mapper-conformance/router-experimental.pkl")
+  `nuxt-generated-membership` = import("../../parts/content-mapper-conformance/nuxt-generated-membership.pkl")
 }

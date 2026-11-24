@@ -150,7 +150,7 @@ const semanticObligations = [
     requirement: "Nuxt-generated aliases and ambient types participate in the mapper project.",
     issues: [11104, 13018],
     evidenceCandidates: [
-      ".github/workflows/nuxt-generated-membership.yml",
+      ".github/workflows/content-mapper-conformance.yml",
       "crates/vize/tests/check_canon_nuxt_parity_cli.rs",
     ],
   },
