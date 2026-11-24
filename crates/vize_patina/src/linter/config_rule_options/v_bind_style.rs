@@ -2,8 +2,7 @@
 
 use super::super::config::Linter;
 use crate::markup::SameNameSpelling;
-use crate::rules::opinionated::vue::{PreferPropsShorthand, VBindStyleSameName};
-use crate::rules::vue::{VBindStyle, VBindStyleOption};
+use crate::rules::vue::{PreferPropsShorthand, VBindStyle, VBindStyleOption};
 use vize_l0::config::{VBindSameNameShorthand, VBindStyle as ConfigVBindStyle, VBindStyleConfig};
 
 pub(super) fn apply(linter: Linter, config: VBindStyleConfig) -> Linter {
@@ -34,13 +33,11 @@ impl Linter {
             VBindSameNameShorthand::Always => SameNameSpelling::Shorthand,
             VBindSameNameShorthand::Never => SameNameSpelling::Explicit,
         };
-        self.registry.replace(Box::new(VBindStyleSameName::new(
-            VBindStyle { style },
-            required,
-        )));
+        self.registry
+            .replace(VBindStyle { style }.requiring_same_name(required));
         if self.registry.has_rule("vue/prefer-props-shorthand") {
             self.registry
-                .replace(Box::new(PreferPropsShorthand::deferring_to_v_bind_style()));
+                .replace(PreferPropsShorthand::deferring_to_v_bind_style());
         }
         self
     }

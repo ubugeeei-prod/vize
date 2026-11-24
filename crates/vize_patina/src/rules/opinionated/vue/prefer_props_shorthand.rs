@@ -38,7 +38,7 @@ use crate::markup::{
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
-use super::v_bind_style::{V_BIND_STYLE, same_name_shorthand_fix};
+use super::v_bind_style::{self, same_name_shorthand_fix};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/prefer-props-shorthand",
@@ -50,28 +50,21 @@ static META: RuleMeta = RuleMeta {
 
 /// Prefer props shorthand rule
 #[derive(Default)]
-pub struct PreferPropsShorthand {
-    /// `vue/v-bind-style` carries an explicit `sameNameShorthand` policy.
-    v_bind_style_decides: bool,
-}
+pub struct PreferPropsShorthand;
 
 impl PreferPropsShorthand {
-    /// The instance that stays quiet while `vue/v-bind-style` enforces its own
-    /// `sameNameShorthand` policy, so one binding gets one report and one fix.
-    pub(crate) const fn deferring_to_v_bind_style() -> Self {
-        Self {
-            v_bind_style_decides: true,
-        }
+    /// The rule for a project whose `vue/v-bind-style` carries an explicit
+    /// `sameNameShorthand` policy: it stays quiet wherever that rule runs, so
+    /// one binding gets one report and one fix.
+    pub(crate) fn deferring_to_v_bind_style() -> Box<dyn Rule> {
+        Box::new(DeferringToVBindStyle)
     }
 
-    fn check_binding(&self, ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
+    fn check_binding(ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
         if binding
             .same_name_binding_written(SameNameSpelling::Explicit)
             .is_none()
         {
-            return;
-        }
-        if self.v_bind_style_decides && ctx.is_rule_enabled(V_BIND_STYLE) {
             return;
         }
 
@@ -109,7 +102,7 @@ impl MarkupRule for PreferPropsShorthand {
         binding: &MarkupBinding<'a>,
     ) {
         if ctx.is_template() {
-            self.check_binding(ctx.lint(), binding);
+            Self::check_binding(ctx.lint(), binding);
         }
     }
 }
@@ -128,7 +121,54 @@ impl Rule for PreferPropsShorthand {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        MarkupElement::new(element).walk_bindings(&mut |binding| self.check_binding(ctx, &binding));
+        MarkupElement::new(element)
+            .walk_bindings(&mut |binding| Self::check_binding(ctx, &binding));
+    }
+}
+
+/// [`PreferPropsShorthand`] behind `vue/v-bind-style`: the same rule, run only
+/// where `vue/v-bind-style` does not. It is a separate object so the default
+/// rule carries no trace of the option.
+struct DeferringToVBindStyle;
+
+impl MarkupRule for DeferringToVBindStyle {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Bindings
+    }
+
+    fn enter_binding<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        if !ctx.lint().is_rule_enabled(v_bind_style::rule_name()) {
+            MarkupRule::enter_binding(&PreferPropsShorthand, ctx, element, binding);
+        }
+    }
+}
+
+impl Rule for DeferringToVBindStyle {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        true
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        if !ctx.is_rule_enabled(v_bind_style::rule_name()) {
+            Rule::enter_element(&PreferPropsShorthand, ctx, element);
+        }
     }
 }
 
@@ -141,7 +181,7 @@ mod tests {
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
-        registry.register(Box::new(PreferPropsShorthand::default()));
+        registry.register(Box::new(PreferPropsShorthand));
         Linter::with_registry(registry)
     }
 

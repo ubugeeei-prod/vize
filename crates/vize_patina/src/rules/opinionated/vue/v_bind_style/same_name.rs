@@ -13,17 +13,22 @@ use vize_l0::cstr;
 use vize_relief::{DirectiveNode, ElementNode};
 
 /// `vue/v-bind-style` with `sameNameShorthand` set to `always` or `never`.
-pub(crate) struct VBindStyleSameName {
+struct VBindStyleSameName {
     style: VBindStyle,
     required: SameNameSpelling,
 }
 
-impl VBindStyleSameName {
-    /// Require `required` of every same-name binding, on top of `style`.
-    pub(crate) const fn new(style: VBindStyle, required: SameNameSpelling) -> Self {
-        Self { style, required }
+impl VBindStyle {
+    /// This style with `required` as the one spelling of same-name bindings.
+    pub(crate) fn requiring_same_name(self, required: SameNameSpelling) -> Box<dyn Rule> {
+        Box::new(VBindStyleSameName {
+            style: self,
+            required,
+        })
     }
+}
 
+impl VBindStyleSameName {
     fn check_same_name(&self, ctx: &mut LintContext<'_>, directive: &DirectiveNode<'_>) {
         // Only the spelling the policy rejects is looked for.
         let rejected = match self.required {

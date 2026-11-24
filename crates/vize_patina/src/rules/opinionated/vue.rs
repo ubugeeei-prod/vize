@@ -73,7 +73,6 @@ pub use slot_name_casing::SlotNameCasing;
 pub use this_in_template::ThisInTemplate;
 pub use use_unique_element_ids::UseUniqueElementIds;
 pub use use_v_on_exact::UseVOnExact;
-pub(crate) use v_bind_style::VBindStyleSameName;
 pub use v_bind_style::{VBindStyle, VBindStyleOption};
 pub use v_on_event_hyphenation::{VOnEventHyphenation, VOnEventHyphenationStyle};
 pub use v_on_handler_style::VOnHandlerStyle;
@@ -104,7 +103,7 @@ fn register_shared(registry: &mut RuleRegistry, flavor: PresetFlavor) {
     }
     registry.register(Box::new(HtmlButtonHasType));
     registry.register(Box::new(ScopedEventNames));
-    registry.register(Box::new(PreferPropsShorthand::default()));
+    registry.register(Box::new(PreferPropsShorthand));
     registry.register(Box::new(SlotNameCasing));
 
     registry.register(Box::new(UseUniqueElementIds::default()));

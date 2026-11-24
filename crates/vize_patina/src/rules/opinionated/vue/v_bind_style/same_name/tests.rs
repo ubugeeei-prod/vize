@@ -1,4 +1,3 @@
-use super::VBindStyleSameName;
 use crate::linter::Linter;
 use crate::markup::SameNameSpelling;
 use crate::rule::RuleRegistry;
@@ -12,10 +11,7 @@ const PREFER_LONGFORM_PROP: &str = "Expected 'v-bind:' instead of '.'.";
 
 fn linter(style: VBindStyleOption, required: SameNameSpelling) -> Linter {
     let mut registry = RuleRegistry::new();
-    registry.register(Box::new(VBindStyleSameName::new(
-        VBindStyle { style },
-        required,
-    )));
+    registry.register(VBindStyle { style }.requiring_same_name(required));
     Linter::with_registry(registry)
 }
 

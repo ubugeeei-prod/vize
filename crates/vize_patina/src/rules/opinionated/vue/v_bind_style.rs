@@ -29,19 +29,20 @@ use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 mod same_name;
 
-pub(crate) use same_name::VBindStyleSameName;
 pub(super) use same_name::same_name_shorthand_fix;
 
-/// The rule's name, for the rules that yield to its `sameNameShorthand`.
-pub(super) const V_BIND_STYLE: &str = "vue/v-bind-style";
-
 static META: RuleMeta = RuleMeta {
-    name: V_BIND_STYLE,
+    name: "vue/v-bind-style",
     description: "Enforce `v-bind` directive style",
     category: RuleCategory::StronglyRecommended,
     fixable: true,
     default_severity: Severity::Warning,
 };
+
+/// The rule's name, for the rule that yields to its `sameNameShorthand`.
+pub(super) fn rule_name() -> &'static str {
+    META.name
+}
 
 /// Style preference for v-bind
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
