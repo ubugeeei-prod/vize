@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-set -o pipefail
-unset VIZE_TEST_DISABLE_TSGO
-export CORSA_PATH="$RUNNER_TEMP/patina-tsrs/node_modules/@tsrs/linux-x64-gnu/tsrs"
-VIZE_SYMBOL_OWNER_CAPTURE="$GITHUB_WORKSPACE/target/patina-native-boolean/tsrs-owner.json" cargo test --locked --profile ci -p vize_patina --lib corsa_session::probe::signature_ -- --nocapture 2>&1 | tee target/patina-native-boolean/tsrs-owner-tests.txt
