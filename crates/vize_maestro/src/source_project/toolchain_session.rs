@@ -247,15 +247,28 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
         serde_json::from_str::<Value>(module.source_map().unwrap()).unwrap(),
         reference["nativeMap"]
     );
+    #[cfg(feature = "experimental-native-scss-session")]
+    let styled = styled_component::restore_formatted_style(
+        &docs,
+        &snapshots,
+        &final_snapshot,
+        &formatted,
+        reference,
+        options,
+    );
     if let Some(history) = std::env::var_os("VIZE_TOOLCHAIN_HISTORY") {
         let revisions = [
             source.source(),
             formatted.source(),
             damaged.source(),
             final_snapshot.source(),
+            #[cfg(feature = "experimental-native-scss-session")]
+            styled.source(),
         ];
         std::fs::write(history, revisions.join("\0")).unwrap();
     }
 }
 
 mod style_corpus;
+#[cfg(feature = "experimental-native-scss-session")]
+mod styled_component;

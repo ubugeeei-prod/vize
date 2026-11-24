@@ -94,6 +94,10 @@ export function recordConfigInputs() {
     if (active && typeof key === "string") env.set(key, value || env.get(key) === true);
   };
   process.env = new Proxy(realEnv, {
+    set(target, key, value) {
+      // Use Node's native setter, not the Proxy receiver's defineProperty path.
+      return Reflect.set(target, key, value);
+    },
     get(target, key) {
       readKey(key, true);
       return Reflect.get(target, key);

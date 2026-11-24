@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-git worktree add --detach "$RUNNER_TEMP/empty-generic-base" "$BASE_SHA"
-(cd "$RUNNER_TEMP/empty-generic-base" && CARGO_TARGET_DIR="$RUNNER_TEMP/empty-generic-target-base" cargo build --locked --profile ci -p vize --bin vize)
-CARGO_TARGET_DIR="$RUNNER_TEMP/empty-generic-target-head" cargo build --locked --profile ci -p vize --bin vize
-CARGO_TARGET_DIR="$RUNNER_TEMP/empty-generic-target-head" cargo test --locked --profile ci -p vize_canon --test empty_generic_public_contract -- --nocapture

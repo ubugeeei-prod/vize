@@ -9,6 +9,7 @@ export const STAR_EXPORT_PROJECT_ROOT = "star-export-shadow-pruning-12059";
 export const REFERENCED_PATHS_PROJECT_ROOT = "imported-props-referenced-paths-13090";
 export const REFERENCED_EXTENDS_PROJECT_ROOT = "imported-props-referenced-extends-13090";
 export const SOURCE_EXPORTS_PROJECT_ROOT = "imported-props-source-exports-13110";
+export const VUE_DECLARATION_PROJECT_ROOT = "vue-declaration-props-13577";
 export const COMPILER_PROJECT_ADAPTER = "compiler-cli-ssr-project-v1";
 export const COMPILER_PROJECT_CONTRACT = "compiler-ssr-project-module-bytes-v1";
 const inputs = [
@@ -51,6 +52,18 @@ const sourceExportsInputs = [
   ["lib.package.json.txt", "dependency", "node_modules/source-first/package.json"],
   ["lib.index.ts.txt", "dependency", "node_modules/source-first/src/index.ts"],
 ] as const;
+const vueDeclarationInputs = [
+  ["Layout.vue.txt", "entry", "Layout.vue"],
+  ["lib.package.json.txt", "dependency", "node_modules/component-library/package.json"],
+  ["lib.module.d.mts.txt", "dependency", "node_modules/component-library/dist/module.d.mts"],
+  ["lib.index.d.ts.txt", "dependency", "node_modules/component-library/dist/index.d.ts"],
+  ["lib.Navbar.vue.txt", "dependency", "node_modules/component-library/dist/components/Navbar.vue"],
+  [
+    "lib.Navbar.vue.d.ts.txt",
+    "dependency",
+    "node_modules/component-library/dist/components/Navbar.vue.d.ts",
+  ],
+] as const;
 const cohorts = new Map<
   string,
   { inputs: readonly (readonly [string, string, string])[]; selector: string }
@@ -84,6 +97,13 @@ const cohorts = new Map<
     {
       inputs: sourceExportsInputs,
       selector: "a package exporting its TypeScript source without declarations",
+    },
+  ],
+  [
+    VUE_DECLARATION_PROJECT_ROOT,
+    {
+      inputs: vueDeclarationInputs,
+      selector: "adjacent compiled Vue runtime and declaration files",
     },
   ],
 ]);

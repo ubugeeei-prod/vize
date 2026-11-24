@@ -2,7 +2,7 @@ import type { ArtFileInfo, ViewportConfig } from "./types/index.js";
 import { MuseaVrtRunner, normalizeVrtWorkerCount } from "./vrt.js";
 import { observePreviewReady, waitForMountedPreview } from "./vrt/preview-ready.js";
 import { processMuseaArtFile } from "./plugin/art-processing.js";
-import { scanArtFiles } from "./utils.js";
+import { resolveScanRoots, scanArtFiles } from "./utils.js";
 
 export type MuseaTestTraceEntry = {
   kind: "step" | "action" | "assertion";
@@ -43,13 +43,15 @@ export async function loadMuseaArtFiles(
   } = {},
 ): Promise<ArtFileInfo[]> {
   const root = options.root ?? process.cwd();
+  const include = options.include ?? ["**/*.art.vue"];
+  const scanRoots = resolveScanRoots(root, include);
   const paths = await scanArtFiles(
     root,
-    options.include ?? ["**/*.art.vue"],
+    include,
     options.exclude ?? ["node_modules/**", "dist/**"],
   );
   const files = await Promise.all(
-    paths.map((filePath) => processMuseaArtFile(filePath, { root, command: "build" })),
+    paths.map((filePath) => processMuseaArtFile(filePath, { root, scanRoots, command: "build" })),
   );
   return files.filter((file): file is ArtFileInfo => file !== null);
 }
