@@ -257,6 +257,7 @@ fn the_reported_component_maps_its_throwing_expression() {
             r#"6:44 "before\" }),⏎" -> 8:16 "before\" />⏎ ""#,
             r#"7:25 "p\", null, _t" -> 9:3 "p>{{ trip.ti""#,
             r#"7:52 "$setup.trip." -> 9:8 "trip.title }""#,
+            r#"7:64 "title), 1 /*" -> 9:13 "title }}</p>""#,
         ],
         "{}",
         client.code
@@ -273,6 +274,7 @@ fn the_reported_component_maps_its_throwing_expression() {
             r#"6:28 "$setup.Child" -> 8:3 "Child label=""#,
             r#"7:10 "p>${_ssrInte" -> 9:3 "p>{{ trip.ti""#,
             r#"7:30 "$setup.trip." -> 9:8 "trip.title }""#,
+            r#"7:42 "title)}</p><" -> 9:13 "title }}</p>""#,
         ],
         "{}",
         server.code
@@ -288,6 +290,7 @@ fn the_reported_component_maps_its_throwing_expression() {
             r#"16:17 "Child, _hois" -> 8:3 "Child label=""#,
             r#"17:25 "p\", null, _t" -> 9:3 "p>{{ trip.ti""#,
             r#"17:52 "_unref(trip)" -> 9:8 "trip.title }""#,
+            r#"17:65 "title), 1 /*" -> 9:13 "title }}</p>""#,
         ],
         "{}",
         inline.code

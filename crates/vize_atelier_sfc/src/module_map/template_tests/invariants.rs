@@ -23,6 +23,7 @@ fn a_standalone_module_keeps_the_template_mappings() {
             r#"16:17 "Child, _hois" -> 8:3 "Child label=""#,
             r#"17:25 "p\", null, _t" -> 9:3 "p>{{ trip.ti""#,
             r#"17:52 "_unref(trip)" -> 9:8 "trip.title }""#,
+            r#"17:65 "title), 1 /*" -> 9:13 "title }}</p>""#,
         ],
         "{}",
         result.code
@@ -163,7 +164,9 @@ fn carriage_returns_in_the_template_do_not_shift_the_mappings() {
             r#"6:44 "before\" }),⏎" -> 8:16 "before\" />\r⏎""#,
             r#"7:25 "p\", null, _t" -> 9:3 "p>{{ trip\r⏎ ""#,
             r#"7:52 "$setup.trip⏎" -> 9:8 "trip\r⏎      ""#,
+            r#"8:7 "title) + _to" -> 10:7 "title }}{{ t""#,
             r#"8:33 "$setup.trip." -> 10:18 "trip.title }""#,
+            r#"8:45 "title), 1 /*" -> 10:23 "title }}</p>""#,
         ],
         "{}",
         client.code
@@ -176,7 +179,9 @@ fn carriage_returns_in_the_template_do_not_shift_the_mappings() {
             r#"6:28 "$setup.Child" -> 8:3 "Child label=""#,
             r#"7:10 "p>${_ssrInte" -> 9:3 "p>{{ trip\r⏎ ""#,
             r#"7:30 "$setup.trip⏎" -> 9:8 "trip\r⏎      ""#,
+            r#"8:7 "title)}${_ss" -> 10:7 "title }}{{ t""#,
             r#"8:32 "$setup.trip." -> 10:18 "trip.title }""#,
+            r#"8:44 "title)}</p><" -> 10:23 "title }}</p>""#,
         ],
         "{}",
         server.code
@@ -188,7 +193,9 @@ fn carriage_returns_in_the_template_do_not_shift_the_mappings() {
             r#"16:17 "Child, _hois" -> 8:3 "Child label=""#,
             r#"17:25 "p\", null, _t" -> 9:3 "p>{{ trip\r⏎ ""#,
             r#"17:52 "_unref(trip)" -> 9:8 "trip\r⏎      ""#,
+            r#"18:7 "title) + _to" -> 10:7 "title }}{{ t""#,
             r#"18:33 "_unref(trip)" -> 10:18 "trip.title }""#,
+            r#"18:46 "title), 1 /*" -> 10:23 "title }}</p>""#,
         ],
         "{}",
         inline.code

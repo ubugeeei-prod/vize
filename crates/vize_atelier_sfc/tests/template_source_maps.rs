@@ -82,6 +82,9 @@ fn a_frame_in_the_render_resolves_to_the_template_expression() {
     // `  <p>{{ trip.title }}</p>` is line 9, and `trip` starts at column 8.
     assert_eq!(frame(&mapped(false), "$setup.trip.title"), Some((9, 8)));
     assert_eq!(frame(&mapped(true), "$setup.trip.title"), Some((9, 8)));
+    // The thrown property read points at `title`, as the Vue renderer does.
+    assert_eq!(frame(&mapped(false), "title),"), Some((9, 13)));
+    assert_eq!(frame(&mapped(true), "title)}"), Some((9, 13)));
     // `  <Child label="before" />` is line 8, and `Child` starts at column 3.
     assert_eq!(frame(&mapped(false), "$setup[\"Child\"]"), Some((8, 3)));
     assert_eq!(frame(&mapped(true), "$setup.Child"), Some((8, 3)));

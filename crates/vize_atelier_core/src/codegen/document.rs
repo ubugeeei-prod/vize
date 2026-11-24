@@ -318,9 +318,9 @@ pub fn expression_links(code: &str, span: Span, source_text: &str) -> Vec<SpanLi
         return Vec::new();
     }
     let authored = source_text.get(span.start as usize..span.end as usize);
-    let identifiers = authored
-        .and_then(|authored| rewritten_identifier_spans(authored, code))
-        .unwrap_or_default();
+    let rewritten = authored.and_then(|text| rewritten_identifier_spans(text, code));
+    let verified = authored.filter(|_| rewritten.is_some());
+    let identifiers = rewritten.unwrap_or_default();
     let covers_start = identifiers
         .first()
         .is_some_and(|identifier| identifier.emitted == 0 && identifier.authored == 0);
@@ -340,7 +340,11 @@ pub fn expression_links(code: &str, span: Span, source_text: &str) -> Vec<SpanLi
             segment: true,
         }
     });
-    core::iter::once(whole).chain(named).collect()
+    let mut links: Vec<_> = core::iter::once(whole).chain(named).collect();
+    if let Some(text) = verified {
+        authored::append_member_links(&mut links, text, code, span.start);
+    }
+    links
 }
 
 #[cfg(test)]

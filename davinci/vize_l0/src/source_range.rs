@@ -3,6 +3,9 @@
 //! Provides types for representing byte ranges in source code,
 //! used for source mapping between Vue SFC and generated code.
 
+mod member_path;
+pub use member_path::visit_static_member_spans;
+
 use serde::{Deserialize, Serialize};
 
 use crate::CompactString as String;
