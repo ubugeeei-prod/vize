@@ -18,7 +18,7 @@ commands {
   cargo test "${flags[@]}" current_scoped_compiler_and_lint_publication -- --ignored --nocapture --test-threads=1
   node crates/vize_atelier_sfc/tests/component_scss/oracle.ts < "$VIZE_STYLED_SESSION_OUTPUT"
   node crates/vize_atelier_sfc/tests/component_scss/oracle.ts < "$VIZE_SCOPED_SESSION_OUTPUT"
-  node "$VIZE_CI_FILES/check-style-revisions.cjs"
+  node "$VIZE_CI_FILES/check-style-revisions.ts"
   cargo test --locked --profile ci-opt -p vize_atelier_sfc --features native-sfc-scss --test native_sfc_scss component_scss::prepared:: -- --include-ignored --nocapture --test-threads=1
   export VIZE_COMPOSED_STYLE_INPUTS="$RUNNER_TEMP/vue-paths"
   git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_COMPOSED_STYLE_INPUTS"
