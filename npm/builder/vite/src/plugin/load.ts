@@ -7,13 +7,15 @@ import type { TransformResult } from "vite";
 import {
   getCompileOptionsForRequest as compileOptions,
   getEnvironmentCache,
+  isHeldByBuild,
   shouldExtractCssForRequest,
   syncCollectedCssForFile,
   type VizePluginState,
 } from "./state.ts";
 import { getLoadableVueSfcPath } from "./load-sfc.ts";
 import { normalizeVueServerRendererImport } from "./ssr-modules.ts";
-import { compileFile, compileJsxModule } from "../compiler.ts";
+import { compileJsxModule } from "../compiler.ts";
+import { compileRequestedSfcNow, readSfcSource } from "./demand-compile.ts";
 import { resolveCssImports } from "../utils/css.ts";
 import type { SourceMapV3 } from "../utils/source-map.ts";
 import { fromPluginVisibleVirtualId, LEGACY_VIZE_PREFIX, RESOLVED_CSS_MODULE } from "../virtual.ts";
@@ -32,6 +34,23 @@ export { getBoundaryPlaceholderCode } from "./sfc-module.ts";
 
 type LoadOptions = { ssr?: boolean; addWatchFile?: (file: string) => void };
 
+// oxlint-disable-next-line no-control-regex -- a virtual module id starts with NUL.
+const VIRTUAL_MODULE = /^\u0000/;
+const JSX_MODULE = /\.[jt]sx$/;
+
+/**
+ * The ids the main plugin's `load` and `transform` can act on. Each list is
+ * both the hook's `filter`, which lets the host skip the call, and the
+ * handler's own first test, so the two cannot disagree. A host tests the
+ * patterns against the id with forward slashes; none of them names a separator.
+ *
+ * `load`: virtual modules, anything naming a `.vue` file, and a `<style src>`
+ * module, which is the src file with the owning SFC in its query.
+ */
+export const LOAD_ID_FILTER: RegExp[] = [VIRTUAL_MODULE, /\.vue/, /vize-file=/];
+/** `transform`: virtual modules, `.vue` and `.tsrx` ids, and `.jsx`/`.tsx` modules. */
+export const TRANSFORM_ID_FILTER: RegExp[] = [VIRTUAL_MODULE, /\.vue/, /\.tsrx/, JSX_MODULE];
+
 function findMacroArtifactModule(
   state: VizePluginState,
   realPath: string,
@@ -43,9 +62,9 @@ function findMacroArtifactModule(
   realPath = classifyVitePluginRequest(realPath).normalizedVuePath;
   let compiled = cache.get(realPath) ?? state.cache.get(realPath) ?? state.ssrCache.get(realPath);
 
-  if (!compiled && fs.existsSync(realPath)) {
-    const source = fs.readFileSync(realPath, "utf-8");
-    compiled = compileFile(realPath, cache, compileOptions(state, ssr, realPath), source);
+  if (!compiled && (isHeldByBuild(state, realPath) || fs.existsSync(realPath))) {
+    // A router imports every page's macro module before any page is requested.
+    compiled = compileRequestedSfcNow(state, realPath, readSfcSource(state, realPath), ssr);
   }
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
 
@@ -78,15 +97,7 @@ export function loadHook(
   id: string,
   loadOptions?: LoadOptions,
 ): string | { code: string; map: SourceMapV3 | null } | null {
-  // A `<style src>` module is the src file; its query names the owning SFC.
-  if (
-    id !== RESOLVED_CSS_MODULE &&
-    !id.startsWith("\0") &&
-    !id.includes(".vue") &&
-    !id.includes("vize-file=")
-  ) {
-    return null;
-  }
+  if (!LOAD_ID_FILTER.some((pattern) => pattern.test(id))) return null;
 
   const request = classifyVitePluginRequest(id);
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
@@ -231,7 +242,7 @@ export function loadHook(
 }
 
 function isJsxComponentPath(path: string): boolean {
-  return /\.[jt]sx$/.test(path) && !/\.(?:stories|story)\.[jt]sx$/.test(path);
+  return JSX_MODULE.test(path) && !/\.(?:stories|story)\.[jt]sx$/.test(path);
 }
 
 function shouldTransformJsxRequest(
@@ -314,14 +325,9 @@ export async function transformHook(
   id: string,
   options?: { ssr?: boolean },
 ): Promise<TransformResult | null> {
-  if (
-    !id.startsWith("\0") &&
-    !id.includes(".vue") &&
-    !id.includes(".tsrx") &&
-    !isJsxComponentPath(id)
-  ) {
-    return null;
-  }
+  const admitted = TRANSFORM_ID_FILTER.find((pattern) => pattern.test(id));
+  // Every `.jsx`/`.tsx` module passes the filter; a story is a plain Vite input.
+  if (!admitted || (admitted === JSX_MODULE && !isJsxComponentPath(id))) return null;
 
   // `.tsrx` modules are real files too; no other plugin reads them.
   const tsrxResult = transformTsrxRequest(state, code, id, { ssr: options?.ssr });

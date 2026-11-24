@@ -53,18 +53,18 @@ pub use records::{
 ///
 /// Arbitrary declarations cannot establish file ownership:
 /// ```compile_fail
-/// use vize_l2::{artifact::Artifact, file::FileArtifact};
+/// use vize_l2::{artifact::Artifact, file::L2Ir};
 /// fn forge(artifact: Artifact<'_>) {
-///     let _ = FileArtifact { artifact, facts: Default::default() };
+///     let _ = L2Ir { artifact, facts: Default::default() };
 /// }
 /// ```
-pub struct FileArtifact<'a> {
+pub struct L2Ir<'a> {
     artifact: Artifact<'a>,
     /// Read by `crate::query` scans; construction stays with the producers.
     pub(crate) facts: build::Facts<'a>,
 }
 
-impl<'a> FileArtifact<'a> {
+impl<'a> L2Ir<'a> {
     #[must_use]
     pub fn artifact(&self) -> &Artifact<'a> {
         &self.artifact
@@ -192,20 +192,20 @@ impl<'a> FileArtifact<'a> {
 /// A query handle retains the actual file; matching numeric IDs are insufficient.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::{BindingRef, FileArtifact}, resolution::BindingId};
-/// fn forge(file: &FileArtifact<'_>) {
+/// use vize_l2::{file::{BindingRef, L2Ir}, resolution::BindingId};
+/// fn forge(file: &L2Ir<'_>) {
 ///     let _ = BindingRef { file, id: BindingId::new(0) };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct BindingRef<'f, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     id: BindingId,
 }
 
 impl<'f, 'a> BindingRef<'f, 'a> {
     #[must_use]
-    pub fn file(self) -> &'f FileArtifact<'a> {
+    pub fn file(self) -> &'f L2Ir<'a> {
         self.file
     }
 
@@ -231,20 +231,20 @@ impl<'f, 'a> BindingRef<'f, 'a> {
 ///
 /// ```compile_fail
 /// use vize_l0::id::NodeId;
-/// use vize_l2::file::{FileArtifact, FileResolution};
-/// fn forge(file: &FileArtifact<'_>) {
+/// use vize_l2::file::{L2Ir, FileResolution};
+/// fn forge(file: &L2Ir<'_>) {
 ///     let _ = FileResolution { file, node: NodeId::FIRST };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct FileResolution<'f, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     node: NodeId,
 }
 
 impl<'f, 'a> FileResolution<'f, 'a> {
     #[must_use]
-    pub fn file(self) -> &'f FileArtifact<'a> {
+    pub fn file(self) -> &'f L2Ir<'a> {
         self.file
     }
 

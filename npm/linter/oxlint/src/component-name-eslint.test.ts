@@ -386,7 +386,6 @@ try {
   inspect("unselected", template, null, null, "PascalCase", false);
   for (const [id, options] of [
     ["unknown-policy", ["PascalCase", { unknown: true }]],
-    ["unsupported-ignores", ["PascalCase", { ignores: [] }]],
     ["unsupported-regexp-global", ["PascalCase", { globals: ["/^My/i"] }]],
     ["canonical-plus-second", [{ casing: "PascalCase" }, { globals: [] }]],
     ["third-option", ["PascalCase", {}, {}]],
@@ -414,7 +413,7 @@ try {
     assert(failure instanceof Error, id);
     assert(failure.message.includes(publicRule), id);
   }
-  assert.equal(observations.length, 30);
+  assert.equal(observations.length, 29);
   completed = true;
 } finally {
   const proof = {
@@ -424,7 +423,7 @@ try {
     ...custody,
     observations,
     limits:
-      "Existing Casing.vue whole source and explicitly derived template-only control; real packed ESLint and pinned official verify/fix/requery/second-fix packets. Finite literal globals/registeredComponentsOnly transport only. Official regex globals and ignores are unsupported by the new tuple. Existing canonical globals semantics retained; no new Core/default/reset, broad parity, direct Oxlint CLI or public release claim. Baseline metadata-only clone is not an old packed-product execution.",
+      "Existing Casing.vue whole source and explicitly derived template-only control; real packed ESLint and pinned official verify/fix/requery/second-fix packets. Finite literal globals/registeredComponentsOnly transport only. Official regex globals are unsupported by the new tuple. Existing canonical globals semantics retained; no new Core/default/reset, broad parity, direct Oxlint CLI or public release claim. Baseline metadata-only clone is not an old packed-product execution.",
   };
   const invocation = mkdtempSync(join(nativeHistoryDirectory(directory), "component-name-eslint-"));
   const destination = join(invocation, "component-name-eslint-host.json");

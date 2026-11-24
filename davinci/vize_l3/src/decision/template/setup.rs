@@ -11,7 +11,7 @@ use crate::decision::{
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::Artifact,
-    file::{BindingRef, DeclarationKind, FileArtifact},
+    file::{BindingRef, DeclarationKind, L2Ir},
     lang::js::{NativeSelectedSetup, NativeTemplateView},
     resolution::{Occurrence, Usage},
 };
@@ -53,7 +53,7 @@ impl<'view, 'owner, 'arena> SelectedSetupDomAnalysis<'view, 'owner, 'arena> {
         self.setup
     }
     #[must_use]
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.setup.file()
     }
     #[must_use]

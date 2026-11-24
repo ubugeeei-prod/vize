@@ -1,0 +1,16 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_checks": { "prover": "alt-ergo", "time": 0.018 },
+      "vc_edges_resolved": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_nested": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_ops_resolved": { "prover": "alt-ergo", "time": 0.011 },
+      "vc_ordered": { "prover": "alt-ergo", "time": 0.011 },
+      "vc_resolved": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_rooted": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_scoped": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_unique_ids": { "prover": "alt-ergo", "time": 0.011 }
+    }
+  }
+}

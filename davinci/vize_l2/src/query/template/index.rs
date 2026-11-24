@@ -2,7 +2,7 @@
 //! borrows the same immutable owner whose original sites were checked.
 
 use super::{
-    FileArtifact, HandlerLocalRef, Origin, ScopeId, Span, TemplateQueryError, TemplateSiteRef,
+    HandlerLocalRef, L2Ir, Origin, ScopeId, Span, TemplateQueryError, TemplateSiteRef,
     TemplateSiteScope, TemplateSymbolRef, Usage, sites,
 };
 use crate::op::{HandlerId, OriginalForId};
@@ -64,11 +64,7 @@ impl StoredSite {
         })
     }
 
-    fn restore<'f, 'a>(
-        &self,
-        file: &'f FileArtifact<'a>,
-        span: Span,
-    ) -> Option<TemplateSiteRef<'f, 'a>> {
+    fn restore<'f, 'a>(&self, file: &'f L2Ir<'a>, span: Span) -> Option<TemplateSiteRef<'f, 'a>> {
         let (origin, scope, symbol) = match self.site {
             Site::Handler {
                 owner,
@@ -120,7 +116,7 @@ impl Default for TemplatePositions {
 }
 
 impl TemplatePositions {
-    pub(in crate::query) fn new(file: &FileArtifact<'_>) -> Self {
+    pub(in crate::query) fn new(file: &L2Ir<'_>) -> Self {
         Self(SiteIntervals::try_from_sites(|push| {
             let mut captured = Ok(());
             sites::visit(file, |site| match StoredSite::capture(site) {
@@ -133,7 +129,7 @@ impl TemplatePositions {
 
     pub(in crate::query) fn at<'f, 'a>(
         &self,
-        file: &'f FileArtifact<'a>,
+        file: &'f L2Ir<'a>,
         offset: u32,
     ) -> Result<Option<TemplateSiteRef<'f, 'a>>, TemplateQueryError> {
         let index = self.0.as_ref().map_err(|e| *e)?;

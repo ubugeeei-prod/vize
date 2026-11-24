@@ -9,12 +9,12 @@ use vize_l1::embed::{
 use vize_l1::{
     container::{
         Vue,
-        vue::{DescriptorObservation, DescriptorOptions, ScriptRole, ScriptView},
+        vue::{DescriptorOptions, L1Ir, ScriptRole, ScriptView},
     },
     markup::SurfaceParseOptions,
 };
 use vize_l2::file::{
-    FileArtifact,
+    L2Ir,
     vue::{ExposureIssue, VueExposure},
 };
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
@@ -22,7 +22,7 @@ use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 mod vue_setup_cases;
 
 struct Observed<'a> {
-    descriptor: DescriptorObservation<'a>,
+    descriptor: L1Ir<'a>,
     syntax: EmbedSyntax<'a>,
 }
 
@@ -60,7 +60,7 @@ impl<'a> Observed<'a> {
             .ok_or("actual script")
     }
 
-    fn file(&self, arena: &'a Allocator) -> Result<FileArtifact<'a>, &'static str> {
+    fn file(&self, arena: &'a Allocator) -> Result<L2Ir<'a>, &'static str> {
         let script = self.script()?;
         let mut producer =
             FileProducer::new(arena, self.descriptor.source()).map_err(|_| "actual file")?;
@@ -84,7 +84,7 @@ impl<'a> Observed<'a> {
 
     fn view<'f>(
         &self,
-        file: &'f FileArtifact<'a>,
+        file: &'f L2Ir<'a>,
     ) -> Result<Result<VueExposure<'f, '_, '_, 'a>, ExposureIssue>, &'static str> {
         Ok(VueExposure::checked(
             file,

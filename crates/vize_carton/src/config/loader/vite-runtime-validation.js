@@ -50,8 +50,13 @@ export function createVueOptionValidator(definitions, object, attributePolicy) {
     if (typeof value === "string" && schema.pattern && !new RegExp(schema.pattern).test(value))
       refuse(`must match ${schema.pattern}`);
     if (Array.isArray(value) && schema.items) {
+      // A list of schemas is a tuple: each item is validated by its position.
+      const tuple = Array.isArray(schema.items) ? schema.items : undefined;
+      if (tuple && schema.additionalItems === false && value.length > tuple.length)
+        refuse(`must have at most ${tuple.length} items`);
       for (let index = 0; index < value.length; index++) {
-        validateVueOption(value[index], schema.items, `${label}[${index}]`);
+        const item = tuple ? tuple[index] : schema.items;
+        if (item) validateVueOption(value[index], item, `${label}[${index}]`);
       }
     }
     if (Array.isArray(value) && schema.uniqueItems) {

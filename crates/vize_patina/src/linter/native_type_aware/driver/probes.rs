@@ -11,7 +11,6 @@ use vize_l0::{FxHashSet, String, profile};
 
 pub(super) struct ProbeBatch<'a> {
     pub content: &'a str,
-    pub source: &'a str,
     pub script_offset: u32,
     pub macros: &'a [MacroQuery],
     pub templates: &'a [TemplateQuery],
@@ -101,11 +100,7 @@ pub(super) fn evaluate(
 
     for query in batch.templates {
         let probe = probes.next().flatten();
-        if !super::super::expression_bindings::template_binding_is_unsafe(
-            batch.source,
-            query,
-            probe.as_ref(),
-        ) {
+        if !super::super::expression_bindings::template_binding_is_unsafe(query, probe.as_ref()) {
             continue;
         }
 

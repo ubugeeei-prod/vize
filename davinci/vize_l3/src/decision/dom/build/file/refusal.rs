@@ -3,10 +3,10 @@
 use crate::decision::dom::{DomRejection, DomUnsupported};
 use oxc_ast::ast::Expression;
 use vize_l0::id::NodeId;
-use vize_l2::{expr::JsExpr, file::FileArtifact};
+use vize_l2::{expr::JsExpr, file::L2Ir};
 
 pub(super) fn refusal<'a>(
-    file: &FileArtifact<'a>,
+    file: &L2Ir<'a>,
     node: NodeId,
     expression: &JsExpr<'a>,
     setup: bool,

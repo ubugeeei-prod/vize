@@ -8,7 +8,7 @@ use crate::file::{
 };
 use crate::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
-use super::{FileArtifact, PositionQueryError as Error};
+use super::{L2Ir, PositionQueryError as Error};
 
 fn append<'a>(
     arena: &'a Allocator,
@@ -28,7 +28,7 @@ fn append<'a>(
         .unwrap();
 }
 
-fn file<'a>(arena: &'a Allocator, source: &'a str, source_type: SourceType) -> FileArtifact<'a> {
+fn file<'a>(arena: &'a Allocator, source: &'a str, source_type: SourceType) -> L2Ir<'a> {
     let mut producer = FileProducer::new(arena, source).unwrap();
     append(
         arena,
@@ -47,7 +47,7 @@ fn offset(source: &str, needle: &str) -> u32 {
     source.find(needle).unwrap() as u32
 }
 
-fn refused(owner: &FileArtifact<'_>) {
+fn refused(owner: &L2Ir<'_>) {
     super::index::tests::assert_equivalent(owner);
     let declaration = owner
         .bindings()

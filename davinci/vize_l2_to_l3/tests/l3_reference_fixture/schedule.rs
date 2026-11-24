@@ -18,7 +18,7 @@ use std::path::Path;
 
 use davinci_test_support::l3_reference::{fixtures, schedule_fixture::schedule_contract};
 use vize_l0::Allocator;
-use vize_l3::op::{EdgeKind, EffectId, OpId, Phase, Program, StateEdge};
+use vize_l3::op::{EdgeKind, EffectId, L3Ir, OpId, Phase, StateEdge};
 use vize_l3::verify::verify;
 
 const STEMS: [&str; 5] = [
@@ -49,11 +49,11 @@ fn source(stem: &str) -> String {
     std::fs::read_to_string(fixtures.join(format!("{stem}.template.txt"))).unwrap()
 }
 
-fn next_op_id(program: &Program<'_>) -> OpId {
+fn next_op_id(program: &L3Ir<'_>) -> OpId {
     OpId::new(program.ops.iter().map(|op| op.id.index()).max().unwrap() + 1)
 }
 
-fn next_effect_id(program: &Program<'_>) -> EffectId {
+fn next_effect_id(program: &L3Ir<'_>) -> EffectId {
     EffectId::new(
         program
             .effects
@@ -65,7 +65,7 @@ fn next_effect_id(program: &Program<'_>) -> EffectId {
 }
 
 /// Returns false when the scenario does not apply to this program.
-fn mutate(program: &mut Program<'_>, scenario: &str) -> bool {
+fn mutate(program: &mut L3Ir<'_>, scenario: &str) -> bool {
     let first = program.ops[0].id;
     let last = program.ops[program.ops.len() - 1].id;
     match scenario {

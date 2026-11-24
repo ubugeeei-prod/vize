@@ -1,10 +1,11 @@
 //! Diagnostic reporting shared by template-local and SFC-absolute ranges.
 
 use crate::diagnostic::{LintDiagnostic, Severity};
+use memchr::memchr_iter;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::{cstr, directive::DirectiveSeverity};
 
-use super::eslint_directive::{SuppressionSource, UnusedDirective};
+use super::eslint_directive::{InlineSuppressionState, SuppressionSource, UnusedDirective};
 use super::{LintContext, SfcDirectiveState};
 
 const UNUSED_RULE: &str = "vue/comment-directive";
@@ -226,33 +227,73 @@ impl SfcSuppression {
     }
 }
 
-/// Drop diagnostics covered by an `eslint-*`, `oxlint-*`, or `vize-*` comment in a plain
-/// script module. SFC blocks use [`retain_unless_sfc_suppressed`]; standalone
-/// `.js` and `.ts` files never enter that scan.
-pub(crate) fn retain_unless_source_suppressed(
-    source: &str,
-    filename: &str,
-    diagnostics: &mut Vec<LintDiagnostic>,
-    report_unused: bool,
-    is_active: impl Fn(&str) -> bool,
-) {
-    if (!report_unused && diagnostics.is_empty())
-        || (!source.contains("eslint-disable")
-            && !source.contains("oxlint-disable")
-            && !source.contains("eslint-enable")
-            && !source.contains("oxlint-enable")
+/// Directive events and a newline table for a plain script.
+///
+/// Preparation used to keep the whole source until the project snapshot was
+/// published, only so this pass could run afterwards. Files without a
+/// recognized disable comment keep nothing.
+pub(crate) struct ScriptSuppression {
+    state: InlineSuppressionState,
+    line_offsets: Vec<u32>,
+}
+
+impl ScriptSuppression {
+    pub(crate) fn scan(source: &str, filename: &str) -> Option<Self> {
+        // A superset of the six historical needles. An empty event list still
+        // returns `None`, so a string that merely contains `eslint-` keeps no state.
+        if !source.contains("eslint-")
+            && !source.contains("oxlint-")
             && !source.contains("vize-disable")
-            && !source.contains("vize-enable"))
-    {
-        return;
+            && !source.contains("vize-enable")
+        {
+            return None;
+        }
+        let state = super::sfc_directives::script_suppressions(source, filename);
+        if state.is_empty() {
+            return None;
+        }
+        Some(Self {
+            state,
+            line_offsets: line_offsets(source),
+        })
     }
-    let state = super::sfc_directives::script_suppressions(source, filename);
-    diagnostics.retain(|diagnostic| {
-        let line = source_line_number(source, diagnostic.start);
-        !state.is_disabled_at(diagnostic.rule_name, line)
-    });
-    if report_unused {
-        diagnostics.extend(state.unused(is_active).into_iter().map(unused_diagnostic));
+
+    pub(crate) fn apply(
+        &self,
+        diagnostics: &mut Vec<LintDiagnostic>,
+        report_unused: bool,
+        is_active: impl Fn(&str) -> bool,
+    ) {
+        if !report_unused && diagnostics.is_empty() {
+            return;
+        }
+        diagnostics.retain(|diagnostic| {
+            let line = line_number_at(&self.line_offsets, diagnostic.start);
+            !self.state.is_disabled_at(diagnostic.rule_name, line)
+        });
+        if report_unused {
+            diagnostics.extend(
+                self.state
+                    .unused(is_active)
+                    .into_iter()
+                    .map(unused_diagnostic),
+            );
+        }
+    }
+}
+
+fn line_offsets(source: &str) -> Vec<u32> {
+    let mut offsets = vec![0];
+    for offset in memchr_iter(b'\n', source.as_bytes()) {
+        offsets.push((offset + 1) as u32);
+    }
+    offsets
+}
+
+fn line_number_at(line_offsets: &[u32], offset: u32) -> u32 {
+    match line_offsets.binary_search(&offset) {
+        Ok(line) => (line + 1) as u32,
+        Err(line) => line as u32,
     }
 }
 
@@ -274,15 +315,9 @@ fn unused_diagnostic(directive: UnusedDirective) -> LintDiagnostic {
     LintDiagnostic::error(UNUSED_RULE, message, directive.start, directive.end)
 }
 
-fn source_line_number(source: &str, start: u32) -> u32 {
-    let end = usize::try_from(start).unwrap_or(source.len());
-    let prefix = source.get(..end).unwrap_or(source);
-    u32::try_from(prefix.bytes().filter(|byte| *byte == b'\n').count()).unwrap_or(u32::MAX) + 1
-}
-
 #[cfg(test)]
 mod tests {
-    use super::SfcSuppression;
+    use super::{ScriptSuppression, SfcSuppression, line_number_at, line_offsets};
     use crate::{LintContext, LintDiagnostic};
     use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
     use vize_l0::Allocator;
@@ -356,6 +391,44 @@ const value = 1;
         assert!(suppressions.retain(&mut diagnostics));
         assert!(diagnostics.is_empty());
         assert!(!suppressions.append_unused(&mut diagnostics, |_| true));
+    }
+
+    #[test]
+    fn script_line_numbers_follow_newline_counts() {
+        let source = "a\r\nb\nc\r\n";
+        let offsets = line_offsets(source);
+        for offset in 0..=source.len() as u32 + 4 {
+            let end = usize::try_from(offset).unwrap_or(source.len());
+            let prefix = source.get(..end).unwrap_or(source);
+            let expected = u32::try_from(prefix.bytes().filter(|byte| *byte == b'\n').count())
+                .unwrap_or(u32::MAX)
+                + 1;
+            assert_eq!(
+                line_number_at(&offsets, offset),
+                expected,
+                "offset {offset}"
+            );
+        }
+    }
+
+    #[test]
+    fn marker_free_script_keeps_no_suppression_state() {
+        assert!(ScriptSuppression::scan("export const value = 1;\n", "mod.ts").is_none());
+    }
+
+    #[test]
+    fn script_suppression_drops_the_next_line_and_keeps_the_directive_line() {
+        let source = "// eslint-disable-next-line no-console\nconsole.log(1);\n";
+        let suppression =
+            ScriptSuppression::scan(source, "mod.ts").expect("disable comment should be retained");
+        let console_at = source.find("console.log").unwrap() as u32;
+        let mut diagnostics = vec![
+            LintDiagnostic::error("no-console", "directive line", 0, 2),
+            LintDiagnostic::error("no-console", "log", console_at, console_at + 7),
+        ];
+        suppression.apply(&mut diagnostics, false, |_| true);
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].start, 0);
     }
 }
 

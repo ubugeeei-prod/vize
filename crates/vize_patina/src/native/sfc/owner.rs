@@ -7,7 +7,7 @@ use vize_l0::{
 use vize_l1::{
     container::{
         Vue,
-        vue::{DescriptorObservation, DescriptorOptions},
+        vue::{DescriptorOptions, L1Ir},
     },
     embed::{
         EmbedSource, Lang,
@@ -16,7 +16,7 @@ use vize_l1::{
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{FileProducer, ProgramInput, ProgramScope, VueSetup},
 };
 
@@ -51,10 +51,10 @@ use super::{NativeSfcLintRefusal as Refusal, envelope};
 /// }
 /// ```
 pub struct NativeSfcLintOwner<'a> {
-    descriptor: DescriptorObservation<'a>,
+    descriptor: L1Ir<'a>,
     template: SelectedTemplateComponent<'a>,
     syntax: EmbedSyntax<'a>,
-    file: FileArtifact<'a>,
+    file: L2Ir<'a>,
 }
 
 impl<'a> NativeSfcLintOwner<'a> {
@@ -123,7 +123,7 @@ impl<'a> NativeSfcLintOwner<'a> {
     }
     /// Returns the original descriptor observation.
     #[must_use]
-    pub fn descriptor(&self) -> &DescriptorObservation<'a> {
+    pub fn descriptor(&self) -> &L1Ir<'a> {
         &self.descriptor
     }
     /// Returns the original selected template component.
@@ -138,7 +138,7 @@ impl<'a> NativeSfcLintOwner<'a> {
     }
     /// Script-only File; this is never native template/DOM/ref authority.
     #[must_use]
-    pub fn file(&self) -> &FileArtifact<'a> {
+    pub fn file(&self) -> &L2Ir<'a> {
         &self.file
     }
 

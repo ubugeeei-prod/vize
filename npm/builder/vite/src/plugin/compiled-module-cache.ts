@@ -32,6 +32,7 @@ import type { FilesystemEpoch } from "./filesystem-epoch.ts";
 import { filesystemPathIdentities } from "./path-identity.ts";
 
 export class CompiledModuleCache extends Map<string, CompiledModule> {
+  readonly #evicted = new Set<string>();
   readonly #ownersByDependency = new Map<string, Set<string>>();
   readonly #dependenciesByOwner = new Map<string, Set<string>>();
   readonly #ownersByFileIdentity = new Map<string, Set<string>>();
@@ -96,6 +97,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
   }
 
   override clear(): void {
+    this.#evicted.clear();
     this.#ownersByDependency.clear();
     this.#dependenciesByOwner.clear();
     this.#ownersByFileIdentity.clear();
@@ -109,7 +111,18 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
    * The next `set` reconciles that retained snapshot with the new compilation.
    */
   evict(file: string): boolean {
-    return super.delete(normalizeCachePath(file));
+    file = normalizeCachePath(file);
+    if (!super.delete(file)) return false;
+    this.#evicted.add(file);
+    return true;
+  }
+
+  /**
+   * Evicted files nothing has compiled again, oldest first. Their owners will
+   * be requested again, so the next compile can take them in the same batch.
+   */
+  evictedFiles(): IterableIterator<string> {
+    return this.#evicted.values();
   }
 
   /** The cached SFCs that `src`-import `resolvedDependency`. */
@@ -132,6 +145,8 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
 
   #unindex(file: string): void {
     file = normalizeCachePath(file);
+    // Compiled again or removed: either way it no longer awaits a recompile.
+    this.#evicted.delete(file);
     for (const dependency of this.#dependenciesByOwner.get(file) ?? []) {
       const owners = this.#ownersByDependency.get(dependency);
       if (!owners) continue;

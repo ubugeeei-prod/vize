@@ -81,6 +81,35 @@ it("unchanged source reuses revision-safe file work", () => {
   }
 });
 
+it("a same-size rewrite with a restored mtime does not reuse cached source", () => {
+  clearFileStateCache();
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-file-state-mtime-"));
+  const filename = path.join(root, "App.vue");
+  const firstSource = "<template><p>one</p></template>\n";
+  const secondSource = "<template><p>two</p></template>\n";
+  assert.equal(Buffer.byteLength(firstSource), Buffer.byteLength(secondSource));
+  // Same length and a restored mtime can share a timestamp tick. The cache
+  // still has to notice the new bytes.
+  const restoredSeconds = 1_700_000_000;
+
+  try {
+    fs.writeFileSync(filename, firstSource);
+    fs.utimesSync(filename, restoredSeconds, restoredSeconds);
+    const context = createContext(filename, "const one = 1;\n");
+    const first = getFileState(context);
+    fs.writeFileSync(filename, secondSource);
+    fs.utimesSync(filename, restoredSeconds, restoredSeconds);
+    const changed = getFileState(context);
+
+    assert.notStrictEqual(changed, first);
+    assert.equal(changed.source, secondSource);
+    assert.equal(changed.partialDiagnosticsByRule.size, 0);
+  } finally {
+    clearFileStateCache();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 it("same filename with changed source starts a fresh reporting revision", () => {
   clearFileStateCache();
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-file-state-revision-"));

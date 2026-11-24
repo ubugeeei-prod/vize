@@ -4,7 +4,7 @@ use super::{SsrFacts, SsrFileAnalysis, SsrTemplateBuildError};
 use crate::decision::DecisionTables;
 use vize_l2::{
     artifact::Artifact,
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{NativeScopedTemplateView, NativeTemplateFile},
 };
 
@@ -41,7 +41,7 @@ impl<'owner, 'arena> TemplateScopedSsrAnalysis<'owner, 'arena> {
         self.view.owner()
     }
     #[must_use]
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.analysis.file()
     }
     #[must_use]

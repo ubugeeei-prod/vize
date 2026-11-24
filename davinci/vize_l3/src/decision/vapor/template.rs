@@ -4,7 +4,7 @@ use super::{VaporFacts, VaporFileAnalysis};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l2::{
     artifact::Artifact,
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{NativeTemplateFile, NativeTemplateView},
 };
 
@@ -29,9 +29,9 @@ use vize_l2::{
 /// ```
 /// A complete manually populated File is not original template completion:
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::vapor::build_template_vapor_decisions;
-/// fn forge(file: &FileArtifact<'_>) { let _ = build_template_vapor_decisions(file); }
+/// fn forge(file: &L2Ir<'_>) { let _ = build_template_vapor_decisions(file); }
 /// ```
 pub struct TemplateVaporAnalysis<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,
@@ -44,7 +44,7 @@ impl<'owner, 'arena> TemplateVaporAnalysis<'owner, 'arena> {
         self.view.owner()
     }
     #[must_use]
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.analysis.file()
     }
     #[must_use]

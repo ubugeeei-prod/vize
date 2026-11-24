@@ -1,0 +1,19 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_branch_Option_u32": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_effect_region": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_elim_Break": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_elim_Continue": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_elim_Some": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_from_residual_Option_ref_str": {
+        "prover": "alt-ergo",
+        "time": 0.009
+      },
+      "vc_op_inside": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_scope_code": { "prover": "alt-ergo", "time": 0.063 },
+      "vc_then_some_ref_str": { "prover": "alt-ergo", "time": 0.012 }
+    }
+  }
+}

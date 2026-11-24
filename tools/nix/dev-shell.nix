@@ -13,23 +13,6 @@
       renderScript = import ./render-script.nix;
       nodejs = pkgs.nodejs_24;
       pnpm = pkgs.pnpm;
-      gauche =
-        assert lib.assertMsg (
-          pkgs.gauche.version == "0.9.15"
-        ) "Update the qualified Gauche version and tooling tests together";
-        pkgs.gauche;
-
-      gaucheToolingCheck =
-        pkgs.runCommand "vize-gauche-tooling"
-          {
-            nativeBuildInputs = [ gauche ];
-          }
-          (
-            renderScript ./scripts/check-gauche.sh {
-              SOURCE = "${../..}";
-            }
-          );
-
       # A Nix-provided Darwin stdenv has no Xcode behind it. Answer the two
       # queries the toolchain actually makes and defer the rest to the host
       # `xcrun` when the machine has one.
@@ -51,7 +34,6 @@
           config.packages.vp
           rustDevToolchain
           pkgs.git
-          gauche
           pkgs.rust-analyzer
           pkgs.wasm-pack
           pkgs.wasm-bindgen-cli
@@ -121,7 +103,6 @@
       };
 
       checks = {
-        gauche-tooling = gaucheToolingCheck;
         shell = devShell.inputDerivation;
       };
     };

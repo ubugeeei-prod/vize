@@ -1,0 +1,10 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_flatten_u32": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_parent'0": { "prover": "alt-ergo", "time": 0.017 },
+      "vc_region_parent": { "prover": "alt-ergo", "time": 0.009 }
+    }
+  }
+}

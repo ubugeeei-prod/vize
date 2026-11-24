@@ -1,0 +1,15 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_closure0": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_deref_Vec_EffectScope_Global": {
+        "prover": "alt-ergo",
+        "time": 0.008
+      },
+      "vc_effect_region": { "prover": "alt-ergo", "time": 0.036 },
+      "vc_lookup_EffectScope": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_map_ref_EffectScope": { "prover": "alt-ergo", "time": 0.008 }
+    }
+  }
+}

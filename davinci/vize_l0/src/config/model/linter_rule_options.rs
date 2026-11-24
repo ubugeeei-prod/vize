@@ -54,7 +54,9 @@ pub use casing::{
 };
 pub use configured_vue::{
     CallAfterAwaitOptions, CallAfterAwaitSpec, ConfiguredVueRuleOptions, MaxPropsOptions,
-    MaxTemplateDepthOptions, RestrictedNames, UnsupportedFeaturesOptions,
+    MaxTemplateDepthOptions, RestrictedHtmlElement, RestrictedHtmlElementSpec,
+    RestrictedHtmlElements, RestrictedNames, RestrictedVOn, RestrictedVOnEntry, RestrictedVOnSpec,
+    UnsupportedFeaturesOptions,
 };
 pub use define_macros_order::DefineMacrosOrderOptions;
 pub use eslint_vue_compatibility::{
@@ -90,7 +92,7 @@ pub use script_unused::{
 pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
 pub use slot_name_casing::SlotNameCasingStyle;
 pub use strict_boolean::StrictBooleanExpressionsOptions;
-pub use v_bind_style::VBindStyle;
+pub use v_bind_style::{VBindSameNameShorthand, VBindStyle, VBindStyleConfig, VBindStyleOptions};
 pub use v_on_event_hyphenation::{VOnEventHyphenationConfig, VOnEventHyphenationOptions};
 pub use v_on_handler_style::{
     VOnHandlerAllowed, VOnHandlerKind, VOnHandlerStyleConfig, VOnHandlerStyleOptions,
@@ -216,7 +218,7 @@ pub struct ConfigLintRuleOptions {
     v_on_event_hyphenation: Option<VOnEventHyphenationConfig>,
     /// Options for `vue/v-bind-style`.
     #[serde(rename = "vue/v-bind-style")]
-    v_bind_style: Option<VBindStyle>,
+    v_bind_style: Option<VBindStyleConfig>,
     /// Options for `vue/v-on-style`.
     #[serde(rename = "vue/v-on-style")]
     v_on_style: Option<VOnStyle>,
@@ -469,12 +471,6 @@ impl ConfigLintRuleOptions {
         self.v_on_event_hyphenation
             .as_ref()
             .map(VOnEventHyphenationConfig::options)
-    }
-
-    /// Configured spelling for `vue/v-bind-style`.
-    #[inline]
-    pub fn v_bind_style(&self) -> Option<VBindStyle> {
-        self.v_bind_style
     }
 
     /// Configured spelling for `vue/v-on-style`.

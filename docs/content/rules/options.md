@@ -68,7 +68,7 @@ export default defineConfig({}).withVue({
 | `script/no-restricted-members` | `{ members?: Array<{ object: string; property: string; message?: string }> }` | Off unless `members` is configured and the rule is enabled. A missing `message` uses the generic diagnostic help. |
 | `script/define-macros-order` | `{ order?: string[]; defineExposeLast?: boolean }` | Defaults to `["defineProps", "defineEmits"]` and `false`. Listed macros appear first after imports and type declarations. With `defineExposeLast: true`, the last direct `defineExpose` must be the final statement in `<script setup>`; omit it from `order`. This finding requires manual repair. |
 | `vue/valid-v-on` | `{ modifiers?: string[] }` | Defaults to an empty list. Adds exact, case-sensitive custom names to the built-in modifiers; it does not enable the rule or permit a missing handler. Scoped entries replace the inherited list, and `[]` clears it. See the [complete modifier example](./reference/vue-valid-v-on.md). |
-| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case", registeredComponentsOnly?: boolean, globals?: string[] }` | Defaults to `PascalCase`, registered components only, and no literal globals. |
+| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case", registeredComponentsOnly?: boolean, globals?: string[], ignores?: string[] }` | Defaults to `PascalCase`, registered components only, no literal globals and no ignored names. `ignores` leaves a tag alone whether or not it is registered; an entry is the exact authored tag name or a `/pattern/flags` value using Rust regex syntax. |
 | `script/custom-event-name-casing` | `{ casing?: "lowercase" \| "camelCase" \| "kebab-case" }` | Defaults to `camelCase`. |
 | `vue/prop-name-casing` | `{ casing?: "camelCase" \| "snake_case" }` | Defaults to `camelCase`. Checks declared prop names; options do not enable the rule or rename its public API. |
 | `vue/slot-name-casing` | `"camelCase" \| "kebab-case" \| "singleword"` | Defaults to `camelCase`. Checks static names on rendered `<slot>` outlets; provider-side `v-slot` and `#name` syntax is outside this rule. |
@@ -78,6 +78,8 @@ export default defineConfig({}).withVue({
 | `vue/no-use-v-if-with-v-for` | `{ allowUsingIterationVar?: boolean }` | Defaults to `false`. `true` permits `v-if` only when its condition references a sibling `v-for` iteration variable; unrelated conditions are still reported. |
 | `vue/enforce-style-attribute` | `{ allow?: Array<"plain" \| "scoped" \| "module"> }` | Defaults to `["scoped"]`. Lists the accepted style-block modes. |
 | `vue/no-restricted-syntax` | `Array<string \| { selector: string, message?: string }>` or `{ selectors?: ... }` | Defaults to `[]`. The eslint-plugin-vue option form: esquery selectors over the vue-eslint-parser template AST (`VElement`, `VText`, `VExpressionContainer`, `VAttribute`, … and the TS-ESTree nodes of every expression), each with an optional message. See [the supported selector subset](#vue-no-restricted-syntax-selectors); a selector outside it fails configuration. |
+| `vue/no-restricted-html-elements` | `string \| Array<string \| { element: string \| string[]; message?: string }>` | Checks nothing until configured. Reports each named native element. An entry's `message` replaces the default `Unexpected use of forbidden element <name>.`; the first entry that names an element decides its message. See [restricted elements](#vue-no-restricted-html-elements). |
+| `vue/no-restricted-v-on` | `string \| Array<string \| { argument: string; modifiers?: string[]; element?: string; message?: string }>` | Checks nothing until configured. A name restricts every listener of that event. An object entry restricts the listeners that carry all of its `modifiers`, on the `element` it names if any, and may set its own `message`. Names are literal. See [restricted listeners](#vue-no-restricted-v-on). |
 | `vue/quote-props` | `"as-needed"` | Rejects unnecessary quoted object keys in retained template expressions. |
 | `vue/sort-keys` | `{ order?: "asc" \| "desc"; caseSensitive?: boolean; natural?: boolean }` | Defaults to ascending, case-sensitive lexical order. Checks every object literal of the script blocks except a component options object itself, the children of `model` and the grandchildren of `computed`, `directives`, `inject`, `props` and `watch`, as eslint-plugin-vue does by default; `natural` uses its natural-compare order. |
 | `vue/warn-custom-directive` | `{ ignore?: string[] }` | Defaults to an empty list. Exact directive names in `ignore` are treated as registered. |
@@ -93,7 +95,7 @@ export default defineConfig({}).withVue({
 | `vue/mustache-interpolation-spacing` | `"always" \| "never"` | Defaults to `"always"`. Requires or forbids whitespace immediately inside `{{` and `}}`; both sides are fixed independently. |
 | `vue/v-on-event-hyphenation` | `"always" \| "never" \| { style?: "always" \| "never"; ignore?: string[] }` | Defaults to `always` and an empty ignore list. Exempts event names containing a configured case-sensitive substring. |
 | `vue/v-on-handler-style` | `Style \| { style?: Style; ignoreIncludesComment?: boolean }`, where `Style` is `"method"`, `"inline"`, `"inline-function"`, `["method", "inline"]` or `["method", "inline-function"]` | Defaults to `"method"`: only a method reference. The other values are eslint-plugin-vue's; its default is `["method", "inline-function"]`. See [handler styles](./options-events.md#vue-v-on-handler-style). |
-| `vue/v-bind-style` | `"shorthand" \| "longform"` | Defaults to `"shorthand"`. Configures whether binding directives use `:class` or `v-bind:class`; longform rewrites `.title` to `v-bind:title.prop`, preserving explicit modifiers. Object syntax such as `v-bind="attrs"` is unchanged. |
+| `vue/v-bind-style` | `"shorthand" \| "longform"` or `[style, { sameNameShorthand?: "always" \| "never" \| "ignore" }]` | Defaults to `"shorthand"`. Configures whether binding directives use `:class` or `v-bind:class`; longform rewrites `.title` to `v-bind:title.prop`, preserving explicit modifiers. Object syntax such as `v-bind="attrs"` is unchanged. The list is eslint-plugin-vue's form: `sameNameShorthand: "always"` requires `:title` where `:title="title"` is written, `"never"` requires the written value, and `"ignore"`, the default, checks neither. See [binding style](./options-vue.md#vue-v-bind-style). |
 | `vue/v-on-style` | `"shorthand" \| "longform"` | Defaults to `"shorthand"`. Configures whether event directives use `@click` or `v-on:click`; object syntax such as `v-on="listeners"` is unchanged. |
 | `vue/v-slot-style` | `"shorthand" \| "longform"` or `{ atComponent?: SlotStyle; default?: SlotStyle; named?: "shorthand" \| "longform" }`, where `SlotStyle` also accepts `"v-slot"` | Defaults to `atComponent: "v-slot"`, `default: "shorthand"`, and `named: "shorthand"`. Bare `v-slot` is rejected for `named` because it would erase the slot name. |
 | `vue/attribute-hyphenation` | `"always" \| "never"` or `{ style?, ignore? }` | Configures whether component prop attributes should be hyphenated in templates. See [attribute options](./options-attributes.md). |
@@ -360,6 +362,75 @@ Good (a configured global):
 
 ```vue
 <MyButton />
+```
+
+## `vue/no-restricted-html-elements`
+
+Each entry is an element name or eslint-plugin-vue's `{ element, message }` object, whose
+`element` is one name or a list. An entry without a `message` reports the default text.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/no-restricted-html-elements": "error" },
+    ruleOptions: {
+      "vue/no-restricted-html-elements": [
+        "marquee",
+        { element: ["a", "button"], message: "Use BaseLink or BaseButton." },
+      ],
+    },
+  },
+});
+```
+
+Bad with this policy: `<marquee>` reports `Unexpected use of forbidden element marquee.` and
+`<a>` reports `Use BaseLink or BaseButton.`
+
+```vue
+<template><marquee>News</marquee><a href="/">Home</a></template>
+```
+
+Good with this policy:
+
+```vue
+<template><p>News</p><BaseLink to="/">Home</BaseLink></template>
+```
+
+## `vue/no-restricted-v-on`
+
+Each entry is an event name or eslint-plugin-vue's `{ argument, modifiers, element, message }`
+object. `modifiers` restricts only the listeners that carry every listed modifier, and `element`
+only the listeners on that authored tag name. Names are literal, and a `null` argument is refused.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/no-restricted-v-on": "error" },
+    ruleOptions: {
+      "vue/no-restricted-v-on": [
+        { argument: "click", modifiers: ["stop"], message: "Handle the click in the child." },
+        { argument: "focus", element: "BaseInput" },
+      ],
+    },
+  },
+});
+```
+
+Bad with this policy: `@click.stop` reports the entry's message, and `@focus` on `<BaseInput>`
+reports ``Using `@focus` is not allowed on this <BaseInput>.``
+
+```vue
+<template><div @click.stop="close"><BaseInput @focus="open" /></div></template>
+```
+
+Good with this policy:
+
+```vue
+<template><div @click="close"><input @focus="open" /></div></template>
 ```
 
 ## `vue/no-restricted-syntax` selectors {#vue-no-restricted-syntax-selectors}

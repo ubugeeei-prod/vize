@@ -16,7 +16,7 @@
 
 use vize_l0::{Allocator, Span, String, cstr};
 use vize_l3::op::{
-    EdgeKind, EffectId, EffectScope, Op, OpId, OpKind, Phase, Program, Region, RegionId, StateEdge,
+    EdgeKind, EffectId, EffectScope, L3Ir, Op, OpId, OpKind, Phase, Region, RegionId, StateEdge,
 };
 use vize_l3::operand::{Operand, OperandRole, OperandValue, ValueKind};
 use vize_l3::placement::{Placement, PlacementRecord, PlacementSet};
@@ -26,13 +26,13 @@ pub const JS: ValueKind = ValueKind::Js;
 pub const LIT: ValueKind = ValueKind::Literal;
 
 pub struct Build<'a> {
-    pub program: Program<'a>,
+    pub program: L3Ir<'a>,
     last_effect: Option<u32>,
 }
 
 impl<'a> Build<'a> {
     pub fn new(allocator: &'a Allocator, span: (u32, u32)) -> Self {
-        let mut program = Program::new(allocator, Phase::Built);
+        let mut program = L3Ir::new(allocator, Phase::Built);
         program.push_region(Region::root(Span::new(span.0, span.1)));
         Self {
             program,
@@ -214,7 +214,7 @@ pub fn fixture<'a>(allocator: &'a Allocator, text6: Value<'a>) -> Build<'a> {
     build
 }
 
-pub fn messages(program: &Program<'_>) -> Vec<String> {
+pub fn messages(program: &L3Ir<'_>) -> Vec<String> {
     verify(program)
         .into_iter()
         .map(|violation| cstr!("{violation}"))

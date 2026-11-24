@@ -1,11 +1,11 @@
 use vize_l0::{Allocator, Span, String, cstr};
 use vize_l3::op::{
-    EdgeKind, EffectId, EffectScope, Op, OpId, OpKind, Phase, Program, Region, RegionId, StateEdge,
+    EdgeKind, EffectId, EffectScope, L3Ir, Op, OpId, OpKind, Phase, Region, RegionId, StateEdge,
 };
 use vize_l3::verify::verify;
 
-fn base<'a>(allocator: &'a Allocator, phase: Phase) -> Program<'a> {
-    let mut program = Program::new(allocator, phase);
+fn base<'a>(allocator: &'a Allocator, phase: Phase) -> L3Ir<'a> {
+    let mut program = L3Ir::new(allocator, phase);
     program.push_region(Region::root(Span::new(0, 100)));
     program.push_op(Op::new(
         OpId::new(0),
@@ -52,7 +52,7 @@ fn base<'a>(allocator: &'a Allocator, phase: Phase) -> Program<'a> {
     program
 }
 
-fn messages(program: &Program<'_>) -> Vec<String> {
+fn messages(program: &L3Ir<'_>) -> Vec<String> {
     verify(program)
         .into_iter()
         .map(|violation| cstr!("{violation}"))
