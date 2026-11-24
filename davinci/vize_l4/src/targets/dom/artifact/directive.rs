@@ -5,10 +5,9 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_l0::ensure_sufficient_stack;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{
-    BindingOp, ComponentOp, DynamicName, ElementOp, ModelOp, Op, Region, VueDirectiveOp, VueShowOp,
+    BindingOp, ComponentOp, DynamicName, ElementOp, ModelOp, VueDirectiveOp, VueShowOp,
 };
 
 use super::EmitCx;
@@ -45,12 +44,6 @@ pub(super) fn prefer_helpers(buf: &mut Buf, bindings: &[BindingOp<'_>]) {
         buf.prefer(Helper::WithDirectives);
         buf.prefer(Helper::ResolveDirective);
     }
-}
-
-pub(super) fn collect_names<'a>(root: &'a Region<'a>) -> StdVec<&'a str> {
-    let mut names = StdVec::new();
-    collect_from(root, &mut names);
-    names
 }
 
 /// `generate_assets` over the directives: a `vFoo` script binding reads
@@ -255,39 +248,11 @@ fn runtime_directives<'a>(bindings: &'a [BindingOp<'a>]) -> StdVec<RuntimeDirect
     directives
 }
 
-fn collect_from<'a>(region: &'a Region<'a>, names: &mut StdVec<&'a str>) {
-    ensure_sufficient_stack(|| collect_from_guarded(region, names));
-}
-
-fn collect_from_guarded<'a>(region: &'a Region<'a>, names: &mut StdVec<&'a str>) {
-    for op in region.ops.iter() {
-        match op {
-            Op::Element(element) => {
-                push_from(&element.bindings, names);
-                collect_from(&element.children, names);
-            }
-            Op::Component(component) => {
-                push_from(&component.bindings, names);
-                collect_from(&component.children, names);
-            }
-            Op::Slot(slot) => {
-                push_from(&slot.bindings, names);
-                collect_from(&slot.fallback, names);
-            }
-            Op::If(if_op) => {
-                for branch in if_op.branches.iter() {
-                    collect_from(&branch.region, names);
-                }
-            }
-            Op::And(and) => collect_from(&and.region, names),
-            Op::For(for_op) => collect_from(&for_op.region, names),
-            Op::OriginalFor(for_op) => collect_from(&for_op.region, names),
-            Op::Text(_) | Op::Interpolation(_) | Op::ChildValue(_) | Op::Comment(_) => {}
-        }
-    }
-}
-
-fn push_from<'a>(bindings: &'a [BindingOp<'a>], names: &mut StdVec<&'a str>) {
+/// Record the custom directives among `bindings` as `resolveDirective`
+/// assets, first occurrence winning. The one home of the rule: the emitter
+/// applies it inside the helper preference walk (`helper_preference`),
+/// before the owner's children, so the preamble costs no walk of its own.
+pub(super) fn note_names<'a>(bindings: &[BindingOp<'a>], names: &mut StdVec<&'a str>) {
     for binding in bindings.iter() {
         let Some(name) = custom_name(binding) else {
             continue;
@@ -298,7 +263,7 @@ fn push_from<'a>(bindings: &'a [BindingOp<'a>], names: &mut StdVec<&'a str>) {
     }
 }
 
-fn custom_name<'a>(binding: &'a BindingOp<'a>) -> Option<&'a str> {
+fn custom_name<'a>(binding: &BindingOp<'a>) -> Option<&'a str> {
     match binding {
         BindingOp::VueDirective(directive) if !slots::is_slots_spread(binding) => {
             Some(directive.name)

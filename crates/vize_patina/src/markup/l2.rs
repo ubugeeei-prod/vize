@@ -24,6 +24,7 @@ use vize_l1_to_l2::lower::{
 };
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{Attribute, BindingOp, ComponentOp, ElementOp, Op, Region, SlotOp};
+use vize_l2::provenance::ProvenanceSink;
 use vize_l2::walk::{PageWalk, visit_nodes};
 
 pub(super) mod binding;
@@ -67,7 +68,7 @@ pub struct L2Markup<'a> {
 
 impl<'a> L2Markup<'a> {
     /// View a lowered Vue template and the L1 tree it was lowered from.
-    pub fn from_lowered(lowered: &'a Lowered<'a>, surface: &'a SurfaceTree<'a>) -> Self {
+    pub fn from_lowered<P>(lowered: &'a Lowered<'a, P>, surface: &'a SurfaceTree<'a>) -> Self {
         Self {
             root: &lowered.artifact.root,
             source: lowered.artifact.source,
@@ -221,14 +222,14 @@ impl<'a> L2Markup<'a> {
 
 /// An owned L1 parse plus its comment-preserving L2 lowering, for callers that
 /// start from template source.
-pub struct L2Template<'a> {
+pub struct L2Template<'a, P> {
     tree: SurfaceTree<'a>,
     authored: Option<SurfaceTree<'a>>,
     errors: vize_l0::Vec<'a, SurfaceError>,
-    lowered: Lowered<'a>,
+    lowered: Lowered<'a, P>,
 }
 
-impl<'a> L2Template<'a> {
+impl<'a, P: ProvenanceSink + Default> L2Template<'a, P> {
     /// Parse `source` into L1 and lower it into L2, keeping authored comments
     /// as `ui.comment` ops (the child list the lint parser sees).
     pub fn lower(allocator: &'a Allocator, source: &'a str) -> Self {
@@ -384,7 +385,7 @@ impl<'a> L2Template<'a> {
     }
 
     /// The lowered artifact.
-    pub fn lowered(&self) -> &Lowered<'a> {
+    pub fn lowered(&self) -> &Lowered<'a, P> {
         &self.lowered
     }
 

@@ -21,7 +21,7 @@ pub(super) fn script_summary(
         .template
         .as_ref()
         .filter(|_| unused)
-        .map(|template| crate::markup::L2Template::lower(&allocator, &template.content));
+        .map(|template| crate::markup::LintInput::lower(&allocator, &template.content));
     let admitted = parsed
         .as_ref()
         .filter(|l2| !Linter::has_fatal_l1_template_parse_errors(l2));
@@ -42,7 +42,7 @@ pub(super) fn script_summary(
 }
 
 pub(super) fn variant(
-    l2: &crate::markup::L2Template<'_>,
+    l2: &crate::markup::LintInput<'_>,
     script: &Croquis,
     unused: bool,
 ) -> Croquis {

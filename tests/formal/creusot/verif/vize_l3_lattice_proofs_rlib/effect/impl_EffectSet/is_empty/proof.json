@@ -1,0 +1,4 @@
+{
+  "profile": [],
+  "proofs": { "Coma": { "vc_is_empty": { "prover": "z3", "time": 0.057 } } }
+}

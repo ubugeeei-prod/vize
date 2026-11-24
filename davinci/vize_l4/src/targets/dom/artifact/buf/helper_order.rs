@@ -9,14 +9,71 @@ use vize_l0::String;
 
 type RankFiveKey = (usize, u8, u8);
 
+/// Every helper's bit, so the shared scan caches the first call of each
+/// alias. A constant: ordering a module must not pay to rebuild it.
+const ALL_ALIASES: u64 = {
+    let mut mask = 0;
+    let mut rest: &[Helper] = &Helper::ALL;
+    while let [helper, tail @ ..] = rest {
+        mask |= helper.bit();
+        rest = tail;
+    }
+    mask
+};
+
 struct OrderCache {
     rank_five_keys: [Option<RankFiveKey>; 8],
     alias_mask: u64,
-    alias_positions: Option<[Option<usize>; 64]>,
+    alias_scan: Option<AliasScan>,
+}
+
+/// The shared lexical scan, stopped where the last question was answered.
+///
+/// The scan reads hoists and then the body once, in order, and records the
+/// first call of every alias it passes. It stops as soon as the alias asked
+/// for is found and resumes from there for the next question, so a module
+/// whose ordering-sensitive helpers are called early is never read to its
+/// end. An alias that is never called costs the rest of the scan, once.
+struct AliasScan {
+    positions: [Option<usize>; 64],
+    /// The bits of the aliases whose first call has been recorded.
+    found: u64,
+    /// The text being scanned: a hoist index, then `hoists.len()` for the
+    /// body, then one past it when everything has been read.
+    text: usize,
+    /// Where to resume inside that text.
+    resume: usize,
+    /// The byte length of the texts before it.
+    offset: usize,
 }
 
 impl Buf {
     pub(super) fn ordered_helpers(&self) -> StdVec<Helper> {
+        let listed = self.listed_helpers();
+        // The comparator asks where an alias is first called. One lexical
+        // scan of the module answers every such question, and it runs only
+        // when the first one is asked. Scanning per alias instead read the
+        // module once per question: a third of the whole emit on a 12 KiB
+        // module. Virtual positions consult transient helpers too, including
+        // helpers replaced in `used_order`, so the scan caches every alias.
+        // The per-alias scans stay as the debug oracle of that one scan.
+        #[cfg(debug_assertions)]
+        let per_alias = self.sort_helpers::<false>(listed.clone(), 0);
+        let ordered = self.sort_helpers::<true>(listed, ALL_ALIASES);
+        #[cfg(debug_assertions)]
+        debug_assert!(
+            ordered
+                .iter()
+                .map(|helper| helper.bit())
+                .eq(per_alias.iter().map(|helper| helper.bit())),
+            "one shared alias scan must order helpers as the per-alias scans do"
+        );
+        ordered
+    }
+
+    /// The used helpers before ranking: preferred first, then first use,
+    /// then the rest in declaration order.
+    fn listed_helpers(&self) -> StdVec<Helper> {
         let mut listed = StdVec::new();
         let mut bits = 0u64;
         let mut push = |helper: Helper| {
@@ -35,31 +92,7 @@ impl Buf {
         for helper in Helper::ALL {
             push(helper);
         }
-        let alias_mask = listed.iter().fold(0, |mask, helper| {
-            if matches!(helper.rank(), 2 | 5) {
-                mask | helper.bit()
-            } else {
-                mask
-            }
-        });
-        // The ordinary comparator wins on typical modules. A shared lexical
-        // scan pays off only after both the helper set and output are large.
-        if alias_mask.count_ones() > 5
-            && self
-                .hoists
-                .iter()
-                .fold(self.code.len(), |len, text| len.saturating_add(text.len()))
-                > 65_536
-        {
-            // Virtual positions consult transient helpers too, including helpers
-            // replaced in `used_order`. Cache every known alias in the one scan.
-            let all_aliases = Helper::ALL
-                .iter()
-                .fold(0, |mask, helper| mask | helper.bit());
-            self.sort_helpers::<true>(listed, all_aliases)
-        } else {
-            self.sort_helpers::<false>(listed, 0)
-        }
+        listed
     }
 
     fn sort_helpers<const SHARED: bool>(
@@ -70,7 +103,7 @@ impl Buf {
         let mut cache = OrderCache {
             rank_five_keys: [None; 8],
             alias_mask,
-            alias_positions: None,
+            alias_scan: None,
         };
         listed.sort_by(|left, right| {
             left.rank()
@@ -147,11 +180,18 @@ impl Buf {
         cache: &mut OrderCache,
     ) -> Option<usize> {
         if SHARED && cache.alias_mask & helper.bit() != 0 {
-            let alias_mask = cache.alias_mask;
-            let positions = cache
-                .alias_positions
-                .get_or_insert_with(|| self.scan_alias_positions(alias_mask));
-            return positions
+            let scan = cache.alias_scan.get_or_insert(AliasScan {
+                positions: [None; 64],
+                found: 0,
+                text: 0,
+                resume: 0,
+                offset: 0,
+            });
+            if scan.found & helper.bit() == 0 {
+                self.scan_until(scan, helper.bit());
+            }
+            return scan
+                .positions
                 .get(helper.bit().trailing_zeros() as usize)
                 .copied()
                 .flatten();
@@ -159,36 +199,43 @@ impl Buf {
         self.scan_alias_position(helper)
     }
 
-    fn scan_alias_positions(&self, alias_mask: u64) -> [Option<usize>; 64] {
-        let mut positions = [None; 64];
-        let mut remaining = alias_mask;
-        let mut offset = 0;
-        for text in self
+    /// Continue `scan` until the alias with bit `wanted` is first called or
+    /// every text has been read.
+    fn scan_until(&self, scan: &mut AliasScan, wanted: u64) {
+        while let Some(text) = self
             .hoists
-            .iter()
+            .get(scan.text)
             .map(String::as_str)
-            .chain(core::iter::once(self.code.as_str()))
+            .or_else(|| (scan.text == self.hoists.len()).then_some(self.code.as_str()))
         {
-            underscore_call_sites(text, |position, alias| {
+            let AliasScan {
+                positions,
+                found,
+                offset,
+                ..
+            } = scan;
+            let resume = underscore_call_sites(text, scan.resume, |position, alias| {
                 let Some(helper) = Helper::from_alias(alias) else {
                     return false;
                 };
                 let bit = helper.bit();
-                if remaining & bit == 0 {
+                if *found & bit != 0 {
                     return false;
                 }
                 if let Some(slot) = positions.get_mut(bit.trailing_zeros() as usize) {
-                    *slot = Some(offset + position);
-                    remaining &= !bit;
+                    *slot = Some(*offset + position);
+                    *found |= bit;
                 }
-                remaining == 0
+                bit == wanted
             });
-            if remaining == 0 {
-                break;
+            if scan.found & wanted != 0 {
+                scan.resume = resume;
+                return;
             }
-            offset += text.len();
+            scan.offset += text.len();
+            scan.text += 1;
+            scan.resume = 0;
         }
-        positions
     }
 
     fn scan_alias_position(&self, helper: Helper) -> Option<usize> {
@@ -319,92 +366,4 @@ fn create_slots_before_v_show(left: Helper, _right: Helper) -> Ordering {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{Buf, Helper, OrderCache};
-
-    #[test]
-    fn shared_scan_matches_each_alias_scan_across_lexical_boundaries() {
-        for (hoist, code) in [
-            ("", "_createVNode(a); _openBlock()"),
-            ("_normalizeProps (p)", "x._createVNode(a), _createVNode (b)"),
-            (
-                "'_mergeProps(' /* _toDisplayString( */",
-                "_mergeProps(x) // _openBlock(\n_openBlock()",
-            ),
-            (
-                "`${_toDisplayString(a)}`",
-                "a_createVNode(), $_createBlock(), _createBlockX(), _createBlock\n(x)",
-            ),
-            ("", "\"esc\\\"_renderList(\" _renderList(l)"),
-        ] {
-            let mut buf = Buf::new(false);
-            for helper in Helper::ALL {
-                buf.use_helper(helper);
-            }
-            if !hoist.is_empty() {
-                buf.push_hoist(hoist.into());
-            }
-            buf.push(code);
-            let positions = buf.scan_alias_positions(buf.used);
-            for helper in Helper::ALL {
-                assert_eq!(
-                    positions
-                        .get(helper.bit().trailing_zeros() as usize)
-                        .copied()
-                        .flatten(),
-                    buf.scan_alias_position(helper),
-                    "{} in {hoist:?} + {code:?}",
-                    helper.alias(),
-                );
-            }
-        }
-    }
-
-    #[test]
-    fn large_helper_module_keeps_ordinary_order_with_one_scan() {
-        let mut buf = Buf::new(false);
-        for helper in Helper::ALL.into_iter().rev() {
-            buf.use_helper(helper);
-            buf.push(helper.alias());
-            buf.push("();");
-        }
-        buf.push("/* _mergeProps() */ '_normalizeProps()' object._camelize();");
-        buf.push(&"x".repeat(65_536));
-
-        let shared = buf.ordered_helpers();
-        let mut listed = Helper::ALL.to_vec();
-        listed.reverse();
-        let ordinary = buf.sort_helpers::<false>(listed, 0);
-
-        assert!(
-            shared
-                .iter()
-                .map(|helper| helper.bit())
-                .eq(ordinary.iter().map(|helper| helper.bit()))
-        );
-        let mut cache = OrderCache {
-            rank_five_keys: [None; 8],
-            alias_mask: buf.used,
-            alias_positions: None,
-        };
-        assert!(
-            buf.first_alias_position::<true>(Helper::MergeProps, &mut cache)
-                .is_some()
-        );
-        assert_eq!(
-            buf.first_alias_position::<true>(Helper::CreateVNode, &mut cache),
-            buf.scan_alias_position(Helper::CreateVNode)
-        );
-    }
-
-    #[test]
-    fn direct_alias_lookup_covers_every_helper() {
-        for helper in Helper::ALL {
-            assert_eq!(
-                Helper::from_alias(helper.alias()).map(Helper::bit),
-                Some(helper.bit())
-            );
-        }
-        assert!(Helper::from_alias("_notAHelper").is_none());
-    }
-}
+mod tests;

@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_adding_an_effect_joins_its_floor": {
+        "prover": "z3",
+        "time": 0.031
+      }
+    }
+  }
+}

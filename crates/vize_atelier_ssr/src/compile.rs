@@ -254,8 +254,14 @@ pub fn compile_ssr_with_sfc_context_codegen_options_and_capture<'a, C: CaptureSi
     )
 }
 
+#[cfg(test)]
+mod direct_lane_tests;
 mod inner;
+mod sfc_template;
 use inner::compile_ssr_inner_captured;
+#[cfg(test)]
+use sfc_template::emit_on_direct_lane;
+pub use sfc_template::{compile_ssr_sfc_template, sfc_direct_lane_enabled};
 
 fn compile_ssr_inner<'a>(
     allocator: &'a Allocator,

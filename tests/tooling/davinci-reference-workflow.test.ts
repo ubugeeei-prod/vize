@@ -134,17 +134,17 @@ function assertHarness(source: string, name: string): void {
   );
 }
 
-/** The attribute lines attached to `pub fn name(`, nearest first. */
+/** The attribute lines attached to `pub fn name(`, in declaration order. */
 function attributesOf(source: string, name: string): string[] {
   const lines = source.split("\n");
   const at = lines.findIndex((line) => line.startsWith(`pub fn ${name}(`));
   assert.notEqual(at, -1, `missing ${name}`);
   const attached: string[] = [];
-  // An item's attributes run up to its doc comment, a blank line or the
-  // previous item's last line.
+  // Blank lines and other outer attributes may separate a law from its declaration.
   for (let index = at - 1; index >= 0; index--) {
     const line = lines[index]!;
-    if (line === "" || line.startsWith("///") || line.startsWith("}") || line.endsWith("{}")) break;
+    if (line.startsWith("}") || line.endsWith("{}") || line.endsWith(";")) break;
+    if (!line.trim() || line.trimStart().startsWith("//")) continue;
     attached.unshift(line);
   }
   return attached;
@@ -152,7 +152,7 @@ function attributesOf(source: string, name: string): string[] {
 
 function assertLemma(source: string, name: string): void {
   const attributes = attributesOf(source, name);
-  assert.equal(attributes[0], "#[logic]", `${name} must be a Creusot lemma`);
+  assert.ok(attributes.includes("#[logic]"), `${name} must be a Creusot lemma`);
   assert.ok(
     attributes.some((line) => line.startsWith("#[ensures(")),
     `${name} must state its law`,
@@ -160,10 +160,9 @@ function assertLemma(source: string, name: string): void {
 }
 
 test("P3-15 laws are Kani harnesses or Creusot proofs that CI verifies", () => {
-  const lattice = harnesses(
-    ["davinci", "vize_l3", "src", "lattice", "kani.rs"],
-    ["davinci", "vize_l3", "src", "lattice", "classify_proofs.rs"],
-  );
+  // The lattice laws are Creusot lemmas over the shipped evaluator
+  // (2026-11-17-creusot-inventory.md), replayed by davinci-creusot.yml.
+  const lattice = readRepoFile("davinci", "vize_l3", "src", "lattice", "creusot.rs");
   for (const name of [
     "join_has_its_units_and_is_monotone",
     "the_effect_floor_is_the_join_of_the_rule_table",
@@ -171,7 +170,7 @@ test("P3-15 laws are Kani harnesses or Creusot proofs that CI verifies", () => {
     "classification_is_monotone",
     "the_provide_inject_cap_never_lowers_and_is_already_implied",
   ]) {
-    assertHarness(lattice, name);
+    assertLemma(lattice, name);
   }
   assert.match(
     readRepoFile("davinci", "vize_l3", "tests", "lattice.rs"),
@@ -218,7 +217,7 @@ test("P3-15 laws are Kani harnesses or Creusot proofs that CI verifies", () => {
     );
   }
   const kani = readRepoFile(".github", "workflows", "davinci-kani.yml");
-  assert.match(kani, /args: davinci\/vize_l3\/src\/lattice\/kani\.rs /u);
+  assert.doesNotMatch(kani, /src\/lattice\//u);
   assert.match(kani, /args: tests\/davinci_test_support\/src\/l3_reference\/kani\.rs /u);
   const creusot = readRepoFile("tests", "formal", "creusot", "reference", "Cargo.toml");
   assert.match(
