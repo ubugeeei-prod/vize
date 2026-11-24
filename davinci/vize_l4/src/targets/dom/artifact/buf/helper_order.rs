@@ -9,6 +9,18 @@ use vize_l0::String;
 
 type RankFiveKey = (usize, u8, u8);
 
+/// Every helper's bit, so the shared scan caches the first call of each
+/// alias. A constant: ordering a module must not pay to rebuild it.
+const ALL_ALIASES: u64 = {
+    let mut mask = 0;
+    let mut rest: &[Helper] = &Helper::ALL;
+    while let [helper, tail @ ..] = rest {
+        mask |= helper.bit();
+        rest = tail;
+    }
+    mask
+};
+
 struct OrderCache {
     rank_five_keys: [Option<RankFiveKey>; 8],
     alias_mask: u64,
@@ -24,13 +36,10 @@ impl Buf {
         // module once per question: a third of the whole emit on a 12 KiB
         // module. Virtual positions consult transient helpers too, including
         // helpers replaced in `used_order`, so the scan caches every alias.
-        let all_aliases = Helper::ALL
-            .iter()
-            .fold(0, |mask, helper| mask | helper.bit());
         // The per-alias scans stay as the debug oracle of that one scan.
         #[cfg(debug_assertions)]
         let per_alias = self.sort_helpers::<false>(listed.clone(), 0);
-        let ordered = self.sort_helpers::<true>(listed, all_aliases);
+        let ordered = self.sort_helpers::<true>(listed, ALL_ALIASES);
         #[cfg(debug_assertions)]
         debug_assert!(
             ordered
