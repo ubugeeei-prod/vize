@@ -251,6 +251,43 @@ Flang FIR are the same correction.
 _Davinci state:_ L2 and L3 are that mid-level IR, and lint semantic rules
 run on L2.
 
+## Where the native DOM route spends its instructions
+
+The surveys above say what to avoid. This section says where the levels cost
+time today, measured on 2026-11-24 on `main` at `0376402504`: retired
+instructions per stage on the ladder fixture `large.vue`, default options,
+read from the macOS process counter on arm64 in the `ci-opt` profile
+(repeatable to about 0.1%). It is a local probe, not the gated callgrind
+measure.
+
+| Stage               | Native | Legacy |
+| ------------------- | -----: | -----: |
+| Parse               |   336k |   908k |
+| Lowering, transform |   766k |   119k |
+| Emit, codegen       | 1,482k |   851k |
+| Total               | 2,585k | 1,879k |
+
+- **The front is at parity.** L1 parses 2.7 times faster than the legacy
+  parser, and lowering spends what that saves. Parse plus lowering is 1.10M on
+  one side and 1.03M on the other.
+- **The whole deficit is the L4 emitter**: 1.74 times the legacy code
+  generator on this template.
+- **Walk count is not where the time goes.** O-2 took a production compile
+  from five template walks to three and measured −0.5% to −2.8% of the emit
+  stage. A walk over a few hundred ops costs little; what a visit does costs
+  a lot.
+- **The emitter re-derived what it had just written.** A sampling profile put
+  32% of the emit stage in one function that scans the generated module for
+  the first call of a helper alias, once per ordering question (O-11). About
+  19% more went to spelling event handler keys, four or more times per
+  listener, one character at a time (O-12). Both are LLVM's "derivable and
+  cached, never both" rule in part 1, broken in the cheap direction: derived
+  again each time instead of cached.
+- **The budget has no row for any of this.** `instruction-budgets.toml` has no
+  native-stage row on the ladder fixtures, and `atelier_dom_compile_*`
+  measures the public entry, which also runs the legacy parser because it
+  returns the legacy tree (O-13).
+
 ## Owed ledger
 
 Owed items from this survey. Each one lands only with measurements under
@@ -269,7 +306,8 @@ the [no-regression rule](./charter.md).
   oracles. A `<script setup>` production compile (inline, static hoisting on)
   walked the L2 template five times: `hoist-static`, helper order, component
   names, directive names, emit. It now walks three times. Slots and `v-model`
-  each add one more on both sides. _Source:_ Cranelift ægraph.
+  each add one more on both sides. Measured, the gain is small: −0.5% to
+  −2.8% of the emit stage. _Source:_ Cranelift ægraph.
 - **O-3 (open): One gate table for every route.** Run the DOM fact passes from
   the `static` plan table, so a new pass or feature bit cannot be gated on one
   route and missed on the other. Needs proof of zero added instructions.
@@ -340,6 +378,30 @@ the [no-regression rule](./charter.md).
   part 2: diagnostics attach to mandatory passes on one path, not to a second
   pipeline kept alive beside the first. _Source:_ GCC `gate`, LLVM "skip
   passes that just ran", Swift SIL.
+
+- **O-11 (in review): Order helper imports from one lexical scan.** The
+  import list is ordered by where each alias is first called in the generated
+  module. The comparator rescanned the module per alias unless it was over
+  64 KiB; the shared scan had only ever been measured on one 71 KiB fixture
+  (#10102). Every module now uses the shared scan, lazily, with the per-alias
+  scans as a debug oracle. Local release-profile probe: emit −22% on
+  `large.vue`, equal elsewhere. The better end state records each helper's
+  first call when it is written, so nothing is scanned. _Source:_ LLVM "one
+  encoding", Cranelift ægraph.
+- **O-12 (in review, part): Spell an event handler key once.**
+  `event_key_for` runs for patch flags, for the duplicate-listener check and
+  for the emit, and built its result through `camelize` and `capitalize` one
+  character at a time. Those two helpers now copy unchanged runs whole (emit
+  −38% on `large.vue` together with O-11, −10% on `stress-wide`). Still owed:
+  the key as a fact computed once per listener, in lowering or in a per-emit
+  table. _Source:_ LLVM "derivable and cached".
+- **O-13 (open): Give the native route stage rows.** Add L1 parse, lowering,
+  L2 passes and L4 emit rows for the ladder fixtures to the instruction
+  harness, and a row for the SFC fast path that does not run the legacy
+  parser. Without them a native-stage regression is invisible until it shows
+  in an end-to-end ratio. After O-11 and O-12 the emit profile's next entries
+  are buffer pushes and `memmove` (about 18%) and temporary allocations
+  (about 5%). _Source:_ LLVM compile-time tracker.
 
 O-5 to O-8 come from a code survey on 2026-11-24 that counted call sites and
 took no timings. Each needs a measurement before it is scheduled.
