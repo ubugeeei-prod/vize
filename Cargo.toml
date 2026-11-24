@@ -258,7 +258,7 @@ corsa_runtime = { package = "corsa_runtime", version = "=2.0.0-beta.5" }
 # Hygiene: suppressions must be `#[expect(lint, reason = "...")]` so a stale
 # one fails the build and every one says why it exists.
 [workspace.lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage)', 'cfg(creusot)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage)', 'cfg(creusot)', 'cfg(kani)'] }
 # A reference that immediately decays into a raw pointer still asserts the
 # aliasing rules of a reference. Use `&raw const` / `&raw mut` instead.
 raw_borrows_via_references = "warn"

@@ -1,7 +1,18 @@
 use super::resolution::{resolve_at_src_alias, resolve_import_path};
 use std::path::{Path, PathBuf};
 
+mod differential;
+mod reference;
+mod sharing;
 mod summaries;
+
+/// A batch generation no open batch has: live generations count up from one,
+/// these count down from the top. Tests pass them explicitly instead of
+/// opening a process-wide batch, which every other test would observe.
+fn synthetic_epoch() -> u64 {
+    static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(u64::MAX);
+    NEXT.fetch_sub(1, std::sync::atomic::Ordering::Relaxed)
+}
 
 fn temp_project_dir(test_name: &str) -> PathBuf {
     let nonce = std::time::SystemTime::now()
