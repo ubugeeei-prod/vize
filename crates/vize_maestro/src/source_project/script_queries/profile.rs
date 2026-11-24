@@ -1,8 +1,8 @@
 //! Complete original products, including the two parser and publication boundaries.
 use super::*;
 use crate::source_project::SourceSnapshotCache;
-use davinci_harness::alloc;
-use std::{fmt::Write, hint::black_box, time::Instant};
+use davinci_harness::{alloc, paired::assert_calibrated_paired_time};
+use std::{fmt::Write, hint::black_box};
 use tower_lsp::lsp_types::Url;
 
 fn independent(snapshot: &SourceSnapshot, state: &ServerState) -> Option<ScriptQueryProducts> {
@@ -43,24 +43,8 @@ fn compare(state: &ServerState, uri: &Url, name: &str, source: &str) {
     }
     let before = alloc::measure(|| run(false)).unwrap();
     let after = alloc::measure(|| run(true)).unwrap();
-    let time = |composed| {
-        let start = Instant::now();
-        for _ in 0..8 {
-            drop(black_box(run(composed)));
-        }
-        start.elapsed().as_nanos() / 8
-    };
-    let mut pairs = Vec::new();
-    for round in 0..35 {
-        let flip = round % 2 != 0;
-        let a = time(flip);
-        let b = time(!flip);
-        if round >= 4 {
-            pairs.push(if flip { (b, a) } else { (a, b) });
-        }
-    }
     eprintln!(
-        "script_product_time {name} calls={}/{} peak={}/{} ns={pairs:?}",
+        "script_product_heap {name} calls={}/{} peak={}/{}",
         before.calls, after.calls, before.peak_bytes_over_start, after.peak_bytes_over_start
     );
     assert!(after.calls <= before.calls, "{name} allocation count");
@@ -68,12 +52,9 @@ fn compare(state: &ServerState, uri: &Url, name: &str, source: &str) {
         after.peak_bytes_over_start <= before.peak_bytes_over_start,
         "{name} peak bytes"
     );
-    let median = |mut samples: Vec<u128>| {
-        samples.sort_unstable();
-        samples[samples.len() / 2]
-    };
-    let (baseline, composed) = pairs.into_iter().unzip();
-    assert!(median(composed) <= median(baseline), "{name} median time");
+    // Equal-cost reads move by about 1% with code layout, so time is compared
+    // against an A/A control run in the same loop.
+    assert_calibrated_paired_time(name, 8, |composed| drop(black_box(run(composed))));
 }
 
 #[test]

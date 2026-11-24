@@ -1,5 +1,8 @@
 use super::*;
-use davinci_harness::{alloc, paired::assert_paired_time};
+use davinci_harness::{
+    alloc,
+    paired::{assert_calibrated_paired_time, assert_paired_time},
+};
 use std::{fmt::Write, hint::black_box, sync::Arc};
 
 fn run(snapshot: &SourceSnapshot, state: &ServerState, joined: bool) -> Option<Products> {
@@ -59,6 +62,9 @@ fn timed_alone(name: &str) -> bool {
 // never shifts which inputs are measured. Wall time is paired per controlled or
 // named input and once over all other originals. A strict median per file made
 // equal-cost reads (both sides parse twice) fail at random.
+// Each controlled or named input is timed against an A/A control in the same
+// loop, so a layout-sized shift on an equal-cost read is not a regression; the
+// pass over all other originals keeps the strict sign test.
 #[test]
 #[ignore = "paired complete responses over controlled grammars and original Vue inputs"]
 fn shared_and_distinct_checking_grammars() {
@@ -133,7 +139,7 @@ fn shared_and_distinct_checking_grammars() {
     assert!(failures.is_empty(), "heap regressions on {failures:?}");
     assert!(!corpus.is_empty(), "no original inputs");
     for (name, snapshot) in &timed {
-        assert_paired_time(name, 12, |joined| drop(run(snapshot, &state, joined)));
+        assert_calibrated_paired_time(name, 12, |joined| drop(run(snapshot, &state, joined)));
     }
     assert_paired_time(
         &vize_l0::cstr!("{} other original inputs", corpus.len()),
