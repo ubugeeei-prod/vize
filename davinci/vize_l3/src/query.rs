@@ -14,6 +14,7 @@ mod index;
 mod trail;
 pub use check::{CertificateError, check_reachability};
 pub use index::OpGraph;
+pub use index::bounded::{BoundedTrailQuery, TrailMatch, TrailVisit, TrailWitnessError};
 pub use trail::{EdgePattern, TrailError, TwoHopMatch, TwoHopQuery, check_two_hop_matches};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
