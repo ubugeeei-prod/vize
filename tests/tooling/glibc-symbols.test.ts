@@ -9,7 +9,7 @@ import {
   evaluateGlibcFloor,
   parseGlibcVersion,
   verifyGlibcSymbols,
-} from "../../tools/commands/ci/github/verify-glibc-symbols.ts";
+} from "../../tools/ci/commands/github/verify-glibc-symbols.ts";
 import { readElfDynamicRequirements } from "../../tools/support/github/elf-dynamic-requirements.ts";
 import { glibcFloorTarget, linuxGnuGlibcFloor } from "../../tools/support/github/glibc-floor.ts";
 import { nativeReleasePlatforms } from "../../tools/support/github/release-platforms.ts";

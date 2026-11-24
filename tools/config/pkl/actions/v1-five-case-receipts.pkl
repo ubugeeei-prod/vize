@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "V1 five-case receipt admission"
 description = "Plan or admit the shared 440-selector v1 five-case receipt registry"

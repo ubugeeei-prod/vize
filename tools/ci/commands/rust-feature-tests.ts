@@ -1,7 +1,7 @@
 // Runs the experimental Cargo feature rows in tools/support/ci/rust-feature-tests.ts.
 //
-//   node tools/commands/ci/rust-feature-tests.ts matrix   # every row, as a GitHub matrix output
-//   node tools/commands/ci/rust-feature-tests.ts run <row>
+//   node tools/ci/commands/rust-feature-tests.ts matrix   # every row, as a GitHub matrix output
+//   node tools/ci/commands/rust-feature-tests.ts run <row>
 import { spawnSync } from "node:child_process";
 import { appendFileSync, rmSync } from "node:fs";
 import {

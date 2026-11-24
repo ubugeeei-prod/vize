@@ -126,7 +126,7 @@ JSON ou texte, inventaires et vérifications de réussite/échec dont la correct
 Gardez un script dans Node (`.mjs`) lorsque MoonBit ajouterait de la friction plutôt que de la supprimer :
 
 - Il est importé sous forme de module par d’autres JavaScript ou par une suite `node --test` (par exemple
-  `tools/commands/ci/github/release-platforms.rs`), donc la réécrire diviserait une source en deux langues.
+  `tools/ci/commands/github/release-platforms.rs`), donc la réécrire diviserait une source en deux langues.
   - Cela dépend de l’écosystème npm (bibliothèques globbing, outils de paquets, SDKs d’action GitHub) ou de
     API uniquement pour les nœuds qui n’ont pas d’équivalent MoonBit.
 - Il est suffisamment vaste ou exploratoire pour que son comportement ne soit pas encore déterminé par un test à sortie complète ; Ne le fais pas

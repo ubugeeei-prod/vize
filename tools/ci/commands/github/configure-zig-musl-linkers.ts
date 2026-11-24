@@ -33,7 +33,7 @@ function configureTarget(
 export function configureZigMuslLinkers(arguments_: readonly string[]): number {
   if (arguments_.length > 0) {
     throw new Error(
-      `Usage: node tools/commands/ci/github/configure-zig-musl-linkers.ts; unexpected argument ${arguments_[0]}`,
+      `Usage: node tools/ci/commands/github/configure-zig-musl-linkers.ts; unexpected argument ${arguments_[0]}`,
     );
   }
   const linkerDirectory = path.join(requiredEnvironment("RUNNER_TEMP"), "vize-zig-linkers");

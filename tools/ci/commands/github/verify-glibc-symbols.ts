@@ -2,7 +2,7 @@
  * Fails when a Linux GNU release image asks the dynamic loader for more than
  * the documented glibc floor (`tools/support/github/glibc-floor.ts`).
  *
- * Usage: node tools/commands/ci/github/verify-glibc-symbols.ts [--max 2.17] <elf>...
+ * Usage: node tools/ci/commands/github/verify-glibc-symbols.ts [--max 2.17] <elf>...
  *
  * Every image is read in process (no binutils needed). It fails on any
  * `GLIBC_x.y` symbol version above the floor (naming the symbols that need
@@ -132,7 +132,7 @@ export function verifyGlibcSymbols(arguments_: readonly string[]): number {
   const { files, floor } = parseArguments(arguments_);
   if (files.length === 0) {
     throw new Error(
-      `Usage: node tools/commands/ci/github/verify-glibc-symbols.ts [--max ${linuxGnuGlibcFloor}] <elf>...`,
+      `Usage: node tools/ci/commands/github/verify-glibc-symbols.ts [--max ${linuxGnuGlibcFloor}] <elf>...`,
     );
   }
   let failed = false;

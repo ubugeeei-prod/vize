@@ -28,7 +28,7 @@ function isObject(value: unknown): value is JsonObject {
 }
 
 function usage(): string {
-  return "Usage: node tools/commands/ci/source-coverage.ts --json <path> [--markdown <path>] [--min-<metric> N]";
+  return "Usage: node tools/ci/commands/source-coverage.ts --json <path> [--markdown <path>] [--min-<metric> N]";
 }
 
 function readValue(args: readonly string[], index: number, flag: string): string {

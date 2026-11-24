@@ -45,6 +45,6 @@ function job(rows: String, condition: String): Dynamic = new {
     }
     ci.workspaceVp()
     ci.command("Install frozen source dependencies", "vp install --frozen-lockfile --prefer-offline")
-    ci.command("Run the feature row", #"node tools/commands/ci/rust-feature-tests.ts run "$ROW""#)
+    ci.command("Run the feature row", #"node tools/ci/commands/rust-feature-tests.ts run "$ROW""#)
   }
 }

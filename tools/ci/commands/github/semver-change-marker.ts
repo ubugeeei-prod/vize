@@ -173,7 +173,7 @@ async function main(): Promise<void> {
   const [outputPath] = process.argv.slice(2);
   if (!outputPath || !process.env.GITHUB_EVENT_PATH) {
     throw new Error(
-      "Usage: node tools/commands/ci/github/semver-change-marker.ts <output-path> with GITHUB_EVENT_PATH",
+      "Usage: node tools/ci/commands/github/semver-change-marker.ts <output-path> with GITHUB_EVENT_PATH",
     );
   }
   const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8")) as GitHubEvent;

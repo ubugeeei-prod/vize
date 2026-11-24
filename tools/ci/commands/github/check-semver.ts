@@ -1,5 +1,5 @@
 // Compare the checked-out PR merge against its actual base parent.
-// usage: node tools/commands/ci/github/check-semver.ts CRATE
+// usage: node tools/ci/commands/github/check-semver.ts CRATE
 import { spawnSync, type SpawnSyncOptions } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -38,7 +38,7 @@ function semverArgs(crate: string, runnerTemp: string, baselineDir: string): str
   const baselineRev = baselineRevision();
   const marker = fs.readFileSync(path.join(runnerTemp, "semver-change-marker.txt"), "utf8");
   const args = breakingMarker.test(marker) ? ["--release-type", "major"] : [];
-  const helper = ["tools/commands/ci/github/semver-baseline.ts", crate, baselineDir];
+  const helper = ["tools/ci/commands/github/semver-baseline.ts", crate, baselineDir];
   const baseline = capture(
     process.env.VIZE_SEMVER_NODE ?? "node",
     baselineRev ? [...helper, baselineRev] : helper,
@@ -73,7 +73,7 @@ function checkRelease(
   if (status !== 0) {
     if (status !== 1 || crate !== "vize_armature") return status;
     const allowed = run(process.execPath, [
-      "tools/commands/ci/github/allow-armature-tokenizer-reexports.ts",
+      "tools/ci/commands/github/allow-armature-tokenizer-reexports.ts",
       output,
     ]);
     if (allowed !== 0) return allowed;

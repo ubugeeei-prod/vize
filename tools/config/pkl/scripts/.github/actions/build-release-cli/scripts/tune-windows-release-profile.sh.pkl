@@ -1,1 +1,1 @@
-amends "../../../../../parts/shell/set-windows-native-release-profile.pkl"
+amends "../../../../../../../ci/lib/parts/shell/set-windows-native-release-profile.pkl"

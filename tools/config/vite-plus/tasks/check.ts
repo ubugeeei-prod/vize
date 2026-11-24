@@ -37,12 +37,12 @@ const localLintCommand = runTask("check");
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
 const rustClippyCommand = steps(
   "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports",
-  "node tools/commands/ci/check-workspace-lints.ts --check",
-  "node tools/commands/ci/check-skeleton-todos.ts --check",
+  "node tools/ci/commands/check-workspace-lints.ts --check",
+  "node tools/ci/commands/check-skeleton-todos.ts --check",
 );
 const iterationRepoCheckCommand = [
   "node",
-  "tools/commands/ci/check-warning-budget.ts",
+  "tools/ci/commands/check-warning-budget.ts",
   "--",
   localVp,
   "check",
@@ -85,7 +85,7 @@ export const checkTasks = defineTasks({
   // v1 alpha release branches keep a zero-warning budget for repo-wide JS/TS checks.
   "check:repo": noCacheTask(strictRepoCheckCommand),
   "check:iteration": noCacheTask(iterationRepoCheckCommand),
-  "source:lengths": noCacheTask("node tools/commands/ci/source-file-lengths.ts"),
+  "source:lengths": noCacheTask("node tools/ci/commands/source-file-lengths.ts"),
   // Every package that exposes a `check` task takes part, including the oxlint
   // example. Its `lint` script is the one that intentionally exits non-zero, and
   // the aggregate never runs `lint`, so there is nothing here to exempt.

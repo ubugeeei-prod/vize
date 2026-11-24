@@ -203,7 +203,7 @@ function main(): number {
   if (process.argv.length > 2) {
     errors.push(
       new Error(
-        `Usage: node tools/commands/ci/github/publish-real-project-shard-summary.ts; unexpected argument ${process.argv[2]}`,
+        `Usage: node tools/ci/commands/github/publish-real-project-shard-summary.ts; unexpected argument ${process.argv[2]}`,
       ),
     );
   } else if (!reportDirectory || !summaryPath) {

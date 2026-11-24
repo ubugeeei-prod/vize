@@ -63,7 +63,14 @@ function workspaceVp(): Dynamic = new {
   }
 }
 
-function stageWorkflowScripts(workflow: String): Listing<Dynamic> = new {
+function stageWorkflowScripts(workflow: String): Listing<Dynamic> =
+  stagePrograms("/.github/scripts/workflows/\(workflow)/")
+
+/// The programs of a workflow that lives in tools/ci/workflows/<workflow>/.
+function stageWorkflow(workflow: String): Listing<Dynamic> =
+  stagePrograms("/tools/ci/workflows/\(workflow)/scripts/")
+
+local function stagePrograms(programs: String): Listing<Dynamic> = new {
   new Dynamic {
     name = "Check out the workflow's scripts"
     uses = checkout
@@ -72,7 +79,7 @@ function stageWorkflowScripts(workflow: String): Listing<Dynamic> = new {
       path = ".vize-workflow-tools"
       `persist-credentials` = false
       `sparse-checkout-cone-mode` = false
-      `sparse-checkout` = "/.github/actions/stage-workflow-scripts/\n/.github/scripts/workflows/shared/\n/.github/scripts/workflows/\(workflow)/"
+      `sparse-checkout` = "/.github/actions/stage-workflow-scripts/\n/tools/ci/lib/scripts/\n\(programs)"
     }
   }
   new Dynamic {

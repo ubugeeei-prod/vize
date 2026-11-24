@@ -228,7 +228,7 @@ test("input selection gates work inside required jobs and keeps the planner depe
   assert.equal(planner.steps?.at(-1)?.run, "node tools/support/compat/github/plan-check-inputs.ts");
   assert.ok(planner.steps?.some((step) => step.uses?.startsWith("actions/setup-node@")));
   for (const [jobName, output, command] of [
-    ["security-audit", "dependencies", "node tools/commands/ci/npm-audit-retry.ts"],
+    ["security-audit", "dependencies", "node tools/ci/commands/npm-audit-retry.ts"],
     ["node-engine-compat", "engines", "node --test tests/tooling/node-engine-matrix.test.ts"],
     ["check-vize-apps", "apps", "./.github/actions/check-vize-apps"],
   ]) {

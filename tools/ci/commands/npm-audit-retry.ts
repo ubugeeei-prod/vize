@@ -32,7 +32,7 @@ async function run(): Promise<number> {
 
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     const executable = process.platform === "win32" ? (process.env.ComSpec ?? "cmd.exe") : "vp";
-    const args = ["node", "tools/commands/ci/npm-audit.ts"];
+    const args = ["node", "tools/ci/commands/npm-audit.ts"];
     const commandArgs = process.platform === "win32" ? ["/d", "/s", "/c", "vp", ...args] : args;
     const result = spawnSync(executable, commandArgs, {
       stdio: "inherit",

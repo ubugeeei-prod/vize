@@ -75,6 +75,10 @@ export const nodeCommandFromVscodeExtension = (command: string, ...args: string[
 export const nodeCommand = (command: string, ...args: string[]) =>
   ["node", `tools/commands/${command}.ts`, ...args].map(shellQuote).join(" ");
 
+/** Runs a TypeScript CI command under `tools/ci/commands`. */
+export const ciCommand = (command: string, ...args: string[]) =>
+  ["node", `tools/ci/commands/${command}.ts`, ...args].map(shellQuote).join(" ");
+
 /** Runs a TypeScript command under `tools/support` with Node's type stripping. */
 export const nodeTool = (command: string, ...args: string[]) =>
   ["node", `tools/support/${command}.ts`, ...args].map(shellQuote).join(" ");

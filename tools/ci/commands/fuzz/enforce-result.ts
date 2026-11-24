@@ -11,7 +11,7 @@ function label(value: string): string {
 export function enforceFuzzResult(arguments_: readonly string[]): number {
   if (arguments_.length !== 3) {
     console.error(
-      "Usage: node tools/commands/ci/fuzz/enforce-result.ts <event-name> <target> <outcome>",
+      "Usage: node tools/ci/commands/fuzz/enforce-result.ts <event-name> <target> <outcome>",
     );
     return 1;
   }

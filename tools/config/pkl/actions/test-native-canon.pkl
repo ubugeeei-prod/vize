@@ -3,9 +3,9 @@ description = "Require native snapshot ownership, projection ranges and syntax/s
 runs {
   using = "composite"
   steps = new Listing {
-    ...import("../parts/test-native-canon/snapshots.pkl").steps
-    ...import("../parts/test-native-canon/vue-projects.pkl").steps
-    ...import("../parts/test-native-canon/cli-diagnostics.pkl").steps
-    ...import("../parts/test-native-canon/beta-editor.pkl").steps
+    ...import("../../../ci/lib/parts/test-native-canon/snapshots.pkl").steps
+    ...import("../../../ci/lib/parts/test-native-canon/vue-projects.pkl").steps
+    ...import("../../../ci/lib/parts/test-native-canon/cli-diagnostics.pkl").steps
+    ...import("../../../ci/lib/parts/test-native-canon/beta-editor.pkl").steps
   }
 }

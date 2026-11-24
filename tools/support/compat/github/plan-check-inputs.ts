@@ -14,7 +14,7 @@ export function planCheckInputs(paths: readonly string[], full = false) {
   );
   const matches = (pattern: RegExp) => full || shared || paths.some((path) => pattern.test(path));
   const dependencies = matches(
-    /(^|\/)(?:Cargo\.(?:toml|lock)|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml)$|^patches\/|^tools\/support\/security\/|^tools\/commands\/ci\/npm-audit|^\.cargo\/audit\.toml$/,
+    /(^|\/)(?:Cargo\.(?:toml|lock)|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml)$|^patches\/|^tools\/support\/security\/|^tools\/ci\/commands\/npm-audit|^\.cargo\/audit\.toml$/,
   );
   return {
     full,
@@ -35,7 +35,7 @@ export function planCheckInputs(paths: readonly string[], full = false) {
       paths.some((path) => path.startsWith("upstream/forks/")) ||
       // Retain the existing conservative npm Vue routing as well as authored inputs.
       matches(
-        /^(?:crates|davinci|playground|examples\/vite-musea)\/|^npm\/.*\.vue$|^npm\/(?:cli|native|builder\/(?:vite|vite-musea|unplugin))\/|^\.cargo\/|^rust-toolchain(?:\.toml)?$|^docs\/davinci\/plan\/(?!.*\.md$)|^docs\/davinci\/plan\/.*fact-alpha-schemas\.md$|^\.github\/actions\/(?:setup-rust-sticky-cache|check-vize-apps)\/|^tools\/commands\/ci\/opinionated-source-lint\./,
+        /^(?:crates|davinci|playground|examples\/vite-musea)\/|^npm\/.*\.vue$|^npm\/(?:cli|native|builder\/(?:vite|vite-musea|unplugin))\/|^\.cargo\/|^rust-toolchain(?:\.toml)?$|^docs\/davinci\/plan\/(?!.*\.md$)|^docs\/davinci\/plan\/.*fact-alpha-schemas\.md$|^\.github\/actions\/(?:setup-rust-sticky-cache|check-vize-apps)\/|^tools\/ci\/commands\/opinionated-source-lint\./,
       ),
   };
 }

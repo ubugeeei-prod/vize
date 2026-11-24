@@ -70,7 +70,7 @@ nix develop .#testbox
 リモートのタスクを実行しません。起動に成功したボックスは、検証が失敗した場合も停止処理を行います。
 
 ```sh
-sh tools/commands/ci/run-testbox-checks.sh
+sh tools/ci/commands/run-testbox-checks.sh
 ```
 
 Blacksmith Testbox のジョブを変更した場合は、

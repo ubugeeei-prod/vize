@@ -20,7 +20,7 @@ const commands = [
 export function checkMaestroFeatureContract(arguments_: readonly string[]): number {
   if (arguments_.length > 0) {
     console.error(
-      `Usage: node tools/commands/ci/github/check-maestro-feature-contract.ts; unexpected argument ${arguments_[0]}`,
+      `Usage: node tools/ci/commands/github/check-maestro-feature-contract.ts; unexpected argument ${arguments_[0]}`,
     );
     return 1;
   }

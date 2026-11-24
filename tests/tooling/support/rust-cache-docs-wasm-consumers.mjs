@@ -90,7 +90,7 @@ const producerHashes = {
     "b2c01a84ad82128243d5302201ee01d62921bc4012f0cf7915c2b0e0c8bea8af",
   ],
 
-  "tools/commands/ci/github/app-e2e-plan.ts":
+  "tools/ci/commands/github/app-e2e-plan.ts":
     "ca7682cc8f0834fa48a325954fbcc10765241ee1f9e29a0ebef9b60048cbc7d2",
   "tools/support/compat/github/app-e2e-plan.ts":
     "67799c81a7a38031b96e5a0f1cd1ea5bd2ae77a30eaf750a389f33f26e290ad7",

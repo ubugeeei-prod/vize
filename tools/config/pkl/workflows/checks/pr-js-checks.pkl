@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "PR JS package checks"
 // The package tests, the Oxlint project qualification and the Fresco and UI
