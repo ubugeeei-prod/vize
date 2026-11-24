@@ -12,7 +12,7 @@ use vize_canon::{
 };
 use vize_l0::{Allocator, Span};
 use vize_l1::{
-    container::vue::{DescriptorObservation, ScriptRole},
+    container::vue::{L1Ir, ScriptRole},
     embed::{Lang, authored_program::AuthoredProgram},
 };
 use vize_l2::query::script::assignments::{
@@ -62,7 +62,7 @@ impl SourceSnapshot {
     pub fn prepare_literal_products<'s>(
         &'s self,
         documents: &DocumentStore,
-        owner: &DescriptorObservation<'_>,
+        owner: &L1Ir<'_>,
         role: ScriptRole,
     ) -> Result<PreparedLiteralProducts<'s>, LiteralProductError> {
         self.check_current(documents)

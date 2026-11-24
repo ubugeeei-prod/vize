@@ -1,0 +1,9 @@
+{
+  "vue/no-restricted-syntax": [
+    "VDirectiveKey > VIdentifier.modifiers",
+    "VAttribute[key.modifiers.0.name='stop']",
+    "VDirectiveKey[modifiers.length=2]",
+    "VDirectiveKey[modifiers.0.rawName='']",
+    "VIdentifier[name='stop'][rawName='STOP']"
+  ]
+}

@@ -73,6 +73,7 @@ class ComponentNameInTemplateCasingOptions {
   casing: TemplateComponentNameCasing = "PascalCase"
   registeredComponentsOnly: Boolean = true
   globals: Listing<String> = new Listing {}
+  ignores: Listing<String>(isDistinct) = new Listing {}
 }
 
 /// Options for `script/custom-event-name-casing`.
@@ -286,10 +287,10 @@ class LintRuleOptions {
   `vue/no-restricted-component-names`: LintRuleOptionTypes.RestrictedNames? = null
   `vue/no-restricted-component-options`: LintRuleOptionTypes.RestrictedNames? = null
   `vue/no-restricted-custom-event`: LintRuleOptionTypes.RestrictedNames? = null
-  `vue/no-restricted-html-elements`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-html-elements`: LintRuleOptionTypes.RestrictedHtmlElements? = null
   `vue/no-restricted-props`: LintRuleOptionTypes.RestrictedNames? = null
   `vue/no-restricted-static-attribute`: LintRuleOptionTypes.RestrictedNames? = null
-  `vue/no-restricted-v-on`: LintRuleOptionTypes.RestrictedNames? = null
+  `vue/no-restricted-v-on`: LintRuleOptionTypes.RestrictedVOn? = null
   `vue/no-unsupported-features`: LintRuleOptionTypes.UnsupportedFeaturesOptions? = null
   `type/await-thenable`: LintRuleOptionTypes.AwaitThenableOptions? = null
   `type/no-base-to-string`: LintRuleOptionTypes.NoBaseToStringOptions? = null
@@ -323,7 +324,7 @@ class LintRuleOptions {
   `vue/html-quotes`: (HtmlQuoteStyle | HtmlQuotesOptions)? = null
   `vue/mustache-interpolation-spacing`: MustacheInterpolationSpacingStyle? = null
   `vue/v-on-event-hyphenation`: (HyphenationStyle | VOnEventHyphenationOptions)? = null
-  `vue/v-bind-style`: VBindStyle? = null
+  `vue/v-bind-style`: (VBindStyle | LintRuleOptionTypes.VBindStyleList)? = null
   `vue/v-on-style`: VOnStyle? = null
   `vue/v-slot-style`: (VSlotUniformStyle | VSlotStyleOptions)? = null
   `vue/attribute-hyphenation`: (HyphenationStyle | AttributeHyphenationOptions)? = null

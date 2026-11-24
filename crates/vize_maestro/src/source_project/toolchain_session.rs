@@ -8,7 +8,7 @@ use tower_lsp::lsp_types::{
 use vize_atelier_sfc::{NativeSfcCompileOptions, compile_native_sfc};
 use vize_glyph::{FormatOptions, GlyphFormatter};
 use vize_l0::Allocator;
-use vize_l1::container::vue::{DescriptorObservation, ScriptRole};
+use vize_l1::container::vue::{L1Ir, ScriptRole};
 use vize_l2::query::script::assignments::Verdict;
 use vize_patina::{
     checked_prefer_const::PreferConstRefusal,
@@ -36,7 +36,7 @@ fn apply(docs: &DocumentStore, uri: &Url, version: i32, range: Option<Range>, te
         version
     ));
 }
-fn check_source(owner: &DescriptorObservation<'_>, snapshot: &SourceSnapshot) {
+fn check_source(owner: &L1Ir<'_>, snapshot: &SourceSnapshot) {
     let mut end = 0;
     for segment in owner.container().segments() {
         let span = segment.span();
@@ -46,7 +46,7 @@ fn check_source(owner: &DescriptorObservation<'_>, snapshot: &SourceSnapshot) {
     }
     assert_eq!(end as usize, snapshot.source().len());
 }
-fn local_types(snapshot: &SourceSnapshot, docs: &DocumentStore, owner: &DescriptorObservation<'_>) {
+fn local_types(snapshot: &SourceSnapshot, docs: &DocumentStore, owner: &L1Ir<'_>) {
     let start = at(snapshot.source(), "other:");
     let range = Range::new(start, Position::new(start.line, start.character + 5));
     let products = snapshot
@@ -247,15 +247,28 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
         serde_json::from_str::<Value>(module.source_map().unwrap()).unwrap(),
         reference["nativeMap"]
     );
+    #[cfg(feature = "experimental-native-scss-session")]
+    let styled = styled_component::restore_formatted_style(
+        &docs,
+        &snapshots,
+        &final_snapshot,
+        &formatted,
+        reference,
+        options,
+    );
     if let Some(history) = std::env::var_os("VIZE_TOOLCHAIN_HISTORY") {
         let revisions = [
             source.source(),
             formatted.source(),
             damaged.source(),
             final_snapshot.source(),
+            #[cfg(feature = "experimental-native-scss-session")]
+            styled.source(),
         ];
         std::fs::write(history, revisions.join("\0")).unwrap();
     }
 }
 
 mod style_corpus;
+#[cfg(feature = "experimental-native-scss-session")]
+mod styled_component;

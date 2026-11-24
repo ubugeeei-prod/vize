@@ -27,7 +27,7 @@ export function buildNuxtCompilerOptions(
     devUrlBase: buildNuxtDevAssetBase(baseURL, buildAssetsDir),
     handleNodeModulesVue: true,
     root: rootDir,
-    scanPatterns: ["**/*.vue"],
+    scanPatterns: [],
   };
 
   if (overrides.customRenderer === true && overrides.exclude !== undefined) {

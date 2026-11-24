@@ -13,7 +13,7 @@ use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Span, String, cstr};
 use vize_l2::dump::Page as L2Page;
 use vize_l3::dump::Page as L3Page;
-use vize_l3::op::{Op, OpId, OpKind, Phase, Program, Region, RegionId};
+use vize_l3::op::{L3Ir, Op, OpId, OpKind, Phase, Region, RegionId};
 
 const L2_FULL: &str = include_str!("../../../davinci/vize_l2/tests/fixtures/reference.folio");
 
@@ -62,7 +62,7 @@ fn assert_success(level: &str, bytes: &[u8]) {
 
 fn l3_page() -> L3Page {
     let allocator = Allocator::default();
-    let mut program = Program::new(&allocator, Phase::Built);
+    let mut program = L3Ir::new(&allocator, Phase::Built);
     program.push_region(Region::root(Span::new(0, 12)));
     program.push_op(Op::new(
         OpId::new(0),

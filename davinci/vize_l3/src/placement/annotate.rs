@@ -10,14 +10,14 @@ use alloc::vec::Vec;
 
 use super::facts::{Index, contains};
 use super::{Placement, PlacementRecord, PlacementSet};
-use crate::op::{OpId, OpKind, Program, RegionId};
+use crate::op::{L3Ir, OpId, OpKind, RegionId};
 
 /// Replace `program.placements` with the canonical alternatives of every op,
 /// each still choosing [`Placement::Inline`].
 ///
 /// This never touches ops, regions, edges, effects, or operands, so partition
 /// facts exported for the canonical program stay exact.
-pub fn annotate(program: &mut Program<'_>) {
+pub fn annotate(program: &mut L3Ir<'_>) {
     let records = enumerate(&Index::new(program));
     program.placements.clear();
     program.placements.extend(records);

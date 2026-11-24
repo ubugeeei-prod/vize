@@ -1,6 +1,6 @@
 //! Original handler custody sealed with its actual attached File node.
 
-use super::{BindingRef, FileArtifact, ScopeId};
+use super::{BindingRef, L2Ir, ScopeId};
 use crate::lang::js::{NativeHandlerInput, RejectedNativeHandlerInput};
 use crate::op::{HandlerId, OnHandlerRef, OnOp};
 use crate::resolution::{HandlerResolution, ResolutionError};
@@ -33,19 +33,19 @@ pub enum RejectedFileHandler<'a> {
 
 /// A short query borrow retains the actual File; an equal node ID is insufficient.
 /// ```compile_fail
-/// use vize_l2::file::{FileArtifact, FileHandler};
+/// use vize_l2::file::{L2Ir, FileHandler};
 /// use vize_l2::op::HandlerId;
-/// fn forge<'f,'a>(file: &'f FileArtifact<'a>, id: HandlerId) {
+/// fn forge<'f,'a>(file: &'f L2Ir<'a>, id: HandlerId) {
 ///     let _ = FileHandler { file, id };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct FileHandler<'f, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     id: HandlerId,
 }
 
-impl<'a> FileArtifact<'a> {
+impl<'a> L2Ir<'a> {
     /// Numeric file-local lookup only; use `handler_for` to join an actual On.
     #[must_use]
     pub fn handler(&self, id: HandlerId) -> Option<FileHandler<'_, 'a>> {
@@ -86,7 +86,7 @@ impl<'f, 'a> FileHandler<'f, 'a> {
             .is_some_and(|record| core::ptr::eq(record.original.as_ptr(), on))
     }
     #[must_use]
-    pub const fn file(self) -> &'f FileArtifact<'a> {
+    pub const fn file(self) -> &'f L2Ir<'a> {
         self.file
     }
     #[must_use]

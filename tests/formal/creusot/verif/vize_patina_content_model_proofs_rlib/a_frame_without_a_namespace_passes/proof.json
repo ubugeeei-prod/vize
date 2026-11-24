@@ -1,0 +1,13 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_frame_without_a_namespace_passes": {
+        "prover": "z3",
+        "time": 0.007
+      },
+      "vc_classify_Possible": { "prover": "z3", "time": 0.002 },
+      "vc_possible": { "prover": "z3", "time": 0.002 }
+    }
+  }
+}

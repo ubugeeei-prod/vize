@@ -21,7 +21,7 @@ fn check_script(
     arena: &Allocator,
     block: SourceBlock<'_>,
     ty: SourceType,
-    owner: Option<&DescriptorObservation<'_>>,
+    owner: Option<&L1Ir<'_>>,
     output: &mut impl Write,
     counts: &mut Counts,
 ) {

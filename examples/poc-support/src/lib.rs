@@ -12,7 +12,7 @@ use oxc_span::SourceType;
 use vize_l0::{Allocator, Span, String, cstr};
 use vize_l2::op::Region;
 use vize_l2_to_l3::Lowered;
-use vize_l3::op::{Op, OpId, OpKind, Program, RegionId};
+use vize_l3::op::{L3Ir, Op, OpId, OpKind, RegionId};
 use vize_l3::operand::{Operand, OperandRole, ValueKind};
 
 pub mod vue;
@@ -59,12 +59,12 @@ pub fn lower<'a>(allocator: &'a Allocator, root: &Region<'_>) -> Result<Lowered<
 /// A tree view over one flat L3 program.
 #[derive(Clone, Copy)]
 pub struct View<'p, 'a> {
-    program: &'p Program<'a>,
+    program: &'p L3Ir<'a>,
 }
 
 impl<'p, 'a> View<'p, 'a> {
     #[must_use]
-    pub fn new(program: &'p Program<'a>) -> Self {
+    pub fn new(program: &'p L3Ir<'a>) -> Self {
         Self { program }
     }
 

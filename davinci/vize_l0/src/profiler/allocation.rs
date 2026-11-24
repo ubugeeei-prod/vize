@@ -302,3 +302,6 @@ pub fn allocation_snapshot() -> AllocationSnapshot {
         realloc_new_bytes: REALLOC_NEW_BYTES.load(Ordering::Relaxed),
     }
 }
+
+#[cfg(test)]
+mod kani;

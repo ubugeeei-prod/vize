@@ -1,6 +1,6 @@
 use core::fmt;
 
-/// One operation id in a [`super::Program`].
+/// One operation id in a [`super::L3Ir`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct OpId(u32);
 

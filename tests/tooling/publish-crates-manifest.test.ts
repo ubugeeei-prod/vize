@@ -3,12 +3,61 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { parse as parseToml } from "@iarna/toml";
 
 import { workspaceVersionFromContent } from "../../tools/support/release/publish_crates/config.ts";
+import { publishedCrates } from "../../tools/support/release/publish_crates/main.ts";
 import {
   crateManifestPath,
   publishManifestWithoutDevDependencies,
 } from "../../tools/support/release/publish_crates/manifest.ts";
+
+interface DependencyTables {
+  dependencies?: Record<string, unknown>;
+  "build-dependencies"?: Record<string, unknown>;
+}
+
+interface CrateManifest extends DependencyTables {
+  features?: Record<string, string[]>;
+  target?: Record<string, DependencyTables>;
+  "dev-dependencies"?: Record<string, { features?: string[] }>;
+}
+
+test("every staged release manifest retains the dependencies used by its public features", () => {
+  for (const crate of publishedCrates) {
+    const original = fs.readFileSync(crateManifestPath(crate), "utf8");
+    const staged = parseToml(publishManifestWithoutDevDependencies(original)) as CrateManifest;
+    const dependencies = new Set<string>();
+    for (const scope of [staged, ...Object.values(staged.target ?? {})]) {
+      for (const kind of ["dependencies", "build-dependencies"] as const) {
+        for (const name of Object.keys(scope[kind] ?? {})) dependencies.add(name);
+      }
+    }
+    for (const [feature, entries] of Object.entries(staged.features ?? {})) {
+      for (const entry of entries) {
+        const dependency = entry.startsWith("dep:")
+          ? entry.slice(4)
+          : entry.includes("/")
+            ? entry.split("/")[0].replace(/\?$/u, "")
+            : null;
+        if (dependency !== null) {
+          assert.ok(dependencies.has(dependency), `${crate}: ${feature} refers to ${entry}`);
+        }
+      }
+    }
+  }
+});
+
+test("the graph-query corpus enables IR views through its development dependency", () => {
+  const manifest = parseToml(
+    fs.readFileSync(crateManifestPath("vize_l2_to_l3"), "utf8"),
+  ) as CrateManifest;
+  assert.deepEqual(manifest.features?.["graph-queries"], [
+    "vize_l3/graph-queries",
+    "vize_l2/ir-views",
+  ]);
+  assert.deepEqual(manifest["dev-dependencies"]?.vize_l1_to_l2.features, ["ir-views"]);
+});
 
 // Ported from the MoonBit `publish_crates` white-box test.
 test("publish manifest retains complete normal/build sections and strips dotted dev tables", () => {

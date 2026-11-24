@@ -14,12 +14,11 @@ mod descriptor;
 mod scan;
 
 pub use descriptor::{
-    AdmittedDescriptor, DescriptorIssue, DescriptorIssueCode, DescriptorObservation,
-    DescriptorOptions, DescriptorRefusal, ScriptRole, ScriptView, StyleView,
-    TemplateFrameNameRefusal, TemplateFrameNames, TemplateOnlyDescriptor, TemplateView,
-    Vue1DescriptorObservation, Vue1DescriptorRefusal, Vue1TemplateView,
-    Vue2DescriptorExpressionPool, Vue2DescriptorObservation, Vue2DescriptorRefusal,
-    Vue2RetainedTemplateView, Vue2TemplateView,
+    AdmittedDescriptor, DescriptorIssue, DescriptorIssueCode, DescriptorOptions, DescriptorRefusal,
+    L1Ir, ScriptRole, ScriptView, StyleView, TemplateFrameNameRefusal, TemplateFrameNames,
+    TemplateOnlyDescriptor, TemplateView, Vue1DescriptorObservation, Vue1DescriptorRefusal,
+    Vue1TemplateView, Vue2DescriptorExpressionPool, Vue2DescriptorObservation,
+    Vue2DescriptorRefusal, Vue2RetainedTemplateView, Vue2TemplateView,
 };
 
 #[cfg(test)]
@@ -91,7 +90,7 @@ impl Vue {
         allocator: &'a Allocator,
         source: &'a str,
         options: DescriptorOptions,
-    ) -> DescriptorObservation<'a> {
+    ) -> L1Ir<'a> {
         descriptor::observe(allocator, source, options)
     }
 }

@@ -3,6 +3,7 @@ use vize_carton::ToCompactString;
 
 use super::directory_index::Probe;
 use super::{ResolutionScope, TypeSourceSnapshot, lexical_path, source_path};
+use crate::script::context::batch_epoch::current_batch_epoch;
 use crate::script::context::external_types::resolution::{
     project, resolve_import_path_with_project,
 };
@@ -116,7 +117,7 @@ impl TypeSourceSnapshot {
         }
         // Package exports are handled by the existing package resolver. Source
         // reads still go through this snapshot once the module is identified.
-        resolve_import_path_with_project(current_file, specifier, project)
+        resolve_import_path_with_project(current_file, specifier, project, current_batch_epoch())
     }
 
     fn exists(&self, candidate: &Path) -> Option<PathBuf> {

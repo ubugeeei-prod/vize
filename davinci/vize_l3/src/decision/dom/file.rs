@@ -4,7 +4,7 @@ use super::{DomFacts, LiteralExpressions, vue::policy::NoReads};
 use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, TargetPolicy, build};
 use vize_l2::{
     artifact::Artifact,
-    file::{FileArtifact, FileResolution, ScopeId},
+    file::{FileResolution, L2Ir, ScopeId},
 };
 
 /// The exact producer resolution admitted by the existing canonical node walk.
@@ -49,9 +49,9 @@ impl<'owner, 'arena> DomFileExpression<'owner, 'arena> {
 /// ```
 /// The live result prevents discarding its actual file owner:
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::build_dom_file_decisions;
-/// fn discard(file: FileArtifact<'_>) {
+/// fn discard(file: L2Ir<'_>) {
 ///     let result = build_dom_file_decisions(&file).unwrap();
 ///     drop(file);
 ///     let _ = result.file();
@@ -64,13 +64,13 @@ impl<'owner, 'arena> DomFileExpression<'owner, 'arena> {
 /// fn emit(result: &FileAnalysis<'_, '_>) { bare(result); }
 /// ```
 pub struct FileAnalysis<'owner, 'arena> {
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
 impl<'owner, 'arena> FileAnalysis<'owner, 'arena> {
     #[must_use]
-    pub const fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub const fn file(&self) -> &'owner L2Ir<'arena> {
         self.file
     }
 
@@ -109,7 +109,7 @@ impl<'owner, 'arena> FileAnalysis<'owner, 'arena> {
 /// list or free-name fallback participates in admission. If/For semantics are
 /// still held until their actual file factories record complete owned facts.
 pub fn build_dom_file_decisions<'owner, 'arena>(
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
 ) -> Result<FileAnalysis<'owner, 'arena>, DecisionBuildError> {
     if !file.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
@@ -147,7 +147,7 @@ pub(super) fn matches_expression(
 
 // Called only after the real selected template entry derives its own File.
 pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
 ) -> Result<FileAnalysis<'owner, 'arena>, DecisionBuildError> {
     let analysis = crate::decision::build::build_with_original(
         file,

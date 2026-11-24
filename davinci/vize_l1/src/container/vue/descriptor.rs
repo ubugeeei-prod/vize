@@ -99,22 +99,22 @@ struct StyleSelection<'a> {
 /// ```compile_fail
 /// use vize_l0::Allocator;
 /// use vize_l1::container::{ContainerFormat, Vue};
-/// use vize_l1::container::vue::DescriptorObservation;
+/// use vize_l1::container::vue::L1Ir;
 /// let arena = Allocator::default();
 /// let capture = Vue.split(&arena, "<script>x</script>");
-/// let owner = DescriptorObservation::from_container(capture);
+/// let owner = L1Ir::from_container(capture);
 /// ```
 /// Nor can its retained original capture be mutated:
 /// ```compile_fail
-/// use vize_l1::container::vue::DescriptorObservation;
-/// fn change(owner: &mut DescriptorObservation<'_>) {
+/// use vize_l1::container::vue::L1Ir;
+/// fn change(owner: &mut L1Ir<'_>) {
 ///     owner.container().blocks.clear();
 /// }
 /// ```
 /// An admitted view itself has no public constructor:
 /// ```compile_fail
-/// use vize_l1::container::vue::{AdmittedDescriptor, DescriptorObservation};
-/// fn forge(owner: &DescriptorObservation<'_>) {
+/// use vize_l1::container::vue::{AdmittedDescriptor, L1Ir};
+/// fn forge(owner: &L1Ir<'_>) {
 ///     let view = AdmittedDescriptor { owner, root: owner.root().unwrap() };
 /// }
 /// ```
@@ -135,7 +135,7 @@ struct StyleSelection<'a> {
 /// assert_eq!(view.template_lang(), Lang::Ts);
 /// assert_eq!(view.setup().unwrap().container_index(), 1);
 /// ```
-pub struct DescriptorObservation<'a> {
+pub struct L1Ir<'a> {
     container: Container<'a>,
     root: Option<SourceRoot<'a>>,
     options: DescriptorOptions,
@@ -149,7 +149,7 @@ pub struct DescriptorObservation<'a> {
 
 // The retained descriptor is an internal ownership improvement. Preserve the
 // pre-existing complete Debug representation consumed by compatibility oracles.
-impl core::fmt::Debug for DescriptorObservation<'_> {
+impl core::fmt::Debug for L1Ir<'_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
             .debug_struct("DescriptorObservation")
@@ -165,7 +165,7 @@ impl core::fmt::Debug for DescriptorObservation<'_> {
     }
 }
 
-impl<'a> DescriptorObservation<'a> {
+impl<'a> L1Ir<'a> {
     pub fn source(&self) -> &'a str {
         self.container.source
     }
@@ -221,7 +221,7 @@ impl DescriptorRefusal<'_> {
 /// Opaque, read-only capability borrowing its original descriptor observation.
 #[derive(Debug, Clone, Copy)]
 pub struct AdmittedDescriptor<'o, 'a> {
-    owner: &'o DescriptorObservation<'a>,
+    owner: &'o L1Ir<'a>,
     root: SourceRoot<'a>,
 }
 
@@ -276,7 +276,7 @@ impl<'o, 'a> AdmittedDescriptor<'o, 'a> {
 /// Authentic script role and checked authored content; first policy is JS/TS Module.
 #[derive(Debug, Clone, Copy)]
 pub struct ScriptView<'o, 'a> {
-    owner: &'o DescriptorObservation<'a>,
+    owner: &'o L1Ir<'a>,
     selected: Selection<'a>,
     role: ScriptRole,
 }
@@ -304,14 +304,14 @@ impl<'a> ScriptView<'_, 'a> {
 ///
 /// A public capture cannot forge an original style capability:
 /// ```compile_fail
-/// use vize_l1::container::vue::{DescriptorObservation, StyleView};
-/// fn forge(owner: &DescriptorObservation<'_>) {
+/// use vize_l1::container::vue::{L1Ir, StyleView};
+/// fn forge(owner: &L1Ir<'_>) {
 ///     let view = StyleView { owner, selected: todo!() };
 /// }
 /// ```
 #[derive(Debug, Clone, Copy)]
 pub struct StyleView<'o, 'a> {
-    owner: &'o DescriptorObservation<'a>,
+    owner: &'o L1Ir<'a>,
     selected: StyleSelection<'a>,
 }
 
@@ -341,7 +341,7 @@ pub(super) fn observe<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     options: DescriptorOptions,
-) -> DescriptorObservation<'a> {
+) -> L1Ir<'a> {
     let mut state = policy::Policy::new(allocator, source, options);
     let container = super::split_with(
         allocator,
@@ -352,7 +352,7 @@ pub(super) fn observe<'a>(
     );
     state.finish();
     let dialect = options.resolve(state.lang());
-    DescriptorObservation {
+    L1Ir {
         container,
         root: state.root,
         options,

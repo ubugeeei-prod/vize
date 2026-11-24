@@ -9,28 +9,45 @@ import path from "node:path";
  * (notably a tsconfig that is created later) still inherit the real identity
  * of their nearest existing parent.
  */
-export function filesystemPathIdentities(file: string): readonly string[] {
+export function filesystemPathIdentities(
+  file: string,
+  probe: PhysicalPathProbe = probePhysicalPath,
+): readonly string[] {
   const resolved = path.resolve(withoutVerbatimPrefix(file));
   const identities = new Set([resolved]);
   let existing = resolved;
   const missing: string[] = [];
 
   for (;;) {
-    try {
-      const physical = fs.realpathSync.native(existing);
+    const physical = probe(existing);
+    if (physical === false) break;
+    if (physical !== null) {
       identities.add(path.join(physical, ...missing));
       break;
-    } catch (error) {
-      const code = (error as NodeJS.ErrnoException).code;
-      if (code !== "ENOENT" && code !== "ENOTDIR") break;
-      const parent = path.dirname(existing);
-      if (parent === existing) break;
-      missing.unshift(path.basename(existing));
-      existing = parent;
     }
+    const parent = path.dirname(existing);
+    if (parent === existing) break;
+    missing.unshift(path.basename(existing));
+    existing = parent;
   }
 
   return [...identities];
+}
+
+/**
+ * The physical path of `file`, `null` when nothing exists there, or `false`
+ * when the path cannot be resolved for any other reason.
+ */
+export type PhysicalPathProbe = (file: string) => string | null | false;
+
+/** One `realpath` of `file`, asked of the filesystem now. */
+export function probePhysicalPath(file: string): string | null | false {
+  try {
+    return fs.realpathSync.native(file);
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    return code === "ENOENT" || code === "ENOTDIR" ? null : false;
+  }
 }
 
 const DOS_DEVICES = new Set(["CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"]);

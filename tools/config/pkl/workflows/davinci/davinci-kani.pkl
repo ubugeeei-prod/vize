@@ -8,6 +8,15 @@ on {
       ".github/workflows/davinci-kani.yml"
       ".github/scripts/workflows/davinci-kani/**"
       "davinci/vize_l0/src/span.rs"
+      "davinci/vize_l0/src/span/proofs.rs"
+      "davinci/vize_l0/src/source_range.rs"
+      "davinci/vize_l0/src/source_range/proofs.rs"
+      "davinci/vize_l0/src/line_index/kani.rs"
+      "davinci/vize_l0/src/line_index/utf16.rs"
+      "davinci/vize_l4/src/write/kani.rs"
+      "davinci/vize_l4/src/write/line_endings.rs"
+      "davinci/vize_l4/src/write/source_map/kani.rs"
+      "davinci/vize_l4/src/write/source_map/vlq.rs"
       "davinci/vize_l2/src/query/position/index/intervals.rs"
       "davinci/vize_l2/src/query/position/index/intervals/tests.rs"
       "tests/formal/position-index/Intervals.lean"
@@ -18,19 +27,22 @@ on {
       "davinci/vize_l3/src/query/check/kani.rs"
       "davinci/vize_l3/src/query/check/rule.rs"
       "davinci/vize_l3/src/lattice/classify_proofs.rs"
-      "tests/davinci_test_support/src/l3_reference/checker.rs"
-      "tests/davinci_test_support/src/l3_reference/checker_proofs.rs"
-      "tests/davinci_test_support/src/l3_reference/graphs.rs"
       "tests/davinci_test_support/src/l3_reference/incremental.rs"
       "tests/davinci_test_support/src/l3_reference/incremental_proofs.rs"
       "tests/davinci_test_support/src/l3_reference/kani.rs"
-      "tests/davinci_test_support/src/l3_reference/program.rs"
-      "tests/davinci_test_support/src/l3_reference/schedule.rs"
-      "tests/davinci_test_support/src/l3_reference/schedule_proofs.rs"
-      "tests/davinci_test_support/src/l3_reference/trace.rs"
-      "crates/vize_patina/src/html_content_model/tri.rs"
-      "crates/vize_patina/src/html_content_model/walk.rs"
-      "crates/vize_patina/src/html_content_model/kani.rs"
+      "davinci/vize_l0/src/js_string.rs"
+      "davinci/vize_l0/src/js_string/tests.rs"
+      "davinci/vize_l0/src/js_string_kani.rs"
+      "davinci/vize_l0/tests/emitted_string_literals.rs"
+      "tests/formal/string-literal/**"
+      // Unsafe islands (docs/davinci/decisions/2026-11-24-unsafe-model-checking.md):
+      // each kernel and the harness module next to it.
+      "davinci/vize_l2/src/analysis/text_facts.rs"
+      "davinci/vize_l2/src/analysis/text_facts/kani.rs"
+      "davinci/vize_l0/src/allocator.rs"
+      "davinci/vize_l0/src/allocator/kani.rs"
+      "davinci/vize_l0/src/profiler/allocation.rs"
+      "davinci/vize_l0/src/profiler/allocation/kani.rs"
     }
   }
   workflow_dispatch = null
@@ -78,6 +90,30 @@ jobs {
       }
     }
   }
+  `source-coordinates` {
+    name = "Span, range, UTF-16 column, line terminator and VLQ laws"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"  // v1.1
+        with {
+          `kani-version` = "0.68.0"
+          command = "kani"
+          args = "davinci/vize_l4/src/write/source_map/kani.rs --output-format=terse"
+        }
+      }
+      ci.command("Verify UTF-16 columns of every short UTF-8 text", "kani davinci/vize_l0/src/line_index/kani.rs --output-format=terse --jobs 2")
+      ci.command("Verify JavaScript line terminators", "kani davinci/vize_l4/src/write/kani.rs --output-format=terse")
+      ci.command("Verify span, range and mapping offsets", "cargo kani --manifest-path davinci/vize_l0/Cargo.toml --lib --harness span::proofs:: --harness source_range::proofs:: --output-format=terse --jobs 2")
+    }
+  }
+
+
   `graph-certificates` {
     name = "L3 reachability certificates"
     `runs-on` = ci.linux
@@ -99,7 +135,7 @@ jobs {
   }
 
   `l3-reference` {
-    name = "L3 reference schedule, checker, and incremental laws"
+    name = "L3 reference incremental update laws"
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     steps = new Listing {
@@ -117,11 +153,43 @@ jobs {
       }
     }
   }
-
-  `html-content-model` {
-    name = "HTML content-model kernel properties"
+  `compiler-string-literals` {
+    name = "Emitted compiler string literals"
     `runs-on` = ci.linux
-    `timeout-minutes` = 20
+    `timeout-minutes` = 40
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("davinci-kani")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Produce literal bytes from the compiler writer"
+        env { VIZE_LITERAL_PROOF_ROWS = "${{ runner.temp }}/rust-literals.jsonl" }
+        run = ". \"${{ env.VIZE_CI_FILES }}/produce-literal-bytes-from-the-compiler-writer.sh\""
+      }
+      new Dynamic {
+        name = "Check the round-trip theorem and each emitted value"
+        `working-directory` = "tests/formal/string-literal"
+        run = ". \"${{ env.VIZE_CI_FILES }}/check-the-round-trip-theorem-and-each-emitted-value.sh\""
+      }
+      new Dynamic {
+        uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"
+        with {
+          `kani-version` = "0.68.0"
+          command = "kani"
+          args = "davinci/vize_l0/src/js_string_kani.rs --harness compiler_emits_original_ascii --output-format=terse"
+        }
+      }
+    }
+  }
+
+  `unsafe-text-rebuild` {
+    name = "Unsafe island: L2 text rebuild fill into spare capacity"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 40
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -131,8 +199,26 @@ jobs {
         uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"  // v1.1
         with {
           `kani-version` = "0.68.0"
-          command = "kani"
-          args = "crates/vize_patina/src/html_content_model/kani.rs --output-format=terse"
+          args = "--manifest-path davinci/vize_l2/Cargo.toml --lib --tests --harness fill_writes_ --output-format=terse"
+        }
+      }
+    }
+  }
+
+  `unsafe-l0-allocators` {
+    name = "Unsafe islands: L0 parked values and profiling allocator"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"  // v1.1
+        with {
+          `kani-version` = "0.68.0"
+          args = "--manifest-path davinci/vize_l0/Cargo.toml --lib --tests --harness parked_values_ --harness profiling_allocator_ --output-format=terse"
         }
       }
     }

@@ -134,7 +134,32 @@ function assertHarness(source: string, name: string): void {
   );
 }
 
-test("P3-15 laws are Kani harnesses that the Kani workflow verifies", () => {
+/** The attribute lines attached to `pub fn name(`, nearest first. */
+function attributesOf(source: string, name: string): string[] {
+  const lines = source.split("\n");
+  const at = lines.findIndex((line) => line.startsWith(`pub fn ${name}(`));
+  assert.notEqual(at, -1, `missing ${name}`);
+  const attached: string[] = [];
+  // An item's attributes run up to its doc comment, a blank line or the
+  // previous item's last line.
+  for (let index = at - 1; index >= 0; index--) {
+    const line = lines[index]!;
+    if (line === "" || line.startsWith("///") || line.startsWith("}") || line.endsWith("{}")) break;
+    attached.unshift(line);
+  }
+  return attached;
+}
+
+function assertLemma(source: string, name: string): void {
+  const attributes = attributesOf(source, name);
+  assert.equal(attributes[0], "#[logic]", `${name} must be a Creusot lemma`);
+  assert.ok(
+    attributes.some((line) => line.startsWith("#[ensures(")),
+    `${name} must state its law`,
+  );
+}
+
+test("P3-15 laws are Kani harnesses or Creusot proofs that CI verifies", () => {
   const lattice = harnesses(
     ["davinci", "vize_l3", "src", "lattice", "kani.rs"],
     ["davinci", "vize_l3", "src", "lattice", "classify_proofs.rs"],
@@ -153,33 +178,53 @@ test("P3-15 laws are Kani harnesses that the Kani workflow verifies", () => {
     /^fn the_verdict_never_changes_the_class_and_only_proven_facts_fire\(\)/mu,
   );
   const root = ["tests", "davinci_test_support", "src", "l3_reference"];
-  const reference = harnesses(
-    [...root, "schedule_proofs.rs"],
-    [...root, "checker_proofs.rs"],
-    [...root, "incremental_proofs.rs"],
-  );
+  // The incremental update machine stays on Kani; the scheduling contract
+  // and the C-23 checker are Creusot proofs (2026-11-17-creusot.md).
+  const incremental = harnesses([...root, "incremental_proofs.rs"]);
   for (const name of [
-    "accepted_schedule_orders_edges",
-    "accepted_edges_stay_in_scope",
-    "accepted_regrouping_preserves_edges",
-    "the_checker_reports_codes_in_validator_order",
-    "l3v001_unique_ids_is_exact",
-    "l3v002_rooted_is_exact",
-    "l3v005_resolved_is_exact",
-    "l3v003_ops_resolved_is_exact",
-    "l3v008_ordered_is_exact",
-    "a_well_formed_schedule_points_every_edge_forward",
     "the_patched_tree_displays_the_view",
     "an_update_is_recompute_and_reorders_allocate_nothing",
     "top_level_identities_are_retained_or_fresh",
     "allocation_is_exactly_the_inserted_delta",
   ]) {
-    assertHarness(reference, name);
+    assertHarness(incremental, name);
+  }
+  const proofs = readRepoFile(...root, "creusot.rs");
+  for (const name of [
+    "an_accepted_scheduled_edge_points_forward",
+    "accepted_schedule_orders_edges",
+    "accepted_edges_stay_in_scope",
+    "accepted_regrouping_preserves_edges",
+    "a_well_formed_schedule_points_every_edge_forward",
+  ]) {
+    assertLemma(proofs, name);
+  }
+  const checker = readRepoFile(...root, "checker.rs");
+  for (const [invariant, statement] of [
+    ["unique_ids", "ids_unique"],
+    ["rooted", "has_root"],
+    ["resolved", "parents_resolve"],
+    ["nested", "spans_nest"],
+    ["ops_resolved", "ops_live"],
+    ["scoped", "effects_scoped"],
+    ["edges_resolved", "edges_stay"],
+    ["ordered", "edges_forward"],
+  ] as const) {
+    assert.ok(
+      attributesOf(checker, invariant).includes(
+        `#[cfg_attr(creusot, ensures(result == ${statement}(*p)))]`,
+      ),
+      `${invariant} must equal its declarative statement`,
+    );
   }
   const kani = readRepoFile(".github", "workflows", "davinci-kani.yml");
   assert.match(kani, /args: davinci\/vize_l3\/src\/lattice\/kani\.rs /u);
   assert.match(kani, /args: tests\/davinci_test_support\/src\/l3_reference\/kani\.rs /u);
-  const checker = readRepoFile(...root, "checker.rs");
+  const creusot = readRepoFile("tests", "formal", "creusot", "reference", "Cargo.toml");
+  assert.match(
+    creusot,
+    /^path = "\.\.\/\.\.\/\.\.\/davinci_test_support\/src\/l3_reference\/creusot\.rs"$/mu,
+  );
   assert.doesNotMatch(
     checker,
     /\bloop\b|\bwhile\b|\bunsafe\b/u,

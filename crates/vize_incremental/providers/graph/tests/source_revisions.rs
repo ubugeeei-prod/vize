@@ -17,6 +17,11 @@ use vize_resident_graph::{
     TemplateRecovery, TemplateSourceSites,
 };
 
+mod source_revisions {
+    pub(super) mod positions;
+}
+use source_revisions::positions;
+
 #[derive(Debug, Default, PartialEq, Eq)]
 struct Counts {
     unavailable: usize,
@@ -27,6 +32,7 @@ struct Counts {
     accepted: usize,
     projected: usize,
     recovery_sites: usize,
+    recovery_cursor_hits: usize,
     checked_answers: usize,
     witnessed: usize,
 }
@@ -217,6 +223,7 @@ fn selected(source: &str, block: BlockView<'_>, lang: Lang, counts: &mut Counts)
         let TemplateGraphObservation::Incomplete(issues) = observation.unwrap() else {
             panic!("fresh native lowering returned incomplete source");
         };
+        counts.recovery_cursor_hits += positions::check(&issues, source, block);
         counts.recovery_sites +=
             checked_recovery(issues, batch.as_ref().err().unwrap(), source, block);
         counts.incomplete += 1;
@@ -368,6 +375,7 @@ fn graph_answers_across_original_source_edits() {
         totals.accepted += count.accepted;
         totals.projected += count.projected;
         totals.recovery_sites += count.recovery_sites;
+        totals.recovery_cursor_hits += count.recovery_cursor_hits;
         totals.checked_answers += count.checked_answers;
         totals.witnessed += count.witnessed;
     }

@@ -18,6 +18,9 @@ use vize_relief::{AttributeNode, DirectiveNode, ExpressionNode};
 
 mod argument;
 mod literal;
+mod same_name;
+
+pub use same_name::{SameNameBinding, SameNameSpelling};
 
 /// The normalized class of a [`MarkupBinding`] (and the directive a JSX
 /// attribute projects to).
@@ -118,7 +121,7 @@ impl<'a> MarkupBinding<'a> {
         Self::from_inner(MarkupBindingInner::ReliefAttribute(node))
     }
 
-    pub(super) const fn from_relief_directive(node: &'a DirectiveNode<'a>) -> Self {
+    pub(crate) const fn from_relief_directive(node: &'a DirectiveNode<'a>) -> Self {
         Self::from_inner(MarkupBindingInner::ReliefDirective(node))
     }
 

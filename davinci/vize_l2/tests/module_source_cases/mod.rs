@@ -1,7 +1,7 @@
 use oxc_parser::{Parser, ProgramObservation};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock};
-use vize_l2::file::FileArtifact;
+use vize_l2::file::L2Ir;
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
 mod coverage;
@@ -33,7 +33,7 @@ fn lower<'a>(
     original: &ProgramObservation<'a>,
     block: SourceBlock<'a>,
     index: usize,
-) -> FileArtifact<'a> {
+) -> L2Ir<'a> {
     let input = ProgramInput::checked(original.admitted().unwrap(), block, index).unwrap();
     let mut producer = FileProducer::new(arena, block.root_source()).unwrap();
     producer.program(input, ProgramScope::Module).unwrap();

@@ -9,6 +9,7 @@ use vize_l3::{
 };
 
 mod profile {
+    pub(super) mod bounded;
     pub(super) mod checks;
     pub(super) mod trails;
 }
@@ -227,6 +228,7 @@ fn main() {
         let mut lowered = vize_l2_to_l3::lower(&arena, native.artifact.root());
         if siblings > 1 {
             profile::trails::profile(lowered.l3ir(), siblings);
+            profile::bounded::profile(lowered.l3ir(), siblings);
         }
         profile::checks::profile(&mut lowered.program, siblings);
     }

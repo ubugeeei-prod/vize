@@ -6,6 +6,6 @@ export WASM_PACK_CACHE="$PWD/.cache/wasm-pack"
 @DARWIN@
 
 echo "Vize dev shell ready."
-echo "Nix provides Node, pnpm, Gauche, Rust, wasm-pack, wasm-bindgen, and binaryen."
+echo "Nix provides Node, pnpm, Rust, wasm-pack, wasm-bindgen, and binaryen."
 echo "Run: vp install --frozen-lockfile"
 echo "Local defaults: vp check / vp fmt / vp dev / vp build / vp test / vp lint"

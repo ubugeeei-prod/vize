@@ -2,7 +2,7 @@
 
 use crate::file::build::Facts;
 use crate::file::vue::{ExposureIssueKind, VueExposure};
-use crate::file::{BindingRef, FileArtifact, ScopeId, ScriptUnitId};
+use crate::file::{BindingRef, L2Ir, ScopeId, ScriptUnitId};
 use alloc::{boxed::Box, vec::Vec};
 use oxc_ast::ast::Program;
 use oxc_parser::AdmittedProgram;
@@ -61,13 +61,13 @@ pub(super) fn record_annotation(
 /// fn forge() { let _ = SetupAnnotation { span: true }; }
 /// ```
 pub struct SetupAnnotation<'owner, 'arena> {
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     original: &'owner SetupAnnotationRecord,
 }
 
 impl<'owner, 'arena> SetupAnnotation<'owner, 'arena> {
     #[must_use]
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.file
     }
     #[must_use]
@@ -132,8 +132,8 @@ pub struct SetupIssue {
 /// ```compile_fail
 /// use oxc_parser::AdmittedProgram;
 /// use vize_l1::container::vue::ScriptView;
-/// use vize_l2::{file::FileArtifact, lang::js::VueSetup};
-/// fn discard<'d, 'p, 'a>(file: FileArtifact<'a>, script: ScriptView<'d, 'a>,
+/// use vize_l2::{file::L2Ir, lang::js::VueSetup};
+/// fn discard<'d, 'p, 'a>(file: L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     program: AdmittedProgram<'p, 'a>) {
 ///     let setup = VueSetup::checked(&file, script, program).unwrap();
 ///     drop(file);
@@ -143,8 +143,8 @@ pub struct SetupIssue {
 /// It also keeps the original parser observation borrowed:
 /// ```compile_fail
 /// use vize_l1::{container::vue::ScriptView, embed::syntax::EmbedSyntax};
-/// use vize_l2::{file::FileArtifact, lang::js::VueSetup};
-/// fn discard<'d, 'a>(file: &FileArtifact<'a>, script: ScriptView<'d, 'a>,
+/// use vize_l2::{file::L2Ir, lang::js::VueSetup};
+/// fn discard<'d, 'a>(file: &L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     syntax: EmbedSyntax<'a>) {
 ///     let setup = VueSetup::checked(file, script, syntax.admitted_program().unwrap()).unwrap();
 ///     drop(syntax);
@@ -157,7 +157,7 @@ pub struct VueSetup<'owner, 'descriptor, 'program, 'arena> {
 
 impl<'owner, 'descriptor, 'program, 'arena> VueSetup<'owner, 'descriptor, 'program, 'arena> {
     pub fn checked(
-        file: &'owner FileArtifact<'arena>,
+        file: &'owner L2Ir<'arena>,
         script: ScriptView<'descriptor, 'arena>,
         program: AdmittedProgram<'program, 'arena>,
     ) -> Result<Self, SetupIssue> {
@@ -216,7 +216,7 @@ impl<'owner, 'descriptor, 'program, 'arena> VueSetup<'owner, 'descriptor, 'progr
     }
 }
 
-impl<'arena> FileArtifact<'arena> {
+impl<'arena> L2Ir<'arena> {
     /// Private projection of real rows; public eligibility receipts choose the unit.
     pub(crate) fn setup_annotations_for_unit(
         &self,

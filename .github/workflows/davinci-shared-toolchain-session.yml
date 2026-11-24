@@ -8,6 +8,10 @@ on:
       - crates/vize_maestro/src/source_project/toolchain_session/**
       - crates/vize_incremental/providers/graph/tests/incremental.rs
       - crates/vize_atelier_sfc/tests/bundler_toolchain_session.rs
+      - crates/vize_atelier_sfc/src/native.rs
+      - crates/vize_atelier_sfc/src/native/styles.rs
+      - crates/vize_atelier_sfc/tests/component_scss/**
+      - crates/vize_maestro/Cargo.toml
       - tests/fixtures/shared-toolchain/**
   workflow_dispatch: null
 permissions:
@@ -51,6 +55,10 @@ jobs:
       - uses: ./.github/actions/setup-wild-http-recovery
         with:
           wild-version: 0.9.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
       - name: Replay the original editor revisions in a single feature build and resident graph
         run: . "${{ env.VIZE_CI_FILES }}/replay-the-original-editor-revisions-in-a-single-feature-build-and-resident-graph.sh"
   stock:

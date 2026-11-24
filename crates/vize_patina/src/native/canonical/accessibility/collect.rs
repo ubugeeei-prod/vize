@@ -39,7 +39,7 @@ pub(super) struct Candidates {
 }
 
 impl Candidates {
-    pub(super) fn collect(&mut self, file: &vize_l2::file::FileArtifact<'_>) {
+    pub(super) fn collect(&mut self, file: &vize_l2::file::L2Ir<'_>) {
         let artifact = file.artifact();
         // The validated count includes attached bindings and nested regions.
         // An isolated root is therefore the complete input to both rules.

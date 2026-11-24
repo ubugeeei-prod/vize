@@ -32,10 +32,7 @@ fn source_contains_parser_recovery(source: &str) -> bool {
                     .unwrap_or_default();
                 // The shipped HTML parser reports `</img>` (and other void
                 // end tags) as fatal. L2 cannot emit before that diagnostic.
-                if is_html_void_tag_name(closing_name)
-                    || (closing_name.bytes().any(|byte| byte.is_ascii_uppercase())
-                        && is_html_void_tag_name(&closing_name.to_ascii_lowercase()))
-                {
+                if is_html_void_tag_ignoring_case(closing_name) {
                     return true;
                 }
                 // A stray root-level end tag is fatal in the shipped parser.
@@ -62,17 +59,12 @@ fn source_contains_parser_recovery(source: &str) -> bool {
 
         let name = source.get(name_start..name_end).unwrap_or_default();
         let namespace = tag_namespace(name, tags.last().copied());
-        let tag_end = scan_tag_end(bytes, name_end);
+        let (tag_end, self_closing) = scan_open_tag_end(bytes, name_end);
         // The direct L2 path skips parser diagnostics and expression entity
         // decoding, so those tags must use the shared parser.
         if tag_needs_shipped_parser(bytes, name_end, tag_end) {
             return true;
         }
-        let self_closing = tag_closes_self_closing(bytes, name_end, tag_end);
-        let html_void_tag = namespace == SourceNamespace::Html
-            && (is_html_void_tag_name(name)
-                || (name.bytes().any(|byte| byte.is_ascii_uppercase())
-                    && is_html_void_tag_name(&name.to_ascii_lowercase())));
         if namespace == SourceNamespace::Html
             && (name.eq_ignore_ascii_case("a")
                 || name.eq_ignore_ascii_case("button")
@@ -83,11 +75,11 @@ fn source_contains_parser_recovery(source: &str) -> bool {
         {
             return true;
         }
-        if namespace == SourceNamespace::Html
+        if self_closing
+            && namespace == SourceNamespace::Html
             && is_plain_native_html_tag_name(name)
             && !is_html_void_tag_name(name)
             && !is_allowed_self_closing_special_tag_name(name)
-            && self_closing
         {
             return true;
         }
@@ -101,7 +93,9 @@ fn source_contains_parser_recovery(source: &str) -> bool {
             return true;
         }
 
-        if !self_closing && !html_void_tag {
+        if !self_closing
+            && (namespace != SourceNamespace::Html || !is_html_void_tag_ignoring_case(name))
+        {
             tags.push(SourceOpenTag { name, namespace });
         }
 
@@ -223,6 +217,12 @@ fn is_html_void_tag_name(name: &str) -> bool {
     )
 }
 
+fn is_html_void_tag_ignoring_case(name: &str) -> bool {
+    is_html_void_tag_name(name)
+        || (name.bytes().any(|byte| byte.is_ascii_uppercase())
+            && is_html_void_tag_name(&name.to_ascii_lowercase()))
+}
+
 fn is_allowed_self_closing_special_tag_name(name: &str) -> bool {
     matches!(name, "component" | "slot")
 }
@@ -298,28 +298,7 @@ fn scan_comment_end(bytes: &[u8], start: usize) -> usize {
 }
 
 fn scan_tag_end(bytes: &[u8], start: usize) -> usize {
-    let mut index = start;
-    let mut quote = None;
-
-    while let Some(&byte) = bytes.get(index) {
-        if let Some(quote_byte) = quote {
-            if byte == quote_byte {
-                quote = None;
-            }
-            index += 1;
-            continue;
-        }
-
-        match byte {
-            b'\'' | b'"' => quote = Some(byte),
-            b'>' => return index + 1,
-            _ => {}
-        }
-
-        index += 1;
-    }
-
-    bytes.len()
+    scan_open_tag_end(bytes, start).0
 }
 
 /// A cheap warning gate for the SFC direct path. A duplicate (or a tag with
@@ -400,14 +379,14 @@ fn tag_needs_shipped_parser(bytes: &[u8], start: usize, end: usize) -> bool {
     false
 }
 
-fn tag_closes_self_closing(bytes: &[u8], start: usize, end: usize) -> bool {
+/// Find the opening tag's end and its last unquoted delimiter in one scan.
+#[inline]
+fn scan_open_tag_end(bytes: &[u8], start: usize) -> (usize, bool) {
     let mut index = start;
     let mut quote = None;
     let mut last_non_whitespace = None;
 
-    while index < end
-        && let Some(&byte) = bytes.get(index)
-    {
+    while let Some(&byte) = bytes.get(index) {
         if let Some(quote_byte) = quote {
             if byte == quote_byte {
                 quote = None;
@@ -418,7 +397,7 @@ fn tag_closes_self_closing(bytes: &[u8], start: usize, end: usize) -> bool {
 
         match byte {
             b'\'' | b'"' => quote = Some(byte),
-            b'>' => return last_non_whitespace == Some(b'/'),
+            b'>' => return (index + 1, last_non_whitespace == Some(b'/')),
             b if b.is_ascii_whitespace() => {}
             _ => last_non_whitespace = Some(byte),
         }
@@ -426,5 +405,5 @@ fn tag_closes_self_closing(bytes: &[u8], start: usize, end: usize) -> bool {
         index += 1;
     }
 
-    false
+    (bytes.len(), false)
 }

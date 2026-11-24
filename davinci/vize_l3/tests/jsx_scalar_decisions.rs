@@ -45,7 +45,7 @@ fn jsx_and_tsx_scalar_body_reads_are_bound_to_the_genuine_original_function_scop
             .as_ptr()
             != original
         {
-            return Err("original moved Program");
+            return Err("original moved L3Ir");
         }
         let read = analysis
             .decisions()

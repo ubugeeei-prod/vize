@@ -49,6 +49,8 @@ type GenerateBundle = Record<string, GenerateBundleItem>;
 type HotUpdateHookOptions = {
   ensureAcceptingClientModule?: (vueFile: string) => Promise<ModuleNode>;
   requireAcceptingClientModule?: boolean;
+  /** Direct SFC edits are recompiled once by the client; dependencies reach every environment. */
+  recompileVueFile?: boolean;
   onRecompileError?: (error: unknown) => void;
   /** The dev server's resolver, for the SFC's `src` module requests. */
   resolve?: HostResolve;
@@ -144,6 +146,7 @@ export async function handleHotUpdateHook(
     return [...affectedModules];
   }
 
+  if (options.recompileVueFile === false) return ctx.modules;
   if (!file.endsWith(".vue")) return;
 
   const cachedOwners = new Set([

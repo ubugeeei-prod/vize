@@ -1,5 +1,5 @@
 use super::{
-    FileArtifact, PositionQueryError, TemplateQueryError, TemplateSiteRef, TemplateSiteScope,
+    L2Ir, PositionQueryError, TemplateQueryError, TemplateSiteRef, TemplateSiteScope,
     TemplateSymbolRef,
 };
 use crate::lang::js::{NativeTemplateFile, NativeTemplateOwner};
@@ -67,7 +67,7 @@ fn attempt<'a>(arena: &'a Allocator, source: &'a str, complete: bool) -> NativeT
     output
 }
 
-fn file<'f, 'a>(output: &'f NativeTemplateFile<'a>) -> &'f FileArtifact<'a> {
+fn file<'f, 'a>(output: &'f NativeTemplateFile<'a>) -> &'f L2Ir<'a> {
     output.view().unwrap().file().unwrap()
 }
 
@@ -75,14 +75,14 @@ fn at(source: &str, needle: &str) -> u32 {
     source.find(needle).unwrap() as u32
 }
 
-fn site<'f, 'a>(file: &'f FileArtifact<'a>, source: &str, needle: &str) -> TemplateSiteRef<'f, 'a> {
+fn site<'f, 'a>(file: &'f L2Ir<'a>, source: &str, needle: &str) -> TemplateSiteRef<'f, 'a> {
     Model::new(&file)
         .template_symbol_at_offset(at(source, needle))
         .unwrap()
         .unwrap()
 }
 
-fn uses(file: &FileArtifact<'_>, symbol: TemplateSymbolRef<'_, '_>) -> alloc::vec::Vec<Span> {
+fn uses(file: &L2Ir<'_>, symbol: TemplateSymbolRef<'_, '_>) -> alloc::vec::Vec<Span> {
     let mut spans = alloc::vec::Vec::new();
     Model::new(&file)
         .for_each_template_reference_to(symbol, |site| spans.push(site.span()))
