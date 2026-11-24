@@ -1,7 +1,10 @@
 use super::*;
-use davinci_harness::{alloc, paired::assert_paired_time};
+use davinci_harness::{alloc, paired::assert_calibrated_paired_time};
 use std::hint::black_box;
 
+// Allocations stay exact. Time is checked against an A/A control in the same
+// loop: the empty and TSX inputs cost the same on both reads, and their sign
+// test alone followed code layout rather than the compared code.
 #[test]
 #[ignore = "measures editor reads with a resident native File and with its construction"]
 fn original_lowering_and_script_products_across_edits() {
@@ -67,7 +70,7 @@ fn original_lowering_and_script_products_across_edits() {
             assert!(
                 new.calls <= old.calls && new.peak_bytes_over_start <= old.peak_bytes_over_start
             );
-            assert_paired_time(
+            assert_calibrated_paired_time(
                 &vize_l0::cstr!("retained script {name} cold={cold}"),
                 64,
                 run,

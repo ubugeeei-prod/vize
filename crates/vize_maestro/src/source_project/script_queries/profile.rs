@@ -1,7 +1,10 @@
 //! Complete original products, including the two parser and publication boundaries.
 use super::*;
 use crate::source_project::SourceSnapshotCache;
-use davinci_harness::{alloc, paired::assert_paired_time};
+use davinci_harness::{
+    alloc,
+    paired::{assert_calibrated_paired_time, assert_paired_time},
+};
 use std::{fmt::Write, hint::black_box, sync::Arc};
 use tower_lsp::lsp_types::Url;
 
@@ -143,7 +146,7 @@ fn combined_original_products() {
     assert!(failures.is_empty(), "heap regressions on {failures:?}");
     assert!(!corpus.is_empty(), "no original inputs");
     for (name, snapshot) in &timed {
-        assert_paired_time(name, 8, |composed| drop(run(snapshot, &state, composed)));
+        assert_calibrated_paired_time(name, 8, |composed| drop(run(snapshot, &state, composed)));
     }
     assert_paired_time(
         &vize_l0::cstr!("{} other original inputs", corpus.len()),
