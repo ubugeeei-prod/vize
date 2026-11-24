@@ -61,10 +61,22 @@ const defaultExpression = readSourceRecord(
 
 const scriptConsumedSlots = readSourceRecord(
   "script-consumed-slots-13578",
-  "8b6794567259acb6b220fb84ea4b622c16b5674f837c751adbeb4010d6ffb848",
+  "87473c12da88cdefdadb4d3fac8e2ac97c61495e45896502783c2298e7a15314",
   "vize.scriptConsumedSlotsSource.v1",
   13578,
 );
+
+const typedUseSlots = readSourceRecord(
+  "typed-use-slots-13578",
+  "6454233b984533bce96260ee97fd94dd989449749f4fb1b484a10582becd9978",
+  "vize.typedUseSlotsSource.v1",
+  13578,
+);
+
+/** Remove only the authenticated #13578 follow-up that keeps typed `useSlots()` exact. */
+export function beforeTypedUseSlots(file: string, current: string): string {
+  return restoreProducer(typedUseSlots, file, current);
+}
 
 /** Remove only the authenticated #13578 producer changes before historical custody. */
 export function beforeScriptConsumedSlots(file: string, current: string): string {
@@ -72,7 +84,7 @@ export function beforeScriptConsumedSlots(file: string, current: string): string
 }
 
 export function beforeComponentMetadata(file: string, current: string): string {
-  current = beforeScriptConsumedSlots(file, current);
+  current = beforeScriptConsumedSlots(file, beforeTypedUseSlots(file, current));
   return restoreProducer(metadata, file, restoreProducer(defaultExpression, file, current));
 }
 
