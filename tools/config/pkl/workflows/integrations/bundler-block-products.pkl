@@ -10,6 +10,8 @@ on {
       "tools/commands/levels/native-addon-identity.ts"
       "tools/support/compat/npm/stock-addon-rustc.rs"
       "tests/tooling/native-addon-identity.test.ts"
+      "tests/tooling/stock-addon-qualification.test.ts"
+      "tools/support/compat/npm/stock-addon-qualification.ts"
       "tools/support/compat/npm/bundler-block-products.ts"
       "davinci/vize_l1/src/container/vue/boundary*"
       "davinci/vize_l1/src/container/vue/boundary/**"
@@ -81,6 +83,7 @@ jobs {
           path = """
           ${{ runner.temp }}/stock-addon.json
           ${{ runner.temp }}/stock-addon-identity.json
+          ${{ runner.temp }}/stock-addon-qualification.json
           ${{ runner.temp }}/stock-addon.json.executables-*/base
           ${{ runner.temp }}/stock-addon.json.executables-*/head*
           !${{ runner.temp }}/stock-addon.json.executables-*/*.node
