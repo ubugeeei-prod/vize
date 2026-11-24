@@ -50,7 +50,10 @@ impl<'a> MarkupBinding<'a> {
     /// This binding as a same-name `v-bind` written as `spelling`.
     ///
     /// A binding written the other way is answered from its value alone, so a
-    /// rule that looks for one spelling does none of the other's work.
+    /// rule that looks for one spelling does none of the other's work. The
+    /// guard is inlined: for every binding that is not such a `v-bind`, the
+    /// caller pays the kind and value checks and nothing else.
+    #[inline]
     pub fn same_name_binding_written(
         &self,
         spelling: SameNameSpelling,
