@@ -81,9 +81,10 @@ _Davinci state:_ declaration fingerprints in `vize_l2::summary` (XXH3-128
 per declaration, not per file) and salsa backdating in
 `crates/vize_incremental/src/summary.rs` already do this for cross-file
 facts. _Owed:_ the same parameterization for **emitted blocks**. A
-template's L4 output should be keyed by its L2 content hash with the
-component's import names and the hoisted-constant numbering factored out, so
-an edit to one block does not re-emit an unchanged sibling block.
+template's L4 cache key should cover its L2 content hash and every emit
+option that affects the output, including mode, development, inline and
+static hoisting. Parameterizing import names and hoisted-constant numbering
+allows an unchanged sibling block to reuse its output.
 
 ## GCC
 
@@ -267,9 +268,9 @@ measure.
 | Emit, codegen       | 1,482k |   851k |
 | Total               | 2,585k | 1,879k |
 
-- **The front is at parity.** L1 parses 2.7 times faster than the legacy
-  parser, and lowering spends what that saves. Parse plus lowering is 1.10M on
-  one side and 1.03M on the other.
+- **Parsing and lowering use similar instruction counts.** L1 parsing
+  retires 336k instructions against the legacy parser's 908k. Including
+  lowering, the totals are 1.10M native and 1.03M legacy.
 - **The whole deficit is the L4 emitter**: 1.74 times the legacy code
   generator on this template.
 - **Walk count is not where the time goes.** O-2 took a production compile
