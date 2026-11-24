@@ -14,11 +14,13 @@ impl SourceSnapshot {
         let editor = self.with_script_blocks(state, |out, root, name, block| {
             let checker = ScriptDiagnosticProfile::for_language(block.lang.as_deref());
             out.read_script(root, name, block, Some(checker.source_type()), |syntax| {
-                diagnostics.extend(
-                    checker
-                        .diagnostics(syntax)
-                        .map_err(ScriptQueryRefusal::Checker)?,
-                );
+                if syntax.parsed().panicked || !syntax.parsed().diagnostics.is_empty() {
+                    diagnostics.extend(
+                        checker
+                            .diagnostics(syntax)
+                            .map_err(ScriptQueryRefusal::Checker)?,
+                    );
+                }
                 Ok(())
             })
         })?;
