@@ -37,6 +37,14 @@ fn sfc_templates_keep_authored_rows_and_html_documents_keep_parser_owners() {
 
     let mut document = Vec::new();
     let page = crate::markup::L2Template::lower_in_dom(&allocator, source);
+    assert!(
+        page.lowered()
+            .artifact
+            .provenance
+            .iter()
+            .any(|record| record.rule == "lower.table.implicit-tbody"),
+        "the public inspection entry retains the decision for the implied owner"
+    );
     element_tags(&page.lowered().artifact.root.ops, &mut document);
     assert_eq!(document, ["table", "tbody", "tr", "td"]);
 
