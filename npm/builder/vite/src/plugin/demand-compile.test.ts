@@ -21,7 +21,7 @@ import { makeState } from "../test/precompile-cache-project.ts";
 import { loadSfcModule } from "../test/sfc-module.ts";
 import { observeConsole } from "../test/startup-scan-project.ts";
 import { handleHotUpdateHook } from "./hmr.ts";
-import { loadHook } from "./load.ts";
+import { LOAD_ID_FILTER, loadHook } from "./load.ts";
 import { getSfcModuleRequest, requestResolvedSfc, transformSfcModule } from "./sfc-module.ts";
 import { getCompileOptionsForRequest, getEnvironmentCache } from "./state.ts";
 
@@ -54,7 +54,15 @@ void test("a loaded file joins the batch when its resolution was not observed", 
   try {
     const state = makeState(project.root);
     // A rebuild loads modules whose resolution the bundler kept from the last build.
-    for (const name of names(3)) assert.notEqual(loadHook(state, project.file(name)), null);
+    for (const name of names(3)) {
+      const id = project.file(name);
+      // The host calls `load` for this id: the hook's filter admits it.
+      assert.equal(
+        LOAD_ID_FILTER.some((pattern) => pattern.test(id)),
+        true,
+      );
+      assert.notEqual(loadHook(state, id), null);
+    }
     assert.deepEqual(takeNativeCompileCalls(project.root), [], "loading compiles nothing");
     for (const name of names(3).reverse()) await loadSfcModule(state, project.file(name));
     assert.deepEqual(takeNativeCompileCalls(project.root), [

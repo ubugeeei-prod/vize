@@ -101,16 +101,22 @@ export function getEnvironmentCache(
 }
 
 /**
- * Whether this build already compiled `file`, which makes probing for it
- * redundant. A dev server always asks the filesystem instead: a file can be
- * deleted while its module stays cached, and its import must then reach the
- * host's resolver.
+ * Whether this build already holds `file`, which makes probing for it
+ * redundant: it compiled the file, or an environment of the build took the
+ * file's source snapshot. A dev server always asks the filesystem instead: a
+ * file can be deleted while its module stays cached, and its import must then
+ * reach the host's resolver.
  */
-export function isCompiledInBuild(
-  state: Pick<VizePluginState, "cache" | "ssrCache" | "server">,
+export function isHeldByBuild(
+  state: Pick<VizePluginState, "cache" | "ssrCache" | "server" | "filesystemEpoch">,
   file: string,
 ): boolean {
-  return state.server === null && (state.cache.has(file) || state.ssrCache.has(file));
+  if (state.server !== null) return false;
+  return (
+    state.cache.has(file) ||
+    state.ssrCache.has(file) ||
+    state.filesystemEpoch?.knownSource(file) !== undefined
+  );
 }
 
 export type CompileOptionsForRequest = {

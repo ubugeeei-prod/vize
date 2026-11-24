@@ -21,6 +21,7 @@ import { RESOLVED_CSS_MODULE, toVirtualId } from "../virtual.ts";
 import { vize } from "./index.ts";
 import { LOAD_ID_FILTER, TRANSFORM_ID_FILTER, loadHook, transformHook } from "./load.ts";
 import { resolveIdHook } from "./resolve.ts";
+import { getSfcModuleRequest } from "./sfc-module.ts";
 
 type Host = Awaited<ReturnType<typeof startupHost>>;
 type Calls = Record<"stat" | "read" | "exists", Map<string, number>>;
@@ -109,17 +110,25 @@ async function loadedText(host: Host, file: string, ssr = false): Promise<string
   return typeof loaded === "string" ? loaded : (loaded as { code: string }).code;
 }
 
+/** The opt-in startup scan, and the default: sources are read when the module graph asks. */
+const scanModes = [
+  { name: "startup scan", scanPatterns: ["**/*.vue"] },
+  { name: "no scan", scanPatterns: undefined },
+];
+type ScanPatterns = (typeof scanModes)[number]["scanPatterns"];
+
 /** `vite build --app`: a plugin instance per environment, all configured before the first builds. */
-async function appBuild(root: string): Promise<[Host, boolean][]> {
+async function appBuild(root: string, scanPatterns: ScanPatterns): Promise<[Host, boolean][]> {
+  const plugins = () => vize({ configMode: false, scanPatterns });
   return [
-    [await startupHost(root, { plugins: vize({ configMode: false }) }), false],
-    [await startupHost(root, { plugins: vize({ configMode: false }), build: { ssr: true } }), true],
+    [await startupHost(root, { plugins: plugins() }), false],
+    [await startupHost(root, { plugins: plugins(), build: { ssr: true } }), true],
   ];
 }
 
 void test("one app build stats and reads each SFC once across its environments", async (t) => {
   const { root, components } = project(t, 12);
-  const environments = await appBuild(root);
+  const environments = await appBuild(root, ["**/*.vue"]);
   const calls = await vueFileCalls(async () => {
     for (const [environment, ssr] of environments) {
       await environment.start();
@@ -132,62 +141,98 @@ void test("one app build stats and reads each SFC once across its environments",
   assert.deepEqual(sorted(calls.read), once(components));
 });
 
-void test("the next build reads its sources again", async (t) => {
-  const { root, components } = project(t, 2);
-  for (const [environment, ssr] of await appBuild(root)) {
-    await environment.start();
-    assert.equal(await loadedText(environment, components[0], ssr), component("0"));
-    await environment.close();
-  }
-
-  fs.writeFileSync(components[0], component("edited"));
-  const next = await appBuild(root);
+void test("an app build with no scan reads each SFC once across its environments", async (t) => {
+  const { root, components } = project(t, 12);
+  const importer = path.join(root, "src/main.ts");
+  const environments = await appBuild(root, undefined);
   const calls = await vueFileCalls(async () => {
-    for (const [environment, ssr] of next) {
+    for (const [environment, ssr] of environments) {
       await environment.start();
-      assert.equal(await loadedText(environment, components[0], ssr), component("edited"));
+      // A module's imports are resolved together and loaded afterwards, so the
+      // first component's request compiles all twelve in one batch.
+      for (const file of components) {
+        const context = { resolve: async () => null };
+        assert.ok(
+          await hook(mainPlugin(environment).resolveId).call(context, file, importer, { ssr }),
+        );
+      }
+      for (const file of components) assert.ok(await environment.load(file, ssr));
       await environment.close();
     }
   });
+  // Nothing is scanned, so nothing is stat'ed. The first environment probes for
+  // each file once and reads it once, for its batch or its `load`, whichever
+  // comes first. The second environment asks the filesystem nothing.
+  assert.deepEqual(sorted(calls.stat), []);
+  assert.deepEqual(sorted(calls.exists), once(components));
   assert.deepEqual(sorted(calls.read), once(components));
 });
 
-void test("an environment that builds again reads its sources again", async (t) => {
-  const { root, components } = project(t, 1);
-  const host = await startupHost(root, { plugins: vize({ configMode: false }) });
-  await host.start();
-  assert.equal(await loadedText(host, components[0]), component("0"));
-  await host.close();
-
-  // A build loop that starts the same environment again reports nothing in between.
-  fs.writeFileSync(components[0], component("edited"));
-  await host.start();
-  assert.equal(await loadedText(host, components[0]), component("edited"));
-});
-
-void test("a build loads the snapshot it compiled; a dev server reads the file", async (t) => {
-  const { root, components } = project(t, 1);
-  for (const command of ["build", "serve"] as const) {
-    const host = await startupHost(root, { plugins: vize({ configMode: false }) }, command);
-    if (command === "serve") {
-      hook(mainPlugin(host).configureServer).call(mainPlugin(host), {
-        config: host.resolved,
-        httpServer: new EventEmitter(),
-        watcher: new EventEmitter(),
-        middlewares: { use() {} },
-      });
+for (const { name, scanPatterns } of scanModes) {
+  void test(`the next build reads its sources again (${name})`, async (t) => {
+    const { root, components } = project(t, 2);
+    for (const [environment, ssr] of await appBuild(root, scanPatterns)) {
+      await environment.start();
+      assert.equal(await loadedText(environment, components[0], ssr), component("0"));
+      await environment.close();
     }
-    await host.start();
-    // No event reports this write, as for a file in a directory the watcher ignores.
+
     fs.writeFileSync(components[0], component("edited"));
-    assert.equal(
-      await loadedText(host, components[0]),
-      component(command === "build" ? "0" : "edited"),
-      command,
-    );
-    fs.writeFileSync(components[0], component("0"));
-  }
-});
+    const next = await appBuild(root, scanPatterns);
+    const calls = await vueFileCalls(async () => {
+      for (const [environment, ssr] of next) {
+        await environment.start();
+        assert.equal(await loadedText(environment, components[0], ssr), component("edited"));
+        await environment.close();
+      }
+    });
+    // A scan reads every file it matches; without one only the loaded file is read.
+    assert.deepEqual(sorted(calls.read), once(scanPatterns ? components : [components[0]]));
+  });
+
+  void test(`an environment that builds again reads its sources again (${name})`, async (t) => {
+    const { root, components } = project(t, 1);
+    const host = await startupHost(root, { plugins: vize({ configMode: false, scanPatterns }) });
+    await host.start();
+    assert.equal(await loadedText(host, components[0]), component("0"));
+    await host.close();
+
+    // A build loop that starts the same environment again reports nothing in between.
+    fs.writeFileSync(components[0], component("edited"));
+    await host.start();
+    assert.equal(await loadedText(host, components[0]), component("edited"));
+  });
+
+  void test(`a build loads the snapshot it took; a dev server reads the file (${name})`, async (t) => {
+    const { root, components } = project(t, 1);
+    for (const command of ["build", "serve"] as const) {
+      const host = await startupHost(
+        root,
+        { plugins: vize({ configMode: false, scanPatterns }) },
+        command,
+      );
+      if (command === "serve") {
+        hook(mainPlugin(host).configureServer).call(mainPlugin(host), {
+          config: host.resolved,
+          httpServer: new EventEmitter(),
+          watcher: new EventEmitter(),
+          middlewares: { use() {} },
+        });
+      }
+      await host.start();
+      // The scan took the snapshot at start. Without one, the first load takes it.
+      if (!scanPatterns) assert.equal(await loadedText(host, components[0]), component("0"));
+      // No event reports this write, as for a file in a directory the watcher ignores.
+      fs.writeFileSync(components[0], component("edited"));
+      assert.equal(
+        await loadedText(host, components[0]),
+        component(command === "build" ? "0" : "edited"),
+        command,
+      );
+      fs.writeFileSync(components[0], component("0"));
+    }
+  });
+}
 
 void test("a build does not probe for an SFC it compiled; a dev server does", async (t) => {
   const { root, components } = project(t, 1);
@@ -303,8 +348,14 @@ void test("the main hooks declare the ids their handlers accept", async (t) => {
 
   const state = makeState(root);
   const corpus = idCorpus();
+  let sfcModules = 0;
   for (const id of corpus) {
     const label = JSON.stringify(id);
+    // `load` is where an SFC main module joins its environment's compile queue.
+    if (getSfcModuleRequest(state, id)) {
+      sfcModules++;
+      assert.equal(hostCalls(LOAD_ID_FILTER, id), true, `SFC module ${label}`);
+    }
     assert.equal(hostCalls(LOAD_ID_FILTER, id), accepts.load(id), `load ${label}`);
     // The one id family the transform filter lets through and its handler turns away.
     assert.equal(
@@ -328,6 +379,7 @@ void test("the main hooks declare the ids their handlers accept", async (t) => {
     ],
   );
   assert.equal(typeof loadHook(state, RESOLVED_CSS_MODULE), "string");
+  assert.equal(sfcModules > 0, true, "the corpus holds SFC main modules");
 });
 
 const APP = `<script setup lang="ts">

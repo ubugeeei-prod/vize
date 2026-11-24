@@ -14,7 +14,7 @@ import {
   splitViteIdQuery,
 } from "@vizejs/native";
 
-import { isCompiledInBuild, type VizePluginState } from "./state.ts";
+import { isHeldByBuild, type VizePluginState } from "./state.ts";
 import { isInsidePath, isProjectSourceImporter, normalizeImporterFilePath } from "./importer.ts";
 import { resolvePackageJsonImportFromVizeImporter } from "./package-imports.ts";
 import { cleanVueSfcImporter, resolveRelativeVueSfcImport } from "./resolve-relative-vue.ts";
@@ -1224,7 +1224,7 @@ export async function resolveIdHook(
     }
 
     const resolved = resolveVuePath(state, vueRequestPath, importer);
-    const fileExists = isCompiledInBuild(state, resolved) || fs.existsSync(resolved);
+    const fileExists = isHeldByBuild(state, resolved) || fs.existsSync(resolved);
     if (!fileExists) {
       const aliased = await resolveAliasedVueImport(
         ctx,

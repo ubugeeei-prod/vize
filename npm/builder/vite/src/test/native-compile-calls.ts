@@ -73,3 +73,37 @@ export function scratchProject(files: Record<string, string>) {
   for (const [name, source] of Object.entries(files)) write(name, source);
   return { root, file, write, cleanup: () => fs.rmSync(root, { recursive: true, force: true }) };
 }
+
+/** How often `run` reads, stats and probes each `.vue` file, by its path relative to `root`. */
+export async function countVueFileAccess(root: string, run: () => unknown) {
+  const calls = { read: new Map<string, number>(), stat: new Map<string, number>() };
+  const probes = new Map<string, number>();
+  const count = (counted: Map<string, number>, file: unknown) => {
+    if (typeof file !== "string" || !file.endsWith(".vue")) return;
+    const name = path.relative(root, file).replaceAll("\\", "/");
+    counted.set(name, (counted.get(name) ?? 0) + 1);
+  };
+  const { readFileSync, statSync, existsSync } = fs;
+  fs.readFileSync = ((file: fs.PathOrFileDescriptor, ...rest: never[]) => {
+    count(calls.read, file);
+    return readFileSync(file, ...rest);
+  }) as typeof readFileSync;
+  fs.statSync = ((file: fs.PathLike, ...rest: never[]) => {
+    count(calls.stat, file);
+    return statSync(file, ...rest);
+  }) as typeof statSync;
+  fs.existsSync = (file) => {
+    count(probes, file);
+    return existsSync(file);
+  };
+  try {
+    await run();
+  } finally {
+    Object.assign(fs, { readFileSync, statSync, existsSync });
+  }
+  return {
+    read: Object.fromEntries(calls.read),
+    stat: Object.fromEntries(calls.stat),
+    exists: Object.fromEntries(probes),
+  };
+}

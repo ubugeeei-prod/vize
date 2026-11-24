@@ -306,30 +306,36 @@ void test("every sign of a filesystem change ends the process epoch", async (t) 
   assert.deepEqual(await asked(), once([file]));
 });
 
-void test("the environments of one app build ask about each path once, and the next build asks again", async (t) => {
-  const { root, models, barrel, types, components } = barrelProject(t, 24, 8);
-  const shared = [...components, ...models, barrel, types];
-  // `vite build --app` configures a plugin instance per environment, then builds them in turn.
-  const appBuild = async () => {
-    const environments = [
-      await startupHost(root, { plugins: vize({ configMode: false }) }),
-      await startupHost(root, { plugins: vize({ configMode: false }), build: { ssr: true } }),
-    ];
-    return realpathCalls(async () => {
-      for (const environment of environments) {
-        await environment.start();
-        await environment.close();
-      }
-    });
-  };
+// The components are compiled by the opt-in startup scan, or when they are loaded.
+for (const scanPatterns of [["**/*.vue"], undefined]) {
+  const mode = scanPatterns ? "startup scan" : "no scan";
+  void test(`the environments of one app build ask about each path once, and the next build asks again (${mode})`, async (t) => {
+    const { root, models, barrel, types, components } = barrelProject(t, 24, 8);
+    const shared = [...components, ...models, barrel, types];
+    // `vite build --app` configures a plugin instance per environment, then builds them in turn.
+    const appBuild = async () => {
+      const plugins = () => vize({ configMode: false, scanPatterns });
+      const environments = [
+        { host: await startupHost(root, { plugins: plugins() }), ssr: false },
+        { host: await startupHost(root, { plugins: plugins(), build: { ssr: true } }), ssr: true },
+      ];
+      return realpathCalls(async () => {
+        for (const { host, ssr } of environments) {
+          await host.start();
+          for (const file of components) assert.ok(await host.load(file, ssr));
+          await host.close();
+        }
+      });
+    };
 
-  for (const build of ["first", "next"]) {
-    const calls = await appBuild();
-    assert.deepEqual(
-      shared.map((file) => calls.get(file)),
-      shared.map(() => 1),
-      `${build} build: every component and type source is asked about once`,
-    );
-    assert.equal(total(calls), calls.size, `${build} build: no path is asked about twice`);
-  }
-});
+    for (const build of ["first", "next"]) {
+      const calls = await appBuild();
+      assert.deepEqual(
+        shared.map((file) => calls.get(file)),
+        shared.map(() => 1),
+        `${build} build: every component and type source is asked about once`,
+      );
+      assert.equal(total(calls), calls.size, `${build} build: no path is asked about twice`);
+    }
+  });
+}

@@ -65,6 +65,21 @@ export function requestSfcCompile(cache: Map<string, CompiledModule>, file: stri
   if (!queue.inFlight.has(file)) queue.resolved.add(file);
 }
 
+/**
+ * The text of the SFC `file` as this run sees it. A build takes one snapshot of
+ * each source in its filesystem epoch, which every environment of the build
+ * shares: `load` and the batches read a file once between them. A dev server
+ * reads the file every time, since a file its watcher ignores can change with
+ * no event to end the epoch. A failure is thrown and not kept.
+ */
+export function readSfcSource(
+  state: Pick<VizePluginState, "server" | "filesystemEpoch">,
+  file: string,
+): string {
+  const epoch = state.server === null ? state.filesystemEpoch : undefined;
+  return epoch ? epoch.readSource(file) : fs.readFileSync(file, "utf-8");
+}
+
 /** Companion plugins whose raw inputs must never be compiled from disk. */
 export function setCompileInputOwners(
   state: Pick<VizePluginState, "cache">,
@@ -219,7 +234,7 @@ function takeResolvedFiles(
     seen.add(file);
     let source: string;
     try {
-      source = fs.readFileSync(file, "utf-8");
+      source = readSfcSource(state, file);
     } catch (error) {
       queue.resolved.delete(file);
       // A removed file is never requested again.
@@ -262,10 +277,18 @@ function compileFiles(
   logWarnings = true,
 ): CompiledModule {
   const { path: file, source } = files[0];
-  const alone = (): CompiledModule =>
-    compileFile(file, cache, getCompileOptionsForRequest(state, ssr, file), source, {
-      logWarnings,
-    });
+  // The next reader of a source that did not compile starts from the file.
+  const forget = (path: string) => state.filesystemEpoch?.forgetSource(path);
+  const alone = (): CompiledModule => {
+    try {
+      return compileFile(file, cache, getCompileOptionsForRequest(state, ssr, file), source, {
+        logWarnings,
+      });
+    } catch (error) {
+      forget(file);
+      throw error;
+    }
+  };
   if (files.length === 1) return alone();
 
   let failed = false;
@@ -275,6 +298,7 @@ function compileFiles(
     ({ results } = compileScopedBatch(files, state, ssr, {
       log: false,
       onFileFailure(path, error) {
+        forget(path);
         if (path !== file) return;
         failed = true;
         failure = error;
@@ -290,6 +314,7 @@ function compileFiles(
   const sources = new Map(files.map((entry) => [entry.path, entry.source]));
   let own: (typeof results)[number] | undefined;
   for (const result of results) {
+    if (result.errors.length > 0) forget(result.path);
     if (result.path === file) {
       own = result;
     } else if (result.errors.length === 0 && result.warnings.length > 0) {

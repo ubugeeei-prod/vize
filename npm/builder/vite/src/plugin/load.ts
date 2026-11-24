@@ -7,6 +7,7 @@ import type { TransformResult } from "vite";
 import {
   getCompileOptionsForRequest as compileOptions,
   getEnvironmentCache,
+  isHeldByBuild,
   shouldExtractCssForRequest,
   syncCollectedCssForFile,
   type VizePluginState,
@@ -14,7 +15,7 @@ import {
 import { getLoadableVueSfcPath } from "./load-sfc.ts";
 import { normalizeVueServerRendererImport } from "./ssr-modules.ts";
 import { compileJsxModule } from "../compiler.ts";
-import { compileRequestedSfcNow } from "./demand-compile.ts";
+import { compileRequestedSfcNow, readSfcSource } from "./demand-compile.ts";
 import { resolveCssImports } from "../utils/css.ts";
 import type { SourceMapV3 } from "../utils/source-map.ts";
 import { fromPluginVisibleVirtualId, LEGACY_VIZE_PREFIX, RESOLVED_CSS_MODULE } from "../virtual.ts";
@@ -61,9 +62,9 @@ function findMacroArtifactModule(
   realPath = classifyVitePluginRequest(realPath).normalizedVuePath;
   let compiled = cache.get(realPath) ?? state.cache.get(realPath) ?? state.ssrCache.get(realPath);
 
-  if (!compiled && fs.existsSync(realPath)) {
+  if (!compiled && (isHeldByBuild(state, realPath) || fs.existsSync(realPath))) {
     // A router imports every page's macro module before any page is requested.
-    compiled = compileRequestedSfcNow(state, realPath, fs.readFileSync(realPath, "utf-8"), ssr);
+    compiled = compileRequestedSfcNow(state, realPath, readSfcSource(state, realPath), ssr);
   }
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
 

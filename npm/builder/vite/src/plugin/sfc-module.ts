@@ -5,7 +5,6 @@
  * reach the source, and those after it see the compiled module.
  */
 
-import fs from "node:fs";
 import { classifyVitePluginRequest } from "@vizejs/native";
 
 import type { HostResolve } from "../../../shared/sfc-src.ts";
@@ -20,7 +19,12 @@ import { getLoadableVueSfcPath, shouldLoadCompiledVueSfcPath } from "./load-sfc.
 import { normalizeStyleVirtualId } from "./style-request.ts";
 import { registerSfcModule, normalizeVueServerRendererImport } from "./ssr-modules.ts";
 import { createDependencyWatch } from "./dependency-watches.ts";
-import { compileRequestedSfc, reportBatchedWarnings, requestSfcCompile } from "./demand-compile.ts";
+import {
+  compileRequestedSfc,
+  readSfcSource,
+  reportBatchedWarnings,
+  requestSfcCompile,
+} from "./demand-compile.ts";
 import { embedsInlineCss, generateOutputWithMap, hasDelegatedStyles } from "../utils/index.ts";
 import { identitySourceMap, MappedModule, type SourceMapV3 } from "../utils/source-map.ts";
 import { resolveCssImports } from "../utils/css.ts";
@@ -130,17 +134,15 @@ export function loadSfcModuleSource(
   sfc: SfcModuleRequest,
   ssr: boolean,
 ): string | { code: string; map: SourceMapV3 } | null {
-  // A build compiles one snapshot of each source: what its pre-compile read is
-  // what the module loads. A dev server reads the file on every request, since
-  // a file its watcher ignores can change with no event to end the epoch.
-  let source = state.server === null ? state.filesystemEpoch?.knownSource(sfc.realPath) : undefined;
-  if (source === undefined) {
-    try {
-      source = fs.readFileSync(sfc.realPath, "utf-8");
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
-      throw error;
-    }
+  // A build compiles one snapshot of each source: what its first reader took
+  // (a pre-compile, a batch, another environment's load) is what the module
+  // loads. A dev server reads the file on every request.
+  let source: string;
+  try {
+    source = readSfcSource(state, sfc.realPath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
   }
   // A load is a request too: a rebuild can load a module it resolved in an earlier build.
   requestSfc(state, sfc, ssr);

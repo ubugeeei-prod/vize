@@ -6,6 +6,7 @@
 
 // Must stay the first import: it wraps the native compile functions the plugin captures.
 import {
+  countVueFileAccess,
   labelledComponent,
   scratchProject,
   takeNativeCompileCalls,
@@ -43,6 +44,15 @@ function reproduction() {
   return scratchProject(files);
 }
 
+/**
+ * The native calls since the last take. A host resolves a module's imports
+ * concurrently, so the order of the files inside a batch is the host's; which
+ * batches there are, and which files each one holds, is not.
+ */
+function batches(root: string): NativeCompileCall[] {
+  return takeNativeCompileCalls(root).map((call) => ({ ...call, files: [...call.files].sort() }));
+}
+
 void test("a build compiles what each environment's graph imports, in one batch", async () => {
   const project = reproduction();
   try {
@@ -58,12 +68,7 @@ void test("a build compiles what each environment's graph imports, in one batch"
           .join("\n");
       },
       closeBundle() {
-        // The bundler resolves a module's imports concurrently, so the order
-        // inside a batch is its own; the batches and their files are not.
-        calls[this.environment.name] = takeNativeCompileCalls(project.root).map((call) => ({
-          ...call,
-          files: [...call.files].sort(),
-        }));
+        calls[this.environment.name] = batches(project.root);
       },
     };
     const entry = (input: string) => ({ build: { rollupOptions: { input } } });
@@ -80,7 +85,7 @@ void test("a build compiles what each environment's graph imports, in one batch"
         worker: { consumer: "server", ...entry("src/worker.ts") },
       },
     });
-    await builder.buildApp();
+    const access = await countVueFileAccess(project.root, () => builder.buildApp());
 
     assert.deepEqual(calls, {
       client: [{ api: "batch", ssr: false, files: components }],
@@ -95,6 +100,10 @@ void test("a build compiles what each environment's graph imports, in one batch"
       );
       assert.equal(outputs[environment].includes("unused"), false);
     }
+    // One build, three environments: each imported file is probed and read once
+    // (#13561), nothing is stat'ed, and an unused file is never touched.
+    const once = Object.fromEntries(components.map((file) => [file, 1]));
+    assert.deepEqual(access, { read: once, stat: {}, exists: once });
   } finally {
     project.cleanup();
   }
@@ -114,13 +123,15 @@ void test("a dev server compiles nothing at start, and a first load in one batch
       ],
     },
     optimizeDeps: { noDiscovery: true, include: [] },
-    server: { middlewareMode: true, watch: null, ws: false },
+    // Vite's own pre-transform starts each import's request while it still
+    // resolves the others. The requests below follow a browser's order instead:
+    // a module's imports are requested once the module itself is served.
+    server: { middlewareMode: true, watch: null, ws: false, preTransformRequests: false },
   });
   try {
     const urls = components.map((file) => `/${file}`);
     const load = async (name: "client" | "ssr", entry: string) => {
       const environment = server.environments[name];
-      // As a page load does: the entry, then the module that imports every component.
       await environment.transformRequest(entry);
       await environment.transformRequest("/src/app.ts");
       return Promise.all(urls.map((url) => environment.transformRequest(url)));
@@ -128,13 +139,9 @@ void test("a dev server compiles nothing at start, and a first load in one batch
     assert.deepEqual(takeNativeCompileCalls(project.root), [], "the server starts uncompiled");
 
     const client = await load("client", "/src/main.ts");
-    assert.deepEqual(takeNativeCompileCalls(project.root), [
-      { api: "batch", ssr: false, files: components },
-    ]);
+    assert.deepEqual(batches(project.root), [{ api: "batch", ssr: false, files: components }]);
     const ssr = await load("ssr", "/src/entry-server.ts");
-    assert.deepEqual(takeNativeCompileCalls(project.root), [
-      { api: "batch", ssr: true, files: components },
-    ]);
+    assert.deepEqual(batches(project.root), [{ api: "batch", ssr: true, files: components }]);
     for (const results of [client, ssr]) {
       assert.deepEqual(
         results.map((result, i) => result?.code.includes(`"${components[i]}"`) ?? false),
