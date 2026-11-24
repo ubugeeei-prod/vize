@@ -180,10 +180,7 @@
       "tests/differential/manifest.mjs",
       "tests/editor-conformance/lsp-tap.mjs",
       "tests/native/css-compile-source-maps.mjs",
-      "tests/native/css-source-map-event.mjs",
       "tests/native/css-v-bind-source-maps.mjs",
-      "tests/native/sfc-parse-attributes-capture.mjs",
-      "tests/native/sfc-parse-attributes-compare.mjs",
       "tests/native/sfc-parse-attributes-source.mjs",
       "tests/tooling/art-lint-public-boundaries.test.mjs",
       "tests/tooling/asset-import-binding-source.mjs",
@@ -706,7 +703,6 @@
       "tools/support/compat/parcel/profile.mjs",
       "tools/support/compat/vite-style-relative-imports.mjs",
       "tools/support/compat/vuefes/passive-failure-sidecar.browser.test.mjs",
-      "tools/support/github/typed-context-undefined-replay.mjs",
       "tools/support/release/jsr/verify-consumer-age.mjs"
     ]
   }

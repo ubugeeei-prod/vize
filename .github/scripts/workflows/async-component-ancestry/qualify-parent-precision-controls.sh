@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-node --test qualification/tests/tooling/async-component-ancestry-workflow.test.ts
-git fetch --no-tags --depth=16 origin 748876d5d580aa5c6d0fb0bf32108b8bb0429951
-git fetch --no-tags --depth=64 origin refs/pull/11011/head
-test "$(git rev-parse FETCH_HEAD)" = "8a089d97ea3c95a23c588085f47502fa7d288bdf"
-node "$VIZE_CI_FILES/verify-historical-precision-controls.ts"

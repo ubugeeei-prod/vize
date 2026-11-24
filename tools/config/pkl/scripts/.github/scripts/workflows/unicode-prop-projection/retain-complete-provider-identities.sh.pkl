@@ -1,7 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #"node "$VIZE_CI_FILES/retain-complete-provider-identities.ts""#
-}
