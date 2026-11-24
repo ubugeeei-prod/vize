@@ -46,6 +46,13 @@ impl Drawer {
         {
             capture.valid = false;
         }
+        // A walk that skips scopes or expression reads proves no absence.
+        if self.binding_demand.reads()
+            && !(self.checks_binding_reads() && self.options.analyze_template_scopes)
+            && let Some(reads) = self.croquis.setup_context.template_binding_reads_mut()
+        {
+            reads.mark_incomplete();
+        }
         if !self.options.analyze_template_scopes && !self.options.track_usage {
             return self;
         }
@@ -87,6 +94,9 @@ impl Drawer {
                 self.visit_template_child(child, &mut Vec::new());
             }
         });
+        if self.binding_demand.reads() {
+            self.read_pattern_defaults();
+        }
 
         self
     }

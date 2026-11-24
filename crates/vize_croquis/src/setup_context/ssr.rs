@@ -19,6 +19,7 @@ pub(super) struct SsrFacts {
     runtime_template_reads: Option<BindingOccurrences>,
     component_reads_qualified: bool,
     module_read_facts: Option<Box<crate::script_parser::ModuleReadFacts>>,
+    template_binding_reads: Option<Box<crate::croquis::TemplateBindingReads>>,
 }
 
 impl std::fmt::Debug for SetupContextTracker {
@@ -46,6 +47,37 @@ impl SetupContextTracker {
             .module_read_facts
             .take()
             .map(|facts| *facts)
+    }
+
+    /// Open the demanded template read relation the template walk fills.
+    pub(crate) fn demand_template_binding_reads(&mut self) {
+        self.ssr_mut()
+            .template_binding_reads
+            .get_or_insert_default();
+    }
+
+    pub(crate) fn template_binding_reads(&self) -> Option<&crate::croquis::TemplateBindingReads> {
+        self.ssr.as_ref()?.template_binding_reads.as_deref()
+    }
+
+    pub(crate) fn template_binding_reads_mut(
+        &mut self,
+    ) -> Option<&mut crate::croquis::TemplateBindingReads> {
+        self.ssr.as_mut()?.template_binding_reads.as_deref_mut()
+    }
+
+    /// Join one template expression's free identifiers to the demanded read
+    /// relation. Out of line, so the expression walk without the demand
+    /// keeps main's code.
+    #[inline(never)]
+    pub(crate) fn note_template_expression_reads(
+        &mut self,
+        identifiers: &[vize_carton::CompactString],
+        locals: &[vize_carton::CompactString],
+    ) {
+        if let Some(reads) = self.template_binding_reads_mut() {
+            reads.note_expression(identifiers, locals);
+        }
     }
 
     fn ssr_mut(&mut self) -> &mut SsrFacts {

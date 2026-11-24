@@ -134,7 +134,7 @@ impl Drawer {
         scope_vars: &[CompactString],
     ) {
         profile!("croquis.template.element.undefined_refs", {
-            if !self.options.detect_undefined && !self.track_unused_bindings {
+            if !self.options.detect_undefined && !self.binding_demand.unused() {
                 return;
             }
 
