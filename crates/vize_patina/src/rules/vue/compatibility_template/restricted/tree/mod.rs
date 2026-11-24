@@ -252,13 +252,16 @@ fn directive_node<'a>(ctx: &mut LintContext<'a>, directive: &DirectiveNode<'a>) 
                 )
             }
         });
-    let argument_end = directive.arg.as_ref().map_or(start + raw.len(), |argument| {
-        let end = expression::expression_span(argument).1;
-        match argument {
-            ExpressionNode::Simple(simple) if simple.is_static => end,
-            _ => end + 1,
-        }
-    });
+    let argument_end = directive
+        .arg
+        .as_ref()
+        .map_or(start + raw.len(), |argument| {
+            let end = expression::expression_span(argument).1;
+            match argument {
+                ExpressionNode::Simple(simple) if simple.is_static => end,
+                _ => end + 1,
+            }
+        });
     let is_implicit_prop = |modifier: &vize_relief::SimpleExpressionNode<'_>| {
         let (modifier_start, modifier_end) = span(modifier.loc.span);
         shorthand == Some(".")
