@@ -15,24 +15,32 @@ itself stays for the `kani` rows.
 
 ## L3 lattice (`davinci/vize_l3/src/lattice`)
 
-Kani file: `lattice/kani.rs` and `lattice/classify_proofs.rs`. Every domain is
-finite (4 classes, 8 effects, 4 origins, 4 escapes), and Kani covers each one
-whole. Creusot states each law for all values instead of enumerating them.
+Kani file: `lattice/kani.rs` and `lattice/classify_proofs.rs`, both deleted
+once every row below was proved. Every domain is finite (4 classes, 8 effects,
+4 origins, 4 escapes), and Kani covered each one whole. Creusot states each law
+for all values instead of enumerating them: the lemmas live in the proof root
+`lattice/creusot.rs`, over the contracts of the shipped `class.rs`, `effect.rs`
+and `axis.rs`. An `EffectSet` is observed through membership (`has`, a bit of
+its `u16`) only; the set operations, `class_floor` and `classify` state their
+results in it. The set operations are proved in Creusot's bitwise mode
+(`#[bitwise_proof]`), where `u16` `|`, `&` and `<<` are Why3 bitvector
+operations; outside that mode they are uninterpreted. A type invariant keeps
+every bit outside the eight offsets clear, which `is_empty` relies on.
 
 | Kani harness                                                 | Law                                                                  | Kani bound   | Creusot replacement                                                                                      | Status |
 | ------------------------------------------------------------ | -------------------------------------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------- | ------ |
 | `the_value_axis_is_a_strict_chain`                           | `<=` is a total order and the chain `static < … < unstable`          | whole domain | `lattice::the_value_axis_is_a_strict_chain`; derived order: oracle `the_derived_order_is_the_join_order` | proved |
 | `join_is_a_least_upper_bound`                                | `join` is commutative, associative, idempotent and the least bound   | whole domain | `lattice::join_is_a_least_upper_bound` over `ReactivityClass::join`                                      | proved |
 | `join_has_its_units_and_is_monotone`                         | `static` is the unit, `unstable` absorbs, `join` is monotone         | whole domain | `lattice::join_has_its_units_and_is_monotone` over `ReactivityClass::join`                               | proved |
-| `the_effect_floor_is_the_join_of_the_rule_table`             | the tiered floor equals the join of each member's demand             | 256 masks    | owed                                                                                                     | owed   |
-| `adding_an_effect_joins_its_floor`                           | `with(e)` joins `e`'s demand                                         | 256 masks    | owed                                                                                                     | owed   |
-| `effect_union_preserves_the_class_floor`                     | the floor is a join homomorphism from union                          | 256² masks   | owed                                                                                                     | owed   |
-| `a_bound_on_every_effect_bounds_the_set`                     | a bound on every member bounds the set                               | 256 masks    | owed                                                                                                     | owed   |
-| `classify_is_the_least_admissible_class`                     | `classify` is the least class every premise admits                   | whole domain | owed                                                                                                     | owed   |
-| `the_provide_inject_cap_never_lowers_and_is_already_implied` | the provide/inject cap never lowers the class and is redundant       | whole domain | owed                                                                                                     | owed   |
-| `classification_is_monotone`                                 | more effects, a worse origin or a worse escape never lower the class | whole domain | owed                                                                                                     | owed   |
-| `classification_reads_effect_membership_only`                | sets with the same members classify alike                            | whole domain | owed                                                                                                     | owed   |
-| `only_an_inert_local_binding_is_static`                      | `static` exactly for a local, effect-free, non-escaping binding      | whole domain | owed                                                                                                     | owed   |
+| `the_effect_floor_is_the_join_of_the_rule_table`             | the tiered floor equals the join of each member's demand             | 256 masks    | `lattice::the_effect_floor_is_the_join_of_the_rule_table` over `EffectSet::class_floor`                  | proved |
+| `adding_an_effect_joins_its_floor`                           | `with(e)` joins `e`'s demand                                         | 256 masks    | `lattice::adding_an_effect_joins_its_floor` over `EffectSet::one`, `with`                                | proved |
+| `effect_union_preserves_the_class_floor`                     | the floor is a join homomorphism from union                          | 256² masks   | `lattice::effect_union_preserves_the_class_floor` over `EffectSet::union`                                | proved |
+| `a_bound_on_every_effect_bounds_the_set`                     | a bound on every member bounds the set                               | 256 masks    | `lattice::a_bound_on_every_effect_bounds_the_set`                                                        | proved |
+| `classify_is_the_least_admissible_class`                     | `classify` is the least class every premise admits                   | whole domain | `lattice::classify_is_the_least_admissible_class` over `classify`                                        | proved |
+| `the_provide_inject_cap_never_lowers_and_is_already_implied` | the provide/inject cap never lowers the class and is redundant       | whole domain | `lattice::the_provide_inject_cap_never_lowers_and_is_already_implied`                                    | proved |
+| `classification_is_monotone`                                 | more effects, a worse origin or a worse escape never lower the class | whole domain | `lattice::classification_is_monotone`                                                                    | proved |
+| `classification_reads_effect_membership_only`                | sets with the same members classify alike                            | whole domain | `lattice::classification_reads_effect_membership_only`                                                   | proved |
+| `only_an_inert_local_binding_is_static`                      | `static` exactly for a local, effect-free, non-escaping binding      | whole domain | `lattice::only_an_inert_local_binding_is_static`                                                         | proved |
 
 ## L3 reference scheduling contract (`tests/davinci_test_support/src/l3_reference`)
 
@@ -185,13 +193,18 @@ Compiled out of the proof crate with `cfg(not(creusot))` because they are not
 part of a law and Creusot cannot verify them. Each is covered by the named
 Rust test.
 
-| Item                                                                     | Why it is outside                          | Rust oracle                                                                                                                                                                                 |
-| ------------------------------------------------------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ReactivityClass::as_str`, `ReactivityClass::from_str`                   | byte-string matching (`str::as_bytes`)     | `vize_l3` `tests/lattice.rs` `reactivity_folio_roundtrips_canonical_text`                                                                                                                   |
-| `ReactivityClass`: derived `Debug`, `PartialOrd`, `Ord`, `Hash`          | discriminant intrinsics                    | `vize_l3` `tests/lattice.rs` `the_derived_order_is_the_join_order`                                                                                                                          |
-| `Tri`: derived `Debug`, `Hash`                                           | discriminant intrinsics                    | `vize_patina` `html_content_model::tri::tests::truth_tables_are_kleene`                                                                                                                     |
-| L3 reference `Phase::parse`, `OpKind::parse`, `EdgeKind::parse`          | string matching (`str` equality)           | `vize_l2_to_l3` `tests/l3_reference_fixture` `committed_graphs_pass_the_independent_checker`, `schedule_contract_codes_match_the_independent_reference` (every committed graph page parses) |
-| L3 reference program and trace types: derived `Debug`, `PartialEq`, `Eq` | discriminant intrinsics; no law reads them | the same fixture tests compare traces and programs with them                                                                                                                                |
+| Item                                                                                    | Why it is outside                          | Rust oracle                                                                                                                                                                                 |
+| --------------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ReactivityClass::as_str`, `ReactivityClass::from_str`                                  | byte-string matching (`str::as_bytes`)     | `vize_l3` `tests/lattice.rs` `reactivity_folio_roundtrips_canonical_text`                                                                                                                   |
+| `ReactivityClass`: derived `Debug`, `PartialOrd`, `Ord`, `Hash`                         | discriminant intrinsics                    | `vize_l3` `tests/lattice.rs` `the_derived_order_is_the_join_order`                                                                                                                          |
+| `Tri`: derived `Debug`, `Hash`                                                          | discriminant intrinsics                    | `vize_patina` `html_content_model::tri::tests::truth_tables_are_kleene`                                                                                                                     |
+| L3 reference `Phase::parse`, `OpKind::parse`, `EdgeKind::parse`                         | string matching (`str` equality)           | `vize_l2_to_l3` `tests/l3_reference_fixture` `committed_graphs_pass_the_independent_checker`, `schedule_contract_codes_match_the_independent_reference` (every committed graph page parses) |
+| L3 reference program and trace types: derived `Debug`, `PartialEq`, `Eq`                | discriminant intrinsics; no law reads them | the same fixture tests compare traces and programs with them                                                                                                                                |
+| `EffectKind`, `BindingOrigin`, `EscapeKind`: `as_str`, `from_str`                       | byte-string matching (`str::as_bytes`)     | `vize_l3` `tests/lattice.rs` `every_folio_spelling_roundtrips`                                                                                                                              |
+| `EffectSet::print`, `EffectSet::parse`                                                  | `fmt::Write`, `str::split`                 | `vize_l3` `tests/lattice.rs` `every_folio_spelling_roundtrips`                                                                                                                              |
+| `EffectKind::bit` in the product (`1 << (self as u8)`; the proof crate's twin matches)  | enum-to-discriminant cast                  | `vize_l3` `tests/lattice.rs` `each_effect_discriminant_is_its_set_offset`                                                                                                                   |
+| `EffectKind`, `BindingOrigin`, `EscapeKind`: derived `Debug`, `PartialEq`, `Eq`, `Hash` | discriminant intrinsics                    | `vize_l3` `tests/lattice.rs` `every_folio_spelling_roundtrips`                                                                                                                              |
+| `EffectSet`: derived `Debug`, `Default`, `PartialEq`, `Eq`, `Hash`                      | `fmt` and `Hasher` calls                   | `vize_l3` `tests/lattice.rs` `effect_set_derives_observe_membership_only`                                                                                                                   |
 
 ## Trusted items
 

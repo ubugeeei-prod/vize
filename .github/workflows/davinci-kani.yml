@@ -1,9 +1,8 @@
 name: Davinci Kani
-
 on:
   pull_request:
     paths:
-      - ".github/workflows/davinci-kani.yml"
+      - .github/workflows/davinci-kani.yml
       - .github/scripts/workflows/davinci-kani/**
       - davinci/vize_l0/src/span.rs
       - davinci/vize_l0/src/span/proofs.rs
@@ -18,19 +17,14 @@ on:
       - davinci/vize_l2/src/query/position/index/intervals.rs
       - davinci/vize_l2/src/query/position/index/intervals/tests.rs
       - tests/formal/position-index/Intervals.lean
-      - "davinci/vize_l3/src/lattice/axis.rs"
-      - "davinci/vize_l3/src/lattice/class.rs"
-      - "davinci/vize_l3/src/lattice/effect.rs"
-      - "davinci/vize_l3/src/lattice/kani.rs"
-      - "davinci/vize_l3/src/query/check/kani.rs"
-      - "davinci/vize_l3/src/query/check/rule.rs"
-      - "davinci/vize_l3/src/lattice/classify_proofs.rs"
-      - "tests/davinci_test_support/src/l3_reference/incremental.rs"
-      - "tests/davinci_test_support/src/l3_reference/incremental_proofs.rs"
-      - "tests/davinci_test_support/src/l3_reference/kani.rs"
-      - "crates/vize_patina/src/html_content_model/tri.rs"
-      - "crates/vize_patina/src/html_content_model/walk.rs"
-      - "crates/vize_patina/src/html_content_model/kani.rs"
+      - davinci/vize_l3/src/query/check/kani.rs
+      - davinci/vize_l3/src/query/check/rule.rs
+      - tests/davinci_test_support/src/l3_reference/incremental.rs
+      - tests/davinci_test_support/src/l3_reference/incremental_proofs.rs
+      - tests/davinci_test_support/src/l3_reference/kani.rs
+      - crates/vize_patina/src/html_content_model/tri.rs
+      - crates/vize_patina/src/html_content_model/walk.rs
+      - crates/vize_patina/src/html_content_model/kani.rs
       - davinci/vize_l0/src/js_string.rs
       - davinci/vize_l0/src/js_string/tests.rs
       - davinci/vize_l0/src/js_string_kani.rs
@@ -42,28 +36,12 @@ on:
       - davinci/vize_l0/src/allocator/kani.rs
       - davinci/vize_l0/src/profiler/allocation.rs
       - davinci/vize_l0/src/profiler/allocation/kani.rs
-  workflow_dispatch:
-
+  workflow_dispatch: null
 permissions:
   contents: read
-
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
-  l3-lattice:
-    name: L3 lattice properties
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
-      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f # v1.1
-        with:
-          kani-version: "0.68.0"
-          command: kani
-          args: davinci/vize_l3/src/lattice/kani.rs --output-format=terse
   position-index:
     name: L2 position queries on original byte intervals
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -95,46 +73,43 @@ jobs:
         run: kani davinci/vize_l4/src/write/kani.rs --output-format=terse
       - name: Verify span, range and mapping offsets
         run: "cargo kani --manifest-path davinci/vize_l0/Cargo.toml --lib --harness span::proofs:: --harness source_range::proofs:: --output-format=terse --jobs 2"
-
   graph-certificates:
     name: L3 reachability certificates
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
-      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f # v1.1
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
         with:
-          kani-version: "0.68.0"
+          kani-version: 0.68.0
           command: kani
           args: davinci/vize_l3/src/query/check/kani.rs --output-format=terse
-
   l3-reference:
     name: L3 reference incremental update laws
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
-      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f # v1.1
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
         with:
-          kani-version: "0.68.0"
+          kani-version: 0.68.0
           command: kani
           args: tests/davinci_test_support/src/l3_reference/kani.rs --output-format=terse --jobs 2
-
   html-content-model:
     name: HTML content-model kernel properties
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
-      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f # v1.1
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
         with:
-          kani-version: "0.68.0"
+          kani-version: 0.68.0
           command: kani
           args: crates/vize_patina/src/html_content_model/kani.rs --output-format=terse
   compiler-string-literals:

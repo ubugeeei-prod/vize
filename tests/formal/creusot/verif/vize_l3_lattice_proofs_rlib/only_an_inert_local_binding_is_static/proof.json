@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_only_an_inert_local_binding_is_static": {
+        "prover": "z3",
+        "time": 0.008
+      }
+    }
+  }
+}

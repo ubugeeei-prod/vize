@@ -37,7 +37,7 @@ fn class_join_moves_only_toward_less_stable_values() {
 }
 
 /// The derived order is the chain the Creusot value-axis laws state through
-/// `join` (tests/formal/creusot/src/lattice.rs): `a <= b` exactly when
+/// `join` (`davinci/vize_l3/src/lattice/creusot.rs`): `a <= b` exactly when
 /// joining `a` into `b` leaves `b`. The derive is outside the proof crate,
 /// so this oracle covers it for every pair.
 #[test]
@@ -129,33 +129,127 @@ fn verdict_axis_is_orthogonal_and_consumers_fire_only_on_proven_values() {
     assert!(proven.fires_as(ReactivityClass::Reactive));
 }
 
+const ORIGINS: [BindingOrigin; 4] = [
+    BindingOrigin::Local,
+    BindingOrigin::Prop,
+    BindingOrigin::ProvideInject,
+    BindingOrigin::TemplateRef,
+];
+/// The vocabulary in declaration order: index `i` is the kind whose
+/// `repr(u8)` discriminant, and so whose set bit, is `i`.
+const EFFECTS: [EffectKind; 8] = [
+    EffectKind::Freeze,
+    EffectKind::Capture,
+    EffectKind::ReadProp,
+    EffectKind::ReadReactive,
+    EffectKind::MutateLocal,
+    EffectKind::MutateGlobal,
+    EffectKind::CallUnknown,
+    EffectKind::Allocate,
+];
+const ESCAPES: [EscapeKind; 4] = [
+    EscapeKind::None,
+    EscapeKind::Returned,
+    EscapeKind::Stored,
+    EscapeKind::Global,
+];
+
+/// The set whose members are the kinds at the bits of `mask`.
+fn subset(mask: u16) -> EffectSet {
+    EFFECTS
+        .into_iter()
+        .enumerate()
+        .filter(|(bit, _)| mask & (1 << bit) != 0)
+        .fold(EffectSet::empty(), |set, (_, effect)| set.with(effect))
+}
+
+/// The product's `EffectKind::bit` shifts by the discriminant; the proof
+/// crate's spells the bit at each kind's `offset`. They agree only if each
+/// discriminant is the kind's position in the vocabulary.
+#[test]
+fn each_effect_discriminant_is_its_set_offset() {
+    for (offset, kind) in EFFECTS.into_iter().enumerate() {
+        assert_eq!(usize::from(kind as u8), offset, "{kind:?} discriminant");
+        for (other_offset, other) in EFFECTS.into_iter().enumerate() {
+            let member = EffectSet::one(kind).contains(other);
+            assert_eq!(member, offset == other_offset, "{kind:?} has {other:?}");
+        }
+    }
+}
+
+/// The derives of `EffectSet` are outside the Creusot proof crate. A set is
+/// its members: equal exactly when the members are, whatever the insertion
+/// order or repetition, equal sets hash alike, and the default is empty.
+#[test]
+fn effect_set_derives_observe_membership_only() {
+    use std::hash::{BuildHasher, RandomState};
+
+    let hasher = RandomState::new();
+    assert_eq!(EffectSet::default(), EffectSet::empty());
+    for left in 0_u16..256 {
+        let reversed = EFFECTS
+            .into_iter()
+            .enumerate()
+            .rev()
+            .filter(|(bit, _)| left & (1 << bit) != 0)
+            .fold(EffectSet::empty(), |set, (_, effect)| {
+                set.with(effect).with(effect)
+            });
+        assert_eq!(reversed, subset(left));
+        assert_eq!(hasher.hash_one(reversed), hasher.hash_one(subset(left)));
+        assert_eq!(subset(left).is_empty(), left == 0);
+        for right in 0_u16..256 {
+            assert_eq!(subset(left) == subset(right), left == right);
+        }
+    }
+}
+
+/// The folio spellings (`as_str`, `from_str`, `EffectSet::print` and
+/// `parse`) are outside the Creusot proof crate. Every origin, escape and
+/// effect kind spells and parses back, and a page with every origin, all 256
+/// effect sets and every escape prints and parses back to itself.
+#[test]
+fn every_folio_spelling_roundtrips() {
+    for origin in ORIGINS {
+        assert_eq!(BindingOrigin::from_str(origin.as_str()), Some(origin));
+    }
+    for escape in ESCAPES {
+        assert_eq!(EscapeKind::from_str(escape.as_str()), Some(escape));
+    }
+    for kind in EFFECTS {
+        assert_eq!(EffectKind::from_str(kind.as_str()), Some(kind));
+    }
+    assert_eq!(EffectKind::from_str("-"), None);
+
+    let arena = Allocator::default();
+    let summaries = ORIGINS
+        .into_iter()
+        .flat_map(|origin| {
+            (0_u16..256).flat_map(move |mask| {
+                ESCAPES
+                    .into_iter()
+                    .map(move |escape| (origin, subset(mask), escape))
+            })
+        })
+        .zip(0_u32..)
+        .map(|((origin, effects, escape), id)| {
+            input(id)
+                .with_origin(origin)
+                .with_effects(effects)
+                .with_escape(escape)
+        });
+    let page = ReactivityPage::of(&evaluate(&arena, summaries));
+    assert_eq!(page.bindings.len(), 4 * 256 * 4);
+    let printed = page.print_to_string(DumpMode::Full);
+    let parsed = ReactivityPage::parse(printed.as_str()).expect("printed folio parses");
+    assert_eq!(parsed, page);
+}
+
 /// Every binding summary there is: 4 origins, 256 effect sets, 4 escapes and
-/// 3 verdicts. The Kani harness `davinci/vize_l3/src/lattice/kani.rs` verifies
-/// the value axis; these are the laws that also read the verdict axis.
+/// 3 verdicts. The Creusot proofs in `davinci/vize_l3/src/lattice/creusot.rs`
+/// verify the value axis; these are the laws that also read the verdict axis.
 #[test]
 fn the_verdict_never_changes_the_class_and_only_proven_facts_fire() {
-    const ORIGINS: [BindingOrigin; 4] = [
-        BindingOrigin::Local,
-        BindingOrigin::Prop,
-        BindingOrigin::ProvideInject,
-        BindingOrigin::TemplateRef,
-    ];
-    const EFFECTS: [EffectKind; 8] = [
-        EffectKind::Freeze,
-        EffectKind::Capture,
-        EffectKind::ReadProp,
-        EffectKind::ReadReactive,
-        EffectKind::MutateLocal,
-        EffectKind::MutateGlobal,
-        EffectKind::CallUnknown,
-        EffectKind::Allocate,
-    ];
-    const ESCAPES: [EscapeKind; 4] = [
-        EscapeKind::None,
-        EscapeKind::Returned,
-        EscapeKind::Stored,
-        EscapeKind::Global,
-    ];
     const VERDICTS: [Verdict; 3] = [Verdict::Proven, Verdict::Refuted, Verdict::Unknown];
     const CLASSES: [ReactivityClass; 4] = [
         ReactivityClass::Static,
@@ -167,11 +261,7 @@ fn the_verdict_never_changes_the_class_and_only_proven_facts_fire() {
     let mut checked = 0_u32;
     for origin in ORIGINS {
         for mask in 0_u16..256 {
-            let effects = EFFECTS
-                .into_iter()
-                .enumerate()
-                .filter(|(bit, _)| mask & (1 << bit) != 0)
-                .fold(EffectSet::empty(), |set, (_, effect)| set.with(effect));
+            let effects = subset(mask);
             for escape in ESCAPES {
                 let summary = input(0)
                     .with_origin(origin)

@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_the_provide_inject_cap_never_lowers_and_is_already_implied": {
+        "prover": "z3",
+        "time": 0.005
+      }
+    }
+  }
+}

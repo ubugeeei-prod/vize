@@ -160,10 +160,9 @@ function assertLemma(source: string, name: string): void {
 }
 
 test("P3-15 laws are Kani harnesses or Creusot proofs that CI verifies", () => {
-  const lattice = harnesses(
-    ["davinci", "vize_l3", "src", "lattice", "kani.rs"],
-    ["davinci", "vize_l3", "src", "lattice", "classify_proofs.rs"],
-  );
+  // The lattice laws are Creusot lemmas over the shipped evaluator
+  // (2026-11-17-creusot-inventory.md), replayed by davinci-creusot.yml.
+  const lattice = readRepoFile("davinci", "vize_l3", "src", "lattice", "creusot.rs");
   for (const name of [
     "join_has_its_units_and_is_monotone",
     "the_effect_floor_is_the_join_of_the_rule_table",
@@ -171,7 +170,7 @@ test("P3-15 laws are Kani harnesses or Creusot proofs that CI verifies", () => {
     "classification_is_monotone",
     "the_provide_inject_cap_never_lowers_and_is_already_implied",
   ]) {
-    assertHarness(lattice, name);
+    assertLemma(lattice, name);
   }
   assert.match(
     readRepoFile("davinci", "vize_l3", "tests", "lattice.rs"),
@@ -218,7 +217,7 @@ test("P3-15 laws are Kani harnesses or Creusot proofs that CI verifies", () => {
     );
   }
   const kani = readRepoFile(".github", "workflows", "davinci-kani.yml");
-  assert.match(kani, /args: davinci\/vize_l3\/src\/lattice\/kani\.rs /u);
+  assert.doesNotMatch(kani, /src\/lattice\//u);
   assert.match(kani, /args: tests\/davinci_test_support\/src\/l3_reference\/kani\.rs /u);
   const creusot = readRepoFile("tests", "formal", "creusot", "reference", "Cargo.toml");
   assert.match(
