@@ -230,8 +230,8 @@ interface VizeNativeOptions {
   root?: string;
 
   /**
-   * Glob patterns to scan for .vue files during pre-compilation
-   * @default ['**\/*.vue']
+   * Opt-in startup pre-compilation: glob patterns compiled at build start.
+   * Unset by default: components are compiled when the module graph imports them.
    */
   scanPatterns?: string[];
 
@@ -258,22 +258,26 @@ compatibility API, and does not inject Vue 3 bundler feature flags.
 
 ## How It Works
 
-### Pre-compilation at Startup
+### Compilation Follows the Module Graph
 
-When the Vite dev server starts (or build begins), the plugin:
+Each environment compiles the `.vue` files its module graph imports, and no others:
 
-1. Scans the project root for all `.vue` files matching the configured patterns
-2. Compiles each file using the native Vize compiler
-3. Stores the compiled JavaScript and CSS in an in-memory cache
+1. The plugin records every `.vue` file an environment resolves
+2. When the first of them is requested, it compiles that file together with the other resolved files in one native, multi-threaded batch (up to `precompileBatchSize` files)
+3. The requests for the other files find their compiled JavaScript and CSS in an in-memory cache
 
-This approach leverages Vize's exceptional performance - compiling 15,000 SFC files in under 500ms with multi-threading.
+A component nothing imports is never compiled, an environment that imports no component (a worker, Nuxt's Nitro pass) compiles nothing, and the dev server starts without compiling.
+
+### Pre-compilation at Startup (opt-in)
+
+With `scanPatterns` set, the plugin also compiles every matching file in batches when the dev server starts or a build begins, in every environment, before anything is requested.
 
 ### Virtual Module Resolution
 
 When Vite requests a `.vue` file:
 
 1. The plugin intercepts the module resolution
-2. Returns the pre-compiled code from cache (or compiles on-demand if not cached)
+2. Returns the compiled code from cache, or compiles it with the other pending files
 3. CSS is injected inline with deduplication support
 
 ### HMR (Hot Module Replacement)
