@@ -69,6 +69,9 @@ pub struct Document {
     /// hover, completion, navigation, or rename request.
     text_snapshot: OnceLock<Arc<String>>,
     structural_snapshot: OnceLock<Arc<StructuralSnapshotCell>>,
+    #[cfg(feature = "experimental-resident-template-passes")]
+    pub(crate) template_passes:
+        OnceLock<Arc<parking_lot::Mutex<vize_incremental::template::TemplateDocument>>>,
     #[cfg(feature = "native")]
     native: Option<edits::CarriedNative>,
 }
@@ -88,6 +91,8 @@ impl Document {
             petite_vue_detected: OnceLock::new(),
             text_snapshot,
             structural_snapshot: OnceLock::new(),
+            #[cfg(feature = "experimental-resident-template-passes")]
+            template_passes: OnceLock::new(),
             #[cfg(feature = "native")]
             native: None,
         }

@@ -4,6 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { rustProofReferences } from "../../tools/support/retired-tooling-languages.ts";
 import {
   codenames,
   evaluate,
@@ -12,13 +13,6 @@ import {
   scanCodenames,
   workspaceMembers,
 } from "../../tools/commands/davinci/completion-gates.ts";
-
-import {
-  coordinateKernel,
-  templateLabelRanking,
-  coordinateProof,
-  coordinateTheory,
-} from "../../tools/support/retired-tooling-languages.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const doc = fs.readFileSync(path.join(root, "docs/davinci/completion-gates.md"), "utf8");
@@ -159,32 +153,27 @@ void test("workspace members are read from the real Cargo.toml", () => {
   assert.ok(members.includes("davinci/vize_l0"));
 });
 
-void test("the supplemental reference for UTF-16 columns requires its Rust kernel and Kani harness", () => {
-  const gate = gates.find((row) => row.id === "formal.rust-only");
-  assert.ok(gate?.measure);
-  const pair = { [coordinateKernel]: "", [coordinateProof]: "", [coordinateTheory]: "" };
-  assert.equal(gate.measure(memory(pair)).pass, true);
-  assert.equal(
-    gate.measure(memory({ [coordinateTheory]: "", [coordinateKernel]: "" })).pass,
-    false,
-  );
-  assert.equal(gate.measure(memory({ [coordinateTheory]: "", [coordinateProof]: "" })).pass, false);
-  assert.equal(
-    gate.measure(memory({ ...pair, "tests/formal/source-map/Other.lean": "" })).pass,
-    false,
-  );
-});
-
-void test("the template label theorem requires its production insertion and Kani harness", () => {
+void test("every supplemental theorem requires its own Rust implementation and Kani harness", () => {
   const formal = gates.find((gate) => gate.id === "formal.rust-only")?.measure;
   assert.ok(formal);
-  const { theorem, kernel, harness } = templateLabelRanking;
-  assert.equal(formal(memory({ [theorem]: "", [kernel]: "", [harness]: "" })).pass, true);
-  assert.equal(formal(memory({ [theorem]: "", [kernel]: "" })).pass, false);
-  assert.equal(formal(memory({ [theorem]: "", [harness]: "" })).pass, false);
-  assert.equal(
-    formal(memory({ [kernel]: "", [harness]: "", "tests/formal/template-lint/Other.lean": "" }))
-      .pass,
-    false,
-  );
+  for (const { theorem, kernel, harness } of rustProofReferences) {
+    assert.equal(formal(memory({ [theorem]: "", [kernel]: "", [harness]: "" })).pass, true);
+    assert.equal(formal(memory({ [theorem]: "", [kernel]: "" })).pass, false);
+    assert.equal(formal(memory({ [theorem]: "", [harness]: "" })).pass, false);
+    assert.equal(
+      formal(memory({ [kernel]: "", [harness]: "", "tests/formal/Other.lean": "" })).pass,
+      false,
+    );
+    for (const other of rustProofReferences) {
+      if (other.theorem === theorem) continue;
+      assert.equal(
+        formal(memory({ [theorem]: "", [kernel]: "", [other.harness]: "" })).pass,
+        false,
+      );
+      assert.equal(
+        formal(memory({ [theorem]: "", [other.kernel]: "", [harness]: "" })).pass,
+        false,
+      );
+    }
+  }
 });
