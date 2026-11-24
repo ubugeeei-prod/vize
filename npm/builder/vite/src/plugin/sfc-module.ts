@@ -111,12 +111,17 @@ export function loadSfcModuleSource(
   sfc: SfcModuleRequest,
   ssr: boolean,
 ): string | { code: string; map: SourceMapV3 } | null {
-  let source: string;
-  try {
-    source = fs.readFileSync(sfc.realPath, "utf-8");
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
-    throw error;
+  // A build compiles one snapshot of each source: what its pre-compile read is
+  // what the module loads. A dev server reads the file on every request, since
+  // a file its watcher ignores can change with no event to end the epoch.
+  let source = state.server === null ? state.filesystemEpoch?.knownSource(sfc.realPath) : undefined;
+  if (source === undefined) {
+    try {
+      source = fs.readFileSync(sfc.realPath, "utf-8");
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+      throw error;
+    }
   }
   if (!compileOptions(state, sfc.ssrId || ssr, sfc.realPath).sourceMap) return source;
   return { code: source, map: identitySourceMap(sfc.realPath, source) };
