@@ -21,7 +21,7 @@ on:
       - "davinci/vize_l3/src/query/check/creusot.rs"
       - "davinci/vize_l3/src/query/check/rule.rs"
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - ".github/workflows/davinci-creusot.yml"
       - "tools/nix/creusot/**"
