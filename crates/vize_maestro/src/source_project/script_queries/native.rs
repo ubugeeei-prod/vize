@@ -51,7 +51,9 @@ impl SourceSnapshot {
                 let outline = syntax.diagnostics().next().is_none().then_some(program);
                 let symbol = ScriptQueryProducts::symbol_from_program(name, block, prefix, outline);
                 out.push_script_symbol(symbol);
-                out.read_retained_specifiers(program, frame.start(), true);
+                let visit_nested = outline.is_none()
+                    || ScriptQueryProducts::has_specifier_argument_list(frame.source().as_bytes());
+                out.read_retained_specifiers(program, frame.start(), visit_nested);
                 return Ok(());
             }
             let symbol = {
