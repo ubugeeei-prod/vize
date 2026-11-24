@@ -10,6 +10,7 @@ on:
       - "davinci/vize_l3/**"
       - "crates/vize_incremental/**"
       - "tests/formal/ir-graph/**"
+      - tests/formal/position-index/**
       - .github/scripts/workflows/davinci-ir-graph/**
   workflow_dispatch:
 permissions: { contents: read }
