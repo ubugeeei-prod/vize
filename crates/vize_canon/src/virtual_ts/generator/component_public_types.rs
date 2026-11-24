@@ -15,6 +15,7 @@ pub(super) struct SlotsTypeOptions<'a> {
     /// Keep an Options API `SlotsType<T>` contract (editor projections only).
     pub options_api_slots: bool,
     pub inferred_slots: bool,
+    pub untyped_script_slots: bool,
 }
 
 /// Emit the private slot contract and preserve the public `Slots` export. When the slots type from
@@ -36,6 +37,7 @@ pub(super) fn emit_slots_type(
         authored_slots_binding,
         options_api_slots,
         inferred_slots,
+        untyped_script_slots,
     } = options;
     let slots_type_args = summary
         .macros
@@ -89,8 +91,12 @@ pub(super) fn emit_slots_type(
             .unwrap_or_default();
         let setup = names::setup_return(&arguments);
         ts! { &mut *ts =>
-            #("type ") #slots #declaration = #setup #("['__vize_template_slots']");
+            #("type ") #slots #declaration = #setup #("['__vize_template_slots']")
         }
+        if untyped_script_slots {
+            ts.push_str(" & import('vue').Slots");
+        }
+        ts.push_str(";\n");
         generic_injection.is_some()
     } else {
         ts! { &mut *ts => #("type ") #slots = {}; }

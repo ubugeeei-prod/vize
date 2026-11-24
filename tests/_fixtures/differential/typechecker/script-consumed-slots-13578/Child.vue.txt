@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import { h, useSlots } from 'vue'
+const slots = useSlots()
+const Label = () => h('span', slots['field-label']?.({ field: 'x' }))
+</script>
+<template><div><Label /><slot name="submit-status" :value="'ready'" /></div></template>

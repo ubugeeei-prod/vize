@@ -98,24 +98,80 @@ Creusot accepts only with a trusted declaration, and the proofs admit none.
 ## HTML content-model kernel (`crates/vize_patina/src/html_content_model`)
 
 Kani file: `html_content_model/kani.rs`. Bound: up to 4 known frames, 2
-revealed ancestors, 3 namespaces and 4 dispatches.
+revealed ancestors, 3 namespaces and 4 dispatches. Creusot root:
+`html_content_model/creusot.rs`. `Tri::not`, `and`, `or` and `join` carry
+their soundness and Kleene truth-table contracts in `tri.rs`; the verdict-rule
+proof folds `join` over any number of dispatches.
 
-| Kani harness                                               | Law                                                                 | Kani bound           | Creusot replacement | Status |
-| ---------------------------------------------------------- | ------------------------------------------------------------------- | -------------------- | ------------------- | ------ |
-| `kleene_connectives_are_sound`                             | `not`, `and`, `or` are sound for every admitted value               | whole domain         | owed                | owed   |
-| `disjunction_is_the_de_morgan_dual_of_conjunction`         | `or` is the De Morgan dual of `and`                                 | whole domain         | owed                | owed   |
-| `a_definite_fact_admits_exactly_one_value`                 | a definite fact admits one value                                    | whole domain         | owed                | owed   |
-| `one_frame_decides_soundly_under_each_possible_namespace`  | one frame decides soundly under each namespace                      | 3 namespaces         | owed                | owed   |
-| `a_frame_without_a_namespace_passes`                       | a frame without a namespace passes                                  | 3 namespaces         | owed                | owed   |
-| `the_walk_is_sound_for_every_stack_the_chain_describes`    | the walk's verdict admits the parser's scan of every concrete stack | 4 frames, 2 revealed | owed                | owed   |
-| `a_definite_truncated_verdict_survives_revealed_ancestors` | a definite truncated verdict survives revealed ancestors            | 4 frames, 2 revealed | owed                | owed   |
-| `a_proven_violation_holds_for_every_dispatch`              | a proven violation holds for every dispatch                         | 4 dispatches         | owed                | owed   |
+| Kani harness                                               | Law                                                                 | Kani bound           | Creusot replacement                                                                                     | Status |
+| ---------------------------------------------------------- | ------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------- | ------ |
+| `kleene_connectives_are_sound`                             | `not`, `and`, `or` are sound for every admitted value               | whole domain         | `content_model::kleene_connectives_are_sound` over `Tri::not`, `and`, `or`                              | proved |
+| `disjunction_is_the_de_morgan_dual_of_conjunction`         | `or` is the De Morgan dual of `and`                                 | whole domain         | `content_model::disjunction_is_the_de_morgan_dual_of_conjunction` over `Tri::not`, `and`, `or`          | proved |
+| `a_definite_fact_admits_exactly_one_value`                 | a definite fact admits one value                                    | whole domain         | `content_model::a_definite_fact_admits_exactly_one_value` over `Tri::admits`                            | proved |
+| `one_frame_decides_soundly_under_each_possible_namespace`  | one frame decides soundly under each namespace                      | 3 namespaces         | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
+| `a_frame_without_a_namespace_passes`                       | a frame without a namespace passes                                  | 3 namespaces         | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
+| `the_walk_is_sound_for_every_stack_the_chain_describes`    | the walk's verdict admits the parser's scan of every concrete stack | 4 frames, 2 revealed | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
+| `a_definite_truncated_verdict_survives_revealed_ancestors` | a definite truncated verdict survives revealed ancestors            | 4 frames, 2 revealed | owed: `classify` calls `Iterator::any` (see below)                                                      | owed   |
+| `a_proven_violation_holds_for_every_dispatch`              | a proven violation holds for every dispatch                         | 4 dispatches         | `content_model::a_proven_violation_holds_for_every_dispatch` over `Tri::join`, any number of dispatches | proved |
+
+The four walk laws stay on their Kani harnesses. `walk.rs` uses two
+standard-library calls Creusot 0.14 has no specification for:
+`Iterator::any` in `classify` (it folds with `try_fold`, which has none
+either) and `frames.iter().enumerate().rev()` in `walk` (`Enumerate` has no
+`DoubleEndedIteratorSpec`). The `walk` loop can be written as
+`while let Some(frame) = rest.next_back()` with `rest.len()` as the index,
+and its release IR is then equal to the original up to the names of SSA values
+and blocks. Replacing `any` with a `for` loop over `next` changes the
+optimized code: in the release build of `vize_patina` (opt-level 3, one
+codegen unit) LLVM then outlines `Map::next` instead of the role closures of
+`Chain::in_scope` and `Chain::list_item_loop`, and the bodies of
+`Chain::in_scope`, `list_item_loop`, `anchor_after_marker` and `has_open`
+differ. The kernel is product code, so the rewrite is not zero-cost, and a
+specification of `any` written here would be a trusted declaration, which
+the proofs do not admit. The rows stay `owed` until one of the two is
+accepted.
 
 ## Laws no harness states yet
 
 These are added where tractable, after the ports: lossless L1 render equals
 source, span monotonicity, and lowering totality. Each gets a row here when
 its proof or oracle lands.
+
+The coordinate kernels below are verified by Kani in `davinci-kani.yml`
+(`source-coordinates`), each against a spec written from the format's
+definition, not from the kernel. Where the bound is "whole domain", the
+harness has no loop over its input, or a loop Kani unwinds completely, so
+Kani checks every value of the domain and the check is exhaustive. Creusot
+does not reach these kernels without changing them: the UTF-16 and
+line-terminator kernels go through `str` APIs without a specification
+(`as_bytes`, `char_indices`, `is_char_boundary`), `span.rs` and
+`source_range.rs` derive `serde` and `Hash` and format through
+`fmt::Write`, and the VLQ writer appends to `CompactString`.
+
+The two `owed` rows are whole-string lookups. Kani harnesses for them
+(`LineIndex` over three to five bytes; the emitter's line table, lookup and
+segment resolution over three to six bytes) exceeded 8 GB in CBMC and are not
+kept: Kani is used here only for small models. They need a Creusot proof over
+a byte-slice kernel, or a Kani model of one line step at a time.
+`tests/tooling/formal-harness-coverage.test.ts` holds that a workflow runs
+every Kani harness in the repository.
+
+| Kani harness                                                        | Law                                                                                                                                                                      | Kani bound                                       | Creusot replacement | Status |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ | ------------------- | ------ |
+| `vlq_digits_decode_to_the_encoded_value`                            | the VLQ writer appends base64 digits only, sets the continuation bit on all but the last, is minimal and decodes back                                                    | whole domain (`i64` except `MIN`)                | none                | kani   |
+| `line_break_len_is_the_width_of_the_terminator_at_the_offset`       | the emitter's line step is 2 at CR LF, 1 at LF or a lone CR, 3 at LS or PS, and 0 anywhere else, including inside a scalar or past the end                               | 4 bytes, whole `usize` offset                    | none                | kani   |
+| `utf16_offset_is_the_boundary_with_that_many_units`                 | `utf16_offset` returns exactly the scalar boundary with that many UTF-16 units, and `None` for any other column                                                          | 4 bytes, whole `u32` column                      | none                | kani   |
+| `utf16_len_counts_the_units_of_every_scalar`                        | `utf16_len` counts two UTF-16 units for a four-byte scalar and one for any other                                                                                         | 4 bytes                                          | none                | kani   |
+| `utf16_prefix_counts_the_units_of_whole_scalars`                    | `prefix_len` counts the units of every scalar that starts before the offset, a mid-scalar offset counting that scalar whole, so it never panics and is monotone          | 4 bytes, whole `usize` offset                    | none                | kani   |
+| `span_length_counts_the_offsets_it_covers`                          | `Span::len` is the number of offsets in `[start, end)`, zero exactly when the span is empty                                                                              | whole domain                                     | none                | kani   |
+| `span_block_relative_form_ignores_where_the_block_starts`           | the block-relative span never grows, inverts the shift inside the block and is invariant under moving span and block                                                     | whole domain                                     | none                | kani   |
+| `source_range_union_is_the_least_enclosing_range`                   | `SourceRange::union` is commutative, associative, idempotent and the least range enclosing both                                                                          | whole domain                                     | none                | kani   |
+| `source_range_intersection_is_the_offsets_in_both`                  | `intersection` holds exactly the offsets in both, is `Some` exactly when they `intersects`, and is a semilattice meet                                                    | whole domain                                     | none                | kani   |
+| `source_range_shifts_saturate_and_invert`                           | `offset` moves each endpoint by the shift clamped into `u32`; without saturation the opposite shift restores the range; `extend` encloses the range                      | whole domain                                     | none                | kani   |
+| `source_mapping_carries_offsets_between_its_ranges`                 | a mapping carries offsets by their distance, clamped into the other range; an equal-length mapping is a bijection                                                        | whole domain                                     | none                | kani   |
+| `source_map_to_generated_uses_the_mapping_that_contains_the_offset` | `SourceMap::to_generated` translates through the mapping whose source range contains the offset, in any insertion order                                                  | 3 disjoint nonempty mappings, whole `u32` values | none                | kani   |
+| none                                                                | `LineIndex::line_col` is the LF count before the offset and the UTF-16 units from that line's start; `line_col_to_offset` is its inverse on scalar boundaries            | —                                                | owed                | owed   |
+| none                                                                | the emitter's line table starts a line after every terminator, and `resolve_in_table` and `resolve_positions` give each segment the line and UTF-16 column of its offset | —                                                | owed                | owed   |
 
 ## Kernel items outside the proof
 
@@ -127,6 +183,7 @@ Rust test.
 | --------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------- |
 | `ReactivityClass::as_str`, `ReactivityClass::from_str`          | byte-string matching (`str::as_bytes`) | `vize_l3` `tests/lattice.rs` `reactivity_folio_roundtrips_canonical_text` |
 | `ReactivityClass`: derived `Debug`, `PartialOrd`, `Ord`, `Hash` | discriminant intrinsics                | `vize_l3` `tests/lattice.rs` `the_derived_order_is_the_join_order`        |
+| `Tri`: derived `Debug`, `Hash`                                  | discriminant intrinsics                | `vize_patina` `html_content_model::tri::tests::truth_tables_are_kleene`   |
 
 ## Trusted items
 
