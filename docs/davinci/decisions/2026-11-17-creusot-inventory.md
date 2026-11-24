@@ -98,18 +98,38 @@ Creusot accepts only with a trusted declaration, and the proofs admit none.
 ## HTML content-model kernel (`crates/vize_patina/src/html_content_model`)
 
 Kani file: `html_content_model/kani.rs`. Bound: up to 4 known frames, 2
-revealed ancestors, 3 namespaces and 4 dispatches.
+revealed ancestors, 3 namespaces and 4 dispatches. Creusot root:
+`html_content_model/creusot.rs`. `Tri::not`, `and`, `or` and `join` carry
+their soundness and Kleene truth-table contracts in `tri.rs`; the verdict-rule
+proof folds `join` over any number of dispatches.
 
-| Kani harness                                               | Law                                                                 | Kani bound           | Creusot replacement | Status |
-| ---------------------------------------------------------- | ------------------------------------------------------------------- | -------------------- | ------------------- | ------ |
-| `kleene_connectives_are_sound`                             | `not`, `and`, `or` are sound for every admitted value               | whole domain         | owed                | owed   |
-| `disjunction_is_the_de_morgan_dual_of_conjunction`         | `or` is the De Morgan dual of `and`                                 | whole domain         | owed                | owed   |
-| `a_definite_fact_admits_exactly_one_value`                 | a definite fact admits one value                                    | whole domain         | owed                | owed   |
-| `one_frame_decides_soundly_under_each_possible_namespace`  | one frame decides soundly under each namespace                      | 3 namespaces         | owed                | owed   |
-| `a_frame_without_a_namespace_passes`                       | a frame without a namespace passes                                  | 3 namespaces         | owed                | owed   |
-| `the_walk_is_sound_for_every_stack_the_chain_describes`    | the walk's verdict admits the parser's scan of every concrete stack | 4 frames, 2 revealed | owed                | owed   |
-| `a_definite_truncated_verdict_survives_revealed_ancestors` | a definite truncated verdict survives revealed ancestors            | 4 frames, 2 revealed | owed                | owed   |
-| `a_proven_violation_holds_for_every_dispatch`              | a proven violation holds for every dispatch                         | 4 dispatches         | owed                | owed   |
+| Kani harness                                               | Law                                                                 | Kani bound           | Creusot replacement                                                                                      | Status |
+| ---------------------------------------------------------- | ------------------------------------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------- | ------ |
+| `kleene_connectives_are_sound`                             | `not`, `and`, `or` are sound for every admitted value               | whole domain         | `content_model::kleene_connectives_are_sound` over `Tri::not`, `and`, `or`                               | proved |
+| `disjunction_is_the_de_morgan_dual_of_conjunction`         | `or` is the De Morgan dual of `and`                                 | whole domain         | `content_model::disjunction_is_the_de_morgan_dual_of_conjunction` over `Tri::not`, `and`, `or`           | proved |
+| `a_definite_fact_admits_exactly_one_value`                 | a definite fact admits one value                                    | whole domain         | `content_model::a_definite_fact_admits_exactly_one_value` over `Tri::admits`                             | proved |
+| `one_frame_decides_soundly_under_each_possible_namespace`  | one frame decides soundly under each namespace                      | 3 namespaces         | owed: `classify` calls `Iterator::any` (see below)                                                       | owed   |
+| `a_frame_without_a_namespace_passes`                       | a frame without a namespace passes                                  | 3 namespaces         | owed: `classify` calls `Iterator::any` (see below)                                                       | owed   |
+| `the_walk_is_sound_for_every_stack_the_chain_describes`    | the walk's verdict admits the parser's scan of every concrete stack | 4 frames, 2 revealed | owed: `classify` calls `Iterator::any` (see below)                                                       | owed   |
+| `a_definite_truncated_verdict_survives_revealed_ancestors` | a definite truncated verdict survives revealed ancestors            | 4 frames, 2 revealed | owed: `classify` calls `Iterator::any` (see below)                                                       | owed   |
+| `a_proven_violation_holds_for_every_dispatch`              | a proven violation holds for every dispatch                         | 4 dispatches         | `content_model::a_proven_violation_holds_for_every_dispatch` over `Tri::join`, any number of dispatches  | proved |
+
+The four walk laws stay on their Kani harnesses. `walk.rs` uses two
+standard-library calls Creusot 0.14 has no specification for:
+`Iterator::any` in `classify` (it folds with `try_fold`, which has none
+either) and `frames.iter().enumerate().rev()` in `walk` (`Enumerate` has no
+`DoubleEndedIteratorSpec`). The `walk` loop can be written as
+`while let Some(frame) = rest.next_back()` with `rest.len()` as the index,
+and its release IR is then equal to the original up to the names of SSA values
+and blocks. Replacing `any` with a `for` loop over `next` changes the
+optimized code: in the release build of `vize_patina` (opt-level 3, one
+codegen unit) LLVM then outlines `Map::next` instead of the role closures of
+`Chain::in_scope` and `Chain::list_item_loop`, and the bodies of
+`Chain::in_scope`, `list_item_loop`, `anchor_after_marker` and `has_open`
+differ. The kernel is product code, so the rewrite is not zero-cost, and a
+specification of `any` written here would be a trusted declaration, which
+the proofs do not admit. The rows stay `owed` until one of the two is
+accepted.
 
 ## Laws no harness states yet
 
@@ -127,6 +147,7 @@ Rust test.
 | --------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------- |
 | `ReactivityClass::as_str`, `ReactivityClass::from_str`          | byte-string matching (`str::as_bytes`) | `vize_l3` `tests/lattice.rs` `reactivity_folio_roundtrips_canonical_text` |
 | `ReactivityClass`: derived `Debug`, `PartialOrd`, `Ord`, `Hash` | discriminant intrinsics                | `vize_l3` `tests/lattice.rs` `the_derived_order_is_the_join_order`        |
+| `Tri`: derived `Debug`, `Hash`                                  | discriminant intrinsics                | `vize_patina` `html_content_model::tri::tests::truth_tables_are_kleene`   |
 
 ## Trusted items
 

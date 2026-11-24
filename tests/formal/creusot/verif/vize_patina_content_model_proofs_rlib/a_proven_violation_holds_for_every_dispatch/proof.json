@@ -1,0 +1,15 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_proven_violation_holds_for_every_dispatch": {
+        "prover": "alt-ergo",
+        "time": 0.095
+      },
+      "vc_elim_Some": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_eq_Tri": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_join": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_len_Tri": { "prover": "alt-ergo", "time": 0.006 }
+    }
+  }
+}

@@ -196,6 +196,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_patina_content_model_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
 name = "wasm-bindgen"
 version = "0.2.130"
 source = "registry+https://github.com/rust-lang/crates.io-index"
