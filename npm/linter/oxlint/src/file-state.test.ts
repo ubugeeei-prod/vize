@@ -88,14 +88,20 @@ it("a same-size rewrite with a restored mtime does not reuse cached source", () 
   const firstSource = "<template><p>one</p></template>\n";
   const secondSource = "<template><p>two</p></template>\n";
   assert.equal(Buffer.byteLength(firstSource), Buffer.byteLength(secondSource));
+  // A Date drops sub-millisecond precision, so restoring `stat.mtime` can
+  // change mtimeNs and miss the cache for the wrong reason.
+  const restoredSeconds = 1_700_000_000;
 
   try {
     fs.writeFileSync(filename, firstSource);
+    fs.utimesSync(filename, restoredSeconds, restoredSeconds);
     const context = createContext(filename, "const one = 1;\n");
     const first = getFileState(context);
-    const preserved = fs.statSync(filename);
     fs.writeFileSync(filename, secondSource);
-    fs.utimesSync(filename, preserved.atime, preserved.mtime);
+    fs.utimesSync(filename, restoredSeconds, restoredSeconds);
+    const restored = fs.statSync(filename, { bigint: true });
+    assert.equal(restored.mtimeNs, first.revision.mtimeNs);
+    assert.notEqual(restored.ctimeNs, first.revision.ctimeNs);
     const changed = getFileState(context);
 
     assert.notStrictEqual(changed, first);
