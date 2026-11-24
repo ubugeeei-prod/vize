@@ -368,7 +368,16 @@ export const rustFeatureRows: readonly RustFeatureRow[] = [
   },
   {
     id: "scss-products",
-    packages: ["vize_l0", "vize_l1", "vize_l1_to_l2", "vize_l2", "vize_l4", "vize_atelier_sfc", "vize_glyph", "vize_maestro"],
+    packages: [
+      "vize_l0",
+      "vize_l1",
+      "vize_l1_to_l2",
+      "vize_l2",
+      "vize_l4",
+      "vize_atelier_sfc",
+      "vize_glyph",
+      "vize_maestro",
+    ],
     env: largeStack,
     commands: [
       "clippy -p vize_l2 --features scss-rules --lib --no-deps",
