@@ -143,6 +143,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
                 template_syntax,
                 has_custom_elements: !custom_elements.is_empty(),
                 frozen: Some((&root, &frozen_elements)),
+                direct: false,
             },
             capture,
         ),

@@ -159,6 +159,7 @@ fn selection_in_context(
             has_custom_elements: false,
             context,
             frozen: Some((&root, &frozen)),
+            direct: false,
         },
     )
 }

@@ -41,6 +41,11 @@ pub(crate) struct SsrL4Request<'o> {
         &'o vize_relief::RootNode<'o>,
         &'o vize_armature::parser::FrozenElements<'o>,
     )>,
+    /// The direct lane: no parser bundle exists, and the lane emits only a
+    /// template the legacy parser and transform would pass without a word.
+    /// It lowers under empty frozen custody, which refuses any `v-pre`
+    /// opening, and it selects the legacy route on any L1 or L2 diagnostic.
+    pub(crate) direct: bool,
 }
 
 /// A selected legacy route is distinct from a failed compiler invariant.
@@ -216,9 +221,29 @@ fn emission_supported(request: &SsrL4Request<'_>) -> bool {
     !options.inline && options.dialect == VueVersion::V3 && !options.experimental_in_tag_comments
 }
 
+#[cfg(debug_assertions)]
+std::thread_local! {
+    /// Set while the direct lane's debug oracle recompiles on the full path.
+    /// That compile checks a selection; it is not one, so it counts nothing.
+    static ORACLE_RUN: core::cell::Cell<bool> = const { core::cell::Cell::new(false) };
+}
+
+/// Run the direct lane's debug oracle without recording its selection.
+#[cfg(debug_assertions)]
+pub(crate) fn as_oracle_run<R>(f: impl FnOnce() -> R) -> R {
+    let previous = ORACLE_RUN.with(|flag| flag.replace(true));
+    let result = f();
+    ORACLE_RUN.with(|flag| flag.set(previous));
+    result
+}
+
 pub(super) fn record_selection(selection: &SsrL4Selection) {
     let profiler = global_profiler();
     if !profiler.is_enabled() {
+        return;
+    }
+    #[cfg(debug_assertions)]
+    if ORACLE_RUN.with(core::cell::Cell::get) {
         return;
     }
     let counter = match selection {
@@ -238,6 +263,10 @@ pub(super) fn record_bridge_counters(
 ) {
     let profiler = global_profiler();
     if !profiler.is_enabled() {
+        return;
+    }
+    #[cfg(debug_assertions)]
+    if ORACLE_RUN.with(core::cell::Cell::get) {
         return;
     }
     profiler.record_counter_enabled("l4.ssr.files", 1);

@@ -43,7 +43,7 @@ pub use compile::differential;
 #[cfg(feature = "legacy-differential")]
 pub use compile::legacy::compile_template_legacy_with_options;
 pub use compile::{
-    compile_template, compile_template_with_options,
+    compile_template, compile_template_with_options, sfc_template_source_is_direct,
     compile_template_with_options_and_hoisted_scope_id, compile_template_with_template_syntax,
     compile_template_with_template_syntax_and_codegen_options,
     compile_template_with_template_syntax_and_hoisted_scope_id,

@@ -50,7 +50,11 @@ pub(crate) fn select_ssr_lane(
     } else {
         SsrL4Selection::Legacy(LegacyReason::Options)
     };
-    record_selection(&selection);
+    // A direct attempt that does not emit is not this compile's lane: the
+    // full path follows and records its own selection.
+    if !request.direct || matches!(selection, SsrL4Selection::Emitted(_)) {
+        record_selection(&selection);
+    }
     selection
 }
 
@@ -59,24 +63,43 @@ fn lower_and_emit_plain(
     source: &str,
     request: &SsrL4Request<'_>,
 ) -> SsrL4Selection {
-    let (tree, surface_errors) = vize_l1::markup::parse_with_options(
-        allocator,
-        source,
-        SurfaceParseOptions {
-            experimental_in_tag_comments: request.options.experimental_in_tag_comments,
-            ..SurfaceParseOptions::default()
-        },
-    );
+    let (tree, surface_errors) = if request.direct {
+        // No legacy parser runs on the direct lane, so L1 also reports the
+        // structural recoveries that parser would have reported.
+        let (tree, _html_tree, errors) =
+            vize_l1::markup::parse_with_authored_diagnostics(allocator, source);
+        (tree, errors)
+    } else {
+        vize_l1::markup::parse_with_options(
+            allocator,
+            source,
+            SurfaceParseOptions {
+                experimental_in_tag_comments: request.options.experimental_in_tag_comments,
+                ..SurfaceParseOptions::default()
+            },
+        )
+    };
+    if request.direct && !surface_errors.is_empty() {
+        return SsrL4Selection::Legacy(LegacyReason::SurfaceSemantics);
+    }
     let lowered = lower_request(allocator, source, &tree, &surface_errors, request);
-    let s2 = match lowered {
+    let mut s2 = match lowered {
         Ok(lowered) => lowered,
         Err(message) => {
             return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
         }
     };
-    let frozen_slots = match request.frozen {
-        Some((root, carrier)) => {
-            let facts = FrozenTemplate::new(root, source, carrier)
+    if request.direct && !s2.diagnostics.is_empty() {
+        return SsrL4Selection::Legacy(LegacyReason::SurfaceSemantics);
+    }
+    let frozen = match request.frozen {
+        Some((root, carrier)) => Some(FrozenTemplate::new(root, source, carrier)),
+        None if request.direct => Some(Ok(FrozenTemplate::unfrozen(source))),
+        None => None,
+    };
+    let frozen_slots = match frozen {
+        Some(template) => {
+            let facts = template
                 .and_then(|template| FrozenSlotFacts::new(template, source, &s2.artifact.root));
             match facts {
                 Ok(facts) => Some(facts),
@@ -106,7 +129,7 @@ fn lower_and_emit_plain(
         .binding_metadata
         .as_ref()
         .map(crate::bindings::binding_table);
-    select::select_from_l2_plain(
+    let selection = select::select_from_l2_plain(
         allocator,
         &artifact,
         request.options,
@@ -140,7 +163,43 @@ fn lower_and_emit_plain(
                 request.options.inline,
             ))
         },
-    )
+    );
+    if request.direct
+        && matches!(selection, SsrL4Selection::Emitted(_))
+        && !slot_and_model_passes_are_silent(&mut s2, request.options.is_ts)
+    {
+        return SsrL4Selection::Legacy(LegacyReason::SurfaceSemantics);
+    }
+    selection
+}
+
+/// Whether the L2 `v-slot` and `v-model` passes report nothing on `s2` and
+/// every slot's props are a well-formed binding pattern.
+///
+/// The legacy transform reports slot and model misuse (a `v-model` argument
+/// on an element, mixed slot usage, a `v-model` on a loop alias, malformed
+/// slot props). The plan emitter does not, so the direct lane, which runs no
+/// legacy transform, asks the passes and the check that own those
+/// diagnostics on the DOM route.
+fn slot_and_model_passes_are_silent(s2: &mut vize_l1_to_l2::Lowered<'_>, is_ts: bool) -> bool {
+    if s2.artifact.features.has_slot_carriers() {
+        let slot_facts = vize_l1_to_l2::pass::vslot::run(s2);
+        let malformed = slot_facts.iter().any(|(_, facts)| {
+            facts.groups.iter().any(|group| match &group.params {
+                vize_l1_to_l2::pass::SlotParams::Scoped { text, .. } => {
+                    !TransformExpressions::slot_params_are_valid(text.as_str(), is_ts)
+                }
+                vize_l1_to_l2::pass::SlotParams::Absent => false,
+            })
+        });
+        if malformed {
+            return false;
+        }
+    }
+    if s2.artifact.features.has_model_bindings() {
+        let _model_facts = vize_l1_to_l2::pass::vmodel::run(s2);
+    }
+    s2.diagnostics.is_empty()
 }
 
 pub(crate) fn select_ssr_lane_captured<C: CaptureSink>(
@@ -280,6 +339,9 @@ fn lower_request<'a>(
     match request.frozen {
         Some((root, carrier)) => FrozenTemplate::new(root, source, carrier)
             .and_then(|template| template.lower(allocator, tree, errors, contracts)),
+        None if request.direct => {
+            FrozenTemplate::unfrozen(source).lower(allocator, tree, errors, contracts)
+        }
         None if contracts.is_empty() => Ok(vize_l1_to_l2::lower(allocator, tree, errors)),
         None => Ok(vize_l1_to_l2::lower_with_directives(
             allocator, tree, errors, contracts,
