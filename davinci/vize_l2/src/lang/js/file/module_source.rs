@@ -1,7 +1,7 @@
 //! Original static module source operands over the actual completed unit.
 
 use super::ProgramInput;
-use crate::file::{Export, FileArtifact, Import, Namespace, ScriptUnit, ScriptUnitId};
+use crate::file::{Export, Import, L2Ir, Namespace, ScriptUnit, ScriptUnitId};
 use oxc_ast::ast::StringLiteral;
 use vize_l0::Span;
 
@@ -39,8 +39,8 @@ pub enum ModuleSourceKind {
 /// URI, snapshot and whole-SFC policy are not established by this neutral view.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::FileArtifact, lang::js::{OriginalModuleSources, ProgramInput}};
-/// fn forge<'f, 'p, 'a>(file: &'f FileArtifact<'a>, input: ProgramInput<'p, 'a>) {
+/// use vize_l2::{file::L2Ir, lang::js::{OriginalModuleSources, ProgramInput}};
+/// fn forge<'f, 'p, 'a>(file: &'f L2Ir<'a>, input: ProgramInput<'p, 'a>) {
 ///     let unit = &file.units()[0];
 ///     let _ = OriginalModuleSources { file, input, unit };
 /// }
@@ -50,8 +50,8 @@ pub enum ModuleSourceKind {
 /// fn copy(view: OriginalModuleSources<'_, '_, '_>) { let _ = view.clone(); }
 /// ```
 /// ```compile_fail
-/// use vize_l2::{file::FileArtifact, lang::js::ProgramInput};
-/// fn discard<'p, 'a>(file: FileArtifact<'a>, input: ProgramInput<'p, 'a>) {
+/// use vize_l2::{file::L2Ir, lang::js::ProgramInput};
+/// fn discard<'p, 'a>(file: L2Ir<'a>, input: ProgramInput<'p, 'a>) {
 ///     let view = file.original_module_sources(input).unwrap();
 ///     let mut original = None;
 ///     view.for_each(|row| original = Some(row)).unwrap();
@@ -61,8 +61,8 @@ pub enum ModuleSourceKind {
 /// ```
 /// ```compile_fail
 /// use oxc_ast::ast::Program;
-/// use vize_l2::file::FileArtifact;
-/// fn substitute(file: &FileArtifact<'_>, program: &Program<'_>) {
+/// use vize_l2::file::L2Ir;
+/// fn substitute(file: &L2Ir<'_>, program: &Program<'_>) {
 ///     let _ = file.original_module_sources(program);
 /// }
 /// ```
@@ -83,12 +83,12 @@ pub enum ModuleSourceKind {
 /// view.for_each(|literal| { let _ = literal.literal(); }).unwrap();
 /// ```
 pub struct OriginalModuleSources<'f, 'p, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     input: ProgramInput<'p, 'a>,
     unit: &'f ScriptUnit,
 }
 
-impl<'a> FileArtifact<'a> {
+impl<'a> L2Ir<'a> {
     /// Join checked original parser admission to this exact completed unit.
     /// Equal text, numeric IDs and a second parse cannot replace its body storage.
     pub fn original_module_sources<'f, 'p>(
@@ -160,8 +160,8 @@ enum Row<'f> {
 /// Metadata extraction does not grant completion to another File/source.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::FileArtifact, lang::js::OriginalModuleSource};
-/// fn substitute<'f, 'p, 'a>(file: &'f FileArtifact<'a>, original: OriginalModuleSource<'f, 'p, 'a>) {
+/// use vize_l2::{file::L2Ir, lang::js::OriginalModuleSource};
+/// fn substitute<'f, 'p, 'a>(file: &'f L2Ir<'a>, original: OriginalModuleSource<'f, 'p, 'a>) {
 ///     let _ = OriginalModuleSource { file, ..original };
 /// }
 /// ```
@@ -173,7 +173,7 @@ enum Row<'f> {
 /// }
 /// ```
 pub struct OriginalModuleSource<'f, 'p, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     row: Row<'f>,
     literal: &'p StringLiteral<'a>,
     raw: &'a str,
@@ -187,7 +187,7 @@ pub struct OriginalModuleSource<'f, 'p, 'a> {
 }
 
 impl<'f, 'p, 'a> OriginalModuleSource<'f, 'p, 'a> {
-    pub fn file(&self) -> &'f FileArtifact<'a> {
+    pub fn file(&self) -> &'f L2Ir<'a> {
         self.file
     }
     pub fn literal(&self) -> &'p StringLiteral<'a> {

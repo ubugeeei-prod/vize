@@ -1,6 +1,6 @@
 use vize_l0::Span;
 
-use crate::op::{EffectId, EffectScope, Op, OpId, Program, Region, RegionId};
+use crate::op::{EffectId, EffectScope, L3Ir, Op, OpId, Region, RegionId};
 
 pub(super) fn contains(owner: Span, child: Span) -> bool {
     owner.start <= child.start && child.end <= owner.end
@@ -11,14 +11,14 @@ pub(super) fn contains(owner: Span, child: Span) -> bool {
 /// record with an id is the one at that index; otherwise lookups scan for the
 /// first record, exactly as before.
 pub(super) struct Tables<'p, 'a> {
-    program: &'p Program<'a>,
+    program: &'p L3Ir<'a>,
     pub(super) dense_ops: bool,
     pub(super) dense_regions: bool,
     pub(super) dense_effects: bool,
 }
 
 impl<'p, 'a> Tables<'p, 'a> {
-    pub(super) fn new(program: &'p Program<'a>) -> Self {
+    pub(super) fn new(program: &'p L3Ir<'a>) -> Self {
         Self {
             program,
             dense_ops: (program.ops.iter().enumerate()).all(|(i, op)| op.id.index() as usize == i),
@@ -31,9 +31,9 @@ impl<'p, 'a> Tables<'p, 'a> {
 }
 
 impl<'a> core::ops::Deref for Tables<'_, 'a> {
-    type Target = Program<'a>;
+    type Target = L3Ir<'a>;
 
-    fn deref(&self) -> &Program<'a> {
+    fn deref(&self) -> &L3Ir<'a> {
         self.program
     }
 }

@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_revealed_ancestors_keep_the_decider": {
+        "prover": "alt-ergo",
+        "time": 0.012
+      }
+    }
+  }
+}

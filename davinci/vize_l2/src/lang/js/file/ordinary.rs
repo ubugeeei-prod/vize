@@ -1,9 +1,7 @@
 //! Original empty-default-object eligibility in the sole Program walk.
 
 use crate::file::build::Facts;
-use crate::file::{
-    Export, FileArtifact, Namespace, ScopeId, ScriptProfile, ScriptUnit, ScriptUnitId,
-};
+use crate::file::{Export, L2Ir, Namespace, ScopeId, ScriptProfile, ScriptUnit, ScriptUnitId};
 use oxc_parser::{AdmittedProgram, OriginalDefaultExport, ParseOptions};
 use vize_l0::{SourceBlock, Span};
 use vize_l1::container::vue::{ScriptRole, ScriptView};
@@ -130,8 +128,8 @@ pub struct OrdinaryIssue {
 /// ```compile_fail
 /// use oxc_parser::AdmittedProgram;
 /// use vize_l1::container::vue::ScriptView;
-/// use vize_l2::{file::FileArtifact, lang::js::VueOrdinaryEmpty};
-/// fn discard<'d, 'p, 'a>(file: FileArtifact<'a>, script: ScriptView<'d, 'a>,
+/// use vize_l2::{file::L2Ir, lang::js::VueOrdinaryEmpty};
+/// fn discard<'d, 'p, 'a>(file: L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     program: AdmittedProgram<'p, 'a>) {
 ///     let view = VueOrdinaryEmpty::checked(&file, script, program).unwrap();
 ///     drop(file);
@@ -140,8 +138,8 @@ pub struct OrdinaryIssue {
 /// ```
 /// ```compile_fail
 /// use vize_l1::{container::vue::ScriptView, embed::syntax::EmbedSyntax};
-/// use vize_l2::{file::FileArtifact, lang::js::VueOrdinaryEmpty};
-/// fn discard<'d, 'a>(file: &FileArtifact<'a>, script: ScriptView<'d, 'a>,
+/// use vize_l2::{file::L2Ir, lang::js::VueOrdinaryEmpty};
+/// fn discard<'d, 'a>(file: &L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     syntax: EmbedSyntax<'a>) {
 ///     let view = VueOrdinaryEmpty::checked(file, script,
 ///         syntax.admitted_program().unwrap()).unwrap();
@@ -150,7 +148,7 @@ pub struct OrdinaryIssue {
 /// }
 /// ```
 pub struct VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
     script: ScriptView<'d, 'a>,
     original: OriginalDefaultExport<'p, 'a>,
     unit: ScriptUnitId,
@@ -158,7 +156,7 @@ pub struct VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
 
 impl<'f, 'd, 'p, 'a> VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
     pub fn checked(
-        file: &'f FileArtifact<'a>,
+        file: &'f L2Ir<'a>,
         script: ScriptView<'d, 'a>,
         admitted: AdmittedProgram<'p, 'a>,
     ) -> Result<Self, OrdinaryIssue> {
@@ -246,7 +244,7 @@ impl<'f, 'd, 'p, 'a> VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
     }
 
     #[must_use]
-    pub fn file(&self) -> &'f FileArtifact<'a> {
+    pub fn file(&self) -> &'f L2Ir<'a> {
         self.file
     }
     #[must_use]

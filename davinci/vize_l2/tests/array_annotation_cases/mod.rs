@@ -1,7 +1,7 @@
 use oxc_parser::{Parser, ProgramObservation};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, String, cstr};
-use vize_l2::file::{FileArtifact, FileIssueKind, InitializerKind, Namespace, ScriptUnit};
+use vize_l2::file::{FileIssueKind, InitializerKind, L2Ir, Namespace, ScriptUnit};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 use vize_l2::query::PositionQueryError;
 
@@ -10,7 +10,7 @@ fn lower<'a>(
     source: &'a str,
     block: SourceBlock<'a>,
     observed: &ProgramObservation<'a>,
-) -> FileArtifact<'a> {
+) -> L2Ir<'a> {
     let mut producer = FileProducer::new(arena, source).unwrap();
     producer
         .program(

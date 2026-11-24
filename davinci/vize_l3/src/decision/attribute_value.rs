@@ -4,7 +4,7 @@ use super::DecisionBuildError;
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::Artifact,
-    file::{FileArtifact, FileAttributeValue, NativeFileAttributeValueState},
+    file::{FileAttributeValue, L2Ir, NativeFileAttributeValueState},
     op::ElementOp,
 };
 
@@ -12,19 +12,19 @@ use vize_l2::{
 /// This keeps the whole normal observations and maps borrowed from that File;
 /// it is not a new attribute table, target-name policy or decoded-source factory.
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::OriginalAttributeFacts;
-/// fn forge<'f,'a>(file: &'f FileArtifact<'a>) {
+/// fn forge<'f,'a>(file: &'f L2Ir<'a>) {
 ///     let _ = OriginalAttributeFacts { file, consumed: 0 };
 /// }
 /// ```
 pub struct OriginalAttributeFacts<'owner, 'arena> {
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     consumed: usize,
 }
 impl<'owner, 'arena> OriginalAttributeFacts<'owner, 'arena> {
     #[must_use]
-    pub const fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub const fn file(&self) -> &'owner L2Ir<'arena> {
         self.file
     }
     #[must_use]
@@ -51,13 +51,13 @@ impl<'owner, 'arena> OriginalAttributeFacts<'owner, 'arena> {
 }
 
 pub(super) struct OriginalAttributeCursor<'owner, 'arena> {
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     next: usize,
     failure: Option<DecisionBuildError>,
 }
 impl<'owner, 'arena> OriginalAttributeCursor<'owner, 'arena> {
     pub(super) fn new(
-        file: &'owner FileArtifact<'arena>,
+        file: &'owner L2Ir<'arena>,
         artifact: &'owner Artifact<'arena>,
     ) -> Result<Self, DecisionBuildError> {
         if !file.is_complete() {

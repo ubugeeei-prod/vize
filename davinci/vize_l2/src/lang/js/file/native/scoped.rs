@@ -1,10 +1,10 @@
 //! Physical original style/template/File custody, without generated scope policy.
 
 use super::{NativeTemplateFile, NativeTemplateIssue, NativeTemplateView};
-use crate::file::FileArtifact;
+use crate::file::L2Ir;
 use vize_l0::Span;
 use vize_l1::{
-    container::vue::{AdmittedDescriptor, DescriptorObservation},
+    container::vue::{AdmittedDescriptor, L1Ir},
     css::{EmptyClassStyle, StyleIssue, StyleSyntax},
     markup::{SurfaceParseOptions, TemplateGrammar},
 };
@@ -35,8 +35,8 @@ pub struct NativeScopedTemplateIssue {
 ///
 /// ```compile_fail
 /// use vize_l1::{container::vue::AdmittedDescriptor, css::EmptyClassStyle};
-/// use vize_l2::{file::FileArtifact, lang::js::{NativeScopedTemplateView, NativeTemplateView}};
-/// fn forge<'o, 'a>(template: NativeTemplateView<'o, 'a>, file: &'o FileArtifact<'a>,
+/// use vize_l2::{file::L2Ir, lang::js::{NativeScopedTemplateView, NativeTemplateView}};
+/// fn forge<'o, 'a>(template: NativeTemplateView<'o, 'a>, file: &'o L2Ir<'a>,
 ///     descriptor: AdmittedDescriptor<'o, 'a>, empty: EmptyClassStyle<'o, 'a>) {
 ///     let _ = NativeScopedTemplateView { template, file, descriptor, empty };
 /// }
@@ -47,24 +47,24 @@ pub struct NativeScopedTemplateIssue {
 /// ```
 /// The separately supplied original owners must remain alive:
 /// ```compile_fail
-/// use vize_l1::{container::vue::DescriptorObservation, css::StyleSyntax};
+/// use vize_l1::{container::vue::L1Ir, css::StyleSyntax};
 /// use vize_l2::lang::js::NativeTemplateFile;
-/// fn discard_style<'a>(owner: &NativeTemplateFile<'a>, original: &DescriptorObservation<'a>, syntax: StyleSyntax<'a>) {
+/// fn discard_style<'a>(owner: &NativeTemplateFile<'a>, original: &L1Ir<'a>, syntax: StyleSyntax<'a>) {
 ///     let view = owner.scoped_view(original, &syntax).unwrap();
 ///     drop(syntax); let _ = view.file();
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l1::{container::vue::DescriptorObservation, css::StyleSyntax};
+/// use vize_l1::{container::vue::L1Ir, css::StyleSyntax};
 /// use vize_l2::lang::js::NativeTemplateFile;
-/// fn discard_descriptor<'a>(owner: &NativeTemplateFile<'a>, original: DescriptorObservation<'a>, syntax: &StyleSyntax<'a>) {
+/// fn discard_descriptor<'a>(owner: &NativeTemplateFile<'a>, original: L1Ir<'a>, syntax: &StyleSyntax<'a>) {
 ///     let view = owner.scoped_view(&original, syntax).unwrap();
 ///     drop(original); let _ = view.file();
 /// }
 /// ```
 pub struct NativeScopedTemplateView<'owner, 'arena> {
     template: NativeTemplateView<'owner, 'arena>,
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     descriptor: AdmittedDescriptor<'owner, 'arena>,
     empty: EmptyClassStyle<'owner, 'arena>,
 }
@@ -74,7 +74,7 @@ impl<'owner, 'arena> NativeScopedTemplateView<'owner, 'arena> {
         self.template.owner()
     }
     #[must_use]
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.file
     }
     #[must_use]
@@ -98,7 +98,7 @@ impl<'arena> NativeTemplateFile<'arena> {
     /// to public callers as well as the private normally owned lower route.
     pub fn scoped_view<'owner>(
         &'owner self,
-        original: &'owner DescriptorObservation<'arena>,
+        original: &'owner L1Ir<'arena>,
         syntax: &'owner StyleSyntax<'arena>,
     ) -> Result<NativeScopedTemplateView<'owner, 'arena>, NativeScopedTemplateIssue> {
         use NativeScopedTemplateIssueKind as Kind;

@@ -1,7 +1,7 @@
 //! Queries over sealed attached Handler/OriginalFor rows, never bare coordinates.
 
 use super::{Model, PositionQueryError};
-use crate::file::{BindingRef, FileArtifact, FileForHead, FileHandler, ScopeId};
+use crate::file::{BindingRef, FileForHead, FileHandler, L2Ir, ScopeId};
 use crate::resolution::{HandlerBinding, HandlerDeclaration, HandlerScopeId, Usage};
 use vize_l0::Span;
 
@@ -65,7 +65,7 @@ pub enum TemplateSymbolRef<'f, 'a> {
 
 impl<'f, 'a> TemplateSymbolRef<'f, 'a> {
     #[must_use]
-    pub fn file(self) -> &'f FileArtifact<'a> {
+    pub fn file(self) -> &'f L2Ir<'a> {
         match self {
             Self::File(binding) => binding.file(),
             Self::HandlerLocal(local) => local.handler.file(),
@@ -101,8 +101,8 @@ enum Origin<'f, 'a> {
 /// One original declaration/use, borrowed with its actual immutable File owner.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::FileArtifact, query::Model};
-/// fn discard(file: FileArtifact<'_>, offset: u32) {
+/// use vize_l2::{file::L2Ir, query::Model};
+/// fn discard(file: L2Ir<'_>, offset: u32) {
 ///     let site = Model::new(&file).template_symbol_at_offset(offset).unwrap().unwrap();
 ///     drop(file);
 ///     let _ = site.symbol();
@@ -119,7 +119,7 @@ pub struct TemplateSiteRef<'f, 'a> {
 
 impl<'f, 'a> TemplateSiteRef<'f, 'a> {
     #[must_use]
-    pub fn file(self) -> &'f FileArtifact<'a> {
+    pub fn file(self) -> &'f L2Ir<'a> {
         self.symbol.file()
     }
     #[must_use]
@@ -202,7 +202,7 @@ impl<'f, 'a> Model<'f, 'a> {
 }
 
 pub(super) fn check_template_offset(
-    file: &FileArtifact<'_>,
+    file: &L2Ir<'_>,
     offset: u32,
 ) -> Result<(), TemplateQueryError> {
     let error = if !file.is_complete() {

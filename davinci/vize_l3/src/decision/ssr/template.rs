@@ -5,7 +5,7 @@ use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l0::Span;
 use vize_l2::{
     artifact::Artifact,
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{NativeTemplateFile, NativeTemplateView},
 };
 
@@ -23,9 +23,9 @@ pub enum SsrTemplateBuildError {
 ///
 /// A complete neutral File cannot mint original-template output authority:
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::ssr::build_template_ssr_decisions;
-/// fn promote(file: &FileArtifact<'_>) { let _ = build_template_ssr_decisions(file); }
+/// fn promote(file: &L2Ir<'_>) { let _ = build_template_ssr_decisions(file); }
 /// ```
 /// Diagnostic SSR analysis cannot construct this receipt:
 /// ```compile_fail
@@ -65,7 +65,7 @@ impl<'owner, 'arena> TemplateSsrAnalysis<'owner, 'arena> {
         self.view.owner()
     }
     #[must_use]
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.analysis.file()
     }
     #[must_use]

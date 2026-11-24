@@ -5,7 +5,7 @@ use vize_l0::{
 use vize_l1::{
     container::{
         Vue,
-        vue::{DescriptorObservation, DescriptorOptions, ScriptRole, ScriptView},
+        vue::{DescriptorOptions, L1Ir, ScriptRole, ScriptView},
     },
     embed::{
         EmbedSource,
@@ -14,7 +14,7 @@ use vize_l1::{
     markup::SurfaceParseOptions,
 };
 use vize_l2::{
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{
         FileProducer, OrdinaryIssue, OrdinaryIssueKind, ProgramInput, ProgramScope,
         VueOrdinaryEmpty,
@@ -24,7 +24,7 @@ use vize_l2::{
 mod vue_ordinary_cases;
 
 struct Observed<'a> {
-    descriptor: DescriptorObservation<'a>,
+    descriptor: L1Ir<'a>,
     syntax: EmbedSyntax<'a>,
 }
 impl<'a> Observed<'a> {
@@ -78,12 +78,12 @@ impl<'a> Observed<'a> {
             .map_err(|_| "walk")?;
         Ok(producer)
     }
-    fn file(&self, arena: &'a Allocator) -> Result<FileArtifact<'a>, &'static str> {
+    fn file(&self, arena: &'a Allocator) -> Result<L2Ir<'a>, &'static str> {
         self.producer(arena)?.finish().map_err(|_| "File")
     }
     fn checked<'f>(
         &self,
-        file: &'f FileArtifact<'a>,
+        file: &'f L2Ir<'a>,
     ) -> Result<Result<VueOrdinaryEmpty<'f, '_, '_, 'a>, OrdinaryIssue>, &'static str> {
         Ok(VueOrdinaryEmpty::checked(
             file,

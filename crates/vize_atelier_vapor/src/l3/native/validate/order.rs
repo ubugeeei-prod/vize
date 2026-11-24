@@ -1,7 +1,7 @@
 //! Source order must agree with the explicit L3 ordering edges exactly.
 
 use vize_carton::{Allocator, Vec};
-use vize_l3::op::{EdgeKind, OpId, Program};
+use vize_l3::op::{EdgeKind, L3Ir, OpId};
 
 use super::Result;
 use crate::l3::AdmissionFailure;
@@ -18,7 +18,7 @@ pub(super) fn edge(from: OpId, to: OpId, kind: EdgeKind) -> Edge {
 /// sorted multisets consumes each obligation once, so repeating an edge
 /// cannot conceal a missing dependency even when the counts agree.
 pub(super) fn check<'a>(
-    program: &Program<'_>,
+    program: &L3Ir<'_>,
     mut expected: Vec<'a, Edge>,
     alloc: &'a Allocator,
 ) -> Result<()> {

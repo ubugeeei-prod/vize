@@ -148,6 +148,10 @@ impl ExactSuppressionState {
 }
 
 impl InlineSuppressionState {
+    pub(super) fn is_empty(&self) -> bool {
+        self.events.is_empty()
+    }
+
     pub(super) fn append(&mut self, other: &mut Self) {
         self.events.append(&mut other.events);
     }

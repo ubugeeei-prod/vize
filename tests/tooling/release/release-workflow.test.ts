@@ -159,7 +159,7 @@ test("npm resume preserves the trusted workflow and restores only the selected r
   assert.match(restore, /git show "FETCH_HEAD:\$file" > "\$file"/);
 });
 
-test("builds use the untagged candidate; only a fully built release is tagged", () => {
+test("builds use the prepared candidate; release gates run before tagging", () => {
   const prePublish = (name: string) =>
     name.startsWith("build-") || name.startsWith("smoke") || name === "tag";
   for (const [name, job] of Object.entries(workflow.jobs)) {
@@ -167,7 +167,7 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
     if (name === "version" || name === "dispatch-verify") continue;
     assert.ok(needs(name).includes("version"), `${name} needs version`);
     const checkout = job.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
-    const ref = prePublish(name) ? "ref" : "tag";
+    const ref = name === "build-editor-platforms" ? "sha" : prePublish(name) ? "ref" : "tag";
     const expected =
       name === "publication-quota"
         ? "${{ github.sha }}"

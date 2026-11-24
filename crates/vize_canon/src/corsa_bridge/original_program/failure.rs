@@ -211,7 +211,7 @@ fn project(root: &Path, _force: bool) -> CorsaBridge {
         ..Default::default()
     })
 }
-fn file<'a>(arena: &'a Allocator, source: &'a str, lang: Lang) -> vize_l2::file::FileArtifact<'a> {
+fn file<'a>(arena: &'a Allocator, source: &'a str, lang: Lang) -> vize_l2::file::L2Ir<'a> {
     use vize_l0::SourceRoot;
     use vize_l1::embed::{
         EmbedSource,

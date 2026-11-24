@@ -5,7 +5,7 @@ use vize_l0::{
 pub mod body;
 use vize_l1::container::{
     Vue,
-    vue::{DescriptorObservation, DescriptorOptions, ScriptRole, ScriptView},
+    vue::{DescriptorOptions, L1Ir, ScriptRole, ScriptView},
 };
 use vize_l1::embed::{
     Embed, EmbedSource, Grammar, Lang, Shape,
@@ -15,7 +15,7 @@ use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::{
     artifact::{ComponentBody, ComponentFactory},
     expr::{JsExpr, js::JsCoordinates},
-    file::{Declaration, FileArtifact, TemplatePolicy, TemplateScope, vue::VueExposure},
+    file::{Declaration, L2Ir, TemplatePolicy, TemplateScope, vue::VueExposure},
     lang::js::{FileProducer, ProgramInput, ProgramScope},
 };
 
@@ -28,7 +28,7 @@ impl TemplatePolicy for LexicalValues {
 }
 
 pub struct Observed<'a> {
-    descriptor: DescriptorObservation<'a>,
+    descriptor: L1Ir<'a>,
     syntax: EmbedSyntax<'a>,
 }
 
@@ -84,7 +84,7 @@ impl<'a> Observed<'a> {
         arena: &'a Allocator,
         span: vize_l0::Span,
         body: B,
-    ) -> Option<FileArtifact<'a>> {
+    ) -> Option<L2Ir<'a>> {
         let mut producer = self.producer(arena)?;
         {
             let mut region = producer
@@ -103,11 +103,7 @@ impl<'a> Observed<'a> {
         producer.finish().ok()
     }
 
-    pub fn file(
-        &self,
-        arena: &'a Allocator,
-        expressions: &[&'a JsExpr<'a>],
-    ) -> Option<FileArtifact<'a>> {
+    pub fn file(&self, arena: &'a Allocator, expressions: &[&'a JsExpr<'a>]) -> Option<L2Ir<'a>> {
         let mut producer = self.producer(arena)?;
         {
             // This real diagnostic factory proves lexical rows, not native
@@ -122,7 +118,7 @@ impl<'a> Observed<'a> {
         producer.finish().ok()
     }
 
-    pub fn exposure<'f>(&self, file: &'f FileArtifact<'a>) -> Option<VueExposure<'f, '_, '_, 'a>> {
+    pub fn exposure<'f>(&self, file: &'f L2Ir<'a>) -> Option<VueExposure<'f, '_, '_, 'a>> {
         VueExposure::checked(file, self.script()?, self.syntax.admitted_program()?).ok()
     }
 }

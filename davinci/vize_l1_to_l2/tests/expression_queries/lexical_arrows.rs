@@ -11,7 +11,7 @@ use vize_l1_to_l2::native_file::{
     NativeSfcObservation, lower_sfc_with_lexical_initializers, lower_sfc_with_listener_references,
 };
 use vize_l2::{
-    file::{DeclarationKind, FileArtifact, InitializerKind},
+    file::{DeclarationKind, InitializerKind, L2Ir},
     lang::js::{FileProducer, ProgramInput, ProgramScope},
     query::Model,
 };
@@ -29,7 +29,7 @@ fn standalone<'a>(
     source: &'a str,
     ty: SourceType,
     arrows: bool,
-) -> Option<FileArtifact<'a>> {
+) -> Option<L2Ir<'a>> {
     let parse = Parser::new(arena.as_oxc(), source, ty).parse_observed();
     let block = SourceRoot::new(source).ok()?.whole_block();
     let input = ProgramInput::checked(parse.admitted()?, block, 0).ok()?;
@@ -48,7 +48,7 @@ fn standalone<'a>(
     file.is_complete().then_some(file)
 }
 
-fn count_arrows(file: &FileArtifact<'_>) -> usize {
+fn count_arrows(file: &L2Ir<'_>) -> usize {
     file.bindings()
         .filter_map(|b| b.declaration())
         .filter(|d| {
@@ -61,7 +61,7 @@ fn count_arrows(file: &FileArtifact<'_>) -> usize {
         .count()
 }
 
-fn original_file<'f, 'a>(source: &'f NativeSfcObservation<'a>) -> Option<&'f FileArtifact<'a>> {
+fn original_file<'f, 'a>(source: &'f NativeSfcObservation<'a>) -> Option<&'f L2Ir<'a>> {
     source
         .file()
         .map(|f| f.file())
@@ -182,7 +182,7 @@ fn original_modules_and_component_files() {
             }
             spelling += 1;
             let arena = Allocator::new();
-            let mut compare = |file: &FileArtifact<'_>, block, ty| {
+            let mut compare = |file: &L2Ir<'_>, block, ty| {
                 let count = count_arrows(file);
                 if count == 0 {
                     return;
