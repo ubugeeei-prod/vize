@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_is_none_ref_str": { "prover": "alt-ergo", "time": 0.008 },
+      "vc_no_code": { "prover": "alt-ergo", "time": 0.009 }
+    }
+  }
+}

@@ -320,7 +320,7 @@ vue/object-shorthand	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	relief	
 vue/permitted-contents	L1 syntax	markup-l2	legacy-rule	atelier_jsx,relief	-	vue/permitted_contents.rs
 vue/prefer-const	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	relief	-	opinionated/vue/script_unused/prefer_const.rs
 vue/prefer-prop-type-boolean-first	L1 script	script-oxc	legacy-engine	-	-	script/props_emits/prefer_prop_type_boolean_first.rs
-vue/prefer-props-shorthand	L2 semantic	markup-l2	legacy-rule	croquis,relief	-	opinionated/vue/prefer_props_shorthand.rs
+vue/prefer-props-shorthand	L1 syntax	markup-l2	legacy-rule	relief	-	opinionated/vue/prefer_props_shorthand.rs
 vue/prefer-pug-lang	L1 syntax	relief-visitor	legacy-engine	-	-	vue/prefer_pug_lang.rs
 vue/prefer-single-event-payload	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	relief	-	vue/compatibility_sfc/event_payload.rs
 vue/prefer-template	L1 syntax	relief-visitor+sfc-descriptor	legacy-rule	relief	-	vue/compatibility_template/core_rules/prefer_template.rs

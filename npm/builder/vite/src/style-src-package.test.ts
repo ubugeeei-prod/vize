@@ -40,7 +40,7 @@ function project(t: { after: (fn: () => void) => void }) {
   return { root, write, file: path.join(root, "src", "Foo.vue") };
 }
 
-/** `scan: false` skips the startup precompile, so `load` compiles on demand. */
+/** `scan` opts into the startup precompile; without it the graph compiles on demand. */
 async function viteBuild(
   root: string,
   scan = true,
@@ -51,7 +51,7 @@ async function viteBuild(
     configFile: false,
     logLevel: "silent",
     resolve: { alias: [{ find: "@", replacement: path.join(root, "src") }] },
-    plugins: [vize({ configMode: false, ...(scan ? {} : { scanPatterns: [] }) })],
+    plugins: [vize({ configMode: false, scanPatterns: scan ? ["**/*.vue"] : [] })],
     build: {
       write: false,
       minify: false,

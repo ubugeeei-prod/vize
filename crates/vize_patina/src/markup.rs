@@ -100,7 +100,7 @@ mod visitor;
 
 pub use attribute::MarkupAttribute;
 pub use batch::{MarkupRules, RankedMarkupRule};
-pub use binding::{MarkupBinding, MarkupBindingKind};
+pub use binding::{MarkupBinding, MarkupBindingKind, SameNameBinding, SameNameSpelling};
 pub use branches::MarkupBranch;
 pub use context::MarkupContext;
 pub use directive::MarkupDirective;

@@ -1,0 +1,17 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_elim_Some": { "prover": "z3", "time": 0.003 },
+      "vc_elim_Some'0": { "prover": "z3", "time": 0.002 },
+      "vc_get_T": { "prover": "z3", "time": 0.002 },
+      "vc_index_of_T": { "prover": "z3", "time": 0.003 },
+      "vc_into_iter_Range_usize": { "prover": "alt-ergo", "time": 0.008 },
+      "vc_key_T'0": { "prover": "z3", "time": 0.002 },
+      "vc_len_T": { "prover": "alt-ergo", "time": 0.009 },
+      "vc_ne_Option_usize": { "prover": "z3", "time": 0.002 },
+      "vc_next_Range_usize": { "prover": "z3", "time": 0.003 },
+      "vc_unique_T": { "prover": "cvc5", "time": 0.831 }
+    }
+  }
+}

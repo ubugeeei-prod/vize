@@ -228,6 +228,17 @@ export function compileJsxModule(
   };
 }
 
+export interface CompileBatchReporting {
+  /**
+   * Receives a failure that belongs to one file alone (a `src` block that
+   * cannot be read or inlined) instead of that failure aborting the batch. The
+   * file is then left out of the cache and of the diagnostics below.
+   */
+  onFileFailure?: (path: string, error: unknown) => void;
+  /** Print each file's compiler errors and warnings. @default true */
+  log?: boolean;
+}
+
 /**
  * Batch compile multiple files in parallel using native Rust multithreading.
  * Returns per-file results with content hashes for HMR.
@@ -236,27 +247,39 @@ export function compileBatch(
   files: { path: string; source: string }[],
   cache: Map<string, CompiledModule>,
   options: CompileBatchOptions,
+  reporting: CompileBatchReporting = {},
 ): BatchCompileResultWithFiles {
+  const { onFileFailure, log = true } = reporting;
+  const failed = new Set<string>();
+  const isolate = (path: string, run: () => void): void => {
+    if (!onFileFailure) return run();
+    try {
+      run();
+    } catch (error) {
+      failed.add(path);
+      onFileFailure(path, error);
+    }
+  };
   const inlinedByPath = new Map<string, InlinedSfcSource>();
-  const resolvedFiles = files.map((file) => {
-    const resolved = inlineSfcSrcBlocks(
-      native.parseSfc,
-      file.path,
-      file.source,
-      options.srcResolutions?.get(file.path),
-    );
-    inlinedByPath.set(file.path, resolved);
-    return {
-      path: file.path,
-      source: resolved.source,
-      scopeId: generateScopeId(file.path, options.root, options.isProd ?? false, file.source),
-    };
-  });
+  const resolvedFiles: BatchFileInput[] = [];
+  for (const file of files) {
+    isolate(file.path, () => {
+      const resolved = inlineSfcSrcBlocks(
+        native.parseSfc,
+        file.path,
+        file.source,
+        options.srcResolutions?.get(file.path),
+      );
+      inlinedByPath.set(file.path, resolved);
+      resolvedFiles.push({
+        path: file.path,
+        source: resolved.source,
+        scopeId: generateScopeId(file.path, options.root, options.isProd ?? false, file.source),
+      });
+    });
+  }
 
-  const result = compileSfcBatchWithResults(
-    resolvedFiles satisfies BatchFileInput[],
-    buildCompileBatchOptions(options),
-  );
+  const result = compileSfcBatchWithResults(resolvedFiles, buildCompileBatchOptions(options));
 
   // Released native bindings predating the batch `scopeId` field ignore it and
   // return their absolute-path scope instead. Keep the JS adapter compatible
@@ -277,34 +300,39 @@ export function compileBatch(
       continue;
     }
 
-    const fallback = compileFile(fileResult.path, cache, options, input.source, {
-      logWarnings: false,
+    isolate(fileResult.path, () => {
+      const fallback = compileFile(fileResult.path, cache, options, input.source, {
+        logWarnings: false,
+      });
+      fileResult.code = fallback.code;
+      delete fileResult.map;
+      if (fallback.map !== undefined) fileResult.map = fallback.map;
+      delete fileResult.css;
+      if (fallback.css !== undefined) fileResult.css = fallback.css;
+      fileResult.scopeId = fallback.scopeId;
+      fileResult.hasScoped = fallback.hasScoped;
+      delete fileResult.typeProject;
+      if (fallback.typeProject !== undefined) fileResult.typeProject = fallback.typeProject;
+      delete fileResult.macroArtifacts;
+      if (fallback.macroArtifacts !== undefined) {
+        fileResult.macroArtifacts = fallback.macroArtifacts;
+      }
+      delete fileResult.moduleShape;
+      if (fallback.moduleShape !== undefined) fileResult.moduleShape = fallback.moduleShape;
     });
-    fileResult.code = fallback.code;
-    delete fileResult.map;
-    if (fallback.map !== undefined) fileResult.map = fallback.map;
-    delete fileResult.css;
-    if (fallback.css !== undefined) fileResult.css = fallback.css;
-    fileResult.scopeId = fallback.scopeId;
-    fileResult.hasScoped = fallback.hasScoped;
-    delete fileResult.typeProject;
-    if (fallback.typeProject !== undefined) fileResult.typeProject = fallback.typeProject;
-    delete fileResult.macroArtifacts;
-    if (fallback.macroArtifacts !== undefined) {
-      fileResult.macroArtifacts = fallback.macroArtifacts;
-    }
-    delete fileResult.moduleShape;
-    if (fallback.moduleShape !== undefined) fileResult.moduleShape = fallback.moduleShape;
   }
 
   for (const fileResult of result.results) {
-    if (fileResult.errors.length > 0) continue;
+    if (fileResult.errors.length > 0 || failed.has(fileResult.path)) continue;
     const imports = inlinedByPath.get(fileResult.path)?.imports;
-    assertSfcStyleSrcImports(fileResult.path, fileResult.styles ?? [], imports);
+    isolate(fileResult.path, () =>
+      assertSfcStyleSrcImports(fileResult.path, fileResult.styles ?? [], imports),
+    );
   }
 
   // Update cache with results
   for (const fileResult of result.results) {
+    if (failed.has(fileResult.path)) continue;
     if (fileResult.errors.length === 0) {
       cache.set(fileResult.path, {
         ...(fileResult.typeProject ? { typeProject: fileResult.typeProject } : {}),
@@ -328,6 +356,7 @@ export function compileBatch(
       });
     }
 
+    if (!log) continue;
     // Log errors and warnings
     if (fileResult.errors.length > 0) {
       console.error(formatCompileErrorMessage(fileResult.path, fileResult.errors));
