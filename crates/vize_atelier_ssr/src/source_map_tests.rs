@@ -136,6 +136,7 @@ fn source_map_is_additive_and_maps_tokens_byte_exactly() {
             r#"3:14 "Y</b>`)⏎" -> "Y</b><i ""#,
             r#"8:2 "_ssrRend" -> "<i v-for""#,
             r#"8:17 "_ctx.xs," -> "xs\">{{ x" [xs]"#,
+            r#"8:27 "x) => {⏎" -> "x in xs\"""#,
             r#"9:12 "i>${_ssr" -> "i v-for=""#,
             r#"9:32 "x)}</i>`" -> "x }}</i>""#,
         ]

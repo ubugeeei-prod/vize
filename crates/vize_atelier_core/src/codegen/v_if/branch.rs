@@ -131,7 +131,7 @@ fn generate_if_branch_slot(
 ) {
     // Slots don't use blocks in branch output; use renderSlot directly.
     ctx.use_helper(RuntimeHelper::RenderSlot);
-    ctx.push(ctx.helper(RuntimeHelper::RenderSlot));
+    ctx.push_mapped(ctx.helper(RuntimeHelper::RenderSlot), el.loc.span.start);
     ctx.push("(_ctx.$slots, ");
     generate_slot_outlet_name(ctx, el);
     ctx.push(", ");
@@ -226,7 +226,7 @@ fn generate_if_branch_component(
     } else if let Some(builtin) = is_builtin_component(el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if ctx.push_component_binding_tag(el.tag) {
+    } else if ctx.push_component_binding(el) {
     } else {
         ctx.push(&to_valid_asset_identifier("component", el.tag));
     }

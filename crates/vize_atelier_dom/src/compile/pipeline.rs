@@ -21,6 +21,10 @@ pub(super) struct DomCompilePipelineOptions {
     /// Refuse malformed slot parameters in L2, as the SFC fast path does.
     pub(super) strict_slot_params: bool,
     pub(super) development: bool,
+    /// A requested source map never changes the module (TS-11): the compile
+    /// selects its emitter as a plain compile does, and the compatibility
+    /// generator supplies a map only when it would emit the same module.
+    pub(super) additive_source_map: bool,
 }
 
 impl DomCompilePipelineOptions {
@@ -36,6 +40,7 @@ impl DomCompilePipelineOptions {
             no_slotted: false,
             strict_slot_params: false,
             development: true,
+            additive_source_map: false,
         }
     }
 
@@ -52,6 +57,7 @@ impl DomCompilePipelineOptions {
             no_slotted: false,
             strict_slot_params: false,
             development: true,
+            additive_source_map: false,
         }
     }
 
@@ -67,6 +73,7 @@ impl DomCompilePipelineOptions {
             no_slotted: false,
             strict_slot_params: false,
             development: true,
+            additive_source_map: false,
         }
     }
 
@@ -83,6 +90,7 @@ impl DomCompilePipelineOptions {
             no_slotted: false,
             strict_slot_params: false,
             development: true,
+            additive_source_map: false,
         }
     }
 
@@ -100,6 +108,7 @@ impl DomCompilePipelineOptions {
             no_slotted: false,
             strict_slot_params: false,
             development: true,
+            additive_source_map: false,
         }
     }
 
@@ -119,6 +128,7 @@ impl DomCompilePipelineOptions {
             no_slotted: false,
             strict_slot_params: false,
             development: true,
+            additive_source_map: false,
         }
     }
 
@@ -135,6 +145,7 @@ impl DomCompilePipelineOptions {
             no_slotted: false,
             strict_slot_params: false,
             development: true,
+            additive_source_map: false,
         }
     }
 }

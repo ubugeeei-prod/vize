@@ -82,11 +82,8 @@ fn compile(name: &str, source: &str, map: bool) -> SfcCompileResult {
     assert!(result.warnings.is_empty(), "{name}: {:?}", result.warnings);
     assert!(result.css.is_none());
     assert!(result.macro_artifacts.is_empty());
-    assert_eq!(
-        result.map.is_some(),
-        map && (descriptor.script.is_some() || descriptor.script_setup.is_some()),
-        "{name}: original descriptor-bound public map disposition"
-    );
+    // The server render is mapped with or without a script (#13547).
+    assert_eq!(result.map.is_some(), map, "{name}: public map disposition");
     if let Some(map) = &result.map {
         assert_eq!(map["sources"], json!([filename]));
     }

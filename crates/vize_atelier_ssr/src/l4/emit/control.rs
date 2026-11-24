@@ -134,11 +134,22 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
         };
         self.ctx.push(", (");
-        // The walker anchors the loop source but not the aliases it binds.
-        for (index, alias) in aliases.iter().flatten().enumerate() {
-            if index > 0 {
+        // Like the walker, anchor each alias at the authored alias it binds.
+        let authored = [
+            Some(&binding.value),
+            binding.key.as_ref(),
+            binding.index.as_ref(),
+        ];
+        let mut written = false;
+        for (alias, authored) in aliases.iter().zip(authored) {
+            let Some(alias) = alias else {
+                continue;
+            };
+            if written {
                 self.ctx.push(", ");
             }
+            written = true;
+            self.ctx.anchor(authored.map(|alias| alias.span().start));
             self.ctx.push(alias);
         }
         self.ctx.push(") => {\n");

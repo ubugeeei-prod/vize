@@ -33,6 +33,7 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         no_slotted,
         strict_slot_params,
         development,
+        additive_source_map,
     } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);
 
@@ -102,7 +103,10 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     });
     let use_l2_emit = l2_refusal.is_none();
     let l2_custom_elements = custom_elements.clone();
-    if use_l2_emit && !codegen_opts.source_map {
+    // An additive mapped compile makes the plain compile's L2 attempt, so the
+    // module it keeps is the plain compile's.
+    let mut native = None;
+    if use_l2_emit && (!codegen_opts.source_map || additive_source_map) {
         if let Some(result) = stage_options::try_emit_l2_captured(
             allocator,
             source,
@@ -120,14 +124,18 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         ) {
             selection::record(Ok(()));
             capture.finish(|| CaptureOutcome::Accepted);
-            return (root, errors.to_vec(), result);
+            if !codegen_opts.source_map {
+                return (root, errors.to_vec(), result);
+            }
+            native = Some(result);
+        } else {
+            selection::record(Err(DomLegacyReason::EmitRefused));
         }
-        selection::record(Err(DomLegacyReason::EmitRefused));
     } else if let Some(reason) = l2_refusal {
         selection::record(Err(reason));
     }
 
-    let l2_emit_after_transform = (use_l2_emit && codegen_opts.source_map)
+    let l2_emit_after_transform = (use_l2_emit && codegen_opts.source_map && !additive_source_map)
         .then(|| (options.clone(), hoisted_scope_id.clone()));
     let experimental_component_name = codegen_experimental_options.component_name.clone();
     let transform_opts = stage_options::transform_options(&options);
@@ -155,6 +163,21 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     // parse errors instead of dropping them — the official compiler reports
     // both through the same `errors` channel.
     let mut errors = errors.to_vec();
+    if let Some(native) = native {
+        // The module and its diagnostics are the plain compile's. The shipped
+        // transform ran only so the compatibility generator can supply a map.
+        let compat = profile!(
+            "atelier.dom.template.codegen_sourcemap_compat",
+            generate_with_sections_and_experimental_options_slot_scope_and_environment(
+                &root,
+                codegen_opts,
+                codegen_experimental_options,
+                no_slotted,
+                development,
+            )
+        );
+        return (root, errors, source_map::with_verified_map(native, compat));
+    }
     errors.extend(transform_errors);
 
     let l2_emit = l2_emit_after_transform.and_then(|(options, hoisted_scope_id)| {
@@ -185,7 +208,7 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         )
         .finish(capture),
         None => {
-            if use_l2_emit && codegen_opts.source_map {
+            if use_l2_emit && codegen_opts.source_map && !additive_source_map {
                 selection::record(Err(DomLegacyReason::EmitRefused));
             }
             capture.finish(|| {

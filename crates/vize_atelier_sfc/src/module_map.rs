@@ -2,13 +2,15 @@
 //!
 //! `compile_sfc` assembles its module from pieces: statement slices of the
 //! authored `<script>` / `<script setup>`, rebuilt imports, synthesized macro
-//! bindings and component plumbing, and (for `lang="ts"` into JavaScript) an oxc
-//! re-print of the whole. Each stage that copies authored text records where
-//! the copy came from as [`Runs`]; a stage that regenerates text from a known
-//! authored construct records a point anchor at it; a re-print contributes the
-//! token provenance oxc's codegen records. Chaining the stages yields the
-//! provenance of every emitted byte that has any, and nothing is recovered by
-//! comparing text.
+//! bindings and component plumbing, the render code compiled from
+//! `<template>`, and (for `lang="ts"` into JavaScript) an oxc re-print of the
+//! whole. Each stage that copies authored text records where the copy came
+//! from as [`Runs`]; a stage that regenerates text from a known authored
+//! construct records a point anchor at it; the template backend's anchors
+//! arrive as points and follow each part of the render code to where the
+//! assembly places it; a re-print contributes the token provenance oxc's
+//! codegen records. Chaining the stages yields the provenance of every emitted
+//! byte that has any, and nothing is recovered by comparing text.
 //!
 //! The map emits one segment per token start inside a verbatim run (so a copied
 //! statement maps token by token) plus one per point anchor. Runs are verified
@@ -20,6 +22,8 @@ mod traced;
 
 #[cfg(test)]
 mod sfc_tests;
+#[cfg(test)]
+mod template_tests;
 #[cfg(test)]
 mod tests;
 

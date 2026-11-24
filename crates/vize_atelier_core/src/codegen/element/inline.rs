@@ -90,7 +90,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ElementType::Slot => {
             let helper = ctx.helper(RuntimeHelper::RenderSlot);
             ctx.use_helper(RuntimeHelper::RenderSlot);
-            ctx.push(helper);
+            ctx.push_mapped(helper, el.loc.span.start);
             ctx.push("(_ctx.$slots, ");
             generate_slot_outlet_name(ctx, el);
             let has_slot_props = has_slot_outlet_props(el);
@@ -340,7 +340,7 @@ pub(super) fn generate_component_vnode(ctx: &mut CodegenContext, el: &ElementNod
     } else if let Some(builtin) = is_builtin_component(el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if ctx.push_component_binding_tag(el.tag) {
+    } else if ctx.push_component_binding(el) {
     } else {
         ctx.push(&to_valid_asset_identifier("component", el.tag));
     }

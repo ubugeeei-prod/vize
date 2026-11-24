@@ -38,7 +38,7 @@ Sfc(
             map: Some(
                 Object {
                     "file": String("/app/src/Counter.vue"),
-                    "mappings": String(";;AAKA;;;;;;;AAEA,MAAM,MAAM,EAAE,GAAG,CAAC,CAAC;AACnB,SAAS,IAAI,CAAC,EAAE;EACd,KAAK,CAAC,MAAM,CAAC,EAAE;AACjB"),
+                    "mappings": String(";;AAKA;;;;;;;AAEA,MAAM,MAAM,EAAE,GAAG,CAAC,CAAC;AACnB,SAAS,IAAI,CAAC,EAAE;EACd,KAAK,CAAC,MAAM,CAAC,EAAE;AACjB;;;SATE,oCAAC,WAAQ,SAAO,yBAAS"),
                     "names": Array [],
                     "sources": Array [
                         String("/app/src/Counter.vue"),

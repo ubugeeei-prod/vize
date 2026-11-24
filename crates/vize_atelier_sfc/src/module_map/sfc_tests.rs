@@ -104,7 +104,7 @@ fn setup_statements_map_token_by_token() {
     let result = compile(source, false, true);
     let segments = render(&result.code, source, result.map.as_ref().unwrap());
     // The rebuilt import is anchored at its statement; the copied statement
-    // maps every token.
+    // maps every token; the inlined render maps to the template (#13547).
     assert_eq!(
         segments,
         [
@@ -116,6 +116,9 @@ fn setup_statements_map_token_by_token() {
             r#""(1)⏎⏎return " -> "(1)⏎</script""#,
             r#""1)⏎⏎return (" -> "1)⏎</script>""#,
             r#"")⏎⏎return (_" -> ")⏎</script>⏎""#,
+            r#""(_openBlock(" -> "<p>{{ n }}</""#,
+            r#""p\", null, _t" -> "p>{{ n }}</p""#,
+            r#""n.value), 1 " -> "n }}</p></te""#,
         ],
         "{}",
         result.code

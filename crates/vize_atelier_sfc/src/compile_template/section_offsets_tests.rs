@@ -3,8 +3,8 @@ use std::borrow::Cow;
 use crate::types::{BindingMetadata, BlockLocation, SfcTemplateBlock, TemplateCompileOptions};
 
 use super::extraction::{
-    extract_template_parts, extract_template_parts_full, slice_template_parts,
-    slice_template_parts_full,
+    extract_template_parts, extract_template_parts_full, render_fn_runs, slice_template_parts,
+    slice_template_parts_full, slice_template_parts_runs,
 };
 use super::{TemplateBlockCompileContext, TemplateBlockCompileResult, compile_template_block};
 
@@ -60,7 +60,7 @@ fn compile(source: &str, inline: bool, hoist_static: bool) -> TemplateBlockCompi
         };
         template_options.compiler_options = Some(compiler_options);
     }
-    let result = compile_template_block(
+    compile_template_block(
         &template_allocator,
         &template,
         &template_options,
@@ -76,20 +76,18 @@ fn compile(source: &str, inline: bool, hoist_static: bool) -> TemplateBlockCompi
             experimental_self_component: false,
             bindings: Some(&bindings),
             script_tables: None,
-            collect_map: false,
             authored_source: None,
             pug_source_map: None,
         },
         vize_atelier_core::TemplateSyntaxMode::Standard,
         &codegen_options,
     )
-    .expect("template should compile");
+    .expect("template should compile")
+}
 
-    assert!(
-        result.map.is_none(),
-        "script-bearing callers must not collect an unused template map"
-    );
-    result
+/// The bytes a part's provenance accounts for.
+fn copied(runs: &crate::module_map::Runs) -> usize {
+    runs.runs().iter().map(|run| run.len).sum()
 }
 
 /// The emission-recorded section offsets must reproduce exactly what the
@@ -110,6 +108,21 @@ fn test_slice_template_parts_matches_line_scanner() {
                 sliced, scanned,
                 "sliced sections must match the line scanner for inline={inline} template:\n{source}\n\ngenerated code:\n{}",
                 result.code
+            );
+
+            // The provenance the source map is composed through names
+            // exactly the bytes each part was cut from (#13547).
+            let (_, _, preamble, render_body, _) = sliced;
+            let (preamble_runs, body_runs) = slice_template_parts_runs(&result.code, &sections);
+            assert_eq!(
+                (
+                    preamble_runs.clone().verified(&preamble, &result.code),
+                    body_runs.clone().verified(&render_body, &result.code),
+                    copied(&preamble_runs),
+                    copied(&body_runs),
+                ),
+                (preamble_runs, body_runs, preamble.len(), render_body.len()),
+                "inline={inline} template:\n{source}"
             );
         }
     }
@@ -138,6 +151,14 @@ fn test_slice_template_parts_full_matches_line_scanner() {
                 sliced, scanned,
                 "sliced sections must match the line scanner for hoist_static={hoist_static} template:\n{source}\n\ngenerated code:\n{}",
                 result.code
+            );
+
+            // The render function's provenance covers every byte of it.
+            let render_fn = &sliced.2;
+            assert_eq!(
+                copied(&render_fn_runs(&result, render_fn)),
+                render_fn.len(),
+                "hoist_static={hoist_static} template:\n{source}"
             );
         }
     }

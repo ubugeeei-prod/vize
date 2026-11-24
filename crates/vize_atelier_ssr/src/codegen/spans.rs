@@ -24,6 +24,14 @@ impl SsrCodegenContext<'_> {
         self.out.push_mapped(text, source);
     }
 
+    /// Anchor the text written next at the authored byte `source`, when there
+    /// is one: a `v-for` alias, which the binder locates but no node spans.
+    pub(crate) fn anchor(&mut self, source: Option<u32>) {
+        if let Some(source) = source {
+            self.out.anchor(source);
+        }
+    }
+
     /// Write `text` directly, anchored at `source` when there is one.
     pub(crate) fn push_optionally_mapped(&mut self, text: &str, source: Option<u32>) {
         match source {

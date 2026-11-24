@@ -16,7 +16,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.use_ssr_helper(RuntimeHelper::SsrRenderSlot);
 
         self.push_indent();
-        self.push("_ssrRenderSlot(_ctx.$slots, ");
+        self.push_mapped("_ssrRenderSlot(_ctx.$slots, ", el.loc.span.start);
 
         // Get slot name
         let slot_name = self.slot_outlet_name_expression(el);

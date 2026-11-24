@@ -55,6 +55,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         no_slotted,
         strict_slot_params,
         development,
+        additive_source_map: _,
     } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);
 

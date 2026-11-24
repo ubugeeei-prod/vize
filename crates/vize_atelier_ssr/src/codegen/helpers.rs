@@ -214,18 +214,24 @@ impl<'a> SsrCodegenContext<'a> {
         self.push_expression(&for_node.source);
         self.push(", (");
 
+        // Each alias is anchored at the authored alias the binder located.
+        let [value_at, key_at, index_at] =
+            [0, 1, 2].map(|alias| for_node.parse_result.alias_start(alias));
         // Value alias
         if let Some(value) = &for_node.value_alias {
+            self.anchor(value_at);
             self.push_expression(value);
         }
         // Key alias
         if let Some(key) = &for_node.key_alias {
             self.push(", ");
+            self.anchor(key_at);
             self.push_expression(key);
         }
         // Index alias
         if let Some(index) = &for_node.object_index_alias {
             self.push(", ");
+            self.anchor(index_at);
             self.push_expression(index);
         }
 

@@ -210,8 +210,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let props = self.with_fallthrough_attrs(props, inherit);
         self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
-        // The resolved name maps to the authored tag, as the AST walker's does.
+        // The callee maps to the authored tag, as the AST walker's does.
         let callee = match binding {
+            Some(binding) if self.ctx.spans_enabled() => {
+                EmitDocument::mapped(&binding, component.span.start + 1)
+            }
             Some(binding) => EmitDocument::from(binding),
             None => self
                 .ctx

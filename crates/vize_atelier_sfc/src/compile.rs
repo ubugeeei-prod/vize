@@ -22,16 +22,14 @@ mod stage_capture_tests;
 mod styles;
 mod template_context;
 mod template_only;
+mod template_parts;
 #[cfg(test)]
 #[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests;
 
 use crate::compile_script::props::{is_valid_identifier, validate_macro_scope_for_descriptor};
 use crate::compile_script::{SetupTrace, TemplateParts, compile_script_setup_inline_with_context};
-use crate::compile_template::{
-    compile_template_block_vapor, compile_template_block_with_capture, extract_template_parts,
-    slice_template_parts, template_parts_full,
-};
+use crate::compile_template::{compile_template_block_vapor, compile_template_block_with_capture};
 use crate::types::{
     BindingType, SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor,
     SfcError,
@@ -48,7 +46,6 @@ use self::helpers::{
 };
 use self::output_module::{
     append_component_render_export, append_css_modules_assignment, finalize_output_mode,
-    rewrite_client_render_for_sfc_main,
 };
 use self::styles::compile_styles;
 
@@ -218,7 +215,9 @@ fn compile_sfc_inner(
             .then(|| bindings::options_api(&script_content, script.lang.as_deref()))
             .flatten();
 
-        // Compile template if present
+        // Compile template if present. With a source map requested, `render_at`
+        // is where the render block lands in the module and what it maps to.
+        let mut render_at = None;
         if let Some(template) = descriptor.template.as_ref() {
             let template_allocator = vize_carton::pool::acquire();
             let template_result = if is_vapor {
@@ -267,7 +266,7 @@ fn compile_sfc_inner(
             match template_result {
                 Ok(template_output) => {
                     warnings.extend(template_output.warnings);
-                    let template_code = template_output.code;
+                    let (template_code, map) = (template_output.code, template_output.map);
                     // Build output matching Vue's compiler-sfc:
                     // 1. Full template output (imports + hoisted + function _sfc_render(...))
                     // 2. Rewritten script
@@ -276,6 +275,7 @@ fn compile_sfc_inner(
                     if is_vapor || options.template.ssr {
                         // Vapor / SSR keep the render block first, then the script.
                         script_at += template_code.len();
+                        render_at = map.map(|map| (0, map));
                         code.push_str(&template_code);
                         code.push_str(&final_script);
                         code.push('\n');
@@ -284,7 +284,8 @@ fn compile_sfc_inner(
                         // the <script> block (and its own imports) comes first, then the
                         // template render block. This keeps user imports at the top of the
                         // module instead of after the generated render function.
-                        let template_code = rewrite_client_render_for_sfc_main(&template_code);
+                        let (template_code, map) = module_trace::client_render(&template_code, map);
+                        render_at = map.map(|map| (final_script.len() + 1, map));
                         code.push_str(&final_script);
                         code.push('\n');
                         code.push_str(&template_code);
@@ -344,10 +345,11 @@ fn compile_sfc_inner(
         }
 
         return Ok(SfcCompileResult {
-            map: module_trace::module_map(
+            map: module_trace::module_map_with_render(
                 &code,
                 script_runs,
                 script_at,
+                render_at,
                 rewrite,
                 descriptor,
                 filename,
@@ -542,90 +544,25 @@ fn compile_sfc_inner(
         None
     };
 
-    if let Some(Ok(template_output)) = &template_result {
-        warnings.extend(template_output.warnings.clone());
-    }
-
-    // Extract template parts for inline mode (imports, hoisted, preamble, render_body)
-    let (
-        template_imports,
-        template_hoisted,
-        template_render_fn,
-        template_render_fn_name,
-        template_preamble,
-        render_body,
-    ) = match &template_result {
+    // Cut the template into the parts the setup assembly embeds: the whole
+    // render function for SSR, Vapor and separate output (named `_sfc_render`
+    // on the client), or the inline render's preamble and return expression.
+    let separate = script_output.separates_template();
+    let mut setup_template = match &template_result {
         Some(Ok(template_output)) => {
-            let template_code = &template_output.code;
-            if is_vapor || options.template.ssr || script_output.separates_template() {
-                let (imports, hoisted, render_fn, render_fn_name) = profile!(
-                    "atelier.sfc.template.extract_parts_full",
-                    template_parts_full(template_output)
-                );
-                (
-                    imports,
-                    hoisted,
-                    render_fn,
-                    render_fn_name,
-                    String::default(),
-                    String::default(),
-                )
-            } else {
-                let (imports, hoisted, preamble, body, render_fn_name) = profile!(
-                    "atelier.sfc.template.extract_parts",
-                    match &template_output.sections {
-                        // Emission-recorded offsets: slice the sections out
-                        // directly instead of re-scanning the module.
-                        Some(sections) => slice_template_parts(template_code, sections),
-                        None => extract_template_parts(template_code),
-                    }
-                );
-                (
-                    imports,
-                    hoisted,
-                    String::default(),
-                    render_fn_name,
-                    preamble,
-                    body,
-                )
-            }
+            warnings.extend(template_output.warnings.clone());
+            template_parts::cut(
+                template_output,
+                is_vapor || options.template.ssr || separate,
+                separate && !is_vapor && !options.template.ssr,
+            )
         }
         Some(Err(e)) => {
             errors.push(e.clone());
             stage_capture::unavailable(capture, "template-error");
-            (
-                String::default(),
-                String::default(),
-                String::default(),
-                "",
-                String::default(),
-                String::default(),
-            )
+            template_parts::SetupTemplate::default()
         }
-        None => (
-            String::default(),
-            String::default(),
-            String::default(),
-            "",
-            String::default(),
-            String::default(),
-        ),
-    };
-
-    // In separate client output the template function shares module scope with
-    // the user's imports and declarations. Keep its name distinct from common
-    // script bindings such as `import { render } from "./lib"`.
-    let (template_render_fn, template_render_fn_name) = if script_output.separates_template()
-        && !is_vapor
-        && !options.template.ssr
-        && !template_render_fn.is_empty()
-    {
-        (
-            rewrite_client_render_for_sfc_main(&template_render_fn),
-            "_sfc_render",
-        )
-    } else {
-        (template_render_fn, template_render_fn_name)
+        None => template_parts::SetupTemplate::default(),
     };
 
     // When demotion rewrote the content, the shared AST is stale for the
@@ -639,7 +576,8 @@ fn compile_sfc_inner(
     // Assemble script setup with either an inline render (`inline_template`) or
     // a separate render function plus a marked setup-state object (module mode),
     // sharing the same analyzed script context, macro lowering, and runtime props.
-    let mut setup_trace = setup_runs.map(|runs| SetupTrace::new(runs, normal_runs));
+    let template_trace = std::mem::take(&mut setup_template.trace);
+    let mut setup_trace = setup_runs.map(|runs| SetupTrace::new(runs, normal_runs, template_trace));
     let script_result = profile!(
         "atelier.sfc.script_setup.inline_compile",
         compile_script_setup_inline_with_context(
@@ -651,12 +589,12 @@ fn compile_sfc_inner(
             source_is_ts,
             is_vapor,
             TemplateParts {
-                imports: &template_imports,
-                hoisted: &template_hoisted,
-                render_fn: &template_render_fn,
-                render_fn_name: template_render_fn_name,
-                preamble: &template_preamble,
-                render_body: &render_body,
+                imports: &setup_template.imports,
+                hoisted: &setup_template.hoisted,
+                render_fn: &setup_template.render_fn,
+                render_fn_name: setup_template.render_fn_name,
+                preamble: &setup_template.preamble,
+                render_body: &setup_template.render_body,
                 render_is_block: is_vapor,
                 hydrates_as_vapor: options.template.vapor,
             },

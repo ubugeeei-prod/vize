@@ -260,7 +260,7 @@ fn template_only_map_navigates_generated_tokens_to_authored_pug() {
 }
 
 #[test]
-fn plain_template_only_map_request_preserves_unmapped_default_packet() {
+fn plain_template_only_map_request_changes_only_the_map() {
     let source = "<template><slot v-pre></slot></template>\n";
     let filename = "/src/PlainMapBoundary.vue";
     let parse = SfcParseOptions {
@@ -285,11 +285,24 @@ fn plain_template_only_map_request_preserves_unmapped_default_packet() {
         .expect("plain fixture compiles")
     };
     let plain = serde_json::to_value(compile(false)).expect("plain whole packet");
-    let requested = serde_json::to_value(compile(true)).expect("requested whole packet");
+    let mut requested = serde_json::to_value(compile(true)).expect("requested whole packet");
+    // A template without a script is mapped like one with a script (#13547):
+    // the request adds the map and changes no other field of the packet.
+    let map = requested["map"].take();
     assert_eq!(
-        serde_json::json!({ "plainMap": &plain["map"], "requested": requested }),
-        serde_json::json!({ "plainMap": null, "requested": plain }),
-        "a source-map request must not change an unmapped plain template packet"
+        serde_json::json!({
+            "plainMap": &plain["map"],
+            "requested": requested,
+            "sources": &map["sources"],
+            "sourcesContent": &map["sourcesContent"],
+        }),
+        serde_json::json!({
+            "plainMap": null,
+            "requested": plain,
+            "sources": [filename],
+            "sourcesContent": [source],
+        }),
+        "a source-map request must change nothing but the map of a plain template packet"
     );
 }
 

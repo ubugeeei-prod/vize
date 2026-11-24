@@ -95,9 +95,51 @@ fn whole_original_photo_metadata_has_no_unrelated_component_dependencies() {
     assert_eq!(packet["source"], source);
     assert_eq!(
         json!(observations),
-        current_scope_ownership(packet)["observations"],
+        current_template_maps(current_scope_ownership(packet))["observations"],
         "whole code, CSS, maps, errors, warnings, bindings and provenance stay exact"
     );
+}
+
+// #13547: the frozen packet predates template mappings, so its maps hold the
+// script's segments only. Retain it and apply only the reviewed successor:
+// each mapped module whose lane records a template map (every shape but the
+// Vapor client) gains the render's segments in `map.mappings`. No code byte
+// and no other result field changes.
+fn current_template_maps(mut packet: serde_json::Value) -> serde_json::Value {
+    let maps: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/compiler/vuefes-page-meta-dependencies/template-maps-13547.json"
+    ))
+    .expect("reviewed mappings of the eight template-mapped modules");
+    let mut successors = 0;
+    for observation in packet["observations"]
+        .as_array_mut()
+        .expect("complete original observation inventory")
+    {
+        if observation["sourceMap"] != true {
+            continue;
+        }
+        let shape = observation["shape"].as_str().expect("observed shape");
+        let compiler = if observation["nuxt"] == true {
+            "nuxt"
+        } else {
+            "ordinary"
+        };
+        let Some(mappings) = maps.get(shape).map(|shape| shape[compiler].clone()) else {
+            continue;
+        };
+        let map = &mut observation["compileResult"]["map"];
+        assert_ne!(
+            map["mappings"], mappings,
+            "the frozen packet keeps the script-only map"
+        );
+        map["mappings"] = mappings;
+        successors += 1;
+    }
+    assert_eq!(
+        successors, 8,
+        "module, inline, ssr and vapor-ssr, each twice"
+    );
+    packet
 }
 
 // #11921: retain the original whole packet and apply only the reviewed scope

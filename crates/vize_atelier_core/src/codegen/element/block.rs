@@ -90,7 +90,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     if el.tag_type == ElementType::Slot {
         let helper = ctx.helper(RuntimeHelper::RenderSlot);
         ctx.use_helper(RuntimeHelper::RenderSlot);
-        ctx.push(helper);
+        ctx.push_mapped(helper, el.loc.span.start);
         ctx.push("(_ctx.$slots, ");
         generate_slot_outlet_name(ctx, el);
 
@@ -288,7 +288,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 // Check for built-in components (Teleport, KeepAlive, Suspense)
                 ctx.use_helper(builtin);
                 ctx.push(ctx.helper(builtin));
-            } else if ctx.push_component_binding_tag(el.tag) {
+            } else if ctx.push_component_binding(el) {
             } else {
                 ctx.push(&to_valid_asset_identifier("component", el.tag));
             }
@@ -414,7 +414,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             // Slots don't use blocks - use renderSlot directly
             let helper = ctx.helper(RuntimeHelper::RenderSlot);
             ctx.use_helper(RuntimeHelper::RenderSlot);
-            ctx.push(helper);
+            ctx.push_mapped(helper, el.loc.span.start);
             ctx.push("(_ctx.$slots, ");
             generate_slot_outlet_name(ctx, el);
             let has_slot_props = has_slot_outlet_props(el);
