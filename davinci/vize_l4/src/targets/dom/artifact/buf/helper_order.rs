@@ -17,6 +17,34 @@ struct OrderCache {
 
 impl Buf {
     pub(super) fn ordered_helpers(&self) -> StdVec<Helper> {
+        let listed = self.listed_helpers();
+        // The comparator asks where an alias is first called. One lexical
+        // scan of the module answers every such question, and it runs only
+        // when the first one is asked. Scanning per alias instead read the
+        // module once per question: a third of the whole emit on a 12 KiB
+        // module. Virtual positions consult transient helpers too, including
+        // helpers replaced in `used_order`, so the scan caches every alias.
+        let all_aliases = Helper::ALL
+            .iter()
+            .fold(0, |mask, helper| mask | helper.bit());
+        // The per-alias scans stay as the debug oracle of that one scan.
+        #[cfg(debug_assertions)]
+        let per_alias = self.sort_helpers::<false>(listed.clone(), 0);
+        let ordered = self.sort_helpers::<true>(listed, all_aliases);
+        #[cfg(debug_assertions)]
+        debug_assert!(
+            ordered
+                .iter()
+                .map(|helper| helper.bit())
+                .eq(per_alias.iter().map(|helper| helper.bit())),
+            "one shared alias scan must order helpers as the per-alias scans do"
+        );
+        ordered
+    }
+
+    /// The used helpers before ranking: preferred first, then first use,
+    /// then the rest in declaration order.
+    fn listed_helpers(&self) -> StdVec<Helper> {
         let mut listed = StdVec::new();
         let mut bits = 0u64;
         let mut push = |helper: Helper| {
@@ -35,31 +63,7 @@ impl Buf {
         for helper in Helper::ALL {
             push(helper);
         }
-        let alias_mask = listed.iter().fold(0, |mask, helper| {
-            if matches!(helper.rank(), 2 | 5) {
-                mask | helper.bit()
-            } else {
-                mask
-            }
-        });
-        // The ordinary comparator wins on typical modules. A shared lexical
-        // scan pays off only after both the helper set and output are large.
-        if alias_mask.count_ones() > 5
-            && self
-                .hoists
-                .iter()
-                .fold(self.code.len(), |len, text| len.saturating_add(text.len()))
-                > 65_536
-        {
-            // Virtual positions consult transient helpers too, including helpers
-            // replaced in `used_order`. Cache every known alias in the one scan.
-            let all_aliases = Helper::ALL
-                .iter()
-                .fold(0, |mask, helper| mask | helper.bit());
-            self.sort_helpers::<true>(listed, all_aliases)
-        } else {
-            self.sort_helpers::<false>(listed, 0)
-        }
+        listed
     }
 
     fn sort_helpers<const SHARED: bool>(
@@ -395,6 +399,71 @@ mod tests {
             buf.first_alias_position::<true>(Helper::CreateVNode, &mut cache),
             buf.scan_alias_position(Helper::CreateVNode)
         );
+    }
+
+    /// The one shared scan is the only product path now, at every module
+    /// size. Generated modules mix used, preferred, called, hoisted, quoted
+    /// and never-called helpers; each must order exactly as the per-alias
+    /// scans order it.
+    #[test]
+    fn one_scan_orders_generated_modules_as_per_alias_scans_do() {
+        // Fixed-seed xorshift: the corpus is the same on every run.
+        let mut state = 0x9E37_79B9_7F4A_7C15_u64;
+        let mut next = |bound: usize| {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            (state % bound as u64) as usize
+        };
+        let mut orders_with_alias_keys = 0_usize;
+        for _ in 0..4_000 {
+            let mut buf = Buf::new(false);
+            let mut chosen = std::vec::Vec::new();
+            for _ in 0..next(14) {
+                let helper = Helper::ALL[next(Helper::ALL.len())];
+                chosen.push(helper);
+                match next(5) {
+                    0 => buf.prefer(helper),
+                    1 => {
+                        buf.use_helper(helper);
+                        let mut hoist = vize_l0::String::from(helper.alias());
+                        hoist.push_str("(h)");
+                        buf.push_hoist(hoist);
+                    }
+                    2 => {
+                        buf.use_helper(helper);
+                        buf.push("'");
+                        buf.push(helper.alias());
+                        buf.push("(' + ");
+                    }
+                    3 => buf.use_helper(helper),
+                    _ => {
+                        buf.use_helper(helper);
+                        buf.push(helper.alias());
+                        buf.push(if next(2) == 0 { "(x), " } else { " (x)\n" });
+                    }
+                }
+            }
+            let per_alias = buf.sort_helpers::<false>(buf.listed_helpers(), 0);
+            let ordered = buf.ordered_helpers();
+            assert!(
+                ordered
+                    .iter()
+                    .map(|helper| helper.bit())
+                    .eq(per_alias.iter().map(|helper| helper.bit())),
+                "{:?}",
+                buf.code
+            );
+            orders_with_alias_keys += usize::from(
+                chosen
+                    .iter()
+                    .filter(|helper| matches!(helper.rank(), 2 | 5))
+                    .count()
+                    > 1,
+            );
+        }
+        // The corpus is not vacuous: many modules need alias positions.
+        assert!(orders_with_alias_keys > 1_000, "{orders_with_alias_keys}");
     }
 
     #[test]

@@ -63,7 +63,16 @@ pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
 pub(super) fn underscore_call_sites(text: &str, mut visit: impl FnMut(usize, &str) -> bool) {
     let bytes = text.as_bytes();
     let mut position = 0;
-    while let Some(&byte) = bytes.get(position) {
+    // Only a quote, a slash or an underscore starts anything here, so the
+    // scan jumps from one to the next instead of dispatching on every byte.
+    while let Some(skipped) = bytes.get(position..).and_then(|tail| {
+        tail.iter()
+            .position(|byte| matches!(byte, b'\'' | b'"' | b'`' | b'/' | b'_'))
+    }) {
+        position += skipped;
+        let Some(&byte) = bytes.get(position) else {
+            return;
+        };
         let rest = bytes.get(position + 1..).unwrap_or_default();
         match byte {
             b'\'' | b'"' | b'`' => position = quoted_end(bytes, position),
