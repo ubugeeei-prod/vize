@@ -11,7 +11,7 @@ description: "型としてしか使わないインポートを import type に�
 | --- | --- | --- | --- |
 | `warning` | なし | あり | [ルールのオプション](../options.md) |
 
-Vue SFC の script ブロックと単独の TypeScript モジュール（`.ts`）が対象です。
+適用範囲：Vue SFC の script ブロックと単独の TypeScript モジュール（`.ts`）。
 
 ## 値としての使用に数えるもの
 

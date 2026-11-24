@@ -226,6 +226,7 @@ const mixedStylusScopeRules = new Set([
 ]);
 
 export function scopeLabel(rule: RuleMetadata, example: RuleExample, ja: boolean) {
+  if (example.scope) return ja ? example.scope.ja : example.scope.en;
   if (example.standaloneScript)
     return ja ? "Nuxt 設定ファイル（nuxt.config.ts）" : "Nuxt configuration files (nuxt.config.ts)";
   if (rule.name.startsWith("petite-vue/"))

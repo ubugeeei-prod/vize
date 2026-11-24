@@ -42,6 +42,7 @@ export interface RuleExample {
   reportUnusedDisableDirectives?: boolean;
   typeAware?: boolean;
   standaloneScript?: boolean;
+  scope?: LocalizedText;
   ruleOptions?: JsonValue;
   note?: string;
   noteJa?: string;

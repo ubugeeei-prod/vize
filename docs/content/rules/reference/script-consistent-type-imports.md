@@ -11,7 +11,7 @@ Enforce consistent usage of type imports, counting template uses as value uses.
 | --- | --- | --- | --- |
 | `warning` | None | Yes | [Rule options](../options.md) |
 
-The rule checks Vue SFC scripts and standalone TypeScript (`.ts`) modules.
+Applies to: Vue SFC scripts and standalone TypeScript (`.ts`) modules.
 
 ## What counts as a value use
 

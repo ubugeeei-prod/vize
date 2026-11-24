@@ -1,5 +1,6 @@
 import type { RuleExampleOptions } from "./types.ts";
 
+const scope = "Vue SFC scripts and standalone TypeScript (`.ts`) modules";
 const heading = "What counts as a value use";
 const uses =
   "Every use the component makes of an import counts, through the same binding analysis the compiler reads: a template expression, a component tag in any casing Vue resolves, a custom directive, a template ref, a `<style>` `v-bind()`, and the other script block.";
@@ -13,10 +14,11 @@ const options =
   "`prefer`, `fixStyle` and `disallowTypeAnnotations` are the typescript-eslint options. `emitDecoratorMetadata` (default `true`) says whether the project emits decorator metadata, which lint does not read from `tsconfig.json`. With `true`, a type that a decorated signature serializes counts as a value use.";
 const fixHeading = "The fix";
 const fix =
-  "The fix replaces only the reported declaration, and a value specifier that remains keeps its position, so module evaluation order does not change. A declaration that must split and contains a comment or import attributes is reported without a fix.";
+  "A split that keeps a value import preserves its evaluation order. Converting the whole declaration to `import type` can remove module initialization under `verbatimModuleSyntax`. A declaration that must split and contains a comment or import attributes is reported without a fix.";
 
 /** The reference page notes of `script/consistent-type-imports`. */
 export const consistentTypeImportsNotes: RuleExampleOptions = {
+  scope: { en: scope, ja: "Vue SFC の script ブロックと単独の TypeScript モジュール（`.ts`）" },
   note: [
     `## ${heading}`,
     uses,
@@ -37,7 +39,7 @@ export const consistentTypeImportsNotes: RuleExampleOptions = {
     "## オプション",
     "`prefer`、`fixStyle`、`disallowTypeAnnotations` は typescript-eslint のオプションです。`emitDecoratorMetadata`（既定値 `true`）には、プロジェクトがデコレーターのメタデータを出力するかどうかを指定します。lint は `tsconfig.json` を読みません。`true` の場合、デコレーター付きのシグネチャが直列化する型を値としての使用に数えます。",
     "## 自動修正",
-    "自動修正は報告した宣言だけを書き換え、残る値の指定子は元の位置を保つため、モジュールの評価順は変わりません。分割が必要で、コメントまたはインポート属性を含む宣言は、修正なしで報告します。",
+    "分割後も値のインポートが残る場合、その評価順は保たれます。宣言全体を `import type` に変換すると、`verbatimModuleSyntax` ではモジュールの初期化が省略されることがあります。分割が必要で、コメントまたはインポート属性を含む宣言は、修正なしで報告します。",
   ].join("\n\n"),
   eslintDifferenceHeading: {
     en: "Differences from typescript-eslint",
@@ -59,6 +61,11 @@ export const consistentTypeImportsNotes: RuleExampleOptions = {
 
 /** `[zh-CN, pt-BR, fr]` for each English line of the note above. */
 const translated: Record<string, readonly [string, string, string]> = {
+  [scope]: [
+    "Vue 单文件组件中的脚本和独立的 TypeScript（`.ts`）模块",
+    "Scripts em SFCs Vue e módulos TypeScript independentes (`.ts`)",
+    "Scripts des SFC Vue et modules TypeScript autonomes (`.ts`)",
+  ],
   [heading]: [
     "哪些情况计为值使用",
     "O que conta como uso de valor",
@@ -91,9 +98,9 @@ const translated: Record<string, readonly [string, string, string]> = {
   ],
   [fixHeading]: ["自动修复", "A correção", "La correction"],
   [fix]: [
-    "自动修复只替换被报告的声明，保留下来的值说明符位置不变，因此模块的求值顺序不会改变。必须拆分且包含注释或导入属性的声明只报告，不提供修复。",
-    "A correção substitui apenas a declaração relatada, e um especificador de valor que permanece mantém sua posição; assim, a ordem de avaliação dos módulos não muda. Uma declaração que precisa ser dividida e contém um comentário ou atributos de import é relatada sem correção.",
-    "La correction ne remplace que la déclaration signalée, et un spécificateur de valeur qui reste garde sa position ; l’ordre d’évaluation des modules ne change donc pas. Une déclaration à scinder qui contient un commentaire ou des attributs d’import est signalée sans correction.",
+    "拆分后若保留值导入，其求值顺序保持不变。在 `verbatimModuleSyntax` 下，将整个声明转换为 `import type` 可能会跳过模块初始化。必须拆分且包含注释或导入属性的声明只报告，不提供修复。",
+    "Quando a divisão mantém uma importação de valor, sua ordem de avaliação é preservada. Converter toda a declaração em `import type` pode eliminar a inicialização do módulo com `verbatimModuleSyntax`. Uma declaração que precisa ser dividida e contém um comentário ou atributos de import é relatada sem correção.",
+    "Si la déclaration scindée conserve un import de valeur, son ordre d’évaluation reste inchangé. Convertir toute la déclaration en `import type` peut supprimer l’initialisation du module avec `verbatimModuleSyntax`. Une déclaration à scinder qui contient un commentaire ou des attributs d’import est signalée sans correction.",
   ],
 };
 

@@ -11,7 +11,7 @@ Uniformizar o uso de imports de tipo, contando os usos no template como usos de 
 | --- | --- | --- | --- |
 | `warning` | Nenhuma | Sim | [Opções das regras](/rules/options.md) |
 
-A regra verifica scripts de SFCs Vue e módulos TypeScript independentes (`.ts`).
+Aplicável a: Scripts em SFCs Vue e módulos TypeScript independentes (`.ts`).
 
 ## O que conta como uso de valor
 

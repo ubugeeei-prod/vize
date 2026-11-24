@@ -11,7 +11,7 @@ Uniformiser l’usage des imports de type, en comptant les usages du template co
 | --- | --- | --- | --- |
 | `warning` | Aucune | Oui | [Options des règles](/rules/options.md) |
 
-La règle vérifie les scripts des SFC Vue et les modules TypeScript autonomes (`.ts`).
+Champ d’application : Scripts des SFC Vue et modules TypeScript autonomes (`.ts`).
 
 ## Ce qui compte comme un usage de valeur
 

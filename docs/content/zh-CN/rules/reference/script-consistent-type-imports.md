@@ -11,7 +11,7 @@ description: "统一类型导入的写法，并把模板中的使用计为值使
 | --- | --- | --- | --- |
 | `warning` | 无 | 支持 | [规则选项](/rules/options.md) |
 
-该规则适用于 Vue SFC 脚本和独立的 TypeScript（`.ts`）模块。
+适用范围：Vue 单文件组件中的脚本和独立的 TypeScript（`.ts`）模块。
 
 ## 哪些情况计为值使用
 
