@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/performance/typecheck-cold-pair.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Type-check cold pair
 run-name: "Type-check cold pair ${{ inputs.head }} vs ${{ inputs.base }} (${{ inputs.projects }})"
 # Two commits check the same generated projects cold on Linux, WSL2 (ext4 and

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/pr-performance-observation/publish-the-observation-summary.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 if [[ -f performance-observation/measurements/summary.md ]]; then
   cat performance-observation/measurements/summary.md >> "$GITHUB_STEP_SUMMARY"
 else

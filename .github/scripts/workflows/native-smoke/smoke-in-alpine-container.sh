@@ -1,4 +1,6 @@
 #!/bin/sh
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/native-smoke/smoke-in-alpine-container.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -o pipefail
 corepack enable
 npm install --global --allow-scripts=bun bun@1.3.14 vite-plus@0.1.24

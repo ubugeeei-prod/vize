@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/typecheck/content-mapper-replay.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Content mapper replay
 run-name: "Content mapper replay ${{ inputs.head || github.sha }} vs ${{ inputs.base || 'merge base' }}"
 # Two commits answer the request streams tsc sends for real corpora. Replies

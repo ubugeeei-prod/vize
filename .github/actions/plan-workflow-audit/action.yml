@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/plan-workflow-audit.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Plan workflow security audit
 description: Check the complete pull request file list at a stable revision
 outputs:

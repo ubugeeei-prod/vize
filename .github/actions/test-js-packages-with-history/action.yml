@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-js-packages-with-history.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Test JS packages with public native history
 description: Preserve the existing JS package gate and all actual formatter build and call evidence.
 inputs:

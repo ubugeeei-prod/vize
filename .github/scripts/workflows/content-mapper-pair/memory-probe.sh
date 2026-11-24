@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/content-mapper-pair/memory-probe.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 size=$(echo "$SIZES" | tr "," "\n" | sort -n | tail -1)
 project="$RUNNER_TEMP/pair/vue-$size"

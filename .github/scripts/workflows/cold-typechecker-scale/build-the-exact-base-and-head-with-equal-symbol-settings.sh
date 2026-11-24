@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/cold-typechecker-scale/build-the-exact-base-and-head-with-equal-symbol-settings.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA"
 git worktree add --detach "$RUNNER_TEMP/base" "$BASE_SHA"
 mkdir -p "$RUNNER_TEMP/cold-scale"

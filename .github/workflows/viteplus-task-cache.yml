@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/integrations/viteplus-task-cache.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Vite+ task cache consumers
 run-name: Vite+ task cache ${{ inputs.version && format('public {0}', inputs.version) || inputs.source_cli_artifact_id && format('source CLI {0}', inputs.source_cli_artifact_id) || 'source' }}
 

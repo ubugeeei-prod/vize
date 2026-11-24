@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/cold-typechecker-scale/refuse-changed-inputs-native-bytes-and-unsupported-modes.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 mkdir -p node_modules
 ln -s "$RUNNER_TEMP/provider/node_modules/typescript" node_modules/typescript

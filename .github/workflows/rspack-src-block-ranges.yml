@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/integrations/rspack-src-block-ranges.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Rspack external block ranges
 on:
   pull_request:

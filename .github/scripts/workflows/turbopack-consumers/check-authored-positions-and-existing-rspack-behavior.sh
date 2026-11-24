@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/turbopack-consumers/check-authored-positions-and-existing-rspack-behavior.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 mkdir -p "$VIZE_TURBOPACK_ARTIFACTS"
 node --test tests/tooling/turbopack-workflow.test.ts npm/builder/turbopack/test/consumer-packaging.test.mjs

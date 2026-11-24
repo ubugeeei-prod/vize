@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/compiler/pre-textarea-first-newline.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Leading newline runtime
 on:
   pull_request:

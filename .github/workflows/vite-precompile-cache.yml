@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/integrations/vite-precompile-cache.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Vite precompile cache identities
 on:
   pull_request:

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/integrations/nuxt-generated-membership.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Nuxt generated declaration membership
 run-name: Nuxt generated declaration membership @ ${{ github.event.pull_request.head.sha || github.sha }}
 on:

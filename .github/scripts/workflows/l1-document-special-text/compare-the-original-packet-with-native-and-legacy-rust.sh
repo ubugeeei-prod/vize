@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/l1-document-special-text/compare-the-original-packet-with-native-and-legacy-rust.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 test "$(git rev-parse HEAD)" = "$HEAD_SHA"
 cargo test --locked --profile ci -p vize_l1 \
   --test html_body_elements \

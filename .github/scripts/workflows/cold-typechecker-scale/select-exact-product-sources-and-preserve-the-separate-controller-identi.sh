@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/cold-typechecker-scale/select-exact-product-sources-and-preserve-the-separate-controller-identi.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 [[ "${VIZE_INPUTS_SFCS}" == 2500 ]]
 mkdir "$RUNNER_TEMP/cold-paired"

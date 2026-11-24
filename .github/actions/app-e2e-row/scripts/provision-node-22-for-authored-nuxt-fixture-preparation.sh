@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/app-e2e-row/scripts/provision-node-22-for-authored-nuxt-fixture-preparation.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 runtime=target/app-e2e-logs/nuxt-prepare-runtime
 mkdir -p "$runtime"

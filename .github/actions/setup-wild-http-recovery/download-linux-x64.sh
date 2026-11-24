@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/setup-wild-http-recovery/download-linux-x64.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 # Sourced by the pinned original Wild recipe; no downloaded program is run here.
 wild_archive=$1
 wild_primary_url=$2

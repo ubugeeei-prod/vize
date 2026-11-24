@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/nuxt3-module-build/download-chromium-dependencies-while-building-the-current-cli.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 archive_dir=
 cache_config=
 download_config=

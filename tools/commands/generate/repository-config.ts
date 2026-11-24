@@ -21,6 +21,11 @@ import {
   renderPackageTasks,
   validatePackageScripts,
 } from "../../support/ci/package-programs.ts";
+import {
+  commentStyle,
+  withGeneratedHeader,
+  withoutGeneratedHeader,
+} from "../../support/ci/generated-header.ts";
 import { renderRepositoryYaml, type ConfigValue } from "../../support/ci/repository-yaml.ts";
 import { workflowNameViolations } from "../../support/ci/workflow-names.ts";
 import { readWorkflowEntries, renderWorkflowCatalog } from "../ci/workflow-catalog.ts";
@@ -227,10 +232,11 @@ async function main(): Promise<void> {
   const values = evaluate(products);
   const runtime = await packageTaskRuntime(root);
   const changes: { target: string; text: string; executable?: boolean }[] = [];
-  for (const [index, { target, kind }] of products.entries()) {
+  for (const [index, { source, target, kind }] of products.entries()) {
     const file = path.join(root, target);
     const current = readOutput(file);
     const value = values[index]!;
+    const sourcePath = path.relative(root, source).split(path.sep).join("/");
     if (kind === "package") {
       const text = renderPackageTasks(root, target, value, runtime);
       if (text !== current) changes.push({ target, text });
@@ -238,26 +244,33 @@ async function main(): Promise<void> {
     }
     if (kind === "shell") {
       if (!isScript(value)) throw new Error(`Invalid shell script definition for ${target}`);
-      if (!historicalStepBodies.has(target)) validateShellProgram(target, value.text);
+      // Historical step bodies are hashed byte for byte, so they keep their original text.
+      const historical = historicalStepBodies.has(target);
+      if (!historical) validateShellProgram(target, value.text);
+      const text = historical
+        ? value.text
+        : withGeneratedHeader(value.text, commentStyle(target), sourcePath);
       if (
-        current !== value.text ||
+        current !== text ||
         (process.platform !== "win32" && ((statSync(file).mode & 0o100) !== 0) !== value.executable)
       ) {
-        changes.push({ target, text: value.text, executable: value.executable });
+        changes.push({ target, text, executable: value.executable });
       }
       continue;
     }
     // A tracked output can be recreated with its existing presentation after deletion.
-    const template =
+    const tracked =
       current ??
       spawnSync("git", ["show", `:${target}`], {
         cwd: root,
         encoding: "utf8",
       }).stdout ??
       undefined;
+    const template = tracked === undefined ? undefined : withoutGeneratedHeader(tracked, "hash");
     const action = target.startsWith(".github/workflows/") || target.startsWith(".github/actions/");
     if (action) validateAutomationSteps(target, value);
-    const text = renderRepositoryYaml(value, template, !action);
+    const body = renderRepositoryYaml(value, template, !action);
+    const text = withGeneratedHeader(body, "hash", sourcePath);
     if (text !== current) changes.push({ target, text });
   }
   if (check && changes.length) {
@@ -274,7 +287,11 @@ async function main(): Promise<void> {
 
   const directory = path.join(root, ".github/workflows");
   const catalog = path.join(directory, "README.md");
-  const contents = renderWorkflowCatalog(readWorkflowEntries(root));
+  const contents = withGeneratedHeader(
+    renderWorkflowCatalog(readWorkflowEntries(root)),
+    "html",
+    "tools/config/pkl/workflows",
+  );
   if (readOutput(catalog) !== contents) {
     if (check) throw new Error("The workflow catalog needs regeneration");
     writeFileSync(catalog, contents);

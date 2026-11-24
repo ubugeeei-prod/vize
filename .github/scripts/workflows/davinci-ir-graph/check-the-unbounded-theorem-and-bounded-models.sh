@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/davinci-ir-graph/check-the-unbounded-theorem-and-bounded-models.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 "$RUNNER_TEMP/lean-4.33.1-linux/bin/lean" -DwarningAsError=true Reach.lean | tee "$RUNNER_TEMP/theorem"
 grep -Fx "'Davinci.exact_answer' does not depend on any axioms" "$RUNNER_TEMP/theorem"

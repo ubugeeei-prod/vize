@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/cold-typechecker-scale/validate-the-full-sfc-cohort.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 [[ "$VIZE_BENCH_SFCS" =~ ^(2500|10000|50000)$ ]]
 baseline_selection=$(node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --select-baseline --receipt "$RUNNER_TEMP/cold-scale/baseline-selection.json")
 [[ "$baseline_selection" =~ ^BASE_SHA=[0-9a-f]{40}$ ]]

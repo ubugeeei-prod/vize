@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/release-jsr/publish-through-the-repository-s-jsr-oidc-link.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 if node "$GITHUB_WORKSPACE/tools/support/release/jsr/package.ts" is-public "${JSR_VERSION#v}"; then
   exit 0
 fi

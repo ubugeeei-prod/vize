@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/published-fresh-project/select-an-exact-version-and-verifier-source.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 version="$REQUESTED_VERSION"
 if [[ -z "$version" ]]; then

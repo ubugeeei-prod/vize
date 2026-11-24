@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/pr-source-checks/collect-playground-test-cases.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 packets=("$RUNNER_TEMP/test-cases-playground-browser.json")
 vrt_report="playground/e2e/vrt/test-results/case-report.json"
 if [[ "$RUN_VRT" == true ]]; then

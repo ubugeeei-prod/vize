@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/hydrate-app-fixtures/scripts/hydrate-exercised-app-fixtures.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 git submodule update --init --recursive --depth 1 \
   tests/_fixtures/_git/ant-design-vue \
   tests/_fixtures/_git/directus \

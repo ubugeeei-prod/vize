@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/nix/scripts/vp.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 workspace_root_input="${VIZE_WORKSPACE_ROOT:-$PWD}"
 if workspace_root="$(cd "$workspace_root_input" 2>/dev/null && pwd -P)"; then
   :

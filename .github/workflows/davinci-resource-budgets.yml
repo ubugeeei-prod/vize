@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/performance/davinci-resource-budgets.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Davinci resource budgets
 
 # TS-44 (Davinci P5-11a): the resident `vize lsp` measured against the

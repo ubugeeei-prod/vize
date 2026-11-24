@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/vue-benchmarks-current-qualification/materialize-the-frozen-minimal-reference-installation.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 provider_source=tools/benchmarks/fixtures/vue-benchmarks-current-typecheck-provider
 provider_prefix="$RUNNER_TEMP/vue-benchmarks-current-provider"
 mkdir "$provider_prefix"

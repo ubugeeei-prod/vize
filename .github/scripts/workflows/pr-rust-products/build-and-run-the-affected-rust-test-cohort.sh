@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/pr-rust-products/build-and-run-the-affected-rust-test-cohort.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 node "$VIZE_CI_FILES/build-and-run-the-affected-rust-test-cohort.cjs"
 evidence="$RUNNER_TEMP/rust-build-evidence"
 node tools/support/compat/github/rust-build-evidence.ts before "$evidence"

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/eslint-plugin-consumer/qualify-packed-public-entries-in-an-isolated-consumer.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 vp exec pnpm --dir npm/linter/oxlint pack --pack-destination "$VIZE_ESLINT_EVIDENCE"
 vp exec pnpm --dir npm/linter/eslint pack --pack-destination "$VIZE_ESLINT_EVIDENCE"

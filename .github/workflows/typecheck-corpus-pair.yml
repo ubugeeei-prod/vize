@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/typecheck/typecheck-corpus-pair.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Type-check corpus pair
 run-name: "Type-check corpus pair ${{ inputs.base_sha }}...${{ inputs.head_sha }}"
 on:

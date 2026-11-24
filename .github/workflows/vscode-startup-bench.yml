@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/performance/vscode-startup-bench.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Benchmark - VS Code startup
 run-name: "VS Code startup ${{ inputs.head }} vs ${{ inputs.base }}"
 # Two extension builds open one SFC in a generated workspace, alternating per

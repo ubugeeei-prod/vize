@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/check.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Check
 run-name: ${{ github.event_name == 'workflow_dispatch' && format('Check full @ {0}', github.sha) || format('Check {0} @ {1}', github.event_name, github.sha) }}
 on:

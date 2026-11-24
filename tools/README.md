@@ -49,6 +49,7 @@ node tools/commands/generate/repository-config.ts
 node tools/commands/generate/repository-config.ts --check
 ```
 
+Every generated file opens with a `DO NOT EDIT` notice that names its Pkl source.
 The command uses the workspace's pinned Pkl CLI on Linux and macOS. On Windows,
 install the same Pkl version on PATH. Evaluation uses local modules. The required
 `check-js` job verifies new files have a source, Actions values and step order

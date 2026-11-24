@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/nix/scripts/check-testbox.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 export VIZE_TESTBOX_SHELL=inherited
 export VIZE_BLACKSMITH_BIN=/host/blacksmith
 @CLEAR_TESTBOX@

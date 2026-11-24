@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-corpus-pair/hydrate-the-pinned-corpora-and-install-the-locked-hosts-and-corpus-packa.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 git submodule update --init --depth 1 -- tests/_fixtures/_git/misskey tests/_fixtures/_git/n8n tests/_fixtures/_git/nuxt-ui tests/_fixtures/_git/reka-ui
 npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund

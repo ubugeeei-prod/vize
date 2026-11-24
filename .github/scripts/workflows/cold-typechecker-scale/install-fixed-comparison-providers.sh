@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/cold-typechecker-scale/install-fixed-comparison-providers.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 mkdir "$RUNNER_TEMP/provider"
 cd "$RUNNER_TEMP/provider"
 cat > package.json <<'JSON'

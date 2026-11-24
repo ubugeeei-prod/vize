@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/performance/level-memory-bench.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Benchmark - Level memory
 
 # Paired runs require a base after the 104-row registry landed. The base and

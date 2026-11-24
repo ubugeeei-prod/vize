@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/typecheck/content-mapper-pair.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Content mapper pair
 run-name: "Content mapper pair ${{ inputs.head }} vs ${{ inputs.base }} (${{ inputs.sizes }})"
 # Two commits answer one content-mapper request stream on Linux, WSL2 (ext4 and

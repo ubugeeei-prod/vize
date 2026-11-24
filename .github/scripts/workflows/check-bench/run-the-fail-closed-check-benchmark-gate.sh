@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/check-bench/run-the-fail-closed-check-benchmark-gate.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 node tools/benchmarks/scripts/check-gate.mjs \
   --input tools/benchmarks/scripts/__in__ \
   --vize-bin target/ci-opt/vize \

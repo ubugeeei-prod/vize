@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/davinci/davinci-creusot.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Davinci Creusot
 
 # Deductive proofs of the Davinci laws (docs/davinci/decisions/2026-11-17-creusot.md).

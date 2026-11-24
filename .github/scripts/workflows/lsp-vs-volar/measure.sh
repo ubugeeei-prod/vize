@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/lsp-vs-volar/measure.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 tools="$RUNNER_TEMP/tools/node_modules"
 rounds="$ROUNDS"
 cycles="$CYCLES"

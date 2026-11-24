@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-profile/install-perf-glibc-symbols-and-flamegraph.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 sudo apt-get update -qq
 sudo apt-get install -y --no-install-recommends linux-tools-generic libc6-dbg

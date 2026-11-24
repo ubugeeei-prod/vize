@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/vue-benchmarks-current-qualification/observe-all-154-original-typecheck-plants.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 provider_prefix="$RUNNER_TEMP/vue-benchmarks-current-provider"
 node tools/benchmarks/scripts/vue-benchmarks-current-typecheck.mjs \
   --source-sha "$EXPECTED_SOURCE_SHA" \

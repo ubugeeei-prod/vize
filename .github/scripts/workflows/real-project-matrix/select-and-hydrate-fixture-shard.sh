@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/real-project-matrix/select-and-hydrate-fixture-shard.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 mapfile -t fixture_paths < <(
   node tools/support/compat/fixtures/tool-matrix-report.ts \
     --list-fixture-paths \

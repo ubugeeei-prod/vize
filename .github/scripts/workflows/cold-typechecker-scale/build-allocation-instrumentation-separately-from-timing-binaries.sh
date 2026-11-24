@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/cold-typechecker-scale/build-allocation-instrumentation-separately-from-timing-binaries.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 for source in base head; do
   source_root="$GITHUB_WORKSPACE"
   if [[ "$source" == base ]]; then source_root="$RUNNER_TEMP/base"; fi

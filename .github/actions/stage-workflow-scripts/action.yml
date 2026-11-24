@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/stage-workflow-scripts.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Stage workflow scripts
 description: Keep the workflow revision's scripts available across nested and historical checkouts
 runs:

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/release-smoke-contracts/measure-config-runtime-storage-lifecycle.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 for round in 1 2 3; do
   if (( round % 2 == 1 )); then
     lanes=(base head)

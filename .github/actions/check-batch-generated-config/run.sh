@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/check-batch-generated-config/run.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 cargo test --locked --profile ci-opt -p vize_canon --lib nested_generated_config:: -- --nocapture
 cargo test --locked --profile ci-opt -p vize_canon --test tier_l_incremental failure::tests:: -- --nocapture

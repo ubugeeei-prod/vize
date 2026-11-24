@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typechecker-native-phases/install-pinned-native-runtime-and-shared-vue-dependencies.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail; vp install --frozen-lockfile --prefer-offline; bash tools/support/compat/github/native-syntax-semantics.sh
 if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
   for dependency_root in node_modules tests/node_modules playground/node_modules npm/cli/node_modules crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/node_modules; do

@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
+import { generatedBody } from "./generated-header.ts";
 import transitions from "./workflow-program-history.json" with { type: "json" };
 
 type WorkflowName = keyof typeof transitions;
-const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
+const digest = (bytes: Buffer) => createHash("sha256").update(generatedBody(bytes)).digest("hex");
 
 /** Follow one reviewed format transition before applying an older whole-workflow byte contract. */
 export function workflowPredecessor(
@@ -15,7 +16,7 @@ export function workflowPredecessor(
   assert.ok(Object.hasOwn(transitions, owner), "workflow has no registered byte contract");
   const transition = transitions[owner as WorkflowName];
   const currentDigest = digest(current);
-  if (currentDigest === transition.before) return current;
+  if (currentDigest === transition.before) return generatedBody(current);
   assert.equal(currentDigest, transition.workflow, owner + ": unreviewed workflow revision");
 
   const closure = createHash("sha256");

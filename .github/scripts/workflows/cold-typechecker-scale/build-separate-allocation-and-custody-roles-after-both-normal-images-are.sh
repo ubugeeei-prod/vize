@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/cold-typechecker-scale/build-separate-allocation-and-custody-roles-after-both-normal-images-are.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 mkdir "$RUNNER_TEMP/cold-paired/allocation"
 for role in base head; do

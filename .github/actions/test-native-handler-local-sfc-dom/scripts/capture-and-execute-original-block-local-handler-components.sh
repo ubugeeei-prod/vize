@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-handler-local-sfc-dom/scripts/capture-and-execute-original-block-local-handler-components.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 cargo test --locked --profile ci -p vize_atelier_sfc native_selected::tests::local::ten_original_block_local_components_and_maps_are_captured -- --exact
 vp node --test tests/tooling/native-handler-local-sfc-dom-reference.test.ts
 test -s "$VIZE_NATIVE_HANDLER_LOCAL_SFC_DOM_CAPTURE"

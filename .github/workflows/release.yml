@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/release/release.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Release
 # Dispatch on main (or `vp run release`) to publish the next minor version.
 #

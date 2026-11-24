@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/hydrate-pinned-fixture.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Hydrate the exact pinned fixture
 description: Fetch the source gitlink directly into a private submodule checkout
 inputs:

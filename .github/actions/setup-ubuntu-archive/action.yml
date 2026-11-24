@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/setup-ubuntu-archive.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Stabilize Ubuntu package archive
 description: Avoid unhealthy Blacksmith mirror-list entries before apt-based setup
 

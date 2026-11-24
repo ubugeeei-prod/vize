@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/check-router-page-types.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Configured Router page types
 description: Compare source-built CLI/editor against the original generated router map
 runs:

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/benchmarks/scripts/content-mapper-burst-windows.ps1.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 param(
   [Parameter(Mandatory)][string]$Executable,
   [Parameter(Mandatory)][string]$MapperArgument,

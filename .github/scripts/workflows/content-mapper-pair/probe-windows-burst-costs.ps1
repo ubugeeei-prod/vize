@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/content-mapper-pair/probe-windows-burst-costs.ps1.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 $size = ($env:SIZES -split ',' | ForEach-Object { [int]$_ } | Measure-Object -Maximum).Maximum
 $root = Join-Path $env:RUNNER_TEMP 'pair'
 $project = Join-Path $root "vue-$size"

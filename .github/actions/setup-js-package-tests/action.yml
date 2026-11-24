@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/setup-js-package-tests.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Setup full JS package tests
 description: Retain the physical package test runtime, cache, and dependency installation.
 runs:

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
 import { historicalCurrentLanguageProjectSources } from "./language-project-current-20261105.ts";
+import { generatedBody } from "../../ci/generated-header.ts";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const CLASSIFICATION_RUNTIME_ROOT =
@@ -53,7 +54,8 @@ function object(value: unknown, keys: string[]): Record<string, any> {
 function pinned(read: ReadFile, raw: unknown, path: string): Buffer {
   const row = object(raw, ["path", "sha256", "bytes"]);
   requireCustody(row.path === path, "closure path differs");
-  const body = read("head", path);
+  const stored = read("head", path);
+  const body = stored && generatedBody(stored);
   requireCustody(
     body && body.length === row.bytes && digest(body) === row.sha256,
     `unreviewed producer registration (missing or changed closure body): ${path}`,

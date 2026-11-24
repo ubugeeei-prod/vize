@@ -1,3 +1,5 @@
 #!/bin/sh
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/crates/vize/tests/programs/pack-registry-npm.sh.in.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 if [ "$1" = view ]; then echo 1.1.0; exit 0; fi
 tar -czf "$4/acme-ui-1.0.0.tgz" -C '{}' package

@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import type { Node } from "yaml";
 
 import { stagedWorkflowAction, verifyWorkflowStage } from "./workflow-stage.ts";
+import { withoutGeneratedHeader } from "../../../tools/support/ci/generated-header.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const actionScript = /^\. "\$GITHUB_ACTION_PATH\/scripts\/([\w.-]+\.(?:sh|ps1))"$/u;
@@ -16,8 +17,7 @@ const workflowScript =
 const shellFiles = new Map<string, Set<string>>();
 
 function shellBody(file: string): string {
-  const body = readFileSync(file, "utf8")
-    .replace(/\r\n?/gu, "\n")
+  const body = withoutGeneratedHeader(readFileSync(file, "utf8").replace(/\r\n?/gu, "\n"), "hash")
     .replace(/^#![^\n]*\n/u, "")
     .trimEnd();
   const files = shellFiles.get(body) ?? new Set<string>();
@@ -38,7 +38,10 @@ export function automationShellPath(body: string, owner?: string): string {
 /** The pre-install benchmark contracts inspect text and run with Node alone. */
 export function readWorkflowShell(owner: string): string {
   assert.match(owner, /^[a-z0-9-]+$/u);
-  const workflow = readFileSync(path.join(root, ".github/workflows", owner + ".yml"), "utf8");
+  const workflow = withoutGeneratedHeader(
+    readFileSync(path.join(root, ".github/workflows", owner + ".yml"), "utf8"),
+    "hash",
+  );
   return workflow.replace(
     /^( *)(- )?run: (.+)$/gmu,
     (line: string, indent: string, item: string | undefined, command: string) => {
@@ -64,7 +67,10 @@ export function readAutomationPrograms(...parts: (string | URL)[]): string {
   if (parts.at(-1) === "utf8") parts.pop();
   const file =
     parts[0] instanceof URL ? fileURLToPath(parts[0]) : path.resolve(root, ...(parts as string[]));
-  const source = readFileSync(file, "utf8").replace(/\r\n?/gu, "\n");
+  const source = withoutGeneratedHeader(
+    readFileSync(file, "utf8").replace(/\r\n?/gu, "\n"),
+    "hash",
+  );
   const { isMap, isScalar, isSeq, parseDocument } = createRequire(import.meta.url)(
     "yaml",
   ) as typeof import("yaml");
@@ -231,5 +237,8 @@ export function workflowProgram(owner: string, command: string, program: string)
       command.includes('"${{ env.VIZE_CI_FILES }}/' + program + '"'),
     owner + " does not invoke " + program,
   );
-  return readFileSync(path.join(root, ".github/scripts/workflows", owner, program), "utf8");
+  return withoutGeneratedHeader(
+    readFileSync(path.join(root, ".github/scripts/workflows", owner, program), "utf8"),
+    "hash",
+  );
 }

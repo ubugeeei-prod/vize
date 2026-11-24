@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/integrations/nuxt2-module-build.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Nuxt 2 module build
 run-name: Nuxt 2 host runtime @ ${{ github.event.pull_request.head.sha || github.sha }}
 on:

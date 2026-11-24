@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/smoke-glibc-floor-containers.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Smoke Linux GNU artifacts on old glibc
 description: >-
   Run the Linux GNU release artifacts inside Amazon Linux 2023 (glibc 2.34:

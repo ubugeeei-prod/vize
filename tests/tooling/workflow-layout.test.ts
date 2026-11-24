@@ -20,6 +20,7 @@ import {
 import { parseTapCounts } from "../../tools/support/github/docs-preview-readiness.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 import { plannedBusyRunner, plannedRunnerCondition } from "./support/planned-runner.ts";
+import { withoutGeneratedHeader } from "../../tools/support/ci/generated-header.ts";
 
 const approvedRunnerLabels = new Set([
   "blacksmith-12vcpu-macos-15",
@@ -99,7 +100,10 @@ function workflowRunnerLabels(
 
 test("the flat GitHub workflow directory has a generated navigation catalog", () => {
   const expected = renderWorkflowCatalog(readWorkflowEntries(root));
-  assert.equal(readRepoFile(".github/workflows/README.md"), expected);
+  assert.equal(
+    withoutGeneratedHeader(readRepoFile(".github/workflows/README.md"), "html"),
+    expected,
+  );
   const headingAnchors = new Set(
     [...expected.matchAll(/^## (.+)$/gmu)].map((match) => githubHeadingAnchor(match[1]!)),
   );

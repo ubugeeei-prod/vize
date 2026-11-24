@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-ssr/scripts/capture-genuine-original-input-model-ssr-values-in-both-runtime-modes.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 model_l3_status=0
 cargo test --locked --profile ci -p vize_l3 --test native_model_ssr -- --nocapture || model_l3_status=$?
 model_rust_status=0

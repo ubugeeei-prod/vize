@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/performance/vue-benchmarks-current-qualification.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Vue Benchmarks Current Qualification
 
 # Periodically replay the complete original 5489 lint and typecheck validators

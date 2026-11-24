@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/real-project-matrix.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Real Project Matrix
 # "enforced" gates every surface. "release-gated" is the exact release dispatch:
 # tool surfaces and the Davinci corpus enforce, lint and LSP parity record their

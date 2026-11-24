@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/release/release-cadence.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Release cadence
 # Starts a release on its own. After every completed Check or Release on main
 # (and on a 15-minute fallback schedule, which GitHub often delays or drops)

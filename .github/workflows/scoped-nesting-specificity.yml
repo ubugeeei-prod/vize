@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/compiler/scoped-nesting-specificity.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Scoped nesting specificity
 on:
   pull_request:

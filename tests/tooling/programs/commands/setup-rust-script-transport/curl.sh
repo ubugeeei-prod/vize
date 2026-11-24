@@ -1,4 +1,6 @@
 #!/bin/bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tests/tooling/programs/commands/setup-rust-script-transport/curl.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 count=0; [ ! -f "$CURL_COUNT" ] || count="$(cat "$CURL_COUNT")"
 count=$((count + 1)); printf "%s" "$count" > "$CURL_COUNT"

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/content-mapper-pair/install-node-24-in-wsl2.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 version=24.14.0
 curl -fsSLO "https://nodejs.org/dist/v$version/node-v$version-linux-x64.tar.xz"

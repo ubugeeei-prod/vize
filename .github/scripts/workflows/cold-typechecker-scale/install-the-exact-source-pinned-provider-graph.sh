@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/cold-typechecker-scale/install-the-exact-source-pinned-provider-graph.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 [[ "$(node --version)" == v24.14.0 ]]
 [[ "$(npm --version)" == 11.9.0 ]]

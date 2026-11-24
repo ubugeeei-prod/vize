@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/cold-typechecker-scale/capture-direct-normal-process-pmu-counters-and-bounded-source-stacks.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 sudo apt-get update -qq
 sudo apt-get install -y --no-install-recommends linux-tools-generic llvm
 sudo sysctl -w kernel.perf_event_paranoid=0

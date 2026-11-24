@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/pr-rust-products.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Rust product checks
 on:
   workflow_call:
