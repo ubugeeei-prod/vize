@@ -42,8 +42,8 @@ pub(crate) use traced::TracedText;
 /// its final module and then compose its source offsets with authored Pug.
 pub(crate) fn source_map_points(raw: &str, generated: &str, source: &str) -> Option<Runs> {
     let map = SourceMap::from_json_string(raw).ok()?;
-    let generated_lines = reprint::Lines::newline_only(generated);
-    let source_lines = reprint::Lines::newline_only(source);
+    let mut generated_lines = reprint::Lines::newline_only(generated);
+    let mut source_lines = reprint::Lines::newline_only(source);
     let mut points = Runs::default();
     for token in map.get_tokens() {
         let Some(output) = generated_lines.offset(token.get_dst_line(), token.get_dst_col()) else {

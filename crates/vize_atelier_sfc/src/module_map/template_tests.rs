@@ -123,7 +123,8 @@ fn offset(text: &str, line: u32, column: u32) -> usize {
         .take(line as usize)
         .map(str::len)
         .sum();
-    start + column as usize
+    let content = text.split('\n').nth(line as usize).expect("mapped line");
+    start + vize_l0::line_index::utf16_offset(content, column).expect("mapped character boundary")
 }
 
 /// Every segment authored inside `<template>`, in generated order.
@@ -163,7 +164,8 @@ fn resolve(result: &SfcCompileResult, needle: &str) -> Option<(u32, u32)> {
         .find(needle)
         .expect("generated code has the needle");
     let line = result.code[..at].matches('\n').count() as u32;
-    let column = (at - result.code[..at].rfind('\n').map_or(0, |start| start + 1)) as u32;
+    let start = result.code[..at].rfind('\n').map_or(0, |index| index + 1);
+    let column = result.code[start..at].encode_utf16().count() as u32;
     decode(result.map.as_ref()?)
         .into_iter()
         .filter(|&(generated_line, generated_column, _, _)| {
@@ -225,6 +227,18 @@ function pick(id: number) {}
   </section>
 </template>
 ";
+
+#[test]
+fn expressions_after_accented_and_astral_text_keep_utf16_columns() {
+    let source = BROKEN.replace("<p>{{ trip", "<p>é🌸{{ trip");
+    let result = compile(&source, SEPARATE);
+    assert_eq!(resolve(&result, "$setup.trip.title"), Some((9, 11)));
+    assert!(
+        template_segments(&result, &source)
+            .iter()
+            .any(|segment| segment.contains("9:11"))
+    );
+}
 
 #[test]
 fn the_reported_component_maps_its_throwing_expression() {

@@ -17,6 +17,10 @@ pub fn locate_for_aliases(root: &mut RootNode<'_>, source: &str) {
 }
 
 fn locate_in(children: &mut [TemplateChildNode<'_>], source: &str) {
+    vize_l0::ensure_sufficient_stack(|| locate_children(children, source));
+}
+
+fn locate_children(children: &mut [TemplateChildNode<'_>], source: &str) {
     for child in children {
         match child {
             TemplateChildNode::Element(element) => locate_in(&mut element.children, source),

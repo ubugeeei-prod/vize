@@ -140,6 +140,27 @@ const templateMapRows: [source: string, before: string | null, after: string][] 
   ],
 ];
 
+test("template provenance preserves repeated anchors and validates the authored block and line", () => {
+  const source =
+    "<script>const text = '<template>decoy</template>'</script>\n<template>\n{{n}}\n</template>";
+  const packet = (text: string, mappings: string) => ({
+    code: "",
+    map: JSON.stringify({ sources: ["Case.vue"], sourcesContent: [text], mappings }),
+  });
+  const before = packet(source, "AAAA,AAAA");
+  const after = packet(source, "AAAA,AAAA,CAEA");
+  assert.deepEqual(templateMapReference(before, after, source), after);
+  assert.deepEqual(withoutTemplateSegments(after, source), before);
+  assert.throws(() => templateMapReference(before, packet(source, "AAAA,CAEA"), source));
+  const noMap = { code: "" };
+  // Column 32 is in the script string. Line 0 of the second fixture has eight columns.
+  assert.throws(() => templateMapReference(noMap, packet(source, "AAAgC"), source));
+  const shortLine = "<!-- -->\n<template>{{n}}</template>";
+  const beyondLine = packet(shortLine, "AAAqB");
+  assert.throws(() => templateMapReference(noMap, beyondLine, shortLine));
+  assert.deepEqual(withoutTemplateSegments(beyondLine, shortLine), beyondLine);
+});
+
 test("a compile packet's map gains only the segments authored in its template", () => {
   for (const [source, before, after] of templateMapRows) {
     const packet = (mappings: string | null, file = "Case.vue"): ExposurePacket => ({
