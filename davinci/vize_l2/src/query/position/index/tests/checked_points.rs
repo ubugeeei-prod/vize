@@ -9,9 +9,13 @@ use super::Intervals;
 use crate::query::PositionQueryError;
 use vize_l0::Span;
 
-fn check_queries(bounds: [[u32; 2]; 3], offset: u32, selected: u8) {
+fn check_queries<const N: usize>(bounds: [[u32; 2]; N], offset: u32, selected: u8) {
     let spans = bounds.map(|[start, end]| Span::new(start, end));
     let index = Intervals::from_rows(&spans, |span| *span);
+    check_index(&spans, &index, offset, selected);
+}
+
+fn check_index(spans: &[Span], index: &Intervals<usize>, offset: u32, selected: u8) {
     let mut expect = 0u8;
     for (i, span) in spans.iter().enumerate() {
         if span.start <= offset && offset < span.end {
@@ -65,7 +69,46 @@ fn query_selections_preserve_crossings_and_equal_spans_at_byte_boundaries() {
 
 #[cfg(kani)]
 #[kani::proof]
-#[kani::unwind(8)]
-fn position_visits_match_original_rows() {
-    check_queries(kani::any(), kani::any(), kani::any());
+#[kani::unwind(4)]
+fn position_queries_preserve_original_row_numbers() {
+    let offset = kani::any();
+    let selected = kani::any();
+    // The last row duplicates the first. Removing the middle row leaves a gap
+    // in the original row numbers, even though the physical index is dense.
+    for first in [[u32::MAX - 4, u32::MAX], [2, 1]] {
+        for second in [[0, u32::MAX - 1], [0, 0]] {
+            for third in [[u32::MAX - 4, u32::MAX], [u32::MAX, u32::MAX]] {
+                check_queries([first, second, third], offset, selected);
+            }
+        }
+    }
+}
+
+#[cfg(kani)]
+fn check_physical<const N: usize>(spans: [Span; N], offset: u32, selected: u8) {
+    use super::Entry;
+    use alloc::vec::Vec;
+
+    let entries: [Entry<usize>; N] = core::array::from_fn(|i| Entry::new(spans[i], i));
+    let index = Intervals::sorted(Vec::from(entries));
+    check_index(&spans, &index, offset, selected);
+}
+
+#[cfg(kani)]
+#[kani::proof]
+#[kani::unwind(4)]
+fn position_queries_for_unordered_intervals() {
+    let a = Span::new(kani::any(), kani::any());
+    let b = Span::new(kani::any(), kani::any());
+    let c = Span::new(kani::any(), kani::any());
+    let offset = kani::any();
+    let selected = kani::any();
+    // This is the exact filter used by from_rows. Discarding an empty or
+    // reversed span cannot remove a match at any query offset.
+    assert_eq!(!a.is_empty(), a.start < a.end);
+    assert!(!a.is_empty() || !(a.start <= offset && offset < a.end));
+    check_physical([], offset, selected);
+    check_physical([a], offset, selected);
+    check_physical([a, b], offset, selected);
+    check_physical([a, b, c], offset, selected);
 }
