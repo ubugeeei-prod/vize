@@ -90,5 +90,8 @@ fn profiling_allocator_forwards_zeroed_blocks() {
         }
         allocator.dealloc(block, layout);
     }
-    kani::cover!(tracking && layout.align() == 8, "tracked aligned zeroed block");
+    kani::cover!(
+        tracking && layout.align() == 8,
+        "tracked aligned zeroed block"
+    );
 }
