@@ -9,6 +9,7 @@ on:
       - crates/vize_maestro/src/source_project/style_format.rs
       - crates/vize_maestro/src/source_project/style_format/**
       - tests/formal/source-map/**
+      - crates/vize_maestro/src/ide/diagnostics/corsa/ambient_project/positions.rs
       - tests/formal/style-format/**
 permissions: { contents: read }
 concurrency:

@@ -1,5 +1,6 @@
 //! Compare authored results and measure full cold and resident queries.
-use super::super::{CorsaDocument, assemble_corsa_diagnostics, borrowed, finished_from_phased_lsp};
+use super::super::super::collect_virtual::finished_from_phased_lsp;
+use super::super::{CorsaDocument, assemble_corsa_diagnostics, borrowed};
 use super::*;
 use std::time::Instant;
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, CorsaBridge};
