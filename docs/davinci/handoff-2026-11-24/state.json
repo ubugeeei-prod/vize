@@ -1,0 +1,590 @@
+{
+  "recordedUtc": "2026-11-24T01:33:01+00:00",
+  "protectedMain": "bcecae652c7a065257a03b99095f867be0cd45cc",
+  "requests": [
+    {
+      "number": 13507,
+      "title": "feat(davinci): compose checked frontend tools across document revisions",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13507",
+      "state": "MERGED",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "test/checked-toolchain-session",
+      "headRefOid": "0a5557500cd119083419495e2f23460b3cad8ac9",
+      "mergeCommit": {
+        "oid": "bcecae652c7a065257a03b99095f867be0cd45cc"
+      },
+      "mergedAt": "2026-11-24T01:17:01Z",
+      "reviewDecision": null,
+      "mergeStateStatus": "UNKNOWN",
+      "mergeable": "UNKNOWN",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13585,
+      "title": "test(sfc): verify historical component source map coordinates",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13585",
+      "state": "MERGED",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "test/historical-component-map-positions",
+      "headRefOid": "8186279ef8319ec746bf54af0ea2e8dc7b0882f0",
+      "mergeCommit": {
+        "oid": "2584de79c0f66d69ce1509c51e873cecdb602bad"
+      },
+      "mergedAt": "2026-11-24T01:00:46Z",
+      "reviewDecision": "APPROVED",
+      "mergeStateStatus": "UNKNOWN",
+      "mergeable": "UNKNOWN",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13555,
+      "title": "test(davinci): verify L2 cursor queries against original rows",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13555",
+      "state": "MERGED",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "test/verified-position-queries",
+      "headRefOid": "1d45e82741bc439b4615a51c122569bebf69f8a7",
+      "mergeCommit": {
+        "oid": "9ca1ba9b3f9f530630c3101c6442495c83c1342c"
+      },
+      "mergedAt": "2026-11-24T01:10:44Z",
+      "reviewDecision": "APPROVED",
+      "mergeStateStatus": "UNKNOWN",
+      "mergeable": "UNKNOWN",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13587,
+      "title": "perf(maestro): skip parsing empty blocks for editor script queries",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13587",
+      "state": "MERGED",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "perf/skip-empty-editor-script-parses",
+      "headRefOid": "2176e866224feb03328100be4538bbf5322712f8",
+      "mergeCommit": {
+        "oid": "6fb3a6c1a95d2df571f319ac023e33a46d4da7eb"
+      },
+      "mergedAt": "2026-11-23T22:19:12Z",
+      "reviewDecision": "APPROVED",
+      "mergeStateStatus": "UNKNOWN",
+      "mergeable": "UNKNOWN",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13583,
+      "title": "feat(ir): retain original recovery sites across template edits",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13583",
+      "state": "MERGED",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "feat/retained-template-recovery",
+      "headRefOid": "c5d8d523a52ba82ebdbb69829b0a99e4aa9e2300",
+      "mergeCommit": {
+        "oid": "4aa1a25508a7674f8628a651d9be7a5877358479"
+      },
+      "mergedAt": "2026-11-23T21:39:42Z",
+      "reviewDecision": "APPROVED",
+      "mergeStateStatus": "UNKNOWN",
+      "mergeable": "UNKNOWN",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13584,
+      "title": "test(ir): verify UTF-8 spans and source frame identity",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13584",
+      "state": "MERGED",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "test/lossless-source-frames",
+      "headRefOid": "0933a59272fa512ed1d59b1635e4845efacbfb69",
+      "mergeCommit": {
+        "oid": "f8b1a9448fc526b9f7f1540fab1d02652aaf0fa8"
+      },
+      "mergedAt": "2026-11-23T21:18:45Z",
+      "reviewDecision": null,
+      "mergeStateStatus": "UNKNOWN",
+      "mergeable": "UNKNOWN",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13531,
+      "title": "feat(patina): derive verified complexity labels from the original template",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13531",
+      "state": "MERGED",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "feat/original-template-lint",
+      "headRefOid": "b41fddddb86bf7bb71a1c02f67deb355d95b584a",
+      "mergeCommit": {
+        "oid": "fb02e34c7eab50a0c7b36cab2ca9ff6414d56b3c"
+      },
+      "mergedAt": "2026-11-23T15:47:52Z",
+      "reviewDecision": "APPROVED",
+      "mergeStateStatus": "UNKNOWN",
+      "mergeable": "UNKNOWN",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13550,
+      "title": "test(davinci): prove checked script relocation and retry costs",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13550",
+      "state": "MERGED",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "test/checked-script-recovery-laws",
+      "headRefOid": "25f45008e7f0451637bdd38ecda4e7a90ce1a011",
+      "mergeCommit": {
+        "oid": "2fb638b86552f3cb4a6428f87166115a2f818644"
+      },
+      "mergedAt": "2026-11-23T10:50:09Z",
+      "reviewDecision": null,
+      "mergeStateStatus": "UNKNOWN",
+      "mergeable": "UNKNOWN",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13510,
+      "title": "feat(davinci): reuse original style passes in whole-component compilation",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13510",
+      "state": "OPEN",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "test/original-scss-toolchain-session",
+      "headRefOid": "b22110515e822e5e60f549e77a9be04afbfc698a",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": "APPROVED",
+      "mergeStateStatus": "BLOCKED",
+      "mergeable": "MERGEABLE",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "PENDING"
+    },
+    {
+      "number": 13514,
+      "title": "feat(davinci): compile scoped SCSS on the original Vue component",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13514",
+      "state": "OPEN",
+      "isDraft": false,
+      "baseRefName": "test/original-scss-toolchain-session",
+      "headRefName": "feat/scoped-scss-components",
+      "headRefOid": "bf6aaf78281b9c6726cfda894e8d99da52973281",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": "APPROVED",
+      "mergeStateStatus": "BLOCKED",
+      "mergeable": "MERGEABLE",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "PENDING"
+    },
+    {
+      "number": 13516,
+      "title": "feat(maestro): share scoped component passes on the current editor revision",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13516",
+      "state": "OPEN",
+      "isDraft": false,
+      "baseRefName": "feat/scoped-scss-components",
+      "headRefName": "feat/composed-component-positions",
+      "headRefOid": "9e1be40f9dea57b0979987bfe93134e50dfb0387",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": "APPROVED",
+      "mergeStateStatus": "BLOCKED",
+      "mergeable": "MERGEABLE",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "PENDING"
+    },
+    {
+      "number": 13519,
+      "title": "feat(davinci): compile original styles independently on incomplete components",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13519",
+      "state": "OPEN",
+      "isDraft": false,
+      "baseRefName": "feat/composed-component-positions",
+      "headRefName": "feat/independent-style-queries",
+      "headRefOid": "e1500478d367d929a3acaf25742600a8d9400df6",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": "APPROVED",
+      "mergeStateStatus": "BLOCKED",
+      "mergeable": "MERGEABLE",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "PENDING"
+    },
+    {
+      "number": 13539,
+      "title": "feat(maestro): share verified frontend passes on one document revision",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13539",
+      "state": "OPEN",
+      "isDraft": false,
+      "baseRefName": "integration/component-pass-inputs",
+      "headRefName": "feat/guarded-component-passes",
+      "headRefOid": "7a386b34c49b1f1629fe1378c8ba24394fe600c8",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": null,
+      "mergeStateStatus": "CLEAN",
+      "mergeable": "MERGEABLE",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13568,
+      "title": "test(davinci): verify emitted JavaScript string literals",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13568",
+      "state": "OPEN",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "test/checked-compiler-literals",
+      "headRefOid": "d4f1d07f7d10820d3aad8638d9140069c8c85ede",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": "APPROVED",
+      "mergeStateStatus": "BLOCKED",
+      "mergeable": "MERGEABLE",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "PENDING"
+    },
+    {
+      "number": 13571,
+      "title": "refactor(ir): emit expanded CSS from input-neutral rules",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13571",
+      "state": "OPEN",
+      "isDraft": false,
+      "baseRefName": "feat/independent-style-queries",
+      "headRefName": "refactor/expanded-rule-target",
+      "headRefOid": "f889dda1b9ee6228a161061d7231652b593c87d0",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": null,
+      "mergeStateStatus": "DIRTY",
+      "mergeable": "CONFLICTING",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13574,
+      "title": "test(ir): verify nearest LSP line starts against the full iterator",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13574",
+      "state": "OPEN",
+      "isDraft": false,
+      "baseRefName": "refactor/expanded-rule-target",
+      "headRefName": "test/lsp-line-break-laws",
+      "headRefOid": "3484badb548450dd3dab97d4795170084f9a4116",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": null,
+      "mergeStateStatus": "CLEAN",
+      "mergeable": "MERGEABLE",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13589,
+      "title": "perf(davinci): reuse diagnostics for an acknowledged Vue source projection",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13589",
+      "state": "OPEN",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "perf/reuse-checked-ambient-diagnostics",
+      "headRefOid": "173b28d0ff34541d3e27d7d64faa9ce7a0ecceb1",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": "CHANGES_REQUESTED",
+      "mergeStateStatus": "CLEAN",
+      "mergeable": "MERGEABLE",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [
+        {
+          "path": ".github/workflows/declaration-source-products.yml",
+          "url": "https://github.com/ubugeeei-prod/vize/pull/13589#discussion_r4674319099"
+        },
+        {
+          "path": "crates/vize_canon/src/lsp_client/diagnostics/ambient.rs",
+          "url": "https://github.com/ubugeeei-prod/vize/pull/13589#discussion_r4674319104"
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/diagnostics/corsa/ambient_project/tests/repeated.rs",
+          "url": "https://github.com/ubugeeei-prod/vize/pull/13589#discussion_r4674319116"
+        }
+      ],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13590,
+      "title": "feat(davinci): stream bounded relationship trails from L3 graphs",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13590",
+      "state": "OPEN",
+      "isDraft": true,
+      "baseRefName": "main",
+      "headRefName": "feat/bounded-ir-trails",
+      "headRefOid": "f5506dff08ce7d78f91d30a53f681477fe6e97c5",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": null,
+      "mergeStateStatus": "BLOCKED",
+      "mergeable": "MERGEABLE",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "PENDING"
+    },
+    {
+      "number": 13591,
+      "title": "feat(davinci): reuse original script programs for editor queries",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13591",
+      "state": "OPEN",
+      "isDraft": false,
+      "baseRefName": "main",
+      "headRefName": "feat/retained-script-query-products",
+      "headRefOid": "13e5ffa7fff62a70b982c1621dbbf4e56b386ce2",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": "APPROVED",
+      "mergeStateStatus": "UNKNOWN",
+      "mergeable": "UNKNOWN",
+      "mergeQueueEntry": {
+        "position": 1
+      },
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "SUCCESS"
+    },
+    {
+      "number": 13592,
+      "title": "feat(davinci): query retained diagnostics at authored cursor positions",
+      "url": "https://github.com/ubugeeei-prod/vize/pull/13592",
+      "state": "OPEN",
+      "isDraft": true,
+      "baseRefName": "main",
+      "headRefName": "feat/queried-recovery-positions",
+      "headRefOid": "0b1eed96e8cc0dd0e1f587ed22531c30f0ef0982",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "reviewDecision": null,
+      "mergeStateStatus": "UNSTABLE",
+      "mergeable": "MERGEABLE",
+      "mergeQueueEntry": null,
+      "autoMergeRequest": null,
+      "unresolved": [],
+      "checks": "FAILURE"
+    }
+  ],
+  "workingBranches": {
+    "recovery": {
+      "branch": "wip/davinci-recovery-cursor-ranks-20261124",
+      "commit": "3602af9a875283b5c05cd9d971b97f1e22f4063e",
+      "parent": "0b1eed96e8cc0dd0e1f587ed22531c30f0ef0982"
+    },
+    "script": {
+      "branch": "feat/composed-l2ir-position-queries",
+      "commit": "834ced8054a0f91fcd228863f7e487254e3b6e36",
+      "base": "9ca1ba9b3f9f530630c3101c6442495c83c1342c"
+    }
+  },
+  "recovery": {
+    "failedLinuxJob": "https://github.com/ubugeeei-prod/vize/actions/runs/45299822296/job/138129237526",
+    "oldLinux": {
+      "rowCount": 1,
+      "cursors": 1,
+      "medianNs": [
+        27,
+        28
+      ],
+      "slowerPairs": [
+        26,
+        31
+      ],
+      "reverseMedianNs": [
+        26,
+        28
+      ],
+      "reverseSlowerPairs": [
+        28,
+        31
+      ]
+    },
+    "arm64BeforeAddingThreeCursorCounts": [
+      "rows 1 cursors 1 pairs 15 old 31 new 28 slower 0",
+      "rows 1 cursors 4 pairs 15 old 39 new 36 slower 0",
+      "rows 1 cursors 16 pairs 15 old 98 new 89 slower 0",
+      "rows 1 cursors 64 pairs 15 old 260 new 218 slower 0",
+      "rows 4 cursors 1 pairs 15 old 105 new 93 slower 0",
+      "rows 4 cursors 4 pairs 15 old 123 new 113 slower 0",
+      "rows 4 cursors 16 pairs 15 old 204 new 184 slower 0",
+      "rows 4 cursors 64 pairs 15 old 502 new 466 slower 0",
+      "rows 32 cursors 1 pairs 15 old 777 new 716 slower 0",
+      "rows 32 cursors 4 pairs 15 old 996 new 833 slower 0",
+      "rows 32 cursors 16 pairs 15 old 1639 new 1162 slower 0",
+      "rows 32 cursors 64 pairs 15 old 1825 new 1343 slower 0",
+      "rows 128 cursors 1 pairs 15 old 3002 new 2748 slower 0",
+      "rows 128 cursors 4 pairs 15 old 3485 new 3117 slower 0",
+      "rows 128 cursors 16 pairs 15 old 4992 new 3928 slower 0",
+      "rows 128 cursors 64 pairs 15 old 7160 new 4441 slower 0",
+      "within-process failed [(0, 0), (1, 0)]"
+    ],
+    "currentKani": {
+      "checks": 473,
+      "failures": 0,
+      "covers": 6,
+      "unreachable": 1,
+      "maxCursors": 7,
+      "passingNegativeControls": [
+        "left",
+        "rank-before",
+        "short-end",
+        "upper",
+        "prefix",
+        "tail-offset",
+        "empty"
+      ],
+      "remaining": [
+        "single-lower",
+        "single-insertion",
+        "single-rank"
+      ]
+    }
+  },
+  "script": {
+    "arm64OriginalReaderImages": {
+      "protected-existing-position-entries-arm64": {
+        "bytes": 1427744,
+        "sha256": "66f1d04dc4d08b89ae38f226ee1105188c559e5b2ee719ed67d80ec77cfb5002",
+        "textBytes": 806880,
+        "textSha256": "864a3172cd212416a10f5f363925262083a036fa1f51c302e0e4e75ca85b80e7"
+      },
+      "isolated-existing-position-entries-arm64": {
+        "bytes": 1427744,
+        "sha256": "66f1d04dc4d08b89ae38f226ee1105188c559e5b2ee719ed67d80ec77cfb5002",
+        "textBytes": 806880,
+        "textSha256": "864a3172cd212416a10f5f363925262083a036fa1f51c302e0e4e75ca85b80e7"
+      }
+    },
+    "corpus": [
+      "composed script positions Counts { files: 6311, invalid: 1, no_l2: 991, complete: 782, incomplete: 4537, offsets: 257315, references: 102, bindings: 876, scopes: 4029, refusals: 225223 }"
+    ],
+    "arm64TimingsAndHeap": [
+      "script_position_heap functions=1 cold=false calls=0/0 peak=0/0",
+      "script position functions=1 cursors=8 cold=false baseline_ns=274 candidate_ns=138 slower=0/31 iterations=128",
+      "script_position_heap functions=1 cold=true calls=0/0 peak=0/0",
+      "script position functions=1 cursors=8 cold=true baseline_ns=286 candidate_ns=151 slower=0/31 iterations=16",
+      "script_position_heap functions=32 cold=false calls=0/0 peak=0/0",
+      "script position functions=32 cursors=8 cold=false baseline_ns=728 candidate_ns=322 slower=0/31 iterations=128",
+      "script_position_heap functions=32 cold=true calls=4/4 peak=5472/5472",
+      "script position functions=32 cursors=8 cold=true baseline_ns=2091 candidate_ns=1684 slower=2/31 iterations=16",
+      "script_position_heap functions=128 cold=false calls=0/0 peak=0/0",
+      "script position functions=128 cursors=8 cold=false baseline_ns=862 candidate_ns=394 slower=0/31 iterations=128",
+      "script_position_heap functions=128 cold=true calls=4/4 peak=21600/21600",
+      "script position functions=128 cursors=8 cold=true baseline_ns=5661 candidate_ns=5203 slower=0/31 iterations=16"
+    ],
+    "lean": [
+      "'Davinci.ScriptPosition.select_original' does not depend on any axioms",
+      "'Davinci.ScriptPosition.all_products' does not depend on any axioms",
+      "'Davinci.ScriptPosition.collision_preserves_reference' does not depend on any axioms"
+    ]
+  },
+  "linuxProofs": {
+    "13590": {
+      "vize_l3": "https://github.com/ubugeeei-prod/vize/actions/runs/45303560128",
+      "native": "https://github.com/ubugeeei-prod/vize/actions/runs/45303562952",
+      "vize": "https://github.com/ubugeeei-prod/vize/actions/runs/45303555038"
+    },
+    "13591": {
+      "vize": "https://github.com/ubugeeei-prod/vize/actions/runs/45297527750",
+      "vize_maestro": "https://github.com/ubugeeei-prod/vize/actions/runs/45297532012",
+      "native": "https://github.com/ubugeeei-prod/vize/actions/runs/45297530192"
+    },
+    "13589": {
+      "vize": "https://github.com/ubugeeei-prod/vize/actions/runs/45298911963",
+      "vize_canon": "https://github.com/ubugeeei-prod/vize/actions/runs/45298916380",
+      "native": "https://github.com/ubugeeei-prod/vize/actions/runs/45298912924",
+      "vize_maestro": "https://github.com/ubugeeei-prod/vize/actions/runs/45298920681",
+      "lean": "https://github.com/ubugeeei-prod/vize/actions/runs/45298912937"
+    }
+  },
+  "olderComparisons": {
+    "archive": "9510bd07ac7c2378ebdb3c3c8c5b35b2791a3c3c",
+    "experiments": [
+      {
+        "experiment": "ambient-prototype",
+        "base": "80c15d71b55ebb3c5b110780833e17c46756055c",
+        "commit": "07782b5dfcf67d31a4dc0107b5f8b094e0f699e3",
+        "paths": 24
+      },
+      {
+        "experiment": "indexed-positions",
+        "base": "91224d697ca2eb6455f19538341024819aedc356",
+        "commit": "7d3f0fc2b28a9f2bf2aaffd49042109d2703036a",
+        "paths": 3
+      },
+      {
+        "experiment": "resident-template",
+        "base": "27cd9b1b3cbb8de360e18f914bb2a4af8c7d7556",
+        "commit": "6db020e06a667e7ad274284e3c4a6cae91bb6139",
+        "paths": 31
+      },
+      {
+        "experiment": "interval-unwind-control",
+        "base": "91224d697ca2eb6455f19538341024819aedc356",
+        "commit": "0c0954585eb14052d9c38945ce3133925a60dde7",
+        "paths": 1
+      },
+      {
+        "experiment": "script-diagnostics-experiment",
+        "base": "f1ff87fc68cc579b1854e97439b585a4c2a9442a",
+        "commit": "1112ead910e4dea61562f06dfd952eb2cedf7410",
+        "paths": 1
+      },
+      {
+        "experiment": "native-text-experiment",
+        "base": "46b5168cc481d46d4f7e31f17934ce0aab07e4ad",
+        "commit": "13cae42c298b8a5fc50f2600f9e2f282adb6665b",
+        "paths": 2
+      }
+    ]
+  }
+}
