@@ -6,6 +6,8 @@
 //!
 //! - `"shorthand"` (default): Prefer `:attr` over `v-bind:attr`
 //! - `"longform"`: Prefer `v-bind:attr` over `:attr`
+//! - `sameNameShorthand`: `"always"` requires `:attr` for `:attr="attr"`,
+//!   `"never"` requires the written value, `"ignore"` (default) checks neither
 //!
 //! ## Examples
 //!
@@ -21,9 +23,14 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use crate::markup::SameNameSpelling;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::{String, cstr};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+
+mod same_name;
+
+pub(super) use same_name::same_name_shorthand_fix;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/v-bind-style",
@@ -32,6 +39,11 @@ static META: RuleMeta = RuleMeta {
     fixable: true,
     default_severity: Severity::Warning,
 };
+
+/// The rule's name, for the rule that yields to its `sameNameShorthand`.
+pub(super) fn rule_name() -> &'static str {
+    META.name
+}
 
 /// Style preference for v-bind
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -127,6 +139,45 @@ impl Rule for VBindStyle {
                 .with_help(help)
                 .with_fix(fix),
         );
+    }
+}
+
+/// `vue/v-bind-style` with `sameNameShorthand` set to `always` or `never`.
+///
+/// The policy is its own rule object, so the rule without the option runs
+/// exactly the code it ran before the option existed.
+struct VBindStyleSameName {
+    style: VBindStyle,
+    required: SameNameSpelling,
+}
+
+impl VBindStyle {
+    /// This style with `required` as the one spelling of same-name bindings.
+    pub(crate) fn requiring_same_name(self, required: SameNameSpelling) -> Box<dyn Rule> {
+        Box::new(VBindStyleSameName {
+            style: self,
+            required,
+        })
+    }
+}
+
+impl Rule for VBindStyleSameName {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::DIRECTIVE
+    }
+
+    fn check_directive<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        element: &ElementNode<'a>,
+        directive: &DirectiveNode<'a>,
+    ) {
+        same_name::check(ctx, directive, self.required);
+        self.style.check_directive(ctx, element, directive);
     }
 }
 

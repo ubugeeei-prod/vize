@@ -42,6 +42,12 @@ crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs	@click.ctrl
 crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs	@click.shift
 crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs	@submit.prevent
 crates/vize_patina/src/rules/vue/attribute_order.rs	@keydown.meta.s.prevent
+crates/vize_patina/src/rules/vue/compatibility_template/restricted/tests.rs	@click.stop
+crates/vize_patina/src/rules/vue/compatibility_template/restricted/tests.rs	v-on:keyup.stop.prevent
+crates/vize_patina/src/rules/vue/compatibility_template/restricted/tests.rs	@click.STOP
+crates/vize_patina/src/rules/vue/configured/restricted_entry_tests.rs	@click.stop
+crates/vize_patina/src/rules/vue/configured/restricted_entry_tests.rs	v-on:click.prevent.stop
+crates/vize_patina/src/rules/vue/configured/restricted_entry_tests.rs	@click.stop
 crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs	@click.native
 crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs	v-on:click.native
 crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs	@click.native.stop

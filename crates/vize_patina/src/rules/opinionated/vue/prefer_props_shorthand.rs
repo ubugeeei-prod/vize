@@ -31,13 +31,14 @@
 //! ```
 
 use crate::context::LintContext;
-use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::markup::{
-    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal,
+    MarkupBinding, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal, SameNameSpelling,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_croquis::naming::names_match;
 use vize_relief::ElementNode;
+
+use super::v_bind_style::{self, same_name_shorthand_fix};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/prefer-props-shorthand",
@@ -52,23 +53,18 @@ static META: RuleMeta = RuleMeta {
 pub struct PreferPropsShorthand;
 
 impl PreferPropsShorthand {
+    /// The rule for a project whose `vue/v-bind-style` carries an explicit
+    /// `sameNameShorthand` policy: it stays quiet wherever that rule runs, so
+    /// one binding gets one report and one fix.
+    pub(crate) fn deferring_to_v_bind_style() -> Box<dyn Rule> {
+        Box::new(DeferringToVBindStyle)
+    }
+
     fn check_binding(ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
-        if binding.kind() != MarkupBindingKind::Bind || !binding.has_value() {
-            return;
-        }
-        let Some(prop_name) = binding.arg_name() else {
-            return;
-        };
-        if !binding.is_static_unqualified_arg_exact(prop_name) {
-            return;
-        }
-        let Some(value) = binding.expression() else {
-            return;
-        };
-        let is_simple_identifier = value
-            .chars()
-            .all(|character| character.is_alphanumeric() || character == '_');
-        if !is_simple_identifier || !names_match(prop_name, value) {
+        if binding
+            .same_name_binding_written(SameNameSpelling::Explicit)
+            .is_none()
+        {
             return;
         }
 
@@ -130,28 +126,50 @@ impl Rule for PreferPropsShorthand {
     }
 }
 
-/// Delete `="value"` from `:user-name="userName"`, leaving `:user-name`.
-fn same_name_shorthand_fix(source: &str, start: u32, end: u32) -> Option<Fix> {
-    let start = start as usize;
-    let end = end as usize;
-    let slice = source.get(start..end)?;
-    let eq = slice.find('=')?;
-    let mut trim = eq;
-    while trim > 0
-        && slice
-            .as_bytes()
-            .get(trim - 1)
-            .is_some_and(u8::is_ascii_whitespace)
-    {
-        trim -= 1;
+/// [`PreferPropsShorthand`] behind `vue/v-bind-style`: the same rule, run only
+/// where `vue/v-bind-style` does not. It is a separate object so the default
+/// rule carries no trace of the option.
+struct DeferringToVBindStyle;
+
+impl MarkupRule for DeferringToVBindStyle {
+    fn name(&self) -> &'static str {
+        META.name
     }
-    if trim == 0 {
-        return None;
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Bindings
     }
-    Some(Fix::new(
-        "Use shorthand prop syntax",
-        TextEdit::delete((start + trim) as u32, end as u32),
-    ))
+
+    fn enter_binding<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        binding: &MarkupBinding<'a>,
+    ) {
+        if !ctx.lint().is_rule_enabled(v_bind_style::rule_name()) {
+            MarkupRule::enter_binding(&PreferPropsShorthand, ctx, element, binding);
+        }
+    }
+}
+
+impl Rule for DeferringToVBindStyle {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        true
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        if !ctx.is_rule_enabled(v_bind_style::rule_name()) {
+            Rule::enter_element(&PreferPropsShorthand, ctx, element);
+        }
+    }
 }
 
 #[cfg(test)]

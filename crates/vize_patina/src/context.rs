@@ -18,7 +18,7 @@ mod template_directives;
 pub(crate) use callback_order::CallbackSite;
 pub(crate) use compatibility_parses::RetainedVFor;
 pub use project_directives::ProjectLintDirectives;
-pub(crate) use reporting::{SfcSuppression, offset_diagnostic, retain_unless_source_suppressed};
+pub(crate) use reporting::{ScriptSuppression, SfcSuppression, offset_diagnostic};
 pub use state::{DisabledRange, ElementContext, SsrMode};
 pub(crate) use template_directives::{TemplateCommentDirectives, process_vize_directive};
 

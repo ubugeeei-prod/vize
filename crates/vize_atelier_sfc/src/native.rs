@@ -94,6 +94,10 @@ pub enum NativeSfcCompileError {
     Dom(DomError),
     Assembly(AssemblyError),
     #[cfg(feature = "native-sfc-scss")]
+    UnusedPreparedScss {
+        span: Span,
+    },
+    #[cfg(feature = "native-sfc-scss")]
     Scss {
         container_index: usize,
         issue: vize_l2::lang::scss::ScssRefusal,
@@ -197,14 +201,14 @@ pub fn compile_native_sfc<'a>(
             &observation,
             options,
             #[cfg(feature = "native-sfc-scss")]
-            false,
+            None,
         )
     } else {
         emit::<NoLinks>(
             &observation,
             options,
             #[cfg(feature = "native-sfc-scss")]
-            false,
+            None,
         )
     };
     NativeSfcCompilation {
@@ -216,7 +220,9 @@ pub fn compile_native_sfc<'a>(
 fn emit<L: LinkSink>(
     observation: &NativeSfcObservation<'_>,
     options: NativeSfcCompileOptions<'_>,
-    #[cfg(feature = "native-sfc-scss")] scss: bool,
+    #[cfg(feature = "native-sfc-scss")] scss: Option<
+        &mut dyn Iterator<Item = &crate::scss::ScssProducts<'_>>,
+    >,
 ) -> Result<NativeSfcOutput, NativeSfcCompileError> {
     // Refusal classification reads retained block metadata, never source text
     // or an external file. It grants no descriptor or compilation authority.
@@ -248,6 +254,8 @@ fn emit<L: LinkSink>(
         .map(vize_l4::module::ScopeId::new)
         .transpose()
         .map_err(NativeSfcCompileError::Assembly)?;
+    #[cfg(feature = "native-sfc-scss")]
+    let use_shared_positions = scss.is_some() && options.source_map;
     let css = styles::emit::<L>(
         descriptor,
         observation.style_syntax(),
@@ -301,7 +309,7 @@ fn emit<L: LinkSink>(
         .map_err(NativeSfcCompileError::Assembly)?
         .into_document();
     #[cfg(feature = "native-sfc-scss")]
-    if scss && options.source_map {
+    if use_shared_positions {
         let index =
             vize_l4::write::source_map::SourceMapIndex::new(observation.descriptor().source());
         let source_map = Some(index.source_map(&document, options.filename));
@@ -359,14 +367,49 @@ pub fn compile_native_sfc_with_scss<'a>(
     source: &'a str,
     options: NativeSfcCompileOptions<'_>,
 ) -> NativeSfcCompilation<'a> {
-    let observation = lower_sfc_native(allocator, source, options.descriptor);
-    let result = if options.source_map {
-        emit::<Recorded>(&observation, options, true)
-    } else {
-        emit::<NoLinks>(&observation, options, true)
-    };
+    let session = NativeScssSession::new(allocator, source, options);
+    let result = session.emit([]);
     NativeSfcCompilation {
-        observation,
+        observation: session.observation,
         result,
+    }
+}
+
+/// A single original component observation shared by the compiler and tool passes.
+#[cfg(feature = "native-sfc-scss")]
+pub struct NativeScssSession<'a, 'o> {
+    observation: NativeSfcObservation<'a>,
+    options: NativeSfcCompileOptions<'o>,
+}
+
+#[cfg(feature = "native-sfc-scss")]
+impl<'a, 'o> NativeScssSession<'a, 'o> {
+    pub fn new(
+        allocator: &'a Allocator,
+        source: &'a str,
+        options: NativeSfcCompileOptions<'o>,
+    ) -> Self {
+        Self {
+            observation: lower_sfc_native(allocator, source, options.descriptor),
+            options,
+        }
+    }
+
+    pub fn observation(&self) -> &NativeSfcObservation<'a> {
+        &self.observation
+    }
+
+    /// Reuse the supplied style passes in authored order. Other inline SCSS
+    /// is lowered on demand. A foreign or unused pass cannot produce a module.
+    pub fn emit<'p, 's: 'p>(
+        &self,
+        prepared: impl IntoIterator<Item = &'p crate::scss::ScssProducts<'s>>,
+    ) -> Result<NativeSfcOutput, NativeSfcCompileError> {
+        let mut styles = prepared.into_iter();
+        if self.options.source_map {
+            emit::<Recorded>(&self.observation, self.options, Some(&mut styles))
+        } else {
+            emit::<NoLinks>(&self.observation, self.options, Some(&mut styles))
+        }
     }
 }

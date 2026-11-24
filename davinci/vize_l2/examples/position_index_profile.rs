@@ -7,7 +7,7 @@ use oxc_span::SourceType;
 use std::{hint::black_box, time::Instant};
 use vize_l0::{Allocator, SourceRoot, String, append};
 use vize_l2::{
-    file::FileArtifact,
+    file::L2Ir,
     lang::js::{FileProducer, ProgramInput, ProgramScope},
     query::Model,
 };
@@ -15,7 +15,7 @@ use vize_l2::{
 const QUERIES: usize = 2048;
 const SAMPLES: usize = 21;
 
-fn file<'a>(arena: &'a Allocator, source: &'a str) -> Result<FileArtifact<'a>, &'static str> {
+fn file<'a>(arena: &'a Allocator, source: &'a str) -> Result<L2Ir<'a>, &'static str> {
     let block = SourceRoot::new(source)
         .map_err(|_| "source size")?
         .whole_block();

@@ -10,6 +10,10 @@ import { getAttributeHyphenationOptions } from "./attribute-options.js";
 import { getPropNameCasingOptions } from "./prop-name-options.js";
 import { getComponentNameCasingOptions } from "./component-name-options.js";
 import {
+  getRestrictedHtmlElementsOptions,
+  getRestrictedVOnOptions,
+} from "./restricted-entry-options.js";
+import {
   getBlockLangOptions,
   getMaxLinesOptions,
   getMaxLinesPerBlockOptions,
@@ -24,6 +28,7 @@ import type {
   PatinaRuleOptions,
   SfcElementOrderOption,
   VBindStyle,
+  VBindStyleOptions,
   VOnStyle,
   VSlotStyle,
 } from "./model.js";
@@ -103,11 +108,23 @@ export function getRuleOptions(
         return { ruleOptions: { "vue/v-slot-style": structuredClone(firstOption) } };
       }
       break;
-    case "vue/v-bind-style":
-      if (isVBindStyle(firstOption)) {
+    case "vue/v-bind-style": {
+      if (!isVBindStyle(firstOption)) break;
+      const secondOption = options[1];
+      if (secondOption === undefined) {
         return { ruleOptions: { "vue/v-bind-style": firstOption } };
       }
+      if (options.length === 2 && isVBindStyleOptions(secondOption)) {
+        return {
+          ruleOptions: { "vue/v-bind-style": [firstOption, structuredClone(secondOption)] },
+        };
+      }
       break;
+    }
+    case "vue/no-restricted-html-elements":
+      return getRestrictedHtmlElementsOptions(options);
+    case "vue/no-restricted-v-on":
+      return getRestrictedVOnOptions(options);
     case "vue/attribute-hyphenation":
       return getAttributeHyphenationOptions(options);
     case "vue/block-lang":
@@ -284,4 +301,15 @@ function isVSlotStyle(value: unknown): value is VSlotStyle {
 
 function isVBindStyle(value: unknown): value is VBindStyle {
   return value === "shorthand" || value === "longform";
+}
+
+function isVBindStyleOptions(value: unknown): value is VBindStyleOptions {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, ["sameNameShorthand"]) &&
+    (value.sameNameShorthand === undefined ||
+      value.sameNameShorthand === "always" ||
+      value.sameNameShorthand === "never" ||
+      value.sameNameShorthand === "ignore")
+  );
 }

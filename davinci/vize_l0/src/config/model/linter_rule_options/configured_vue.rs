@@ -10,6 +10,13 @@ use super::script_unused::{NoUnusedScriptVarsOptions, PreferConstOptions};
 use super::v_on_handler_style::VOnHandlerStyleConfig;
 use crate::String;
 
+mod restricted_entries;
+
+pub use restricted_entries::{
+    RestrictedHtmlElement, RestrictedHtmlElementSpec, RestrictedHtmlElements, RestrictedVOn,
+    RestrictedVOnEntry, RestrictedVOnSpec,
+};
+
 /// `vue/max-props`. Absent or zero means unlimited.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields, rename_all = "camelCase")]
@@ -161,7 +168,7 @@ pub struct ConfiguredVueRuleOptions {
         rename = "vue/no-restricted-html-elements",
         skip_serializing_if = "Option::is_none"
     )]
-    pub no_restricted_html_elements: Option<RestrictedNames>,
+    pub no_restricted_html_elements: Option<RestrictedHtmlElements>,
     /// `vue/no-restricted-props`.
     #[serde(
         rename = "vue/no-restricted-props",
@@ -179,7 +186,7 @@ pub struct ConfiguredVueRuleOptions {
         rename = "vue/no-restricted-v-on",
         skip_serializing_if = "Option::is_none"
     )]
-    pub no_restricted_v_on: Option<RestrictedNames>,
+    pub no_restricted_v_on: Option<RestrictedVOn>,
     /// `vue/no-unsupported-features`.
     #[serde(
         rename = "vue/no-unsupported-features",

@@ -68,12 +68,18 @@ pub(crate) fn emit<L: LinkSink>(
     syntax: &[StyleSyntax<'_>],
     scope_id: Option<ScopeId<'_>>,
     trim: bool,
-    #[cfg(feature = "native-sfc-scss")] scss: bool,
+    #[cfg(feature = "native-sfc-scss")] scss: Option<
+        &mut dyn Iterator<Item = &crate::scss::ScssProducts<'_>>,
+    >,
 ) -> Result<Option<EmitDocument>, NativeSfcCompileError> {
     let mut output = EmitDocument::new(L::RECORDING);
+    #[cfg(feature = "native-sfc-scss")]
+    let enabled = scss.is_some();
+    #[cfg(feature = "native-sfc-scss")]
+    let mut prepared = scss.into_iter().flatten().peekable();
     for original in descriptor.styles() {
         #[cfg(feature = "native-sfc-scss")]
-        if scss
+        if enabled
             && let [lang] = original.attrs()
             && lang.name == "lang"
             && vize_l1::container::lang::style_lang(lang.value)
@@ -81,16 +87,25 @@ pub(crate) fn emit<L: LinkSink>(
         {
             use vize_l1::css::lang::StyleLanguage;
             use vize_l2::lang::scss::ScssProgram;
-            let program = StyleLanguage::Scss
-                .with_original_structure(original.block(), ScssProgram::lower)
-                .map_err(|issue| NativeSfcCompileError::Scss {
-                    container_index: original.container_index(),
-                    issue,
-                })?;
+            let block = original.block();
+            let lowered;
+            let program = if let Some(first) = prepared.next_if(|p| {
+                core::ptr::eq(p.block().root_source(), block.root_source())
+                    && p.block().span() == block.span()
+            }) {
+                first.program()
+            } else {
+                lowered = StyleLanguage::Scss.with_original_structure(block, ScssProgram::lower);
+                lowered.as_ref().map_err(|issue| *issue)
+            }
+            .map_err(|issue| NativeSfcCompileError::Scss {
+                container_index: original.container_index(),
+                issue,
+            })?;
             if !output.is_empty() {
                 output.push_str("\n");
             }
-            vize_l4::targets::scss::append(&mut output, &program);
+            vize_l4::targets::scss::append(&mut output, program);
             continue;
         }
         if original.attrs().iter().any(|attr| attr.name == "scoped") {
@@ -98,6 +113,12 @@ pub(crate) fn emit<L: LinkSink>(
         } else {
             PlainStyle::observe(original)?.append(&mut output, trim);
         }
+    }
+    #[cfg(feature = "native-sfc-scss")]
+    if let Some(unused) = prepared.next() {
+        return Err(NativeSfcCompileError::UnusedPreparedScss {
+            span: unused.block().span(),
+        });
     }
     Ok((!output.is_empty()).then_some(output))
 }

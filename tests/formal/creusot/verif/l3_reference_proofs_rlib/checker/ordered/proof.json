@@ -1,0 +1,15 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_all_StateEdge": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_closure0": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_deref_Vec_StateEdge_Global": {
+        "prover": "alt-ergo",
+        "time": 0.009
+      },
+      "vc_forward": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_ordered": { "prover": "alt-ergo", "time": 0.02 }
+    }
+  }
+}

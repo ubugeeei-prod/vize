@@ -4,6 +4,7 @@ import { vOnEventHyphenationRuleSchema } from "./v-on-event-options.js";
 import { attributeHyphenationSchema } from "./attribute-options.js";
 import { propNameCasingSchema } from "./prop-name-options.js";
 import { componentNameCasingSchema } from "./component-name-options.js";
+import { restrictedHtmlElementsSchema, restrictedVOnSchema } from "./restricted-entry-options.js";
 import { blockLangSchema, maxLinesPerBlockSchema, maxLinesSchema } from "./block-limit-options.js";
 import { collectActiveRule, getActiveRuleDiagnostics } from "./active-rule-collection.js";
 
@@ -176,7 +177,14 @@ function ruleOptionsSchema(ruleName: string): unknown[] | Record<string, unknown
         },
       ];
     case "vue/v-bind-style":
-      return [{ enum: ["shorthand", "longform"] }];
+      return [
+        { enum: ["shorthand", "longform"] },
+        objectSchema({ sameNameShorthand: { enum: ["always", "never", "ignore"] } }),
+      ];
+    case "vue/no-restricted-html-elements":
+      return restrictedHtmlElementsSchema();
+    case "vue/no-restricted-v-on":
+      return restrictedVOnSchema();
     case "vue/require-component-registration":
       return [objectSchema({ globals: stringArraySchema() })];
     case "vue/valid-v-on":

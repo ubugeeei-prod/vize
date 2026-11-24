@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_accepted_regrouping_preserves_edges": {
+        "prover": "alt-ergo",
+        "time": 0.02
+      }
+    }
+  }
+}

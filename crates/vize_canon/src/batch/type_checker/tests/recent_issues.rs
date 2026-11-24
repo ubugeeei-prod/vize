@@ -86,6 +86,7 @@ mod reference_path_module;
 mod release_opaque_slot_hosts;
 mod required_default_props;
 mod scoped_slot_listener_narrowing;
+mod script_consumed_slots;
 mod sequence_prop_expressions;
 mod setup_custom_properties;
 mod setup_type_exports;

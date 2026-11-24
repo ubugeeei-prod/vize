@@ -56,6 +56,34 @@ class MaxTemplateDepthOptions {
 
 typealias RestrictedNames = String | Listing<String>
 
+/// `vue/no-restricted-html-elements`: element names that share a message.
+class RestrictedHtmlElementSpec {
+  element: String | Listing<String>
+  message: String? = null
+}
+
+typealias RestrictedHtmlElements = String | Listing<String | RestrictedHtmlElementSpec>
+
+/// `vue/no-restricted-v-on`: an event with the modifiers a listener must
+/// all carry, the element it is restricted on, and its own message.
+class RestrictedVOnSpec {
+  argument: String
+  modifiers: Listing<String>? = null
+  element: String? = null
+  message: String? = null
+}
+
+typealias RestrictedVOn = String | Listing<String | RestrictedVOnSpec>
+
+/// The second item of the `vue/v-bind-style` list.
+class VBindStyleOptions {
+  sameNameShorthand: "always" | "never" | "ignore" = "ignore"
+}
+
+/// eslint-plugin-vue's list: `[style]` or `[style, new VBindStyleOptions {}]`.
+typealias VBindStyleList =
+  Listing<"shorthand" | "longform" | VBindStyleOptions>(length.isBetween(1, 2))
+
 class CallAfterAwaitSpec {
   `module`: String
   path: (String | Listing<String>)? = null

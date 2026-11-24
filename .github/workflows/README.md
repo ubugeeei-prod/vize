@@ -25,12 +25,12 @@ surfaces and are not routine CI-refactor targets.
 | Group | Area                                                                                   | Workflows |
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 22        |
-| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 37        |
+| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 17        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 43        |
-| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 27        |
+| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 28        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 24        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
@@ -73,45 +73,25 @@ Publication, registry, and installed-consumer evidence. Trusted-publishing workf
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/release/)
 
-| ID    | Workflow                                  | File                                                                                       |
-| ----- | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
-| 02.01 | Corsa package refresh                     | [`corsa-package-refresh.yml`](./corsa-package-refresh.yml)                                 |
-| 02.02 | Public editor installation custody        | [`editor-vite-stub-public.yml`](./editor-vite-stub-public.yml)                             |
-| 02.03 | Empty generic public contract             | [`empty-generic-public-contract.yml`](./empty-generic-public-contract.yml)                 |
-| 02.04 | Public formatter profile acceptance       | [`formatter-profiles-public.yml`](./formatter-profiles-public.yml)                         |
-| 02.05 | JSR package checks                        | [`jsr-package.yml`](./jsr-package.yml)                                                     |
-| 02.06 | Public JSR types and runtime capabilities | [`jsr-public-types.yml`](./jsr-public-types.yml)                                           |
-| 02.07 | Shipped Linux LSP resource comparison     | [`lsp-release-resources.yml`](./lsp-release-resources.yml)                                 |
-| 02.08 | Public unused script vars acceptance      | [`no-unused-script-vars-public.yml`](./no-unused-script-vars-public.yml)                   |
-| 02.09 | Nuxt public runtime dependencies          | [`nuxt-public-dependencies.yml`](./nuxt-public-dependencies.yml)                           |
-| 02.10 | Nuxt and Vite release products            | [`nuxt-vite-release-products.yml`](./nuxt-vite-release-products.yml)                       |
-| 02.11 | Public attribute ignore acceptance        | [`patina-attribute-ignore-public.yml`](./patina-attribute-ignore-public.yml)               |
-| 02.12 | Public strict boolean runtime acceptance  | [`patina-boolean-public.yml`](./patina-boolean-public.yml)                                 |
-| 02.13 | pkg.pr.new                                | [`pkg-pr-new.yml`](./pkg-pr-new.yml)                                                       |
-| 02.14 | Published plain-script import acceptance  | [`plain-script-import-public-acceptance.yml`](./plain-script-import-public-acceptance.yml) |
-| 02.15 | Published JSX child values                | [`public-jsx-child-values.yml`](./public-jsx-child-values.yml)                             |
-| 02.16 | Public native event casing                | [`public-native-events.yml`](./public-native-events.yml)                                   |
-| 02.17 | Public typechecker consumer               | [`public-typechecker-consumer.yml`](./public-typechecker-consumer.yml)                     |
-| 02.18 | Published original ambient template ref   | [`published-ambient-template-ref.yml`](./published-ambient-template-ref.yml)               |
-| 02.19 | Published component ARIA                  | [`published-component-aria.yml`](./published-component-aria.yml)                           |
-| 02.20 | Published computed event names            | [`published-computed-event-names.yml`](./published-computed-event-names.yml)               |
-| 02.21 | Published original constructor 27         | [`published-constructor-original27.yml`](./published-constructor-original27.yml)           |
-| 02.22 | Published fresh project                   | [`published-fresh-project.yml`](./published-fresh-project.yml)                             |
-| 02.23 | Published human reports 11252 and 11253   | [`published-human-reports-11252-11253.yml`](./published-human-reports-11252-11253.yml)     |
-| 02.24 | Published slot instance NoAny             | [`published-slot-instance-noany.yml`](./published-slot-instance-noany.yml)                 |
-| 02.25 | Published slot provider controls          | [`published-slot-provider.yml`](./published-slot-provider.yml)                             |
-| 02.26 | Queue release gates                       | [`queue-release-gates.yml`](./queue-release-gates.yml)                                     |
-| 02.27 | Release build cache                       | [`release-build-cache.yml`](./release-build-cache.yml)                                     |
-| 02.28 | Release cadence                           | [`release-cadence.yml`](./release-cadence.yml)                                             |
-| 02.29 | Release contracts                         | [`release-contracts.yml`](./release-contracts.yml)                                         |
-| 02.30 | Release glibc floor                       | [`release-glibc-floor.yml`](./release-glibc-floor.yml)                                     |
-| 02.31 | Release JSR                               | [`release-jsr.yml`](./release-jsr.yml)                                                     |
-| 02.32 | Prepare npm first-publish handoff         | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)                                 |
-| 02.33 | Release smoke contracts                   | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
-| 02.34 | Release verify                            | [`release-verify.yml`](./release-verify.yml)                                               |
-| 02.35 | Release Zed host                          | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
-| 02.36 | Release                                   | [`release.yml`](./release.yml)                                                             |
-| 02.37 | Published TypeScript provider acceptance  | [`typescript-provider-public.yml`](./typescript-provider-public.yml)                       |
+| ID    | Workflow                                 | File                                                                                       |
+| ----- | ---------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 02.01 | JSR package checks                       | [`jsr-package.yml`](./jsr-package.yml)                                                     |
+| 02.02 | Shipped Linux LSP resource comparison    | [`lsp-release-resources.yml`](./lsp-release-resources.yml)                                 |
+| 02.03 | Nuxt and Vite release products           | [`nuxt-vite-release-products.yml`](./nuxt-vite-release-products.yml)                       |
+| 02.04 | pkg.pr.new                               | [`pkg-pr-new.yml`](./pkg-pr-new.yml)                                                       |
+| 02.05 | Published plain-script import acceptance | [`plain-script-import-public-acceptance.yml`](./plain-script-import-public-acceptance.yml) |
+| 02.06 | Published fresh project                  | [`published-fresh-project.yml`](./published-fresh-project.yml)                             |
+| 02.07 | Queue release gates                      | [`queue-release-gates.yml`](./queue-release-gates.yml)                                     |
+| 02.08 | Release build cache                      | [`release-build-cache.yml`](./release-build-cache.yml)                                     |
+| 02.09 | Release cadence                          | [`release-cadence.yml`](./release-cadence.yml)                                             |
+| 02.10 | Release contracts                        | [`release-contracts.yml`](./release-contracts.yml)                                         |
+| 02.11 | Release glibc floor                      | [`release-glibc-floor.yml`](./release-glibc-floor.yml)                                     |
+| 02.12 | Release JSR                              | [`release-jsr.yml`](./release-jsr.yml)                                                     |
+| 02.13 | Prepare npm first-publish handoff        | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)                                 |
+| 02.14 | Release smoke contracts                  | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
+| 02.15 | Release verify                           | [`release-verify.yml`](./release-verify.yml)                                               |
+| 02.16 | Release Zed host                         | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
+| 02.17 | Release                                  | [`release.yml`](./release.yml)                                                             |
 
 ## 03 Benchmarks and profiling
 
@@ -284,35 +264,36 @@ Davinci migration, Canon ownership, Level lowering, and cross-file graph contrac
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/davinci/)
 
-| ID    | Workflow                                      | File                                                                           |
-| ----- | --------------------------------------------- | ------------------------------------------------------------------------------ |
-| 07.01 | Canon component casing accuracy               | [`canon-component-casing.yml`](./canon-component-casing.yml)                   |
-| 07.02 | Canon ecosystem producer qualification        | [`canon-ecosystem-producer.yml`](./canon-ecosystem-producer.yml)               |
-| 07.03 | Canon helper native baseline                  | [`canon-helper-native-baseline.yml`](./canon-helper-native-baseline.yml)       |
-| 07.04 | Canon instance directive ownership            | [`canon-instance-directives.yml`](./canon-instance-directives.yml)             |
-| 07.05 | Canon slot constructor admission              | [`canon-slot-constructor.yml`](./canon-slot-constructor.yml)                   |
-| 07.06 | Canon slot provider ownership                 | [`canon-slot-provider-any.yml`](./canon-slot-provider-any.yml)                 |
-| 07.07 | Windows project mirror and lint program paths | [`canon-windows-mirror-paths.yml`](./canon-windows-mirror-paths.yml)           |
-| 07.08 | Compact Collections                           | [`compact-collections.yml`](./compact-collections.yml)                         |
-| 07.09 | Cross-file finalization work comparison       | [`cross-file-finalization-compare.yml`](./cross-file-finalization-compare.yml) |
-| 07.10 | Cross-file finalization order                 | [`cross-file-finalization-order.yml`](./cross-file-finalization-order.yml)     |
-| 07.11 | Cross-file dependency profiling               | [`cross-file-finalization.yml`](./cross-file-finalization.yml)                 |
-| 07.12 | Cross-file SFC effect graphs                  | [`cross-file-sfc-effects.yml`](./cross-file-sfc-effects.yml)                   |
-| 07.13 | Cross-file retained import updates            | [`cross-file-source-updates.yml`](./cross-file-source-updates.yml)             |
-| 07.14 | Cross-file WASM effect grammars               | [`cross-file-wasm-effects.yml`](./cross-file-wasm-effects.yml)                 |
-| 07.15 | Canonical Davinci corpus                      | [`davinci-canonical-corpus.yml`](./davinci-canonical-corpus.yml)               |
-| 07.16 | Davinci Creusot                               | [`davinci-creusot.yml`](./davinci-creusot.yml)                                 |
-| 07.17 | Davinci Incremental                           | [`davinci-incremental.yml`](./davinci-incremental.yml)                         |
-| 07.18 | Davinci IR graph queries                      | [`davinci-ir-graph.yml`](./davinci-ir-graph.yml)                               |
-| 07.19 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                       |
-| 07.20 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                           |
-| 07.21 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                             |
-| 07.22 | Davinci authored source frames                | [`davinci-source-frames.yml`](./davinci-source-frames.yml)                     |
-| 07.23 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                 |
-| 07.24 | IR pass composition                           | [`ir-pass-composition.yml`](./ir-pass-composition.yml)                         |
-| 07.25 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)               |
-| 07.26 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                           |
-| 07.27 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)               |
+| ID    | Workflow                                      | File                                                                             |
+| ----- | --------------------------------------------- | -------------------------------------------------------------------------------- |
+| 07.01 | Canon component casing accuracy               | [`canon-component-casing.yml`](./canon-component-casing.yml)                     |
+| 07.02 | Canon ecosystem producer qualification        | [`canon-ecosystem-producer.yml`](./canon-ecosystem-producer.yml)                 |
+| 07.03 | Canon helper native baseline                  | [`canon-helper-native-baseline.yml`](./canon-helper-native-baseline.yml)         |
+| 07.04 | Canon instance directive ownership            | [`canon-instance-directives.yml`](./canon-instance-directives.yml)               |
+| 07.05 | Canon slot constructor admission              | [`canon-slot-constructor.yml`](./canon-slot-constructor.yml)                     |
+| 07.06 | Canon slot provider ownership                 | [`canon-slot-provider-any.yml`](./canon-slot-provider-any.yml)                   |
+| 07.07 | Windows project mirror and lint program paths | [`canon-windows-mirror-paths.yml`](./canon-windows-mirror-paths.yml)             |
+| 07.08 | Compact Collections                           | [`compact-collections.yml`](./compact-collections.yml)                           |
+| 07.09 | Cross-file finalization work comparison       | [`cross-file-finalization-compare.yml`](./cross-file-finalization-compare.yml)   |
+| 07.10 | Cross-file finalization order                 | [`cross-file-finalization-order.yml`](./cross-file-finalization-order.yml)       |
+| 07.11 | Cross-file dependency profiling               | [`cross-file-finalization.yml`](./cross-file-finalization.yml)                   |
+| 07.12 | Cross-file SFC effect graphs                  | [`cross-file-sfc-effects.yml`](./cross-file-sfc-effects.yml)                     |
+| 07.13 | Cross-file retained import updates            | [`cross-file-source-updates.yml`](./cross-file-source-updates.yml)               |
+| 07.14 | Cross-file WASM effect grammars               | [`cross-file-wasm-effects.yml`](./cross-file-wasm-effects.yml)                   |
+| 07.15 | Canonical Davinci corpus                      | [`davinci-canonical-corpus.yml`](./davinci-canonical-corpus.yml)                 |
+| 07.16 | Davinci Creusot                               | [`davinci-creusot.yml`](./davinci-creusot.yml)                                   |
+| 07.17 | Davinci Incremental                           | [`davinci-incremental.yml`](./davinci-incremental.yml)                           |
+| 07.18 | Davinci IR graph queries                      | [`davinci-ir-graph.yml`](./davinci-ir-graph.yml)                                 |
+| 07.19 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                         |
+| 07.20 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                             |
+| 07.21 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                               |
+| 07.22 | Shared toolchain session                      | [`davinci-shared-toolchain-session.yml`](./davinci-shared-toolchain-session.yml) |
+| 07.23 | Davinci authored source frames                | [`davinci-source-frames.yml`](./davinci-source-frames.yml)                       |
+| 07.24 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                   |
+| 07.25 | IR pass composition                           | [`ir-pass-composition.yml`](./ir-pass-composition.yml)                           |
+| 07.26 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)                 |
+| 07.27 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                             |
+| 07.28 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)                 |
 
 ## 08 Builders and framework integrations
 

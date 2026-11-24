@@ -1,0 +1,3 @@
+<!-- 雪🦀 -->
+<style lang="scss">$ink:red;.card{color:$ink;display:none;margin-left:4px;}</style>
+<script setup lang="ts">const count:number=1;let other:number=false;var final:number=3;</script><template><p>{{count}} {{other}} {{final}}</p></template>

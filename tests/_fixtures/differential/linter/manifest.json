@@ -177,6 +177,42 @@
       }
     },
     {
+      "id": "linter/a11y-hidden-focusable-13533",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "a11y-hidden-focusable-13533",
+        "files": [
+          {
+            "path": "Hidden.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "367e3459ab9a3aedbb4f59a9400a3f15d142ffc02916b5954598efa1967cd026"
+          },
+          {
+            "path": "Visible.vue.txt",
+            "role": "negative-control",
+            "sha256": "7c1796f583b3653a17bc0eb8bc5ad3482888cafc64322769a18485a5be775287"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/a11y-listbox-focus-10925",
       "state": "active",
       "targets": [
@@ -20777,6 +20813,42 @@
       }
     },
     {
+      "id": "linter/directive-modifier-selectors-13534",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "directive-modifier-selectors-13534",
+        "files": [
+          {
+            "path": "Case.vue.txt",
+            "role": "third-party-directive-modifier-reproduction",
+            "sha256": "8dc8898e9c7fe9a1f2b2f233771ee4db3c1b0a9b300d5edc10461443b43389fb"
+          },
+          {
+            "path": "selectors.json",
+            "role": "third-party-directive-modifier-reproduction",
+            "sha256": "723f99a8a5156bcd10fd4bb3dc124ac77bed9982a4b4cef47fdd50c8b37eff54"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/duplicate-attribute-dialects",
       "state": "active",
       "targets": [
@@ -21946,6 +22018,36 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/native-jsx-routing-13540",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "native-jsx-routing-13540",
+        "files": [
+          {
+            "path": "BrokenMedia.tsx.txt",
+            "role": "third-party-native-jsx-reproduction",
+            "sha256": "94237bc6b5b8f3c9c29080d41914e68ffbef423549c3ac750a4e89c22f2c901d"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "tsx"
             ],
             "selector": "linter manifest pinned authored sources"
           }

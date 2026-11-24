@@ -5,7 +5,7 @@ use crate::decision::{DecisionAnalysis, DecisionTables, build};
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::Artifact,
-    file::{BindingRef, FileArtifact, FileResolution},
+    file::{BindingRef, FileResolution, L2Ir},
     lang::js::{NativeSelectedSetup, NativeTemplateFile, NativeTemplateView},
     resolution::Occurrence,
 };
@@ -105,7 +105,7 @@ impl<'view, 'owner, 'arena> SelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
         self.setup
     }
     #[must_use]
-    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+    pub fn file(&self) -> &'owner L2Ir<'arena> {
         self.setup.file()
     }
     #[must_use]

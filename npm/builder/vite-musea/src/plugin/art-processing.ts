@@ -28,6 +28,7 @@ export {
 
 export interface ArtProcessingContext {
   root: string;
+  scanRoots?: string[];
   command: string;
   onError?: (message: string) => void;
   onWarn?: (message: string) => void;
@@ -315,6 +316,7 @@ export async function processMuseaArtFile(
       : null;
     const component = resolveArtComponent(provisional, filePath, parsedScriptSetup, {
       root: ctx.root,
+      scanRoots: ctx.scanRoots,
     });
     const inferredTitle =
       component.componentTagName ?? path.basename(filePath).replace(/\.art\.vue$/u, "");

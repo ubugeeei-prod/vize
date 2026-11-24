@@ -3,7 +3,7 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l2::file::{FileArtifact, FileIssueKind, ScriptUnit};
+use vize_l2::file::{FileIssueKind, L2Ir, ScriptUnit};
 use vize_l2::lang::js::{
     CallEvent, DeclaredEvent, FileObserver, FileProducer, InvocationEvent, ProgramInput,
     ProgramScope, StatementEvent,
@@ -69,7 +69,7 @@ fn observe_file<'a>(
     arena: &'a Allocator,
     source: &'a str,
     mode: Mode,
-) -> Result<(FileArtifact<'a>, Observer, bool), &'static str> {
+) -> Result<(L2Ir<'a>, Observer, bool), &'static str> {
     let parsed = Parser::new(arena, source, SourceType::mjs()).parse_observed();
     let admitted = parsed.admitted().ok_or("original stock parser admission")?;
     let block = SourceRoot::new(source)

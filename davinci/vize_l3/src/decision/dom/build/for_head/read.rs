@@ -1,7 +1,7 @@
 //! The actual native For seal already checked selected setup membership.
 //!
 //! This classifies only its retained collection row. It never repeats whole
-//! Program eligibility, resolves names or manufactures an expression context.
+//! L3Ir eligibility, resolves names or manufactures an expression context.
 
 use crate::decision::dom::{
     DomFileForHead,

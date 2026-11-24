@@ -1,6 +1,6 @@
 use super::{Allocator, Kind, State, Test, check, owner, same};
 use crate::expr::ExprRef;
-use crate::file::FileArtifact;
+use crate::file::L2Ir;
 use crate::lang::js::NativeTemplateOwner;
 use crate::op::{InterpolationOp, Op};
 
@@ -17,7 +17,7 @@ fn complete(original: &mut NativeTemplateOwner<'_>) -> Test {
     walk.complete().map_err(|_| "complete root")
 }
 
-fn joined(file: &FileArtifact<'_>, index: usize, actual: &InterpolationOp<'_>) -> Test {
+fn joined(file: &L2Ir<'_>, index: usize, actual: &InterpolationOp<'_>) -> Test {
     let record = file
         .native_interpolations()
         .get(index)

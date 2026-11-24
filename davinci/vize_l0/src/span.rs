@@ -113,6 +113,9 @@ fn floor_char_boundary(source: &str, mut index: usize) -> usize {
     index
 }
 
+#[cfg(kani)]
+mod proofs;
+
 #[cfg(test)]
 mod tests {
     use core::hash::{Hash, Hasher};

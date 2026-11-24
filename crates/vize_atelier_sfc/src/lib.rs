@@ -151,4 +151,4 @@ mod template_tests;
 #[cfg(feature = "original-scss-products")]
 pub mod scss;
 #[cfg(feature = "native-sfc-scss")]
-pub use native::compile_native_sfc_with_scss;
+pub use native::{NativeScssSession, compile_native_sfc_with_scss};

@@ -1,6 +1,6 @@
 //! Original selected-template view and retained outer-frame names.
 
-use super::{DescriptorObservation, Selection};
+use super::{L1Ir, Selection};
 use vize_l0::{SourceBlock, SourceRoot, Span};
 
 #[derive(Debug)]
@@ -18,7 +18,7 @@ pub(super) struct TemplateSelection<'a> {
 /// Checked original ordinary HTML template content.
 #[derive(Debug, Clone, Copy)]
 pub struct TemplateView<'o, 'a> {
-    pub(super) owner: &'o DescriptorObservation<'a>,
+    pub(super) owner: &'o L1Ir<'a>,
     pub(super) selected: &'o TemplateSelection<'a>,
 }
 
@@ -152,8 +152,8 @@ pub enum TemplateFrameNameRefusal {
 /// ```
 /// Template views have no public constructor:
 /// ```compile_fail
-/// use vize_l1::container::vue::{DescriptorObservation, TemplateView};
-/// fn forge(owner: &DescriptorObservation<'_>) {
+/// use vize_l1::container::vue::{L1Ir, TemplateView};
+/// fn forge(owner: &L1Ir<'_>) {
 ///     let _ = TemplateView { owner, selected: todo!() };
 /// }
 /// ```
@@ -164,7 +164,7 @@ pub enum TemplateFrameNameRefusal {
 /// requires_clone::<TemplateFrameNames<'static, 'static>>();
 /// ```
 pub struct TemplateFrameNames<'o, 'a> {
-    owner: &'o DescriptorObservation<'a>,
+    owner: &'o L1Ir<'a>,
     selected: &'o TemplateSelection<'a>,
     root: SourceRoot<'a>,
     names: &'o TemplateNamePair,

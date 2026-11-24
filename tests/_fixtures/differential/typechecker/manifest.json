@@ -15516,7 +15516,7 @@
           "sha256": "0b12fcd133cc545f3fa2b3502f7067b81813e1d597f15407e08290414bc39cf4"
         },
         {
-          "file": "src/日本語🍣 quoted'\"directory/lib/greet/index.ts",
+          "file": "src/\u65e5\u672c\u8a9e\ud83c\udf63 quoted'\"directory/lib/greet/index.ts",
           "path": "escaped-import-literals-10763/greet.ts.txt",
           "sha256": "e3f0a1233aef0813dca919b61cf564e1af873e12ff1d3186541fd033864a4a93"
         }
@@ -15569,7 +15569,7 @@
           "sha256": "464423219ab43a695eeb8d4674ffdbc7c36a23a856242ee53df67aab439e6b29"
         },
         {
-          "file": "src/日本語🍣 quoted'\"directory/lib/greet/index.ts",
+          "file": "src/\u65e5\u672c\u8a9e\ud83c\udf63 quoted'\"directory/lib/greet/index.ts",
           "path": "escaped-import-literals-10763/greet.ts.txt",
           "sha256": "e3f0a1233aef0813dca919b61cf564e1af873e12ff1d3186541fd033864a4a93"
         }
@@ -69740,6 +69740,51 @@
       }
     },
     {
+      "id": "typechecker/script-consumed-slots-13578/script-consumer",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::script_consumed_slots::script_consumed_slots_keep_public_inference_open",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "script-consumed-slots-13578/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "script-consumed-slots-13578/Child.vue.txt",
+          "sha256": "189634abdcc7caf930c70c4ca28c604e5aa10516415ab14d7800993cff27a0fa"
+        },
+        {
+          "file": "src/Parent.vue",
+          "path": "script-consumed-slots-13578/Parent.vue.txt",
+          "sha256": "e642967db147aaba48d02f1966ef61725237e29ee2c37a9e4d1eec66764b6bf7"
+        },
+        {
+          "file": "cases.json",
+          "path": "script-consumed-slots-13578/cases.json",
+          "sha256": "a344eb85d680e96cc419506a240f080f49579dd9d9285219d1d6d26a26bb3677"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::script_consumed_slots::script_consumed_slots_keep_public_inference_open; script-consumed slots remain open while explicit contracts and inferred payloads stay checked. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/setup-enum-computed-keys-12998/reported-project",
       "state": "active",
       "targets": [
@@ -70115,6 +70160,51 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::tsx_script_syntax::standard_tsgo_checks_ts_only_generic_arrows_and_assertions; input-only registration, source/native/public qualification remains independent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/typed-use-slots-13578/inferred-dollar-slots",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::script_consumed_slots::inferred_dollar_slots_keep_script_use_slots_exact",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "typed-use-slots-13578/tsconfig.json.txt",
+          "sha256": "46ee110dd3c8aa7e9ccfb66c7e966636da493a60685705bd477dffb86c5e0edb"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "typed-use-slots-13578/Child.vue.txt",
+          "sha256": "f773fac5ce01005399e66d23c9c032272b2d1d6915632214ae32eea208b09cde"
+        },
+        {
+          "file": "src/Parent.vue",
+          "path": "typed-use-slots-13578/Parent.vue.txt",
+          "sha256": "e642967db147aaba48d02f1966ef61725237e29ee2c37a9e4d1eec66764b6bf7"
+        },
+        {
+          "file": "cases.json",
+          "path": "typed-use-slots-13578/cases.json",
+          "sha256": "a09d37fc25f46cc68523deb479938e0c814544248de4ae68ce9e6d6d21ebb21f"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::script_consumed_slots::inferred_dollar_slots_keep_script_use_slots_exact; with inferTemplateDollarSlots, useSlots() stays the exact template map and the public slot map stays closed. Input-only registration; no native parity claim."
           }
         ]
       }

@@ -1,7 +1,7 @@
 //! Genuine file-owned DOM entry: literals need no framework binding access.
 
 use vize_l0::id::NodeId;
-use vize_l2::{expr::ExprRef, file::FileArtifact, resolution::Occurrence};
+use vize_l2::{expr::ExprRef, file::L2Ir, resolution::Occurrence};
 use vize_l3::decision::{FileAnalysis, dom::DomFacts, template::TemplateDomAnalysis};
 
 use super::expression::ExpressionWriter;
@@ -74,7 +74,7 @@ pub fn emit_template<L: LinkSink>(
 // Constructed only by the two typed owner entries above. Callers cannot pair
 // an arbitrary File with DOM rows or discard the selected completion wrapper.
 struct FileExpressions<'s, 'owner, 'arena> {
-    file: &'owner FileArtifact<'arena>,
+    file: &'owner L2Ir<'arena>,
     facts: Option<&'s DomFacts<'owner, 'arena>>,
 }
 

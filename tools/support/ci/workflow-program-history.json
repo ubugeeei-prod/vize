@@ -1,19 +1,4 @@
 {
-  "public-typechecker-consumer": {
-    "before": "0ae41e50f9a693bab2d5d44c0193ced6d34d4730c20b6db241f84691dc3931ef",
-    "workflow": "e12c1bbd7378672b1980ee1777b2eb8272b76d3ee07184eb6046d70d47994732",
-    "programs": [
-      ".github/scripts/workflows/public-typechecker-consumer/install-a-fresh-public-0-602-consumer.sh",
-      ".github/scripts/workflows/public-typechecker-consumer/package-only-owned-data.sh",
-      ".github/scripts/workflows/public-typechecker-consumer/package-only-owned-evidence-after-capture-or-refusal.sh",
-      ".github/scripts/workflows/public-typechecker-consumer/package-only-owned-evidence.sh",
-      ".github/scripts/workflows/public-typechecker-consumer/package-owned-data-after-success-or-refusal.sh",
-      ".github/scripts/workflows/public-typechecker-consumer/provision-the-reported-npm-version-separately.sh",
-      ".github/scripts/workflows/public-typechecker-consumer/run-complete-public-mutation-and-repair-packets.sh",
-      ".github/scripts/workflows/public-typechecker-consumer/verify-the-published-standalone-archive.sh"
-    ],
-    "closure": "3d086ec3bec0fb3d666a07e7ac685cf5779b8c22699c5165634b671050973054"
-  },
   "content-mapper-conformance": {
     "before": "af3a0c9c81dd1a48f790ea66feced0945e59278eeb8f063a67b83cab62ef4cc1",
     "workflow": "49691173b9e7115b74cb72915b0ebb1b335a17bdab96207cd30bf5b841c3fdae",
@@ -92,25 +77,6 @@
       ".github/scripts/workflows/native-beta-diagnostic-dto/keep-strict-known-dto-unknown-fields-source-ownership-and-both-envelope.sh"
     ],
     "closure": "e052895acdf8d6d4cad805ff43c69d40e8793cd36bd80b81fb13738266e9d621"
-  },
-  "public-native-events": {
-    "before": "e8d2be49d842bed8100b42de98343b94268b6fa395758fef8b88b52473135ada",
-    "workflow": "ff4649c539ac653126f123aa6d40ec7afbb446f9ea587e84a7fd09731b2babb2",
-    "programs": [
-      ".github/scripts/workflows/public-native-events/compare-every-complete-vnode-packet-to-the-frozen-official-oracle.sh",
-      ".github/scripts/workflows/public-native-events/install-only-exact-public-packages-in-a-fresh-consumer.sh",
-      ".github/scripts/workflows/public-native-events/prove-tag-identity-and-source-inclusion.sh",
-      ".github/scripts/workflows/public-native-events/prove-tag-identity-and-source-inclusion.ts",
-      ".github/scripts/workflows/public-native-events/prove-the-candidate-contains-the-required-icon-source.sh",
-      ".github/scripts/workflows/public-native-events/prove-the-candidate-contains-the-required-icon-source.ts",
-      ".github/scripts/workflows/public-native-events/prove-the-immutable-tag-contains-the-merged-public-instance-change.sh",
-      ".github/scripts/workflows/public-native-events/prove-the-immutable-tag-contains-the-merged-public-instance-change.ts",
-      ".github/scripts/workflows/public-native-events/qualify-fresh-public-custom-properties-and-authored-directive-ownership.sh",
-      ".github/scripts/workflows/public-native-events/validate-the-explicit-public-candidate.sh",
-      ".github/scripts/workflows/public-native-events/validate-the-explicit-public-candidate.ts",
-      ".github/scripts/workflows/shared/files.ts"
-    ],
-    "closure": "920aeda106e9a7dd4c39cc260a7f78471865083e9ac6fe135cd5096858c38242"
   },
   "release-contracts": {
     "before": "09b8a95b6712a565f5ce782707bf0409189aabf30127b968efcdfce76eac47c3",

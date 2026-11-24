@@ -29,7 +29,7 @@ impl<'a> StyleBindingReferences<'a> {
         allocator: &'a Allocator,
         source: &'a str,
         options: vize_croquis::sfc::SfcParseOptions,
-        visit: impl FnMut(OriginalStyleBindings<'a>),
+        mut visit: impl FnMut(OriginalStyleBindings<'a>),
     ) -> Result<(vize_croquis::sfc::SfcDescriptor<'a>, Self), StyleBindingInputError> {
         // The compiler already has a validated fast parser for a lone template.
         // A nested SVG style or an import containing "<style" is part of that
@@ -62,23 +62,21 @@ impl<'a> StyleBindingReferences<'a> {
         {
             return Err(StyleBindingInputError::StyleSelection);
         }
-        let mut facts = Self::default();
-        let mut visit = visit;
+        let mut references = Self::default();
         for block in descriptor.styles.iter().filter_map(original) {
             let style = OriginalStyleBindings::from_block(allocator, block);
-            facts.extend(&style);
-            visit(style);
+            references.observe_style(style, &mut visit);
         }
         // A multi-block file may also start and end with template spelling.
         descriptor.css_vars.clear();
         descriptor.css_vars.extend(
-            facts
+            references
                 .expressions
                 .iter()
                 .copied()
                 .map(std::borrow::Cow::Borrowed),
         );
-        Ok((descriptor, facts))
+        Ok((descriptor, references))
     }
 
     /// Lower the original file's styles in descriptor order and expose each
@@ -96,10 +94,20 @@ impl<'a> StyleBindingReferences<'a> {
         let mut result = Self::default();
         for original in styles {
             let style = OriginalStyleBindings::read(allocator, original);
-            result.extend(&style);
-            visit(style);
+            result.observe_style(style, &mut visit);
         }
         Some(result)
+    }
+
+    fn observe_style(
+        &mut self,
+        style: OriginalStyleBindings<'a>,
+        visit: &mut impl FnMut(OriginalStyleBindings<'a>),
+    ) {
+        if style.has_calls() {
+            self.extend(&style);
+        }
+        visit(style);
     }
 
     fn extend(&mut self, style: &OriginalStyleBindings<'a>) {

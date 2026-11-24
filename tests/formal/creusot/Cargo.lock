@@ -79,6 +79,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "l3_reference_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.191"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -190,6 +197,13 @@ dependencies = [
 
 [[package]]
 name = "vize_l3_lattice_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
+name = "vize_patina_content_model_proofs"
 version = "0.0.0"
 dependencies = [
  "creusot-std",

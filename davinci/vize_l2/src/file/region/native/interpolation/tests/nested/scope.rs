@@ -1,9 +1,9 @@
 use super::{Allocator, State, Test, check, complete, joined, owner, same};
-use crate::file::{FileArtifact, ScopeId};
+use crate::file::{L2Ir, ScopeId};
 use crate::op::Op;
 use crate::resolution::BindingId;
 
-fn reference(file: &FileArtifact<'_>, index: usize) -> Result<(ScopeId, BindingId), &'static str> {
+fn reference(file: &L2Ir<'_>, index: usize) -> Result<(ScopeId, BindingId), &'static str> {
     let record = file
         .native_interpolations()
         .get(index)

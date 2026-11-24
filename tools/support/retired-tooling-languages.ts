@@ -16,6 +16,16 @@ export const styleHeaderValidation = {
   kernel: "crates/vize_maestro/src/source_project/style_format/header.rs",
   harness: "crates/vize_maestro/src/source_project/style_format/kani.rs",
 } as const;
+const compilerStringLiterals = {
+  theorem: "tests/formal/string-literal/Emission.lean",
+  kernel: "davinci/vize_l0/src/js_string.rs",
+  harness: "davinci/vize_l0/src/js_string_kani.rs",
+} as const;
+const positionIndex = {
+  theorem: "tests/formal/position-index/Intervals.lean",
+  kernel: "davinci/vize_l2/src/query/position/index/intervals.rs",
+  harness: "davinci/vize_l2/src/query/position/index/intervals/tests.rs",
+} as const;
 export const templateLabelRanking = {
   theorem: "tests/formal/template-lint/Selection.lean",
   kernel: "crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs",
@@ -29,6 +39,8 @@ export const templateSpanProjection = {
 export const rustProofReferences = [
   sourceMapCoordinates,
   styleHeaderValidation,
+  positionIndex,
+  compilerStringLiterals,
   templateLabelRanking,
   templateSpanProjection,
 ] as const;

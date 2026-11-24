@@ -62,3 +62,11 @@ export function resolveBuildStartSsr(
   if (name === "client" || name === "browser") return false;
   return !!fallback?.build?.ssr;
 }
+
+/** The environment a build starts for; Vite 7 build hooks name none. */
+export function resolveBuildStartEnvironment(
+  context: { environment?: { name?: string } },
+  fallback?: { build?: { ssr?: unknown } },
+): string {
+  return context.environment?.name ?? (resolveBuildStartSsr(context, fallback) ? "ssr" : "client");
+}

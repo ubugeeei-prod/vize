@@ -19,24 +19,38 @@
  * Each key keeps both its resolved logical path and physical real path. This
  * preserves constant-time lookup when a workspace link is reported from the
  * opposite side by Vite or its watcher.
+ *
+ * Those identities are filesystem facts. A cache built on its own asks the
+ * filesystem for each of them every time. The plugin's caches share a
+ * `FilesystemEpoch` instead, so the dependencies that most components have in
+ * common are resolved once rather than once per component (#13557).
  */
 
 import type { CompiledModule } from "../types.ts";
 import { normalizeCachePath } from "./cache-path.ts";
+import type { FilesystemEpoch } from "./filesystem-epoch.ts";
 import { filesystemPathIdentities } from "./path-identity.ts";
 
 export class CompiledModuleCache extends Map<string, CompiledModule> {
+  readonly #evicted = new Set<string>();
   readonly #ownersByDependency = new Map<string, Set<string>>();
   readonly #dependenciesByOwner = new Map<string, Set<string>>();
   readonly #ownersByFileIdentity = new Map<string, Set<string>>();
   readonly #fileIdentitiesByOwner = new Map<string, Set<string>>();
+  readonly #epoch: FilesystemEpoch | undefined;
 
   /**
    * Deliberately takes no entries: `Map`'s constructor would call the
    * overridden `set` from inside `super()`, before `#ownersByDependency` exists.
    */
-  constructor() {
+  constructor(epoch?: FilesystemEpoch) {
     super();
+    this.#epoch = epoch;
+  }
+
+  /** Every filesystem identity of `file`, as this cache's index observes them. */
+  pathIdentities(file: string): readonly string[] {
+    return this.#epoch ? this.#epoch.pathIdentities(file) : filesystemPathIdentities(file);
   }
 
   override get(file: string): CompiledModule | undefined {
@@ -51,9 +65,11 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
     file = normalizeCachePath(file);
     this.#unindex(file);
     super.set(file, compiled);
+    // Before any identity is asked for: a new project revision ends the epoch.
+    if (compiled.typeProject) this.#epoch?.observeTypeProject(compiled.typeProject);
     const dependencies = new Set<string>();
     for (const dependency of compiled.dependencies ?? []) {
-      for (const key of filesystemPathIdentities(dependency)) {
+      for (const key of this.pathIdentities(dependency)) {
         dependencies.add(key);
         const owners = this.#ownersByDependency.get(key);
         if (owners) {
@@ -64,7 +80,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
       }
     }
     this.#dependenciesByOwner.set(file, dependencies);
-    const fileIdentities = new Set(filesystemPathIdentities(file));
+    const fileIdentities = new Set(this.pathIdentities(file));
     for (const identity of fileIdentities) {
       const owners = this.#ownersByFileIdentity.get(identity);
       if (owners) owners.add(file);
@@ -81,6 +97,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
   }
 
   override clear(): void {
+    this.#evicted.clear();
     this.#ownersByDependency.clear();
     this.#dependenciesByOwner.clear();
     this.#ownersByFileIdentity.clear();
@@ -94,13 +111,24 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
    * The next `set` reconciles that retained snapshot with the new compilation.
    */
   evict(file: string): boolean {
-    return super.delete(normalizeCachePath(file));
+    file = normalizeCachePath(file);
+    if (!super.delete(file)) return false;
+    this.#evicted.add(file);
+    return true;
+  }
+
+  /**
+   * Evicted files nothing has compiled again, oldest first. Their owners will
+   * be requested again, so the next compile can take them in the same batch.
+   */
+  evictedFiles(): IterableIterator<string> {
+    return this.#evicted.values();
   }
 
   /** The cached SFCs that `src`-import `resolvedDependency`. */
   ownersOf(resolvedDependency: string): readonly string[] {
     const owners = new Set<string>();
-    for (const identity of filesystemPathIdentities(resolvedDependency)) {
+    for (const identity of this.pathIdentities(resolvedDependency)) {
       for (const owner of this.#ownersByDependency.get(identity) ?? []) owners.add(owner);
     }
     return [...owners];
@@ -109,7 +137,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
   /** Cached logical owner paths that name the same physical SFC as `file`. */
   ownersOfFile(file: string): readonly string[] {
     const owners = new Set<string>();
-    for (const identity of filesystemPathIdentities(file)) {
+    for (const identity of this.pathIdentities(file)) {
       for (const owner of this.#ownersByFileIdentity.get(identity) ?? []) owners.add(owner);
     }
     return [...owners];
@@ -117,6 +145,8 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
 
   #unindex(file: string): void {
     file = normalizeCachePath(file);
+    // Compiled again or removed: either way it no longer awaits a recompile.
+    this.#evicted.delete(file);
     for (const dependency of this.#dependenciesByOwner.get(file) ?? []) {
       const owners = this.#ownersByDependency.get(dependency);
       if (!owners) continue;

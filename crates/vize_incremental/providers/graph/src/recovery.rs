@@ -4,6 +4,9 @@ use super::{
     source_sites::project, template_graph,
 };
 
+mod positions;
+pub use positions::{RecoveryMatch, RecoveryPositionError, RecoveryRecord};
+
 /// The native template lowering either supplies a complete graph or describes
 /// the source constructs that prevented its construction.
 pub enum TemplateGraphObservation<'db> {

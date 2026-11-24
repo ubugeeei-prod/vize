@@ -29,7 +29,10 @@ void test(
     );
     fs.writeFileSync(
       path.join(root, "probe-lint.config.mjs"),
-      'export default { vue: { linter: { preset: "incremental", rules: { "vue/sort-keys": "off" } } } };\n',
+      'process.env.VIZE_PUBLIC_CONFIG_ENV = "after";\n' +
+        'Object.assign(process.env, { VIZE_PUBLIC_CONFIG_ENV: "assigned" });\n' +
+        'if (process.env.VIZE_PUBLIC_CONFIG_ENV !== "assigned") throw new Error("environment assignment failed");\n' +
+        'export default { vue: { linter: { preset: "incremental", rules: { "vue/sort-keys": "off" } } } };\n',
     );
     fs.writeFileSync(
       path.join(root, "App.vue"),
@@ -46,7 +49,12 @@ void test(
         "stylish",
         "App.vue",
       ],
-      { cwd: root, encoding: "utf8", timeout: 30_000 },
+      {
+        cwd: root,
+        env: { ...process.env, VIZE_PUBLIC_CONFIG_ENV: "before", VIZE_CONFIG_CACHE: "1" },
+        encoding: "utf8",
+        timeout: 30_000,
+      },
     );
     assert.equal(result.error, undefined);
     assert.equal(result.signal, null);

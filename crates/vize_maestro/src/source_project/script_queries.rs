@@ -8,7 +8,8 @@ use super::{SnapshotRefusal, SourceSnapshot};
 use crate::server::ServerState;
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::DocumentSymbol;
-use vize_atelier_sfc::SfcScriptBlock;
+use vize_atelier_sfc::{SfcDescriptor, SfcScriptBlock};
+use vize_incremental::SharedDescriptor;
 use vize_l0::{Allocator, SourceBlock, SourceFrameError, SourceRoot, Span, line_index::LineIndex};
 use vize_l1::embed::authored_program::AuthoredProgram;
 
@@ -68,9 +69,37 @@ impl SourceSnapshot {
         Ok(result)
     }
 
+    fn with_current_script_descriptor<T>(
+        &self,
+        state: &ServerState,
+        read: impl FnOnce(Option<SharedDescriptor>) -> Result<T, ScriptQueryRefusal>,
+    ) -> Result<T, ScriptQueryRefusal> {
+        self.with_current(&state.documents, |_| {
+            if self.language_id() != "vue" || crate::utils::is_jsx_path(self.uri().path()) {
+                return Err(ScriptQueryRefusal::Language);
+            }
+            read(state.sfc_descriptor(self.uri(), self.source()))
+        })
+        .map_err(ScriptQueryRefusal::Host)?
+    }
+
     fn read_script_blocks(
         &self,
         state: &ServerState,
+        read: impl FnMut(
+            &mut ScriptQueryProducts,
+            SourceRoot<'_>,
+            &'static str,
+            &SfcScriptBlock<'_>,
+        ) -> Result<(), ScriptQueryRefusal>,
+    ) -> Result<Option<ScriptQueryProducts>, ScriptQueryRefusal> {
+        let parsed = self.with_current_script_descriptor(state, Ok)?;
+        self.read_descriptor_blocks(parsed.as_deref(), read)
+    }
+
+    fn read_descriptor_blocks(
+        &self,
+        descriptor: Option<&SfcDescriptor<'_>>,
         mut read: impl FnMut(
             &mut ScriptQueryProducts,
             SourceRoot<'_>,
@@ -78,15 +107,7 @@ impl SourceSnapshot {
             &SfcScriptBlock<'_>,
         ) -> Result<(), ScriptQueryRefusal>,
     ) -> Result<Option<ScriptQueryProducts>, ScriptQueryRefusal> {
-        let parsed = self
-            .with_current(&state.documents, |_| {
-                if self.language_id() != "vue" || crate::utils::is_jsx_path(self.uri().path()) {
-                    return Err(ScriptQueryRefusal::Language);
-                }
-                Ok(state.sfc_descriptor(self.uri(), self.source()))
-            })
-            .map_err(ScriptQueryRefusal::Host)??;
-        Ok(if let Some(descriptor) = parsed.as_deref() {
+        Ok(if let Some(descriptor) = descriptor {
             let root = SourceRoot::new(self.source()).map_err(ScriptQueryRefusal::Frame)?;
             let mut products = ScriptQueryProducts::default();
             for (name, block) in [
@@ -154,7 +175,7 @@ impl ScriptQueryProducts {
                 let symbol = Self::script_symbol(name, block, &LineIndex::new(prefix), &syntax);
                 #[cfg(feature = "experimental-checker-script-queries")]
                 if additional_profile.is_some() {
-                    self.read_checker_specifiers(&syntax);
+                    self.read_selected_specifiers(&syntax);
                 } else {
                     self.read_specifiers(&syntax);
                 }
@@ -166,13 +187,15 @@ impl ScriptQueryProducts {
                 symbol
             };
             if let Some(profile) = additional_profile.filter(|profile| *profile != editor_type) {
-                // OXC reset keeps only its last chunk. Reserve the observed size
-                // for the other grammar if that chunk could not hold the first AST.
+                // OXC reset keeps only its last chunk. When that chunk cannot hold
+                // the first AST, grow a fresh arena as a separate read would. The
+                // other grammar can need a few more bytes, so reserving the observed
+                // size overflowed into a doubled chunk and raised the peak.
                 let used = arena.allocated_bytes();
                 arena.reset();
                 if arena.as_oxc().capacity() < used {
                     drop(arena);
-                    arena = Allocator::with_capacity(used);
+                    arena = Allocator::default();
                 }
                 observe(&AuthoredProgram::parse(&arena, frame, profile))?;
             }
@@ -201,3 +224,5 @@ mod checker;
 
 #[cfg(feature = "experimental-script-tools")]
 pub(super) mod tools;
+
+mod native;

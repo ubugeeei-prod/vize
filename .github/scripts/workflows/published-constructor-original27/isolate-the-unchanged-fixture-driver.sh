@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-[[ "$(git rev-parse HEAD)" == "$GITHUB_SHA" ]]
-[[ "$(git -C .original27-fixtures rev-parse HEAD)" == "a8ce1ec166a53b380e74dbf7189cc8578c80c676" ]]
-git -C .original27-fixtures diff --exit-code
-mv .original27-fixtures "$RUNNER_TEMP/original27-fixtures"

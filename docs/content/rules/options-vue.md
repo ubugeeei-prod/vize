@@ -114,9 +114,10 @@ Use this option when a project wants component tags in templates to be consisten
 kebab-case. By default, it checks registered component names from `<script setup>` declarations
 and direct `components` registrations. Unregistered tags and scriptless templates stay clear.
 Use `registeredComponentsOnly: false` to check all custom tags, or `globals: ["PrimaryButton"]`
-for explicitly registered global components. Global names are literal strings; regex patterns and
-the ESLint `ignores` option remain unsupported. Native HTML, SVG, MathML, `slot` and dynamic
-`component` tags are skipped.
+for explicitly registered global components. Global names are literal strings. `ignores` leaves a
+tag alone in either scope: an entry is the exact authored tag name, such as `"primitive"`, or a
+`/pattern/flags` value in Rust regex syntax, such as `"/^Tres/"`. Entries are unique. Native HTML,
+SVG, MathML, `slot` and dynamic `component` tags are skipped.
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -344,6 +345,14 @@ Use this option to choose the authored binding-directive spelling. The default `
 requires `:class`; `longform` requires `v-bind:class`. Both modes preserve arguments, modifiers,
 and values when applying a fix. Longform also rewrites `.title` to `v-bind:title.prop`, retaining
 explicit modifiers and their order. Object syntax such as `v-bind="attrs"` is left unchanged.
+
+eslint-plugin-vue's list form adds `sameNameShorthand`, as in
+`["shorthand", { sameNameShorthand: "always" }]`. `always` requires the Vue 3.4 shorthand `:title`
+where `:title="title"` is written, `never` requires the written value, and `ignore`, the default,
+checks neither. A binding is same-name when its value is the identifier the shorthand reads: the
+camelized argument, as in `:aria-label="ariaLabel"`. Modifiers and the `.title` form are kept, and
+a dynamic argument is never same-name. With `always` or `never`, `vue/prefer-props-shorthand`
+stays quiet while this rule runs, so a binding gets one report and one fix.
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";

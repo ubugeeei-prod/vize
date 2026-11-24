@@ -81,9 +81,9 @@ export interface VizeNuxtCompilerOptions {
   template?: VizeOptions["template"];
   /** Root directory to scan for .vue files. */
   root?: string;
-  /** Glob patterns to scan for .vue files during pre-compilation. */
+  /** Opt-in startup pre-compilation globs. Unset, each pass compiles what its module graph imports. */
   scanPatterns?: string[];
-  /** Maximum number of Vue files to compile in a single native batch. */
+  /** Maximum number of Vue files to compile in a single native batch. @default 128 */
   precompileBatchSize?: number;
   /** Glob patterns to ignore during pre-compilation. */
   ignorePatterns?: string[];

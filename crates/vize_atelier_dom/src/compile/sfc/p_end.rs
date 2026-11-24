@@ -4,9 +4,12 @@
 //! the SFC fast path.
 
 pub(super) fn source_has_invalid_p_end_tag(source: &str) -> bool {
+    if !source.contains("</p") && !source.contains("</P") {
+        return false;
+    }
     let bytes = source.as_bytes();
     let mut index = 0;
-    let mut open_p = 0i32;
+    let mut open_p = false;
     while let Some(start) = find_byte(bytes, index, b'<') {
         let name_start = start + 1;
         let Some(&first) = bytes.get(name_start) else {
@@ -24,20 +27,13 @@ pub(super) fn source_has_invalid_p_end_tag(source: &str) -> bool {
             continue;
         }
         let name = source.get(raw_start..name_end).unwrap_or_default();
-        if closing {
-            if name.eq_ignore_ascii_case("p") {
-                if open_p == 0 {
-                    return true;
-                }
-                open_p -= 1;
+        if name.eq_ignore_ascii_case("p") {
+            if closing && !open_p {
+                return true;
             }
-        } else if name.eq_ignore_ascii_case("p") && open_p == 0 {
-            open_p = 1;
-        } else if closes_open_p(name) && open_p > 0 {
-            open_p -= 1;
-            if name.eq_ignore_ascii_case("p") {
-                open_p += 1;
-            }
+            open_p = !closing;
+        } else if open_p && !closing && closes_open_p(name) {
+            open_p = false;
         }
         index = name_end;
     }
@@ -66,7 +62,6 @@ fn closes_open_p(name: &str) -> bool {
         "main",
         "nav",
         "ol",
-        "p",
         "pre",
         "section",
         "table",
@@ -99,5 +94,7 @@ mod tests {
     fn a_block_inside_p_is_an_invalid_end_tag() {
         assert!(source_has_invalid_p_end_tag("<p>Intro <div>x</div></p>"));
         assert!(!source_has_invalid_p_end_tag("<p>Intro</p><div>x</div>"));
+        assert!(source_has_invalid_p_end_tag("<P>intro<SECTION></P>"));
+        assert!(!source_has_invalid_p_end_tag("<p>first<p>second</P>"));
     }
 }

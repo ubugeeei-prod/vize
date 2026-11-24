@@ -1,5 +1,5 @@
 use vize_l0::{Allocator, Span, Vec};
-use vize_l3::op::{OpId, Program};
+use vize_l3::op::{L3Ir, OpId};
 
 pub mod dump;
 
@@ -91,7 +91,7 @@ impl<'a> PartitionFacts<'a> {
     /// export is current. The P3-3 contract requires `None` after every
     /// optional pass.
     #[must_use]
-    pub fn stale(&self, program: &Program<'_>) -> Option<usize> {
+    pub fn stale(&self, program: &L3Ir<'_>) -> Option<usize> {
         let mismatch = self
             .ops
             .iter()

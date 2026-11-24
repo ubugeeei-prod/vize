@@ -22,7 +22,7 @@ macro_rules! equal {
     };
 }
 
-use super::{FileArtifact, Observed};
+use super::{L2Ir, Observed};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, String, cstr};
@@ -40,7 +40,7 @@ mod typescript;
 
 fn checked<'o, 'f, 'a>(
     original: &'o Observed<'a>,
-    file: &'f FileArtifact<'a>,
+    file: &'f L2Ir<'a>,
 ) -> Result<Result<VueSetup<'f, 'o, 'o, 'a>, SetupIssue>, &'static str> {
     Ok(VueSetup::checked(
         file,

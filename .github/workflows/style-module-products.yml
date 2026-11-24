@@ -4,7 +4,6 @@ on:
     paths:
       - ".github/workflows/style-module-products.yml"
       - ".github/scripts/workflows/style-module-products/**"
-      - tools/benchmarks/crates/davinci_harness/src/paired.rs
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/container/lang.rs"
       - "davinci/vize_l1/src/css.rs"
@@ -52,6 +51,7 @@ on:
       - tests/formal/source-map/**
       - crates/vize_maestro/src/ide/diagnostics/corsa/ambient_project/positions.rs
       - tests/formal/style-format/**
+      - crates/vize_atelier_sfc/tests/fixtures/compile-history/cases.json
       - crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json
       - crates/vize_atelier_sfc/tests/scss_products.rs
       - crates/vize_atelier_sfc/tests/observed_scss/**

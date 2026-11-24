@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_an_accepted_scheduled_edge_points_forward": {
+        "prover": "alt-ergo",
+        "time": 0.014
+      }
+    }
+  }
+}
