@@ -91,6 +91,8 @@ pub(super) fn parse_sfc<'a>(
         if let Some(value) = projection.lang {
             attrs.insert(Cow::Borrowed("lang"), Cow::Borrowed(value));
         }
+        // Initialize absent blocks directly so this fast path does not create
+        // and drop a second default descriptor.
         return Ok(SfcDescriptor {
             filename: Cow::Owned(options.filename.into()),
             source: Cow::Borrowed(source),
@@ -101,7 +103,13 @@ pub(super) fn parse_sfc<'a>(
                 src: None,
                 attrs,
             }),
-            ..Default::default()
+            script: None,
+            script_setup: None,
+            styles: Vec::new(),
+            custom_blocks: Vec::new(),
+            css_vars: Vec::new(),
+            slotted: false,
+            should_force_reload: false,
         });
     }
     parse_complete_sfc(source, options)
