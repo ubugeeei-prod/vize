@@ -4,11 +4,16 @@ interface WatchServer {
   watcher: { add(file: string): unknown };
 }
 
+// Transform calls share one filesystem watcher, including across environments.
+// A restarted server has a new watcher and receives its own registrations.
+const serverWatches = new WeakMap<WatchServer["watcher"], Set<string>>();
+
 /**
  * Vite records a transform's addWatchFile calls as module imports. Compiler
  * inputs include absent config candidates and type-only files, so watch them
  * through the dev server's filesystem watcher. Build hooks keep Rollup watches.
- * Each file is watched once, in its plain spelling.
+ * Each file is watched once per dev watcher, in its plain spelling. Build
+ * hooks retain per-module registration so every module owns its watch inputs.
  */
 export function createDependencyWatch(
   server: WatchServer | null,
@@ -20,7 +25,11 @@ export function createDependencyWatch(
       }
     : addWatchFile;
   if (!watch) return undefined;
-  const watched = new Set<string>();
+  let watched = server ? serverWatches.get(server.watcher) : undefined;
+  if (!watched) {
+    watched = new Set<string>();
+    if (server) serverWatches.set(server.watcher, watched);
+  }
   return (file) => {
     const plain = withoutVerbatimPrefix(file);
     if (watched.has(plain)) return;
