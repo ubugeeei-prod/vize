@@ -33,7 +33,7 @@ use vize_l2::op::vue::asset_identifier;
 pub(super) use entry::{
     emit_for_item, emit_fragment_root, emit_if_branch, emit_nested, emit_once, emit_root,
 };
-pub(super) use preamble::{collect_names, emit_resolves};
+pub(super) use preamble::{emit_resolves, note as note_name};
 
 pub(super) fn emit_call(
     cx: &mut EmitCx<'_>,

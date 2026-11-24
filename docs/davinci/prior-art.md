@@ -6,6 +6,8 @@
 > what it deliberately does not. This page is the justification trail for
 > practices referenced by the [architecture](./architecture.md) and
 > [roadmap](./roadmap.md).
+> [Part 3](./prior-art-backends.md) (2026-11-24) adds Cranelift, GCC, pass
+> cost and tool-facing IR, with a ledger of what Davinci still owes.
 
 ## rustc — MIR, Polonius, queries
 
