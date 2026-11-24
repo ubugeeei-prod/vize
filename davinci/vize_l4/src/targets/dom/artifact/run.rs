@@ -159,7 +159,7 @@ pub(super) fn emit_dom_observed<'f, P>(
         first_for_source_unref: core::cell::Cell::new(false),
         early_transition_slot_for: core::cell::Cell::new(false),
     };
-    helper_preference::prefer_helpers(
+    let assets = helper_preference::prefer_helpers(
         &mut cx.buf,
         &prefer_cx,
         &mut helper_walk,
@@ -175,8 +175,8 @@ pub(super) fn emit_dom_observed<'f, P>(
     cx.buf.indent();
     cx.buf.newline();
     let assets_start = cx.buf.code.len();
-    let names = component::collect_names(&lowered.artifact.root, lowered.artifact.source);
-    let dirs = directive::collect_names(&lowered.artifact.root);
+    let names = assets.components;
+    let dirs = assets.directives;
     let mut resolved_assets = false;
     if !names.is_empty() {
         resolved_assets |= component::emit_resolves(&mut cx, &names);

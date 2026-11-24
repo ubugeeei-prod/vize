@@ -1,7 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #"GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs"#
-}

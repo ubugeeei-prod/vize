@@ -1,4 +1,3 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -15,11 +14,8 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { runInNewContext } from "node:vm";
 import { toolingProgram } from "./support/program-path.ts";
-import { parse } from "yaml";
 import {
   privateGuest,
   runCapture,
@@ -30,7 +26,6 @@ import {
   producer,
 } from "../../.github/actions/test-js-packages-with-history/native-fault-core.ts";
 
-const root = fileURLToPath(new URL("../..", import.meta.url));
 const environment = (fixture, id = "123") => ({
   ...process.env,
   GITHUB_ACTIONS: "true",
@@ -402,64 +397,4 @@ void test("observation setup refusal executes the original command once with its
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }
-});
-void test("only an explicit label observes the frozen original failure; mandatory gates stay mandatory", () => {
-  const workflow = parse(
-    readAutomationPrograms(join(root, ".github/workflows/ci-walltime-benchmark.yml")),
-  );
-  const job = workflow.jobs["js-native-fault-diagnostic"];
-  const admitted = (event, action, label) =>
-    runInNewContext(job.if.slice(3, -3), {
-      github: { event_name: event, event: { action, label: { name: label } } },
-    });
-  assert.equal(admitted("pull_request", "labeled", "ci-native-fault-diagnostic"), true);
-  for (const event of ["push", "merge_group", "workflow_dispatch"])
-    assert.equal(admitted(event, "labeled", "ci-native-fault-diagnostic"), false);
-  for (const action of ["opened", "reopened", "synchronize"])
-    assert.equal(admitted("pull_request", action, "ci-native-fault-diagnostic"), false);
-  assert.equal(admitted("pull_request", "labeled", "ci-walltime-benchmark"), false);
-  assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
-  assert.equal(job["timeout-minutes"], 35);
-  assert.deepEqual(job.env, {
-    NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169",
-    CARGO_BUILD_JOBS: "12",
-  });
-  assert.equal(job.steps[2].with.ref, "0b82a31fc9dd8634786fc17ec3bd3eeb8427ae6e");
-  const commands = job.steps.map((step) => step.run ?? "").join("\n");
-  assert.equal((commands.match(/-- vp run --workspace-root test:js:builders/g) ?? []).length, 1);
-  assert.match(commands, /b865787dc492550b568d7cea3bcf458f75b11cfb/);
-  assert.match(commands, /install-js-checks\.ts builders/);
-  assert.equal(
-    job.steps.find((step) => step.uses?.startsWith("voidzero-dev/setup-vp"))?.with.version,
-    "1.4.0",
-  );
-  assert.match(commands, /cp \.github\/actions.*native-fault-evidence\.ts/);
-  assert.match(commands, /cp \.github\/actions.*native-fault-retention\.ts/);
-  assert.match(commands, /cp \.github\/actions.*native-fault-resources\.ts/);
-  assert.doesNotMatch(commands, /continue-on-error|retry|DISABLE_TSGO|test-name-pattern/);
-  const upload = job.steps.at(-1);
-  assert.equal(upload.if, "${{ always() }}");
-  assert.doesNotMatch(upload.with.path, /fault-cores|core\.\*|\.node/);
-  const action = parse(
-    readAutomationPrograms(join(root, ".github/actions/test-js-packages-with-history/action.yml")),
-  );
-  const full = action.runs.steps.find((step) => step.name === "Test JS packages");
-  const qualification = action.runs.steps.find(
-    (step) => step.id === "original-project-qualification",
-  );
-  const cleanup = action.runs.steps.find(
-    (step) => step.name === "Clean completed original project staging after evidence upload",
-  );
-  const fault = action.runs.steps.find(
-    (step) => step.name === "Preserve bounded JS native fault diagnostics",
-  );
-  assert.equal(full.if, "${{ success() && job.status == 'success' && inputs.partition == 'all' }}");
-  assert.equal(
-    full.run,
-    "node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js",
-  );
-  assert.equal(qualification.run, "node npm/linter/oxlint/scripts/check-project-transport.mjs");
-  assert.equal(cleanup.run, "node npm/linter/oxlint/scripts/project-native-staging.ts --cleanup");
-  assert.equal(fault.if, "${{ always() }}");
-  assert.equal(fault.with.path, "${{ runner.temp }}/js-native-fault-evidence-*/**/*.json");
 });

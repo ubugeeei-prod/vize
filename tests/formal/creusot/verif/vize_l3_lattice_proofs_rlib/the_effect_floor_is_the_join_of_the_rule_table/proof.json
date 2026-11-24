@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_the_effect_floor_is_the_join_of_the_rule_table": {
+        "prover": "z3",
+        "time": 0.01
+      }
+    }
+  }
+}

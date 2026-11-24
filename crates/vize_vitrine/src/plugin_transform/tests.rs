@@ -251,3 +251,26 @@ fn invalid_late_edit_does_not_mutate_the_native_artifact() {
         Some("legacy-btn")
     );
 }
+
+#[test]
+fn recorded_edits_keep_the_original_and_encoded_attribute_spelling() {
+    let arena = vize_l0::Allocator::new();
+    let source = r#"<button class="old"></button>"#;
+    let (tree, errors) = vize_l1::markup::parse(&arena, source);
+    let mut lowered = vize_l1_to_l2::lower(&arena, &tree, &errors);
+    let before = lowered.artifact.provenance.len();
+    let reply = edits::decode(r#"{"schema":1,"edits":[{"kind":"replace-static-attribute","node":0,"name":"class","value":"a&b"}]}"#).unwrap();
+    edits::validate(&reply, &walk::nodes(&mut lowered.artifact.root)).unwrap();
+    edits::apply(&mut lowered, &reply, "theme");
+    let records = &lowered.artifact.provenance[before..];
+    assert_eq!(records.len(), 1);
+    let record = &records[0];
+    assert_eq!(record.rule, "plugin.transform:theme");
+    assert_eq!(record.node, Some(vize_l0::id::NodeId::FIRST));
+    assert_eq!(record.before, r#"class=Some("old")"#);
+    assert_eq!(record.after, r#"class=Some("a&amp;b")"#);
+    assert_eq!(
+        &source[record.span.start as usize..record.span.end as usize],
+        r#"class="old""#
+    );
+}

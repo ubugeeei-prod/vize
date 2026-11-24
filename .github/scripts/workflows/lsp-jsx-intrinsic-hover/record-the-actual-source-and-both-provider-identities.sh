@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-mkdir -p target/vize-tests/jsx-intrinsic-hover
-node "$VIZE_CI_FILES/record-the-actual-source-and-both-provider-identities.ts"

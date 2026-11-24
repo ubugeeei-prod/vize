@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-cargo test --locked --profile ci --no-fail-fast -p vize_l1_to_l2 --features legacy-differential \
-  --test davinci_dom_n8n_diagnosed \
-  --test davinci_dom_n8n_default_loops \
-  --test davinci_dom_n8n_helper_props \
-  --test davinci_dom_n8n_if_key_modes -- --nocapture

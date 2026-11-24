@@ -1,12 +1,16 @@
 //! Transform-analogue helper pre-registration for the DOM emitter.
 
 mod slot_order;
+#[cfg(test)]
+mod tests;
 mod unref;
+
+use alloc::vec::Vec as StdVec;
 
 use vize_l0::ensure_sufficient_stack;
 use vize_l0::side_table::SideTable;
 use vize_l2::expr::{ExprRef, OpaqueReason};
-use vize_l2::op::{Op, Region};
+use vize_l2::op::{ComponentOp, Op, Region};
 
 use vize_l2::analysis::fragment_facts::LoopFragment;
 use vize_l2::analysis::pass_facts::L2Facts;
@@ -16,7 +20,7 @@ use vize_l2::walk::PageWalk;
 use super::buf::Buf;
 use super::helper::Helper;
 use super::options::BindingTable;
-use super::{builtin, directive, slots, style_carrier};
+use super::{builtin, component, directive, slots, style_carrier};
 use slot_order::{
     component_slot_content, direct_slot_carrier_precedes_slot_outlet,
     explicit_transition_slot_with_implicit_transition_group, has_slot_outlet,
@@ -56,20 +60,53 @@ impl PreferCx<'_> {
     }
 }
 
-pub(super) fn prefer_helpers(
-    buf: &mut Buf,
-    cx: &PreferCx<'_>,
-    walk: &mut PageWalk,
-    region: &Region<'_>,
-) {
-    prefer_region_helpers(buf, cx, walk, region, false, false);
+/// The render preamble's asset names, collected by the preference walk.
+///
+/// `generate_assets` resolves every component and custom directive the
+/// template uses before the render body. Each list used to cost a walk of
+/// the whole template. Collecting both here saves those two walks per
+/// compile (the Cranelift ægraph lesson in
+/// `docs/davinci/prior-art-backends.md`: passes over the same nodes compose
+/// into one visit). Each list keeps the order its own walk produced:
+/// directives in pre-order (an owner's bindings before its children),
+/// components in post-order (children before the component). The replaced
+/// walks live on in the tests as oracles.
+#[derive(Debug, Default)]
+pub(super) struct AssetNames<'a> {
+    pub(super) components: StdVec<&'a str>,
+    pub(super) directives: StdVec<&'a str>,
+    /// Open `Op::And` regions. Component assets never come from inside one:
+    /// a JSX `{c && <A/>}` child resolves at its own call.
+    and_depth: u32,
 }
 
-fn prefer_region_helpers(
+impl<'a> AssetNames<'a> {
+    fn note_component(&mut self, owner: &ComponentOp<'a>, source: &str) {
+        if self.and_depth == 0 {
+            component::note_name(owner, source, &mut self.components);
+        }
+    }
+}
+
+/// Pre-register the render helpers in transform order, and collect the
+/// preamble's asset names in the same walk.
+pub(super) fn prefer_helpers<'a>(
     buf: &mut Buf,
     cx: &PreferCx<'_>,
     walk: &mut PageWalk,
-    region: &Region<'_>,
+    region: &Region<'a>,
+) -> AssetNames<'a> {
+    let mut names = AssetNames::default();
+    prefer_region_helpers(buf, cx, walk, &mut names, region, false, false);
+    names
+}
+
+fn prefer_region_helpers<'a>(
+    buf: &mut Buf,
+    cx: &PreferCx<'_>,
+    walk: &mut PageWalk,
+    names: &mut AssetNames<'a>,
+    region: &Region<'a>,
     template_slot_context: bool,
     suppress_first_runtime_directives: bool,
 ) {
@@ -78,6 +115,7 @@ fn prefer_region_helpers(
             buf,
             cx,
             walk,
+            names,
             region,
             template_slot_context,
             suppress_first_runtime_directives,
@@ -85,11 +123,12 @@ fn prefer_region_helpers(
     });
 }
 
-fn prefer_region_helpers_guarded(
+fn prefer_region_helpers_guarded<'a>(
     buf: &mut Buf,
     cx: &PreferCx<'_>,
     walk: &mut PageWalk,
-    region: &Region<'_>,
+    names: &mut AssetNames<'a>,
+    region: &Region<'a>,
     template_slot_context: bool,
     suppress_first_runtime_directives: bool,
 ) {
@@ -104,6 +143,7 @@ fn prefer_region_helpers_guarded(
             buf,
             cx,
             walk,
+            names,
             op,
             slot_context,
             suppress_first_runtime_directives && index == 0,
@@ -112,11 +152,12 @@ fn prefer_region_helpers_guarded(
     }
 }
 
-fn prefer_op_helpers(
+fn prefer_op_helpers<'a>(
     buf: &mut Buf,
     cx: &PreferCx<'_>,
     walk: &mut PageWalk,
-    op: &Op<'_>,
+    names: &mut AssetNames<'a>,
+    op: &Op<'a>,
     slot_context: bool,
     suppress_runtime_directives: bool,
 ) {
@@ -125,6 +166,8 @@ fn prefer_op_helpers(
     unref::note_op(cx, op, visit);
     buf.set_prefer_visit(visit);
     match op {
+        // A carrier holds only `v-bind()` CSS bindings and no children, so
+        // it has no assets to collect either.
         Op::Element(element) if style_carrier::is_carrier_element(element) => {
             walk.skip(element.bindings.len())
         }
@@ -135,12 +178,21 @@ fn prefer_op_helpers(
             if !suppress_runtime_directives {
                 directive::prefer_helpers(buf, bindings);
             }
+            directive::note_names(bindings, &mut names.directives);
             if early_element_vnode {
                 buf.prefer(Helper::CreateElementVNode);
             }
             walk.skip(bindings.len());
             let child_slot_context = slot_context || slot_template;
-            prefer_region_helpers(buf, cx, walk, &element.children, child_slot_context, false);
+            prefer_region_helpers(
+                buf,
+                cx,
+                walk,
+                names,
+                &element.children,
+                child_slot_context,
+                false,
+            );
             if slot_context && !slot_template && !early_element_vnode {
                 buf.set_prefer_visit(visit);
                 buf.prefer(Helper::CreateElementVNode);
@@ -152,6 +204,7 @@ fn prefer_op_helpers(
                 buf.prefer(Helper::RenderSlot);
             }
             directive::prefer_helpers(buf, bindings);
+            directive::note_names(bindings, &mut names.directives);
             if !builtin::is_dynamic_component(component, cx.source)
                 && !cx.tag_is_binding(component.name)
             {
@@ -164,12 +217,22 @@ fn prefer_op_helpers(
                 }
                 prefer_slot_helpers(buf, &component.children);
             }
-            prefer_region_helpers(buf, cx, walk, &component.children, slot_context, false);
+            prefer_region_helpers(
+                buf,
+                cx,
+                walk,
+                names,
+                &component.children,
+                slot_context,
+                false,
+            );
+            names.note_component(component, cx.source);
         }
         Op::Slot(slot) => {
             buf.prefer(Helper::RenderSlot);
             walk.skip(slot.bindings.len());
-            prefer_region_helpers(buf, cx, walk, &slot.fallback, slot_context, false);
+            directive::note_names(&slot.bindings, &mut names.directives);
+            prefer_region_helpers(buf, cx, walk, names, &slot.fallback, slot_context, false);
         }
         Op::If(if_op) => {
             buf.prefer(Helper::OpenBlock);
@@ -178,11 +241,15 @@ fn prefer_op_helpers(
             buf.prefer(Helper::Fragment);
             buf.prefer(Helper::CreateComment);
             for branch in if_op.branches.iter() {
-                prefer_if_branch_helpers(buf, cx, walk, &branch.region, slot_context);
+                prefer_if_branch_helpers(buf, cx, walk, names, &branch.region, slot_context);
             }
         }
         // A falsy `left` is the child itself: no comment placeholder.
-        Op::And(and) => prefer_if_branch_helpers(buf, cx, walk, &and.region, slot_context),
+        Op::And(and) => {
+            names.and_depth += 1;
+            prefer_if_branch_helpers(buf, cx, walk, names, &and.region, slot_context);
+            names.and_depth -= 1;
+        }
         Op::For(for_op) => {
             if cx.authored_for.get() == u32::MAX {
                 cx.authored_for.set(visit);
@@ -198,13 +265,14 @@ fn prefer_op_helpers(
                 buf,
                 cx,
                 walk,
+                names,
                 &for_op.region,
                 slot_context,
                 suppress_root_directives,
             );
         }
         Op::OriginalFor(for_op) => {
-            prefer_region_helpers(buf, cx, walk, &for_op.region, slot_context, false);
+            prefer_region_helpers(buf, cx, walk, names, &for_op.region, slot_context, false);
         }
         Op::ChildValue(_) => {}
         Op::Text(_) => buf.prefer(Helper::CreateText),
@@ -230,16 +298,17 @@ fn prefer_op_helpers(
     }
 }
 
-fn prefer_if_branch_helpers(
+fn prefer_if_branch_helpers<'a>(
     buf: &mut Buf,
     cx: &PreferCx<'_>,
     walk: &mut PageWalk,
-    region: &Region<'_>,
+    names: &mut AssetNames<'a>,
+    region: &Region<'a>,
     slot_context: bool,
 ) {
     ensure_sufficient_stack(|| {
         for op in region.ops.iter() {
-            prefer_op_helpers(buf, cx, walk, op, slot_context, false);
+            prefer_op_helpers(buf, cx, walk, names, op, slot_context, false);
         }
     });
 }

@@ -104,7 +104,7 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
 
 pub(in crate::linter::engine) struct Dispatch<'a> {
     pub root: &'a RootNode<'a>,
-    pub l2: &'a crate::markup::L2Template<'a>,
+    pub l2: &'a crate::markup::LintInput<'a>,
     pub analysis: Option<&'a Croquis>,
     pub rules: &'static [&'static str],
     pub rule_count: usize,

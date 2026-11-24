@@ -8,8 +8,6 @@ on {
   schedule = new Listing {
     new Dynamic { cron = "41 3 * * *" }
   }
-  // The merge queue runs the same lanes for Rust changes (Check / miri).
-  workflow_call {}
 }
 concurrency {
   group = "miri-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}"

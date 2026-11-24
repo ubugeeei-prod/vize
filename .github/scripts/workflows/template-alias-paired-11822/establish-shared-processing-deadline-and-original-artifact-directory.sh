@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-[[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-[[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-started="$(date +%s%3N)"
-echo "TEMPLATE_ALIAS_STARTED_MS=$started" >> "$GITHUB_ENV"
-echo "TEMPLATE_ALIAS_DEADLINE_MS=$((started + 53 * 60000))" >> "$GITHUB_ENV"
-mkdir -p "$RUNNER_TEMP/mapper-public-stages"

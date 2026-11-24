@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -o pipefail
-cargo test --locked --profile ci -p vize_patina --lib corsa_session::boolean::nodes::tests -- --nocapture 2>&1 | tee target/patina-native-boolean/ast-tests.txt
-cargo test --locked --profile ci -p vize_patina --lib selected_runtime_query_failure_is_an_error -- --nocapture 2>&1 | tee target/patina-native-boolean/query-failure-tests.txt

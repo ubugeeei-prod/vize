@@ -1,82 +1,84 @@
 use super::*;
-use davinci_harness::alloc;
-use std::{fmt::Write, hint::black_box, time::Instant};
+use davinci_harness::{alloc, paired::assert_paired_time};
+use std::{fmt::Write, hint::black_box, sync::Arc};
 
-fn measure(
-    state: &ServerState,
-    uri: &Url,
-    name: &str,
-    source: &str,
-    linter: &ScriptLinter,
-    failures: &mut Vec<String>,
-) {
-    state
-        .documents
-        .open(uri.clone(), source.into(), 1, "vue".into());
-    let snapshot = SourceSnapshotCache::default()
-        .capture(&state.documents, uri)
-        .unwrap();
-    let options = FormatOptions::default();
-    let run = |joined| {
-        let arena = Allocator::default();
-        let formatter = GlyphFormatter::new(black_box(&options), &arena);
-        if joined {
-            black_box(&snapshot)
-                .script_tool_products(black_box(state), black_box(linter), &formatter)
-                .unwrap()
-        } else {
-            separate(
-                black_box(&snapshot),
-                black_box(state),
-                black_box(linter),
-                &formatter,
-            )
-        }
-    };
-    same(&run(true), &run(false), name);
-    let old = alloc::measure(|| run(false)).unwrap();
-    let new = alloc::measure(|| run(true)).unwrap();
-    let timing = |joined| {
-        let start = Instant::now();
-        for _ in 0..8 {
-            drop(black_box(run(joined)));
-        }
-        start.elapsed().as_nanos() / 8
-    };
-    let mut pairs = Vec::new();
-    for round in 0..35 {
-        let first = round % 2 == 0;
-        let a = timing(first);
-        let b = timing(!first);
-        if round >= 4 {
-            pairs.push(if first { (b, a) } else { (a, b) });
-        }
-    }
-    eprintln!(
-        "script_tool_time {name} calls={}/{} peak={}/{} ns={pairs:?}",
-        old.calls, new.calls, old.peak_bytes_over_start, new.peak_bytes_over_start
-    );
-    let median = |mut ns: Vec<u128>| {
-        ns.sort_unstable();
-        ns[ns.len() / 2]
-    };
-    let (old_ns, new_ns) = pairs.into_iter().unzip();
-    if new.calls > old.calls
-        || new.peak_bytes_over_start > old.peak_bytes_over_start
-        || median(new_ns) > median(old_ns)
-    {
-        failures.push(name.into());
+struct Tools {
+    state: ServerState,
+    linter: ScriptLinter,
+    options: FormatOptions,
+}
+
+fn run(snapshot: &SourceSnapshot, tools: &Tools, joined: bool) -> ScriptToolProducts {
+    let arena = Allocator::default();
+    let formatter = GlyphFormatter::new(black_box(&tools.options), &arena);
+    let (state, linter) = (black_box(&tools.state), black_box(&tools.linter));
+    if joined {
+        black_box(snapshot)
+            .script_tool_products(state, linter, &formatter)
+            .unwrap()
+    } else {
+        separate(black_box(snapshot), state, linter, &formatter)
     }
 }
 
+/// Compare both products and their deterministic heap use, then return the
+/// snapshot so its time can be paired too.
+fn measure(
+    tools: &Tools,
+    uri: &Url,
+    name: &str,
+    source: &str,
+    failures: &mut Vec<String>,
+) -> Arc<SourceSnapshot> {
+    let documents = &tools.state.documents;
+    documents.open(uri.clone(), source.into(), 1, "vue".into());
+    let snapshot = SourceSnapshotCache::default()
+        .capture(documents, uri)
+        .unwrap();
+    same(
+        &run(&snapshot, tools, true),
+        &run(&snapshot, tools, false),
+        name,
+    );
+    let old = alloc::measure(|| run(&snapshot, tools, false)).unwrap();
+    let new = alloc::measure(|| run(&snapshot, tools, true)).unwrap();
+    eprintln!(
+        "script_tool_heap {name} calls={}/{} peak={}/{}",
+        old.calls, new.calls, old.peak_bytes_over_start, new.peak_bytes_over_start
+    );
+    if new.calls > old.calls || new.peak_bytes_over_start > old.peak_bytes_over_start {
+        failures.push(name.into());
+    }
+    snapshot
+}
+
+// Every original input is compared and its heap use checked. Wall time is
+// paired per controlled or named input and once over all other original
+// inputs, so adding a fixture never changes which files are measured.
 #[test]
 #[ignore = "alternating complete formatter, linter, checker and editor responses"]
 fn complete_tool_products_on_ordinary_setup_and_recovered_inputs() {
     alloc::mark_installed();
-    let state = ServerState::new();
-    let uri = Url::parse("file:///editor/Profile.vue").unwrap();
-    let linter = ScriptLinter::with_vapor_rules();
+    let tools = Tools {
+        state: ServerState::new(),
+        linter: ScriptLinter::with_vapor_rules(),
+        options: FormatOptions::default(),
+    };
     let mut failures = Vec::new();
+    let mut timed = Vec::new();
+    // A distinct URI per input keeps every retained snapshot current.
+    let mut uris = 0..;
+    let mut uri = || {
+        Url::parse(&vize_l0::cstr!(
+            "file:///editor/{}.vue",
+            uris.next().unwrap()
+        ))
+        .unwrap()
+    };
+    let mut controlled = |name: &str, source: &str, failures: &mut Vec<String>| {
+        let snapshot = measure(&tools, &uri(), name, source, failures);
+        timed.push((name.to_owned(), snapshot));
+    };
     for lang in ["js", "jsx", "ts", "tsx"] {
         for count in [1, 12] {
             let mut source = vize_l0::cstr!(
@@ -86,14 +88,7 @@ fn complete_tool_products_on_ordinary_setup_and_recovered_inputs() {
                 writeln!(source, "import x{i} from './local{i}'; const v{i} = x{i};").unwrap();
             }
             source.push_str("</script><template><span>🌱</span></template>");
-            measure(
-                &state,
-                &uri,
-                &vize_l0::cstr!("{lang}-{count}"),
-                &source,
-                &linter,
-                &mut failures,
-            );
+            controlled(&vize_l0::cstr!("{lang}-{count}"), &source, &mut failures);
         }
     }
     for (name, source) in [
@@ -107,12 +102,30 @@ fn complete_tool_products_on_ordinary_setup_and_recovered_inputs() {
             "<script>export default {}</script><script setup lang='tsx'>const v=<span/>;</script>",
         ),
     ] {
-        measure(&state, &uri, name, source, &linter, &mut failures);
+        controlled(name, source, &mut failures);
     }
-    for_originals(|i, name, source| {
-        if i % 179 == 0 || name.ends_with("/ScriptEnd.vue.txt") {
-            measure(&state, &uri, name, source, &linter, &mut failures);
+    let mut corpus = Vec::new();
+    for_originals(|_, name, source| {
+        let snapshot = measure(&tools, &uri(), name, source, &mut failures);
+        if name.ends_with("/ScriptEnd.vue.txt") {
+            timed.push((name.to_owned(), snapshot));
+        } else {
+            corpus.push(snapshot);
         }
     });
-    assert!(failures.is_empty(), "regressions on {failures:?}");
+    assert!(failures.is_empty(), "heap regressions on {failures:?}");
+    for (name, snapshot) in &timed {
+        assert_paired_time(name, 8, |joined| {
+            drop(run(snapshot, &tools, joined));
+        });
+    }
+    assert_paired_time(
+        &vize_l0::cstr!("{} other original inputs", corpus.len()),
+        1,
+        |joined| {
+            for snapshot in &corpus {
+                drop(run(snapshot, &tools, joined));
+            }
+        },
+    );
 }
