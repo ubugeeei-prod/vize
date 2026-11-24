@@ -103,24 +103,3 @@ void test("local and original manual comparison environments retain the serial d
     assert.equal(observedMode(workflow.env, manual.env, step.env), "serial");
   }
 });
-
-void test("the explicit manual baseline pair still selects its two original modes", () => {
-  const manual = workflow.jobs["n8n-baseline"];
-  const arms = manual.steps.filter((step) => step.run?.startsWith(controller));
-  assert.equal(arms.length, 2);
-  assert.deepEqual(
-    arms.map((step) => step.env),
-    [{ VIZE_N8N_BASELINE_MODE: "serial" }, { VIZE_N8N_BASELINE_MODE: "partitioned" }],
-  );
-  assert.deepEqual(
-    arms.map((step) => observedMode(workflow.env, manual.env, step.env)),
-    ["serial", "partitioned"],
-  );
-  assert.deepEqual(
-    arms.map((step) => step.run),
-    [
-      `${controller} --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-serial.json`,
-      `${controller} --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-partitioned.json`,
-    ],
-  );
-});

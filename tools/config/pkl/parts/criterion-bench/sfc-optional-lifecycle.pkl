@@ -1,7 +1,0 @@
-`if` = "${{ inputs.sfc_optional_lifecycle_only }}"
-permissions { contents = "read" }
-uses = "./.github/workflows/sfc-optional-lifecycle.yml"
-with {
-  `expected-driver-sha` = "${{ inputs.head_sha }}"
-  `conflicting-modes` = "${{ inputs.sfc_member_only || inputs.production_only || inputs.historical_sfc_parse || inputs.level_memory_only || inputs.vapor_only }}"
-}

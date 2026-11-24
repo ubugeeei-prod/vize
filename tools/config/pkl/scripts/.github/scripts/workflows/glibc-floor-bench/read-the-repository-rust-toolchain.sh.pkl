@@ -1,7 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #"sed -n -f "$VIZE_CI_FILES/toolchain-channel-output.sed" rust-toolchain.toml >> "$GITHUB_OUTPUT""#
-}

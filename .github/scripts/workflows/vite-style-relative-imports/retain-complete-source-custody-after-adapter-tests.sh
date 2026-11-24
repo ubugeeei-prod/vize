@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-custody="$RUNNER_TEMP/vite-style-source-custody"
-mkdir -p "$custody"
-git rev-parse HEAD > "$custody/after-tests.head"
-git status --porcelain=v1 --untracked-files=all > "$custody/after-tests.status"
-git diff --binary HEAD > "$custody/after-tests.diff"

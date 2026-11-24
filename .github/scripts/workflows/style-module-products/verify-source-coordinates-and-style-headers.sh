@@ -9,5 +9,6 @@ grep -Fx "'Davinci.SourceMap.LineBreaks.first_exact' does not depend on any axio
 grep -Fx "'Davinci.SourceMap.LineBreaks.last_exact' depends on axioms: [propext]" line-breaks.log
 lean-4.33.1-linux/bin/lean -DwarningAsError=true "$GITHUB_WORKSPACE/tests/formal/source-map/Coordinates.lean" | tee theorem.log
 grep -Fx "'Davinci.SourceMap.column_exact' depends on axioms: [propext, Quot.sound]" theorem.log
+grep -Fx "'Davinci.SourceMap.diagnostic_range_rebased' depends on axioms: [propext, Quot.sound]" theorem.log
 lean-4.33.1-linux/bin/lean -DwarningAsError=true "$GITHUB_WORKSPACE/tests/formal/style-format/Header.lean" | tee header.log
 grep -Fx "'Davinci.StyleFormat.accepted_iff' depends on axioms: [propext, Classical.choice, Quot.sound]" header.log

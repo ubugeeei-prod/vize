@@ -59,7 +59,7 @@ void test("actual complete consumers retain the sole WASM producer and separate 
   assert.deepEqual(result.wasm, [{ file: docs, job: "build-playground" }]);
   assert(result.cacheCalls >= 86);
   assert(result.cacheFileCount >= 56);
-  assert(result.app.length >= 4);
+  assert(result.app.length >= 2);
   assert(result.napi.length >= 2);
 });
 

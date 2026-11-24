@@ -228,8 +228,8 @@ export function readsProse(path, sources) {
 // a widely shared helper says nothing about what any one test exercises; the
 // same reference in a test or a narrow helper still selects it.
 export const SHARED_HELPER_IMPORTERS = 10;
-// These source-built campaigns run in nightly Full qualification (merge tier)
-// and in their own dispatchable workflows (#6830), not on the PR critical path.
+// These source-built campaigns run in nightly Full qualification (merge tier),
+// not on the PR critical path (#6830).
 // Their selector audits stay available through `includeDedicated`.
 export const dedicatedPrToolingTests = [
   "tests/tooling/content-mapper-instance-globals-10617.test.ts",

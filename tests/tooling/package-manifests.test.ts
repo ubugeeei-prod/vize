@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -271,7 +272,7 @@ test("documented install commands point at supported release artifacts", () => {
 });
 
 test("release contracts run the manifest tests", () => {
-  const contracts = parse(readRepoFile(".github/workflows/release-contracts.yml"));
+  const contracts = parse(readAutomationPrograms(".github/workflows/release-contracts.yml"));
   const steps = contracts.jobs.contracts.steps as Array<{ run?: string }>;
   for (const filename of [
     "tests/tooling/package-manifests.test.ts",

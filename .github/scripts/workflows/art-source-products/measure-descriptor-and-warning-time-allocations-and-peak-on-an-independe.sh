@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-export VIZE_ART_SOURCE_INPUTS="$RUNNER_TEMP/gallery-sources"
-cargo test --locked --profile ci-opt -p vize_musea --features art-source-products --test art_source_products complete_responses_share_the_original_art_surface -- --ignored --nocapture --test-threads=1

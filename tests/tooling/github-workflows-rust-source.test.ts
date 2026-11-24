@@ -234,7 +234,7 @@ const yaml = createRequire(import.meta.url)("yaml") as {
 };
 const rustWorkflow = (name: string) => yaml.parse(readAutomationPrograms(join(workflowRoot, name)));
 const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
-const productJobs = ["pr-rust-shard"];
+const productJobs = ["pr-rust-shard", "rust-feature-tests"];
 const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
 
 function requireSplitRustRecipes(
@@ -336,6 +336,7 @@ function requireSplitRustRecipes(
   );
   assert.deepEqual(productReport.steps[3].env, {
     RUN_RUST: "${{ inputs.run-rust }}",
+    FEATURE_TESTS: "${{ fromJSON(inputs.rust-plan).featureTests }}",
     NEEDS_JSON: "${{ toJSON(needs) }}",
     GH_TOKEN: "${{ github.token }}",
   });

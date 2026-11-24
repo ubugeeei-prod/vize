@@ -13,6 +13,10 @@ import {
   readWorkflowEntries,
   renderWorkflowCatalog,
 } from "../../tools/commands/ci/workflow-catalog.ts";
+import {
+  legacyWorkflowNames,
+  workflowNameViolations,
+} from "../../tools/support/ci/workflow-names.ts";
 import { parseTapCounts } from "../../tools/support/github/docs-preview-readiness.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 import { plannedBusyRunner, plannedRunnerCondition } from "./support/planned-runner.ts";
@@ -39,6 +43,7 @@ const approvedRunnerLabels = new Set([
 // sticky disk or build cache.
 const hostedZeroComputeJobs: Readonly<Record<string, readonly string[]>> = {
   "check.yml": ["iteration-plan", "test-report"],
+  "01-rust-feature-tests.yml": ["rust-feature-plan"],
   "pr-rust-checks.yml": ["rust-source-report"],
   "pr-rust-products.yml": ["rust-product-report"],
   "pr-source-checks.yml": ["pr-source-plan", "affected-tooling-report", "source-report"],
@@ -88,7 +93,7 @@ function workflowRunnerLabels(
       const resolved = matrixKeys.flatMap((key) => valuesForMatrixKey(strategy.matrix, key));
       if (resolved.length === 0 && typeof strategy.matrix === "string") {
         // Generated matrices are validated by their typed planner contract.
-        assert.match(strategy.matrix, /^\$\{\{\s*fromJSON\(.+\)\s*\}\}$/u);
+        assert.match(strategy.matrix, /^\$\{\{\s*fromJSON\(.+\)(?:\.[\w-]+)*\s*\}\}$/u);
         return [];
       }
       assert.ok(resolved.length > 0, `cannot resolve runner matrix expression: ${runner}`);
@@ -231,4 +236,48 @@ test("every named automation program is available in the same checkout as its ca
       for (const program of fs.readdirSync(directory))
         check(directory, fs.readFileSync(path.join(directory, program), "utf8"));
   }
+});
+
+test("workflow files follow the group-prefixed naming rules", () => {
+  const files = fs
+    .readdirSync(path.join(root, ".github/workflows"))
+    .filter((file) => file.endsWith(".yml"));
+  assert.deepEqual(workflowNameViolations(files), []);
+  for (const { file, groupId } of readWorkflowEntries(root)) {
+    const prefix = /^(\d\d)-/u.exec(file)?.[1];
+    if (prefix != null) assert.equal(groupId, prefix, file);
+  }
+});
+
+test("workflow naming rules reject unprefixed, investigative and duplicate names", () => {
+  const violations = workflowNameViolations([
+    ...legacyWorkflowNames,
+    "release.yml",
+    "release-jsr.yml",
+    "release-verify.yml",
+    "release-cadence.yml",
+    "release-npm-bootstrap.yml",
+    "pkg-pr-new.yml",
+    "published-fresh-project.yml",
+    "parcel-transformer.yml",
+    "deploy-docs.yml",
+    "01-check.yml",
+    "lsp-check.yml",
+    "05-lsp-public-replay.yml",
+    "06-template-alias-11822.yml",
+    "03-compile-bench.yml",
+    "11-sticky-disk.yml",
+    "08-sticky-disk.yml",
+    "08-deploy-docs.yml",
+    "03-vue-benchmarks.yml",
+  ]);
+  assert.deepEqual(violations, [
+    "lsp-check.yml: name must be NN-<subject>.yml",
+    '05-lsp-public-replay.yml: "public" names an investigation',
+    '05-lsp-public-replay.yml: "replay" names an investigation',
+    '06-template-alias-11822.yml: "11822" is an issue or version number',
+    '03-compile-bench.yml: group 03 already implies "bench"',
+    "08-sticky-disk.yml: subject is already used by 11-sticky-disk.yml",
+    "08-deploy-docs.yml: subject is already used by deploy-docs.yml",
+  ]);
 });

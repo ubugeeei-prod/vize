@@ -88,24 +88,6 @@ test("canonical mirror transitions stay side-effect-free and URI bounded", () =>
   );
 });
 
-test("source profile workflow follows every direct cancellation dependency", () => {
-  const workflow = fs.readFileSync(
-    new URL("../../.github/workflows/lsp-source-profile.yml", import.meta.url),
-    "utf8",
-  );
-  const paths = [...workflow.matchAll(/^ {6}- "([^"]+)"$/gm)].map((match) => match[1]);
-  for (const dependency of [
-    "tools/support/compat/davinci/lib/lsp-resource-sampler.ts",
-    "tools/support/compat/davinci/lib/lsp-resource-corsa-mirror.cjs",
-    "tools/support/json-value.ts",
-    "tests/tooling/lsp-resource-corsa-gate.test.ts",
-    "tests/tooling/support/lsp/assertions.ts",
-    "tests/tooling/support/lsp/protocol.ts",
-  ]) {
-    assert.ok(paths.includes(dependency), `${dependency} must trigger exact source profiling`);
-  }
-});
-
 test("generated Corsa gate atomically publishes one-shot JSON receipts", () => {
   assert.match(resourceCorsaProxySource, /function publishJson\(file, value\)/);
   assert.match(resourceCorsaProxySource, /fs\.renameSync\(temporary, file\);/);

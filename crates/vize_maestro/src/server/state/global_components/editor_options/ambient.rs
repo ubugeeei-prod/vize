@@ -11,7 +11,9 @@ use std::{
     sync::Arc,
 };
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_l0::FxHashMap;
+use vize_l0::{FxHashMap, SmallVec};
+
+type DeclarationInputs = SmallVec<[(PathBuf, Arc<String>); 4]>;
 
 impl ServerState {
     pub(crate) fn ambient_declaration_revision(&self) -> u64 {
@@ -24,7 +26,7 @@ impl ServerState {
         &self,
         root: &Path,
         overlays: &[(PathBuf, Arc<String>)],
-    ) -> io::Result<(VirtualTsOptions, Vec<(PathBuf, Arc<String>)>)> {
+    ) -> io::Result<(VirtualTsOptions, DeclarationInputs)> {
         let mut paths = self.global_component_reference_paths().await;
         let mut open = FxHashMap::default();
         for (path, text) in overlays {
@@ -49,7 +51,8 @@ impl ServerState {
             paths.dedup();
         }
         let mut options = self.virtual_ts_options();
-        let mut selected = Vec::new();
+        options.reference_paths.reserve_exact(paths.len());
+        let mut selected = DeclarationInputs::new();
         let mut closed = Vec::new();
         for path in paths {
             options.reference_paths.push(

@@ -1,0 +1,50 @@
+// One job per experimental Cargo feature row (tools/support/ci/rust-feature-tests.ts).
+// The PR product tier runs the affected rows; full qualification runs all of them.
+module vize.ci.RustFeatureTests
+
+import "Actions.pkl" as ci
+
+function job(rows: String, condition: String): Dynamic = new {
+  name = "Rust feature tests (${{ matrix.row }})"
+  `if` = condition
+  `runs-on` = "${{ matrix.runner }}"
+  `timeout-minutes` = 45
+  strategy {
+    `fail-fast` = false
+    matrix = rows
+  }
+  defaults {
+    run { shell = "bash" }
+  }
+  env {
+    CARGO_BUILD_JOBS = "24"
+    CARGO_INCREMENTAL = "0"
+    NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    ROW = "${{ matrix.row }}"
+  }
+  steps = new Listing {
+    ci.use(ci.checkout)
+    new Dynamic {
+      uses = ci.setupRust
+      with {
+        toolchain = "1.100.0"
+        components = "clippy"
+      }
+    }
+    new Dynamic {
+      uses = ci.setupWild
+      `if` = "runner.os == 'Linux'"
+      with { `wild-version` = "0.9.0" }
+    }
+    new Dynamic {
+      uses = "./.github/actions/setup-rust-sticky-cache"
+      with {
+        key = "rust-feature-tests"
+        `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+      }
+    }
+    ci.workspaceVp()
+    ci.command("Install frozen source dependencies", "vp install --frozen-lockfile --prefer-offline")
+    ci.command("Run the feature row", #"node tools/commands/ci/rust-feature-tests.ts run "$ROW""#)
+  }
+}

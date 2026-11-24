@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-node head/tools/benchmarks/scripts/check-diagnostic-messages.mjs \
-  "$MESSAGE_BASE_BIN" "$MESSAGE_HEAD_BIN" "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA" \
-  "$GITHUB_WORKSPACE/check-message-evidence"
-cat check-message-evidence/summary.md >> "$GITHUB_STEP_SUMMARY"

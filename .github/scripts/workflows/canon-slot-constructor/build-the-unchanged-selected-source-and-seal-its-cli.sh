@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-evidence="$RUNNER_TEMP/original27-current-evidence"
-export CARGO_TARGET_DIR="$RUNNER_TEMP/original27-current-target"
-(cd original27-source && cargo build --locked --profile ci-opt -p vize --bin vize --message-format=json) > "$evidence/head-cargo.jsonl" 2> "$evidence/head-cargo.stderr"
-node tools/support/compat/content-mapper/constructor-original27-current.ts build "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$evidence"
