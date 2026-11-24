@@ -154,7 +154,7 @@ pub(super) fn verify(
     }
 
     let verification = &update["verification"];
-    if verification["command"] != "node tools/commands/ci/npm-audit.ts"
+    if verification["command"] != "node tools/ci/commands/npm-audit.ts"
         || verification["frozenInstall"] != "vp install --frozen-lockfile --prefer-offline"
         || verification["patches"]
             != json!({

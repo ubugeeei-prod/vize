@@ -2,7 +2,7 @@
 [[ "$QUOTA_SOURCE" =~ ^[0-9a-f]{40}$ ]]
 mkdir -p "$RUNNER_TEMP/release-quota-tooling"
 git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
-status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$QUOTA_SOURCE...$GITHUB_SHA" --jq "$(<"$VIZE_CI_FILES/../shared/commit-compare-status.jq")")
+status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$QUOTA_SOURCE...$GITHUB_SHA" --jq "$(<"$VIZE_CI_FILES/../../../../tools/ci/lib/scripts/commit-compare-status.jq")")
 [[ "$status" == ahead || "$status" == identical ]]
 git fetch --no-tags --depth=1 origin "$QUOTA_SOURCE"
 git checkout --detach FETCH_HEAD

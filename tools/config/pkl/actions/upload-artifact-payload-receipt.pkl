@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Retain complete artifact consumer receipt"
 description = "Preserve the source-bound consumer receipt even after a failed or cancelled step"

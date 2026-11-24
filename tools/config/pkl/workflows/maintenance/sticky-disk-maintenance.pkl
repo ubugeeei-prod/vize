@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Sticky disk maintenance"
 // Deletes Blacksmith sticky disks that nothing mounts any more, such as the

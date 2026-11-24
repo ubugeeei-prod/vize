@@ -25,10 +25,12 @@ import {
 } from "../../support/ci/package-programs.ts";
 import { renderRepositoryYaml, type ConfigValue } from "../../support/ci/repository-yaml.ts";
 import { protectedWorkflows, workflowNameViolations } from "../../support/ci/workflow-names.ts";
-import { readWorkflowEntries, renderWorkflowCatalog } from "../ci/workflow-catalog.ts";
+import { readWorkflowEntries, renderWorkflowCatalog } from "../../ci/commands/workflow-catalog.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const sources = path.join(root, "tools/config/pkl");
+// Each workflow owns tools/ci/workflows/<file stem>/: workflow.pkl, jobs/ and scripts/.
+const ciWorkflows = path.join(root, "tools/ci/workflows");
 
 // The product CLI already owns the repository's pinned Pkl distribution.
 const cliRequire = createRequire(new URL("../../../npm/cli/package.json", import.meta.url));
@@ -56,6 +58,24 @@ function listProducts(): Product[] {
       });
     }
   }
+  for (const workflow of existsSync(ciWorkflows) ? readdirSync(ciWorkflows) : []) {
+    const home = path.join(ciWorkflows, workflow);
+    products.push({
+      source: path.join(home, "workflow.pkl"),
+      target: `.github/workflows/${workflow}.yml`,
+      kind: "yaml",
+    });
+    const scripts = path.join(home, "scripts");
+    for (const name of existsSync(scripts) ? readdirSync(scripts) : []) {
+      if (!name.endsWith(".pkl")) continue;
+      const target = path.relative(root, path.join(scripts, name.slice(0, -4)));
+      products.push({
+        source: path.join(scripts, name),
+        target: target.split(path.sep).join("/"),
+        kind: "shell",
+      });
+    }
+  }
   return products.sort((left, right) => left.target.localeCompare(right.target, "en"));
 }
 
@@ -68,7 +88,7 @@ function evaluate(products: Product[]): ConfigValue[] {
       "--color",
       "never",
       "--root-dir",
-      sources,
+      path.join(root, "tools"),
       "--allowed-modules",
       "pkl:,file:",
       "--allowed-resources",

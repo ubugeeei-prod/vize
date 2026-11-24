@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Retain complete SFC runtime child outcomes"
 description = "Preserve original completed SFC child streams and source receipts after either test outcome"

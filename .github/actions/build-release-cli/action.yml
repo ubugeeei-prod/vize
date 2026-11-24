@@ -48,7 +48,7 @@ runs:
     - name: Configure Zig linker (Linux musl CLI)
       if: endsWith(inputs.target, '-musl')
       shell: bash
-      run: node tools/commands/ci/github/configure-zig-musl-linkers.ts
+      run: node tools/ci/commands/github/configure-zig-musl-linkers.ts
     - name: Mount Rust sticky disks (Linux)
       if: runner.os == 'Linux'
       uses: ./.github/actions/setup-rust-sticky-cache

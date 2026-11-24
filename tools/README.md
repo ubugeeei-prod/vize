@@ -11,7 +11,7 @@ support modules.
 ## Layout
 
 - `tools/commands/agents`: agent-facing local automation.
-- `tools/commands/ci`: GitHub Actions, fuzz, and hosted verification helpers.
+- `tools/ci`: CI sources and commands: `lib/` (shared Pkl modules, parts and programs), `commands/` (GitHub Actions, fuzz and hosted verification helpers) and, as workflows move, `workflows/NN-name/` (each workflow's Pkl source, jobs and programs).
 - `tools/commands/davinci`: Davinci roadmap, matrix, corpus, and budget commands.
 - `tools/commands/editors`: editor extension packaging and real-server checks.
 - `tools/commands/fixtures`: real-project and generated fixture orchestration.
@@ -20,7 +20,7 @@ support modules.
 - `tools/support/github` and `tools/support/tasks`: strictly typed TypeScript commands for
   GitHub Actions job steps and root Vite+ tasks, run directly with `node`.
 
-Run `node tools/commands/ci/verify-tool-layout.ts` after adding or removing tool
+Run `node tools/ci/commands/verify-tool-layout.ts` after adding or removing tool
 entrypoints. It verifies the stable Node command surface, prevents the remaining
 Rust Script budget from growing, and keeps retired command runners absent.
 

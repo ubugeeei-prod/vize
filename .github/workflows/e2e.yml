@@ -58,7 +58,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/e2e/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -107,7 +107,7 @@ jobs:
               - 'tests/snapshots/build/generic.ts'
               - 'tests/snapshots/build/__snapshots__/generic-*.snap'
               - 'tests/tooling/cli-lint-contract.test.ts'
-              - 'tools/commands/ci/github/app-e2e-*.ts'
+              - 'tools/ci/commands/github/app-e2e-*.ts'
               - 'tools/support/**'
               - 'tools/moon/**'
               - 'config/vite-plus/**'
@@ -196,7 +196,7 @@ jobs:
           PLAN_RESULT: ${{ needs.app-readiness-plan.result }}
           PRODUCER_RESULT: ${{ needs.app-readiness-producer.result }}
           PLANNED_COUNT: ${{ needs.app-readiness-plan.outputs.count }}
-        run: node tools/commands/ci/github/app-e2e-aggregate.ts readiness all "$RUN_REQUIRED" "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT"
+        run: node tools/ci/commands/github/app-e2e-aggregate.ts readiness all "$RUN_REQUIRED" "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT"
 
   testbox:
     name: Testbox
@@ -213,7 +213,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/e2e/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -270,7 +270,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/e2e/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -327,7 +327,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/e2e/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -370,4 +370,4 @@ jobs:
           PRODUCER_RESULT: ${{ needs.app-e2e-producer.result }}
           PLANNED_COUNT: ${{ needs.app-e2e-plan.outputs.count }}
           PLANNED_SUITE: ${{ needs.app-e2e-plan.outputs.suite }}
-        run: node tools/commands/ci/github/app-e2e-aggregate.ts full "$PLANNED_SUITE" true "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT"
+        run: node tools/ci/commands/github/app-e2e-aggregate.ts full "$PLANNED_SUITE" true "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT"

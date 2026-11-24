@@ -4,12 +4,12 @@ import { test } from "node:test";
 import {
   optsIntoWorkspaceLints,
   workspaceMembers,
-} from "../../tools/commands/ci/check-workspace-lints.ts";
+} from "../../tools/ci/commands/check-workspace-lints.ts";
 import {
   countMarkers,
   parseBaseline,
   renderBaseline,
-} from "../../tools/commands/ci/check-skeleton-todos.ts";
+} from "../../tools/ci/commands/check-skeleton-todos.ts";
 
 test("workspace lint membership preserves the manifest contract", () => {
   assert.deepEqual(

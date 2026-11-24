@@ -70,7 +70,7 @@ const producerHashes = {
   ".github/scripts/workflows/e2e/write-readiness-plan-evidence.sh":
     "e7110ceaa0266e4a479b2de79660834f82ace685e217be9a8967d14a56b206d6",
 
-  "tools/commands/ci/github/app-e2e-plan.ts":
+  "tools/ci/commands/github/app-e2e-plan.ts":
     "ca7682cc8f0834fa48a325954fbcc10765241ee1f9e29a0ebef9b60048cbc7d2",
   "tools/support/compat/github/app-e2e-plan.ts":
     "67799c81a7a38031b96e5a0f1cd1ea5bd2ae77a30eaf750a389f33f26e290ad7",

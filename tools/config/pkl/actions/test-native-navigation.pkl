@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Test native Program and Vue navigation"
 description = "Query actual retained native owners through source and complete RPC laws"

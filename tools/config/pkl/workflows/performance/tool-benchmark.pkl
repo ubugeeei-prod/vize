@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Benchmark - Tool comparison"
 
@@ -133,13 +133,13 @@ jobs {
             - '!tools/benchmarks/scripts/check-gate-report.ts'
             - '!editors/**'
             - '!tests/**'
-            - '!tools/commands/ci/github/**'
+            - '!tools/ci/commands/github/**'
             - '!tools/support/github/**'
             - '!tools/support/release/publish_*/**'
             - '!tools/support/release/release/**'
-            - '!tools/commands/ci/source-coverage.ts'
-            - '!tools/commands/ci/source-file-lengths.ts'
-            - '!tools/commands/ci/check-warning-budget.ts'
+            - '!tools/ci/commands/source-coverage.ts'
+            - '!tools/ci/commands/source-file-lengths.ts'
+            - '!tools/ci/commands/check-warning-budget.ts'
             - '!tools/commands/release/npm/tag.ts'
             - '!tools/support/release/inject_native_optional_deps/**'
 

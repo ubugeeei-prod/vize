@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-echo "suite=$REQUESTED_SUITE" >> "$GITHUB_OUTPUT" && echo "matrix=$(node tools/commands/ci/github/app-e2e-plan.ts --profile full --suite "$REQUESTED_SUITE")" >> "$GITHUB_OUTPUT" && echo "count=$(node tools/commands/ci/github/app-e2e-plan.ts --profile full --suite "$REQUESTED_SUITE" --field count)" >> "$GITHUB_OUTPUT"
+echo "suite=$REQUESTED_SUITE" >> "$GITHUB_OUTPUT" && echo "matrix=$(node tools/ci/commands/github/app-e2e-plan.ts --profile full --suite "$REQUESTED_SUITE")" >> "$GITHUB_OUTPUT" && echo "count=$(node tools/ci/commands/github/app-e2e-plan.ts --profile full --suite "$REQUESTED_SUITE" --field count)" >> "$GITHUB_OUTPUT"

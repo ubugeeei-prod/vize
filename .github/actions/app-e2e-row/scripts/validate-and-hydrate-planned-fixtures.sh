@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-planner=(node tools/commands/ci/github/app-e2e-plan.ts --profile "$PLAN_PROFILE" --suite "$PLAN_SUITE" --shard "$PLAN_SHARD")
+planner=(node tools/ci/commands/github/app-e2e-plan.ts --profile "$PLAN_PROFILE" --suite "$PLAN_SUITE" --shard "$PLAN_SHARD")
 test "$("${planner[@]}" --field task)" = "$PLANNED_TASK"
 test "$("${planner[@]}" --field timeout)" = "$PLANNED_TIMEOUT"
 test "$("${planner[@]}" --field needs-playwright)" = "$PLANNED_BROWSER"

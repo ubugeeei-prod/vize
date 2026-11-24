@@ -12,7 +12,7 @@ import {
   githubHeadingAnchor,
   readWorkflowEntries,
   renderWorkflowCatalog,
-} from "../../tools/commands/ci/workflow-catalog.ts";
+} from "../../tools/ci/commands/workflow-catalog.ts";
 import {
   legacyWorkflowNames,
   workflowNameViolations,
@@ -193,14 +193,18 @@ test("every action and workflow step invokes a named program", () => {
 test("every named automation program is available in the same checkout as its caller", () => {
   function check(directory: string, source: string) {
     for (const name of automationProgramReferences(source)) {
-      assert.match(name, /^(?:\.\.\/shared\/)?[\w.-]+$/u, name);
+      assert.match(name, /^(?:(?:\.\.\/){3,4}(?:tools\/ci\/)?lib\/scripts\/)?[\w.-]+$/u, name);
       const program = path.join(directory, name);
       assert.ok(fs.statSync(program, { throwIfNoEntry: false })?.isFile(), program);
     }
   }
   const workflows = path.join(root, ".github/workflows");
   for (const file of fs.readdirSync(workflows).filter((file) => file.endsWith(".yml"))) {
-    const directory = path.join(root, ".github/scripts/workflows", path.basename(file, ".yml"));
+    const stem = path.basename(file, ".yml");
+    const moved = path.join(root, "tools/ci/workflows", stem, "scripts");
+    const directory = fs.existsSync(moved)
+      ? moved
+      : path.join(root, ".github/scripts/workflows", stem);
     check(directory, fs.readFileSync(path.join(workflows, file), "utf8"));
     if (fs.existsSync(directory))
       for (const program of fs.readdirSync(directory))

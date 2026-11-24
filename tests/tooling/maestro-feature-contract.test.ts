@@ -19,7 +19,7 @@ test("check workflow enforces the Maestro non-native feature contract", () => {
 
   assert.match(
     workflowJobBody(workflow, "rust-clippy-portability"),
-    /node tools\/commands\/ci\/github\/check-maestro-feature-contract\.ts/,
+    /node tools\/ci\/commands\/github\/check-maestro-feature-contract\.ts/,
   );
   assert.match(command, /RUSTFLAGS: "-D warnings"/);
   assert.match(command, /"check",\s*"-p",\s*"vize_maestro",\s*"--no-default-features"/);

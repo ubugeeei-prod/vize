@@ -146,7 +146,7 @@ pub(super) fn verify(
     }
 
     let verification = &update["verification"];
-    if verification["command"] != "vp node tools/commands/ci/npm-audit.ts"
+    if verification["command"] != "vp node tools/ci/commands/npm-audit.ts"
         || verification["packages"]
             != json!({
                 "@hono/node-server": "2.1.6",

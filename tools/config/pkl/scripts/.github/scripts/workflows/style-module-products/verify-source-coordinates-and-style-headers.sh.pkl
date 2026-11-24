@@ -1,4 +1,4 @@
-amends "../../../../../ShellScript.pkl"
+amends "../../../../../../../ci/lib/ShellScript.pkl"
 
 local leanVersion = "4.33.1"
 

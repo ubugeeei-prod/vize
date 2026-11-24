@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Create GitHub Release"
 needs = List("version", "tag", "publish-npm", "build-editor-platforms", "publication-quota")

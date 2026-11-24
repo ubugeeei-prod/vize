@@ -107,7 +107,7 @@ jobs:
         run: vp run --filter './npm/native' build:ci
       - name: Verify GNU native glibc compatibility
         if: runner.os == 'Linux' && endsWith(matrix.target, '-gnu')
-        run: node tools/commands/ci/github/verify-glibc-symbols.ts --max 2.36 npm/native/*.linux-*-gnu.node
+        run: node tools/ci/commands/github/verify-glibc-symbols.ts --max 2.36 npm/native/*.linux-*-gnu.node
       - name: Smoke @vizejs/native
         run: node "${{ env.VIZE_CI_FILES }}/smoke-vizejs-native.cjs"
       - name: Package-install smoke for host native package

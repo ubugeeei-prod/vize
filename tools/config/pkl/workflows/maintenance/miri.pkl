@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Miri"
 `run-name` = "${{ github.event_name == 'workflow_dispatch' && format('Miri @ {0}', github.sha) || format('Miri scheduled @ {0}', github.sha) }}"

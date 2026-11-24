@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "test-scripts"  // Release preflight requires exactly one successful job with this exact name.
 `runs-on` = ci.linux

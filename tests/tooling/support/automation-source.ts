@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
@@ -14,6 +14,14 @@ const workflowScript =
   /^\. "(?:\$\{\{ env\.VIZE_CI_FILES \}\}|\$VIZE_CI_FILES)\/([\w.-]+\.(?:sh|ps1))"$/u;
 
 const shellFiles = new Map<string, Set<string>>();
+
+/** Repository path of a workflow's programs: tools/ci/workflows/<owner>/scripts or its old home. */
+export function workflowProgramsDirectory(owner: string): string {
+  const moved = path.posix.join("tools/ci/workflows", owner, "scripts");
+  return existsSync(path.join(root, moved))
+    ? moved
+    : path.posix.join(".github/scripts/workflows", owner);
+}
 
 function shellBody(file: string): string {
   const body = readFileSync(file, "utf8")
@@ -44,7 +52,7 @@ export function readWorkflowShell(owner: string): string {
     (line: string, indent: string, item: string | undefined, command: string) => {
       const script = workflowScript.exec(command);
       if (!script) return line;
-      const program = shellBody(path.join(root, ".github/scripts/workflows", owner, script[1]!));
+      const program = shellBody(path.join(root, workflowProgramsDirectory(owner), script[1]!));
       const padding = indent + (item ?? "").replace("-", " ") + "  ";
       return (
         indent +
@@ -102,7 +110,7 @@ export function readAutomationPrograms(...parts: (string | URL)[]): string {
       const env = job.get("env", true);
       if (isMap(env) && env.has("VIZE_CI_FILES")) {
         const dirs = new Set([
-          "${{ github.workspace }}/.github/scripts/workflows/" + workflowOwner,
+          "${{ github.workspace }}/" + workflowProgramsDirectory(workflowOwner),
         ]);
         if (isSeq(steps))
           for (const child of steps.items) {
@@ -128,7 +136,7 @@ export function readAutomationPrograms(...parts: (string | URL)[]): string {
               )
             )
               dirs.add(
-                "${{ github.workspace }}/" + dir + "/.github/scripts/workflows/" + workflowOwner,
+                "${{ github.workspace }}/" + dir + "/" + workflowProgramsDirectory(workflowOwner),
               );
           }
         assert.ok(
@@ -179,8 +187,7 @@ export function readAutomationPrograms(...parts: (string | URL)[]): string {
             ? path.join(path.dirname(file), "scripts", action[1]!)
             : path.join(
                 root,
-                ".github/scripts/workflows",
-                path.basename(file, path.extname(file)),
+                workflowProgramsDirectory(path.basename(file, path.extname(file))),
                 workflow![1]!,
               );
           const body = shellBody(script);
@@ -231,5 +238,5 @@ export function workflowProgram(owner: string, command: string, program: string)
       command.includes('"${{ env.VIZE_CI_FILES }}/' + program + '"'),
     owner + " does not invoke " + program,
   );
-  return readFileSync(path.join(root, ".github/scripts/workflows", owner, program), "utf8");
+  return readFileSync(path.join(root, workflowProgramsDirectory(owner), program), "utf8");
 }

@@ -21,7 +21,7 @@ jobs:
           package-manager-cache: false
       - name: List every feature row
         id: plan
-        run: node tools/commands/ci/rust-feature-tests.ts matrix
+        run: node tools/ci/commands/rust-feature-tests.ts matrix
   rust-feature-tests:
     name: Rust feature tests (${{ matrix.row }})
     if: ${{ success() }}
@@ -60,5 +60,5 @@ jobs:
       - name: Install frozen source dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Run the feature row
-        run: node tools/commands/ci/rust-feature-tests.ts run "$ROW"
+        run: node tools/ci/commands/rust-feature-tests.ts run "$ROW"
     needs: rust-feature-plan

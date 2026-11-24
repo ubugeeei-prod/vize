@@ -297,7 +297,7 @@ jobs:
       - name: Publish shard summary
         if: ${{ always() }}
         shell: bash
-        run: node tools/commands/ci/github/publish-real-project-shard-summary.ts
+        run: node tools/ci/commands/github/publish-real-project-shard-summary.ts
 
       - name: Upload shard report
         if: ${{ always() }}

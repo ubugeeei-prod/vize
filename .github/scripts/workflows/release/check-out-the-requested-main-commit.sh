@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Only a commit already on main may be released.
-status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$RELEASE_SOURCE...$GITHUB_SHA" --jq "$(<"$VIZE_CI_FILES/../shared/commit-compare-status.jq")")
+status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$RELEASE_SOURCE...$GITHUB_SHA" --jq "$(<"$VIZE_CI_FILES/../../../../tools/ci/lib/scripts/commit-compare-status.jq")")
 [[ "$status" == ahead || "$status" == identical ]]
 git fetch --depth=1 origin "$RELEASE_SOURCE"
 git checkout --detach FETCH_HEAD

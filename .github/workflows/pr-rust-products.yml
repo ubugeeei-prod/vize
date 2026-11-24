@@ -214,7 +214,7 @@ jobs:
       - name: Install frozen source dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Run the feature row
-        run: node tools/commands/ci/rust-feature-tests.ts run "$ROW"
+        run: node tools/ci/commands/rust-feature-tests.ts run "$ROW"
 
   rust-product-report:
     name: Rust product report

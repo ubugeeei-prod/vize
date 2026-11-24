@@ -3,5 +3,5 @@ args=(npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine "$RELEASE_TAR
 if [[ "$RELEASE_CROSS_COMPILE" == true ]]; then args+=(--cross-compile); fi
 node tools/support/github/build-napi-package.ts "${args[@]}"
 if [[ "$RUNNER_OS" == Linux && "$RELEASE_TARGET" == *-gnu ]]; then
-  node tools/commands/ci/github/verify-glibc-symbols.ts npm/native/*.linux-*-gnu.node
+  node tools/ci/commands/github/verify-glibc-symbols.ts npm/native/*.linux-*-gnu.node
 fi

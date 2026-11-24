@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 // cli: the shipped CLI profile. alloc: the same with --features profiling,
 // which counts allocations. perf: head only, with line tables, symbols and

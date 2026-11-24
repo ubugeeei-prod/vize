@@ -64,7 +64,7 @@ authentication, push, or warmup fails, and always attempts to stop a successfull
 when a task fails:
 
 ```sh
-sh tools/commands/ci/run-testbox-checks.sh
+sh tools/ci/commands/run-testbox-checks.sh
 ```
 
 For Blacksmith Testbox job changes, also validate the workflow shape with
@@ -91,7 +91,7 @@ In test code, reach for the real replacement before an allow:
 ### Workspace lint contract
 
 `[workspace.lints]` in the root `Cargo.toml` is the shared contract every crate joins with
-`[lints] workspace = true`. `node tools/commands/ci/check-workspace-lints.ts --check` runs in CI and keeps
+`[lints] workspace = true`. `node tools/ci/commands/check-workspace-lints.ts --check` runs in CI and keeps
 the list of crates that have not joined yet from growing back.
 
 - **Panic-free shipped code.** Library and binary targets must not abort on any input, so
@@ -105,7 +105,7 @@ the list of crates that have not joined yet from growing back.
   some `cfg`, gate the expectation with `cfg_attr`.
 - **Skeleton `todo!()`.** Davinci level skeletons may leave bodies as `todo!()` inside a module
   that starts with `#![expect(clippy::todo, reason = "skeleton: #NNNN")]`, and only where no
-  product path reaches them. `node tools/commands/ci/check-skeleton-todos.ts --check` compares the
+  product path reaches them. `node tools/ci/commands/check-skeleton-todos.ts --check` compares the
   per-crate count with `tools/config/skeleton-todos.toml`; counts only go down (`--write` lowers
   the baseline after you fill a module).
 
@@ -123,7 +123,7 @@ described in [Source Layout](#source-layout). `insta` keeps the recorded snapsho
 
 ## Source Layout
 
-- **500 lines per file.** `node tools/commands/ci/source-file-lengths.ts --check` (`vp run source:lengths`)
+- **500 lines per file.** `node tools/ci/commands/source-file-lengths.ts --check` (`vp run source:lengths`)
   rejects new files over 500 lines and files that grow past it. Split by responsibility, not by
   size alone: do not scatter a feature across many tiny files a reader has to hop through.
 - **Ordinary Rust module discovery.** Keep a module's unit tests in its own file as

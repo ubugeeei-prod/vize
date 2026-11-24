@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Test fresh native SSR modules"
 description = "Require source-built module maps and actual pinned Vue SSR executions"

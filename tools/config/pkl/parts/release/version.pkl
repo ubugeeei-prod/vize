@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 `if` = "github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'"
 name = "Prepare the release candidate"
