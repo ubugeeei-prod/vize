@@ -5,7 +5,8 @@
 
 use std::fmt;
 
-use serde::de::{Error, IgnoredAny, IntoDeserializer, SeqAccess, Visitor};
+use serde::de::value::MapAccessDeserializer;
+use serde::de::{Error, IgnoredAny, IntoDeserializer, MapAccess, SeqAccess, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
 
 use super::ConfigLintRuleOptions;
@@ -77,6 +78,10 @@ impl<'de> Visitor<'de> for VBindStyleConfigVisitor {
         VBindStyle::deserialize(value.into_deserializer()).map(VBindStyleConfig::Style)
     }
 
+    fn visit_map<A: MapAccess<'de>>(self, map: A) -> Result<Self::Value, A::Error> {
+        VBindStyle::deserialize(MapAccessDeserializer::new(map)).map(VBindStyleConfig::Style)
+    }
+
     fn visit_seq<A: SeqAccess<'de>>(self, mut items: A) -> Result<Self::Value, A::Error> {
         let Some(style) = items.next_element::<VBindStyle>()? else {
             return Err(A::Error::custom(
@@ -144,11 +149,21 @@ mod tests {
     }
 
     #[test]
-    fn the_style_string_and_the_upstream_tuple_are_read() {
+    fn the_style_and_the_upstream_tuple_are_read() {
         for (json, style, same_name) in [
             (
                 r#"{"vue/v-bind-style":"longform"}"#,
                 VBindStyle::Longform,
+                VBindSameNameShorthand::Ignore,
+            ),
+            (
+                r#"{"vue/v-bind-style":{"longform":null}}"#,
+                VBindStyle::Longform,
+                VBindSameNameShorthand::Ignore,
+            ),
+            (
+                r#"{"vue/v-bind-style":{"shorthand":null}}"#,
+                VBindStyle::Shorthand,
                 VBindSameNameShorthand::Ignore,
             ),
             (
