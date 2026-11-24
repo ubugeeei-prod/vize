@@ -100,6 +100,61 @@ function useItemEnd(tokens: readonly RustToken[], start: number): number {
   return -1;
 }
 
+const delimiters = new Map([
+  ["(", ")"],
+  ["[", "]"],
+  ["{", "}"],
+]);
+
+function groupEnd(tokens: readonly RustToken[], start: number): number {
+  const open = tokens[start]?.text;
+  const close = delimiters.get(open);
+  if (!close) return start;
+  let depth = 1;
+  let end = start + 1;
+  while (end < tokens.length && depth > 0) {
+    const text = tokens[end++].text;
+    if (text === open) depth++;
+    else if (text === close) depth--;
+  }
+  return end;
+}
+
+function macroDefinitionName(tokens: readonly RustToken[], at: number): number | undefined {
+  const offset =
+    tokens[at].text === "macro"
+      ? 1
+      : tokens[at].text === "macro_rules" && tokens[at + 1]?.text === "!"
+        ? 2
+        : 0;
+  return offset > 0 && tokens[at + offset]?.kind === "ident" ? at + offset : undefined;
+}
+
+function invocation(tokens: readonly RustToken[], at: number): boolean {
+  return (
+    tokens[at].kind === "ident" &&
+    tokens[at + 1]?.text === "!" &&
+    delimiters.has(tokens[at + 2]?.text)
+  );
+}
+
+function macroEnd(tokens: readonly RustToken[], at: number): number {
+  const name = macroDefinitionName(tokens, at);
+  if (name !== undefined) {
+    const end = groupEnd(tokens, name + 1);
+    // A macro item can have a parenthesized matcher followed by its body.
+    return tokens[name + 1]?.text === "(" && tokens[end]?.text === "{"
+      ? groupEnd(tokens, end)
+      : end;
+  }
+  if (invocation(tokens, at)) return groupEnd(tokens, at + 2);
+  if (tokens[at].text === "#") {
+    const open = at + (tokens[at + 1]?.text === "!" ? 2 : 1);
+    if (tokens[open]?.text === "[") return groupEnd(tokens, open);
+  }
+  return at;
+}
+
 /**
  * Sort each run of consecutive `use` items (with their attributes). Import
  * order has no meaning in Rust, so regrouping imports keeps the program.
@@ -114,7 +169,8 @@ export function sortUseRuns(tokens: readonly RustToken[]): RustToken[] {
       [";", "{", "}", "]"].includes(tokens[index - 1].text);
     let end = boundary ? useItemEnd(tokens, index) : -1;
     if (end < 0) {
-      out.push(tokens[index++]);
+      const untouched = Math.max(index + 1, macroEnd(tokens, index));
+      while (index < untouched) out.push(tokens[index++]);
       continue;
     }
     const items: RustToken[][] = [];
@@ -131,14 +187,30 @@ export function sortUseRuns(tokens: readonly RustToken[]): RustToken[] {
 }
 
 function positionCalls(tokens: readonly RustToken[]): string[] {
-  const calls: string[] = [];
-  for (let index = 0; index + 1 < tokens.length; index++) {
-    const token = tokens[index];
-    if (token.kind === "ident" && (token.text === "line" || token.text === "column"))
-      if (tokens[index + 1].text === "!" && ["(", "{", "["].includes(tokens[index + 2]?.text))
-        calls.push(`${token.line}:${token.column}`);
+  const sensitive = new Set(["line", "column"]);
+  const calls: RustToken[] = [];
+  const definitions: { name: string; calls: string[] }[] = [];
+  for (let at = 0; at < tokens.length; at++) {
+    if (invocation(tokens, at)) calls.push(tokens[at]);
+    const name = macroDefinitionName(tokens, at);
+    if (name === undefined) continue;
+    const nested: string[] = [];
+    const end = macroEnd(tokens, at);
+    for (let index = name + 1; index < end; index++) {
+      if (invocation(tokens, index)) nested.push(tokens[index].text);
+    }
+    definitions.push({ name: tokens[name].text, calls: nested });
   }
-  return calls;
+  let previous = 0;
+  do {
+    previous = sensitive.size;
+    for (const definition of definitions) {
+      if (definition.calls.some((name) => sensitive.has(name))) sensitive.add(definition.name);
+    }
+  } while (previous !== sensitive.size);
+  return calls
+    .filter((token) => sensitive.has(token.text))
+    .map((token) => `${token.text}:${token.line}:${token.column}`);
 }
 
 /** Compare one file's two sides. */

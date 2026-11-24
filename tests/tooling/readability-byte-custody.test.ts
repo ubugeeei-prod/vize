@@ -36,6 +36,12 @@ test("a pinned source must be registered, and registering it settles the check",
   });
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
 
+  for (const setting of ["grep.lineNumber", "grep.column", "color.grep"]) {
+    execFileSync("git", ["config", setting, setting === "color.grep" ? "always" : "true"], {
+      cwd: root,
+    });
+  }
+
   const first = checkCustody(root, new Map());
   assert.equal(first.problems.length, 1);
   assert.equal(first.problems[0].startsWith("crates/a/src/pinned.rs: its current bytes"), true);

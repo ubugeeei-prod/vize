@@ -44,7 +44,7 @@ export interface AstResult {
 const scriptExtension = /\.(?:[cm]?[jt]s|[jt]sx|vue)$/u;
 const positionKeys = new Set(["start", "end", "range", "loc"]);
 const semanticComment =
-  /[@#]__(?:PURE|NO_SIDE_EFFECTS)__|@vite-ignore|webpack[A-Z]\w*\s*:|vite-ignore|sourceMappingURL=|^\s*@ts-|^\/\s*<reference\b|\b(?:eslint|oxlint)-(?:disable|enable)|@jsx|@license|@preserve|^\s*!|\bistanbul ignore|\bc8 ignore|\bv8 ignore/u;
+  /[@#]__(?:PURE|NO_SIDE_EFFECTS)__|@vite-ignore|webpack[A-Z]\w*\s*:|vite-ignore|sourceMappingURL=|^\s*@ts-|^\/\s*<reference\b|^\s*(?:eslint(?:-env)?|oxlint)\s+\S|\b(?:eslint|oxlint)-(?:disable|enable)|@jsx|@license|@preserve|^\s*!|\bistanbul ignore|\bc8 ignore|\bv8 ignore/u;
 
 type Lang = "js" | "jsx" | "ts" | "tsx";
 
@@ -70,15 +70,22 @@ function parseScript(path: string, source: string, lang: Lang): ParsedScript {
   if (result.comments.some((comment) => semanticComment.test(comment.value))) {
     let end = 0;
     let offset = 0;
+    let lastCodeEnd = -1;
     for (const comment of result.comments) {
       const gap = source.slice(end, comment.start);
       offset += gap.replace(/\s/gu, "").length;
+      const code = gap.trimEnd();
+      if (code) lastCodeEnd = end + code.length;
       end = comment.end;
       if (!semanticComment.test(comment.value)) continue;
       const next = /^\s*/u.exec(source.slice(end))![0];
       const lineSensitive = /@ts-|(?:eslint|oxlint)-|istanbul|[cv]8 ignore/u.test(comment.value);
       const nextLines = lineSensitive ? next.split(/\r\n|[\r\n\u2028\u2029]/u).length - 1 : 0;
-      semantic.push(JSON.stringify([offset, nextLines, comment.value.trim()]));
+      const sameLine =
+        /\b(?:eslint|oxlint)-disable-line\b/u.test(comment.value) &&
+        lastCodeEnd >= 0 &&
+        !/[\r\n\u2028\u2029]/u.test(source.slice(lastCodeEnd, comment.start));
+      semantic.push(JSON.stringify([offset, nextLines, sameLine, comment.value.trim()]));
     }
   }
   return { tree, semantic, errors: result.errors.length };

@@ -156,3 +156,78 @@ test("Rust punctuation, position macros and conditional bindings keep their dist
     "doc-product-text",
   );
 });
+
+test("lint rule configuration and disable-line targets are semantic", () => {
+  const verdict = (a: string, b: string) => compareScriptFile("a.ts", a, b).verdict;
+  for (const comment of ['/* eslint no-alert: "off" */', '/* oxlint no-alert: "off" */']) {
+    assert.equal(verdict(comment + "\nalert(1);", "alert(1);"), "semantic-comment");
+    assert.equal(
+      verdict("// prose\n" + comment + "\nalert(1);", comment + "\nalert(1);"),
+      "identical",
+    );
+  }
+  for (const newline of ["\n", "\r\n"]) {
+    const directive = "// eslint-disable-line no-alert";
+    assert.equal(
+      verdict("alert(1); /* prose */ " + directive, "alert(1);" + newline + directive),
+      "semantic-comment",
+    );
+    assert.equal(
+      verdict("alert(1); " + directive, "alert(1); /* prose */ " + directive),
+      "identical",
+    );
+  }
+});
+
+test("panic locations accept attributed pointers and retain equal-length path changes", () => {
+  const attributed = (line: number, path: string) =>
+    module(line, "add", path).replace(
+      "panic(ptr @alloc_b)",
+      "panic(ptr noalias nofree noundef readonly align 8 captures(none) dereferenceable(24) @alloc_b)",
+    );
+  const a = attributed(10, "src/lib.rs");
+  const b = attributed(24, "src/mod.rs");
+  assert.equal(normalizeLocations(a).summary.sites, 1);
+  assert.deepEqual(compareWithLocations("demo", a, attributed(24, "src/lib.rs")).changed, []);
+  assert.deepEqual(compareWithLocations("demo", a, b).changed, ["demo::walk"]);
+  assert.deepEqual(compareWithLocations("demo", a, b, { files: true }).changed, []);
+  assert.equal(normalizeLocations(a + "@other = global ptr @alloc_b\n").summary.sites, 0);
+});
+
+test("Rust delimiters and suffixes retain their token-tree semantics", () => {
+  const verdict = (a: string, b: string) => compareRust("lib.rs", a, b).verdict;
+  assert.equal(verdict("fn f() {}", "fn f(){}"), "identical");
+  assert.equal(verdict("m!(x && y);", "m!(x & & y);"), "different");
+  for (const literal of ['"x"', 'br##"x"##', "b'v'", "'q'", 'c"str"']) {
+    assert.equal(verdict("m!(" + literal + "tag);", "m!(" + literal + " tag);"), "different");
+  }
+});
+
+test("import sorting leaves token-tree arguments and macro bodies in source order", () => {
+  const verdict = (a: string) =>
+    compareRust("lib.rs", a, a.replace("use a; use b;", "use b; use a;")).verdict;
+  for (const code of [
+    "m! {use a; use b;}",
+    "foo::m!([ { use a; use b; } ]);",
+    "macro_rules! m { () => { use a; use b; } }",
+    "macro m() { use a; use b; }",
+    "#![m({ use a; use b; })] fn f() {}",
+  ])
+    assert.equal(verdict(code), "different");
+  assert.equal(verdict("mod real { use a; use b; }"), "use-reordered");
+});
+
+test("moving calls to local wrappers of position macros changes their result", () => {
+  for (const macro of ["line", "column"]) {
+    const definitions =
+      "macro_rules! outer { () => { here!() } }\n" +
+      "macro_rules! here { () => { " +
+      macro +
+      "!() } }\n";
+    const call = "const N: u32 = outer!();";
+    assert.equal(
+      compareRust("a.rs", definitions + "// prose\n" + call, definitions + call).verdict,
+      "position-sensitive",
+    );
+  }
+});

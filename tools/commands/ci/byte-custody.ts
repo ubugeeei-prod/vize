@@ -66,7 +66,21 @@ export function digestsOf(bytes: Buffer): { sha256: string; blob: string } {
 function gitGrep(root: string, args: readonly string[]): string {
   const result = spawnSync(
     "git",
-    ["grep", "-I", "-o", ...args, "--", ".", ":!upstream", `:!${registryPath}`],
+    [
+      "-c",
+      "grep.lineNumber=false",
+      "-c",
+      "grep.column=false",
+      "grep",
+      "--no-color",
+      "-I",
+      "-o",
+      ...args,
+      "--",
+      ".",
+      ":!upstream",
+      `:!${registryPath}`,
+    ],
     { cwd: root, encoding: "utf8", maxBuffer: 1 << 30 },
   );
   // Status 1 means "no match".

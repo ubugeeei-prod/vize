@@ -37,7 +37,7 @@ export interface RustLexResult {
   readonly comments: readonly RustComment[];
 }
 
-const punctuation = new Set("!#$%&*+,-./:;<=>?@^|~()[]{}");
+const punctuation = new Set("!#$%&*+,-./:;<=>?@^|~");
 const asciiEnd = 0x80;
 const lastBmpCodePoint = 0xffff;
 const isDigit = (char: string) => char >= "0" && char <= "9";
@@ -204,7 +204,7 @@ class RustLexer {
     while (at < this.source.length) {
       const char = this.source[at];
       if (char === "\\") at += 2;
-      else if (char === quote) return at + 1;
+      else if (char === quote) return this.literalEnd(at + 1);
       else at++;
     }
     return this.source.length;
@@ -217,7 +217,11 @@ class RustLexer {
     if (this.source[start + hashes] !== '"') return -1;
     const close = `"${"#".repeat(hashes)}`;
     const end = this.source.indexOf(close, start + hashes + 1);
-    return end < 0 ? this.source.length : end + close.length;
+    return end < 0 ? this.source.length : this.literalEnd(end + close.length);
+  }
+
+  private literalEnd(close: number): number {
+    return isIdentStart(this.source[close] ?? "") ? this.identEnd(close) : close;
   }
 
   private identEnd(start: number): number {

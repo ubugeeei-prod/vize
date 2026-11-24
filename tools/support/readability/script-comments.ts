@@ -9,6 +9,8 @@
 // that is the usual heuristic and it is deterministic, which is what a
 // ratchet needs.
 
+import { parseSync, Visitor } from "vite";
+
 import { vueScripts } from "./vue-scripts.ts";
 
 export interface ScriptComment {
@@ -197,19 +199,63 @@ class ScriptMasker {
   }
 }
 
-/** Mask one script. */
-export function maskScript(source: string): MaskedScript {
-  return new ScriptMasker(source).run();
+/** JSX children are text until an expression container enters JavaScript again. */
+function maskJsx(source: string, lang: "jsx" | "tsx"): MaskedScript {
+  const parsed = parseSync(`source.${lang}`, source, { lang, sourceType: "unambiguous" });
+  if (parsed.errors.length) return new ScriptMasker(source).run();
+  const out = source.split("");
+  const blank = (start: number, end: number) => {
+    for (let at = start; at < end; at++) if (out[at] !== "\n" && out[at] !== "\r") out[at] = " ";
+  };
+  new Visitor({
+    JSXText(node) {
+      blank(node.start, node.end);
+    },
+    TemplateElement(node) {
+      blank(node.start + 1, node.end - (node.tail ? 1 : 2));
+    },
+    Literal(node) {
+      if (typeof node.value === "string") blank(node.start + 1, node.end - 1);
+      else if ("regex" in node) blank(node.start, node.end);
+    },
+  }).visit(parsed.program);
+  let cursor = 0;
+  let line = 1;
+  const comments = parsed.comments.map((comment): ScriptComment => {
+    while (cursor < comment.start) if (source[cursor++] === "\n") line++;
+    const kind =
+      comment.type === "Line" ? "line" : source.startsWith("/**", comment.start) ? "doc" : "block";
+    blank(comment.start, comment.end);
+    return {
+      kind,
+      line,
+      lines: (kind === "doc" ? comment.value.replace(/^\*/u, "") : comment.value).split("\n"),
+    };
+  });
+  return { code: out.join(""), comments };
 }
 
-/** The `<script>` blocks of a Vue SFC, with everything else blanked to spaces. */
-export function vueScriptSource(source: string): string {
-  const out: string[] = [];
+export function maskScript(source: string, lang?: string): MaskedScript {
+  return lang === "jsx" || lang === "tsx" ? maskJsx(source, lang) : new ScriptMasker(source).run();
+}
+
+/** Preserve SFC offsets while giving each script its own lexical state. */
+export function maskVueScripts(source: string): MaskedScript & { readonly raw: string } {
+  const raw: string[] = [];
+  const code: string[] = [];
+  const comments: ScriptComment[] = [];
+  const gap = (text: string) => text.replace(/[^\r\n]/g, " ");
   let end = 0;
   for (const block of vueScripts(source).blocks) {
-    out.push(source.slice(end, block.loc.start.offset).replace(/[^\r\n]/g, " "), block.content);
+    const blank = gap(source.slice(end, block.loc.start.offset));
+    const masked = maskScript(block.content, block.lang);
+    raw.push(blank, block.content);
+    code.push(blank, masked.code);
+    for (const comment of masked.comments) {
+      comments.push({ ...comment, line: block.loc.start.line + comment.line - 1 });
+    }
     end = block.loc.end.offset;
   }
-  out.push(source.slice(end).replace(/[^\r\n]/g, " "));
-  return out.join("");
+  const tail = gap(source.slice(end));
+  return { raw: raw.join("") + tail, code: code.join("") + tail, comments };
 }

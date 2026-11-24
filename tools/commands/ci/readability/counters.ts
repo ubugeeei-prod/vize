@@ -4,7 +4,7 @@
 // only needs counts that cannot rise unnoticed, not a verdict on each line.
 
 import { lexRust } from "../../../support/readability/rust-tokens.ts";
-import { maskScript, vueScriptSource } from "../../../support/readability/script-comments.ts";
+import { maskScript, maskVueScripts } from "../../../support/readability/script-comments.ts";
 
 export const counterNames = [
   "lines",
@@ -312,6 +312,7 @@ export function countFile(
   if (issueFileName.test(path.split("/").at(-1) ?? "")) counts["issue-names"] = 1;
   let comments: CommentLine[];
   let code: string;
+  let raw = source;
   if (language === "rust") {
     const lexed = lexRust(source);
     const masked = source.split("");
@@ -330,7 +331,9 @@ export function countFile(
       })),
     );
   } else {
-    const masked = maskScript(language === "vue" ? vueScriptSource(source) : source);
+    const vue = language === "vue" ? maskVueScripts(source) : undefined;
+    const masked = vue ?? maskScript(source, path.split(".").at(-1));
+    raw = vue?.raw ?? source;
     code = masked.code;
     comments = masked.comments.flatMap((comment) =>
       comment.lines.map((text, offset) => ({
@@ -349,7 +352,7 @@ export function countFile(
     codeLines,
     language === "rust" ? rustFunction : scriptFunction,
   );
-  const rawLines = (language === "vue" ? vueScriptSource(source) : source).split("\n");
+  const rawLines = raw.split("\n");
   counts["mixed-imports"] = mixedImports(
     language === "rust" ? rustImportGroups(rawLines) : scriptImportGroups(rawLines),
   );

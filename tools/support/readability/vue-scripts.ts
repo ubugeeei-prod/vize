@@ -4,7 +4,7 @@ const fromTests = createRequire(new URL("../../../tests/package.json", import.me
 interface ScriptBlock {
   readonly lang?: string;
   readonly content: string;
-  readonly loc: { start: { offset: number }; end: { offset: number } };
+  readonly loc: { start: { offset: number; line: number }; end: { offset: number } };
 }
 
 // Use the workspace's pinned Vue SFC parser for authored block boundaries.

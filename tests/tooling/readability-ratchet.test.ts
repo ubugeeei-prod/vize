@@ -16,7 +16,7 @@ import {
   type Counts,
 } from "../../tools/commands/ci/readability/counters.ts";
 import { countTree, inScope, main } from "../../tools/commands/ci/readability-ratchet.ts";
-import { maskScript } from "../../tools/support/readability/script-comments.ts";
+import { maskScript, maskVueScripts } from "../../tools/support/readability/script-comments.ts";
 
 const counts = (values: Partial<Counts>): Counts => ({ ...emptyCounts(), ...values });
 
@@ -218,4 +218,42 @@ test("only an initial generated comment excludes a source", (t) => {
   assert.equal(counts.get(files[0])?.["issue-comments"], 1);
   assert.equal(counts.has(files[1]), false);
   assert.equal(main(["--reseed", "--root", root]), 1);
+});
+
+test("Vue script blocks start with independent lexical state and keep their source positions", () => {
+  const sfc = [
+    "<template><span>🦊 // issue #4000</span></template>",
+    "<script>/* issue #2000 */ export default {}</script>",
+    "<script setup>/[/*] #3000/.test(value); // issue #2100",
+    "</script>",
+  ].join("\n");
+  const masked = maskVueScripts(sfc);
+  assert.equal(masked.code.length, sfc.length);
+  assert.deepEqual(
+    masked.comments.map(({ line, kind }) => [line, kind]),
+    [
+      [2, "block"],
+      [3, "line"],
+    ],
+  );
+  assert.equal(countFile("example.vue", sfc, { lines: true })["issue-comments"], 2);
+});
+
+test("JSX text and literal contents leave only JavaScript comments visible", () => {
+  const jsx = [
+    "const n = 1;",
+    'const node = <p title="🦊 // issue #1111">// issue #1234',
+    "{ /* real issue #4567 */ n }{ `// issue #6666 ${n /* issue #5678 */}` }</p>;",
+  ].join("\n");
+  for (const file of ["a.jsx", "a.tsx"]) {
+    assert.equal(countFile(file, jsx, { lines: true })["issue-comments"], 2);
+  }
+  const sfc = '<template><p/></template>\n<script setup lang="tsx">\n' + jsx + "\n</script>";
+  const masked = maskVueScripts(sfc);
+  assert.equal(masked.code.length, sfc.length);
+  assert.deepEqual(
+    masked.comments.map(({ line }) => line),
+    [5, 5],
+  );
+  assert.equal(countFile("a.vue", sfc, { lines: true })["issue-comments"], 2);
 });

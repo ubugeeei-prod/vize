@@ -55,7 +55,7 @@ const locationDefinition =
 const symbolRef = /@(?:"([^"]+)"|([\w.$-]+))/gu;
 const directCall = /\b(?:call|invoke)\b[^@\n]*@(?:"([^"]+)"|([\w.$-]+))\(/u;
 const callerArgument =
-  /\bptr\s+(?:(?:nonnull|noundef|readonly|nocapture|align\s+\d+|dereferenceable(?:_or_null)?\(\d+\))\s+)*(@(?:"([^"]+)"|([\w.$-]+)))\s*\)\s*(?:$|[#,!]|\[|to label\b)/u;
+  /\bptr\s+(?:(?:nonnull|noundef|readonly|nocapture|noalias|nofree|captures\([^()\r\n]*\)|align\s+\d+|dereferenceable(?:_or_null)?\(\d+\))\s+)*(@(?:"([^"]+)"|([\w.$-]+)))\s*\)\s*(?:$|[#,!]|\[|to label\b)/u;
 const panicEntries = new Set([
   "core::panicking::panic",
   "core::panicking::panic_fmt",
@@ -121,15 +121,16 @@ export function normalizeLocations(
   ir: string,
   options: { readonly files?: boolean } = {},
 ): { readonly ir: string; readonly summary: LocationSummary } {
-  const paths = new Map<string, { text: string; size: number }>();
+  const paths = new Map<string, { text: string; size: number; bytes: Buffer }>();
   const lines = ir.split("\n");
   const proved = panicLocations(lines);
   for (const line of lines) {
     const match = pathString.exec(line);
     if (!match) continue;
-    const bytes = decodeLlvmString(match[4]);
-    const text = Buffer.from(bytes).toString("utf8").replace(/\0$/u, "");
-    if (text.endsWith(".rs")) paths.set(match[2], { text, size: Number(match[3]) });
+    const literal = Buffer.from(decodeLlvmString(match[4]));
+    const bytes = literal.at(-1) === 0 ? literal.subarray(0, -1) : literal;
+    const text = bytes.toString("utf8");
+    if (text.endsWith(".rs")) paths.set(match[2], { text, size: Number(match[3]), bytes });
   }
   let sites = 0;
   const files = new Map<string, number>();
@@ -155,12 +156,14 @@ export function normalizeLocations(
           const length = bytes
             .slice(0, 8)
             .reduce((sum, byte, index) => sum + byte * 2 ** (8 * index), 0);
-          const pathLength = Buffer.byteLength(file.text);
+          const pathLength = file.bytes.length;
           if (length !== pathLength && length !== pathLength + 1) return whole;
           sites++;
           files.set(file.text, file.size);
           const kept = options.files ? Array(8).fill(0) : bytes.slice(0, 8);
-          const pointer = options.files ? "@{location-file}" : `@${target}`;
+          const pointer = options.files
+            ? "@{location-file}"
+            : `@vize.location.path.${file.bytes.toString("hex")}`;
           return `${open}${pointer}${middle}${encodeBytes([...kept, ...Array(8).fill(0)])}${close}`;
         },
       );
