@@ -15516,7 +15516,7 @@
           "sha256": "0b12fcd133cc545f3fa2b3502f7067b81813e1d597f15407e08290414bc39cf4"
         },
         {
-          "file": "src/日本語🍣 quoted'\"directory/lib/greet/index.ts",
+          "file": "src/\u65e5\u672c\u8a9e\ud83c\udf63 quoted'\"directory/lib/greet/index.ts",
           "path": "escaped-import-literals-10763/greet.ts.txt",
           "sha256": "e3f0a1233aef0813dca919b61cf564e1af873e12ff1d3186541fd033864a4a93"
         }
@@ -15569,7 +15569,7 @@
           "sha256": "464423219ab43a695eeb8d4674ffdbc7c36a23a856242ee53df67aab439e6b29"
         },
         {
-          "file": "src/日本語🍣 quoted'\"directory/lib/greet/index.ts",
+          "file": "src/\u65e5\u672c\u8a9e\ud83c\udf63 quoted'\"directory/lib/greet/index.ts",
           "path": "escaped-import-literals-10763/greet.ts.txt",
           "sha256": "e3f0a1233aef0813dca919b61cf564e1af873e12ff1d3186541fd033864a4a93"
         }
@@ -78396,11 +78396,7 @@
       "targets": [
         "batch"
       ],
-      "adapters": {
-        "legacy": "batch-typechecker-fixture-v1",
-        "native": null
-      },
-      "test": "script_consumed_slots_keep_public_inference_open",
+      "test": "batch::type_checker::tests::recent_issues::script_consumed_slots::script_consumed_slots_keep_public_inference_open",
       "inputs": [
         {
           "file": "tsconfig.json",
@@ -78416,13 +78412,27 @@
           "file": "src/Parent.vue",
           "path": "script-consumed-slots-13578/Parent.vue.txt",
           "sha256": "e642967db147aaba48d02f1966ef61725237e29ee2c37a9e4d1eec66764b6bf7"
+        },
+        {
+          "file": "cases.json",
+          "path": "script-consumed-slots-13578/cases.json",
+          "sha256": "a344eb85d680e96cc419506a240f080f49579dd9d9285219d1d6d26a26bb3677"
         }
       ],
-      "pack": "script-consumed-slots-13578",
-      "case": "script-consumer",
-      "packReference": {
-        "path": "script-consumed-slots-13578/cases.json",
-        "sha256": "a344eb85d680e96cc419506a240f080f49579dd9d9285219d1d6d26a26bb3677"
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::script_consumed_slots::script_consumed_slots_keep_public_inference_open; script-consumed slots remain open while explicit contracts and inferred payloads stay checked. Input-only registration; no native parity claim."
+          }
+        ]
       }
     }
   ],
