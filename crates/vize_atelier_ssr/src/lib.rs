@@ -22,10 +22,10 @@ pub use codegen::{SsrCodegenContext, SsrCodegenResult, SsrSfcContext};
 pub use compile::compile_ssr_with_vue_parser_quirks;
 pub use compile::{
     compile_l2_to_ssr, compile_l2_to_ssr_with_experimental_options,
-    compile_l2_to_ssr_with_host_context, compile_ssr,
+    compile_l2_to_ssr_with_host_context, compile_ssr, compile_ssr_sfc_template,
     compile_ssr_with_custom_elements_and_template_syntax,
     compile_ssr_with_custom_elements_template_syntax_and_experimental_options,
-    compile_ssr_sfc_template, compile_ssr_with_options, compile_ssr_with_sfc_context,
+    compile_ssr_with_options, compile_ssr_with_sfc_context,
     compile_ssr_with_sfc_context_and_capture, compile_ssr_with_sfc_context_and_codegen_options,
     compile_ssr_with_sfc_context_codegen_options_and_capture, compile_ssr_with_sfc_slotted_context,
     compile_ssr_with_sfc_slotted_context_and_capture, compile_ssr_with_template_syntax,
