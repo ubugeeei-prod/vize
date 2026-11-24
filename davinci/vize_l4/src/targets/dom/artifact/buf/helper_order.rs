@@ -24,7 +24,27 @@ const ALL_ALIASES: u64 = {
 struct OrderCache {
     rank_five_keys: [Option<RankFiveKey>; 8],
     alias_mask: u64,
-    alias_positions: Option<[Option<usize>; 64]>,
+    alias_scan: Option<AliasScan>,
+}
+
+/// The shared lexical scan, stopped where the last question was answered.
+///
+/// The scan reads hoists and then the body once, in order, and records the
+/// first call of every alias it passes. It stops as soon as the alias asked
+/// for is found and resumes from there for the next question, so a module
+/// whose ordering-sensitive helpers are called early is never read to its
+/// end. An alias that is never called costs the rest of the scan, once.
+struct AliasScan {
+    positions: [Option<usize>; 64],
+    /// The bits of the aliases whose first call has been recorded.
+    found: u64,
+    /// The text being scanned: a hoist index, then `hoists.len()` for the
+    /// body, then one past it when everything has been read.
+    text: usize,
+    /// Where to resume inside that text.
+    resume: usize,
+    /// The byte length of the texts before it.
+    offset: usize,
 }
 
 impl Buf {
@@ -83,7 +103,7 @@ impl Buf {
         let mut cache = OrderCache {
             rank_five_keys: [None; 8],
             alias_mask,
-            alias_positions: None,
+            alias_scan: None,
         };
         listed.sort_by(|left, right| {
             left.rank()
@@ -160,11 +180,18 @@ impl Buf {
         cache: &mut OrderCache,
     ) -> Option<usize> {
         if SHARED && cache.alias_mask & helper.bit() != 0 {
-            let alias_mask = cache.alias_mask;
-            let positions = cache
-                .alias_positions
-                .get_or_insert_with(|| self.scan_alias_positions(alias_mask));
-            return positions
+            let scan = cache.alias_scan.get_or_insert(AliasScan {
+                positions: [None; 64],
+                found: 0,
+                text: 0,
+                resume: 0,
+                offset: 0,
+            });
+            if scan.found & helper.bit() == 0 {
+                self.scan_until(scan, helper.bit());
+            }
+            return scan
+                .positions
                 .get(helper.bit().trailing_zeros() as usize)
                 .copied()
                 .flatten();
@@ -172,36 +199,43 @@ impl Buf {
         self.scan_alias_position(helper)
     }
 
-    fn scan_alias_positions(&self, alias_mask: u64) -> [Option<usize>; 64] {
-        let mut positions = [None; 64];
-        let mut remaining = alias_mask;
-        let mut offset = 0;
-        for text in self
+    /// Continue `scan` until the alias with bit `wanted` is first called or
+    /// every text has been read.
+    fn scan_until(&self, scan: &mut AliasScan, wanted: u64) {
+        while let Some(text) = self
             .hoists
-            .iter()
+            .get(scan.text)
             .map(String::as_str)
-            .chain(core::iter::once(self.code.as_str()))
+            .or_else(|| (scan.text == self.hoists.len()).then_some(self.code.as_str()))
         {
-            underscore_call_sites(text, |position, alias| {
+            let AliasScan {
+                positions,
+                found,
+                offset,
+                ..
+            } = scan;
+            let resume = underscore_call_sites(text, scan.resume, |position, alias| {
                 let Some(helper) = Helper::from_alias(alias) else {
                     return false;
                 };
                 let bit = helper.bit();
-                if remaining & bit == 0 {
+                if *found & bit != 0 {
                     return false;
                 }
                 if let Some(slot) = positions.get_mut(bit.trailing_zeros() as usize) {
-                    *slot = Some(offset + position);
-                    remaining &= !bit;
+                    *slot = Some(*offset + position);
+                    *found |= bit;
                 }
-                remaining == 0
+                bit == wanted
             });
-            if remaining == 0 {
-                break;
+            if scan.found & wanted != 0 {
+                scan.resume = resume;
+                return;
             }
-            offset += text.len();
+            scan.offset += text.len();
+            scan.text += 1;
+            scan.resume = 0;
         }
-        positions
     }
 
     fn scan_alias_position(&self, helper: Helper) -> Option<usize> {
@@ -358,17 +392,26 @@ mod tests {
                 buf.push_hoist(hoist.into());
             }
             buf.push(code);
-            let positions = buf.scan_alias_positions(buf.used);
-            for helper in Helper::ALL {
-                assert_eq!(
-                    positions
-                        .get(helper.bit().trailing_zeros() as usize)
-                        .copied()
-                        .flatten(),
-                    buf.scan_alias_position(helper),
-                    "{} in {hoist:?} + {code:?}",
-                    helper.alias(),
-                );
+            // The scan stops at each answer and resumes for the next
+            // question, so the order of the questions must not matter.
+            let mut forward = Helper::ALL.to_vec();
+            let mut backward = forward.clone();
+            backward.reverse();
+            forward.rotate_left(7);
+            for questions in [Helper::ALL.to_vec(), backward, forward] {
+                let mut cache = OrderCache {
+                    rank_five_keys: [None; 8],
+                    alias_mask: super::ALL_ALIASES,
+                    alias_scan: None,
+                };
+                for helper in questions {
+                    assert_eq!(
+                        buf.first_alias_position::<true>(helper, &mut cache),
+                        buf.scan_alias_position(helper),
+                        "{} in {hoist:?} + {code:?}",
+                        helper.alias(),
+                    );
+                }
             }
         }
     }
@@ -398,7 +441,7 @@ mod tests {
         let mut cache = OrderCache {
             rank_five_keys: [None; 8],
             alias_mask: buf.used,
-            alias_positions: None,
+            alias_scan: None,
         };
         assert!(
             buf.first_alias_position::<true>(Helper::MergeProps, &mut cache)
