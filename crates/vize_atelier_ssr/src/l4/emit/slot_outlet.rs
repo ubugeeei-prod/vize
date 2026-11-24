@@ -81,8 +81,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSlot);
         self.ctx.push_indent();
-        self.ctx
-            .push_mapped("_ssrRenderSlot(_ctx.$slots, ", slot.span.start);
+        self.ctx.push("_ssrRenderSlot(_ctx.$slots, ");
         self.ctx.push(&name);
         self.ctx.push(", ");
         self.ctx.push(&props);

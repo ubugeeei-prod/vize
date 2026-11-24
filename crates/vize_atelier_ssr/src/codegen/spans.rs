@@ -24,6 +24,22 @@ impl SsrCodegenContext<'_> {
         self.out.push_mapped(text, source);
     }
 
+    /// Write `text` directly, anchored at the authored byte `source` while a
+    /// map is recorded: one flag test and the plain write without one.
+    #[inline]
+    pub(crate) fn push_anchored(&mut self, text: &str, source: u32) {
+        if self.spans_enabled() {
+            self.anchor_at(source);
+        }
+        self.push(text);
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn anchor_at(&mut self, source: u32) {
+        self.out.anchor(source);
+    }
+
     /// Write `code` directly from the node text `authored`: unchanged from a
     /// slice of the template, it is anchored where that slice was authored.
     pub(crate) fn push_authored_text(&mut self, code: &str, authored: &str) {

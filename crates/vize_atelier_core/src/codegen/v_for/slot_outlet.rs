@@ -18,7 +18,7 @@ use super::super::{
 
 pub(super) fn generate_for_slot_outlet(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.use_helper(RuntimeHelper::RenderSlot);
-    ctx.push_mapped(ctx.helper(RuntimeHelper::RenderSlot), el.loc.span.start);
+    ctx.push(ctx.helper(RuntimeHelper::RenderSlot));
     ctx.push("(_ctx.$slots, ");
     generate_slot_outlet_name(ctx, el);
 

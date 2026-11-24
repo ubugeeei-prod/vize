@@ -2,6 +2,7 @@
 //! control flow, with the legacy lane's fragment-marker rules.
 
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l2::expr::ExprRef;
 use vize_l2::op as l2;
 use vize_l4::targets::dom::artifact::TransformContent;
@@ -193,22 +194,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             return;
         };
         self.ctx.push_expression_text_then(code, span, |out, end| {
-            let spans = [
-                Some(binding.value.span()),
-                binding.key.as_ref().map(|alias| alias.span()),
-                binding.index.as_ref().map(|alias| alias.span()),
-            ];
-            // `, (` follows the source and `, ` separates the aliases.
-            let mut at = end + 3;
-            for ((alias, authored), span) in aliases.iter().zip(authored).zip(spans) {
-                let Some(alias) = alias else {
-                    continue;
-                };
-                if let Some(span) = span.filter(|_| authored == Some(alias.as_str())) {
-                    out.anchor_ahead(at, span.start);
-                }
-                at += alias.len() as u32 + 2;
-            }
+            anchor_for_aliases(out, end, binding, authored, aliases);
         });
     }
 
@@ -233,4 +219,34 @@ pub(super) fn alias<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
         return Err(LegacyReason::Structure.into());
     }
     Ok(source)
+}
+
+/// Anchor each alias written after a loop source that ends at `end`, at the
+/// alias the loop authored: an alias spelled as authored maps to its own
+/// bytes, a rewritten one to nothing. Called only while a map is recorded.
+#[cold]
+#[inline(never)]
+fn anchor_for_aliases(
+    out: &mut EmitDocument,
+    end: u32,
+    binding: &l2::ForBinding<'_>,
+    authored: [Option<&str>; 3],
+    aliases: &[Option<vize_l0::String>; 3],
+) {
+    let spans = [
+        Some(binding.value.span()),
+        binding.key.as_ref().map(|alias| alias.span()),
+        binding.index.as_ref().map(|alias| alias.span()),
+    ];
+    // `, (` follows the source and `, ` separates the aliases.
+    let mut at = end + 3;
+    for ((alias, authored), span) in aliases.iter().zip(authored).zip(spans) {
+        let Some(alias) = alias else {
+            continue;
+        };
+        if let Some(span) = span.filter(|_| authored == Some(alias.as_str())) {
+            out.anchor_ahead(at, span.start);
+        }
+        at += alias.len() as u32 + 2;
+    }
 }

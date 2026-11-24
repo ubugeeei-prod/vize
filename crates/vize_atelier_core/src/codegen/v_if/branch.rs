@@ -131,7 +131,7 @@ fn generate_if_branch_slot(
 ) {
     // Slots don't use blocks in branch output; use renderSlot directly.
     ctx.use_helper(RuntimeHelper::RenderSlot);
-    ctx.push_mapped(ctx.helper(RuntimeHelper::RenderSlot), el.loc.span.start);
+    ctx.push(ctx.helper(RuntimeHelper::RenderSlot));
     ctx.push("(_ctx.$slots, ");
     generate_slot_outlet_name(ctx, el);
     ctx.push(", ");

@@ -90,7 +90,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ElementType::Slot => {
             let helper = ctx.helper(RuntimeHelper::RenderSlot);
             ctx.use_helper(RuntimeHelper::RenderSlot);
-            ctx.push_mapped(helper, el.loc.span.start);
+            ctx.push(helper);
             ctx.push("(_ctx.$slots, ");
             generate_slot_outlet_name(ctx, el);
             let has_slot_props = has_slot_outlet_props(el);
