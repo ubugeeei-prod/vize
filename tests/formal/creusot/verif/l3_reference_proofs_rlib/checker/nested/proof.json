@@ -16,7 +16,7 @@
       "vc_deref_Vec_Op_Global": { "prover": "alt-ergo", "time": 0.01 },
       "vc_deref_Vec_Region_Global": { "prover": "alt-ergo", "time": 0.009 },
       "vc_ne_Option_u32": { "prover": "alt-ergo", "time": 0.01 },
-      "vc_nested": { "prover": "alt-ergo", "time": 0.992 },
+      "vc_nested": { "prover": "alt-ergo", "time": 0.677 },
       "vc_reaches_top": { "prover": "alt-ergo", "time": 0.01 }
     }
   }

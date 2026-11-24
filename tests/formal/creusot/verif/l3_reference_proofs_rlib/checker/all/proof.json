@@ -4,15 +4,15 @@
     "Coma": {
       "vc_all_T": { "prover": "cvc5", "time": 0.107 },
       "vc_call_impl_32_Fn_40_T_41__32__45__62__32_bool": {
-        "prover": "alt-ergo",
-        "time": 0.009
+        "prover": "z3",
+        "time": 0.003
       },
-      "vc_elim_Some": { "prover": "alt-ergo", "time": 0.01 },
-      "vc_elim_Some'0": { "prover": "alt-ergo", "time": 0.01 },
-      "vc_get_T": { "prover": "alt-ergo", "time": 0.01 },
+      "vc_elim_Some": { "prover": "z3", "time": 0.003 },
+      "vc_elim_Some'0": { "prover": "z3", "time": 0.003 },
+      "vc_get_T": { "prover": "z3", "time": 0.003 },
       "vc_into_iter_Range_usize": { "prover": "alt-ergo", "time": 0.009 },
       "vc_len_T": { "prover": "alt-ergo", "time": 0.008 },
-      "vc_next_Range_usize": { "prover": "alt-ergo", "time": 0.01 }
+      "vc_next_Range_usize": { "prover": "z3", "time": 0.003 }
     }
   }
 }
