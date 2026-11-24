@@ -233,21 +233,24 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         )
     });
     let codegen_result = match l2_emit {
-        Some(result) => source_map::attach_compat_map(
-            &root,
-            &codegen_opts,
-            codegen_experimental_options,
-            no_slotted,
-            development,
-            result,
-        )
-        .finish(capture),
+        // Only a mapped compile emits L2 after the transform.
+        Some(result) => {
+            locate_for_aliases(&mut root, source);
+            source_map::attach_compat_map(
+                &root,
+                &codegen_opts,
+                codegen_experimental_options,
+                no_slotted,
+                development,
+                result,
+            )
+            .finish(capture)
+        }
         None => {
             if codegen_opts.source_map {
-                if additive_source_map {
-                    // Its L2 attempt recorded the refusal before the transform.
-                    locate_for_aliases(&mut root, source);
-                } else if use_l2_emit {
+                locate_for_aliases(&mut root, source);
+                // An additive compile recorded its refusal before the transform.
+                if use_l2_emit && !additive_source_map {
                     selection::record(Err(DomLegacyReason::EmitRefused));
                 }
             }
