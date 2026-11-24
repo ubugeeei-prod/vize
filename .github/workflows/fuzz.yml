@@ -52,7 +52,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [ sfc_parse, template_lexer, js_ts_expression, l1_program, css_parse, template_compile, l1_lowering, l2_to_l3_lowering, text_rebuild, folio_parse ]
+        target:
+          [
+            sfc_parse,
+            template_lexer,
+            js_ts_expression,
+            l1_program,
+            css_parse,
+            template_compile,
+            l1_lowering,
+            l2_to_l3_lowering,
+            text_rebuild,
+            folio_parse,
+          ]
     env:
       VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/fuzz"
     steps:
