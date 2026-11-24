@@ -6,8 +6,8 @@ Delete `.handoff/` before this branch merges.
 
 | Item | Branch | State |
 | --- | --- | --- |
-| PR 1 (L0): ratchet, byte-custody registry, identity checkers | `test/readability-ratchet` | **#13638** open, CI running on `cf1e8c06e9`. Auto-merge is off; turn it on once required checks are green and the merged-tree check passes. |
-| PR 2 (L1): house source style | `docs/house-source-style` | pushed, **no PR yet**. Open it after #13638's CI with `pr-bodies/pr2-house-style.md` (replace nothing: it already cites #13638). **Hold for maintainer review: no auto-merge.** |
+| PR 1 (L0): ratchet, byte-custody registry, identity checkers | `test/readability-ratchet` | **#13638** open. CI on `cf1e8c06e9` is green except two shards that are red on main (canon slots from #13603, fixed by #13636; patina column 29→30 from #13616, being fixed on `fix/v-bind-style-config-error-position`). Once both are on main: merge main in, run the merged-tree check, push (with the local `ir-identity` `--crate-type rlib` commit), and enable auto-merge once green. Do not queue before that. |
+| PR 2 (L1): house source style | `docs/house-source-style` | **#13640** open. Held for the maintainer's review: no auto-merge. |
 | PR 3 (pilot): fresco, musea, doctor, marquette, curator, armature | `refactor/house-style-quiet-crates` (this branch) | pushed, **no PR yet**. Waits for #13638 to merge, plus the IR identity and release-size evidence. |
 
 ### Main-merge rule for #13638
@@ -41,8 +41,8 @@ Evidence so far (`readability/token-identity.txt`, `counts.txt`, `test-summary.t
 
 ## Resume steps
 
-1. **IR identity.** `sweep/pilot-evidence.sh ir` (it takes the fleet release lock and needs ≥ 60 GB free). The first attempt failed with `cargo reported no LLVM IR for vize_fresco`. Likely cause: `vize_fresco` builds a `cdylib` as well as an `rlib`, so `emitIr` in `tools/commands/levels/ir-identity.ts` does not find the `.ll` beside a hashed rlib. Investigate (try `--crate` per package, and check `target/release/deps/*.ll`). Fix it in the wrapper or with a per-crate `cargo rustc --crate-type rlib`, then rerun for all 6 crates. Expect `identical` with only Location line and column normalized.
-2. **Release size.** After pushing, run `gh workflow run shipped-profile-measure.yml -f base_sha=<full main sha> -f head_sha=<full pilot sha> -f twins=false`. The `vize` CLI and `vize_vitrine` bytes must be identical.
+1. **IR identity: done, clean.** Release profile with locations normalized: all six crates identical (fresco 586, musea 467, doctor 742, marquette 529, curator 451, armature 235 functions; 541 panic locations normalized; path-string bytes +0). It needed the `--crate-type rlib` fix in `ir-identity.ts`, which is folded into #13638.
+2. **Release size.** Run 45402779037 (`shipped-profile-measure.yml`, base `baddbe9417`, head `7e9f977c1e`, twins off) is in flight; read its summary. The `vize` CLI and `vize_vitrine` bytes must be identical.
 3. **After #13638 merges.** Rebase this branch, delete `.handoff/`, run `node tools/commands/ci/readability-ratchet.ts --write` (it lowers the six areas), squash, fill the `<IR>`, `<SIZE>` and `<TESTS>` cells of `pr-bodies/pr3-pilot.md`, open the PR, and enable auto-merge only once the evidence is clean.
 4. **Next PR (pilot part 2).** Move the 30 sibling `*_tests.rs` / `tests_*.rs` files and the 2 `mod.rs` files to `foo/tests.rs` / `foo.rs`. The `super::` paths change, `parser/tests.rs` is over the limit (don't let it grow), and the moves need test-list parity.
 5. Keep at most one PR in CI. Check `/bin/df -g /Users` ≥ 60 before cargo. Never admin-merge.

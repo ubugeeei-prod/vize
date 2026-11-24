@@ -1,0 +1,16 @@
+Vize dev shell ready.
+Nix provides Node, pnpm, Rust, wasm-pack, wasm-bindgen, and binaryen.
+Run: vp install --frozen-lockfile
+Local defaults: vp check / vp fmt / vp dev / vp build / vp test / vp lint
+identical vize_fresco: 586 functions identical
+identical vize_musea: 467 functions identical
+identical vize_doctor: 742 functions identical
+identical vize_marquette: 529 functions identical
+identical vize_curator: 451 functions identical
+identical vize_armature: 235 functions identical
+  vize_fresco: 133/133 panic locations normalized (base/head); 31/31 location files, 2724/2724 path-string bytes (+0)
+  vize_musea: 108/108 panic locations normalized (base/head); 27/27 location files, 2014/2014 path-string bytes (+0)
+  vize_doctor: 98/98 panic locations normalized (base/head); 33/33 location files, 2407/2407 path-string bytes (+0)
+  vize_marquette: 60/60 panic locations normalized (base/head); 21/21 location files, 1527/1527 path-string bytes (+0)
+  vize_curator: 88/88 panic locations normalized (base/head); 28/28 location files, 2139/2139 path-string bytes (+0)
+  vize_armature: 54/54 panic locations normalized (base/head); 19/19 location files, 1356/1356 path-string bytes (+0)
