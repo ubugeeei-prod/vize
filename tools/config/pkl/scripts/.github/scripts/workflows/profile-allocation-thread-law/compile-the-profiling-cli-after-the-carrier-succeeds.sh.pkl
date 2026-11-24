@@ -1,8 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  module.strictMode
-  "cargo +1.100.0 build --locked --profile ci -p vize --features profiling --message-format json > evidence/profiling-cli-artifacts.jsonl"
-}

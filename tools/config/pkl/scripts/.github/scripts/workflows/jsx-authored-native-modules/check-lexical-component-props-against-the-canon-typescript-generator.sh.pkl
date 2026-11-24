@@ -1,9 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  module.command("cargo", List("test", "--locked", "--profile", "ci", "-p", "vize_canon", "--features", "component-projection-tests", "--test", "component_prop_projection"))
-  module.command("cargo", List("run", "--locked", "--profile", "ci", "-p", "vize_canon", "--features", "component-projection-tests", "--example", "component_projection_alloc"))
-  module.command("cargo", List("test", "--locked", "--profile", "ci", "-p", "vize_canon", "--features", "component-projection-tests", "--test", "component_prop_projection", "--", "corpus::component_props_in_original_modules", "--exact", "--ignored", "--nocapture"))
-}

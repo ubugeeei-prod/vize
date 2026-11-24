@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-version=$(node "$VIZE_CI_FILES/read-pinned-sass-version.ts")
-npm install --prefix "$RUNNER_TEMP/scss-oracle" --no-audit --no-fund --ignore-scripts --save-exact "sass@$version" @vue/compiler-sfc@3.5.35 @jridgewell/sourcemap-codec@1.6.0 postcss-selector-parser@7.1.6

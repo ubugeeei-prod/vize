@@ -1,4 +1,5 @@
 import "../../Actions.pkl" as ci
+import "../../RustFeatureTests.pkl" as features
 
 name = "Rust product checks"
 on {
@@ -241,6 +242,12 @@ jobs {
     }
   }
 
+  // Experimental Cargo features the workspace suites never enable.
+  `rust-feature-tests` = features.job(
+    "${{ fromJSON(inputs.rust-plan).featureMatrix }}",
+    "${{ inputs.run-rust && fromJSON(inputs.rust-plan).featureTests }}"
+  )
+
   `rust-product-report` {
     name = "Rust product report"
     permissions {
@@ -250,7 +257,7 @@ jobs {
     }
     // A superseded run reports nothing: its required check fails in test-report.
     `if` = "${{ always() && !contains(needs.*.result, 'cancelled') }}"
-    needs = List("pr-rust-shard")
+    needs = List("pr-rust-shard", "rust-feature-tests")
     `runs-on` = "ubuntu-24.04"
     `timeout-minutes` = 10
     steps = new Listing {
@@ -281,6 +288,7 @@ jobs {
         name = "Require the complete Rust tier"
         env {
           RUN_RUST = "${{ inputs.run-rust }}"
+          FEATURE_TESTS = "${{ fromJSON(inputs.rust-plan).featureTests }}"
           NEEDS_JSON = "${{ toJSON(needs) }}"
           GH_TOKEN = "${{ github.token }}"
         }

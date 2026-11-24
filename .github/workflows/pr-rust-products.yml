@@ -65,8 +65,7 @@ jobs:
       - name: Test complete Inspector production and descriptor oracles
         if: ${{ matrix.cohort == 'cli-and-integrations' && contains(fromJSON(inputs.rust-plan).packages, 'vize') }}
         run: >-
-          node --test tests/tooling/inspector-production-mode.test.ts
-          tests/tooling/inspector-ssr-css-vars.test.ts
+          node --test tests/tooling/inspector-production-mode.test.ts tests/tooling/inspector-ssr-css-vars.test.ts
       - name: Test canonical native content classification
         if: ${{ matrix.cohort == 'lint-and-format' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}
         run: node --test tests/tooling/patina-native-svg-content-oracle.test.ts
@@ -177,13 +176,52 @@ jobs:
             ${{ runner.temp }}/mounted-runtime-producer-failures/*.stderr.bin
           if-no-files-found: ignore
           retention-days: 7
+  rust-feature-tests:
+    name: Rust feature tests (${{ matrix.row }})
+    if: ${{ inputs.run-rust && fromJSON(inputs.rust-plan).featureTests }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.rust-plan).featureMatrix }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      NODE_OPTIONS: --disable-warning=DEP0040 --disable-warning=DEP0169
+      ROW: ${{ matrix.row }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+          components: clippy
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        if: runner.os == 'Linux'
+        with:
+          wild-version: 0.9.0
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: rust-feature-tests
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install frozen source dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Run the feature row
+        run: node tools/commands/ci/rust-feature-tests.ts run "$ROW"
 
   rust-product-report:
     name: Rust product report
     permissions: { contents: read, actions: read, pull-requests: read }
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
-    needs: [pr-rust-shard]
+    needs: [pr-rust-shard, rust-feature-tests]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -205,6 +243,7 @@ jobs:
       - name: Require the complete Rust tier
         env:
           RUN_RUST: ${{ inputs.run-rust }}
+          FEATURE_TESTS: ${{ fromJSON(inputs.rust-plan).featureTests }}
           NEEDS_JSON: ${{ toJSON(needs) }}
           GH_TOKEN: ${{ github.token }}
         run: node tools/support/compat/github/require-rust-tier.ts --products
