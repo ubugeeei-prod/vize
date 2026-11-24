@@ -40,7 +40,7 @@ export interface CustodyRow {
 }
 
 const sourceExtensions =
-  /\.(?:rs|ts|tsx|js|mjs|cjs|mts|vue|pkl|sh|md|toml|json|css|scss|lua|scm|yml|yaml|html|el|vim|nix)$/u;
+  /\.(?:rs|[cm]?[jt]s|[jt]sx|vue|pkl|sh|md|toml|json|css|scss|lua|scm|yml|yaml|html|el|vim|nix)$/u;
 // Fixtures are oracles and `.github/` is generated from Pkl, so no sweep ever
 // edits them; the registry covers hand-written sources only.
 const fixturePath =
@@ -144,6 +144,8 @@ export function renderRegistry(rows: Iterable<CustodyRow>): string {
 export interface CustodyReport {
   /** Failures: an unregistered pin or an enforced file whose bytes moved. */
   readonly problems: readonly string[];
+  /** Registered sources whose reviewed bytes have changed without a replacement pin. */
+  readonly unresolved: readonly string[];
   /** Rows `--write` would refresh or drop. */
   readonly stale: readonly string[];
   /** The registry as `--write` would leave it. */
@@ -168,6 +170,7 @@ export function checkCustody(
     if (hits.length) pinned.set(file, hits);
   }
   const problems: string[] = [];
+  const unresolved: string[] = [];
   const stale: string[] = [];
   for (const row of registry.values()) {
     const now = current.get(row.path);
@@ -177,28 +180,41 @@ export function checkCustody(
     }
     const recorded = row.digests.map((digest) => digest.split(":")[1]);
     const unchanged = recorded.includes(now.sha256) || recorded.includes(now.blob);
-    if (!unchanged && row.class === "enforced" && !pinned.has(row.path))
+    if (!unchanged && row.class === "enforced" && !pinned.has(row.path)) {
+      unresolved.push(row.path);
       problems.push(
         `${row.path}: its bytes are pinned by ${row.owners.join(", ") || "a test"} and changed. ` +
           "Release the pin through the custody procedure (freeze it under tests/_fixtures) " +
           `or re-pin it, then run --write to update ${registryPath}.`,
       );
-    else if (!unchanged || !pinned.has(row.path))
+    } else if (!unchanged || !pinned.has(row.path))
       stale.push(`${row.path}: ${unchanged ? "no longer pinned" : "re-pinned or edited"}`);
   }
   // A pinned file that moved keeps its gone row's class: the bytes are the same.
-  const goneByDigest = new Map<string, CustodyRow>();
-  for (const row of registry.values())
-    if (!current.has(row.path)) for (const digest of row.digests) goneByDigest.set(digest, row);
-  const movedFrom = new Map<string, CustodyRow>();
-  for (const [file, digests] of pinned) {
-    const from = registry.has(file)
-      ? undefined
-      : digests.map((d) => goneByDigest.get(d)).find(Boolean);
-    if (from) {
-      movedFrom.set(file, from);
-      stale.push(`${file}: moved from ${from.path}`);
+  const goneByDigest = new Map<string, CustodyRow | null>();
+  for (const row of registry.values()) {
+    if (current.has(row.path)) continue;
+    for (const digest of row.digests) {
+      goneByDigest.set(digest, goneByDigest.has(digest) ? null : row);
     }
+  }
+  const destinations = new Map<CustodyRow, string[]>();
+  for (const [file, digests] of pinned) {
+    if (registry.has(file)) continue;
+    const matches = new Set(
+      digests.map((digest) => goneByDigest.get(digest)).filter((row) => row !== undefined),
+    );
+    const [from] = matches;
+    if (matches.size !== 1 || !from) continue;
+    const paths = destinations.get(from) ?? [];
+    paths.push(file);
+    destinations.set(from, paths);
+  }
+  const movedFrom = new Map<string, CustodyRow>();
+  for (const [from, paths] of destinations) {
+    if (paths.length !== 1) continue;
+    movedFrom.set(paths[0], from);
+    stale.push(`${paths[0]}: moved from ${from.path}`);
   }
   const unregistered = [...pinned.keys()].filter(
     (file) => !registry.has(file) && !movedFrom.has(file),
@@ -240,7 +256,7 @@ export function checkCustody(
       owners: ownerList(file),
     } satisfies CustodyRow;
   });
-  return { problems, stale, next };
+  return { problems, unresolved, stale, next };
 }
 
 function readClasses(file: string): Map<string, CustodyClass> {
@@ -265,6 +281,10 @@ export function main(argv: readonly string[], root = process.cwd()): number {
       `${report.problems.length} problem(s), ${report.stale.length} stale row(s)`,
   );
   if (write) {
+    if (report.unresolved.length) {
+      for (const problem of report.problems) console.error(problem);
+      return 1;
+    }
     fs.writeFileSync(file, renderRegistry(report.next));
     console.log(`  wrote ${registryPath}`);
     return 0;

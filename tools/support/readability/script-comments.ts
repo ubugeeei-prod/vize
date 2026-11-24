@@ -9,6 +9,8 @@
 // that is the usual heuristic and it is deterministic, which is what a
 // ratchet needs.
 
+import { vueScripts } from "./vue-scripts.ts";
+
 export interface ScriptComment {
   /** `doc` is `/** … *\/`; `line` is `//`; `block` is any other `/* … *\/`. */
   readonly kind: "line" | "block" | "doc";
@@ -39,6 +41,8 @@ const expressionKeywords = new Set([
   "await",
 ]);
 
+const controlKeywords = new Set(["if", "while", "for", "with", "switch", "catch"]);
+
 const isWordChar = (char: string) => /[\p{L}\p{N}_$]/u.test(char);
 
 class ScriptMasker {
@@ -49,6 +53,8 @@ class ScriptMasker {
   private line = 1;
   /** `true` when the last significant token ends an expression, so `/` divides. */
   private afterExpression = false;
+  private pendingControl = false;
+  private readonly controlParens: boolean[] = [];
   /** Brace depth at each open template substitution. */
   private readonly templates: number[] = [];
   private braces = 0;
@@ -80,10 +86,16 @@ class ScriptMasker {
       this.braces--;
       this.template(this.index + 1);
     } else if (isWordChar(char)) this.word();
-    else {
+    else if ((char === "+" || char === "-") && next === char) {
+      this.index += 2;
+      this.pendingControl = false;
+    } else {
+      if (char === "(") this.controlParens.push(this.pendingControl);
+      this.pendingControl = false;
       if (char === "{") this.braces++;
       if (char === "}") this.braces--;
-      this.afterExpression = char === ")" || char === "]" || char === "}";
+      this.afterExpression =
+        char === ")" ? !this.controlParens.pop() : char === "]" || char === "}";
       this.index++;
     }
   }
@@ -124,7 +136,7 @@ class ScriptMasker {
     let at = this.index + 1;
     while (at < this.source.length) {
       const char = this.source[at];
-      if (char === "\\") at += 2;
+      if (char === "\\") at += this.source.startsWith("\r\n", at + 1) ? 3 : 2;
       else if (char === quote || char === "\n") break;
       else at++;
     }
@@ -139,7 +151,7 @@ class ScriptMasker {
     let substitution = false;
     while (at < this.source.length) {
       const char = this.source[at];
-      if (char === "\\") at += 2;
+      if (char === "\\") at += this.source.startsWith("\r\n", at + 1) ? 3 : 2;
       else if (char === "`") break;
       else if (char === "$" && this.source[at + 1] === "{") {
         substitution = true;
@@ -178,7 +190,9 @@ class ScriptMasker {
   private word(): void {
     let end = this.index + 1;
     while (end < this.source.length && isWordChar(this.source[end])) end++;
-    this.afterExpression = !expressionKeywords.has(this.source.slice(this.index, end));
+    const word = this.source.slice(this.index, end);
+    this.pendingControl = controlKeywords.has(word);
+    this.afterExpression = !expressionKeywords.has(word);
     this.index = end;
   }
 }
@@ -191,19 +205,11 @@ export function maskScript(source: string): MaskedScript {
 /** The `<script>` blocks of a Vue SFC, with everything else blanked to spaces. */
 export function vueScriptSource(source: string): string {
   const out: string[] = [];
-  let inside = false;
-  for (const text of source.split("\n")) {
-    if (!inside && /^\s*<script\b/u.test(text)) {
-      inside = !/<\/script>/u.test(text);
-      out.push("");
-      continue;
-    }
-    if (inside && /^\s*<\/script>/u.test(text)) {
-      inside = false;
-      out.push("");
-      continue;
-    }
-    out.push(inside ? text : "");
+  let end = 0;
+  for (const block of vueScripts(source).blocks) {
+    out.push(source.slice(end, block.loc.start.offset).replace(/[^\r\n]/g, " "), block.content);
+    end = block.loc.end.offset;
   }
-  return out.join("\n");
+  out.push(source.slice(end).replace(/[^\r\n]/g, " "));
+  return out.join("");
 }

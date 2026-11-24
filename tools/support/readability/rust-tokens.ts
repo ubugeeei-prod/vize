@@ -94,7 +94,12 @@ class RustLexer {
     else if (isIdentStart(char)) this.push("ident", this.identEnd(this.index));
     // Unknown symbols are kept as punctuation so they can never hide.
     else
-      this.push("punct", this.index + 1, { joint: punctuation.has(next) && punctuation.has(char) });
+      this.push("punct", this.index + 1, {
+        joint:
+          punctuation.has(next) &&
+          punctuation.has(char) &&
+          !(next === "/" && ["/", "*"].includes(this.source[this.index + 2])),
+      });
   }
 
   private advanceTo(end: number): void {

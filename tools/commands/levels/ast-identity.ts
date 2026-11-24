@@ -21,6 +21,7 @@ import fs from "node:fs";
 import { parseSync } from "vite";
 
 import { isEntrypoint } from "../../support/command-runtime.ts";
+import { vueScripts } from "../../support/readability/vue-scripts.ts";
 import { changedPairs } from "../../support/readability/revision-pairs.ts";
 
 export type AstVerdict =
@@ -61,33 +62,41 @@ interface ParsedScript {
 
 function parseScript(path: string, source: string, lang: Lang): ParsedScript {
   const result = parseSync(path, source, { lang, sourceType: "unambiguous" });
-  const tree = JSON.stringify(result.program, (key, value: unknown) =>
-    positionKeys.has(key) ? undefined : value,
-  );
-  const semantic = result.comments
-    .map((comment) => comment.value)
-    .filter((value) => semanticComment.test(value))
-    .map((value) => value.trim());
+  const tree = JSON.stringify(result.program, (key, value: unknown) => {
+    if (positionKeys.has(key)) return undefined;
+    return typeof value === "bigint" ? String(value) : value;
+  });
+  const semantic: string[] = [];
+  if (result.comments.some((comment) => semanticComment.test(comment.value))) {
+    let end = 0;
+    let offset = 0;
+    for (const comment of result.comments) {
+      const gap = source.slice(end, comment.start);
+      offset += gap.replace(/\s/gu, "").length;
+      end = comment.end;
+      if (!semanticComment.test(comment.value)) continue;
+      const next = /^\s*/u.exec(source.slice(end))![0];
+      const lineSensitive = /@ts-|(?:eslint|oxlint)-|istanbul|[cv]8 ignore/u.test(comment.value);
+      const nextLines = lineSensitive ? next.split(/\r\n|[\r\n\u2028\u2029]/u).length - 1 : 0;
+      semantic.push(JSON.stringify([offset, nextLines, comment.value.trim()]));
+    }
+  }
   return { tree, semantic, errors: result.errors.length };
 }
 
-interface VueParts {
-  readonly scripts: readonly { lang: Lang; source: string }[];
-  /** The SFC with each script block's contents replaced by a marker. */
-  readonly rest: string;
-}
-
-function vueParts(source: string): VueParts {
-  const scripts: { lang: Lang; source: string }[] = [];
-  const rest = source.replace(
-    /(<script\b([^>]*)>)([\s\S]*?)(<\/script>)/gu,
-    (_whole, open: string, attributes: string, body: string, close: string) => {
-      const lang = /\blang\s*=\s*["']?(tsx|ts|jsx|js)\b/u.exec(attributes)?.[1] as Lang | undefined;
-      scripts.push({ lang: lang ?? "js", source: body });
-      return `${open}\u0000${scripts.length - 1}${close}`;
-    },
-  );
-  return { scripts, rest };
+function vueParts(source: string) {
+  const { blocks, errors } = vueScripts(source);
+  const rest: string[] = [];
+  let end = 0;
+  const scripts = blocks.map((block) => {
+    rest.push(source.slice(end, block.loc.start.offset));
+    end = block.loc.end.offset;
+    const lang: Lang =
+      block.lang === "ts" || block.lang === "tsx" || block.lang === "jsx" ? block.lang : "js";
+    return { lang, source: block.content };
+  });
+  rest.push(source.slice(end));
+  return { scripts, rest, errors };
 }
 
 function compareScripts(path: string, before: ParsedScript, after: ParsedScript): AstResult {
@@ -114,7 +123,9 @@ export function compareScriptFile(path: string, before?: string, after?: string)
   }
   const left = vueParts(before);
   const right = vueParts(after);
-  if (left.rest !== right.rest) return { path, verdict: "template-changed" };
+  if (left.errors.length || right.errors.length) return { path, verdict: "parse-error" };
+  if (JSON.stringify(left.rest) !== JSON.stringify(right.rest))
+    return { path, verdict: "template-changed" };
   for (const [index, script] of left.scripts.entries()) {
     const other = right.scripts[index];
     const name = `${path}#script${index}`;

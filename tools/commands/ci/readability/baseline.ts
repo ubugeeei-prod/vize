@@ -11,8 +11,8 @@
 //   violation must be paid for by removing one. The budget of deleted files
 //   may pay for growth in another area, so a cross-area rename is free too.
 //
-// `--write` records the current counts, which can only lower the totals,
-// because it refuses to run while the comparison fails.
+// `--write` refuses increases in enforced counters. Advisory totals follow
+// the current source and can rise or fall.
 
 import { counterNames, emptyCounts, type CounterName, type Counts } from "./counters.ts";
 

@@ -82,6 +82,8 @@ const excludedFiles = new Set([
 const lengthExemptPrefixes = ["tools/commands/", "tools/support/"];
 // A generated file says so in its first lines.
 const headerLength = 400;
+const leadingComments =
+  /^(?:\uFEFF|#![^\n]*(?:\n|$))?(?:\s*(?:\/\/[^\n]*|\/\*[\s\S]*?(?:\*\/|$)|<!--[\s\S]*?(?:-->|$)))*/u;
 const generatedHeader =
   /@generated|do not edit|auto-?generated|generated (?:by|from)|this file is generated/iu;
 
@@ -104,7 +106,8 @@ export function countTree(root: string, files?: readonly string[]): Map<string, 
     const absolute = path.join(root, file);
     if (!fs.lstatSync(absolute, { throwIfNoEntry: false })?.isFile()) continue;
     const source = fs.readFileSync(absolute, "utf8");
-    if (generatedHeader.test(source.slice(0, headerLength))) continue;
+    if (generatedHeader.test(leadingComments.exec(source.slice(0, headerLength))?.[0] ?? ""))
+      continue;
     sources.set(file, source);
     if (file.endsWith(".rs"))
       for (const module of rustTestModules(file, source))
@@ -147,6 +150,10 @@ function option(argv: readonly string[], name: string): string | undefined {
 }
 
 export function main(argv: readonly string[]): number {
+  if (argv.includes("--reseed") && !argv.includes("--write")) {
+    console.error("--reseed requires --write");
+    return 1;
+  }
   const root = path.resolve(option(argv, "--root") ?? process.cwd());
   const baselineFile = path.resolve(root, option(argv, "--baseline") ?? baselinePath);
   const filesAt = argv.indexOf("--files");
@@ -185,14 +192,12 @@ export function main(argv: readonly string[]): number {
       console.error(["Refusing to raise the baseline:", ...describe(failures)].join("\n"));
       return 1;
     }
-    fs.writeFileSync(baselineFile, renderBaseline(current));
-    console.log(`  wrote ${path.relative(root, baselineFile)}`);
   } else if (failures.length) {
     console.error([...describe(failures), "", ...advice].join("\n"));
     status = 1;
   } else if (comparison.lowerable)
     console.log(`  ${comparison.lowerable} baseline row(s) can be lowered with --write`);
-  if (!argv.includes("--no-custody") && !argv.includes("--reseed")) {
+  if (!argv.includes("--no-custody")) {
     const registryFile = path.join(root, registryPath);
     const registry = fs.existsSync(registryFile)
       ? parseRegistry(fs.readFileSync(registryFile, "utf8"))
@@ -203,6 +208,10 @@ export function main(argv: readonly string[]): number {
     );
     for (const problem of report.problems) console.error(`  ${problem}`);
     if (report.problems.length) status = 1;
+  }
+  if (argv.includes("--write") && status === 0) {
+    fs.writeFileSync(baselineFile, renderBaseline(current));
+    console.log(`  wrote ${path.relative(root, baselineFile)}`);
   }
   return status;
 }

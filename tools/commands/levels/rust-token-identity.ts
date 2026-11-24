@@ -50,7 +50,7 @@ export interface TokenResult {
 }
 
 const productTextMarkers =
-  /#\[derive\([^)]*\b(?:Parser|Args|Subcommand|ValueEnum)\b|#\[napi\b|#\[wasm_bindgen\b|#\[(?:command|arg|clap)\(/u;
+  /#\s*\[\s*(?:cfg_attr\s*\([^\]]*?,\s*)?(?:derive\s*\([^)]*\b(?:Parser|Args|Subcommand|ValueEnum)\b|(?:[\w:]+::)?(?:napi|wasm_bindgen)\b|(?:command|arg|clap)\s*\()/u;
 const failing = new Set<TokenVerdict>([
   "doc-product-text",
   "position-sensitive",
@@ -135,7 +135,8 @@ function positionCalls(tokens: readonly RustToken[]): string[] {
   for (let index = 0; index + 1 < tokens.length; index++) {
     const token = tokens[index];
     if (token.kind === "ident" && (token.text === "line" || token.text === "column"))
-      if (tokens[index + 1].text === "!") calls.push(`${token.line}:${token.column}`);
+      if (tokens[index + 1].text === "!" && ["(", "{", "["].includes(tokens[index + 2]?.text))
+        calls.push(`${token.line}:${token.column}`);
   }
   return calls;
 }

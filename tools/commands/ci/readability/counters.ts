@@ -39,12 +39,13 @@ export const fileLineLimit = 500;
 export const functionLineLimit = 120;
 
 const issueReference = /(?<![\w&])#\d{3,6}\b|\b(?:issue|PR|pull)\s*#?\d{3,6}\b|\bgh-\d{3,}\b/iu;
-const liveTodo = /\b(?:TODO|FIXME)\(#\d+\)/u;
+const liveTodo = /\b(?:TODO|FIXME)\(#\d+\)/gu;
 const keepMarker =
   /^\s*(?:SAFETY|INVARIANT|Invariant|PANIC|TODO|FIXME|XXX|HACK|eslint|oxlint|@ts-|prettier|rustfmt|clippy|#region|#endregion|shellcheck|@vite-ignore|istanbul|c8|v8)/u;
 const issueFileName = /[-_]\d{3,6}(?=[-_.]|$)/u;
 const rustIssueTest = /(?:^|_)(?:issue_?|pr_?|gh_?)?\d{3,6}(?:_|$)/u;
-const scriptTestTitle = /\b(?:test|it|describe)(?:\.\w+)?\s*\(\s*(["'`])((?:\\.|(?!\1).)*)\1/gu;
+const scriptTestTitle =
+  /(?<![\w$.])\b(?:test|it|describe)(?:\.\w+)?\s*\(\s*(["'`])((?:\\.|(?!\1).)*)\1/gu;
 const stopWords = new Set(
   "the a an of to in on for is are be this that it its and or with by as at from into we our".split(
     " ",
@@ -137,7 +138,7 @@ function commentCounts(comments: readonly CommentLine[], codeLines: readonly str
   let issues = 0;
   let restating = 0;
   for (const comment of comments)
-    if (issueReference.test(comment.text) && !liveTodo.test(comment.text)) issues++;
+    if (issueReference.test(comment.text.replace(liveTodo, ""))) issues++;
   const blocks: CommentLine[][] = [];
   for (const comment of comments) {
     const last = blocks.at(-1)?.at(-1);
@@ -281,17 +282,19 @@ function hardcodedLimits(codeLines: readonly string[], named: RegExp): number {
   return count;
 }
 
-function testNameIssues(language: Language, source: string): number {
+function testNameIssues(language: Language, source: string, code: string): number {
   if (language === "rust") {
     let count = 0;
-    for (const match of source.matchAll(
+    for (const match of code.matchAll(
       /#\[(?:tokio::)?test\b[^\]]*\](?:\s*#\[[^\]]*\])*\s*(?:async\s+)?fn\s+(\w+)/gu,
     ))
       if (rustIssueTest.test(match[1])) count++;
     return count;
   }
   let count = 0;
-  for (const match of source.matchAll(scriptTestTitle)) if (issueReference.test(match[2])) count++;
+  for (const match of source.matchAll(scriptTestTitle)) {
+    if (code[match.index] === source[match.index] && issueReference.test(match[2])) count++;
+  }
   return count;
 }
 
@@ -307,7 +310,6 @@ export function countFile(
   const lines = lineCount(source);
   if (options.lines && lines > fileLineLimit) counts.lines = lines;
   if (issueFileName.test(path.split("/").at(-1) ?? "")) counts["issue-names"] = 1;
-  counts["issue-names"] += testNameIssues(language, source);
   let comments: CommentLine[];
   let code: string;
   if (language === "rust") {
@@ -338,6 +340,7 @@ export function countFile(
       })),
     );
   }
+  counts["issue-names"] += testNameIssues(language, source, code);
   const codeLines = code.split("\n");
   const commentResult = commentCounts(comments, codeLines);
   counts["issue-comments"] = commentResult.issues;

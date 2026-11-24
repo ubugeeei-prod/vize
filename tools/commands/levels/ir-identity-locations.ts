@@ -28,7 +28,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 
 import { isEntrypoint } from "../../support/command-runtime.ts";
-import { isIdentical } from "../../support/levels/ir-normalize.ts";
+import { demangleV0, isIdentical } from "../../support/levels/ir-normalize.ts";
 import {
   comparePackage,
   emitIr,
@@ -49,6 +49,48 @@ const pathString =
   /^@("?)([^"\s]+)\1 = [^=]*?constant \[(\d+) x i8\] c"((?:[^"\\]|\\[0-9A-Fa-f]{2}|\\\\)*)"/u;
 const location =
   /(<?\{ ptr )@("?)([^"\s,]+)\2(, \[16 x i8\] c")((?:[^"\\]|\\[0-9A-Fa-f]{2}|\\\\)*)(" \}>?)/gu;
+
+const locationDefinition =
+  /^@(?:"([^"]+)"|([\w.$-]+))\s*=\s*[^=]*?\bconstant\s+<?\{\s*ptr,\s*\[16 x i8\]\s*\}>?\s+/u;
+const symbolRef = /@(?:"([^"]+)"|([\w.$-]+))/gu;
+const directCall = /\b(?:call|invoke)\b[^@\n]*@(?:"([^"]+)"|([\w.$-]+))\(/u;
+const callerArgument =
+  /\bptr\s+(?:(?:nonnull|noundef|readonly|nocapture|align\s+\d+|dereferenceable(?:_or_null)?\(\d+\))\s+)*(@(?:"([^"]+)"|([\w.$-]+)))\s*\)\s*(?:$|[#,!]|\[|to label\b)/u;
+const panicEntries = new Set([
+  "core::panicking::panic",
+  "core::panicking::panic_fmt",
+  "core::panicking::panic_bounds_check",
+  "core::option::unwrap_failed",
+  "core::result::unwrap_failed",
+]);
+
+/** Normalize a global only if every use supplies the caller location of a known panic entry. */
+function panicLocations(lines: readonly string[]): Set<string> {
+  const candidates = new Set<string>();
+  for (const line of lines) {
+    const match = locationDefinition.exec(line);
+    if (match) candidates.add(match[1] ?? match[2]);
+  }
+  const proved = new Set<string>();
+  for (const line of lines) {
+    if (line.trimStart().startsWith(";")) continue;
+    let knownArgument: number | undefined;
+    const argument = callerArgument.exec(line);
+    if (argument && candidates.has(argument[2] ?? argument[3])) {
+      const callee = directCall.exec(line);
+      if (callee && panicEntries.has(demangleV0(callee[1] ?? callee[2]) ?? "")) {
+        knownArgument = argument.index + argument[0].lastIndexOf(argument[1]);
+      }
+    }
+    for (const match of line.matchAll(symbolRef)) {
+      const name = match[1] ?? match[2];
+      if (!candidates.has(name) || (match.index === 0 && locationDefinition.test(line))) continue;
+      if (match.index === knownArgument) proved.add(name);
+      else candidates.delete(name);
+    }
+  }
+  return new Set([...proved].filter((name) => candidates.has(name)));
+}
 
 /** LLVM spells non-printable bytes of a `c"…"` string as `\XX` escapes. */
 export function decodeLlvmString(body: string): number[] {
@@ -80,41 +122,50 @@ export function normalizeLocations(
   options: { readonly files?: boolean } = {},
 ): { readonly ir: string; readonly summary: LocationSummary } {
   const paths = new Map<string, { text: string; size: number }>();
-  for (const line of ir.split("\n")) {
+  const lines = ir.split("\n");
+  const proved = panicLocations(lines);
+  for (const line of lines) {
     const match = pathString.exec(line);
     if (!match) continue;
     const bytes = decodeLlvmString(match[4]);
-    const text = String.fromCharCode(...bytes.filter((byte) => byte !== 0));
+    const text = Buffer.from(bytes).toString("utf8").replace(/\0$/u, "");
     if (text.endsWith(".rs")) paths.set(match[2], { text, size: Number(match[3]) });
   }
   let sites = 0;
   const files = new Map<string, number>();
-  const rewritten = ir.replace(
-    location,
-    (
-      whole,
-      open: string,
-      _quote: string,
-      target: string,
-      middle: string,
-      body: string,
-      close: string,
-    ) => {
-      const file = paths.get(target);
-      const bytes = decodeLlvmString(body);
-      if (!file || bytes.length !== 16) return whole;
-      // Bytes 0-7 are the path length (little endian), 8-11 the line, 12-15 the column.
-      const length = bytes
-        .slice(0, 8)
-        .reduce((sum, byte, index) => sum + byte * 2 ** (8 * index), 0);
-      if (length !== file.text.length && length !== file.text.length + 1) return whole;
-      sites++;
-      files.set(file.text, file.size);
-      const kept = options.files ? Array(8).fill(0) : bytes.slice(0, 8);
-      const pointer = options.files ? "@{location-file}" : `@${target}`;
-      return `${open}${pointer}${middle}${encodeBytes([...kept, ...Array(8).fill(0)])}${close}`;
-    },
-  );
+  const rewritten = lines
+    .map((line) => {
+      const definition = locationDefinition.exec(line);
+      if (!definition || !proved.has(definition[1] ?? definition[2])) return line;
+      return line.replace(
+        location,
+        (
+          whole,
+          open: string,
+          _quote: string,
+          target: string,
+          middle: string,
+          body: string,
+          close: string,
+        ) => {
+          const file = paths.get(target);
+          const bytes = decodeLlvmString(body);
+          if (!file || bytes.length !== 16) return whole;
+          // Bytes 0-7 are the path length (little endian), 8-11 the line, 12-15 the column.
+          const length = bytes
+            .slice(0, 8)
+            .reduce((sum, byte, index) => sum + byte * 2 ** (8 * index), 0);
+          const pathLength = Buffer.byteLength(file.text);
+          if (length !== pathLength && length !== pathLength + 1) return whole;
+          sites++;
+          files.set(file.text, file.size);
+          const kept = options.files ? Array(8).fill(0) : bytes.slice(0, 8);
+          const pointer = options.files ? "@{location-file}" : `@${target}`;
+          return `${open}${pointer}${middle}${encodeBytes([...kept, ...Array(8).fill(0)])}${close}`;
+        },
+      );
+    })
+    .join("\n");
   return { ir: rewritten, summary: { sites, files } };
 }
 

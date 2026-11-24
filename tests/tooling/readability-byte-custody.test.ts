@@ -8,6 +8,7 @@ import { test } from "node:test";
 import {
   checkCustody,
   digestsOf,
+  main as custodyMain,
   parseRegistry,
   registryPath,
   renderRegistry,
@@ -53,10 +54,15 @@ test("a pinned source must be registered, and registering it settles the check",
   const registry = parseRegistry(fs.readFileSync(path.join(root, registryPath), "utf8"));
   assert.deepEqual(checkCustody(root, registry).problems, []);
 
+  const recordOnly = new Map(
+    [...registry].map(([file, row]) => [file, { ...row, class: "record-only" as const }]),
+  );
+
   // Moving the pinned file unchanged keeps its row's class.
   fs.renameSync(path.join(root, "crates/a/src/pinned.rs"), path.join(root, "crates/a/src/kept.rs"));
   execFileSync("git", ["add", "-A"], { cwd: root });
-  const moved = checkCustody(root, registry);
+  const moved = checkCustody(root, recordOnly);
+  assert.equal(moved.next.find((row) => row.path === "crates/a/src/kept.rs")?.class, "record-only");
   assert.deepEqual(
     [moved.problems, moved.stale],
     [
@@ -67,17 +73,22 @@ test("a pinned source must be registered, and registering it settles the check",
       ],
     ],
   );
+  const copy = path.join(root, "crates/a/src/copy.cts");
+  fs.copyFileSync(path.join(root, "crates/a/src/kept.rs"), copy);
+  execFileSync("git", ["add", "."], { cwd: root });
+  assert.equal(checkCustody(root, recordOnly).problems.length, 2);
+  fs.unlinkSync(copy);
   fs.renameSync(path.join(root, "crates/a/src/kept.rs"), path.join(root, "crates/a/src/pinned.rs"));
   execFileSync("git", ["add", "-A"], { cwd: root });
 
   // Editing the enforced file without re-pinning it is a custody violation.
   fs.writeFileSync(path.join(root, "crates/a/src/pinned.rs"), "pub fn pinned() { }\n");
   assert.equal(checkCustody(root, registry).problems.length, 1);
+  const registered = fs.readFileSync(path.join(root, registryPath), "utf8");
+  assert.equal(custodyMain(["--write"], root), 1);
+  assert.equal(fs.readFileSync(path.join(root, registryPath), "utf8"), registered);
 
   // A record-only row only goes stale.
-  const recordOnly = new Map(
-    [...registry].map(([file, row]) => [file, { ...row, class: "record-only" as const }]),
-  );
   const report = checkCustody(root, recordOnly);
   assert.deepEqual(report.problems, []);
   assert.deepEqual(report.stale, ["crates/a/src/pinned.rs: re-pinned or edited"]);

@@ -114,3 +114,45 @@ test("IR identity normalizes panic-location lines and columns only", () => {
     }).changed;
   assert.deepEqual([split(false), split(true)], [["demo::walk"], []]);
 });
+
+test("identity keeps semantic comments with their call, and reads only top-level SFC scripts", () => {
+  const left = "const a = /*#__PURE__*/ f(1n); const b = f(2n);";
+  assert.equal(compareScriptFile("a.ts", left, "// prose\n" + left).verdict, "identical");
+  const moved = "const a = f(1n); const b = /*#__PURE__*/ f(2n);";
+  assert.equal(compareScriptFile("a.ts", left, moved).verdict, "semantic-comment");
+  const fake = "<template><!-- <script>/* prose */</script> --><p/></template>";
+  assert.equal(
+    compareScriptFile("a.vue", fake, fake.replace("prose", "edited")).verdict,
+    "template-changed",
+  );
+});
+
+test("only exclusively used panic caller constants are normalized", () => {
+  const ir = module(10, "add");
+  assert.equal(
+    normalizeLocations(ir.replace(/@_RNvNtCs1_4core9panicking5panic/gu, "@store")).summary.sites,
+    0,
+  );
+  assert.equal(
+    normalizeLocations(ir + "declare void @keep(ptr)\n@table = global ptr @alloc_b\n").summary
+      .sites,
+    0,
+  );
+  const text = "a".repeat(150_000);
+  assert.equal(
+    normalizeLocations(`@long = private constant [${text.length} x i8] c"${text}"`).summary.sites,
+    0,
+  );
+});
+
+test("Rust punctuation, position macros and conditional bindings keep their distinctions", () => {
+  const same = (a: string, b: string) => compareRust("lib.rs", a, b).verdict;
+  assert.equal(same("let a = (x,/* note */y);", "let a = (x, y);"), "identical");
+  assert.equal(same("// note\nif line != 0 {}", "if line != 0 {}"), "identical");
+  assert.equal(same("// note\nlet n = line!();", "let n = line!();"), "position-sensitive");
+  const conditional = '#[cfg_attr(feature="cli", derive(clap::Parser))]\n';
+  assert.equal(
+    same("/// First\n" + conditional + "struct App;", "/// Second\n" + conditional + "struct App;"),
+    "doc-product-text",
+  );
+});
