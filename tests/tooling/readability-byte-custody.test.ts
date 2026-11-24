@@ -132,13 +132,19 @@ test("freezing requires a tracked regular fixture with every recorded digest", (
   execFileSync("git", ["add", "--", fixture], { cwd: root });
   fs.writeFileSync(fixture, "changed\n");
   assert.deepEqual(checkCustody(root, registry).unresolved, [source]);
+  execFileSync("git", ["add", "--", fixture], { cwd: root });
+  fs.writeFileSync(fixture, bytes);
+  assert.deepEqual(checkCustody(root, registry).unresolved, [source]);
   fs.unlinkSync(fixture);
   const copy = path.join(root, "stand-in.rs");
   fs.writeFileSync(copy, bytes);
   fs.symlinkSync(copy, fixture);
   assert.deepEqual(checkCustody(root, registry).unresolved, [source]);
+  execFileSync("git", ["add", "--", fixture], { cwd: root });
   fs.unlinkSync(fixture);
   fs.writeFileSync(fixture, bytes);
+  assert.deepEqual(checkCustody(root, registry).unresolved, [source]);
+  execFileSync("git", ["add", "--", fixture], { cwd: root });
 
   const partial = {
     ...original[0],

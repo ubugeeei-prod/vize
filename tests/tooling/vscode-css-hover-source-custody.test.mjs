@@ -370,7 +370,7 @@ await test("historical anchors and the pinned integrated product tree remain qua
     (change) => change.path === source,
   );
   assert.equal(
-    execFileSync("git", ["hash-object", frozen], { encoding: "utf8" }).trim(),
+    execFileSync("git", ["hash-object", "--no-filters", frozen], { encoding: "utf8" }).trim(),
     reviewed.after.oid,
   );
   assert.equal(report.currentContracts.changes.length, 1);

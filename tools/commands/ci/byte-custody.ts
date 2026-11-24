@@ -16,7 +16,7 @@
 // which `--write` refreshes or drops. New rows are `enforced` until a person
 // classifies them, which is the safe default for the sweeps.
 
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -167,13 +167,30 @@ export interface CustodyReport {
 }
 
 // Historical admissions keep their original bytes after the live implementation moves on.
-function hasFrozenCopy(root: string, tracked: readonly string[], row: CustodyRow): boolean {
+function hasFrozenCopy(root: string, row: CustodyRow): boolean {
   const fixture = `tests/_fixtures/byte-custody/${row.path}`;
-  if (!tracked.includes(fixture)) return false;
   const file = path.join(root, fixture);
   if (!fs.lstatSync(file, { throwIfNoEntry: false })?.isFile()) return false;
 
-  const { sha256, blob } = digestsOf(fs.readFileSync(file));
+  const entry = execFileSync(
+    "git",
+    [
+      "--literal-pathspecs",
+      "ls-files",
+      "--format=%(objectmode) %(objectname) %(stage)",
+      "--",
+      fixture,
+    ],
+    { cwd: root, encoding: "utf8" },
+  ).trimEnd();
+  const regular = /^(?:100644|100755) ([0-9a-f]+) 0$/u.exec(entry);
+  if (!regular) return false;
+  const indexed = execFileSync("git", ["cat-file", "blob", regular[1]], {
+    cwd: root,
+    maxBuffer: 1 << 30,
+  });
+  if (!indexed.equals(fs.readFileSync(file))) return false;
+  const { sha256, blob } = digestsOf(indexed);
   return row.digests.every((digest) => digest === `sha256:${sha256}` || digest === `blob:${blob}`);
 }
 
@@ -207,7 +224,7 @@ export function checkCustody(
     const recorded = row.digests.map((digest) => digest.split(":")[1]);
     const unchanged = recorded.includes(now.sha256) || recorded.includes(now.blob);
     if (!unchanged && row.class === "enforced" && !pinned.has(row.path)) {
-      if (hasFrozenCopy(root, tracked, row)) {
+      if (hasFrozenCopy(root, row)) {
         stale.push(`${row.path}: its historical bytes are frozen; its live row will be dropped`);
         continue;
       }
