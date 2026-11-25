@@ -109,6 +109,24 @@ Creusot accepts only with a trusted declaration, and the proofs admit none.
 | `an_update_is_recompute_and_reorders_allocate_nothing` | an update equals recompute; a reorder allocates nothing       | 2 roots         | none                | kani   |
 | `allocation_is_exactly_the_inserted_delta`             | allocation is exactly the inserted delta                      | 1 insertion     | none                | kani   |
 
+## L2 script recovery and assignability (`davinci/vize_l2/src/query/script/assignments`)
+
+Kani files, deleted: `assignments/kani.rs` and `assignments/prefix/kani.rs`.
+Their bounds were the whole `u32` domain and every primitive pair with one
+representative value per type. Creusot roots: `assignments/prefix/creusot.rs`
+(package `tests/formal/creusot/recovery`), over the contracts of
+`frame::rebase` and `frame::retry_limit`, and `assignments/creusot.rs`
+(package `tests/formal/creusot/assignability`), over the contract of
+`relation::accepts`: a primitive annotation is assignable from a literal type
+exactly when they are the same primitive. A literal is modelled by its value,
+and the value sets of the three primitives are disjoint.
+
+| Kani harness                                     | Law                                                                                                                  | Kani bound                                 | Creusot replacement                                                                       | Status |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------- | ------ |
+| `cold_retries_fit_the_remaining_byte_budget`     | the next cold-open limit is at most the first label, below a nonzero failed end, and fits twice into the bytes spent | whole `u32` domain                         | `cold_retries_fit_the_remaining_byte_budget` over the contract of `frame::retry_limit`    | proved |
+| `moving_a_checked_source_interval_is_lossless`   | relocating a checked interval keeps it in the new block, keeps its length and moves back                             | whole `u32` domain                         | `moving_a_checked_source_interval_is_lossless` over the contract of `frame::rebase`       | proved |
+| `literal_membership_is_necessary_and_sufficient` | an annotation accepts a literal exactly when the literal's value is in the annotation's value set                    | 3 annotations, every boolean, `u64`, `u16` | `literal_membership_is_necessary_and_sufficient` over the contract of `relation::accepts` | proved |
+
 ## HTML content-model kernel (`crates/vize_patina/src/html_content_model`)
 
 Kani file, deleted with its last harness: `html_content_model/kani.rs`. Its
