@@ -13,7 +13,7 @@ use std::path::Path;
 /// resolve outside every authored scope, so the host spells none of those.
 const SETUP_LIB_TYPES: &[(&str, &str, [usize; 2])] = &[
     ("Element", "type Element = never", [0, 0]),
-    ("Exclude", "type Exclude<T, U> = never", [2, 2]),
+    ("Exclude", "type Exclude<T, U> = never", [1, 2]),
     ("Extract", "type Extract<T, U> = never", [1, 1]),
     (
         "HTMLElementTagNameMap",

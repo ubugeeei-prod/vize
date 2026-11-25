@@ -26,7 +26,7 @@ fn check_fallthrough_attrs_follow_inherit_attrs_and_root_shape() {
 }
 
 #[test]
-fn check_fallthrough_attrs_keep_single_component_root_forwarding_open() {
+fn check_single_component_root_forwarding_follows_fallthrough_attributes() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
@@ -55,6 +55,27 @@ defineProps<{ modelValue?: string }>();
         )],
     );
 
+    // `strictTemplates` alone does not infer the root's attributes: the root
+    // component's prop is unknown on `Child`, as vue-tsc reports it.
+    let report = run_check_json(&project_root, &corsa_path);
+    assert_error_diagnostics(
+        "fallthrough-component-root-strict",
+        &report,
+        &[
+            r#"error:4:29 [TS2353] Object literal may only specify known properties, and '"modelValue"' does not exist in type '$ComponentCheckProps<Props, $CheckTail>'. (source: <template><Child title="ok" model-value="draft" data-test-id="base-input" w-48px /></template>)"#,
+        ],
+    );
+    // With `fallthroughAttributes`, the root component's props are `Child`'s.
+    let tsconfig = project_root.join("tsconfig.json");
+    let strict = std::fs::read_to_string(&tsconfig).unwrap();
+    std::fs::write(
+        &tsconfig,
+        strict.replace(
+            r#""strictTemplates": true"#,
+            r#""strictTemplates": true, "fallthroughAttributes": true"#,
+        ),
+    )
+    .unwrap();
     let report = run_check_json(&project_root, &corsa_path);
     assert_clean("fallthrough-component-root-open", &report);
     let _ = std::fs::remove_dir_all(project_root);

@@ -3532,7 +3532,7 @@
       "sourceRevision": "a58a9ed3a59120922707ac9ec929a8d610ccc531",
       "packReference": {
         "path": "check-unknown-props-config-4918/cases.json",
-        "sha256": "13fd2f6df1b30ee160278e592ceec75f1e043cb879d00a0ff0f6d43bb88ed554"
+        "sha256": "4a859cdb7a271d40bc821d7c675907670bcdb0a5e9689d289ea12eeb33fc018d"
       },
       "inputs": [
         {
@@ -3584,7 +3584,7 @@
       "sourceRevision": "a58a9ed3a59120922707ac9ec929a8d610ccc531",
       "packReference": {
         "path": "check-unknown-props-config-4918/cases.json",
-        "sha256": "13fd2f6df1b30ee160278e592ceec75f1e043cb879d00a0ff0f6d43bb88ed554"
+        "sha256": "4a859cdb7a271d40bc821d7c675907670bcdb0a5e9689d289ea12eeb33fc018d"
       },
       "inputs": [
         {
@@ -3636,7 +3636,7 @@
       "sourceRevision": "a58a9ed3a59120922707ac9ec929a8d610ccc531",
       "packReference": {
         "path": "check-unknown-props-config-4918/cases.json",
-        "sha256": "13fd2f6df1b30ee160278e592ceec75f1e043cb879d00a0ff0f6d43bb88ed554"
+        "sha256": "4a859cdb7a271d40bc821d7c675907670bcdb0a5e9689d289ea12eeb33fc018d"
       },
       "inputs": [
         {
@@ -3693,7 +3693,7 @@
       "sourceRevision": "a58a9ed3a59120922707ac9ec929a8d610ccc531",
       "packReference": {
         "path": "check-unknown-props-config-4918/cases.json",
-        "sha256": "13fd2f6df1b30ee160278e592ceec75f1e043cb879d00a0ff0f6d43bb88ed554"
+        "sha256": "4a859cdb7a271d40bc821d7c675907670bcdb0a5e9689d289ea12eeb33fc018d"
       },
       "inputs": [
         {
@@ -15516,7 +15516,7 @@
           "sha256": "0b12fcd133cc545f3fa2b3502f7067b81813e1d597f15407e08290414bc39cf4"
         },
         {
-          "file": "src/\u65e5\u672c\u8a9e\ud83c\udf63 quoted'\"directory/lib/greet/index.ts",
+          "file": "src/日本語🍣 quoted'\"directory/lib/greet/index.ts",
           "path": "escaped-import-literals-10763/greet.ts.txt",
           "sha256": "e3f0a1233aef0813dca919b61cf564e1af873e12ff1d3186541fd033864a4a93"
         }
@@ -15569,7 +15569,7 @@
           "sha256": "464423219ab43a695eeb8d4674ffdbc7c36a23a856242ee53df67aab439e6b29"
         },
         {
-          "file": "src/\u65e5\u672c\u8a9e\ud83c\udf63 quoted'\"directory/lib/greet/index.ts",
+          "file": "src/日本語🍣 quoted'\"directory/lib/greet/index.ts",
           "path": "escaped-import-literals-10763/greet.ts.txt",
           "sha256": "e3f0a1233aef0813dca919b61cf564e1af873e12ff1d3186541fd033864a4a93"
         }
@@ -43034,7 +43034,7 @@
       },
       "packReference": {
         "path": "required-default-props/cases.json",
-        "sha256": "652725e01be53de61a16c1a5f532989adc2e3e01115eabae24beac550db87b78"
+        "sha256": "c6f89c54bb50809aa8959bd4667c61a97277dc27757652eb7333bcbf2ba33ef1"
       },
       "inputs": [
         {
@@ -43105,7 +43105,7 @@
       },
       "packReference": {
         "path": "required-default-props/cases.json",
-        "sha256": "652725e01be53de61a16c1a5f532989adc2e3e01115eabae24beac550db87b78"
+        "sha256": "c6f89c54bb50809aa8959bd4667c61a97277dc27757652eb7333bcbf2ba33ef1"
       },
       "inputs": [
         {
