@@ -166,7 +166,7 @@ const shardEvidence = (directory, files) => ({
 const vectorDigests = (directory, names) =>
   Object.fromEntries(names.map((name) => [name, sha256(readFileSync(join(directory, name)))]));
 
-export function validateObserverArtifact(observer, directory) {
+export function validateObserverArtifact(observer, directory, cwd = process.cwd()) {
   const receipt = readJson(join(directory, "observer.json"));
   assert.equal(receipt.schema, "vize.canonical-corpus-observer", "Foreign observer receipt");
   assert.equal(receipt.version, 1, "Unknown observer receipt version");
@@ -198,9 +198,9 @@ export function validateObserverArtifact(observer, directory) {
     identity.filesSha256,
     "Canonical file manifest was replaced",
   );
-  validateNativeWalk(directory, identity, proof, files);
+  validateNativeWalk(directory, identity, proof, files, cwd);
   if (nativeRecapture)
-    validateRecordRecapture(directory, identity, files, proof, receipt.recapture);
+    validateRecordRecapture(directory, identity, files, proof, receipt.recapture, cwd);
   else assert.equal(receipt.recapture, undefined, "Unexpected native recapture relation");
   const bytes = readFileSync(join(directory, observerLogs[observer]));
   assert.equal(sha256(bytes), receipt.logSha256, "Observer log was replaced");
@@ -283,7 +283,7 @@ export function recordObserver(observer, outcome, cwd, env = process.env) {
       ? { vectorSha256: vectorDigests(directory, inspected.vectors) }
       : {}),
   });
-  return validateObserverArtifact(observer, directory);
+  return validateObserverArtifact(observer, directory, cwd);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

@@ -171,6 +171,7 @@ function baseline(
   files: VueFile[],
   proof: FiniteProof,
   observationName?: string,
+  cwd = process.cwd(),
 ) {
   assert.equal(
     proof.traversal,
@@ -188,7 +189,7 @@ function baseline(
     identity.filesSha256,
     "Strict snapshot files changed",
   );
-  validateNativeWalk(directory, identity, proof, files);
+  validateNativeWalk(directory, identity, proof, files, cwd);
   const original = json<VueFile[]>(directory, "original-kernel-files.json");
   const names = observationName
     ? [observationName]
@@ -209,6 +210,7 @@ export function validateRecordRecapture(
   files: VueFile[],
   proof: FiniteProof,
   value: unknown,
+  cwd = process.cwd(),
 ): RecordRecaptureRelation {
   const relation = value;
 
@@ -247,7 +249,7 @@ export function validateRecordRecapture(
       typeof fields.directory === "string",
     "Foreign recapture archive names",
   );
-  const initial = baseline(directory, identity, files, proof, fields.baselineObservation);
+  const initial = baseline(directory, identity, files, proof, fields.baselineObservation, cwd);
   const currentIdentity = json<SnapshotIdentity>(recaptureDirectory, "identity.json");
   const currentProof = json<FiniteProof>(recaptureDirectory, "committed-corpus.json");
   const currentFiles = json<VueFile[]>(recaptureDirectory, "files.json");
@@ -268,7 +270,11 @@ export function validateRecordRecapture(
     currentIdentity.committedSha256,
     "Recapture proof digest changed",
   );
-  const { receipt, paths, original } = validateNativeSource(recaptureDirectory, currentIdentity);
+  const { receipt, paths, original } = validateNativeSource(
+    recaptureDirectory,
+    currentIdentity,
+    cwd,
+  );
   assert.deepEqual(
     nativeWalkIdentity(receipt),
     currentIdentity.nativeWalk,
@@ -352,7 +358,7 @@ export function captureRecordRecapture(
   files: VueFile[],
   proof: FiniteProof,
 ): RecordRecaptureRelation {
-  const initial = baseline(directory, identity, files, proof);
+  const initial = baseline(directory, identity, files, proof, undefined, cwd);
   const destination = mkdtempSync(join(directory, "record-recapture-"));
   const current = captureCorpus(cwd, env, {
     directory: destination,
@@ -394,5 +400,5 @@ export function captureRecordRecapture(
     cut: qualified.cut,
     finiteFiles: files.length,
   };
-  return validateRecordRecapture(directory, identity, files, proof, relation);
+  return validateRecordRecapture(directory, identity, files, proof, relation, cwd);
 }

@@ -75,6 +75,10 @@ function physicalTree(nodes: CorpusNodes, observation: NativeObservation) {
       );
     }
   }
+  for (const node of nodes.values()) {
+    if (!node.path || node.path.split("/").some(excluded)) continue;
+    assert(entries.has(node.path), `Missing committed physical entry: ${node.path}`);
+  }
   for (const entry of entries.values()) {
     const owner = parent(entry.path);
     assert(
