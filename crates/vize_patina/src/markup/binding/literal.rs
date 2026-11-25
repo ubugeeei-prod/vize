@@ -11,7 +11,9 @@ impl<'a> MarkupBinding<'a> {
         }
         if let MarkupBindingInner::Jsx { node, .. } = self.inner
             && let Some(JSXAttributeValue::ExpressionContainer(container)) =
-                &jsx_attribute_ref(node).value
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                &unsafe { jsx_attribute_ref(node) }.value
             && let JSXExpression::StringLiteral(value) = &container.expression
         {
             return Some(value.value.as_str());

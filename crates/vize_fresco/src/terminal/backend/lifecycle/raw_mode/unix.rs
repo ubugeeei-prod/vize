@@ -134,6 +134,8 @@ pub(in crate::terminal::backend::lifecycle) fn emergency_restore_raw_mode() -> b
     let Some(snapshot) = RawSnapshotReader::acquire() else {
         return true;
     };
+    // SAFETY: the reader holds the published snapshot, so its descriptor is
+    // open and `original` is the initialized termios `tcgetattr` returned.
     // `tcsetattr` is a direct libc operation: it does not allocate or take
     // Fresco/stdout locks. State remains active so unwind cleanup can retry.
     unsafe {
