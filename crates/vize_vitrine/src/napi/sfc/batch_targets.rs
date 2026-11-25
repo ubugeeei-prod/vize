@@ -146,12 +146,12 @@ fn compile_for_targets(
     // graph. The named guard must stay alive until the parallel map has joined.
     #[deny(let_underscore_drop)]
     let _type_resolution_batch = vize_atelier_sfc::begin_type_resolution_batch();
-    let rows: Vec<Vec<(BatchFileResultNapi, bool)>> = files
+    let rows: Vec<(Vec<(BatchFileResultNapi, bool)>, bool)> = files
         .into_par_iter()
         .map(|file| {
             let mut row = compile_file_for_targets(file, &shared, &targets);
-            leave_out_shared_dependencies(&mut row);
-            row
+            let shared = leave_out_shared_dependencies(&mut row);
+            (row, shared)
         })
         .collect();
     let time_ms = start.elapsed().as_secs_f64() * 1000.0;
@@ -166,8 +166,8 @@ fn compile_for_targets(
         })
         .collect();
     let mut dependencies_shared = Vec::with_capacity(total_count);
-    for row in rows {
-        dependencies_shared.push(dependencies_left_out(&row));
+    for (row, shared) in rows {
+        dependencies_shared.push(shared);
         for (target, (result, compiled)) in per_target.iter_mut().zip(row) {
             if compiled {
                 target.success_count += 1;
@@ -185,10 +185,11 @@ fn compile_for_targets(
 }
 
 /// Drop each later target's `dependencies` when they are the first target's,
-/// but only when every later target's are: the row then says so with one flag.
-fn leave_out_shared_dependencies(row: &mut [(BatchFileResultNapi, bool)]) {
+/// but only when every later target's are, and say whether it did. A later
+/// result without a list (a failed compile) is not one that shares it.
+pub(super) fn leave_out_shared_dependencies(row: &mut [(BatchFileResultNapi, bool)]) -> bool {
     let Some(((first, _), later)) = row.split_first_mut() else {
-        return;
+        return false;
     };
     if later.is_empty()
         || first.dependencies.is_none()
@@ -196,25 +197,12 @@ fn leave_out_shared_dependencies(row: &mut [(BatchFileResultNapi, bool)]) {
             .iter()
             .any(|(result, _)| result.dependencies != first.dependencies)
     {
-        return;
+        return false;
     }
     for (result, _) in later {
         result.dependencies = None;
     }
-}
-
-/// Whether `leave_out_shared_dependencies` left this row's later lists out.
-fn dependencies_left_out(row: &[(BatchFileResultNapi, bool)]) -> bool {
-    match row.split_first() {
-        Some(((first, _), later)) => {
-            first.dependencies.is_some()
-                && !later.is_empty()
-                && later
-                    .iter()
-                    .all(|(result, _)| result.dependencies.is_none())
-        }
-        None => false,
-    }
+    true
 }
 
 /// The parts of a file's result every target reports alike.
