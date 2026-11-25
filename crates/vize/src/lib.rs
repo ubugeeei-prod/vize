@@ -36,6 +36,12 @@ pub mod lint_plan;
 /// Shared native CLI entrypoint.
 pub mod cli;
 
+/// Format one source text with `vize fmt`'s configuration and file policies.
+#[cfg(feature = "glyph")]
+pub mod format_api {
+    pub use crate::commands::fmt::source_api::{FormatConfig, FormatSettings, format_source};
+}
+
 /// Failure-safe source replacement shared with the native bindings.
 pub mod source_write {
     pub use crate::commands::atomic_write::atomic_write;

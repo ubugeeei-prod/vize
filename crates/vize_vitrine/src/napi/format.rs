@@ -91,6 +91,38 @@ pub struct FormatResultNapi {
 
 fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
     let mut options = FormatOptions::default();
+    apply_overrides(&mut options, opts)?;
+    Ok(options)
+}
+
+/// The Vue version an options object selects, if it names one.
+pub(super) fn vue_version_override(opts: &FormatOptionsNapi) -> Result<Option<VueVersion>> {
+    opts.vue_version
+        .as_deref()
+        .map(|version| {
+            VueVersion::from_config_str(version)
+                .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))
+        })
+        .transpose()
+}
+
+/// The import sorting an options object selects, if it names one.
+pub(super) fn sort_imports_override(
+    opts: &FormatOptionsNapi,
+) -> Result<Option<Option<vize_glyph::ImportSortOptions>>> {
+    let Some(value) = opts.sort_imports.as_ref() else {
+        return Ok(None);
+    };
+    let setting = serde_json::from_value::<vize_l0::config::SortImportsSetting>(value.clone())
+        .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
+    resolve_sort_imports(Some(&setting))
+        .map(Some)
+        .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))
+}
+
+/// Apply an options object on top of `options`: a preset first, then every
+/// option it names, as command-line flags apply over a project config.
+pub(super) fn apply_overrides(options: &mut FormatOptions, opts: FormatOptionsNapi) -> Result<()> {
     if let Some(preset) = opts.preset.as_deref() {
         options.apply_preset(match preset {
             "vize" => FormatPreset::Vize,
@@ -230,7 +262,7 @@ fn apply_options(opts: FormatOptionsNapi) -> Result<FormatOptions> {
         options.reindent_preprocessor_styles = value;
     }
 
-    Ok(options)
+    Ok(())
 }
 
 /// Format a Vue SFC source string.
@@ -240,23 +272,8 @@ pub fn format_sfc_napi(
     options: Option<FormatOptionsNapi>,
 ) -> Result<FormatResultNapi> {
     let options = options.unwrap_or_default();
-    let vue_version = options
-        .vue_version
-        .as_deref()
-        .map(|version| {
-            VueVersion::from_config_str(version)
-                .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))
-        })
-        .transpose()?
-        .unwrap_or_default();
-    let sorting = options
-        .sort_imports
-        .as_ref()
-        .map(|value| serde_json::from_value::<vize_l0::config::SortImportsSetting>(value.clone()))
-        .transpose()
-        .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
-    let sorting = resolve_sort_imports(sorting.as_ref())
-        .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
+    let vue_version = vue_version_override(&options)?.unwrap_or_default();
+    let sorting = sort_imports_override(&options)?.flatten();
     let options = apply_options(options)?;
     let allocator = Allocator::with_capacity(source.len() * 2);
     let result = GlyphFormatter::new_with_vue_version(&options, &allocator, vue_version)

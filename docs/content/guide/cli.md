@@ -172,6 +172,20 @@ Default discovery formats Vue, JavaScript/TypeScript, TSRX and JSON/JSONC files.
 | `--preset`                         | Apply `vize`, `prettier`, `compact` or `documentation` formatter defaults |
 | `--profile`                        | Print timing profile                                 |
 
+### From JavaScript
+
+Code generators can format their output through the `vize` package instead of running the command:
+
+```ts
+import { format, formatSync } from "vize";
+
+const { code, changed } = await format(source, { filename: "src/generated/routes.ts" });
+```
+
+`filename` names the file the source is written to. The file is never read or written. Its extension selects the formatter, as `vize fmt` selects it. Its directory selects the configuration, as `vize fmt` run from that directory would find it. The returned `code` is the bytes `vize fmt --write` would write. Options use the config names (`semi`, `printWidth`, `sortImports`, `preset`, …), and each one given overrides the configured value, as a flag does. `config: "path/to/vite.config.ts"` reads that config instead of discovering one, and `config: false` formats with defaults only. Ignore patterns select files for the command and do not apply here.
+
+`format` runs on a worker thread and returns a promise, so many files can be formatted concurrently without blocking the event loop while a Vite config is evaluated. `formatSync` is the same call for code that cannot await. Both throw with the formatter's message when the source does not parse, the file type is not formatted (YAML and Markdown are not), or the configuration is invalid.
+
 ## Lint
 
 ```bash

@@ -21,6 +21,8 @@ mod config;
 #[cfg(feature = "napi")]
 mod format;
 #[cfg(feature = "napi")]
+mod format_file;
+#[cfg(feature = "napi")]
 mod inspector;
 #[cfg(any(test, feature = "napi"))]
 mod jsx;
