@@ -214,7 +214,8 @@ export async function transformSfcModule(
   // The load hook supplies this source itself, so Vite never reaches the
   // filesystem fallback that watches outside files. Register before compiling
   // so an edit can also repair a component whose first compilation fails.
-  if (state.server) watchDependency?.(realPath);
+  if (sfc.nullPrefixed && options.addWatchFile) options.addWatchFile(realPath);
+  else if (state.server) watchDependency?.(realPath);
   adoptSiblingCompile(state, realPath, isSsr);
   const cached = cache.get(realPath);
   const reused = cached?.source === code ? cached : undefined;
@@ -236,8 +237,7 @@ export async function transformSfcModule(
     throw new Error(TYPE_PROJECT_CHANGED_MESSAGE);
   }
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
-  // The real SFC is executable; compiler inputs only need filesystem watches.
-  if (sfc.nullPrefixed) options.addWatchFile?.(realPath);
+  // Compiler inputs only need filesystem watches, not runtime import edges.
   if (watchDependency && watchDependency !== UNWATCHED_DEPENDENCY) {
     for (const dependency of new Set(compiled.dependencies ?? [])) watchDependency(dependency);
   }
