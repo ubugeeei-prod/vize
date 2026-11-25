@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Setup full JS package tests"
 description = "Retain the physical package test runtime, cache, and dependency installation."

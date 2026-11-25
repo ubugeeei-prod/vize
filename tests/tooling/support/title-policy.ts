@@ -9,7 +9,7 @@ import { writeFakeCommand } from "./fake-command.ts";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 export const repository = "ubugeeei/vize";
-const commandPath = "tools/commands/ci/github/issue-pr-title-policy.ts";
+const commandPath = "tools/ci/commands/github/issue-pr-title-policy.ts";
 
 export type PolicyRun = {
   result: SpawnSyncReturns<string>;

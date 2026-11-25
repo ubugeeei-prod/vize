@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Type-check profile"
 `run-name` = "Type-check profile ${{ inputs.head_sha || github.sha }}${{ inputs.base_sha && format(' vs {0}', inputs.base_sha) || '' }}"

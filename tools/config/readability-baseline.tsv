@@ -1,6 +1,6 @@
 # Readability ratchet baseline (shrink-only). Generated; do not edit by hand.
-# Lower it with `node tools/commands/ci/readability-ratchet.ts --write`.
-# Counters are defined in tools/commands/ci/readability/counters.ts.
+# Lower it with `node tools/ci/commands/readability-ratchet.ts --write`.
+# Counters are defined in tools/ci/commands/readability/counters.ts.
 path	lines	long-functions	issue-comments	issue-names	restating-comments	mixed-imports	hardcoded-limits
 crates/vize/build.rs	0	0	1	0	0	0	0
 crates/vize/examples/css_engine_vendor_observer.rs	0	1	0	0	0	1	0
@@ -10263,21 +10263,21 @@ tools/benchmarks/scripts/vue-benchmarks-replay-core.ts	0	0	0	0	0	0	3
 tools/benchmarks/scripts/vue-benchmarks-replay.ts	0	0	1	0	0	0	0
 tools/benchmarks/scripts/workspace-route-identity-admission.ts	0	0	0	0	0	1	8
 tools/benchmarks/src/pmu_calibration.rs	0	0	0	0	0	0	8
+tools/ci/commands/check-skeleton-todos.ts	0	0	0	0	0	1	0
+tools/ci/commands/check-workspace-lints.ts	0	0	0	0	0	1	0
+tools/ci/commands/github/allow-armature-tokenizer-reexports.ts	0	0	1	0	0	0	0
+tools/ci/commands/github/check-maestro-feature-contract.ts	0	0	0	0	0	1	0
+tools/ci/commands/github/check-semver.ts	0	0	1	0	0	0	0
+tools/ci/commands/github/semver-baseline.ts	0	0	0	0	0	0	5
+tools/ci/commands/github/semver-change-marker.ts	0	0	0	0	0	0	3
+tools/ci/commands/github/verify-musl-cli-binary.ts	0	0	0	0	0	0	1
+tools/ci/commands/npm-audit-retry.ts	0	0	0	0	0	0	3
+tools/ci/commands/npm-audit.ts	0	0	0	0	0	0	2
+tools/ci/commands/opinionated-source-lint.ts	0	0	0	0	0	1	2
+tools/ci/commands/source-file-lengths.ts	0	0	0	0	0	0	1
+tools/ci/commands/verify-tool-layout.ts	0	0	0	0	0	1	0
+tools/ci/commands/workspace-task.ts	0	0	0	0	0	1	0
 tools/commands/agents/ai-fix-agent.rs	0	1	0	0	0	1	0
-tools/commands/ci/check-skeleton-todos.ts	0	0	0	0	0	1	0
-tools/commands/ci/check-workspace-lints.ts	0	0	0	0	0	1	0
-tools/commands/ci/github/allow-armature-tokenizer-reexports.ts	0	0	1	0	0	0	0
-tools/commands/ci/github/check-maestro-feature-contract.ts	0	0	0	0	0	1	0
-tools/commands/ci/github/check-semver.ts	0	0	1	0	0	0	0
-tools/commands/ci/github/semver-baseline.ts	0	0	0	0	0	0	5
-tools/commands/ci/github/semver-change-marker.ts	0	0	0	0	0	0	3
-tools/commands/ci/github/verify-musl-cli-binary.ts	0	0	0	0	0	0	1
-tools/commands/ci/npm-audit-retry.ts	0	0	0	0	0	0	3
-tools/commands/ci/npm-audit.ts	0	0	0	0	0	0	2
-tools/commands/ci/opinionated-source-lint.ts	0	0	0	0	0	1	2
-tools/commands/ci/source-file-lengths.ts	0	0	0	0	0	0	1
-tools/commands/ci/verify-tool-layout.ts	0	0	0	0	0	1	0
-tools/commands/ci/workspace-task.ts	0	0	0	0	0	1	0
 tools/commands/davinci/assertion-lint.rs	0	1	0	0	0	0	0
 tools/commands/davinci/bench-compare.rs	0	3	0	0	0	0	2
 tools/commands/davinci/completion-gates.ts	0	0	0	0	0	1	57

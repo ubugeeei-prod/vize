@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Test actual source LSP product responses"
 description = "Exercise editor features, authored config and project navigation with real native types"

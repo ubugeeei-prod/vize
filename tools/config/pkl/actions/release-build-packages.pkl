@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Build release npm packages"
 description = "Build the JS npm packages and upload them as one npm-packages artifact rooted at npm/"

@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "App E2E"
 
@@ -108,7 +108,7 @@ jobs {
             - 'tests/snapshots/build/generic.ts'
             - 'tests/snapshots/build/__snapshots__/generic-*.snap'
             - 'tests/tooling/cli-lint-contract.test.ts'
-            - 'tools/commands/ci/github/app-e2e-*.ts'
+            - 'tools/ci/commands/github/app-e2e-*.ts'
             - 'tools/support/**'
             - 'tools/moon/**'
             - 'config/vite-plus/**'
@@ -229,7 +229,7 @@ jobs {
           PRODUCER_RESULT = "${{ needs.app-readiness-producer.result }}"
           PLANNED_COUNT = "${{ needs.app-readiness-plan.outputs.count }}"
         }
-        run = #"node tools/commands/ci/github/app-e2e-aggregate.ts readiness all "$RUN_REQUIRED" "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT""#
+        run = #"node tools/ci/commands/github/app-e2e-aggregate.ts readiness all "$RUN_REQUIRED" "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT""#
       }
     }
   }
@@ -402,7 +402,7 @@ jobs {
           PLANNED_COUNT = "${{ needs.app-e2e-plan.outputs.count }}"
           PLANNED_SUITE = "${{ needs.app-e2e-plan.outputs.suite }}"
         }
-        run = #"node tools/commands/ci/github/app-e2e-aggregate.ts full "$PLANNED_SUITE" true "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT""#
+        run = #"node tools/ci/commands/github/app-e2e-aggregate.ts full "$PLANNED_SUITE" true "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT""#
       }
     }
   }

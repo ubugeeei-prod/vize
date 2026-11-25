@@ -8,14 +8,14 @@ import {
   compare,
   parseBaseline,
   renderBaseline,
-} from "../../tools/commands/ci/readability/baseline.ts";
+} from "../../tools/ci/commands/readability/baseline.ts";
 import {
   countFile,
   emptyCounts,
   rustTestModules,
   type Counts,
-} from "../../tools/commands/ci/readability/counters.ts";
-import { countTree, inScope, main } from "../../tools/commands/ci/readability-ratchet.ts";
+} from "../../tools/ci/commands/readability/counters.ts";
+import { countTree, inScope, main } from "../../tools/ci/commands/readability-ratchet.ts";
 import { maskScript, maskVueScripts } from "../../tools/support/readability/script-comments.ts";
 
 const counts = (values: Partial<Counts>): Counts => ({ ...emptyCounts(), ...values });

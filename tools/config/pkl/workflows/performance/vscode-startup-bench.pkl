@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Benchmark - VS Code startup"
 `run-name` = "VS Code startup ${{ inputs.head }} vs ${{ inputs.base }}"

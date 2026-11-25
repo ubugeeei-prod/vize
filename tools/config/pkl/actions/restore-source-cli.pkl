@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Restore the same-run source-built CLI and SFC oracle"
 description = "Preserve producer custody and bind a separate immutable consumer attempt."

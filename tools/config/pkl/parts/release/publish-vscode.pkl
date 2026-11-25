@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Publish VS Code extension"
 needs = List("version", "tag", "publication-quota")

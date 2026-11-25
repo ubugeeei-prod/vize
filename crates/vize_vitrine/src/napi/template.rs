@@ -281,11 +281,8 @@ pub fn parse_template(
         )
     });
 
-    if !errors.is_empty() {
-        return Err(Error::new(
-            Status::GenericFailure,
-            crate::parse_errors::message(&errors, &template),
-        ));
+    if let Some(message) = crate::parse_errors::failure(&errors, &template) {
+        return Err(Error::new(Status::GenericFailure, message));
     }
 
     Ok(build_ast_json(&root))

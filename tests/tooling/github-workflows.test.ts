@@ -204,10 +204,10 @@ test("title policy workflow mutates only issue and PR metadata", () => {
   assert.match(workflow, /pull-requests:\s*write/);
   assert.match(job, /timeout-minutes:\s*5/);
   assert.match(job, /ref:\s*\$\{\{\s*github\.event\.repository\.default_branch\s*\}\}/);
-  assert.deepEqual(sparseCheckoutEntries, ["tools/commands/ci/github/issue-pr-title-policy.ts"]);
+  assert.deepEqual(sparseCheckoutEntries, ["tools/ci/commands/github/issue-pr-title-policy.ts"]);
   assert.match(job, /uses:\s*actions\/setup-node@[0-9a-f]{40}/);
   assert.match(job, /node-version:\s*"24\.14\.0"/);
-  assert.match(job, /node tools\/commands\/ci\/github\/issue-pr-title-policy\.ts/);
+  assert.match(job, /node tools\/ci\/commands\/github\/issue-pr-title-policy\.ts/);
   assert.doesNotMatch(job, /setup-rust-script|rust-script|rust-toolchain/);
   assert.doesNotMatch(job, /\.github\/actions\/setup-moonbit/);
   assert.doesNotMatch(job, /tools\/moon\/cmd\/github\/issue_pr_title_policy/);

@@ -132,7 +132,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   assert.ok(publisher && oldPublisher);
   assert.deepEqual(publisher, {
     ...oldPublisher,
-    run: "node tools/commands/ci/github/publish-real-project-shard-summary.ts",
+    run: "node tools/ci/commands/github/publish-real-project-shard-summary.ts",
   });
   publisher.run = oldPublisher.run;
   const linterReadiness = steps.findIndex(

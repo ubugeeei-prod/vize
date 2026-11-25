@@ -70,7 +70,7 @@ autenticação, push ou aquecimento falharem, e sempre tenta parar uma caixa que
 quando uma tarefa falha:
 
 ```sh
-sh tools/commands/ci/run-testbox-checks.sh
+sh tools/ci/commands/run-testbox-checks.sh
 ```
 
 Para alterações de tarefas do Blacksmith Testbox, também valide a forma do fluxo de trabalho com

@@ -1,0 +1,24 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_an_accepting_scan_reorders_plain_flags": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.007 },
+              { "prover": "z3", "time": 0.009 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.009 },
+              { "prover": "z3", "time": 0.083 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "cvc5", "time": 0.028 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
