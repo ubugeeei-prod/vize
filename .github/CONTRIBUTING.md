@@ -10,7 +10,7 @@ Instruction-count and paired-memory measurements use the same `rust-toolchain.to
 
 The Nix shell speeds up Rust builds on the same pinned compiler ([build accelerators](../docs/davinci/decisions/2026-11-25-rust-build-accelerators.md)). Cargo runs every `rustc` call through `tools/support/launchers/rustc.sh`, which:
 
-- compiles workspace crates with rustc's parallel frontend (`VIZE_RUSTC_FRONTEND_JOBS`, default 4; CI uses 8). Dependencies and build-script probes compile as before, and the produced artifacts are byte-identical.
+- compiles workspace crates with rustc's parallel frontend (`VIZE_RUSTC_FRONTEND_JOBS`, default 8, the fastest measured count; the Rust CI jobs use 8 too). Dependencies and build-script probes compile as before, and object code is identical.
 - hands the call to [kache](https://github.com/kunobi-ninja/kache) (`VIZE_KACHE`), which shares compiled crates across every worktree and target directory on the machine and clones them on copy-on-write filesystems instead of storing them again.
 
 Enter the shell with `VIZE_RUSTC_FRONTEND_JOBS=1` or `VIZE_KACHE=` to turn either off, for example while measuring compile times. `kache stats` reports hits and the store size; `kache clean` frees space.

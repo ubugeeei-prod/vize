@@ -14,7 +14,7 @@ case "${RUSTC_WRAPPER:-}" in
   '' | */tools/support/launchers/rustc.sh) export RUSTC_WRAPPER="$VIZE_WORKSPACE_ROOT/tools/support/launchers/rustc.sh" ;;
 esac
 export VIZE_KACHE="${VIZE_KACHE-@KACHE@/bin/kache}"
-export VIZE_RUSTC_FRONTEND_JOBS="${VIZE_RUSTC_FRONTEND_JOBS:-4}"
+export VIZE_RUSTC_FRONTEND_JOBS="${VIZE_RUSTC_FRONTEND_JOBS:-8}"
 
 echo "Vize dev shell ready."
 echo "Nix provides Node, pnpm, Rust, kache, wasm-pack, wasm-bindgen, and binaryen."

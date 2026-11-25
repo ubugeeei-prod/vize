@@ -2,21 +2,28 @@
 
 This record supersedes the scope of
 [the 2026-11-17 parallel frontend record](./2026-11-17-rust-parallel-frontend.md): the
-parallel frontend moves from an opt-in nightly shell to every Linux and macOS build, on
-the pinned compiler. Its measurements and pitfalls stay valid background. The
+parallel frontend moves from an opt-in nightly shell to the default dev shell and the Rust
+CI jobs, on the pinned compiler. Its measurements and pitfalls stay valid background. The
 [one Rust toolchain](./2026-10-20-single-rust-toolchain.md) decision is unchanged:
 `rust-toolchain.toml` stays the only compiler.
 
 ## Decision
 
-- **Parallel frontend everywhere Cargo builds the workspace on Linux and macOS.** Cargo runs
-  every `rustc` call through
+- **Parallel frontend in the dev shell and the Rust CI jobs.** Cargo runs every `rustc`
+  call through
   [`tools/support/launchers/rustc.sh`](../../../tools/support/launchers/rustc.sh) (`RUSTC_WRAPPER`).
-  For a workspace crate it appends `-Zunstable-options --jobs-frontend=N`. The Nix dev shell
-  uses `N = 4`. Every CI job that uses
+  For a workspace crate it appends `-Zunstable-options --jobs-frontend=N`. Both the Nix dev shell and CI
+  use `N = 8`, the fastest count measured (16 and 32 are slower). In CI,
   [`setup-rust-sticky-cache`](../../../.github/actions/setup-rust-sticky-cache/action.yml)
-  uses `N = 8`, which the action's `frontend-jobs` input can change, or turn off with `1`.
+  takes a `frontend-jobs` input. It defaults to `1` (off), and the Rust jobs set it:
+  Clippy, doctests and feature lanes; the Rust test shards; and the Rust feature tests.
   Windows legs are unchanged.
+- **Why CI opts in per job.** Jobs that build the native addon for a toolchain-history
+  capture (`npm/native/scripts/formatter-history-toolchain.mts`) reject every
+  `RUSTC_WRAPPER`. So does the installed-LSP acceptance
+  (`tools/support/release/public_acceptance/lsp_assets.ts`). Both guards record the exact
+  real toolchain, and a job-wide wrapper failed them on the first PR run. Those guards stay
+  as they are, and jobs that run them keep the default.
 - **The pinned 1.100.0 compiler, not a nightly.** Stable 1.100.0 already contains the
   parallel frontend and accepts `--jobs-frontend` when unstable options are enabled.
   The wrapper enables them for that one crate only, with `RUSTC_BOOTSTRAP=<crate name>`.
@@ -85,5 +92,37 @@ shared machine (load average 18 to 32) are directional only.
 
 ### CI (quiet runner)
 
-TODO: fill from the bench run on `blacksmith-32vcpu-ubuntu-2404`, which compares `j1`, `j4`
-and `j8` and kache cold/warm in rotated order over three rounds.
+Run [45565292781](https://github.com/ubugeeei-prod/vize/actions/runs/45565292781) on one
+`blacksmith-32vcpu-ubuntu-2404` runner, with CI's Wild linker. It visits `j1` (the
+wrapper's passthrough, identical to plain stable), `j4` and `j8` in rotated order over three
+rounds. The workspace rows start from an empty target: `check` (dev), `clippy`
+and `build` (`ci` profile). The edit rows append a public function to `vize_canon` and
+rebuild `vize` in a warm dev target. Values are p50 wall seconds; CPU is user plus system
+seconds of the whole tree; RSS is the largest single process. Every row's three samples
+lie within 2% of each other, except the first `j1` edit-check (29.7 s, the first
+incremental check after a build), which the p50 discards.
+
+| Scenario                   | `j1` wall | `j4` wall | `j8` wall | `j8` vs `j1` | CPU `j1` → `j8` | Peak RSS `j1` → `j8` |
+| -------------------------- | --------: | --------: | --------: | -----------: | --------------: | -------------------: |
+| workspace `check`          |      33.2 |      20.8 |      18.6 |       -44.0% |     175 → 206 s |      1.34 → 1.52 GiB |
+| workspace `clippy`         |      34.2 |      21.8 |      19.8 |       -42.1% |     174 → 204 s |      1.35 → 1.53 GiB |
+| workspace `build`          |      51.7 |      35.0 |      31.7 |       -38.7% |     312 → 379 s |      1.99 → 2.12 GiB |
+| edit `vize_canon`, `check` |      16.9 |       8.4 |       6.9 |       -59.4% |       17 → 24 s |      1.34 → 1.19 GiB |
+| edit `vize_canon`, `build` |      33.2 |      20.5 |      17.4 |       -47.7% |      80 → 107 s |      2.66 → 3.50 GiB |
+
+The parallel frontend trades CPU for wall time. At `j8` the CPU cost is +17% to +34%; at
+`j4` it is +10% to +24%. The maintainer chose the fastest setting, `j8`, for both CI and the dev shell. kache
+offsets the extra CPU locally: a hit costs almost none.
+
+**Output identity on Linux.** Every build's rlibs were unpacked and their object
+members hashed. Of 463 rlibs, all 460 that the edit loop did not touch carry identical
+object code at `j1`, `j4` and `j8` in every round. The exceptions are `vize_canon`, whose
+source the edit loop changed, and `libmimalloc_sys`, which differs between `j1` rounds
+too. As on macOS, the rest of the full-file differences are workspace `lib.rmeta` crate
+hashes.
+
+**kache on the same runner** (`j8`, empty store, then two fresh targets against it):
+`build` 34.5 s on the miss (+9% over `j8` alone, CPU 435 s), then 4.6 s on hits (CPU 14 s,
+-96%). The warm `clippy` takes 4.5 s instead of 19.8 s. Its object code differs from the
+uncached build in 378 rlibs, because the paths are normalized. That confirms why release
+and measurement builds stay without kache.

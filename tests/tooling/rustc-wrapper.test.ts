@@ -173,6 +173,12 @@ test("the dev shell and Rust CI jobs route rustc through the wrapper", () => {
     ".github/actions/setup-rust-sticky-cache/scripts/enable-parallel-frontend.sh",
   );
   assert.match(action, /runner\.os != 'Windows' && inputs\.frontend-jobs != '1'/u);
+  // Off by default: native history captures and installed-LSP acceptance
+  // reject any rustc wrapper. Only the Rust-only jobs opt in.
+  assert.match(action, /frontend-jobs:\n(?: {4}.*\n)*? {4}default: "1"/u);
+  for (const workflow of ["pr-rust-checks", "pr-rust-products", "01-rust-feature-tests"]) {
+    assert.match(read(`.github/workflows/${workflow}.yml`), /frontend-jobs: "8"/u, workflow);
+  }
   assert.match(enable, /wrapper="\$GITHUB_WORKSPACE\/tools\/support\/launchers\/rustc\.sh"/u);
   assert.match(enable, /-z "\$\{RUSTC_WRAPPER:-\}" && -x "\$wrapper"/u);
   // The parallel frontend runs on the pinned compiler: no second toolchain.

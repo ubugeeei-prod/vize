@@ -35,9 +35,9 @@ inputs:
     required: false
     default: "false"
   frontend-jobs:
-    description: rustc frontend threads for workspace crates on Linux and macOS; 1 turns the parallel frontend off
+    description: "rustc frontend threads for workspace crates on Linux and macOS (1: off). Jobs that record a native toolchain identity must keep 1."
     required: false
-    default: "8"
+    default: "1"
 
 runs:
   using: composite
