@@ -36,7 +36,7 @@ jobs {
   `primitive-assignability-proof` {
     name = "Verify primitive literal membership in Kani"
     `runs-on` = ci.linux
-    `timeout-minutes` = 15
+    `timeout-minutes` = 10
     steps = new Listing {
       ...ci.stageWorkflowScripts("declaration-source-products")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
