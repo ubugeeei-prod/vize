@@ -92,6 +92,7 @@ void test("the standalone public plugin shares rules and complete flat presets",
                 type: "object",
                 properties: {
                   registeredComponentsOnly: { type: "boolean" },
+                  ignores: { type: "array", items: { type: "string" }, uniqueItems: true },
                   globals: {
                     type: "array",
                     items: { type: "string", not: { pattern: "^/(.+)/(.*)$" } },
@@ -109,6 +110,7 @@ void test("the standalone public plugin shares rules and complete flat presets",
                 properties: {
                   casing: { enum: ["PascalCase", "kebab-case"] },
                   registeredComponentsOnly: { type: "boolean" },
+                  ignores: { type: "array", items: { type: "string" }, uniqueItems: true },
                   globals: { type: "array", items: { type: "string" } },
                 },
                 additionalProperties: false,
@@ -118,6 +120,25 @@ void test("the standalone public plugin shares rules and complete flat presets",
             maxItems: 1,
           },
         ],
+      },
+      "vue/no-restricted-html-elements": {
+        type: "array",
+        items: {
+          oneOf: [
+            { type: "string" },
+            {
+              type: "object",
+              properties: {
+                element: {
+                  oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }],
+                },
+                message: { type: "string" },
+              },
+              required: ["element"],
+              additionalProperties: false,
+            },
+          ],
+        },
       },
       "vue/no-restricted-syntax": {
         type: "array",
@@ -133,6 +154,25 @@ void test("the standalone public plugin shares rules and complete flat presets",
           ],
         },
         uniqueItems: true,
+      },
+      "vue/no-restricted-v-on": {
+        type: "array",
+        items: {
+          oneOf: [
+            { type: "string" },
+            {
+              type: "object",
+              properties: {
+                argument: { type: "string" },
+                element: { type: "string" },
+                message: { type: "string" },
+                modifiers: { type: "array", items: { type: "string" } },
+              },
+              required: ["argument"],
+              additionalProperties: false,
+            },
+          ],
+        },
       },
       "vue/v-on-event-hyphenation": {
         type: "array",
