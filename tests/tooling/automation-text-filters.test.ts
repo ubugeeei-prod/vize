@@ -60,7 +60,7 @@ test(
     assert.deepEqual(
       runFilter(
         "awk",
-        path.join(workflows, "content-mapper-pair/median-memory-row.awk"),
+        path.join(workflows, "typecheck-cold-pair/mapper-median-memory-row.awk"),
         "1024 1 2 3\n2048 2.5 1 2.75\n4096 3 4 5\n",
         ["-v", "label=head"],
       ),
@@ -69,7 +69,7 @@ test(
     assert.deepEqual(
       runFilter(
         "awk",
-        path.join(workflows, "content-mapper-replay/perf-report-lines.awk"),
+        path.join(workflows, "typecheck-cold-pair/replay-perf-report-lines.awk"),
         "# perf\n\nfirst\n# skip\nsecond\nthird\n",
         ["-v", "limit=2"],
       ),
@@ -81,12 +81,12 @@ test(
       'read(2, "c", 3) = 3',
     ].join("\n");
     assert.deepEqual(
-      runFilter("awk", path.join(workflows, "content-mapper-replay/syscall-io.awk"), syscalls, [
-        "-v",
-        "side=head",
-        "-v",
-        "corpus=small",
-      ]),
+      runFilter(
+        "awk",
+        path.join(workflows, "typecheck-cold-pair/replay-syscall-io.awk"),
+        syscalls,
+        ["-v", "side=head", "-v", "corpus=small"],
+      ),
       { status: 0, stdout: "| small | head | write(1) | 2 | 0.0 | 1 |" },
     );
   },

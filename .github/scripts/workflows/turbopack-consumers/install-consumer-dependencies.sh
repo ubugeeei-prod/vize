@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+vp install \
+  --filter vize-workspace \
+  --filter '@vize/tests' \
+  --filter '@vizejs/rspack-plugin...' \
+  --filter '@vizejs/turbopack-plugin...' \
+  --frozen-lockfile \
+  --prefer-offline

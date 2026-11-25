@@ -159,7 +159,7 @@ steps = new Listing {
   new Dynamic {
     name = "Verify the full host used this source-built binary"
     `if` = "matrix.client == 'vscode'"
-    run = #"node tests/editor-conformance/server-artifact.ts scorecard "${RUNNER_TEMP}/vize-server/server.json" "${RUNNER_TEMP}/vscode-full-host/host-result.json" "$GITHUB_SHA""#
+    run = ci.workflowScript("verify-the-full-host-used-this-source-built-binary.sh")
   }
   new Dynamic {
     uses = ci.uploadArtifact

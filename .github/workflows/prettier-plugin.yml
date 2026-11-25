@@ -61,12 +61,12 @@ jobs:
       - name: Check real host options, complete goldens, AST/render semantics and format counts
         run: node npm/native/scripts/test-preparation.mjs node --test npm/formatter/prettier/src/plugin.test.ts
       - name: Install the tarball in a fresh consumer and exercise actual CLI and configuration
-        run: node npm/native/scripts/test-preparation.mjs node npm/formatter/prettier/test/consumer.mjs --mode source-native --expected-node 24.14.0 --output "$RUNNER_TEMP/prettier-source-consumer"
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-tarball-in-a-fresh-consumer-and-exercise.sh"
       - name: Install the declared minimum Node consumer runtime
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "22.0.0", package-manager-cache: false }
       - name: Qualify the same tarball and native image on Node 22.0.0
-        run: node npm/native/scripts/test-preparation.mjs node npm/formatter/prettier/test/consumer.mjs --mode source-native --expected-node 22.0.0 --tarball-directory "$RUNNER_TEMP/prettier-source-consumer" --output "$RUNNER_TEMP/prettier-node22-consumer"
+        run: . "${{ env.VIZE_CI_FILES }}/qualify-the-same-tarball-and-native-image-on-node-22-0-0.sh"
       - name: Compare installed runtime identity and complete output across consumers
         shell: bash
         run: . "${{ env.VIZE_CI_FILES }}/compare-installed-runtime-identity-and-complete-output-across-consumers.sh"

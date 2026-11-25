@@ -1,0 +1,57 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  ###"""
+  sudo sysctl -w kernel.perf_event_paranoid=-1 kernel.kptr_restrict=0
+  perf_bin=""
+  for candidate in /usr/lib/linux-tools/*/perf /usr/lib/linux-tools-*/perf; do
+    if [[ -x "$candidate" ]]; then perf_bin="$candidate"; break; fi
+  done
+  test -n "$perf_bin"
+  out="$RUNNER_TEMP/replay-out/profiles"
+  mkdir -p "$out"
+  read -ra streams < "$RUNNER_TEMP/streams.args"
+  for ((i = 1; i < ${#streams[@]}; i += 2)); do
+    spec=${streams[$i]}
+    corpus=${spec%%=*}; rest=${spec#*=}; stream=${rest%@*}; project=${rest##*@}
+    bin="$PWD/replay-bin/perf/head/vize"
+    (cd "$project" && "$perf_bin" stat -e task-clock,cycles,instructions,cache-misses,page-faults,context-switches,cpu-migrations \
+      -o "$out/$corpus.stat.txt" -- "$bin" content-mapper --reply-when-ready < "$stream" > /dev/null)
+    # Five fresh mapper processes, so short corpora still collect enough samples.
+    (cd "$project" && "$perf_bin" record -F 2999 --call-graph fp -o "$out/$corpus.perf.data" \
+      -- bash "$VIZE_CI_FILES/replay-repeat-replay.sh" "$bin" "$stream" 2> /dev/null)
+    "$perf_bin" report -i "$out/$corpus.perf.data" --no-children --sort dso,symbol --stdio -g none --percent-limit 0.2 > "$out/$corpus.self.txt" 2> /dev/null
+    "$perf_bin" report -i "$out/$corpus.perf.data" --children --sort symbol --stdio -g none --percent-limit 0.5 > "$out/$corpus.children.txt" 2> /dev/null
+    "$perf_bin" report -i "$out/$corpus.perf.data" --no-children --sort dso --stdio -g none > "$out/$corpus.dso.txt" 2> /dev/null
+    "$perf_bin" script -i "$out/$corpus.perf.data" 2> /dev/null | gzip > "$out/$corpus.perf-script.txt.gz"
+    rm "$out/$corpus.perf.data"
+    for side in base head; do
+      sbin="$PWD/replay-bin/cli/$side/vize"
+      (cd "$project" && strace -f -qq -c -o "$out/$corpus.$side.strace-c.txt" "$sbin" content-mapper < "$stream" > /dev/null)
+      # One file per thread (-ff), so no call is split into unfinished/resumed halves.
+      mkdir -p "$out/io"
+      (cd "$project" && strace -ff -qq -e trace=read,write,writev -e signal=none -o "$out/io/$corpus.$side" "$sbin" content-mapper < "$stream" > /dev/null)
+      # fd 0 reads and fd 1 writes: calls, bytes, and calls under 4 KiB.
+      cat "$out/io/$corpus.$side".* | awk -v side="$side" -v corpus="$corpus" -f "$VIZE_CI_FILES/replay-syscall-io.awk" >> "$out/io.md"
+      rm -r "$out/io"
+    done
+  done
+  {
+    echo "## Syscalls on stdin/stdout"
+    echo ""
+    echo "| corpus | build | call | count | MiB | under 4 KiB |"
+    echo "|---|---|---|---|---|---|"
+    sort "$out/io.md"
+    echo ""
+    for f in "$out"/*.strace-c.txt; do echo "<details><summary>$(basename "$f")</summary>"; echo ""; echo '```'; head -n 30 "$f"; echo '```'; echo "</details>"; done
+    echo ""
+    echo "## perf (head CLI, frame pointers)"
+    for f in "$out"/*.stat.txt; do echo '```'; awk -f "$VIZE_CI_FILES/replay-perf-report-lines.awk" "$f"; echo '```'; done
+    for f in "$out"/*.self.txt; do echo "<details><summary>$(basename "$f") (self, dso and symbol)</summary>"; echo ""; echo '```'; awk -v limit=60 -f "$VIZE_CI_FILES/replay-perf-report-lines.awk" "$f"; echo '```'; echo "</details>"; done
+    for f in "$out"/*.children.txt; do echo "<details><summary>$(basename "$f") (inclusive)</summary>"; echo ""; echo '```'; awk -v limit=80 -f "$VIZE_CI_FILES/replay-perf-report-lines.awk" "$f"; echo '```'; echo "</details>"; done
+  } >> "$GITHUB_STEP_SUMMARY"
+  """###
+}

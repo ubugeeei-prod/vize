@@ -44,6 +44,7 @@ const approvedRunnerLabels = new Set([
 const hostedZeroComputeJobs: Readonly<Record<string, readonly string[]>> = {
   "check.yml": ["iteration-plan", "test-report"],
   "01-rust-feature-tests.yml": ["rust-feature-plan"],
+  "level-html-content-model.yml": ["changes"],
   "pr-rust-checks.yml": ["rust-source-report"],
   "pr-rust-products.yml": ["rust-product-report"],
   "pr-source-checks.yml": ["pr-source-plan", "affected-tooling-report", "source-report"],

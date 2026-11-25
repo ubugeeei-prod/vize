@@ -60,16 +60,11 @@ jobs:
       - name: Build the measured server
         run: . "${{ env.VIZE_CI_FILES }}/build-the-measured-server.sh"
       - name: Record the measured binary and build identity
-        run: >-
-          vp exec node tools/support/compat/davinci/lsp-build-identity.ts
-          target/ci-opt/vize ci-opt "${RUNNER_TEMP}/resource-build.jsonl"
-          "${RUNNER_TEMP}/resource-build-identity.json"
+        run: . "${{ env.VIZE_CI_FILES }}/record-the-measured-binary-and-build-identity.sh"
 
       - name: Measure the resident server
         run: >-
-          rust-script tools/commands/davinci/resource-budgets.rs --measure
-          --preset "${RESOURCE_PRESET}" --runs 3 --keystrokes 20 --idle-seconds 60
-          --server target/ci-opt/vize --out "${RUNNER_TEMP}/resource.json"
+          rust-script tools/commands/davinci/resource-budgets.rs --measure --preset "${RESOURCE_PRESET}" --runs 3 --keystrokes 20 --idle-seconds 60 --server target/ci-opt/vize --out "${RUNNER_TEMP}/resource.json"
       - name: Every number carries its methodology
         if: ${{ !cancelled() }}
         run: rust-script tools/commands/davinci/resource-budgets.rs --validate
@@ -81,8 +76,7 @@ jobs:
       - name: The measurement holds every pinned ceiling
         if: ${{ !cancelled() }}
         run: >-
-          rust-script tools/commands/davinci/resource-budgets.rs --check
-          --measurement "${RUNNER_TEMP}/resource.json"
+          rust-script tools/commands/davinci/resource-budgets.rs --check --measurement "${RUNNER_TEMP}/resource.json"
       - name: Summarize
         if: ${{ !cancelled() }}
         run: . "${{ env.VIZE_CI_FILES }}/summarize.sh"
@@ -114,15 +108,10 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Build the isolated resident session
         run: >-
-          cargo build --profile ci-opt -p vize_incremental --example resource_session
-          --config 'profile.ci-opt.inherits="release"'
-          --config 'profile.ci-opt.lto="thin"'
-          --config 'profile.ci-opt.codegen-units=16'
+          cargo build --profile ci-opt -p vize_incremental --example resource_session --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16'
       - name: Measure and enforce the unchanged reference RSS ceilings
         run: >-
-          node tools/commands/davinci/resident-resources.ts
-          --server target/ci-opt/examples/resource_session --files 10000 --edits 32
-          --runs 3 --out "${RUNNER_TEMP}/resident-resource.json"
+          node tools/commands/davinci/resident-resources.ts --server target/ci-opt/examples/resource_session --files 10000 --edits 32 --runs 3 --out "${RUNNER_TEMP}/resident-resource.json"
       - name: Summarize the isolated session
         if: ${{ !cancelled() }}
         run: . "${{ env.VIZE_CI_FILES }}/summarize-the-isolated-session.sh"
@@ -160,27 +149,14 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - name: Verify assertion, module, and source length gates
         run: >-
-          vp exec node --test tests/tooling/davinci-assertion-lint.test.ts
-          tests/tooling/davinci-module-layout.test.ts tests/tooling/source-file-lengths.test.ts
+          vp exec node --test tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-module-layout.test.ts tests/tooling/source-file-lengths.test.ts
       - name: Build the production server
         run: >-
-          cargo build --profile ci-opt -p vize
-          --config 'profile.ci-opt.inherits="release"'
-          --config 'profile.ci-opt.lto="thin"'
-          --config 'profile.ci-opt.codegen-units=16'
+          cargo build --profile ci-opt -p vize --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16'
       - name: Verify the protocol and controlled edit oracle
-        run: >-
-          vp exec node tools/support/compat/davinci/lsp-resources.ts
-          --server target/ci-opt/vize --files 2 --runs 1 --idle-seconds 10
-          --build "ci-opt: release, thin LTO, 16 codegen units"
-          --out "${RUNNER_TEMP}/lsp-resource-smoke.json"
+        run: . "${{ env.VIZE_CI_FILES }}/verify-the-protocol-and-controlled-edit-oracle.sh"
       - name: Measure 10000 open buffers, 16 production providers, and Corsa
-        run: >-
-          timeout --signal=TERM --kill-after=30s 45m
-          vp exec node tools/support/compat/davinci/lsp-resources.ts
-          --server target/ci-opt/vize --files 10000 --warm-providers 16 --runs 1 --idle-seconds 10
-          --build "ci-opt: release, thin LTO, 16 codegen units"
-          --out "${RUNNER_TEMP}/lsp-resource.json"
+        run: . "${{ env.VIZE_CI_FILES }}/measure-10000-open-buffers-16-production-providers-and.sh"
       - name: Summarize the actual scope and every process
         if: ${{ !cancelled() }}
         run: . "${{ env.VIZE_CI_FILES }}/summarize-the-actual-scope-and-every-process.sh"
@@ -194,4 +170,50 @@ jobs:
   release-resource:
     name: Shipped Linux CLI resource comparison
     if: github.event_name == 'workflow_dispatch' && inputs.include_release
-    uses: ./.github/workflows/lsp-release-resources.yml
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env:
+      VIZE_CI_FILES: ${{ github.workspace }}/.github/scripts/workflows/davinci-resource-budgets
+      CARGO_TERM_COLOR: always
+      NODE_OPTIONS: --disable-warning=DEP0040 --disable-warning=DEP0169
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the repository Rust toolchain
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain-2.sh"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: lsp-release-resources
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Build the shipped Linux CLI recipe
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-shipped-linux-cli-recipe.sh"
+      - name: Record the measured binary and build identity
+        run: . "${{ env.VIZE_CI_FILES }}/record-the-measured-binary-and-build-identity-2.sh"
+      - name: Measure the complete TS-44 campaign with the shipped profile
+        run: . "${{ env.VIZE_CI_FILES }}/measure-the-complete-ts-44-campaign-with-the-shipped.sh"
+      - name: Apply every unchanged TS-44 ceiling to this additional build
+        run: rust-script tools/commands/davinci/resource-budgets.rs --check --measurement "${RUNNER_TEMP}/release-resource.json"
+      - name: Verify the protocol and controlled edit oracle
+        run: '. "${{ env.VIZE_CI_FILES }}/verify-the-protocol-and-controlled-edit-oracle-2.sh"'
+      - name: Measure 10000 open buffers, 16 production providers, and Corsa
+        run: '. "${{ env.VIZE_CI_FILES }}/measure-10000-open-buffers-16-production-providers-and-2.sh"'
+      - name: Summarize the separate release measurements
+        if: ${{ !cancelled() }}
+        run: . "${{ env.VIZE_CI_FILES }}/summarize-the-separate-release-measurements.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() }}
+        with:
+          name: release-lsp-resources-linux-x64
+          path: |
+            ${{ runner.temp }}/release-build-identity.json
+            ${{ runner.temp }}/release-resource.json
+            ${{ runner.temp }}/release-lsp-resource*.json
+          retention-days: 30

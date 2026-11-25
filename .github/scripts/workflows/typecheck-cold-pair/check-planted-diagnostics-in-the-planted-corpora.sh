@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+node tools/benchmarks/scripts/typecheck-corpus-mutations-run.ts \
+  --base "$RUNNER_TEMP/pair-base" \
+  --head "$RUNNER_TEMP/pair-head" \
+  --work "$RUNNER_TEMP/pair-work" \
+  --out "$RUNNER_TEMP/pair-out" \
+  --corpora "$CORPORA"

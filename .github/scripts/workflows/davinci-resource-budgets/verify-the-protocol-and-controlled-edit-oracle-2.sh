@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+vp exec node tools/support/compat/davinci/lsp-resources.ts \
+  --server target/x86_64-unknown-linux-gnu/release/vize \
+  --build "release: fat LTO, one codegen unit" \
+  --files 2 \
+  --runs 1 \
+  --idle-seconds 10 \
+  --out "${RUNNER_TEMP}/release-lsp-resource-smoke.json"

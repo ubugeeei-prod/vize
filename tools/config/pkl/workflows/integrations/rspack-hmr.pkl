@@ -14,6 +14,7 @@ on {
       "crates/vize_atelier_sfc/**"
       "crates/vize_vitrine/src/napi/sfc/**"
       "crates/vize_croquis/src/sfc/**"
+      "tools/config/pkl/parts/rspack-hmr/**"
     }
   }
 }
@@ -69,4 +70,6 @@ jobs {
       }
     }
   }
+
+  `source-ranges` = import("../../parts/rspack-hmr/source-ranges.pkl")
 }
