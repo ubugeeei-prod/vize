@@ -1,0 +1,10 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("cargo", List("test", "-p", "vize", "--test", "integration", "--", "davinci_ts40_projection_cli::", "--nocapture"))
+  module.command("cargo", List("test", "-p", "vize_maestro", "--test", "davinci_ts40_projection", "--", "--nocapture"))
+  module.command("cargo", List("test", "-p", "vize_maestro", "--features", "legacy", "--test", "davinci_ts40_projection", "--", "--nocapture"))
+  module.command("node", List("--test", "tests/tooling/davinci-ts40-projection.test.ts"))
+}

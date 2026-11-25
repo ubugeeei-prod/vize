@@ -74,7 +74,7 @@ void test("the new pin retains historical results without promoting current or n
 void test("the existing disposable replay keeps its independent old pin and paths", () => {
   assert.equal(UPSTREAM.commit, "65c6102504b14cd49c0b03305be8dd0b9d208c59");
   assert.notEqual(UPSTREAM.commit, manifest.revision);
-  const workflow = readAutomationPrograms(".github/workflows/vue-benchmarks-replay.yml");
+  const workflow = readAutomationPrograms(".github/workflows/03-vue-benchmarks.yml");
   assert.equal(workflow.includes(fixture), false);
   assert.equal(workflow.includes("vue-benchmarks-replay.ts"), true);
 });

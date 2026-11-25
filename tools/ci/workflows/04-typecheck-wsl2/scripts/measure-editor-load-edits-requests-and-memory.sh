@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/ci/workflows/04-typecheck-wsl2/scripts/measure-editor-load-edits-requests-and-memory.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+set -euo pipefail
+[[ "$LSP_FIXTURES" =~ ^scale-(1k|5k|20k|giant-sfc|monorepo)(\ scale-(1k|5k|20k|giant-sfc|monorepo))*$ ]]
+output="$WSL_MOUNT_ROOT/results"
+summary_path=$(wslpath "$GITHUB_STEP_SUMMARY")
+tsrs_spec=$(node "$VIZE_CI_FILES/measure-editor-load-edits-requests-and-memory.cjs")
+for entry in "ext4=$HOME/vize-wsl2" "windows-mount=$WSL_MOUNT_ROOT/mounted"; do
+  label=${entry%%=*}
+  root=${entry#*=}
+  tools="$root/editor-tools"
+  mkdir -p "$tools"
+  printf '{"private":true}\n' > "$tools/package.json"
+  npm install --prefix "$tools" --no-audit --no-fund \
+    "vize@$VIZE_SPEC" \
+    "@vue/language-server@3.3.11" "@vue/typescript-plugin@3.3.11" \
+    "typescript@6.0.3" "@typescript/typescript-linux-x64@7.0.2" \
+    "tsrs@$tsrs_spec"
+  tsgo="$tools/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+  tsrs_fast="$tools/tsrs-fast"
+  printf '#!/bin/sh\nexport TSRS_FAST=1\nexec "%s" "$@"\n' "$tools/node_modules/.bin/tsrs" > "$tsrs_fast"
+  chmod +x "$tsrs_fast"
+  args=()
+  for fixture in $LSP_FIXTURES; do args+=(--fixture "$fixture"); done
+  node tools/benchmarks/scripts/lsp-vs-volar.ts \
+    "${args[@]}" \
+    --vize "published-tsgo=$tools/node_modules/.bin/vize" \
+    --vize-env "published-tsgo:CORSA_PATH=$tsgo" \
+    --vize "published-tsrs-fast=$tools/node_modules/.bin/vize" \
+    --vize-env "published-tsrs-fast:CORSA_PATH=$tsrs_fast" \
+    --volar-root "$tools" --fixtures-dir "$root/editor-projects" \
+    --rounds 1 --warmups 0 --cycles 2 --idle-ms 2000 \
+    --meta "filesystem=$label" --meta "vize=$VIZE_SPEC" \
+    --out "$output/lsp-$label.md" --json "$output/lsp-$label.json" \
+    --logs "$output/lsp-$label-logs"
+  cat "$output/lsp-$label.md" >> "$summary_path"
+done

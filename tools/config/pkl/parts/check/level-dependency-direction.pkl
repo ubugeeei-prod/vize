@@ -1,1 +1,1 @@
-uses = "./.github/workflows/level-dependencies.yml"
+uses = "./.github/workflows/07-level-dependencies.yml"

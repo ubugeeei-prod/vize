@@ -1,0 +1,476 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Type-check cold pair"
+`run-name` = "Type-check ${{ inputs.mode || 'content-mapper-replay' }} ${{ inputs.head || github.sha }} vs ${{ inputs.base || 'merge base' }}"
+// One base/head A/B host for type checking and the content mapper. Each mode
+// measures two commits with alternating builds:
+// - generated: cold checks of generated projects on Linux, WSL2 (ext4 and the
+//   Windows mount) and native Windows;
+// - corpus: pinned real corpora and owned workloads on Linux;
+// - content-mapper: one content-mapper request stream on every filesystem;
+// - content-mapper-replay: the request streams tsc sends for real corpora. A push
+//   to bench/content-mapper-replay/** measures the pushed commit against its
+//   merge base with main, or against the commit a `Replay-Base: <sha>` trailer of
+//   the pushed commit names, on every corpus with every option on.
+on {
+  push {
+    branches = List("bench/content-mapper-replay/**")
+  }
+  workflow_dispatch {
+    inputs {
+      mode {
+        description = "What to compare"
+        type = "choice"
+        options = List("generated", "corpus", "content-mapper", "content-mapper-replay")
+        ["default"] = "generated"
+      }
+      base {
+        description = #"Full 40-hex commit measured first (the "before"; the head SHA again for an A/A run)"#
+        type = "string"
+        required = true
+      }
+      head {
+        description = "Full 40-hex commit compared against it"
+        type = "string"
+        required = true
+      }
+      runs {
+        description = "Recorded runs per build (alternating cold runs, corpus lanes, AB+BA replicates or timed replays)"
+        type = "string"
+        ["default"] = "5"
+      }
+      allow_output_change {
+        description = "Publish timing even when the builds report or answer differently"
+        type = "boolean"
+        ["default"] = false
+      }
+      projects {
+        description = "generated: comma-separated projects (vue:<sfcs> or monorepo:<sfcs>)"
+        type = "string"
+        ["default"] = "vue:1000,vue:5000,monorepo:5000"
+      }
+      runtime {
+        description = "generated: native checker host used by both builds"
+        type = "choice"
+        options = List("tsgo", "tsrs")
+        ["default"] = "tsgo"
+      }
+      checkers {
+        description = "generated: explicit checker width used by both builds"
+        type = "choice"
+        options = List("1", "8")
+        ["default"] = "8"
+      }
+      strace {
+        description = "generated: attribute filesystem calls per process, syscall and path on Linux"
+        type = "boolean"
+        ["default"] = true
+      }
+      platforms {
+        description = "generated: comma-separated measured cells (linux, wsl2, windows)"
+        type = "string"
+        ["default"] = "linux,wsl2,windows"
+      }
+      corpora {
+        description = "corpus, content-mapper-replay: comma-separated corpora (misskey, n8n, nuxt-ui, reka-ui); empty means all"
+        type = "string"
+        ["default"] = ""
+      }
+      owned_pair {
+        description = "corpus: lossless source pair including huge Vue/Nuxt, explicit widths and isolated caches"
+        type = "boolean"
+        ["default"] = false
+      }
+      workloads {
+        description = "corpus: optional comma-separated owned workload IDs"
+        type = "string"
+        ["default"] = ""
+      }
+      lanes {
+        description = "corpus: optional comma-separated owned pair lane IDs"
+        type = "string"
+        ["default"] = ""
+      }
+      batch {
+        description = "corpus: also diff the head build's vize check against its mapper under tsc"
+        type = "boolean"
+        ["default"] = false
+      }
+      attribution {
+        description = "corpus: attribute tsc check time and types to helpers and projection families"
+        type = "boolean"
+        ["default"] = true
+      }
+      floors {
+        description = "corpus: also time the head build's floors (absolute, expressions-only, zero mapper wait)"
+        type = "boolean"
+        ["default"] = false
+      }
+      sizes {
+        description = "content-mapper: comma-separated SFC counts of the generated projects"
+        type = "string"
+        ["default"] = "1000,5000"
+      }
+      reference_mapper {
+        description = "content-mapper: also time @vue/content-mapper (pinned in tools/benchmarks/typecheck-hosts)"
+        type = "boolean"
+        ["default"] = false
+      }
+      syscall_census {
+        description = "content-mapper: also count the Linux filesystem syscalls per transform (strace)"
+        type = "boolean"
+        ["default"] = false
+      }
+      memory_probe {
+        description = "content-mapper: also time the head build's Linux burst peak RSS by worker count and mimalloc options"
+        type = "boolean"
+        ["default"] = false
+      }
+      windows_probe {
+        description = "content-mapper: also time the head build on Windows with stdout to NUL and a Defender exclusion"
+        type = "boolean"
+        ["default"] = false
+      }
+      launcher {
+        description = "content-mapper-replay: also replay through the npm launcher and a release @vizejs/native"
+        type = "boolean"
+        ["default"] = true
+      }
+      profile {
+        description = "content-mapper-replay: also perf-profile the head CLI and count allocations and syscalls"
+        type = "boolean"
+        ["default"] = true
+      }
+      host_runs {
+        description = "content-mapper-replay: alternating tsc and tsrs --fast runs per mapper through a timing proxy (0 skips)"
+        type = "string"
+        ["default"] = "3"
+      }
+    }
+  }
+  // Registers the dispatch-only modes from their PRs; only the tests run there.
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/03-typecheck-compare.yml"
+      "tools/ci/workflows/03-typecheck-compare/scripts/**"
+      "tools/ci/workflows/03-typecheck-compare/jobs/**"
+      "tools/benchmarks/scripts/typecheck-cold-pair*.ts"
+      "tools/benchmarks/scripts/content-mapper-pair*.ts"
+      "tools/benchmarks/scripts/content-mapper-burst-windows.ps1"
+      "tools/benchmarks/scripts/content-mapper-replay*.ts"
+      "tests/tooling/typecheck-cold-pair.test.ts"
+      "tests/tooling/content-mapper-pair*.test.ts"
+      "tests/tooling/content-mapper-replay*.test.ts"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "typecheck-cold-pair-${{ github.event.pull_request.number || github.ref }}-${{ inputs.mode }}-${{ inputs.head }}-${{ inputs.base }}-${{ inputs.projects }}-${{ inputs.platforms }}-${{ inputs.runtime }}-${{ inputs.checkers }}-${{ inputs.sizes }}-${{ inputs.corpora }}"
+  `cancel-in-progress` = true
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+  CARGO_INCREMENTAL = "0"
+}
+jobs {
+  test {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Test the pair planners"
+        env { VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts" }
+        run = ci.workflowScript("test-the-pair-planners.sh")
+      }
+    }
+  }
+
+  // Each platform builds on its own, so Linux results do not wait for Windows.
+  `build-linux` {
+    `if` = "github.event_name == 'workflow_dispatch' && inputs.mode == 'generated' && (contains(format(',{0},', inputs.platforms), ',linux,') || contains(format(',{0},', inputs.platforms), ',wsl2,'))"
+    needs = "test"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 90
+    env {
+
+      BASE = "${{ inputs.base }}"
+      HEAD = "${{ inputs.head }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflow("03-typecheck-compare")
+      new Dynamic {
+        name = "Validate inputs"
+        shell = "bash"
+        run = ci.workflowScript("validate-inputs.sh")
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.rust("1.100.0")
+      // The faster linker is optional: a failed release download falls back
+      // to the default linker instead of failing the pair.
+      new Dynamic {
+        uses = ci.setupWild
+        id = "wild"
+        `continue-on-error` = true
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Drop a partial wild configuration"
+        `if` = "steps.wild.outcome == 'failure'"
+        run = ci.workflowScript("drop-a-partial-wild-configuration.sh")
+      }
+      new Dynamic {
+        name = "Build both commits"
+        shell = "bash"
+        run = ci.workflowScript("build-both-commits.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        with {
+          name = "cold-pair-bin-linux"
+          path = "pair-bin/"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+
+  // Each platform builds on its own, so Linux results do not wait for Windows.
+  `build-windows` {
+    `if` = "github.event_name == 'workflow_dispatch' && inputs.mode == 'generated' && contains(format(',{0},', inputs.platforms), ',windows,')"
+    needs = "test"
+    `runs-on` = ci.windows
+    `timeout-minutes` = 90
+    env {
+
+      BASE = "${{ inputs.base }}"
+      HEAD = "${{ inputs.head }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflow("03-typecheck-compare")
+      new Dynamic {
+        name = "Validate inputs"
+        shell = "bash"
+        run = ci.workflowScript("validate-inputs.sh")
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Setup MSVC toolchain"
+        uses = "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756"  // v1
+        with { arch = "amd64" }
+      }
+      ci.rust("1.100.0")
+      new Dynamic {
+        name = "Build both commits"
+        shell = "bash"
+        run = ci.workflowScript("build-both-commits-2.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        with {
+          name = "cold-pair-bin-windows"
+          path = "pair-bin/"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+
+  linux {
+    needs = "build-linux"
+    `if` = "contains(format(',{0},', inputs.platforms), ',linux,')"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 120
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "cold-pair-bin-linux"
+          path = "pair-bin"
+        }
+      }
+      new Dynamic {
+        name = "Measure"
+        env {
+          PROJECTS = "${{ inputs.projects }}"
+          RUNS = "${{ inputs.runs }}"
+          RUNTIME = "${{ inputs.runtime }}"
+          CHECKERS = "${{ inputs.checkers }}"
+          ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
+          STRACE = "${{ inputs.strace && '--strace' || '' }}"
+        }
+        run = ci.workflowScript("measure.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "cold-pair-linux"
+          path = "${{ runner.temp }}/pair-out/"
+          `if-no-files-found` = "warn"
+        }
+      }
+    }
+  }
+
+  wsl2 {
+    needs = "build-linux"
+    `if` = "contains(format(',{0},', inputs.platforms), ',wsl2,')"
+    // WSL2 needs nested virtualization; Blacksmith Windows runners lack it.
+    `runs-on` = "windows-2025"
+    `timeout-minutes` = 300
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = "Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364"  // v7.0.0
+        with {
+          distribution = "Ubuntu-24.04"
+          `wsl-version` = "2"
+          `wsl-shell-user` = "root"
+          `additional-packages` = "ca-certificates curl time xz-utils"
+        }
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "cold-pair-bin-linux"
+          path = "pair-bin"
+        }
+      }
+      new Dynamic {
+        name = "Resolve the Windows mount"
+        shell = "pwsh"
+        run = ci.workflowScript("resolve-the-windows-mount.ps1")
+      }
+      new Dynamic {
+        name = "Install Node 24 in WSL2"
+        shell = "wsl-bash {0}"
+        env {
+          WSLENV = "VIZE_CI_FILES/p"
+        }
+        run = ci.wslScript("install-node-24-in-wsl2.sh")
+      }
+      new Dynamic {
+        name = "Measure ext4 and the Windows mount"
+        shell = "wsl-bash {0}"
+        env {
+          WSLENV = "PROJECTS/u:RUNS/u:RUNTIME/u:CHECKERS/u:ALLOW/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p"
+          PROJECTS = "${{ inputs.projects }}"
+          RUNS = "${{ inputs.runs }}"
+          RUNTIME = "${{ inputs.runtime }}"
+          CHECKERS = "${{ inputs.checkers }}"
+          ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
+        }
+        run = ci.wslScript("measure-ext4-and-the-windows-mount.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "cold-pair-wsl2"
+          path = "${{ runner.temp }}/vize-cold-pair/out/"
+          `if-no-files-found` = "warn"
+        }
+      }
+    }
+  }
+
+  windows {
+    needs = "build-windows"
+    `if` = "contains(format(',{0},', inputs.platforms), ',windows,')"
+    `runs-on` = ci.windows
+    `timeout-minutes` = 120
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "cold-pair-bin-windows"
+          path = "pair-bin"
+        }
+      }
+      new Dynamic {
+        name = "Measure"
+        shell = "pwsh"
+        env {
+          PROJECTS = "${{ inputs.projects }}"
+          RUNS = "${{ inputs.runs }}"
+          RUNTIME = "${{ inputs.runtime }}"
+          CHECKERS = "${{ inputs.checkers }}"
+          ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
+        }
+        run = ci.workflowScript("measure.ps1")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "cold-pair-windows"
+          path = "${{ runner.temp }}/pair-out/"
+          `if-no-files-found` = "warn"
+        }
+      }
+    }
+  }
+
+  corpus = import("jobs/corpus.pkl")
+  `mapper-build-linux` = import("jobs/mapper-build-linux.pkl")
+  `mapper-build-windows` = import("jobs/mapper-build-windows.pkl")
+  `mapper-linux` = import("jobs/mapper-linux.pkl")
+  `mapper-wsl2` = import("jobs/mapper-wsl2.pkl")
+  `mapper-windows` = import("jobs/mapper-windows.pkl")
+  `replay-resolve` = import("jobs/replay-resolve.pkl")
+  `replay-build` = import("jobs/replay-build.pkl")
+  replay = import("jobs/replay.pkl")
+}

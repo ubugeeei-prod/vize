@@ -55,7 +55,7 @@
 **Steps:**
 
 - [x] `node tools/commands/davinci/incremental-equivalence.ts` with committed edit scripts _(six scripts under `incremental-equivalence/scripts/`; the harness is `vize_incremental::equivalence`)_
-- [x] `.github/workflows/davinci-incremental.yml` required on PRs touching `crates/vize_incremental/` _(the `incremental-equivalence` job; its shape is pinned by `davinci-incremental-workflow.test.ts`)_
+- [x] `.github/workflows/07-incremental.yml` required on PRs touching `crates/vize_incremental/` _(the `incremental-equivalence` job; its shape is pinned by `davinci-incremental-workflow.test.ts`)_
 
 **Acceptance:** TS-42 green with scope proof (edits applied and artifacts compared are counted; a zero-comparison run fails); a seeded stale-cache bug is caught.
 

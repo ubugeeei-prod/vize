@@ -10,7 +10,7 @@
  * Vite and Nuxt rows, does not fail a build on a regression.
  *
  * It therefore declares no baseline of its own. Enforcement in this repo has
- * exactly one mechanism, `.github/workflows/benchmark.yml`, which since #3586
+ * exactly one mechanism, `.github/workflows/03-source-comparison.yml`, which since #3586
  * compares a lane against a pinned historical commit on a weekly schedule as
  * well as against the PR base. A second lane carrying its own committed
  * baseline file and its own threshold would be a parallel drift gate with

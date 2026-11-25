@@ -1,0 +1,42 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Content Mapper Conformance"
+
+on {
+  schedule = new Listing {
+    new Dynamic { cron = "21 4 * * *" }
+  }
+  workflow_dispatch {
+    inputs {
+      `targeted-test` {
+        description = "Run the full suite or the original 16-state/four-host generic body-error cohort"
+        type = "choice"
+        options = List("full", "generic-body-error")
+        ["default"] = "full"
+      }
+      `expected-source-sha` {
+        description = "Exact reviewed source for the targeted mode"
+        type = "string"
+        required = false
+      }
+    }
+  }
+}
+
+concurrency {
+  group = "content-mapper-${{ github.ref }}${{ inputs.targeted-test == 'generic-body-error' && '-generic-body-error' || '' }}"
+  `cancel-in-progress` = true
+}
+
+permissions { contents = "read" }
+
+env {
+  CARGO_TERM_COLOR = "always"
+  CONTENT_MAPPER_TYPESCRIPT_SHA = "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+
+jobs {
+  `exact-tsgo-project` = import("jobs/exact-tsgo-project.pkl")
+  `nuxt-generated-membership` = import("jobs/nuxt-generated-membership.pkl")
+}

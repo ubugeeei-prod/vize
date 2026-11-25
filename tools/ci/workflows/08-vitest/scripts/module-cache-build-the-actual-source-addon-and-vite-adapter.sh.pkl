@@ -1,0 +1,9 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("vp", List("run", "--workspace-root", "build:native:test"))
+  module.command("vp", List("run", "--workspace-root", "build:vite-plugin"))
+  module.command("node", List("npm/builder/vite/scripts/run-tests.ts", "--require-prepared"))
+}

@@ -14,7 +14,7 @@
  * `perf record` run whose `perf script` is folded by typecheck-profile-fold
  * into role/DSO/phase/function tables, folded stacks and a flame graph.
  * Every run starts from an empty XDG cache. Build each worktree's native
- * addon with frame pointers and symbols (see typecheck-profile.yml).
+ * addon with frame pointers and symbols (see 03-typecheck-profile.yml).
  */
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";

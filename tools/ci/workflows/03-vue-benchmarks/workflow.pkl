@@ -1,0 +1,109 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Vue Benchmarks Replay"
+
+// Periodic replay of the upstream pikax/vue-benchmarks typecheck confirmation
+// corpus (#3283) against current main and the latest released vize. Outcomes
+// are pinned in tools/benchmarks/scripts/vue-benchmarks-replay-expect-{main,release}.json; any
+// drift fails the lane. A release that fixes a known upstream failure turns
+// that entry into a stale suppression, so the release table must be refreshed
+// with the fix recorded as a required pass — external reports cannot stay
+// stale silently.
+//
+on {
+  workflow_dispatch = null
+  schedule = new Listing {
+    new Dynamic { cron = "43 6 * * 1" }
+  }
+}
+concurrency {
+  group = "vue-benchmarks-replay-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+
+jobs {
+  `replay-main` {
+    name = "replay-main"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    permissions { contents = "read" }
+    steps = new Listing {
+      ...ci.stageWorkflow("03-vue-benchmarks")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+        }
+      }
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "vue-benchmarks-replay"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.workspaceVp()
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+      ci.command("Build Vize CLI", "cargo build --profile ci -p vize")
+      new Dynamic {
+        name = "Replay the upstream corpus against current main"
+        run = ci.workflowScript("replay-the-upstream-corpus-against-current-main.sh")
+      }
+      new Dynamic {
+        name = "Upload replay results"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "vue-benchmarks-replay-main"
+          path = "replay-main-results.json"
+          `if-no-files-found` = "warn"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  `replay-release` {
+    name = "replay-release"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    permissions { contents = "read" }
+    steps = new Listing {
+      ...ci.stageWorkflow("03-vue-benchmarks")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+        }
+      }
+      ci.workspaceVp()
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Install the latest released vize"
+        run = #"npm install --prefix "$RUNNER_TEMP/vize-release" vize@latest --no-fund --no-audit"#
+      }
+      new Dynamic {
+        name = "Replay the upstream corpus against the latest release"
+        run = ci.workflowScript("replay-the-upstream-corpus-against-the-latest-release.sh")
+      }
+      new Dynamic {
+        name = "Upload replay results"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "vue-benchmarks-replay-release"
+          path = "replay-release-results.json"
+          `if-no-files-found` = "warn"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

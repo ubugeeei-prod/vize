@@ -1,7 +1,0 @@
-amends "../../../../../../../ci/lib/ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #"node "$VIZE_CI_FILES/require-identical-output.cjs""#
-}

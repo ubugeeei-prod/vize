@@ -11,7 +11,7 @@ import { aggregateCheckNeedsResults } from "./require-needs-success.ts";
 const inputs = [
   /^\.gitmodules$/,
   // The workflows on the PR/queue call path and the local actions they use.
-  /^\.github\/workflows\/(?:check|pr-source-checks|davinci-canonical-corpus)\.yml$/,
+  /^\.github\/workflows\/(?:check|pr-source-checks|07-canonical-corpus)\.yml$/,
   /^\.github\/actions\/(?:setup-rust-script|setup-wild-http-recovery|setup-rust-sticky-cache|reuse-rust-target)\//,
   // setup-node reads the pinned runtime from package.json.
   /^package\.json$/,

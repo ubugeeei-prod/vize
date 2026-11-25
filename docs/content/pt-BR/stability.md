@@ -43,7 +43,7 @@ O fluxo de trabalho de lançamento cria pacotes nativos para macOS, Linux e Wind
 onde o pacote declara suporte. Os trabalhos de compatibilidade de CI cobrem o chão declarado do Nó e a versão
 atual do projeto do Nó.
 
-A matriz de fumaça totalmente instalada de zero (`.github/workflows/native-smoke.yml`) roda em uma cadência semanal de
+A matriz de fumaça totalmente instalada de zero (`.github/workflows/06-native-smoke.yml`) roda em uma cadência semanal de
 e sob demanda, não em toda campanha de PR. Ele exerce o caminho de instalação de pacotes publicado em
 runners hospedados no GitHub para linux-x64-gnu, linux-arm64-gnu, darwin-arm64 e win32-x64-msvc; Os
 alvos restantes Darwin-x64 e Win32-ARM64-MSVC permanecem em runners hospedados específicos da arquitetura.

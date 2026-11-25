@@ -1,0 +1,114 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/07-declaration-products/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Declaration source products
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/07-declaration-products.yml"
+      - tools/ci/workflows/07-declaration-products/scripts/**
+      - davinci/vize_l2/src/query/script/assignments.rs
+      - davinci/vize_l2/src/query/script/assignments/**
+      - crates/vize_canon/src/corsa_bridge/vue_document.rs
+      - crates/vize_canon/src/corsa_bridge/vue_document/ambient_diagnostics.rs
+      - crates/vize_canon/src/corsa_bridge/bridge/initial_diagnostics.rs
+      - crates/vize_canon/src/lsp_client/diagnostics.rs
+      - crates/vize_canon/src/lsp_client/diagnostics/ambient.rs
+      - crates/vize_canon/src/lsp_client/initial_diagnostics.rs
+      - crates/vize_canon/src/lsp_client/initial_diagnostics/ambient_world.rs
+      - crates/vize_canon/src/lsp_client/tracked_documents.rs
+      - crates/vize_canon/src/lsp_client/tracked_documents/**
+      - crates/vize_maestro/src/ide/diagnostics/corsa/ambient_project*
+      - crates/vize_maestro/src/ide/diagnostics/corsa/ambient_project/**
+      - crates/vize_maestro/src/server/state/global_components/editor_options/ambient.rs
+      - tests/_fixtures/differential/typechecker/ambient-global-slot-host-3011/**
+      - tests/formal/ambient-diagnostics/**
+      - tools/benchmarks/scripts/compare-ambient-diagnostics.ts
+      - "tests/formal/primitive-assignments/**"
+permissions: { contents: read }
+concurrency:
+  group: declaration-source-products-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  primitive-assignability-proof:
+    name: Check immutable binding traces
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/07-declaration-products/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+
+      - name: Check immutable binding traces and witness unsafe scopes
+        env:
+          ALLOY_SHA256: "6037cbeee0e8423c1c468447ed10f5fcf2f2743a2ffc39cb1c81f2905c0fdb9d"
+        run: |-
+          . "${{ env.VIZE_CI_FILES }}/check-immutable-binding-traces-and-witness-unsafe-scopes.sh"
+  ambient-component-project:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: 1.100.0
+      VIZE_TEST_REQUIRE_TSGO: "1"
+      VIZE_TEST_TSGO_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/07-declaration-products/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+          components: clippy
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with:
+          wild-version: 0.9.0
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          version: latest
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: true
+      - name: Model native acknowledgement and publication across edits
+        working-directory: tests/formal/ambient-diagnostics
+        run: . "${{ env.VIZE_CI_FILES }}/model-native-diagnostic-publication.sh"
+      - name: Compare cold and repeated diagnostics on both revisions
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: . "${{ env.VIZE_CI_FILES }}/compare-ambient-diagnostic-revisions.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: ambient-diagnostic-costs
+          path: ${{ runner.temp }}/ambient-diagnostics.json
+          if-no-files-found: ignore
+          retention-days: 7

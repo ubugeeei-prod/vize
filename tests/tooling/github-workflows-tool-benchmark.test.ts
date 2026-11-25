@@ -7,7 +7,7 @@ import { stagedSnapshotFiles } from "./support/benchmark-staging.ts";
 import { hostedOrBlacksmithExact, workflowJobBody } from "./support/github-workflows.ts";
 
 test("tool benchmark workflow produces docs artifacts, PR comments, and conventional commits", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "tool-benchmark.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "03-tool-comparison.yml");
   const benchmarkJob = workflowJobBody(workflow, "tool-benchmark");
   const commentJob = workflowJobBody(workflow, "tool-benchmark-comment");
   const commitJob = workflowJobBody(workflow, "tool-benchmark-commit");
@@ -111,7 +111,7 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
 });
 
 test("tool benchmark workflow publishes scheduled artifacts without pushing to protected main", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "tool-benchmark.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "03-tool-comparison.yml");
 
   // A weekly cron keeps benchmark artifacts fresh without directly refreshing
   // tools/benchmarks/results/tool-benchmark-latest.json from the protected main branch.

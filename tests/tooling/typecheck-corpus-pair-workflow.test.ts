@@ -5,7 +5,7 @@ import { parse } from "yaml";
 
 void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU runner", () => {
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "typecheck-cold-pair.yml"),
+    readAutomationPrograms(".github", "workflows", "03-typecheck-compare.yml"),
   ) as {
     on: {
       workflow_dispatch: {

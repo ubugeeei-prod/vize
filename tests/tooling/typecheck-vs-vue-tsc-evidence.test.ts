@@ -30,7 +30,7 @@ const vize: Tool = { label: "vize", kind: "vize", bin: "/unused", env: {} };
 const project = { id: "fixture", cwd: "/unused", tsconfig: "tsconfig.json" };
 
 test("Actions retains partial evidence after failure and records the source actually checked out", () => {
-  const workflow = readWorkflowShell("typecheck-vs-vue-tsc");
+  const workflow = readWorkflowShell("03-typecheck-vs-vue-tsc");
   const upload = workflow
     .split(/^      - /m)
     .find((step) => step.startsWith("uses: actions/upload-artifact@"));

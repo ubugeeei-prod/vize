@@ -1,0 +1,14 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  module.requireCommitShas(List("BASE_SHA"))
+  module.requireCommitShas(List("HEAD_SHA"))
+  #"""
+  [[ "$HEAD_SHA" == "$DISPATCH_SHA" ]]
+  [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+  git merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
+  """#
+}

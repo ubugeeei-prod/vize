@@ -125,7 +125,7 @@ test("replay expectation tables stay pinned to the upstream corpus", () => {
 });
 
 test("replay workflow reads the manifest runtime in both lanes", () => {
-  const source = readRepoFile(".github", "workflows", "vue-benchmarks-replay.yml");
+  const source = readRepoFile(".github", "workflows", "03-vue-benchmarks.yml");
   const workflow = parse(source) as { jobs?: Record<string, WorkflowJob> };
 
   for (const jobName of ["replay-main", "replay-release"]) {

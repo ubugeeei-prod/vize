@@ -417,7 +417,7 @@ test("performance targets require every correct p50 and p99 plus cold and warm m
 });
 
 test("the workflow keeps evidence after failure and measures the checked-out source", () => {
-  const workflow = readWorkflowShell("lsp-vs-volar");
+  const workflow = readWorkflowShell("05-lsp-vs-volar");
   const upload = workflow
     .split(/^      - /m)
     .find((step) => step.startsWith("uses: actions/upload-artifact@"));

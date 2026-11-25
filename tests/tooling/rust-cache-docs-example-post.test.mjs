@@ -90,7 +90,7 @@ function currentWorkloads(fixture, result) {
 
 await test("docs examples use separate primary and secondary target directories", () => {
   const docs = parse(
-    readFileSync(new URL("../../.github/workflows/build-docs.yml", import.meta.url), "utf8"),
+    readFileSync(new URL("../../.github/workflows/11-docs-build.yml", import.meta.url), "utf8"),
   );
   const caller = docs.jobs["build-playground"].steps.filter(
     ({ uses }) => uses === "./.github/actions/setup-rust-sticky-cache",

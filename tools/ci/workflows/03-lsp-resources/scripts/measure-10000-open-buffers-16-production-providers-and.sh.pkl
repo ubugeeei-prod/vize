@@ -1,0 +1,18 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  timeout \
+    --signal=TERM \
+    --kill-after=30s 45m vp exec node tools/support/compat/davinci/lsp-resources.ts \
+    --server target/ci-opt/vize \
+    --files 10000 \
+    --warm-providers 16 \
+    --runs 1 \
+    --idle-seconds 10 \
+    --build "ci-opt: release, thin LTO, 16 codegen units" \
+    --out "${RUNNER_TEMP}/lsp-resource.json"
+  """#
+}

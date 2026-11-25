@@ -11,7 +11,7 @@ import { parse as parseYaml } from "yaml";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const crateDir = path.join(repoRoot, "tests", "formal", "creusot");
-const workflowFile = path.join(repoRoot, ".github", "workflows", "davinci-creusot.yml");
+const workflowFile = path.join(repoRoot, ".github", "workflows", "07-proofs-creusot.yml");
 const inventoryFile = path.join(
   repoRoot,
   "docs",
@@ -75,7 +75,7 @@ test("the Creusot workflow replays every proof whenever a proved kernel changes"
   const kernels = includedKernels();
   assert.ok(kernels.length > 0);
   const own = [
-    ".github/workflows/davinci-creusot.yml",
+    ".github/workflows/07-proofs-creusot.yml",
     "tools/nix/creusot/**",
     "tests/formal/creusot/**",
   ];

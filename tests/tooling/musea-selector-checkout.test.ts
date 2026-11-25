@@ -17,8 +17,9 @@ import test from "node:test";
 import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const job = parse(readAutomationPrograms(join(root, ".github/workflows/musea-browser.yml"), "utf8"))
-  .jobs.plan;
+const job = parse(
+  readAutomationPrograms(join(root, ".github/workflows/10-musea-browser.yml"), "utf8"),
+).jobs.plan;
 const inputs = job.steps.find((step: { uses?: string }) =>
   step.uses?.startsWith("actions/checkout@"),
 ).with;

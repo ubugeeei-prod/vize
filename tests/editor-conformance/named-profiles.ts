@@ -36,7 +36,7 @@ const inputs = [
   "tests/editor-conformance/support/lsp-client.ts",
   "tests/editor-conformance/lsp-tap.mjs",
   "tests/editor-conformance/record-server-exit.sh",
-  ".github/workflows/editor-conformance.yml",
+  ".github/workflows/05-editor-conformance.yml",
   "crates/vize_maestro/src/server/state/features.rs",
   ...(editor === "neovim"
     ? [

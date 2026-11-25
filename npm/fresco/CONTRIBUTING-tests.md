@@ -11,7 +11,7 @@ quotes through literally, so quote glob arguments with double quotes
 
 The Linux workspace gates (`check.yml`) run the Fresco JS check/build/test
 tasks and `cargo test --workspace` on every PR. In addition, the `fresco`
-workflow (`.github/workflows/fresco.yml`) re-runs the focused suites —
+workflow (`.github/workflows/10-fresco.yml`) re-runs the focused suites —
 `check`/`build`/`test` here plus `cargo test -p vize_fresco` — on Linux,
 macOS, and Windows whenever Fresco sources change, since terminal behavior
 (console backends, IME platform modules, shell quoting) is platform-sensitive.

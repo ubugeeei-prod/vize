@@ -65,7 +65,7 @@ test("TS-40 verifier fails closed on diagnostic drift", () => {
 
 test("TS-40 baselines are wired into exact Content Mapper CI", () => {
   const workflow = readAutomationPrograms(
-    path.join(root, ".github/workflows/content-mapper-conformance.yml"),
+    path.join(root, ".github/workflows/04-content-mapper-conformance.yml"),
   );
   const parsed = parse(workflow) as {
     on: {

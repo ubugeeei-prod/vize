@@ -11,9 +11,7 @@ import { stageProjectNative } from "../../npm/linter/oxlint/scripts/project-nati
 
 void test("walltime comparisons use the same source and runner without publishing authority", () => {
   const workflow = parse(
-    readAutomationPrograms(
-      new URL("../../.github/workflows/ci-walltime-benchmark.yml", import.meta.url),
-    ),
+    readAutomationPrograms(new URL("../../.github/workflows/03-ci-walltime.yml", import.meta.url)),
   );
   assert.deepEqual(workflow.permissions, { contents: "read" });
   assert.deepEqual(workflow.on.pull_request.types, ["opened", "reopened", "labeled"]);
@@ -46,9 +44,7 @@ void test("walltime comparisons use the same source and runner without publishin
 
 void test("manual components are dispatch-only and the default run keeps every same-source arm", () => {
   const workflow = parse(
-    readAutomationPrograms(
-      new URL("../../.github/workflows/ci-walltime-benchmark.yml", import.meta.url),
-    ),
+    readAutomationPrograms(new URL("../../.github/workflows/03-ci-walltime.yml", import.meta.url)),
   );
   const input = workflow.on.workflow_dispatch.inputs.component;
   assert.equal(input.default, "all");
@@ -109,9 +105,7 @@ void test("both benchmark arms stage the same source bytes into distinct retaine
 
 void test("whole artifact payload trial is manual-only with a separate complete consumer", () => {
   const workflow = parse(
-    readAutomationPrograms(
-      new URL("../../.github/workflows/ci-walltime-benchmark.yml", import.meta.url),
-    ),
+    readAutomationPrograms(new URL("../../.github/workflows/03-ci-walltime.yml", import.meta.url)),
   );
   const producer = workflow.jobs["artifact-payload"];
   const consumer = workflow.jobs["artifact-payload-restore"];

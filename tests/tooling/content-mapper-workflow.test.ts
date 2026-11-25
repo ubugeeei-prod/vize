@@ -62,7 +62,11 @@ function assertTriggerFilters(workflowConfig: WorkflowConfig): void {
 }
 
 test("Content Mapper conformance pins and runs the exact upstream project path", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "content-mapper-conformance.yml");
+  const workflow = readAutomationPrograms(
+    ".github",
+    "workflows",
+    "04-content-mapper-conformance.yml",
+  );
   const workflowConfig = parse(workflow) as WorkflowConfig;
   const job = workflowJobBody(workflow, "exact-tsgo-project");
   const steps = jobSteps(workflow, "exact-tsgo-project");
@@ -181,7 +185,7 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.equal(stressSteps.length, 1, "expected exactly one Maestro lifecycle stress step");
   const stressStep = stressSteps[0];
   const stressRun = workflowProgram(
-    "content-mapper-conformance",
+    "04-content-mapper-conformance",
     stressStep.run ?? "",
     "stress-every-editor-case-against-its-exact-native-provider.ts",
   );

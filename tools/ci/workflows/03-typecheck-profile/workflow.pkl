@@ -1,0 +1,134 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Type-check profile"
+`run-name` = "Type-check profile ${{ inputs.head_sha || github.sha }}${{ inputs.base_sha && format(' vs {0}', inputs.base_sha) || '' }}"
+// Whole-process-tree perf profiles of tsc + Vize mapper, tsrs + Vize mapper
+// and `vize check` on the corpus-pair corpora: per process, DSO (tsgo, tsrs,
+// node, Vize native, libc, kernel), phase and function, with folded stacks,
+// flame graphs, tsgo's own pprof profile and perf stat counters, base vs head.
+// Vize is built in the ci-opt profile with frame pointers and its symbols.
+// A push to bench/typecheck-profile/** profiles the pushed commit; trailers in
+// the last paragraph of its message stand in for the inputs: Profile-Base (a
+// full SHA), Profile-Corpora, Profile-Lanes and Profile-Frequency. The
+// "Validate inputs" step prints what it read.
+on {
+  push {
+    branches = List("bench/typecheck-profile/**")
+  }
+  workflow_dispatch {
+    inputs {
+      head_sha {
+        description = "Full 40-hex commit to profile"
+        type = "string"
+        required = true
+      }
+      base_sha {
+        description = "Optional full 40-hex baseline commit for the function-level diff"
+        type = "string"
+        ["default"] = ""
+      }
+      corpora {
+        description = "Optional comma-separated corpus ids from the corpus pair (default all)"
+        type = "string"
+        ["default"] = ""
+      }
+      lanes {
+        description = "Comma-separated lanes (tsc, tsrs, tsrs-dwarf, check)"
+        type = "string"
+        ["default"] = "tsc,tsrs,check"
+      }
+      frequency {
+        description = "perf record sampling frequency (Hz)"
+        type = "string"
+        ["default"] = "999"
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "typecheck-profile-${{ github.ref }}-${{ inputs.base_sha }}-${{ inputs.head_sha }}"
+  `cancel-in-progress` = true
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+  CARGO_INCREMENTAL = "0"
+}
+jobs {
+  profile {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 150
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/03-typecheck-profile/scripts"
+      BASE_SHA = "${{ inputs.base_sha }}"
+      HEAD_SHA = "${{ inputs.head_sha || github.sha }}"
+      CORPORA = "${{ inputs.corpora }}"
+      LANES = "${{ inputs.lanes || 'tsc,tsrs,check' }}"
+      FREQUENCY = "${{ inputs.frequency || '999' }}"
+      // FlameGraph's flamegraph.pl and difffolded.pl at a fixed commit.
+      FLAMEGRAPH_SHA = "41fee1f99f9276008b7cd112fca19dc3ea84ac32"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Read the pushed commit's profile trailers"
+        `if` = "github.event_name == 'push'"
+        run = ci.workflowScript("read-the-pushed-commit-s-profile-trailers.sh")
+      }
+      new Dynamic {
+        name = "Validate inputs"
+        run = ci.workflowScript("validate-inputs.sh")
+      }
+      ci.workspaceVp()
+      ci.rust("1.100.0")
+      ci.wild()
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Check out the profiled commits beside the driver"
+        run = ci.workflowScript("check-out-the-profiled-commits-beside-the-driver.sh")
+      }
+      new Dynamic {
+        name = "Install perf, glibc symbols and FlameGraph"
+        run = ci.workflowScript("install-perf-glibc-symbols-and-flamegraph.sh")
+      }
+      new Dynamic {
+        name = "Install the locked hosts and corpus packages and hydrate the corpora"
+        run = ci.workflowScript("install-the-locked-hosts-and-corpus-packages-and-hydrate-the-corpora.sh")
+      }
+      ci.command("Test the profile folder and parsers", "node --test tests/tooling/typecheck-profile.test.ts")
+      // ci-opt (thin LTO) with frame pointers and an unstripped symbol table, so
+      // perf unwinds and names Vize's Rust frames inside node.
+      new Dynamic {
+        name = "Build the native binding with frame pointers and the vize package"
+        run = ci.workflowScript("build-the-native-binding-with-frame-pointers-and-the-vize-package.sh")
+      }
+      new Dynamic {
+        name = "Profile the lanes"
+        run = ci.workflowScript("profile-the-lanes.sh")
+      }
+      new Dynamic {
+        name = "Write job summary"
+        `if` = "always()"
+        run = ci.workflowScript("write-job-summary.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "typecheck-profile-${{ github.run_id }}"
+          path = """
+          ${{ runner.temp }}/profile-out/
+          ${{ runner.temp }}/build-*.log
+
+          """
+          `if-no-files-found` = "warn"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}
