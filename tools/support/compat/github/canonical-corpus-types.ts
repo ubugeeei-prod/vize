@@ -88,3 +88,10 @@ export interface NativeObservation {
   rejected: Boundary["rejected"];
   successfulFollows: number;
 }
+
+// Present only during an explicit snapshot-to-record recapture qualification.
+export interface RecaptureBasis {
+  raw: NativeObservation;
+  boundary: Boundary;
+  files: VueFile[];
+}

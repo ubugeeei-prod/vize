@@ -260,6 +260,23 @@ export function finiteCommittedInventory(
   boundary: Boundary,
 ) {
   const original = walkCommittedGraph(nodes, children, boundary).files;
+  const { files, cut } = finiteCommittedPlan(nodes, children);
+  const kept = original.filter(([path]) => !cut.some((prefix) => path.startsWith(`${prefix}/`)));
+  assert.deepEqual(files, kept, "Finite walk changed paths beyond ancestor-loop repetitions");
+  const sources = (rows: Array<[string, string]>) =>
+    new Set(rows.map(([path, blob]) => JSON.stringify([resolveLogical(nodes, path).path, blob])));
+  assert.deepEqual(
+    sources(files),
+    sources(original),
+    "Finite walk omitted an original source or blob",
+  );
+  return { files, original, cut };
+}
+
+// This plan is derived solely from authenticated committed directory edges.
+// It does not authorize any physical observation or metadata refusal.
+export function finiteCommittedPlan(nodes: CorpusNodes, children: CorpusChildren) {
+  validateLogicalGraph(nodes, children);
   const files: Array<[string, string]> = [];
   const cut: string[] = [];
   const visit = (logical: string, node: CorpusNode, edges: Set<string>) => {
@@ -277,14 +294,5 @@ export function finiteCommittedInventory(
     }
   };
   visit("", nodes.get("")!, new Set());
-  const kept = original.filter(([path]) => !cut.some((prefix) => path.startsWith(`${prefix}/`)));
-  assert.deepEqual(files, kept, "Finite walk changed paths beyond ancestor-loop repetitions");
-  const sources = (rows: Array<[string, string]>) =>
-    new Set(rows.map(([path, blob]) => JSON.stringify([resolveLogical(nodes, path).path, blob])));
-  assert.deepEqual(
-    sources(files),
-    sources(original),
-    "Finite walk omitted an original source or blob",
-  );
-  return { files, original, cut };
+  return { files, cut };
 }
