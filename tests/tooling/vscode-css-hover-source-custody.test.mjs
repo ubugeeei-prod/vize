@@ -375,6 +375,10 @@ await test("historical anchors and the pinned integrated product tree remain qua
       report.mergedMain.integrationLayer,
       "crates/vize_patina/tests/native_canonical_img_alt/refusals.rs",
     ],
+    [
+      report.successorMain.integrationLayer,
+      "crates/vize_atelier_sfc/src/croquis/unused/sibling_scripts.rs",
+    ],
     [report.successorMain.integrationLayer, "crates/vize_croquis/src/setup_context/ssr.rs"],
   ]) {
     const frozen = path.join(root, "tests/_fixtures/byte-custody", source);
