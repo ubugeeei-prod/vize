@@ -1,0 +1,141 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_deref_Vec_usize_Global": { "prover": "z3", "time": 0.003 },
+      "vc_elim_Some": { "prover": "z3", "time": 0.003 },
+      "vc_floor_char_boundary": { "prover": "z3", "time": 0.003 },
+      "vc_into_iter_ref_slice_Segment": {
+        "prover": "alt-ergo",
+        "time": 0.007
+      },
+      "vc_len_Segment": { "prover": "alt-ergo", "time": 0.007 },
+      "vc_line_break_len": { "prover": "z3", "time": 0.003 },
+      "vc_line_start_table": { "prover": "alt-ergo", "time": 0.007 },
+      "vc_next_Iter_Segment": { "prover": "z3", "time": 0.003 },
+      "vc_push_ResolvedSegment": { "prover": "z3", "time": 0.004 },
+      "vc_resolve_in_table": { "prover": "z3", "time": 0.003 },
+      "vc_resolve_positions": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.012 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.015 },
+              { "prover": "z3", "time": 0.012 },
+              { "prover": "z3", "time": 0.013 },
+              { "prover": "z3", "time": 0.013 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.023 },
+              {
+                "tactic": "split_vc",
+                "children": [ { "prover": "z3", "time": 0.005 } ]
+              },
+              { "prover": "z3", "time": 0.017 },
+              { "prover": "z3", "time": 0.017 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.018 },
+              { "prover": "z3", "time": 0.018 },
+              { "prover": "z3", "time": 0.018 },
+              { "prover": "z3", "time": 0.033 },
+              { "prover": "z3", "time": 0.081 },
+              {
+                "tactic": "split_vc",
+                "children": [ { "prover": "z3", "time": 0.045 } ]
+              },
+              { "prover": "z3", "time": 0.019 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "z3", "time": 0.017 },
+                  { "prover": "z3", "time": 0.017 }
+                ]
+              },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "z3", "time": 0.016 },
+                  {
+                    "tactic": "split_vc",
+                    "children": [
+                      { "prover": "z3", "time": 0.017 },
+                      {
+                        "tactic": "compute_in_goal",
+                        "children": [
+                          {
+                            "tactic": "split_vc",
+                            "children": [
+                              { "prover": "cvc5", "time": 0.289 },
+                              { "prover": "cvc5", "time": 0.273 },
+                              { "prover": "z3", "time": 0.146 },
+                              { "prover": "z3", "time": 0.137 }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              { "prover": "z3", "time": 0.042 },
+              { "prover": "z3", "time": 0.021 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "cvc5", "time": 0.025 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.004 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  {
+                    "tactic": "split_vc",
+                    "children": [ { "prover": "z3", "time": 0.016 } ]
+                  }
+                ]
+              },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  {
+                    "tactic": "split_vc",
+                    "children": [
+                      {
+                        "tactic": "compute_in_goal",
+                        "children": [ { "prover": "z3", "time": 0.242 } ]
+                      },
+                      { "prover": "z3", "time": 0.017 },
+                      { "prover": "z3", "time": 0.005 }
+                    ]
+                  },
+                  { "prover": "z3", "time": 0.005 }
+                ]
+              },
+              { "prover": "z3", "time": 0.016 },
+              { "prover": "cvc5", "time": 0.118 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.017 },
+              { "prover": "cvc5", "time": 0.081 },
+              { "prover": "cvc5", "time": 0.147 },
+              { "prover": "z3", "time": 0.017 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.019 },
+              { "prover": "z3", "time": 0.017 },
+              { "prover": "z3", "time": 0.004 }
+            ]
+          }
+        ]
+      },
+      "vc_utf16_len": { "prover": "z3", "time": 0.004 },
+      "vc_with_capacity_ResolvedSegment": {
+        "prover": "alt-ergo",
+        "time": 0.007
+      }
+    }
+  }
+}

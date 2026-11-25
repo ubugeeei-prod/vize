@@ -32,25 +32,9 @@
 //! [`names`]: https://tc39.es/ecma426/#json-names
 //! [VLQ]: https://en.wikipedia.org/wiki/Variable-length_quantity
 
-use super::line_endings::line_break_len;
+use super::source_positions::{ResolvedSegment, Segment, resolve_positions};
 use alloc::vec::Vec;
 use vize_l0::{FxHashMap, String, ToCompactString};
-
-/// A recorded mapping anchor, as raw byte offsets.
-///
-/// `generated_offset` is a byte offset into the code buffer captured at the
-/// moment the mapped token was about to be written; `source_offset` is the byte
-/// offset of the originating node in the original template source. Both are
-/// resolved to (line, column) at [`SourceMapBuilder::finish`]. `name` is an
-/// index into the builder's `names` table when the anchor carries a known
-/// source symbol (a prop key, a static attribute name), or `None` for anonymous
-/// anchors; it becomes the optional 5th VLQ field of the segment.
-#[derive(Debug, Clone, Copy)]
-struct Segment {
-    generated_offset: u32,
-    source_offset: u32,
-    name: Option<u32>,
-}
 
 /// Accumulates source-map segments during codegen and serializes a v3 map.
 ///
@@ -140,7 +124,11 @@ impl SourceMapBuilder {
         // starts, so it does not require the segments to be source-sorted.
         self.segments.sort_by_key(|s| s.generated_offset);
 
-        let resolved = resolve_positions(generated_code, source_content, &self.segments);
+        let resolved = resolve_positions(
+            generated_code.as_bytes(),
+            source_content.as_bytes(),
+            &self.segments,
+        );
         let mappings = encode_mappings(&resolved);
 
         // Use serde_json to build the document so `filename`/source content and
@@ -163,117 +151,10 @@ impl SourceMapBuilder {
     }
 }
 
-/// A segment whose endpoints have been resolved to 0-indexed line/column.
-#[derive(Debug, Clone, Copy)]
-struct ResolvedSegment {
-    generated_line: u32,
-    generated_column: u32,
-    source_line: u32,
-    source_column: u32,
-    /// Index into the v3 `names` array when this anchor carries a known source
-    /// symbol, carried through unchanged from the recorded segment.
-    name: Option<u32>,
-}
-
-/// Resolve every segment's generated and source byte offsets to 0-indexed
-/// (line, column) pairs.
-///
-/// The generated side uses a single monotonic forward scan (segments are sorted
-/// by generated offset by the caller). The source side uses a precomputed table
-/// of line-start byte offsets plus binary search, since segments are not sorted
-/// by source offset.
-///
-/// Columns are counted in UTF-16 code units to match what source-map consumers
-/// (browsers, the `source-map` npm package) expect. Both the generated render
-/// code and template identifiers are overwhelmingly ASCII, so this equals the
-/// byte/char column in the common case and only diverges on embedded non-ASCII.
-fn resolve_positions(code: &str, source: &str, segments: &[Segment]) -> Vec<ResolvedSegment> {
-    let code_bytes = code.as_bytes();
-    let source_line_starts = line_start_table(source);
-
-    let mut resolved = Vec::with_capacity(segments.len());
-
-    let mut cursor = 0usize; // byte index into the generated code
-    let mut gen_line = 0u32;
-    let mut gen_line_start = 0usize;
-
-    for seg in segments {
-        // Generated side: advance the forward scan to this segment's offset.
-        let target =
-            floor_char_boundary(code, (seg.generated_offset as usize).min(code_bytes.len()));
-        while cursor < target {
-            let width = line_break_len(code, cursor);
-            if width > 0 && cursor + width <= target {
-                cursor += width;
-                gen_line += 1;
-                gen_line_start = cursor;
-            } else {
-                cursor += 1;
-            }
-        }
-        let generated_column = utf16_len(code.get(gen_line_start..target).unwrap_or_default());
-
-        // Source side: binary search the line-start table.
-        let (source_line, source_column) =
-            resolve_in_table(source, &source_line_starts, seg.source_offset as usize);
-
-        resolved.push(ResolvedSegment {
-            generated_line: gen_line,
-            generated_column,
-            source_line,
-            source_column,
-            name: seg.name,
-        });
-    }
-
-    resolved
-}
-
-/// Byte offsets at which each line of `text` begins. Always starts with `0`;
-/// each JavaScript line terminator adds the offset just past it.
-fn line_start_table(text: &str) -> Vec<usize> {
-    let mut starts = Vec::with_capacity(16);
-    starts.push(0);
-    let mut cursor = 0;
-    while cursor < text.len() {
-        let width = line_break_len(text, cursor);
-        cursor += width.max(1);
-        if width > 0 {
-            starts.push(cursor);
-        }
-    }
-    starts
-}
-
-/// Resolve a byte `offset` into `text` to a 0-indexed (line, column) using a
-/// precomputed `line_starts` table. Column is in UTF-16 code units.
-fn resolve_in_table(text: &str, line_starts: &[usize], offset: usize) -> (u32, u32) {
-    let offset = floor_char_boundary(text, offset.min(text.len()));
-    // The line is the index of the greatest line-start <= offset.
-    let line = match line_starts.binary_search(&offset) {
-        Ok(i) => i,
-        Err(i) => i.saturating_sub(1), // i >= 1 because line_starts[0] == 0 <= offset
-    };
-    let line_start = line_starts.get(line).copied().unwrap_or(0);
-    let column = utf16_len(text.get(line_start..offset).unwrap_or_default());
-    (line as u32, column)
-}
-
-fn floor_char_boundary(text: &str, mut offset: usize) -> usize {
-    while offset > 0 && !text.is_char_boundary(offset) {
-        offset -= 1;
-    }
-    offset
-}
-
-/// UTF-16 code-unit length of `s` (chars above U+FFFF count as 2).
-#[inline]
-fn utf16_len(s: &str) -> u32 {
-    let mut n = 0u32;
-    for ch in s.chars() {
-        n += ch.len_utf16() as u32;
-    }
-    n
+/// The greatest scalar boundary at or before `offset`, clamped to the text.
+#[cfg(feature = "indexed-source-maps")]
+fn floor_char_boundary(text: &str, offset: usize) -> usize {
+    super::source_positions::floor_char_boundary(text.as_bytes(), offset)
 }
 
 /// Encode resolved segments as a v3 `mappings` string.

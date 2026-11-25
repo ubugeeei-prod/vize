@@ -1,0 +1,6 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": { "vc_the_floor_grows": { "prover": "alt-ergo", "time": 0.008 } }
+  }
+}

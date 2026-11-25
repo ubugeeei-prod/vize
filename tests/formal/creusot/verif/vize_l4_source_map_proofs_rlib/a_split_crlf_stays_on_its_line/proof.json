@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_split_crlf_stays_on_its_line": {
+        "prover": "alt-ergo",
+        "time": 0.019
+      }
+    }
+  }
+}
