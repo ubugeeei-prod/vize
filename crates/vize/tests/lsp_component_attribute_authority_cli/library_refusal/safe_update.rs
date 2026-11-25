@@ -4,6 +4,8 @@ use serde_json::{Value, json};
 
 use super::{APP, CONFIG, Fixture, TOGGLE, range};
 
+mod confirmation_tests;
+
 const UPDATED_TOGGLE: &str = include_str!(
     "../../../../../tests/_fixtures/differential/lsp/event-rename/8010/UpdatedToggle.vue.txt"
 );
@@ -58,10 +60,9 @@ pub(super) fn publish(
     carried: Value,
 ) -> Value {
     let uri = fixture.uri(file);
-    // The lint+typecheck contract publishes prompt sync feedback (the lint
-    // findings plus the type errors of the last native answer that the edit
-    // left in place), then the complete native answer. Author both packets
-    // before didChange.
+    // Prompt feedback carries the latest native errors left in place by the
+    // edit. A complete same-world result may win before that prompt and retire
+    // a duplicate worker answer; two natural didChange packets are not promised.
     let lint: Vec<Value> = expected_diagnostics
         .as_array()
         .into_iter()
@@ -84,6 +85,17 @@ pub(super) fn publish(
     let Some(first) = expected_packets.first() else {
         panic!("the authored publication sequence must be nonempty")
     };
+    // Identical prompt/complete payloads cannot identify native completion on
+    // the wire. After one fresh packet, explicitly save these already-written
+    // bytes: saves collect a complete answer even when ordinary work coalesces.
+    // One didChange emits at most one versioned prompt, so two observations
+    // across this confirmation include a complete result. Distinct-payload
+    // controls keep their original prompt/native expectations.
+    let save_confirmation =
+        (expected_packets.len() == 2 && expected_packets[0] == expected_packets[1]).then(|| {
+            json!({"jsonrpc":"2.0","method":"textDocument/didSave",
+            "params":{"textDocument":{"uri":uri}}})
+        });
     fixture.expect_publication(&uri, version, first["params"]["diagnostics"].clone());
     let notification = if opening {
         json!({"jsonrpc":"2.0","method":"textDocument/didOpen","params":{
@@ -94,15 +106,23 @@ pub(super) fn publish(
             "textDocument":{"uri":uri,"version":version},"contentChanges":[{"text":text}]
         }})
     };
+    let deadline = super::super::LspProcess::message_deadline();
     fixture.lsp.send(notification);
-    let actual_packets = fixture.recv_publication_sequence(&uri, version, &expected_packets);
+    let actual_packets = fixture.recv_publication_sequence_until(
+        &uri,
+        version,
+        &expected_packets,
+        deadline,
+        save_confirmation.as_ref(),
+    );
     fixture
         .publication_sequences
         .push(json!({"file":file,"version":version,"opening":opening,
-        "expected":expected_packets,"actual":actual_packets}));
+        "expected":expected_packets,"actual":actual_packets,
+        "saveConfirmationAfterFirstPublication":save_confirmation}));
     assert_eq!(
         actual_packets, expected_packets,
-        "whole prompt/native publication sequence"
+        "whole publication sequence with its authored completion confirmation"
     );
     let Some(complete) = actual_packets.last() else {
         panic!("the complete native publication must be retained")

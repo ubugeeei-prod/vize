@@ -83,6 +83,7 @@ export type PublicationWait = {
   resolve: (packets: Packet[]) => void;
   reject: (error: Error) => void;
   timer: NodeJS.Timeout;
+  afterFirst?: () => void;
 };
 export class InstalledAliasError extends Error {
   readonly packet: Packet | undefined;

@@ -174,14 +174,32 @@ export async function observeLibraryCase(
       target.push(row);
       capture();
       const opening = file === names[1] && version === 2 && !oracle.parentOpen;
+      const saveConfirmationAfterFirstPublication =
+        wanted[index].saveConfirmationAfterFirstPublication;
       const packets = opening
         ? [await session.open(uri(projectRoot, file), texts[index], version)]
-        : await session.changeWithPublications(uri(projectRoot, file), texts[index], version, 2);
-      actual.publicationSequences.push({ file, version, opening, packets });
+        : await session.changeWithPublications(
+            uri(projectRoot, file),
+            texts[index],
+            version,
+            2,
+            saveConfirmationAfterFirstPublication ?? undefined,
+          );
+      actual.publicationSequences.push({
+        file,
+        version,
+        opening,
+        packets,
+        saveConfirmationAfterFirstPublication,
+      });
       row.diagnostics =
         packets.at(-1)?.params && (packets.at(-1)!.params as ObjectValue).diagnostics;
       capture();
-      assert.deepEqual(packets, wanted[index].packets, "whole prompt/native publication sequence");
+      assert.deepEqual(
+        packets,
+        wanted[index].packets,
+        "whole publication sequence with its authored confirmation",
+      );
     }
   };
   capture();

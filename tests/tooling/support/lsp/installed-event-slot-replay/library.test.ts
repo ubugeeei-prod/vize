@@ -85,11 +85,12 @@ test("all22 expected-only projections never read historical actual or batch witn
         },
       });
     for (const sequence of packet.publicationSequences)
-      Object.defineProperty(sequence, "actual", {
-        get() {
-          throw new Error("historical actual publication is not an oracle");
-        },
-      });
+      for (const key of ["actual", "saveConfirmationAfterFirstPublication"])
+        Object.defineProperty(sequence, key, {
+          get() {
+            throw new Error(`historical ${key} is not a current replay instruction`);
+          },
+        });
     const oracle = selectLibraryOracle(packet);
     assert.equal(oracle.context, entry.context);
     assert.equal("actual" in oracle, false);
@@ -99,6 +100,91 @@ test("all22 expected-only projections never read historical actual or batch witn
       cases.find((item) => item.context === entry.context),
     );
   }
+});
+
+test("current confirmations derive from equal authored envelopes while NativeGuard stays distinct", () => {
+  for (const oracle of cases) {
+    const expected = prepareLibraryExpectation(oracle, projectRoot);
+    assert.deepEqual(
+      expected.nativeGuard.repaired[0].params.diagnostics,
+      expected.nativeGuard.invalid.params.diagnostics,
+      "the untouched identifier error must survive prompt feedback",
+    );
+    assert.deepEqual(expected.nativeGuard.repaired[1].params.diagnostics, []);
+    assert.notDeepEqual(expected.nativeGuard.repaired[0], expected.nativeGuard.repaired[1]);
+    assert.equal("saveConfirmationAfterFirstPublication" in expected.nativeGuard, false);
+    for (const row of expected.publicationSequences) {
+      const identical =
+        !row.opening && JSON.stringify(row.packets[0]) === JSON.stringify(row.packets[1]);
+      assert.deepEqual(
+        row.saveConfirmationAfterFirstPublication,
+        identical
+          ? {
+              jsonrpc: "2.0",
+              method: "textDocument/didSave",
+              params: {
+                textDocument: { uri: pathToFileURL(path.join(projectRoot, row.file)).href },
+              },
+            }
+          : null,
+      );
+    }
+  }
+});
+
+test("only the four partial cases project current lint and carried-native expectations", () => {
+  let projected = 0;
+  for (const oracle of cases) {
+    const before = JSON.stringify(oracle);
+    const [historical, sequences] = remapLibraryExpected(
+      [oracle.expected, oracle.publicationSequences],
+      projectRoot,
+    );
+    const expected = prepareLibraryExpectation(oracle, projectRoot);
+    if (oracle.kind !== "partial") {
+      assert.deepEqual(expected.transaction, historical);
+      assert.deepEqual(
+        expected.publicationSequences.map((row: any) => row.packets),
+        sequences.map((row: any) => row.expected),
+      );
+      continue;
+    }
+    projected++;
+    const callOnly = oracle.context.includes("CallOnly");
+    const argument = callOnly ? "update" : "change";
+    const [lint, native] = expected.transaction.partialFiles[0].diagnostics;
+    assert.deepEqual(native, historical.partialFiles[0].diagnostics[0]);
+    assert.deepEqual(lint, {
+      range: { start: { line: 6, character: 7 }, end: { line: 6, character: 15 } },
+      severity: 2,
+      code: "script/require-explicit-emits",
+      source: "vize/lint",
+      codeDescription: {
+        href: "https://eslint.vuejs.org/rules/script/require-explicit-emits.html",
+      },
+      message: `The emitted event '${argument}' is not declared in defineEmits or the emits option.\n\nHelp: Add this event to the defineEmits declaration (or the Options API emits option) so the component's event surface is explicit.`,
+    });
+    assert.deepEqual(expected.transaction.partialFiles[1], historical.partialFiles[1]);
+    assert.deepEqual(expected.transaction.rename, historical.rename);
+    assert.deepEqual(expected.transaction.independentRepair, historical.independentRepair);
+    assert.deepEqual(
+      expected.publicationSequences[0].packets.map((packet: any) => packet.params.diagnostics),
+      [[lint], [lint, native]],
+    );
+    assert.deepEqual(
+      expected.publicationSequences[2].packets.map((packet: any) => packet.params.diagnostics),
+      [callOnly ? [native] : [], []],
+    );
+    assert.equal(expected.publicationSequences[0].saveConfirmationAfterFirstPublication, null);
+    assert.equal(
+      expected.publicationSequences[2].saveConfirmationAfterFirstPublication === null,
+      callOnly,
+    );
+    for (const index of [1, 3])
+      assert.deepEqual(expected.publicationSequences[index].packets, sequences[index].expected);
+    assert.equal(JSON.stringify(oracle), before, "historical authored fields stay byte-equivalent");
+  }
+  assert.equal(projected, 4);
 });
 
 test("whole artifact, compressed packet and original source tampering refuse before a provider exists", () => {
@@ -160,7 +246,18 @@ test("complete expectations preserve rename-before-references, fixed IDs and bot
     assert.equal(expected.nativeGuard.repaired.length, 2);
     assert.deepEqual(
       expected.nativeGuard.repaired.map((packet: Record<string, any>) => packet.params.diagnostics),
-      [[], []],
+      [
+        [
+          {
+            range: { start: { line: 1, character: 6 }, end: { line: 1, character: 17 } },
+            severity: 1,
+            code: 2322,
+            source: "vize/types",
+            message: "Type 'string' is not assignable to type 'number'.",
+          },
+        ],
+        [],
+      ],
     );
     const source = oracle.inputs.toggleBuffer ?? oracle.inputs.toggle;
     if (oracle.kind !== "ambiguous") {
@@ -203,7 +300,10 @@ test("pure UTF16 application uses complete owned edits and reproduces every sepa
     assert.equal(JSON.stringify({ oracle, expected }), before);
     if (oracle.kind === "partial") {
       assert.equal(expected.transaction.rename.changes[toggleUri].length, 2);
-      assert.equal(expected.transaction.partialFiles[0].diagnostics[0].code, 2345);
+      assert.deepEqual(
+        expected.transaction.partialFiles[0].diagnostics.map((item: any) => item.code),
+        ["script/require-explicit-emits", 2345],
+      );
       assert.deepEqual(
         expected.transaction.independentRepair.map((row: Record<string, any>) => row.diagnostics),
         [[], []],

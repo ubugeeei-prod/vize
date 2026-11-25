@@ -22,11 +22,19 @@ pub(super) fn prove(fixture: &mut Fixture) {
 impl Fixture {
     pub(crate) fn recv_checked_with(
         &mut self,
+        matches: impl FnMut(&Value, &mut std::collections::HashMap<(String, i64), Value>) -> bool,
+    ) -> Value {
+        self.recv_checked_until(super::LspProcess::message_deadline(), matches)
+    }
+
+    fn recv_checked_until(
+        &mut self,
+        deadline: std::time::Instant,
         mut matches: impl FnMut(&Value, &mut std::collections::HashMap<(String, i64), Value>) -> bool,
     ) -> Value {
         let expected = &mut self.publications;
         let mismatches = &mut self.mismatches;
-        self.lsp.recv_matching(|message| {
+        self.lsp.recv_matching_until(deadline, |message| {
             if message["method"] == "textDocument/publishDiagnostics" {
                 println!("whole publication: {message}");
                 let _: lsp_types::PublishDiagnosticsParams =
@@ -50,22 +58,45 @@ impl Fixture {
         version: i64,
         expected_packets: &[Value],
     ) -> Vec<Value> {
+        self.recv_publication_sequence_until(
+            uri,
+            version,
+            expected_packets,
+            super::LspProcess::message_deadline(),
+            None,
+        )
+    }
+
+    pub(crate) fn recv_publication_sequence_until(
+        &mut self,
+        uri: &str,
+        version: i64,
+        expected_packets: &[Value],
+        deadline: std::time::Instant,
+        save_confirmation: Option<&Value>,
+    ) -> Vec<Value> {
         let mut packets = Vec::new();
-        // One receive loop retains the original transaction deadline.
-        self.recv_checked_with(|message, ledger| {
-            if message["method"] == "textDocument/publishDiagnostics"
-                && message["params"]["uri"] == uri
-                && message["params"]["version"] == version
-            {
-                packets.push(message.clone());
-                if let Some(next) = expected_packets.get(packets.len()) {
-                    ledger.insert((uri.to_owned(), version), next.clone());
-                } else {
+        // A confirmation may separate receives, but never renews the deadline.
+        for index in 0..expected_packets.len() {
+            self.recv_checked_until(deadline, |message, ledger| {
+                if message["method"] == "textDocument/publishDiagnostics"
+                    && message["params"]["uri"] == uri
+                    && message["params"]["version"] == version
+                {
+                    packets.push(message.clone());
+                    if let Some(next) = expected_packets.get(packets.len()) {
+                        ledger.insert((uri.to_owned(), version), next.clone());
+                    }
                     return true;
                 }
+                false
+            });
+            if index == 0
+                && let Some(confirmation) = save_confirmation
+            {
+                self.lsp.send(confirmation.clone());
             }
-            false
-        });
+        }
         packets
     }
 }

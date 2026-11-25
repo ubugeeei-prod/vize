@@ -141,3 +141,70 @@ test("malformed second publication retains the first and rejects the whole seque
   assert.equal((result.errors[0] as InstalledAliasError).packet, malformed);
   assert.deepEqual(result.failures, ["malformed diagnostic publication"]);
 });
+
+test("confirmation fires only for the first fresh exact URI/version packet", (t) => {
+  const result = publication(2, 4),
+    confirmations: Packet[] = [];
+  t.after(() => clearTimeout(result.wait.timer));
+  const save = {
+    jsonrpc: "2.0",
+    method: "textDocument/didSave",
+    params: {
+      textDocument: { uri: result.wait.uri },
+    },
+  };
+  result.wait.afterFirst = () => confirmations.push(save);
+  for (const [packet, cursor] of [
+    [empty, 4],
+    [{ ...empty, params: { ...(empty.params as Packet), uri: "file:///foreign.vue" } }, 5],
+    [{ ...empty, params: { ...(empty.params as Packet), version: 1 } }, 6],
+  ] as const)
+    settlePublication(packet, cursor, result.waits, result.failures);
+  assert.deepEqual(confirmations, []);
+  assert.deepEqual(result.wait.packets, []);
+  settlePublication(empty, 7, result.waits, result.failures);
+  assert.deepEqual(confirmations, [save]);
+  assert.deepEqual(result.sequences, []);
+  settlePublication(empty, 8, result.waits, result.failures);
+  settlePublication(empty, 9, result.waits, result.failures);
+  assert.deepEqual(
+    confirmations,
+    [save],
+    "neither completion nor a late duplicate sends another save",
+  );
+  assert.deepEqual(result.sequences, [[empty, empty]]);
+});
+
+test("missing completion expires the original timer even when confirmation happens near its end", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const sequences: Packet[][] = [],
+    errors: string[] = [],
+    confirmations: string[] = [];
+  const waits: PublicationWait[] = [];
+  const wait: PublicationWait = {
+    uri: "file:///project/Guard.vue",
+    version: 2,
+    after: 0,
+    packets: [],
+    count: 2,
+    resolve: (packets) => sequences.push(packets),
+    reject: (error) => errors.push(error.message),
+    timer: setTimeout(() => {
+      waits.splice(waits.indexOf(wait), 1);
+      wait.reject(new Error("original publication deadline"));
+    }, 20),
+    afterFirst: () => confirmations.push("explicit save"),
+  };
+  waits.push(wait);
+  const originalTimer = wait.timer;
+  t.mock.timers.tick(19);
+  settlePublication(empty, 1, waits, []);
+  assert.deepEqual(confirmations, ["explicit save"]);
+  assert.equal(wait.timer, originalTimer);
+  assert.deepEqual(sequences, [], "one empty prompt cannot qualify completion");
+  t.mock.timers.tick(1);
+  assert.deepEqual(errors, ["original publication deadline"]);
+  assert.deepEqual(waits, []);
+  settlePublication(empty, 2, waits, []);
+  assert.deepEqual(sequences, [], "a late packet cannot revive the expired transaction");
+});

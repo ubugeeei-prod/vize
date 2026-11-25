@@ -23,6 +23,7 @@ export function settlePublication(
       continue;
     if (Array.isArray(params.diagnostics)) {
       wait.packets.push(packet);
+      if (wait.packets.length === 1) wait.afterFirst?.();
       if (wait.packets.length !== wait.count) continue;
       clearTimeout(wait.timer);
       publications.splice(publications.indexOf(wait), 1);

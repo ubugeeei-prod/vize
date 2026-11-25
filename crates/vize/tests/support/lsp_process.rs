@@ -32,6 +32,8 @@ use passive::Passive;
 mod protocol;
 use protocol::read_message;
 
+mod transaction_tests;
+
 const MESSAGE_TIMEOUT: Duration = Duration::from_secs(20);
 const PROCESS_EXIT_TIMEOUT: Duration = Duration::from_secs(5);
 pub struct LspProcess {
@@ -204,8 +206,20 @@ impl LspProcess {
         self.recv_matching(|message| message["id"].as_i64() == Some(id))
     }
 
-    pub fn recv_matching(&mut self, mut matches: impl FnMut(&Value) -> bool) -> Value {
-        let deadline = Instant::now() + MESSAGE_TIMEOUT;
+    pub fn recv_matching(&mut self, matches: impl FnMut(&Value) -> bool) -> Value {
+        self.recv_matching_until(Self::message_deadline(), matches)
+    }
+
+    pub fn message_deadline() -> Instant {
+        Instant::now() + MESSAGE_TIMEOUT
+    }
+
+    /// Share one transaction budget across receives separated by a notification.
+    pub fn recv_matching_until(
+        &mut self,
+        deadline: Instant,
+        mut matches: impl FnMut(&Value) -> bool,
+    ) -> Value {
         let mut seen = Vec::new();
         loop {
             let now = Instant::now();
