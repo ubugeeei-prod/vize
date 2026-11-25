@@ -57,7 +57,10 @@ test("format selects the formatter from the file name", async () => {
   await assert.rejects(format("const = ;", { filename: "broken.ts", config }), /broken\.ts/);
   await assert.rejects(
     format("a", { filename: "a.ts", config, quoteProps: "keep" as "preserve" }),
-    /quoteProps/,
+    {
+      code: "InvalidArg",
+      message: "a.ts: Unknown quoteProps; expected 'as-needed', 'consistent', or 'preserve'",
+    },
   );
   assert.throws(() => formatSync("a", { filename: "" }), TypeError);
 });

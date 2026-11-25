@@ -69,7 +69,10 @@ fn format_file(source: &str, request: FormatFileOptionsNapi) -> Result<FormatRes
             code: result.code.into(),
             changed: result.changed,
         }),
-        (Err(_), Some(error)) => Err(error),
+        (Err(_), Some(error)) => Err(Error::new(
+            error.status,
+            vize_l0::cstr!("{filename}: {}", error.reason).as_str(),
+        )),
         (Err(message), None) => Err(Error::new(Status::GenericFailure, message.as_str())),
     }
 }
@@ -173,5 +176,9 @@ mod tests {
             panic!("an unknown quoteProps is refused");
         };
         assert_eq!(invalid.status, napi::Status::InvalidArg);
+        assert_eq!(
+            invalid.reason,
+            "a.ts: Unknown quoteProps; expected 'as-needed', 'consistent', or 'preserve'"
+        );
     }
 }
