@@ -68,16 +68,16 @@ pub(super) fn with_oxc(
 
 pub(super) fn file(l2ir: &L2Ir<'_>) -> Symbols {
     let mut rows = Symbols::default();
-    for binding in file.bindings() {
+    for binding in l2ir.bindings() {
         let decl = binding.declaration().unwrap();
         rows.declarations
             .push((decl.span.start, decl.span.end, decl.name.to_string()));
     }
-    for row in file.references() {
+    for row in l2ir.references() {
         let ReferenceTarget::Resolved(id) = row.target else {
             panic!("unresolved {}", row.name)
         };
-        let decl = file.binding(id).unwrap().declaration().unwrap();
+        let decl = l2ir.binding(id).unwrap().declaration().unwrap();
         rows.references.push((
             row.span.start,
             row.span.end,

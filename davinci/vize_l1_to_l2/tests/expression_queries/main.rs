@@ -70,7 +70,7 @@ fn compare(source: &str, path: &str, counts: &mut Counts, every_byte: bool) -> b
         return false;
     };
     counts.admitted += 1;
-    let file = native.file().file();
+    let file = native.file().l2ir();
     let model = Model::new(file);
     let index = ExpressionPositionIndex::new(file);
     let mut rows = Vec::new();
@@ -108,7 +108,7 @@ fn compare(source: &str, path: &str, counts: &mut Counts, every_byte: bool) -> b
         by_binding.sort_by_key(key);
         assert_eq!(by_binding.len(), original.len(), "{path}");
         for (&old, &new) in original.iter().zip(&by_binding) {
-            assert!(ptr::eq(old.file(), new.binding().file()), "{path}");
+            assert!(ptr::eq(old.l2ir(), new.binding().l2ir()), "{path}");
             assert_eq!(old.binding().id(), new.binding().id(), "{path}");
             assert_eq!(old.scope(), new.scope(), "{path}");
             assert_eq!(old.span(), new.span(), "{path}");
@@ -162,7 +162,7 @@ fn compare(source: &str, path: &str, counts: &mut Counts, every_byte: bool) -> b
         }
     }
 
-    if let Some(template) = observe.descriptor().admitted().unwrap().template() {
+    if let Some(template) = observe.l1ir().admitted().unwrap().template() {
         counts.templates += 1;
         let block = template.block();
         let (root, diagnostics, syntax) =
@@ -229,8 +229,8 @@ fn a_foreign_binding_and_invalid_byte_positions_are_typed_refusals() {
     let other = observe(&b, source);
     let first = first.admitted().unwrap();
     let other = other.admitted().unwrap();
-    let file = first.file().file();
-    let binding = other.file().file().bindings().next().unwrap();
+    let file = first.file().l2ir();
+    let binding = other.file().l2ir().bindings().next().unwrap();
     let model = Model::new(file);
     let mut visits = 0;
     assert_eq!(

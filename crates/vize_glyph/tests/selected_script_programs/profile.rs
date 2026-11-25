@@ -32,7 +32,7 @@ fn syntax_units(program: &EmbedSyntax<'_>) -> usize {
 
 fn semantic_units(producer: VueFileProducer<'_>) -> usize {
     let file = producer.finish().unwrap();
-    black_box(file.file().units().len() + file.file().bindings().count())
+    black_box(file.l2ir().units().len() + file.l2ir().bindings().count())
 }
 
 fn run(view: AdmittedDescriptor<'_, '_>, read: Read, shared: bool) -> usize {

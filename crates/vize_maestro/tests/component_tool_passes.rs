@@ -85,14 +85,14 @@ impl Editor {
     fn run(&self, shared: bool) -> Products {
         let script = |snapshot: &SourceSnapshot, l1ir: &L1Ir<'_>| {
             snapshot
-                .prepare_literal_products(&self.docs, owner, ScriptRole::Setup)
+                .prepare_literal_products(&self.docs, l1ir, ScriptRole::Setup)
                 .unwrap()
                 .publish(&self.docs, Some(self.binding))
                 .unwrap()
         };
         let style = |snapshot: &SourceSnapshot, l1ir: &L1Ir<'_>| {
             let (selected, ()) = snapshot
-                .prepare_scss_with(&self.docs, owner, 0, |_| ())
+                .prepare_scss_with(&self.docs, l1ir, 0, |_| ())
                 .unwrap();
             let options = NativeStyleOptions {
                 filename: "Setup雪🌸.vue",
@@ -100,7 +100,7 @@ impl Editor {
                 trim: false,
                 source_map: true,
             };
-            let compiled = compile_native_styles(owner, options, [selected.products()]).unwrap();
+            let compiled = compile_native_styles(l1ir, options, [selected.products()]).unwrap();
             let definition = snapshot
                 .scss_definition(&self.docs, selected.products(), self.variable)
                 .unwrap();
@@ -136,7 +136,7 @@ struct Template {
 }
 
 fn template<'a>(arena: &'a Allocator, l1ir: &L1Ir<'a>) -> Template {
-    let selected = owner.admitted_template().unwrap().unwrap();
+    let selected = l1ir.admitted_template().unwrap().unwrap();
     let pass = OriginalTemplate::analyze(arena, selected, &mut NoObserver).unwrap();
     let mut body = vize_l0::String::default();
     render(pass.l1ir(), &mut |part| body.push_str(part));

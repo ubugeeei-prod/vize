@@ -49,7 +49,7 @@ fn standalone<'a>(
 }
 
 fn count_arrows(l2ir: &L2Ir<'_>) -> usize {
-    file.bindings()
+    l2ir.bindings()
         .filter_map(|b| b.declaration())
         .filter(|d| {
             d.initializer == InitializerKind::Function
@@ -64,7 +64,7 @@ fn count_arrows(l2ir: &L2Ir<'_>) -> usize {
 fn original_file<'f, 'a>(source: &'f NativeSfcObservation<'a>) -> Option<&'f L2Ir<'a>> {
     source
         .file()
-        .map(|f| f.file())
+        .map(|f| f.l2ir())
         .or_else(|| source.rejected_file()?.file())
 }
 
@@ -183,11 +183,11 @@ fn original_modules_and_component_files() {
             spelling += 1;
             let arena = Allocator::new();
             let mut compare = |l2ir: &L2Ir<'_>, block, ty| {
-                let count = count_arrows(file);
+                let count = count_arrows(l2ir);
                 if count == 0 {
                     return;
                 }
-                let actual = oracle::file(file);
+                let actual = oracle::file(l2ir);
                 let expected = oracle::oxc(block, ty);
                 assert_eq!(actual, expected, "{name}");
                 files += 1;
