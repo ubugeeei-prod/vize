@@ -36,7 +36,7 @@ pub enum RejectedFileHandler<'a> {
 /// use vize_l2::file::{L2Ir, FileHandler};
 /// use vize_l2::op::HandlerId;
 /// fn forge<'f,'a>(l2ir: &'f L2Ir<'a>, id: HandlerId) {
-///     let _ = FileHandler { file, id };
+///     let _ = FileHandler { l2ir, id };
 /// }
 /// ```
 #[derive(Clone, Copy)]

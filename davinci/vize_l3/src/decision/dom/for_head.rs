@@ -31,10 +31,10 @@ use vize_l2::{
 /// use vize_l2::{file::L2Ir, op::Op};
 /// use vize_l3::decision::build_dom_file_decisions;
 /// fn discard(l2ir: L2Ir<'_>) {
-///     let analysis = build_dom_file_decisions(&file).unwrap();
-///     let Op::OriginalFor(original) = &file.artifact().root().ops[0] else { return };
+///     let analysis = build_dom_file_decisions(&l2ir).unwrap();
+///     let Op::OriginalFor(original) = &l2ir.artifact().root().ops[0] else { return };
 ///     let row = analysis.dom().unwrap().file_for_head(original.id().node()).unwrap();
-///     drop(file);
+///     drop(l2ir);
 ///     let _ = row.resolution();
 /// }
 /// ```

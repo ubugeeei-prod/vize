@@ -25,7 +25,7 @@ pub enum SsrTemplateBuildError {
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::ssr::build_template_ssr_decisions;
-/// fn promote(l2ir: &L2Ir<'_>) { let _ = build_template_ssr_decisions(file); }
+/// fn promote(l2ir: &L2Ir<'_>) { let _ = build_template_ssr_decisions(l2ir); }
 /// ```
 /// Diagnostic SSR analysis cannot construct this receipt:
 /// ```compile_fail

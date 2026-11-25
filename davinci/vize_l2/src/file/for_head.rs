@@ -80,8 +80,8 @@ impl<'f, 'a> TemplateDeclaration<'f, 'a> {
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// fn discard(l2ir: L2Ir<'_>) {
-///     let original = file.template_declarations().next().unwrap();
-///     drop(file);
+///     let original = l2ir.template_declarations().next().unwrap();
+///     drop(l2ir);
 ///     let _ = original.declaration().original();
 /// }
 /// ```

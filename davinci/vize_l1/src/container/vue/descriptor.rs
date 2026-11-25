@@ -108,14 +108,14 @@ struct StyleSelection<'a> {
 /// ```compile_fail
 /// use vize_l1::container::vue::L1Ir;
 /// fn change(l1ir: &mut L1Ir<'_>) {
-///     owner.container().blocks.clear();
+///     l1ir.container().blocks.clear();
 /// }
 /// ```
 /// An admitted view itself has no public constructor:
 /// ```compile_fail
 /// use vize_l1::container::vue::{AdmittedDescriptor, L1Ir};
 /// fn forge(l1ir: &L1Ir<'_>) {
-///     let view = AdmittedDescriptor { owner, root: owner.root().unwrap() };
+///     let view = AdmittedDescriptor { l1ir, root: l1ir.root().unwrap() };
 /// }
 /// ```
 /// Setup-only TypeScript determines the template's language:
@@ -306,7 +306,7 @@ impl<'a> ScriptView<'_, 'a> {
 /// ```compile_fail
 /// use vize_l1::container::vue::{L1Ir, StyleView};
 /// fn forge(l1ir: &L1Ir<'_>) {
-///     let view = StyleView { owner, selected: todo!() };
+///     let view = StyleView { l1ir, selected: todo!() };
 /// }
 /// ```
 #[derive(Debug, Clone, Copy)]

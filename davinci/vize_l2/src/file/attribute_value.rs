@@ -50,7 +50,7 @@ impl<'a> NativeFileAttributeValue<'a> {
 /// use vize_l2::file::{L2Ir, FileAttributeValue};
 /// use vize_l2::op::ElementOp;
 /// fn forge<'f,'a>(l2ir: &'f L2Ir<'a>, element: &'f ElementOp<'a>) {
-///     let _ = FileAttributeValue { file, element, index: 0, slot: 0 };
+///     let _ = FileAttributeValue { l2ir, element, index: 0, slot: 0 };
 /// }
 /// ```
 #[derive(Clone, Copy)]

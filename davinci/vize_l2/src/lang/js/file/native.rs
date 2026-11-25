@@ -209,7 +209,7 @@ impl<'a> NativeTemplateOwner<'a> {
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, lang::js::NativeTemplateFile};
 /// fn replace<'a>(owner: &mut NativeTemplateFile<'a>, l2ir: L2Ir<'a>) {
-///     owner.outcome = Ok(file);
+///     owner.outcome = Ok(l2ir);
 /// }
 /// ```
 /// ```compile_fail

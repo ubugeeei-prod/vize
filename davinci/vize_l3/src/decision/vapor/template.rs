@@ -31,7 +31,7 @@ use vize_l2::{
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::vapor::build_template_vapor_decisions;
-/// fn forge(l2ir: &L2Ir<'_>) { let _ = build_template_vapor_decisions(file); }
+/// fn forge(l2ir: &L2Ir<'_>) { let _ = build_template_vapor_decisions(l2ir); }
 /// ```
 pub struct TemplateVaporAnalysis<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,

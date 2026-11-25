@@ -15,7 +15,7 @@ use vize_l2::{
 /// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::OriginalAttributeFacts;
 /// fn forge<'f,'a>(l2ir: &'f L2Ir<'a>) {
-///     let _ = OriginalAttributeFacts { file, consumed: 0 };
+///     let _ = OriginalAttributeFacts { l2ir, consumed: 0 };
 /// }
 /// ```
 pub struct OriginalAttributeFacts<'owner, 'arena> {

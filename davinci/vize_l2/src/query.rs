@@ -26,8 +26,8 @@ pub use template::{
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, query::Model};
 /// fn discard(l2ir: L2Ir<'_>, offset: u32) {
-///     let binding = Model::new(&file).binding_at_offset(offset).unwrap().unwrap();
-///     drop(file);
+///     let binding = Model::new(&l2ir).binding_at_offset(offset).unwrap().unwrap();
+///     drop(l2ir);
 ///     let _ = binding.declaration();
 /// }
 /// ```

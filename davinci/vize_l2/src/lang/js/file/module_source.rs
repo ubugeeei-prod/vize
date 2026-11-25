@@ -41,8 +41,8 @@ pub enum ModuleSourceKind {
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, lang::js::{OriginalModuleSources, ProgramInput}};
 /// fn forge<'f, 'p, 'a>(l2ir: &'f L2Ir<'a>, input: ProgramInput<'p, 'a>) {
-///     let unit = &file.units()[0];
-///     let _ = OriginalModuleSources { file, input, unit };
+///     let unit = &l2ir.units()[0];
+///     let _ = OriginalModuleSources { l2ir, input, unit };
 /// }
 /// ```
 /// ```compile_fail
@@ -52,18 +52,18 @@ pub enum ModuleSourceKind {
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, lang::js::ProgramInput};
 /// fn discard<'p, 'a>(l2ir: L2Ir<'a>, input: ProgramInput<'p, 'a>) {
-///     let view = file.original_module_sources(input).unwrap();
+///     let view = l2ir.original_module_sources(input).unwrap();
 ///     let mut original = None;
 ///     view.for_each(|row| original = Some(row)).unwrap();
-///     drop(file);
-///     let _ = original.unwrap().file();
+///     drop(l2ir);
+///     let _ = original.unwrap().l2ir();
 /// }
 /// ```
 /// ```compile_fail
 /// use oxc_ast::ast::Program;
 /// use vize_l2::file::L2Ir;
 /// fn substitute(l2ir: &L2Ir<'_>, program: &Program<'_>) {
-///     let _ = file.original_module_sources(program);
+///     let _ = l2ir.original_module_sources(program);
 /// }
 /// ```
 /// ```compile_fail
@@ -162,7 +162,7 @@ enum Row<'f> {
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, lang::js::OriginalModuleSource};
 /// fn substitute<'f, 'p, 'a>(l2ir: &'f L2Ir<'a>, original: OriginalModuleSource<'f, 'p, 'a>) {
-///     let _ = OriginalModuleSource { file, ..original };
+///     let _ = OriginalModuleSource { l2ir, ..original };
 /// }
 /// ```
 /// ```compile_fail

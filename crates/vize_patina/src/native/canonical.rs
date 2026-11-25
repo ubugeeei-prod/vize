@@ -47,7 +47,7 @@ pub enum NativeCanonicalLintRefusal {
 /// use vize_l2::file::L2Ir;
 /// use vize_patina::native::canonical::NativeCanonicalLint;
 /// fn forge<'a>(l2ir: &L2Ir<'a>) {
-///     let _ = NativeCanonicalLint { file };
+///     let _ = NativeCanonicalLint { l2ir };
 /// }
 /// ```
 pub struct NativeCanonicalLint<'o, 'a> {

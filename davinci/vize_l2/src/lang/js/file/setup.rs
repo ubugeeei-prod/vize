@@ -135,8 +135,8 @@ pub struct SetupIssue {
 /// use vize_l2::{file::L2Ir, lang::js::VueSetup};
 /// fn discard<'d, 'p, 'a>(l2ir: L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     program: AdmittedProgram<'p, 'a>) {
-///     let setup = VueSetup::checked(&file, script, program).unwrap();
-///     drop(file);
+///     let setup = VueSetup::checked(&l2ir, script, program).unwrap();
+///     drop(l2ir);
 ///     let _ = setup.source();
 /// }
 /// ```
@@ -146,7 +146,7 @@ pub struct SetupIssue {
 /// use vize_l2::{file::L2Ir, lang::js::VueSetup};
 /// fn discard<'d, 'a>(l2ir: &L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     syntax: EmbedSyntax<'a>) {
-///     let setup = VueSetup::checked(file, script, syntax.admitted_program().unwrap()).unwrap();
+///     let setup = VueSetup::checked(l2ir, script, syntax.admitted_program().unwrap()).unwrap();
 ///     drop(syntax);
 ///     let _ = setup.source();
 /// }

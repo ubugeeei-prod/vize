@@ -41,7 +41,7 @@ pub struct ExposureIssue {
 /// ```
 /// ```compile_fail
 /// use vize_l2::file::{L2Ir, vue::VueExposure};
-/// fn forge(l2ir: &L2Ir<'_>) { let _ = VueExposure { file }; }
+/// fn forge(l2ir: &L2Ir<'_>) { let _ = VueExposure { l2ir }; }
 /// ```
 pub struct VueExposure<'f, 'd, 'p, 'a> {
     l2ir: &'f L2Ir<'a>,

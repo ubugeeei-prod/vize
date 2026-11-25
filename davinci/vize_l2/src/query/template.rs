@@ -103,8 +103,8 @@ enum Origin<'f, 'a> {
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, query::Model};
 /// fn discard(l2ir: L2Ir<'_>, offset: u32) {
-///     let site = Model::new(&file).template_symbol_at_offset(offset).unwrap().unwrap();
-///     drop(file);
+///     let site = Model::new(&l2ir).template_symbol_at_offset(offset).unwrap().unwrap();
+///     drop(l2ir);
 ///     let _ = site.symbol();
 /// }
 /// ```

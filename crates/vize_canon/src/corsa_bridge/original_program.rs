@@ -47,8 +47,8 @@ impl std::error::Error for OriginalProgramError {}
 /// use vize_canon::CorsaBridge;
 /// use vize_l2::{file::L2Ir, lang::js::JsxFile};
 /// async fn discard(bridge: &CorsaBridge, l2ir: L2Ir<'_>, path: &Path) {
-///     let result = bridge.check_original_program(&file, path).await.unwrap();
-///     drop(file);
+///     let result = bridge.check_original_program(&l2ir, path).await.unwrap();
+///     drop(l2ir);
 ///     let _ = result.report();
 /// }
 /// ```

@@ -131,8 +131,8 @@ pub struct OrdinaryIssue {
 /// use vize_l2::{file::L2Ir, lang::js::VueOrdinaryEmpty};
 /// fn discard<'d, 'p, 'a>(l2ir: L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     program: AdmittedProgram<'p, 'a>) {
-///     let view = VueOrdinaryEmpty::checked(&file, script, program).unwrap();
-///     drop(file);
+///     let view = VueOrdinaryEmpty::checked(&l2ir, script, program).unwrap();
+///     drop(l2ir);
 ///     let _ = view.source();
 /// }
 /// ```
@@ -141,7 +141,7 @@ pub struct OrdinaryIssue {
 /// use vize_l2::{file::L2Ir, lang::js::VueOrdinaryEmpty};
 /// fn discard<'d, 'a>(l2ir: &L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     syntax: EmbedSyntax<'a>) {
-///     let view = VueOrdinaryEmpty::checked(file, script,
+///     let view = VueOrdinaryEmpty::checked(l2ir, script,
 ///         syntax.admitted_program().unwrap()).unwrap();
 ///     drop(syntax);
 ///     let _ = view.object_span();

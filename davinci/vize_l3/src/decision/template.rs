@@ -55,7 +55,7 @@ use vize_l2::{
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::template::build_template_dom_decisions;
-/// fn promote(l2ir: &L2Ir<'_>) { let _ = build_template_dom_decisions(file); }
+/// fn promote(l2ir: &L2Ir<'_>) { let _ = build_template_dom_decisions(l2ir); }
 /// ```
 pub struct TemplateDomAnalysis<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,

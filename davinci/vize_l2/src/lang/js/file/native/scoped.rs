@@ -38,7 +38,7 @@ pub struct NativeScopedTemplateIssue {
 /// use vize_l2::{file::L2Ir, lang::js::{NativeScopedTemplateView, NativeTemplateView}};
 /// fn forge<'o, 'a>(template: NativeTemplateView<'o, 'a>, l2ir: &'o L2Ir<'a>,
 ///     descriptor: AdmittedDescriptor<'o, 'a>, empty: EmptyClassStyle<'o, 'a>) {
-///     let _ = NativeScopedTemplateView { template, file, descriptor, empty };
+///     let _ = NativeScopedTemplateView { template, l2ir, descriptor, empty };
 /// }
 /// ```
 /// ```compile_fail
@@ -50,16 +50,16 @@ pub struct NativeScopedTemplateIssue {
 /// use vize_l1::{container::vue::L1Ir, css::StyleSyntax};
 /// use vize_l2::lang::js::NativeTemplateFile;
 /// fn discard_style<'a>(owner: &NativeTemplateFile<'a>, l1ir: &L1Ir<'a>, syntax: StyleSyntax<'a>) {
-///     let view = owner.scoped_view(original, &syntax).unwrap();
-///     drop(syntax); let _ = view.file();
+///     let view = owner.scoped_view(l1ir, &syntax).unwrap();
+///     drop(syntax); let _ = view.l2ir();
 /// }
 /// ```
 /// ```compile_fail
 /// use vize_l1::{container::vue::L1Ir, css::StyleSyntax};
 /// use vize_l2::lang::js::NativeTemplateFile;
 /// fn discard_descriptor<'a>(owner: &NativeTemplateFile<'a>, l1ir: L1Ir<'a>, syntax: &StyleSyntax<'a>) {
-///     let view = owner.scoped_view(&original, syntax).unwrap();
-///     drop(original); let _ = view.file();
+///     let view = owner.scoped_view(&l1ir, syntax).unwrap();
+///     drop(l1ir); let _ = view.l2ir();
 /// }
 /// ```
 pub struct NativeScopedTemplateView<'owner, 'arena> {

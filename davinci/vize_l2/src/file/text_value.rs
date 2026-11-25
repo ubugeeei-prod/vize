@@ -64,7 +64,7 @@ impl<'a> NativeFileTextValue<'a> {
 /// use vize_l2::{file::{L2Ir, FileTextValue}, op::TextOp};
 /// use vize_l0::id::NodeId;
 /// fn forge<'f, 'a>(l2ir: &'f L2Ir<'a>, text: &'f TextOp<'a>) {
-///     let _ = FileTextValue { file, text, node: NodeId::FIRST };
+///     let _ = FileTextValue { l2ir, text, node: NodeId::FIRST };
 /// }
 /// ```
 #[derive(Clone, Copy)]

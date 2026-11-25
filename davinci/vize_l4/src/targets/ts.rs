@@ -67,7 +67,7 @@ pub enum ProjectionError {
 /// use vize_l2::file::L2Ir;
 /// use vize_l4::{targets::ts::ProgramProjection, write::EmitDocument};
 /// fn forge(l2ir: &L2Ir<'_>, document: EmitDocument) {
-///     let _ = ProgramProjection { file, document };
+///     let _ = ProgramProjection { l2ir, document };
 /// }
 /// ```
 /// The actual File cannot be dropped while the projection is live:
@@ -75,8 +75,8 @@ pub enum ProjectionError {
 /// use vize_l2::file::L2Ir;
 /// use vize_l4::targets::ts::project_program;
 /// fn discard(l2ir: L2Ir<'_>) {
-///     let projection = project_program(&file).unwrap();
-///     drop(file);
+///     let projection = project_program(&l2ir).unwrap();
+///     drop(l2ir);
 ///     let _ = projection.document();
 /// }
 /// ```
@@ -130,7 +130,7 @@ pub fn project_program_no_links<'file, 'arena>(
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_l4::targets::ts::project_jsx_program;
-/// fn forge(l2ir: &L2Ir<'_>) { let _ = project_jsx_program(file); }
+/// fn forge(l2ir: &L2Ir<'_>) { let _ = project_jsx_program(l2ir); }
 /// ```
 /// The original owning body cannot be dropped while its projection is live:
 /// ```compile_fail

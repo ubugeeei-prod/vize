@@ -194,7 +194,7 @@ impl<'a> L2Ir<'a> {
 /// ```compile_fail
 /// use vize_l2::{file::{BindingRef, L2Ir}, resolution::BindingId};
 /// fn forge(l2ir: &L2Ir<'_>) {
-///     let _ = BindingRef { file, id: BindingId::new(0) };
+///     let _ = BindingRef { l2ir, id: BindingId::new(0) };
 /// }
 /// ```
 #[derive(Clone, Copy)]
@@ -233,7 +233,7 @@ impl<'f, 'a> BindingRef<'f, 'a> {
 /// use vize_l0::id::NodeId;
 /// use vize_l2::file::{L2Ir, FileResolution};
 /// fn forge(l2ir: &L2Ir<'_>) {
-///     let _ = FileResolution { file, node: NodeId::FIRST };
+///     let _ = FileResolution { l2ir, node: NodeId::FIRST };
 /// }
 /// ```
 #[derive(Clone, Copy)]

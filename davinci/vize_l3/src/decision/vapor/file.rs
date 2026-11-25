@@ -18,9 +18,9 @@ use vize_l2::{artifact::Artifact, file::L2Ir};
 /// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::vapor::build_vapor_file_decisions;
 /// fn discard(l2ir: L2Ir<'_>) {
-///     let analysis = build_vapor_file_decisions(&file).unwrap();
-///     drop(file);
-///     let _ = analysis.file();
+///     let analysis = build_vapor_file_decisions(&l2ir).unwrap();
+///     drop(l2ir);
+///     let _ = analysis.l2ir();
 /// }
 /// ```
 pub struct VaporFileAnalysis<'owner, 'arena> {

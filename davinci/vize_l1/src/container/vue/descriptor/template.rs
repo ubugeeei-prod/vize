@@ -154,7 +154,7 @@ pub enum TemplateFrameNameRefusal {
 /// ```compile_fail
 /// use vize_l1::container::vue::{L1Ir, TemplateView};
 /// fn forge(l1ir: &L1Ir<'_>) {
-///     let _ = TemplateView { owner, selected: todo!() };
+///     let _ = TemplateView { l1ir, selected: todo!() };
 /// }
 /// ```
 /// Receipts cannot detach a shared ownership handle:

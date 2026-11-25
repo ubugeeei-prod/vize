@@ -52,9 +52,9 @@ impl<'owner, 'arena> DomFileExpression<'owner, 'arena> {
 /// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::build_dom_file_decisions;
 /// fn discard(l2ir: L2Ir<'_>) {
-///     let result = build_dom_file_decisions(&file).unwrap();
-///     drop(file);
-///     let _ = result.file();
+///     let result = build_dom_file_decisions(&l2ir).unwrap();
+///     drop(l2ir);
+///     let _ = result.l2ir();
 /// }
 /// ```
 /// A bare artifact consumer cannot silently infer framework access:

@@ -24,14 +24,14 @@ pub enum PositionQueryError {
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, query::ReferenceRef};
 /// fn substitute<'f, 'a>(l2ir: &'f L2Ir<'a>, row: ReferenceRef<'f, 'a>) {
-///     let _ = ReferenceRef { file, reference: row.reference() };
+///     let _ = ReferenceRef { l2ir, reference: row.reference() };
 /// }
 /// ```
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, query::Model};
 /// fn discard(l2ir: L2Ir<'_>, offset: u32) {
-///     let row = Model::new(&file).reference_at_offset(offset).unwrap().unwrap();
-///     drop(file);
+///     let row = Model::new(&l2ir).reference_at_offset(offset).unwrap().unwrap();
+///     drop(l2ir);
 ///     let _ = row.binding();
 /// }
 /// ```
@@ -67,7 +67,7 @@ impl<'file, 'arena> ReferenceRef<'file, 'arena> {
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, query::ScopeRef};
 /// fn substitute<'f, 'a>(l2ir: &'f L2Ir<'a>, row: ScopeRef<'f, 'a>) {
-///     let _ = ScopeRef { file, scope: row.scope() };
+///     let _ = ScopeRef { l2ir, scope: row.scope() };
 /// }
 /// ```
 #[derive(Clone, Copy)]
