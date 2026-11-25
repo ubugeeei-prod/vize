@@ -2,6 +2,7 @@
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 mod scoped_regressions;
+mod string_bodies;
 
 #[cfg(feature = "native")]
 use std::{fs, path::PathBuf};
