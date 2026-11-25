@@ -168,6 +168,7 @@ test("parallel Rust jobs preserve setup and apply the reviewed Clippy and TS-24 
   const currentPortability = tasks.find((step) => step.name === portabilityStep);
   assert.ok(currentPortability);
   assert.equal(normalizePortabilityRun(currentPortability.run), portabilityRun);
+  assert.ok(currentPortability.run !== undefined);
   portability.run = restoreCiLibraryPaths(currentPortability.run);
   assert.deepEqual(restoreCiLibraryValue(tasks), expectedTasks);
   const aggregate = jobs["clippy-and-test"];

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { join } from "node:path";
-import { requiredEnv, writeJson } from "../shared/files.ts";
+import { requiredEnv, writeJson } from "./files.ts";
 
 import { execFileSync } from "node:child_process";
 const root = requiredEnv("EVIDENCE");

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { join } from "node:path";
-import { requiredEnv, textFile, writeJson, fileIdentity } from "../shared/files.ts";
+import { requiredEnv, textFile, writeJson, fileIdentity } from "./files.ts";
 
 import { writeFileSync, copyFileSync } from "node:fs";
 import { executableArtifact } from "./cargo-artifacts.ts";

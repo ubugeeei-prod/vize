@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { join } from "node:path";
-import { requiredEnv, textFile, writeJson, fileSha256 } from "../shared/files.ts";
+import { requiredEnv, textFile, writeJson, fileSha256 } from "./files.ts";
 
 import { cargoArtifacts } from "./cargo-artifacts.ts";
 const carrierName = process.argv[2];

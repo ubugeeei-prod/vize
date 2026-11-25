@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { join } from "node:path";
-import { requiredEnv, textFile, writeJson, fileSha256 } from "../shared/files.ts";
+import { requiredEnv, textFile, writeJson, fileSha256 } from "./files.ts";
 
 import { spawnSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
