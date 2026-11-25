@@ -1,0 +1,29 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_elim_Some": { "prover": "z3", "time": 0.003 },
+      "vc_eq_ref_str": { "prover": "z3", "time": 0.004 },
+      "vc_get_BlockAttr": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_names": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.003 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.007 },
+              { "prover": "z3", "time": 0.003 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
