@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/check-workflow-syntax/validate.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Validate workflow syntax
 description: Validate workflow syntax using the runner Node runtime
 runs:

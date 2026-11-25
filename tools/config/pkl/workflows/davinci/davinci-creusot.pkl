@@ -14,6 +14,8 @@ on {
       ".github/workflows/davinci-creusot.yml"
       "tools/nix/creusot/**"
       "tests/formal/creusot/**"
+      "crates/vize_atelier_core/src/codegen/helpers/creusot.rs"
+      "crates/vize_atelier_core/src/codegen/helpers/escape_gate.rs"
       "crates/vize_patina/src/html_content_model/creusot.rs"
       "crates/vize_patina/src/html_content_model/tri.rs"
       "crates/vize_patina/src/html_content_model/walk.rs"
@@ -38,6 +40,8 @@ on {
       ".github/workflows/davinci-creusot.yml"
       "tools/nix/creusot/**"
       "tests/formal/creusot/**"
+      "crates/vize_atelier_core/src/codegen/helpers/creusot.rs"
+      "crates/vize_atelier_core/src/codegen/helpers/escape_gate.rs"
       "crates/vize_patina/src/html_content_model/creusot.rs"
       "crates/vize_patina/src/html_content_model/tri.rs"
       "crates/vize_patina/src/html_content_model/walk.rs"
@@ -66,7 +70,7 @@ jobs {
   prove {
     name = "Creusot proofs"
     `runs-on` = ci.linux
-    `timeout-minutes` = 60
+    `timeout-minutes` = 30
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout

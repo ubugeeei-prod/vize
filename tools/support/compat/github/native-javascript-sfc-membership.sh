@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/support/compat/github/native-javascript-sfc-membership.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 # Execute the admitted project-membership and ownership laws on the original native recipe.
 set -euo pipefail
 if [[ "$GITHUB_EVENT_NAME" != pull_request && "$GITHUB_EVENT_NAME" != schedule ]]; then exit 0; fi

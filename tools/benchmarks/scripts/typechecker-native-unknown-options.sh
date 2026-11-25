@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/benchmarks/scripts/typechecker-native-unknown-options.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 # Required source-built public CLI and editor controls for original #7874.
 set -euo pipefail
 [[ "${VIZE_TEST_REQUIRE_TSGO:-}" == 1 ]]

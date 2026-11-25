@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/measure-artifact-payload.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Measure complete artifact payload transport
 description: Authenticate and preserve every whole original file in an opt-in envelope.
 runs:

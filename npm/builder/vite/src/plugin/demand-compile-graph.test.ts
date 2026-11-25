@@ -53,7 +53,7 @@ function batches(root: string): NativeCompileCall[] {
   return takeNativeCompileCalls(root).map((call) => ({ ...call, files: [...call.files].sort() }));
 }
 
-void test("a build compiles what each environment's graph imports, in one batch", async () => {
+void test("a build compiles what its environments' graphs import, in one batch", async () => {
   const project = reproduction();
   try {
     linkWorkspaceVue(project.root);
@@ -87,9 +87,10 @@ void test("a build compiles what each environment's graph imports, in one batch"
     });
     const access = await countVueFileAccess(project.root, () => builder.buildApp());
 
+    // The client batch also compiles for the SSR environment, which reuses it.
     assert.deepEqual(calls, {
-      client: [{ api: "batch", ssr: false, files: components }],
-      ssr: [{ api: "batch", ssr: true, files: components }],
+      client: [{ api: "targets", ssr: false, alsoSsr: true, files: components }],
+      ssr: [],
       worker: [],
     });
     for (const environment of ["client", "ssr"]) {

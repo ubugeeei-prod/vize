@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/integrations/nuxt-style-build.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Nuxt scoped style build
 on:
   # #6830: off the PR tier; main runs it per commit and nightly.

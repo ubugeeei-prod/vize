@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/davinci-ir-graph/install-pinned-standalone-model-checkers.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 curl -fsSL --retry 3 -o alloy.jar https://repo.maven.apache.org/maven2/org/alloytools/org.alloytools.alloy.dist/6.2.0/org.alloytools.alloy.dist-6.2.0.jar
 curl -fsSL --retry 3 -o tlc.jar https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar

@@ -50,12 +50,19 @@ export function statSourceFile(file: string): PrecompileFileMetadata {
   return { mtimeMs: stat.mtimeMs, size: stat.size };
 }
 
+/** A native type-resolution window: the compile batches inside it read each imported type file once. */
+export interface TypeResolutionWindow {
+  close(): unknown;
+}
+
 export class FilesystemEpoch {
+  #typeResolution: TypeResolutionWindow | null = null;
   readonly #identities = new Map<string, readonly string[]>();
   readonly #physicalPaths = new Map<string, string | null | false>();
   readonly #typeProjects = new Map<string, string>();
   readonly #sourceMetadata = new Map<string, PrecompileFileMetadata>();
   readonly #sources = new Map<string, string>();
+  #generation = 0;
 
   /** A missing parent is shared by every absent path below it, so probes are kept as well. */
   readonly #probe: PhysicalPathProbe = (file) => {
@@ -67,13 +74,39 @@ export class FilesystemEpoch {
     return physical;
   };
 
+  /** Counts the epochs: what was learned in one holds only while this stays the same. */
+  get generation(): number {
+    return this.#generation;
+  }
+
   /** The filesystem may have changed: ask every question again. */
   advance(): void {
+    this.#generation++;
+    this.releaseTypeResolution();
     this.#identities.clear();
     this.#physicalPaths.clear();
     this.#typeProjects.clear();
     this.#sourceMetadata.clear();
     this.#sources.clear();
+  }
+
+  /**
+   * Keep one native type-resolution window open until this epoch ends or the
+   * holder releases it. Each native compile batch is otherwise a window of its
+   * own, which reads every imported type file again: a star barrel's modules
+   * were read once per `precompileBatchSize` files. Within an epoch
+   * the plugin already treats what it read as current, so its batches may
+   * share those reads. `open` may return nothing on a binding without windows.
+   */
+  holdTypeResolution(open: () => TypeResolutionWindow | undefined): void {
+    this.#typeResolution ??= open() ?? null;
+  }
+
+  /** Close the held window: the next batch reads the type files again. */
+  releaseTypeResolution(): void {
+    const window = this.#typeResolution;
+    this.#typeResolution = null;
+    window?.close();
   }
 
   /** `filesystemPathIdentities`, probing each path once in this epoch. */

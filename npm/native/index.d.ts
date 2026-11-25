@@ -185,6 +185,33 @@ export interface BatchCompileResultWithFilesNapi {
   timeMs: number;
 }
 
+/**
+ * What one target of a multi-target batch sets. An omitted field keeps the
+ * value of the call's options.
+ */
+export interface BatchCompileTargetNapi {
+  ssr?: boolean;
+  vapor?: boolean;
+  /** Inline the render function into `setup()` and keep the ES module. */
+  inlineTemplate?: boolean;
+}
+
+export interface BatchCompileTargetsResultNapi {
+  /**
+   * One result per target, in target order. Each lists the files in input
+   * order, and its `timeMs` is the time of the whole call.
+   */
+  targets: Array<BatchCompileResultWithFilesNapi>;
+  /**
+   * Per file, in input order: whether every later target compiled the
+   * first target's `dependencies` and so leaves them out. A component typed
+   * through a barrel depends on every module of it, so the list would
+   * otherwise cross the boundary once per target.
+   */
+  dependenciesShared: Array<boolean>;
+  timeMs: number;
+}
+
 export interface BatchFileInputNapi {
   path: string;
   source: string;
@@ -388,6 +415,12 @@ export declare function compileSfcBatch(
   pattern: string,
   options?: BatchCompileOptionsNapi | undefined | null,
 ): BatchCompileResultNapi;
+
+export declare function compileSfcBatchForTargets(
+  files: Array<BatchFileInputNapi>,
+  options: BatchCompileOptionsNapi | undefined | null,
+  targets: Array<BatchCompileTargetNapi>,
+): BatchCompileTargetsResultNapi;
 
 export declare function compileSfcBatchWithResults(
   files: Array<BatchFileInputNapi>,

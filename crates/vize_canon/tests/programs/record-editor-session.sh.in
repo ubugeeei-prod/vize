@@ -1,3 +1,5 @@
 #!/bin/sh
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/crates/vize_canon/tests/programs/record-editor-session.sh.in.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 printf '%s\n' "$*" >> {}
 exec {} "$@"

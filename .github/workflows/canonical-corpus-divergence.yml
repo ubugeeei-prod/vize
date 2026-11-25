@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/canonical-corpus-divergence.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Canonical corpus divergence
 # Called by the Real Project Matrix once per canonical observer (dom, ssr,
 # reach) on schedule and dispatch runs: reduce the first legacy-vs-native

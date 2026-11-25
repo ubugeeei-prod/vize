@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/report-test-inventory.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Report test inventory
 description: Collect and upload the test inventory before aggregate verification
 runs:

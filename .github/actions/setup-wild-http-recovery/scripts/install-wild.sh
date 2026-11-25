@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/setup-wild-http-recovery/scripts/install-wild.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 case "$RUNNER_ARCH" in
   X64)   target_arch="x86_64" ;;
   ARM64) target_arch="aarch64" ;;

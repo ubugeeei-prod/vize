@@ -38,6 +38,9 @@ on {
       "davinci/vize_l0/src/allocator/kani.rs"
       "davinci/vize_l0/src/profiler/allocation.rs"
       "davinci/vize_l0/src/profiler/allocation/kani.rs"
+      // The CSS string-body step both scoped CSS scanners share.
+      "crates/vize_atelier_sfc/src/css/string_body.rs"
+      "crates/vize_atelier_sfc/src/css/kani.rs"
     }
   }
   workflow_dispatch = null
@@ -50,7 +53,7 @@ jobs {
   `position-index` {
     name = "L2 position queries on original byte intervals"
     `runs-on` = ci.linux
-    `timeout-minutes` = 15
+    `timeout-minutes` = 10
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -68,7 +71,7 @@ jobs {
   `source-coordinates` {
     name = "Span, range, UTF-16 column, line terminator and VLQ laws"
     `runs-on` = ci.linux
-    `timeout-minutes` = 25
+    `timeout-minutes` = 10
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -92,7 +95,7 @@ jobs {
   `graph-certificates` {
     name = "L3 reachability certificates"
     `runs-on` = ci.linux
-    `timeout-minutes` = 20
+    `timeout-minutes` = 10
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -112,7 +115,7 @@ jobs {
   `l3-reference` {
     name = "L3 reference incremental update laws"
     `runs-on` = ci.linux
-    `timeout-minutes` = 30
+    `timeout-minutes` = 10
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -131,7 +134,7 @@ jobs {
   `compiler-string-literals` {
     name = "Emitted compiler string literals"
     `runs-on` = ci.linux
-    `timeout-minutes` = 40
+    `timeout-minutes` = 10
     steps = new Listing {
       ...ci.stageWorkflowScripts("davinci-kani")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
@@ -161,10 +164,30 @@ jobs {
     }
   }
 
+  `css-string-bodies` {
+    name = "Scoped CSS strings end at their unescaped quote"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"  // v1.1
+        with {
+          `kani-version` = "0.68.0"
+          command = "kani"
+          args = "crates/vize_atelier_sfc/src/css/kani.rs --output-format=terse"
+        }
+      }
+    }
+  }
+
   `unsafe-text-rebuild` {
     name = "Unsafe island: L2 text rebuild fill into spare capacity"
     `runs-on` = ci.linux
-    `timeout-minutes` = 40
+    `timeout-minutes` = 10
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -183,7 +206,7 @@ jobs {
   `unsafe-l0-allocators` {
     name = "Unsafe islands: L0 parked values and profiling allocator"
     `runs-on` = ci.linux
-    `timeout-minutes` = 30
+    `timeout-minutes` = 10
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout

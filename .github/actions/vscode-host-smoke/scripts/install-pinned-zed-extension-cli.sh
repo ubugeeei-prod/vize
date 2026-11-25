@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/vscode-host-smoke/scripts/install-pinned-zed-extension-cli.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 timeout --signal=TERM --kill-after=10s 300s \
   bash .github/actions/vscode-host-smoke/download-artifact.sh \

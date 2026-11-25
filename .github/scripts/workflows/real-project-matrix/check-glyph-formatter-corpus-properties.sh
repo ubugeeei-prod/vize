@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/real-project-matrix/check-glyph-formatter-corpus-properties.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 glyph_exit_code=0
 node --test --test-concurrency=1 \
   tests/tooling/sfc-baseline-routes.test.ts \

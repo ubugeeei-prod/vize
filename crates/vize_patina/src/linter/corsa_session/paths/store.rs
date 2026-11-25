@@ -68,6 +68,8 @@ fn process_is_running(pid: u64) -> bool {
         return false;
     }
 
+    // SAFETY: signal 0 sends nothing; `kill` only checks that the process
+    // exists. The pid was range-checked into `pid_t` above.
     let result = unsafe { libc::kill(pid as libc::pid_t, 0) };
     result == 0 || std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
 }

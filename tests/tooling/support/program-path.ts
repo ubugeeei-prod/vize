@@ -1,5 +1,9 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import {
+  commentStyle,
+  withoutGeneratedHeader,
+} from "../../../tools/support/ci/generated-header.ts";
 
 export function toolingProgram(name: string): string {
   return fileURLToPath(new URL("../programs/" + name, import.meta.url));
@@ -9,7 +13,8 @@ export function readToolingProgram(
   name: string | URL,
   values: Readonly<Record<string, unknown>> = {},
 ): string {
-  const source = readFileSync(typeof name === "string" ? toolingProgram(name) : name, "utf8");
+  const file = typeof name === "string" ? toolingProgram(name) : fileURLToPath(name);
+  const source = withoutGeneratedHeader(readFileSync(file, "utf8"), commentStyle(file));
   return source.replace(/@@([A-Z][A-Z0-9_]*)@@/gu, (_, key: string) => {
     if (!Object.hasOwn(values, key))
       throw new Error("Missing fixture argument " + key + " in " + name);

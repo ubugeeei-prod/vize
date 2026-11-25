@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/e2e/validate-target-sha.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 if [[ -z "$REQUESTED_TARGET_SHA" ]]; then
   if [[ "$REQUESTED_SUITE" == "all" ]]; then
     echo "::error title=Missing target_sha::target_sha is required when suite=all"

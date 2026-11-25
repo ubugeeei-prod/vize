@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/release/release-contracts.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Release contracts
 # Runs the release pipeline's tool and workflow tests on changes to them.
 on:

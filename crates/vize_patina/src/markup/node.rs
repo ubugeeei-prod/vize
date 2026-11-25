@@ -52,7 +52,9 @@ impl<'a> MarkupText<'a> {
     pub fn content(&self) -> &'a str {
         match self.inner {
             MarkupTextInner::Relief(node) => node.content,
-            MarkupTextInner::Jsx { node, .. } => jsx_text_ref(node).value.as_str(),
+            // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+            // into the program this facade borrows for `'a`.
+            MarkupTextInner::Jsx { node, .. } => unsafe { jsx_text_ref(node) }.value.as_str(),
             MarkupTextInner::Static { content, .. } => content,
         }
     }
@@ -61,7 +63,11 @@ impl<'a> MarkupText<'a> {
     pub fn range(&self) -> ByteRange {
         match self.inner {
             MarkupTextInner::Relief(node) => loc_to_range(&node.loc),
-            MarkupTextInner::Jsx { node, offset } => span_to_range(jsx_text_ref(node).span, offset),
+            // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+            // into the program this facade borrows for `'a`.
+            MarkupTextInner::Jsx { node, offset } => {
+                span_to_range(unsafe { jsx_text_ref(node) }.span, offset)
+            }
             MarkupTextInner::Static { range, .. } => range,
         }
     }

@@ -1,4 +1,6 @@
 #!/bin/sh
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/crates/vize_canon/tests/programs/report-native-outcome.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 directory=${0%/*}
 if [ -f "$directory/fail-shard-one" ]; then
   case "$*" in

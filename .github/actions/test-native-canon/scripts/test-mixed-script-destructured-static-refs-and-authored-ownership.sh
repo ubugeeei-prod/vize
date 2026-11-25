@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-canon/scripts/test-mixed-script-destructured-static-refs-and-authored-ownership.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -uo pipefail
 unset VIZE_TEST_DISABLE_TSGO
 mixed_ref_status=0

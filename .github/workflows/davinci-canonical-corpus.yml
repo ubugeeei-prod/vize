@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/davinci/davinci-canonical-corpus.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Canonical Davinci corpus
 on:
   workflow_call:

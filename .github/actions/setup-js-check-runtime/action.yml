@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/setup-js-check-runtime.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Setup JS Check Runtime
 description: Validate workflows using the Actions Node.js runtime without compiling orchestration tools
 

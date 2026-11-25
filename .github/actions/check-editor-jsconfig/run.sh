@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/check-editor-jsconfig/run.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 cd "$NATIVE_PHASE_SOURCE_ROOT"
 export VIZE_EDITOR_CONFIG_CAPTURE="$RUNNER_TEMP/outside-import-types/editor-jsconfig"

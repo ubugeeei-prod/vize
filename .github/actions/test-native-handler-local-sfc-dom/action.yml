@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-handler-local-sfc-dom.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Original handler block-local SFC runtime
 description: Capture complete original local-handler components and pinned Vue execution
 runs:

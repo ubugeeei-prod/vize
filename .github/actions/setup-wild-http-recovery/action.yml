@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/setup-wild-http-recovery.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: "wild"
 description: "Use the Wild linker when building Rust code"
 author: "Wild authors"

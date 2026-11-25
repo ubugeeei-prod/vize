@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typechecker-native-phases/pack-complete-native-evidence-and-prove-reconstruction.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 # Retain original raw custody even when immutable helper authority is unavailable.
 raw_paths=(outside-import-types/ typechecker-native-source-custody.json 'native-source-recipe*' reference-path-module/ typechecker-native-phases.json typechecker-native-phases.json.samples/provenance.json template-dollar-emit/ config-scoped-vue-helpers/)

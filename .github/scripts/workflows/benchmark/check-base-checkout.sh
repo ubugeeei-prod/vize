@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/benchmark/check-base-checkout.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 if [[ "$EVENT_NAME" != "pull_request" ]] && \
    ! git -C "$GITHUB_WORKSPACE/head" merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"; then
   echo "::error title=Invalid benchmark range::base_sha must be an ancestor of head_sha"

@@ -162,6 +162,7 @@ const props = defineProps<SelectedProps>();
     let collected = ctx
         .try_collect_imported_types_from_path(source, parent.to_string_lossy().as_ref(), true, None)
         .unwrap();
+    ctx.merge_declarations(&collected.declarations);
     ctx.analyze();
 
     assert!(ctx.interfaces.contains_key("SelectedProps"));
@@ -218,6 +219,7 @@ const props = defineProps<Props>();
     let collected = ctx
         .try_collect_imported_types_from_path(source, parent.to_string_lossy().as_ref(), true, None)
         .unwrap();
+    ctx.merge_declarations(&collected.declarations);
     ctx.analyze();
 
     assert!(ctx.interfaces.contains_key("Props"));

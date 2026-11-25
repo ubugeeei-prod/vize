@@ -25,7 +25,7 @@ jobs {
   `lint-ranking` {
     name = "Prove stable complexity label selection for unbounded inputs"
     `runs-on` = ci.linux
-    `timeout-minutes` = 15
+    `timeout-minutes` = 10
     steps = new Listing {
       ...ci.stageWorkflowScripts("ir-pass-composition")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
@@ -56,7 +56,7 @@ jobs {
   partition {
     name = "Prove the Rust group cursor partitions every bounded plan"
     `runs-on` = ci.linux
-    `timeout-minutes` = 15
+    `timeout-minutes` = 10
     steps = new Listing {
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       new Dynamic {

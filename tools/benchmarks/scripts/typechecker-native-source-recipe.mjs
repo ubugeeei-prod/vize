@@ -10,6 +10,7 @@ import {
   metadataCandidate,
   rewriteVersionMetadata,
 } from "./typechecker-native-release-metadata.mjs";
+import { generatedBody, withoutGeneratedHeader } from "../../support/ci/generated-header.ts";
 
 export const WORKFLOW = ".github/workflows/typechecker-native-phases.yml";
 export const STEP =
@@ -30,7 +31,17 @@ const INLINE_END = "  # VIZE_NATIVE_SOURCE_INLINE_END\n";
 const historicalWrapperDigest = "8494f1946478063c635005005b0b0c7df589dd80b6521f42b534107620002ed3";
 
 /** Execute source-owned commands once; never recurse through a future source wrapper. */
-export function declaredSourceRecipe(run, readSource) {
+export function declaredSourceRecipe(run, readGitSource) {
+  // Pins cover the generated program, not the do-not-edit notice in front of it.
+  const readSource =
+    typeof readGitSource === "function"
+      ? (file) => {
+          const source = readGitSource(file);
+          return typeof source === "string"
+            ? withoutGeneratedHeader(source, "hash")
+            : generatedBody(source);
+        }
+      : readGitSource;
   if (run === fileStep) {
     assert.equal(
       typeof readSource,

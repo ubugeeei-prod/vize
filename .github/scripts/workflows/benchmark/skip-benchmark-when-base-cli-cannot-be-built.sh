@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/benchmark/skip-benchmark-when-base-cli-cannot-be-built.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 {
   echo "## PR Benchmark"
   echo

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/lsp-vs-volar/install-the-repository-s-pinned-vue-language-tools-and-corsa.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 # One source of truth: the workspace catalog pins vue-tsc (same release
 # train as @vue/language-server), TypeScript and the Corsa runtime.
 # The typecheck-host manifest owns the experimental tsrs pin.

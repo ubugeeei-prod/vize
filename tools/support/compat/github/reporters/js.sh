@@ -1,4 +1,6 @@
 #!/bin/bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/support/compat/github/reporters/js.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 # Cached tasks can filter environment variables and still inherit this executable on PATH.
 tool=@@VIZE_REPORT_TOOL@@
 capture_environment=(@@VIZE_REPORT_ENV@@)

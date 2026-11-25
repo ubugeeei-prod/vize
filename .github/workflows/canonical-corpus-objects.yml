@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/canonical-corpus-objects.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Canonical corpus objects
 # Seeds the immutable fixture object cache that the PR and queue canonical
 # observers restore. Only trusted default-branch runs write it; pull requests

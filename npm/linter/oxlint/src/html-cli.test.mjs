@@ -18,6 +18,7 @@ import {
 } from "./test-support/html-cli-oracles.mjs";
 import { presentationInputs } from "./cli/presentation-context.ts";
 import { mergeHtmlOutput, unavailableHtml } from "./cli/html-project-output.ts";
+import { targetFixtures, targetCounterLaw } from "./test-support/html-cli-targets.ts";
 
 const packageDir = fileURLToPath(new URL("..", import.meta.url));
 const repository = path.resolve(packageDir, "../../..");
@@ -50,8 +51,10 @@ const save = () => fs.writeFileSync(capturePath, JSON.stringify(capture, null, 2
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const events = () => readEvents(custody.calls);
 const environment = plainHostEnvironment(process.env);
-for (const fixture of fixtures)
+const targetLedger = { qualified: { cases: 0, wholeNativeCalls: 0, wholeHostPhases: 0 } };
+for (const fixture of [...fixtures, ...targetFixtures])
   for (const format of fixture.formats ?? ["default", "json", "unix", "stylish"]) {
+    const ledger = fixture.targets ? targetLedger : capture;
     const childEnvironment = {
       ...environment,
       ...(fixture.agent ? { AI_AGENT: "qualification" } : {}),
@@ -99,13 +102,17 @@ for (const fixture of fixtures)
       fs.mkdirSync(path.dirname(path.join(root, name)), { recursive: true });
       fs.copyFileSync(path.join(corpus, source), path.join(root, name));
     }
+    for (const [name, source] of Object.entries(fixture.sources ?? {})) {
+      fs.mkdirSync(path.dirname(path.join(root, name)), { recursive: true });
+      fs.writeFileSync(path.join(root, name), source);
+    }
     const args = [
       "--threads",
       "1",
       ...(fixture.implicitDefault && format === "default" ? [] : ["-f", format]),
       ...(fixture.ignored ? ["--ignore-pattern", "src/Skipped.html"] : []),
       ...(fixture.deny ? ["--deny-warnings"] : []),
-      fixture.target ?? ".",
+      ...(fixture.targets ?? [fixture.target ?? "."]),
     ];
     const before = snapshot(workspace);
     const run = (entrypoint) => {
@@ -189,57 +196,87 @@ for (const fixture of fixtures)
           wrapper.stderr,
           fixture.skipped ? /Skipped standalone HTML lint/u : /Original HTML unavailable/u,
         );
-        completeCase(capture, nativeCalls, hostPhases);
+        completeCase(ledger, nativeCalls, hostPhases);
         save();
         continue;
       }
       assert.equal(wrapper.stderr, "");
-      assert.equal(nativeCalls.length, 1);
-      assert.equal(nativeCalls[0].outcome, "return");
-      const actual = nativeCalls[0].result.completed;
-      assert.ok(actual);
-      assert.equal(nativeCalls[0].result.refused, undefined);
-      assert.equal(actual.executedFileCount, Object.keys(fixture.selected).length);
+      assert.equal(nativeCalls.length, fixture.nativeCalls ?? 1);
+      const operations = nativeCalls.map((call) => {
+        assert.equal(call.outcome, "return");
+        assert.ok(call.result.completed);
+        assert.equal(call.result.refused, undefined);
+        return call.result.completed;
+      });
+      // An operation whose originals an enclosing target already linted adds no rows.
+      const linted = new Set();
+      const joined = operations.filter((operation) => {
+        const paths = operation.originals.map((original) => original.path);
+        if (paths.length > 0 && paths.every((file) => linted.has(file))) return false;
+        assert.ok(!paths.some((file) => linted.has(file)), "each original is joined once");
+        for (const file of paths) linted.add(file);
+        return true;
+      });
+      assert.equal(joined.length, fixture.joinedCalls ?? 1);
+      const actual = joined[0];
+      const executedFileCount = joined.reduce(
+        (sum, { executedFileCount }) => sum + executedFileCount,
+        0,
+      );
+      const elapsedSeconds = joined.reduce((sum, { elapsedSeconds }) => sum + elapsedSeconds, 0);
+      assert.equal(executedFileCount, Object.keys(fixture.selected).length);
       assert.deepEqual(
-        actual.originals.map((original) => original.cwdRelative),
+        joined
+          .flatMap(({ originals }) => originals.map(({ cwdRelative }) => cwdRelative))
+          .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0)),
         Object.keys(fixture.selected).sort(),
       );
-      for (const original of actual.originals)
-        assert.deepEqual(
-          Buffer.from(original.bytes),
-          fs.readFileSync(path.join(root, original.cwdRelative)),
-        );
       const htmlRows = [];
-      for (const file of actual.files) {
-        const name = path.relative(root, file.path),
-          packet = packets[fixture.selected[name]];
-        const expected = packet.diagnostics.map((finding) => ({
-          ruleName: finding.rule_name,
-          severity: finding.severity,
-          message: finding.message,
-          start: finding.start,
-          end: finding.end,
-          ...(finding.help == null || fixture.settings?.vize?.helpLevel === "none"
-            ? {}
-            : { help: finding.help }),
-          labels: finding.labels,
-          ...(finding.fix == null ? {} : { fix: finding.fix }),
-        }));
-        assert.deepEqual(file.diagnostics, expected);
-        assert.equal(file.errorCount, packet.error_count);
-        assert.equal(file.warningCount, packet.warning_count);
-        htmlRows.push(
-          ...expectedRows(
-            name,
-            packet,
-            fs.readFileSync(file.path),
-            fixture.settings?.vize?.helpLevel,
-          ),
+      for (const operation of joined) {
+        const relative = operation.originals.map((original) => original.cwdRelative);
+        assert.deepEqual(
+          relative,
+          [...relative].sort((left, right) => (left < right ? -1 : left > right ? 1 : 0)),
         );
+        for (const original of operation.originals)
+          assert.deepEqual(
+            Buffer.from(original.bytes),
+            fs.readFileSync(path.join(root, original.cwdRelative)),
+          );
+        const operationRows = [];
+        for (const file of operation.files) {
+          const name = path.relative(root, file.path),
+            packet = packets[fixture.selected[name]];
+          const expected = packet.diagnostics.map((finding) => ({
+            ruleName: finding.rule_name,
+            severity: finding.severity,
+            message: finding.message,
+            start: finding.start,
+            end: finding.end,
+            ...(finding.help == null || fixture.settings?.vize?.helpLevel === "none"
+              ? {}
+              : { help: finding.help }),
+            labels: finding.labels,
+            ...(finding.fix == null ? {} : { fix: finding.fix }),
+          }));
+          assert.deepEqual(file.diagnostics, expected);
+          assert.equal(file.errorCount, packet.error_count);
+          assert.equal(file.warningCount, packet.warning_count);
+          operationRows.push(
+            ...expectedRows(
+              name,
+              packet,
+              fs.readFileSync(file.path),
+              fixture.settings?.vize?.helpLevel,
+            ),
+          );
+        }
+        assert.deepEqual(JSON.parse(operation.jsonDiagnostics), operationRows);
+        htmlRows.push(...operationRows);
       }
-      assert.deepEqual(JSON.parse(actual.jsonDiagnostics), htmlRows);
       assertStandaloneOutput(fixture, format, wrapper.stdout, repository);
-      if (actual.executedFileCount > 0 && !fixture.original) {
+      // Only the closed NoFilesFound host packet refuses an appended extra line.
+      if (executedFileCount > 0 && !fixture.original && !fixture.plain) {
         const original = {
           stdout: stock.stdout,
           stderr: stock.stderr,
@@ -273,7 +310,7 @@ for (const fixture of fixtures)
         assert.deepEqual(event.source, custody.source);
         assert.equal(event.binarySha256, custody.binary.sha256);
       }
-      if (actual.executedFileCount === 0) {
+      if (executedFileCount === 0) {
         assert.equal(wrapper.stdout, originalOutput);
         assert.equal(wrapper.status, stock.status);
       } else if (format === "json") {
@@ -291,21 +328,26 @@ for (const fixture of fixtures)
           stockReport.diagnostics,
         );
         assert.deepEqual(report.diagnostics, [...originalRows, ...htmlRows]);
-        assert.equal(
-          report.number_of_files,
-          stockReport.number_of_files + actual.executedFileCount,
-        );
+        assert.equal(report.number_of_files, stockReport.number_of_files + executedFileCount);
         assert.equal(report.number_of_rules, stockReport.number_of_rules);
         assert.equal(report.threads_count, stockReport.threads_count);
-        assert.ok(report.start_time >= actual.elapsedSeconds);
+        assert.ok(report.start_time >= elapsedSeconds);
         assert.deepEqual(Object.keys(report), Object.keys(stockReport));
       } else {
+        const nativeOutput = joined.map(({ output }) => output).join("");
         assert.ok(
-          wrapper.stdout.endsWith(actual.output),
+          wrapper.stdout.endsWith(nativeOutput),
           "complete native report bytes must survive the public join",
         );
-        const preceding = wrapper.stdout.slice(0, wrapper.stdout.length - actual.output.length);
-        if (!fixture.original) {
+        const preceding = wrapper.stdout.slice(0, wrapper.stdout.length - nativeOutput.length);
+        if (fixture.plain) {
+          if (format === "default")
+            assert.match(
+              preceding,
+              /^Found 0 warnings and 0 errors\.\nFinished in [0-9.]+(?:ms|s) on 1 file with [0-9]+ rules using 1 threads\.\n$/u,
+            );
+          else assert.equal(preceding, "");
+        } else if (!fixture.original) {
           if (format === "default")
             assert.match(
               preceding,
@@ -314,34 +356,35 @@ for (const fixture of fixtures)
           else assert.equal(preceding, "");
         } else
           assert.ok(preceding.includes("AppPanel.vue") && !preceding.includes("Standalone.html"));
-        if (format === "unix" || format === "stylish") {
-          let expected = "";
-          let errors = 0,
-            warnings = 0;
-          for (const file of actual.files) {
-            const name = path.relative(root, file.path),
-              rows = htmlRows.filter((row) => row.filename === name);
-            if (format === "stylish" && rows.length) expected += `\n${name}\n`;
-            for (const row of rows) {
-              const { line, column } = row.labels[0].span;
-              errors += row.severity === "error";
-              warnings += row.severity === "warning";
+        if (format === "unix" || format === "stylish")
+          for (const operation of joined) {
+            let expected = "";
+            let errors = 0,
+              warnings = 0;
+            for (const file of operation.files) {
+              const name = path.relative(root, file.path),
+                rows = htmlRows.filter((row) => row.filename === name);
+              if (format === "stylish" && rows.length) expected += `\n${name}\n`;
+              for (const row of rows) {
+                const { line, column } = row.labels[0].span;
+                errors += row.severity === "error";
+                warnings += row.severity === "warning";
+                expected +=
+                  format === "unix"
+                    ? `${name}:${line}:${column}: ${row.message} [${row.severity === "error" ? "Error" : "Warning"}/${row.code}]\n`
+                    : `  ${line}:${column}  ${row.severity}  ${row.message}  ${row.code}\n`;
+              }
+            }
+            const total = errors + warnings;
+            if (total)
               expected +=
                 format === "unix"
-                  ? `${name}:${line}:${column}: ${row.message} [${row.severity === "error" ? "Error" : "Warning"}/${row.code}]\n`
-                  : `  ${line}:${column}  ${row.severity}  ${row.message}  ${row.code}\n`;
-            }
+                  ? `\n${total} problem${total === 1 ? "" : "s"}\n`
+                  : `\n✖ ${total} problem${total === 1 ? "" : "s"} (${errors} error${errors === 1 ? "" : "s"}, ${warnings} warning${warnings === 1 ? "" : "s"})\n`;
+            assert.equal(operation.output, expected);
           }
-          const total = errors + warnings;
-          if (total)
-            expected +=
-              format === "unix"
-                ? `\n${total} problem${total === 1 ? "" : "s"}\n`
-                : `\n✖ ${total} problem${total === 1 ? "" : "s"} (${errors} error${errors === 1 ? "" : "s"}, ${warnings} warning${warnings === 1 ? "" : "s"})\n`;
-          assert.equal(actual.output, expected);
-        }
       }
-      completeCase(capture, nativeCalls, hostPhases);
+      completeCase(ledger, nativeCalls, hostPhases);
       save();
     } finally {
       fs.rmSync(workspace, { recursive: true, force: true });
@@ -349,4 +392,6 @@ for (const fixture of fixtures)
   }
 capture.qualified.formats = ["default", "json", "unix", "stylish"];
 finishCapture(capture);
+assert.deepEqual(targetLedger.qualified, targetCounterLaw);
+capture.targets = targetLedger.qualified;
 save();

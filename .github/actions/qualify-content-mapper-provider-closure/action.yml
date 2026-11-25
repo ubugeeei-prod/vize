@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/qualify-content-mapper-provider-closure.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Qualify Content Mapper provider closure
 description: Preserve the complete six-check provider closure and fail only incomplete qualification
 

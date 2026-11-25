@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/check-vue-parity/scripts/build-vize-cli.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 cargo_args=(build --profile ci -p vize --features legacy)
 if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
   cargo_args+=(--jobs 2)

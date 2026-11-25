@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/level-instruction-counts/verify-pinned-registry-and-immutable-base-ratchet.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 if [[ -z "$BASE_SHA" ]]; then
   BASE_SHA=$(git ls-remote origin refs/heads/main | cut -f1)

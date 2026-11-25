@@ -1,3 +1,5 @@
 #!/bin/sh
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/crates/vize/tests/programs/pack-ui-registry.sh.in.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 echo "$2" >> '{}'
 tar -czf "$4/vizejs-ui-2.0.0.tgz" -C '{}' package

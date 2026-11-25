@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/editors/lsp-current-baseline.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Current-source LSP baseline
 
 # Finite, manually approved RPC baseline. Ordinary PR checks run pure controls.

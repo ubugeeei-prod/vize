@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/pr-performance-observation/observe-alternating-latency-separate-memory-and-binary-sizes.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 node driver/tools/benchmarks/scripts/pr-performance-observation.ts \
   --base-bin "$RUNNER_TEMP/pr-performance-base-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
   --head-bin "$RUNNER_TEMP/pr-performance-head-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \

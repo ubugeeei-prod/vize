@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/level-dependencies/fetch-dependency-policy-comparison-base.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 dependency_base="$BASE_SHA"
 if [[ -z "$dependency_base" ]]; then
   dependency_base="$(git rev-parse HEAD^)"

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/v1-five-case-receipts/scripts/verify-exact-source-and-run-the-shared-receipt-driver.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
 mkdir -p .qualification/v1-five-case

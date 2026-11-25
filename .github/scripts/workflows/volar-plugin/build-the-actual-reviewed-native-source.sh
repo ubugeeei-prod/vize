@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/volar-plugin/build-the-actual-reviewed-native-source.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 test "$(git rev-parse HEAD)" = "$VIZE_SOURCE_SHA"
 token="$(openssl rand -hex 16)"
 VIZE_NATIVE_BUILD_TOKEN="$token" cargo build --profile ci -p vize_vitrine --features napi

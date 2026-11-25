@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_byte_may_need_js_escaping": { "prover": "alt-ergo", "time": 0.014 }
+    }
+  }
+}

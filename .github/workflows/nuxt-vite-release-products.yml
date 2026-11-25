@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/release/nuxt-vite-release-products.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Nuxt and Vite release products
 
 # One required merge-queue edge owns the complete supported integration set.

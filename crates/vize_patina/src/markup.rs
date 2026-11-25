@@ -290,7 +290,7 @@ impl<'a> MarkupDocument<'a> {
 /// Safe to call only when `markup` stays borrowed for every use of the
 /// returned reference. Extending the lifetime is a lie the type system
 /// cannot see; dropping the header first is undefined.
-pub(crate) fn reborrow_markup<'a>(markup: &L2Markup<'_>) -> &'a L2Markup<'a> {
+pub(crate) unsafe fn reborrow_markup<'a>(markup: &L2Markup<'_>) -> &'a L2Markup<'a> {
     // SAFETY: the caller keeps `markup` (and the artifact it views) borrowed
     // for every use of the returned reference. The header is not stored.
     // Lifetimes are erased on pointers, so widening is a transmute; provenance

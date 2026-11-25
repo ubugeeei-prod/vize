@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/real-project-matrix-differential.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Real Project Matrix differential
 # Writes one shared-format result per product from each completed full Real
 # Project Matrix run on main (#6891), then publishes the native-only acceptance

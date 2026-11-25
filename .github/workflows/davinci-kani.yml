@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/davinci/davinci-kani.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Davinci Kani
 on:
   pull_request:
@@ -33,6 +35,8 @@ on:
       - davinci/vize_l0/src/allocator/kani.rs
       - davinci/vize_l0/src/profiler/allocation.rs
       - davinci/vize_l0/src/profiler/allocation/kani.rs
+      - crates/vize_atelier_sfc/src/css/string_body.rs
+      - crates/vize_atelier_sfc/src/css/kani.rs
   workflow_dispatch: null
 permissions:
   contents: read
@@ -42,7 +46,7 @@ jobs:
   position-index:
     name: L2 position queries on original byte intervals
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -54,7 +58,7 @@ jobs:
   source-coordinates:
     name: Span, range, UTF-16 column, line terminator and VLQ laws
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 25
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -73,7 +77,7 @@ jobs:
   graph-certificates:
     name: L3 reachability certificates
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -86,7 +90,7 @@ jobs:
   l3-reference:
     name: L3 reference incremental update laws
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -99,7 +103,7 @@ jobs:
   compiler-string-literals:
     name: Emitted compiler string literals
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
+    timeout-minutes: 10
     steps:
       - name: Check out the workflow's scripts
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -136,10 +140,23 @@ jobs:
           kani-version: 0.68.0
           command: kani
           args: davinci/vize_l0/src/js_string_kani.rs --harness compiler_emits_original_ascii --output-format=terse
+  css-string-bodies:
+    name: Scoped CSS strings end at their unescaped quote
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
+        with:
+          kani-version: 0.68.0
+          command: kani
+          args: crates/vize_atelier_sfc/src/css/kani.rs --output-format=terse
   unsafe-text-rebuild:
     name: "Unsafe island: L2 text rebuild fill into spare capacity"
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -151,7 +168,7 @@ jobs:
   unsafe-l0-allocators:
     name: "Unsafe islands: L0 parked values and profiling allocator"
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:

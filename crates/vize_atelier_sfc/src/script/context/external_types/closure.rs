@@ -1,6 +1,14 @@
 //! What a walk from one module gives every component that reaches it.
 
+#![expect(
+    clippy::disallowed_types,
+    reason = "the components of a batch share one walk's declarations"
+)]
+
+use std::sync::{Arc, OnceLock};
+
 use super::FileTypeSummary;
+use super::declarations::Declarations;
 use super::modules::{ModuleGraph, ModuleId};
 use super::resolution::project::Project;
 use super::walk::{RequestedExports, Visit, Walk};
@@ -19,6 +27,9 @@ pub(super) struct TypeClosure {
     /// Whether every resolved module could be read. A walk that met an
     /// unreadable one says nothing about the next attempt.
     pub(super) complete: bool,
+    /// The declarations of `modules` by name, made when a component first
+    /// merges this walk.
+    declarations: OnceLock<Arc<Declarations>>,
 }
 
 impl TypeClosure {
@@ -36,7 +47,15 @@ impl TypeClosure {
             modules,
             files,
             complete,
+            declarations: OnceLock::new(),
         }
+    }
+
+    /// The declarations of this walk, by name. `graph` is the graph it
+    /// walked.
+    pub(super) fn declarations(&self, graph: &ModuleGraph) -> &Arc<Declarations> {
+        self.declarations
+            .get_or_init(|| Arc::new(Declarations::of(graph, &self.modules)))
     }
 }
 

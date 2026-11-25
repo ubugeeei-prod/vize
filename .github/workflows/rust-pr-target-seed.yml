@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/rust-pr-target-seed.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Seed PR Rust target
 # Trusted writer of the sticky disks that PR and merge-queue Rust jobs mount
 # read-only. `nextest-ci` repeats a workspace-scope PR's and the queue

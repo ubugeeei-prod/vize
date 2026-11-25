@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/check-vue-parity.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Check Vue parity
 description: Gate compiler fixtures and incremental LSP behavior against pinned Vue projects
 

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/v1-five-case-receipts.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: V1 five-case receipt admission
 description: Plan or admit the shared 440-selector v1 five-case receipt registry
 

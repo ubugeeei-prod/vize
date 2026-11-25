@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/release-npm-artifacts.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Restore release npm packages
 description: Download the built npm packages and native bindings into npm/ and lay out the native platform packages
 inputs:

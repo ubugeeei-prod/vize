@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/install-playwright-browsers.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Install Playwright browsers
 description: Install Chromium from a workspace's Playwright after stabilizing apt for its OS dependencies
 

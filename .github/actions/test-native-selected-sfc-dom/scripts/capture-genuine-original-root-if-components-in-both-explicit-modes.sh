@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-selected-sfc-dom/scripts/capture-genuine-original-root-if-components-in-both-explicit-modes.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 root_if_rust_status=0
 cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_root_if::eighteen_whole_original_root_if_components_and_maps_are_captured -- --exact --nocapture || root_if_rust_status=$?
 root_if_development_status=0

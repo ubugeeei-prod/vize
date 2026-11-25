@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typechecker-native-phases/qualify-original-outside-import-types-with-the-source-cli-and-official-n.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 unset VIZE_TEST_DISABLE_TSGO
 git show "$GITHUB_WORKFLOW_SHA:tools/benchmarks/scripts/typechecker-native-project-retirement.mjs" > "$RUNNER_TEMP/typechecker-native-project-retirement.mjs"

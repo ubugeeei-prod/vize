@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-vapor/scripts/test-original-vapor-modules-maps-and-refusals.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 cargo test --locked --profile ci -p vize_l4 --test native_vapor
 test -s "$VIZE_NATIVE_VAPOR_CAPTURE"
 vp node --test tests/tooling/native-vapor-reference.test.mjs

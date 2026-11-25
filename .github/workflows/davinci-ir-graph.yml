@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/davinci/davinci-ir-graph.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Davinci IR graph queries
 on:
   pull_request:
@@ -19,7 +21,7 @@ jobs:
   models:
     name: Reachability theory and snapshot publication
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - name: Check out the workflow's scripts
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd

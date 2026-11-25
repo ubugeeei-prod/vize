@@ -12,6 +12,7 @@ pub(super) use slotted::transform_slotted;
 pub(super) use where_selector::add_scope_to_element;
 
 use super::scoped_selector::split_before_trailing_universal_or_pseudo;
+use super::string_body::StringBody;
 use super::transform::find_matching_paren;
 
 /// Apply scoped CSS transformation
@@ -28,8 +29,7 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
     let mut output = ArenaVec::with_capacity_in(css_bytes.len() * 2, &bump);
     let mut chars = css.char_indices().peekable();
     let mut in_selector = true;
-    let mut in_string = false;
-    let mut string_char = b'"';
+    let mut string: Option<StringBody> = None;
     let mut in_comment = false;
     let mut brace_depth = 0u32;
     let mut last_selector_end = 0usize;
@@ -50,14 +50,8 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
             continue;
         }
 
-        if in_string {
-            if c as u8 == string_char {
-                // Check for escape
-                let prev_byte = i.checked_sub(1).and_then(|p| css_bytes.get(p)).copied();
-                if prev_byte != Some(b'\\') {
-                    in_string = false;
-                }
-            }
+        if let Some(body) = string {
+            string = body.step(c);
             if !in_selector && !in_at_rule {
                 output.extend_from_slice(c.encode_utf8(&mut [0; 4]).as_bytes());
             }
@@ -66,8 +60,7 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
 
         match c {
             '"' | '\'' => {
-                in_string = true;
-                string_char = c as u8;
+                string = Some(StringBody::open(c));
                 if !in_selector && !in_at_rule {
                     output.push(c as u8);
                 }

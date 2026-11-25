@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/pkg-pr-new/publish-pkg-pr-new-preview.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -e
 OUTPUT_FILE=$(mktemp)
 if vp exec pkg-pr-new publish --pnpm --packageManager=pnpm --comment=update \

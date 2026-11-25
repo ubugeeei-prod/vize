@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/vscode-startup-bench/measure-ext4-and-the-windows-mount.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 [[ "$ROUNDS" =~ ^[1-9][0-9]?$ ]] && [[ "$SFCS" =~ ^[0-9]+$ ]] && [[ "$NOISE" =~ ^[0-9]+$ ]]
 # Extensions and the server live on ext4, as a WSL remote installs them.

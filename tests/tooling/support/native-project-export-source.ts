@@ -37,6 +37,9 @@ const configStdinCapabilityExport =
 const registerPluginPlanExport =
   "module.exports.registerPluginPlan = nativeBinding.registerPluginPlan;\n";
 const compileTsrxExport = "module.exports.compileTsrx = nativeBinding.compileTsrx;\n";
+// Builds compile a batch for their client and SSR environments in one call.
+const compileForTargetsExport =
+  "module.exports.compileSfcBatchForTargets = nativeBinding.compileSfcBatchForTargets;\n";
 const sha256 = (body: Buffer | string) => createHash("sha256").update(body).digest("hex");
 
 // native-binding.js gained load-failure diagnostics (the glibc floor, dlopen
@@ -159,6 +162,15 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
   );
   assert.equal(
     text.split(
+      "module.exports.compileSfcBatch = nativeBinding.compileSfcBatch;\n" +
+        compileForTargetsExport +
+        "module.exports.compileSfcBatchWithResults = nativeBinding.compileSfcBatchWithResults;\n",
+    ).length,
+    2,
+    "multi-target batch export retains its canonical initialization position",
+  );
+  assert.equal(
+    text.split(
       "module.exports.printCssAst = nativeBinding.printCssAst;\n" +
         registerPluginPlanExport +
         "module.exports.resolveDesignTokenReferences = nativeBinding.resolveDesignTokenReferences;\n",
@@ -184,6 +196,7 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
       .replace(configStdinCapabilityExport, "")
       .replace(compileTsrxExport, "")
       .replace(registerPluginPlanExport, "")
+      .replace(compileForTargetsExport, "")
       .replace(addedExports, ""),
   );
   assert.equal(original.length, reference.bytes, "complete original native loader length");

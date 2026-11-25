@@ -21,6 +21,7 @@ import { resolveIdHook } from "./resolve.ts";
 import { LOAD_ID_FILTER, TRANSFORM_ID_FILTER, loadHook, transformHook } from "./load.ts";
 import { getSfcModuleRequest, requestResolvedSfc, transformSfcModule } from "./sfc-module.ts";
 import { resetDemandCompiles, setCompileInputOwners } from "./demand-compile.ts";
+import { noteEnvironmentClosed, noteEnvironmentStarted } from "./sibling-compiles.ts";
 import {
   handleGenerateBundleHook,
   handleHotUpdateHook,
@@ -124,6 +125,7 @@ export function vize(
           ssr: resolveHookSsr(this, transformOptions),
           addWatchFile: this.addWatchFile.bind(this),
           resolve: (request, importer) => this.resolve(request, importer, { skipSelf: true }),
+          environment: this.environment,
         });
       },
     },
@@ -314,6 +316,7 @@ export function vize(
         startedEnvironments.clear();
       }
       startedEnvironments.add(environment);
+      noteEnvironmentStarted(this.environment);
       resetTypeProjectWatches(state.cache);
       state.viteResolveCache?.clear();
       const inputOwners = precompileInputOwners(this, precompileConfig);
@@ -374,6 +377,12 @@ export function vize(
       },
     },
 
+    // Every compile of this build is done: later compiles in the process read
+    // the imported type files again.
+    buildEnd() {
+      processFilesystemEpoch.releaseTypeResolution();
+    },
+
     watchChange() {
       processFilesystemEpoch.advance();
     },
@@ -407,7 +416,9 @@ export function vize(
     },
 
     closeBundle() {
+      processFilesystemEpoch.releaseTypeResolution();
       if (state.server === null) {
+        noteEnvironmentClosed(this.environment, state.filesystemEpoch);
         configBridge.unregisterBuild(this);
         clearBuildCaches(state);
         resetDemandCompiles(state);

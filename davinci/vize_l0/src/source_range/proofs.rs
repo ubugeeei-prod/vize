@@ -7,7 +7,8 @@
 //!
 //! The range and mapping harnesses have no loop, so every endpoint, offset
 //! and shift ranges over its whole `u32` or `i32` domain and the check is
-//! exhaustive. The `SourceMap` lookup is bounded to three mappings.
+//! exhaustive. The `SourceMap` lookup is bounded to three mappings of any
+//! shape: empty, inverted and overlapping source ranges included.
 use super::{SourceMap, SourceMapping, SourceRange};
 
 fn any_range() -> SourceRange {
@@ -133,32 +134,83 @@ fn source_mapping_carries_offsets_between_its_ranges() {
 #[kani::proof]
 #[kani::unwind(5)]
 fn source_map_to_generated_uses_the_mapping_that_contains_the_offset() {
+    // Any three mappings, in any insertion order: empty, inverted and
+    // overlapping source ranges included.
     let mappings: [SourceMapping; 3] =
         core::array::from_fn(|_| SourceMapping::new(any_range(), any_range()));
-    // Mappings cover disjoint, nonempty source ranges, in any insertion
-    // order. An inverted range, or an empty one sorted after a nonempty range
-    // with the same start, breaks the order the binary search relies on and
-    // hides the range that contains the offset.
-    for (left, a) in mappings.iter().enumerate() {
-        kani::assume(a.source.start < a.source.end);
-        for b in mappings.iter().skip(left + 1) {
-            kani::assume(a.source.end <= b.source.start || b.source.end <= a.source.start);
+    let offset: u32 = kani::any();
+    // By the documentation: the map keeps its mappings in source order, and
+    // a lookup translates through the first mapping in that order whose
+    // source range holds the offset. Source order is the smallest start,
+    // then the earliest insertion among equal starts.
+    let mut chosen: Option<usize> = None;
+    for (index, mapping) in mappings.iter().enumerate() {
+        let holds = mapping.source.start <= offset && offset < mapping.source.end;
+        let earlier =
+            chosen.is_some_and(|best| mappings[best].source.start <= mapping.source.start);
+        if holds && !earlier {
+            chosen = Some(index);
         }
     }
-    let offset: u32 = kani::any();
-    let expected = mappings
-        .iter()
-        .find(|mapping| mapping.contains_source(offset))
-        .and_then(|mapping| mapping.source_to_generated(offset));
+    let expected = chosen.and_then(|index| mappings[index].source_to_generated(offset));
     let map = SourceMap::from_mappings(mappings.to_vec());
     let found = map.to_generated(offset);
     assert_eq!(found, expected);
     kani::cover!(
-        found.is_some() && mappings[0].source.start > offset,
-        "a mapping inserted after its source neighbour"
+        found.is_some()
+            && mappings
+                .iter()
+                .any(|mapping| mapping.source.start > mapping.source.end),
+        "an inverted range beside the mapping that holds the offset"
     );
     kani::cover!(
-        found.is_none() && mappings.iter().all(|mapping| !mapping.source.is_empty()),
-        "an offset in a gap between mappings"
+        found.is_some()
+            && mappings
+                .iter()
+                .any(|mapping| mapping.source.is_empty() && mapping.source.start <= offset),
+        "an empty range sorted before the offset"
     );
+    kani::cover!(
+        found.is_some()
+            && mappings[0].contains_source(offset)
+            && mappings[1].contains_source(offset),
+        "overlapping mappings"
+    );
+    kani::cover!(found.is_none(), "an offset no mapping holds");
+}
+
+#[kani::proof]
+#[kani::unwind(4)]
+fn source_map_to_source_shifts_into_the_file_without_overflow() {
+    // Any two mappings and any block offset. Kani's arithmetic checks
+    // fail the harness on any overflow inside the lookup.
+    let mappings: [SourceMapping; 2] =
+        core::array::from_fn(|_| SourceMapping::new(any_range(), any_range()));
+    let gen_offset: u32 = kani::any();
+    let block_offset: u32 = kani::any();
+    let mut map = SourceMap::from_mappings(mappings.to_vec());
+    map.set_block_offset(block_offset);
+    // By the documentation: the first mapping, in the map's order, whose
+    // generated range holds the offset carries it into the block; the block
+    // offset moves it into the file, and a file offset past `u32::MAX` has no
+    // `u32` coordinate.
+    let in_block = map
+        .mappings()
+        .iter()
+        .find(|mapping| mapping.generated.start <= gen_offset && gen_offset < mapping.generated.end)
+        .and_then(|mapping| mapping.generated_to_source(gen_offset));
+    let expected = in_block
+        .map(|offset| u64::from(offset) + u64::from(block_offset))
+        .and_then(|file| u32::try_from(file).ok());
+    let found = map.to_source(gen_offset);
+    assert_eq!(found, expected);
+    kani::cover!(
+        in_block.is_some() && found.is_none(),
+        "a block offset that carries the source past u32::MAX"
+    );
+    kani::cover!(
+        found.is_some() && block_offset > 0,
+        "a shifted source offset"
+    );
+    kani::cover!(in_block.is_none(), "an offset no mapping holds");
 }

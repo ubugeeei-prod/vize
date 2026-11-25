@@ -123,7 +123,9 @@ fn probe_sfc_facade_candidates() {
         let (root, _) = Parser::new(&allocator, source).parse();
         let lowered = L2Template::lower(&allocator, source);
         let markup = lowered.markup();
-        let markup = crate::markup::reborrow_markup(&markup);
+        // SAFETY: the local header lives to the end of this iteration, and
+        // the document built from it is dropped with it.
+        let markup = unsafe { crate::markup::reborrow_markup(&markup) };
         let document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);
 
         for (slot, &index) in indexes.iter().enumerate() {

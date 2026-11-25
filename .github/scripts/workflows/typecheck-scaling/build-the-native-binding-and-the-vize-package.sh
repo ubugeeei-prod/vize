@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-scaling/build-the-native-binding-and-the-vize-package.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 # The whole workspace: vue-tsc and vue come from tools/benchmarks/scripts, tsgo from the root.
 vp install --frozen-lockfile --prefer-offline
