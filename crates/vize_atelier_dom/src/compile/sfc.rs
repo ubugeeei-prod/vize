@@ -1,5 +1,4 @@
 use super::{
-    compile_template_inner_with_sections,
     pipeline::{self, DomCompilePipelineOptions},
     selection, stage_options,
 };
@@ -204,7 +203,8 @@ pub(super) fn compile_template_inner_for_sfc<'a>(
     codegen_options: CodegenOptions,
     codegen_experimental_options: CodegenExperimentalOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
-    let (root, errors, result) = compile_template_inner_with_sections(
+    // The SFC pipeline, which prepares a mapped template, not the plain one.
+    let (root, errors, result) = super::inner::compile_template_inner_with_sections_captured(
         allocator,
         source,
         options,
@@ -215,6 +215,7 @@ pub(super) fn compile_template_inner_for_sfc<'a>(
             codegen_options,
             codegen_experimental_options,
         ),
+        &mut NoCapture,
     );
     (root, errors, result.into_result())
 }

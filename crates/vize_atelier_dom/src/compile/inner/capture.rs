@@ -3,7 +3,7 @@ use vize_atelier_core::{
     codegen::{
         CodegenResult, CodegenResultWithSections,
         generate_with_sections_and_experimental_options_slot_scope_and_environment,
-        locate_for_aliases,
+        prepare_mapped_template,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{
@@ -204,6 +204,9 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     // both through the same `errors` channel.
     let mut errors = errors.to_vec();
     errors.extend(transform_errors);
+    if codegen_opts.source_map {
+        prepare_mapped_template(&mut root, source);
+    }
 
     let l2_emit = l2_emit_after_transform.and_then(|(options, hoisted_scope_id)| {
         stage_options::try_emit_l2_captured(
@@ -223,26 +226,19 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         )
     });
     let codegen_result = match l2_emit {
-        // Only a mapped compile emits L2 after the transform.
-        Some(result) => {
-            locate_for_aliases(&mut root, source);
-            source_map::attach_compat_map(
-                &root,
-                &codegen_opts,
-                codegen_experimental_options,
-                no_slotted,
-                development,
-                result,
-            )
-            .finish(capture)
-        }
+        Some(result) => source_map::attach_compat_map(
+            &root,
+            &codegen_opts,
+            codegen_experimental_options,
+            no_slotted,
+            development,
+            result,
+        )
+        .finish(capture),
         None => {
-            if codegen_opts.source_map {
-                locate_for_aliases(&mut root, source);
-                // An additive compile recorded its refusal before the transform.
-                if use_l2_emit && !additive_source_map {
-                    selection::record(Err(DomLegacyReason::EmitRefused));
-                }
+            // An additive compile recorded its refusal before the transform.
+            if use_l2_emit && codegen_opts.source_map && !additive_source_map {
+                selection::record(Err(DomLegacyReason::EmitRefused));
             }
             capture.finish(|| {
                 CaptureOutcome::Legacy(String::from(
@@ -306,7 +302,7 @@ fn additive_map<'a>(
             inputs.hoisted_scope_id,
         )
     );
-    locate_for_aliases(root, source);
+    prepare_mapped_template(root, source);
     let compat = profile!(
         "atelier.dom.template.codegen_sourcemap_compat",
         generate_with_sections_and_experimental_options_slot_scope_and_environment(

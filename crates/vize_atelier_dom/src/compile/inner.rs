@@ -3,7 +3,6 @@ use vize_atelier_core::{
     codegen::{
         CodegenResult, CodegenResultWithSections,
         generate_with_sections_and_experimental_options_slot_scope_and_environment,
-        locate_for_aliases,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
@@ -194,25 +193,18 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         )
     });
     let codegen_result = match l2_emit {
-        // Only a mapped compile emits L2 after the transform.
-        Some(result) => {
-            locate_for_aliases(&mut root, source);
-            source_map::attach_compat_map(
-                &root,
-                &codegen_opts,
-                codegen_experimental_options,
-                no_slotted,
-                development,
-                result,
-            )
-            .finish(&mut NoCapture)
-        }
+        Some(result) => source_map::attach_compat_map(
+            &root,
+            &codegen_opts,
+            codegen_experimental_options,
+            no_slotted,
+            development,
+            result,
+        )
+        .finish(&mut NoCapture),
         None => {
-            if codegen_opts.source_map {
-                locate_for_aliases(&mut root, source);
-                if use_l2_emit {
-                    selection::record(Err(DomLegacyReason::EmitRefused));
-                }
+            if use_l2_emit && codegen_opts.source_map {
+                selection::record(Err(DomLegacyReason::EmitRefused));
             }
             profile!(
                 "atelier.dom.template.codegen_compat",

@@ -7,7 +7,7 @@
 
 use std::cell::Cell;
 
-use super::{EmitDocument, SourceMapBuilder, rewritten_identifier_spans};
+use super::{EmitDocument, SourceMapBuilder};
 use oxc_syntax::identifier::is_identifier_name;
 use vize_l0::Span;
 
@@ -40,7 +40,11 @@ impl EmitDocument {
     #[cold]
     #[inline(never)]
     pub(super) fn write_member_columns(&self, builder: &mut SourceMapBuilder, source: &str) {
-        for link in self.links().iter().filter(|link| link.name.is_none()) {
+        let links = self.links();
+        for (index, link) in links.iter().enumerate() {
+            if link.name.is_some() {
+                continue;
+            }
             let Some(authored) =
                 source.get(link.authored.start as usize..link.authored.end as usize)
             else {
@@ -57,9 +61,23 @@ impl EmitDocument {
             if emitted == authored && self.is_string_content(link.generated) {
                 continue;
             }
-            visit_static_member_spans(authored, emitted, link.authored.start, |out, at| {
-                builder.add_raw((link.generated.start + out.start) as usize, at.start);
-            });
+            // An expression whose rewrite was verified when it was linked
+            // carries its rewritten identifiers' named links right after it.
+            let verified = emitted == authored
+                || links.get(index + 1).is_some_and(|next| {
+                    next.name.is_some()
+                        && link.generated.start <= next.generated.start
+                        && next.generated.end <= link.generated.end
+                });
+            visit_static_member_spans(
+                authored,
+                emitted,
+                link.authored.start,
+                verified,
+                |out, at| {
+                    builder.add_raw((link.generated.start + out.start) as usize, at.start);
+                },
+            );
         }
     }
 
@@ -79,6 +97,7 @@ fn visit_static_member_spans(
     authored: &str,
     emitted: &str,
     source_start: u32,
+    verified: bool,
     mut visit: impl FnMut(Span, Span),
 ) {
     let mut parts = authored.split_inclusive('.');
@@ -95,7 +114,7 @@ fn visit_static_member_spans(
         || !parts
             .clone()
             .all(|part| is_identifier_name(member_name(part)))
-        || (emitted != authored && rewritten_identifier_spans(authored, emitted).is_none())
+        || !verified
     {
         return;
     }
@@ -121,7 +140,12 @@ fn member_name(part: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::{EmitDocument, visit_static_member_spans};
+    use crate::codegen::rewrite_spans::rewritten_identifier_spans;
     use vize_l0::Span;
+
+    fn verified(authored: &str, emitted: &str) -> bool {
+        authored == emitted || rewritten_identifier_spans(authored, emitted).is_some()
+    }
 
     #[test]
     fn a_literal_with_a_dot_keeps_its_existing_map() {
@@ -146,11 +170,25 @@ mod tests {
     }
 
     #[test]
+    fn a_rewritten_receiver_keeps_its_member_columns() {
+        let authored = "photo.description";
+        let mut read = EmitDocument::default();
+        read.push_expression("_ctx.photo.description", Span::new(0, 17), authored);
+        assert_ne!(
+            super::composing_sfc_render_map(|| read.source_map("a.vue", authored)),
+            read.source_map("a.vue", authored)
+        );
+    }
+
+    #[test]
     fn properties_use_distinct_offsets_after_a_rewritten_receiver() {
         let authored = "旅 ?. hôtel.hôtel";
         let emitted = "_unref(旅) ?. hôtel.hôtel";
         let mut spans = Vec::new();
-        visit_static_member_spans(authored, emitted, 10, |out, at| spans.push((out, at)));
+        let checked = verified(authored, emitted);
+        visit_static_member_spans(authored, emitted, 10, checked, |out, at| {
+            spans.push((out, at));
+        });
         assert_eq!(
             spans,
             [
@@ -163,7 +201,10 @@ mod tests {
             ("'a.b'", "'a.b'"),
             ("x.y", "_ctx.x.z"),
         ] {
-            visit_static_member_spans(source, output, 0, |_, _| panic!("unexpected member"));
+            let checked = verified(source, output);
+            visit_static_member_spans(source, output, 0, checked, |_, _| {
+                panic!("unexpected member")
+            });
         }
     }
 }

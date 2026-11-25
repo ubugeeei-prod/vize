@@ -226,7 +226,7 @@ fn generate_if_branch_component(
     } else if let Some(builtin) = is_builtin_component(el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if ctx.push_component_binding(el) {
+    } else if ctx.push_component_binding_tag(el.tag) {
     } else {
         ctx.push(&to_valid_asset_identifier("component", el.tag));
     }

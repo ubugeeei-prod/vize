@@ -1,7 +1,5 @@
 use crate::options::BindingType;
-use crate::{CodegenContext, ElementNode, RuntimeHelper};
-
-use super::document::EmitDocument;
+use crate::{CodegenContext, RuntimeHelper};
 use vize_l0::{String, ToCompactString, camelize, capitalize};
 
 struct ComponentBinding {
@@ -36,6 +34,9 @@ impl CodegenContext {
         let Some(binding) = self.resolve_component_binding(component) else {
             return false;
         };
+        if self.out.is_recording() {
+            self.anchor_component_tag(component);
+        }
 
         let needs_unref = self.options.inline
             && matches!(
@@ -67,33 +68,16 @@ impl CodegenContext {
         true
     }
 
-    /// Push `el`'s tag as the setup binding it resolves to, as
-    /// [`Self::push_component_binding_tag`] does. A resolved asset is anchored
-    /// where it is resolved, but a binding is read in place, so with a map
-    /// requested the read is anchored at the authored tag name. The one
-    /// recording check follows a written binding: a tag that is not one, and
-    /// every compile without a map, does what it did before.
-    #[inline(always)]
-    pub(in crate::codegen) fn push_component_binding(&mut self, el: &ElementNode<'_>) -> bool {
-        if !self.push_component_binding_tag(el.tag) {
-            return false;
-        }
-        if self.out.is_recording() {
-            self.anchor_component_binding(el);
-        }
-        true
-    }
-
-    /// Anchor the binding [`Self::push_component_binding_tag`] just wrote.
+    /// Anchor the setup binding about to be read for `tag` at the tag's
+    /// authored name. A resolved asset is anchored where it is
+    /// resolved, but a binding is read in place. Only a compile that records
+    /// a map reaches this, after the tag resolved to a binding.
     #[cold]
     #[inline(never)]
-    fn anchor_component_binding(&mut self, el: &ElementNode<'_>) {
-        // Measure the read by writing it again into a scratch document. The
-        // only other effect, using the `unref` helper, is already recorded.
-        let written = std::mem::replace(&mut self.out, EmitDocument::new(false));
-        self.push_component_binding_tag(el.tag);
-        let read = std::mem::replace(&mut self.out, written).len() as u32;
-        self.out.anchor_written(read, el.loc.span.start + 1);
+    fn anchor_component_tag(&mut self, tag: &str) {
+        if let Some(at) = super::mapped_template::template_offset(tag) {
+            self.out.anchor(at);
+        }
     }
 
     fn resolve_component_binding(&self, component: &str) -> Option<ComponentBinding> {
