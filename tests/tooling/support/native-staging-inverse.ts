@@ -79,12 +79,12 @@ function invert(workflow: string, steps: readonly Step[]): string {
   return workflow;
 }
 
-/** Restores content-mapper-conformance.yml's former napi pre-publish staging. */
+/** Restores 04-content-mapper-conformance.yml's former napi pre-publish staging. */
 export function restoreConformanceNativeStaging(workflow: string): string {
   return invert(workflow, conformanceSteps);
 }
 
-/** Restores native-smoke.yml's former napi pre-publish staging. */
+/** Restores 06-native-smoke.yml's former napi pre-publish staging. */
 export function restoreNativeSmokeStaging(workflow: string): string {
   return invert(workflow, nativeSmokeSteps);
 }

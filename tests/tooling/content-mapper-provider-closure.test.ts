@@ -39,7 +39,7 @@ test("the exact Content Mapper provider closure retains all six original checks"
 });
 
 test("scheduled conformance always runs and retains the provider closure", () => {
-  const workflow = parse(readRepoFile(".github/workflows/content-mapper-conformance.yml")) as {
+  const workflow = parse(readRepoFile(".github/workflows/04-content-mapper-conformance.yml")) as {
     jobs: Record<string, { steps: Step[] }>;
   };
   const action = parse(

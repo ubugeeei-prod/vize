@@ -1,0 +1,10 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  (cd npm/cli && vp pack)
+  (cd npm/builder/vite && vp pack)
+  """#
+}

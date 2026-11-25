@@ -144,7 +144,7 @@ export function validateBuild(
   manifest: ManifestIdentity,
   available = true,
 ): BuildIdentity {
-  validateRun(run, repositoryId, ".github/workflows/build-docs.yml");
+  validateRun(run, repositoryId, ".github/workflows/11-docs-build.yml");
   assert(["push", "schedule", "workflow_dispatch"].includes(run.event), "Trusted Docs trigger");
   assert.equal(run.id, expected.runId, "Triggered Docs run");
   assert.equal(run.run_attempt, expected.attempt, "Triggered Docs attempt");

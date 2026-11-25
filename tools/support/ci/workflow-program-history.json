@@ -1,47 +1,47 @@
 {
-  "content-mapper-conformance": {
+  "04-content-mapper-conformance": {
     "before": "af3a0c9c81dd1a48f790ea66feced0945e59278eeb8f063a67b83cab62ef4cc1",
-    "workflow": "0ad2a9bab9cedcd7b1b07c61ff8d62a769df4f0092ffa192871740242e2175a7",
+    "workflow": "52ee8adc41fe9d086578bc259d8283a70fb67d3d80f489b33e2ed9eb248cad34",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
-      ".github/scripts/workflows/content-mapper-conformance/build-exact-upstream-tsgo.sh",
-      ".github/scripts/workflows/content-mapper-conformance/build-packed-content-mapper-runtime.sh",
-      ".github/scripts/workflows/content-mapper-conformance/nuxt-membership-require-every-executed-native-stock-and-graph-control.sh",
-      ".github/scripts/workflows/content-mapper-conformance/nuxt-membership-verify-membership-controls.ts",
-      ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.sh",
-      ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.ts",
-      ".github/scripts/workflows/content-mapper-conformance/run-authored-syntax-and-setup-binding-conformance.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-content-mapper-lsp-and-virtual-overlay-editor-checks.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-importer-scoped-package-resolution-matrix.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-standard-project-and-declaration-conformance.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-standard-tsgo-through-fresh-installed-package-tarballs.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-ts-40-current-projection-baselines.sh",
-      ".github/scripts/workflows/content-mapper-conformance/stress-every-editor-case-against-its-exact-native-provider.sh",
-      ".github/scripts/workflows/content-mapper-conformance/stress-every-editor-case-against-its-exact-native-provider.ts",
-      ".github/scripts/workflows/content-mapper-conformance/verify-targeted-source.sh",
-      ".github/scripts/workflows/content-mapper-conformance/verify-upstream-content-mapper-protocol-regressions.sh",
-      "tools/ci/lib/scripts/files.ts"
+      "tools/ci/lib/scripts/files.ts",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/build-exact-upstream-tsgo.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/build-packed-content-mapper-runtime.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/nuxt-membership-require-every-executed-native-stock-and-graph-control.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/nuxt-membership-verify-membership-controls.ts",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/retain-exact-native-host-identity-before-conformance.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/retain-exact-native-host-identity-before-conformance.ts",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-authored-syntax-and-setup-binding-conformance.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-content-mapper-lsp-and-virtual-overlay-editor-checks.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-importer-scoped-package-resolution-matrix.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-standard-project-and-declaration-conformance.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-standard-tsgo-through-fresh-installed-package-tarballs.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-ts-40-current-projection-baselines.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/stress-every-editor-case-against-its-exact-native-provider.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/stress-every-editor-case-against-its-exact-native-provider.ts",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/verify-targeted-source.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/verify-upstream-content-mapper-protocol-regressions.sh"
     ],
-    "closure": "218fd734ca5ab330f6c31b08f0c1877525918f0b69b16051e242130c2c39ae78"
+    "closure": "f84b88f556abc844032558c39537e36934deee49c8233a0f048ff5978ada75c4"
   },
-  "native-smoke": {
+  "06-native-smoke": {
     "before": "dfcea2b5fd581d6e18d08cbefdbdbda26a46dd63df02dc672a7ae13cfcc7f9c0",
-    "workflow": "d88c69dad85320d1e50d60f83487ca6ddd6c15d8603e306073af123370fdb584",
+    "workflow": "9b164e99171d77e81ba2ead0adf2b5687a44c2ec470d87b5e31dea7bdd10c350",
     "programs": [
-      ".github/scripts/workflows/native-smoke/build-npm-runtime-packages.sh",
-      ".github/scripts/workflows/native-smoke/fresh-install-and-runtime-smoke-in-alpine.sh",
-      ".github/scripts/workflows/native-smoke/fresh-install-and-runtime-smoke-published-tarballs.sh",
-      ".github/scripts/workflows/native-smoke/fresh-packed-nuxt-init-check-and-lsp-smoke.sh",
-      ".github/scripts/workflows/native-smoke/install-package-dependencies.sh",
-      ".github/scripts/workflows/native-smoke/prepare-the-musl-native-platform-package.sh",
-      ".github/scripts/workflows/native-smoke/read-the-package-version.cjs",
-      ".github/scripts/workflows/native-smoke/read-the-package-version.sh",
-      ".github/scripts/workflows/native-smoke/smoke-cli.sh",
-      ".github/scripts/workflows/native-smoke/smoke-in-alpine-container.sh",
-      ".github/scripts/workflows/native-smoke/smoke-vizejs-native.cjs"
+      "tools/ci/workflows/06-native-smoke/scripts/build-npm-runtime-packages.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/fresh-install-and-runtime-smoke-in-alpine.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/fresh-install-and-runtime-smoke-published-tarballs.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/fresh-packed-nuxt-init-check-and-lsp-smoke.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/install-package-dependencies.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/prepare-the-musl-native-platform-package.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/read-the-package-version.cjs",
+      "tools/ci/workflows/06-native-smoke/scripts/read-the-package-version.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/smoke-cli.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/smoke-in-alpine-container.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/smoke-vizejs-native.cjs"
     ],
-    "closure": "d54d23f7bcfa04bbe3da74ee5107a14dbef0c77bf6f227aae6006e0e46279d6a"
+    "closure": "7ebdd00a168e67bbe0aa955e9429d00e3f071febedc1cf04389d0d41d1429172"
   },
   "native-beta-diagnostic-dto": {
     "before": "5ffa8d324be8757ee3293ec178ca097b1f20e1f50845f83cd370f50f185a8310",

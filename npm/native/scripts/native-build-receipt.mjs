@@ -40,7 +40,7 @@ const scriptPaths = [
   "tools/support/github/build-napi-package.ts",
   "tools/support/command-runtime.ts",
   "tests/tooling/native-build-token.test.ts",
-  ".github/workflows/native-smoke.yml",
+  ".github/workflows/06-native-smoke.yml",
 ];
 const receipt = {
   schema: "vize.native-image-build-token.v1",

@@ -71,7 +71,9 @@ test("Musea browser observation helpers keep their actual consumer selected", ()
 });
 
 test("Musea native CLI builds install their transitive rule generator runner", () => {
-  const workflow = parse(readAutomationPrograms(".github", "workflows", "musea-browser.yml")) as {
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "10-musea-browser.yml"),
+  ) as {
     jobs: Record<string, { steps?: Array<{ uses?: string; run?: string }> }>;
   };
   const native = workflow.jobs["musea-native-inline"].steps!;

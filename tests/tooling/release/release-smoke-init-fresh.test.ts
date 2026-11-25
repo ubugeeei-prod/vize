@@ -399,7 +399,7 @@ function workflowSteps(workflow: string, jobName: string) {
 }
 
 test("release workflows run the runtime matrix with every required package", () => {
-  for (const workflow of ["release.yml", "native-smoke.yml"]) {
+  for (const workflow of ["release.yml", "06-native-smoke.yml"]) {
     // Assert the step's own arguments, so reflowing the YAML command cannot
     // silently drop the packed CLI from the runtime smoke.
     const runtimeSmokeArgs = smokeInstallInvocations(workflow).filter((args) =>
@@ -437,7 +437,7 @@ function assertRuntimeSmokePackageManagers(workflow: string, jobName: string) {
 }
 
 test("fresh install runtime smokes expose every package manager they matrix", () => {
-  assertRuntimeSmokePackageManagers("native-smoke.yml", "fresh-install-smoke");
+  assertRuntimeSmokePackageManagers("06-native-smoke.yml", "fresh-install-smoke");
   assertRuntimeSmokePackageManagers("release.yml", "smoke");
 });
 

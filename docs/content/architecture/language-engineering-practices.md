@@ -37,8 +37,8 @@ memory.
 | Lane        | Use when the change touches                                                                                          | Evidence to record                                                                                                                                                                                                                                                                                                |
 | ----------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Security    | URL handling, HTML or SSR output, filesystem/config loading, native loading, package publishing, CI, or credentials. | `security-audit` in `.github/workflows/check.yml`, `vp exec pnpm audit --prod --audit-level moderate`, `cargo audit --deny warnings`, smoke-install runtime checks, pinned GitHub Actions checks, and any focused regression covering the risky input or boundary.                                                |
-| Performance | Parser, compiler, linter, formatter, type-checker, caching, project graph traversal, generated output, or CLI I/O.   | `.github/workflows/benchmark.yml`, `tools/benchmarks/scripts/compare-pr.ts`, `tools/benchmarks/scripts/enforce-pr-budget.ts`, the `pr-benchmark-budget` status, local `bench:*` tasks, and `vize lint --profile`, `vize check --profile`, or `vize fmt --profile` output when the regression needs attribution. |
-| Fuzzing     | Byte-oriented parsing, syntax recovery, CSS parsing, JS/TS expression parsing, template lexing, or codegen recovery. | `.github/workflows/fuzz.yml`, `tests/fuzz/Cargo.toml`, `tools/ci/commands/fuzz/seed-corpus.ts`, `cargo +nightly fuzz run <target>`, uploaded `fuzz-reproducers-*` artifacts, and a minimized deterministic regression after the crash, timeout, or OOM has been understood.                                       |
+| Performance | Parser, compiler, linter, formatter, type-checker, caching, project graph traversal, generated output, or CLI I/O.   | `.github/workflows/03-source-comparison.yml`, `tools/benchmarks/scripts/compare-pr.ts`, `tools/benchmarks/scripts/enforce-pr-budget.ts`, the `pr-benchmark-budget` status, local `bench:*` tasks, and `vize lint --profile`, `vize check --profile`, or `vize fmt --profile` output when the regression needs attribution. |
+| Fuzzing     | Byte-oriented parsing, syntax recovery, CSS parsing, JS/TS expression parsing, template lexing, or codegen recovery. | `.github/workflows/11-fuzz.yml`, `tests/fuzz/Cargo.toml`, `tools/ci/commands/fuzz/seed-corpus.ts`, `cargo +nightly fuzz run <target>`, uploaded `fuzz-reproducers-*` artifacts, and a minimized deterministic regression after the crash, timeout, or OOM has been understood.                                       |
 
 ## Baseline Policy
 
@@ -79,10 +79,10 @@ Vize keeps these practices executable instead of relying on memory:
 - `CONTRIBUTING.md` names the change-class discipline for contributors.
 - `.github/PULL_REQUEST_TEMPLATE.md` asks for behavior references, risks, and verification evidence.
 - `tools/benchmarks/scripts/test-inventory.ts` reports the current test asset inventory in PR CI.
-- `.github/workflows/benchmark.yml` compares base and head CLI performance and enforces a PR budget.
+- `.github/workflows/03-source-comparison.yml` compares base and head CLI performance and enforces a PR budget.
 - `.github/workflows/check.yml` runs the `security-audit` job for production npm and Rust
   dependency advisories.
-- `.github/workflows/fuzz.yml` runs the `tests/fuzz` cargo-fuzz workspace and uploads crash
+- `.github/workflows/11-fuzz.yml` runs the `tests/fuzz` cargo-fuzz workspace and uploads crash
   reproducers for parser/compiler triage.
 - `docs/release/production-readiness.md` and `docs/release/vue-parity-matrix.md` define when a
   behavior can be called production-ready or compatible.

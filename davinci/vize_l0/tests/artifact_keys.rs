@@ -6,7 +6,7 @@
 //!
 //! 1. **Golden keys, two platforms.** `fixtures/keys/base-l2-recipe4.keys` is the full
 //!    key listing of `fixtures/keys/base.vue`. The Linux and macOS lanes of
-//!    `.github/workflows/davinci-incremental.yml` both print the listing and
+//!    `.github/workflows/07-incremental.yml` both print the listing and
 //!    compare it with the golden, so a platform-dependent byte anywhere in a
 //!    recipe fails on one of them.
 //! 2. **Edit locality.** Each edit case names exactly the `(block, stage)`

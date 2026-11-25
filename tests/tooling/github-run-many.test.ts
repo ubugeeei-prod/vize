@@ -77,7 +77,7 @@ test("github/run-many stops at the first failing command group", () => {
 });
 
 test("docs and release workflows run command groups with Node", () => {
-  const docsWorkflow = readRepoFile(".github", "workflows", "build-docs.yml");
+  const docsWorkflow = readRepoFile(".github", "workflows", "11-docs-build.yml");
   const releaseWorkflow = readRepoFile(".github", "workflows", "release.yml");
   assert.match(
     workflowJobBody(releaseWorkflow, "build-packages"),
@@ -86,12 +86,12 @@ test("docs and release workflows run command groups with Node", () => {
 
   for (const [workflowName, jobBody, command] of [
     [
-      "build-docs.yml:build-docs",
+      "11-docs-build.yml:build-docs",
       workflowJobBody(docsWorkflow, "build-docs"),
       "node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci",
     ],
     [
-      "build-docs.yml:build-playground",
+      "11-docs-build.yml:build-playground",
       workflowJobBody(docsWorkflow, "build-playground"),
       "node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci",
     ],

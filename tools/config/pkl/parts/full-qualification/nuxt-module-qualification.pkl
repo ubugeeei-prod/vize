@@ -1,2 +1,2 @@
 name = "Nuxt and Vite release products"
-uses = "./.github/workflows/nuxt-vite-release-products.yml"
+uses = "./.github/workflows/08-nuxt-vite-products.yml"

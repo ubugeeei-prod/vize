@@ -1,0 +1,15 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  vp exec node tools/support/compat/davinci/lsp-resources.ts \
+    --server target/ci-opt/vize \
+    --files 2 \
+    --runs 1 \
+    --idle-seconds 10 \
+    --build "ci-opt: release, thin LTO, 16 codegen units" \
+    --out "${RUNNER_TEMP}/lsp-resource-smoke.json"
+  """#
+}

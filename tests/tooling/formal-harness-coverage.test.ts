@@ -12,7 +12,7 @@ import { parse as parseYaml } from "yaml";
 // a Kani step of a generated workflow, either from the standalone root Kani
 // compiles or through the module tree of a `--manifest-path` crate whose
 // `--harness` filters select it. Every Creusot proof package must be a member
-// of the proof workspace that `davinci-creusot.yml` replays.
+// of the proof workspace that `07-proofs-creusot.yml` replays.
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const creusotDir = path.join(repoRoot, "tests", "formal", "creusot");

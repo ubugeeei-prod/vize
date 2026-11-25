@@ -7,7 +7,7 @@ import "../../tools/benchmarks/scripts/check-gate-report.test.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 test("check-bench keeps optional scheduled and manual fail-closed measurements", () => {
-  const workflow = readAutomationPrograms(path.join(root, ".github/workflows/check-bench.yml"));
+  const workflow = readAutomationPrograms(path.join(root, ".github/workflows/03-check-gate.yml"));
   assert.match(workflow, /^  workflow_dispatch:$/mu);
   assert.match(workflow, /^  schedule:$/mu);
   assert.doesNotMatch(workflow, /^  pull_request:$/mu);

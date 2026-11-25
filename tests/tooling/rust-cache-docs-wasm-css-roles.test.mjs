@@ -11,7 +11,7 @@ import {
 } from "./support/rust-cache-docs-wasm-consumers.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const css = ".github/workflows/css-engine-vendor-candidate.yml";
+const css = ".github/workflows/06-css-engine-forks.yml";
 const cache = "./.github/actions/setup-rust-sticky-cache";
 const app = "./.github/actions/app-e2e-row";
 const keys = {

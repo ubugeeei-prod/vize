@@ -11,7 +11,7 @@ import { assertAuthoredOracle, loadAuthoredCases } from "./support/n8n-cli-confi
 
 void test("complete n8n custody remains a scheduled and manual campaign", () => {
   const root = new URL("../../", import.meta.url);
-  const workflow = fs.readFileSync(new URL(".github/workflows/n8n-adoption.yml", root), "utf8");
+  const workflow = fs.readFileSync(new URL(".github/workflows/09-n8n-adoption.yml", root), "utf8");
   assert.match(workflow, /^  schedule:\n/mu);
   assert.match(workflow, /^  workflow_dispatch:/mu);
   assert.doesNotMatch(workflow, /^  (pull_request|merge_group):/mu);

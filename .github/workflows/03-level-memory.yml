@@ -1,0 +1,90 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/03-level-memory/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Benchmark - Level memory
+
+# Paired runs require a base after the 104-row registry landed. The base and
+# head registry and budget files must be byte-identical; the collector rejects
+# an earlier or mismatched baseline before measuring.
+
+on:
+  workflow_call:
+    inputs:
+      base_sha: { required: true, type: string }
+      head_sha: { required: true, type: string }
+      conflicting_modes: { required: true, type: boolean }
+
+permissions:
+  contents: read
+
+jobs:
+  memory:
+    name: Original104 normal-mode memory pairs
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      CARGO_TERM_COLOR: never
+      RUSTUP_TOOLCHAIN: "1.100.0"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      MEMORY_BASE_SHA: ${{ inputs.base_sha }}
+      MEMORY_HEAD_SHA: ${{ inputs.head_sha }}
+      MEMORY_CONFLICTING_MODES: ${{ inputs.conflicting_modes }}
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/03-level-memory/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Checkout candidate and collector
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.head_sha }}
+          path: head
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout baseline
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.base_sha }}
+          path: base
+          persist-credentials: false
+      - name: Validate exact dispatch and pair before build
+        run: . "${{ env.VIZE_CI_FILES }}/validate-exact-dispatch-and-pair-before-build.sh"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: head/package.json
+          run-install: false
+      - name: Install exact measurement Rust and Callgrind identity provider
+        run: . "${{ env.VIZE_CI_FILES }}/install-exact-measurement-rust-and-callgrind-identity-provider.sh"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      # The cache action's nested local action resolves from the workspace root,
+      # and this job checks the repository out under head/.
+      - name: Expose the nested target action at the workspace root
+        run: . "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh"
+      - uses: ./head/.github/actions/setup-rust-sticky-cache
+        with:
+          key: level-memory-v1
+          target-path: head/target
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./head/.github/actions/setup-rust-script
+      - name: Test missing, stale, forged and partial evidence refusal
+        run: node --test head/tests/tooling/level-memory-collector.test.mjs
+      - name: Build all thirteen original providers and collect all paired observations
+        run: node head/tools/benchmarks/scripts/level-memory.mjs "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" "$GITHUB_WORKSPACE/level-memory"
+      - name: Retain whole reports and process provenance on success or failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: level-memory-${{ inputs.head_sha }}-${{ github.run_attempt }}
+          path: level-memory/
+          if-no-files-found: warn
+          retention-days: 30

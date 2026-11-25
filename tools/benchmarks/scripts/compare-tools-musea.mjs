@@ -52,7 +52,7 @@ function throughputOf(units, unitLabel, medianMs) {
  * variant `createSurface` reports `primarySpeedup: null` and
  * `speedupStatus: "unavailable"` instead of inventing a ratio, and the surface
  * stores no historical value, so nothing downstream can read a drift number
- * out of it. Enforcement stays with benchmark.yml's fixed-baseline schedule
+ * out of it. Enforcement stays with 03-source-comparison.yml's fixed-baseline schedule
  * (#3586) rather than a second gate growing here.
  */
 export function buildMuseaSurface(data) {

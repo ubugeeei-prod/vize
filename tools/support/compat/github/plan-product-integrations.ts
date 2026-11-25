@@ -25,9 +25,9 @@ const shared =
 // These regressions replace the Vite and Nuxt JavaScript adapters in pinned
 // published installations. They do not build or exercise candidate Rust.
 const nuxt =
-  /^(npm\/builder\/(vite|unplugin|shared)\/|npm\/framework\/nuxt\/|npm\/cli\/src\/(config\/|types\/)|crates\/vize_carton\/src\/config\/loader\/vite-runtime\.[cm]?[jt]s$|tools\/support\/compat\/nuxt\/|tests\/_fixtures\/_projects\/nuxt-(scoped-style-build|critical-css-build|dev-ssr-style)\/|tests\/package\.json$|\.github\/workflows\/nuxt-style-build\.yml$)/;
+  /^(npm\/builder\/(vite|unplugin|shared)\/|npm\/framework\/nuxt\/|npm\/cli\/src\/(config\/|types\/)|crates\/vize_carton\/src\/config\/loader\/vite-runtime\.[cm]?[jt]s$|tools\/support\/compat\/nuxt\/|tests\/_fixtures\/_projects\/nuxt-(scoped-style-build|critical-css-build|dev-ssr-style)\/|tests\/package\.json$|\.github\/workflows\/08-nuxt-styles\.yml$)/;
 const musea =
-  /^(npm\/builder\/vite-musea\/|tests\/_fixtures\/differential\/musea\/|tests\/tooling\/fixtures\/musea\/|examples\/vite-musea\/|tools\/support\/release\/public_acceptance\/gallery\.ts$|\.github\/workflows\/musea-browser\.yml$)/;
+  /^(npm\/builder\/vite-musea\/|tests\/_fixtures\/differential\/musea\/|tests\/tooling\/fixtures\/musea\/|examples\/vite-musea\/|tools\/support\/release\/public_acceptance\/gallery\.ts$|\.github\/workflows\/10-musea-browser\.yml$)/;
 // Native inline Art consumes the source N-API compiler, CLI, and Vite adapter.
 // Rust's transitive dependencies are deliberately conservative here; unrelated
 // docs, tooling, and other JS integrations never start a native browser build.

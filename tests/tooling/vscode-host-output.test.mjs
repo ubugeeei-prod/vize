@@ -201,7 +201,7 @@ await test("existing host routes retain configuration packets and native logs un
     assert.ok(upload.with.path.split("\n").includes(required));
   }
   const workflow = parse(
-    fs.readFileSync(path.join(root, ".github/workflows/editor-conformance.yml"), "utf8"),
+    fs.readFileSync(path.join(root, ".github/workflows/05-editor-conformance.yml"), "utf8"),
   );
   const hostSteps = Object.values(workflow.jobs)
     .flatMap((job) => job.steps ?? [])

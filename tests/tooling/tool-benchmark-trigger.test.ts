@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 
 test("Tool Benchmark ignores only known non-runtime pull request paths", () => {
   const workflow = parse(
-    fs.readFileSync(path.join(root, ".github", "workflows", "tool-benchmark.yml"), "utf8"),
+    fs.readFileSync(path.join(root, ".github", "workflows", "03-tool-comparison.yml"), "utf8"),
   ) as Record<string, unknown>;
   const events = workflow.on as { pull_request?: { "paths-ignore"?: string[] } };
   const jobs = workflow.jobs as Record<
@@ -44,15 +44,15 @@ test("Tool Benchmark ignores only known non-runtime pull request paths", () => {
     "!.github/ISSUE_TEMPLATE/**",
     "!.github/PULL_REQUEST_TEMPLATE.md",
     "!.github/actions/app-readiness/**",
-    "!.github/workflows/check-bench.yml",
+    "!.github/workflows/03-check-gate.yml",
     "!.github/workflows/check.yml",
-    "!.github/workflows/criterion-bench.yml",
-    "!.github/workflows/build-docs.yml",
+    "!.github/workflows/03-criterion.yml",
+    "!.github/workflows/11-docs-build.yml",
     "!.github/workflows/deploy-docs.yml",
-    "!.github/workflows/e2e.yml",
-    "!.github/workflows/fuzz.yml",
-    "!.github/workflows/miri.yml",
-    "!.github/workflows/native-smoke.yml",
+    "!.github/workflows/10-app-e2e.yml",
+    "!.github/workflows/11-fuzz.yml",
+    "!.github/workflows/11-miri.yml",
+    "!.github/workflows/06-native-smoke.yml",
     "!.github/workflows/pkg-pr-new.yml",
     "!.github/workflows/release*.yml",
     "!.github/workflows/title-policy.yml",

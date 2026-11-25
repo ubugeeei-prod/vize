@@ -24,7 +24,7 @@ type Workflow = {
 };
 
 const workflow = parseYaml(
-  readAutomationPrograms(path.join(repoRoot, ".github/workflows/davinci-incremental.yml")),
+  readAutomationPrograms(path.join(repoRoot, ".github/workflows/07-incremental.yml")),
 ) as Workflow;
 
 const shard = ["splitpanes", "layoutit-grid", "cssgridgenerator"];
@@ -47,7 +47,7 @@ test("the incrementality workflow triggers on the resident tier and its keyers",
     "davinci/vize_l2/**",
     "davinci/vize_l1_to_l2/**",
     "tools/commands/davinci/incremental-equivalence/**",
-    ".github/workflows/davinci-incremental.yml",
+    ".github/workflows/07-incremental.yml",
   ]) {
     assert.ok(paths.includes(required), `push must trigger on ${required}`);
   }

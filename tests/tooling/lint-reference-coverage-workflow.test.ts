@@ -19,7 +19,7 @@ interface Workflow {
 }
 const workflow = parse(
   readFileSync(
-    new URL("../../.github/workflows/lint-reference-coverage-contracts.yml", import.meta.url),
+    new URL("../../.github/workflows/09-lint-reference-coverage.yml", import.meta.url),
     "utf8",
   ),
 ) as Workflow;

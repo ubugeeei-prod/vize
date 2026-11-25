@@ -91,7 +91,7 @@ async function prepare() {
   assert.equal(preparation.length, 1);
   const preparationStartedAt = preparation[0].started_at;
   assert(preparationStartedAt && Number.isFinite(Date.parse(preparationStartedAt)));
-  validateRun(event.workflow_run, metadata.id, ".github/workflows/build-docs.yml");
+  validateRun(event.workflow_run, metadata.id, ".github/workflows/11-docs-build.yml");
   const owner = await api.json<WorkflowRun>(
     "/actions/runs/" + event.workflow_run.id + "/attempts/" + event.workflow_run.run_attempt,
   );

@@ -1,0 +1,253 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Benchmark - SFC compilation"
+
+// Compile-only measurements on the README runner class: wall, CPU-seconds
+// (user+sys) and load cost per build, single-thread and parallel apart.
+// compare: the pushed commit against its merge base with main, both built from
+// source in the shipped release profile; fails when their corpus output differs.
+// verify: the compiler crate's tests and clippy. Opt in with [published]
+// (release history from npm) and [profile] (frame-pointer perf profile).
+//
+on {
+  push {
+    branches = List("bench/compile/**")
+  }
+  workflow_dispatch {
+    inputs {
+      versions {
+        description = "Published @vizejs/native versions (space-separated)"
+        required = false
+        ["default"] = ""
+      }
+      profile_versions {
+        description = "Published versions to profile with perf (space-separated)"
+        required = false
+        ["default"] = ""
+      }
+      base {
+        description = "Full SHA to compare the dispatched ref against (default merge base with main)"
+        required = false
+        ["default"] = ""
+      }
+      profile {
+        description = "Also build the ref with frame pointers and record a perf profile"
+        required = false
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+
+concurrency {
+  group = "compile-bench-${{ github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  COMPILE_BENCH_FILES = "3000"
+  COMPILE_BENCH_VERSIONS = "${{ inputs.versions || '0.424.10 0.425.1 0.429.2 0.441.0 0.481.0 0.511.0 0.541.0 0.571.0 0.601.0 0.631.0 0.646.0 0.661.0' }}"
+  COMPILE_BENCH_PROFILE_VERSIONS = "${{ inputs.profile_versions || '0.424.10 0.661.0' }}"
+  COMPILE_BENCH_BASE = "${{ inputs.base || '' }}"
+  // Crates the verify job tests and lints.
+  COMPILE_BENCH_VERIFY = "-p vize_atelier_sfc"
+}
+
+jobs {
+  published {
+    name = "published"
+    `if` = "${{ (github.event_name == 'workflow_dispatch' && inputs.versions != '') || contains(github.event.head_commit.message, '[published]') }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 60
+    permissions { contents = "read" }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/03-compile/scripts"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+      ci.command("Generate benchmark corpus", #"node tools/benchmarks/scripts/generate.mjs "$COMPILE_BENCH_FILES""#)
+      new Dynamic {
+        name = "Fetch published natives"
+        run = ci.workflowScript("fetch-published-natives.sh")
+      }
+      new Dynamic {
+        name = "Measure"
+        run = ci.workflowScript("measure.sh")
+      }
+      new Dynamic {
+        name = "Profile single-thread compile"
+        run = ci.workflowScript("profile-single-thread-compile.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "compile-bench-published"
+          path = """
+          compile-history.md
+          compile-history.json
+          profiles/
+
+          """
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  profile {
+    name = "profile"
+    `if` = "${{ (github.event_name == 'workflow_dispatch' && inputs.profile) || contains(github.event.head_commit.message, '[profile]') }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 60
+    permissions { contents = "read" }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/03-compile/scripts"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "compile-bench"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.workspaceVp()
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+      // Shipped release profile plus line tables and frame pointers, so perf
+      // can attribute inclusive time to compiler stages.
+      new Dynamic {
+        name = "Build native with symbols"
+        env {
+          CARGO_PROFILE_RELEASE_DEBUG = "line-tables-only"
+          CARGO_PROFILE_RELEASE_STRIP = "none"
+        }
+        run = ci.workflowScript("build-native-with-symbols.sh")
+      }
+      ci.command("Generate benchmark corpus", #"node tools/benchmarks/scripts/generate.mjs "$COMPILE_BENCH_FILES""#)
+      new Dynamic {
+        name = "Fetch latest published native"
+        run = ci.workflowScript("fetch-latest-published-native.sh")
+      }
+      new Dynamic {
+        name = "Measure source against latest release"
+        run = ci.workflowScript("measure-source-against-latest-release.sh")
+      }
+      new Dynamic {
+        name = "Profile source compile"
+        run = ci.workflowScript("profile-source-compile.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "compile-bench-source"
+          path = """
+          compile-source.md
+          compile-source.json
+          profiles/
+
+          """
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  compare {
+    name = "compare"
+    `if` = "${{ !contains(github.event.head_commit.message, '[skip compare]') }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 60
+    permissions { contents = "read" }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/03-compile/scripts"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `fetch-depth` = 50 }
+      }
+      ci.rust("stable")
+      ci.wild()
+      ci.workspaceVp()
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Check out the merge base"
+        run = ci.workflowScript("check-out-the-merge-base.sh")
+      }
+      // Separate target dirs: two checkouts sharing one overwrite each other.
+      new Dynamic {
+        name = "Build base and head natives"
+        run = ci.workflowScript("build-base-and-head-natives.sh")
+      }
+      ci.command("Generate benchmark corpus", #"node tools/benchmarks/scripts/generate.mjs "$COMPILE_BENCH_FILES""#)
+      new Dynamic {
+        name = "Measure base against head"
+        run = ci.workflowScript("measure-base-against-head.sh")
+      }
+      new Dynamic {
+        name = "Count instructions"
+        run = ci.workflowScript("count-instructions.sh")
+      }
+      new Dynamic {
+        name = "Require identical output"
+        run = ci.workflowScript("require-identical-output.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "compile-bench-compare"
+          path = """
+          compile-compare.md
+          compile-compare.json
+          stat-*.csv
+
+          """
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  verify {
+    name = "verify"
+    `if` = "${{ !contains(github.event.head_commit.message, '[skip verify]') }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 60
+    permissions { contents = "read" }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "stable"
+          components = "clippy"
+        }
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "compile-bench-verify"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.workspaceVp()
+      // Runtime contract tests load vue, happy-dom and the Vapor runtime.
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+      // Snapshot fixtures are Pkl.
+      ci.command("Install Pkl", "npm install --global @pkl-community/pkl@0.27.2")
+      ci.command("Clippy", "cargo clippy $COMPILE_BENCH_VERIFY -- -D warnings -D clippy::wildcard_imports")
+      ci.command("Test", "cargo test --no-fail-fast $COMPILE_BENCH_VERIFY")
+    }
+  }
+}

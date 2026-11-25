@@ -44,7 +44,7 @@
   },
   "files": [
     {
-      "path": ".github/workflows/babel-plugin-hosts.yml",
+      "path": ".github/workflows/08-babel.yml",
       "sha256": "0aedf8a38ec4247595c03baf6bc22ccc899186d9a5b33fd1b210fb457028140e"
     },
     {

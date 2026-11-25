@@ -85,7 +85,7 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tools/support/compat/github/require-rust-tier.ts",
     "tools/support/compat/github/plan-source-checks.ts",
     "tools/benchmarks/scripts/vue-benchmarks-replay.ts",
-    ".github/workflows/davinci-canonical-corpus.yml",
+    ".github/workflows/07-canonical-corpus.yml",
     ".github/workflows/pr-source-checks.yml",
     ".github/workflows/check.yml",
     ".github/actions/setup-rust-script/action.yml",
@@ -105,8 +105,8 @@ await test("selection covers pinned inputs, drivers and real producers in both c
       "tests/_fixtures/fixture-compatibility-ledger.json",
       "tests/_fixtures/vue-benchmarks-upstream.json",
       "tests/_fixtures/differential/lint/authored/cases.json",
-      ".github/workflows/e2e.yml",
-      ".github/workflows/canonical-corpus-objects.yml",
+      ".github/workflows/10-app-e2e.yml",
+      ".github/workflows/07-canonical-corpus-objects.yml",
     ])
       assert.equal(canonicalCorpusRequired([unread], event), false, unread);
   }
@@ -159,7 +159,7 @@ await test("a required canonical execution cannot be skipped, failed or hidden b
 
 await test("ordinary source and queue reports require the strict reusable execution", () => {
   const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml"));
-  const corpus = parse(readRepoFile(".github", "workflows", "davinci-canonical-corpus.yml"));
+  const corpus = parse(readRepoFile(".github", "workflows", "07-canonical-corpus.yml"));
   const matrix = parse(readRepoFile(".github", "workflows", "real-project-matrix.yml"));
   const worker = corpus.jobs["canonical-observers"];
   assert.equal(corpus.jobs["davinci-dom-corpus"].needs, "canonical-observers");
@@ -173,14 +173,14 @@ await test("ordinary source and queue reports require the strict reusable execut
   );
   assert.deepEqual(matrix.jobs["davinci-dom-corpus"], {
     permissions: { contents: "read", actions: "read", checks: "read" },
-    uses: "./.github/workflows/davinci-canonical-corpus.yml",
+    uses: "./.github/workflows/07-canonical-corpus.yml",
     with: { davinci_dom_corpus_mode: "${{ inputs.davinci_dom_corpus_mode || 'enforce' }}" },
   });
   assert.deepEqual(source.jobs["canonical-corpus"], {
     permissions: { contents: "read", actions: "read", checks: "read" },
     needs: "pr-source-plan",
     if: "${{ !cancelled() && needs.pr-source-plan.result == 'success' && needs.pr-source-plan.outputs.canonical-corpus == 'true' }}",
-    uses: "./.github/workflows/davinci-canonical-corpus.yml",
+    uses: "./.github/workflows/07-canonical-corpus.yml",
   });
   assert.ok(source.jobs["source-report"].needs.includes("canonical-corpus"));
   assert.equal(

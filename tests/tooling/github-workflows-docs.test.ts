@@ -55,7 +55,7 @@ function namedStep(job: WorkflowJob, name: string): WorkflowStep {
 }
 
 test("docs build evidence is immutable per SHA and has no Pages authority", () => {
-  const workflow = readWorkflow("build-docs.yml");
+  const workflow = readWorkflow("11-docs-build.yml");
   const events = workflow.on as {
     push?: { branches?: string[]; paths?: string[] };
     schedule?: Array<{ cron: string }>;
@@ -66,8 +66,8 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
   assert.deepEqual(Object.keys(events).sort(), ["push", "schedule", "workflow_dispatch"]);
   assert.deepEqual(events.push?.branches, ["main"]);
   assert.deepEqual(events.push?.paths, [
-    ".github/workflows/build-docs.yml",
-    ".github/scripts/workflows/build-docs/**",
+    ".github/workflows/11-docs-build.yml",
+    "tools/ci/workflows/11-docs-build/scripts/**",
     "docs/**",
     "!docs/davinci/decisions/**",
     "npm/compose/core/examples/**",
@@ -87,7 +87,7 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
   assert.deepEqual(Object.keys(workflow.jobs ?? {}).sort(), ["build-docs", "build-playground"]);
   assert.equal(workflow.permissions?.contents, "read");
 
-  const source = readAutomationPrograms(".github", "workflows", "build-docs.yml");
+  const source = readAutomationPrograms(".github", "workflows", "11-docs-build.yml");
   assert.doesNotMatch(source, /pages:\s*write|id-token:\s*write|actions\/deploy-pages/);
   for (const artifact of ["docs", "playground", "musea-examples"]) {
     const upload = Object.values(workflow.jobs ?? {})
@@ -100,7 +100,7 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
 });
 
 test("authored reader inputs publish while runtime-only and excluded inputs keep their policy", () => {
-  const events = readWorkflow("build-docs.yml").on as {
+  const events = readWorkflow("11-docs-build.yml").on as {
     push: { paths: string[] };
   };
   const publishes = (file: string) =>
@@ -126,7 +126,7 @@ test("authored reader inputs publish while runtime-only and excluded inputs keep
 });
 
 test("full Docs checks real preview resources before building and retains the raw evidence", () => {
-  const job = workflowJob(readWorkflow("build-docs.yml"), "build-docs");
+  const job = workflowJob(readWorkflow("11-docs-build.yml"), "build-docs");
   const readiness = namedStep(job, "Check preview resource readiness");
   const steps = job.steps!;
   assert.equal(readiness.if, undefined);
@@ -159,7 +159,7 @@ test("full Docs checks real preview resources before building and retains the ra
     ].join("\n"),
   );
   const routeProgram = workflowProgram(
-    "build-docs",
+    "11-docs-build",
     reading.run!,
     "verify-rendered-navigation-and-japanese-reading-paths.ts",
   );
@@ -225,7 +225,7 @@ test("full Docs checks real preview resources before building and retains the ra
 });
 
 test("Docs resource fixture preserves Node exit failure even after a passing TAP summary", () => {
-  const job = workflowJob(readWorkflow("build-docs.yml"), "build-docs");
+  const job = workflowJob(readWorkflow("11-docs-build.yml"), "build-docs");
   const step = namedStep(job, "Check preview resource readiness");
   const temporary = mkdtempSync(join(tmpdir(), "docs-resource-exit-"));
   try {

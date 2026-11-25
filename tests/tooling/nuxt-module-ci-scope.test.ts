@@ -19,9 +19,7 @@ type Step = {
   "continue-on-error"?: boolean;
   with?: { path?: string };
 };
-const workflow = parse(
-  readAutomationPrograms(".github", "workflows", "nuxt3-module-build.yml"),
-) as {
+const workflow = parse(readAutomationPrograms(".github", "workflows", "08-nuxt3-module.yml")) as {
   on: Record<string, { paths?: string[] }>;
   jobs: Record<string, { if?: string; "continue-on-error"?: boolean; steps: Step[] }>;
 };
@@ -78,7 +76,7 @@ test("merge, main and manual runs retain every extended campaign and source rece
   assert.deepEqual(source.jobs["nuxt-module-qualification"], {
     name: "Nuxt and Vite release products",
     if: "${{ github.event_name == 'merge_group' }}",
-    uses: "./.github/workflows/nuxt-vite-release-products.yml",
+    uses: "./.github/workflows/08-nuxt-vite-products.yml",
   });
   const condition = source.jobs["nuxt-module-qualification"].if.slice(3, -2);
   for (const event of [
@@ -124,9 +122,7 @@ test("merge, main and manual runs retain every extended campaign and source rece
 });
 
 test("the required integration product edge closes every supported Nuxt and Vite host", () => {
-  const products = parse(
-    readRepoFile(".github", "workflows", "nuxt-vite-release-products.yml"),
-  ) as {
+  const products = parse(readRepoFile(".github", "workflows", "08-nuxt-vite-products.yml")) as {
     on: Record<string, unknown>;
     jobs: Record<string, { name?: string; uses?: string }>;
   };
@@ -134,23 +130,23 @@ test("the required integration product edge closes every supported Nuxt and Vite
   assert.deepEqual(products.jobs, {
     "nuxt2-webpack": {
       name: "Nuxt 2 webpack product",
-      uses: "./.github/workflows/nuxt2-module-build.yml",
+      uses: "./.github/workflows/08-nuxt2-module.yml",
     },
     "nuxt2-bridge": {
       name: "Nuxt 2 Bridge webpack and Vite products",
-      uses: "./.github/workflows/nuxt2-bridge-module-build.yml",
+      uses: "./.github/workflows/08-nuxt2-bridge.yml",
     },
     "nuxt-modern-vite": {
       name: "Nuxt 3, 4 and 5 Vite products",
-      uses: "./.github/workflows/nuxt3-module-build.yml",
+      uses: "./.github/workflows/08-nuxt3-module.yml",
     },
     "nuxt4-styles": {
       name: "Nuxt 4 style products",
-      uses: "./.github/workflows/nuxt-style-build.yml",
+      uses: "./.github/workflows/08-nuxt-styles.yml",
     },
     "vite-plus-types": {
       name: "Vite and Vite+ public types",
-      uses: "./.github/workflows/vite-plus-type-compat.yml",
+      uses: "./.github/workflows/08-vite-plus-types.yml",
     },
   });
   for (const job of Object.values(products.jobs)) {
@@ -169,7 +165,7 @@ test("the required integration product edge closes every supported Nuxt and Vite
   const full = parse(readAutomationPrograms(".github", "workflows", "full-qualification.yml"));
   assert.deepEqual(full.jobs["nuxt-module-qualification"], {
     name: "Nuxt and Vite release products",
-    uses: "./.github/workflows/nuxt-vite-release-products.yml",
+    uses: "./.github/workflows/08-nuxt-vite-products.yml",
   });
 });
 

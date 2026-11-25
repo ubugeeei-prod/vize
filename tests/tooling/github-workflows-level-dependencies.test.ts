@@ -21,7 +21,7 @@ type Job = {
 type Workflow = { jobs: Record<string, Job> };
 const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as Workflow;
 const dependencyWorkflow = parse(
-  readRepoFile(".github", "workflows", "level-dependencies.yml"),
+  readRepoFile(".github", "workflows", "07-level-dependencies.yml"),
 ) as Workflow;
 
 test("docs-only dependency policy changes still run a mandatory metadata gate", () => {
@@ -42,7 +42,7 @@ test("docs-only dependency policy changes still run a mandatory metadata gate", 
   assert.ok(gate);
   assert.equal(gate.if, undefined);
   assert.equal(gate.needs, undefined);
-  assert.equal(gate.uses, "./.github/workflows/level-dependencies.yml");
+  assert.equal(gate.uses, "./.github/workflows/07-level-dependencies.yml");
   const implementation = dependencyWorkflow.jobs["level-dependencies"];
   assert.equal(implementation.if, undefined);
   assert.equal(implementation.needs, undefined);

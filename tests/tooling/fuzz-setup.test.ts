@@ -43,7 +43,7 @@ test("fuzz workspace declares libfuzzer-sys and an isolated [workspace]", () => 
 });
 
 test("fuzz CI workflow runs strict nightly and dispatched campaigns", () => {
-  const workflow = readAutomationPrograms(".github/workflows/fuzz.yml");
+  const workflow = readAutomationPrograms(".github/workflows/11-fuzz.yml");
   const parsed = parse(workflow) as {
     "run-name": string;
     jobs: {

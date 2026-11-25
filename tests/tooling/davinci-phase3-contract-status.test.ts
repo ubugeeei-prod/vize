@@ -33,7 +33,10 @@ const phaseExitGateDefinitions = [
   {
     id: "p3-16-parity",
     text: "Vapor: TS-33 behavioral parity green; SSR **and VDOM**: TS-11 byte-empty (P3-7 changes patch-flag derivation, so DOM parity re-gates here)",
-    witnesses: [".github/workflows/davinci-reference.yml", "tools/commands/davinci/corpus-diff.ts"],
+    witnesses: [
+      ".github/workflows/07-reference-backends.yml",
+      "tools/commands/davinci/corpus-diff.ts",
+    ],
   },
   {
     id: "p3-16-source-map",
@@ -48,14 +51,14 @@ const phaseExitGateDefinitions = [
     text: "Production reach: `[reach]` floors held and raised, production-path DOM parity oracle empty, no DOM shape refused for its Croquis summary (P3-17)",
     witnesses: [
       "crates/vize_atelier_sfc/tests/davinci_production_reach.rs",
-      ".github/workflows/davinci-canonical-corpus.yml",
+      ".github/workflows/07-canonical-corpus.yml",
     ],
   },
   {
     id: "p3-16-vapor-performance",
     text: "Vapor compile bench beats the pinned double-transform floor",
     witnesses: [
-      ".github/workflows/criterion-bench.yml",
+      ".github/workflows/03-criterion.yml",
       "docs/davinci/plan/phase-3-records/p3-6-production-perf.md",
     ],
   },
@@ -70,7 +73,7 @@ const phaseExitGateDefinitions = [
   {
     id: "p3-16-mandatory-suites",
     text: "TS-27/TS-28/TS-29/TS-30 all mandatory-green; TS-20 totality fuzz extended to L2→L3 green",
-    witnesses: [".github/workflows/davinci-reference.yml", ".github/workflows/fuzz.yml"],
+    witnesses: [".github/workflows/07-reference-backends.yml", ".github/workflows/11-fuzz.yml"],
   },
 ] as const;
 

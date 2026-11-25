@@ -55,7 +55,7 @@ export function buildCommands(inputFileCount, options) {
   ];
 
   return {
-    workflowDispatch: `gh workflow run tool-benchmark.yml --ref <branch> ${workflowFlags.join(" ")}`,
+    workflowDispatch: `gh workflow run 03-tool-comparison.yml --ref <branch> ${workflowFlags.join(" ")}`,
     generate: `node tools/benchmarks/scripts/generate.mjs ${inputFileCount}`,
     benchmark: `node tools/benchmarks/scripts/compare-tools.mjs ${compareFlags.join(" ")}`,
   };

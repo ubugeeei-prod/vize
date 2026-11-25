@@ -1,9 +1,0 @@
-amends "../../../../../../../ci/lib/ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #"""
-  cat benchmark-summary.md >> "$GITHUB_STEP_SUMMARY"
-  """#
-}

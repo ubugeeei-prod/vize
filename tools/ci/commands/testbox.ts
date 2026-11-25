@@ -26,7 +26,7 @@ function warmup(binary: string): number {
     return diagnostic("Testbox warmup needs the current HEAD on origin.\n" + pushHint);
   const result = spawnSync(
     binary,
-    ["testbox", "warmup", ".github/workflows/e2e.yml", "--ref", branch, "--job", "testbox"],
+    ["testbox", "warmup", ".github/workflows/10-app-e2e.yml", "--ref", branch, "--job", "testbox"],
     { stdio: "inherit" },
   );
   return result.status === 0

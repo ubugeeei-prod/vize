@@ -1,0 +1,820 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/03-typecheck-compare/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Type-check cold pair
+run-name: Type-check ${{ inputs.mode || 'content-mapper-replay' }} ${{ inputs.head || github.sha }} vs ${{ inputs.base || 'merge base' }}
+on:
+  push:
+    branches:
+      - bench/content-mapper-replay/**
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: What to compare
+        type: choice
+        options:
+          - generated
+          - corpus
+          - content-mapper
+          - content-mapper-replay
+        default: generated
+      base:
+        description: Full 40-hex commit measured first (the "before"; the head SHA again for an A/A run)
+        type: string
+        required: true
+      head:
+        description: Full 40-hex commit compared against it
+        type: string
+        required: true
+      runs:
+        description: Recorded runs per build (alternating cold runs, corpus lanes, AB+BA replicates or timed replays)
+        type: string
+        default: "5"
+      allow_output_change:
+        description: Publish timing even when the builds report or answer differently
+        type: boolean
+        default: false
+      projects:
+        description: "generated: comma-separated projects (vue:<sfcs> or monorepo:<sfcs>)"
+        type: string
+        default: vue:1000,vue:5000,monorepo:5000
+      runtime:
+        description: "generated: native checker host used by both builds"
+        type: choice
+        options:
+          - tsgo
+          - tsrs
+        default: tsgo
+      checkers:
+        description: "generated: explicit checker width used by both builds"
+        type: choice
+        options:
+          - "1"
+          - "8"
+        default: "8"
+      strace:
+        description: "generated: attribute filesystem calls per process, syscall and path on Linux"
+        type: boolean
+        default: true
+      platforms:
+        description: "generated: comma-separated measured cells (linux, wsl2, windows)"
+        type: string
+        default: linux,wsl2,windows
+      corpora:
+        description: "corpus, content-mapper-replay: comma-separated corpora (misskey, n8n, nuxt-ui, reka-ui); empty means all"
+        type: string
+        default: ""
+      owned_pair:
+        description: "corpus: lossless source pair including huge Vue/Nuxt, explicit widths and isolated caches"
+        type: boolean
+        default: false
+      workloads:
+        description: "corpus: optional comma-separated owned workload IDs"
+        type: string
+        default: ""
+      lanes:
+        description: "corpus: optional comma-separated owned pair lane IDs"
+        type: string
+        default: ""
+      batch:
+        description: "corpus: also diff the head build's vize check against its mapper under tsc"
+        type: boolean
+        default: false
+      attribution:
+        description: "corpus: attribute tsc check time and types to helpers and projection families"
+        type: boolean
+        default: true
+      floors:
+        description: "corpus: also time the head build's floors (absolute, expressions-only, zero mapper wait)"
+        type: boolean
+        default: false
+      sizes:
+        description: "content-mapper: comma-separated SFC counts of the generated projects"
+        type: string
+        default: 1000,5000
+      reference_mapper:
+        description: "content-mapper: also time @vue/content-mapper (pinned in tools/benchmarks/typecheck-hosts)"
+        type: boolean
+        default: false
+      syscall_census:
+        description: "content-mapper: also count the Linux filesystem syscalls per transform (strace)"
+        type: boolean
+        default: false
+      memory_probe:
+        description: "content-mapper: also time the head build's Linux burst peak RSS by worker count and mimalloc options"
+        type: boolean
+        default: false
+      windows_probe:
+        description: "content-mapper: also time the head build on Windows with stdout to NUL and a Defender exclusion"
+        type: boolean
+        default: false
+      launcher:
+        description: "content-mapper-replay: also replay through the npm launcher and a release @vizejs/native"
+        type: boolean
+        default: true
+      profile:
+        description: "content-mapper-replay: also perf-profile the head CLI and count allocations and syscalls"
+        type: boolean
+        default: true
+      host_runs:
+        description: "content-mapper-replay: alternating tsc and tsrs --fast runs per mapper through a timing proxy (0 skips)"
+        type: string
+        default: "3"
+  pull_request:
+    paths:
+      - .github/workflows/03-typecheck-compare.yml
+      - tools/ci/workflows/03-typecheck-compare/scripts/**
+      - tools/ci/workflows/03-typecheck-compare/jobs/**
+      - tools/benchmarks/scripts/typecheck-cold-pair*.ts
+      - tools/benchmarks/scripts/content-mapper-pair*.ts
+      - tools/benchmarks/scripts/content-mapper-burst-windows.ps1
+      - tools/benchmarks/scripts/content-mapper-replay*.ts
+      - tests/tooling/typecheck-cold-pair.test.ts
+      - tests/tooling/content-mapper-pair*.test.ts
+      - tests/tooling/content-mapper-replay*.test.ts
+permissions:
+  contents: read
+concurrency:
+  group: typecheck-cold-pair-${{ github.event.pull_request.number || github.ref }}-${{ inputs.mode }}-${{ inputs.head }}-${{ inputs.base }}-${{ inputs.projects }}-${{ inputs.platforms }}-${{ inputs.runtime }}-${{ inputs.checkers }}-${{ inputs.sizes }}-${{ inputs.corpora }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+jobs:
+  test:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - name: Test the pair planners
+        env:
+          VIZE_CI_FILES: ${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts
+        run: . "${{ env.VIZE_CI_FILES }}/test-the-pair-planners.sh"
+  build-linux:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'generated' && (contains(format(',{0},', inputs.platforms), ',linux,') || contains(format(',{0},', inputs.platforms), ',wsl2,'))
+    needs: test
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    env:
+      BASE: ${{ inputs.base }}
+      HEAD: ${{ inputs.head }}
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/03-typecheck-compare/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Validate inputs
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/validate-inputs.sh"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        id: wild
+        continue-on-error: true
+        with:
+          wild-version: 0.9.0
+      - name: Drop a partial wild configuration
+        if: steps.wild.outcome == 'failure'
+        run: . "${{ env.VIZE_CI_FILES }}/drop-a-partial-wild-configuration.sh"
+      - name: Build both commits
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/build-both-commits.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cold-pair-bin-linux
+          path: pair-bin/
+          retention-days: 7
+  build-windows:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'generated' && contains(format(',{0},', inputs.platforms), ',windows,')
+    needs: test
+    runs-on: blacksmith-32vcpu-windows-2025
+    timeout-minutes: 90
+    env:
+      BASE: ${{ inputs.base }}
+      HEAD: ${{ inputs.head }}
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/03-typecheck-compare/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Validate inputs
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/validate-inputs.sh"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - name: Setup MSVC toolchain
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+        with:
+          arch: amd64
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+      - name: Build both commits
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/build-both-commits-2.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cold-pair-bin-windows
+          path: pair-bin/
+          retention-days: 7
+  linux:
+    needs: build-linux
+    if: contains(format(',{0},', inputs.platforms), ',linux,')
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    env:
+      VIZE_CI_FILES: ${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: cold-pair-bin-linux
+          path: pair-bin
+      - name: Measure
+        env:
+          PROJECTS: ${{ inputs.projects }}
+          RUNS: ${{ inputs.runs }}
+          RUNTIME: ${{ inputs.runtime }}
+          CHECKERS: ${{ inputs.checkers }}
+          ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+          STRACE: ${{ inputs.strace && '--strace' || '' }}
+        run: . "${{ env.VIZE_CI_FILES }}/measure.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: cold-pair-linux
+          path: ${{ runner.temp }}/pair-out/
+          if-no-files-found: warn
+  wsl2:
+    needs: build-linux
+    if: contains(format(',{0},', inputs.platforms), ',wsl2,')
+    runs-on: windows-2025
+    timeout-minutes: 300
+    env:
+      VIZE_CI_FILES: ${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364
+        with:
+          distribution: Ubuntu-24.04
+          wsl-version: "2"
+          wsl-shell-user: root
+          additional-packages: ca-certificates curl time xz-utils
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: cold-pair-bin-linux
+          path: pair-bin
+      - name: Resolve the Windows mount
+        shell: pwsh
+        run: . "${{ env.VIZE_CI_FILES }}/resolve-the-windows-mount.ps1"
+      - name: Install Node 24 in WSL2
+        shell: wsl-bash {0}
+        env:
+          WSLENV: VIZE_CI_FILES/p
+        run: . "$VIZE_CI_FILES/install-node-24-in-wsl2.sh"
+      - name: Measure ext4 and the Windows mount
+        shell: wsl-bash {0}
+        env:
+          WSLENV: PROJECTS/u:RUNS/u:RUNTIME/u:CHECKERS/u:ALLOW/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p
+          PROJECTS: ${{ inputs.projects }}
+          RUNS: ${{ inputs.runs }}
+          RUNTIME: ${{ inputs.runtime }}
+          CHECKERS: ${{ inputs.checkers }}
+          ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+        run: . "$VIZE_CI_FILES/measure-ext4-and-the-windows-mount.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: cold-pair-wsl2
+          path: ${{ runner.temp }}/vize-cold-pair/out/
+          if-no-files-found: warn
+  windows:
+    needs: build-windows
+    if: contains(format(',{0},', inputs.platforms), ',windows,')
+    runs-on: blacksmith-32vcpu-windows-2025
+    timeout-minutes: 120
+    env:
+      VIZE_CI_FILES: ${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: cold-pair-bin-windows
+          path: pair-bin
+      - name: Measure
+        shell: pwsh
+        env:
+          PROJECTS: ${{ inputs.projects }}
+          RUNS: ${{ inputs.runs }}
+          RUNTIME: ${{ inputs.runtime }}
+          CHECKERS: ${{ inputs.checkers }}
+          ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+        run: . "${{ env.VIZE_CI_FILES }}/measure.ps1"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: cold-pair-windows
+          path: ${{ runner.temp }}/pair-out/
+          if-no-files-found: warn
+  corpus:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'corpus'
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: ${{ inputs.owned_pair && 240 || 120 }}
+    env:
+      VIZE_PAIR_RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
+      BASE_SHA: ${{ inputs.base }}
+      HEAD_SHA: ${{ inputs.head }}
+      RUNS: ${{ inputs.runs }}
+      BATCH: ${{ inputs.batch }}
+      OWNED_PAIR: ${{ inputs.owned_pair }}
+      OWNED_WORKLOADS: ${{ inputs.workloads }}
+      OWNED_LANES: ${{ inputs.lanes }}
+      FLOORS: ${{ inputs.floors }}
+      CORPORA: ${{ inputs.corpora }}
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/03-typecheck-compare/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Validate inputs
+        run: . "${{ env.VIZE_CI_FILES }}/corpus-validate-inputs.sh"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with:
+          wild-version: 0.9.0
+      - uses: ./.github/actions/setup-rust-script
+      - name: Check out base and head beside the driver
+        run: . "${{ env.VIZE_CI_FILES }}/corpus-check-out-base-and-head-beside-the-driver.sh"
+      - name: Hydrate the pinned corpora and install the locked hosts and corpus packages
+        run: . "${{ env.VIZE_CI_FILES }}/corpus-hydrate-the-pinned-corpora-and-install-the-locked-hosts-and-corpus-packa.sh"
+      - name: Test the pair parsers and the byte probe
+        run: . "${{ env.VIZE_CI_FILES }}/test-the-pair-parsers-and-the-byte-probe.sh"
+      - name: Test the opt-in Linux raw runner
+        if: inputs.owned_pair
+        env:
+          VIZE_PAIR_RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
+        run: node --test tests/tooling/typecheck-owned-pair-linux.test.ts
+      - name: Record fresh owned-pair build boundary
+        if: inputs.owned_pair
+        run: node tools/benchmarks/scripts/typecheck-owned-pair-build.ts "$RUNNER_TEMP/pair-base" "$BASE_SHA" "$RUNNER_TEMP/pair-head" "$HEAD_SHA" "$RUNNER_TEMP/pair-out"
+      - name: Build the native binding and the vize package for base and head
+        run: . "${{ env.VIZE_CI_FILES }}/corpus-build-the-native-binding-and-the-vize-package-for-base-and-head.sh"
+      - name: Measure the corpora
+        id: measure
+        env:
+          VIZE_PAIR_RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
+        run: . "${{ env.VIZE_CI_FILES }}/corpus-measure-the-corpora.sh"
+      - name: Attribute check cost to helpers and projection families
+        if: always() && !inputs.owned_pair && inputs.attribution
+        run: node tools/benchmarks/scripts/typecheck-cost-attribution.ts --pair "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out"
+      - name: Check planted diagnostics in the planted corpora
+        if: ${{ !cancelled() && !inputs.owned_pair && steps.measure.outcome != 'skipped' }}
+        run: . "${{ env.VIZE_CI_FILES }}/check-planted-diagnostics-in-the-planted-corpora.sh"
+      - name: Write job summary
+        if: always()
+        run: . "${{ env.VIZE_CI_FILES }}/corpus-write-job-summary.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: typecheck-corpus-pair-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/pair-out/
+            ${{ runner.temp }}/build-*.log
+          if-no-files-found: warn
+          retention-days: 30
+  mapper-build-linux:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'content-mapper'
+    needs: test
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    env:
+      BASE: ${{ inputs.base }}
+      HEAD: ${{ inputs.head }}
+      RUSTUP_TOOLCHAIN: 1.100.0
+      PAIR_OS: linux
+      PAIR_EXE: vize
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/03-typecheck-compare/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Validate inputs
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/mapper-validate-inputs.sh"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - name: Setup MSVC toolchain
+        if: env.PAIR_OS == 'windows'
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+        with:
+          arch: amd64
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        if: env.PAIR_OS == 'linux'
+        with:
+          wild-version: 0.9.0
+      - name: Build both commits
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/mapper-build-both-commits.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pair-bin-${{ env.PAIR_OS }}
+          path: pair-bin/
+          retention-days: 7
+  mapper-build-windows:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'content-mapper'
+    needs: test
+    runs-on: blacksmith-32vcpu-windows-2025
+    timeout-minutes: 90
+    env:
+      BASE: ${{ inputs.base }}
+      HEAD: ${{ inputs.head }}
+      PAIR_OS: windows
+      PAIR_EXE: vize.exe
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/03-typecheck-compare/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Validate inputs
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/mapper-validate-inputs.sh"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - name: Setup MSVC toolchain
+        if: env.PAIR_OS == 'windows'
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+        with:
+          arch: amd64
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        if: env.PAIR_OS == 'linux'
+        with:
+          wild-version: 0.9.0
+      - name: Build both commits
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/mapper-build-both-commits.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pair-bin-${{ env.PAIR_OS }}
+          path: pair-bin/
+          retention-days: 7
+  mapper-linux:
+    needs: mapper-build-linux
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    env:
+      VIZE_CI_FILES: ${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: pair-bin-linux
+          path: pair-bin
+      - name: Measure
+        env:
+          SIZES: ${{ inputs.sizes }}
+          RUNS: ${{ inputs.runs }}
+          ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+          REFERENCE: ${{ inputs.reference_mapper }}
+        run: . "${{ env.VIZE_CI_FILES }}/mapper-measure.sh"
+      - name: Memory probe
+        if: inputs.memory_probe
+        env:
+          SIZES: ${{ inputs.sizes }}
+        run: . "${{ env.VIZE_CI_FILES }}/mapper-memory-probe.sh"
+      - name: Syscall census
+        if: inputs.syscall_census
+        env:
+          SIZES: ${{ inputs.sizes }}
+        run: . "${{ env.VIZE_CI_FILES }}/mapper-syscall-census.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: pair-linux
+          path: ${{ runner.temp }}/pair-out/
+          if-no-files-found: warn
+  mapper-wsl2:
+    needs: mapper-build-linux
+    runs-on: windows-2025
+    timeout-minutes: 150
+    env:
+      VIZE_CI_FILES: ${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364
+        with:
+          distribution: Ubuntu-24.04
+          wsl-version: "2"
+          wsl-shell-user: root
+          additional-packages: ca-certificates curl time xz-utils
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: pair-bin-linux
+          path: pair-bin
+      - name: Resolve the Windows mount
+        shell: pwsh
+        run: . "${{ env.VIZE_CI_FILES }}/mapper-resolve-the-windows-mount.ps1"
+      - name: Install Node 24 in WSL2
+        shell: wsl-bash {0}
+        env:
+          WSLENV: VIZE_CI_FILES/p
+        run: . "$VIZE_CI_FILES/mapper-install-node-24-in-wsl2.sh"
+      - name: Measure ext4 and the Windows mount
+        shell: wsl-bash {0}
+        env:
+          WSLENV: SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p
+          SIZES: ${{ inputs.sizes }}
+          RUNS: ${{ inputs.runs }}
+          ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+          REFERENCE: ${{ inputs.reference_mapper }}
+        run: . "$VIZE_CI_FILES/mapper-measure-ext4-and-the-windows-mount.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: pair-wsl2
+          path: ${{ runner.temp }}/vize-pair/out/
+          if-no-files-found: warn
+  mapper-windows:
+    needs: mapper-build-windows
+    runs-on: blacksmith-32vcpu-windows-2025
+    timeout-minutes: 90
+    env:
+      VIZE_CI_FILES: ${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: pair-bin-windows
+          path: pair-bin
+      - name: Measure
+        shell: pwsh
+        env:
+          SIZES: ${{ inputs.sizes }}
+          RUNS: ${{ inputs.runs }}
+          ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+          REFERENCE: ${{ inputs.reference_mapper }}
+        run: . "${{ env.VIZE_CI_FILES }}/mapper-measure.ps1"
+      - name: Probe Windows burst costs
+        if: inputs.windows_probe
+        shell: pwsh
+        env:
+          SIZES: ${{ inputs.sizes }}
+        run: . "${{ env.VIZE_CI_FILES }}/mapper-probe-windows-burst-costs.ps1"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: pair-windows
+          path: ${{ runner.temp }}/pair-out/
+          if-no-files-found: warn
+  replay-resolve:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' && inputs.mode == 'content-mapper-replay'
+    needs: test
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    outputs:
+      base: ${{ steps.shas.outputs.base }}
+      head: ${{ steps.shas.outputs.head }}
+    env:
+      VIZE_CI_FILES: ${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - id: shas
+        env:
+          BASE: ${{ inputs.base }}
+          HEAD: ${{ inputs.head || github.sha }}
+        run: . "${{ env.VIZE_CI_FILES }}/replay-shas.sh"
+  replay-build:
+    needs: replay-resolve
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    strategy:
+      matrix:
+        variant:
+          - cli
+          - alloc
+          - perf
+    env:
+      BASE: ${{ needs.replay-resolve.outputs.base }}
+      HEAD: ${{ needs.replay-resolve.outputs.head }}
+      RUSTUP_TOOLCHAIN: 1.100.0
+      VARIANT: ${{ matrix.variant }}
+      PROFILE_INPUT: ${{ github.event_name == 'push' || inputs.profile }}
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/03-typecheck-compare/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Validate inputs
+        run: . "${{ env.VIZE_CI_FILES }}/replay-validate-inputs.sh"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        if: env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        if: env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'
+        with:
+          toolchain: 1.100.0
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        if: env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'
+        with:
+          wild-version: 0.9.0
+      - name: Build
+        if: env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'
+        run: . "${{ env.VIZE_CI_FILES }}/replay-build.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'
+        with:
+          name: replay-bin-${{ matrix.variant }}
+          path: replay-bin/
+          retention-days: 7
+  replay:
+    needs:
+      - replay-resolve
+      - replay-build
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    env:
+      BASE: ${{ needs.replay-resolve.outputs.base }}
+      HEAD: ${{ needs.replay-resolve.outputs.head }}
+      CORPORA: ${{ inputs.corpora || 'misskey,n8n,reka-ui,nuxt-ui' }}
+      RUNS: ${{ inputs.runs || '5' }}
+      LAUNCHER: ${{ github.event_name == 'push' || inputs.launcher }}
+      PROFILE: ${{ github.event_name == 'push' || inputs.profile }}
+      ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+      HOST_RUNS: ${{ inputs.host_runs || '3' }}
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/03-typecheck-compare/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - name: Validate inputs
+        run: . "${{ env.VIZE_CI_FILES }}/replay-validate-inputs-2.sh"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        if: env.LAUNCHER == 'true'
+        with:
+          toolchain: 1.100.0
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        if: env.LAUNCHER == 'true'
+        with:
+          wild-version: 0.9.0
+      - uses: ./.github/actions/setup-rust-script
+        if: env.LAUNCHER == 'true'
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: replay-bin-*
+          path: replay-bin
+          merge-multiple: true
+      - name: Hydrate the corpora and install the locked hosts and corpus packages
+        run: . "${{ env.VIZE_CI_FILES }}/replay-hydrate-the-corpora-and-install-the-locked-hosts-and-corpus-packages.sh"
+      - name: Build the npm launcher and the native binding for base and head
+        if: env.LAUNCHER == 'true'
+        run: . "${{ env.VIZE_CI_FILES }}/replay-build-the-npm-launcher-and-the-native-binding-for-base-and-head.sh"
+      - name: Record tsc's request streams
+        run: . "${{ env.VIZE_CI_FILES }}/replay-record-tsc-s-request-streams.sh"
+      - name: Replay
+        run: . "${{ env.VIZE_CI_FILES }}/replay-replay.sh"
+      - name: Host runs through a timing proxy
+        if: env.HOST_RUNS != '0'
+        run: . "${{ env.VIZE_CI_FILES }}/replay-host-runs-through-a-timing-proxy.sh"
+      - name: Count allocations
+        if: env.PROFILE == 'true'
+        run: . "${{ env.VIZE_CI_FILES }}/replay-count-allocations.sh"
+      - name: Profile the head CLI and count syscalls
+        if: env.PROFILE == 'true'
+        run: . "${{ env.VIZE_CI_FILES }}/replay-profile-the-head-cli-and-count-syscalls.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: replay-out
+          path: ${{ runner.temp }}/replay-out/
+          if-no-files-found: warn
