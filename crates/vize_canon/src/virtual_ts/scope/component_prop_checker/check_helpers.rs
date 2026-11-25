@@ -247,10 +247,13 @@ fn append_prop_check_helpers_text(
     // named members without importing a public index signature into strict
     // checks. Unchanged generated surfaces keep the raw alias and diagnostic
     // shape; include emits in that comparison, since they already join the
-    // checker separately. Both conditional boundaries distribute over unions
-    // so optional keys present on one component are not erased.
+    // checker separately. Distribute the component before reading either
+    // surface, so each union branch keeps its own and added props together.
     ts.push_str(
-        "  type $ComponentRawProps<C, __P = $HasInstanceRawProps<C> extends true ? $InstanceRawProps<C> : $HasStaticRawProps<C> extends true ? $StaticRawProps<C> : $PublicProps<C>, __Q = C extends unknown ? { [K in keyof $PublicProps<C> as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: $PublicProps<C>[K] } : never, __B = __P & $EmitListeners<C>> = unknown extends __P ? Record<string, unknown> : $HasRawProps<C> extends true ? __Q extends unknown ? [Exclude<keyof __Q, keyof __B>] extends [never] ? [__B] extends [__Q] ? [__Q] extends [__B] ? __P : __P & __Q : __P & __Q : __P & __Q : never : __P;\n",
+        "  type $ComponentRawPropsFor<C, __P = $HasInstanceRawProps<C> extends true ? $InstanceRawProps<C> : $HasStaticRawProps<C> extends true ? $StaticRawProps<C> : $PublicProps<C>, __Q = C extends unknown ? { [K in keyof $PublicProps<C> as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: $PublicProps<C>[K] } : never, __B = __P & $EmitListeners<C>> = unknown extends __P ? Record<string, unknown> : $HasRawProps<C> extends true ? __Q extends unknown ? [Exclude<keyof __Q, keyof __B>] extends [never] ? [__B] extends [__Q] ? [__Q] extends [__B] ? __P : __P & __Q : __P & __Q : __P & __Q : never : __P;\n",
+    );
+    ts.push_str(
+        "  type $ComponentRawProps<C, __P = C extends unknown ? $ComponentRawPropsFor<C> : never> = unknown extends __P ? Record<string, unknown> : __P;\n",
     );
     ts.push_str(
         "  type $HasRawProps<C> = $HasInstanceRawProps<C> extends true ? true : $HasStaticRawProps<C>;\n",

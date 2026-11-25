@@ -33,11 +33,12 @@ function helpers(): string {
       "$HasInstanceRawProps",
       "$HasStaticRawProps",
       "$HasRawProps",
+      "$ComponentRawPropsFor",
       "$ComponentRawProps",
     ].map((name) => {
       const declaration = declarations.get(name);
       assert.ok(declaration, `the producer declares ${name}`);
-      if (name === "$ComponentRawProps") {
+      if (name === "$ComponentRawProps" || name === "$ComponentRawPropsFor") {
         const shared = fs
           .readFileSync(
             path.join(
@@ -47,8 +48,8 @@ function helpers(): string {
             "utf8",
           )
           .split("\n")
-          .find((text) => text.startsWith("export type $ComponentRawProps<"));
-        assert.equal(shared, `export ${declaration.trim()}`);
+          .find((text) => text.replace(/^export /u, "").startsWith(`type ${name}<`));
+        assert.equal(shared?.replace(/^export /u, ""), declaration.trim());
       }
       return declaration;
     }),
@@ -75,6 +76,14 @@ type Lazy = DefineComponent<{ hydrateOnIdle?: number | true }>;
 const forward: $ComponentRawProps<Lazy & typeof Foo> = { required: 1, hydrateOnIdle: true };
 const reverse: $ComponentRawProps<typeof Foo & Lazy> = { required: 1, hydrateOnIdle: 1 };
 const union: $ComponentRawProps<(Lazy & typeof Foo) | typeof Foo> = { required: 1, hydrateOnIdle: true };
+type Generated<P, Q> = { readonly __vizeComponentMarker: true; readonly __vizeRawProps?: P }
+  & (new (...args: any[]) => { $props: Q; readonly __vizeRawProps?: P });
+type BranchA = Generated<{ a: number }, { a?: number; extraA: boolean }>;
+type BranchB = Generated<{ b: string }, { b?: string; extraB: boolean }>;
+const branchA: $ComponentRawProps<BranchA | BranchB> = { a: 1, extraA: true };
+const branchB: $ComponentRawProps<BranchB | BranchA> = { b: "ok", extraB: true };
+// @ts-expect-error an extension from B cannot satisfy the required contract of A
+const mixedBranches: $ComponentRawProps<BranchA | BranchB> = { a: 1, extraB: true };
 const emits: $ComponentRawProps<Lazy & typeof EmitsFoo> = { required: 1, hydrateOnIdle: true, onSelect: (n: number) => {} };
 // @ts-expect-error the added prop keeps its value type
 const wrong: $ComponentRawProps<Lazy & typeof Foo> = { required: 1, hydrateOnIdle: "wrong" };
@@ -107,6 +116,10 @@ type Compatible = Assert<Equal<Old<StaticAny>, $ComponentRawProps<StaticAny>>
   & Equal<Old<AnyProps>, $ComponentRawProps<AnyProps>>
   & Equal<Old<External>, $ComponentRawProps<External>>
   & Equal<Old<Unmarked>, $ComponentRawProps<Unmarked>>>;
+type Overrides = Assert<Equal<$ComponentRawProps<typeof Foo, { custom: number }>, { custom: number }>
+  & Equal<$ComponentRawProps<typeof Foo, unknown>, Record<string, unknown>>
+  & Equal<$ComponentRawProps<typeof Foo, any>, Record<string, unknown>>
+  & Equal<$ComponentRawProps<typeof Foo, never>, never>>;
 const external: $ComponentRawProps<External> = { arbitrary: true };
 // @ts-expect-error unmarked authored components still check their public values
 const unmarked: $ComponentRawProps<Unmarked> = { value: "wrong" };

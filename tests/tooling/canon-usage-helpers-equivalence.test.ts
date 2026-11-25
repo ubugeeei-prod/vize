@@ -55,6 +55,7 @@ const helpers = [
     "$HasInstanceRawProps",
     "$HasStaticRawProps",
     "$HasRawProps",
+    "$ComponentRawPropsFor",
     "$ComponentRawProps",
     "$FallthroughSourceMember",
     "$FallthroughSourceAdmitsEmpty",

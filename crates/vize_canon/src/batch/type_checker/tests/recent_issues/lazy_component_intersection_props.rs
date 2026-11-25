@@ -138,3 +138,56 @@ import { Indexed } from "./lazy";
         ],
     );
 }
+
+#[test]
+fn component_union_extensions_stay_with_their_own_raw_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project = super::real_vue::create_project_case(
+        "lazy-component-intersection-union-13689",
+        &[
+            ("tsconfig.json", reported!("tsconfig.json.txt")),
+            (
+                "A.vue",
+                "<script setup lang=\"ts\">defineProps<{ a: number }>();</script>",
+            ),
+            (
+                "B.vue",
+                "<script setup lang=\"ts\">defineProps<{ b: string }>();</script>",
+            ),
+            (
+                "union.ts",
+                r#"import type { DefineComponent } from "vue";
+import A from "./A.vue";
+import B from "./B.vue";
+export declare const Union: (DefineComponent<{ extraA: boolean }> & typeof A)
+  | (DefineComponent<{ extraB: boolean }> & typeof B);"#,
+            ),
+            (
+                "Good.vue",
+                r#"<script setup lang="ts">
+import { Union } from "./union";
+</script>
+<template><Union :a="1" :extra-a="true" /><Union b="ok" :extra-b="true" /></template>"#,
+            ),
+            (
+                "Mixed.vue",
+                r#"<script setup lang="ts">
+import { Union } from "./union";
+</script>
+<template><Union :a="1" :extra-b="true" /></template>"#,
+            ),
+        ],
+    );
+    let actual = snapshot_project_diagnostics(&project);
+    let _ = std::fs::remove_dir_all(project);
+    assert_eq!(
+        actual
+            .expect("the project typechecks")
+            .into_iter()
+            .map(|(file, code, _)| (file, code))
+            .collect::<Vec<_>>(),
+        [("Mixed.vue".into(), Some(2345))],
+    );
+}
