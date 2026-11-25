@@ -34,20 +34,10 @@ inputs:
     description: Allow a validated workflow_dispatch release job to read the default-branch sticky cache. Never enables writes.
     required: false
     default: "false"
-  frontend-jobs:
-    description: "rustc frontend threads for workspace crates on Linux and macOS (1: off). Jobs that record a native toolchain identity must keep 1."
-    required: false
-    default: "1"
 
 runs:
   using: composite
   steps:
-    - name: Compile workspace crates with the parallel frontend
-      if: ${{ runner.os != 'Windows' && inputs.frontend-jobs != '1' }}
-      shell: bash
-      env:
-        VIZE_RUSTC_FRONTEND_JOBS: ${{ inputs.frontend-jobs }}
-      run: . "$GITHUB_ACTION_PATH/scripts/enable-parallel-frontend.sh"
     - name: Select the Rust cache backend
       id: cache-policy
       uses: ./.github/actions/setup-rust-sticky-cache/cache-policy

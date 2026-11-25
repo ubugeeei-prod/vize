@@ -289,12 +289,6 @@ function requireSplitRustRecipes(
       );
       assert.deepEqual(wild?.with, { "wild-version": "0.9.0" });
       wild!.uses = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203";
-      // The Rust jobs opt into the parallel frontend on the pinned compiler.
-      const cache = job.steps.find(
-        (step) => step.uses === "./.github/actions/setup-rust-sticky-cache",
-      );
-      assert.equal(cache?.with?.["frontend-jobs"], "8");
-      delete cache!.with!["frontend-jobs"];
       restoreRustCaseReporting(job, contracts);
       job.steps[contracts].run =
         "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts";
