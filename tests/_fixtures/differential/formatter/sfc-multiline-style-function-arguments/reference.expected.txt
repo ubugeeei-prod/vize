@@ -1,0 +1,26 @@
+<template>
+  <div class="panel" />
+</template>
+
+<style scoped>
+.panel {
+  background: linear-gradient(
+    to right,
+    rgb(30 29 45 / 0.1),
+    rgb(30 29 45 / 0.4)
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    color-mix(
+      in srgb,
+      black 80%,
+      transparent
+    ),
+    transparent
+  );
+  border-image: linear-gradient(to right,
+    red,
+    blue) 1;
+  width: calc(100% - var(--gutter));
+}
+</style>

@@ -27,7 +27,7 @@ pub(super) fn format_chunk(trimmed: &str, options: &FormatOptions) -> Result<Str
     let formatted = if super::authored::changes_authored_css(trimmed, formatted.as_str()) {
         super::authored::format_layout_only(trimmed, options)
     } else {
-        formatted
+        super::paren_breaks::restore(trimmed, formatted)
     };
     Ok(super::blank_lines::preserve_rule_layout(
         trimmed,
