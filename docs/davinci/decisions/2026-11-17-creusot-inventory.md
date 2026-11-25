@@ -109,6 +109,24 @@ Creusot accepts only with a trusted declaration, and the proofs admit none.
 | `an_update_is_recompute_and_reorders_allocate_nothing` | an update equals recompute; a reorder allocates nothing       | 2 roots         | none                | kani   |
 | `allocation_is_exactly_the_inserted_delta`             | allocation is exactly the inserted delta                      | 1 insertion     | none                | kani   |
 
+## L2 script recovery and assignability (`davinci/vize_l2/src/query/script/assignments`)
+
+Kani files, deleted: `assignments/kani.rs` and `assignments/prefix/kani.rs`.
+Their bounds were the whole `u32` domain and every primitive pair with one
+representative value per type. Creusot roots: `assignments/prefix/creusot.rs`
+(package `tests/formal/creusot/recovery`), over the contracts of
+`frame::rebase` and `frame::retry_limit`, and `assignments/creusot.rs`
+(package `tests/formal/creusot/assignability`), over the contract of
+`relation::accepts`: a primitive annotation is assignable from a literal type
+exactly when they are the same primitive. A literal is modelled by its value,
+and the value sets of the three primitives are disjoint.
+
+| Kani harness                                     | Law                                                                                                                  | Kani bound                                 | Creusot replacement                                                                       | Status |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------- | ------ |
+| `cold_retries_fit_the_remaining_byte_budget`     | the next cold-open limit is at most the first label, below a nonzero failed end, and fits twice into the bytes spent | whole `u32` domain                         | `cold_retries_fit_the_remaining_byte_budget` over the contract of `frame::retry_limit`    | proved |
+| `moving_a_checked_source_interval_is_lossless`   | relocating a checked interval keeps it in the new block, keeps its length and moves back                             | whole `u32` domain                         | `moving_a_checked_source_interval_is_lossless` over the contract of `frame::rebase`       | proved |
+| `literal_membership_is_necessary_and_sufficient` | an annotation accepts a literal exactly when the literal's value is in the annotation's value set                    | 3 annotations, every boolean, `u64`, `u16` | `literal_membership_is_necessary_and_sufficient` over the contract of `relation::accepts` | proved |
+
 ## HTML content-model kernel (`crates/vize_patina/src/html_content_model`)
 
 Kani file, deleted with its last harness: `html_content_model/kani.rs`. Its
@@ -194,6 +212,28 @@ distance from the range start, clamped to the last offset of the other range
 | `source_range_shifts_saturate_and_invert`                 | `offset` moves each endpoint by the shift clamped into `u32`; without saturation the opposite shift restores the range; `extend` encloses the range | whole domain | `source_range_shifts_saturate`, `source_range_shifts_invert`                                                            | proved |
 | `source_mapping_carries_offsets_between_its_ranges`       | a mapping carries offsets by their distance, clamped into the other range; an equal-length mapping is a bijection                                   | whole domain | `source_mapping_carries_offsets_between_its_ranges` over the `source_to_generated` and `generated_to_source` contracts  | proved |
 
+## Style header acceptance (`crates/vize_maestro/src/source_project/style_format`)
+
+Kani file, deleted with its harness: `style_format/kani.rs`. Its bound was
+four attributes per header over five names and four values. Creusot root:
+`style_format/creusot.rs`, which includes `header.rs` verbatim, as
+`style_format.rs` does, over the two fields the policy reads (an attribute's
+name and optional value) and the ordered attribute view. `same_header` carries
+the Lean model's `accepts` as its contract. The law is `accepted_iff` of
+tests/formal/style-format/Header.lean, stated as the Kani harness stated it: a
+header is accepted exactly when it is unchanged, or when its attributes are
+distinct plain flags (`lang`, `scoped`, `module`) and the new header, of the
+same length, spells each of them exactly once. The pigeonhole step from "each
+spelling is found" to "each occurs once" is a lemma over finite sets of
+spellings. Creusot 0.14 has no spec for `Iterator::eq`, `all` or `any`, so the
+policy reads both headers with `get` loops; the flag names are `const` items,
+which contracts can name. `str` equality goes through `PartialEq`'s trait
+contract on the deep model.
+
+| Kani harness                                                                  | Law                                                                                                               | Kani bound                      | Creusot replacement                                                                                                                       | Status |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `accepted_headers_keep_order_or_permute_unique_plain_flags_with_their_values` | a header is accepted exactly when it is unchanged, or a permutation of distinct plain flags that keeps each value | 4 attributes, 5 names, 4 values | `style_header::accepted_headers_keep_order_or_permute_unique_plain_flags_with_their_values` over `same_header`, every length and spelling | proved |
+
 ## Laws no harness states yet
 
 These are added where tractable, after the ports: lossless L1 render equals
@@ -240,6 +280,14 @@ every Kani harness in the repository.
 | `a_string_ends_at_its_first_unescaped_quote`                        | a scoped CSS string ends at the first opening quote preceded by an even run of backslashes (CSS Syntax 3, "consume a string token")                                      | every body of 4 scalars                          | none                | kani   |
 | none                                                                | `LineIndex::line_col` is the LF count before the offset and the UTF-16 units from that line's start; `line_col_to_offset` is its inverse on scalar boundaries            | —                                                | owed                | owed   |
 | none                                                                | the emitter's line table starts a line after every terminator, and `resolve_in_table` and `resolve_positions` give each segment the line and UTF-16 column of its offset | —                                                | owed                | owed   |
+
+## Preconditions of unsafe sites
+
+These laws discharge the precondition of an `unsafe` call in shipped code. No Kani harness stated them; round 1 of the [unsafe record](./2026-11-24-unsafe-model-checking.md) could not bound them in CBMC.
+
+| Law                                                                                                              | Kernel                                        | Creusot proof                                                                                                            | Status |
+| ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------ |
+| the current scope row exists (`current < rows.len()`), so `get_unchecked` and `get_unchecked_mut` read in bounds | `crates/vize_croquis/src/scope/chain/rows.rs` | type invariant of `Rows`; `Rows::current`, `Rows::current_mut`; `the_current_row_exists_after_every_transition_sequence` | proved |
 
 ## Kernel items outside the proof
 

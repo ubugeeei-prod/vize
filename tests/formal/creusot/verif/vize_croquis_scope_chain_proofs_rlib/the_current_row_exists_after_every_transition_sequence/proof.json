@@ -1,0 +1,27 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_current_mut_T": { "prover": "z3", "time": 0.003 },
+      "vc_elim_Enter": { "prover": "z3", "time": 0.003 },
+      "vc_elim_Reserve": { "prover": "z3", "time": 0.003 },
+      "vc_elim_Select": { "prover": "z3", "time": 0.003 },
+      "vc_elim_Some": { "prover": "z3", "time": 0.002 },
+      "vc_into_iter_Vec_Transition_T_Global": {
+        "prover": "alt-ergo",
+        "time": 0.006
+      },
+      "vc_next_IntoIter_Transition_T_Global": {
+        "prover": "z3",
+        "time": 0.003
+      },
+      "vc_push_selected_T": { "prover": "z3", "time": 0.003 },
+      "vc_reserve_exact_T": { "prover": "z3", "time": 0.003 },
+      "vc_select_T": { "prover": "z3", "time": 0.003 },
+      "vc_the_current_row_exists_after_every_transition_sequence_T": {
+        "prover": "z3",
+        "time": 0.012
+      }
+    }
+  }
+}

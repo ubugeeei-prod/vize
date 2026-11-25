@@ -1,0 +1,14 @@
+[package]
+name = "vize_croquis_scope_chain_proofs"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "../../../../crates/vize_croquis/src/scope/chain/creusot.rs"
+
+[dependencies]
+creusot-std = { workspace = true }
+
+[lints]
+workspace = true

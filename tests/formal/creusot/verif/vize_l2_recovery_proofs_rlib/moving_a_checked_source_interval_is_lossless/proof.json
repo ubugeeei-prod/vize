@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_moving_a_checked_source_interval_is_lossless": {
+        "prover": "alt-ergo",
+        "time": 0.044
+      },
+      "vc_rebase": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}

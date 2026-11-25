@@ -16,14 +16,20 @@ on:
       - "tests/formal/creusot/**"
       - crates/vize_atelier_core/src/codegen/helpers/creusot.rs
       - crates/vize_atelier_core/src/codegen/helpers/escape_gate.rs
+      - crates/vize_croquis/src/scope/chain/creusot.rs
+      - crates/vize_croquis/src/scope/chain/rows.rs
+      - crates/vize_maestro/src/source_project/style_format/creusot.rs
+      - crates/vize_maestro/src/source_project/style_format/header.rs
       - crates/vize_patina/src/html_content_model/creusot.rs
       - crates/vize_patina/src/html_content_model/tri.rs
       - crates/vize_patina/src/html_content_model/walk.rs
       - davinci/vize_l0/src/creusot.rs
       - davinci/vize_l0/src/source_range.rs
       - davinci/vize_l0/src/span.rs
+      - davinci/vize_l2/src/query/script/assignments/creusot.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/frame.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs
+      - davinci/vize_l2/src/query/script/assignments/relation.rs
       - davinci/vize_l3/src/lattice/axis.rs
       - "davinci/vize_l3/src/lattice/class.rs"
       - "davinci/vize_l3/src/lattice/creusot.rs"
@@ -43,14 +49,20 @@ on:
       - "tests/formal/creusot/**"
       - crates/vize_atelier_core/src/codegen/helpers/creusot.rs
       - crates/vize_atelier_core/src/codegen/helpers/escape_gate.rs
+      - crates/vize_croquis/src/scope/chain/creusot.rs
+      - crates/vize_croquis/src/scope/chain/rows.rs
+      - crates/vize_maestro/src/source_project/style_format/creusot.rs
+      - crates/vize_maestro/src/source_project/style_format/header.rs
       - crates/vize_patina/src/html_content_model/creusot.rs
       - crates/vize_patina/src/html_content_model/tri.rs
       - crates/vize_patina/src/html_content_model/walk.rs
       - davinci/vize_l0/src/creusot.rs
       - davinci/vize_l0/src/source_range.rs
       - davinci/vize_l0/src/span.rs
+      - davinci/vize_l2/src/query/script/assignments/creusot.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/frame.rs
       - davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs
+      - davinci/vize_l2/src/query/script/assignments/relation.rs
       - davinci/vize_l3/src/lattice/axis.rs
       - "davinci/vize_l3/src/lattice/class.rs"
       - "davinci/vize_l3/src/lattice/creusot.rs"

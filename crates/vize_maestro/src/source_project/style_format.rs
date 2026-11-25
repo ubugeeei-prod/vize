@@ -9,7 +9,10 @@ use vize_atelier_sfc::scss::{ScssMismatch, ScssProducts, ScssRefusal};
 use vize_glyph::{FormatError, GlyphFormatter};
 use vize_l0::{Allocator, Span, String};
 use vize_l1::{
-    container::vue::{L1Ir, StyleView, Vue},
+    container::{
+        BlockAttr,
+        vue::{L1Ir, StyleView, Vue},
+    },
     css::lang::OriginalStyleStructure,
 };
 
