@@ -9,13 +9,15 @@
 mod access;
 mod builder;
 mod resolution;
+mod rows;
 mod template_offsets;
 mod visibility;
 use core::fmt;
-use index_vec::IndexVec;
+use index_vec::Idx;
 use std::borrow::Cow;
 use std::ops::Range;
 
+use rows::Rows;
 use vize_carton::{
     CompactString, FxHashMap, FxHashSet, SmallVec, String, ToCompactString, smallvec,
 };
@@ -243,9 +245,8 @@ impl Scope {
 
 /// Manages the scope chain during analysis
 pub struct ScopeChain {
-    /// All scopes (indexed by ScopeId)
-    pub(crate) scopes: IndexVec<ScopeId, Scope>,
-    pub(crate) current: ScopeId,
+    /// All scopes (indexed by ScopeId) and the current one.
+    scopes: Rows<Scope>,
     /// v-slot scopes whose directive argument was dynamic (`v-slot:[name]`).
     dynamic_v_slot_scopes: FxHashSet<ScopeId>,
     directive_expression_offsets: FxHashMap<ScopeId, u32>,
@@ -255,8 +256,8 @@ pub struct ScopeChain {
 impl fmt::Debug for ScopeChain {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ScopeChain")
-            .field("scopes", &self.scopes)
-            .field("current", &self.current)
+            .field("scopes", &self.scopes.as_slice())
+            .field("current", &self.current_id())
             .finish()
     }
 }
@@ -272,25 +273,27 @@ impl ScopeChain {
     /// ECMAScript standard built-ins only (ECMA-262)
     #[inline]
     pub fn new() -> Self {
-        Self::with_root(IndexVec::from_vec(vec![Self::root()]))
+        // `vec!` writes the root straight into the allocation. The table is
+        // never empty, so the second arm only keeps this constructor total.
+        match Rows::from_rows(vec![Self::root()]) {
+            Ok(scopes) => Self::with_root(scopes),
+            Err(_) => Self::with_capacity(1),
+        }
     }
 
     /// Create with pre-allocated capacity
     #[inline]
     pub fn with_capacity(capacity: usize) -> Self {
-        let mut scopes = IndexVec::with_capacity(capacity);
-        scopes.push(Self::root());
-        Self::with_root(scopes)
+        Self::with_root(Rows::with_capacity(capacity, Self::root()))
     }
 
     fn root() -> Scope {
         Scope::standard(ScopeId::ROOT, None, &UNIVERSAL)
     }
 
-    fn with_root(scopes: IndexVec<ScopeId, Scope>) -> Self {
+    fn with_root(scopes: Rows<Scope>) -> Self {
         Self {
             scopes,
-            current: ScopeId::ROOT,
             dynamic_v_slot_scopes: FxHashSet::default(),
             directive_expression_offsets: FxHashMap::default(),
             v_for_source_spans: FxHashMap::default(),
@@ -300,7 +303,13 @@ impl ScopeChain {
     /// Current scope ID
     #[inline]
     pub const fn current_id(&self) -> ScopeId {
-        self.current
+        ScopeId::new(self.scopes.current_index())
+    }
+
+    /// The id the next entered scope receives.
+    #[inline]
+    fn next_id(&self) -> ScopeId {
+        ScopeId::from_usize(self.scopes.len())
     }
 
     /// Whether a v-slot scope name came from a static directive argument.
@@ -324,13 +333,13 @@ impl ScopeChain {
     /// Iterate over all scopes
     #[inline]
     pub fn iter(&self) -> impl Iterator<Item = &Scope> {
-        self.scopes.iter()
+        self.scopes.as_slice().iter()
     }
 
     /// Shift script-local offsets after embedding a script analysis into a
     /// larger synthetic script. Template scopes should be added after this.
     pub fn shift_script_offsets(&mut self, delta: u32) {
-        for scope in &mut self.scopes {
+        for scope in self.scopes.as_mut_slice() {
             if matches!(
                 scope.kind,
                 ScopeKind::JsGlobalUniversal
@@ -353,7 +362,11 @@ impl ScopeChain {
     /// Find a scope by kind (returns the first match)
     #[inline]
     pub fn find_scope_by_kind(&self, kind: ScopeKind) -> Option<ScopeId> {
-        self.scopes.iter().find(|s| s.kind == kind).map(|s| s.id)
+        self.scopes
+            .as_slice()
+            .iter()
+            .find(|s| s.kind == kind)
+            .map(|s| s.id)
     }
 
     /// Find the deepest scope whose span contains `offset`.
@@ -365,7 +378,7 @@ impl ScopeChain {
     /// walking the parent chain of the matched scope.
     pub fn scope_at_offset(&self, offset: u32) -> Option<ScopeId> {
         let mut best: Option<(ScopeId, u32)> = None;
-        for scope in &self.scopes {
+        for scope in self.scopes.as_slice() {
             if matches!(
                 scope.kind,
                 ScopeKind::JsGlobalUniversal
@@ -400,7 +413,7 @@ impl ScopeChain {
     /// Get mutable scope by ID
     #[inline]
     pub fn get_scope_mut(&mut self, id: ScopeId) -> Option<&mut Scope> {
-        self.scopes.get_mut(id)
+        self.scopes.get_mut(id.as_u32())
     }
 
     /// Set the current scope directly (used for switching between sibling scopes)
@@ -409,16 +422,13 @@ impl ScopeChain {
     /// Panics before changing the current scope if the handle is out of range.
     #[inline]
     pub fn set_current(&mut self, id: ScopeId) {
-        assert!(
-            self.scopes.get(id).is_some(),
-            "scope handle is out of range"
-        );
-        self.current = id;
+        let selected = self.scopes.select(id.as_u32());
+        assert!(selected, "scope handle is out of range");
     }
 
     /// Build parents list including Vue global for template scopes
     pub(crate) fn build_template_parents(&self) -> ParentScopes {
-        let mut parents: ParentScopes = smallvec![self.current];
+        let mut parents: ParentScopes = smallvec![self.current_id()];
         if let Some(vue_id) = self.find_scope_by_kind(ScopeKind::VueGlobal)
             && !parents.contains(&vue_id)
         {

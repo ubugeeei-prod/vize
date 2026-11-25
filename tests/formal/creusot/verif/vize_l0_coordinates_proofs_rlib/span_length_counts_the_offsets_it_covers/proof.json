@@ -1,0 +1,13 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_is_empty": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_len": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_span_length_counts_the_offsets_it_covers": {
+        "prover": "alt-ergo",
+        "time": 0.013
+      }
+    }
+  }
+}

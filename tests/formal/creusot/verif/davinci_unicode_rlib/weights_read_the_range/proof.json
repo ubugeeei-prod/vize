@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_weights_read_the_range": { "prover": "alt-ergo", "time": 0.01 }
+    }
+  }
+}

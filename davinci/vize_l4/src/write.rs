@@ -26,6 +26,7 @@ pub mod document;
 pub(crate) mod line_endings;
 pub mod rewrite_spans;
 pub mod source_map;
+mod source_positions;
 
 pub use document::{EmitDocument, SpanLink};
 

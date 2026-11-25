@@ -184,3 +184,31 @@ test("the dev shell and Rust CI jobs route rustc through the wrapper", () => {
   // The parallel frontend runs on the pinned compiler: no second toolchain.
   assert.doesNotMatch(read("tools/nix/dev-shell.nix"), /rust-bin\.nightly/u);
 });
+
+// Cargo names a test's binaries `CARGO_BIN_EXE_<bin>`, and bin names may carry
+// hyphens (`vize-marquette`). Dash, the `/bin/sh` of the Linux runners, drops
+// such variables before `exec`, so the wrapper must not run under `/bin/sh`.
+test("the rustc wrapper keeps hyphenated Cargo variables", (t) => {
+  const workspace = scratchWorkspace();
+  t.after(() => fs.rmSync(workspace.root, { recursive: true, force: true }));
+  assert.match(fs.readFileSync(workspace.wrapper, "utf8"), /^#!\/usr\/bin\/env bash\n/u);
+  const probe = path.join(workspace.root, "env-rustc");
+  fs.writeFileSync(
+    probe,
+    "#!/usr/bin/env node\nconsole.log(process.env['CARGO_BIN_EXE_a-b'] ?? 'missing');\n",
+  );
+  fs.chmodSync(probe, 0o755);
+  for (const jobs of ["1", "8"]) {
+    const out = execFileSync(workspace.wrapper, [probe, "--crate-name", "cli"], {
+      env: {
+        PATH: process.env.PATH,
+        VIZE_RUSTC_FRONTEND_JOBS: jobs,
+        CARGO_MANIFEST_DIR: path.join(workspace.root, "crates/vize_marquette"),
+        CARGO_CRATE_NAME: "cli",
+        "CARGO_BIN_EXE_a-b": "/target/a-b",
+      },
+      encoding: "utf8",
+    });
+    assert.equal(out.trimEnd(), "/target/a-b", `frontend jobs ${jobs}`);
+  }
+});

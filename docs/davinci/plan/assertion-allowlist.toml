@@ -192,7 +192,7 @@ paths = [
   "crates/vize_canon/tests/tsconfig_option_diagnostics.rs",
   "davinci/vize_l0/src/config/model/vue.rs",
   "davinci/vize_l0/src/flags.rs",
-  "davinci/vize_l0/src/source_range.rs",
+  "davinci/vize_l0/src/source_range/tests.rs",
   "crates/vize_carton/tests/loading.rs",
   "crates/vize_croquis/src/declaration_ts.rs",
   "crates/vize_croquis/src/effect_graph.rs",

@@ -11,8 +11,10 @@
 //! units (the #1223 class of bug). Centralizing it here keeps the conversion
 //! correct in one place. See issue #1389.
 
+mod code_units;
 mod cursor;
 mod line_breaks;
+mod line_table;
 mod position;
 mod utf16;
 pub use cursor::PositionCursor;
@@ -56,20 +58,7 @@ impl<'a> LineIndex<'a> {
     /// the `\n`, so the column at end-of-line includes it and the next line
     /// starts immediately after the `\n`.
     pub fn line_col(&self, offset: usize) -> (u32, u32) {
-        let offset = offset.min(self.source.len());
-
-        // Greatest line start <= offset.
-        // `line_starts` begins with 0, so a predecessor always exists.
-        let line = match self.line_starts.binary_search(&offset) {
-            Ok(line) => line,
-            Err(next) => next.saturating_sub(1),
-        };
-        let line_start = self.line_starts.get(line).copied().unwrap_or(0);
-
-        // Sum UTF-16 code units of every character on this line whose byte
-        // start is before `offset`.
-        let line_text = self.source.get(line_start..).unwrap_or_default();
-        let col = utf16::prefix_len(line_text, offset.saturating_sub(line_start));
+        let (line, col) = line_table::line_col(self.source.as_bytes(), &self.line_starts, offset);
         (line as u32, col as u32)
     }
 
@@ -82,13 +71,12 @@ impl<'a> LineIndex<'a> {
     /// Convert an LSP `(line, UTF-16 column)` position to a byte offset.
     pub fn line_col_to_offset(&self, line: u32, column: u32) -> Option<usize> {
         let line = usize::try_from(line).ok()?;
-        let start = *self.line_starts.get(line)?;
-        let end = self
-            .line_starts
-            .get(line + 1)
-            .map(|next| next.saturating_sub(1))
-            .unwrap_or(self.source.len());
-        utf16_offset(self.source.get(start..end)?, column).map(|offset| start + offset)
+        line_table::offset_at(
+            self.source.as_bytes(),
+            &self.line_starts,
+            line,
+            column as usize,
+        )
     }
 }
 
@@ -124,7 +112,71 @@ pub use utf16_cursor::Utf16Cursor;
 
 #[cfg(test)]
 mod tests {
-    use super::{LineIndex, offset_to_line_col};
+    use super::{LineIndex, offset_to_line_col, utf16_len, utf16_offset};
+
+    const PARTS: [&str; 8] = ["", "a", "\n", "\r", "\r\n", "é", "😀", "\u{2028}"];
+
+    fn every_short_text(mut check: impl FnMut(&str)) {
+        for a in PARTS {
+            for b in PARTS {
+                for c in PARTS {
+                    for d in PARTS {
+                        check(&[a, b, c, d].concat());
+                    }
+                }
+            }
+        }
+    }
+
+    /// The Rust oracle for the table `line_table.rs` is proved against
+    /// (`lf_table` in `creusot.rs`): `LineIndex::new` finds the line feeds
+    /// with `memchr`, which Creusot cannot read, and builds 0 and the offset
+    /// after each of them, in order.
+    #[test]
+    fn line_starts_follow_every_line_feed() {
+        every_short_text(|text| {
+            let index = LineIndex::new(text);
+            let feeds = text.bytes().enumerate().filter(|(_, byte)| *byte == b'\n');
+            let expected = core::iter::once(0).chain(feeds.map(|(at, _)| at + 1));
+            assert!(index.line_starts.iter().copied().eq(expected), "{text:?}");
+        });
+    }
+
+    /// Both directions against a definition read off the scalars.
+    #[test]
+    fn positions_match_the_scalars_of_every_short_text() {
+        every_short_text(|text| {
+            let index = LineIndex::new(text);
+            // The line and units of the scalars that begin before `offset`: an
+            // offset inside a scalar already counts it.
+            let mut position = (0, 0);
+            for offset in 0..=text.len() + 1 {
+                assert_eq!(index.line_col(offset), position, "{text:?} {offset}");
+                if text.is_char_boundary(offset) {
+                    assert_eq!(
+                        index.line_col_to_offset(position.0, position.1),
+                        Some(offset)
+                    );
+                }
+                match text.get(offset..).and_then(|rest| rest.chars().next()) {
+                    Some('\n') => position = (position.0 + 1, 0),
+                    Some(ch) if text.is_char_boundary(offset) => {
+                        if ch.len_utf16() == 2 {
+                            assert_eq!(index.line_col_to_offset(position.0, position.1 + 1), None);
+                        }
+                        position.1 += ch.len_utf16() as u32;
+                    }
+                    _ => {}
+                }
+            }
+            assert_eq!(index.line_col_to_offset(position.0, position.1 + 1), None);
+            assert_eq!(index.line_col_to_offset(position.0 + 1, 0), None);
+            let units: usize = text.chars().map(char::len_utf16).sum();
+            assert_eq!(utf16_len(text), units);
+            assert_eq!(utf16_offset(text, units as u32), Some(text.len()));
+            assert_eq!(utf16_offset(text, u32::MAX), None);
+        });
+    }
 
     #[test]
     fn indexed_and_allocation_free_positions_match_at_every_byte() {

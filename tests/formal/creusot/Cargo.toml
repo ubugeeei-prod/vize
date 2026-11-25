@@ -8,7 +8,22 @@
 # workspace, its lock and its stable toolchain never see it.
 [workspace]
 resolver = "3"
-members = ["lattice", "graph", "recovery", "content-model", "reference", "js-escape-gate", "utf8"]
+members = [
+  "lattice",
+  "graph",
+  "recovery",
+  "content-model",
+  "reference",
+  "js-escape-gate",
+  "unicode",
+  "line-index",
+  "source-map",
+  "coordinates",
+  "scope-chain",
+  "style-header",
+  "assignability",
+  "utf8",
+]
 
 [workspace.dependencies]
 creusot-std = "=0.14.0"

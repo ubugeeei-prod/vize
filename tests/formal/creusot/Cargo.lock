@@ -33,6 +33,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "davinci_unicode"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
 name = "futures-core"
 version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -189,7 +196,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_croquis_scope_chain_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
+name = "vize_l0_coordinates_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
+name = "vize_l0_line_index_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+ "davinci_unicode",
+]
+
+[[package]]
 name = "vize_l0_utf8_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
+name = "vize_l2_assignability_proofs"
 version = "0.0.0"
 dependencies = [
  "creusot-std",
@@ -211,6 +247,21 @@ dependencies = [
 
 [[package]]
 name = "vize_l3_lattice_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
+name = "vize_l4_source_map_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+ "davinci_unicode",
+]
+
+[[package]]
+name = "vize_maestro_style_header_proofs"
 version = "0.0.0"
 dependencies = [
  "creusot-std",

@@ -1,50 +1,27 @@
-//! UTF-16 column arithmetic without allocating an encoded string.
+//! UTF-16 column arithmetic without allocating an encoded string. The byte
+//! kernels in `code_units.rs` count the units; a `&str` is always UTF-8,
+//! which is all their contracts ask for.
 
-/// Count UTF-16 units. Most generated and authored code is ASCII; the standard
-/// library checks that case in wide chunks before any scalar decoding.
+use super::code_units::{offset_of_units, units_between};
+
+/// Count UTF-16 units. Most generated and authored code is ASCII; the kernel
+/// checks that case with one vectorized pass before counting lead bytes.
 #[inline]
 pub fn utf16_len(text: &str) -> usize {
-    if text.is_ascii() {
-        text.len()
-    } else {
-        text.chars().map(char::len_utf16).sum()
-    }
+    units_between(text.as_bytes(), 0, text.len())
 }
 
 /// Keep the historical byte-position behavior: a position within a UTF-8
 /// character counts that whole character, without slicing at an invalid boundary.
 #[inline]
 pub(super) fn prefix_len(text: &str, bytes: usize) -> usize {
-    let end = bytes.min(text.len());
-    // Round a mid-character offset up to the end of that character.
-    let end = (end..=text.len())
-        .find(|at| text.is_char_boundary(*at))
-        .unwrap_or(text.len());
-    utf16_len(text.get(..end).unwrap_or(text))
+    units_between(text.as_bytes(), 0, bytes.min(text.len()))
 }
 
 /// Reject positions between surrogate halves and beyond the text.
 #[inline]
 pub fn utf16_offset(text: &str, column: u32) -> Option<usize> {
-    let column = column as usize;
-    // UTF-16 never needs more code units than UTF-8 needs bytes. Only inspect
-    // the requested prefix: column zero must stay O(1) even on a huge line,
-    // and Unicode later in the line cannot affect an ASCII prefix's offset.
-    let prefix = text.as_bytes().get(..column)?;
-    if prefix.is_ascii() {
-        return Some(column);
-    }
-    let mut units = 0;
-    for (at, ch) in text.char_indices() {
-        if units == column {
-            return Some(at);
-        }
-        units += ch.len_utf16();
-        if units > column {
-            return None;
-        }
-    }
-    (units == column).then_some(text.len())
+    offset_of_units(text.as_bytes(), 0, text.len(), column as usize)
 }
 
 #[cfg(test)]

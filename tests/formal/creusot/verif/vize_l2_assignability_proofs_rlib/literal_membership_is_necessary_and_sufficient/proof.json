@@ -1,0 +1,13 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_accepts": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_literal_membership_is_necessary_and_sufficient": {
+        "prover": "alt-ergo",
+        "time": 0.009
+      },
+      "vc_literal_type": { "prover": "alt-ergo", "time": 0.006 }
+    }
+  }
+}
