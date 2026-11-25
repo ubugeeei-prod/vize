@@ -131,6 +131,11 @@ const config = {
     options: {
       typeAware: true,
     },
+    // House source style (docs/project/source-style.md §3): only rules with no
+    // hits today are on; the rest turn on per area after its sweep.
+    rules: {
+      "eslint/no-warning-comments": ["error", { terms: ["fixme", "xxx", "hack"] }],
+    },
     overrides: [
       {
         files: floatingPromiseTestPatterns,
