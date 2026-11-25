@@ -4,6 +4,7 @@
       activateTestboxEnvironment,
       clearTestboxEnvironment,
       config,
+      inputs',
       lib,
       pkgs,
       rustDevToolchain,
@@ -42,6 +43,7 @@
           pkgs.cargo-insta
           pkgs.jq
           pkgs.pkg-config
+          inputs'.ush.packages.default
         ]
         ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
           workspaceXcrun

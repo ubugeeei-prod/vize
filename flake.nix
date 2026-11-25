@@ -9,6 +9,12 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Compiles the repository's `.ush` programs. Their committed `compiled/*.sh`
+    # run without it; tools/support/ci/ush-programs.ts checks this pin.
+    ush = {
+      url = "github:ubugeeei-prod/ush";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
