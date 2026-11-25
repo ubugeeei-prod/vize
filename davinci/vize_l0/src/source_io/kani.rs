@@ -21,13 +21,20 @@ mod proofs {
         let prefix = bytes.get(..len).unwrap_or_default();
         let expected = core::str::from_utf8(prefix).is_ok();
         assert_eq!(is_well_formed(prefix), expected);
-        kani::cover!(expected && len == 4, "a four-byte scalar is accepted");
+        kani::cover!(
+            expected && len == 4 && matches!(prefix.first(), Some(0xF0..=0xF4)),
+            "a four-byte scalar is accepted"
+        );
         kani::cover!(
             expected && len == 3 && prefix.first() == Some(&0xED),
             "a non-surrogate ED row is accepted"
         );
         kani::cover!(
-            !expected && prefix.first() == Some(&0xED),
+            !expected
+                && len == 3
+                && prefix.first() == Some(&0xED)
+                && matches!(prefix.get(1), Some(0xA0..=0xBF))
+                && matches!(prefix.get(2), Some(0x80..=0xBF)),
             "a surrogate is rejected"
         );
         kani::cover!(
