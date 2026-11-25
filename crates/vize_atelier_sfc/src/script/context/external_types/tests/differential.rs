@@ -16,10 +16,10 @@ use super::super::{FileTypeSummary, ScriptCompileContext, extract_script_summary
 use super::{reference, synthetic_epoch};
 
 /// xorshift64*: the same graphs on every run and every platform.
-struct Rng(u64);
+pub(super) struct Rng(pub(super) u64);
 
 impl Rng {
-    fn below(&mut self, bound: usize) -> usize {
+    pub(super) fn below(&mut self, bound: usize) -> usize {
         self.0 ^= self.0 >> 12;
         self.0 ^= self.0 << 25;
         self.0 ^= self.0 >> 27;

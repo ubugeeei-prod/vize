@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 
 mod differential;
 mod reference;
+mod referenced;
 mod sharing;
 mod summaries;
 

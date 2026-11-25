@@ -64,6 +64,7 @@ jobs {
         with {
           key = "nextest-ci"
           `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+          `frontend-jobs` = "8"
         }
       }
       ci.use("./.github/actions/cache-vp-bootstrap")

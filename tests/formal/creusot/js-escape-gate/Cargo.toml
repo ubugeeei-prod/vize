@@ -1,0 +1,14 @@
+[package]
+name = "vize_atelier_core_escape_gate_proofs"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "../../../../crates/vize_atelier_core/src/codegen/helpers/creusot.rs"
+
+[dependencies]
+creusot-std = { workspace = true }
+
+[lints]
+workspace = true

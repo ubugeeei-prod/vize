@@ -53,6 +53,7 @@ jobs:
         with:
           key: nextest-ci
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          frontend-jobs: "8"
       - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
@@ -208,6 +209,7 @@ jobs:
         with:
           key: rust-feature-tests
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          frontend-jobs: "8"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
         with:
           node-version-file: package.json

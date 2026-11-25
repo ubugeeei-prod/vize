@@ -41,6 +41,7 @@ function job(rows: String, condition: String): Dynamic = new {
       with {
         key = "rust-feature-tests"
         `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        `frontend-jobs` = "8"
       }
     }
     ci.workspaceVp()

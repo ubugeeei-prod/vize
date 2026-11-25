@@ -42,11 +42,30 @@ inputs {
     required = false
     ["default"] = "false"
   }
+  `frontend-jobs` {
+    description = "rustc frontend threads for workspace crates on Linux and macOS (1: off). Jobs that record a native toolchain identity must keep 1."
+    required = false
+    ["default"] = "1"
+  }
 }
 
 runs {
   using = "composite"
   steps = new Listing {
+    // Cargo routes every rustc call through the wrapper, which adds the parallel
+    // frontend to workspace crates only; dependencies, build-script probes and
+    // object code stay as they are. Opt-in: native history captures and
+    // installed-LSP acceptance reject any rustc wrapper in their environment
+    // (docs/davinci/decisions/2026-11-25-rust-build-accelerators.md).
+    new Dynamic {
+      name = "Compile workspace crates with the parallel frontend"
+      `if` = "${{ runner.os != 'Windows' && inputs.frontend-jobs != '1' }}"
+      shell = "bash"
+      env {
+        VIZE_RUSTC_FRONTEND_JOBS = "${{ inputs.frontend-jobs }}"
+      }
+      run = ci.actionScript("enable-parallel-frontend.sh")
+    }
     new Dynamic {
       name = "Select the Rust cache backend"
       id = "cache-policy"
