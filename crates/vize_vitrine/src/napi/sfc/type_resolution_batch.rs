@@ -23,7 +23,9 @@ impl TypeResolutionBatchNapi {
 ///
 /// The package entrypoint uses this to share validation across synchronous
 /// `compileSfc` calls in one JavaScript turn. Direct consumers may also hold the
-/// returned handle across a known-stable build phase and close it afterwards.
+/// returned handle across a known-stable build phase and close it afterwards:
+/// `compileSfcBatch*` calls made while it is open join it, so they read each
+/// imported type file once for the whole phase instead of once per call.
 #[napi(js_name = "beginTypeResolutionBatch")]
 pub fn begin_type_resolution_batch() -> TypeResolutionBatchNapi {
     TypeResolutionBatchNapi {
