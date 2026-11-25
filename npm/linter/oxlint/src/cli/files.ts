@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { hasVueLikeExtension } from "../file-kinds.ts";
+import { hasVueLikeExtension, isStandaloneHtmlFile } from "../file-kinds.ts";
 
 const GLOB_PATTERN = /[*?[\]{}]/u;
 
@@ -10,15 +10,28 @@ export function collectVueLikeFilesFromTargets(
   targets: readonly string[],
   onCandidate?: (filename: string) => void,
 ): string[] {
-  const files = new Set<string>();
+  return unionOfTargetFiles(collectVueLikeFilesByTarget(cwd, targets, onCandidate));
+}
 
-  for (const target of targets) {
-    for (const file of collectVueLikeFilesFromTarget(cwd, target, onCandidate)) {
-      files.add(file);
-    }
-  }
+/** One walk per literal target; entry `i` holds the Vue-like files under `targets[i]`. */
+export function collectVueLikeFilesByTarget(
+  cwd: string,
+  targets: readonly string[],
+  onCandidate?: (filename: string) => void,
+): string[][] {
+  return targets.map((target) => collectVueLikeFilesFromTarget(cwd, target, onCandidate));
+}
 
-  return [...files].sort();
+/** Literal targets whose own files include standalone HTML, in argument order. */
+export function standaloneHtmlTargets(
+  targets: readonly string[],
+  filesByTarget: readonly (readonly string[])[],
+): string[] {
+  return targets.filter((_, index) => filesByTarget[index].some(isStandaloneHtmlFile));
+}
+
+export function unionOfTargetFiles(filesByTarget: readonly (readonly string[])[]): string[] {
+  return [...new Set(filesByTarget.flat())].sort();
 }
 
 function collectVueLikeFilesFromTarget(

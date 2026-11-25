@@ -10,6 +10,8 @@ not add another root file.
 
 - [`redundancy.md`](./redundancy.md) records the continuity and engineering
   principles used when maintainers cannot supply implicit context.
+- [`source-style.md`](./source-style.md) is the house source style for every
+  first-party language, with the evidence each kind of style change must carry.
 - [`.github/CONTRIBUTING.md`](../../.github/CONTRIBUTING.md) describes the
   contribution and verification workflow.
 - [`.github/GOVERNANCE.md`](../../.github/GOVERNANCE.md) and

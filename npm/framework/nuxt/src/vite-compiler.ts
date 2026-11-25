@@ -8,11 +8,25 @@ type NuxtCompilerHost = {
   options: {
     srcDir?: string;
     buildDir?: string;
+    typesDir?: string;
     vue?: { compilerOptions?: Record<string, unknown> };
     vite?: { plugins?: unknown[] };
   };
   hook(name: string, callback: (...args: unknown[]) => unknown): void;
 };
+
+/**
+ * Nuxt writes its generated root tsconfig to `typesDir` (Nuxt 4.7+), falling
+ * back to `buildDir` before that option existed. A production build that runs
+ * after `nuxt prepare` or `nuxt dev` builds into a cache `buildDir` and keeps
+ * the tsconfigs in `typesDir`, so `buildDir` is not where they are.
+ */
+export function nuxtTypeResolutionFallback(
+  host: Pick<NuxtCompilerHost["options"], "buildDir" | "typesDir">,
+): { typeResolutionFallbackTsconfig?: string } {
+  const typesDir = host.typesDir || host.buildDir;
+  return typesDir ? { typeResolutionFallbackTsconfig: resolve(typesDir, "tsconfig.json") } : {};
+}
 
 /**
  * Keep lazy plugin loading and native-only registration outside the module
@@ -38,11 +52,8 @@ export async function setupNuxtViteCompiler(
       ...explicit,
       nuxtPageMeta: true,
       ssrModuleIdRoot: host.srcDir,
-      // The generated root config exists across Nuxt generations. Native
-      // selection still prefers a governing user config for each source.
-      ...(host.buildDir
-        ? { typeResolutionFallbackTsconfig: resolve(host.buildDir, "tsconfig.json") }
-        : {}),
+      // Native selection still prefers a governing user config for each source.
+      ...nuxtTypeResolutionFallback(host),
     },
     defaults,
     "nuxt",

@@ -1,6 +1,6 @@
 import type { OxlintHtmlCompleted } from "@vizejs/native";
 import type { OxlintProcessResult } from "./scoped-selection.ts";
-import type { HtmlContext } from "./html-operation.ts";
+import { executeHtml, type HtmlContext } from "./html-operation.ts";
 import { joinProjectJson } from "./project-json.ts";
 
 const noFiles = "No files found to lint. Please check your paths and ignore patterns.\n";
@@ -149,6 +149,51 @@ export function mergeHtmlOutput(
     rawStdout: undefined,
     status: Math.max(empty == null ? original.status : 0, nativeFailure ? 1 : 0),
   };
+}
+
+/**
+ * Join each target's native operation in order, like one-target runs combined.
+ * An operation whose originals an enclosing target already linted adds nothing.
+ */
+export function joinHtmlTargets(
+  original: OxlintProcessResult,
+  contexts: readonly HtmlContext[],
+  args: readonly string[],
+): OxlintProcessResult {
+  let merged = original;
+  const linted = new Set<string>();
+  for (const context of contexts) {
+    try {
+      qualifyHtmlHost(context, merged);
+    } catch (error) {
+      // Qualification reads the host phases every target shares, so report its failure once.
+      return htmlFailure(merged, context, error);
+    }
+    try {
+      const { completed } = executeHtml(context);
+      if (!completed) throw new Error("original HTML operation is incomplete");
+      const paths = completed.originals.map((selected) => selected.path);
+      const repeated = paths.filter((file) => linted.has(file));
+      if (repeated.length > 0 && repeated.length === paths.length) continue;
+      if (repeated.length > 0)
+        throw new Error(`overlapping HTML targets select ${repeated.join(", ")} twice`);
+      for (const file of paths) linted.add(file);
+      merged = mergeHtmlOutput(merged, completed, args);
+    } catch (error) {
+      merged = htmlFailure(merged, context, error);
+    }
+  }
+  return merged;
+}
+
+function htmlFailure(
+  original: OxlintProcessResult,
+  context: HtmlContext,
+  error: unknown,
+): OxlintProcessResult {
+  return context.skipReason && !context.failure
+    ? skippedHtml(original, error)
+    : unavailableHtml(original, error);
 }
 
 export function unavailableHtml(

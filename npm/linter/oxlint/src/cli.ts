@@ -1,7 +1,11 @@
 import type { Writable } from "node:stream";
 
 import { expectsLintReport, getLintTargets } from "./cli/args.js";
-import { collectVueLikeFilesFromTargets } from "./cli/files.js";
+import {
+  collectVueLikeFilesByTarget,
+  standaloneHtmlTargets,
+  unionOfTargetFiles,
+} from "./cli/files.js";
 import { resolveOxlintCliEntrypoint, verifyOxlintCliEntrypoint } from "./cli/oxlint.js";
 import { rewriteReportedPaths } from "./cli/output.js";
 import { rewriteReportedLocations } from "./cli/locations.js";
@@ -9,13 +13,8 @@ import { prepareScriptlessWorkaroundFiles } from "./cli/workaround-files.js";
 import { prepareScopedSelection } from "./cli/scoped-selection.js";
 import { mergeProjectOutput } from "./cli/project-output.js";
 import { isStandaloneHtmlFile } from "./file-kinds.ts";
-import { prepareHtmlContext, executeHtml } from "./cli/html-operation.ts";
-import {
-  mergeHtmlOutput,
-  skippedHtml,
-  unavailableHtml,
-  qualifyHtmlHost,
-} from "./cli/html-project-output.ts";
+import { prepareHtmlContexts } from "./cli/html-operation.ts";
+import { joinHtmlTargets } from "./cli/html-project-output.ts";
 import { runOxlint } from "./cli/process.ts";
 import { requestsTypeAware, runVueTypeAwarePass } from "./cli/type-aware-vue.ts";
 import {
@@ -31,12 +30,15 @@ async function main(): Promise<void> {
   const forwardedArgs = convertedFormat ? withJsonReport(requestedArgs) : requestedArgs;
   const targets = getLintTargets(forwardedArgs);
   const candidates = new Set<string>();
-  const lintFiles = collectVueLikeFilesFromTargets(cwd, targets, (file) => candidates.add(file));
+  const filesByTarget = collectVueLikeFilesByTarget(cwd, targets, (file) => candidates.add(file));
+  const lintFiles = unionOfTargetFiles(filesByTarget);
   const oxlintEntrypoint = resolveOxlintCliEntrypoint(cwd);
   const version = verifyOxlintCliEntrypoint(process.execPath, oxlintEntrypoint);
-  const html = lintFiles.some(isStandaloneHtmlFile)
-    ? prepareHtmlContext(cwd, forwardedArgs, oxlintEntrypoint, version, candidates)
-    : undefined;
+  const htmlTargets = standaloneHtmlTargets(targets, filesByTarget);
+  let html =
+    htmlTargets.length > 0
+      ? prepareHtmlContexts(cwd, forwardedArgs, oxlintEntrypoint, version, candidates, htmlTargets)
+      : undefined;
   const vueFiles = html ? lintFiles.filter((file) => !isStandaloneHtmlFile(file)) : lintFiles;
   let scoped: Awaited<ReturnType<typeof prepareScopedSelection>>;
   try {
@@ -50,8 +52,8 @@ async function main(): Promise<void> {
   } catch (error) {
     if (!html) throw error;
     // No normal source packet has been returned yet. Preserve one genuine
-    // unsplit normal run and make preparation failure visible without a carrier.
-    html.failure = error instanceof Error ? error.message : String(error);
+    // unsplit normal run and make preparation failure visible once, without a carrier.
+    html = [{ ...html[0], failure: error instanceof Error ? error.message : String(error) }];
     scoped = {
       result: await runOxlint(process.execPath, [oxlintEntrypoint, ...forwardedArgs], cwd),
     };
@@ -88,19 +90,7 @@ async function main(): Promise<void> {
       };
       if (transport?.originalResult)
         merged = mergeProjectOutput(transport.originalResult, merged, forwardedArgs);
-      if (html) {
-        try {
-          qualifyHtmlHost(html, merged);
-          const outcome = executeHtml(html);
-          if (!outcome.completed) throw new Error("original HTML operation is incomplete");
-          merged = mergeHtmlOutput(merged, outcome.completed, forwardedArgs);
-        } catch (error) {
-          merged =
-            html.skipReason && !html.failure
-              ? skippedHtml(merged, error)
-              : unavailableHtml(merged, error);
-        }
-      }
+      if (html) merged = joinHtmlTargets(merged, html, forwardedArgs);
       if (requestsTypeAware(forwardedArgs, cwd))
         merged = await withVueTypeAwarePass(merged, cwd, oxlintEntrypoint, forwardedArgs, vueFiles);
     } catch (error) {

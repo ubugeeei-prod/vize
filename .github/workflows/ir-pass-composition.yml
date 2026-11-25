@@ -19,7 +19,7 @@ jobs:
   lint-ranking:
     name: Prove stable complexity label selection for unbounded inputs
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - name: Check out the workflow's scripts
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -55,7 +55,7 @@ jobs:
   partition:
     name: Prove the Rust group cursor partitions every bounded plan
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
