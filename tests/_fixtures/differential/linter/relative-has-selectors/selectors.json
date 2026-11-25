@@ -1,0 +1,8 @@
+{
+  "vue/no-restricted-syntax": [
+    "VElement:has(> VStartTag > VAttribute[key.name='flex-wrap']) > VElement[rawName='div']",
+    "VElement[name='div']:has(VAttribute[key.name='flex-1'])",
+    "VStartTag ~ VElement",
+    "VStartTag + VElement"
+  ]
+}

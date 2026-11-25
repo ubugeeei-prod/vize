@@ -22538,6 +22538,53 @@
       }
     },
     {
+      "id": "linter/no-empty-pattern-slot-scope-dispatch-13703",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-empty-pattern-slot-scope-dispatch-13703",
+        "files": [
+          {
+            "path": "Dispatch.vue.txt",
+            "role": "full-registry-and-filtered-mixed-facade-dispatch-control",
+            "sha256": "296ff73554b218aa5ae1c7441cf8f597b51f6713e4bbf62d83420ab5fd69db45"
+          },
+          {
+            "path": "original-drag-table.vue.txt",
+            "role": "pinned-real-project-original",
+            "sha256": "5a18279a18b3e9be581e5a5ca99ba054f1b6934a6bc9b7880a0293902fbbc559"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "395dc85cee0a8cd18cb2a095001bfefe17109f0acb92b9c117b42065670c255b"
+          },
+          {
+            "path": "source-provenance.json",
+            "role": "pinned-real-project-source-provenance",
+            "sha256": "6a10475f71a43f55ce0a332e735a41621892fe5fd88fe3971dfbdfa1c855a897"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-implied-eval-callable-13000",
       "state": "active",
       "targets": [
@@ -25294,6 +25341,42 @@
           {
             "kind": "source-inspection",
             "dialects": [
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/relative-has-selectors",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "relative-has-selectors",
+        "files": [
+          {
+            "path": "Foo.vue.txt",
+            "role": "third-party-relative-has-reproduction",
+            "sha256": "827d4d1edbee26c1cc5cc68a2a08e201df646acfd7631496ca4ebc362d09bdb0"
+          },
+          {
+            "path": "selectors.json",
+            "role": "third-party-relative-has-reproduction",
+            "sha256": "6cd337595f6a4bbda55f7813d7ae53c050352549bb39de6498ecb66dbc83d252"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
               "html-template"
             ],
             "selector": "linter manifest pinned authored sources"

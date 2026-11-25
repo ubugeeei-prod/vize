@@ -1,0 +1,13 @@
+<script setup lang="ts">
+const stream: MediaStream | null = null
+const count = 1
+</script>
+
+<template>
+  <video :srcObject.prop="stream" />
+  <video .srcObject="stream" />
+  <video :src-object.prop.camel="stream" />
+  <svg><a :href.prop="'x'" /></svg>
+  <video :srcObject.prop="count" />
+  <video :notAProp.prop="stream" />
+</template>

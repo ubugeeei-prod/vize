@@ -13,7 +13,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use matcher::{Regexes, Tree};
 use regex::Regex;
 use serde_json::Value;
-use vize_l0::config::esquery::{self, Selector, Simple, Value as Expected};
+use vize_l0::config::esquery::{self, HasArgument, Selector, Simple, Value as Expected};
 use vize_l0::{String, cstr};
 use vize_relief::RootNode;
 
@@ -71,24 +71,36 @@ fn collect_regexes(selector: &Selector, regexes: &mut Regexes) {
             collect_regexes(left, regexes);
             collect_regexes(right, regexes);
         }
-        Selector::Compound(parts) => {
-            for part in parts {
-                match part {
-                    Simple::Attribute(_, Some((_, Expected::Regex(pattern)))) => {
-                        if let Ok(regex) = Regex::new(pattern) {
-                            regexes.insert(pattern.clone(), regex);
-                        }
-                    }
-                    Simple::Matches(selectors)
-                    | Simple::Not(selectors)
-                    | Simple::Has(selectors) => {
-                        for selector in selectors {
-                            collect_regexes(selector, regexes);
-                        }
-                    }
-                    _ => {}
+        Selector::Compound(parts) => collect_compound_regexes(parts, regexes),
+    }
+}
+
+fn collect_compound_regexes(parts: &[Simple], regexes: &mut Regexes) {
+    for part in parts {
+        match part {
+            Simple::Attribute(_, Some((_, Expected::Regex(pattern)))) => {
+                if let Ok(regex) = Regex::new(pattern) {
+                    regexes.insert(pattern.clone(), regex);
                 }
             }
+            Simple::Matches(selectors) | Simple::Not(selectors) => {
+                for selector in selectors {
+                    collect_regexes(selector, regexes);
+                }
+            }
+            Simple::Has(arguments) => {
+                for argument in arguments {
+                    match argument {
+                        HasArgument::Descendant(selector) => collect_regexes(selector, regexes),
+                        HasArgument::Relative(steps) => {
+                            for (_, parts) in steps {
+                                collect_compound_regexes(parts, regexes);
+                            }
+                        }
+                    }
+                }
+            }
+            _ => {}
         }
     }
 }

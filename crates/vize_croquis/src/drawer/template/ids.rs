@@ -313,7 +313,7 @@ impl Drawer {
                 content: CompactString::new(content),
                 base_offset,
                 scope_vars: scope_vars.to_vec(),
-                scope: self.croquis.scopes.current,
+                scope: self.croquis.scopes.current_id(),
             });
         }
 

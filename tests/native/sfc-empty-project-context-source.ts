@@ -36,7 +36,51 @@ function blob(bytes: Uint8Array): string {
     .digest("hex");
 }
 
+/** Authenticate the ownership-only dependency conversion before the older law. */
+function dependencyOwnershipPredecessor(file: string, bytes: Uint8Array): Uint8Array {
+  const expected =
+    file === "crates/vize_vitrine/src/napi/sfc/compile.rs"
+      ? ["20a0b1d7a67747d64ee22ad54d2c37211d45de26", "8ec4b58ac5b5fa47c2c1b3859368c08b8481152a"]
+      : file === "crates/vize_vitrine/src/napi/sfc/types/conversions.rs"
+        ? ["e6defb2f305801c24eb8979bb633278afdf68fb0", "c3a1d0e4cfffa709e5512252701cd1385b597d1b"]
+        : undefined;
+  if (!expected || blob(bytes) !== expected[0]) return bytes;
+  let text = Buffer.from(bytes).toString("utf8");
+  const replace = (current: string, reference: string) => {
+    assert.equal(text.split(current).length, 2, "unique reviewed dependency ownership edit");
+    text = text.replace(current, reference);
+  };
+  if (file.endsWith("/compile.rs")) {
+    replace(
+      "dependencies_to_napi(result.dependencies)",
+      "dependencies_to_napi(&result.dependencies)",
+    );
+  } else {
+    replace("dependencies: Vec<vize_l0::String>", "dependencies: &[impl AsRef<str>]");
+    replace(
+      "let mut paths: Vec<String> = dependencies\n            .into_iter()",
+      "let mut paths: Vec<String> = dependencies\n            .iter()",
+    );
+    replace(
+      "                // The compile result no longer needs these paths. Moving a\n" +
+        "                // heap-backed CompactString into String keeps its allocation.\n" +
+        "                vize::type_projects::plain_windows_path(path.as_str())\n" +
+        "                    .map_or_else(|| path.into(), Into::into)",
+      "                let path = path.as_ref();\n" +
+        "                vize::type_projects::plain_windows_path(path)\n" +
+        "                    .map_or_else(|| path.to_owned(), Into::into)",
+    );
+    const start = text.indexOf("\n#[cfg(test)]\nmod tests {");
+    assert(start >= 0, "reviewed converter's complete trailing test module");
+    text = text.slice(0, start);
+  }
+  const predecessor = Buffer.from(text);
+  assert.equal(blob(predecessor), expected[1], "dependency packet law keeps its exact predecessor");
+  return predecessor;
+}
+
 function supportingSourceForReference(file: string, bytes: Uint8Array): Uint8Array {
+  bytes = dependencyOwnershipPredecessor(file, bytes);
   if (
     file === "crates/vize_vitrine/src/napi/sfc/types/conversions.rs" &&
     blob(bytes) === "c3a1d0e4cfffa709e5512252701cd1385b597d1b"
@@ -157,20 +201,24 @@ pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<V
   return reference;
 }
 
+/** Reverse the exact setup-owner vocabulary change before older integrations. */
+function setupOwnerPredecessor(file: string, bytes: Uint8Array): Uint8Array {
+  if (
+    file !== "crates/vize_atelier_sfc/src/compile.rs" ||
+    blob(bytes) !== "6fe53a971db59aff6fac446803cf161e1d6054d8"
+  )
+    return bytes;
+  const text = Buffer.from(bytes).toString("utf8");
+  const edit = "setup_facts::SetupCompileAnalysis::new";
+  assert.equal(text.split(edit).length, 2, "unique reviewed setup-owner rename");
+  const predecessor = Buffer.from(text.replace(edit, "setup_facts::SetupAnalysis::new"));
+  assert.equal(blob(predecessor), "b80c1e46486d2aaec325c748aae5b8791826daff");
+  return predecessor;
+}
+
 /** Later reviewed edits to an integrated source, removed before its law is checked. */
 function reviewedSourceSuccessor(file: string, bytes: Uint8Array): Uint8Array {
-  // The SFC setup owner now has a distinct name from the L2 setup analysis.
-  // Its constructor, arguments and the rest of this source are unchanged.
-  if (
-    file === "crates/vize_atelier_sfc/src/compile.rs" &&
-    blob(bytes) === "6fe53a971db59aff6fac446803cf161e1d6054d8"
-  ) {
-    const text = Buffer.from(bytes).toString("utf8");
-    const current = "setup_facts::SetupCompileAnalysis::new";
-    assert.equal(text.split(current).length, 2, "unique reviewed setup-owner rename");
-    bytes = Buffer.from(text.replace(current, "setup_facts::SetupAnalysis::new"));
-    assert.equal(blob(bytes), "b80c1e46486d2aaec325c748aae5b8791826daff");
-  }
+  bytes = dependencyOwnershipPredecessor(file, setupOwnerPredecessor(file, bytes));
   // The levels name the component render binding by concept (`_sfc_render` is
   // unchanged): `RenderFunctionName::SfcRender` became `ComponentRender`.
   if (

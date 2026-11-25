@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_an_ascii_byte_is_a_whole_scalar": {
+        "prover": "alt-ergo",
+        "time": 0.007
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/PanJiaChen/vue-element-admin",
+  "revision": "6858a9ad67483025f6a9432a926beb9327037be3",
+  "path": "src/views/table/drag-table.vue",
+  "sha256": "5a18279a18b3e9be581e5a5ca99ba054f1b6934a6bc9b7880a0293902fbbc559",
+  "license": "MIT",
+  "sourceUrl": "https://github.com/PanJiaChen/vue-element-admin/blob/6858a9ad67483025f6a9432a926beb9327037be3/src/views/table/drag-table.vue",
+  "qualification": "Real Project Matrix shard 3, vue/no-empty-pattern at line 50, columns 31-33"
+}

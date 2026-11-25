@@ -1,0 +1,4 @@
+{
+  "vue/no-empty-pattern": "warn",
+  "a11y/img-alt": "warn"
+}

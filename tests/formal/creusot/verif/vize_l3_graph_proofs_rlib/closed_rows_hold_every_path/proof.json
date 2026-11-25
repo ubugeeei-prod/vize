@@ -1,0 +1,28 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_closed_rows_hold_every_path": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "alt-ergo", "time": 0.007 },
+              { "prover": "alt-ergo", "time": 0.006 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "alt-ergo", "time": 0.005 },
+                  { "prover": "alt-ergo", "time": 0.006 },
+                  { "prover": "alt-ergo", "time": 0.007 }
+                ]
+              },
+              { "prover": "alt-ergo", "time": 0.007 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

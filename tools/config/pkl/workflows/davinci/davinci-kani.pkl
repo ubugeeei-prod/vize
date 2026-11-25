@@ -7,21 +7,13 @@ on {
     paths = new Listing {
       ".github/workflows/davinci-kani.yml"
       ".github/scripts/workflows/davinci-kani/**"
-      "davinci/vize_l0/src/span.rs"
-      "davinci/vize_l0/src/span/proofs.rs"
       "davinci/vize_l0/src/source_range.rs"
       "davinci/vize_l0/src/source_range/proofs.rs"
-      "davinci/vize_l0/src/line_index/kani.rs"
-      "davinci/vize_l0/src/line_index/utf16.rs"
-      "davinci/vize_l4/src/write/kani.rs"
-      "davinci/vize_l4/src/write/line_endings.rs"
       "davinci/vize_l4/src/write/source_map/kani.rs"
       "davinci/vize_l4/src/write/source_map/vlq.rs"
       "davinci/vize_l2/src/query/position/index/intervals.rs"
       "davinci/vize_l2/src/query/position/index/intervals/tests.rs"
       "tests/formal/position-index/Intervals.lean"
-      "davinci/vize_l3/src/query/check/kani.rs"
-      "davinci/vize_l3/src/query/check/rule.rs"
       "tests/davinci_test_support/src/l3_reference/incremental.rs"
       "tests/davinci_test_support/src/l3_reference/incremental_proofs.rs"
       "tests/davinci_test_support/src/l3_reference/kani.rs"
@@ -41,6 +33,8 @@ on {
       // The CSS string-body step both scoped CSS scanners share.
       "crates/vize_atelier_sfc/src/css/string_body.rs"
       "crates/vize_atelier_sfc/src/css/kani.rs"
+      "davinci/vize_l0/src/source_io/utf8.rs"
+      "davinci/vize_l0/src/source_io/kani.rs"
     }
   }
   workflow_dispatch = null
@@ -69,7 +63,7 @@ jobs {
     }
   }
   `source-coordinates` {
-    name = "Span, range, UTF-16 column, line terminator and VLQ laws"
+    name = "Source map lookup and VLQ laws"
     `runs-on` = ci.linux
     `timeout-minutes` = 10
     steps = new Listing {
@@ -85,15 +79,15 @@ jobs {
           args = "davinci/vize_l4/src/write/source_map/kani.rs --output-format=terse"
         }
       }
-      ci.command("Verify UTF-16 columns of every short UTF-8 text", "kani davinci/vize_l0/src/line_index/kani.rs --output-format=terse --jobs 2")
-      ci.command("Verify JavaScript line terminators", "kani davinci/vize_l4/src/write/kani.rs --output-format=terse")
-      ci.command("Verify span, range and mapping offsets", "cargo kani --manifest-path davinci/vize_l0/Cargo.toml --lib --harness span::proofs:: --harness source_range::proofs:: --output-format=terse --jobs 2")
+      ci.command("Verify the source map lookup", "cargo kani --manifest-path davinci/vize_l0/Cargo.toml --lib --harness source_range::proofs:: --output-format=terse --jobs 2")
     }
   }
 
-
-  `graph-certificates` {
-    name = "L3 reachability certificates"
+  // Unicode Table 3-7 as `utf8.rs` transcribes it agrees with the standard
+  // decoder on every sequence of up to four bytes. A standalone root, so the
+  // job compiles one file (37 to 76 s of CBMC time locally, 0.5 GB).
+  `utf8-well-formedness` {
+    name = "UTF-8 well-formedness against the standard decoder"
     `runs-on` = ci.linux
     `timeout-minutes` = 10
     steps = new Listing {
@@ -106,11 +100,12 @@ jobs {
         with {
           `kani-version` = "0.68.0"
           command = "kani"
-          args = "davinci/vize_l3/src/query/check/kani.rs --output-format=terse"
+          args = "davinci/vize_l0/src/source_io/kani.rs --output-format=terse"
         }
       }
     }
   }
+
 
   `l3-reference` {
     name = "L3 reference incremental update laws"

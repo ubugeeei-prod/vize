@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: cleanup-obsolete-merge-groups
+  group: cleanup-obsolete-merge-groups-${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.event == 'merge_group' }}
   cancel-in-progress: true
 
 permissions:

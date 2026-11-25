@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_floor_is_the_greatest_boundary": {
+        "prover": "alt-ergo",
+        "time": 0.02
+      }
+    }
+  }
+}

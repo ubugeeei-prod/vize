@@ -1,0 +1,47 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_elim_Some": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_intersection": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_intersects": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_is_empty": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_len": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_source_range_intersection_is_the_offsets_in_both": {
+        "tactic": "split_vc",
+        "children": [
+          { "prover": "alt-ergo", "time": 0.016 },
+          { "prover": "alt-ergo", "time": 0.149 },
+          { "prover": "alt-ergo", "time": 0.098 },
+          { "prover": "alt-ergo", "time": 0.009 },
+          { "prover": "alt-ergo", "time": 0.007 },
+          { "prover": "z3", "time": 0.203 },
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "cvc5", "time": 0.513 },
+              { "prover": "alt-ergo", "time": 0.009 },
+              { "prover": "alt-ergo", "time": 0.014 }
+            ]
+          },
+          { "prover": "z3", "time": 0.005 },
+          { "prover": "alt-ergo", "time": 0.01 },
+          { "prover": "alt-ergo", "time": 0.007 },
+          { "prover": "z3", "time": 0.007 },
+          { "prover": "alt-ergo", "time": 0.011 },
+          { "prover": "z3", "time": 0.123 },
+          { "prover": "alt-ergo", "time": 0.086 },
+          { "prover": "alt-ergo", "time": 0.092 },
+          { "prover": "alt-ergo", "time": 0.054 },
+          { "prover": "z3", "time": 0.01 },
+          { "prover": "z3", "time": 0.007 },
+          { "prover": "z3", "time": 0.281 },
+          { "prover": "z3", "time": 0.007 },
+          { "prover": "alt-ergo", "time": 0.41 },
+          { "prover": "alt-ergo", "time": 0.115 },
+          { "prover": "alt-ergo", "time": 0.009 }
+        ]
+      }
+    }
+  }
+}
