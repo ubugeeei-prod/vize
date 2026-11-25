@@ -1096,7 +1096,7 @@ export interface FormatterConfig {
    */
   quoteProps?: "as-needed" | "consistent" | "preserve";
   /**
-   * Keep objects multiline when a newline follows '{', or collapse objects that fit
+   * Keep objects multiline when a newline follows the opening brace, or collapse objects that fit
    */
   objectWrap?: "preserve" | "collapse";
   /**

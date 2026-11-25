@@ -147,6 +147,7 @@ Default discovery formats Vue, JavaScript/TypeScript, TSRX and JSON/JSONC files.
 | `--single-quote`                   | Toggle string quote style                            |
 | `--jsx-single-quote`               | Toggle JSX attribute quote style                     |
 | `--quote-props`                    | Choose object property quote policy                  |
+| `--object-wrap`                    | Choose `preserve` or `collapse` for object literals   |
 | `--trailing-comma`                 | Choose `all`, `es5` or `none` trailing commas        |
 | `--arrow-parens`                   | Choose `always` or `avoid` for sole arrow parameters |
 | `--bracket-spacing`                | Toggle spaces inside object literal braces           |

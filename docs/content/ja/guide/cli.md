@@ -144,6 +144,7 @@ vize fmt --write src
 | `--single-quote`                   | 文字列の引用符を切り替える                             |
 | `--jsx-single-quote`               | JSX 属性の引用符を切り替える                           |
 | `--quote-props`                    | オブジェクトキーの引用符ポリシーを選ぶ                 |
+| `--object-wrap`                    | オブジェクトリテラルの改行を `preserve`、`collapse` から選ぶ |
 | `--trailing-comma`                 | 末尾のカンマを `all`、`es5`、`none` から選ぶ           |
 | `--arrow-parens`                   | 1 引数のアロー関数の括弧を `always`、`avoid` から選ぶ  |
 | `--bracket-spacing`                | オブジェクトリテラルの波括弧内の空白を切り替える       |
