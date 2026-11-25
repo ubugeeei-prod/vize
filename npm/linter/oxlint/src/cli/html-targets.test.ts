@@ -100,4 +100,34 @@ void test("a host-wide HTML failure is reported once for every target", () => {
     skipped.stderr,
     "\n[oxlint-plugin-vize] Skipped standalone HTML lint: unqualified host\n",
   );
+
+  // A failed host phase disqualifies every target alike, so it is reported once.
+  const target = (literalTarget: string) => ({
+    environment: {},
+    options: { cwd: "/project", format: "unix", literalTarget },
+    provider: { entrypoint: "oxlint", requestedEntrypoint: "oxlint" },
+  });
+  const crashed = joinHtmlTargets(
+    {
+      ...original,
+      status: 2,
+      observation: {
+        executable: "node",
+        args: ["oxlint"],
+        cwd: "/project",
+        environment: {},
+        status: 2,
+        signal: null,
+        error: null,
+        stdoutBytes: new Uint8Array(),
+        stderrBytes: new Uint8Array(),
+      },
+    },
+    [target("src"), target("pages")] as never,
+    [],
+  );
+  assert.equal(
+    crashed.stderr,
+    "\nOriginal HTML unavailable: actual host phase failed before qualified HTML execution\n",
+  );
 });

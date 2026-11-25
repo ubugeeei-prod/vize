@@ -20,7 +20,7 @@ jobs:
   source-frames:
     name: UTF-8 span bytes and block-relative holes
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:

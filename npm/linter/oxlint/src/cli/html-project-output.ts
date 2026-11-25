@@ -165,6 +165,11 @@ export function joinHtmlTargets(
   for (const context of contexts) {
     try {
       qualifyHtmlHost(context, merged);
+    } catch (error) {
+      // Qualification reads the host phases every target shares, so report its failure once.
+      return htmlFailure(merged, context, error);
+    }
+    try {
       const { completed } = executeHtml(context);
       if (!completed) throw new Error("original HTML operation is incomplete");
       const paths = completed.originals.map((selected) => selected.path);
@@ -175,13 +180,20 @@ export function joinHtmlTargets(
       for (const file of paths) linted.add(file);
       merged = mergeHtmlOutput(merged, completed, args);
     } catch (error) {
-      merged =
-        context.skipReason && !context.failure
-          ? skippedHtml(merged, error)
-          : unavailableHtml(merged, error);
+      merged = htmlFailure(merged, context, error);
     }
   }
   return merged;
+}
+
+function htmlFailure(
+  original: OxlintProcessResult,
+  context: HtmlContext,
+  error: unknown,
+): OxlintProcessResult {
+  return context.skipReason && !context.failure
+    ? skippedHtml(original, error)
+    : unavailableHtml(original, error);
 }
 
 export function unavailableHtml(
