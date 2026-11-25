@@ -37,7 +37,7 @@ pub use experimentals::ConfigExperimentalVueFlags;
 pub use features::ConfigFeatureFlags;
 pub use formatter::{
     ArrowParens, AttributeSortOrder, EndOfLine, FormatterConfig, FormatterPreset, FormatterProfile,
-    QuoteProps, TrailingComma,
+    ObjectWrap, QuoteProps, TrailingComma,
 };
 pub use global_types::{GlobalTypeDeclaration, GlobalTypesConfig, RawGlobalTypesConfig};
 pub use language_server::{LanguageServerConfig, LanguageServerUnstableFlags, LspConfig};

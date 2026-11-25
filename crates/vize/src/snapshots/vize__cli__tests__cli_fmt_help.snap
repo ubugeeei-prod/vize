@@ -43,6 +43,13 @@ Options:
           - consistent: Quote every property when one property requires quotes
           - preserve:   Preserve whether each property was authored with quotes
 
+      --object-wrap <OBJECT_WRAP>
+          Keep objects multiline when a newline follows '{', or collapse objects that fit
+
+          Possible values:
+          - preserve: Preserve a newline authored after an object's opening brace
+          - collapse: Collapse objects that fit the print width
+
       --trailing-comma <TRAILING_COMMA>
           Change where trailing commas are printed
 

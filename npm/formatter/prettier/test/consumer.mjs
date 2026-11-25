@@ -245,6 +245,32 @@ assert.equal(execute(["--write", "src/App.vue"]).status, 2);
 
 const prettier = require("prettier");
 const plugin = await import(pathToFileURL(installedPlugin).href);
+if (mode === "source-native") {
+  // The published-binding leg intentionally uses the historical native package.
+  // Exercise new policies against the authenticated source addon and packed plugin.
+  const objectInput = "<script setup>\nconst options = {\n a:1,\n};\n</script>\n";
+  for (const [objectWrap, body] of [
+    ["preserve", "const options = {\n  a: 1,\n};\n"],
+    ["collapse", "const options = { a: 1 };\n"],
+  ]) {
+    const parameters = [
+      "--stdin-filepath",
+      "src/Objects.vue",
+      "--object-wrap",
+      objectWrap,
+      "--semi",
+      "--end-of-line",
+      "lf",
+    ];
+    const expected = `<script setup>\n${body}</script>\n`;
+    const formatted = execute(parameters, objectInput);
+    assert.equal(formatted.status, 0, formatted.stderr);
+    assert.equal(formatted.stdout, expected);
+    const repeated = execute(parameters, formatted.stdout);
+    assert.equal(repeated.status, 0, repeated.stderr);
+    assert.equal(repeated.stdout, expected);
+  }
+}
 const timings = [];
 const benchmarkInput = input;
 for (let iteration = 0; iteration < 31; iteration++) {
@@ -269,6 +295,7 @@ const report = {
   packedNativeDependencyVersion: installedManifest.dependencies["@vizejs/native"],
   runtimeNativePackageVersion: require("@vizejs/native/package.json").version,
   sourcePreparation: preparation,
+  objectWrapSourceRegression: mode === "source-native",
   nativePackage: require.resolve("@vizejs/native"),
   nativeDependencyInstalledVersion: nativeVersion,
   nativeTransport:

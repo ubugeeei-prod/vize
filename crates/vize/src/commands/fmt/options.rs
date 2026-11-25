@@ -5,6 +5,24 @@ use crate::config;
 use clap::ValueEnum;
 use vize_glyph::VueVersion;
 
+/// Authored object layout modes selectable from the CLI.
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub(in crate::commands) enum FmtObjectWrap {
+    /// Preserve a newline authored after an object's opening brace
+    Preserve,
+    /// Collapse objects that fit the print width
+    Collapse,
+}
+
+impl From<FmtObjectWrap> for vize_glyph::ObjectWrap {
+    fn from(value: FmtObjectWrap) -> Self {
+        match value {
+            FmtObjectWrap::Preserve => Self::Preserve,
+            FmtObjectWrap::Collapse => Self::Collapse,
+        }
+    }
+}
+
 /// Named formatter defaults selectable from the CLI.
 #[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum FmtPreset {
@@ -106,6 +124,9 @@ pub(super) fn build_format_options(
     }
     if let Some(v) = args.quote_props {
         opts.quote_props = v.into();
+    }
+    if let Some(value) = args.object_wrap {
+        opts.object_wrap = value.into();
     }
     if let Some(v) = args.trailing_comma {
         opts.trailing_comma = v.into();

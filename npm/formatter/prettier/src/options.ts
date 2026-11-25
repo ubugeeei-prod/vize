@@ -17,7 +17,6 @@ export function nativeOptions(options: VizeOptions, length: number): FormatOptio
     ["vueIndentScriptAndStyle", options.vueIndentScriptAndStyle, false],
     ["embeddedLanguageFormatting", options.embeddedLanguageFormatting, "auto"],
     ["proseWrap", options.proseWrap, "preserve"],
-    ["objectWrap", options.objectWrap, "preserve"],
     ["experimentalTernaries", options.experimentalTernaries, false],
     ["experimentalOperatorPosition", options.experimentalOperatorPosition, "end"],
   ];
@@ -53,6 +52,7 @@ export function nativeOptions(options: VizeOptions, length: number): FormatOptio
     singleQuote: options.singleQuote,
     jsxSingleQuote: options.jsxSingleQuote,
     quoteProps: options.quoteProps,
+    objectWrap: options.objectWrap,
     trailingComma: options.trailingComma,
     arrowParens: options.arrowParens,
     bracketSpacing: options.bracketSpacing,

@@ -1,0 +1,43 @@
+{
+  "reference": {
+    "package": "oxfmt",
+    "version": "0.80.0"
+  },
+  "cases": [
+    {
+      "id": "reported",
+      "printWidth": 100,
+      "source": "const options = {\n a:1,\n};\n",
+      "preserve": "const options = {\n  a: 1,\n};\n",
+      "collapse": "const options = { a: 1 };\n"
+    },
+    {
+      "id": "nested",
+      "printWidth": 100,
+      "source": "const options = {\n nested: {\n a:1,\n },\n};\n",
+      "preserve": "const options = {\n  nested: {\n    a: 1,\n  },\n};\n",
+      "collapse": "const options = { nested: { a: 1 } };\n"
+    },
+    {
+      "id": "line-comment",
+      "printWidth": 100,
+      "source": "const options = {\n // keep this explanation\n a:1,\n};\n",
+      "preserve": "const options = {\n  // keep this explanation\n  a: 1,\n};\n",
+      "collapse": "const options = {\n  // keep this explanation\n  a: 1,\n};\n"
+    },
+    {
+      "id": "print-width",
+      "printWidth": 32,
+      "source": "const options = {\n first: \"a moderately long value\",\n second: \"another long value\",\n};\n",
+      "preserve": "const options = {\n  first:\n    \"a moderately long value\",\n  second: \"another long value\",\n};\n",
+      "collapse": "const options = {\n  first:\n    \"a moderately long value\",\n  second: \"another long value\",\n};\n"
+    },
+    {
+      "id": "array-control",
+      "printWidth": 100,
+      "source": "const values = [\n  1,\n  2,\n];\n",
+      "preserve": "const values = [1, 2];\n",
+      "collapse": "const values = [1, 2];\n"
+    }
+  ]
+}

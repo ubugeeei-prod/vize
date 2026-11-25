@@ -9,7 +9,7 @@ use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use vize_glyph::{
     Allocator, ArrowParens, AttributeSortOrder, FormatOptions, FormatPreset, GlyphFormatter,
-    QuoteProps, TrailingComma, VueVersion, resolve_sort_imports,
+    ObjectWrap, QuoteProps, TrailingComma, VueVersion, resolve_sort_imports,
 };
 
 /// Existing formatter line-ending modes, validated at the Node boundary.
@@ -45,6 +45,9 @@ pub struct FormatOptionsNapi {
     /// Change when object properties are quoted.
     #[napi(ts_type = "'as-needed' | 'consistent' | 'preserve'")]
     pub quote_props: Option<String>,
+    /// Keep objects multiline when a newline follows '{', or collapse objects that fit.
+    #[napi(ts_type = "'preserve' | 'collapse'")]
+    pub object_wrap: Option<String>,
     /// Change where trailing commas are printed.
     #[napi(ts_type = "'all' | 'es5' | 'none'")]
     pub trailing_comma: Option<String>,
@@ -165,6 +168,18 @@ pub(super) fn apply_overrides(options: &mut FormatOptions, opts: FormatOptionsNa
                 return Err(Error::new(
                     Status::InvalidArg,
                     "Unknown quoteProps; expected 'as-needed', 'consistent', or 'preserve'",
+                ));
+            }
+        };
+    }
+    if let Some(value) = opts.object_wrap.as_deref() {
+        options.object_wrap = match value {
+            "preserve" => ObjectWrap::Preserve,
+            "collapse" => ObjectWrap::Collapse,
+            _ => {
+                return Err(Error::new(
+                    Status::InvalidArg,
+                    "Unknown objectWrap; expected 'preserve' or 'collapse'",
                 ));
             }
         };

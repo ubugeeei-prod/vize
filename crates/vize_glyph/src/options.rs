@@ -5,6 +5,7 @@
 mod line_ending;
 
 use serde::{Deserialize, Serialize};
+pub use vize_l0::config::ObjectWrap;
 use vize_l0::{String, ToCompactString};
 
 /// Formatting options for Vue SFC
@@ -58,6 +59,10 @@ pub struct FormatOptions {
     /// Change when properties in objects are quoted (default: AsNeeded)
     #[serde(default)]
     pub quote_props: QuoteProps,
+
+    /// Keep objects multiline when a newline follows '{', or collapse them (default: Preserve).
+    #[serde(default, skip_serializing_if = "preserve_object_wrap")]
+    pub object_wrap: ObjectWrap,
 
     /// Put each HTML attribute on its own line (default: false)
     #[serde(default)]
@@ -166,6 +171,7 @@ impl Default for FormatOptions {
             arrow_parens: ArrowParens::default(),
             end_of_line: EndOfLine::default(),
             quote_props: QuoteProps::default(),
+            object_wrap: ObjectWrap::default(),
             single_attribute_per_line: false,
             vue_indent_script_and_style: false,
             sort_attributes: true,
@@ -242,6 +248,10 @@ impl FormatOptions {
 /// options while off, so existing option snapshots keep their bytes.
 fn is_false(value: &bool) -> bool {
     !*value
+}
+
+fn preserve_object_wrap(value: &ObjectWrap) -> bool {
+    *value == ObjectWrap::Preserve
 }
 
 /// Preserve the formatter's existing fallback for widths outside its domain.
@@ -353,7 +363,7 @@ impl FormatOptions {
         // Oxc 0.142 renamed FormatOptions to JsFormatOptions; shared layout types
         // live in oxc_formatter_core and are not re-exported by oxc_formatter.
         use oxc_formatter::{
-            ArrowParentheses, BracketSameLine, BracketSpacing, QuoteProperties, QuoteStyle,
+            ArrowParentheses, BracketSameLine, BracketSpacing, Expand, QuoteProperties, QuoteStyle,
             Semicolons, TrailingCommas,
         };
         use oxc_formatter_core::{IndentStyle, IndentWidth, LineEnding};
@@ -385,6 +395,10 @@ impl FormatOptions {
                 QuoteProps::AsNeeded => QuoteProperties::AsNeeded,
                 QuoteProps::Consistent => QuoteProperties::Consistent,
                 QuoteProps::Preserve => QuoteProperties::Preserve,
+            },
+            expand: match self.object_wrap {
+                ObjectWrap::Preserve => Expand::Auto,
+                ObjectWrap::Collapse => Expand::Never,
             },
             semicolons: if self.semi {
                 Semicolons::Always
