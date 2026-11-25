@@ -173,3 +173,29 @@ fn unique_case_dir(name: &str) -> PathBuf {
         .join("fmt")
         .join(dir_name.as_str())
 }
+
+#[test]
+fn globs_sharing_a_root_select_their_union_in_one_walk() {
+    let root = unique_case_dir("shared-walk");
+    let nested = root.join("src").join("nested");
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(&nested).unwrap();
+    for file in ["A.vue", "b.ts", "c.css.map", "d.json"] {
+        fs::write(nested.join(file), "{}").unwrap();
+    }
+    fs::create_dir_all(nested.join("Dir.vue")).unwrap();
+
+    let patterns = ["**/*.vue", "**/*.ts", "src/**/*.json", "**/*.ts"]
+        .map(|glob| root.join(glob).to_string_lossy().into_owned());
+    let files = collect_files(&patterns, None);
+    let _ = fs::remove_dir_all(&root);
+
+    assert_eq!(
+        files,
+        vec![
+            nested.join("A.vue"),
+            nested.join("b.ts"),
+            nested.join("d.json")
+        ]
+    );
+}

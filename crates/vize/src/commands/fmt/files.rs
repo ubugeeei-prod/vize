@@ -17,6 +17,9 @@ pub(crate) fn collect_files(
         return files;
     }
 
+    // Globs that share a walk root and ignore policy are matched in one walk:
+    // the default discovery names one glob per extension under the same root.
+    let mut walks: Vec<Walk> = Vec::new();
     for pattern in patterns {
         let input = pattern.as_ref();
         let is_directory_input = !contains_glob_char(input) && Path::new(input).is_dir();
@@ -35,13 +38,14 @@ pub(crate) fn collect_files(
         }
         if contains_glob_char(&normalized) {
             if let Some(pattern) = FmtPattern::new(&normalized, &cwd) {
-                collect_walked_files(
-                    &pattern,
-                    &normalized,
-                    is_directory_input,
-                    ignore_set,
-                    &mut files,
-                );
+                let walk = Walk::new(&normalized, is_directory_input);
+                match walks.iter_mut().find(|planned| planned.shares_walk(&walk)) {
+                    Some(planned) => planned.patterns.push(pattern),
+                    None => walks.push(Walk {
+                        patterns: vec![pattern],
+                        ..walk
+                    }),
+                }
             }
         } else {
             let path = PathBuf::from(&normalized);
@@ -51,31 +55,54 @@ pub(crate) fn collect_files(
         }
     }
 
+    for walk in &walks {
+        collect_walked_files(walk, ignore_set, &mut files);
+    }
+
     files.sort();
     files.dedup();
 
     files
 }
 
-fn collect_walked_files(
-    pattern: &FmtPattern,
-    input: &str,
+/// One directory walk and the globs matched against its entries.
+struct Walk {
+    root: PathBuf,
+    respect_ignores: bool,
     exclude_unimplemented_documents: bool,
-    ignore_set: Option<&FmtIgnoreSet>,
-    files: &mut Vec<PathBuf>,
-) {
-    let mut root = PathBuf::new();
-    for component in Path::new(input).components() {
-        if contains_glob_char(&component.as_os_str().to_string_lossy()) {
-            break;
+    patterns: Vec<FmtPattern>,
+}
+
+impl Walk {
+    fn new(input: &str, exclude_unimplemented_documents: bool) -> Self {
+        let mut root = PathBuf::new();
+        for component in Path::new(input).components() {
+            if contains_glob_char(&component.as_os_str().to_string_lossy()) {
+                break;
+            }
+            root.push(component);
         }
-        root.push(component);
+        if root.as_os_str().is_empty() {
+            root.push(".");
+        }
+        Self {
+            root,
+            respect_ignores: should_walk_with_gitignore(input),
+            exclude_unimplemented_documents,
+            patterns: Vec::new(),
+        }
     }
-    if root.as_os_str().is_empty() {
-        root.push(".");
+
+    fn shares_walk(&self, other: &Self) -> bool {
+        self.root == other.root
+            && self.respect_ignores == other.respect_ignores
+            && self.exclude_unimplemented_documents == other.exclude_unimplemented_documents
     }
-    let respect_ignores = should_walk_with_gitignore(input);
-    let walker = WalkBuilder::new(root)
+}
+
+fn collect_walked_files(walk: &Walk, ignore_set: Option<&FmtIgnoreSet>, files: &mut Vec<PathBuf>) {
+    let respect_ignores = walk.respect_ignores;
+    let walker = WalkBuilder::new(&walk.root)
         .hidden(false)
         .ignore(respect_ignores)
         .git_ignore(respect_ignores)
@@ -90,9 +117,12 @@ fn collect_walked_files(
 
     for entry in walker.filter_map(Result::ok) {
         let path = entry.path();
-        if pattern.matches(path)
-            && should_include_format_file(path, ignore_set)
-            && (!exclude_unimplemented_documents || !is_unimplemented_document(path))
+        // The walk already read a regular file's type; only links need a stat.
+        let file = entry.file_type().is_some_and(|kind| kind.is_file()) || path.is_file();
+        if file
+            && walk.patterns.iter().any(|pattern| pattern.matches(path))
+            && includes_format_file(path, ignore_set)
+            && (!walk.exclude_unimplemented_documents || !is_unimplemented_document(path))
         {
             files.push(path.strip_prefix(".").unwrap_or(path).to_path_buf());
         }
@@ -100,8 +130,12 @@ fn collect_walked_files(
 }
 
 fn should_include_format_file(path: &Path, ignore_set: Option<&FmtIgnoreSet>) -> bool {
+    path.is_file() && includes_format_file(path, ignore_set)
+}
+
+/// Every selection rule except the file-type check its caller already made.
+fn includes_format_file(path: &Path, ignore_set: Option<&FmtIgnoreSet>) -> bool {
     !vize_carton::path::is_git_metadata_path(path)
-        && path.is_file()
         && is_format_target(path)
         && !is_dependency_path(path)
         && !ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(path))

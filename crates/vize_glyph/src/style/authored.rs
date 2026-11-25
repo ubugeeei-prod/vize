@@ -287,7 +287,10 @@ fn reindent_token_gaps(source: &str, options: &FormatOptions, printer_indent: bo
             };
             gaps.push((token.gap_start, token.start, level));
             if declaration.is_some() && !matches!(token.text, ";" | "}") {
-                pending.push(gaps.len() - 1);
+                // A value's outermost closing parenthesis lines up with the
+                // declaration that opened it, not with its arguments.
+                let closes_value = token.text == ")" && token.parens == 1;
+                pending.push((gaps.len() - 1, closes_value));
             }
         }
         if token.parens != 0 || token.brackets != 0 {
@@ -299,9 +302,9 @@ fn reindent_token_gaps(source: &str, options: &FormatOptions, printer_indent: bo
             }
             ";" | "}" => {
                 if let Some(depth) = declaration.take() {
-                    for index in pending.drain(..) {
+                    for (index, closes_value) in pending.drain(..) {
                         if let Some((_, _, level)) = gaps.get_mut(index) {
-                            *level = depth + 1;
+                            *level = depth + usize::from(!closes_value);
                         }
                     }
                 }
