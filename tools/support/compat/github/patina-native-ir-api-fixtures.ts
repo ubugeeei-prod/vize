@@ -180,6 +180,9 @@ export function newPatinaNativeIrApiCases(
     equal(row.sources, patinaNativeIrApiRegistration.sources, "source closure differs");
     equal(row.tests, patinaNativeIrApiRegistration.tests, "selector closure differs");
     equal(row.evidence, patinaNativeIrApiRegistration.evidence, "evidence scope differs");
+    for (const input of patinaNativeIrApiRegistration.inputs.files) {
+      pinned(readFile, "head", `${patinaNativeIrApiRoot}/${input.path}`, input.sha256);
+    }
     if (old.length) {
       equal(value, old[0], "historical registration changed");
       continue;
@@ -189,9 +192,6 @@ export function newPatinaNativeIrApiCases(
     const rawData = readFile("head", dataPath);
     require(rawData !== null, "missing getter data");
     equal(JSON.parse(rawData.toString("utf8")), expectedData, "getter contract differs");
-    for (const input of patinaNativeIrApiRegistration.inputs.files) {
-      pinned(readFile, "head", `${patinaNativeIrApiRoot}/${input.path}`, input.sha256);
-    }
     for (const source of patinaNativeIrApiRegistration.sources) {
       pinned(readFile, "base", source.path, source.before, source.beforeBlob);
       pinned(readFile, "head", source.path, source.after, source.afterBlob);

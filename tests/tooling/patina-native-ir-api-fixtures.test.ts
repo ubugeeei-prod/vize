@@ -135,7 +135,7 @@ test("closed IDs, adapters, getter data, paths and test selectors reject substit
     const data = JSON.parse(tree.get(path)!.toString());
     edit(data);
     tree.set(path, Buffer.from(JSON.stringify(data)));
-    assert.match(report(tree).products[0].reason ?? "", /getter contract differs/);
+    assert.match(report(tree).products[0].reason ?? "", /head hash mismatch/);
   }
 });
 
@@ -165,6 +165,20 @@ test("a historical API registration cannot be reused for a subsequent fix", () =
   const tree = new Map(original);
   tree.set(`base:${manifest}`, tree.get(`head:${manifest}`)!);
   assert.equal(report(tree).products[0].state, "new-input-missing");
+});
+
+test("historical registrations still authenticate their current Rust consumer and getter inputs", () => {
+  const tree = new Map(original);
+  tree.set(`base:${manifest}`, tree.get(`head:${manifest}`)!);
+  for (const input of patinaNativeIrApiRegistration.inputs.files) {
+    const key = `head:${patinaNativeIrApiRoot}/${input.path}`;
+    const missing = new Map(tree);
+    missing.delete(key);
+    assert.equal(report(missing).products[0].state, "invalid-manifest-or-input", key);
+    const changed = new Map(tree);
+    changed.set(key, Buffer.concat([changed.get(key)!, Buffer.from("\nchanged\n")]));
+    assert.equal(report(changed).products[0].state, "invalid-manifest-or-input", key);
+  }
 });
 
 test("historical admission records do not read or freeze later live implementations", () => {
