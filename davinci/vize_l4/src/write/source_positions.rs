@@ -87,6 +87,7 @@ pub(super) struct ResolvedSegment {
         && result@[i].source_column@ == units(source@, last_start(source@, authored), authored)
         && result@[i].name == segments@[i].name
 }))]
+#[inline]
 pub(super) fn resolve_positions(
     code: &[u8],
     source: &[u8],
@@ -175,6 +176,7 @@ pub(super) fn resolve_positions(
 /// Byte offsets at which each line of `text` begins. Always starts with `0`;
 /// each JavaScript line terminator adds the offset just past it.
 #[cfg_attr(creusot, ensures(js_table(text@, result@)))]
+#[inline]
 pub(super) fn line_start_table(text: &[u8]) -> Vec<usize> {
     let mut starts = Vec::with_capacity(16);
     starts.push(0);
@@ -220,6 +222,7 @@ pub(super) fn line_start_table(text: &[u8]) -> Vec<usize> {
     let at = floor(text@, offset@);
     result.0@ == line_breaks(text@, at) && result.1@ == units(text@, last_start(text@, at), at)
 }))]
+#[inline]
 pub(super) fn resolve_in_table(text: &[u8], line_starts: &[usize], offset: usize) -> (u32, u32) {
     let offset = floor_char_boundary(text, offset);
     #[cfg(creusot)]
@@ -256,6 +259,7 @@ pub(super) fn resolve_in_table(text: &[u8], line_starts: &[usize], offset: usize
     clippy::manual_range_contains,
     reason = "Creusot 0.14 has no contract for Range::contains"
 )]
+#[inline]
 pub(super) fn floor_char_boundary(text: &[u8], offset: usize) -> usize {
     #[cfg(creusot)]
     proof_assert!(floor_is_the_greatest_boundary(text@, offset@); the_end_is_its_own_floor(text@); true);
