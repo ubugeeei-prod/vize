@@ -110,7 +110,7 @@ incremental check after a build), which the p50 discards.
 | edit `vize_canon`, `check` |      16.9 |       8.4 |       6.9 |       -59.4% |       17 → 24 s |      1.34 → 1.19 GiB |
 | edit `vize_canon`, `build` |      33.2 |      20.5 |      17.4 |       -47.7% |      80 → 107 s |      2.66 → 3.50 GiB |
 
-The parallel frontend trades CPU for wall time. At `j8` the CPU cost is +17% to +34%; at
+The parallel frontend trades CPU for wall time. At `j8` the CPU cost is +17% to +41%; at
 `j4` it is +10% to +24%. The maintainer chose the fastest setting, `j8`, for both CI and the dev shell. kache
 offsets the extra CPU locally: a hit costs almost none.
 
