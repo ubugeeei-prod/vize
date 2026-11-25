@@ -312,7 +312,7 @@ fn original_if_projections_keep_the_complete_authored_probe_owner() {
         let template = descriptor.template.as_ref().expect("template");
         let script = descriptor.script_setup.as_ref().expect("setup");
         let allocator = vize_l0::Allocator::new();
-        let l2 = crate::markup::L2Template::lower(&allocator, template.content.as_ref());
+        let l2 = crate::markup::LintL2Template::lower(&allocator, template.content.as_ref());
         assert!(l2.surface_errors().is_empty());
         let document = super::super::document::project_type_aware(
             &descriptor,

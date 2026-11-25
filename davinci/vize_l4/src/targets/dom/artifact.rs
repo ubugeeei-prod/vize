@@ -121,11 +121,11 @@ use vize_l0::String;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l2::op::Namespace;
-use vize_l2::scope::ScopeFacts;
+use vize_l2::scope::ScopeAnalysis;
 
 use vize_l2::analysis::fragment_facts::{BranchFragments, LoopFragment};
-use vize_l2::analysis::if_facts::IfFacts;
-use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::if_facts::IfAnalysis;
+use vize_l2::analysis::pass_facts::L2Analyses;
 use vize_l2::analysis::text_facts::TextParts;
 use vize_l2::walk::PageWalk;
 
@@ -142,7 +142,7 @@ pub use self::budget::{
 };
 #[cfg(any(test, feature = "legacy-differential"))]
 pub use self::budget::{
-    ObservedPatchFactsEmit, emit_dom_source_patch_facts_observed,
+    ObservedPatchAnalysisEmit, emit_dom_source_patch_facts_observed,
     emit_dom_source_patch_facts_observed_with_options,
 };
 use self::buf::Buf;
@@ -171,13 +171,13 @@ pub use self::transform_expr::{
 struct EmitCx<'facts> {
     buf: Buf,
     source: &'facts str,
-    facts: &'facts L2Facts,
+    facts: &'facts L2Analyses,
     texts: &'facts SideTable<TextParts>,
-    if_facts: &'facts SideTable<IfFacts>,
-    scopes: &'facts SideTable<ScopeFacts>,
+    if_facts: &'facts SideTable<IfAnalysis>,
+    scopes: &'facts SideTable<ScopeAnalysis>,
     wrappers: &'facts SideTable<BranchFragments>,
     for_wrappers: &'facts SideTable<LoopFragment>,
-    patch_facts: patch::PatchFactsTable,
+    patch_facts: patch::PatchAnalysisTable,
     walk: PageWalk,
     scope_names: StdVec<String>,
     /// Sibling `v-if` chains share one counter; nested chains reset.

@@ -6,11 +6,12 @@ use vize_l1::embed::{
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l2::framework::vue::{
-    OrdinaryFacts, OrdinaryFactsIncomplete, OrdinaryObserver, ReactiveSource, SetupBindingKind,
+    OrdinaryAnalysis, OrdinaryAnalysisIncomplete, OrdinaryObserver, ReactiveSource,
+    SetupBindingKind,
 };
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
-fn observe(source: &str) -> Option<OrdinaryFacts> {
+fn observe(source: &str) -> Option<OrdinaryAnalysis> {
     let arena = Allocator::default();
     let span = Span::new(0, u32::try_from(source.len()).ok()?);
     let syntax = parse_program_once(
@@ -116,6 +117,6 @@ export enum ExportedEnum { A }
 fn unfinished_observer_claims_no_program() {
     assert_eq!(
         OrdinaryObserver::new().finish(),
-        Err(OrdinaryFactsIncomplete::NoProgram)
+        Err(OrdinaryAnalysisIncomplete::NoProgram)
     );
 }

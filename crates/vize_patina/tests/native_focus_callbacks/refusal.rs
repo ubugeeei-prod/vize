@@ -1,6 +1,6 @@
 use super::support::*;
 use vize_l0::Span;
-use vize_l1::markup::TagFactsRefusal;
+use vize_l1::markup::TagAnalysisRefusal;
 use vize_patina::{
     HelpLevel, Severity,
     native::{NativeLintRefusal, template::NativeTemplateLintRefusal as Refusal},
@@ -226,7 +226,7 @@ fn exact_and_modified_verbatim_headers_cannot_grant_whole_body_clean_credit() {
         (
             "<div v-pre.camel autofocus></div>",
             Refusal::Header(NativeLintRefusal::LintTag {
-                reason: TagFactsRefusal::AmbiguousVerbatim,
+                reason: TagAnalysisRefusal::AmbiguousVerbatim,
             }),
         ),
     ] {

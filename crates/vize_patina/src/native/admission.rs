@@ -1,7 +1,7 @@
 //! One original child traversal for the bounded complete parser-output profile.
 
 use vize_l0::{SmallVec, Span, is_html_tag, is_math_ml_tag, is_svg_tag};
-use vize_l1::markup::{ChildrenView, OwnedComponent, SurfaceChild, TagFactsKind, Token};
+use vize_l1::markup::{ChildrenView, OwnedComponent, SurfaceChild, TagAnalysisKind, Token};
 
 use super::{
     attribute, header, header_rules,
@@ -175,7 +175,7 @@ fn walk<'o, 'a>(
                     } else {
                         select::check(owner_profile, parent, &element, &attributes, opening)?
                     };
-                    if receipt.kind() != TagFactsKind::Element
+                    if receipt.kind() != TagAnalysisKind::Element
                         || receipt.header_is_literal()
                         || element.surface().open.is_verbatim()
                         || !is_html_tag(tag)

@@ -49,7 +49,7 @@ allocations.
 The L2 provenance page (`folio/provenance.rs`) and the L2-to-L3 partition
 page (`partition/folio.rs`) each retain one source-sized `Vec` of owned
 records: the same contract storage as the other derived Folio pages, while
-the live provenance records and the arena-owned `PartitionFacts` stay with
+the live provenance records and the arena-owned `PartitionAnalysis` stay with
 their stages.
 
 L3 value payloads use an arena-owned operand sequence. The separate owned

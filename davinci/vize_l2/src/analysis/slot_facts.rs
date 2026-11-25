@@ -44,7 +44,7 @@ impl SlotName {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SlotBound {
     /// The one enumerated simple-identifier name, validated against the
-    /// lowering's `ScopeFacts` entry.
+    /// lowering's `ScopeAnalysis` entry.
     Named(String),
     /// Authored but enumerating no name yet: a destructuring pattern
     /// (awaiting the #4365 enumeration seam), a foreign dialect, or the
@@ -99,7 +99,7 @@ pub struct SlotGroup {
 /// order (duplicate static names dropped, exactly as the legacy
 /// grouping), then the implicit default when synthesized.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SlotFacts {
+pub struct SlotAnalysis {
     /// The groups.
     pub groups: StdVec<SlotGroup>,
 }
@@ -113,7 +113,7 @@ const _: () = {
     assert_owned::<SlotParams>();
     assert_owned::<SlotCarrier>();
     assert_owned::<SlotGroup>();
-    assert_owned::<SlotFacts>();
+    assert_owned::<SlotAnalysis>();
 };
 
 /// 64-bit footprints, guarded like every node-size assert (the wasm32
@@ -125,7 +125,7 @@ const _: () = {
     assert!(core::mem::size_of::<SlotParams>() == 56);
     assert!(core::mem::size_of::<SlotCarrier>() == 8);
     assert!(core::mem::size_of::<SlotGroup>() == 112);
-    assert!(core::mem::size_of::<SlotFacts>() == 24);
+    assert!(core::mem::size_of::<SlotAnalysis>() == 24);
 };
 
 /// Whitespace-only text (`&nbsp;` spellings included) that never counts as

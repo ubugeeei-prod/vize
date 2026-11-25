@@ -12,7 +12,7 @@
 
 use vize_atelier_core::{ElementNode, ElementType, StaticType, TemplateChildNode, get_static_type};
 use vize_l0::side_table::SideTable;
-use vize_l1_to_l2::pass::StaticFacts;
+use vize_l1_to_l2::pass::StaticAnalysis;
 use vize_l2::dump::{
     Component as DumpComponent, Element as DumpElement, Op as DumpOp, Slot as DumpSlot,
 };
@@ -35,7 +35,7 @@ pub fn walk_element(
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
-    facts: &SideTable<StaticFacts>,
+    facts: &SideTable<StaticAnalysis>,
     counters: &mut HoistCounters,
 ) -> bool {
     let owner = *next;
@@ -189,7 +189,7 @@ pub fn walk_component(
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
-    facts: &SideTable<StaticFacts>,
+    facts: &SideTable<StaticAnalysis>,
     counters: &mut HoistCounters,
 ) -> bool {
     let owner = *next;
@@ -270,7 +270,7 @@ pub fn walk_slot(
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
-    facts: &SideTable<StaticFacts>,
+    facts: &SideTable<StaticAnalysis>,
     counters: &mut HoistCounters,
 ) -> bool {
     *next += 1 + u32::try_from(slot.bindings.len()).expect("binding count fits");

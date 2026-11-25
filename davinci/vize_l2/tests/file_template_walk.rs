@@ -1,7 +1,7 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::artifact::{ArtifactError, ComponentFactory};
+use vize_l2::artifact::{ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
 use vize_l2::file::{Declaration, FileIssueKind, TemplatePolicy, TemplateScope};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
@@ -63,7 +63,7 @@ fn driver<'a, R: ComponentFactory<'a>>(
     factory: &mut R,
     expression: &'a JsExpr<'a>,
     span: Span,
-) -> Result<vize_l0::id::NodeId, ArtifactError> {
+) -> Result<vize_l0::id::NodeId, L2TemplateError> {
     factory.interpolation(expression, span)
 }
 #[test]
@@ -194,7 +194,7 @@ fn nested_whole_driver_cannot_supply_a_forgotten_pending_guard() {
             Err(error) => {
                 assert!(matches!(
                     error,
-                    ArtifactError::InvalidSpan { node: None, span } if span == inner
+                    L2TemplateError::InvalidSpan { node: None, span } if span == inner
                 ));
                 refused = true;
             }

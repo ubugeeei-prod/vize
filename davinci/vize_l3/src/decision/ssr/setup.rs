@@ -1,10 +1,10 @@
 //! SSR reads retain the normal original setup and its completed template File.
 
-use super::{SsrFacts, SsrTemplateBuildError};
+use super::{SsrAnalysis, SsrTemplateBuildError};
 use crate::decision::{DecisionAnalysis, DecisionTables, build};
 use vize_l0::id::NodeId;
 use vize_l2::{
-    artifact::Artifact,
+    artifact::L2Template,
     file::{BindingRef, FileResolution, L2Ir},
     lang::js::{NativeSelectedSetup, NativeTemplateFile, NativeTemplateView},
     resolution::Occurrence,
@@ -115,11 +115,11 @@ impl<'view, 'owner, 'arena> SelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
     #[must_use]
     pub fn original_attributes(
         &self,
-    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+    ) -> Option<&crate::decision::OriginalAttributeAnalysis<'owner, 'arena>> {
         self.analysis.original_attributes()
     }
     #[must_use]
-    pub fn artifact(&self) -> &'owner Artifact<'arena> {
+    pub fn artifact(&self) -> &'owner L2Template<'arena> {
         self.l2ir().artifact()
     }
     #[must_use]
@@ -127,7 +127,7 @@ impl<'view, 'owner, 'arena> SelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
         self.analysis.tables()
     }
     #[must_use]
-    pub fn ssr(&self) -> Option<&SsrFacts<'owner, 'arena>> {
+    pub fn ssr(&self) -> Option<&SsrAnalysis<'owner, 'arena>> {
         self.analysis.ssr()
     }
     #[must_use]

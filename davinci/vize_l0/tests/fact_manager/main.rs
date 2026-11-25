@@ -1,4 +1,4 @@
-//! P4-1a: the `FactManager` computes exactly the demanded closure, in
+//! P4-1a: the `AnalysisManager` computes exactly the demanded closure, in
 //! stratum order, each group at most once per artifact, and serves borrowed
 //! tables.
 
@@ -14,8 +14,9 @@ use groups::{
     Impostor, PARTIAL, Parity, REGISTRY, SquareRule, Squares, Summary, SummaryRule, Unused,
     UnusedRule, Values, serial, take_log,
 };
-use vize_l0::fact::{
-    Demand, FactConsumer, FactError, FactGroup, FactManager, FactTable, produced_count,
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisError, AnalysisManager, AnalysisTable, Demand,
+    produced_count,
 };
 
 const ARTIFACT: &[u32] = &[1, 2, 3, 4];
@@ -38,7 +39,7 @@ fn delta(before: [u64; 5], after: [u64; 5]) -> [u64; 5] {
 fn a_run_computes_exactly_the_closure_in_stratum_order() {
     let _serial = serial();
     take_log();
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let produced = manager.compute(ARTIFACT, SummaryRule::DEMAND).unwrap();
     let closure = Demand::NONE
         .with(Values::ID)
@@ -54,7 +55,7 @@ fn a_run_computes_exactly_the_closure_in_stratum_order() {
 fn each_group_is_produced_once_per_artifact() {
     let _serial = serial();
     let before = counts();
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager.compute(ARTIFACT, SummaryRule::DEMAND).unwrap();
     // Overlapping and repeated demands reuse what is already computed.
     assert_eq!(
@@ -68,7 +69,7 @@ fn each_group_is_produced_once_per_artifact() {
     assert_eq!(delta(before, counts()), [1, 0, 1, 1, 1]);
 
     // A second artifact is a second manager: one more production each.
-    let mut other = FactManager::new(&REGISTRY);
+    let mut other = AnalysisManager::new(&REGISTRY);
     other.compute(&[5, 6][..], SquareRule::DEMAND).unwrap();
     assert_eq!(delta(before, counts()), [2, 0, 2, 1, 1]);
 }
@@ -76,10 +77,10 @@ fn each_group_is_produced_once_per_artifact() {
 #[test]
 fn queries_borrow_the_exact_tables() {
     let _serial = serial();
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let view = manager.prepare::<SummaryRule>(ARTIFACT).unwrap();
     let summary = view.get::<Summary>().unwrap();
-    let expected: FactTable<Summary> = [(0, 4 + 16)].into_iter().collect();
+    let expected: AnalysisTable<Summary> = [(0, 4 + 16)].into_iter().collect();
     assert_eq!(summary, &expected);
 
     let view = manager.view::<SquareRule>();
@@ -96,10 +97,10 @@ fn queries_borrow_the_exact_tables() {
 fn a_declared_table_can_leave_a_consumed_manager() {
     let _serial = serial();
     let before = counts();
-    let summary = FactManager::new(&REGISTRY)
+    let summary = AnalysisManager::new(&REGISTRY)
         .prepare_owned::<SummaryRule, Summary>(ARTIFACT)
         .unwrap();
-    let expected: FactTable<Summary> = [(0, 4 + 16)].into_iter().collect();
+    let expected: AnalysisTable<Summary> = [(0, 4 + 16)].into_iter().collect();
     assert_eq!(summary, expected);
     assert_eq!(delta(before, counts()), [1, 0, 1, 1, 1]);
 }
@@ -107,29 +108,29 @@ fn a_declared_table_can_leave_a_consumed_manager() {
 #[test]
 fn owning_a_table_keeps_the_consumers_declared_demand_boundary() {
     let _serial = serial();
-    let error = FactManager::new(&REGISTRY)
+    let error = AnalysisManager::new(&REGISTRY)
         .prepare_owned::<SquareRule, Summary>(ARTIFACT)
         .unwrap_err();
     #[cfg(debug_assertions)]
     assert_eq!(
         error,
-        FactError::Undeclared {
+        AnalysisError::Undeclared {
             consumer: "square-rule",
             group: Summary::ID,
         }
     );
     #[cfg(not(debug_assertions))]
-    assert_eq!(error, FactError::NotComputed { group: Summary::ID });
+    assert_eq!(error, AnalysisError::NotComputed { group: Summary::ID });
 }
 
 #[test]
 fn an_unregistered_demand_is_refused_before_anything_runs() {
     let _serial = serial();
     take_log();
-    let mut manager = FactManager::new(&PARTIAL);
+    let mut manager = AnalysisManager::new(&PARTIAL);
     assert_eq!(
         manager.compute(ARTIFACT, UnusedRule::DEMAND.with(Values::ID)),
-        Err(FactError::Unregistered { group: Unused::ID })
+        Err(AnalysisError::Unregistered { group: Unused::ID })
     );
     assert_eq!(manager.computed(), Demand::NONE);
     assert_eq!(take_log(), Vec::<&str>::new());
@@ -137,17 +138,17 @@ fn an_unregistered_demand_is_refused_before_anything_runs() {
 
 #[test]
 fn a_declared_but_uncomputed_group_is_not_computed() {
-    let manager = FactManager::new(&REGISTRY);
+    let manager = AnalysisManager::new(&REGISTRY);
     let view = manager.view::<SquareRule>();
     assert_eq!(
-        view.get::<Squares>().map(FactTable::len),
-        Err(FactError::NotComputed { group: Squares::ID })
+        view.get::<Squares>().map(AnalysisTable::len),
+        Err(AnalysisError::NotComputed { group: Squares::ID })
     );
 }
 
 /// The consumer of a group whose id another group type also claims.
 struct ImpostorRule;
-impl FactConsumer for ImpostorRule {
+impl AnalysisConsumer for ImpostorRule {
     const NAME: &'static str = "impostor-rule";
     const DEMAND: Demand = Demand::NONE.with(Impostor::ID);
 }
@@ -155,12 +156,12 @@ impl FactConsumer for ImpostorRule {
 #[test]
 fn a_query_through_the_wrong_group_type_is_a_type_mismatch() {
     let _serial = serial();
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager.compute(ARTIFACT, SquareRule::DEMAND).unwrap();
     let view = manager.view::<ImpostorRule>();
     assert_eq!(
-        view.get::<Impostor>().map(FactTable::len),
-        Err(FactError::TypeMismatch {
+        view.get::<Impostor>().map(AnalysisTable::len),
+        Err(AnalysisError::TypeMismatch {
             group: Squares::ID,
             expected: "fact_manager::groups::Impostor",
         })
@@ -169,7 +170,7 @@ fn a_query_through_the_wrong_group_type_is_a_type_mismatch() {
 
 #[test]
 fn an_empty_demand_computes_nothing() {
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     assert_eq!(manager.compute(ARTIFACT, Demand::NONE), Ok(Demand::NONE));
     assert_eq!(manager.computed(), Demand::NONE);
 }

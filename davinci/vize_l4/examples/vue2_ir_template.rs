@@ -10,7 +10,7 @@ use vize_l0::Allocator;
 use vize_l1::framework::vue::version::v2::surface::parse_component;
 use vize_l1_to_l2::native_vue2::lower_vue2_component;
 use vize_l2::{
-    artifact::Artifact,
+    artifact::L2Template,
     expr::ExprRef,
     resolution::{BindingId, BindingLookup, ResolutionTable, resolve_expression},
 };
@@ -57,7 +57,7 @@ impl BindingLookup for Lookup {
             .map(|index| BindingId::new(index as u32))
     }
 }
-fn tables<'a>(artifact: &Artifact<'a>, lookup: &impl BindingLookup) -> Vec<ResolutionTable<'a>> {
+fn tables<'a>(artifact: &L2Template<'a>, lookup: &impl BindingLookup) -> Vec<ResolutionTable<'a>> {
     let mut rows = Vec::new();
     artifact
         .visit_nodes(&mut |_, node| {

@@ -1,6 +1,6 @@
 //! Admit the actual private factory resolution, without another AST walk.
 
-use super::{DomBuilder, DomExpressionFacts, DomUnsupported, ValueKind};
+use super::{DomBuilder, DomExpressionAnalysis, DomUnsupported, ValueKind};
 use crate::decision::dom::file::{DomFileExpression, matches_expression};
 use crate::decision::dom::vue::policy::FileReads;
 use crate::decision::dom::vue::{VueReadKind, VueRenderExpression, VueRenderRead};
@@ -8,7 +8,7 @@ use alloc::vec::Vec;
 use vize_l0::id::NodeId;
 use vize_l2::{expr::JsExpr, file::Namespace};
 
-impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
 {
     pub(super) fn file_value(

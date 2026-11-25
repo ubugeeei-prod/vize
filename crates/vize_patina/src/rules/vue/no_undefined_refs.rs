@@ -5,7 +5,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_croquis::facts::{Demand, FactConsumer, FactGroup, UndefinedRefs};
+use vize_croquis::facts::{Analysis, AnalysisConsumer, Demand, UndefinedRefs};
 use vize_l0::cstr;
 use vize_relief::RootNode;
 
@@ -21,7 +21,7 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoUndefinedRefs;
 
-impl FactConsumer for NoUndefinedRefs {
+impl AnalysisConsumer for NoUndefinedRefs {
     const NAME: &'static str = "vue/no-undefined-refs";
     const DEMAND: Demand = Demand::NONE.with(UndefinedRefs::ID);
 }

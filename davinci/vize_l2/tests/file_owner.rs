@@ -1,5 +1,5 @@
 use vize_l0::{Allocator, Span, id::NodeId};
-use vize_l2::artifact::ArtifactError;
+use vize_l2::artifact::L2TemplateError;
 use vize_l2::file::FileBuilder;
 
 #[test]
@@ -26,7 +26,7 @@ fn refused_factory_sites_do_not_mint_or_replace_file_nodes() {
     let mut builder = FileBuilder::new(&arena, "é").unwrap();
     assert!(matches!(
         builder.text("", Span::new(1, 2)),
-        Err(ArtifactError::InvalidSpan { .. })
+        Err(L2TemplateError::InvalidSpan { .. })
     ));
     assert_eq!(builder.text("é", Span::new(0, 2)).unwrap(), NodeId::FIRST);
     assert_eq!(builder.finish().unwrap().artifact().node_count(), 1);

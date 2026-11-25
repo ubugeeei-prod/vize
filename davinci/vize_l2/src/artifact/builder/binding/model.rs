@@ -1,6 +1,6 @@
 //! Only a retained original Model can introduce this attached contract.
 
-use super::super::{ArtifactError, Builder, Owner, check};
+use super::super::{Builder, L2TemplateError, Owner, check};
 use crate::expr::ExprRef;
 use crate::file::NativeFileModelKind;
 use crate::lang::js::NativeModelInput;
@@ -12,28 +12,28 @@ impl<'a> Builder<'a> {
         &mut self,
         input: &NativeModelInput<'a>,
         kind: NativeFileModelKind,
-    ) -> Result<(NodeId, core::ptr::NonNull<ModelOp<'a>>), ArtifactError> {
-        let span = input.attribute_span().ok_or(ArtifactError::InvalidSpan {
+    ) -> Result<(NodeId, core::ptr::NonNull<ModelOp<'a>>), L2TemplateError> {
+        let span = input.attribute_span().ok_or(L2TemplateError::InvalidSpan {
             node: None,
             span: input.operand().name_span(),
         })?;
-        let expression = input.expression().ok_or(ArtifactError::InvalidSpan {
+        let expression = input.expression().ok_or(L2TemplateError::InvalidSpan {
             node: None,
             span: input.operand().value_span(),
         })?;
         let frame = self
             .frames
             .last()
-            .ok_or(ArtifactError::BindingWithoutOwner { span })?;
+            .ok_or(L2TemplateError::BindingWithoutOwner { span })?;
         if !matches!(&frame.owner, Owner::Element { tag: "input", namespace: Namespace::Html, attributes } if match kind {
             NativeFileModelKind::Text => attributes.is_empty(),
             NativeFileModelKind::Checkbox => matches!(attributes.as_slice(), [attribute] if attribute.name == "type" && attribute.value == Some("checkbox")),
         }) || !frame.bindings.is_empty()
         {
-            return Err(ArtifactError::BindingWithoutOwner { span });
+            return Err(L2TemplateError::BindingWithoutOwner { span });
         }
         if frame.children_started {
-            return Err(ArtifactError::BindingAfterChild {
+            return Err(L2TemplateError::BindingAfterChild {
                 node: frame.id,
                 span,
             });
@@ -45,7 +45,7 @@ impl<'a> Builder<'a> {
                 self.parts.source,
             )
         {
-            return Err(ArtifactError::MismatchedJsSource {
+            return Err(L2TemplateError::MismatchedJsSource {
                 node: id,
                 span: expression.span,
             });
@@ -93,7 +93,7 @@ impl<'a> Builder<'a> {
         let frame = self
             .frames
             .last_mut()
-            .ok_or(ArtifactError::BindingWithoutOwner { span })?;
+            .ok_or(L2TemplateError::BindingWithoutOwner { span })?;
         let _ = self.walk.mint_attached();
         frame.bindings.push(BindingOp::Model(model));
         Ok((id, original))

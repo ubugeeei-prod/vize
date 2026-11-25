@@ -2,14 +2,14 @@
 //! group through a declared demand (Davinci P4-3a).
 
 use vize_carton::cstr;
-use vize_croquis::facts::{CroquisFacts, Demand, FactConsumer, FactGroup, UndefinedRefs};
+use vize_croquis::facts::{Analysis, AnalysisConsumer, CroquisFacts, Demand, UndefinedRefs};
 
 use super::{SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity};
 
 /// The template-binding check reads the template's unresolved reads.
 struct TemplateBindingCheck;
 
-impl FactConsumer for TemplateBindingCheck {
+impl AnalysisConsumer for TemplateBindingCheck {
     const NAME: &'static str = "canon/template-bindings";
     const DEMAND: Demand = Demand::NONE.with(UndefinedRefs::ID);
 }

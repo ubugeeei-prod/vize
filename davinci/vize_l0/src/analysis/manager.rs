@@ -1,25 +1,25 @@
-//! [`FactManager`] — computes and owns one artifact's facts.
+//! [`AnalysisManager`] — computes and owns one artifact's facts.
 
-use super::registry::FactRegistry;
+use super::registry::AnalysisRegistry;
 use super::view::{Declared, Tables, count_production};
-use super::{Demand, FactConsumer, FactError, FactGroup, FactTable, FactView};
+use super::{Analysis, AnalysisConsumer, AnalysisError, AnalysisTable, AnalysisView, Demand};
 
 /// Computes and owns the facts of one artifact.
 ///
 /// The manager does not hold the artifact: passes mutate it between
 /// queries, so every computing call takes the artifact's **current** state.
 /// Every group is produced at most once per artifact state, however many
-/// consumers demand it; [`FactManager::after_pass`] (P4-1b) is the only way
+/// consumers demand it; [`AnalysisManager::after_pass`] (P4-1b) is the only way
 /// a computed group goes away.
-pub struct FactManager<'r, A: ?Sized + 'static> {
-    pub(crate) registry: &'r FactRegistry<A>,
+pub struct AnalysisManager<'r, A: ?Sized + 'static> {
+    pub(crate) registry: &'r AnalysisRegistry<A>,
     pub(crate) tables: Tables,
 }
 
-impl<'r, A: ?Sized + 'static> FactManager<'r, A> {
+impl<'r, A: ?Sized + 'static> AnalysisManager<'r, A> {
     /// A manager with nothing computed yet.
     #[must_use]
-    pub fn new(registry: &'r FactRegistry<A>) -> Self {
+    pub fn new(registry: &'r AnalysisRegistry<A>) -> Self {
         Self {
             registry,
             tables: Tables::new(),
@@ -38,9 +38,9 @@ impl<'r, A: ?Sized + 'static> FactManager<'r, A> {
     ///
     /// # Errors
     ///
-    /// [`FactError::Unregistered`] (before anything runs) when the closure
+    /// [`AnalysisError::Unregistered`] (before anything runs) when the closure
     /// names a group no producer computes.
-    pub fn compute(&mut self, artifact: &A, demand: Demand) -> Result<Demand, FactError> {
+    pub fn compute(&mut self, artifact: &A, demand: Demand) -> Result<Demand, AnalysisError> {
         let pending = self.pending(demand)?;
         compute_into(self.registry, &mut self.tables, artifact, pending, true);
         Ok(pending)
@@ -50,28 +50,31 @@ impl<'r, A: ?Sized + 'static> FactManager<'r, A> {
     ///
     /// # Errors
     ///
-    /// As [`FactManager::compute`].
-    pub fn prepare<C: FactConsumer>(&mut self, artifact: &A) -> Result<FactView<'_>, FactError> {
+    /// As [`AnalysisManager::compute`].
+    pub fn prepare<C: AnalysisConsumer>(
+        &mut self,
+        artifact: &A,
+    ) -> Result<AnalysisView<'_>, AnalysisError> {
         self.compute(artifact, C::DEMAND)?;
         Ok(self.view::<C>())
     }
 
     /// Compute `C`'s demand and transfer ownership of one declared table.
     ///
-    /// This is the owning counterpart of [`FactManager::prepare`]. It is for
+    /// This is the owning counterpart of [`AnalysisManager::prepare`]. It is for
     /// a caller that outlives the manager but still wants every read to pass
     /// through the same declared-demand and runtime type checks as a borrowed
-    /// [`FactView`]. The manager is consumed so no dependent table can retain
+    /// [`AnalysisView`]. The manager is consumed so no dependent table can retain
     /// a stale view of the extracted group.
     ///
     /// # Errors
     ///
     /// Returns the same errors as preparing `C` and reading `G` from the
     /// resulting view.
-    pub fn prepare_owned<C: FactConsumer, G: FactGroup>(
+    pub fn prepare_owned<C: AnalysisConsumer, G: Analysis>(
         mut self,
         artifact: &A,
-    ) -> Result<FactTable<G>, FactError> {
+    ) -> Result<AnalysisTable<G>, AnalysisError> {
         self.prepare::<C>(artifact)?.get::<G>()?;
         let Some(table) = self
             .tables
@@ -79,12 +82,12 @@ impl<'r, A: ?Sized + 'static> FactManager<'r, A> {
             .get_mut(G::ID.index() as usize)
             .and_then(Option::take)
         else {
-            return Err(FactError::NotComputed { group: G::ID });
+            return Err(AnalysisError::NotComputed { group: G::ID });
         };
         table
-            .downcast::<FactTable<G>>()
+            .downcast::<AnalysisTable<G>>()
             .map(|table| *table)
-            .map_err(|_| FactError::TypeMismatch {
+            .map_err(|_| AnalysisError::TypeMismatch {
                 group: G::ID,
                 expected: core::any::type_name::<G>(),
             })
@@ -92,15 +95,15 @@ impl<'r, A: ?Sized + 'static> FactManager<'r, A> {
 
     /// `C`'s view of what is computed now, declared with `C`'s demand.
     #[must_use]
-    pub fn view<C: FactConsumer>(&self) -> FactView<'_> {
-        FactView::new(&self.tables, Declared::new(C::NAME, C::DEMAND))
+    pub fn view<C: AnalysisConsumer>(&self) -> AnalysisView<'_> {
+        AnalysisView::new(&self.tables, Declared::new(C::NAME, C::DEMAND))
     }
 
     /// The closure of `demand` minus what is already computed.
-    fn pending(&self, demand: Demand) -> Result<Demand, FactError> {
+    fn pending(&self, demand: Demand) -> Result<Demand, AnalysisError> {
         let closure = self.registry.closure(demand);
         match closure.minus(self.registry.registered()).iter().next() {
-            Some(group) => Err(FactError::Unregistered { group }),
+            Some(group) => Err(AnalysisError::Unregistered { group }),
             None => Ok(closure.minus(self.tables.computed)),
         }
     }
@@ -111,7 +114,7 @@ impl<'r, A: ?Sized + 'static> FactManager<'r, A> {
 /// dependencies not already in `tables`; `count` records productions (a
 /// verification recompute is not one).
 pub(crate) fn compute_into<A: ?Sized + 'static>(
-    registry: &FactRegistry<A>,
+    registry: &AnalysisRegistry<A>,
     tables: &mut Tables,
     artifact: &A,
     pending: Demand,
@@ -132,7 +135,7 @@ pub(crate) fn compute_into<A: ?Sized + 'static>(
             if desc.stratum != stratum || !pending.contains(desc.id) {
                 continue;
             }
-            let inputs = FactView::new(tables, Declared::new(desc.name, desc.depends));
+            let inputs = AnalysisView::new(tables, Declared::new(desc.name, desc.depends));
             let table = (entry.run)(artifact, &inputs);
             if count {
                 count_production(desc.id);

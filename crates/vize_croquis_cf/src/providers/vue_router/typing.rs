@@ -19,12 +19,14 @@
 mod messages;
 
 use vize_carton::{CompactString, FxHashSet};
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisError, AnalysisManager, AnalysisView, Demand,
+};
 use vize_l0::diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup};
 use vize_l0::diag::{
     Advisory, Diagnostic, DiagnosticPart, Domain, PartKind, RuleContract, Severity, Stage, Tier,
     WitnessChain, WitnessLink,
 };
-use vize_l0::fact::{Demand, FactConsumer, FactError, FactGroup, FactManager, FactView};
 
 use super::sites::{self, NavSite, Params, Target};
 use super::{NamedRoute, RouteParams, RouteTree, RouterTree};
@@ -52,7 +54,7 @@ pub static CONTRACT: RuleContract = RuleContract::new(
 /// The route-typing consumer: reads the route tree and the route params.
 pub struct RouteTyping;
 
-impl FactConsumer for RouteTyping {
+impl AnalysisConsumer for RouteTyping {
     const NAME: &'static str = "vue-router/route-typing";
     const DEMAND: Demand = Demand::NONE.with(RouteTree::ID).with(RouteParams::ID);
 }
@@ -109,10 +111,10 @@ pub struct RouteDiagnostic {
 ///
 /// # Errors
 ///
-/// A [`FactError`] only if the project registry lost a route group — a
+/// A [`AnalysisError`] only if the project registry lost a route group — a
 /// build without the `provider-vue-router` feature.
-pub fn run(project: &ProjectSources) -> Result<Vec<RouteDiagnostic>, FactError> {
-    let mut manager = FactManager::new(&PROJECT_FACTS);
+pub fn run(project: &ProjectSources) -> Result<Vec<RouteDiagnostic>, AnalysisError> {
+    let mut manager = AnalysisManager::new(&PROJECT_FACTS);
     let view = manager.prepare::<RouteTyping>(project)?;
     check(project, &view)
 }
@@ -121,11 +123,11 @@ pub fn run(project: &ProjectSources) -> Result<Vec<RouteDiagnostic>, FactError> 
 ///
 /// # Errors
 ///
-/// As [`FactView::get`] for the two demanded groups.
+/// As [`AnalysisView::get`] for the two demanded groups.
 pub fn check(
     project: &ProjectSources,
-    view: &FactView<'_>,
-) -> Result<Vec<RouteDiagnostic>, FactError> {
+    view: &AnalysisView<'_>,
+) -> Result<Vec<RouteDiagnostic>, AnalysisError> {
     let trees = view.get::<RouteTree>()?;
     let named = view.get::<RouteParams>()?;
     let routers: Vec<(u32, &RouterTree)> = trees.iter().map(|(key, tree)| (*key, tree)).collect();

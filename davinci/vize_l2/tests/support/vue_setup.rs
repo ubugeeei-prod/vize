@@ -15,7 +15,7 @@ use vize_l1::embed::{
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l1::markup::SurfaceParseOptions;
-use vize_l2::framework::vue::{SetupFacts, SetupFactsIncomplete, SetupObserver};
+use vize_l2::framework::vue::{SetupAnalysis, SetupAnalysisIncomplete, SetupObserver};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
 /// Repository trees holding `.vue` files, relative to the workspace root.
@@ -69,7 +69,9 @@ pub fn text(value: &str) -> String {
 
 /// The facts of the file's `<script setup>` with its content and start, or
 /// `None` when the native levels refuse the file first.
-pub fn observe(source: &str) -> Option<(String, u32, Result<SetupFacts, SetupFactsIncomplete>)> {
+pub fn observe(
+    source: &str,
+) -> Option<(String, u32, Result<SetupAnalysis, SetupAnalysisIncomplete>)> {
     let arena = Allocator::default();
     let descriptor = Vue.observe_descriptor(
         &arena,

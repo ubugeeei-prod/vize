@@ -3,7 +3,7 @@
 //! The shipped codegen enables `_cache[n]` static vnode reuse when the
 //! transform produced any root hoist. L2 realizes hoists directly during emit,
 //! so this pre-walk reconstructs the old `!root.hoists.is_empty()` gate from
-//! page-order ids plus `StaticFacts`.
+//! page-order ids plus `StaticAnalysis`.
 
 mod foreign_props;
 
@@ -12,13 +12,13 @@ use vize_l0::side_table::SideTable;
 use vize_l2::op::{ComponentOp, ElementOp, Op, Region};
 
 use vize_l2::analysis::fragment_facts::BranchFragments;
-use vize_l2::analysis::pass_facts::L2Facts;
-use vize_l2::analysis::static_facts::{StaticFacts, StaticLevel};
+use vize_l2::analysis::pass_facts::L2Analyses;
+use vize_l2::analysis::static_facts::{StaticAnalysis, StaticLevel};
 use vize_l2::walk::PageWalk;
 
 pub(super) fn enabled(
     root: &Region<'_>,
-    facts: &L2Facts,
+    facts: &L2Analyses,
     wrappers: &SideTable<BranchFragments>,
     allow_component_props_hoist: bool,
 ) -> bool {
@@ -40,7 +40,7 @@ pub(super) fn enabled(
 fn region_has_legacy_hoist(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
-    facts: &L2Facts,
+    facts: &L2Analyses,
     wrappers: &SideTable<BranchFragments>,
     is_root: bool,
     hoist_static_vnodes: bool,
@@ -65,7 +65,7 @@ fn region_has_legacy_hoist(
 fn op_has_legacy_hoist(
     walk: &mut PageWalk,
     op: &Op<'_>,
-    facts: &L2Facts,
+    facts: &L2Analyses,
     wrappers: &SideTable<BranchFragments>,
     is_root: bool,
     hoist_static_vnodes: bool,
@@ -152,8 +152,8 @@ struct ElementHoistContext {
 fn element_has_legacy_hoist(
     walk: &mut PageWalk,
     element: &ElementOp<'_>,
-    fact: StaticFacts,
-    facts: &L2Facts,
+    fact: StaticAnalysis,
+    facts: &L2Analyses,
     wrappers: &SideTable<BranchFragments>,
     context: ElementHoistContext,
 ) -> bool {
@@ -199,8 +199,8 @@ fn element_has_legacy_hoist(
 fn component_has_legacy_hoist(
     walk: &mut PageWalk,
     component: &ComponentOp<'_>,
-    fact: Option<StaticFacts>,
-    facts: &L2Facts,
+    fact: Option<StaticAnalysis>,
+    facts: &L2Analyses,
     wrappers: &SideTable<BranchFragments>,
     allow_component_props_hoist: bool,
 ) -> bool {
@@ -225,7 +225,7 @@ fn component_has_legacy_hoist(
 fn branch_roots_have_legacy_hoist(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
-    facts: &L2Facts,
+    facts: &L2Analyses,
     wrappers: &SideTable<BranchFragments>,
     allow_component_props_hoist: bool,
 ) -> bool {
@@ -314,7 +314,7 @@ fn slot_template_lone_branch_root(ops: &[Op<'_>]) -> bool {
 fn slot_branch_root_descendants_have_legacy_hoist(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
-    facts: &L2Facts,
+    facts: &L2Analyses,
     wrappers: &SideTable<BranchFragments>,
     allow_component_props_hoist: bool,
 ) -> bool {
@@ -362,7 +362,7 @@ fn slot_branch_root_descendants_have_legacy_hoist(
 fn for_children_have_legacy_hoist(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
-    facts: &L2Facts,
+    facts: &L2Analyses,
     wrappers: &SideTable<BranchFragments>,
     allow_component_props_hoist: bool,
 ) -> bool {

@@ -1,7 +1,7 @@
 //! Selected ownership with Text/Comment/empty and zero-header HTML bodies.
 
 use super::FileProducer;
-use crate::artifact::ArtifactError;
+use crate::artifact::L2TemplateError;
 use crate::file::region::native::NativeTemplateWalk;
 use crate::file::{FileIssueKind, L2Ir, RejectedFile, ScriptUnitId};
 use vize_l0::Span;
@@ -36,7 +36,7 @@ pub enum NativeTemplateIssueKind {
         kind: vize_l1::markup::TextValueError,
     },
     TextValuePolicy(crate::file::NativeTextValuePolicyError),
-    Artifact(ArtifactError),
+    Artifact(L2TemplateError),
     Program(FileIssueKind),
     SetupSyntax(vize_l1::embed::syntax::EmbedHole),
     SetupSource(vize_l1::embed::SourceError),
@@ -94,7 +94,7 @@ pub struct NativeTemplateOwner<'a> {
 }
 pub struct RejectedNativeTemplateOwner<'a> {
     selected: SelectedTemplateComponent<'a>,
-    error: ArtifactError,
+    error: L2TemplateError,
 }
 impl<'a> RejectedNativeTemplateOwner<'a> {
     #[must_use]
@@ -102,7 +102,7 @@ impl<'a> RejectedNativeTemplateOwner<'a> {
         &self.selected
     }
     #[must_use]
-    pub fn error(&self) -> ArtifactError {
+    pub fn error(&self) -> L2TemplateError {
         self.error
     }
 }

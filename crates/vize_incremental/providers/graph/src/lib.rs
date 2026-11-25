@@ -13,7 +13,7 @@ use std::{borrow::Borrow, ops::ControlFlow};
 use vize_incremental::{block_query::BlockView, db::Block};
 use vize_l0::{Allocator, Lang, Span, diag::Diagnostic};
 use vize_l1_to_l2::native::{NativeHole, lower_component_native};
-use vize_l2::artifact::ArtifactError;
+use vize_l2::artifact::L2TemplateError;
 use vize_l3::{
     op::OpId,
     query::{
@@ -25,7 +25,7 @@ use vize_l3::{
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TemplateGraphError {
     UnsupportedBlock,
-    Construction(ArtifactError),
+    Construction(L2TemplateError),
     Incomplete {
         holes: Vec<NativeHole>,
         diagnostics: Vec<Diagnostic>,

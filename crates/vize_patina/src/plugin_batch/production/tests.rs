@@ -74,7 +74,7 @@ fn batches_only_carry_declared_production_groups() {
         visit: None,
         demands: &demands,
     };
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let batch: Value =
         serde_json::from_str(&build_batch(&document, &spec, &mut manager).unwrap().json).unwrap();
     assert_eq!(

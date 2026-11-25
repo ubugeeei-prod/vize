@@ -29,8 +29,8 @@ use vize_l0::pass::BudgetObserver;
 use vize_l1::markup::parse;
 use vize_l1_to_l2::pass::run_transform;
 use vize_l1_to_l2::{LegacyCaps, lower, lower_with_caps};
-use vize_l2::analysis::pass_facts::L2Facts;
-use vize_l2::artifact::{ArtifactParts, LoweringFeatures, OpFamily};
+use vize_l2::analysis::pass_facts::L2Analyses;
+use vize_l2::artifact::{L2TemplateParts, LoweringFeatures, OpFamily};
 use vize_l2::dump::Page as L2Page;
 
 /// Controls whose absent families the planner is supposed to save walks on.
@@ -196,15 +196,15 @@ struct Products {
     text_facts: usize,
     model_faults: usize,
     static_facts: usize,
-    complexity: Option<vize_l1_to_l2::pass::ComplexityFacts>,
+    complexity: Option<vize_l1_to_l2::pass::ComplexityAnalysis>,
 }
 
 fn products(
     folio: &L2Page,
     diagnostics: &[Diagnostic],
     provenance: usize,
-    artifact: &ArtifactParts<'_>,
-    facts: &L2Facts,
+    artifact: &L2TemplateParts<'_>,
+    facts: &L2Analyses,
 ) -> Products {
     Products {
         folio: folio.print_to_string(DumpMode::Full).as_str().to_owned(),

@@ -1,6 +1,6 @@
 //! Conditional admission without revisiting any branch body.
 
-use super::{DomBuilder, DomExpressionFacts, DomUnsupported, ValueKind};
+use super::{DomBuilder, DomExpressionAnalysis, DomUnsupported, ValueKind};
 use crate::decision::dom::vue::policy::FileReads;
 use crate::decision::{DecisionBuildError, dom::control::build::ConditionalFrame};
 use vize_l0::{Span, id::NodeId};
@@ -10,7 +10,7 @@ use vize_l2::{
     resolution::Usage,
 };
 
-impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
 {
     pub(super) fn prepare_conditional(

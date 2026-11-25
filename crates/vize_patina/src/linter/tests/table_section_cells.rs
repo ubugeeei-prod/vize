@@ -31,12 +31,12 @@ fn sfc_templates_keep_authored_rows_and_html_documents_keep_parser_owners() {
     let allocator = vize_l0::Allocator::new();
 
     let mut component = Vec::new();
-    let template = crate::markup::L2Template::lower(&allocator, source);
+    let template = crate::markup::LintL2Template::lower(&allocator, source);
     element_tags(&template.lowered().artifact.root.ops, &mut component);
     assert_eq!(component, ["table", "tr", "td"]);
 
     let mut document = Vec::new();
-    let page = crate::markup::L2Template::lower_in_dom(&allocator, source);
+    let page = crate::markup::LintL2Template::lower_in_dom(&allocator, source);
     assert!(
         page.lowered()
             .artifact

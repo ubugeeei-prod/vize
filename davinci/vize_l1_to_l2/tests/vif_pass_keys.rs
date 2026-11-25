@@ -60,7 +60,7 @@ fn a_template_wrapper_key_folds_into_the_branch_fact() {
             lowered.artifact.if_facts.sorted_entries(),
             vec![(
                 NodeId::from_index(0).expect("op 0 has an id"),
-                &vif::IfFacts {
+                &vif::IfAnalysis {
                     branches: vec![Some(BranchKey {
                         kind: BranchKeyKind::Static(Some("k".into())),
                         span: span_of(source, r#"key="k""#, 0),

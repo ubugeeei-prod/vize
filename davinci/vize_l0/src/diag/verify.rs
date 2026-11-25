@@ -9,7 +9,7 @@
 //!
 //! 1. a fact group registered for witnesses ([`WitnessChecks`]),
 //! 2. that the producer **declared** and the run computed — the read goes
-//!    through the producer's own [`FactView`], so a witness citing a group
+//!    through the producer's own [`AnalysisView`], so a witness citing a group
 //!    outside its producer's demand trips the TS-35 detector,
 //! 3. a key of the group's shape under which a fact is stored,
 //! 4. the exact span that fact is about, and
@@ -39,8 +39,8 @@ pub use audit::{AuditReport, WitnessAudit, WitnessFailure, unverifiable_witnesse
 pub use check::{WitnessCheck, WitnessChecks, WitnessGroup};
 pub use error::WitnessError;
 
+use crate::analysis::{AnalysisConsumer, AnalysisManager, AnalysisView};
 use crate::diag::{Diagnostic, WitnessChain};
-use crate::fact::{FactConsumer, FactManager, FactView};
 
 /// Re-check `diagnostic`'s witness chain against `facts`, the view of the
 /// consumer that produced it.
@@ -54,7 +54,7 @@ use crate::fact::{FactConsumer, FactManager, FactView};
 /// The first link that does not verify, as the exact [`WitnessError`].
 pub fn verify(
     diagnostic: &Diagnostic,
-    facts: &FactView<'_>,
+    facts: &AnalysisView<'_>,
     checks: &WitnessChecks,
 ) -> Result<(), WitnessError> {
     match diagnostic.witness_chain() {
@@ -64,14 +64,14 @@ pub fn verify(
 }
 
 /// [`verify`] through consumer `C`'s view of `facts` — the form a producer
-/// that owns its [`FactManager`] calls.
+/// that owns its [`AnalysisManager`] calls.
 ///
 /// # Errors
 ///
 /// As [`verify`].
-pub fn verify_as<C: FactConsumer, A: ?Sized + 'static>(
+pub fn verify_as<C: AnalysisConsumer, A: ?Sized + 'static>(
     diagnostic: &Diagnostic,
-    facts: &FactManager<'_, A>,
+    facts: &AnalysisManager<'_, A>,
     checks: &WitnessChecks,
 ) -> Result<(), WitnessError> {
     verify(diagnostic, &facts.view::<C>(), checks)
@@ -84,7 +84,7 @@ pub fn verify_as<C: FactConsumer, A: ?Sized + 'static>(
 /// As [`verify`].
 pub fn verify_chain(
     chain: &WitnessChain,
-    facts: &FactView<'_>,
+    facts: &AnalysisView<'_>,
     checks: &WitnessChecks,
 ) -> Result<(), WitnessError> {
     for (index, link) in chain.links().iter().enumerate() {

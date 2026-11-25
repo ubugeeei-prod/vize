@@ -12,25 +12,25 @@ mod page;
 
 use alloc::vec::Vec;
 
-use vize_l0::fact::FactManager;
+use vize_l0::analysis::AnalysisManager;
 use vize_l0::{Allocator, Span, String};
 use vize_l1::markup::{SurfaceTree, parse};
 
 use crate::lower::{Lowered, lower};
 
-use facts::{PartialHoles, PartialRegions, PartialScopes, REGISTRY, TemplateFacts};
+use facts::{PartialHoles, PartialRegions, PartialScopes, PartialTemplateAnalysis, REGISTRY};
 use page::collect;
 
 /// An L1 hole that a kept fragment was lowered beside.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct HoleFact {
+pub struct HoleInfo {
     /// `Unexpected` bytes, or a `Missing` token / end tag.
     pub kind: HoleKind,
     /// The hole's range in the lowering's source. `Missing` is often empty.
     pub span: Span,
 }
 
-/// Which hole policy clause a [`HoleFact`] records.
+/// Which hole policy clause a [`HoleInfo`] records.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HoleKind {
     /// `SurfaceChild::Unexpected` — bytes with no structural home.
@@ -41,7 +41,7 @@ pub enum HoleKind {
 
 /// One kept L2 op the fact manager accepted as a well-formed region.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct RegionFact {
+pub struct RegionInfo {
     /// The op's source range.
     pub span: Span,
     /// What kind of op was kept.
@@ -96,7 +96,7 @@ pub struct ScopeKey {
 
 /// One scope name computed for a well-formed fragment.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScopeNameFact {
+pub struct ScopeNameInfo {
     /// The bound name.
     pub name: String,
     /// Where the name was authored. Empty for a synthesized name.
@@ -109,15 +109,15 @@ pub struct ScopeNameFact {
 
 /// The holes, regions and scope names of one partial page.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct PartialFacts {
-    holes: Vec<(u32, HoleFact)>,
-    regions: Vec<(u32, RegionFact)>,
-    scopes: Vec<(ScopeKey, ScopeNameFact)>,
+pub struct PartialAnalysis {
+    holes: Vec<(u32, HoleInfo)>,
+    regions: Vec<(u32, RegionInfo)>,
+    scopes: Vec<(ScopeKey, ScopeNameInfo)>,
 }
 
 /// Facts for `source`, including when it contains L1 holes.
 #[must_use]
-pub fn partial_facts_of(source: &str) -> PartialFacts {
+pub fn partial_facts_of(source: &str) -> PartialAnalysis {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let mut lowered = lower(&allocator, &tree, &errors);
@@ -127,22 +127,22 @@ pub fn partial_facts_of(source: &str) -> PartialFacts {
 /// Facts for an already-lowered page. `tree` is the L1 tree `lowered` came
 /// from; hole spans are measured against `lowered.artifact.source`.
 #[must_use]
-pub fn partial_facts(lowered: &mut Lowered<'_>, tree: &SurfaceTree<'_>) -> PartialFacts {
+pub fn partial_facts(lowered: &mut Lowered<'_>, tree: &SurfaceTree<'_>) -> PartialAnalysis {
     let page = collect(lowered, tree);
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     // The registry is closed over its groups, so these lookups succeed;
     // should they ever not, the page reports no facts instead of aborting.
-    let Ok(view) = manager.prepare::<TemplateFacts>(&page) else {
-        return PartialFacts::default();
+    let Ok(view) = manager.prepare::<PartialTemplateAnalysis>(&page) else {
+        return PartialAnalysis::default();
     };
     let (Ok(holes), Ok(regions), Ok(scopes)) = (
         view.get::<PartialHoles>(),
         view.get::<PartialRegions>(),
         view.get::<PartialScopes>(),
     ) else {
-        return PartialFacts::default();
+        return PartialAnalysis::default();
     };
-    PartialFacts {
+    PartialAnalysis {
         holes: holes.iter().map(|(key, hole)| (*key, *hole)).collect(),
         regions: regions
             .iter()
@@ -155,22 +155,22 @@ pub fn partial_facts(lowered: &mut Lowered<'_>, tree: &SurfaceTree<'_>) -> Parti
     }
 }
 
-impl PartialFacts {
+impl PartialAnalysis {
     /// Holes in source order.
     #[must_use]
-    pub fn holes(&self) -> &[(u32, HoleFact)] {
+    pub fn holes(&self) -> &[(u32, HoleInfo)] {
         &self.holes
     }
 
     /// Well-formed fragments, in page-order id order.
     #[must_use]
-    pub fn regions(&self) -> &[(u32, RegionFact)] {
+    pub fn regions(&self) -> &[(u32, RegionInfo)] {
         &self.regions
     }
 
     /// Scope names of well-formed fragments, in `(node, index)` order.
     #[must_use]
-    pub fn scopes(&self) -> &[(ScopeKey, ScopeNameFact)] {
+    pub fn scopes(&self) -> &[(ScopeKey, ScopeNameInfo)] {
         &self.scopes
     }
 
@@ -184,7 +184,7 @@ impl PartialFacts {
 
     /// The innermost scope name `name` visible at `offset`.
     #[must_use]
-    pub fn binding_at(&self, offset: u32, name: &str) -> Option<&ScopeNameFact> {
+    pub fn binding_at(&self, offset: u32, name: &str) -> Option<&ScopeNameInfo> {
         if self.in_unexpected(offset) {
             return None;
         }
@@ -201,7 +201,7 @@ impl PartialFacts {
         if self.in_unexpected(offset) {
             return Vec::new();
         }
-        let mut rows: Vec<&ScopeNameFact> = self
+        let mut rows: Vec<&ScopeNameInfo> = self
             .scopes
             .iter()
             .filter(|(_, fact)| contains(fact.visible, offset))

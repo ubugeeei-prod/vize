@@ -122,7 +122,7 @@ fn alpha_demands_filter_batches_and_leave_beta_managers_independent() {
         visit: None,
         demands: &demands,
     };
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let batch: Value =
         serde_json::from_str(&build_batch(&document, &spec, &mut manager).unwrap().json).unwrap();
     let facts = batch.get("facts").unwrap().as_object().unwrap();

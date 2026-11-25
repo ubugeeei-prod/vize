@@ -150,7 +150,7 @@ pub fn resolve_for_head<'a>(
     }
 }
 
-type Facts<'a> = (
+type ForHeadAnalysis<'a> = (
     Occurrence<'a>,
     Span,
     OriginalForAlias<'a>,
@@ -160,7 +160,7 @@ type Facts<'a> = (
 fn resolve<'a>(
     input: &NativeForInput<'a>,
     enclosing: &impl BindingLookup,
-) -> Result<Facts<'a>, ForResolutionError> {
+) -> Result<ForHeadAnalysis<'a>, ForResolutionError> {
     let source = input.references().ok_or(ForResolutionError {
         part: ForHeadPart::Collection,
         span: Span::new(0, 0),

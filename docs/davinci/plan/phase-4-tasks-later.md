@@ -31,7 +31,7 @@
 
 **Lane:** D
 
-**Deliverable:** TS-36: `vize_davinci::witness::verify(&Diagnostic, &FactManager) -> Result<(), WitnessError>` re-checks every link against the fact base, run over every error diagnostic in debug and CI builds through an observer (release ZST).
+**Deliverable:** TS-36: `vize_davinci::witness::verify(&Diagnostic, &AnalysisManager) -> Result<(), WitnessError>` re-checks every link against the fact base, run over every error diagnostic in debug and CI builds through an observer (release ZST).
 
 **Steps:**
 
@@ -177,7 +177,7 @@
 
 **Lane:** G
 
-**Deliverable:** the metric definition recommended in [open questions](../open-questions.md#complexity-metric-definition), written as `docs/davinci/plan/complexity-metrics.md`, and the `ComplexityFacts` group computed by a fusable analysis pass over L2 regions, replacing today's string counting in `vize_croquis_cf/src/rules/complexity.rs`.
+**Deliverable:** the metric definition recommended in [open questions](../open-questions.md#complexity-metric-definition), written as `docs/davinci/plan/complexity-metrics.md`, and the `ComplexityAnalysis` group computed by a fusable analysis pass over L2 regions, replacing today's string counting in `vize_croquis_cf/src/rules/complexity.rs`.
 
 **Steps:**
 

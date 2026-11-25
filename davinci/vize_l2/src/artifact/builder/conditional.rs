@@ -1,6 +1,6 @@
 //! A conditional whose branches arrive in authored order, checked as they open.
 
-use super::{ArtifactError, Builder, Frame, Owner, RegionBuilder, check};
+use super::{Builder, Frame, L2TemplateError, Owner, RegionBuilder, check};
 use crate::artifact::IfShape;
 use crate::expr::ExprRef;
 use crate::op::{IfBranch, Region};
@@ -19,7 +19,7 @@ impl<'a> BranchBuilder<'_, 'a> {
         condition: Option<ExprRef<'a>>,
         span: Span,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<(), ArtifactError> {
+    ) -> Result<(), L2TemplateError> {
         self.builder.branch(self.node, condition, span, children)
     }
 }
@@ -29,7 +29,7 @@ impl<'a> Builder<'a> {
         &mut self,
         span: Span,
         branches: impl FnOnce(&mut BranchBuilder<'_, 'a>, NodeId),
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare(span)?;
         self.mint();
         self.frames.push(Frame {
@@ -51,7 +51,7 @@ impl<'a> Builder<'a> {
             id,
         );
         if self.frames.len() != depth {
-            return Err(ArtifactError::UnfinishedOwner { node: id });
+            return Err(L2TemplateError::UnfinishedOwner { node: id });
         }
         match self.frames.last() {
             Some(Frame {
@@ -60,18 +60,18 @@ impl<'a> Builder<'a> {
             }) if branches.is_empty() => {
                 // Keep the owner pending: finish retains it as unfinished
                 // instead of sealing a branchless conditional.
-                return Err(ArtifactError::InvalidIf {
+                return Err(L2TemplateError::InvalidIf {
                     node: id,
                     shape: IfShape::Empty,
                 });
             }
             Some(frame) if frame.id == id => {}
-            _ => return Err(ArtifactError::UnfinishedOwner { node: id }),
+            _ => return Err(L2TemplateError::UnfinishedOwner { node: id }),
         }
         let frame = self
             .frames
             .pop()
-            .ok_or(ArtifactError::UnfinishedOwner { node: id })?;
+            .ok_or(L2TemplateError::UnfinishedOwner { node: id })?;
         self.close(frame);
         Ok(id)
     }
@@ -82,16 +82,16 @@ impl<'a> Builder<'a> {
         condition: Option<ExprRef<'a>>,
         span: Span,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<(), ArtifactError> {
+    ) -> Result<(), L2TemplateError> {
         let frame = self
             .frames
             .last()
-            .ok_or(ArtifactError::UnfinishedOwner { node })?;
+            .ok_or(L2TemplateError::UnfinishedOwner { node })?;
         let Owner::Conditional { branches } = &frame.owner else {
-            return Err(ArtifactError::UnfinishedOwner { node: frame.id });
+            return Err(L2TemplateError::UnfinishedOwner { node: frame.id });
         };
         if frame.id != node {
-            return Err(ArtifactError::UnfinishedOwner { node: frame.id });
+            return Err(L2TemplateError::UnfinishedOwner { node: frame.id });
         }
         let shape = match branches.last() {
             None if condition.is_none() => Some(IfShape::LeadingElse),
@@ -99,13 +99,13 @@ impl<'a> Builder<'a> {
             _ => None,
         };
         if let Some(shape) = shape {
-            return Err(ArtifactError::InvalidIf { node, shape });
+            return Err(L2TemplateError::InvalidIf { node, shape });
         }
         check::owned_span(self.parts.source, node, span, Some(frame.span))?;
         if let Some(last) = branches.last()
             && span.start < last.span.end
         {
-            return Err(ArtifactError::OutsideOwner {
+            return Err(L2TemplateError::OutsideOwner {
                 node,
                 span,
                 owner: frame.span,
@@ -133,12 +133,12 @@ impl<'a> Builder<'a> {
                 })
             )
         {
-            return Err(ArtifactError::UnfinishedOwner { node });
+            return Err(L2TemplateError::UnfinishedOwner { node });
         }
         let frame = self
             .frames
             .pop()
-            .ok_or(ArtifactError::UnfinishedOwner { node })?;
+            .ok_or(L2TemplateError::UnfinishedOwner { node })?;
         self.close(frame);
         Ok(())
     }

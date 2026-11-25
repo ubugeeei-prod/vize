@@ -5,12 +5,12 @@ pub use setup::{SelectedSetupDomAnalysis, build_selected_setup_dom_decisions};
 
 use super::{
     DecisionBuildError, DecisionTables, FileAnalysis,
-    dom::{DomFacts, DomFileExpression, DomFileForHead, DomFileHandler},
+    dom::{DomAnalysis, DomFileExpression, DomFileForHead, DomFileHandler},
     policy::TargetPolicy,
 };
 use vize_l0::id::NodeId;
 use vize_l2::{
-    artifact::Artifact,
+    artifact::L2Template,
     file::L2Ir,
     lang::js::{NativeTemplateFile, NativeTemplateView},
 };
@@ -75,12 +75,12 @@ impl<'owner, 'arena> TemplateDomAnalysis<'owner, 'arena> {
     }
 
     #[must_use]
-    pub fn original_attributes(&self) -> Option<&super::OriginalAttributeFacts<'owner, 'arena>> {
+    pub fn original_attributes(&self) -> Option<&super::OriginalAttributeAnalysis<'owner, 'arena>> {
         self.analysis.original_attributes()
     }
 
     #[must_use]
-    pub fn artifact(&self) -> &'owner Artifact<'arena> {
+    pub fn artifact(&self) -> &'owner L2Template<'arena> {
         self.analysis.artifact()
     }
 
@@ -95,7 +95,7 @@ impl<'owner, 'arena> TemplateDomAnalysis<'owner, 'arena> {
     }
 
     #[must_use]
-    pub fn dom(&self) -> Option<&DomFacts<'owner, 'arena>> {
+    pub fn dom(&self) -> Option<&DomAnalysis<'owner, 'arena>> {
         self.analysis.dom()
     }
 

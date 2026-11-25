@@ -233,7 +233,7 @@ fn ts_profile_reaches_actual_retained_typed_ast_without_claiming_typed_resolutio
     assert_eq!(
         native.holes[0].kind,
         vize_l1_to_l2::native::NativeHoleKind::Construction(
-            vize_l2::artifact::ArtifactError::InvalidSpan {
+            vize_l2::artifact::L2TemplateError::InvalidSpan {
                 node: None,
                 span: expression_span,
             }

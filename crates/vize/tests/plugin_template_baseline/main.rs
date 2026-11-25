@@ -2,7 +2,7 @@
 use davinci_harness::alloc::{self, CountingAllocator};
 use std::{alloc::System, hint::black_box};
 use vize_croquis_cf::TemplateComplexity;
-use vize_l0::fact::FactManager;
+use vize_l0::analysis::AnalysisManager;
 use vize_patina::plugin_batch::{
     batch::{PluginSpec, build_batch, diagnostics},
     document::PluginDocument,
@@ -27,7 +27,7 @@ fn original_component_facts_plugin_scopes_and_report_positions_share_the_authore
         let doc =
             PluginDocument::build(black_box(SOURCE), "Original.vue").expect("valid component");
         let batch =
-            build_batch(&doc, &spec, &mut FactManager::new(&REGISTRY)).expect("public demand");
+            build_batch(&doc, &spec, &mut AnalysisManager::new(&REGISTRY)).expect("public demand");
         let facts = TemplateComplexity::from_sfc(black_box(SOURCE)).expect("inline HTML");
         (doc, batch, facts)
     };
@@ -93,7 +93,7 @@ fn original_component_facts_plugin_scopes_and_report_positions_share_the_authore
     );
     spec.demands = &[];
     let without =
-        build_batch(&document, &spec, &mut FactManager::new(&REGISTRY)).expect("no demands");
+        build_batch(&document, &spec, &mut AnalysisManager::new(&REGISTRY)).expect("no demands");
     let mut expected = payload;
     expected["facts"] = serde_json::json!({});
     assert_eq!(

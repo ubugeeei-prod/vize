@@ -5,12 +5,14 @@
     reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
 )]
 
-use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
+use vize_croquis::facts::{
+    Analysis, AnalysisConsumer, Bindings, BindingsTable, CroquisFacts, Demand,
+};
 
 /// The auto-import code action reads script bindings.
 struct AutoImportBindingCheck;
 
-impl FactConsumer for AutoImportBindingCheck {
+impl AnalysisConsumer for AutoImportBindingCheck {
     const NAME: &'static str = "maestro/code-action-auto-import";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 }

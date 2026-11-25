@@ -8,9 +8,9 @@
 
 mod words;
 
-use vize_l0::fact::{
-    Demand, FactConsumer, FactError, FactGroup, FactManager, FactTable, GroupDesc, StrataError,
-    check_strata, undeclared_accesses,
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisError, AnalysisManager, AnalysisTable, Demand, GroupDesc,
+    StrataError, check_strata, undeclared_accesses,
 };
 use vize_l0::pass::AnalysisId;
 use words::{
@@ -23,7 +23,7 @@ const WORDS: &Words = &["fact", "demand", "view", "queue"];
 fn declared_consumers_make_zero_undeclared_accesses() {
     let _serial = serial();
     let before = undeclared_accesses();
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager
         .compute(WORDS, LongestRule::DEMAND.union(VowelRule::DEMAND))
         .unwrap();
@@ -47,7 +47,7 @@ fn declared_consumers_make_zero_undeclared_accesses() {
 fn an_undeclared_read_is_refused_exactly_even_when_computed() {
     let _serial = serial();
     let before = undeclared_accesses();
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     // `Vowels` is computed — the vowel rule demands it …
     manager
         .compute(WORDS, VowelRule::DEMAND.union(SneakyRule::DEMAND))
@@ -62,13 +62,13 @@ fn an_undeclared_read_is_refused_exactly_even_when_computed() {
     // … but the sneaky rule never declared it.
     let view = manager.view::<SneakyRule>();
     assert_eq!(
-        view.get::<Vowels>().map(FactTable::len),
-        Err(FactError::Undeclared {
+        view.get::<Vowels>().map(AnalysisTable::len),
+        Err(AnalysisError::Undeclared {
             consumer: "sneaky-rule",
             group: Vowels::ID,
         })
     );
-    assert_eq!(view.get::<Longest>().map(FactTable::len), Ok(1));
+    assert_eq!(view.get::<Longest>().map(AnalysisTable::len), Ok(1));
     assert_eq!(undeclared_accesses() - before, 1);
 }
 
@@ -77,7 +77,7 @@ fn an_undeclared_read_is_refused_exactly_even_when_computed() {
 fn a_producer_reading_outside_its_depends_is_refused_too() {
     let _serial = serial();
     let before = undeclared_accesses();
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     // `Vowels` (stratum 0) is computed before `Leaky` (stratum 1) runs, so
     // only the detector stands between the producer and the table.
     manager
@@ -97,12 +97,12 @@ fn a_producer_reading_outside_its_depends_is_refused_too() {
 #[cfg(not(debug_assertions))]
 #[test]
 fn release_builds_carry_no_detector() {
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager
         .compute(WORDS, VowelRule::DEMAND.union(SneakyRule::DEMAND))
         .unwrap();
     let view = manager.view::<SneakyRule>();
-    assert_eq!(view.get::<Vowels>().map(FactTable::len), Ok(4));
+    assert_eq!(view.get::<Vowels>().map(AnalysisTable::len), Ok(4));
     assert_eq!(undeclared_accesses(), 0);
 }
 

@@ -13,8 +13,8 @@ use core::fmt::Write as _;
 use super::catalog::{Catalog, Phrase};
 use super::source::SourceFile;
 use vize_l0::String;
+use vize_l0::analysis::ids;
 use vize_l0::diag::{Diagnostic, WitnessKey, WitnessLink};
-use vize_l0::fact::ids;
 use vize_l0::pass::AnalysisId;
 
 /// Characters of a fact's source text quoted in a note before it is cut.

@@ -1,6 +1,6 @@
 //! Server eligibility attached to the existing shared enter/leave events.
 
-use super::{SsrFacts, SsrPart, SsrRejection, SsrUnsupported};
+use super::{SsrAnalysis, SsrPart, SsrRejection, SsrUnsupported};
 use crate::decision::policy::BindingOwner;
 use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId, side_table::SideTable};
@@ -14,7 +14,7 @@ mod model;
 mod read;
 
 pub(in crate::decision) struct SsrBuilder<'facts, 'owner, 'arena> {
-    facts: SsrFacts<'owner, 'arena>,
+    facts: SsrAnalysis<'owner, 'arena>,
     frames: Vec<(NodeId, Option<&'owner ElementOp<'arena>>, bool)>,
     roots: usize,
     non_comments: usize,
@@ -28,7 +28,7 @@ pub(in crate::decision) struct SsrBuilder<'facts, 'owner, 'arena> {
 impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
     pub fn new() -> Self {
         Self {
-            facts: SsrFacts {
+            facts: SsrAnalysis {
                 parts: Vec::new(),
                 unsupported: Vec::new(),
                 inherit_attrs: None,
@@ -279,7 +279,7 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
         core::ptr::eq(child.as_ref(), interpolation).then_some(*parent_node)
     }
 
-    pub fn finish(mut self) -> SsrFacts<'owner, 'arena> {
+    pub fn finish(mut self) -> SsrAnalysis<'owner, 'arena> {
         // A visited prefix cannot authorize the final whole-root composition.
         // Retain the exact child facts but refuse output if any suffix changed it.
         if let Some((node, span, parent)) = self.nested_interpolation

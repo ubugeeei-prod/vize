@@ -29,7 +29,7 @@ fn exact_and_inherited_pre_keep_real_registered_output_and_component_exemptions(
     let template = section.children().next().unwrap().into_element().unwrap();
     assert!(matches!(
         template.tag_facts(),
-        Err(TagFactsRefusal::InheritedTemplate)
+        Err(TagAnalysisRefusal::InheritedTemplate)
     ));
     for locale in [Locale::En, Locale::Ja, Locale::Zh] {
         let (output, result) = observed(source, locale, &owner);
@@ -80,17 +80,20 @@ fn modified_pre_refusals_preserve_the_unfiltered_registered_oracle_control() {
         let template = owner.children().next().unwrap().into_element().unwrap();
         assert!(matches!(
             template.tag_facts(),
-            Err(TagFactsRefusal::AmbiguousVerbatim)
+            Err(TagAnalysisRefusal::AmbiguousVerbatim)
         ));
         assert!(template.surface().open.is_verbatim());
         let child = template.children().next().unwrap().into_element().unwrap();
         assert!(matches!(
             child.tag_facts(),
-            Err(TagFactsRefusal::AmbiguousVerbatim)
+            Err(TagAnalysisRefusal::AmbiguousVerbatim)
         ));
         assert_eq!(child.surface().open.attrs[0].name.text, ":autofocus");
         let outside = owner.children().nth(1).unwrap().into_element().unwrap();
-        assert_eq!(outside.tag_facts().unwrap().kind(), TagFactsKind::Element);
+        assert_eq!(
+            outside.tag_facts().unwrap().kind(),
+            TagAnalysisKind::Element
+        );
         for locale in [Locale::En, Locale::Ja, Locale::Zh] {
             let (output, result) = observed(&source, locale, &owner);
             assert_original_parser_kinds(&source, &output);

@@ -11,7 +11,7 @@ use crate::native::template::{
     NativeTemplateRule,
 };
 use vize_l0::String;
-use vize_l1::markup::ComponentTagFacts;
+use vize_l1::markup::ComponentTagAnalysis;
 
 impl NativeTemplateRule for ValidVOn {
     fn attribute_profile(&self) -> Profile {
@@ -21,7 +21,7 @@ impl NativeTemplateRule for ValidVOn {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
-        owner: &ComponentTagFacts<'a>,
+        owner: &ComponentTagAnalysis<'a>,
     ) -> Result<(), Refusal> {
         check_owner(context, owner)
     }
@@ -43,7 +43,7 @@ impl NativeTemplateRule for ConfiguredValidVOn {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
-        owner: &ComponentTagFacts<'a>,
+        owner: &ComponentTagAnalysis<'a>,
     ) -> Result<(), Refusal> {
         check_owner(context, owner)
     }
@@ -59,7 +59,7 @@ impl NativeTemplateRule for ConfiguredValidVOn {
 
 fn check_owner<'a>(
     context: &NativeTemplateLintContext<'_, 'a>,
-    owner: &ComponentTagFacts<'a>,
+    owner: &ComponentTagAnalysis<'a>,
 ) -> Result<(), Refusal> {
     if !core::ptr::eq(context.owner(), owner) {
         return Err(Refusal::SourceMismatch);

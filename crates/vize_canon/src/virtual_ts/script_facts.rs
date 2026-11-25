@@ -7,28 +7,28 @@
 use std::cell::RefCell;
 
 use vize_croquis::facts::{
-    Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup, UndefinedRefs,
+    Analysis, AnalysisConsumer, Bindings, BindingsTable, CroquisFacts, Demand, UndefinedRefs,
 };
 use vize_croquis::{BindingType, Croquis, UndefinedRef};
-use vize_l0::fact::FactTable;
+use vize_l0::analysis::AnalysisTable;
 
 struct CanonBindings;
 
-impl FactConsumer for CanonBindings {
+impl AnalysisConsumer for CanonBindings {
     const NAME: &'static str = "canon/virtual-ts-bindings";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 }
 
 struct CanonUndefinedRefs;
 
-impl FactConsumer for CanonUndefinedRefs {
+impl AnalysisConsumer for CanonUndefinedRefs {
     const NAME: &'static str = "canon/virtual-ts-undefined-refs";
     const DEMAND: Demand = Demand::NONE.with(UndefinedRefs::ID);
 }
 
 struct CachedBindings {
     summary: *const Croquis,
-    table: FactTable<Bindings>,
+    table: AnalysisTable<Bindings>,
 }
 
 thread_local! {
@@ -63,7 +63,7 @@ impl Drop for BindingsScope {
     }
 }
 
-fn prepare_bindings(summary: &Croquis) -> Option<FactTable<Bindings>> {
+fn prepare_bindings(summary: &Croquis) -> Option<AnalysisTable<Bindings>> {
     #[cfg(test)]
     preparation_count(true);
     vize_l0::micro_count!("canon.script_facts.prepare_bindings.calls", 1);
@@ -99,7 +99,7 @@ pub(super) fn ensure_bindings(summary: &Croquis) -> Option<BindingsScope> {
 /// `None` only if the fact manager refused the declared demand; every query
 /// then answers as for a script without bindings.
 #[derive(Clone, Copy)]
-pub(super) struct ScriptBindings<'a>(Option<&'a FactTable<Bindings>>);
+pub(super) struct ScriptBindings<'a>(Option<&'a AnalysisTable<Bindings>>);
 
 impl ScriptBindings<'_> {
     pub(super) fn is_script_setup(&self) -> bool {

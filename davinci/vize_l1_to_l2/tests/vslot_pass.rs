@@ -13,7 +13,7 @@ use crate::support;
 use vize_l0::id::NodeId;
 use vize_l1_to_l2::pass::vslot::{
     DUPLICATE_MESSAGE, EXTRANEOUS_MESSAGE, MISPLACED_MESSAGE, MIXED_MESSAGE, RULE_DEFAULT_NAME,
-    RULE_IMPLICIT_DEFAULT, SlotBound, SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams,
+    RULE_IMPLICIT_DEFAULT, SlotAnalysis, SlotBound, SlotCarrier, SlotGroup, SlotName, SlotParams,
 };
 use vize_l2::scope::{ScopeOrigin, ScopeTag};
 
@@ -35,7 +35,7 @@ fn a_bare_v_slot_synthesizes_the_default_name_never_authored() {
             entries,
             vec![(
                 id(0),
-                &SlotFacts {
+                &SlotAnalysis {
                     groups: vec![SlotGroup {
                         name: SlotName::Static {
                             text: "default".into(),

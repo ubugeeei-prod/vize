@@ -77,7 +77,7 @@ all but the two codegen reads). The living code is
     outside its own scope exactly as `traverse_node` orders it) and
     `VModelArgOnElement`. The legacy lane _removes_ invalid models; a
     binding op cannot leave the S2 surface, so the pass publishes the
-    removal's preserving twin — the sparse [`ModelFacts`] fault table.
+    removal's preserving twin — the sparse [`ModelAnalysis`] fault table.
     Pattern params contribute no scope name (#4365, the one-scanner
     rule): the recorded weaker behaviour, pinned loud, with the
     differential class (`models_pattern_scope`) counted instead of
@@ -93,7 +93,7 @@ targets: `op_family` (the canary itself), `folio_laws`, `folio_mirror`
 Size asserts: `BindOp` 72 / `OnOp` 72 held on the first guess;
 `SlotOp` moved 56 → 104 with its props surface; ricalco's `BranchKey`
 first guess of 56 was corrected to 48 by the probe (the ratchet
-working) and `WrapperKey` 40 / `WrapperKeys` 24 / `ModelFacts` 1 held.
+working) and `WrapperKey` 40 / `WrapperKeys` 24 / `ModelAnalysis` 1 held.
 The folio grew the two binding lines (print + parse through the shared
 optional-field walker, exact-message rejections added) and the outlet's
 phased frame (`parse/frame.rs`, split under the budget); the verifier
@@ -204,7 +204,7 @@ it: the number moves when P2-5b's widening (or P2-11's read) puts S2
 structure in front of the shipped prefixer. What this installment
 contributes is the largest prepared feed so far: every `v-bind` value
 and `v-on` handler now sits in an op with a retained AST where
-admitted, beside `ForFacts`/`SlotFacts`/`TextFacts`/`ModelFacts`.
+admitted, beside `ForFacts`/`SlotAnalysis`/`TextFacts`/`ModelAnalysis`.
 
 ### TS-17
 

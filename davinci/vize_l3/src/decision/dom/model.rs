@@ -1,6 +1,6 @@
 //! A separate original-Model read/write receipt, never a generic read policy.
 
-use super::{DomFacts, PropertyRole, ValueKind, file::matches_expression};
+use super::{DomAnalysis, PropertyRole, ValueKind, file::matches_expression};
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
     expr::ExprRef,
@@ -22,7 +22,7 @@ pub struct DomFileModel<'owner, 'arena> {
 }
 
 pub(super) fn get<'owner, 'arena>(
-    facts: &DomFacts<'owner, 'arena>,
+    facts: &DomAnalysis<'owner, 'arena>,
     node: NodeId,
 ) -> Option<DomFileModel<'owner, 'arena>> {
     let fact = facts.binding(node)?;

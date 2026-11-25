@@ -9,7 +9,7 @@ use crate::vue_file::{NativeTemplateProfile, VueFileRegion};
 use alloc::boxed::Box;
 use vize_l0::{SourceBlock, diag::Diagnostic};
 use vize_l1::embed::syntax::EmbedSyntax;
-use vize_l2::artifact::ArtifactError;
+use vize_l2::artifact::L2TemplateError;
 use vize_l2::file::TemplateIssue;
 
 /// Source, interruption and repeat refusal retain the original pending owner.
@@ -18,7 +18,7 @@ pub enum NativeVueConstructionError {
     AlreadyStarted,
     ForeignSource,
     NativeAuthorityUnavailable,
-    Artifact(ArtifactError),
+    Artifact(L2TemplateError),
     Interrupted(TemplateIssue),
 }
 

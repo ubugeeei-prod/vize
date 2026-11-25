@@ -10,7 +10,7 @@ use vize_l2::{
     walk::NodeRef,
 };
 use vize_l3::decision::{
-    OriginalAttributeFacts, ssr::build_template_ssr_decisions,
+    OriginalAttributeAnalysis, ssr::build_template_ssr_decisions,
     template::build_template_dom_decisions, vapor::build_template_vapor_decisions,
 };
 
@@ -189,19 +189,19 @@ fn l3_failure(state: &str, error: Option<String>) -> Value {
 }
 
 fn l3_receipt(
-    facts: Option<&OriginalAttributeFacts<'_, '_>>,
+    facts: Option<&OriginalAttributeAnalysis<'_, '_>>,
     owner_same: bool,
     file_same: bool,
     tables: String,
 ) -> Value {
     let (values, visit_error) = facts.map_or_else(|| (Vec::new(), None), joined_values);
     json!({"state":"complete","publicError":null,"ownerSame":owner_same,"fileSame":file_same,
-        "tablesDebug":tables,"valueCount":facts.map_or(0,OriginalAttributeFacts::len),
+        "tablesDebug":tables,"valueCount":facts.map_or(0,OriginalAttributeAnalysis::len),
         "visitError":visit_error,"values":values})
 }
 
 fn joined_values<'owner, 'arena>(
-    facts: &OriginalAttributeFacts<'owner, 'arena>,
+    facts: &OriginalAttributeAnalysis<'owner, 'arena>,
 ) -> (Vec<Value>, Option<String>) {
     let file = facts.l2ir();
     let mut values = Vec::new();

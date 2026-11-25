@@ -83,7 +83,7 @@ fn original_region_events() {
 }
 
 pub(super) fn original_preorder<'s, 'a>(
-    artifact: &'s vize_l2::artifact::Artifact<'a>,
+    artifact: &'s vize_l2::artifact::L2Template<'a>,
     visit: &mut impl FnMut(vize_l0::id::NodeId, vize_l2::walk::NodeRef<'s, 'a>),
 ) -> Result<(), vize_l2::walk::NodeLimit> {
     artifact.visit_nodes(visit)

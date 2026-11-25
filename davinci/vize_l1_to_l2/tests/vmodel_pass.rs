@@ -13,7 +13,7 @@ use crate::support;
 use vize_l0::diag::{Severity, Stage};
 use vize_l1_to_l2::exemptions;
 use vize_l1_to_l2::pass::vmodel;
-use vize_l2::analysis::model_facts::{ModelFacts, ModelFault};
+use vize_l2::analysis::model_facts::{ModelAnalysis, ModelFault};
 
 use support::{assert_transformed_sound, with_transformed};
 
@@ -35,7 +35,7 @@ fn a_model_on_a_v_for_alias_is_flagged_with_reliefs_wording() {
         assert_eq!(entries[0].0.index(), 3);
         assert_eq!(
             entries[0].1,
-            &ModelFacts {
+            &ModelAnalysis {
                 fault: ModelFault::OnScope,
             }
         );
@@ -173,7 +173,7 @@ fn an_argument_on_a_plain_element_is_flagged() {
         let entries = facts.model_faults.sorted_entries();
         assert_eq!(
             entries[0].1,
-            &ModelFacts {
+            &ModelAnalysis {
                 fault: ModelFault::ArgOnElement,
             }
         );
@@ -203,7 +203,7 @@ fn the_on_scope_check_wins_over_the_argument_check() {
         let entries = facts.model_faults.sorted_entries();
         assert_eq!(
             entries[0].1,
-            &ModelFacts {
+            &ModelAnalysis {
                 fault: ModelFault::OnScope,
             }
         );

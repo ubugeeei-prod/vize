@@ -26,7 +26,7 @@ use vize_l1::markup::parse;
 use vize_l1_to_l2::{LegacyCaps, Lowered, lower_with_caps};
 use vize_l2::dump::Page as L2Page;
 use vize_l2::provenance::ProvenanceRecord;
-use vize_l2::scope::ScopeFacts;
+use vize_l2::scope::ScopeAnalysis;
 use vize_l2::verify::{Rigor, Violation, verify, verify_table};
 
 pub use authored::assert_authored_artifact;
@@ -34,7 +34,7 @@ pub use dump_spans::assert_folio_spans_resolve;
 
 /// The owned snapshot of one lowering, for exact-equality pins.
 #[derive(Debug)]
-pub struct Artifact {
+pub struct LoweringSnapshot {
     /// The canonical `Full`-mode folio text (owned, arena-free).
     pub folio: String,
     /// The minted op count.
@@ -44,17 +44,17 @@ pub struct Artifact {
     /// The provenance records, in decision order.
     pub provenance: Vec<ProvenanceRecord>,
     /// The scope facts, as (op index, facts), ascending.
-    pub scopes: Vec<(u32, ScopeFacts)>,
+    pub scopes: Vec<(u32, ScopeAnalysis)>,
 }
 
 /// Lower `source` and clone everything owned out of the arena's shadow.
-pub fn artifact(source: &str) -> Artifact {
+pub fn artifact(source: &str) -> LoweringSnapshot {
     artifact_caps(source, LegacyCaps::VUE3)
 }
 
 /// [`artifact`] under an explicit Vue dialect.
-pub fn artifact_caps(source: &str, caps: LegacyCaps) -> Artifact {
-    with_lowered_caps(source, caps, |lowered, folio| Artifact {
+pub fn artifact_caps(source: &str, caps: LegacyCaps) -> LoweringSnapshot {
+    with_lowered_caps(source, caps, |lowered, folio| LoweringSnapshot {
         folio: folio.print_to_string(DumpMode::Full),
         op_count: lowered.op_count,
         diagnostics: lowered.diagnostics.clone(),
@@ -95,7 +95,7 @@ pub fn with_transformed<R>(
     f: impl FnOnce(
         &Lowered<'_>,
         &L2Page,
-        &vize_l2::analysis::pass_facts::L2Facts,
+        &vize_l2::analysis::pass_facts::L2Analyses,
         &vize_l0::pass::BudgetObserver,
     ) -> R,
 ) -> R {
@@ -119,7 +119,7 @@ pub fn with_transformed_caps<R>(
     f: impl FnOnce(
         &Lowered<'_>,
         &L2Page,
-        &vize_l2::analysis::pass_facts::L2Facts,
+        &vize_l2::analysis::pass_facts::L2Analyses,
         &vize_l0::pass::BudgetObserver,
     ) -> R,
 ) -> R {

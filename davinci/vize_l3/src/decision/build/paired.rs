@@ -4,9 +4,9 @@ use super::{
     OriginalAttributeCursor, SideTable, SsrBuilder, TargetPolicy,
 };
 use crate::decision::{
-    OriginalAttributeFacts,
+    OriginalAttributeAnalysis,
     policy::BindingOwner,
-    ssr::{SsrFacts, SsrTemplateBuildError},
+    ssr::{SsrAnalysis, SsrTemplateBuildError},
     template::{TemplateDomAnalysis, build_template_dom_decisions},
 };
 use alloc::vec::Vec;
@@ -22,8 +22,8 @@ use vize_l2::{
 pub struct ServerRenderAnalysis<'owner, 'arena> {
     owner: &'owner NativeTemplateFile<'arena>,
     l2ir: &'owner L2Ir<'arena>,
-    attributes: OriginalAttributeFacts<'owner, 'arena>,
-    facts: SsrFacts<'owner, 'arena>,
+    attributes: OriginalAttributeAnalysis<'owner, 'arena>,
+    facts: SsrAnalysis<'owner, 'arena>,
 }
 impl<'owner, 'arena> ServerRenderAnalysis<'owner, 'arena> {
     pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
@@ -32,10 +32,10 @@ impl<'owner, 'arena> ServerRenderAnalysis<'owner, 'arena> {
     pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
         self.l2ir
     }
-    pub fn original_attributes(&self) -> &OriginalAttributeFacts<'owner, 'arena> {
+    pub fn original_attributes(&self) -> &OriginalAttributeAnalysis<'owner, 'arena> {
         &self.attributes
     }
-    pub fn facts(&self) -> &SsrFacts<'owner, 'arena> {
+    pub fn facts(&self) -> &SsrAnalysis<'owner, 'arena> {
         &self.facts
     }
 }

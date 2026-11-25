@@ -15,7 +15,7 @@ pub(crate) struct ConditionalStorage<'a> {
     failures: alloc::vec::Vec<AttributeExpressionFailure<'a>>,
 }
 
-impl<'a> super::build::Facts<'a> {
+impl<'a> super::build::L2Script<'a> {
     pub(crate) fn native_conditionals(&self) -> &[NativeFileConditional<'a>] {
         self.conditional_storage
             .as_deref()

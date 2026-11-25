@@ -154,7 +154,7 @@ fn raw_interpolation_width_is_disjoint_from_quote_and_opening_aux() {
 
 #[test]
 fn selected_tag_facts_aux_never_changes_mode_quotes_width_or_event_layout() {
-    use crate::markup::htmlish::surface::{HeaderFacts, TagKindFact};
+    use crate::markup::htmlish::surface::{HeaderAnalysis, TagKindInfo};
     let allocator = Allocator::new();
     let (mut events, mut errors) = record(&allocator, "", true, false);
     let mut recorder = Recorder {
@@ -163,12 +163,12 @@ fn selected_tag_facts_aux_never_changes_mode_quotes_width_or_event_layout() {
     };
     for kind in [EventKind::OpenTagEnd, EventKind::SelfClosingTag] {
         for fact in [
-            TagKindFact::Element,
-            TagKindFact::Component,
-            TagKindFact::Slot,
-            TagKindFact::Template,
-            TagKindFact::AmbiguousVerbatim,
-            TagKindFact::InheritedTemplate,
+            TagKindInfo::Element,
+            TagKindInfo::Component,
+            TagKindInfo::Slot,
+            TagKindInfo::Template,
+            TagKindInfo::AmbiguousVerbatim,
+            TagKindInfo::InheritedTemplate,
         ] {
             for verbatim in [false, true] {
                 for literal in [false, true] {
@@ -178,7 +178,7 @@ fn selected_tag_facts_aux_never_changes_mode_quotes_width_or_event_layout() {
                                 kind,
                                 19,
                                 verbatim,
-                                HeaderFacts {
+                                HeaderAnalysis {
                                     kind: Some(fact),
                                     literal,
                                     table_context,

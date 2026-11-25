@@ -4,7 +4,7 @@
 
 use vize_l0::{Allocator, Span, Vec};
 use vize_l2::{
-    artifact::{Artifact, Builder},
+    artifact::{Builder, L2Template},
     expr::{ExprRef, JsExpr},
     op::{Namespace, Op},
     resolution::{BindingId, BindingLookup, resolve_expression},
@@ -61,7 +61,7 @@ fn typed_sequence_child_preserves_the_real_expression_and_complete_emission_pack
     assert!(children.next().is_none());
     element.children.ops = Vec::from_iter_in([Op::ChildValue(child)], &arena);
     parts.root.ops = Vec::from_iter_in([Op::Element(element)], &arena);
-    let artifact = Artifact::try_new(parts).unwrap();
+    let artifact = L2Template::try_new(parts).unwrap();
     let tables = [resolve_expression(js, &State).unwrap()];
     let ids = [BindingId::new(0)];
     let bindings = [Binding {

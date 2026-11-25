@@ -1,7 +1,7 @@
 //! Transactional use rows from the shared resolver's sole AST traversal.
 
 use super::{ProgramInput, Walk};
-use crate::file::build::Facts;
+use crate::file::build::L2Script;
 use crate::file::{FileIssueKind, Namespace, Reference, ReferenceTarget, ScopeId, ScriptUnitId};
 use crate::lang::js::file::observer::{CallEvent, FileObserver, InvocationEvent, SyntaxEvent};
 use crate::resolution::sink::{ReferenceEvent, ReferenceSink};
@@ -11,7 +11,7 @@ use vize_l0::{Span, String};
 
 struct Pending<'f, 'p, 'a, O> {
     input: &'f ProgramInput<'p, 'a>,
-    facts: &'f mut Facts<'a>,
+    facts: &'f mut L2Script<'a>,
     unit: ScriptUnitId,
     scope: ScopeId,
     namespace: Namespace,

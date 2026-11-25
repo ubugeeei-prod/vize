@@ -87,11 +87,11 @@ fn the_dashboard_fixture_snapshots_the_folio_and_the_breakdown() {
 fn empty_regions_preserve_all_facts_and_surrounding_page_order() {
     use vize_l0::Span;
     use vize_l0::id::NodeId;
-    use vize_l1_to_l2::pass::cfg::{ComplexityFacts, Contribution, DecisionKind};
+    use vize_l1_to_l2::pass::cfg::{ComplexityAnalysis, Contribution, DecisionKind};
 
     support::with_lowered("", |lowered, _folio| {
         assert_eq!(lowered.op_count, 0);
-        assert_eq!(cfg::run(lowered), ComplexityFacts::empty());
+        assert_eq!(cfg::run(lowered), ComplexityAnalysis::empty());
     });
 
     // Empty children before, within and after real decisions must not mint ids

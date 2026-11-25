@@ -8,8 +8,8 @@ mod render_tree;
 #[cfg(test)]
 mod render_tree_tests;
 
-use vize_croquis::facts::{Bindings, Demand, FactConsumer, FactGroup};
-use vize_l0::fact::{FactManager, FactRegistry};
+use vize_croquis::facts::{Analysis, AnalysisConsumer, Bindings, Demand};
+use vize_l0::analysis::{AnalysisManager, AnalysisRegistry};
 
 pub use render_tree::{
     RenderEdgeKey, RenderSite, RenderTree, component_usage_targets, imported_render_target,
@@ -23,7 +23,7 @@ use crate::registry::ModuleRegistry;
 /// `cross-file/error-boundary`: script bindings (`onErrorCaptured`).
 pub struct ErrorBoundaryRule;
 
-impl FactConsumer for ErrorBoundaryRule {
+impl AnalysisConsumer for ErrorBoundaryRule {
     const NAME: &'static str = "cross-file/error-boundary";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 }
@@ -32,7 +32,7 @@ impl FactConsumer for ErrorBoundaryRule {
 /// template component locally.
 pub struct ComponentResolutionRule;
 
-impl FactConsumer for ComponentResolutionRule {
+impl AnalysisConsumer for ComponentResolutionRule {
     const NAME: &'static str = "cross-file/component-resolution";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 }
@@ -40,33 +40,33 @@ impl FactConsumer for ComponentResolutionRule {
 /// The edge builder reads the project render tree.
 pub struct RenderTreeReader;
 
-impl FactConsumer for RenderTreeReader {
+impl AnalysisConsumer for RenderTreeReader {
     const NAME: &'static str = "cross-file/render-tree";
     const DEMAND: Demand = Demand::NONE.with(RenderTree::ID);
 }
 
 /// Every project-level fact group.
-pub const PROJECT_FACTS: FactRegistry<ModuleRegistry> =
-    FactRegistry::new(&[vize_l0::fact::ProducerEntry::of::<RenderTree>()]);
+pub const PROJECT_FACTS: AnalysisRegistry<ModuleRegistry> =
+    AnalysisRegistry::new(&[vize_l0::analysis::ProducerEntry::of::<RenderTree>()]);
 
 /// Facts computed over one module registry.
 pub struct ProjectFacts<'a> {
     registry: &'a ModuleRegistry,
-    manager: FactManager<'static, ModuleRegistry>,
+    manager: AnalysisManager<'static, ModuleRegistry>,
 }
 
 impl<'a> ProjectFacts<'a> {
     pub fn new(registry: &'a ModuleRegistry) -> Self {
         Self {
             registry,
-            manager: FactManager::new(&PROJECT_FACTS),
+            manager: AnalysisManager::new(&PROJECT_FACTS),
         }
     }
 
     /// Compute `C`'s demand and return `C`'s view. A demand on an
-    /// unregistered group computes nothing for it; `FactView::get` then
+    /// unregistered group computes nothing for it; `AnalysisView::get` then
     /// reports that group as not computed.
-    pub fn prepare<C: FactConsumer>(&mut self) -> vize_l0::fact::FactView<'_> {
+    pub fn prepare<C: AnalysisConsumer>(&mut self) -> vize_l0::analysis::AnalysisView<'_> {
         // `prepare` returns exactly `view::<C>()` on success.
         let _ = self.manager.prepare::<C>(self.registry);
         self.manager.view::<C>()

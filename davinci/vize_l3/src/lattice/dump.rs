@@ -7,7 +7,7 @@ use vize_l0::dump::{Dump, Error as DumpError};
 use vize_l0::{Span, cstr};
 
 use super::{
-    BindingFact, BindingId, BindingOrigin, EffectSet, EscapeKind, LatticeFacts, ReactivityClass,
+    BindingId, BindingInfo, BindingOrigin, EffectSet, EscapeKind, LatticeAnalysis, ReactivityClass,
     Verdict,
 };
 
@@ -22,7 +22,7 @@ pub struct Page {
 impl Page {
     /// Mirror live arena facts into the owned folio page.
     #[must_use]
-    pub fn of(facts: &LatticeFacts<'_>) -> Self {
+    pub fn of(facts: &LatticeAnalysis<'_>) -> Self {
         Self {
             bindings: facts.bindings.iter().map(Binding::from).collect(),
         }
@@ -41,8 +41,8 @@ pub struct Binding {
     pub span: Span,
 }
 
-impl From<&BindingFact> for Binding {
-    fn from(fact: &BindingFact) -> Self {
+impl From<&BindingInfo> for Binding {
+    fn from(fact: &BindingInfo) -> Self {
         Self {
             id: fact.id.index(),
             class: fact.class,
@@ -97,7 +97,7 @@ impl DumpValue for Binding {
     }
 }
 
-impl From<Binding> for BindingFact {
+impl From<Binding> for BindingInfo {
     fn from(binding: Binding) -> Self {
         Self {
             id: BindingId::new(binding.id),

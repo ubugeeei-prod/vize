@@ -114,7 +114,7 @@ Rust の最低対応バージョン（MSRV）は、`Cargo.toml` の `[workspace.
 | `vize_l1_to_l2` | 実験的 | Vue の変換・コンパイラバックエンド開発者 | `vize_l1_to_l2::{lower, emit_dom}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
 | `vize_l2` | 実験的 | 方言に依存しないコンパイラ IR の開発者 | `vize_l2::{dump::Page, op, verify}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
 | `vize_l0` | 実験的 | Davinci の各層・パスの開発者 | `vize_l0::{id::NodeId, side_table::SideTable}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
-| `vize_l2_to_l3` | 実験的 | L2 から L3 への変換・バックエンド開発者 | `vize_l2_to_l3::{lower, PartitionFacts}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
+| `vize_l2_to_l3` | 実験的 | L2 から L3 への変換・バックエンド開発者 | `vize_l2_to_l3::{lower, PartitionAnalysis}` | 最低期間の保証なし。可能な範囲で破壊的変更を告知 |
 
 <!-- rust-crate-support:end -->
 

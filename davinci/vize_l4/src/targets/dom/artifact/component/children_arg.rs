@@ -1,6 +1,6 @@
 use vize_l2::op::ComponentOp;
 
-use vize_l2::analysis::slot_facts::SlotFacts;
+use vize_l2::analysis::slot_facts::SlotAnalysis;
 
 use super::super::js::RawJs;
 use super::super::{EmitCx, EmitError, builtin, create_slots, create_slots_walk, slots};
@@ -9,7 +9,7 @@ pub(super) struct Args<'a> {
     pub(super) array: bool,
     pub(super) has_array: bool,
     pub(super) create: bool,
-    pub(super) facts: Option<&'a SlotFacts>,
+    pub(super) facts: Option<&'a SlotAnalysis>,
     pub(super) spread: Option<&'a RawJs<'a>>,
     pub(super) emit_flag: bool,
     pub(super) keyed_branch: bool,

@@ -186,8 +186,8 @@ fn kebab_case_component_name(name: &str) -> Option<String> {
 /// `maestro/art-target-bindings`'s declared fact demand.
 struct ArtTargetBindings;
 
-impl vize_croquis::facts::FactConsumer for ArtTargetBindings {
+impl vize_croquis::facts::AnalysisConsumer for ArtTargetBindings {
     const NAME: &'static str = "maestro/art-target-bindings";
     const DEMAND: vize_croquis::facts::Demand = vize_croquis::facts::Demand::NONE
-        .with(<vize_croquis::facts::Bindings as vize_croquis::facts::FactGroup>::ID);
+        .with(<vize_croquis::facts::Bindings as vize_croquis::facts::Analysis>::ID);
 }

@@ -25,7 +25,7 @@
 //! # Residency
 //!
 //! Facts live beside the tree in a
-//! [`SideTable<ScopeFacts>`](vize_l0::side_table::SideTable) keyed by
+//! [`SideTable<ScopeAnalysis>`](vize_l0::side_table::SideTable) keyed by
 //! the introducing op's [`NodeId`](vize_l0::id::NodeId) (dense
 //! page-order ids, `folio-format.md` "Node numbering"). The table is the
 //! sparse non-arena form, so names are owned [`String`]s and the facts are
@@ -111,7 +111,7 @@ pub struct ScopeBinding {
 
 /// The scope facts of one binding-introducing op.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ScopeFacts {
+pub struct ScopeAnalysis {
     /// The op's introduction-site tag.
     pub tag: ScopeTag,
     /// The bindings it introduces, in position order (for `ui.for`:
@@ -127,7 +127,7 @@ pub struct ScopeFacts {
 /// contract, the same enforcement `Diagnostic` carries).
 const _: () = {
     const fn assert_owned<T: 'static>() {}
-    assert_owned::<ScopeFacts>();
+    assert_owned::<ScopeAnalysis>();
     assert_owned::<ScopeBinding>();
     assert_owned::<ScopeOrigin>();
 };
@@ -140,12 +140,12 @@ const _: () = assert!(core::mem::size_of::<ScopeTag>() == 4);
 const _: () = {
     assert!(core::mem::size_of::<ScopeOrigin>() == 24);
     assert!(core::mem::size_of::<ScopeBinding>() == 48);
-    assert!(core::mem::size_of::<ScopeFacts>() == 32);
+    assert!(core::mem::size_of::<ScopeAnalysis>() == 32);
 };
 
 #[cfg(test)]
 mod tests {
-    use super::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
+    use super::{ScopeAnalysis, ScopeBinding, ScopeOrigin, ScopeTag};
     use alloc::vec;
     use vize_l0::{Span, String, cstr};
 
@@ -182,7 +182,7 @@ mod tests {
 
     #[test]
     fn facts_hold_bindings_in_position_order() {
-        let facts = ScopeFacts {
+        let facts = ScopeAnalysis {
             tag: ScopeTag::from_index(2),
             bindings: vec![
                 ScopeBinding {

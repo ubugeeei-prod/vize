@@ -1,6 +1,6 @@
 //! Transient actual Element allocation from the same normal frame close.
 
-use super::{ArtifactError, Builder, Owner, RegionBuilder};
+use super::{Builder, L2TemplateError, Owner, RegionBuilder};
 use crate::op::{Attribute, ElementOp, Namespace};
 use core::ptr::NonNull;
 use vize_l0::{Span, id::NodeId};
@@ -31,7 +31,7 @@ impl<'a> Builder<'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<(NodeId, ElementAllocation<'a>), ArtifactError> {
+    ) -> Result<(NodeId, ElementAllocation<'a>), L2TemplateError> {
         let id = self.prepare_owner(&attributes, span)?;
         let closed = self.children(
             Owner::Element {
@@ -45,7 +45,7 @@ impl<'a> Builder<'a> {
         )?;
         let element = closed
             .element
-            .ok_or(ArtifactError::UnfinishedOwner { node: id })?;
+            .ok_or(L2TemplateError::UnfinishedOwner { node: id })?;
         Ok((id, element))
     }
 }

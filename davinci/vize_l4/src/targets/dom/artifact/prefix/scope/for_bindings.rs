@@ -8,7 +8,7 @@ impl PrefixScope<'_> {
         &mut self,
         aliases: [Option<&str>; 3],
         spans: [Option<vize_l0::Span>; 3],
-        facts: Option<&vize_l2::scope::ScopeFacts>,
+        facts: Option<&vize_l2::scope::ScopeAnalysis>,
         patterns_only: bool,
     ) {
         for (index, (alias, span)) in aliases.into_iter().zip(spans).enumerate() {

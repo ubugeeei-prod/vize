@@ -8,7 +8,7 @@ use support::{artifact, with_lowered};
 use vize_l0::id::NodeId;
 use vize_l0::{Span, String};
 use vize_l2::provenance::ProvenanceRecord;
-use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
+use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin, ScopeTag};
 
 fn authored(name: &str, start: u32, end: u32) -> ScopeBinding {
     ScopeBinding {
@@ -26,7 +26,7 @@ fn a_v_for_scope_records_its_authored_bindings_in_position_order() {
         art.scopes,
         vec![(
             0,
-            ScopeFacts {
+            ScopeAnalysis {
                 tag: ScopeTag::from_index(0),
                 bindings: vec![authored("item", 12, 16), authored("i", 18, 19)],
             }
@@ -45,7 +45,7 @@ fn aliases_after_the_three_position_contract_do_not_change_lowering() {
         art.scopes,
         vec![(
             0,
-            ScopeFacts {
+            ScopeAnalysis {
                 tag: ScopeTag::from_index(0),
                 bindings: vec![
                     authored("value", 12, 17),
@@ -68,7 +68,7 @@ fn a_destructuring_alias_contributes_no_names_but_the_scope_stands() {
         art.scopes,
         vec![(
             0,
-            ScopeFacts {
+            ScopeAnalysis {
                 tag: ScopeTag::from_index(0),
                 bindings: vec![authored("i", 21, 22)],
             }
@@ -89,7 +89,7 @@ fn slot_props_are_a_tagged_introduction_site_on_their_own_binding_op() {
         art.scopes,
         vec![(
             2,
-            ScopeFacts {
+            ScopeAnalysis {
                 tag: ScopeTag::from_index(0),
                 bindings: vec![authored("props", 23, 28)],
             }

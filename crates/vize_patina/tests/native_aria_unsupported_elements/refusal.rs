@@ -1,6 +1,6 @@
 use super::support::{LOCALES, complete, error, expected, parser, registered, selected, span};
 use vize_l0::{Allocator, Span, cstr};
-use vize_l1::markup::TagFactsRefusal;
+use vize_l1::markup::TagAnalysisRefusal;
 use vize_patina::native::{
     NativeLintRefusal, NativeSyntaxLint, header_facts::NativeHeaderFactError,
 };
@@ -119,7 +119,7 @@ fn original_modified_pre_classification_stays_ambiguous() {
         assert_eq!(
             lint.header_facts(&element).err(),
             Some(NativeHeaderFactError::Header(NativeLintRefusal::LintTag {
-                reason: TagFactsRefusal::AmbiguousVerbatim
+                reason: TagAnalysisRefusal::AmbiguousVerbatim
             }))
         );
         for locale in LOCALES {

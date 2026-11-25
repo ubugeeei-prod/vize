@@ -43,7 +43,7 @@
 //! </template>
 //! ```
 
-use vize_l0::fact::{Demand, FactConsumer, FactGroup};
+use vize_l0::analysis::{Analysis, AnalysisConsumer, Demand};
 use vize_l1_to_l2::pass::cfg::{
     COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, Contribution, TemplateComplexityGroup,
     template_facts,
@@ -69,7 +69,7 @@ const MAX_LABELS: usize = 5;
 pub struct MaxTemplateComplexity;
 
 /// The rule reads exactly one fact group (TS-35: declared, never inferred).
-impl FactConsumer for MaxTemplateComplexity {
+impl AnalysisConsumer for MaxTemplateComplexity {
     const NAME: &'static str = "vue/max-template-complexity";
     const DEMAND: Demand = Demand::NONE.with(TemplateComplexityGroup::ID);
 }

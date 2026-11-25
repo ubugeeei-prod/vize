@@ -5,7 +5,7 @@ use super::{TEMPLATES, rule_fixtures};
 use crate::context::LintContext;
 use crate::diagnostic::LintDiagnostic;
 use crate::ir::TemplateSyntax;
-use crate::markup::{L2Template, MarkupContext, MarkupDocument};
+use crate::markup::{LintL2Template, MarkupContext, MarkupDocument};
 use crate::rule::RuleRegistry;
 use crate::visitor::LintVisitor;
 use std::fs::OpenOptions;
@@ -121,7 +121,7 @@ fn probe_sfc_facade_candidates() {
         }
         let allocator = Allocator::with_capacity(source.len().saturating_mul(4).max(1024));
         let (root, _) = Parser::new(&allocator, source).parse();
-        let lowered = L2Template::lower(&allocator, source);
+        let lowered = LintL2Template::lower(&allocator, source);
         let markup = lowered.markup();
         // SAFETY: the local header lives to the end of this iteration, and
         // the document built from it is dropped with it.

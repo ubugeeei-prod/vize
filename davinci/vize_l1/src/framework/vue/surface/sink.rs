@@ -6,7 +6,7 @@ use super::{HeaderPolicy, LexicalScope, SurfacePolicy};
 use crate::markup::entity::DecodedEntity;
 use crate::markup::htmlish::build::scope::{Frame, Recovery, authored_close, namespace};
 use crate::markup::htmlish::event::{EventKind, Recorder};
-use crate::markup::htmlish::surface::HeaderFacts;
+use crate::markup::htmlish::surface::HeaderAnalysis;
 use crate::markup::token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 use core::marker::PhantomData;
 
@@ -83,9 +83,9 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         }
     }
 
-    fn finish_tag(&mut self, self_closing: bool) -> (bool, HeaderFacts) {
+    fn finish_tag(&mut self, self_closing: bool) -> (bool, HeaderAnalysis) {
         let Some(tag) = self.tag.take() else {
-            return (false, HeaderFacts::default());
+            return (false, HeaderAnalysis::default());
         };
         // The lexer read the dialect's mode while consuming the actual
         // header, before HTML recovery changes structural ancestry.
@@ -156,7 +156,7 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         }
         (
             verbatim,
-            HeaderFacts {
+            HeaderAnalysis {
                 kind: tag_facts,
                 literal: header_literal,
                 table_context,

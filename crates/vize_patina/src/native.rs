@@ -10,7 +10,7 @@ use vize_l0::{
     Span,
     diag::{Diagnostic, MessageLookup},
 };
-use vize_l1::markup::{ElementView, SelectedTemplateComponent, TagFactsRefusal};
+use vize_l1::markup::{ElementView, SelectedTemplateComponent, TagAnalysisRefusal};
 
 mod admission;
 mod aria_unsupported_elements;
@@ -98,7 +98,7 @@ pub enum NativeLintRefusal {
     /// A literal-context lint tag prevents an authenticated interpretation.
     LintTag {
         /// Producer-supplied reason for refusing the lint tag.
-        reason: TagFactsRefusal,
+        reason: TagAnalysisRefusal,
     },
     /// HTML table recovery makes the element's parent context ambiguous.
     TableContext {

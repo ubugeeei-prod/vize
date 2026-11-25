@@ -2,14 +2,16 @@
 //! (Davinci P4-3a).
 
 use vize_croquis::Croquis;
-use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
+use vize_croquis::facts::{
+    Analysis, AnalysisConsumer, Bindings, BindingsTable, CroquisFacts, Demand,
+};
 
 use super::super::source_offsets::ScriptOffsetMapper;
 
 /// The playground's analysis payload reads script bindings.
 struct AnalyzePayload;
 
-impl FactConsumer for AnalyzePayload {
+impl AnalysisConsumer for AnalyzePayload {
     const NAME: &'static str = "vitrine/analyze-sfc";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 }

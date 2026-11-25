@@ -179,7 +179,7 @@ fn caught_original_for_park_and_scope_unwind_preserve_whole_owner_parent_and_pre
             assert_eq!(original.id().node().index(), 1);
             assert_eq!(
                 rejected.artifact().error,
-                crate::artifact::ArtifactError::UnfinishedOwner {
+                crate::artifact::L2TemplateError::UnfinishedOwner {
                     node: original.id().node(),
                 }
             );

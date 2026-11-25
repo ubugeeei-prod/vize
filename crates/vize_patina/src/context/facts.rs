@@ -3,7 +3,7 @@
 use super::LintContext;
 use vize_croquis::{
     Croquis,
-    facts::{FactConsumer, FactView},
+    facts::{AnalysisConsumer, AnalysisView},
 };
 
 impl<'a> LintContext<'a> {
@@ -55,7 +55,7 @@ impl<'a> LintContext<'a> {
     }
 
     /// Read a consumer's declared groups, computed once for this artifact.
-    pub fn facts<C: FactConsumer>(&mut self) -> Option<FactView<'_>> {
+    pub fn facts<C: AnalysisConsumer>(&mut self) -> Option<AnalysisView<'_>> {
         self.analysis()?;
         self.facts.as_mut().map(|facts| facts.prepare::<C>())
     }

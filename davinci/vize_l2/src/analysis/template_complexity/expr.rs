@@ -14,7 +14,7 @@ use oxc_ast_visit::{Visit, walk};
 use vize_l0::Span;
 use vize_l0::id::NodeId;
 
-use super::{ComplexityFacts, Contribution, DecisionKind};
+use super::{ComplexityAnalysis, Contribution, DecisionKind};
 
 #[cfg(test)]
 mod tests;
@@ -26,7 +26,7 @@ pub(in crate::analysis) fn score(
     expr: ExprRef<'_>,
     op: Option<NodeId>,
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) {
     match expr {
         ExprRef::Js(js) if terminal(js.ast) => {}
@@ -38,7 +38,12 @@ pub(in crate::analysis) fn score(
 }
 
 /// Keep retained-AST traversal and its rollback frame off the terminal fast path.
-fn score_js<'a>(js: &'a JsExpr<'a>, op: Option<NodeId>, depth: u32, facts: &mut ComplexityFacts) {
+fn score_js<'a>(
+    js: &'a JsExpr<'a>,
+    op: Option<NodeId>,
+    depth: u32,
+    facts: &mut ComplexityAnalysis,
+) {
     let previous = (facts.contributions.len(), facts.cyclomatic, facts.cognitive);
     let mut scorer = Scorer {
         js,
@@ -77,7 +82,7 @@ fn terminal(expr: &Expression<'_>) -> bool {
     )
 }
 
-fn unknown(expr: ExprRef<'_>, op: Option<NodeId>, depth: u32, facts: &mut ComplexityFacts) {
+fn unknown(expr: ExprRef<'_>, op: Option<NodeId>, depth: u32, facts: &mut ComplexityAnalysis) {
     facts.push(Contribution {
         span: expr.span(),
         kind: DecisionKind::Unknown,
@@ -95,7 +100,7 @@ struct Scorer<'f, 'a> {
     js: &'a JsExpr<'a>,
     op: Option<NodeId>,
     nesting: u32,
-    facts: &'f mut ComplexityFacts,
+    facts: &'f mut ComplexityAnalysis,
     unprojectable: bool,
 }
 

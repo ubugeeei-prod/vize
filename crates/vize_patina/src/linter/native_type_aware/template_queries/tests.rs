@@ -45,7 +45,7 @@ fn real_shorthand_projection_queries_camelized_expression_values() {
     let template = descriptor.template.as_ref().unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     let allocator = vize_l0::Allocator::default();
-    let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+    let l2 = crate::markup::LintL2Template::lower(&allocator, &template.content);
     assert!(l2.surface_errors().is_empty());
     let document = super::super::document::project_type_aware(
         &descriptor,
@@ -97,7 +97,7 @@ function pick(index: number): string[] { return pages[index] ?? [] }
     let template = descriptor.template.as_ref().unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     let allocator = vize_l0::Allocator::default();
-    let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+    let l2 = crate::markup::LintL2Template::lower(&allocator, &template.content);
     assert!(l2.surface_errors().is_empty());
     let document = super::super::document::project_type_aware(
         &descriptor,
@@ -214,7 +214,7 @@ const ids: number[] = [1]
     let template = descriptor.template.as_ref().unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     let allocator = vize_l0::Allocator::default();
-    let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+    let l2 = crate::markup::LintL2Template::lower(&allocator, &template.content);
     assert!(l2.surface_errors().is_empty());
     let document = super::super::document::project_type_aware(
         &descriptor,
@@ -282,7 +282,7 @@ const selected: number[] = [1]
     let template = descriptor.template.as_ref().unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     let allocator = vize_l0::Allocator::default();
-    let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+    let l2 = crate::markup::LintL2Template::lower(&allocator, &template.content);
     assert!(l2.surface_errors().is_empty());
     let document = super::super::document::project_type_aware(
         &descriptor,
@@ -331,7 +331,7 @@ const cardProps = { topConfig: { distance: 1 } }
     let template = descriptor.template.as_ref().unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     let allocator = vize_l0::Allocator::default();
-    let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+    let l2 = crate::markup::LintL2Template::lower(&allocator, &template.content);
     assert!(l2.surface_errors().is_empty());
     let document = super::super::document::project_type_aware(
         &descriptor,

@@ -9,7 +9,7 @@ mod support {
 
 use support::vue_setup::{corpus, observe, slice, text};
 use vize_l0::{String, cstr};
-use vize_l2::framework::vue::{ContractSource, SetupFacts};
+use vize_l2::framework::vue::{ContractSource, SetupAnalysis};
 
 /// `(name, required, value, default)` of one prop.
 type Row = (String, bool, Option<String>, Option<String>);
@@ -21,7 +21,7 @@ struct Read {
     unexpanded: Vec<String>,
 }
 
-fn facts(script: &str) -> (String, u32, SetupFacts) {
+fn facts(script: &str) -> (String, u32, SetupAnalysis) {
     let source = cstr!("<script setup lang=\"ts\">{script}</script>");
     let (content, base, facts) = observe(&source).expect("the setup is admitted");
     (content, base, facts.expect("every statement is observed"))

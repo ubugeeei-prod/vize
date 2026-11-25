@@ -6,7 +6,7 @@
 //! tokens, [`ElementClose::Missing`], [`SurfaceChild::Unexpected`] — are
 //! the crate-level hole policy's clauses 1 and 2 (see the crate docs).
 
-pub(crate) use tag_facts::{HeaderFacts, TagKindFact};
+pub(crate) use tag_facts::{HeaderAnalysis, TagKindInfo};
 use vize_l0::{Box, Vec};
 
 /// Whether a token's syntax is present in the source or a typed hole.
@@ -37,7 +37,7 @@ pub struct Token<'a> {
     pub status: TokenStatus,
     verbatim_opening: bool,
     raw_interpolation: bool,
-    tag_facts: Option<TagKindFact>,
+    tag_facts: Option<TagKindInfo>,
     header_facts_literal: bool,
     header_table_context: bool,
     header_recovery_context: bool,
@@ -104,7 +104,7 @@ impl<'a> Token<'a> {
 
     pub(crate) fn mark_tag_facts(
         &mut self,
-        fact: Option<TagKindFact>,
+        fact: Option<TagKindInfo>,
         header_literal: bool,
         table_context: bool,
         recovery_context: bool,
@@ -194,7 +194,7 @@ pub struct OpenTag<'a> {
 }
 
 impl OpenTag<'_> {
-    pub(crate) fn tag_facts(&self) -> Option<TagKindFact> {
+    pub(crate) fn tag_facts(&self) -> Option<TagKindInfo> {
         self.lt_name.tag_facts
     }
 

@@ -21,7 +21,7 @@
 )]
 
 use serde::{Deserialize, Serialize};
-use vize_l0::fact::FactManager;
+use vize_l0::analysis::AnalysisManager;
 
 use super::document::{PluginDocument, PluginNode};
 use super::error::HostError;
@@ -98,7 +98,7 @@ pub struct BuiltBatch {
 pub fn build_batch(
     document: &PluginDocument,
     spec: &PluginSpec<'_>,
-    manager: &mut FactManager<'_, PluginDocument>,
+    manager: &mut AnalysisManager<'_, PluginDocument>,
 ) -> Result<BuiltBatch, HostError> {
     let demand = validate_spec(spec)?;
     let visited = |node: &&PluginNode| {
@@ -124,7 +124,7 @@ pub fn build_batch(
 }
 
 /// Reject unknown manifest inputs before a cache hit can skip batch building.
-pub fn validate_spec(spec: &PluginSpec<'_>) -> Result<vize_l0::fact::Demand, HostError> {
+pub fn validate_spec(spec: &PluginSpec<'_>) -> Result<vize_l0::analysis::Demand, HostError> {
     if let Some(kind) = spec
         .visit
         .into_iter()

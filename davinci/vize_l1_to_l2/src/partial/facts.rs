@@ -4,40 +4,40 @@
 //! a fact only when their introducing fragment was accepted as a region.
 
 use vize_l0::Span;
-use vize_l0::fact::{
-    Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView,
-    ProducerEntry, ids,
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisProducer, AnalysisRegistry, AnalysisTable, AnalysisView,
+    Demand, ProducerEntry, ids,
 };
 use vize_l0::pass::AnalysisId;
 
 use super::page::PartialPage;
-use super::{FragmentKind, HoleFact, HoleKind, RegionFact, ScopeKey, ScopeNameFact, ScopeRole};
+use super::{FragmentKind, HoleInfo, HoleKind, RegionInfo, ScopeKey, ScopeNameInfo, ScopeRole};
 
 pub(crate) struct PartialHoles;
 pub(crate) struct PartialRegions;
 pub(crate) struct PartialScopes;
 
-pub(crate) struct TemplateFacts;
+pub(crate) struct PartialTemplateAnalysis;
 
-impl FactGroup for PartialHoles {
+impl Analysis for PartialHoles {
     const ID: AnalysisId = ids::PARTIAL_HOLES;
     const NAME: &'static str = "partial-holes";
     const STRATUM: u8 = 0;
     const DEPENDS: Demand = Demand::NONE;
     type Key = u32;
-    type Value = HoleFact;
+    type Value = HoleInfo;
 }
 
-impl FactGroup for PartialRegions {
+impl Analysis for PartialRegions {
     const ID: AnalysisId = ids::PARTIAL_REGIONS;
     const NAME: &'static str = "partial-regions";
     const STRATUM: u8 = 0;
     const DEPENDS: Demand = Demand::NONE;
     type Key = u32;
-    type Value = RegionFact;
+    type Value = RegionInfo;
 }
 
-impl FactGroup for PartialScopes {
+impl Analysis for PartialScopes {
     const ID: AnalysisId = ids::PARTIAL_SCOPES;
     const NAME: &'static str = "partial-scopes";
     const STRATUM: u8 = 1;
@@ -45,11 +45,11 @@ impl FactGroup for PartialScopes {
         .with(ids::PARTIAL_HOLES)
         .with(ids::PARTIAL_REGIONS);
     type Key = ScopeKey;
-    type Value = ScopeNameFact;
+    type Value = ScopeNameInfo;
 }
 
-impl FactProducer<PartialPage> for PartialHoles {
-    fn produce(page: &PartialPage, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<PartialPage> for PartialHoles {
+    fn produce(page: &PartialPage, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         page.holes
             .iter()
             .enumerate()
@@ -58,15 +58,15 @@ impl FactProducer<PartialPage> for PartialHoles {
     }
 }
 
-impl FactProducer<PartialPage> for PartialRegions {
-    fn produce(page: &PartialPage, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<PartialPage> for PartialRegions {
+    fn produce(page: &PartialPage, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         page.fragments
             .iter()
             .filter(|fragment| !covered(fragment.span, &page.holes))
             .map(|fragment| {
                 (
                     fragment.node,
-                    RegionFact {
+                    RegionInfo {
                         span: fragment.span,
                         kind: fragment.kind,
                     },
@@ -76,12 +76,12 @@ impl FactProducer<PartialPage> for PartialRegions {
     }
 }
 
-impl FactProducer<PartialPage> for PartialScopes {
-    fn produce(page: &PartialPage, inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<PartialPage> for PartialScopes {
+    fn produce(page: &PartialPage, inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let (Ok(regions), Ok(holes)) =
             (inputs.get::<PartialRegions>(), inputs.get::<PartialHoles>())
         else {
-            return FactTable::default();
+            return AnalysisTable::default();
         };
         page.names
             .iter()
@@ -96,7 +96,7 @@ impl FactProducer<PartialPage> for PartialScopes {
                         node: name.node,
                         index: name.index,
                     },
-                    ScopeNameFact {
+                    ScopeNameInfo {
                         name: name.name.clone(),
                         name_span: name.span,
                         visible: fragment.visible,
@@ -108,7 +108,7 @@ impl FactProducer<PartialPage> for PartialScopes {
     }
 }
 
-impl FactConsumer for TemplateFacts {
+impl AnalysisConsumer for PartialTemplateAnalysis {
     const NAME: &'static str = "partial-template";
     const DEMAND: Demand = Demand::NONE
         .with(ids::PARTIAL_HOLES)
@@ -116,7 +116,7 @@ impl FactConsumer for TemplateFacts {
         .with(ids::PARTIAL_SCOPES);
 }
 
-pub(crate) static REGISTRY: FactRegistry<PartialPage> = FactRegistry::new(&[
+pub(crate) static REGISTRY: AnalysisRegistry<PartialPage> = AnalysisRegistry::new(&[
     ProducerEntry::of::<PartialHoles>(),
     ProducerEntry::of::<PartialRegions>(),
     ProducerEntry::of::<PartialScopes>(),
@@ -134,13 +134,13 @@ fn role_of(kind: FragmentKind, index: u16) -> ScopeRole {
     }
 }
 
-fn covered(span: Span, holes: &[HoleFact]) -> bool {
+fn covered(span: Span, holes: &[HoleInfo]) -> bool {
     holes
         .iter()
         .any(|hole| hole.kind == HoleKind::Unexpected && covers(hole.span, span))
 }
 
-fn name_in_hole(span: Span, holes: &FactTable<PartialHoles>) -> bool {
+fn name_in_hole(span: Span, holes: &AnalysisTable<PartialHoles>) -> bool {
     !span.is_empty()
         && holes
             .iter()
@@ -157,7 +157,7 @@ mod tests {
     use crate::lower::lower;
     use crate::partial::page::collect;
     use vize_l0::Allocator;
-    use vize_l0::fact::{FactManager, produced_count};
+    use vize_l0::analysis::{AnalysisManager, produced_count};
     use vize_l1::markup::parse;
 
     #[test]
@@ -170,9 +170,13 @@ mod tests {
         let before_holes = produced_count(ids::PARTIAL_HOLES);
         let before_regions = produced_count(ids::PARTIAL_REGIONS);
         let before_scopes = produced_count(ids::PARTIAL_SCOPES);
-        let mut manager = FactManager::new(&REGISTRY);
-        manager.prepare::<TemplateFacts>(&page).expect("closed");
-        manager.prepare::<TemplateFacts>(&page).expect("closed");
+        let mut manager = AnalysisManager::new(&REGISTRY);
+        manager
+            .prepare::<PartialTemplateAnalysis>(&page)
+            .expect("closed");
+        manager
+            .prepare::<PartialTemplateAnalysis>(&page)
+            .expect("closed");
         assert_eq!(produced_count(ids::PARTIAL_HOLES), before_holes + 1);
         assert_eq!(produced_count(ids::PARTIAL_REGIONS), before_regions + 1);
         assert_eq!(produced_count(ids::PARTIAL_SCOPES), before_scopes + 1);

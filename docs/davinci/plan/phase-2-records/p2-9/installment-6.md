@@ -17,7 +17,7 @@ code splits three ways, and the split _is_ the design:
   `props.rs`'s per-prop hoistability (`is_hoistable_static_prop`,
   `has_static_props`, the two nested-children predicates) — is the pass
   body: `vize_s1_to_s2::pass::hoist`, published per owner as
-  [`StaticFacts`] (level + `props_hoistable` + `nested_static` +
+  [`StaticAnalysis`] (level + `props_hoistable` + `nested_static` +
   `native_descendants` + `foreign`), dense over `ui.element` /
   `ui.component`, keyed by page-order id, one provenance record per
   fact (`pass.hoist-static.fact`).
@@ -145,7 +145,7 @@ is what keeps corpus comparisons alive around tainted islands.
   installment's measured lesson: `<TransitionGroup>` inside `<svg>`
   (directus `arrows.vue`) — the legacy `ns != Html` props-hoist arm
   reads the parser's _inherited_ namespace, and `ui.component`
-  deliberately carries none — so [`StaticFacts`] gained its `foreign`
+  deliberately carries none — so [`StaticAnalysis`] gained its `foreign`
   bit (own namespace for elements, inherited context for components,
   the lowering's integration-point rule mirrored), pinned by the
   component-context and `foreignObject`-return unit tests.
@@ -160,7 +160,7 @@ of it is this pass's fact. The shipped decision
 setup-const check are compile-option inputs, not template facts;
 (b) the scope condition (`!has_slot_params()`) is ancestor context the
 realization walk carries natively — the emitter is already walking the
-tree when it needs the answer, and `SlotFacts` holds the params
+tree when it needs the answer, and `SlotAnalysis` holds the params
 surface besides; (c) the cache-index allocation is emission ordering.
 Nothing is a whole-subtree synthesized attribute, so nothing belongs
 beside the lattice: **the cacheable-handler analysis lands whole with
@@ -176,7 +176,7 @@ admitted 196,236; legacy total 28,636 of 224,872 = **12.73%**
 structural reason once and for all: the S2 lane feeds no shipped
 `rewrite_expression` site, so no installment of this series can move
 the number — it moves when P2-5b's widening or P2-11's read puts S2
-structure in front of the shipped prefixer. `StaticFacts` joins the
+structure in front of the shipped prefixer. `StaticAnalysis` joins the
 prepared feed.
 
 ### TS-17
@@ -231,7 +231,7 @@ re-pinned `walks=6`; their folio snapshots did not move.
   fuzz workspace is untouched (no grammar or lowering change).
 - **TS-12**: `croquis-consumption.md` regenerated (the new test files
   move the naive consumer counts); `--check` green.
-- **Size asserts, probe-corrected**: `StaticFacts` first landed at 4
+- **Size asserts, probe-corrected**: `StaticAnalysis` first landed at 4
   bytes; the corpus-forced `foreign` bit moved it to **5**, the assert
   moved with the measured change (the ratchet recording a real design
   correction, not a guess).

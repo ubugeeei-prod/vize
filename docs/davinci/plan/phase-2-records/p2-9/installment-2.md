@@ -21,7 +21,7 @@ into the P2-8 lowering, and so do most of its driver halves:
   region-owning `ui.for` from birth, `<template v-for>` unwrap
   included;
 - **scope recording** (`enter_v_for_scope`'s registration data in
-  `lane/traverse.rs`) — P2-8's `ScopeFacts`, one fresh tag per
+  `lane/traverse.rs`) — P2-8's `ScopeAnalysis`, one fresh tag per
   site;
 - **moved elsewhere, not here**: runtime helpers, keyed/unkeyed
   fragment decisions, the iterated element's `key` prop and `v-memo`'s
@@ -157,7 +157,7 @@ first that might move the number (the reparse class contains v-for
 values); measured: **it does not move**, because the pass feeds no
 `rewrite_expression` site — nothing S2 produces is consumed by the
 shipped prefixer yet. What this installment _does_ contribute is the
-prepared feed: `ForFacts`/`ScopeFacts` are exactly the region-scope
+prepared feed: `ForFacts`/`ScopeAnalysis` are exactly the region-scope
 data the P2-5b widening will read when S2 structure starts driving the
 rewriter; the movement claim stays with that future installment.
 

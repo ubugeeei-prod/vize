@@ -1,4 +1,4 @@
-//! Slot objects (`withCtx` / `_: 1|2`) from [`SlotFacts`].
+//! Slot objects (`withCtx` / `_: 1|2`) from [`SlotAnalysis`].
 //!
 //! Implicit default, named `<template>` groups, and component-root `v-slot`.
 //! Conditional / looped slot templates go through [`super::create_slots`].
@@ -32,7 +32,7 @@ use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::{RawJs, expr_source};
 use super::prefix::PrefixScope;
-use vize_l2::analysis::slot_facts::{SlotCarrier, SlotFacts, SlotName};
+use vize_l2::analysis::slot_facts::{SlotAnalysis, SlotCarrier, SlotName};
 
 /// First `v-slots="expr"` (no argument) on the component, matching
 /// `codegen/slots/detect.rs`. An argument spelling is a different
@@ -109,7 +109,7 @@ pub(super) fn has_text_only_implicit_default(children: &Region<'_>) -> bool {
     has_content
 }
 
-pub(super) fn has_dynamic_names(facts: &SlotFacts) -> bool {
+pub(super) fn has_dynamic_names(facts: &SlotAnalysis) -> bool {
     facts
         .groups
         .iter()
@@ -383,7 +383,7 @@ fn is_inert_slot_binding(binding: &BindingOp<'_>) -> bool {
 pub(super) fn emit_slots(
     cx: &mut EmitCx<'_>,
     children: &Region<'_>,
-    facts: &SlotFacts,
+    facts: &SlotAnalysis,
     spread: Option<&RawJs<'_>>,
     component_bindings: &[BindingOp<'_>],
     captures_scope: bool,

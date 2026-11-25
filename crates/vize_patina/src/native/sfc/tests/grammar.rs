@@ -4,7 +4,7 @@ use crate::{
     HelpLevel, Severity,
     native::{NativeLintRefusal, template::NativeTemplateLintRefusal as Template},
 };
-use vize_l1::markup::TagFactsRefusal;
+use vize_l1::markup::TagAnalysisRefusal;
 
 #[test]
 fn exact_and_modified_pre_never_turn_whole_selected_literal_body_into_clean_credit() {
@@ -12,11 +12,11 @@ fn exact_and_modified_pre_never_turn_whole_selected_literal_body_into_clean_cred
         ("<div v-pre><span>{{ raw }}</span></div>", None),
         (
             "<div v-pre.camel><textarea>{{ raw }}</textarea></div>",
-            Some(TagFactsRefusal::AmbiguousVerbatim),
+            Some(TagAnalysisRefusal::AmbiguousVerbatim),
         ),
         (
             "<div v-pre:argument><span>{{ raw }}</span></div>",
-            Some(TagFactsRefusal::AmbiguousVerbatim),
+            Some(TagAnalysisRefusal::AmbiguousVerbatim),
         ),
     ] {
         let source = SOURCE.replace("<div ref=\"text\" />", body);

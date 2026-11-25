@@ -1,7 +1,7 @@
 //! Concrete borrowed children retain the same private semantic recorder.
 
 use super::{FileRegion, TemplatePolicy};
-use crate::artifact::{ArtifactError, ComponentBody, ComponentFactory, RegionBuilder};
+use crate::artifact::{ComponentBody, ComponentFactory, L2TemplateError, RegionBuilder};
 use crate::expr::JsExpr;
 use crate::file::{FileIssueKind, TemplateIssue};
 use crate::op::{Attribute, Namespace};
@@ -55,7 +55,7 @@ where
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.with_walk(span, |file| {
             let Self {
                 region,
@@ -89,7 +89,7 @@ where
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.with_walk(span, |file| {
             let Self {
                 region,
@@ -131,7 +131,7 @@ impl<'f, 'a, P: TemplatePolicy> super::TemplateRegion<'f, 'a, P> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner
             .element_body(tag, namespace, attributes, span, body)
     }
@@ -141,7 +141,7 @@ impl<'f, 'a, P: TemplatePolicy> super::TemplateRegion<'f, 'a, P> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.component_body(name, attributes, span, body)
     }
 }
@@ -154,7 +154,7 @@ impl<'a: 'b, 'b, 'r, P: TemplatePolicy> TemplateChildRegion<'r, 'b, 'a, P> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner
             .element_body(tag, namespace, attributes, span, body)
     }
@@ -164,7 +164,7 @@ impl<'a: 'b, 'b, 'r, P: TemplatePolicy> TemplateChildRegion<'r, 'b, 'a, P> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.component_body(name, attributes, span, body)
     }
 }
@@ -173,17 +173,17 @@ impl<'a: 'b, 'b, P: TemplatePolicy> ComponentFactory<'a> for TemplateChildRegion
     fn source(&self) -> &'a str {
         self.inner.source()
     }
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.inner.text(text, span)
     }
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.inner.comment(text, span)
     }
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.interpolation(expression, span)
     }
     fn bind(
@@ -192,7 +192,7 @@ impl<'a: 'b, 'b, P: TemplatePolicy> ComponentFactory<'a> for TemplateChildRegion
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.bind(name, name_span, expression, span)
     }
     fn element<B: ComponentBody<'a>>(
@@ -202,7 +202,7 @@ impl<'a: 'b, 'b, P: TemplatePolicy> ComponentFactory<'a> for TemplateChildRegion
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.element(tag, namespace, attributes, span, body)
     }
     fn component<B: ComponentBody<'a>>(
@@ -211,10 +211,10 @@ impl<'a: 'b, 'b, P: TemplatePolicy> ComponentFactory<'a> for TemplateChildRegion
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.component(name, attributes, span, body)
     }
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         self.inner.record(record)
     }
 }

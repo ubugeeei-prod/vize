@@ -11,7 +11,7 @@ use vize_l0::id::NodeId;
 use vize_l0::{String, cstr};
 
 pub(crate) use vize_l2::analysis::if_facts::take_carrier_key;
-pub use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, IfFacts};
+pub use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, IfAnalysis};
 
 use super::cx::Cx;
 use vize_l2::analysis::fragment_facts::FragmentKey;
@@ -88,7 +88,7 @@ pub(crate) fn attach_if_facts(
     if keys.iter().any(Option::is_some)
         && let Some(id) = node
     {
-        cx.if_facts.insert(id, IfFacts { branches: keys });
+        cx.if_facts.insert(id, IfAnalysis { branches: keys });
     }
 }
 

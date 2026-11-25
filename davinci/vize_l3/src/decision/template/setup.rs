@@ -3,14 +3,14 @@
 use crate::decision::{
     DecisionAnalysis, DecisionBuildError, DecisionTables, build,
     dom::{
-        DomFacts, LiteralExpressions,
+        DomAnalysis, LiteralExpressions,
         vue::{VueReadKind, VueRenderExpression, policy::FileReads},
     },
     policy::TargetPolicy,
 };
 use vize_l0::id::NodeId;
 use vize_l2::{
-    artifact::Artifact,
+    artifact::L2Template,
     file::{BindingRef, DeclarationKind, L2Ir},
     lang::js::{NativeSelectedSetup, NativeTemplateView},
     resolution::{Occurrence, Usage},
@@ -63,11 +63,11 @@ impl<'view, 'owner, 'arena> SelectedSetupDomAnalysis<'view, 'owner, 'arena> {
     #[must_use]
     pub fn original_attributes(
         &self,
-    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+    ) -> Option<&crate::decision::OriginalAttributeAnalysis<'owner, 'arena>> {
         self.analysis.original_attributes()
     }
     #[must_use]
-    pub fn artifact(&self) -> &'owner Artifact<'arena> {
+    pub fn artifact(&self) -> &'owner L2Template<'arena> {
         self.l2ir().artifact()
     }
     #[must_use]
@@ -79,7 +79,7 @@ impl<'view, 'owner, 'arena> SelectedSetupDomAnalysis<'view, 'owner, 'arena> {
         self.analysis.tables()
     }
     #[must_use]
-    pub fn dom(&self) -> Option<&DomFacts<'owner, 'arena>> {
+    pub fn dom(&self) -> Option<&DomAnalysis<'owner, 'arena>> {
         self.analysis.dom()
     }
     #[must_use]

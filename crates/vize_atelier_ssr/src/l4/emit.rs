@@ -33,7 +33,7 @@ mod vnode_props;
 use vize_l0::side_table::SideTable;
 use vize_l0::{FxHashSet, String};
 use vize_l2::analysis::fragment_facts::{BranchFragments, LoopFragment};
-use vize_l2::analysis::if_facts::IfFacts;
+use vize_l2::analysis::if_facts::IfAnalysis;
 use vize_l2::analysis::text_facts::TextParts;
 use vize_l2::expr::ExprRef;
 use vize_l2_to_l3::PartitionKind;
@@ -52,11 +52,11 @@ type Result<T> = core::result::Result<T, AdmissionFailure>;
 
 /// The L2 side facts the emitter reads beside the plan.
 pub(super) struct PlanFacts<'s, 'a> {
-    pub(super) scopes: &'s SideTable<vize_l2::scope::ScopeFacts>,
+    pub(super) scopes: &'s SideTable<vize_l2::scope::ScopeAnalysis>,
     pub(super) texts: &'s SideTable<TextParts>,
     pub(super) for_wrappers: &'s SideTable<LoopFragment>,
     pub(super) wrappers: &'s SideTable<BranchFragments>,
-    pub(super) if_facts: &'s SideTable<IfFacts>,
+    pub(super) if_facts: &'s SideTable<IfAnalysis>,
     pub(super) frozen_slots: Option<super::frozen_slots::FrozenSlotFacts<'s, 'a>>,
 }
 

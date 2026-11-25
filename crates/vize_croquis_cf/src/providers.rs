@@ -3,7 +3,7 @@
 //! Not everything a Vue project means lives inside one file: the route tree a
 //! `createRouter({ routes })` call declares, `definePageMeta`, i18n catalogs.
 //! A **provider** turns such a convention into ordinary fact groups on the
-//! P4-1 fact API ([`vize_l0::fact`]), so a consumer demands "the route
+//! P4-1 fact API ([`vize_l0::analysis`]), so a consumer demands "the route
 //! params of `user-posts`" exactly the way it demands bindings or scopes.
 //!
 //! # The contract (`docs/davinci/open-questions.md`, settled here)
@@ -21,7 +21,7 @@
 //!   `const` item, at compile time;
 //! - its groups are registered producers over the project artifact
 //!   ([`ProjectSources`]) in [`PROJECT_FACTS`], so consumers declare them in a
-//!   [`FactConsumer::DEMAND`](vize_l0::fact::FactConsumer::DEMAND) and
+//!   [`AnalysisConsumer::DEMAND`](vize_l0::analysis::AnalysisConsumer::DEMAND) and
 //!   the TS-35 detector polices every read.
 //!
 //! In-tree providers compile in behind cargo features (charter #15's first
@@ -42,7 +42,7 @@ pub use project::{
     ModuleId, ModuleKind, ProjectModule, ProjectSources, ScriptBlock, TemplateBlock,
 };
 
-use vize_l0::fact::{Demand, FactRegistry, ProducerEntry};
+use vize_l0::analysis::{AnalysisRegistry, Demand, ProducerEntry};
 use vize_l0::pass::AnalysisId;
 
 /// Fact-group ids of the project-level (provider-owned) groups.
@@ -208,7 +208,7 @@ pub const fn produced<A: ?Sized>(producers: &[ProducerEntry<A>]) -> Demand {
 ///     AmbientInput, PROJECT_FACTS, ProjectSources, Provider, ProviderRegistry,
 ///     vue_router::{RouteTree, VueRouterProvider},
 /// };
-/// use vize_l0::fact::{Demand, FactGroup};
+/// use vize_l0::analysis::{Demand, Analysis};
 ///
 /// struct FileRoutes;
 /// impl Provider for FileRoutes {
@@ -240,7 +240,7 @@ pub const fn produced<A: ?Sized>(producers: &[ProducerEntry<A>]) -> Demand {
 /// ```
 pub struct ProviderRegistry<A: ?Sized + 'static> {
     providers: &'static [ProviderDesc],
-    facts: &'static FactRegistry<A>,
+    facts: &'static AnalysisRegistry<A>,
 }
 
 impl<A: ?Sized + 'static> ProviderRegistry<A> {
@@ -253,7 +253,7 @@ impl<A: ?Sized + 'static> ProviderRegistry<A> {
     /// The first [`ProviderError`] of [`check_providers`].
     pub const fn new(
         providers: &'static [ProviderDesc],
-        facts: &'static FactRegistry<A>,
+        facts: &'static AnalysisRegistry<A>,
     ) -> Result<Self, ProviderError> {
         match check_providers(providers, produced(facts.producers())) {
             Ok(()) => Ok(Self { providers, facts }),
@@ -269,7 +269,7 @@ impl<A: ?Sized + 'static> ProviderRegistry<A> {
 
     /// The fact registry that runs the providers' producers.
     #[must_use]
-    pub const fn facts(&self) -> &'static FactRegistry<A> {
+    pub const fn facts(&self) -> &'static AnalysisRegistry<A> {
         self.facts
     }
 
@@ -304,7 +304,7 @@ impl<A: ?Sized + 'static> ProviderRegistry<A> {
 
 /// Every project-level fact group, as registered producers over
 /// [`ProjectSources`].
-pub const PROJECT_FACTS: FactRegistry<ProjectSources> = FactRegistry::new(&[
+pub const PROJECT_FACTS: AnalysisRegistry<ProjectSources> = AnalysisRegistry::new(&[
     #[cfg(feature = "provider-vue-router")]
     ProducerEntry::of::<vue_router::RouteTree>(),
     #[cfg(feature = "provider-vue-router")]

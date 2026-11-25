@@ -22,7 +22,7 @@ mod tests;
 
 use core::fmt;
 use serde_json::{Map, Value};
-use vize_l0::fact::FactManager;
+use vize_l0::analysis::AnalysisManager;
 
 use super::batch::{BuiltBatch, PluginSpec, build_batch};
 use super::document::PluginDocument;
@@ -66,7 +66,7 @@ pub fn refusal(plugin: &str, detail: &str) -> ProviderError {
 pub fn custom_batch(
     document: &PluginDocument,
     spec: &PluginSpec<'_>,
-    manager: &mut FactManager<'_, PluginDocument>,
+    manager: &mut AnalysisManager<'_, PluginDocument>,
     custom: &Map<String, Value>,
 ) -> Result<BuiltBatch, ProviderError> {
     let native: Vec<_> = spec

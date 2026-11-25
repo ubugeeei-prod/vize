@@ -9,7 +9,9 @@
 //! union, nothing is inferred.
 
 use vize_carton::CompactString;
-use vize_l0::fact::{Demand, FactGroup, FactProducer, FactTable, FactTableBuilder, FactView, ids};
+use vize_l0::analysis::{
+    Analysis, AnalysisProducer, AnalysisTable, AnalysisTableBuilder, AnalysisView, Demand, ids,
+};
 use vize_l0::pass::AnalysisId;
 use vize_relief::BindingType;
 
@@ -41,7 +43,7 @@ pub struct BindingFact {
 /// The `Bindings` fact group.
 pub struct Bindings;
 
-impl FactGroup for Bindings {
+impl Analysis for Bindings {
     const ID: AnalysisId = ids::BINDINGS;
     const NAME: &'static str = "bindings";
     const STRATUM: u8 = 0;
@@ -50,10 +52,10 @@ impl FactGroup for Bindings {
     type Value = BindingFact;
 }
 
-impl FactProducer<Croquis> for Bindings {
-    fn produce(croquis: &Croquis, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Croquis> for Bindings {
+    fn produce(croquis: &Croquis, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let metadata = &croquis.bindings;
-        let mut builder = FactTableBuilder::<Self>::with_capacity(
+        let mut builder = AnalysisTableBuilder::<Self>::with_capacity(
             metadata.bindings.len() + usize::from(metadata.is_script_setup),
         );
         if metadata.is_script_setup {
@@ -106,7 +108,7 @@ pub trait BindingsTable {
     fn spans(&self) -> impl Iterator<Item = (&str, (u32, u32))>;
 }
 
-impl BindingsTable for FactTable<Bindings> {
+impl BindingsTable for AnalysisTable<Bindings> {
     fn is_script_setup(&self) -> bool {
         self.contains_key(&BindingKey::ScriptSetup)
     }
@@ -148,12 +150,12 @@ impl BindingsTable for FactTable<Bindings> {
 mod tests {
     use super::{BindingFact, BindingKey, Bindings, BindingsTable};
     use crate::Croquis;
-    use crate::facts::{CroquisFacts, Demand, FactConsumer, FactGroup};
+    use crate::facts::{Analysis, AnalysisConsumer, CroquisFacts, Demand};
     use vize_carton::CompactString;
     use vize_relief::BindingType;
 
     struct Reader;
-    impl FactConsumer for Reader {
+    impl AnalysisConsumer for Reader {
         const NAME: &'static str = "test/bindings-reader";
         const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
     }

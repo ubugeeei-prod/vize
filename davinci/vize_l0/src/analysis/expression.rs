@@ -12,16 +12,16 @@
 
 use vize_l0::{FxHashMap, String};
 
-use super::{AlphaExport, Demand, FactGroup, FactTable, ids};
+use super::{AlphaExport, Analysis, AnalysisTable, Demand, ids};
 use crate::dump::Dump;
 use crate::pass::AnalysisId;
 
 /// The group: one [`ExpressionFact`] per expression id.
-pub struct ExpressionFacts;
+pub struct ExpressionAnalysis;
 
 /// What a dialect answered about one expression.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct ExpressionFact {
+pub struct ExpressionInfo {
     /// Referenced binding names in source order, comma-separated (binding
     /// names never contain a comma).
     pub references: String,
@@ -31,29 +31,29 @@ pub struct ExpressionFact {
     pub constant: bool,
 }
 
-impl FactGroup for ExpressionFacts {
+impl Analysis for ExpressionAnalysis {
     const ID: AnalysisId = ids::EXPRESSION_FACTS;
     const NAME: &'static str = "expression-facts";
     const STRATUM: u8 = 0;
     const DEPENDS: Demand = Demand::NONE;
     type Key = u32;
-    type Value = ExpressionFact;
+    type Value = ExpressionInfo;
 }
 
 /// The α page: the three answers as three id-keyed sections.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
-pub struct ExpressionFactsAlpha {
+pub struct ExpressionAnalysisAlpha {
     pub references: FxHashMap<u32, String>,
     pub exact: FxHashMap<u32, bool>,
     pub constant: FxHashMap<u32, bool>,
 }
 
-impl AlphaExport for ExpressionFacts {
+impl AlphaExport for ExpressionAnalysis {
     const ALPHA_SCHEMA: u16 = 1;
-    type Alpha = ExpressionFactsAlpha;
+    type Alpha = ExpressionAnalysisAlpha;
 
-    fn export(table: &FactTable<Self>) -> ExpressionFactsAlpha {
-        let mut alpha = ExpressionFactsAlpha::default();
+    fn export(table: &AnalysisTable<Self>) -> ExpressionAnalysisAlpha {
+        let mut alpha = ExpressionAnalysisAlpha::default();
         for (id, fact) in table.iter() {
             alpha.references.insert(*id, fact.references.clone());
             alpha.exact.insert(*id, fact.exact);
@@ -65,13 +65,13 @@ impl AlphaExport for ExpressionFacts {
     /// Total over any page: an id missing from a section reads as that
     /// section's pessimal answer (no references, inexact, not constant).
     /// Hosts refuse pages whose sections disagree before importing them.
-    fn import(alpha: ExpressionFactsAlpha) -> FactTable<Self> {
+    fn import(alpha: ExpressionAnalysisAlpha) -> AnalysisTable<Self> {
         let mut ids: alloc::collections::BTreeSet<u32> = alpha.references.keys().copied().collect();
         ids.extend(alpha.exact.keys().copied());
         ids.extend(alpha.constant.keys().copied());
         ids.into_iter()
             .map(|id| {
-                let fact = ExpressionFact {
+                let fact = ExpressionInfo {
                     references: alpha.references.get(&id).cloned().unwrap_or_default(),
                     exact: alpha.exact.get(&id).copied().unwrap_or(false),
                     constant: alpha.constant.get(&id).copied().unwrap_or(false),

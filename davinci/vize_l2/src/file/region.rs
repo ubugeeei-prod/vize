@@ -1,8 +1,8 @@
 //! Private factory recorder: resolve, mint, and associate in one owned method.
 
-use super::build::{Facts, ScopedResolution};
+use super::build::{L2Script, ScopedResolution};
 use super::{Declaration, FileIssueKind, Namespace as BindingNamespace, ScopeId, TemplateIssue};
-use crate::artifact::{ArtifactError, ComponentBody, ComponentFactory, RegionBuilder};
+use crate::artifact::{ComponentBody, ComponentFactory, L2TemplateError, RegionBuilder};
 use crate::expr::{ExprRef, JsExpr};
 use crate::op::{Attribute, Namespace};
 use crate::provenance::ProvenanceRecord;
@@ -55,7 +55,7 @@ pub(crate) type RootRegion<'f, 'a, P> = FileRegion<'f, 'f, 'a, Owned<RegionBuild
 
 pub(crate) struct FileRegion<'f, 'b, 'a, R, P> {
     region: R,
-    facts: &'f mut Facts<'a>,
+    facts: &'f mut L2Script<'a>,
     scope: ScopeId,
     policy: P,
     source: &'a str,
@@ -65,7 +65,7 @@ pub(crate) struct FileRegion<'f, 'b, 'a, R, P> {
 impl<'f, 'a, P: TemplatePolicy> RootRegion<'f, 'a, P> {
     pub(crate) fn root(
         region: RegionBuilder<'f, 'a>,
-        facts: &'f mut Facts<'a>,
+        facts: &'f mut L2Script<'a>,
         scope: ScopeId,
         policy: P,
         source: &'a str,
@@ -82,7 +82,7 @@ impl<'f, 'a, P: TemplatePolicy> RootRegion<'f, 'a, P> {
 }
 
 struct Lookup<'f, 'a, P> {
-    facts: &'f Facts<'a>,
+    facts: &'f L2Script<'a>,
     scope: ScopeId,
     policy: P,
 }
@@ -110,7 +110,7 @@ where
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<ResolutionTable<'a>, ArtifactError> {
+    ) -> Result<ResolutionTable<'a>, L2TemplateError> {
         if !expression.matches_authored_source(self.source) {
             return Err(self.reject(span, FileIssueKind::InvalidSource));
         }
@@ -143,13 +143,13 @@ where
         })
     }
 
-    fn reject(&mut self, span: Span, kind: FileIssueKind) -> ArtifactError {
+    fn reject(&mut self, span: Span, kind: FileIssueKind) -> L2TemplateError {
         self.facts.template_issues.push(TemplateIssue {
             node: None,
             span,
             kind,
         });
-        ArtifactError::InvalidSpan { node: None, span }
+        L2TemplateError::InvalidSpan { node: None, span }
     }
 }
 
@@ -161,17 +161,17 @@ where
     fn source(&self) -> &'a str {
         self.source
     }
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.text(text, span)
     }
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.comment(text, span)
     }
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.with_walk(span, |region| {
             let table = region.resolve(expression, span)?;
             let node = region.region.interpolation(ExprRef::Js(expression), span)?;
@@ -193,7 +193,7 @@ where
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.with_walk(span, |region| {
             let table = region.resolve(expression, span)?;
             let node = region
@@ -218,7 +218,7 @@ where
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.with_walk(span, |file| {
             let Self {
                 region,
@@ -247,7 +247,7 @@ where
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.with_walk(span, |file| {
             let Self {
                 region,
@@ -275,7 +275,7 @@ where
             })
         })
     }
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         self.region.record(record)
     }
 }

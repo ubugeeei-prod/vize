@@ -1,6 +1,6 @@
 //! Checked Text leaf construction at the existing canonical mint.
 
-use super::{ArtifactError, Builder};
+use super::{Builder, L2TemplateError};
 use crate::op::{Op, TextOp};
 use core::ptr::NonNull;
 use vize_l0::{Box, Span, id::NodeId};
@@ -15,7 +15,7 @@ impl<'a> TextAllocation<'a> {
 
 impl<'a> Builder<'a> {
     /// Build a leaf only after its span is checked against the current owner.
-    pub fn text(&mut self, content: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    pub fn text(&mut self, content: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.native_text(content, span).map(|(node, _)| node)
     }
 
@@ -23,7 +23,7 @@ impl<'a> Builder<'a> {
         &mut self,
         content: &'a str,
         span: Span,
-    ) -> Result<(NodeId, TextAllocation<'a>), ArtifactError> {
+    ) -> Result<(NodeId, TextAllocation<'a>), L2TemplateError> {
         let id = self.prepare(span)?;
         self.mint();
         let owner = Box::new_in(TextOp { content, span }, &self.allocator);

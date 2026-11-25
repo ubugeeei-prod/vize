@@ -2,8 +2,9 @@
 //!
 //! Parser-derived race risks in tracker order.
 
-use vize_l0::fact::{
-    Demand, FactConsumer, FactGroup, FactProducer, FactTable, FactTableBuilder, FactView, ids,
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisProducer, AnalysisTable, AnalysisTableBuilder,
+    AnalysisView, Demand, ids,
 };
 use vize_l0::pass::AnalysisId;
 
@@ -13,7 +14,7 @@ use crate::race::RaceConditionRisk;
 /// The `RaceConditions` fact group.
 pub struct RaceConditions;
 
-impl FactGroup for RaceConditions {
+impl Analysis for RaceConditions {
     const ID: AnalysisId = ids::RACE_CONDITIONS;
     const NAME: &'static str = "race-conditions";
     const STRATUM: u8 = 0;
@@ -22,10 +23,10 @@ impl FactGroup for RaceConditions {
     type Value = RaceConditionRisk;
 }
 
-impl FactProducer<Croquis> for RaceConditions {
-    fn produce(croquis: &Croquis, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Croquis> for RaceConditions {
+    fn produce(croquis: &Croquis, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let mut builder =
-            FactTableBuilder::<Self>::with_capacity(croquis.race_conditions.risks().len());
+            AnalysisTableBuilder::<Self>::with_capacity(croquis.race_conditions.risks().len());
         for (ordinal, risk) in croquis.race_conditions.risks().iter().enumerate() {
             let ordinal = u32::try_from(ordinal).unwrap_or(u32::MAX);
             builder.insert(ordinal, risk.clone());
@@ -36,7 +37,7 @@ impl FactProducer<Croquis> for RaceConditions {
 
 struct RaceReader;
 
-impl FactConsumer for RaceReader {
+impl AnalysisConsumer for RaceReader {
     const NAME: &'static str = "croquis/race-conditions";
     const DEMAND: Demand = Demand::NONE.with(RaceConditions::ID);
 }
@@ -56,12 +57,12 @@ pub fn race_risks(croquis: &Croquis) -> Vec<RaceConditionRisk> {
 mod tests {
     use super::{RaceConditions, race_risks};
     use crate::Croquis;
-    use crate::facts::{CroquisFacts, Demand, FactConsumer, FactGroup};
+    use crate::facts::{Analysis, AnalysisConsumer, CroquisFacts, Demand};
     use crate::race::RaceConditionRiskKind;
     use vize_carton::CompactString;
 
     struct Reader;
-    impl FactConsumer for Reader {
+    impl AnalysisConsumer for Reader {
         const NAME: &'static str = "test/race-reader";
         const DEMAND: Demand = Demand::NONE.with(RaceConditions::ID);
     }

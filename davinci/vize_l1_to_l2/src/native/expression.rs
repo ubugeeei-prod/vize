@@ -8,7 +8,7 @@ use vize_l1::embed::prepare_vue_interpolation_in;
 use vize_l1::embed::syntax::{EmbedHole, RetainedExpression, parse_once};
 use vize_l1::embed::{Embed, EmbedSource, Grammar, Shape};
 use vize_l1::markup::Interpolation;
-use vize_l2::artifact::ArtifactError;
+use vize_l2::artifact::L2TemplateError;
 use vize_l2::expr::JsExpr;
 use vize_l2::expr::js::JsCoordinateError;
 
@@ -76,7 +76,7 @@ impl<'a> Context<'_, 'a> {
         span: Span,
         (rule, after): (&'static str, &'static str),
         admit: impl FnOnce(&RetainedExpression<'a>) -> Result<(), NativeHoleKind>,
-        construct: impl FnOnce(&mut R, &'a JsExpr<'a>) -> Result<vize_l0::id::NodeId, ArtifactError>,
+        construct: impl FnOnce(&mut R, &'a JsExpr<'a>) -> Result<vize_l0::id::NodeId, L2TemplateError>,
     ) {
         let source_span = source.span();
         #[cfg(not(feature = "lexical-arrow-initializers"))]

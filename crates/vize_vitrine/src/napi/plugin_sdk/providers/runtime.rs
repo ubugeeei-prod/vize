@@ -6,7 +6,7 @@ use serde_json::{Map, Value};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
-use vize_l0::fact::FactManager;
+use vize_l0::analysis::AnalysisManager;
 
 use super::super::PluginCacheInputNapi;
 use super::super::batch::{BuiltBatch, PluginSpec};
@@ -123,7 +123,7 @@ impl ProviderHost {
         env: &Env,
         document: &PluginDocument,
         spec: &PluginSpec<'_>,
-        manager: &mut FactManager<'_, PluginDocument>,
+        manager: &mut AnalysisManager<'_, PluginDocument>,
     ) -> Result<ProviderBatch> {
         for index in self.catalog.demanded(spec).map_err(error)? {
             if !self.results.contains_key(&index) {
@@ -166,7 +166,7 @@ impl ProviderHost {
         index: usize,
         env: &Env,
         document: &PluginDocument,
-        manager: &mut FactManager<'_, PluginDocument>,
+        manager: &mut AnalysisManager<'_, PluginDocument>,
     ) -> Result<()> {
         let started = Instant::now();
         let provider = self

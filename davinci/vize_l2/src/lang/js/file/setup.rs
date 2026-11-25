@@ -1,6 +1,6 @@
 //! Whole setup eligibility classified in the sole original Program walk.
 
-use crate::file::build::Facts;
+use crate::file::build::L2Script;
 use crate::file::vue::{ExposureIssueKind, VueExposure};
 use crate::file::{BindingRef, L2Ir, ScopeId, ScriptUnitId};
 use alloc::{boxed::Box, vec::Vec};
@@ -42,7 +42,7 @@ impl SetupAnnotationStorage {
 }
 
 pub(super) fn record_annotation(
-    facts: &mut Facts<'_>,
+    facts: &mut L2Script<'_>,
     unit: ScriptUnitId,
     span: Span,
     kind: SetupPrimitiveType,
@@ -92,7 +92,7 @@ pub(crate) fn initial(program: &Program<'_>) -> bool {
 
 /// The current original unit was appended immediately before its one walk.
 /// Rejection is sticky and cannot complete an interrupted walk.
-pub(super) fn reject(facts: &mut Facts<'_>, id: ScriptUnitId) {
+pub(super) fn reject(facts: &mut L2Script<'_>, id: ScriptUnitId) {
     if let Some(unit) = facts.units.last_mut()
         && unit.id == id
     {

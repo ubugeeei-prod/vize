@@ -4,7 +4,7 @@ pub(crate) mod dump;
 pub mod js;
 pub mod tsrx;
 
-pub use crate::expr::foreign::{ForeignExpr, ForeignFact};
+pub use crate::expr::foreign::{ForeignExpr, ForeignInfo};
 
 #[cfg(feature = "scss-rules")]
 pub mod scss;

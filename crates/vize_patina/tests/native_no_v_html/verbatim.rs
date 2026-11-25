@@ -2,7 +2,7 @@ use super::support::{
     LOCALES, NeverLookup, complete, expected, parity, parser, registered, selected, span,
 };
 use vize_l0::{Allocator, Span, cstr};
-use vize_l1::markup::TagFactsRefusal;
+use vize_l1::markup::TagAnalysisRefusal;
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint, NativeVHtmlLintError};
 
 #[test]
@@ -34,7 +34,7 @@ fn modified_argument_and_dynamic_pre_refuse_without_erasing_original_clean_vecto
             assert_eq!(
                 lint.no_v_html(element, &NeverLookup).err(),
                 Some(NativeVHtmlLintError::Header(NativeLintRefusal::LintTag {
-                    reason: TagFactsRefusal::AmbiguousVerbatim
+                    reason: TagAnalysisRefusal::AmbiguousVerbatim
                 }))
             );
         }
@@ -164,7 +164,7 @@ fn inherited_template_preserves_original_provider_refusal_and_clean_registered_v
     assert_eq!(
         lint.no_v_html(&element, &NeverLookup).err(),
         Some(NativeVHtmlLintError::Header(NativeLintRefusal::LintTag {
-            reason: TagFactsRefusal::InheritedTemplate
+            reason: TagAnalysisRefusal::InheritedTemplate
         }))
     );
     for locale in LOCALES {

@@ -187,19 +187,20 @@ pub use contract::{
 
 mod ordinary;
 pub use ordinary::{
-    OrdinaryBinding, OrdinaryCheckpoint, OrdinaryFacts, OrdinaryFactsIncomplete, OrdinaryObserver,
+    OrdinaryAnalysis, OrdinaryAnalysisIncomplete, OrdinaryBinding, OrdinaryCheckpoint,
+    OrdinaryObserver,
 };
 
 mod options;
 pub use options::{
-    ComponentOptions, ComponentShape, OptionKey, OptionMember, OptionMemberKind, OptionsCheckpoint,
-    OptionsFacts, OptionsFactsIncomplete, OptionsObserver,
+    ComponentOptions, ComponentShape, OptionKey, OptionMember, OptionMemberKind, OptionsAnalysis,
+    OptionsAnalysisIncomplete, OptionsCheckpoint, OptionsObserver,
 };
 
 mod setup;
 pub use setup::{
-    MacroCall, PropsDestructure, PropsField, ReactiveSource, SetupBinding, SetupBindingKind,
-    SetupCheckpoint, SetupFacts, SetupFactsIncomplete, SetupObserver,
+    MacroCall, PropsDestructure, PropsField, ReactiveSource, SetupAnalysis,
+    SetupAnalysisIncomplete, SetupBinding, SetupBindingKind, SetupCheckpoint, SetupObserver,
 };
 
 /// Vue's `unwrapTSNode`, plus the parentheses Babel does not retain.

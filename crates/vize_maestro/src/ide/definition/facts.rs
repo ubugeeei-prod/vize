@@ -2,12 +2,14 @@
 //! spans come from the `Bindings` group, never from `Croquis` fields.
 
 use vize_croquis::Croquis;
-use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
+use vize_croquis::facts::{
+    Analysis, AnalysisConsumer, Bindings, BindingsTable, CroquisFacts, Demand,
+};
 
 /// Script go-to-definition on an analyzed (class / Options API) binding.
 struct ScriptBindingDefinition;
 
-impl FactConsumer for ScriptBindingDefinition {
+impl AnalysisConsumer for ScriptBindingDefinition {
     const NAME: &'static str = "maestro/script-definition";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 }
@@ -15,12 +17,12 @@ impl FactConsumer for ScriptBindingDefinition {
 /// Template go-to-definition on a component prop declared in its script.
 struct TemplatePropDefinition;
 
-impl FactConsumer for TemplatePropDefinition {
+impl AnalysisConsumer for TemplatePropDefinition {
     const NAME: &'static str = "maestro/template-prop-definition";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 }
 
-fn span_of<C: FactConsumer>(croquis: &Croquis, name: &str) -> Option<(u32, u32)> {
+fn span_of<C: AnalysisConsumer>(croquis: &Croquis, name: &str) -> Option<(u32, u32)> {
     let mut facts = CroquisFacts::new(croquis);
     let view = facts.prepare::<C>();
     view.get::<Bindings>().ok()?.span(name)

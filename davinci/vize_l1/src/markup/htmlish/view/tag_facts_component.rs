@@ -11,38 +11,38 @@ use vize_l0::{Allocator, SourceBlock};
 ///
 /// Raw parsed carriers cannot mint this owner:
 /// ```compile_fail
-/// use vize_l1::markup::{ComponentParse, ComponentTagFacts};
-/// fn detached<'a>(carrier: ComponentParse<'a>) -> ComponentTagFacts<'a> {
-///     ComponentTagFacts::from(carrier)
+/// use vize_l1::markup::{ComponentParse, ComponentTagAnalysis};
+/// fn detached<'a>(carrier: ComponentParse<'a>) -> ComponentTagAnalysis<'a> {
+///     ComponentTagAnalysis::from(carrier)
 /// }
 /// ```
 /// It cannot substitute for Descriptor selection:
 /// ```compile_fail
-/// use vize_l1::markup::{ComponentTagFacts, SelectedTemplateComponent};
-/// fn selected<'a>(bare: ComponentTagFacts<'a>) -> SelectedTemplateComponent<'a> {
+/// use vize_l1::markup::{ComponentTagAnalysis, SelectedTemplateComponent};
+/// fn selected<'a>(bare: ComponentTagAnalysis<'a>) -> SelectedTemplateComponent<'a> {
 ///     bare.into()
 /// }
 /// ```
 /// Custody is not cloneable:
 /// ```compile_fail
-/// use vize_l1::markup::ComponentTagFacts;
+/// use vize_l1::markup::ComponentTagAnalysis;
 /// fn cloneable<T: Clone>() {}
-/// cloneable::<ComponentTagFacts<'static>>();
+/// cloneable::<ComponentTagAnalysis<'static>>();
 /// ```
-pub struct ComponentTagFacts<'a> {
+pub struct ComponentTagAnalysis<'a> {
     component: OwnedComponent<'a>,
 }
 
-impl core::fmt::Debug for ComponentTagFacts<'_> {
+impl core::fmt::Debug for ComponentTagAnalysis<'_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("ComponentTagFacts")
+            .debug_struct("ComponentTagAnalysis")
             .field("component", &self.component)
             .finish_non_exhaustive()
     }
 }
 
-impl<'a> ComponentTagFacts<'a> {
+impl<'a> ComponentTagAnalysis<'a> {
     /// Parse this exact original block once with the existing default Vue 3
     /// tag-facts sink. No source rewriting, SFC wrapping or alternate dialect occurs.
     pub fn parse_in(

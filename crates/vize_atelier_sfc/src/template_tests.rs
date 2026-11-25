@@ -218,7 +218,7 @@ const isRootSelected = ref(false)
     let script_setup = descriptor.script_setup.as_ref().unwrap();
     let template = descriptor.template.as_ref().unwrap();
     let arena = vize_l0::Allocator::default();
-    let setup = crate::compile::setup_facts::SetupAnalysis::new(
+    let setup = crate::compile::setup_facts::SetupCompileAnalysis::new(
         &arena,
         script_setup.content.as_ref(),
         (&descriptor, &crate::TemplateCompileOptions::default()),

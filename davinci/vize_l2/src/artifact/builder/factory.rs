@@ -1,6 +1,6 @@
 //! Monomorphized construction capabilities; callbacks receive real child factories.
 
-use super::{ArtifactError, RegionBuilder};
+use super::{L2TemplateError, RegionBuilder};
 use crate::expr::{ExprRef, JsExpr};
 use crate::op::{Attribute, Namespace};
 use crate::provenance::ProvenanceRecord;
@@ -21,20 +21,20 @@ pub trait ComponentBody<'a> {
 /// resolves, constructs and associates each expression inside its own methods.
 pub trait ComponentFactory<'a>: Sized {
     fn source(&self) -> &'a str;
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError>;
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError>;
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError>;
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError>;
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError>;
+    ) -> Result<NodeId, L2TemplateError>;
     fn bind(
         &mut self,
         name: &'a str,
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError>;
+    ) -> Result<NodeId, L2TemplateError>;
     fn element<B: ComponentBody<'a>>(
         &mut self,
         tag: &'a str,
@@ -42,32 +42,32 @@ pub trait ComponentFactory<'a>: Sized {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError>;
+    ) -> Result<NodeId, L2TemplateError>;
     fn component<B: ComponentBody<'a>>(
         &mut self,
         name: &'a str,
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError>;
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError>;
+    ) -> Result<NodeId, L2TemplateError>;
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError>;
 }
 
 impl<'a> ComponentFactory<'a> for RegionBuilder<'_, 'a> {
     fn source(&self) -> &'a str {
         self.builder.parts.source
     }
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         RegionBuilder::text(self, text, span)
     }
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         RegionBuilder::comment(self, text, span)
     }
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         RegionBuilder::interpolation(self, ExprRef::Js(expression), span)
     }
     fn bind(
@@ -76,7 +76,7 @@ impl<'a> ComponentFactory<'a> for RegionBuilder<'_, 'a> {
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         RegionBuilder::bind(self, name, name_span, ExprRef::Js(expression), span)
     }
     fn element<B: ComponentBody<'a>>(
@@ -86,7 +86,7 @@ impl<'a> ComponentFactory<'a> for RegionBuilder<'_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         RegionBuilder::element(self, tag, namespace, attributes, span, |child, node| {
             body.run(child, node);
         })
@@ -97,12 +97,12 @@ impl<'a> ComponentFactory<'a> for RegionBuilder<'_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         RegionBuilder::component(self, name, attributes, span, |child, node| {
             body.run(child, node);
         })
     }
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         RegionBuilder::record(self, record)
     }
 }

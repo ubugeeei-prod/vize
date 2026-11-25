@@ -24,12 +24,12 @@ use vize_croquis::sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
 use vize_croquis::{
     Croquis,
     facts::{
-        BindingKey, Bindings, CROQUIS_FACTS, ComponentUsages, FactConsumer, FactGroup, FactManager,
-        ProvideInject, RaceConditions, Reactivity, UndefinedRefs, UnusedBindings,
+        Analysis, AnalysisConsumer, AnalysisManager, BindingKey, Bindings, CROQUIS_FACTS,
+        ComponentUsages, ProvideInject, RaceConditions, Reactivity, UndefinedRefs, UnusedBindings,
     },
 };
 use vize_l0::Allocator;
-use vize_l0::fact::Demand;
+use vize_l0::analysis::Demand;
 use vize_l2::summary::{AlphaPages, Facet};
 
 /// Production (Croquis) fact groups a plugin may demand.
@@ -59,14 +59,14 @@ struct ProductionAnalysis {
 pub struct ProductionDocument {
     croquis: OnceLock<Result<ProductionAnalysis, HostError>>,
     alpha: OnceLock<Result<AlphaPages, HostError>>,
-    manager: Mutex<FactManager<'static, Croquis>>,
+    manager: Mutex<AnalysisManager<'static, Croquis>>,
 }
 impl Default for ProductionDocument {
     fn default() -> Self {
         Self {
             croquis: OnceLock::new(),
             alpha: OnceLock::new(),
-            manager: Mutex::new(FactManager::new(&CROQUIS_FACTS)),
+            manager: Mutex::new(AnalysisManager::new(&CROQUIS_FACTS)),
         }
     }
 }
@@ -153,7 +153,7 @@ impl ProductionDocument {
 }
 
 struct PluginFacts;
-impl FactConsumer for PluginFacts {
+impl AnalysisConsumer for PluginFacts {
     const NAME: &'static str = "js-plugin-production-facts";
     const DEMAND: Demand = Demand::NONE
         .with(Bindings::ID)

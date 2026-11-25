@@ -11,7 +11,7 @@ use vize_l1_to_l2::Lowered;
 use vize_l1_to_l2::lower::TextPart;
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{Attribute, BindingOp, DynamicName, ForBinding, Op, Region};
-use vize_l2::scope::{ScopeFacts, ScopeOrigin};
+use vize_l2::scope::{ScopeAnalysis, ScopeOrigin};
 
 pub fn assert_authored_artifact(source: &str, lowered: &Lowered<'_>) {
     let root = SourceRoot::new(source).expect("authored source");
@@ -226,7 +226,7 @@ fn assert_dynamic_name(source: &str, root: SourceRoot<'_>, name: DynamicName<'_>
     }
 }
 
-fn assert_scope_facts(source: &str, root: SourceRoot<'_>, facts: &ScopeFacts) {
+fn assert_scope_facts(source: &str, root: SourceRoot<'_>, facts: &ScopeAnalysis) {
     for binding in &facts.bindings {
         if let ScopeOrigin::Authored { span } = binding.origin {
             assert_span(source, root, span, "scope binding");
@@ -378,7 +378,7 @@ fn different_scope_spellings_require_one_complete_original_identifier_token() {
         (r"\u0061", "wrong"),
     ] {
         let root = SourceRoot::new(source).unwrap();
-        let facts = ScopeFacts {
+        let facts = ScopeAnalysis {
             tag: ScopeTag::from_index(0),
             bindings: vec![ScopeBinding {
                 name: String::from(cooked),

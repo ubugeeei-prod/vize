@@ -6,10 +6,10 @@ use crate::file::{L2Ir, Namespace, ScopeId, ScriptUnitId};
 pub use crate::framework::vue::{
     CallContract, ComponentContract, ComponentOptions, ComponentShape, ContractSource, Emit,
     EmitsContract, MacroCall, MacroKind, ModelContract, ModelName, OptionKey, OptionMember,
-    OptionMemberKind, OptionsFactsIncomplete, OrdinaryFactsIncomplete, Prop, PropsContract,
-    ReactiveSource, SetupBinding, SetupBindingKind, SetupFactsIncomplete, SlotsContract,
+    OptionMemberKind, OptionsAnalysisIncomplete, OrdinaryAnalysisIncomplete, Prop, PropsContract,
+    ReactiveSource, SetupAnalysisIncomplete, SetupBinding, SetupBindingKind, SlotsContract,
 };
-use crate::framework::vue::{OptionsFacts, OrdinaryFacts, SetupFacts};
+use crate::framework::vue::{OptionsAnalysis, OrdinaryAnalysis, SetupAnalysis};
 use alloc::boxed::Box;
 use core::ops::Deref;
 use vize_l0::Span;
@@ -34,9 +34,9 @@ pub enum VueQueryError {
     IncompleteFile,
     ForeignFile,
     NotObserved(VueFamily),
-    SetupIncomplete(SetupFactsIncomplete),
-    OrdinaryIncomplete(OrdinaryFactsIncomplete),
-    OptionsIncomplete(OptionsFactsIncomplete),
+    SetupIncomplete(SetupAnalysisIncomplete),
+    OrdinaryIncomplete(OrdinaryAnalysisIncomplete),
+    OptionsIncomplete(OptionsAnalysisIncomplete),
     /// The producer retained an authored pattern it could not classify.
     Unclassified(Span),
     /// More than one classification covers the original declaration.
@@ -49,19 +49,19 @@ struct Observed<F> {
     facts: F,
 }
 #[derive(Default)]
-struct VueFacts {
-    setup: Option<Box<Observed<Result<SetupFacts, SetupFactsIncomplete>>>>,
+struct VueAnalysis {
+    setup: Option<Box<Observed<Result<SetupAnalysis, SetupAnalysisIncomplete>>>>,
     ordinary: Option<Box<Observed<OrdinaryFamilies>>>,
 }
 struct OrdinaryFamilies {
-    bindings: Option<Result<OrdinaryFacts, OrdinaryFactsIncomplete>>,
-    options: Option<Result<OptionsFacts, OptionsFactsIncomplete>>,
+    bindings: Option<Result<OrdinaryAnalysis, OrdinaryAnalysisIncomplete>>,
+    options: Option<Result<OptionsAnalysis, OptionsAnalysisIncomplete>>,
 }
 
 /// An immutable File plus the fact families requested from its own producer.
 pub struct VueFile<'a> {
     l2ir: L2Ir<'a>,
-    facts: VueFacts,
+    facts: VueAnalysis,
 }
 impl<'a> VueFile<'a> {
     #[must_use]
@@ -85,7 +85,7 @@ impl<'a> VueFile<'a> {
 #[derive(Clone, Copy)]
 pub struct VueModel<'f, 'a> {
     model: Model<'f, 'a>,
-    facts: Option<&'f VueFacts>,
+    facts: Option<&'f VueAnalysis>,
 }
 
 impl<'f, 'a> Deref for VueModel<'f, 'a> {
@@ -128,7 +128,7 @@ impl<'f, 'a> VueModel<'f, 'a> {
         }
     }
 
-    fn setup(self) -> Result<&'f SetupFacts, VueQueryError> {
+    fn setup(self) -> Result<&'f SetupAnalysis, VueQueryError> {
         self.complete()?;
         let observed = self
             .facts

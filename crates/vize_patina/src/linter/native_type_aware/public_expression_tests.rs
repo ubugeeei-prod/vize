@@ -200,7 +200,7 @@ fn inert_script_markers_remain_complete_in_the_checker_document() {
     let script = descriptor.script_setup.as_ref().expect("setup");
     let allocator = vize_l0::Allocator::new();
     let (_, errors) = vize_armature::parse(&allocator, template.content.as_ref());
-    let l2 = crate::markup::L2Template::lower(&allocator, template.content.as_ref());
+    let l2 = crate::markup::LintL2Template::lower(&allocator, template.content.as_ref());
     assert_eq!(
         super::slot_binding_tests::whole_parser_errors(&errors),
         super::slot_binding_tests::expected_parser_notices(

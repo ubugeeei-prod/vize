@@ -2,7 +2,7 @@
 
 use super::ProgramInput;
 use super::observer::{DeclaredEvent, FileObserver, StatementEvent};
-use crate::file::build::{DeclarationSite, Facts};
+use crate::file::build::{DeclarationSite, L2Script};
 use crate::file::{
     DeclarationKind, FileIssueKind, InitializerKind, Namespace, ScopeId, ScriptUnitId,
 };
@@ -24,7 +24,7 @@ mod references;
 
 pub(super) fn program<'a, O: FileObserver<'a>>(
     input: &ProgramInput<'_, 'a>,
-    facts: &mut Facts<'a>,
+    facts: &mut L2Script<'a>,
     unit: ScriptUnitId,
     scope: ScopeId,
     observer: &mut O,
@@ -57,7 +57,7 @@ pub(super) fn program<'a, O: FileObserver<'a>>(
 
 struct Walk<'f, 'p, 'a, O> {
     input: &'f ProgramInput<'p, 'a>,
-    facts: &'f mut Facts<'a>,
+    facts: &'f mut L2Script<'a>,
     unit: ScriptUnitId,
     scope: ScopeId,
     observer: &'f mut O,

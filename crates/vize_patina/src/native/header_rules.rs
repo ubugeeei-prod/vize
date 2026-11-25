@@ -4,7 +4,7 @@ use vize_l0::{
     SmallVec, Span, String,
     diag::{Advisory, Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage},
 };
-use vize_l1::markup::{AttributeView, ElementView, TagFacts, TagFactsKind};
+use vize_l1::markup::{AttributeView, ElementView, TagAnalysis, TagAnalysisKind};
 
 use super::{
     NO_ACCESS_KEY_RULE, NO_AUTOFOCUS_RULE, NO_DISTRACTING_ELEMENTS_RULE, NativeLintFinding,
@@ -14,7 +14,7 @@ use super::{
 pub(super) fn inspect(
     element: &ElementView<'_, '_>,
     mut visit: impl FnMut(header::Binding<'_>),
-) -> Result<(TagFactsKind, Span), NativeLintRefusal> {
+) -> Result<(TagAnalysisKind, Span), NativeLintRefusal> {
     let (receipt, opening) = inspect_attributes(element, |_, binding| visit(binding))?;
     Ok((receipt.kind(), opening))
 }
@@ -24,7 +24,7 @@ pub(super) fn inspect(
 pub(super) fn inspect_attributes<'o, 'a>(
     element: &ElementView<'o, 'a>,
     mut visit: impl FnMut(&AttributeView<'o, 'a>, header::Binding<'a>),
-) -> Result<(TagFacts<'o, 'a>, Span), NativeLintRefusal> {
+) -> Result<(TagAnalysis<'o, 'a>, Span), NativeLintRefusal> {
     inspect_checked::<false>(element, |checked, binding| {
         let binding = checked.narrow(binding)?;
         visit(checked.original(), binding);
@@ -40,7 +40,7 @@ pub(super) fn inspect_checked<'o, 'a, const WIDE: bool>(
         header::CheckedAttribute<'o, 'a>,
         header::AttributeBinding<'a>,
     ) -> Result<(), NativeLintRefusal>,
-) -> Result<(TagFacts<'o, 'a>, Span), NativeLintRefusal> {
+) -> Result<(TagAnalysis<'o, 'a>, Span), NativeLintRefusal> {
     inspect_with(
         element,
         |element, original| {
@@ -60,7 +60,7 @@ pub(super) fn inspect_events<'o, 'a>(
         header::CheckedAttribute<'o, 'a>,
         header::AttributeBinding<'a>,
     ) -> Result<(), NativeLintRefusal>,
-) -> Result<(TagFacts<'o, 'a>, Span), NativeLintRefusal> {
+) -> Result<(TagAnalysis<'o, 'a>, Span), NativeLintRefusal> {
     inspect_with(element, header::event_binding, visit)
 }
 
@@ -80,7 +80,7 @@ fn inspect_with<'o, 'a>(
         header::CheckedAttribute<'o, 'a>,
         header::AttributeBinding<'a>,
     ) -> Result<(), NativeLintRefusal>,
-) -> Result<(TagFacts<'o, 'a>, Span), NativeLintRefusal> {
+) -> Result<(TagAnalysis<'o, 'a>, Span), NativeLintRefusal> {
     let receipt = element
         .tag_facts()
         .map_err(|reason| NativeLintRefusal::LintTag { reason })?;
@@ -137,7 +137,7 @@ fn attribute_rule(
         }
         _ => {}
     })?;
-    if kind == TagFactsKind::Component {
+    if kind == TagAnalysisKind::Component {
         return Ok(Vec::new());
     }
     Ok(matches
@@ -191,7 +191,7 @@ pub(super) fn no_distracting_elements(
 ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
     let (kind, range) = inspect(element, |_| {})?;
     let tag = element.surface().tag();
-    if kind == TagFactsKind::Component || !matches!(tag, "marquee" | "blink") {
+    if kind == TagAnalysisKind::Component || !matches!(tag, "marquee" | "blink") {
         return Ok(None);
     }
     let template = messages.lookup("a11y/no-distracting-elements.message");

@@ -7,13 +7,13 @@ use super::access::{
     used_components_empty,
 };
 use crate::facts::{
-    ComponentUsages, CroquisFacts, Demand, FactConsumer, FactGroup, GroupedComponentUse,
+    Analysis, AnalysisConsumer, ComponentUsages, CroquisFacts, Demand, GroupedComponentUse,
 };
 use crate::{Croquis, Drawer, DrawerOptions};
 
 struct Reader;
 
-impl FactConsumer for Reader {
+impl AnalysisConsumer for Reader {
     const NAME: &'static str = "croquis/component-usages-test";
     const DEMAND: Demand = Demand::NONE.with(ComponentUsages::ID);
 }

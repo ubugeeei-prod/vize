@@ -82,7 +82,7 @@ pub enum SsrPart<'owner, 'arena> {
 
 /// Immutable SSR facts beside their exact sealed native analysis.
 #[derive(Debug)]
-pub struct SsrFacts<'owner, 'arena> {
+pub struct SsrAnalysis<'owner, 'arena> {
     parts: Vec<SsrPart<'owner, 'arena>>,
     unsupported: Vec<SsrRejection>,
     inherit_attrs: Option<NodeId>,
@@ -90,7 +90,7 @@ pub struct SsrFacts<'owner, 'arena> {
     expressions: SideTable<SsrSetupExpression<'owner, 'arena>>,
 }
 
-impl<'owner, 'arena> SsrFacts<'owner, 'arena> {
+impl<'owner, 'arena> SsrAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn parts(&self) -> &[SsrPart<'owner, 'arena>] {
         &self.parts

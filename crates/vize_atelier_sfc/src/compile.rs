@@ -385,7 +385,7 @@ fn compile_sfc_inner(
     let setup_options = (descriptor, &options.template);
     let setup = profile!(
         "atelier.sfc.script_setup.facts",
-        setup_facts::SetupAnalysis::new(&setup_arena, &script_setup_content, setup_options)
+        setup_facts::SetupCompileAnalysis::new(&setup_arena, &script_setup_content, setup_options)
     )?;
     let setup_program = setup.program();
     setup_exports::validate(setup_program, &script_setup_content, descriptor)?;

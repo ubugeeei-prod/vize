@@ -1,6 +1,6 @@
 //! The canonical L2 artifact, independent of any input lowering.
 //!
-//! [`ArtifactParts`] is the one artifact every producer hands to L2
+//! [`L2TemplateParts`] is the one artifact every producer hands to L2
 //! consumers: ops plus semantic side tables. The transitional Vue lowering
 //! holds it unsealed beside its conversion bookkeeping; native producers
 //! seal it into an [`Artifact`].
@@ -17,11 +17,11 @@ use vize_l0::{Span, id::NodeId, side_table::SideTable};
 
 use crate::analysis::for_facts::ForParts;
 use crate::analysis::fragment_facts::{BranchFragments, LoopFragment};
-use crate::analysis::if_facts::IfFacts;
+use crate::analysis::if_facts::IfAnalysis;
 use crate::analysis::text_facts::TextParts;
 use crate::op::Region;
 use crate::provenance::ProvenanceRecord;
-use crate::scope::{ScopeFacts, ScopeTag};
+use crate::scope::{ScopeAnalysis, ScopeTag};
 use crate::walk::{NodeEvent, NodeLimit, NodeRef, PageWalk};
 
 mod builder;
@@ -45,7 +45,7 @@ mod tests;
 /// choices, input capabilities and conversion bookkeeping have no fields
 /// here. `P` is the provenance sink the producer chose; only the default,
 /// record-keeping sink can be sealed into an [`Artifact`].
-pub struct ArtifactParts<'a, P = Vec<ProvenanceRecord>> {
+pub struct L2TemplateParts<'a, P = Vec<ProvenanceRecord>> {
     /// The complete authored source, borrowed for this compile.
     pub source: &'a str,
     /// The normalized, arena-resident owned region.
@@ -53,14 +53,14 @@ pub struct ArtifactParts<'a, P = Vec<ProvenanceRecord>> {
     /// Decisions in producer order, including failed decisions with no node.
     pub provenance: P,
     /// Binding introduction facts keyed by exact page-local node ids.
-    pub scopes: SideTable<ScopeFacts>,
+    pub scopes: SideTable<ScopeAnalysis>,
     /// The recorded parts of every merged text/interpolation run, keyed by
     /// its compound `ui.interpolation` op.
     pub texts: SideTable<TextParts>,
     /// Consumed `ui.for` scope views, keyed by the `ui.for` op.
     pub for_facts: SideTable<ForParts>,
     /// Branch-key facts, keyed by the `ui.if` op.
-    pub if_facts: SideTable<IfFacts>,
+    pub if_facts: SideTable<IfAnalysis>,
     /// Unwrapped branch carriers, keyed by the `ui.if` op.
     pub branch_fragments: SideTable<BranchFragments>,
     /// Unwrapped loop-body carriers, keyed by the `ui.for` op.
@@ -71,8 +71,10 @@ pub struct ArtifactParts<'a, P = Vec<ProvenanceRecord>> {
 
 /// Prints the ownership fields, then only the populated side tables, so a
 /// native artifact with no derived facts prints exactly its owned parts.
-impl<P: core::fmt::Debug> core::fmt::Debug for ArtifactParts<'_, P> {
+impl<P: core::fmt::Debug> core::fmt::Debug for L2TemplateParts<'_, P> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        // Reviewed SFC fixtures pin this output byte for byte, so it keeps the
+        // name the type had when they were frozen.
         let mut out = f.debug_struct("ArtifactParts");
         out.field("source", &self.source)
             .field("root", &self.root)
@@ -100,7 +102,7 @@ impl<P: core::fmt::Debug> core::fmt::Debug for ArtifactParts<'_, P> {
     }
 }
 
-impl<'a, P: Default> ArtifactParts<'a, P> {
+impl<'a, P: Default> L2TemplateParts<'a, P> {
     /// An artifact over `root` with no decisions and empty side tables.
     #[must_use]
     pub fn new(source: &'a str, root: Region<'a>) -> Self {
@@ -119,11 +121,21 @@ impl<'a, P: Default> ArtifactParts<'a, P> {
     }
 }
 
-/// A sealed native L2 artifact. It exposes no mutable tree or side tables.
-#[derive(Debug)]
-pub struct Artifact<'a> {
-    parts: ArtifactParts<'a>,
+/// A sealed native L2 template. It exposes no mutable tree or side tables.
+pub struct L2Template<'a> {
+    parts: L2TemplateParts<'a>,
     node_count: u32,
+}
+
+/// Reviewed SFC fixtures pin this output byte for byte, so it keeps the name
+/// the type had when they were frozen.
+impl core::fmt::Debug for L2Template<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Artifact")
+            .field("parts", &self.parts)
+            .field("node_count", &self.node_count)
+            .finish()
+    }
 }
 
 /// A failed constructor retains the actual partial tree and all decisions.
@@ -131,11 +143,11 @@ pub struct Artifact<'a> {
 /// Boxing the parts only on rejection keeps the result's error small; it
 /// does not copy arena nodes or expression payloads.
 #[derive(Debug)]
-pub struct RejectedArtifact<'a> {
+pub struct RejectedL2Template<'a> {
     /// The first deterministic invariant failure.
-    pub error: ArtifactError,
+    pub error: L2TemplateError,
     /// The original inputs, available for repair or diagnostic reporting.
-    pub parts: Box<ArtifactParts<'a>>,
+    pub parts: Box<L2TemplateParts<'a>>,
 }
 
 /// Which canonical conditional form was violated.
@@ -151,7 +163,7 @@ pub enum IfShape {
 
 /// Checked ownership errors, reported without a compiler panic.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ArtifactError {
+pub enum L2TemplateError {
     /// The complete source does not fit in the shared u32 coordinate space.
     SourceLimit,
     /// At least one node did not fit in the shared NodeId space.
@@ -202,16 +214,16 @@ pub enum ArtifactError {
     MissingEventRecorder { span: Span },
 }
 
-impl<'a> Artifact<'a> {
+impl<'a> L2Template<'a> {
     /// Consume native parts, checking their invariants once at creation.
     ///
     /// The node count is derived in the same walk that checks spans,
     /// expressions, branches and scope sites. This is a provider constructor,
     /// not a new pipeline phase, release verifier, or reparsing adapter.
-    pub fn try_new(parts: ArtifactParts<'a>) -> Result<Self, RejectedArtifact<'a>> {
+    pub fn try_new(parts: L2TemplateParts<'a>) -> Result<Self, RejectedL2Template<'a>> {
         match check::check(&parts) {
             Ok(node_count) => Ok(Self { parts, node_count }),
-            Err(error) => Err(RejectedArtifact {
+            Err(error) => Err(RejectedL2Template {
                 error,
                 parts: Box::new(parts),
             }),
@@ -248,7 +260,7 @@ impl<'a> Artifact<'a> {
 
     /// Sparse immutable scope facts; use sorted_entries for printing.
     #[must_use]
-    pub fn scopes(&self) -> &SideTable<ScopeFacts> {
+    pub fn scopes(&self) -> &SideTable<ScopeAnalysis> {
         &self.parts.scopes
     }
 
@@ -260,7 +272,7 @@ impl<'a> Artifact<'a> {
 
     /// The sealed parts, side tables included.
     #[must_use]
-    pub fn parts(&self) -> &ArtifactParts<'a> {
+    pub fn parts(&self) -> &L2TemplateParts<'a> {
         &self.parts
     }
 
@@ -288,13 +300,13 @@ impl<'a> Artifact<'a> {
     /// Previously derived tables are invalid after changing page order;
     /// producers must update them and reconstruct an Artifact.
     #[must_use]
-    pub fn into_parts(self) -> ArtifactParts<'a> {
+    pub fn into_parts(self) -> L2TemplateParts<'a> {
         self.parts
     }
 }
 
 #[cfg(feature = "sparse-region-walk")]
-impl<'a> Artifact<'a> {
+impl<'a> L2Template<'a> {
     /// Visit every numbered node in canonical preorder. Markup leaf regions
     /// and tail children reuse the current frame. Structural control ops use
     /// the shared nested event walker.

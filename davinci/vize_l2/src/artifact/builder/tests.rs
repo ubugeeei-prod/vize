@@ -1,7 +1,7 @@
 extern crate std;
 
 use super::Builder;
-use crate::artifact::{Artifact, ArtifactError};
+use crate::artifact::{L2Template, L2TemplateError};
 use crate::expr::{ExprRef, JsExpr};
 use crate::op::{Attribute, Namespace, Op};
 use crate::provenance::ProvenanceRecord;
@@ -70,7 +70,7 @@ fn construction_mints_exact_preorder_and_seals_without_a_second_walk() {
     // The independent arbitrary-parts checker agrees; production finish never
     // calls it and did not visit any previously constructed child again.
     assert_eq!(
-        Artifact::try_new(artifact.into_parts())
+        L2Template::try_new(artifact.into_parts())
             .unwrap()
             .node_count(),
         4
@@ -83,7 +83,7 @@ fn rejected_nodes_never_consume_an_id_or_replace_supported_fragments() {
     let mut builder = Builder::new(&a, "é").unwrap();
     assert!(matches!(
         builder.text("", Span::new(1, 2)),
-        Err(ArtifactError::InvalidSpan { .. })
+        Err(L2TemplateError::InvalidSpan { .. })
     ));
     assert_eq!(builder.text("é", Span::new(0, 2)).unwrap(), NodeId::FIRST);
     assert_eq!(builder.finish().unwrap().node_count(), 1);
@@ -101,7 +101,7 @@ fn owner_spans_and_static_attribute_spans_are_checked_at_construction() {
     });
     assert!(matches!(
         builder.element("x", Namespace::Html, attrs, Span::new(0, 4), |_, _| {}),
-        Err(ArtifactError::OutsideOwner { .. })
+        Err(L2TemplateError::OutsideOwner { .. })
     ));
     builder
         .element(
@@ -112,7 +112,7 @@ fn owner_spans_and_static_attribute_spans_are_checked_at_construction() {
             |region, _| {
                 assert!(matches!(
                     region.text("--", Span::new(5, 7)),
-                    Err(ArtifactError::OutsideOwner { .. })
+                    Err(L2TemplateError::OutsideOwner { .. })
                 ));
             },
         )
@@ -165,11 +165,11 @@ fn caught_callback_unwind_cannot_publish_a_false_seal_or_lose_partial_nodes() {
     let rejected = builder.finish().unwrap_err();
     assert_eq!(
         rejected.error,
-        ArtifactError::UnfinishedOwner {
+        L2TemplateError::UnfinishedOwner {
             node: NodeId::FIRST
         }
     );
-    let restored = Artifact::try_new(*rejected.parts).unwrap();
+    let restored = L2Template::try_new(*rejected.parts).unwrap();
     assert_eq!(restored.node_count(), 2);
     let Some(Op::Element(element)) = restored.root().ops.first() else {
         panic!("retained owner");
@@ -211,12 +211,12 @@ fn caught_nested_unwind_cannot_report_an_outer_owner_as_complete() {
     let pending = NodeId::from_index(1).unwrap();
     assert_eq!(
         outcome,
-        Err(ArtifactError::UnfinishedOwner { node: pending })
+        Err(L2TemplateError::UnfinishedOwner { node: pending })
     );
     let rejected = builder.finish().unwrap_err();
     assert_eq!(
         rejected.error,
-        ArtifactError::UnfinishedOwner { node: pending }
+        L2TemplateError::UnfinishedOwner { node: pending }
     );
     assert_eq!(rejected.parts.provenance.len(), 1);
     assert_eq!(rejected.parts.provenance[0].node, Some(pending));
@@ -231,7 +231,10 @@ fn caught_nested_unwind_cannot_report_an_outer_owner_as_complete() {
     };
     assert_eq!(text.content, "z");
     // The independent checker observes exactly the three actually minted nodes.
-    assert_eq!(Artifact::try_new(*rejected.parts).unwrap().node_count(), 3);
+    assert_eq!(
+        L2Template::try_new(*rejected.parts).unwrap().node_count(),
+        3
+    );
 }
 
 fn at(source: &str, needle: &str) -> Span {
@@ -307,7 +310,7 @@ fn conditional_branches_child_values_and_spreads_seal_canonical_ops() {
         [Op::ChildValue(_)]
     ));
     assert_eq!(
-        Artifact::try_new(artifact.into_parts())
+        L2Template::try_new(artifact.into_parts())
             .unwrap()
             .node_count(),
         5
@@ -325,7 +328,7 @@ fn conditional_shapes_and_branch_order_are_checked_as_branches_open() {
         .conditional(Span::new(0, 15), |branches, node| {
             assert_eq!(
                 branches.branch(None, Span::new(0, 8), |_, _| {}),
-                Err(ArtifactError::InvalidIf {
+                Err(L2TemplateError::InvalidIf {
                     node,
                     shape: crate::artifact::IfShape::LeadingElse
                 })
@@ -334,18 +337,18 @@ fn conditional_shapes_and_branch_order_are_checked_as_branches_open() {
                 .branch(Some(condition()), Span::new(0, 8), |region, _| {
                     assert!(matches!(
                         region.spread(condition(), Span::new(3, 4)),
-                        Err(ArtifactError::BindingWithoutOwner { .. })
+                        Err(L2TemplateError::BindingWithoutOwner { .. })
                     ));
                 })
                 .unwrap();
             assert!(matches!(
                 branches.branch(None, Span::new(4, 15), |_, _| {}),
-                Err(ArtifactError::OutsideOwner { .. })
+                Err(L2TemplateError::OutsideOwner { .. })
             ));
             branches.branch(None, Span::new(8, 15), |_, _| {}).unwrap();
             assert_eq!(
                 branches.branch(Some(condition()), Span::new(8, 15), |_, _| {}),
-                Err(ArtifactError::InvalidIf {
+                Err(L2TemplateError::InvalidIf {
                     node,
                     shape: crate::artifact::IfShape::NonTrailingElse
                 })
@@ -354,7 +357,7 @@ fn conditional_shapes_and_branch_order_are_checked_as_branches_open() {
         .unwrap();
     let artifact = builder.finish().unwrap();
     assert_eq!(
-        Artifact::try_new(artifact.into_parts())
+        L2Template::try_new(artifact.into_parts())
             .unwrap()
             .node_count(),
         1
@@ -363,14 +366,14 @@ fn conditional_shapes_and_branch_order_are_checked_as_branches_open() {
     let mut empty = Builder::new(&a, source).unwrap();
     assert_eq!(
         empty.region().conditional(Span::new(0, 15), |_, _| {}),
-        Err(ArtifactError::InvalidIf {
+        Err(L2TemplateError::InvalidIf {
             node: NodeId::FIRST,
             shape: crate::artifact::IfShape::Empty
         })
     );
     assert_eq!(
         empty.finish().unwrap_err().error,
-        ArtifactError::UnfinishedOwner {
+        L2TemplateError::UnfinishedOwner {
             node: NodeId::FIRST
         }
     );
@@ -425,7 +428,7 @@ fn host_loops_keep_the_authored_head_and_mint_empty_after_body() {
                 .unwrap();
             assert_eq!(
                 regions.body(|_, _| {}),
-                Err(ArtifactError::InvalidHostFor { node: owner })
+                Err(L2TemplateError::InvalidHostFor { node: owner })
             );
             regions
                 .empty(|region, _| {
@@ -455,8 +458,8 @@ fn host_loops_keep_the_authored_head_and_mint_empty_after_body() {
         panic!("expected ui.for");
     };
     for_op.binding.key = Some(for_op.binding.source);
-    let rejected = Artifact::try_new(parts).err().unwrap();
-    assert_eq!(rejected.error, ArtifactError::InvalidHostFor { node: id });
+    let rejected = L2Template::try_new(parts).err().unwrap();
+    assert_eq!(rejected.error, L2TemplateError::InvalidHostFor { node: id });
 }
 
 #[test]
@@ -470,12 +473,12 @@ fn host_loops_need_a_body_before_their_empty_region() {
         .host_for(head, Span::new(0, 52), |regions, owner| {
             assert_eq!(
                 regions.empty(|_, _| {}),
-                Err(ArtifactError::InvalidHostFor { node: owner })
+                Err(L2TemplateError::InvalidHostFor { node: owner })
             );
         });
     assert_eq!(
         result,
-        Err(ArtifactError::UnfinishedOwner {
+        Err(L2TemplateError::UnfinishedOwner {
             node: NodeId::FIRST
         })
     );

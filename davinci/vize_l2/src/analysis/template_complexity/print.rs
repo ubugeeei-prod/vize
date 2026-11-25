@@ -1,4 +1,4 @@
-//! The canonical text form of [`ComplexityFacts`]: the TS-17 snapshot body
+//! The canonical text form of [`ComplexityAnalysis`]: the TS-17 snapshot body
 //! and the breakdown humans read ("where does this component's complexity
 //! come from").
 //!
@@ -10,14 +10,14 @@ use core::fmt::Write as _;
 
 use vize_l0::String;
 
-use super::{ComplexityFacts, Contribution};
+use super::{ComplexityAnalysis, Contribution};
 
 /// Longest excerpt a row prints before clipping with `…`.
 const EXCERPT_CHARS: usize = 48;
 
 /// Print `facts` against the `source` its spans index.
 #[must_use]
-pub fn print_facts(facts: &ComplexityFacts, source: &str) -> String {
+pub fn print_facts(facts: &ComplexityAnalysis, source: &str) -> String {
     let mut out = String::default();
     let _ = writeln!(out, "[complexity]");
     let _ = writeln!(out, "cyclomatic={}", facts.cyclomatic);

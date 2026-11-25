@@ -6,7 +6,7 @@ use crate::native::template::{
     NativeTemplateElement, NativeTemplateLintContext, NativeTemplateLintRefusal as Refusal,
     NativeTemplateRule,
 };
-use vize_l1::markup::ComponentTagFacts;
+use vize_l1::markup::ComponentTagAnalysis;
 
 #[cfg(test)]
 mod tests;
@@ -19,7 +19,7 @@ impl NativeTemplateRule for NoDeprecatedVOnNumberModifiers {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
-        owner: &ComponentTagFacts<'a>,
+        owner: &ComponentTagAnalysis<'a>,
     ) -> Result<(), Refusal> {
         if !core::ptr::eq(context.owner(), owner) {
             return Err(Refusal::SourceMismatch);

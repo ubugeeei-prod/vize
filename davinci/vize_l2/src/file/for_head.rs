@@ -182,7 +182,7 @@ impl<'f, 'a> FileForHead<'f, 'a> {
     /// Canonical binding facts minted beside this actual attached For node.
     /// Their dense hygiene tag is distinct from the File's lexical ScopeId.
     #[must_use]
-    pub fn scope_facts(self) -> Option<&'f crate::scope::ScopeFacts> {
+    pub fn scope_facts(self) -> Option<&'f crate::scope::ScopeAnalysis> {
         let _ = self.l2ir.facts.for_heads.get(self.id.node())?.original?;
         self.l2ir.artifact().scopes().get(self.id.node())
     }

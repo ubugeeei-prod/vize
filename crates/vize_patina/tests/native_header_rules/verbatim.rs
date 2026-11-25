@@ -3,7 +3,7 @@ use super::support::{
     warning,
 };
 use vize_l0::{Allocator, Span, cstr};
-use vize_l1::markup::TagFactsRefusal;
+use vize_l1::markup::TagAnalysisRefusal;
 use vize_patina::Locale;
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint};
 
@@ -77,7 +77,7 @@ fn inherited_structural_template_refuses_without_losing_the_registered_oracle() 
         assert_eq!(
             rule.check(&lint, &element, &NeverLookup).err(),
             Some(NativeLintRefusal::LintTag {
-                reason: TagFactsRefusal::InheritedTemplate
+                reason: TagAnalysisRefusal::InheritedTemplate
             })
         );
         for locale in LOCALES {
@@ -115,7 +115,7 @@ fn modified_and_argument_pre_scopes_refuse_authentic_lint_ambiguity() {
                 assert_eq!(
                     rule.check(&lint, element, &NeverLookup).err(),
                     Some(NativeLintRefusal::LintTag {
-                        reason: TagFactsRefusal::AmbiguousVerbatim
+                        reason: TagAnalysisRefusal::AmbiguousVerbatim
                     })
                 );
             }

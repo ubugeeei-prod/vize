@@ -92,7 +92,7 @@ fn accepted_dom_capture_is_from_the_emitting_run() {
     );
     assert_eq!(
         capture.pages[6].text.as_str(),
-        r#"L2Facts {
+        r#"L2Analyses {
     filters: FilterAssets {
         names: [],
         resolve_before_components: false,
@@ -105,7 +105,7 @@ fn accepted_dom_capture_is_from_the_emitting_run() {
     },
     static_facts: SideTable {
         entries: {
-            NodeId(0): StaticFacts {
+            NodeId(0): StaticAnalysis {
                 level: HasDynamicText,
                 props_hoistable: false,
                 nested_static: true,
@@ -115,7 +115,7 @@ fn accepted_dom_capture_is_from_the_emitting_run() {
         },
     },
     complexity: Some(
-        ComplexityFacts {
+        ComplexityAnalysis {
             cyclomatic: 1,
             cognitive: 0,
             unknown: 0,

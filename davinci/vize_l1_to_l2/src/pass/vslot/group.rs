@@ -21,8 +21,8 @@ use vize_l2::scope::ScopeOrigin;
 
 use super::consume::{Channels, ChildKind, ChildView, SlotSpelling};
 use super::{
-    DUPLICATE_MESSAGE, EXTRANEOUS_MESSAGE, MIXED_MESSAGE, RULE_IMPLICIT_DEFAULT, SlotCarrier,
-    SlotFacts, SlotGroup, SlotName, SlotParams,
+    DUPLICATE_MESSAGE, EXTRANEOUS_MESSAGE, MIXED_MESSAGE, RULE_IMPLICIT_DEFAULT, SlotAnalysis,
+    SlotCarrier, SlotGroup, SlotName, SlotParams,
 };
 
 /// Group and validate one `ui.component`.
@@ -61,7 +61,7 @@ pub(super) fn component(
         span,
     });
     if let Some(id) = id {
-        channels.facts.insert(id, SlotFacts { groups });
+        channels.facts.insert(id, SlotAnalysis { groups });
     }
 }
 

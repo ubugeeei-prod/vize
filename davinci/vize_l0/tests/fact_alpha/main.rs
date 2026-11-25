@@ -10,11 +10,11 @@ mod groups;
 
 use groups::{Lengths, Longest, REGISTRY, Summary, Words, Words2};
 use vize_l0::String;
-use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
-use vize_l0::fact::{
-    ALPHA_GROUPS, AlphaDesc, AlphaDocError, AlphaDocument, AlphaExport, FactGroup, FactManager,
-    FactTable, check_alpha_schema_doc, ids,
+use vize_l0::analysis::{
+    ALPHA_GROUPS, AlphaDesc, AlphaDocError, AlphaDocument, AlphaExport, Analysis, AnalysisManager,
+    AnalysisTable, check_alpha_schema_doc, ids,
 };
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::pass::AnalysisId;
 
 const SCHEMA_DOC: &str = include_str!("../../../../docs/davinci/plan/fact-alpha-schemas.md");
@@ -23,7 +23,7 @@ const ARTIFACTS: [&Words; 3] = [&["alpha", "be", "gamma", "δelta"], &["one"], &
 
 /// Export, print (`Full`), parse, import: the table survives exactly and
 /// the page text survives byte-for-byte.
-fn round_trip<G: AlphaExport>(table: &FactTable<G>) -> String {
+fn round_trip<G: AlphaExport>(table: &AnalysisTable<G>) -> String {
     let document = AlphaDocument::<G>::export(table);
     let text = document.print_to_string(DumpMode::Full);
     let parsed = AlphaDocument::<G>::parse(&text).expect("canonical α text parses");
@@ -37,7 +37,7 @@ fn round_trip<G: AlphaExport>(table: &FactTable<G>) -> String {
 #[test]
 fn every_alpha_group_round_trips_exactly() {
     for words in ARTIFACTS {
-        let mut manager = FactManager::new(&REGISTRY);
+        let mut manager = AnalysisManager::new(&REGISTRY);
         let view = manager.prepare::<Summary>(words).unwrap();
         round_trip::<Lengths>(view.get::<Lengths>().unwrap());
         round_trip::<Words2>(view.get::<Words2>().unwrap());
@@ -47,7 +47,7 @@ fn every_alpha_group_round_trips_exactly() {
 
 #[test]
 fn an_alpha_page_prints_its_group_and_schema_version() {
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     // `gamma` ties `alpha` for longest; `max_by_key` keeps the last.
     let view = manager
         .prepare::<Summary>(&["alpha", "be", "gamma"][..])

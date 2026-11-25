@@ -1,11 +1,11 @@
 //! Croquis products as fact groups (Davinci P4-3).
 //!
 //! Each tracker product a consumer reads becomes a fact group on the
-//! [`vize_l0::fact`] query surface: the tracker code stays the
+//! [`vize_l0::analysis`] query surface: the tracker code stays the
 //! population pass (semantic-engine.md #1), a registered producer turns its
-//! output into a key-sorted [`FactTable`], and a consumer reads the table
-//! through a [`FactView`] scoped to the demand it declared as const data
-//! ([`FactConsumer::DEMAND`]). The debug detector refuses every read outside
+//! output into a key-sorted [`AnalysisTable`], and a consumer reads the table
+//! through a [`AnalysisView`] scoped to the demand it declared as const data
+//! ([`AnalysisConsumer::DEMAND`]). The debug detector refuses every read outside
 //! that demand (TS-35), so "consumed but undeclared" is caught mechanically.
 //!
 //! The artifact the producers read is the drawn [`Croquis`]: its fields stay
@@ -32,12 +32,12 @@
 //! ```
 //! use vize_croquis::Croquis;
 //! use vize_croquis::facts::{
-//!     BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup, bindings::Bindings,
+//!     BindingsTable, CroquisFacts, Demand, AnalysisConsumer, Analysis, bindings::Bindings,
 //! };
 //! use vize_relief::BindingType;
 //!
 //! struct CountRefs;
-//! impl FactConsumer for CountRefs {
+//! impl AnalysisConsumer for CountRefs {
 //!     const NAME: &'static str = "doc/count-refs";
 //!     const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 //! }
@@ -80,15 +80,15 @@ pub use access::{
 };
 pub use undefined_refs::UndefinedRefs;
 pub use unused_bindings::{UnusedBindingFact, UnusedBindings};
-pub use vize_l0::fact::{
-    Demand, FactConsumer, FactError, FactGroup, FactManager, FactRegistry, FactTable, FactView,
-    ProducerEntry,
+pub use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisError, AnalysisManager, AnalysisRegistry, AnalysisTable,
+    AnalysisView, Demand, ProducerEntry,
 };
 
 use crate::Croquis;
 
 /// Every Croquis fact group, stratified at compile time.
-pub const CROQUIS_FACTS: FactRegistry<Croquis> = FactRegistry::new(&[
+pub const CROQUIS_FACTS: AnalysisRegistry<Croquis> = AnalysisRegistry::new(&[
     ProducerEntry::of::<Bindings>(),
     ProducerEntry::of::<UndefinedRefs>(),
     ProducerEntry::of::<UnusedBindings>(),
@@ -100,13 +100,13 @@ pub const CROQUIS_FACTS: FactRegistry<Croquis> = FactRegistry::new(&[
 
 /// One drawn [`Croquis`] and the facts computed over it.
 ///
-/// Holds a [`FactManager`] over [`CROQUIS_FACTS`], so every group is
+/// Holds a [`AnalysisManager`] over [`CROQUIS_FACTS`], so every group is
 /// produced at most once for the artifact however many consumers demand it.
 /// Creating one allocates nothing; a group allocates only when a consumer's
 /// demand first reaches it.
 pub struct CroquisFacts<'c> {
     croquis: &'c Croquis,
-    manager: FactManager<'static, Croquis>,
+    manager: AnalysisManager<'static, Croquis>,
 }
 
 impl<'c> CroquisFacts<'c> {
@@ -115,7 +115,7 @@ impl<'c> CroquisFacts<'c> {
     pub fn new(croquis: &'c Croquis) -> Self {
         Self {
             croquis,
-            manager: FactManager::new(&CROQUIS_FACTS),
+            manager: AnalysisManager::new(&CROQUIS_FACTS),
         }
     }
 
@@ -129,8 +129,8 @@ impl<'c> CroquisFacts<'c> {
     ///
     /// When `C` demands a group [`CROQUIS_FACTS`] does not register (a static
     /// mistake in `C`'s const demand, never a data-dependent one), nothing is
-    /// computed for it and [`FactView::get`] reports the group as not computed.
-    pub fn prepare<C: FactConsumer>(&mut self) -> FactView<'_> {
+    /// computed for it and [`AnalysisView::get`] reports the group as not computed.
+    pub fn prepare<C: AnalysisConsumer>(&mut self) -> AnalysisView<'_> {
         // `prepare` returns exactly `view::<C>()` on success; on failure the
         // view still answers, with an error for every group it lacks.
         let _ = self.manager.prepare::<C>(self.croquis);
@@ -141,23 +141,25 @@ impl<'c> CroquisFacts<'c> {
     ///
     /// Consuming the manager makes the table suitable for a longer-lived,
     /// read-only query scope without cloning its keys and values.
-    pub fn prepare_owned<C: FactConsumer, G: FactGroup>(self) -> Result<FactTable<G>, FactError> {
+    pub fn prepare_owned<C: AnalysisConsumer, G: Analysis>(
+        self,
+    ) -> Result<AnalysisTable<G>, AnalysisError> {
         self.manager.prepare_owned::<C, G>(self.croquis)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{Bindings, CROQUIS_FACTS, CroquisFacts, Demand, FactConsumer, FactGroup};
+    use super::{Analysis, AnalysisConsumer, Bindings, CROQUIS_FACTS, CroquisFacts, Demand};
     use super::{
-        ComponentUsages, FactError, ProvideInject, RaceConditions, Reactivity, UndefinedRefs,
+        AnalysisError, ComponentUsages, ProvideInject, RaceConditions, Reactivity, UndefinedRefs,
         UnusedBindings,
     };
     use crate::Croquis;
-    use vize_l0::fact::ids;
+    use vize_l0::analysis::ids;
 
     struct ReadsBindings;
-    impl FactConsumer for ReadsBindings {
+    impl AnalysisConsumer for ReadsBindings {
         const NAME: &'static str = "test/reads-bindings";
         const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
     }
@@ -206,7 +208,7 @@ mod tests {
         #[cfg(debug_assertions)]
         assert_eq!(
             view.get::<UndefinedRefs>().err(),
-            Some(FactError::Undeclared {
+            Some(AnalysisError::Undeclared {
                 consumer: "test/reads-bindings",
                 group: ids::UNDEFINED_REFS,
             })

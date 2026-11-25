@@ -9,7 +9,7 @@ use super::{
 };
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use vize_l0::fact::FactManager;
+use vize_l0::analysis::AnalysisManager;
 
 /// The proxy arm the spike measured and rejected: the same document behind
 /// a handle whose every read is one napi call.
@@ -28,7 +28,7 @@ pub fn open_plugin_document(
     let filename = filename.unwrap_or_else(|| "anonymous.vue".to_owned());
     let document = PluginDocument::build(&source, &filename).map_err(host_error)?;
     let demand = resolve_demands("proxy", &["templateScopes".to_owned()]).map_err(host_error)?;
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager
         .compute(&document, demand)
         .map_err(|error| Error::new(Status::GenericFailure, format!("{error:?}")))?;

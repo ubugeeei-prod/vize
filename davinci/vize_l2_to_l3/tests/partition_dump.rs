@@ -4,7 +4,9 @@
 
 use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{Allocator, cstr};
-use vize_l2_to_l3::partition::dump::{Fact as DumpPartitionFact, Page as PartitionPage};
+use vize_l2_to_l3::partition::dump::{
+    Page as PartitionPage, PartitionRecord as DumpPartitionRecord,
+};
 use vize_l2_to_l3::{PartitionKind, lower};
 
 const CANONICAL: &str = "\
@@ -49,12 +51,12 @@ fn the_live_mirror_prints_the_lowered_facts_exactly() {
 fn structural_round_trip_holds_for_both_kinds() {
     let folio = PartitionPage {
         ops: vec![
-            DumpPartitionFact {
+            DumpPartitionRecord {
                 op: 7,
                 kind: PartitionKind::Dynamic,
                 span: vize_l0::Span::new(3, 9),
             },
-            DumpPartitionFact {
+            DumpPartitionRecord {
                 op: 8,
                 kind: PartitionKind::Static,
                 span: vize_l0::Span::new(9, 9),

@@ -14,13 +14,13 @@ use vize_croquis::facts::spec::{
     bindings, bindings_extract, provide_inject, reactivity, trace, undefined_refs, unused_bindings,
 };
 use vize_croquis::facts::{
-    Bindings, CroquisFacts, Demand, FactConsumer, FactGroup, FactTable, UndefinedRefs,
+    Analysis, AnalysisConsumer, AnalysisTable, Bindings, CroquisFacts, Demand, UndefinedRefs,
     UnusedBindings,
 };
 
 /// The TS-34 harness reads both groups through a declared demand.
 struct FactSpecHarness;
-impl FactConsumer for FactSpecHarness {
+impl AnalysisConsumer for FactSpecHarness {
     const NAME: &'static str = "ts-34/fact-spec";
     const DEMAND: Demand = Demand::NONE
         .with(Bindings::ID)
@@ -195,8 +195,8 @@ pub fn run_source(name: &str, source: &str, planes: &mut Planes) {
 
 fn describe_bindings(
     name: &str,
-    production: &FactTable<Bindings>,
-    spec: &FactTable<Bindings>,
+    production: &AnalysisTable<Bindings>,
+    spec: &AnalysisTable<Bindings>,
 ) -> CompactString {
     let production: Vec<_> = production.iter().collect();
     let spec: Vec<_> = spec.iter().collect();

@@ -3,12 +3,12 @@
 use super::{VaporError, VaporErrorKind, error, literal, number};
 use crate::runtime::{Runtime, vocabulary};
 use crate::write::{LinkSink, Writer};
-use vize_l3::decision::vapor::{VaporFacts, VaporPart};
+use vize_l3::decision::vapor::{VaporAnalysis, VaporPart};
 
 pub(super) fn static_roots<L: LinkSink>(
     prelude: &mut Writer<L>,
     render: &mut Writer<L>,
-    facts: &VaporFacts<'_, '_>,
+    facts: &VaporAnalysis<'_, '_>,
 ) -> Result<(), VaporError> {
     let runtime = vocabulary(Runtime::VueVapor);
     for (index, root) in facts.roots().iter().enumerate() {

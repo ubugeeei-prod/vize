@@ -3,7 +3,7 @@
 //! Rows preserve authored ranges and consumed rendered/expression text.
 //! Whitespace, comment and dialect legalization policy stays with the producer;
 //! the rebuild is a display spelling, never executable JavaScript or admission.
-//! The table rides on the canonical artifact (`ArtifactParts::texts`).
+//! The table rides on the canonical artifact (`L2TemplateParts::texts`).
 
 use alloc::vec::Vec as StdVec;
 use core::mem::MaybeUninit;

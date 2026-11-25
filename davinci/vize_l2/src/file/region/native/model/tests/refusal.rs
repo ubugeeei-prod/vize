@@ -61,7 +61,8 @@ fn const_global_import_nested_and_type_namespace_are_not_mutable_setup_model_tar
             source
         ));
         if unresolved {
-            let Kind::Artifact(crate::artifact::ArtifactError::InvalidSpan { node, span }) = error
+            let Kind::Artifact(crate::artifact::L2TemplateError::InvalidSpan { node, span }) =
+                error
             else {
                 panic!("actual unresolved source occurrence: {error:?}")
             };

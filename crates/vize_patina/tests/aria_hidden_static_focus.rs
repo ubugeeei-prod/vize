@@ -5,7 +5,7 @@ use vize_l0::Allocator;
 use vize_patina::{
     HelpLevel, LintContext, LintDiagnostic, LintResult, Linter, Locale, RuleRegistry,
     ir::TemplateSyntax,
-    markup::{L2Template, MarkupContext, MarkupDocument},
+    markup::{LintL2Template, MarkupContext, MarkupDocument},
     native::template::NativeTemplateLintRefusal,
     rules::a11y::NoAriaHiddenOnFocusable,
 };
@@ -177,7 +177,7 @@ fn genuine_relief_and_l1_l2_facade_ancestor_views_publish_identical_whole_findin
     let allocator = Allocator::default();
     let (root, errors) = vize_armature::Parser::new(&allocator, source).parse();
     assert!(errors.is_empty(), "{errors:?}");
-    let lowered = L2Template::lower(&allocator, source);
+    let lowered = LintL2Template::lower(&allocator, source);
     assert!(lowered.surface_errors().is_empty());
     let markup = lowered.markup();
     for document in [

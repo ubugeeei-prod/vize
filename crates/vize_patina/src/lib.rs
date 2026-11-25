@@ -135,7 +135,7 @@ pub use linter::css_rules::{BuiltinCssRuleMeta, builtin_css_rules};
 pub use linter::script_rules::{BuiltinScriptRuleMeta, builtin_script_rules};
 pub use linter::{LintResult, Linter};
 pub use markup::{
-    L2Markup, L2Template, MarkupAttribute, MarkupBinding, MarkupBindingKind, MarkupConditional,
+    L2Markup, LintL2Template, MarkupAttribute, MarkupBinding, MarkupBindingKind, MarkupConditional,
     MarkupContext, MarkupDirective, MarkupDocument, MarkupDocumentVisitor, MarkupElement,
     MarkupElementKind, MarkupList, MarkupNode, MarkupRule, MarkupText,
 };

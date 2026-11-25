@@ -10,7 +10,7 @@ use vize_l1::markup::Element;
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{ForBinding, ForOp, Namespace, Op, Region};
 use vize_l2::provenance::ProvenanceSink;
-use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
+use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin, ScopeTag};
 
 pub use vize_l2::analysis::for_facts::{ForName, ForParts};
 use vize_l2::analysis::fragment_facts::LoopFragment;
@@ -96,7 +96,7 @@ pub(crate) fn lower_for<'a>(
                 key: None,
                 index: None,
             };
-            let scope = ScopeFacts {
+            let scope = ScopeAnalysis {
                 tag,
                 bindings: StdVec::new(),
             };
@@ -154,7 +154,7 @@ pub(crate) fn lower_for<'a>(
                 key,
                 index,
             };
-            let scope = ScopeFacts { tag, bindings };
+            let scope = ScopeAnalysis { tag, bindings };
             let parts = derive_for_parts(tag, &binding, &scope, cx.foreign_dialect, &goals);
             let binding_count = scope.bindings.len();
             cx.attach_scope(node, scope);
@@ -226,11 +226,11 @@ fn alias_position<'a>(
 }
 
 /// Re-derive the consumed scope view from the just-built `ForBinding`, then
-/// assert it byte-equals the `ScopeFacts` the lowering recorded.
+/// assert it byte-equals the `ScopeAnalysis` the lowering recorded.
 fn derive_for_parts(
     tag: ScopeTag,
     binding: &ForBinding<'_>,
-    recorded: &ScopeFacts,
+    recorded: &ScopeAnalysis,
     dialect: Option<super::foreign::ForeignDialect<'_>>,
     goals: &[AliasGoal<'_>; 3],
 ) -> ForParts {

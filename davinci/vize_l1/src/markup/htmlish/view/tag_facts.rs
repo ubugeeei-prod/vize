@@ -4,11 +4,11 @@
 use vize_l0::Span;
 
 use super::{ElementView, OwnedComponent};
-use crate::markup::{Element, htmlish::surface::TagKindFact};
+use crate::markup::{Element, htmlish::surface::TagKindInfo};
 
 /// The original default Vue 3 tag category; no runtime tag resolution is implied.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TagFactsKind {
+pub enum TagAnalysisKind {
     Element,
     Component,
     Slot,
@@ -17,7 +17,7 @@ pub enum TagFactsKind {
 
 /// No kind is fabricated when a constructor or lexical policy cannot prove it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TagFactsRefusal {
+pub enum TagAnalysisRefusal {
     Unavailable,
     AmbiguousVerbatim,
     InheritedTemplate,
@@ -29,24 +29,24 @@ pub enum TagFactsRefusal {
 /// No raw tag, category, element, source or profile can be supplied by a caller.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::TagFacts;
+/// use vize_l1::markup::TagAnalysis;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<TagFacts<'static, 'static>>();
+/// requires_clone::<TagAnalysis<'static, 'static>>();
 /// ```
-pub struct TagFacts<'o, 'a> {
+pub struct TagAnalysis<'o, 'a> {
     component: &'o OwnedComponent<'a>,
     element: &'o Element<'a>,
-    kind: TagFactsKind,
+    kind: TagAnalysisKind,
     span: Span,
     header_literal: bool,
     table_context: bool,
     recovery_context: bool,
 }
 
-impl core::fmt::Debug for TagFacts<'_, '_> {
+impl core::fmt::Debug for TagAnalysis<'_, '_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("TagFacts")
+            .debug_struct("TagAnalysis")
             .field("kind", &self.kind)
             .field("span", &self.span)
             .field("header_literal", &self.header_literal)
@@ -56,7 +56,7 @@ impl core::fmt::Debug for TagFacts<'_, '_> {
     }
 }
 
-impl<'o, 'a> TagFacts<'o, 'a> {
+impl<'o, 'a> TagAnalysis<'o, 'a> {
     #[must_use]
     pub fn component(&self) -> &'o OwnedComponent<'a> {
         self.component
@@ -66,7 +66,7 @@ impl<'o, 'a> TagFacts<'o, 'a> {
         self.element
     }
     #[must_use]
-    pub fn kind(&self) -> TagFactsKind {
+    pub fn kind(&self) -> TagAnalysisKind {
         self.kind
     }
     /// Absolute original tag-name range, without the opening `<`.
@@ -102,30 +102,30 @@ impl<'o, 'a> TagFacts<'o, 'a> {
 }
 
 impl<'o, 'a> ElementView<'o, 'a> {
-    pub fn tag_facts(&self) -> Result<TagFacts<'o, 'a>, TagFactsRefusal> {
+    pub fn tag_facts(&self) -> Result<TagAnalysis<'o, 'a>, TagAnalysisRefusal> {
         let element = self.surface();
         if element.open.lt_name.is_missing() || element.open.gt.is_missing() {
-            return Err(TagFactsRefusal::IncompleteHeader);
+            return Err(TagAnalysisRefusal::IncompleteHeader);
         }
         let kind = match element.open.tag_facts() {
-            Some(TagKindFact::Element) => TagFactsKind::Element,
-            Some(TagKindFact::Component) => TagFactsKind::Component,
-            Some(TagKindFact::Slot) => TagFactsKind::Slot,
-            Some(TagKindFact::Template) => TagFactsKind::Template,
-            Some(TagKindFact::AmbiguousVerbatim) => {
-                return Err(TagFactsRefusal::AmbiguousVerbatim);
+            Some(TagKindInfo::Element) => TagAnalysisKind::Element,
+            Some(TagKindInfo::Component) => TagAnalysisKind::Component,
+            Some(TagKindInfo::Slot) => TagAnalysisKind::Slot,
+            Some(TagKindInfo::Template) => TagAnalysisKind::Template,
+            Some(TagKindInfo::AmbiguousVerbatim) => {
+                return Err(TagAnalysisRefusal::AmbiguousVerbatim);
             }
-            Some(TagKindFact::InheritedTemplate) => {
-                return Err(TagFactsRefusal::InheritedTemplate);
+            Some(TagKindInfo::InheritedTemplate) => {
+                return Err(TagAnalysisRefusal::InheritedTemplate);
             }
-            None => return Err(TagFactsRefusal::Unavailable),
+            None => return Err(TagAnalysisRefusal::Unavailable),
         };
         let block = self.component().block();
         let span = block
             .span_of(element.tag())
             .filter(|span| block.contains_block_span(*span))
-            .ok_or(TagFactsRefusal::SourceMismatch)?;
-        Ok(TagFacts {
+            .ok_or(TagAnalysisRefusal::SourceMismatch)?;
+        Ok(TagAnalysis {
             component: self.component(),
             element,
             kind,

@@ -19,7 +19,7 @@ use davinci_harness::stage::bench_stage_with_metrics;
 use vize_l0::{Allocator, cstr};
 use vize_patina::ir::TemplateSyntax;
 use vize_patina::markup::{
-    L2Markup, L2Template, MarkupContext, MarkupDocument, MarkupRules, RankedMarkupRule,
+    L2Markup, LintL2Template, MarkupContext, MarkupDocument, MarkupRules, RankedMarkupRule,
 };
 use vize_patina::{JsxLang, LintContext, Rule, RuleRegistry};
 
@@ -110,7 +110,7 @@ fn davinci_l2_markup(criterion: &mut Criterion) {
     let id = cstr!("patina_s2_markup_one_root");
     bench_stage_with_metrics(criterion, &id, "synthetic:l2-one-root-gallery", |window| {
         let allocator = Allocator::new();
-        let lowered = L2Template::lower(&allocator, ONE_ROOT_TEMPLATE);
+        let lowered = LintL2Template::lower(&allocator, ONE_ROOT_TEMPLATE);
         assert!(
             lowered.lowered().diagnostics.is_empty(),
             "fixture must lower cleanly"
