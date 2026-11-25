@@ -25,7 +25,7 @@ pub(super) fn classify<'owner, 'arena>(
     model: &'owner ModelOp<'arena>,
 ) -> Result<VaporModel<'owner, 'arena>, VaporUnsupported> {
     let resolution =
-        crate::decision::model::checked(setup.file(), element_node, element, node, binding, model)
+        crate::decision::model::checked(setup.l2ir(), element_node, element, node, binding, model)
             .ok_or(VaporUnsupported::ModelOrigin)?;
     let [occurrence] = resolution
         .table()
@@ -61,7 +61,7 @@ impl<'owner, 'arena> VaporModel<'owner, 'arena> {
 
     #[must_use]
     pub fn original(&self) -> Option<&'owner NativeFileModel<'arena>> {
-        self.resolution.file().native_model(self.resolution.node())
+        self.resolution.l2ir().native_model(self.resolution.node())
     }
 
     #[must_use]

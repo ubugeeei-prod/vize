@@ -62,7 +62,7 @@ impl SourceSnapshot {
     pub fn prepare_literal_products<'s>(
         &'s self,
         documents: &DocumentStore,
-        owner: &L1Ir<'_>,
+        l1ir: &L1Ir<'_>,
         role: ScriptRole,
     ) -> Result<PreparedLiteralProducts<'s>, LiteralProductError> {
         self.check_current(documents)
@@ -70,10 +70,10 @@ impl SourceSnapshot {
         if self.language_id() != "vue" {
             return Err(LiteralProductError::Language);
         }
-        if !core::ptr::eq(self.source(), owner.source()) {
+        if !core::ptr::eq(self.source(), l1ir.source()) {
             return Err(LiteralProductError::ForeignSource);
         }
-        let view = owner
+        let view = l1ir
             .admitted()
             .map_err(|_| LiteralProductError::Descriptor)?;
         let selected = match role {
@@ -98,7 +98,7 @@ impl SourceSnapshot {
             }
         });
         let mut warnings = Vec::new();
-        let lint = default_prefer_const(owner, &checked, |warning| warnings.push(warning))
+        let lint = default_prefer_const(l1ir, &checked, |warning| warnings.push(warning))
             .map(|()| warnings);
         Ok(PreparedLiteralProducts {
             snapshot: self,

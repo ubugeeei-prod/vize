@@ -56,14 +56,14 @@ fn actual_original_for_generic_graph_does_not_mint_native_vapor_admission() {
     let head = file.for_head_for(original).unwrap().resolution().unwrap();
     assert_eq!(head.input().operand().raw_value(), "item in items");
     let lowered = vize_l2_to_l3::lower(&arena, file.artifact().root());
-    assert!(vize_l3::verify::verify(&lowered.program).is_empty());
-    assert_eq!(lowered.program.ops[0].kind, vize_l3::op::OpKind::For);
+    assert!(vize_l3::verify::verify(&lowered.l3ir).is_empty());
+    assert_eq!(lowered.l3ir.ops[0].kind, vize_l3::op::OpKind::For);
     assert!(
         lowered
-            .program
+            .l3ir
             .operands
             .iter()
-            .all(|operand| operand.op != lowered.program.ops[0].id)
+            .all(|operand| operand.op != lowered.l3ir.ops[0].id)
     );
     let retained = Retained::collect(&arena, file.artifact().root());
     let result = super::super::NativeArtifact::admit(&lowered, &retained, &[], source);

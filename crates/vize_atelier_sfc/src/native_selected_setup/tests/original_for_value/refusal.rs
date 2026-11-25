@@ -38,7 +38,7 @@ fn only_current_value_singleton_admits_while_outer_literal_mixed_and_compound_bo
             compiled.result().err()
         );
         let view = compiled.observation().admitted().unwrap();
-        assert!(view.setup().file().is_complete());
+        assert!(view.setup().l2ir().is_complete());
         assert!(view.setup().owner().retained_setup().is_some());
     }
 }
@@ -57,7 +57,7 @@ fn generic_and_neutral_same_mutable_owner_keep_operation_refusal() {
         );
         assert!(compiled.result().is_ok());
         let view = compiled.observation().admitted().unwrap();
-        let file = view.setup().file();
+        let file = view.setup().l2ir();
         let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
             panic!("actual original For");
         };

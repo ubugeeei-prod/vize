@@ -119,7 +119,7 @@ pub struct OrdinaryIssue {
 /// Options/Ref/template-context classification and output remain separate.
 /// ```compile_fail
 /// use vize_l2::lang::js::VueOrdinaryEmpty;
-/// fn forge() { let _ = VueOrdinaryEmpty { file: true }; }
+/// fn forge() { let _ = VueOrdinaryEmpty { l2ir: todo!(), script: todo!(), original: todo!(), unit: todo!() }; }
 /// ```
 /// ```compile_fail
 /// use vize_l2::lang::js::VueOrdinaryEmpty;
@@ -129,26 +129,26 @@ pub struct OrdinaryIssue {
 /// use oxc_parser::AdmittedProgram;
 /// use vize_l1::container::vue::ScriptView;
 /// use vize_l2::{file::L2Ir, lang::js::VueOrdinaryEmpty};
-/// fn discard<'d, 'p, 'a>(file: L2Ir<'a>, script: ScriptView<'d, 'a>,
+/// fn discard<'d, 'p, 'a>(l2ir: L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     program: AdmittedProgram<'p, 'a>) {
-///     let view = VueOrdinaryEmpty::checked(&file, script, program).unwrap();
-///     drop(file);
+///     let view = VueOrdinaryEmpty::checked(&l2ir, script, program).unwrap();
+///     drop(l2ir);
 ///     let _ = view.source();
 /// }
 /// ```
 /// ```compile_fail
 /// use vize_l1::{container::vue::ScriptView, embed::syntax::EmbedSyntax};
 /// use vize_l2::{file::L2Ir, lang::js::VueOrdinaryEmpty};
-/// fn discard<'d, 'a>(file: &L2Ir<'a>, script: ScriptView<'d, 'a>,
+/// fn discard<'d, 'a>(l2ir: &L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     syntax: EmbedSyntax<'a>) {
-///     let view = VueOrdinaryEmpty::checked(file, script,
+///     let view = VueOrdinaryEmpty::checked(l2ir, script,
 ///         syntax.admitted_program().unwrap()).unwrap();
 ///     drop(syntax);
 ///     let _ = view.object_span();
 /// }
 /// ```
 pub struct VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     script: ScriptView<'d, 'a>,
     original: OriginalDefaultExport<'p, 'a>,
     unit: ScriptUnitId,
@@ -156,7 +156,7 @@ pub struct VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
 
 impl<'f, 'd, 'p, 'a> VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
     pub fn checked(
-        file: &'f L2Ir<'a>,
+        l2ir: &'f L2Ir<'a>,
         script: ScriptView<'d, 'a>,
         admitted: AdmittedProgram<'p, 'a>,
     ) -> Result<Self, OrdinaryIssue> {
@@ -167,7 +167,7 @@ impl<'f, 'd, 'p, 'a> VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
         if script.role() != ScriptRole::Ordinary {
             return Err(reject(OrdinaryIssueKind::Role));
         }
-        if !core::ptr::eq(file.artifact().source(), script.source())
+        if !core::ptr::eq(l2ir.artifact().source(), script.source())
             || !core::ptr::eq(admitted.source(), script.block().source())
         {
             return Err(reject(OrdinaryIssueKind::Source));
@@ -184,7 +184,7 @@ impl<'f, 'd, 'p, 'a> VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
         {
             return Err(reject(OrdinaryIssueKind::Profile));
         }
-        let [unit] = file.units() else {
+        let [unit] = l2ir.units() else {
             return Err(reject(OrdinaryIssueKind::MissingUnit));
         };
         if unit.id.index() as usize != script.container_index() {
@@ -206,7 +206,7 @@ impl<'f, 'd, 'p, 'a> VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
             return Err(reject(OrdinaryIssueKind::ProgramOrigin));
         }
         if unit.scope != ScopeId(0)
-            || !file.scopes().first().is_some_and(|root| {
+            || !l2ir.scopes().first().is_some_and(|root| {
                 root.id == ScopeId(0)
                     && root.parent.is_none()
                     && root.span == Span::new(0, script.source().len() as u32)
@@ -214,10 +214,10 @@ impl<'f, 'd, 'p, 'a> VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
         {
             return Err(reject(OrdinaryIssueKind::Scope));
         }
-        if !file.is_complete() || !unit.walk_completed() {
+        if !l2ir.is_complete() || !unit.walk_completed() {
             return Err(reject(OrdinaryIssueKind::IncompleteFile));
         }
-        let family = file
+        let family = l2ir
             .ordinary_empty_script()
             .ok_or_else(|| reject(OrdinaryIssueKind::UnsupportedSyntax))?;
         let original = admitted
@@ -236,7 +236,7 @@ impl<'f, 'd, 'p, 'a> VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
             return Err(reject(OrdinaryIssueKind::Span));
         }
         Ok(Self {
-            file,
+            l2ir,
             script,
             original,
             unit: unit.id,
@@ -244,8 +244,8 @@ impl<'f, 'd, 'p, 'a> VueOrdinaryEmpty<'f, 'd, 'p, 'a> {
     }
 
     #[must_use]
-    pub fn file(&self) -> &'f L2Ir<'a> {
-        self.file
+    pub fn l2ir(&self) -> &'f L2Ir<'a> {
+        self.l2ir
     }
     #[must_use]
     pub fn unit(&self) -> ScriptUnitId {

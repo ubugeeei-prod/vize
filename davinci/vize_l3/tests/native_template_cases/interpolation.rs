@@ -33,7 +33,7 @@ fn original_root_literal_retains_file_input_and_resolution_in_the_existing_sole_
     let analysis = build_template_dom_decisions(output.view().map_err(|_| "genuine native view")?)
         .map_err(|_| "existing sole L3 walk")?;
     check(core::ptr::eq(analysis.owner(), &output))?;
-    let file = analysis.file();
+    let file = analysis.l2ir();
     check(core::ptr::eq(file, output.file().ok_or("same File")?))?;
     check(core::ptr::eq(analysis.artifact().source(), source))?;
     check(analysis.artifact().node_count() == 1)?;
@@ -63,7 +63,7 @@ fn original_root_literal_retains_file_input_and_resolution_in_the_existing_sole_
         .expression(NodeId::FIRST)
         .ok_or("same-walk original File expression")?;
     let resolution = row.resolution();
-    check(core::ptr::eq(resolution.file(), file))?;
+    check(core::ptr::eq(resolution.l2ir(), file))?;
     check(resolution.node() == NodeId::FIRST)?;
     let table = resolution.table().ok_or("original resolver table")?;
     // Normal resolution copies only the metadata wrapper, retaining all

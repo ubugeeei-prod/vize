@@ -55,7 +55,7 @@ impl<'a> NativeSfcObservation<'a> {
         &self,
     ) -> Result<SetupComponentImports<'_, 'a>, ComponentImportRefusal> {
         let source = ComponentImportRefusal::SourceAssembly;
-        let descriptor = self.descriptor().admitted().map_err(|_| source)?;
+        let descriptor = self.l1ir().admitted().map_err(|_| source)?;
         let setup = descriptor.setup().ok_or(source)?;
         let template = descriptor.template().ok_or(source)?;
         let [script] = self.scripts() else {
@@ -74,7 +74,7 @@ impl<'a> NativeSfcObservation<'a> {
             return Err(source);
         }
         let (file, receipt) = if let Some(admitted) = self.admitted() {
-            (admitted.file().file(), admitted.file().setup())
+            (admitted.file().l2ir(), admitted.file().setup())
         } else {
             let [issue] = self.issues() else {
                 return Err(source);

@@ -10,7 +10,7 @@ fn actual_setup_descriptor_program_and_direct_unit_admit_without_parser_replay()
     let observed = Observed::new(&arena, source).unwrap();
     let file = observed.file(&arena).unwrap();
     let view = observed.view(&file).unwrap().unwrap();
-    assert!(core::ptr::eq(view.file(), &file));
+    assert!(core::ptr::eq(view.l2ir(), &file));
     assert!(core::ptr::eq(
         view.program().program(),
         observed.syntax.program().unwrap()
@@ -18,7 +18,7 @@ fn actual_setup_descriptor_program_and_direct_unit_admit_without_parser_replay()
     assert_eq!(view.scope(), file.units()[0].scope);
     assert_eq!(view.unit(), file.units()[0].id);
     assert_eq!(view.script().container_index(), 0);
-    assert!(core::ptr::eq(view.file().artifact().source(), source));
+    assert!(core::ptr::eq(view.l2ir().artifact().source(), source));
     for binding in file.bindings() {
         assert!(view.binding(binding).is_ok());
     }
@@ -37,8 +37,8 @@ fn equal_copied_root_and_descriptor_cannot_mint_foreign_exposure() {
         ExposureIssueKind::Source
     );
     assert!(!core::ptr::eq(
-        original.descriptor.source(),
-        foreign.descriptor.source()
+        original.l1ir.source(),
+        foreign.l1ir.source()
     ));
 }
 
@@ -106,7 +106,7 @@ fn ordinary_role_and_absent_actual_unit_cannot_supply_setup_receipts() {
         ExposureIssueKind::Role
     );
     let setup = Observed::new(&arena, "<script setup>let message = 1;</script>").unwrap();
-    let empty_file = FileProducer::new(&arena, setup.descriptor.source())
+    let empty_file = FileProducer::new(&arena, setup.l1ir.source())
         .unwrap()
         .finish()
         .unwrap();

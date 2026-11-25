@@ -82,11 +82,11 @@ fn real_native_route_retains_original_ast_comments_and_actual_file_tables() {
             .unwrap()
     ));
     let vue = producer.finish().unwrap();
-    assert!(vue.file().is_complete());
-    assert_eq!(vue.file().artifact().node_count(), 3);
+    assert!(vue.l2ir().is_complete());
+    assert_eq!(vue.l2ir().artifact().node_count(), 3);
     for embed in &produced.embeds {
         let table = vue
-            .file()
+            .l2ir()
             .expression(embed.node.unwrap())
             .unwrap()
             .table()

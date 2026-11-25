@@ -55,7 +55,7 @@ fn original_program_comments_cannot_be_lost_by_canonical_normalization() {
                 )
             }
         );
-        assert!(owner.file().is_complete());
+        assert!(owner.l2ir().is_complete());
     }
 }
 

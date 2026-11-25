@@ -28,7 +28,7 @@ impl TemplatePolicy for LexicalValues {
 }
 
 pub struct Observed<'a> {
-    descriptor: L1Ir<'a>,
+    l1ir: L1Ir<'a>,
     syntax: EmbedSyntax<'a>,
 }
 
@@ -50,17 +50,20 @@ impl<'a> Observed<'a> {
             EmbedSource::authored(source, script.block().span()).ok()?,
             ProgramOptions::module(script.lang()),
         );
-        Some(Self { descriptor, syntax })
+        Some(Self {
+            l1ir: descriptor,
+            syntax,
+        })
     }
 
     pub fn script(&self) -> Option<ScriptView<'_, 'a>> {
-        let view = self.descriptor.admitted().ok()?;
+        let view = self.l1ir.admitted().ok()?;
         view.setup().or_else(|| view.ordinary())
     }
 
     fn producer(&self, arena: &'a Allocator) -> Option<FileProducer<'a>> {
         let script = self.script()?;
-        let mut producer = FileProducer::new(arena, self.descriptor.source()).ok()?;
+        let mut producer = FileProducer::new(arena, self.l1ir.source()).ok()?;
         producer
             .program(
                 ProgramInput::checked(
@@ -118,8 +121,8 @@ impl<'a> Observed<'a> {
         producer.finish().ok()
     }
 
-    pub fn exposure<'f>(&self, file: &'f L2Ir<'a>) -> Option<VueExposure<'f, '_, '_, 'a>> {
-        VueExposure::checked(file, self.script()?, self.syntax.admitted_program()?).ok()
+    pub fn exposure<'f>(&self, l2ir: &'f L2Ir<'a>) -> Option<VueExposure<'f, '_, '_, 'a>> {
+        VueExposure::checked(l2ir, self.script()?, self.syntax.admitted_program()?).ok()
     }
 }
 

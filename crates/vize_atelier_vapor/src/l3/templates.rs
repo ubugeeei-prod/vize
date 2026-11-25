@@ -17,7 +17,7 @@ pub(super) fn collect<'a>(
     allocator: &'a Allocator,
     source: &str,
     s2: &vize_l1_to_l2::Lowered<'_>,
-    program: &L3Ir<'a>,
+    l3ir: &L3Ir<'a>,
     retained: &mut Retained<'_, 'a>,
 ) -> Result<std::vec::Vec<TemplateLoop<'a>>, LegacyReason> {
     if s2
@@ -47,7 +47,7 @@ pub(super) fn collect<'a>(
             .find(|record| record.rule == "lower.for" && record.node == Some(node))
             .map(|record| record.span)
             .ok_or(LegacyReason::ControlFlow)?;
-        let op = program
+        let op = l3ir
             .ops
             .iter()
             .filter(|op| {

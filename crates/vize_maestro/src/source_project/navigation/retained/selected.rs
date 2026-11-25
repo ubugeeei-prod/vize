@@ -58,13 +58,13 @@ pub(in crate::source_project::navigation) fn run(
             .collect::<Vec<_>>();
         let query = SelectedNavigation {
             snapshot: &snapshot,
-            file,
+            l2ir: file,
             lines: &lines,
             #[cfg(test)]
             original: super::super::worker::selected::Inspection {
                 file: core::ptr::from_ref(file) as usize,
                 observation: core::ptr::from_ref(&observation) as usize,
-                descriptor: core::ptr::from_ref(observation.descriptor()) as usize,
+                descriptor: core::ptr::from_ref(observation.l1ir()) as usize,
                 selected: core::ptr::from_ref(observation.template().unwrap().selected()) as usize,
                 handler_body: None,
                 productions: control
@@ -81,7 +81,7 @@ pub(in crate::source_project::navigation) fn run(
 
 struct SelectedNavigation<'f, 'a> {
     snapshot: &'f SourceSnapshot,
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     lines: &'f [usize],
     #[cfg(test)]
     original: super::super::worker::selected::Inspection,
@@ -94,7 +94,7 @@ impl<'f, 'a> SelectedNavigation<'f, 'a> {
     ) -> Result<Option<TemplateSymbolRef<'f, 'a>>, NavigationRefusal> {
         let offset = coordinates::offset(self.snapshot.source(), self.lines, position)?;
         let offset = u32::try_from(offset).map_err(|_| NavigationRefusal::Position)?;
-        Model::new(self.file)
+        Model::new(self.l2ir)
             .template_symbol_at_offset(offset)
             .map(|site| site.map(|site| site.symbol()))
             .map_err(NavigationRefusal::TemplateQuery)
@@ -158,7 +158,7 @@ impl<'f, 'a> SelectedNavigation<'f, 'a> {
         let mut spans = Vec::new();
         // A provider refusal invalidates every partial callback span before
         // any location/publication is constructed.
-        Model::new(self.file)
+        Model::new(self.l2ir)
             .for_each_template_reference_to(symbol, |site| spans.push(site.span()))
             .map_err(NavigationRefusal::TemplateQuery)?;
         if include {

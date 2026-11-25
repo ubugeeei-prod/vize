@@ -49,15 +49,15 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
     }
     let s3 = vize_l2_to_l3::lower(allocator, artifact.root);
     capture.page(Level::L3, "lower", || {
-        vize_l3::dump::Page::of(&s3.program).print_to_string(DumpMode::Full)
+        vize_l3::dump::Page::of(&s3.l3ir).print_to_string(DumpMode::Full)
     });
     capture.page(Level::L3, "partition", || {
         vize_l2_to_l3::PartitionPage::of(&s3.partition).print_to_string(DumpMode::Full)
     });
     capture.page(Level::L3, "values", || {
-        vize_l3::values_dump::Page::of(&s3.program).print_to_string(DumpMode::Full)
+        vize_l3::values_dump::Page::of(&s3.l3ir).print_to_string(DumpMode::Full)
     });
-    let violations = verify(&s3.program);
+    let violations = verify(&s3.l3ir);
     if !violations.is_empty() {
         return SsrL4Selection::Rejected(
             violations
@@ -68,11 +68,11 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
                 .collect(),
         );
     }
-    if s3.partition.ops.len() != s3.program.ops.len() {
+    if s3.partition.ops.len() != s3.l3ir.ops.len() {
         return SsrL4Selection::Rejected(std::vec![cstr!(
             "Davinci L4 verifier rejected SSR bridge input: partition facts {} did not match ops {}",
             s3.partition.ops.len(),
-            s3.program.ops.len()
+            s3.l3ir.ops.len()
         )]);
     }
     let lowered = lower_l2_to_string_plan(allocator, artifact.root, &s3.partition);
@@ -131,7 +131,7 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
         return SsrL4Selection::Rejected(std::vec![cstr!("{message}")]);
     }
     let s3 = vize_l2_to_l3::lower(allocator, artifact.root);
-    let violations = verify(&s3.program);
+    let violations = verify(&s3.l3ir);
     if !violations.is_empty() {
         return SsrL4Selection::Rejected(
             violations
@@ -142,11 +142,11 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
                 .collect(),
         );
     }
-    if s3.partition.ops.len() != s3.program.ops.len() {
+    if s3.partition.ops.len() != s3.l3ir.ops.len() {
         return SsrL4Selection::Rejected(std::vec![cstr!(
             "Davinci L4 verifier rejected SSR bridge input: partition facts {} did not match ops {}",
             s3.partition.ops.len(),
-            s3.program.ops.len()
+            s3.l3ir.ops.len()
         )]);
     }
     let lowered = lower_l2_to_string_plan(allocator, artifact.root, &s3.partition);

@@ -25,7 +25,7 @@ fn original_ts_module_primitives_keep_profile_body_source_kind_and_declaration_o
         program.program(),
         original.syntax.program().ok_or("Program")?
     ));
-    require!(core::ptr::eq(exposure.file(), &file));
+    require!(core::ptr::eq(exposure.l2ir(), &file));
     require!(core::ptr::eq(setup.source().root_source(), source));
     require!(core::ptr::eq(
         setup.source().source(),
@@ -41,7 +41,7 @@ fn original_ts_module_primitives_keep_profile_body_source_kind_and_declaration_o
         ("large", DeclarationKind::Let),
         ("日本語", DeclarationKind::Var),
     ]) {
-        require!(core::ptr::eq(binding.file(), &file));
+        require!(core::ptr::eq(binding.l2ir(), &file));
         let declaration = binding.declaration().ok_or("actual TS binding")?;
         equal!(declaration.name.as_str(), name);
         equal!(declaration.kind, kind);
@@ -211,8 +211,7 @@ fn every_ts_setup_callback_interruption_preserves_original_owners_and_refuses_se
     )?;
     let script = original.script()?;
     for point in [Point::Unit, Point::Statement, Point::Declared] {
-        let mut producer =
-            FileProducer::new(&arena, original.descriptor.source()).map_err(|_| "file")?;
+        let mut producer = FileProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
         let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             producer
                 .program_observed(
@@ -250,7 +249,7 @@ fn every_ts_setup_callback_interruption_preserves_original_owners_and_refuses_se
             if issue.kind == SetupIssueKind::Exposure(ExposureIssueKind::IncompleteFile)));
         require!(core::ptr::eq(
             file.artifact().source(),
-            original.descriptor.source()
+            original.l1ir.source()
         ));
         equal!(original.syntax.comments().count(), 1);
         equal!(original.syntax.diagnostics().count(), 0);

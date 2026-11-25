@@ -82,7 +82,7 @@ fn frozen_event_payload_owns_the_handler() {
         r#"<button v-once @click="save">frozen</button>"#,
     );
     let handler = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| {

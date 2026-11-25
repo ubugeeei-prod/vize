@@ -32,7 +32,7 @@ fn actual_admitted_file_projects_nonzero_script_comments_without_reparsing() {
     let native = observed.admitted().expect("actual ordinary JS sealed File");
     assert!(observed.scripts()[0].block().span().start > 0);
     assert!(core::ptr::eq(
-        native.file().file().artifact().source(),
+        native.file().l2ir().artifact().source(),
         source
     ));
     assert_eq!(sfc_comment_ranges(&native), Ok(vec![expected(1, 2)]));
@@ -46,7 +46,7 @@ fn authentic_setup_before_ordinary_keeps_original_document_comment_order() {
     let native = observed
         .admitted()
         .expect("actual selected role membership");
-    assert_eq!(native.file().file().units().len(), 2);
+    assert_eq!(native.file().l2ir().units().len(), 2);
     assert_eq!(
         sfc_comment_ranges(&native),
         Ok(vec![expected(1, 2), expected(7, 8)])
@@ -124,7 +124,7 @@ fn primitive_keyword_annotations_preserve_full_original_ts_file_comment_ranges()
         .admitted()
         .expect("same complete original annotated File");
     assert!(core::ptr::eq(
-        native.file().file().artifact().source(),
+        native.file().l2ir().artifact().source(),
         source
     ));
     assert_eq!(sfc_comment_ranges(&native), Ok(vec![expected(2, 3)]));

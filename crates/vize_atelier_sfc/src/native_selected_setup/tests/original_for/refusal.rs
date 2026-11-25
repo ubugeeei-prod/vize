@@ -115,14 +115,14 @@ fn dynamic_nested_keyed_attribute_and_mixed_root_bodies_remain_sticky_refusals()
             "{template}"
         );
         let view = compiled.observation().admitted().unwrap();
-        assert!(view.setup().file().is_complete());
-        let [Op::OriginalFor(original), ..] = view.setup().file().artifact().root().ops.as_slice()
+        assert!(view.setup().l2ir().is_complete());
+        let [Op::OriginalFor(original), ..] = view.setup().l2ir().artifact().root().ops.as_slice()
         else {
             panic!("For")
         };
         assert!(
             view.setup()
-                .file()
+                .l2ir()
                 .for_head_for(original)
                 .unwrap()
                 .resolution()
@@ -145,7 +145,7 @@ fn constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_p
     assert_eq!(positive.source, source);
     assert_eq!(compiled.result().unwrap().code(), positive.expected_code);
     let view = compiled.observation().admitted().unwrap();
-    let file = view.setup().file();
+    let file = view.setup().l2ir();
     let generic = vize_l3::decision::build_dom_file_decisions(file).unwrap();
     assert_eq!(
         generic.dom().unwrap().unsupported()[0].reason,
@@ -166,7 +166,7 @@ fn constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_p
         let view = mutable.observation().admitted().unwrap();
         let selected = build_selected_setup_dom_decisions(view.setup()).unwrap();
         assert!(selected.dom().unwrap().unsupported().is_empty());
-        let generic = vize_l3::decision::build_dom_file_decisions(view.setup().file()).unwrap();
+        let generic = vize_l3::decision::build_dom_file_decisions(view.setup().l2ir()).unwrap();
         assert_eq!(
             generic.dom().unwrap().unsupported()[0].reason,
             DomUnsupported::Operation

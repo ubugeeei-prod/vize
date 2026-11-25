@@ -62,7 +62,7 @@ fn capture(name: &str, source: &str, trim: bool) -> Result<Value, NativeSfcCompi
             .css_document()
             .is_none_or(|doc| doc.links().is_empty())
     );
-    let file = mapped.observation().admitted().unwrap().file().file();
+    let file = mapped.observation().admitted().unwrap().file().l2ir();
     assert!(file.is_complete() && core::ptr::eq(file.artifact().source(), source));
     let old = compile_native_sfc(&arena, source, options);
     assert!(old.result().is_err(), "{name}: existing SCSS admission");
@@ -162,7 +162,7 @@ fn failure_in_any_style_script_or_template_preserves_the_complete_input() {
             "{source}"
         );
         assert!(core::ptr::eq(
-            result.observation().descriptor().source(),
+            result.observation().l1ir().source(),
             source.as_str()
         ));
     }

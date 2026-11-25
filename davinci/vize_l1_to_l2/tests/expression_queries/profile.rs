@@ -41,7 +41,7 @@ fn paired_reference_queries() {
         let source = repeated(repeats);
         let observation = observe(&arena, &source);
         let native = observation.admitted().unwrap();
-        let file = native.file().file();
+        let file = native.file().l2ir();
         let binding = file.bindings().next().unwrap();
         let model = Model::new(file);
         let index = ExpressionPositionIndex::new(file);

@@ -36,9 +36,9 @@ pub struct Page {
 
 impl Page {
     #[must_use]
-    pub fn of(program: &L3Ir<'_>) -> Self {
+    pub fn of(l3ir: &L3Ir<'_>) -> Self {
         Self {
-            operands: program
+            operands: l3ir
                 .operands
                 .iter()
                 .map(|operand| {

@@ -118,11 +118,11 @@ fn compare(owner: &NativeTemplateFile<'_>, counts: &mut Counts) {
     assert_eq!(old_dom.as_ref().err().copied(), actual.dom().err());
     assert_eq!(old_ssr.as_ref().err().copied(), actual.ssr().err());
     if let (Ok(old), Ok(new)) = (&old_dom, actual.dom()) {
-        assert!(core::ptr::eq(old.owner(), new.owner()) && core::ptr::eq(old.file(), new.file()));
+        assert!(core::ptr::eq(old.owner(), new.owner()) && core::ptr::eq(old.l2ir(), new.l2ir()));
         assert_eq!(old.tables(), new.tables());
         assert!(core::ptr::eq(
-            old.original_attributes().unwrap().file(),
-            new.original_attributes().unwrap().file()
+            old.original_attributes().unwrap().l2ir(),
+            new.original_attributes().unwrap().l2ir()
         ));
         assert_eq!(
             old.original_attributes().map(|v| v.len()),
@@ -142,7 +142,7 @@ fn compare(owner: &NativeTemplateFile<'_>, counts: &mut Counts) {
         }
     }
     if let (Ok(old), Ok(new)) = (&old_ssr, actual.ssr()) {
-        assert!(core::ptr::eq(old.owner(), new.owner()) && core::ptr::eq(old.file(), new.file()));
+        assert!(core::ptr::eq(old.owner(), new.owner()) && core::ptr::eq(old.l2ir(), new.l2ir()));
         assert_eq!(
             old.original_attributes().map(|v| v.len()),
             Some(new.original_attributes().len())
@@ -152,8 +152,8 @@ fn compare(owner: &NativeTemplateFile<'_>, counts: &mut Counts) {
             vize_l0::cstr!("{:?}", new.facts())
         );
         assert!(core::ptr::eq(
-            old.original_attributes().unwrap().file(),
-            new.original_attributes().file()
+            old.original_attributes().unwrap().l2ir(),
+            new.original_attributes().l2ir()
         ));
         let actual_product =
             ssr::emit_render_analysis::<Recorded>(new).map(|w| w.finish().into_document());

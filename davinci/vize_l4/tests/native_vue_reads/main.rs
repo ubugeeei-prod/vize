@@ -52,16 +52,16 @@ fn original_sfc_leaf_reads_match_complete_modules_and_keep_authentic_owners() {
         assert!(observed.issues().is_empty(), "{:?}", observed.issues());
         let native = observed.admitted().unwrap();
         assert!(core::ptr::eq(native.observation(), &observed));
-        let file = native.file().file();
+        let file = native.file().l2ir();
         assert!(core::ptr::eq(file.artifact().source(), source));
         assert!(file.is_complete());
-        let descriptor = observed.descriptor().admitted().unwrap();
+        let descriptor = observed.l1ir().admitted().unwrap();
         let setup = descriptor.setup().unwrap();
         let script = observed.scripts().first().unwrap();
         let program = script.syntax().unwrap().admitted_program().unwrap();
         let exposure = VueExposure::checked(file, setup, program).unwrap();
         let analysis = build_vue_render_decisions(&exposure).unwrap();
-        assert!(core::ptr::eq(analysis.file(), file));
+        assert!(core::ptr::eq(analysis.l2ir(), file));
         assert!(core::ptr::eq(analysis.artifact(), file.artifact()));
         assert!(analysis.dom().unwrap().unsupported().is_empty());
         let template = observed.template().unwrap();
@@ -74,7 +74,7 @@ fn original_sfc_leaf_reads_match_complete_modules_and_keep_authentic_owners() {
                 .unwrap()
                 .resolution();
             let table = resolution.table().unwrap();
-            assert!(core::ptr::eq(resolution.file(), file));
+            assert!(core::ptr::eq(resolution.l2ir(), file));
             assert_eq!(resolution.scope(), Some(exposure.scope()));
             assert!(core::ptr::eq(
                 table.expression().ast,

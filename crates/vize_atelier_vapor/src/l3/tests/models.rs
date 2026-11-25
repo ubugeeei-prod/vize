@@ -145,7 +145,7 @@ fn model_element_kind_must_match_its_target() {
         let allocator = Allocator::new();
         let mut s3 = lowered_source(&allocator, source);
         let kind = s3
-            .program
+            .l3ir
             .operands
             .iter_mut()
             .find(|operand| {
@@ -213,7 +213,7 @@ fn dynamic_component_model_is_owned_by_the_checked_graph() {
         &allocator,
         r#"<component :is="view" v-model.trim="original" />"#,
     );
-    for operand in &mut s3.program.operands {
+    for operand in &mut s3.l3ir.operands {
         if matches!(
             operand.role,
             OperandRole::ModelRead | OperandRole::ModelWrite

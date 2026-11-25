@@ -45,7 +45,7 @@ pub(super) fn write<L: LinkSink>(
         .expression(node)
         .ok_or_else(|| fail(SsrErrorKind::MissingAnalysis))?;
     let resolution = row.resolution();
-    if !core::ptr::eq(resolution.file(), analysis.file()) || resolution.node() != node {
+    if !core::ptr::eq(resolution.l2ir(), analysis.l2ir()) || resolution.node() != node {
         return Err(fail(SsrErrorKind::MissingAnalysis));
     }
     let table = resolution

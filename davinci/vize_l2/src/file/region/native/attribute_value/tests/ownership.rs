@@ -55,7 +55,7 @@ fn fourteen_original_history_sources_keep_thirteen_actual_slots_and_entity_text_
             let view = file
                 .native_attribute_value_for(0, actual, 0)
                 .ok_or("actual allocation/slot")?;
-            check(core::ptr::eq(view.file(), file))?;
+            check(core::ptr::eq(view.l2ir(), file))?;
             check(core::ptr::eq(view.element(), actual))?;
             check(core::ptr::eq(
                 view.observation().ok_or("joined value")?,

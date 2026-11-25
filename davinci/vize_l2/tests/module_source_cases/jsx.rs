@@ -70,7 +70,7 @@ fn actual_jsx_and_tsx_elements_keep_original_module_literals_and_reference_rows(
             let mut visited = 0;
             view.for_each(|row| {
                 assert!(core::ptr::eq(row.literal(), literals[visited]));
-                assert!(core::ptr::eq(row.file(), &file));
+                assert!(core::ptr::eq(row.l2ir(), &file));
                 assert_eq!(row.namespace(), Namespace::Value);
                 if visited == 0 {
                     assert_eq!(row.raw(), "'./部品\\u002ejsx'");

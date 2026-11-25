@@ -6,7 +6,7 @@ use super::{JsxEmitError, JsxEmitErrorKind as Error, invalid, kind};
 
 pub(super) fn check(analysis: &JsxAnalysis<'_>) -> Result<(), JsxEmitError> {
     let owner = analysis.owner();
-    let file = owner.file();
+    let file = owner.l2ir();
     let source = file.artifact().source();
     let failure = |kind| JsxEmitError {
         kind,

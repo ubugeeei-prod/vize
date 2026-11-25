@@ -44,7 +44,7 @@ fn transparent_fragments_match_full_semantics_ranges_and_every_mounted_boundary(
             let baseline_file = match &plain {
                 Ok(owner) => {
                     assert!(!incomplete);
-                    owner.file()
+                    owner.l2ir()
                 }
                 Err(owner) => {
                     assert!(
@@ -106,7 +106,7 @@ fn transparent_fragments_match_full_semantics_ranges_and_every_mounted_boundary(
                     rejected
                         .owner()
                         .ok_or("completed whole refused owner")?
-                        .file()
+                        .l2ir()
                 };
                 assert_eq!(
                     retained_file.artifact().node_count(),
@@ -117,7 +117,7 @@ fn transparent_fragments_match_full_semantics_ranges_and_every_mounted_boundary(
                 continue;
             }
             let native = result.map_err(|_| "static fragment refused")?;
-            assert_eq!(facts(native.file()), facts(baseline_file));
+            assert_eq!(facts(native.l2ir()), facts(baseline_file));
             realize::original(
                 native.owner(),
                 plain.as_ref().map_err(|_| "completed baseline original")?,
@@ -134,7 +134,7 @@ fn transparent_fragments_match_full_semantics_ranges_and_every_mounted_boundary(
                 body
             );
             assert_eq!(
-                dom(&native.file().artifact().root().ops)?,
+                dom(&native.l2ir().artifact().root().ops)?,
                 *output.get("semantic").ok_or("complete semantic tree")?
             );
             assert_eq!(
@@ -147,7 +147,7 @@ fn transparent_fragments_match_full_semantics_ranges_and_every_mounted_boundary(
             );
             let mut source_ops = Vec::new();
             native
-                .file()
+                .l2ir()
                 .artifact()
                 .visit_nodes(&mut |_, node| {
                     let kind = match node {
@@ -160,7 +160,7 @@ fn transparent_fragments_match_full_semantics_ranges_and_every_mounted_boundary(
                 })
                 .map_err(|_| "node accounting")?;
             assert_eq!(
-                native.file().artifact().node_count() as usize,
+                native.l2ir().artifact().node_count() as usize,
                 source_ops.len()
             );
             assert_eq!(

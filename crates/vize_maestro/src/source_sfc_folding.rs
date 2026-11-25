@@ -29,7 +29,7 @@ pub enum SfcFoldingRefusal {
 pub fn sfc_comment_ranges(
     native: &NativeSfc<'_, '_>,
 ) -> Result<Vec<FoldingRange>, SfcFoldingRefusal> {
-    let source = native.file().file().artifact().source();
+    let source = native.file().l2ir().artifact().source();
     let lines: Vec<_> = LineBreaks::Lsp.line_starts(source).collect();
     let line_at = |offset: usize| -> u32 {
         lines

@@ -85,7 +85,7 @@ fn js_and_ts_receipts_retain_original_file_allocation_source_and_stock_parameter
         let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
         let row = analysis.for_head(original.id().node()).unwrap();
         assert!(core::ptr::eq(analysis.owner(), &owner));
-        assert!(core::ptr::eq(row.head().file(), file));
+        assert!(core::ptr::eq(row.head().l2ir(), file));
         assert!(core::ptr::eq(row.original(), original));
         assert!(core::ptr::eq(row.resolution(), facts));
         assert!(row.accepts_original(original));
@@ -112,7 +112,7 @@ fn js_and_ts_receipts_retain_original_file_allocation_source_and_stock_parameter
             "items"
         );
         assert_eq!(row.collection().id(), facts.collection().binding);
-        assert!(core::ptr::eq(row.collection().file(), file));
+        assert!(core::ptr::eq(row.collection().l2ir(), file));
         assert!(row.collection().declaration().is_some());
         for (binding, expected) in [
             (row.head().value().unwrap(), facts.value_declaration()),
@@ -120,7 +120,7 @@ fn js_and_ts_receipts_retain_original_file_allocation_source_and_stock_parameter
         ] {
             let declaration = binding.template_declaration().unwrap();
             let original_declaration = declaration.declaration().original().unwrap();
-            assert!(core::ptr::eq(declaration.file(), file));
+            assert!(core::ptr::eq(declaration.l2ir(), file));
             assert_eq!(declaration.declaration().origin(), original.id());
             assert_eq!(Some(declaration.declaration().scope()), lower.scope());
             assert!(core::ptr::eq(original_declaration.resolution(), facts));

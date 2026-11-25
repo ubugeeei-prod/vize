@@ -42,7 +42,7 @@ fn whole_original_components_and_maps_match_complete_independent_fixtures() {
         assert!(plain.result().unwrap().source_map().is_none());
         assert!(plain.result().unwrap().document().links().is_empty());
         assert!(core::ptr::eq(
-            compilation.observation().descriptor().source(),
+            compilation.observation().l1ir().source(),
             source
         ));
         let original = compilation.observation().template().unwrap();
@@ -153,7 +153,7 @@ fn unsupported_whole_source_envelopes_preserve_authentic_observations() {
         assert!(compilation.observation().admitted().is_none());
         assert!(compilation.observation().template().is_none());
         assert!(core::ptr::eq(
-            compilation.observation().descriptor().source(),
+            compilation.observation().l1ir().source(),
             source
         ));
     }
@@ -183,7 +183,7 @@ fn structural_completion_never_grants_unsupported_vapor_semantics() {
             );
             assert!(compilation.result().is_err(), "{template}");
             assert!(core::ptr::eq(
-                compilation.observation().descriptor().source(),
+                compilation.observation().l1ir().source(),
                 source.as_str()
             ));
         }

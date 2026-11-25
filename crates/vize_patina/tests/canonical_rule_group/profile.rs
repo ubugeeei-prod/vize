@@ -82,7 +82,7 @@ fn paired_lint_requests() {
             }
             eprintln!(
                 "rows={n} kind={kind:?} nodes={} answers={answers:?} calls={}/{} peak={}/{} pairs={pairs:?}",
-                lint.file().artifact().node_count(),
+                lint.l2ir().artifact().node_count(),
                 old.calls,
                 new.calls,
                 old.peak_bytes_over_start,
@@ -183,7 +183,7 @@ fn original_request_costs() {
             }
             eprintln!(
                 "original {path:?} nodes={} calls={}/{} peak={}/{} pairs={pairs:?}",
-                lint.file().artifact().node_count(),
+                lint.l2ir().artifact().node_count(),
                 old.calls,
                 new.calls,
                 old.peak_bytes_over_start,

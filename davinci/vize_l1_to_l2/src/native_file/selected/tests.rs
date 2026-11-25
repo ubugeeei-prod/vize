@@ -98,7 +98,7 @@ fn whole_original_descriptor_and_handler_file_survive_movement_with_full_source(
     );
     assert_eq!(syntax.diagnostics().count(), 0);
     assert_eq!(resolution.references().len(), 1);
-    let descriptor = moved.descriptor().admitted().unwrap();
+    let descriptor = moved.l1ir().admitted().unwrap();
     assert_eq!(
         view.owner().selected().template_index(),
         descriptor.template().unwrap().container_index()
@@ -160,17 +160,14 @@ fn every_script_role_and_style_sibling_is_refused_before_template_admission() {
         let issue = observation.issues()[0];
         assert_eq!(issue.kind, expected);
         assert_eq!(issue.container_index, Some(1));
-        assert!(observation.descriptor().admitted().is_ok());
-        assert_eq!(observation.descriptor().container().blocks.len(), 2);
+        assert!(observation.l1ir().admitted().is_ok());
+        assert_eq!(observation.l1ir().container().blocks.len(), 2);
         assert!(
             source
                 .get(issue.span.start as usize..issue.span.end as usize)
                 .is_some()
         );
-        assert!(core::ptr::eq(
-            observation.descriptor().source(),
-            source.as_str()
-        ));
+        assert!(core::ptr::eq(observation.l1ir().source(), source.as_str()));
     }
 }
 
@@ -190,10 +187,10 @@ fn unsupported_profiles_external_custom_and_malformed_envelopes_keep_descriptor_
         assert!(observation.template().is_none());
         assert_eq!(observation.issues()[0].kind, Kind::Descriptor);
         assert!(
-            !observation.descriptor().issues().is_empty()
-                || !observation.descriptor().container().errors.is_empty()
+            !observation.l1ir().issues().is_empty()
+                || !observation.l1ir().container().errors.is_empty()
         );
-        assert!(core::ptr::eq(observation.descriptor().source(), source));
+        assert!(core::ptr::eq(observation.l1ir().source(), source));
     }
     for options in [
         DescriptorOptions {
@@ -216,7 +213,7 @@ fn unsupported_profiles_external_custom_and_malformed_envelopes_keep_descriptor_
         let observation =
             lower_selected_sfc_native(&arena, "<template><button/></template>", options);
         assert!(observation.admitted().is_none());
-        assert_eq!(observation.descriptor().options(), options);
+        assert_eq!(observation.l1ir().options(), options);
         assert_eq!(observation.issues()[0].kind, Kind::Descriptor);
     }
 }

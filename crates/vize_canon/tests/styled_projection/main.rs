@@ -44,7 +44,7 @@ struct Counts {
 // byte for the original projection. Only the independent control is rewritten.
 fn control_source(source: &str, observed: &NativeSfcObservation<'_>) -> String {
     let mut replacement = source.as_bytes().to_vec();
-    for style in observed.descriptor().admitted().unwrap().styles() {
+    for style in observed.l1ir().admitted().unwrap().styles() {
         let span = style.original_block().authored_span();
         for byte in replacement
             .get_mut(span.start as usize..span.end as usize)
@@ -63,8 +63,8 @@ fn compare(current: &VueProjection<'_, '_>, original: &VueProjection<'_, '_>, co
     assert_eq!(current.document(), original.document());
     let doc = original.document();
     assert_eq!(
-        current.file().artifact().source(),
-        current.original().observation().descriptor().source()
+        current.l2ir().artifact().source(),
+        current.original().observation().l1ir().source()
     );
     let mut probes = vec![0, 1, doc.len() / 2, doc.len().saturating_sub(1), doc.len()];
     for link in doc.links() {
@@ -145,7 +145,7 @@ fn qualify(source: &str, path: &Path, counts: &mut Counts) {
     let obs = lower_sfc_native(&arena, source, options());
     let Some(owner) = obs.admitted() else { return };
     counts.native += 1;
-    let styles = obs.descriptor().admitted().unwrap().styles().len();
+    let styles = obs.l1ir().admitted().unwrap().styles().len();
     let strict = project_vue(owner);
     let prepared = StyledVueInput::prepare(obs.admitted().unwrap());
     let projected = prepared

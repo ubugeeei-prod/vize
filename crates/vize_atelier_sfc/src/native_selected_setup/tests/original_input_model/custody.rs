@@ -19,7 +19,7 @@ pub(super) fn capture(
     let name = text(fixture, "binding")?;
     let view = compilation.observation().admitted().ok_or("setup owner")?;
     let setup = view.setup();
-    let file = setup.file();
+    let file = setup.l2ir();
     require!(
         file.is_complete() && file.units().len() == 1 && file.scopes().len() == 2,
         "{id}: actual whole File/Program/scope"
@@ -163,7 +163,7 @@ pub(super) fn capture(
             && core::ptr::eq(model_row.occurrence(), occurrence)
             && model_row.binding().same_owner(binding)
             && model_row.resolution().node() == node
-            && core::ptr::eq(model_row.resolution().file(), file)
+            && core::ptr::eq(model_row.resolution().l2ir(), file)
             && model_row.authored_span() == authored,
         "{id}: L3 borrows exact current FileModel/Element/Binding/ReadWrite identity"
     );

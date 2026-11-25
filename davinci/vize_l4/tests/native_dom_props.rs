@@ -69,7 +69,7 @@ fn complete_file_literal_property_modules_keep_comments_trivia_and_authentic_own
             .file_expression(embed.node.unwrap())
             .unwrap();
         let resolution = row.resolution();
-        assert!(core::ptr::eq(resolution.file(), &vue));
+        assert!(core::ptr::eq(resolution.l2ir(), &vue));
         let table = resolution.table().unwrap();
         assert!(table.occurrences().is_empty());
         assert!(core::ptr::eq(

@@ -85,7 +85,7 @@ fn nested_component_listeners_keep_their_original_names_modifiers_and_handler_bi
     let observation = listeners(&arena, source);
     let imports = observation.setup_component_imports().unwrap();
     assert_eq!(compare(&imports), (3, 3));
-    let file = imports.sites()[0].binding().file();
+    let file = imports.sites()[0].binding().l2ir();
     let model = vize_l2::query::Model::new(file);
     let mut uses = Vec::new();
     // An imported component is a typed general-File refusal. Its expression rows remain
@@ -101,7 +101,7 @@ fn nested_component_listeners_keep_their_original_names_modifiers_and_handler_bi
         uses.push(span.slice(source));
         assert!(
             model
-                .file()
+                .l2ir()
                 .binding(expr.occurrences()[0].binding)
                 .is_some()
         );

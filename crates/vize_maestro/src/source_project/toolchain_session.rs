@@ -36,21 +36,21 @@ fn apply(docs: &DocumentStore, uri: &Url, version: i32, range: Option<Range>, te
         version
     ));
 }
-fn check_source(owner: &L1Ir<'_>, snapshot: &SourceSnapshot) {
+fn check_source(l1ir: &L1Ir<'_>, snapshot: &SourceSnapshot) {
     let mut end = 0;
-    for segment in owner.container().segments() {
+    for segment in l1ir.container().segments() {
         let span = segment.span();
         assert_eq!(span.start, end);
-        assert_eq!(span.slice(owner.source()), span.slice(snapshot.source()));
+        assert_eq!(span.slice(l1ir.source()), span.slice(snapshot.source()));
         end = span.end;
     }
     assert_eq!(end as usize, snapshot.source().len());
 }
-fn local_types(snapshot: &SourceSnapshot, docs: &DocumentStore, owner: &L1Ir<'_>) {
+fn local_types(snapshot: &SourceSnapshot, docs: &DocumentStore, l1ir: &L1Ir<'_>) {
     let start = at(snapshot.source(), "other:");
     let range = Range::new(start, Position::new(start.line, start.character + 5));
     let products = snapshot
-        .prepare_literal_products(docs, owner, ROLE)
+        .prepare_literal_products(docs, l1ir, ROLE)
         .unwrap()
         .publish(docs, Some(start))
         .unwrap();
@@ -84,7 +84,7 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
         ..Default::default()
     };
     let compiler = compile_native_sfc(&arena, source.source(), options);
-    let owner = compiler.observation().descriptor();
+    let owner = compiler.observation().l1ir();
     check_source(owner, &source);
     local_types(&source, &docs, owner);
     let rules = CssLinter::with_all_rules();
@@ -144,7 +144,7 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
 
     let formatted = snapshots.capture(&docs, &uri).unwrap();
     let current = compile_native_sfc(&arena, formatted.source(), options);
-    let surface = current.observation().descriptor();
+    let surface = current.observation().l1ir();
     check_source(surface, &formatted);
     local_types(&formatted, &docs, surface);
     let (after, ()) = formatted
@@ -175,7 +175,7 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
     );
     let damaged = snapshots.capture(&docs, &uri).unwrap();
     let damaged_file = compile_native_sfc(&arena, damaged.source(), options);
-    let damaged_owner = damaged_file.observation().descriptor();
+    let damaged_owner = damaged_file.observation().l1ir();
     check_source(damaged_owner, &damaged);
     assert!(damaged_file.result().is_err());
     #[cfg(feature = "experimental-scoped-component-session")]
@@ -241,7 +241,7 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
     );
     let final_snapshot = snapshots.capture(&docs, &uri).unwrap();
     let actual = compile_native_sfc(&arena, final_snapshot.source(), options);
-    let final_owner = actual.observation().descriptor();
+    let final_owner = actual.observation().l1ir();
     check_source(final_owner, &final_snapshot);
     let final_types = final_snapshot
         .prepare_literal_products(&docs, final_owner, ROLE)

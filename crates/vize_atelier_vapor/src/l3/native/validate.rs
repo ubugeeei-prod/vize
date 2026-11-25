@@ -43,37 +43,35 @@ type Result<T> = core::result::Result<T, AdmissionFailure>;
 type Slots = [Option<(usize, RegionId)>];
 
 pub(super) fn admit<'a>(
-    program: &L3Ir<'a>,
+    l3ir: &L3Ir<'a>,
     retained: &Retained<'_, 'a>,
     loops: &[TemplateLoop<'a>],
     source: &str,
 ) -> Result<NativeArtifact<'a>> {
-    if program.phase != Phase::Built {
+    if l3ir.phase != Phase::Built {
         return Err(LegacyReason::Operation.into());
     }
     // The L3 lowering mints op ids densely in op order, so ids index tables.
-    if (program.ops.iter().enumerate()).any(|(index, op)| op.id.index() as usize != index) {
+    if (l3ir.ops.iter().enumerate()).any(|(index, op)| op.id.index() as usize != index) {
         return Err(AdmissionFailure::Invalid("op ids are not dense"));
     }
     // Admission tables and the payload live in the output arena: one compile
     // owns them, and bump allocation keeps admission off the global heap.
     let alloc = retained.allocator();
-    let (operands, starts) = by_op(program, alloc)?;
-    let controlled = control::controlled_regions(program, alloc)?;
-    let count = program.ops.len();
+    let (operands, starts) = by_op(l3ir, alloc)?;
+    let controlled = control::controlled_regions(l3ir, alloc)?;
+    let count = l3ir.ops.len();
     let mut nodes = Vec::with_capacity_in(count, &alloc);
     let mut slots = filled(alloc, None, count);
     // Node indexes of each region, in source order.
-    let mut regions: Vec<'a, Vec<'a, usize>> = Vec::from_iter_in(
-        (0..program.regions.len()).map(|_| Vec::new_in(&alloc)),
-        &alloc,
-    );
+    let mut regions: Vec<'a, Vec<'a, usize>> =
+        Vec::from_iter_in((0..l3ir.regions.len()).map(|_| Vec::new_in(&alloc)), &alloc);
     let mut bindings = Vec::new_in(&alloc);
-    let mut edges = Vec::with_capacity_in(program.edges.len(), &alloc);
-    let mut last_in_region: Vec<'a, Option<OpId>> = filled(alloc, None, program.regions.len());
+    let mut edges = Vec::with_capacity_in(l3ir.edges.len(), &alloc);
+    let mut last_in_region: Vec<'a, Option<OpId>> = filled(alloc, None, l3ir.regions.len());
     let mut last_binding: Vec<'a, Option<OpId>> = filled(alloc, None, count);
     let mut last_effect = None;
-    for (index, op) in program.ops.iter().enumerate() {
+    for (index, op) in l3ir.ops.iter().enumerate() {
         if op.effect.is_some()
             && let Some(previous) = last_effect.replace(op.id)
         {
@@ -174,8 +172,8 @@ pub(super) fn admit<'a>(
             bindings: Vec::new_in(&alloc),
         });
     }
-    order::check(program, edges, alloc)?;
-    let parents = tree::assemble(program, &mut nodes, &slots, &mut regions, alloc)?;
+    order::check(l3ir, edges, alloc)?;
+    let parents = tree::assemble(l3ir, &mut nodes, &slots, &mut regions, alloc)?;
     attach::bindings(&mut nodes, &slots, &parents, bindings, alloc)?;
     slots::check(&nodes, &parents)?;
     teleport::check(&nodes)?;
@@ -201,11 +199,11 @@ pub(super) fn admit<'a>(
 /// Operands grouped by op in authored order: the program's own storage when
 /// the producer already emitted them by op, else a counting sort.
 fn by_op<'p, 'a>(
-    program: &'p L3Ir<'a>,
+    l3ir: &'p L3Ir<'a>,
     alloc: &'a Allocator,
 ) -> Result<(Cow<'p, [Operand<'a>]>, Vec<'a, usize>)> {
-    let mut starts = filled(alloc, 0_usize, program.ops.len() + 1);
-    for operand in &program.operands {
+    let mut starts = filled(alloc, 0_usize, l3ir.ops.len() + 1);
+    for operand in &l3ir.operands {
         *starts
             .get_mut(operand.op.index() as usize + 1)
             .ok_or(AdmissionFailure::Invalid("operand op does not resolve"))? += 1;
@@ -215,12 +213,12 @@ fn by_op<'p, 'a>(
         total += *start;
         *start = total;
     }
-    let operands = if program.operands.is_sorted_by_key(|operand| operand.op) {
-        Cow::Borrowed(program.operands.as_slice())
+    let operands = if l3ir.operands.is_sorted_by_key(|operand| operand.op) {
+        Cow::Borrowed(l3ir.operands.as_slice())
     } else {
         let mut cursor = starts.to_vec();
-        let mut placed = program.operands.to_vec();
-        for operand in &program.operands {
+        let mut placed = l3ir.operands.to_vec();
+        for operand in &l3ir.operands {
             let slot = at_mut(&mut cursor, operand.op.index() as usize)?;
             *at_mut(&mut placed, *slot)? = *operand;
             *slot += 1;

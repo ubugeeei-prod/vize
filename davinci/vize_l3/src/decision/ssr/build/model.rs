@@ -29,7 +29,7 @@ impl<'owner, 'arena> SsrBuilder<'_, 'owner, 'arena> {
 
     pub(super) fn finish_model(&mut self) {
         let Some(setup) = self.setup else { return };
-        let [original] = setup.file().native_models() else {
+        let [original] = setup.l2ir().native_models() else {
             return;
         };
         let NativeFileModelState::Admitted(node) = original.state() else {

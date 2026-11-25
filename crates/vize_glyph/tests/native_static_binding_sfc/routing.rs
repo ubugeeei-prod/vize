@@ -137,8 +137,8 @@ fn script_style_and_unknown_outer_roles_refuse_before_any_binding_value_observat
             },
         );
         assert!(owner.selected().is_none());
-        assert_eq!(owner.descriptor().issues(), []);
-        assert_eq!(owner.descriptor().container().errors.as_slice(), []);
+        assert_eq!(owner.l1ir().issues(), []);
+        assert_eq!(owner.l1ir().container().errors.as_slice(), []);
     }
     let source = "<template><p :id='a+b'/></template><custom>raw</custom>";
     let arena = Allocator::default();
@@ -147,14 +147,14 @@ fn script_style_and_unknown_outer_roles_refuse_before_any_binding_value_observat
     empty_refusal(&owner, source, policy, NativeSfcRefusal::Descriptor);
     assert!(owner.selected().is_none());
     assert_eq!(
-        owner.descriptor().issues(),
+        owner.l1ir().issues(),
         [DescriptorIssue {
             code: DescriptorIssueCode::UnsupportedBlock,
             container_index: Some(1),
             span: Span::new(35, 43)
         }]
     );
-    assert_eq!(owner.descriptor().container().errors.as_slice(), []);
+    assert_eq!(owner.l1ir().container().errors.as_slice(), []);
 }
 
 #[test]
@@ -189,7 +189,7 @@ fn unsupported_native_descriptor_profiles_keep_exact_options_and_first_issue_bef
         empty_refusal(&owner, source, policy, NativeSfcRefusal::Descriptor);
         assert!(owner.selected().is_none());
         assert_eq!(
-            owner.descriptor().issues(),
+            owner.l1ir().issues(),
             [DescriptorIssue {
                 code,
                 container_index: None,

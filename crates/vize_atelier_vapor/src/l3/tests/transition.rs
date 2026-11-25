@@ -99,7 +99,7 @@ fn transition_payload_owns_wrapper_identity_and_checks_css_mutation() {
     let retained = crate::l3::retained::Retained::collect(&allocator, &s2.artifact.root);
     let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.artifact.root);
     let tag = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|value| value.name == Some("tag"))
@@ -109,7 +109,7 @@ fn transition_payload_owns_wrapper_identity_and_checks_css_mutation() {
     assert!(code.contains("tag: () => (\"div\")"), "{code}");
     let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.artifact.root);
     let css = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|value| value.value.text == "false")

@@ -9,7 +9,7 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
         &self,
         mut visit: impl FnMut(ResolvedTemplateOperand<'o, 'a>),
     ) -> Result<(), TemplateQueryError> {
-        let file = self.file().file();
+        let file = self.file().l2ir();
         let model = Model::new(file);
         let template = self.observation().template();
         let embeds = template.map_or(&[][..], |t| t.embeds());

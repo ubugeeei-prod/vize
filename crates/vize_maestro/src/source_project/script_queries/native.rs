@@ -16,7 +16,7 @@ impl SourceSnapshot {
         state: &ServerState,
         owner: &NativeSfcObservation<'_>,
     ) -> Result<Option<ScriptQueryProducts>, ScriptQueryRefusal> {
-        if !core::ptr::eq(self.source(), owner.descriptor().source()) {
+        if !core::ptr::eq(self.source(), owner.l1ir().source()) {
             self.check_current(&state.documents)
                 .map_err(ScriptQueryRefusal::Host)?;
             return Err(ScriptQueryRefusal::DescriptorSourceMismatch);

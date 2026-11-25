@@ -45,11 +45,11 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
 }
 
 fn join<'owner, 'arena>(
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
     node: NodeId,
     original: &'owner OriginalForOp<'arena>,
 ) -> Result<DomFileForHead<'owner, 'arena>, DomUnsupported> {
-    let head = file
+    let head = l2ir
         .for_head_for(original)
         .filter(|head| head.id().node() == node)
         .ok_or(DomUnsupported::FileForHead)?;
@@ -61,18 +61,18 @@ fn join<'owner, 'arena>(
             .syntax()
             .source()
             .authored_root(),
-        file.artifact().source(),
+        l2ir.artifact().source(),
     ) {
         return Err(DomUnsupported::FileForHead);
     }
     let enclosing = head.enclosing_scope().ok_or(DomUnsupported::FileScope)?;
     let scope = head.scope().ok_or(DomUnsupported::FileScope)?;
-    let outer = file
+    let outer = l2ir
         .scopes()
         .get(enclosing.index() as usize)
         .filter(|row| row.id == enclosing)
         .ok_or(DomUnsupported::FileScope)?;
-    let child = file
+    let child = l2ir
         .scopes()
         .get(scope.index() as usize)
         .filter(|row| row.id == scope)
@@ -98,20 +98,20 @@ fn join<'owner, 'arena>(
     if !alias(
         head.value(),
         &resolution.value_declaration(),
-        file,
+        l2ir,
         head.id(),
         scope,
     ) || match (head.key(), resolution.key_declaration()) {
         (None, None) => false,
         (Some(binding), Some(declaration)) => {
-            !alias(Some(binding), &declaration, file, head.id(), scope)
+            !alias(Some(binding), &declaration, l2ir, head.id(), scope)
         }
         _ => true,
     } {
         return Err(DomUnsupported::FileBinding);
     }
     let occurrence = resolution.collection();
-    let collection = file
+    let collection = l2ir
         .binding(occurrence.binding)
         .ok_or(DomUnsupported::FileBinding)?;
     Ok(DomFileForHead {
@@ -135,7 +135,7 @@ fn canonical_alias(binding: &ScopeBinding, expected: &ForAliasDeclaration<'_, '_
 fn alias(
     binding: Option<BindingRef<'_, '_>>,
     expected: &ForAliasDeclaration<'_, '_>,
-    file: &L2Ir<'_>,
+    l2ir: &L2Ir<'_>,
     origin: vize_l2::op::OriginalForId,
     scope: ScopeId,
 ) -> bool {
@@ -147,8 +147,8 @@ fn alias(
     let Some(original) = declaration.original() else {
         return false;
     };
-    core::ptr::eq(binding.file(), file)
-        && core::ptr::eq(row.file(), file)
+    core::ptr::eq(binding.l2ir(), l2ir)
+        && core::ptr::eq(row.l2ir(), l2ir)
         && declaration.id() == binding.id()
         && declaration.origin() == origin
         && declaration.scope() == scope

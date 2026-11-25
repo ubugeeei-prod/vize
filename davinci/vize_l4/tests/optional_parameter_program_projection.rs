@@ -20,7 +20,7 @@ use vize_l4::targets::ts::{
 
 fn packet(case: &serde_json::Value, projection: &ProgramProjection<'_, '_>) -> serde_json::Value {
     let source = case["source"].as_str().unwrap();
-    let file = projection.file();
+    let file = projection.l2ir();
     assert!(file.is_complete(), "{:?}", file.issues());
     assert!(core::ptr::eq(file.artifact().source(), source));
     assert!(core::ptr::eq(projection.unit(), &file.units()[0]));
@@ -42,7 +42,7 @@ fn packet(case: &serde_json::Value, projection: &ProgramProjection<'_, '_>) -> s
     let name = case["binding"].as_str().unwrap();
     let at = source.rfind(name).unwrap() as u32;
     let binding = Model::new(&file).binding_at_offset(at).unwrap().unwrap();
-    assert!(core::ptr::eq(binding.file(), file));
+    assert!(core::ptr::eq(binding.l2ir(), file));
     let declaration = binding.declaration().unwrap();
     assert_eq!(declaration.kind, DeclarationKind::Parameter);
     assert_eq!(declaration.namespace, Namespace::Value);
@@ -135,10 +135,10 @@ fn original_optional_parameter_ts_tsx_projection_preserves_full_primary_vectors_
         assert!(owner.nodes().any(|node| node.source() == Some("<></>")));
         let projection = project_jsx_program(&owner).unwrap();
         assert_eq!(projection.source_kind(), SourceKind::Tsx);
-        assert!(core::ptr::eq(projection.file(), owner.file()));
+        assert!(core::ptr::eq(projection.l2ir(), owner.l2ir()));
         packets.push(packet(&case, &projection));
         assert!(matches!(
-            project_program(owner.file()),
+            project_program(owner.l2ir()),
             Err(ProjectionError::UnsupportedProfile)
         ));
         let unrecorded = project_jsx_program_no_links(&owner).unwrap();

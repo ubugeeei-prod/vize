@@ -19,7 +19,7 @@ pub(super) fn inspect<'owner, 'a>(
     let file = original.file().ok_or("original File")?;
     check(file.is_complete())?;
     check(core::ptr::eq(analysis.owner(), original))?;
-    check(core::ptr::eq(analysis.file(), file))?;
+    check(core::ptr::eq(analysis.l2ir(), file))?;
     check(core::ptr::eq(analysis.artifact(), file.artifact()))?;
     check(core::ptr::eq(
         file.artifact().source(),
@@ -87,7 +87,7 @@ pub(super) fn inspect<'owner, 'a>(
                     .expression(node)
                     .ok_or("sole-visit expression fact")?
                     .resolution();
-                check(core::ptr::eq(resolution.file(), file))?;
+                check(core::ptr::eq(resolution.l2ir(), file))?;
                 equal(resolution.node(), node)?;
                 let table = resolution.table().ok_or("original sole resolver table")?;
                 check(table.occurrences().is_empty())?;

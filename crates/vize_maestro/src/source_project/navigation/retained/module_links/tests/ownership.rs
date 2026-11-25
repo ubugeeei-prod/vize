@@ -12,9 +12,9 @@ fn module_link_same_file_view_retains_original_occurrence_and_private_source_joi
         let mut visited = 0;
         view.view
             .for_each(|original| {
-                assert!(core::ptr::eq(original.file(), query.file));
+                assert!(core::ptr::eq(original.l2ir(), query.l2ir));
                 assert!(core::ptr::eq(
-                    original.file().artifact().source(),
+                    original.l2ir().artifact().source(),
                     query.snapshot.source()
                 ));
                 assert!(core::ptr::eq(
@@ -43,7 +43,7 @@ fn module_link_equal_foreign_file_and_source_cannot_enter_local_owned_reply() {
                     local.snapshot.source(),
                     foreign.snapshot.source()
                 ));
-                assert!(!core::ptr::eq(local.file, foreign.file));
+                assert!(!core::ptr::eq(local.l2ir, foreign.l2ir));
                 assert_eq!(
                     collect(local, admission.as_ref().unwrap(), || false),
                     Err(ModuleOperandRefusal::Navigation(
@@ -75,10 +75,10 @@ fn module_link_fresh_input_errors_and_same_buffer_reparse_refusals_stay_distinct
             panic!("foreign allocation must refuse checked input")
         };
         assert!(
-            matches!(super::super::admit(&foreign_syntax, block, query.file), Err(ModuleOperandRefusal::Input(error)) if error == input_error)
+            matches!(super::super::admit(&foreign_syntax, block, query.l2ir), Err(ModuleOperandRefusal::Input(error)) if error == input_error)
         );
         assert!(
-            matches!(super::super::admit(&foreign_syntax, foreign_block, query.file), Err(ModuleOperandRefusal::Sources(error)) if error.kind == ModuleSourceErrorKind::Source)
+            matches!(super::super::admit(&foreign_syntax, foreign_block, query.l2ir), Err(ModuleOperandRefusal::Sources(error)) if error.kind == ModuleSourceErrorKind::Source)
         );
         let reparsed = parse_program_once(
             &arena,
@@ -86,7 +86,7 @@ fn module_link_fresh_input_errors_and_same_buffer_reparse_refusals_stay_distinct
             ProgramOptions::module(Lang::Js),
         );
         assert!(
-            matches!(super::super::admit(&reparsed, block, query.file), Err(ModuleOperandRefusal::Sources(error)) if error.kind == ModuleSourceErrorKind::ProgramOrigin)
+            matches!(super::super::admit(&reparsed, block, query.l2ir), Err(ModuleOperandRefusal::Sources(error)) if error.kind == ModuleSourceErrorKind::ProgramOrigin)
         );
     });
 }

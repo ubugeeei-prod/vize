@@ -21,9 +21,9 @@ fn with_lowered(check: impl FnOnce(Lowered<'_>)) {
 fn fresh_and_optimized_exports_are_current_at_every_tier() {
     for tier in OptTier::ALL {
         with_lowered(|mut lowered| {
-            assert_eq!(lowered.partition.stale(&lowered.program), None);
-            optimize(&mut lowered.program, tier, &mut NoObserver).expect("closed pipeline");
-            assert_eq!(lowered.partition.stale(&lowered.program), None);
+            assert_eq!(lowered.partition.stale(&lowered.l3ir), None);
+            optimize(&mut lowered.l3ir, tier, &mut NoObserver).expect("closed pipeline");
+            assert_eq!(lowered.partition.stale(&lowered.l3ir), None);
         });
     }
 }
@@ -32,25 +32,25 @@ fn fresh_and_optimized_exports_are_current_at_every_tier() {
 fn each_drift_names_its_first_position() {
     with_lowered(|mut lowered| {
         lowered.partition.ops[2].span = Span::new(0, 1);
-        assert_eq!(lowered.partition.stale(&lowered.program), Some(2));
+        assert_eq!(lowered.partition.stale(&lowered.l3ir), Some(2));
     });
     with_lowered(|mut lowered| {
         lowered.partition.ops[3].op = OpId::new(99);
-        assert_eq!(lowered.partition.stale(&lowered.program), Some(3));
+        assert_eq!(lowered.partition.stale(&lowered.l3ir), Some(3));
     });
     with_lowered(|mut lowered| {
         lowered.partition.ops[0].kind = PartitionKind::Dynamic;
-        assert_eq!(lowered.partition.stale(&lowered.program), Some(0));
+        assert_eq!(lowered.partition.stale(&lowered.l3ir), Some(0));
     });
     with_lowered(|mut lowered| {
-        let effect = lowered.program.ops[1].effect.take();
+        let effect = lowered.l3ir.ops[1].effect.take();
         assert_eq!(effect, Some(EffectId::new(0)));
-        assert_eq!(lowered.partition.stale(&lowered.program), Some(1));
+        assert_eq!(lowered.partition.stale(&lowered.l3ir), Some(1));
     });
     with_lowered(|mut lowered| {
         let last = lowered.partition.ops.len() - 1;
         lowered.partition.ops.pop();
-        assert_eq!(lowered.partition.stale(&lowered.program), Some(last));
+        assert_eq!(lowered.partition.stale(&lowered.l3ir), Some(last));
     });
     with_lowered(|mut lowered| {
         let extra = lowered.partition.ops.len();
@@ -59,6 +59,6 @@ fn each_drift_names_its_first_position() {
             kind: PartitionKind::Static,
             span: Span::new(0, 0),
         });
-        assert_eq!(lowered.partition.stale(&lowered.program), Some(extra));
+        assert_eq!(lowered.partition.stale(&lowered.l3ir), Some(extra));
     });
 }

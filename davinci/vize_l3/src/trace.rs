@@ -96,34 +96,34 @@ fn write_event<W: Write>(writer: &mut W, backend: TraceBackend, op: &Op) -> fmt:
 pub fn write_backend_trace<W: Write>(
     writer: &mut W,
     backend: TraceBackend,
-    program: &L3Ir<'_>,
+    l3ir: &L3Ir<'_>,
 ) -> fmt::Result {
-    for op in &program.ops {
+    for op in &l3ir.ops {
         write_event(writer, backend, op)?;
     }
     Ok(())
 }
 
 /// Write the combined VDOM-then-Vapor reference trace for `program`.
-pub fn write_reference_trace<W: Write>(writer: &mut W, program: &L3Ir<'_>) -> fmt::Result {
-    write_backend_trace(writer, TraceBackend::Vdom, program)?;
-    write_backend_trace(writer, TraceBackend::Vapor, program)
+pub fn write_reference_trace<W: Write>(writer: &mut W, l3ir: &L3Ir<'_>) -> fmt::Result {
+    write_backend_trace(writer, TraceBackend::Vdom, l3ir)?;
+    write_backend_trace(writer, TraceBackend::Vapor, l3ir)
 }
 
 /// Render one backend trace as text.
 #[must_use]
-pub fn backend_trace_text(backend: TraceBackend, program: &L3Ir<'_>) -> String {
+pub fn backend_trace_text(backend: TraceBackend, l3ir: &L3Ir<'_>) -> String {
     let mut text = String::default();
     // Writing into a growable string cannot fail.
-    let _ = write_backend_trace(&mut text, backend, program);
+    let _ = write_backend_trace(&mut text, backend, l3ir);
     text
 }
 
 /// Render the combined reference trace as text.
 #[must_use]
-pub fn reference_trace_text(program: &L3Ir<'_>) -> String {
+pub fn reference_trace_text(l3ir: &L3Ir<'_>) -> String {
     let mut text = String::default();
     // Writing into a growable string cannot fail.
-    let _ = write_reference_trace(&mut text, program);
+    let _ = write_reference_trace(&mut text, l3ir);
     text
 }

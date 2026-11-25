@@ -14,7 +14,7 @@ impl RetainedNavigation<'_, '_> {
                 .for_each_reference_at_binding(offset, |r| sites.push((r.span(), Some(r.usage()))))
                 .map_err(NavigationRefusal::NativeQuery)?
         } else {
-            let model = Model::new(self.file);
+            let model = Model::new(self.l2ir);
             let binding = model
                 .binding_at_offset(offset)
                 .map_err(NavigationRefusal::Query)?;

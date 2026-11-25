@@ -15,7 +15,7 @@ fn declaration_and_reference_keep_their_original_file_and_resolved_identity() {
         .reference_at_offset(offset(source, "later;"))
         .unwrap()
         .unwrap();
-    assert!(core::ptr::eq(reference.file(), &owner));
+    assert!(core::ptr::eq(reference.l2ir(), &owner));
     assert!(core::ptr::eq(reference.reference(), &owner.references()[0]));
     assert!(declaration.same_owner(reference.binding().unwrap()));
     assert_eq!(declaration.id(), reference.binding().unwrap().id());
@@ -139,7 +139,7 @@ fn function_name_queries_retain_the_parent_while_parameters_and_body_use_the_chi
         .unwrap()
         .unwrap();
     assert_ne!(child.scope().id, root);
-    assert!(core::ptr::eq(child.file(), &owner));
+    assert!(core::ptr::eq(child.l2ir(), &owner));
     assert_eq!(child.scope().id, parameter.declaration().unwrap().scope);
     assert_eq!(
         child.lookup("value", Namespace::Value).unwrap().id(),
@@ -204,7 +204,7 @@ fn scope_parents_and_reference_visits_stay_inside_the_queried_file() {
         .unwrap()
         .unwrap();
     let unit = body.parent().unwrap();
-    assert!(core::ptr::eq(unit.file(), &owner));
+    assert!(core::ptr::eq(unit.l2ir(), &owner));
     assert_eq!(unit.scope().id, owner.units()[0].scope);
     let mut top = unit;
     let mut steps = 0;
@@ -226,7 +226,7 @@ fn scope_parents_and_reference_visits_stay_inside_the_queried_file() {
         .map(|(at, _)| at as u32);
     let mut visits = 0;
     model.for_each_reference_to(binding, |row| {
-        assert!(core::ptr::eq(row.file(), &owner));
+        assert!(core::ptr::eq(row.l2ir(), &owner));
         assert_eq!(row.binding().unwrap().id(), binding.id());
         assert_eq!(Some(row.reference().span.start), expected.next());
         visits += 1;

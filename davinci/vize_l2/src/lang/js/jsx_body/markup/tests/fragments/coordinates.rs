@@ -78,12 +78,12 @@ fn original_fragment_boundaries_keep_absolute_bytes_utf16_and_owner_after_moves(
                 body
             );
             assert!(core::ptr::eq(
-                first.file().artifact().source(),
+                first.l2ir().artifact().source(),
                 source.as_str()
             ));
             assert_eq!(
                 first
-                    .file()
+                    .l2ir()
                     .units()
                     .iter()
                     .map(|u| (u.id.index(), u.span))

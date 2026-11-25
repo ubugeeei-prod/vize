@@ -64,16 +64,16 @@ impl StoredSite {
         })
     }
 
-    fn restore<'f, 'a>(&self, file: &'f L2Ir<'a>, span: Span) -> Option<TemplateSiteRef<'f, 'a>> {
+    fn restore<'f, 'a>(&self, l2ir: &'f L2Ir<'a>, span: Span) -> Option<TemplateSiteRef<'f, 'a>> {
         let (origin, scope, symbol) = match self.site {
             Site::Handler {
                 owner,
                 ref binding,
                 scope,
             } => {
-                let handler = file.handler(owner)?;
+                let handler = l2ir.handler(owner)?;
                 let symbol = match binding {
-                    HandlerBinding::Outer(id) => TemplateSymbolRef::File(file.binding(*id)?),
+                    HandlerBinding::Outer(id) => TemplateSymbolRef::File(l2ir.binding(*id)?),
                     HandlerBinding::Local(id) => {
                         let binding = handler.resolution()?.bindings().get(id.index() as usize)?;
                         TemplateSymbolRef::HandlerLocal(HandlerLocalRef { handler, binding })
@@ -90,9 +90,9 @@ impl StoredSite {
                 binding,
                 scope,
             } => (
-                Origin::For(file.for_head(owner)?),
+                Origin::For(l2ir.for_head(owner)?),
                 TemplateSiteScope::File(scope),
-                TemplateSymbolRef::File(file.binding(binding)?),
+                TemplateSymbolRef::File(l2ir.binding(binding)?),
             ),
         };
         Some(TemplateSiteRef {
@@ -116,10 +116,10 @@ impl Default for TemplatePositions {
 }
 
 impl TemplatePositions {
-    pub(in crate::query) fn new(file: &L2Ir<'_>) -> Self {
+    pub(in crate::query) fn new(l2ir: &L2Ir<'_>) -> Self {
         Self(SiteIntervals::try_from_sites(|push| {
             let mut captured = Ok(());
-            sites::visit(file, |site| match StoredSite::capture(site) {
+            sites::visit(l2ir, |site| match StoredSite::capture(site) {
                 Ok(record) => push(site.span, record),
                 Err(error) => captured = Err(error),
             })?;
@@ -129,7 +129,7 @@ impl TemplatePositions {
 
     pub(in crate::query) fn at<'f, 'a>(
         &self,
-        file: &'f L2Ir<'a>,
+        l2ir: &'f L2Ir<'a>,
         offset: u32,
     ) -> Result<Option<TemplateSiteRef<'f, 'a>>, TemplateQueryError> {
         let index = self.0.as_ref().map_err(|e| *e)?;
@@ -139,7 +139,7 @@ impl TemplatePositions {
         selected
             .map(|(span, record)| {
                 record
-                    .restore(file, span)
+                    .restore(l2ir, span)
                     .ok_or(TemplateQueryError::OriginalMembership)
             })
             .transpose()

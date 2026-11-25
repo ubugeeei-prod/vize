@@ -33,7 +33,7 @@ pub fn compile(source: &str) -> Result<String, Error> {
     let mut cursor = 0;
     for (span, region) in &roots.roots {
         let lowered = poc_support::lower(&allocator, region)?;
-        let replacement = module.root(View::new(&lowered.program))?;
+        let replacement = module.root(View::new(&lowered.l3ir))?;
         body.push(source.get(cursor..span.start as usize).unwrap_or_default());
         body.push(&indent(&replacement, line_indent(source, span.start)));
         cursor = span.end as usize;

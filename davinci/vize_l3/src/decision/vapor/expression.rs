@@ -49,7 +49,7 @@ pub(super) fn admit<'owner, 'arena>(
     node: NodeId,
     interpolation: &InterpolationOp<'arena>,
 ) -> Result<VaporExpression<'owner, 'arena>, VaporUnsupported> {
-    let file = setup.file();
+    let file = setup.l2ir();
     let ExprRef::Js(expression) = interpolation.expression else {
         return Err(VaporUnsupported::Expression);
     };

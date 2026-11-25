@@ -26,7 +26,7 @@ pub(super) enum Outcome<'a> {
 /// }
 /// ```
 pub struct NativeSfcObservation<'a> {
-    pub(super) descriptor: L1Ir<'a>,
+    pub(super) l1ir: L1Ir<'a>,
     pub(super) selected: Option<SelectedTemplateComponent<'a>>,
     pub(super) operands: std::vec::Vec<InterpolationOperand<'a>>,
     pub(super) interpolation_failure: Option<InterpolationFailure<'a>>,
@@ -62,15 +62,15 @@ impl core::fmt::Debug for NativeSfcObservation<'_> {
 impl<'a> NativeSfcObservation<'a> {
     /// Return the complete authored SFC source retained by the descriptor.
     pub fn source(&self) -> &'a str {
-        self.descriptor.source()
+        self.l1ir.source()
     }
     /// Return the native descriptor, print and directive policies used.
     pub fn options(&self) -> NativeSfcOptions {
         self.options
     }
     /// Borrow the original descriptor observation and all of its evidence.
-    pub fn descriptor(&self) -> &L1Ir<'a> {
-        &self.descriptor
+    pub fn l1ir(&self) -> &L1Ir<'a> {
+        &self.l1ir
     }
     /// Borrow the original selected template, if selection succeeded.
     pub fn selected(&self) -> Option<&SelectedTemplateComponent<'a>> {

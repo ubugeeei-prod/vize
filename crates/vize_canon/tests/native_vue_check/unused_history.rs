@@ -62,7 +62,7 @@ fn primitive_native_history_keeps_full_unused_errors_and_disabled_hints() {
         });
         let observed = lower_sfc_native(&arena, SOURCE, options());
         let admitted = observed.admitted().unwrap();
-        assert!(admitted.file().file().is_complete());
+        assert!(admitted.file().l2ir().is_complete());
         block_on(bridge.spawn()).unwrap();
         let checked = block_on(bridge.check_native_vue(admitted, &path)).unwrap();
         assert!(std::ptr::eq(
@@ -70,8 +70,8 @@ fn primitive_native_history_keeps_full_unused_errors_and_disabled_hints() {
             &observed
         ));
         assert!(std::ptr::eq(
-            checked.projection().file(),
-            observed.file().unwrap().file()
+            checked.projection().l2ir(),
+            observed.file().unwrap().l2ir()
         ));
         let effective = checked
             .configuration()

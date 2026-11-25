@@ -92,7 +92,7 @@ fn condensed_text_keeps_each_authored_span_and_existing_svg_refusal() {
     let arena = Allocator::default();
     let source = "<!-- 🌸 --><template>&#32;<p>a&#32;  b</p>&#10;</template><style lang=scss scoped>.a{color:red}</style>";
     let session = NativeScssSession::new_scoped(&arena, source, Default::default());
-    let observed = session.observation().file().unwrap().file().artifact();
+    let observed = session.observation().file().unwrap().l2ir().artifact();
     let records: Vec<_> = observed
         .provenance()
         .iter()
@@ -142,7 +142,7 @@ fn unsupported_selectors_options_and_broken_styles_keep_original_typed_refusals(
         let arena = Allocator::default();
         let session = NativeScssSession::new_scoped(&arena, &source, Default::default());
         assert!(core::ptr::eq(
-            session.observation().descriptor().source(),
+            session.observation().l1ir().source(),
             source.as_str()
         ));
         assert!(matches!(

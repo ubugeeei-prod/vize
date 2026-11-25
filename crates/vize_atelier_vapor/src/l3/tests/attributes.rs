@@ -274,7 +274,7 @@ fn cloak_schema_rejects_an_unmatched_directive_kind() {
     let allocator = Allocator::new();
     let mut s3 = lowered_source(&allocator, r#"<div v-cloak>{{ label }}</div>"#);
     let kind = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| operand.role == OperandRole::BindingKind)
@@ -349,7 +349,7 @@ fn retained_asts_never_describe_stale_operand_text() {
         let retained = Retained::collect(allocator, &s2.artifact.root);
         if let Some(text) = text {
             let value = s3
-                .program
+                .l3ir
                 .operands
                 .iter_mut()
                 .find(|operand| operand.role == OperandRole::Value)

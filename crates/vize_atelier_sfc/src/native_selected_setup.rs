@@ -163,7 +163,7 @@ fn emit<L: LinkSink>(
     let admitted = observation
         .admitted()
         .ok_or(NativeSelectedSetupSfcDomError::Observation)?;
-    let source = admitted.observation().original().descriptor().source();
+    let source = admitted.observation().original().l1ir().source();
     let analysis = build_selected_setup_dom_decisions(admitted.setup())
         .map_err(NativeSelectedSetupSfcDomError::Analysis)?;
     let mut parts =

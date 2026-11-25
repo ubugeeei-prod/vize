@@ -47,7 +47,7 @@ fn complete_static_and_literal_modules_keep_real_file_owners_and_link_sinks() {
         );
         let vue = producer.finish().unwrap();
         let analysis = build_dom_file_decisions(&vue).unwrap();
-        assert!(core::ptr::eq(analysis.file(), &vue));
+        assert!(core::ptr::eq(analysis.l2ir(), &vue));
         assert!(core::ptr::eq(analysis.artifact(), vue.artifact()));
         assert!(analysis.dom().unwrap().unsupported().is_empty());
         let recorded = assemble_template(
@@ -77,7 +77,7 @@ fn complete_static_and_literal_modules_keep_real_file_owners_and_link_sinks() {
                 .file_expression(node)
                 .unwrap()
                 .resolution();
-            assert!(core::ptr::eq(resolution.file(), &vue));
+            assert!(core::ptr::eq(resolution.l2ir(), &vue));
             assert_eq!(resolution.node(), node);
             let scope = resolution.scope().unwrap();
             assert_eq!(vue.scopes().get(scope.index() as usize).unwrap().id, scope);

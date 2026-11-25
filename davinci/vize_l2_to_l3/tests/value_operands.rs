@@ -18,8 +18,8 @@ fn lowered_values_outlive_both_source_text_and_the_l2_arena() {
         let s2 = vize_l1_to_l2::lower(&l2_arena, &tree, &errors);
         lower(&l3_arena, &s2.artifact.root)
     };
-    assert_eq!(verify(&lowered.program), []);
-    let operands = &lowered.program.operands;
+    assert_eq!(verify(&lowered.l3ir), []);
+    let operands = &lowered.l3ir.operands;
     for (role, text) in [
         (Role::Tag, "Widget"),
         (Role::ModelRead, "title"),
@@ -83,7 +83,7 @@ fn lowered_values_outlive_both_source_text_and_the_l2_arena() {
     assert_eq!(branches.len(), 2);
     assert_ne!(branches[0].region, branches[1].region);
     assert_eq!(branches[1].value.kind, ValueKind::Absent);
-    let folio = ValuesPage::of(&lowered.program);
+    let folio = ValuesPage::of(&lowered.l3ir);
     assert_eq!(
         ValuesPage::parse(folio.print_to_string(DumpMode::Full).as_str()).unwrap(),
         folio
@@ -108,9 +108,9 @@ fn an_l2_preserved_comment_is_copied_into_the_l3_arena() {
         )));
         lower(&l3_arena, &Region { ops })
     };
-    assert_eq!(verify(&lowered.program), []);
-    assert_eq!(lowered.program.operands.len(), 1);
-    let operand = &lowered.program.operands[0];
+    assert_eq!(verify(&lowered.l3ir), []);
+    assert_eq!(lowered.l3ir.operands.len(), 1);
+    let operand = &lowered.l3ir.operands[0];
     assert_eq!(operand.role, Role::Comment);
     assert_eq!(operand.value.kind, ValueKind::Literal);
     assert_eq!(operand.value.text, " note ");

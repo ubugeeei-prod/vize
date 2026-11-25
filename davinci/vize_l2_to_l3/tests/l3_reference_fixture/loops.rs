@@ -23,28 +23,28 @@ fn loop_reference_graph_and_values_are_rust_lowered() {
         let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
         assert!(s2.diagnostics.is_empty(), "{:?}", s2.diagnostics);
         let lowered = vize_l2_to_l3::lower(&allocator, &s2.artifact.root);
-        assert_eq!(verify(&lowered.program), []);
+        assert_eq!(verify(&lowered.l3ir), []);
         for (extension, actual) in [
             (
                 "s3.folio",
-                L3Page::of(&lowered.program)
+                L3Page::of(&lowered.l3ir)
                     .print_to_string(DumpMode::Full)
                     .to_string(),
             ),
             (
                 "values.folio",
-                ValuesPage::of(&lowered.program)
+                ValuesPage::of(&lowered.l3ir)
                     .print_to_string(DumpMode::Full)
                     .to_string(),
             ),
-            ("trace", reference_trace_text(&lowered.program).to_string()),
+            ("trace", reference_trace_text(&lowered.l3ir).to_string()),
             (
                 "vdom.trace",
-                backend_trace_text(TraceBackend::Vdom, &lowered.program).to_string(),
+                backend_trace_text(TraceBackend::Vdom, &lowered.l3ir).to_string(),
             ),
             (
                 "vapor.trace",
-                backend_trace_text(TraceBackend::Vapor, &lowered.program).to_string(),
+                backend_trace_text(TraceBackend::Vapor, &lowered.l3ir).to_string(),
             ),
         ] {
             let path = stem.with_extension(extension);

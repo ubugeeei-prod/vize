@@ -29,7 +29,7 @@ fn setup_only_native_template_resolves_bind_and_interpolation_at_actual_sites() 
     assert_eq!(receipt.span(), block.span());
     assert_eq!(native.embeds.len(), 2);
     for embed in &native.embeds {
-        let resolution = vue.file().expression(embed.node.unwrap()).unwrap();
+        let resolution = vue.l2ir().expression(embed.node.unwrap()).unwrap();
         assert_eq!(resolution.scope(), Some(receipt.scope()));
         let table = resolution.table().unwrap();
         assert!(core::ptr::eq(
@@ -83,7 +83,7 @@ fn combined_roles_use_actual_indices_and_parent_scope_even_when_authored_reverse
     assert_eq!(vue.ordinary().unwrap().unit().index(), 1);
     assert_eq!(vue.setup().unwrap().unit().index(), 0);
     assert_eq!(
-        vue.file()
+        vue.l2ir()
             .scopes()
             .get(vue.setup().unwrap().scope().index() as usize)
             .unwrap()
@@ -91,7 +91,7 @@ fn combined_roles_use_actual_indices_and_parent_scope_even_when_authored_reverse
         Some(vue.ordinary().unwrap().scope())
     );
     let normal = vue
-        .file()
+        .l2ir()
         .lookup(vue.setup().unwrap().scope(), "ordinary", Namespace::Value)
         .unwrap();
     assert_eq!(
@@ -99,7 +99,7 @@ fn combined_roles_use_actual_indices_and_parent_scope_even_when_authored_reverse
         VueScriptRole::Ordinary
     );
     let local = vue
-        .file()
+        .l2ir()
         .lookup(vue.setup().unwrap().scope(), "local", Namespace::Value)
         .unwrap();
     assert_eq!(vue.exposure(local).unwrap().role(), VueScriptRole::Setup);
@@ -125,9 +125,9 @@ fn script_only_and_setup_only_without_template_finish_without_missing_template()
             producer.ordinary(input).unwrap();
         }
         let vue = producer.finish().unwrap();
-        let binding = vue.file().bindings().next().unwrap();
+        let binding = vue.l2ir().bindings().next().unwrap();
         assert_eq!(vue.exposure(binding).is_some(), setup);
-        assert_eq!(vue.file().artifact().node_count(), 0);
+        assert_eq!(vue.l2ir().artifact().node_count(), 0);
     }
 }
 
@@ -143,15 +143,15 @@ fn setup_type_import_identity_is_retained_without_runtime_exposure() {
     let vue = producer.finish().unwrap();
     let scope = vue.setup().unwrap().scope();
     assert!(
-        vue.exposure(vue.file().lookup(scope, "T", Namespace::Type).unwrap())
+        vue.exposure(vue.l2ir().lookup(scope, "T", Namespace::Type).unwrap())
             .is_none()
     );
     assert!(
-        vue.exposure(vue.file().lookup(scope, "value", Namespace::Value).unwrap())
+        vue.exposure(vue.l2ir().lookup(scope, "value", Namespace::Value).unwrap())
             .is_some()
     );
     assert!(
-        vue.exposure(vue.file().lookup(scope, "local", Namespace::Value).unwrap())
+        vue.exposure(vue.l2ir().lookup(scope, "local", Namespace::Value).unwrap())
             .is_some()
     );
     assert_eq!(vue.declarations().len(), 3);

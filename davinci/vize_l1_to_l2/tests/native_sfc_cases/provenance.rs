@@ -23,7 +23,7 @@ fn setup_only_ts_absolute_spans_and_exact_ast_scope_identity_survive() {
     assert_eq!(receipt.span(), script.block().span());
     let scope = native
         .file()
-        .file()
+        .l2ir()
         .scopes()
         .iter()
         .find(|scope| scope.id == receipt.scope())
@@ -38,7 +38,7 @@ fn setup_only_ts_absolute_spans_and_exact_ast_scope_identity_survive() {
     for embed in &produced.embeds {
         let resolution = native
             .file()
-            .file()
+            .l2ir()
             .expression(embed.node.unwrap())
             .unwrap();
         assert_eq!(resolution.scope(), Some(receipt.scope()));
@@ -50,7 +50,7 @@ fn setup_only_ts_absolute_spans_and_exact_ast_scope_identity_survive() {
         assert_eq!(table.expression().span, embed.syntax.source().span());
         assert_eq!(table.occurrences().len(), 1);
         let occurrence = table.occurrences().first().unwrap();
-        let binding = native.file().file().binding(occurrence.binding).unwrap();
+        let binding = native.file().l2ir().binding(occurrence.binding).unwrap();
         assert!(resolution.accepts(binding));
         assert!(native.file().exposure(binding).is_some());
     }
@@ -67,7 +67,7 @@ fn decoded_template_entities_and_unicode_keep_exact_whole_file_origin() {
     for embed in &produced.embeds {
         let resolution = native
             .file()
-            .file()
+            .l2ir()
             .expression(embed.node.unwrap())
             .unwrap();
         let table = resolution.table().unwrap();

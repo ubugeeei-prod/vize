@@ -12,7 +12,7 @@ use crate::operand::{Operand, OperandRole as Role, ValueKind};
 
 /// Sorted lookup tables over one program.
 pub(crate) struct Index<'p, 'a> {
-    pub(crate) program: &'p L3Ir<'a>,
+    pub(crate) l3ir: &'p L3Ir<'a>,
     ops: Vec<(OpId, u32)>,
     regions: Vec<(RegionId, u32)>,
     operands: Vec<(OpId, u32)>,
@@ -49,25 +49,25 @@ fn all<K: Ord + Copy, V: Copy>(table: &[(K, V)], key: K) -> impl Iterator<Item =
 }
 
 impl<'p, 'a> Index<'p, 'a> {
-    pub(crate) fn new(program: &'p L3Ir<'a>) -> Self {
-        let mut effect_preds: Vec<(OpId, OpId)> = program
+    pub(crate) fn new(l3ir: &'p L3Ir<'a>) -> Self {
+        let mut effect_preds: Vec<(OpId, OpId)> = l3ir
             .edges
             .iter()
             .filter(|edge| edge.kind == EdgeKind::EffectOrder)
             .map(|edge| (edge.to, edge.from))
             .collect();
         effect_preds.sort_by_key(|entry| entry.0);
-        let mut owned: Vec<(OpId, RegionId)> = program
+        let mut owned: Vec<(OpId, RegionId)> = l3ir
             .regions
             .iter()
             .filter_map(|region| region.owner.map(|owner| (owner, region.id)))
             .collect();
         owned.sort_by_key(|entry| entry.0);
         Self {
-            program,
-            ops: positions(&program.ops, |op| op.id),
-            regions: positions(&program.regions, |region| region.id),
-            operands: positions(&program.operands, |operand| operand.op),
+            l3ir,
+            ops: positions(&l3ir.ops, |op| op.id),
+            regions: positions(&l3ir.regions, |region| region.id),
+            operands: positions(&l3ir.operands, |operand| operand.op),
             effect_preds,
             owned,
         }
@@ -78,11 +78,11 @@ impl<'p, 'a> Index<'p, 'a> {
     }
 
     pub(crate) fn op(&self, id: OpId) -> Option<&'p Op> {
-        self.program.ops.get(self.position(id)?)
+        self.l3ir.ops.get(self.position(id)?)
     }
 
     pub(crate) fn region(&self, id: RegionId) -> Option<&'p Region> {
-        self.program.regions.get(first(&self.regions, id)? as usize)
+        self.l3ir.regions.get(first(&self.regions, id)? as usize)
     }
 
     pub(crate) fn region_position(&self, id: RegionId) -> Option<usize> {
@@ -90,7 +90,7 @@ impl<'p, 'a> Index<'p, 'a> {
     }
 
     pub(crate) fn operands(&self, id: OpId) -> impl Iterator<Item = &'p Operand<'a>> + '_ {
-        let operands = &self.program.operands;
+        let operands = &self.l3ir.operands;
         all(&self.operands, id).filter_map(move |position| operands.get(position as usize))
     }
 
@@ -111,7 +111,7 @@ impl<'p, 'a> Index<'p, 'a> {
     /// other owner can create, destroy, or re-render its regions on its own.
     pub(crate) fn effect_region(&self, region: RegionId) -> Option<&'p Region> {
         let mut current = self.region(region)?;
-        for _ in 0..=self.program.regions.len() {
+        for _ in 0..=self.l3ir.regions.len() {
             if self.owner_kind(current)? != Some(OpKind::InsertNode) {
                 return Some(current);
             }
@@ -144,7 +144,7 @@ impl<'p, 'a> Index<'p, 'a> {
         let Some(mut current) = self.region(region) else {
             return false;
         };
-        for _ in 0..=self.program.regions.len() {
+        for _ in 0..=self.l3ir.regions.len() {
             match self.owner_kind(current) {
                 Some(None) => return true,
                 Some(Some(OpKind::InsertNode | OpKind::If)) => {}
@@ -161,7 +161,7 @@ impl<'p, 'a> Index<'p, 'a> {
     /// `region` is owned by `owner` or nested inside a region it owns.
     pub(crate) fn under(&self, region: RegionId, owner: OpId) -> bool {
         let mut current = self.region(region);
-        for _ in 0..=self.program.regions.len() {
+        for _ in 0..=self.l3ir.regions.len() {
             let Some(item) = current else {
                 return false;
             };
@@ -185,7 +185,7 @@ impl<'p, 'a> Index<'p, 'a> {
     /// re-renders, where op order is unchanged by any placement.
     pub(crate) fn keyed_pred(&self, op: OpId) -> Option<OpId> {
         let mut current = self.effect_pred(op)?;
-        for _ in 0..self.program.ops.len() {
+        for _ in 0..self.l3ir.ops.len() {
             if self.operands(current).any(reads) {
                 return Some(current);
             }

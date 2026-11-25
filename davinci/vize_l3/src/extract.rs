@@ -48,16 +48,16 @@ pub const EXTRACT: PassDesc = PassDesc::new(
 ///
 /// Expects placements that `annotate` recorded or that `L3V010` accepts;
 /// records whose op does not resolve are left alone.
-pub fn extract(program: &mut L3Ir<'_>, tier: OptTier) -> Extraction {
-    let (chosen, extraction) = plan(&Index::new(program), tier);
-    for (record, chosen) in program.placements.iter_mut().zip(chosen) {
+pub fn extract(l3ir: &mut L3Ir<'_>, tier: OptTier) -> Extraction {
+    let (chosen, extraction) = plan(&Index::new(l3ir), tier);
+    for (record, chosen) in l3ir.placements.iter_mut().zip(chosen) {
         record.chosen = chosen;
     }
     extraction
 }
 
 fn plan(index: &Index<'_, '_>, tier: OptTier) -> (Vec<Placement>, Extraction) {
-    let program = index.program;
+    let program = index.l3ir;
     let budget = tier.budget();
     let model = Model::new(index);
     let mut plan = alloc::vec![Choice::INLINE; program.ops.len()];
@@ -151,7 +151,7 @@ fn blocked(
 ) -> Option<Reason> {
     match choice.placement {
         Placement::Hoist => {
-            let program = index.program;
+            let program = index.l3ir;
             let mut region = index.region(program.ops.get(position)?.region);
             for _ in 0..=program.regions.len() {
                 let owner = index.position(region?.owner?)?;
@@ -165,7 +165,7 @@ fn blocked(
         Placement::Group => {
             let leader = record.leader?;
             let mut current = index.keyed_pred(record.op);
-            for _ in 0..index.program.ops.len() {
+            for _ in 0..index.l3ir.ops.len() {
                 let Some(pred) = current else {
                     return Some(Reason::NotContiguous);
                 };

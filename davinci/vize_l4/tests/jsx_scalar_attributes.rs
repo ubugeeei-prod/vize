@@ -63,7 +63,7 @@ fn complete_scalar_attribute_modules_keep_original_owner_reads_maps_and_plain_ou
                     assert_eq!(
                         analysis
                             .owner()
-                            .file()
+                            .l2ir()
                             .lookup(reference.scope, name, Namespace::Value)
                             .ok_or("actual File binding")?
                             .id(),
@@ -180,7 +180,7 @@ fn mixed_duplicate_and_attribute_comment_forms_keep_exact_target_refusals()
             };
             assert_eq!(kind, expected);
         }
-        assert!(analysis.owner().file().is_complete());
+        assert!(analysis.owner().l2ir().is_complete());
     }
     Ok(())
 }
@@ -211,8 +211,8 @@ fn genuine_tsx_attribute_owner_does_not_gain_runtime_typescript_erasure() -> Res
                 .ok_or("plain TS refusal")?,
             recorded
         );
-        assert!(analysis.owner().file().is_complete());
-        assert_eq!(analysis.owner().file().artifact().source(), source);
+        assert!(analysis.owner().l2ir().is_complete());
+        assert_eq!(analysis.owner().l2ir().artifact().source(), source);
     }
     Ok(())
 }

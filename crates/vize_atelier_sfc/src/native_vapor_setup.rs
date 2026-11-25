@@ -114,7 +114,7 @@ fn emit<L: LinkSink>(
     let source_map = options.source_map.then(|| {
         String::new(document.source_map(
             options.filename,
-            observation.original().descriptor().container().source,
+            observation.original().l1ir().container().source,
         ))
     });
     Ok(NativeVaporSetupSfcOutput {

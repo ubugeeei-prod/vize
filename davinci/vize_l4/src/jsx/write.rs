@@ -184,7 +184,7 @@ fn container<L: LinkSink>(
 ) -> Result<(), JsxEmitError> {
     let span = node.span().ok_or_else(|| invalid(node))?;
     let child = node.children().next().ok_or_else(|| invalid(node))?;
-    let source = analysis.owner().file().artifact().source();
+    let source = analysis.owner().l2ir().artifact().source();
     let inner = Span::new(span.start + 1, span.end - 1);
     let child_span = child.span().ok_or_else(|| invalid(child))?;
     if kind(analysis, child)? == Kind::Empty {

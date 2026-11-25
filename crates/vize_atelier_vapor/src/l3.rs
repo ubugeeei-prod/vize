@@ -241,7 +241,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         );
         let recoveries = match bridge_profile!(
             "atelier.vapor.bridge.markup_admission",
-            markup::self_closing_recoveries(allocator, source, &s3.program)
+            markup::self_closing_recoveries(allocator, source, &s3.l3ir)
         ) {
             Ok(recoveries) => recoveries,
             Err(reason) => return VaporL3BridgeStatus::Legacy(reason),
@@ -258,7 +258,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         // Template carriers keep their wrapper facts in L2 side tables.
         let loops = match bridge_profile!(
             "atelier.vapor.bridge.template_carriers",
-            templates::collect(allocator, source, &s2, &s3.program, &mut retained)
+            templates::collect(allocator, source, &s2, &s3.l3ir, &mut retained)
         ) {
             Ok(loops) => loops,
             Err(reason) => return VaporL3BridgeStatus::Legacy(reason),
@@ -277,13 +277,13 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             };
         }
         capture.page(Level::L3, "lower", || {
-            vize_l2::dump::render_full_page(&vize_l3::dump::Page::of(&s3.program))
+            vize_l2::dump::render_full_page(&vize_l3::dump::Page::of(&s3.l3ir))
         });
         capture.page(Level::L3, "partition", || {
             vize_l2::dump::render_full_page(&vize_l2_to_l3::PartitionPage::of(&s3.partition))
         });
         capture.page(Level::L3, "values", || {
-            vize_l2::dump::render_full_page(&vize_l3::values_dump::Page::of(&s3.program))
+            vize_l2::dump::render_full_page(&vize_l3::values_dump::Page::of(&s3.l3ir))
         });
         admit_with(s3, &retained, &loops, source, recoveries)
     })
@@ -301,7 +301,7 @@ fn admit_with<'a>(
     source: &str,
     recoveries: std::vec::Vec<(u32, u32)>,
 ) -> VaporL3BridgeStatus<'a> {
-    let violations = bridge_profile!("atelier.vapor.bridge.generic_verify", verify(&s3.program));
+    let violations = bridge_profile!("atelier.vapor.bridge.generic_verify", verify(&s3.l3ir));
     if !violations.is_empty() {
         return VaporL3BridgeStatus::Rejected(
             violations
@@ -312,17 +312,12 @@ fn admit_with<'a>(
     }
     // Count equality alone admits duplicate, reordered, stale, or incorrectly
     // classified facts. The producing pass exports one aligned fact per op.
-    if s3.partition.ops.len() != s3.program.ops.len()
-        || s3
-            .partition
-            .ops
-            .iter()
-            .zip(&s3.program.ops)
-            .any(|(fact, op)| {
-                fact.op != op.id
-                    || fact.span != op.span
-                    || fact.kind.is_dynamic() != op.effect.is_some()
-            })
+    if s3.partition.ops.len() != s3.l3ir.ops.len()
+        || s3.partition.ops.iter().zip(&s3.l3ir.ops).any(|(fact, op)| {
+            fact.op != op.id
+                || fact.span != op.span
+                || fact.kind.is_dynamic() != op.effect.is_some()
+        })
     {
         return VaporL3BridgeStatus::Rejected(std::vec![String::from(
             "Davinci L3 verifier rejected Vapor artifact: partition identity/classification mismatch",

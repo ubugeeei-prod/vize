@@ -54,7 +54,7 @@ fn fused_scoping_and_rule_output() {
         let session = NativeScssSession::new_scoped(&arena, &text, Default::default());
         let style = session
             .observation()
-            .descriptor()
+            .l1ir()
             .admitted()
             .unwrap()
             .styles()

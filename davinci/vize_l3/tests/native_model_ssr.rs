@@ -35,7 +35,7 @@ fn seven_original_models_retain_write_identity_without_becoming_generic_reads() 
         let observation = lower_selected_setup_sfc_native(&arena, source, descriptor());
         let admitted = observation.admitted().ok_or("genuine setup completion")?;
         let setup = admitted.setup();
-        let file = setup.file();
+        let file = setup.l2ir();
         let provenance = file.artifact().provenance().to_vec();
         let analysis =
             build_selected_setup_ssr_decisions(setup).map_err(|error| format!("{error:?}"))?;
@@ -75,7 +75,7 @@ fn seven_original_models_retain_write_identity_without_becoming_generic_reads() 
         assert!(core::ptr::eq(row.original(), original));
         assert!(row.original().accepts(row.model()));
         assert!(row.original().accepts_element(*root, element));
-        assert!(core::ptr::eq(row.resolution().file(), file));
+        assert!(core::ptr::eq(row.resolution().l2ir(), file));
         assert_eq!(row.resolution().node(), node);
         assert_eq!(row.resolution().scope(), Some(setup.scope()));
         assert_eq!(row.occurrence().usage, Usage::ReadWrite);

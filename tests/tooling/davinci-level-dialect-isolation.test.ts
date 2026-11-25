@@ -143,7 +143,7 @@ test("one L0 file descriptor owns every input axis and legacy types only re-expo
     "utf8",
   );
   assert.match(target, /registry::TargetOptions::for_file\(/u);
-  assert.match(target, /\.descriptor\(\)\.dialect\(\)/u);
+  assert.match(target, /\.l1ir\(\)\.dialect\(\)/u);
   assert.doesNotMatch(target, /options\.(?:version|dialect)/u);
 });
 

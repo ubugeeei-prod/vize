@@ -72,14 +72,14 @@ fn five_original_click_modules_match_the_complete_pinned_compiler_bytes() {
         let source = fixture["source"].as_str().unwrap();
         let owner = completed(&arena, source);
         let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
-        let file = analysis.file();
+        let file = analysis.l2ir();
         assert!(core::ptr::eq(analysis.owner(), &owner));
         assert!(core::ptr::eq(file.artifact().source(), source));
         let original_on = on(file.artifact().root());
         let lower = file.handler_for(original_on).unwrap();
         let row = analysis.handler(lower.id().node()).unwrap();
         assert!(row.accepts_on(original_on));
-        assert!(core::ptr::eq(row.handler().file(), file));
+        assert!(core::ptr::eq(row.handler().l2ir(), file));
         assert!(core::ptr::eq(row.resolution(), lower.resolution().unwrap()));
         assert!(row.resolution().syntax().leading_declaration());
         assert_eq!(row.resolution().syntax().first_return(), None);

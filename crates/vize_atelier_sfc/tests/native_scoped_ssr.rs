@@ -93,12 +93,12 @@ fn three_whole_original_scoped_ssr_modules_css_maps_and_file_custody_match() {
             tokens
         );
         assert!(core::ptr::eq(
-            observation.original().descriptor().source(),
+            observation.original().l1ir().source(),
             source
         ));
         assert!(observation.original().admitted().is_none());
         let view = observation.admitted().unwrap().into_scoped_template_view();
-        let file = view.file();
+        let file = view.l2ir();
         assert!(core::ptr::eq(
             file,
             observation.original().template().unwrap().file().unwrap()
@@ -111,7 +111,7 @@ fn three_whole_original_scoped_ssr_modules_css_maps_and_file_custody_match() {
             observation.style_syntax().unwrap()
         ));
         let analysis = build_scoped_template_ssr_decisions(view).unwrap();
-        assert!(core::ptr::eq(analysis.file(), file));
+        assert!(core::ptr::eq(analysis.l2ir(), file));
         assert!(core::ptr::eq(
             analysis.scoped().style_syntax(),
             observation.style_syntax().unwrap()
@@ -218,7 +218,7 @@ fn original_style_refusals_do_not_grant_partial_scoped_product() {
         let compilation = compile_native_scoped_ssr_sfc(&arena, source, Options::default());
         assert!(compilation.result().is_err(), "{source}");
         assert!(core::ptr::eq(
-            compilation.observation().original().descriptor().source(),
+            compilation.observation().original().l1ir().source(),
             source
         ));
     }

@@ -79,21 +79,21 @@ impl<'f, 'a> TemplateDeclaration<'f, 'a> {
 /// The exact normally owned File remains borrowed beside the declaration row.
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
-/// fn discard(file: L2Ir<'_>) {
-///     let original = file.template_declarations().next().unwrap();
-///     drop(file);
+/// fn discard(l2ir: L2Ir<'_>) {
+///     let original = l2ir.template_declarations().next().unwrap();
+///     drop(l2ir);
 ///     let _ = original.declaration().original();
 /// }
 /// ```
 pub struct FileTemplateDeclaration<'f, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     declaration: TemplateDeclaration<'f, 'a>,
 }
 
 impl<'f, 'a> FileTemplateDeclaration<'f, 'a> {
     #[must_use]
-    pub const fn file(&self) -> &'f L2Ir<'a> {
-        self.file
+    pub const fn l2ir(&self) -> &'f L2Ir<'a> {
+        self.l2ir
     }
     #[must_use]
     pub const fn declaration(&self) -> &TemplateDeclaration<'f, 'a> {
@@ -101,14 +101,14 @@ impl<'f, 'a> FileTemplateDeclaration<'f, 'a> {
     }
     #[must_use]
     pub fn same_owner(&self, other: &FileTemplateDeclaration<'_, '_>) -> bool {
-        core::ptr::eq(self.file, other.file)
+        core::ptr::eq(self.l2ir, other.l2ir)
     }
 }
 
 /// Numeric lookup is File-local; `for_head_for` joins an actual arena allocation.
 #[derive(Clone, Copy)]
 pub struct FileForHead<'f, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     id: OriginalForId,
 }
 
@@ -122,7 +122,7 @@ impl<'a> L2Ir<'a> {
                 ForAliasRole::Key => record.key?,
             };
             Some(FileTemplateDeclaration {
-                file: self,
+                l2ir: self,
                 declaration: TemplateDeclaration { record, row, id },
             })
         })
@@ -130,7 +130,7 @@ impl<'a> L2Ir<'a> {
     #[must_use]
     pub fn for_head(&self, id: OriginalForId) -> Option<FileForHead<'_, 'a>> {
         self.facts.for_heads.get(id.node())?;
-        Some(FileForHead { file: self, id })
+        Some(FileForHead { l2ir: self, id })
     }
     #[must_use]
     pub fn for_head_for(&self, original: &OriginalForOp<'a>) -> Option<FileForHead<'_, 'a>> {
@@ -160,8 +160,8 @@ impl<'a> L2Ir<'a> {
 
 impl<'f, 'a> FileForHead<'f, 'a> {
     #[must_use]
-    pub const fn file(self) -> &'f L2Ir<'a> {
-        self.file
+    pub const fn l2ir(self) -> &'f L2Ir<'a> {
+        self.l2ir
     }
     #[must_use]
     pub const fn id(self) -> OriginalForId {
@@ -169,26 +169,26 @@ impl<'f, 'a> FileForHead<'f, 'a> {
     }
     #[must_use]
     pub fn resolution(self) -> Option<&'f ForResolution<'a>> {
-        Some(&self.file.facts.for_heads.get(self.id.node())?.resolution)
+        Some(&self.l2ir.facts.for_heads.get(self.id.node())?.resolution)
     }
     #[must_use]
     pub fn scope(self) -> Option<ScopeId> {
-        Some(self.file.facts.for_heads.get(self.id.node())?.scope)
+        Some(self.l2ir.facts.for_heads.get(self.id.node())?.scope)
     }
     #[must_use]
     pub fn enclosing_scope(self) -> Option<ScopeId> {
-        Some(self.file.facts.for_heads.get(self.id.node())?.enclosing)
+        Some(self.l2ir.facts.for_heads.get(self.id.node())?.enclosing)
     }
     /// Canonical binding facts minted beside this actual attached For node.
     /// Their dense hygiene tag is distinct from the File's lexical ScopeId.
     #[must_use]
     pub fn scope_facts(self) -> Option<&'f crate::scope::ScopeFacts> {
-        let _ = self.file.facts.for_heads.get(self.id.node())?.original?;
-        self.file.artifact().scopes().get(self.id.node())
+        let _ = self.l2ir.facts.for_heads.get(self.id.node())?.original?;
+        self.l2ir.artifact().scopes().get(self.id.node())
     }
     #[must_use]
     pub fn accepts(self, original: &OriginalForOp<'a>) -> bool {
-        self.file
+        self.l2ir
             .facts
             .for_heads
             .get(self.id.node())
@@ -197,13 +197,13 @@ impl<'f, 'a> FileForHead<'f, 'a> {
     }
     #[must_use]
     pub fn value(self) -> Option<BindingRef<'f, 'a>> {
-        self.file
-            .binding(self.file.facts.for_heads.get(self.id.node())?.value?)
+        self.l2ir
+            .binding(self.l2ir.facts.for_heads.get(self.id.node())?.value?)
     }
     #[must_use]
     pub fn key(self) -> Option<BindingRef<'f, 'a>> {
-        self.file
-            .binding(self.file.facts.for_heads.get(self.id.node())?.key?)
+        self.l2ir
+            .binding(self.l2ir.facts.for_heads.get(self.id.node())?.key?)
     }
 }
 
@@ -211,8 +211,8 @@ impl<'f, 'a> BindingRef<'f, 'a> {
     #[must_use]
     pub fn template_declaration(self) -> Option<FileTemplateDeclaration<'f, 'a>> {
         Some(FileTemplateDeclaration {
-            file: self.file(),
-            declaration: self.file().facts.template_declaration(self.id())?,
+            l2ir: self.l2ir(),
+            declaration: self.l2ir().facts.template_declaration(self.id())?,
         })
     }
 }

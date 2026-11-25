@@ -71,7 +71,7 @@ impl<'a> NativeScriptObservation<'a> {
             && profile.module
             && !profile.jsx
             && profile.typescript == (self.lang == Lang::Ts)
-            && file.file().units().iter().any(|unit| {
+            && file.l2ir().units().iter().any(|unit| {
                 unit.id == receipt.unit()
                     && unit.scope == receipt.scope()
                     && unit.span == receipt.span()
@@ -90,7 +90,7 @@ impl<'a> NativeScriptObservation<'a> {
 /// }
 /// ```
 pub struct NativeSfcObservation<'a> {
-    descriptor: L1Ir<'a>,
+    l1ir: L1Ir<'a>,
     scripts: Vec<NativeScriptObservation<'a>>,
     template: Option<NativeTemplateObservation<'a>>,
     file: Option<Result<VueFile<'a>, RejectedVueFile<'a>>>,
@@ -102,7 +102,7 @@ impl core::fmt::Debug for NativeSfcObservation<'_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
             .debug_struct("NativeSfcObservation")
-            .field("descriptor", &self.descriptor)
+            .field("descriptor", &self.l1ir)
             .field("scripts", &self.scripts)
             .field("style_syntax", &self.style_syntax)
             .field("template", &self.template)
@@ -113,22 +113,22 @@ impl core::fmt::Debug for NativeSfcObservation<'_> {
 }
 impl<'a> NativeSfcObservation<'a> {
     pub(super) fn new(
-        descriptor: L1Ir<'a>,
+        l1ir: L1Ir<'a>,
         scripts: Vec<NativeScriptObservation<'a>>,
         template: Option<NativeTemplateObservation<'a>>,
         file: Option<Result<VueFile<'a>, RejectedVueFile<'a>>>,
         mut issues: Vec<NativeSfcIssue>,
     ) -> Self {
-        let membership = match (descriptor.admitted(), file.as_ref()) {
+        let membership = match (l1ir.admitted(), file.as_ref()) {
             (Ok(view), Some(Ok(file))) => {
                 let roles = [
                     (view.ordinary(), file.ordinary()),
                     (view.setup(), file.setup()),
                 ];
-                core::ptr::eq(file.file().artifact().source(), descriptor.source())
-                    && file.file().is_complete()
+                core::ptr::eq(file.l2ir().artifact().source(), l1ir.source())
+                    && file.l2ir().is_complete()
                     && scripts.len() == roles.iter().filter(|(view, _)| view.is_some()).count()
-                    && file.file().units().len() == scripts.len()
+                    && file.l2ir().units().len() == scripts.len()
                     && roles
                         .into_iter()
                         .all(|(selected, receipt)| match (selected, receipt) {
@@ -151,14 +151,14 @@ impl<'a> NativeSfcObservation<'a> {
         if !membership && issues.is_empty() {
             issues.push(NativeSfcIssue {
                 container_index: None,
-                span: descriptor.root().map(|root| root.whole_block().span()),
+                span: l1ir.root().map(|root| root.whole_block().span()),
                 kind: NativeSfcIssueKind::Membership,
             });
         }
         let admitted = membership && issues.is_empty();
         // Style syntax is neutral to File membership. Product consumers decide
         // whether the retained original CSS family can be emitted.
-        let style_syntax = descriptor
+        let style_syntax = l1ir
             .admitted()
             .map(|view| {
                 view.styles()
@@ -168,7 +168,7 @@ impl<'a> NativeSfcObservation<'a> {
             })
             .unwrap_or_default();
         Self {
-            descriptor,
+            l1ir,
             scripts,
             template,
             file,
@@ -178,8 +178,8 @@ impl<'a> NativeSfcObservation<'a> {
         }
     }
     #[must_use]
-    pub fn descriptor(&self) -> &L1Ir<'a> {
-        &self.descriptor
+    pub fn l1ir(&self) -> &L1Ir<'a> {
+        &self.l1ir
     }
     #[must_use]
     pub fn style_syntax(&self) -> &[StyleSyntax<'a>] {

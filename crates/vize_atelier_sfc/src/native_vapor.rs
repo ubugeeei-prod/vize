@@ -136,10 +136,7 @@ fn emit<L: LinkSink>(
         .map_err(NativeVaporSfcCompileError::Vapor)?
         .into_document();
     let source_map = options.source_map.then(|| {
-        String::new(document.source_map(
-            options.filename,
-            observation.descriptor().container().source,
-        ))
+        String::new(document.source_map(options.filename, observation.l1ir().container().source))
     });
     Ok(NativeVaporSfcOutput {
         document,

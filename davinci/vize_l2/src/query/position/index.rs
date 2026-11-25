@@ -22,9 +22,9 @@ pub struct PositionIndex<F> {
 impl<'a> PositionIndex<L2Ir<'a>> {
     /// Take ownership of a finished File. Moving the snapshot preserves every row identity.
     #[must_use]
-    pub fn from_file(file: L2Ir<'a>) -> Self {
-        let rows = Rows::new(&file);
-        Self { owner: file, rows }
+    pub fn from_file(l2ir: L2Ir<'a>) -> Self {
+        let rows = Rows::new(&l2ir);
+        Self { owner: l2ir, rows }
     }
 
     #[must_use]
@@ -44,8 +44,8 @@ impl<'f, 'a> Model<'f, 'a> {
     #[must_use]
     pub fn index_positions(self) -> PositionIndex<&'f L2Ir<'a>> {
         PositionIndex {
-            owner: self.file,
-            rows: Rows::new(self.file),
+            owner: self.l2ir,
+            rows: Rows::new(self.l2ir),
         }
     }
 }
@@ -69,40 +69,40 @@ struct Rows {
 }
 
 impl Rows {
-    fn new(file: &L2Ir<'_>) -> Self {
-        if !file.is_complete() {
+    fn new(l2ir: &L2Ir<'_>) -> Self {
+        if !l2ir.is_complete() {
             return Self::default();
         }
         let mut rows = Self {
             complete: true,
-            template: TemplatePositions::new(file),
+            template: TemplatePositions::new(l2ir),
             ..Self::default()
         };
         // Short contiguous tables are cheaper to scan. The paired position
         // profile measures the crossover using the same source and questions.
-        let sites = file
+        let sites = l2ir
             .units()
             .len()
-            .saturating_add(file.scopes().len())
-            .saturating_add(file.facts.declarations.len())
-            .saturating_add(file.references().len());
+            .saturating_add(l2ir.scopes().len())
+            .saturating_add(l2ir.facts.declarations.len())
+            .saturating_add(l2ir.references().len());
         if sites >= 96 {
-            rows.index_script(file);
+            rows.index_script(l2ir);
         }
         rows
     }
 
-    fn index_script(&mut self, file: &L2Ir<'_>) {
-        self.units = Intervals::from_rows(file.units(), |row| row.span);
-        self.declarations = Intervals::from_rows(&file.facts.declarations, |row| row.span);
-        self.references = Intervals::from_rows(file.references(), |row| row.span);
-        self.scopes = Intervals::from_rows(file.scopes(), |row| row.span);
+    fn index_script(&mut self, l2ir: &L2Ir<'_>) {
+        self.units = Intervals::from_rows(l2ir.units(), |row| row.span);
+        self.declarations = Intervals::from_rows(&l2ir.facts.declarations, |row| row.span);
+        self.references = Intervals::from_rows(l2ir.references(), |row| row.span);
+        self.scopes = Intervals::from_rows(l2ir.scopes(), |row| row.span);
         self.indexed_script = true;
     }
 
-    fn model<'f, 'a>(&'f self, file: &'f L2Ir<'a>) -> IndexedModel<'f, 'a> {
+    fn model<'f, 'a>(&'f self, l2ir: &'f L2Ir<'a>) -> IndexedModel<'f, 'a> {
         IndexedModel {
-            scan: Model::new(file),
+            scan: Model::new(l2ir),
             rows: self,
         }
     }
@@ -125,7 +125,7 @@ impl<'f, 'a> Deref for IndexedModel<'f, 'a> {
 
 impl<'f, 'a> IndexedModel<'f, 'a> {
     fn check(self, offset: u32) -> Result<(), PositionQueryError> {
-        let file = self.scan.file;
+        let file = self.scan.l2ir;
         if !self.rows.complete {
             return Err(PositionQueryError::IncompleteFile);
         }
@@ -141,7 +141,7 @@ impl<'f, 'a> IndexedModel<'f, 'a> {
 
     fn unit(self, offset: u32) -> Result<Option<&'f ScriptUnit>, PositionQueryError> {
         self.check(offset)?;
-        let units = self.scan.file.units();
+        let units = self.scan.l2ir.units();
         if let [unit] = units {
             return Ok(contains(unit.span, offset).then_some(unit));
         }
@@ -150,7 +150,7 @@ impl<'f, 'a> IndexedModel<'f, 'a> {
         }
         self.rows
             .units
-            .unique(offset, |_, index| self.scan.file.units().get(*index))
+            .unique(offset, |_, index| self.scan.l2ir.units().get(*index))
     }
 
     fn reference(
@@ -158,7 +158,7 @@ impl<'f, 'a> IndexedModel<'f, 'a> {
         unit: &ScriptUnit,
         offset: u32,
     ) -> Result<Option<ReferenceRef<'f, 'a>>, PositionQueryError> {
-        let file = self.scan.file;
+        let file = self.scan.l2ir;
         if !self.rows.indexed_script {
             return query_reference(file, unit, offset);
         }
@@ -166,7 +166,10 @@ impl<'f, 'a> IndexedModel<'f, 'a> {
             file.references()
                 .get(*index)
                 .filter(|row| row.unit == unit.id)
-                .map(|reference| ReferenceRef { file, reference })
+                .map(|reference| ReferenceRef {
+                    l2ir: file,
+                    reference,
+                })
         })
     }
 
@@ -175,7 +178,7 @@ impl<'f, 'a> IndexedModel<'f, 'a> {
         unit: &ScriptUnit,
         offset: u32,
     ) -> Result<Option<BindingRef<'f, 'a>>, PositionQueryError> {
-        let file = self.scan.file;
+        let file = self.scan.l2ir;
         if !self.rows.indexed_script {
             return query_declaration(file, unit, offset);
         }
@@ -233,7 +236,7 @@ impl<'f, 'a> IndexedModel<'f, 'a> {
         let Some(unit) = self.unit(offset)? else {
             return Ok(None);
         };
-        let file = self.scan.file;
+        let file = self.scan.l2ir;
         let site = match (
             self.declaration(unit, offset)?,
             self.reference(unit, offset)?,
@@ -263,7 +266,7 @@ impl<'f, 'a> IndexedModel<'f, 'a> {
                 Ok(())
             })?;
         }
-        Ok(Some(ScopeRef { file, scope }))
+        Ok(Some(ScopeRef { l2ir: file, scope }))
     }
 
     /// The unique checked handler or loop-alias site at this byte.
@@ -272,7 +275,7 @@ impl<'f, 'a> IndexedModel<'f, 'a> {
         offset: u32,
     ) -> Result<Option<TemplateSiteRef<'f, 'a>>, TemplateQueryError> {
         self.check(offset).map_err(TemplateQueryError::Position)?;
-        self.rows.template.at(self.scan.file, offset)
+        self.rows.template.at(self.scan.l2ir, offset)
     }
 }
 

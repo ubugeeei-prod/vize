@@ -30,19 +30,19 @@ pub enum PreferConstRefusal {
 /// Requiring one actual script and whitespace around it also excludes sibling
 /// reads/writes, template directives and file-level lint suppressions.
 pub fn default_prefer_const(
-    owner: &L1Ir<'_>,
+    l1ir: &L1Ir<'_>,
     checked: &CheckedAssignments<'_, '_, '_>,
     mut report: impl FnMut(LintDiagnostic),
 ) -> Result<(), PreferConstRefusal> {
-    let view = owner
+    let view = l1ir
         .admitted()
         .map_err(|_| PreferConstRefusal::Descriptor)?;
     let script = match (view.ordinary(), view.setup()) {
         (Some(script), None) | (None, Some(script)) => script,
         _ => return Err(PreferConstRefusal::Envelope),
     };
-    if owner.container().blocks.len() != 1 || owner.container().segments().any(|segment| {
-        matches!(segment, ContainerSegment::Interstitial(span) if !span.slice(owner.source()).trim().is_empty())
+    if l1ir.container().blocks.len() != 1 || l1ir.container().segments().any(|segment| {
+        matches!(segment, ContainerSegment::Interstitial(span) if !span.slice(l1ir.source()).trim().is_empty())
     }) {
         return Err(PreferConstRefusal::Envelope);
     }

@@ -153,7 +153,7 @@ fn read_is_resolved(node: JsxNode<'_, '_>, name: &str) -> bool {
         && reference.usage == Usage::Read
         && node
             .owner()
-            .file()
+            .l2ir()
             .lookup(reference.scope, name, Namespace::Value)
             .is_some_and(|binding| reference.target == ReferenceTarget::Resolved(binding.id()))
 }

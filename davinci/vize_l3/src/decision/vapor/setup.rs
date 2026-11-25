@@ -43,8 +43,8 @@ impl<'view, 'owner, 'arena> SelectedSetupVaporAnalysis<'view, 'owner, 'arena> {
         self.template.owner()
     }
     #[must_use]
-    pub fn file(&self) -> &'owner L2Ir<'arena> {
-        self.setup.file()
+    pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.setup.l2ir()
     }
     #[must_use]
     pub fn original_attributes(
@@ -54,7 +54,7 @@ impl<'view, 'owner, 'arena> SelectedSetupVaporAnalysis<'view, 'owner, 'arena> {
     }
     #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
-        self.file().artifact()
+        self.l2ir().artifact()
     }
     #[must_use]
     pub fn tables(&self) -> &DecisionTables {
@@ -76,7 +76,7 @@ pub fn build_selected_setup_vapor_decisions<'view, 'owner, 'arena>(
         .view()
         .map_err(|_| DecisionBuildError::IncompleteFile)?;
     let file = template.file().ok_or(DecisionBuildError::IncompleteFile)?;
-    if !core::ptr::eq(file, setup.file()) {
+    if !core::ptr::eq(file, setup.l2ir()) {
         return Err(DecisionBuildError::IncompleteFile);
     }
     let analysis = build::build_with_vapor_setup(setup)?;

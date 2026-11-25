@@ -18,7 +18,7 @@ pub(super) fn capture(
     let name = text(fixture, "binding")?;
     let view = compilation.observation().admitted().ok_or("setup owner")?;
     let setup = view.setup();
-    let file = setup.file();
+    let file = setup.l2ir();
     require!(
         file.is_complete() && file.units().len() == 1 && file.scopes().len() == 2,
         "{id}: actual whole File/Program/scope"
@@ -177,7 +177,7 @@ pub(super) fn capture(
             && core::ptr::eq(row.occurrence(), occurrence)
             && row.binding().same_owner(binding)
             && row.resolution().node() == node
-            && core::ptr::eq(row.resolution().file(), file)
+            && core::ptr::eq(row.resolution().l2ir(), file)
             && row.authored_span() == authored,
         "{id}: exact retained SSR Model/Element/Binding/ReadWrite identity"
     );

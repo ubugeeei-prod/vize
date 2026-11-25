@@ -142,7 +142,7 @@ pub(super) fn lowered_source<'a>(
 fn graph_payload_mutations_change_generated_behavior() {
     let allocator = Allocator::new();
     let mut s3 = lowered(&allocator);
-    for operand in &mut s3.program.operands {
+    for operand in &mut s3.l3ir.operands {
         if operand.role == OperandRole::Text && operand.value.kind == ValueKind::Js {
             operand.value.text = "message";
         }
@@ -168,7 +168,7 @@ fn corrupt_graph_and_partition_are_rejected_instead_of_falling_back() {
     for mutation in 0..4 {
         let mut s3 = lowered(&allocator);
         match mutation {
-            0 => s3.program.operands[0].op = OpId::new(999),
+            0 => s3.l3ir.operands[0].op = OpId::new(999),
             1 => s3.partition.ops[1].op = s3.partition.ops[0].op,
             2 => s3.partition.ops[0].span.end += 1,
             _ => s3.partition.ops[0].kind = vize_l2_to_l3::PartitionKind::Dynamic,
@@ -187,7 +187,7 @@ fn corrupt_graph_and_partition_are_rejected_instead_of_falling_back() {
 fn generic_graph_verification_does_not_imply_backend_admission() {
     let allocator = Allocator::new();
     let mut reordered = lowered(&allocator);
-    reordered.program.edges.reverse();
+    reordered.l3ir.edges.reverse();
     assert!(matches!(
         admit(reordered, &Retained::new(&allocator)),
         VaporL3BridgeStatus::Accepted(_)
@@ -196,15 +196,15 @@ fn generic_graph_verification_does_not_imply_backend_admission() {
         let mut s3 = lowered(&allocator);
         match mutation {
             0 => {
-                s3.program.operands.remove(0);
+                s3.l3ir.operands.remove(0);
             }
             1 => {
-                let value = s3.program.operands[0];
-                s3.program.operands.push(value);
+                let value = s3.l3ir.operands[0];
+                s3.l3ir.operands.push(value);
             }
             2 => {
                 let value = s3
-                    .program
+                    .l3ir
                     .operands
                     .iter_mut()
                     .find(|v| v.role == OperandRole::Text)
@@ -213,11 +213,11 @@ fn generic_graph_verification_does_not_imply_backend_admission() {
                 value.value.qualifier = "compound";
             }
             3 => {
-                s3.program.edges.pop();
+                s3.l3ir.edges.pop();
             }
             4 => {
                 let value = s3
-                    .program
+                    .l3ir
                     .operands
                     .iter_mut()
                     .find(|v| v.role == OperandRole::BindingKind)
@@ -227,10 +227,10 @@ fn generic_graph_verification_does_not_imply_backend_admission() {
             _ => {
                 // Preserve the length and individually valid edges while
                 // replacing a required dependency with a duplicate.
-                s3.program.edges[1] = s3.program.edges[0];
+                s3.l3ir.edges[1] = s3.l3ir.edges[0];
             }
         }
-        assert!(vize_l3::verify::verify(&s3.program).is_empty());
+        assert!(vize_l3::verify::verify(&s3.l3ir).is_empty());
         let status = admit(s3, &Retained::new(&allocator));
         if matches!(mutation, 0 | 1 | 3 | 5) {
             assert!(
@@ -345,7 +345,7 @@ fn empty_static_text_cannot_shift_materialized_child_addresses() {
     let allocator = Allocator::new();
     let mut s3 = lowered_source(&allocator, "<div>prefix<span>{{ label }}</span></div>");
     let text = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| {
@@ -353,7 +353,7 @@ fn empty_static_text_cannot_shift_materialized_child_addresses() {
         })
         .unwrap();
     text.value.text = "";
-    assert!(vize_l3::verify::verify(&s3.program).is_empty());
+    assert!(vize_l3::verify::verify(&s3.l3ir).is_empty());
     // Empty HTML text produces no DOM node. Counting it as a child would make
     // the following dynamic span address the wrong browser node.
     assert!(matches!(

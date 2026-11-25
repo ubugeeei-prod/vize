@@ -49,13 +49,13 @@ impl<'a> NativeFileAttributeValue<'a> {
 /// ```compile_fail
 /// use vize_l2::file::{L2Ir, FileAttributeValue};
 /// use vize_l2::op::ElementOp;
-/// fn forge<'f,'a>(file: &'f L2Ir<'a>, element: &'f ElementOp<'a>) {
-///     let _ = FileAttributeValue { file, element, index: 0, slot: 0 };
+/// fn forge<'f,'a>(l2ir: &'f L2Ir<'a>, element: &'f ElementOp<'a>) {
+///     let _ = FileAttributeValue { l2ir, element, index: 0, slot: 0 };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct FileAttributeValue<'f, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     element: &'f ElementOp<'a>,
     index: usize,
     slot: usize,
@@ -86,7 +86,7 @@ impl<'a> L2Ir<'a> {
             return None;
         }
         Some(FileAttributeValue {
-            file: self,
+            l2ir: self,
             element,
             index,
             slot,
@@ -101,8 +101,8 @@ impl<'a> RejectedFile<'a> {
 }
 impl<'f, 'a> FileAttributeValue<'f, 'a> {
     #[must_use]
-    pub const fn file(self) -> &'f L2Ir<'a> {
-        self.file
+    pub const fn l2ir(self) -> &'f L2Ir<'a> {
+        self.l2ir
     }
     #[must_use]
     pub const fn element(self) -> &'f ElementOp<'a> {
@@ -118,7 +118,7 @@ impl<'f, 'a> FileAttributeValue<'f, 'a> {
     }
     #[must_use]
     pub fn observation(self) -> Option<&'f AttributeValueOperand<'a>> {
-        self.file
+        self.l2ir
             .facts
             .native_attribute_values
             .get(self.index)?

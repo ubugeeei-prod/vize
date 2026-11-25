@@ -42,7 +42,7 @@ pub struct VerifiedStyleFormat<'s> {
 /// revision. The descriptor borrow keeps the original style identity private.
 pub struct PreparedScss<'s, 'o, 'a> {
     snapshot: &'s SourceSnapshot,
-    descriptor: &'o L1Ir<'a>,
+    l1ir: &'o L1Ir<'a>,
     ordinal: usize,
     original: StyleView<'o, 'a>,
     products: ScssProducts<'a>,
@@ -52,11 +52,11 @@ impl SourceSnapshot {
     pub fn verified_style_format<'s>(
         &'s self,
         documents: &DocumentStore,
-        descriptor: &L1Ir<'_>,
+        l1ir: &L1Ir<'_>,
         ordinal: usize,
         formatter: &GlyphFormatter<'_>,
     ) -> Result<VerifiedStyleFormat<'s>, StyleFormatError> {
-        let (prepared, ()) = self.prepare_scss_with(documents, descriptor, ordinal, |_| ())?;
+        let (prepared, ()) = self.prepare_scss_with(documents, l1ir, ordinal, |_| ())?;
         prepared.format(formatter)
     }
 
@@ -65,16 +65,16 @@ impl SourceSnapshot {
     pub fn prepare_scss_with<'s, 'o, 'a, R>(
         &'s self,
         documents: &DocumentStore,
-        descriptor: &'o L1Ir<'a>,
+        l1ir: &'o L1Ir<'a>,
         ordinal: usize,
         visit: impl FnOnce(OriginalStyleStructure<'_, 'a>) -> R,
     ) -> Result<(PreparedScss<'s, 'o, 'a>, R), StyleFormatError> {
         self.check_current(documents)
             .map_err(StyleFormatError::Host)?;
-        if !core::ptr::eq(descriptor.source(), self.source()) {
+        if !core::ptr::eq(l1ir.source(), self.source()) {
             return Err(StyleFormatError::ForeignSource);
         }
-        let original = style_at(descriptor, ordinal)?;
+        let original = style_at(l1ir, ordinal)?;
         if original.attrs().iter().any(|attr| attr.name == "src") {
             return Err(StyleFormatError::ExternalStyle);
         }
@@ -83,7 +83,7 @@ impl SourceSnapshot {
         Ok((
             PreparedScss {
                 snapshot: self,
-                descriptor,
+                l1ir,
                 ordinal,
                 original,
                 products,
@@ -145,7 +145,7 @@ impl<'s, 'a> PreparedScss<'s, '_, 'a> {
             let end = candidate.len();
             candidate.push_str(suffix);
             let arena = Allocator::default();
-            let observed = Vue.observe_descriptor(&arena, &candidate, self.descriptor.options());
+            let observed = Vue.observe_descriptor(&arena, &candidate, self.l1ir.options());
             let after = style_at(&observed, self.ordinal)?;
             let after_span = after.original_block().authored_span();
             if span.start != after_span.start
@@ -178,13 +178,13 @@ impl<'s, 'a> PreparedScss<'s, '_, 'a> {
 include!("style_format/header.rs");
 
 fn style_at<'o, 'a>(
-    descriptor: &'o L1Ir<'a>,
+    l1ir: &'o L1Ir<'a>,
     ordinal: usize,
 ) -> Result<StyleView<'o, 'a>, StyleFormatError> {
     #[cfg(feature = "experimental-scoped-component-session")]
-    let selection = descriptor.admitted_styles();
+    let selection = l1ir.admitted_styles();
     #[cfg(not(feature = "experimental-scoped-component-session"))]
-    let selection = descriptor.admitted();
+    let selection = l1ir.admitted();
     selection
         .map_err(|_| StyleFormatError::Descriptor)?
         .styles()

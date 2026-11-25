@@ -129,13 +129,13 @@ fn legal_original_numeric_and_string_literals_keep_exact_owners_and_setup_admiss
             let file = original.file(&arena)?;
             let setup = checked(&original, &file)?.map_err(|_| "valid strict setup")?;
             require!(core::ptr::eq(setup.source().root_source(), source.as_str()));
-            require!(core::ptr::eq(setup.exposure().file(), &file));
+            require!(core::ptr::eq(setup.exposure().l2ir(), &file));
             require!(core::ptr::eq(
                 setup.exposure().program().program(),
                 program.program()
             ));
             let binding = setup.bindings().next().ok_or("genuine strict binding")?;
-            require!(core::ptr::eq(binding.file(), &file));
+            require!(core::ptr::eq(binding.l2ir(), &file));
             let declaration = binding.declaration().ok_or("genuine strict declaration")?;
             equal!(declaration.kind, kind);
             equal!(declaration.initializer, expected);

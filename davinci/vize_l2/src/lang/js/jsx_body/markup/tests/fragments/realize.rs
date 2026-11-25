@@ -114,7 +114,7 @@ pub(super) fn mounted(owner: &JsxMarkupFile<'_>) -> Result<Value, &'static str> 
         }
         Ok(())
     }
-    collect(&owner.file().artifact().root().ops, &mut values)?;
+    collect(&owner.l2ir().artifact().root().ops, &mut values)?;
     fn realize(
         node: JsxNode<'_, '_>,
         values: &BTreeMap<(u32, u32), Value>,

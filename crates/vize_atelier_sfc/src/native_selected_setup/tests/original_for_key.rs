@@ -76,7 +76,7 @@ fn nine_whole_original_key_sources_capture_real_bindings_and_maps() -> Result<()
             );
             let view = mapped.observation().admitted().ok_or("original owner")?;
             let setup = view.setup();
-            let file = setup.file();
+            let file = setup.l2ir();
             let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
                 return Err(cstr!("{id}: original For root"));
             };

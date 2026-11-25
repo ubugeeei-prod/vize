@@ -30,7 +30,7 @@ fn actual_constant_scope_uses_vnodes_and_rejects_a_counterfeit_mutable_access_ki
     );
     let view = observation.admitted().unwrap();
     let setup = view.setup();
-    let file = setup.file();
+    let file = setup.l2ir();
     let [root @ Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
         panic!("original");
     };
@@ -101,7 +101,7 @@ fn constant_enter_unwind_keeps_actual_collection_program_params_and_completed_fi
     );
     let view = observation.admitted().unwrap();
     let setup = view.setup();
-    let file = setup.file();
+    let file = setup.l2ir();
     let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
         panic!("original");
     };

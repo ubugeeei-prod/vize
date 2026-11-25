@@ -56,7 +56,7 @@ impl<'a> L1Ir<'a> {
         {
             Ok(self.template.as_ref().map(|selected| CheckedTemplateBlock {
                 view: TemplateView {
-                    owner: self,
+                    l1ir: self,
                     selected,
                 },
             }))
@@ -101,7 +101,7 @@ impl<'a> CheckedTemplateBlock<'_, 'a> {
             clippy::indexing_slicing,
             reason = "the selection index was minted from this immutable descriptor's block list"
         )]
-        self.view.owner.container.blocks[self.container_index()].open_tag
+        self.view.l1ir.container.blocks[self.container_index()].open_tag
     }
     /// The original opening and closing tag name spans.
     pub fn tag_names(self) -> Result<(Span, Span), TemplateFrameNameRefusal> {
@@ -111,6 +111,6 @@ impl<'a> CheckedTemplateBlock<'_, 'a> {
     /// The descriptor's actual HTML tree construction and recovery settings.
     #[must_use]
     pub fn surface_options(self) -> SurfaceParseOptions {
-        self.view.owner.options().template
+        self.view.l1ir.options().template
     }
 }

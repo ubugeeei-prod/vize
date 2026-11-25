@@ -13,16 +13,13 @@ fn whole_js_ts_descriptor_program_and_completed_file_remain_one_moved_owner()
         check(owner.original().issues().is_empty())?;
         let descriptor = owner
             .original()
-            .descriptor()
+            .l1ir()
             .admitted()
             .map_err(|_| "whole descriptor")?;
         let script = descriptor.setup().ok_or("original script")?;
         let template = descriptor.template().ok_or("original template")?;
-        check(owner.original().descriptor().container().blocks.len() == 2)?;
-        check(core::ptr::eq(
-            owner.original().descriptor().source(),
-            source,
-        ))?;
+        check(owner.original().l1ir().container().blocks.len() == 2)?;
+        check(core::ptr::eq(owner.original().l1ir().source(), source))?;
         check(owner.original().admitted().is_none())?;
         let view = owner.admitted().ok_or("whole original setup envelope")?;
         let setup = view.setup();
@@ -43,18 +40,18 @@ fn whole_js_ts_descriptor_program_and_completed_file_remain_one_moved_owner()
         check(setup.program().program().body.len() == 2)?;
         check(setup.unit().index() as usize == script.container_index())?;
         check(setup.unit_record().span == script.block().span())?;
-        check(setup.file().bindings().count() == 2)?;
+        check(setup.l2ir().bindings().count() == 2)?;
         check(setup.bindings().count() == 2)?;
         check(setup.type_annotations().count() == if script.lang() == Lang::Ts { 2 } else { 0 })?;
         for annotation in setup.type_annotations() {
-            check(core::ptr::eq(annotation.file(), setup.file()))?;
+            check(core::ptr::eq(annotation.l2ir(), setup.l2ir()))?;
             check(
                 annotation.span().start >= script.block().span().start
                     && annotation.span().end <= script.block().span().end,
             )?;
         }
-        check(setup.file().native_interpolations().len() == 1)?;
-        let original_file = setup.file();
+        check(setup.l2ir().native_interpolations().len() == 1)?;
+        let original_file = setup.l2ir();
         let original_body = setup.program().program().body.as_ptr();
         let native = view.into_template_view();
         check(core::ptr::eq(
@@ -88,7 +85,7 @@ fn same_file_setup_declarations_reach_original_for_alias_and_handler_resolution(
     let view = owner.admitted().ok_or("whole setup owner")?;
     let setup = view.setup();
     let binding = setup
-        .file()
+        .l2ir()
         .bindings()
         .find(|binding| {
             binding
@@ -98,25 +95,25 @@ fn same_file_setup_declarations_reach_original_for_alias_and_handler_resolution(
         .ok_or("actual selected setup declaration")?;
     check(binding.declaration().ok_or("same declaration")?.unit == setup.unit())?;
     let alias = setup
-        .file()
+        .l2ir()
         .template_declarations()
         .next()
         .ok_or("original For alias")?;
-    check(core::ptr::eq(alias.file(), setup.file()))?;
+    check(core::ptr::eq(alias.l2ir(), setup.l2ir()))?;
     check(alias.declaration().original().is_some())?;
     check(setup.bindings().count() == 1)?;
     let actual_alias = setup
-        .file()
+        .l2ir()
         .binding(alias.declaration().id())
         .ok_or("actual File alias row")?;
     check(setup.binding(actual_alias).is_err())?;
-    let Some(vize_l2::op::Op::Element(button)) = setup.file().artifact().root().ops.last() else {
+    let Some(vize_l2::op::Op::Element(button)) = setup.l2ir().artifact().root().ops.last() else {
         return Err("original button");
     };
     let [vize_l2::op::BindingOp::On(on)] = button.bindings.as_slice() else {
         return Err("original On");
     };
-    let handler = setup.file().handler_for(on).ok_or("same File actual On")?;
+    let handler = setup.l2ir().handler_for(on).ok_or("same File actual On")?;
     check(handler.accepts(binding))?;
     check(handler.scope() == Some(setup.scope()))?;
     let resolution = handler.resolution().ok_or("whole handler resolution")?;
@@ -124,7 +121,7 @@ fn same_file_setup_declarations_reach_original_for_alias_and_handler_resolution(
         return Err("original outer read");
     };
     check(reference.binding == vize_l2::resolution::HandlerBindingRef::Outer(binding.id()))?;
-    check(setup.file().units().len() == 1)?;
+    check(setup.l2ir().units().len() == 1)?;
     Ok(())
 }
 
@@ -156,7 +153,7 @@ fn equal_sources_and_shared_source_keep_distinct_normal_whole_owners() -> Result
         check(
             matches!(first.setup().binding(foreign_binding), Err(issue) if issue.kind == vize_l2::file::vue::ExposureIssueKind::ForeignBinding),
         )?;
-        check(!core::ptr::eq(first.setup().file(), other.setup().file()))?;
+        check(!core::ptr::eq(first.setup().l2ir(), other.setup().l2ir()))?;
         check(first.setup().program().source() == other.setup().program().source())?;
         check(
             first.setup().program().program().body.as_ptr()

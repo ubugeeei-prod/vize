@@ -20,7 +20,7 @@ fn every_actual_setup_target_preserves_its_own_context_and_original_value_cursor
             );
             let selected = original.admitted().ok_or("actual whole setup envelope")?;
             let setup = selected.setup();
-            let file = setup.file();
+            let file = setup.l2ir();
             let actual = element(file, 0)?;
             let dom = template::build_selected_setup_dom_decisions(setup)
                 .map_err(|_| "actual DOM setup context")?;
@@ -37,7 +37,7 @@ fn every_actual_setup_target_preserves_its_own_context_and_original_value_cursor
                 vapor.original_attributes(),
             ] {
                 let facts = facts.ok_or("complete selected value facts")?;
-                check(core::ptr::eq(facts.file(), file) && facts.len() == 1)?;
+                check(core::ptr::eq(facts.l2ir(), file) && facts.len() == 1)?;
                 let value = facts
                     .value(0, actual, 0)
                     .ok_or("actual canonical slot")?

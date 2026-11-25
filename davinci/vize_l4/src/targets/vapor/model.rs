@@ -24,7 +24,7 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     let occurrence = model.occurrence().ok_or_else(fail)?;
     let authored = model.authored_span().ok_or_else(fail)?;
     let binding = model.binding().ok_or_else(fail)?;
-    if !core::ptr::eq(resolution.file(), analysis.file())
+    if !core::ptr::eq(resolution.l2ir(), analysis.l2ir())
         || !original.accepts_element(node, element)
         || analysis.setup().binding(binding).is_err()
         || !resolution.accepts(binding)
@@ -57,7 +57,7 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     prelude.push(", read: _unref, isRef: _isRef }\n");
     if kind == NativeFileModelKind::Checkbox {
         let value = analysis
-            .file()
+            .l2ir()
             .native_attribute_value_for(0, element, 0)
             .ok_or_else(fail)?;
         let observation = value.observation().ok_or_else(fail)?;

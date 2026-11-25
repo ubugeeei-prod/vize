@@ -77,7 +77,7 @@ fn computed_dom_model_arguments_remain_legacy() {
 fn checked_model_name_payload_owns_all_three_generated_keys() {
     let allocator = Allocator::new();
     let mut s3 = super::lowered_source(&allocator, r#"<Child v-model:[name].trim="value" />"#);
-    for operand in &mut s3.program.operands {
+    for operand in &mut s3.l3ir.operands {
         if operand.role == vize_l3::operand::OperandRole::Name {
             operand.value.text = "changedName";
         }

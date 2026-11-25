@@ -85,7 +85,7 @@ fn three_original_class_list_sfc_modules_css_maps_and_scope_id_match_whole_contr
                 .observation()
                 .file()
                 .unwrap()
-                .file()
+                .l2ir()
                 .artifact()
                 .source(),
             source
@@ -225,7 +225,7 @@ fn unproven_list_normalization_or_syntax_retains_complete_custody_and_no_partial
         assert_eq!(
             compilation
                 .observation()
-                .descriptor()
+                .l1ir()
                 .admitted()
                 .unwrap()
                 .styles()
@@ -237,7 +237,7 @@ fn unproven_list_normalization_or_syntax_retains_complete_custody_and_no_partial
                 .observation()
                 .file()
                 .unwrap()
-                .file()
+                .l2ir()
                 .is_complete()
         );
         assert!(compilation.observation().admitted().is_some());

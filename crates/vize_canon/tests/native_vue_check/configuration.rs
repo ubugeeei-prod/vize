@@ -160,7 +160,7 @@ fn authored_absolute_original_source_and_original_refusals_cannot_be_bypassed() 
         ))
     ));
     assert!(std::ptr::eq(
-        unsupported.file().unwrap().file().artifact().source(),
-        unsupported.descriptor().source()
+        unsupported.file().unwrap().l2ir().artifact().source(),
+        unsupported.l1ir().source()
     ));
 }

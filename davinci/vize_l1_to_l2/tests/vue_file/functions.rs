@@ -20,8 +20,8 @@ fn setup_function_exposure_uses_only_actual_unit_scope_declarations() {
     let vue = producer.finish().unwrap();
     let scope = vue.setup().unwrap().scope();
     assert_eq!(vue.declarations().len(), 2);
-    assert_eq!(vue.file().bindings().count(), 4);
-    for binding in vue.file().bindings() {
+    assert_eq!(vue.l2ir().bindings().count(), 4);
+    for binding in vue.l2ir().bindings() {
         let declaration = binding.declaration().unwrap();
         if declaration.scope == scope {
             assert_eq!(vue.exposure(binding).unwrap().role(), VueScriptRole::Setup);
@@ -34,12 +34,12 @@ fn setup_function_exposure_uses_only_actual_unit_scope_declarations() {
         }
     }
     assert!(
-        vue.file()
+        vue.l2ir()
             .lookup(scope, "local", Namespace::Value)
             .is_none()
     );
     let resolution = vue
-        .file()
+        .l2ir()
         .expression(native.embeds[0].node.unwrap())
         .unwrap();
     assert_eq!(resolution.scope(), Some(scope));
@@ -80,7 +80,7 @@ fn ordinary_only_functions_have_no_template_exposure_and_combined_roles_expose_t
     let ordinary_file = producer.finish().unwrap();
     assert!(
         ordinary_file
-            .file()
+            .l2ir()
             .bindings()
             .all(|binding| ordinary_file.exposure(binding).is_none())
     );
@@ -105,14 +105,14 @@ fn ordinary_only_functions_have_no_template_exposure_and_combined_roles_expose_t
     assert!(native.is_supported());
     let vue = producer.finish().unwrap();
     assert_eq!(vue.declarations().len(), 2);
-    assert_eq!(vue.file().bindings().count(), 5);
+    assert_eq!(vue.l2ir().bindings().count(), 5);
     let ordinary_receipt = vue.ordinary().unwrap();
     let setup_receipt = vue.setup().unwrap();
     assert_eq!(
-        vue.file().scopes()[setup_receipt.scope().index() as usize].parent,
+        vue.l2ir().scopes()[setup_receipt.scope().index() as usize].parent,
         Some(ordinary_receipt.scope())
     );
-    for binding in vue.file().bindings() {
+    for binding in vue.l2ir().bindings() {
         let declaration = binding.declaration().unwrap();
         if declaration.scope == ordinary_receipt.scope() {
             assert_eq!(
@@ -126,8 +126,8 @@ fn ordinary_only_functions_have_no_template_exposure_and_combined_roles_expose_t
         }
     }
     assert_eq!(
-        vue.file().exports()[0].local,
-        vue.file()
+        vue.l2ir().exports()[0].local,
+        vue.l2ir()
             .lookup(ordinary_receipt.scope(), "outer", Namespace::Value)
             .map(|binding| binding.id())
     );

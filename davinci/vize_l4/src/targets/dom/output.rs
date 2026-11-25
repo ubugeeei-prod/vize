@@ -166,7 +166,7 @@ impl fmt::Debug for TemplateDomOutputFailure<'_, '_> {
 /// use vize_l4::targets::dom::emit_template_output;
 /// fn reuse(analysis: TemplateDomAnalysis<'_, '_>) {
 ///     let _ = emit_template_output(analysis);
-///     let _ = analysis.file();
+///     let _ = analysis.l2ir();
 /// }
 /// ```
 pub fn emit_template_output<'owner, 'arena>(

@@ -59,10 +59,10 @@ fn original_named_export_nonzero_unicode_crlf_keeps_exact_declaration_and_name_s
         let at = row.span.start;
         let queried = Model::new(&file).binding_at_offset(at).unwrap().unwrap();
         assert_eq!(queried.id(), declared.id());
-        assert!(core::ptr::eq(queried.file(), file.as_ref()));
+        assert!(core::ptr::eq(queried.l2ir(), file.as_ref()));
         let scope = Model::new(&file).scope_at_offset(at).unwrap().unwrap();
         assert_eq!(scope.scope().id, root);
-        assert!(core::ptr::eq(scope.file(), file.as_ref()));
+        assert!(core::ptr::eq(scope.l2ir(), file.as_ref()));
     }
     let Statement::ExportNamedDeclaration(current) = &parsed.admitted().unwrap().program().body[0]
     else {
@@ -94,7 +94,7 @@ fn genuine_named_tsx_owner_move_and_requery_keep_actual_export_and_original_frag
             .finish()
             .unwrap_or_else(|r| panic!("complete TSX: {:?}", r.error())),
     );
-    let file = owner.file();
+    let file = owner.l2ir();
     assert!(file.is_complete());
     assert!(file.units()[0].profile.jsx);
     let function = file
@@ -115,7 +115,7 @@ fn genuine_named_tsx_owner_move_and_requery_keep_actual_export_and_original_frag
             .unwrap()
             .unwrap();
         assert_eq!(binding.id(), parameter.id());
-        assert!(core::ptr::eq(binding.file(), file));
+        assert!(core::ptr::eq(binding.l2ir(), file));
     }
     assert_eq!(owner.observation().comments().len(), 1);
     assert_eq!(
@@ -154,9 +154,9 @@ fn equal_source_foreign_arenas_and_nondefault_profiles_never_replace_named_expor
         .unwrap()
         .unwrap();
     assert_eq!(x.id(), y.id());
-    assert!(core::ptr::eq(x.file(), &left));
-    assert!(core::ptr::eq(y.file(), &right));
-    assert!(!core::ptr::eq(x.file(), y.file()));
+    assert!(core::ptr::eq(x.l2ir(), &left));
+    assert!(core::ptr::eq(y.l2ir(), &right));
+    assert!(!core::ptr::eq(x.l2ir(), y.l2ir()));
     assert!(
         matches!(ProgramInput::checked(a.admitted().unwrap(), SourceRoot::new(&foreign).unwrap().whole_block(), 7), Err(issue) if issue.kind==FileIssueKind::InvalidSource && issue.span==Span::new(0,source.len() as u32))
     );

@@ -18,8 +18,8 @@ fn genuine_embedded_jsx_owner_does_not_authorize_copying_the_outer_module()
     producer.walk().map_err(|_| "walk")?;
     let analysis =
         build_jsx_decisions(producer.finish().map_err(|_| "finish")?).map_err(|_| "L3")?;
-    assert_eq!(analysis.owner().file().artifact().source(), source);
-    assert_eq!(analysis.owner().file().units()[0].span.start, start as u32);
+    assert_eq!(analysis.owner().l2ir().artifact().source(), source);
+    assert_eq!(analysis.owner().l2ir().units()[0].span.start, start as u32);
     assert_eq!(
         emit_js_module::<Recorded>(&analysis).unwrap_err().kind,
         Error::SourceWindow

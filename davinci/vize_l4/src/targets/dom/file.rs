@@ -34,7 +34,7 @@ pub fn emit_file<L: LinkSink>(analysis: &FileAnalysis<'_, '_>) -> Result<Writer<
         analysis.tables(),
         analysis.dom(),
         FileExpressions {
-            file: analysis.file(),
+            l2ir: analysis.l2ir(),
             facts: analysis.dom(),
         },
     )
@@ -65,7 +65,7 @@ pub fn emit_template<L: LinkSink>(
         analysis.tables(),
         analysis.dom(),
         FileExpressions {
-            file: analysis.file(),
+            l2ir: analysis.l2ir(),
             facts: analysis.dom(),
         },
     )
@@ -74,7 +74,7 @@ pub fn emit_template<L: LinkSink>(
 // Constructed only by the two typed owner entries above. Callers cannot pair
 // an arbitrary File with DOM rows or discard the selected completion wrapper.
 struct FileExpressions<'s, 'owner, 'arena> {
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
     facts: Option<&'s DomFacts<'owner, 'arena>>,
 }
 
@@ -85,7 +85,7 @@ impl ExpressionWriter for FileExpressions<'_, '_, '_> {
         node: NodeId,
         on: &vize_l2::op::OnOp<'_>,
     ) -> Result<(), DomError> {
-        super::handler::write(writer, self.file, self.facts, node, on)
+        super::handler::write(writer, self.l2ir, self.facts, node, on)
     }
     fn write<L: LinkSink>(
         &self,
@@ -106,11 +106,11 @@ impl ExpressionWriter for FileExpressions<'_, '_, '_> {
             .and_then(|facts| facts.file_expression(node))
             .ok_or_else(|| fail(DomErrorKind::MissingFileExpression))?;
         let resolution = row.resolution();
-        if !core::ptr::eq(resolution.file(), self.file) || resolution.node() != node {
+        if !core::ptr::eq(resolution.l2ir(), self.l2ir) || resolution.node() != node {
             return Err(fail(DomErrorKind::FileOwnerMismatch));
         }
         if !resolution.scope().is_some_and(|scope| {
-            self.file
+            self.l2ir
                 .scopes()
                 .get(scope.index() as usize)
                 .is_some_and(|record| record.id == scope)
@@ -142,7 +142,7 @@ impl ExpressionWriter for FileExpressions<'_, '_, '_> {
         // This policy is private and rejects every access. The real retained
         // literal and complete empty table were checked above, so it supplies
         // no context/ref/prop fallback and is never consulted for a binding.
-        write_expression(writer, self.file.artifact().source(), table, &NoReferences).map_err(
+        write_expression(writer, self.l2ir.artifact().source(), table, &NoReferences).map_err(
             |error| DomError {
                 node: Some(node),
                 span: error.span,

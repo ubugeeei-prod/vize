@@ -59,10 +59,10 @@ fn whole_original_jsx_and_tsx_keep_kind_owner_comments_full_source_and_maps() ->
         let owner = moved.pop().ok_or("moved owner")?;
         let projection = project_jsx_program(&owner).map_err(|_| "projection")?;
         let plain = project_jsx_program_no_links(&owner).map_err(|_| "plain")?;
-        assert!(core::ptr::eq(projection.file(), owner.file()));
+        assert!(core::ptr::eq(projection.l2ir(), owner.l2ir()));
         assert!(core::ptr::eq(
             projection.unit(),
-            owner.file().units().first().ok_or("unit")?
+            owner.l2ir().units().first().ok_or("unit")?
         ));
         assert!(projection.unit().profile.jsx);
         assert_eq!(projection.source_kind(), kind);
@@ -114,11 +114,11 @@ fn whole_original_jsx_and_tsx_keep_kind_owner_comments_full_source_and_maps() ->
         );
         assert_eq!(owner.observation().comments().len(), comment_count);
         assert!(matches!(
-            project_program(owner.file()),
+            project_program(owner.l2ir()),
             Err(ProjectionError::UnsupportedProfile)
         ));
         assert!(matches!(
-            project_program_no_links(owner.file()),
+            project_program_no_links(owner.l2ir()),
             Err(ProjectionError::UnsupportedProfile)
         ));
     }
@@ -191,8 +191,8 @@ fn genuine_partial_jsx_owners_cannot_project_unparsed_root_bytes() -> LawResult 
         )
         .map_err(|_| "block")?;
     let owner = lower(&arena, block, SourceType::jsx())?;
-    assert!(owner.file().is_complete());
-    assert_eq!(owner.file().artifact().source(), source);
+    assert!(owner.l2ir().is_complete());
+    assert_eq!(owner.l2ir().artifact().source(), source);
     assert!(matches!(
         project_jsx_program(&owner),
         Err(ProjectionError::PartialSource)

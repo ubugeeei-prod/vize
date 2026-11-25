@@ -41,7 +41,7 @@ fn original_js_and_ts_empty_default_complete_with_directives_comments_and_zero_b
             .unwrap();
         assert!(native.produced().is_supported());
         let vue = producer.finish().unwrap();
-        let file = vue.file();
+        let file = vue.l2ir();
         assert!(file.is_complete());
         assert_eq!(file.units().len(), 1);
         assert_eq!(vue.ordinary().unwrap().unit(), unit);

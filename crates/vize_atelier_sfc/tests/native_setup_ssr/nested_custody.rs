@@ -5,7 +5,7 @@ use vize_l2::{
 
 pub fn assert_original(setup: &NativeSelectedSetup<'_, '_>, source: &str) {
     let name = "nested";
-    let file = setup.file();
+    let file = setup.l2ir();
     let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
         panic!("{name}: original root element missing")
     };
@@ -39,7 +39,7 @@ pub fn assert_original(setup: &NativeSelectedSetup<'_, '_>, source: &str) {
         expression.ast
     ));
     let resolution = file.expression(node).unwrap();
-    assert!(core::ptr::eq(resolution.file(), file));
+    assert!(core::ptr::eq(resolution.l2ir(), file));
     assert_eq!(resolution.scope(), Some(setup.scope()));
     let table = resolution.table().unwrap();
     assert!(core::ptr::eq(table.expression().ast, expression.ast));

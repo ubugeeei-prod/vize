@@ -16,7 +16,7 @@ pub fn capture() -> Value {
             },
         );
         assert!(core::ptr::eq(
-            compilation.observation().descriptor().source(),
+            compilation.observation().l1ir().source(),
             source
         ));
         let view = compilation

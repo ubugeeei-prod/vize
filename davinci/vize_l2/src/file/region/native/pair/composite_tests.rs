@@ -24,9 +24,9 @@ use vize_l1::markup::SurfaceChild;
 
 mod refusal;
 
-fn node<'a>(file: &L2Ir<'a>, target: &Op<'a>) -> NodeId {
+fn node<'a>(l2ir: &L2Ir<'a>, target: &Op<'a>) -> NodeId {
     let mut found = None;
-    file.artifact()
+    l2ir.artifact()
         .visit_nodes(&mut |id, actual| {
             if let NodeRef::Op(actual) = actual
                 && core::ptr::eq(actual, target)

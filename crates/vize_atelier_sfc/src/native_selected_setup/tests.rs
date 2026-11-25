@@ -83,7 +83,7 @@ fn seven_whole_original_setup_components_and_maps_are_captured() -> Result<(), S
         );
         let admitted = mapped.observation().admitted().ok_or("own envelope")?;
         let setup = admitted.setup();
-        let file = setup.file();
+        let file = setup.l2ir();
         require!(
             core::ptr::eq(setup.syntax().source().authored_root(), source),
             "{id}: full original source owner"
@@ -140,7 +140,7 @@ fn seven_whole_original_setup_components_and_maps_are_captured() -> Result<(), S
                 .ok_or("original interpolation")?;
             let table = resolution.table().ok_or("whole immutable table")?;
             require!(
-                core::ptr::eq(resolution.file(), file),
+                core::ptr::eq(resolution.l2ir(), file),
                 "{id}: same File expression"
             );
             require!(
@@ -190,7 +190,7 @@ fn seven_whole_original_setup_components_and_maps_are_captured() -> Result<(), S
         require!(seen == 1, "{id}: original sole expression row");
         for annotation in setup.type_annotations() {
             require!(
-                core::ptr::eq(annotation.file(), file),
+                core::ptr::eq(annotation.l2ir(), file),
                 "{id}: same-File annotation"
             );
             require!(

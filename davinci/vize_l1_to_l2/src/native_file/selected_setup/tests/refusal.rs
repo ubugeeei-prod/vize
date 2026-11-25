@@ -69,11 +69,8 @@ fn omitted_sibling_external_and_profile_refusals_preserve_descriptor_before_prog
         check(owner.admitted().is_none())?;
         check(owner.original().template().is_none())?;
         check(!owner.original().issues().is_empty())?;
-        check(core::ptr::eq(
-            owner.original().descriptor().source(),
-            source,
-        ))?;
-        check(!owner.original().descriptor().container().blocks.is_empty())?;
+        check(core::ptr::eq(owner.original().l1ir().source(), source))?;
+        check(!owner.original().l1ir().container().blocks.is_empty())?;
     }
     Ok(())
 }
@@ -97,7 +94,7 @@ fn late_template_refusal_keeps_original_descriptor_program_and_actual_completed_
     check(syntax.program().ok_or("stock Program")?.body.len() == 1)?;
     check(core::ptr::eq(
         syntax.source().authored_root(),
-        owner.original().descriptor().source(),
+        owner.original().l1ir().source(),
     ))?;
     check(original.view().is_err())?;
     let file = original.file().ok_or("normal incomplete prefix")?;
