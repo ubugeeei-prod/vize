@@ -164,6 +164,7 @@ const tasks = {
         "tests/vite-module-config.test.ts",
         "tests/define-config.test.ts",
         "tests/corsa-runtime.test.ts",
+        "tests/format.test.ts",
         "tests/setup.test.ts",
         "tests/setup-oxlint-config.test.ts",
         "tests/init.test.ts",

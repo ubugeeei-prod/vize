@@ -76,6 +76,24 @@ pub(super) fn load_raw_editor_config_attempt_with_compile_cache(
     }
 }
 
+/// Discover the configuration that governs `directory` the way a command run
+/// from that directory does: walk up to the nearest package or TypeScript
+/// boundary, and use project defaults when no Vite config is found there.
+pub(super) fn load_raw_config_discovered_from(
+    directory: &Path,
+) -> Result<LoadedRawConfig, std::string::String> {
+    load_raw_checked_at(
+        directory.to_path_buf(),
+        true,
+        true,
+        &mut Vec::new(),
+        &mut true,
+        &mut None,
+        &mut None,
+        None,
+    )
+}
+
 fn load_raw_checked(
     path: Option<&Path>,
     require_explicit_config: bool,
@@ -88,6 +106,32 @@ fn load_raw_checked(
     let base = path
         .map(Path::to_path_buf)
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+    load_raw_checked_at(
+        base,
+        path.is_none(),
+        require_explicit_config,
+        dependencies,
+        complete,
+        before_read,
+        failure_identity,
+        compile_cache,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one loader serves command, editor and discovery callers"
+)]
+fn load_raw_checked_at(
+    base: PathBuf,
+    automatic: bool,
+    require_explicit_config: bool,
+    dependencies: &mut Vec<PathBuf>,
+    complete: &mut bool,
+    before_read: &mut BeforeConfigRead<'_>,
+    failure_identity: &mut Option<ConfigLoadFailureIdentity>,
+    compile_cache: Option<&Path>,
+) -> Result<LoadedRawConfig, std::string::String> {
     if !base.is_dir()
         && let Some(observe) = before_read.as_deref_mut()
     {
@@ -110,7 +154,7 @@ fn load_raw_checked(
     // The directory's children are the actual discovery inputs. Keeping its
     // mtime would turn unrelated source-file creation into config changes.
     dependencies.pop();
-    for directory in search_directories_observed(&base, path.is_none(), before_read) {
+    for directory in search_directories_observed(&base, automatic, before_read) {
         let mut selected = None;
         for name in CONFIG_FILE_NAMES {
             let candidate = directory.join(name);
@@ -156,7 +200,7 @@ fn load_raw_checked(
             }
         }
     }
-    if path.is_some() && require_explicit_config {
+    if !automatic && require_explicit_config {
         return Err(crate::cstr!("no Vite config file found under {}", base.display()).into());
     }
     Ok(LoadedRawConfig {

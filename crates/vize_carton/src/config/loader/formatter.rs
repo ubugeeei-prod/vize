@@ -1,7 +1,7 @@
 //! Formatter settings projected from one host config read.
 use super::{
-    LoadedConfigWithFeatures, LoadedRawConfig, load_raw_config_checked,
-    load_raw_config_from_serialized, load_raw_config_with_source,
+    LoadedConfigWithFeatures, LoadedRawConfig, checked::load_raw_config_discovered_from,
+    load_raw_config_checked, load_raw_config_from_serialized, load_raw_config_with_source,
 };
 use crate::config::{
     CompilerConfigEntry, ConfigEntryFiles, ConfigEntryIgnore, FormatterProfile,
@@ -42,6 +42,14 @@ pub fn try_load_formatter_snapshot(
     path: Option<&Path>,
 ) -> Result<LoadedFormatterSnapshot, std::string::String> {
     load_raw_config_checked(path).map(snapshot)
+}
+
+/// Discover the formatter settings that govern files in `directory`, as a
+/// command run from that directory would.
+pub fn try_discover_formatter_snapshot(
+    directory: &Path,
+) -> Result<LoadedFormatterSnapshot, std::string::String> {
+    load_raw_config_discovered_from(directory).map(snapshot)
 }
 
 /// Load formatter settings from one already-evaluated Vite-shaped JSON document.

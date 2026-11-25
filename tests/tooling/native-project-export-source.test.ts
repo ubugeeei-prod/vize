@@ -26,6 +26,8 @@ test("unknown exports and modules cannot acquire the original loader authority",
     "typeProjectOwners",
     "TypeResolutionBatch",
     "beginTypeResolutionBatch",
+    "formatFile",
+    "formatFileSync",
   ]) {
     assert.throws(() =>
       originalNativeLoaderModule(
@@ -50,6 +52,36 @@ test("relocated project API exports cannot inherit the original initialization l
     original.replace("const ", addition + "const "),
   ]) {
     assert.throws(() => originalNativeLoaderModule("index.js", Buffer.from(relocated)));
+  }
+});
+
+test("source formatting exports require their exact canonical facade slot", () => {
+  const current = fs.readFileSync(new URL("../../npm/native/index.js", import.meta.url), "utf8");
+  const addition =
+    "module.exports.formatFile = nativeBinding.formatFile;\n" +
+    "module.exports.formatFileSync = nativeBinding.formatFileSync;\n";
+  const without = current.replace(addition, "");
+  assert.notEqual(without, current);
+  assert.deepEqual(
+    originalNativeLoaderModule("index.js", Buffer.from(without)),
+    originalNativeLoaderModule("index.js", Buffer.from(current)),
+    "the previously recognized facade retains the same original loader authority",
+  );
+  for (const changed of [
+    addition + without,
+    without + addition,
+    without.replace("const ", addition + "const "),
+    current + addition,
+    current.replace(addition, addition + addition),
+    current.replace("module.exports.formatFileSync = nativeBinding.formatFileSync;\n", ""),
+    current.replace("nativeBinding.formatFileSync;", "nativeBinding.formatSfc;"),
+    current.replace(
+      addition,
+      "module.exports.formatFileSync = nativeBinding.formatFileSync;\n" +
+        "module.exports.formatFile = nativeBinding.formatFile;\n",
+    ),
+  ]) {
+    assert.throws(() => originalNativeLoaderModule("index.js", Buffer.from(changed)));
   }
 });
 

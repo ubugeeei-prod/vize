@@ -4,7 +4,12 @@
  * This package provides:
  * - CLI binary for compilation, linting, and formatting
  * - Configuration utilities for programmatic use
+ * - `format` / `formatSync`, formatting a source as `vize fmt` formats a file
  */
+
+// Formatting
+export { format, formatSync } from "./format.js";
+export type { FormatOptions, FormatResult, FormatterOverrides } from "./format.js";
 
 // Types
 export type {

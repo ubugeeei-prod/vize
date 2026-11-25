@@ -402,3 +402,30 @@ fn empty_editor_directory_retains_fresh_defaults_and_strict_cli_checks() {
         )
     );
 }
+
+#[test]
+fn discovered_formatter_settings_follow_the_command_boundary() {
+    let project = tempfile::tempdir().unwrap();
+    let root = project.path();
+    std::fs::write(root.join("package.json"), "{}").unwrap();
+    std::fs::write(
+        root.join("vite.config.mjs"),
+        "export default { vue: { formatter: { semi: false } } };",
+    )
+    .unwrap();
+    let nested = root.join("src").join("generated");
+    std::fs::create_dir_all(&nested).unwrap();
+    let snapshot = super::try_discover_formatter_snapshot(&nested).unwrap();
+    assert_eq!(
+        snapshot.loaded.source_path,
+        Some(root.join("vite.config.mjs"))
+    );
+    assert_eq!(snapshot.formatter_profile.options["semi"], false);
+
+    // A nested package boundary without a config stops the walk on defaults.
+    let package = root.join("packages").join("plain");
+    std::fs::create_dir_all(&package).unwrap();
+    std::fs::write(package.join("package.json"), "{}").unwrap();
+    let defaults = super::try_discover_formatter_snapshot(&package).unwrap();
+    assert_eq!(defaults.loaded.source_path, None);
+}

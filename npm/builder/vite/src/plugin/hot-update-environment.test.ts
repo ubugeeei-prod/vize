@@ -232,7 +232,9 @@ function createEnvironment(name: string, clientModule?: EnvironmentModuleNode): 
 
 {
   const state = createState();
-  const previous = state.cache.get(vueFile);
+  state.ssrCache.set(vueFile, state.cache.get(vueFile)!);
+  state.collectedCss.set(vueFile, "old CSS");
+  state.precompileMetadata.set(vueFile, { mtimeMs: 1, size: 1 });
   const rawModule = { url: vueFile } as EnvironmentModuleNode;
   let read = false;
   const options = createOptions([rawModule]);
@@ -244,7 +246,10 @@ function createEnvironment(name: string, clientModule?: EnvironmentModuleNode): 
   const modules = await handleHotUpdateEnvironmentHook(state, createEnvironment("client"), options);
 
   assert.deepEqual(modules, [], "an unloaded client SFC should not fall back to raw reload");
-  assert.equal(state.cache.get(vueFile), previous, "an empty client graph should preserve cache");
+  assert.equal(state.cache.has(vueFile), false, "an empty client graph must evict old output");
+  assert.equal(state.ssrCache.has(vueFile), false, "SSR must not reuse this edit's old output");
+  assert.equal(state.collectedCss.has(vueFile), false);
+  assert.equal(state.precompileMetadata.has(vueFile), false);
   assert.equal(read, false, "an empty client graph should not read or compile the source");
   assert.equal(
     state.pendingHmrUpdateTypes.has(vueFile),
@@ -266,6 +271,26 @@ function createEnvironment(name: string, clientModule?: EnvironmentModuleNode): 
     [clientModule],
     "the loaded client graph should still classify after an empty graph ran first",
   );
+  assert.equal(state.pendingHmrUpdateTypes.get(vueFile), "full-reload");
+}
+
+// Vite can first register the compiled id through a plain .vue request. Its
+// public URL is then plain too, including /@fs for an outside-root component.
+{
+  const state = createState();
+  const clientModule = {
+    id: toPluginVisibleVirtualId(vueFile),
+    url: `/@fs${vueFile}`,
+  } as EnvironmentModuleNode;
+  assert.deepEqual(
+    await handleHotUpdateEnvironmentHook(
+      state,
+      createEnvironment("client", clientModule),
+      createOptions([clientModule]),
+    ),
+    [clientModule],
+  );
+  assert.equal(state.cache.get(vueFile)?.source, nextSource);
   assert.equal(state.pendingHmrUpdateTypes.get(vueFile), "template-only");
 }
 
