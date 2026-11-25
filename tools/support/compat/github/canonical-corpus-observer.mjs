@@ -20,6 +20,10 @@ import {
   sha256,
   validateFiles,
 } from "./canonical-corpus-identity.mjs";
+import {
+  captureRecordRecapture,
+  validateRecordRecapture,
+} from "./canonical-corpus-recapture-archive.mjs";
 import { hasProcessSegments, validateShardedObserver } from "./canonical-corpus-shard-evidence.ts";
 
 export const observerLogs = { dom: "dom-corpus.log", "ssr-pug": "ssr-pug.log", reach: "reach.log" };
@@ -189,6 +193,9 @@ export function validateObserverArtifact(observer, directory) {
     "Canonical file manifest was replaced",
   );
   validateNativeWalk(directory, identity, proof, files);
+  if (identity.nativeWalk)
+    validateRecordRecapture(directory, identity, files, proof, receipt.recapture);
+  else assert.equal(receipt.recapture, undefined, "Unexpected native recapture relation");
   const bytes = readFileSync(join(directory, observerLogs[observer]));
   assert.equal(sha256(bytes), receipt.logSha256, "Observer log was replaced");
   const inspected = inspectObserverLog(observer, bytes, identity, shardEvidence(directory, files));
@@ -239,7 +246,12 @@ export function recordObserver(observer, outcome, cwd, env = process.env) {
   assert.equal(outcome, "success", "Required canonical observer did not succeed");
   const directory = join(cwd, artifactRoot);
   const identity = readJson(join(directory, "identity.json"));
-  sameCorpus(identity, captureCorpus(cwd, env).identity);
+  const files = readJson(join(directory, "files.json"));
+  const proof = readJson(join(directory, "committed-corpus.json"));
+  const recapture = identity.nativeWalk
+    ? captureRecordRecapture(cwd, env, directory, identity, files, proof)
+    : undefined;
+  if (!recapture) sameCorpus(identity, captureCorpus(cwd, env).identity);
   const bytes = readFileSync(join(directory, observerLogs[observer]));
   const inspected = inspectObserverLog(
     observer,
@@ -253,6 +265,7 @@ export function recordObserver(observer, outcome, cwd, env = process.env) {
     observer,
     outcome,
     identity,
+    ...(recapture ? { recapture } : {}),
     hydrationSha256: validateHydration(directory, identity),
     logSha256: sha256(bytes),
     selectedSha256: sha256(readFileSync(join(directory, "selected-gitlinks.txt"))),

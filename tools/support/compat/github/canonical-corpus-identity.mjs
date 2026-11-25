@@ -12,13 +12,14 @@ import {
 import { join, relative, resolve, sep } from "node:path";
 import {
   corpusRoot,
+  committedGraph,
   createCommittedProof,
   verifyCommittedInventory,
   gitObjectId,
 } from "./canonical-corpus-inventory.mjs";
 import { captureNativeWalk } from "./canonical-corpus-native-walk.ts";
 import { commandOutput, runChain, runChainsSync } from "./canonical-corpus-batch.ts";
-import { needsNativeWalk } from "./canonical-corpus-logical-walk.ts";
+import { finiteCommittedPlan, needsNativeWalk } from "./canonical-corpus-logical-walk.ts";
 import { rustCachePolicy } from "../../../../.github/actions/setup-rust-sticky-cache/cache-policy.ts";
 
 export { corpusRoot } from "./canonical-corpus-inventory.mjs";
@@ -253,7 +254,7 @@ export function assertFixtureCheckout(cwd, observed = runChain(fixtureCheckoutCo
   }
 }
 
-export function captureCorpus(cwd, env = process.env) {
+export function captureCorpus(cwd, env = process.env, recapture) {
   const plan = corpusPlan(cwd, env);
   // The same read-only commands as before, one chain per fixture, run
   // concurrently; results are checked in committed gitlink order.
@@ -274,10 +275,19 @@ export function captureCorpus(cwd, env = process.env) {
   }
   const proof = createCommittedProof(cwd, plan.gitlinks);
   const native = needsNativeWalk(plan.gitlinks)
-    ? captureNativeWalk(cwd, plan, proof, resolve(cwd, artifactRoot))
+    ? captureNativeWalk(
+        cwd,
+        plan,
+        proof,
+        recapture?.directory ?? resolve(cwd, artifactRoot),
+        recapture?.basis,
+      )
     : { files: collectFiles(resolve(cwd, corpusRoot)) };
   const files = native.files;
-  const committedFiles = verifyCommittedInventory(proof, plan.gitlinks);
+  const graph = recapture ? committedGraph(proof, plan.gitlinks) : undefined;
+  const committedFiles = graph
+    ? finiteCommittedPlan(graph.nodes, graph.children).files
+    : verifyCommittedInventory(proof, plan.gitlinks);
   return {
     identity: {
       ...plan,

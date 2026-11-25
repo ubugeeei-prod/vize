@@ -33,7 +33,10 @@ import {
 } from "./canonical-corpus-finite-walk.mjs";
 export { collectFinitePhysical } from "./canonical-corpus-finite-walk.mjs";
 
+import { qualifyRecapturedObservation } from "./canonical-corpus-recapture.ts";
+
 import type {
+  RecaptureBasis,
   Boundary,
   CorpusChildren,
   CorpusNodes,
@@ -138,10 +141,11 @@ export function collectNativePhysical(
   nodes: CorpusNodes,
   children: CorpusChildren,
   observe: ((raw: NativeObservation) => void) | null = null,
+  recapture?: RecaptureBasis,
 ): { files: VueFile[]; boundary: Boundary; committed: Array<[string, string]> } {
   validateLogicalGraph(nodes, children);
-  const physical: PhysicalEntry[] | null = observe ? [] : null;
-  const metadata: MetadataEntry[] | null = observe ? [] : null;
+  const physical: PhysicalEntry[] | null = observe || recapture ? [] : null;
+  const metadata: MetadataEntry[] | null = observe || recapture ? [] : null;
   const files: VueFile[] = [];
   const rejected: Boundary["rejected"] = [];
   const witnesses: KernelPrefixWitness[] = [];
@@ -227,7 +231,18 @@ export function collectNativePhysical(
   }
   if (traversalFailure) throw traversalFailure.error;
   const boundary = qualifyKernelBoundary(nodes, rejected, successfulFollows, witnesses);
-  const committed = walkCommittedGraph(nodes, children, boundary).files;
+  if (recapture) {
+    qualifyRecapturedObservation(
+      nodes,
+      children,
+      recapture,
+      { physical, metadata, files, rejected, successfulFollows },
+      boundary,
+    );
+  }
+  const committed = recapture
+    ? files.map(([path, , , blob]): [string, string] => [path, blob])
+    : walkCommittedGraph(nodes, children, boundary).files;
   assert.deepEqual(
     files.map(([path, , , blob]) => [path, blob]),
     committed,
@@ -250,6 +265,7 @@ export function captureNativeWalk(
   identity: CorpusIdentity,
   proof: CorpusProof,
   directory: string,
+  recapture?: RecaptureBasis,
 ): { files: VueFile[]; nativeWalk: NativeWalkIdentity } {
   const { nodes, children } = committedGraph(proof, identity.gitlinks);
   validateLogicalGraph(nodes, children);
@@ -299,9 +315,15 @@ export function captureNativeWalk(
     ["native-collector", readFileSync(join(directory, "native-collector"))],
   ] satisfies Array<[string, string | Uint8Array]>)
     writeFileSync(join(observation, name), bytes, { flag: "wx" });
-  const original = collectNativePhysical(root, nodes, children, (raw) => {
-    writeFileSync(join(observation, "physical.json"), JSON.stringify(raw), { flag: "wx" });
-  });
+  const original = collectNativePhysical(
+    root,
+    nodes,
+    children,
+    (raw) => {
+      writeFileSync(join(observation, "physical.json"), JSON.stringify(raw), { flag: "wx" });
+    },
+    recapture,
+  );
   proof.kernelBoundary = original.boundary;
   proof.traversal = "finite-physical-edges";
   const {
@@ -312,8 +334,13 @@ export function captureNativeWalk(
     files: VueFile[];
     committed: Array<[string, string]>;
     originalVector: Buffer;
-  } = captureFiniteObservation(root, nodes, children, original, directory);
-  const nativePaths = validateFiniteNativeVector(vector, nodes, children, original.boundary);
+  } = captureFiniteObservation(root, nodes, children, original, directory, recapture?.boundary);
+  const nativePaths = validateFiniteNativeVector(
+    vector,
+    nodes,
+    children,
+    recapture?.boundary ?? original.boundary,
+  );
   assert.deepEqual(
     nativePaths,
     files.map(([path]) => path),
@@ -348,7 +375,8 @@ export function captureNativeWalk(
     originalFilesSha256: digest(JSON.stringify(original.files)),
   };
   writeFileSync(join(directory, "native-walk.json"), JSON.stringify(receipt) + "\n");
-  validateNativeWalk(directory, identity, proof, files, cwd);
+  if (recapture) validateNativeSource(directory, identity, cwd);
+  else validateNativeWalk(directory, identity, proof, files, cwd);
   return {
     files,
     nativeWalk: nativeWalkIdentity(receipt),
