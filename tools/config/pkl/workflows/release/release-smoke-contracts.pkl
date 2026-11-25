@@ -42,6 +42,7 @@ concurrency {
 env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
 jobs {
   `bun-planner` {
+    `if` = "${{ github.event_name != 'workflow_dispatch' }}"
     name = "Shared source planner on Bun 1.3.14"
     `runs-on` = ci.linux
     `timeout-minutes` = 5
@@ -74,6 +75,7 @@ jobs {
   }
 
   `node-planner-baseline` {
+    `if` = "${{ github.event_name != 'workflow_dispatch' }}"
     name = "Shared source planner on Node 24.14.0"
     `runs-on` = ci.linux
     `timeout-minutes` = 5
@@ -106,6 +108,7 @@ jobs {
   }
 
   `bun-products` {
+    `if` = "${{ github.event_name != 'workflow_dispatch' }}"
     name = "Packed products on Bun 1.3.14"
     `runs-on` = ci.linux
     `timeout-minutes` = 30
@@ -150,6 +153,7 @@ jobs {
   }
 
   contracts {
+    `if` = "${{ github.event_name != 'workflow_dispatch' }}"
     name = "Release smoke contracts (${{ matrix.os }})"
     `runs-on` = "${{ matrix.os }}"
     `timeout-minutes` = 15
@@ -225,6 +229,67 @@ jobs {
         name = "Require release caller and fresh-project workflow wiring"
         shell = "bash"
         run = ci.workflowScript("require-release-caller-and-fresh-project-workflow-wiring.sh")
+      }
+    }
+  }
+
+  `wasm-smoke-diagnostic` {
+    name = "Actual WASM package smoke (private diagnostic)"
+    `if` = "${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/diag/wasm-smoke-13711-20261126' }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      CARGO_INCREMENTAL = "0"
+      VIZE_RELEASE_BUILD = "1"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.sha }}"
+          `fetch-depth` = 2
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "stable"
+          targets = "wasm32-unknown-unknown"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          `reuse-target` = "true"
+          `restore-trusted` = "true"
+          key = "release-wasm"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        uses = "taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1"
+        with { tool = "wasm-bindgen-cli@0.2.129" }
+      }
+      ci.command("Build and smoke the unchanged source WASM package", "node tools/diagnostics/wasm-smoke-13711.ts")
+      new Dynamic {
+        name = "Retain source, binary and command receipts"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "wasm-smoke-13711-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/vize-wasm-smoke-13711/"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
       }
     }
   }
