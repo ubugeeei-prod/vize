@@ -57,26 +57,35 @@ fn assert_locations(source: &str, node: &Value) {
                     assert_locations(source, value);
                 }
             }
-            let text = || slice(source, &node["loc"]);
+            let text = slice(source, &node["loc"]);
+            // The first and last `n` characters of the node's text.
+            let head = |n: usize| text.chars().take(n).collect::<String>();
+            let tail = |n: usize| {
+                let count = text.chars().count();
+                text.chars()
+                    .skip(count.saturating_sub(n))
+                    .collect::<String>()
+            };
+            let field = |key: &str| node[key].as_str().expect("string field");
             match node["type"].as_str() {
                 Some("ELEMENT") => {
-                    let tag = node["tag"].as_str().expect("tag");
-                    assert!(text().starts_with(&["<", tag].concat()), "{node}");
+                    let tag = field("tag");
+                    assert_eq!(head(tag.chars().count() + 1), ["<", tag].concat(), "{node}");
                 }
                 Some("COMMENT") => {
-                    let content = node["content"].as_str().expect("content");
-                    assert_eq!(text(), ["<!--", content, "-->"].concat());
+                    assert_eq!(text, ["<!--", field("content"), "-->"].concat());
                 }
                 Some("INTERPOLATION") => {
-                    assert!(text().starts_with("{{") && text().ends_with("}}"));
+                    assert_eq!((head(2), tail(2)), ("{{".to_owned(), "}}".to_owned()));
                 }
                 Some("ATTRIBUTE") => {
-                    let name = node["name"].as_str().expect("name");
+                    let name = field("name");
                     assert_eq!(slice(source, &node["nameLoc"]), name);
-                    assert!(text().starts_with(name));
+                    assert_eq!(head(name.chars().count()), name);
                 }
                 Some("DIRECTIVE") => {
-                    assert!(text().starts_with(node["rawName"].as_str().expect("rawName")));
+                    let raw_name = field("rawName");
+                    assert_eq!(head(raw_name.chars().count()), raw_name);
                 }
                 _ => {}
             }
@@ -245,17 +254,23 @@ fn character_references_decode_outside_raw_text() {
 fn syntax_errors_are_returned_with_the_recovered_tree() {
     let source = "<div><span>text</div>\u{1}</b>";
     let result = parse(source);
-    let errors = result["errors"].as_array().expect("errors");
-    assert!(!errors.is_empty(), "{result}");
-    for error in errors {
-        assert!(
-            error["code"]
-                .as_str()
-                .expect("code")
-                .starts_with("compiler/")
-        );
-        assert!(!error["message"].as_str().expect("message").is_empty());
-    }
+    let errors: Vec<(&str, String)> = result["errors"]
+        .as_array()
+        .expect("errors")
+        .iter()
+        .map(|error| {
+            let code = error["code"].as_str().expect("code");
+            (code, slice(source, &error["loc"]))
+        })
+        .collect();
+    assert_eq!(
+        errors,
+        [
+            ("compiler/missing-end-tag", "<span>".to_owned()),
+            ("compiler/invalid-end-tag", "</b>".to_owned()),
+        ]
+    );
+    assert_eq!(result["warnings"], json!([]));
     let div = &result["ast"]["children"][0];
     assert_eq!(div["tag"], "div");
     assert_eq!(div["children"][0]["tag"], "span");

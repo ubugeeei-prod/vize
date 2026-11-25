@@ -148,9 +148,16 @@ test("every location slices its node out of non-ASCII source in UTF-16 units", (
 });
 
 test("syntax errors are returned with the recovered tree instead of thrown", () => {
-  const { ast, errors } = parseTemplateAst("<div><span>text</div>");
-  assert.ok(errors.length > 0);
-  assert.ok(errors.every((error) => error.code.startsWith("compiler/") && error.message !== ""));
+  const source = "<div><span>text</div></b>";
+  const { ast, errors, warnings } = parseTemplateAst(source);
+  assert.deepEqual(
+    errors.map((error) => [error.code, text(source, error.loc)]),
+    [
+      ["compiler/missing-end-tag", "<span>"],
+      ["compiler/invalid-end-tag", "</b>"],
+    ],
+  );
+  assert.deepEqual(warnings, []);
   assert.equal(ast.children[0].type, "ELEMENT");
 });
 
