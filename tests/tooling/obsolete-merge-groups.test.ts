@@ -37,7 +37,7 @@ function fixture({
             mergeQueue: {
               entries: {
                 pageInfo: { hasNextPage: incomplete },
-                nodes: heads.map((oid) => ({ headCommit: { oid } })),
+                nodes: heads.map((oid) => ({ state: "AWAITING_CHECKS", headCommit: { oid } })),
               },
             },
           },
@@ -78,7 +78,7 @@ void test("uses one complete queue snapshot for every candidate in a batch", asy
             mergeQueue: {
               entries: {
                 pageInfo: { hasNextPage: false },
-                nodes: [{ headCommit: { oid: retained.head_sha } }],
+                nodes: [{ state: "AWAITING_CHECKS", headCommit: { oid: retained.head_sha } }],
               },
             },
           },
@@ -119,6 +119,33 @@ void test("retains a live queue candidate even after its temporary ref disappear
     calls.some((call) => call.endsWith("/cancel")),
     false,
   );
+});
+
+void test("unbuilt queued entries do not prevent cleanup of obsolete candidates", async () => {
+  const { api, calls } = fixture();
+  const results = await cleanObsoleteMergeGroups(async (endpoint) => {
+    if (endpoint !== "graphql") return api(endpoint);
+    return {
+      data: {
+        repository: {
+          mergeQueue: {
+            entries: {
+              pageInfo: { hasNextPage: false },
+              nodes: [
+                { state: "AWAITING_CHECKS", headCommit: { oid: "c".repeat(40) } },
+                { state: "QUEUED", headCommit: null },
+              ],
+            },
+          },
+        },
+      },
+    };
+  }, "owner/repo");
+  assert.deepEqual(
+    results.map(({ run: current, reason }) => [current.id, reason]),
+    [[1, "cancel-requested: absent queue head and obsolete ref"]],
+  );
+  assert.equal(calls.at(-1), "repos/owner/repo/actions/runs/1/cancel");
 });
 
 void test("retains a current ref and never cancels PRs, releases, completed runs, or other queues", async () => {
@@ -163,7 +190,10 @@ void test("fails closed on incomplete or unavailable queue evidence", async () =
         data: {
           repository: {
             mergeQueue: {
-              entries: { pageInfo: { hasNextPage: false }, nodes: [{ headCommit: null }] },
+              entries: {
+                pageInfo: { hasNextPage: false },
+                nodes: [{ state: "AWAITING_CHECKS", headCommit: null }],
+              },
             },
           },
         },
