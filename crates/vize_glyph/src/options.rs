@@ -60,7 +60,7 @@ pub struct FormatOptions {
     #[serde(default)]
     pub quote_props: QuoteProps,
 
-    /// Keep authored object newlines, or collapse objects that fit (default: Preserve).
+    /// Keep objects multiline when a newline follows '{', or collapse them (default: Preserve).
     #[serde(default, skip_serializing_if = "preserve_object_wrap")]
     pub object_wrap: ObjectWrap,
 

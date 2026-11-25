@@ -2925,7 +2925,7 @@
           "enum": ["as-needed", "consistent", "preserve"]
         },
         "objectWrap": {
-          "description": "Preserve authored object newlines, or collapse objects that fit",
+          "description": "Keep objects multiline when a newline follows '{', or collapse objects that fit",
           "default": "preserve",
           "type": "string",
           "enum": ["preserve", "collapse"]

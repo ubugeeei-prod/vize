@@ -45,7 +45,7 @@ pub struct FmtArgs {
     #[arg(long, value_enum)]
     pub quote_props: Option<FmtQuoteProps>,
 
-    /// Preserve authored object newlines, or collapse objects that fit
+    /// Keep objects multiline when a newline follows '{', or collapse objects that fit
     #[arg(long, value_enum)]
     pub(in crate::commands) object_wrap: Option<FmtObjectWrap>,
 

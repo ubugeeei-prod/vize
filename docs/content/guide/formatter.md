@@ -162,7 +162,7 @@ Every option below can be set under `vue.formatter`. An option you leave out tak
 | `arrowParens`                  | `"always"`       | Parentheses around a sole arrow function parameter: `"always"` or `"avoid"`.                                                       |
 | `endOfLine`                    | `"lf"`           | Line endings: `"lf"`, `"crlf"`, `"cr"` or `"auto"`. See [Line endings](./formatter-line-endings.md).                               |
 | `quoteProps`                   | `"as-needed"`    | When object keys are quoted: `"as-needed"`, `"consistent"` or `"preserve"`. See [Property quotes](./formatter-property-quotes.md). |
-| `objectWrap`                   | `"preserve"`     | Preserve authored object newlines, or use `"collapse"` to collapse objects that fit the print width.                               |
+| `objectWrap`                   | `"preserve"`     | Keep objects multiline when a newline follows `{`, or use `"collapse"` for objects that fit the print width.                       |
 | `singleAttributePerLine`       | `false`          | Puts each attribute on its own line.                                                                                               |
 | `maxAttributesPerLine`         | none             | Wraps attributes once a tag has more than this many.                                                                               |
 | `vueIndentScriptAndStyle`      | `false`          | Indents the contents of `<script>` and `<style>`.                                                                                  |

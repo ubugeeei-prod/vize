@@ -84,7 +84,7 @@ formatterConfigDef: JsonSchema = new JsonSchema {
     ["objectWrap"] = new JsonSchema {
       type = "string"
       enum = new Listing { "preserve"; "collapse" }
-      description = "Preserve authored object newlines, or collapse objects that fit"
+      description = "Keep objects multiline when a newline follows '{', or collapse objects that fit"
       default = "preserve"
     }
     ["singleAttributePerLine"] = new JsonSchema {

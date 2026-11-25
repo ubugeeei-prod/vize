@@ -637,7 +637,7 @@ export interface FormatOptionsNapi {
   jsxSingleQuote?: boolean;
   /** Change when object properties are quoted. */
   quoteProps?: "as-needed" | "consistent" | "preserve";
-  /** Preserve authored object newlines, or collapse objects that fit. */
+  /** Keep objects multiline when a newline follows '{', or collapse objects that fit. */
   objectWrap?: "preserve" | "collapse";
   /** Change where trailing commas are printed. */
   trailingComma?: "all" | "es5" | "none";

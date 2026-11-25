@@ -45,7 +45,7 @@ pub struct FormatOptionsNapi {
     /// Change when object properties are quoted.
     #[napi(ts_type = "'as-needed' | 'consistent' | 'preserve'")]
     pub quote_props: Option<String>,
-    /// Preserve authored object newlines, or collapse objects that fit.
+    /// Keep objects multiline when a newline follows '{', or collapse objects that fit.
     #[napi(ts_type = "'preserve' | 'collapse'")]
     pub object_wrap: Option<String>,
     /// Change where trailing commas are printed.

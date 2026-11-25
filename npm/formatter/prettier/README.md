@@ -53,7 +53,8 @@ Use `quoteProps: "preserve"` with Vize's
 props/emits-specific convention to lint and prevents format-on-save from
 removing required quotes without changing unrelated object literals.
 
-`objectWrap: "preserve"` (default) keeps authored object newlines.
+`objectWrap: "preserve"` (default) keeps an object multiline when a newline
+follows its opening `{`. Other objects collapse when they fit the print width.
 `objectWrap: "collapse"` puts objects on one line when they fit the print width;
 comments and width constraints can still require multiple lines.
 
