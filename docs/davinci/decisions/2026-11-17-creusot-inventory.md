@@ -216,6 +216,16 @@ every Kani harness in the repository.
 | none                                                                | `LineIndex::line_col` is the LF count before the offset and the UTF-16 units from that line's start; `line_col_to_offset` is its inverse on scalar boundaries            | —                                                | owed                | owed   |
 | none                                                                | the emitter's line table starts a line after every terminator, and `resolve_in_table` and `resolve_positions` give each segment the line and UTF-16 column of its offset | —                                                | owed                | owed   |
 
+## Preconditions of unsafe sites
+
+These laws discharge the precondition of an `unsafe` call in shipped code, or its general step. No Kani harness stated them; round 1 of the [unsafe record](./2026-11-24-unsafe-model-checking.md) could not bound them in CBMC.
+
+| Law                                                                                                                                                                                   | Kernel                                  | Creusot proof                                                                                                                                                                                   | Status |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `is_well_formed` decides Unicode Table 3-7 well-formedness (and Kani checks it against `core::str::from_utf8` on every sequence of up to 4 bytes)                                     | `davinci/vize_l0/src/source_io/utf8.rs` | `is_well_formed`, `scalar_len`                                                                                                                                                                  | proved |
+| concatenating well-formed sequences, or appending an ASCII byte, yields a well-formed sequence                                                                                        | `davinci/vize_l0/src/source_io/utf8.rs` | `well_formed_sequences_concatenate`, `appending_an_ascii_byte_keeps_a_sequence_well_formed`, `adjacent_well_formed_ranges_concatenate`                                                          | proved |
+| an ASCII byte is a whole scalar and splits a well-formed range into two; a range between ASCII boundaries is well-formed; dropping a trailing ASCII byte keeps a sequence well-formed | `davinci/vize_l0/src/source_io/utf8.rs` | `an_ascii_byte_is_a_whole_scalar`, `an_ascii_byte_splits_a_well_formed_range`, `a_range_between_ascii_boundaries_is_well_formed`, `dropping_a_trailing_ascii_byte_keeps_a_sequence_well_formed` | proved |
+
 ## Kernel items outside the proof
 
 Compiled out of the proof crate with `cfg(not(creusot))` because they are not

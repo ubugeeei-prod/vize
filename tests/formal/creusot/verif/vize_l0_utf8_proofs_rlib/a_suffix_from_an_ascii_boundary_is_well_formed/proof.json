@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_suffix_from_an_ascii_boundary_is_well_formed": {
+        "prover": "alt-ergo",
+        "time": 0.009
+      }
+    }
+  }
+}

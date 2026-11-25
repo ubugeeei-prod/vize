@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_adjacent_well_formed_ranges_concatenate": {
+        "prover": "alt-ergo",
+        "time": 0.029
+      }
+    }
+  }
+}
