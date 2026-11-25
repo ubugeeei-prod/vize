@@ -203,15 +203,15 @@ impl SetupPropsPlan {
     ) {
         // Options API projection found no props, yet the default export
         // declares `props`: projection is off, so they were not extracted.
-        // Only a component with no macro props reaches the empty contract, and
-        // the text tests keep the extractor's parse off every other component.
+        // Models retain their known types alongside this open contract. The
+        // text tests avoid parsing unrelated scripts; the AST finds the export.
         let unextracted_options_props = options_api_props.is_none()
             && summary.macros.define_props().is_none()
             && summary.macros.props().is_empty()
-            && summary.macros.models().is_empty()
             && script.is_some_and(|script| {
-                script.contains("export default")
-                    && script.contains("props")
+                script.contains("export")
+                    && script.contains("default")
+                    && (script.contains("props") || script.contains("mixins"))
                     && super::options_api_support::find_options_api_props(script).is_some()
             });
         generate_props_type(

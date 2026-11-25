@@ -315,7 +315,7 @@ fn emit_event_name_checks(
         };
         vize_l0::emit_ts!(
             ts,
-            " & {{ [K in keyof {fallthrough_props}<typeof {component_ref}> & string as K extends `on${{string}}` ? K : never]?: unknown }}"
+            " & {{ [K in keyof {fallthrough_props}<typeof {component_ref}> & string as K extends `on${{string}}` ? $ComponentAttrCamel<K> : never]?: unknown }}"
         );
     }
     ts.push_str(" = {\n");

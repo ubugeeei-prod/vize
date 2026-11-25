@@ -62,6 +62,16 @@ fn inner_macro_type(type_args: &str) -> &str {
         .unwrap_or(type_args)
 }
 
+fn append_unextracted_options_tail(
+    ts: &mut crate::virtual_ts::TextBuf,
+    emission: PropsTypeEmission,
+) {
+    if emission.has_unextracted_options_props() {
+        let record = names::lib("Record");
+        append!(*ts, " & {record}<string, unknown>");
+    }
+}
+
 pub(crate) fn generate_props_type(
     ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
@@ -119,6 +129,7 @@ pub(crate) fn generate_props_type(
                 generic_param,
                 emission.prefer_identifier_props(),
             );
+            append_unextracted_options_tail(ts, emission);
             ts.push_str(";\n");
         } else if let Some(options_api_props) = options_api_props {
             emit_options_api_props_type(
@@ -142,6 +153,7 @@ pub(crate) fn generate_props_type(
         } else if has_models {
             append!(*ts, "type {resolved} = Props & ");
             append_model_props_type_literal(ts, summary, script, models, generic_param);
+            append_unextracted_options_tail(ts, emission);
             ts.push_str(";\n");
         }
     } else if let Some(inner_type) = define_props_inner_type {
@@ -175,6 +187,7 @@ pub(crate) fn generate_props_type(
             generic_param,
             emission.prefer_identifier_props(),
         );
+        append_unextracted_options_tail(ts, emission);
         ts.push_str(";\n");
     } else if let Some(options_api_props) = options_api_props {
         exports_props = true;

@@ -7,6 +7,8 @@
 
 use super::super::{resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
+mod regressions;
+
 const INPUT_ROOT: &str = r#"<script setup lang="ts">
 const model = defineModel<string>();
 </script>

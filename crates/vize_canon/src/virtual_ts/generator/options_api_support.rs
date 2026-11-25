@@ -46,7 +46,7 @@ pub(super) fn props_source_from_object(source: &str) -> OptionsApiPropsSource {
 
 /// Extract direct runtime props or the inferred props of a mixin-only export.
 pub(super) fn find_options_api_props(script: &str) -> Option<OptionsApiPropsSource> {
-    if !script.contains("export default") {
+    if !script.contains("export") || !script.contains("default") {
         return None;
     }
     let allocator = Allocator::default();
