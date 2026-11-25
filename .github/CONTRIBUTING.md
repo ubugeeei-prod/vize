@@ -8,17 +8,12 @@ Use the Node.js development runtime from `package.json#devEngines.runtime` and t
 
 Instruction-count and paired-memory measurements use the same `rust-toolchain.toml` compiler. A toolchain bump re-baselines their recorded compiler identity in the same PR, without loosening ceilings the compiler change does not explain (see [one Rust toolchain](../docs/davinci/decisions/2026-10-20-single-rust-toolchain.md)).
 
-Rust's nightly parallel frontend is an optional local accelerator, not a second pinned toolchain: CI, release builds, published artifacts and measurements stay on `rust-toolchain.toml`. For local `check`, `clippy` and `test` loops, a rustup-managed nightly with eight frontend threads cuts `cargo check -p vize` after an edit to `vize_canon` from 17.0 s to 6.5 s on a 32-vCPU runner ([measurements](../docs/davinci/decisions/2026-11-17-rust-parallel-frontend.md)):
+The Nix shell speeds up Rust builds on the same pinned compiler ([build accelerators](../docs/davinci/decisions/2026-11-25-rust-build-accelerators.md)). Cargo runs every `rustc` call through `tools/support/launchers/rustc.sh`, which:
 
-```sh
-rustup toolchain install nightly-2026-11-16 --profile minimal -c clippy
-RUSTFLAGS="${RUSTFLAGS:-} -Zunstable-options --jobs-frontend=8" \
-  CARGO_TARGET_DIR=target/nightly-frontend ~/.cargo/bin/cargo +nightly-2026-11-16 check -p vize_canon
-```
+- compiles workspace crates with rustc's parallel frontend (`VIZE_RUSTC_FRONTEND_JOBS`, default 8, the fastest measured count; the Rust CI jobs use 8 too). Dependencies and build-script probes compile as before, and object code is identical.
+- hands the call to [kache](https://github.com/kunobi-ninja/kache) (`VIZE_KACHE`), which shares compiled crates across every worktree and target directory on the machine and clones them on copy-on-write filesystems instead of storing them again.
 
-Keep the separate target directory, use 8 threads (16 and 32 are slower), and append to `RUSTFLAGS` so the Nix shell's Darwin link flags survive; call rustup's `cargo` because the Nix shell's has no toolchain selector. Nightly Clippy lints differ from the pinned gate, so run the final `clippy` and tests with the pinned toolchain before pushing.
-
-Without rustup, `nix develop .#parallel-frontend` provides the same nightly with those settings applied: it appends `-Zunstable-options --jobs-frontend=$VIZE_JOBS_FRONTEND` (default 8) to `RUSTFLAGS` and uses `target/nightly-frontend-j<N>`. On the shared 15-CPU macOS machine it shortens a `vize_canon`-only re-check (about 21 s to 13 s at load 40 to 50) but not clean whole-graph builds, which already saturate the cores and spend about 20% more CPU. The default shell is unchanged.
+Enter the shell with `VIZE_RUSTC_FRONTEND_JOBS=1` or `VIZE_KACHE=` to turn either off, for example while measuring compile times. `kache stats` reports hits and the store size; `kache clean` frees space.
 
 Install dependencies from the workspace root:
 
