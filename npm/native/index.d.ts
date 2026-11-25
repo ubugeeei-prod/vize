@@ -603,6 +603,40 @@ export declare function findDependentDesignTokens(
 
 export declare function flattenDesignTokenCategories(categories: string): string;
 
+/** Where `formatFile` reads its file name, configuration and overrides. */
+export interface FormatFileOptionsNapi {
+  /**
+   * File name whose extension selects the formatter and whose directory
+   * selects the configuration. Relative names resolve from the working
+   * directory. The file is never read or written.
+   */
+  filename: string;
+  /**
+   * Vite config file or project directory to read instead of discovering
+   * one from `filename`.
+   */
+  config?: string;
+  /** Format with defaults only, without reading any configuration. */
+  noConfig?: boolean;
+  /** Options applied over the configuration, as `vize fmt` flags are. */
+  overrides?: FormatOptionsNapi;
+}
+
+/**
+ * Format `source` as the contents of `options.filename` on a worker thread,
+ * with the configuration and per-file rules `vize fmt` applies to that file.
+ */
+export declare function formatFile(
+  source: string,
+  options: FormatFileOptionsNapi,
+): Promise<FormatResultNapi>;
+
+/** Synchronous `formatFile`. */
+export declare function formatFileSync(
+  source: string,
+  options: FormatFileOptionsNapi,
+): FormatResultNapi;
+
 /** Format options for NAPI. */
 export interface FormatOptionsNapi {
   /** Existing formatter defaults; explicit options below take precedence. */
