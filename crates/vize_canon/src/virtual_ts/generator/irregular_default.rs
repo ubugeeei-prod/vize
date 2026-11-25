@@ -1,7 +1,7 @@
 //! AST-owned default exports whose keywords span comments or physical lines.
 
-use super::options_api::OptionsApiScriptFacts;
-use crate::virtual_ts::VizeMapping;
+use super::{options_api::OptionsApiScriptFacts, template_ref_keys::TemplateRefKeyChecks};
+use crate::virtual_ts::{TextBuf, VizeMapping};
 use std::ops::Range;
 use vize_carton::String;
 
@@ -61,10 +61,20 @@ impl<'a> IrregularDefault<'a> {
         })
     }
 
-    pub(super) fn project_line(&self, line: &str, start: usize) -> Option<ProjectedLine> {
+    pub(super) fn project_line(
+        &self,
+        line: &str,
+        start: usize,
+        const_assertions: &[usize],
+    ) -> Option<ProjectedLine> {
         let end = start + line.len();
         let declares_alias = start <= self.export.start && self.export.start < end;
         let mut edits = Vec::new();
+        for &offset in const_assertions {
+            if start < offset && offset <= end {
+                edits.push((offset - start..offset - start, " as const"));
+            }
+        }
         for (keyword, mask) in [(&self.export, "      "), (&self.default, "       ")] {
             if start <= keyword.start && keyword.end <= end {
                 edits.push((keyword.start - start..keyword.end - start, mask));
@@ -120,25 +130,26 @@ impl ProjectedLine {
         Some(())
     }
 
-    /// Preserve exact expression offsets around the inserted declaration and
-    /// `)`. Other specialized rewrites already publish their own sub-spans.
-    pub(super) fn map_copied(
+    /// Project each copied source range before composing it with synthetic
+    /// export text. Callee aliases and const assertions can both change length.
+    pub(super) fn emit(
         &self,
+        ts: &mut TextBuf,
         mappings: &mut Vec<VizeMapping>,
-        generated: &str,
-        gen_start: usize,
+        refs: &TemplateRefKeyChecks<'_>,
         start: usize,
-        source_offset: &impl Fn(usize) -> usize,
+        source_offset: &dyn Fn(usize) -> usize,
     ) {
-        if generated != self.text.as_str() {
-            return;
-        }
+        let mut cursor = 0;
         for (generated, authored) in &self.copied {
-            mappings.push(VizeMapping::new(
-                gen_start + generated.start..gen_start + generated.end,
-                source_offset(start + authored.start)..source_offset(start + authored.end),
-            ));
+            ts.push_str(self.text.get(cursor..generated.start).unwrap_or_default());
+            if let Some(text) = self.text.get(generated.clone()) {
+                refs.emit_mapped_chunk(ts, mappings, text, start + authored.start, source_offset);
+            }
+            cursor = generated.end;
         }
+        ts.push_str(self.text.get(cursor..).unwrap_or_default());
+        ts.push('\n');
     }
 }
 

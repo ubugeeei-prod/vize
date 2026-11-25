@@ -108,6 +108,29 @@ pub(super) fn rewrite_export_default_for_module_scope(
     text.into()
 }
 
+/// The copied value's generated start follows fixed synthetic text and the
+/// preserved keyword trivia. Searching for its text can match a comment.
+pub(super) fn rewritten_default_value_start(
+    text: &str,
+    default_object: Option<(usize, usize, usize)>,
+    default_expr: Option<(usize, usize, usize)>,
+) -> Option<usize> {
+    let (start, inner, _) = default_object.or(default_expr)?;
+    let keyword_end = super::irregular_default::keyword_end(text, start)?;
+    let between = if text.get(start..keyword_end)? == "export default" {
+        0
+    } else {
+        text.get(start + 6..keyword_end - 7)?.len()
+    };
+    let gap = inner.checked_sub(keyword_end)?;
+    let wrapper = if default_object.is_some() {
+        DEFINE_COMPONENT_REF.len() + 1
+    } else {
+        0
+    };
+    Some(start + "const __default__ =".len() + between + gap + wrapper)
+}
+
 /// Rewrite an arbitrary `export default <expr>` to `const __default__ = <expr>`
 /// using the `(export_start, expr_start, expr_end)` offsets (relative to
 /// `text`) located by the AST. The `export default` keyword run

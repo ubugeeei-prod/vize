@@ -1,7 +1,7 @@
 //! Emit an authored module statement with its default-export rewrite and mapping.
 
 use super::options_api::OptionsApiScriptFacts;
-use super::spans::rewrite_export_default_for_module_scope;
+use super::spans::{rewrite_export_default_for_module_scope, rewritten_default_value_start};
 use crate::virtual_ts::VizeMapping;
 
 /// Return whether the statement rewrite declared the default-export alias.
@@ -59,10 +59,12 @@ pub(super) fn emit(
         .map(|(_, inner_start, inner_end)| inner_start..inner_end)
         .filter(|core| prefix <= core.start && core.end <= text_end)
         .and_then(|core| {
-            let generated = rewritten
-                .get(prefix..rewritten_end)?
-                .find(text.get(core.clone())?)?;
-            Some((prefix + generated, core))
+            let generated =
+                rewritten_default_value_start(text, span_relative_object, span_relative_expr)?;
+            (prefix <= generated
+                && generated + core.len() <= rewritten_end
+                && rewritten.get(generated..generated + core.len())? == text.get(core.clone())?)
+            .then_some((generated, core))
         });
     let mut segments = vec![(0..prefix, 0..prefix)];
     match core {
@@ -226,6 +228,35 @@ mod tests {
         assert_eq!(
             ts.as_str(),
             "const __default__ = /* 日本 */\r\n __vizeDefineComponent({ name: 'A' }); const after: number = 'bad';void __default__;\n\n"
+        );
+    }
+
+    #[test]
+    fn object_text_in_keyword_comments_cannot_capture_the_value_mapping() {
+        use crate::virtual_ts::mapping::{
+            map_generated_offset_to_source, mapping_for_generated_offset,
+        };
+        let text = "export /* { name: 'A' } */ default { name: 'A' };";
+        let facts = analyze_options_api_script(text, true, false);
+        let mut ts = crate::virtual_ts::TextBuf::default();
+        let mut mappings = Vec::new();
+        assert!(emit(
+            &mut ts,
+            &mut mappings,
+            text,
+            (0, text.len() as u32),
+            &|x| x,
+            &facts
+        ));
+        assert_eq!(
+            ts.as_str(),
+            "const __default__ = /* { name: 'A' } */  __vizeDefineComponent({ name: 'A' });void __default__;\n\n"
+        );
+        let offset = ts.as_str().rfind("name").unwrap();
+        let mapping = mapping_for_generated_offset(&mappings, offset).unwrap();
+        assert_eq!(
+            map_generated_offset_to_source(mapping, offset),
+            text.rfind("name").unwrap()
         );
     }
 }

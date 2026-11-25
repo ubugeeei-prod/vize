@@ -87,3 +87,32 @@ import Wrapper from "./Wrapper.vue";
         [],
     );
 }
+
+#[test]
+fn commented_default_exports_compose_same_line_ref_callee_diagnostics() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    for (name, import, declaration, column) in [
+        ("direct", "useTemplateRef", "useTemplateRef", 80),
+        ("alias", "useTemplateRef as r", "r", 67),
+    ] {
+        let source = vize_carton::cstr!(
+            "<script lang=\"ts\">\nimport {{ {import} }} from 'vue';\nconst el = {declaration}('el'); export /* gap */ default {{ name: 'A' }}; const after: number = 'bad';\n</script>\n<template><div ref=\"el\" /></template>"
+        );
+        assert_eq!(
+            check(
+                vize_carton::cstr!("commented-default-ref-diagnostics-{name}").as_str(),
+                r#"{ "strictTemplates": true }"#,
+                &[("src/App.vue", source.as_str())],
+            ),
+            vec![(
+                "src/App.vue".into(),
+                Some(2322),
+                vize_carton::cstr!(
+                    "3:{column}:error Type 'string' is not assignable to type 'number'."
+                ),
+            )],
+        );
+    }
+}

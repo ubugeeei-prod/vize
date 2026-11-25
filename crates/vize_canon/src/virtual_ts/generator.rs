@@ -454,46 +454,41 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     pending_default.wrap_close = None;
                 }
 
-                let irregular_projection = irregular_default.as_ref()
-                    .and_then(|rewrite| rewrite.project_line(&output_line, line_start));
-                if let Some(projected) = &irregular_projection {
-                    output_line = std::borrow::Cow::Owned(projected.text.clone().into());
+                let mut irregular_projection = irregular_default.as_ref()
+                    .and_then(|rewrite| rewrite.project_line(&output_line, line_start, &[]));
+                if irregular_projection.is_some() {
+                    let offsets = props_const_assertions.take_line_offsets(line_start, line_end);
+                    if !offsets.is_empty() {
+                        irregular_projection = irregular_default.as_ref()
+                            .and_then(|rewrite| rewrite.project_line(&output_line, line_start, offsets));
+                    }
+                }
+                if let Some(projected) = irregular_projection {
                     if projected.declares_alias {
                         emitted_default_alias = true;
                         declared_default_alias = true;
                     }
-                }
-                props_const_assertions.splice_output_line(&mut output_line, line_start);
-                if standard_default::rewrite_line(
-                    &mut output_line,
-                    line,
-                    (line_start, line_end),
-                    script,
-                    standard_default::Context {
-                        facts: &options_script,
-                        has_script_setup,
-                        inside_literal: module_plan.inside_literal(line_start),
-                    },
-                    &mut pending_default,
-                ) {
-                    emitted_default_alias = true;
-                    declared_default_alias = true;
-                }
-                let projected_gen_start = ts.len();
-                ref_keys.emit_line(
-                    &mut ts,
-                    &mut mappings,
-                    output_line,
-                    (line_start, line),
-                    source_offset,
-                );
-                if let Some(projected) = irregular_projection {
-                    projected.map_copied(
-                        &mut mappings,
-                        ts.as_str().get(projected_gen_start..ts.len().saturating_sub(1)).unwrap_or_default(),
-                        projected_gen_start,
-                        line_start,
-                        &source_offset,
+                    projected.emit(&mut ts, &mut mappings, &ref_keys, line_start, source_offset);
+                } else {
+                    props_const_assertions.splice_output_line(&mut output_line, line_start);
+                    if standard_default::rewrite_line(
+                        &mut output_line,
+                        line,
+                        (line_start, line_end),
+                        script,
+                        standard_default::Context {
+                            facts: &options_script,
+                            has_script_setup,
+                            inside_literal: module_plan.inside_literal(line_start),
+                        },
+                        &mut pending_default,
+                    ) {
+                        emitted_default_alias = true;
+                        declared_default_alias = true;
+                    }
+                    ref_keys.emit_line(
+                        &mut ts, &mut mappings, output_line,
+                        (line_start, line), source_offset,
                     );
                 }
                 if let Some(name) = irregular_default.as_ref()
