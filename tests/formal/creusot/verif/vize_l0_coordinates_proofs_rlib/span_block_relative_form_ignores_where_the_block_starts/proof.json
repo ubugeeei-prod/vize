@@ -1,0 +1,13 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_new": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_span_block_relative_form_ignores_where_the_block_starts": {
+        "prover": "z3",
+        "time": 0.005
+      },
+      "vc_to_block_relative": { "prover": "alt-ergo", "time": 0.006 }
+    }
+  }
+}

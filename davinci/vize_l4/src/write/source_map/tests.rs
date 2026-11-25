@@ -1,5 +1,6 @@
 use super::vlq::BASE64_CHARS;
 use super::*;
+use crate::write::source_positions::{line_start_table, resolve_in_table, utf16_len};
 
 /// Decode a single VLQ-encoded value from `chars`, returning the value and
 /// the number of base64 digits consumed. Test-only mirror of the encoder so
@@ -59,9 +60,9 @@ fn vlq_known_encodings() {
 
 #[test]
 fn utf16_len_counts_surrogates() {
-    assert_eq!(utf16_len("abc"), 3);
-    assert_eq!(utf16_len("é"), 1); // U+00E9, single unit
-    assert_eq!(utf16_len("𝟘"), 2); // U+1D7D8, surrogate pair
+    assert_eq!(utf16_len(b"abc", 0, 3), 3);
+    assert_eq!(utf16_len("é".as_bytes(), 0, 2), 1); // U+00E9, single unit
+    assert_eq!(utf16_len("𝟘".as_bytes(), 0, 4), 2); // U+1D7D8, surrogate pair
 }
 
 #[test]
@@ -80,7 +81,7 @@ fn resolve_generated_side_multiline() {
             name: None,
         },
     ];
-    let resolved = resolve_positions(code, "", &segs);
+    let resolved = resolve_positions(code.as_bytes(), b"", &segs);
     assert_eq!(
         (resolved[0].generated_line, resolved[0].generated_column),
         (1, 3)
@@ -96,12 +97,12 @@ fn resolve_source_offset_to_line_column() {
     // "<div>\n  {{ msg }}\n</div>": line 1 starts at byte 6, so `msg` at byte
     // offset 11 is on line 1 (0-indexed), column 5 (`  {{ ` precedes it).
     let source = "<div>\n  {{ msg }}\n</div>";
-    let starts = line_start_table(source);
-    assert_eq!(resolve_in_table(source, &starts, 11), (1, 5));
+    let starts = line_start_table(source.as_bytes());
+    assert_eq!(resolve_in_table(source.as_bytes(), &starts, 11), (1, 5));
     // The `<` at offset 0 is line 0, column 0.
-    assert_eq!(resolve_in_table(source, &starts, 0), (0, 0));
+    assert_eq!(resolve_in_table(source.as_bytes(), &starts, 0), (0, 0));
     // The `<` of `</div>` is at offset 18, line 2, column 0.
-    assert_eq!(resolve_in_table(source, &starts, 18), (2, 0));
+    assert_eq!(resolve_in_table(source.as_bytes(), &starts, 18), (2, 0));
 }
 
 #[test]
@@ -114,7 +115,7 @@ fn javascript_line_terminators_resolve_both_sides_once_with_utf16_columns() {
             source_offset: source.find('x').unwrap() as u32,
             name: Some(0),
         }];
-        let resolved = resolve_positions(&code, &source, &segments);
+        let resolved = resolve_positions(code.as_bytes(), source.as_bytes(), &segments);
         assert_eq!(resolved.len(), 1);
         assert_eq!(
             (resolved[0].generated_line, resolved[0].generated_column),
@@ -122,7 +123,7 @@ fn javascript_line_terminators_resolve_both_sides_once_with_utf16_columns() {
         );
         assert_eq!((resolved[0].source_line, resolved[0].source_column), (1, 3));
         assert_eq!(
-            line_start_table(&source),
+            line_start_table(source.as_bytes()),
             vec![0, 1 + ending.len(), 9 + 2 * ending.len()]
         );
     }
@@ -140,7 +141,7 @@ fn resolve_positions_clamps_non_char_boundary_offsets() {
         name: None,
     }];
 
-    let resolved = resolve_positions(generated, source, &segs);
+    let resolved = resolve_positions(generated.as_bytes(), source.as_bytes(), &segs);
 
     assert_eq!(resolved.len(), 1);
     assert_eq!(resolved[0].generated_column, 15);
@@ -211,4 +212,59 @@ fn intern_name_deduplicates() {
     assert_eq!(names.len(), 2, "`id` should be deduplicated");
     assert_eq!(names[0], "id");
     assert_eq!(names[1], "class");
+}
+
+/// Both sides against a definition read off the scalars: a line starts after
+/// every JavaScript line terminator, CR LF once, and a column counts the
+/// UTF-16 units of the scalars from the line start to the offset moved back
+/// to a scalar boundary.
+#[test]
+fn every_offset_of_every_short_text_resolves_to_its_scalar_position() {
+    let parts = [
+        "", "a", "\n", "\r", "\r\n", "é", "😀", "\u{2028}", "\u{2029}",
+    ];
+    for a in parts {
+        for b in parts {
+            for c in parts {
+                for d in parts {
+                    let text = [a, b, c, d].concat();
+                    let mut boundaries = Vec::new();
+                    let mut position = (0u32, 0u32);
+                    let mut chars = text.char_indices().peekable();
+                    while let Some((at, ch)) = chars.next() {
+                        boundaries.push((at, position));
+                        let crlf = ch == '\r' && chars.peek().map(|(_, next)| *next) == Some('\n');
+                        position = match ch {
+                            '\n' | '\r' | '\u{2028}' | '\u{2029}' if !crlf => (position.0 + 1, 0),
+                            _ => (position.0, position.1 + ch.len_utf16() as u32),
+                        };
+                    }
+                    boundaries.push((text.len(), position));
+                    let at = |offset: usize| {
+                        let floor = boundaries.iter().rev().find(|(at, _)| *at <= offset);
+                        floor.map(|(_, position)| *position)
+                    };
+                    let starts = line_start_table(text.as_bytes());
+                    let segments: Vec<Segment> = (0..text.len() + 3)
+                        .map(|offset| Segment {
+                            generated_offset: offset as u32,
+                            source_offset: (text.len() + 2 - offset) as u32,
+                            name: None,
+                        })
+                        .collect();
+                    let resolved = resolve_positions(text.as_bytes(), text.as_bytes(), &segments);
+                    for (offset, segment) in resolved.iter().enumerate() {
+                        let expected = at(offset);
+                        let source = text.len() + 2 - offset;
+                        let table = resolve_in_table(text.as_bytes(), &starts, offset);
+                        assert_eq!(Some(table), expected, "{text:?} {offset}");
+                        let generated = (segment.generated_line, segment.generated_column);
+                        assert_eq!(Some(generated), expected, "{text:?} {offset}");
+                        let authored = (segment.source_line, segment.source_column);
+                        assert_eq!(Some(authored), at(source), "{text:?} {source}");
+                    }
+                }
+            }
+        }
+    }
 }

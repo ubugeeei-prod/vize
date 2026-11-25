@@ -15,7 +15,14 @@ members = [
   "content-model",
   "reference",
   "js-escape-gate",
+  "unicode",
+  "line-index",
+  "source-map",
+  "coordinates",
+  "scope-chain",
   "style-header",
+  "assignability",
+  "utf8",
 ]
 
 [workspace.dependencies]

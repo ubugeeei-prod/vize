@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_scalar_does_not_depend_on_the_bound_past_it": {
+        "prover": "alt-ergo",
+        "time": 0.018
+      }
+    }
+  }
+}

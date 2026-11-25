@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_line_col_is_one_to_one_on_boundaries": {
+        "prover": "alt-ergo",
+        "time": 0.052
+      }
+    }
+  }
+}

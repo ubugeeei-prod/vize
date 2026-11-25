@@ -27,7 +27,7 @@ pub(super) fn original<L: LinkSink>(
     let mut start = 0;
     let mut cursor = 0;
     while cursor < text.len() {
-        let width = line_break_len(text, cursor);
+        let width = line_break_len(text.as_bytes(), cursor);
         cursor += width.max(1);
         if width > 0 {
             writer.push_linked(

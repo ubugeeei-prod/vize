@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_nonempty_range_is_its_offsets": {
+        "prover": "alt-ergo",
+        "time": 0.011
+      }
+    }
+  }
+}

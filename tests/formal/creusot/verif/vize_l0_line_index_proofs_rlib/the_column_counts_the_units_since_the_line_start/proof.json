@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_the_column_counts_the_units_since_the_line_start": {
+        "prover": "alt-ergo",
+        "time": 0.012
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_the_last_start_stays": { "prover": "alt-ergo", "time": 0.011 }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_source_range_union_is_the_least_enclosing_range": {
+        "prover": "z3",
+        "time": 0.007
+      },
+      "vc_union": { "prover": "alt-ergo", "time": 0.006 }
+    }
+  }
+}

@@ -2,7 +2,19 @@
 //!
 //! Provides types for representing byte ranges in source code,
 //! used for source mapping between Vue SFC and generated code.
+//!
+//! Creusot proves the range and mapping arithmetic for every `u32` and `i32`
+//! value (`tests/formal/creusot/coordinates`, root `../creusot.rs`). The
+//! contracts restate the documentation: a range is the half-open set of
+//! offsets `[start, end)`. Under `cfg(creusot)` the derives other than
+//! `Clone` and `Copy`, the `Display` impl and the `SourceMap` methods are
+//! compiled out: no range or mapping law reads them, and the inventory
+//! (`docs/davinci/decisions/2026-11-17-creusot-inventory.md`) names the
+//! check that covers each. The product build keeps every item.
 
+#[cfg(creusot)]
+use creusot_std::prelude::{Int, ensures, logic};
+#[cfg(not(creusot))]
 use serde::{Deserialize, Serialize};
 
 use crate::CompactString as String;
@@ -13,7 +25,21 @@ use crate::CompactString as String;
 /// - Error reporting
 /// - Source mapping between original and generated code
 /// - IDE features (hover, goto definition, etc.)
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(
+    not(creusot),
+    derive(
+        Debug,
+        Clone,
+        Copy,
+        Default,
+        PartialEq,
+        Eq,
+        Hash,
+        Serialize,
+        Deserialize
+    )
+)]
+#[cfg_attr(creusot, derive(Copy))]
 pub struct SourceRange {
     /// Start byte offset (inclusive)
     pub start: u32,
@@ -24,12 +50,14 @@ pub struct SourceRange {
 impl SourceRange {
     /// Create a new source range.
     #[inline]
+    #[cfg_attr(creusot, ensures(result.start == start && result.end == end))]
     pub const fn new(start: u32, end: u32) -> Self {
         Self { start, end }
     }
 
     /// Create a range for a single position.
     #[inline]
+    #[cfg_attr(creusot, ensures(result.start == offset && result.end == offset))]
     pub const fn point(offset: u32) -> Self {
         Self {
             start: offset,
@@ -39,30 +67,42 @@ impl SourceRange {
 
     /// Check if this range contains the given offset.
     #[inline]
+    #[cfg_attr(creusot, ensures(result == self.covers(offset@)))]
     pub const fn contains(&self, offset: u32) -> bool {
         offset >= self.start && offset < self.end
     }
 
     /// Get the length of this range.
     #[inline]
+    #[cfg_attr(creusot, ensures(result@ == if self.start@ <= self.end@ {
+        self.end@ - self.start@
+    } else {
+        0
+    }))]
     pub const fn len(&self) -> u32 {
         self.end.saturating_sub(self.start)
     }
 
     /// Check if this range is empty.
     #[inline]
+    #[cfg_attr(creusot, ensures(result == forall<offset: Int> !self.covers(offset)))]
     pub const fn is_empty(&self) -> bool {
         self.start >= self.end
     }
 
     /// Check if this range intersects with another range.
     #[inline]
+    #[cfg_attr(creusot, ensures(result == exists<offset: Int>
+        self.covers(offset) && other.covers(offset)))]
     pub const fn intersects(&self, other: &Self) -> bool {
         !self.is_empty() && !other.is_empty() && self.start < other.end && other.start < self.end
     }
 
     /// Get the union of two ranges (smallest range containing both).
     #[inline]
+    #[cfg_attr(creusot, ensures(result.encloses(*self) && result.encloses(*other)))]
+    #[cfg_attr(creusot, ensures(forall<outer: SourceRange>
+        outer.encloses(*self) && outer.encloses(*other) ==> outer.encloses(result)))]
     pub fn union(&self, other: &Self) -> Self {
         Self {
             start: self.start.min(other.start),
@@ -72,6 +112,11 @@ impl SourceRange {
 
     /// Get the intersection of two ranges (largest range contained in both).
     #[inline]
+    #[cfg_attr(creusot, ensures(match result {
+        Some(both) => both.start@ < both.end@ && forall<offset: Int>
+            both.covers(offset) == (self.covers(offset) && other.covers(offset)),
+        None => forall<offset: Int> !(self.covers(offset) && other.covers(offset)),
+    }))]
     pub fn intersection(&self, other: &Self) -> Option<Self> {
         let start = self.start.max(other.start);
         let end = self.end.min(other.end);
@@ -84,6 +129,8 @@ impl SourceRange {
 
     /// Offset this range by a given amount.
     #[inline]
+    #[cfg_attr(creusot, ensures(result.start@ == shifted(self.start@, amount@)))]
+    #[cfg_attr(creusot, ensures(result.end@ == shifted(self.end@, amount@)))]
     pub const fn offset(&self, amount: i32) -> Self {
         Self {
             start: offset_u32(self.start, amount),
@@ -93,6 +140,8 @@ impl SourceRange {
 
     /// Extend this range by a given amount on both ends.
     #[inline]
+    #[cfg_attr(creusot, ensures(result.start@ == shifted(self.start@, -amount@)))]
+    #[cfg_attr(creusot, ensures(result.end@ == shifted(self.end@, amount@)))]
     pub const fn extend(&self, amount: u32) -> Self {
         Self {
             start: self.start.saturating_sub(amount),
@@ -101,15 +150,73 @@ impl SourceRange {
     }
 }
 
+/// The proof crate's `Clone`: a copy. Creusot's `Clone` derive does not
+/// resolve on a struct of machine integers.
+#[cfg(creusot)]
+impl Clone for SourceRange {
+    #[ensures(result == *self)]
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+/// The laws' reading of a range: the offsets it covers, and enclosure.
+#[cfg(creusot)]
+impl SourceRange {
+    /// `offset` lies in the half-open range `[start, end)`.
+    #[logic(open)]
+    pub fn covers(self, offset: Int) -> bool {
+        pearlite! { self.start@ <= offset && offset < self.end@ }
+    }
+
+    /// The endpoints of `self` enclose those of `inner`.
+    #[logic(open)]
+    pub fn encloses(self, inner: SourceRange) -> bool {
+        pearlite! { self.start@ <= inner.start@ && inner.end@ <= self.end@ }
+    }
+}
+
+/// An offset moved by `amount` in the integers, clamped into `u32`.
+#[cfg(creusot)]
+#[logic(open)]
+pub fn shifted(offset: Int, amount: Int) -> Int {
+    pearlite! {
+        if offset + amount < 0 {
+            0
+        } else if offset + amount > u32::MAX@ {
+            u32::MAX@
+        } else {
+            offset + amount
+        }
+    }
+}
+
+/// The offset at the distance of `offset` from `from.start`, counted from
+/// `to.start` and clamped to the last offset of `to` (its start when `to`
+/// is empty).
+#[cfg(creusot)]
+#[logic(open)]
+pub fn carried(offset: Int, from: SourceRange, to: SourceRange) -> Int {
+    pearlite! {
+        let last = if to.start@ < to.end@ { to.end@ - 1 } else { to.start@ };
+        let target = to.start@ + (offset - from.start@);
+        if target <= last { target } else { last }
+    }
+}
+
+/// `amount.abs_diff(0)` is `amount.unsigned_abs()`, spelled with the std
+/// function Creusot specifies; both compile to the same negation.
 #[inline]
+#[cfg_attr(creusot, ensures(result@ == shifted(value@, amount@)))]
 const fn offset_u32(value: u32, amount: i32) -> u32 {
     if amount >= 0 {
         value.saturating_add(amount as u32)
     } else {
-        value.saturating_sub(amount.unsigned_abs())
+        value.saturating_sub(amount.abs_diff(0))
     }
 }
 
+#[cfg(not(creusot))]
 impl std::fmt::Display for SourceRange {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}..{}", self.start, self.end)
@@ -119,7 +226,7 @@ impl std::fmt::Display for SourceRange {
 /// A single source mapping entry.
 ///
 /// Maps a range in the original source to a range in the generated code.
-#[derive(Debug, Clone, Default)]
+#[cfg_attr(not(creusot), derive(Debug, Clone, Default))]
 pub struct SourceMapping {
     /// Range in the original source
     pub source: SourceRange,
@@ -132,6 +239,7 @@ pub struct SourceMapping {
 impl SourceMapping {
     /// Create a new mapping.
     #[inline]
+    #[cfg_attr(creusot, ensures(result.source == source && result.generated == generated))]
     pub fn new(source: SourceRange, generated: SourceRange) -> Self {
         Self {
             source,
@@ -152,17 +260,24 @@ impl SourceMapping {
 
     /// Check if this mapping contains the source offset.
     #[inline]
+    #[cfg_attr(creusot, ensures(result == self.source.covers(offset@)))]
     pub fn contains_source(&self, offset: u32) -> bool {
         self.source.contains(offset)
     }
 
     /// Check if this mapping contains the generated offset.
     #[inline]
+    #[cfg_attr(creusot, ensures(result == self.generated.covers(offset@)))]
     pub fn contains_generated(&self, offset: u32) -> bool {
         self.generated.contains(offset)
     }
 
     /// Map a source offset to generated offset.
+    #[cfg_attr(creusot, ensures(match result {
+        Some(target) => self.source.covers(source_offset@)
+            && target@ == carried(source_offset@, self.source, self.generated),
+        None => !self.source.covers(source_offset@),
+    }))]
     pub fn source_to_generated(&self, source_offset: u32) -> Option<u32> {
         if self.source.contains(source_offset) {
             let relative = source_offset - self.source.start;
@@ -175,6 +290,11 @@ impl SourceMapping {
     }
 
     /// Map a generated offset to source offset.
+    #[cfg_attr(creusot, ensures(match result {
+        Some(origin) => self.generated.covers(gen_offset@)
+            && origin@ == carried(gen_offset@, self.generated, self.source),
+        None => !self.generated.covers(gen_offset@),
+    }))]
     pub fn generated_to_source(&self, gen_offset: u32) -> Option<u32> {
         if self.generated.contains(gen_offset) {
             let relative = gen_offset - self.generated.start;
@@ -187,7 +307,7 @@ impl SourceMapping {
 }
 
 /// Metadata associated with a mapping.
-#[derive(Debug, Clone)]
+#[cfg_attr(not(creusot), derive(Debug, Clone))]
 pub enum MappingData {
     /// Expression (e.g., {{ expr }})
     Expression { text: String },
@@ -209,7 +329,7 @@ pub enum MappingData {
 ///
 /// Maintains mappings between original source and generated code,
 /// supporting efficient lookup in both directions.
-#[derive(Debug, Clone, Default)]
+#[cfg_attr(not(creusot), derive(Debug, Clone, Default))]
 pub struct SourceMap {
     /// Mappings sorted by source offset
     mappings: Vec<SourceMapping>,
@@ -217,6 +337,7 @@ pub struct SourceMap {
     pub block_offset: u32,
 }
 
+#[cfg(not(creusot))]
 impl SourceMap {
     /// Create an empty source map.
     #[inline]
@@ -318,98 +439,4 @@ impl SourceMap {
 mod proofs;
 
 #[cfg(test)]
-mod tests {
-    use super::{SourceMap, SourceMapping, SourceRange};
-
-    #[test]
-    fn test_source_range_contains() {
-        let range = SourceRange::new(10, 20);
-        assert!(!range.contains(9));
-        assert!(range.contains(10));
-        assert!(range.contains(15));
-        assert!(range.contains(19));
-        assert!(!range.contains(20));
-    }
-
-    #[test]
-    fn test_source_range_intersects() {
-        let a = SourceRange::new(10, 20);
-        let b = SourceRange::new(15, 25);
-        let c = SourceRange::new(25, 30);
-
-        assert!(a.intersects(&b));
-        assert!(b.intersects(&a));
-        assert!(!a.intersects(&c));
-        assert!(!c.intersects(&a));
-    }
-
-    #[test]
-    fn test_source_range_offset_saturates() {
-        assert_eq!(SourceRange::new(10, 20).offset(5), SourceRange::new(15, 25));
-        assert_eq!(SourceRange::new(10, 20).offset(-5), SourceRange::new(5, 15));
-        assert_eq!(SourceRange::new(10, 20).offset(-50), SourceRange::new(0, 0));
-        assert_eq!(
-            SourceRange::new(u32::MAX - 1, u32::MAX).offset(10),
-            SourceRange::new(u32::MAX, u32::MAX),
-        );
-    }
-
-    #[test]
-    fn test_mapping_source_to_generated() {
-        let mapping = SourceMapping::new(SourceRange::new(10, 20), SourceRange::new(100, 110));
-
-        assert_eq!(mapping.source_to_generated(10), Some(100));
-        assert_eq!(mapping.source_to_generated(15), Some(105));
-        assert_eq!(mapping.source_to_generated(19), Some(109));
-        assert_eq!(mapping.source_to_generated(9), None);
-        assert_eq!(mapping.source_to_generated(20), None);
-    }
-
-    #[test]
-    fn test_source_map() {
-        let mut map = SourceMap::new();
-        map.add_simple(10, 20, 100, 110);
-        map.add_simple(30, 40, 200, 210);
-
-        assert_eq!(map.to_generated(15), Some(105));
-        assert_eq!(map.to_generated(35), Some(205));
-        assert_eq!(map.to_generated(25), None);
-
-        assert_eq!(map.to_source(105), Some(15));
-        assert_eq!(map.to_source(205), Some(35));
-    }
-
-    #[test]
-    fn to_generated_finds_the_mapping_beside_an_empty_or_inverted_range() {
-        // Kani's counterexample: an empty range inserted after a mapping with
-        // the same start hid the mapping that contains the offset.
-        let mut map = SourceMap::new();
-        map.add_simple(438_272_201, 2_585_755_849, 0, 10);
-        map.add_simple(438_272_201, 438_272_201, 20, 30);
-        map.add_simple(4_280_271_103, 4_293_705_983, 40, 50);
-        assert_eq!(map.to_generated(2_466_300_108), Some(9));
-
-        let mut map = SourceMap::new();
-        map.add_simple(10, 20, 100, 110);
-        map.add_simple(12, 4, 200, 210);
-        map.add_simple(30, 40, 300, 310);
-        assert_eq!(map.to_generated(15), Some(105));
-
-        // Overlapping ranges: the first in source order wins.
-        let mut map = SourceMap::new();
-        map.add_simple(1, 2, 500, 501);
-        map.add_simple(0, 10, 100, 110);
-        assert_eq!(map.to_generated(5), Some(105));
-        assert_eq!(map.to_generated(1), Some(101));
-    }
-
-    #[test]
-    fn to_source_has_no_coordinate_past_the_u32_file_range() {
-        let mut map = SourceMap::new();
-        map.add_simple(10, 20, 100, 110);
-        map.set_block_offset(u32::MAX - 15);
-        assert_eq!(map.to_source(105), Some(u32::MAX));
-        assert_eq!(map.to_source(106), None);
-        assert_eq!(map.to_source(99), None);
-    }
-}
+mod tests;

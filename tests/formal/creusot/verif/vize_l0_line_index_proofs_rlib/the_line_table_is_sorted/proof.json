@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_the_line_table_is_sorted": { "prover": "alt-ergo", "time": 0.008 }
+    }
+  }
+}

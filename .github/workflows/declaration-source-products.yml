@@ -30,7 +30,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   primitive-assignability-proof:
-    name: Verify primitive literal membership in Kani
+    name: Check immutable binding traces
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
@@ -49,24 +49,12 @@ jobs:
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
-      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
-        with:
-          kani-version: "0.68.0"
-          command: kani
-          args: davinci/vize_l2/src/query/script/assignments/kani.rs --output-format=terse
 
       - name: Check immutable binding traces and witness unsafe scopes
         env:
           ALLOY_SHA256: "6037cbeee0e8423c1c468447ed10f5fcf2f2743a2ffc39cb1c81f2905c0fdb9d"
         run: |-
           . "${{ env.VIZE_CI_FILES }}/check-immutable-binding-traces-and-witness-unsafe-scopes.sh"
-
-      - name: Verify source relocation for the full 32-bit byte domain
-        uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
-        with:
-          kani-version: "0.68.0"
-          command: kani
-          args: davinci/vize_l2/src/query/script/assignments/prefix/kani.rs --output-format=terse
   ambient-component-project:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25

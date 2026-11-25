@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_range_is_well_formed_by_its_bytes_alone": {
+        "prover": "z3",
+        "time": 0.137
+      }
+    }
+  }
+}
