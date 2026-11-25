@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import type { OxlintHtmlOptions, OxlintHtmlOutcome } from "@vizejs/native";
 
-import { getLintTargets, withoutLintTargets } from "./args.ts";
+import { withoutLintTargets } from "./args.ts";
 import { readScopedConfig } from "./scoped-config.ts";
 import { loadBinding } from "../native.ts";
 import { captureHtmlCustody, assertHtmlCustody, type HtmlCustody } from "./html-custody.ts";
@@ -31,8 +31,34 @@ const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest(
 
 class HtmlSkip extends Error {}
 
-/** Capture original root/provider/piped-child context without executing a provider query. */
-export function prepareHtmlContext(
+const qualifiedHosts = ["1.78.0", "1.81.0", "1.86.0"];
+
+/**
+ * Capture original root/provider/piped-child context without executing a provider
+ * query. Each literal target holding standalone HTML gets its own native operation,
+ * as a one-target run would; all of them share the host, root and custody capture.
+ * Enclosing targets come first, so an original that a nested target selects again
+ * is recognized as already linted instead of being reported twice.
+ */
+export function prepareHtmlContexts(
+  cwd: string,
+  args: readonly string[],
+  entrypoint: string,
+  version: string,
+  candidates: ReadonlySet<string>,
+  targets: readonly string[],
+): HtmlContext[] {
+  const shared = prepareHtmlContext(cwd, args, entrypoint, version, candidates);
+  const { options } = shared;
+  // A host-wide skip or failure is reported once, not once per target.
+  if (!options || shared.failure || shared.skipReason) return [shared];
+  const depth = (target: string) => path.resolve(cwd, target).split(path.sep).length;
+  return [...targets]
+    .sort((left, right) => depth(left) - depth(right))
+    .map((literalTarget) => ({ ...shared, options: { ...options, literalTarget } }));
+}
+
+function prepareHtmlContext(
   cwd: string,
   args: readonly string[],
   entrypoint: string,
@@ -43,10 +69,10 @@ export function prepareHtmlContext(
     environment: presentationContext(),
   };
   try {
-    if (!["1.78.0", "1.81.0", "1.86.0"].includes(version))
-      throw new HtmlSkip("original HTML requires a qualified Oxlint 1.78.0, 1.81.0 or 1.86.0 host");
-    const targets = getLintTargets(args);
-    if (targets.length !== 1) throw new Error("original HTML requires one literal original target");
+    if (!qualifiedHosts.includes(version))
+      throw new HtmlSkip(
+        `Oxlint ${version} is not a qualified standalone HTML host (${qualifiedHosts.join(", ")}); .html/.htm files were not linted`,
+      );
     const config = readScopedConfig(cwd, args);
     if (!config || config.module || path.dirname(config.file) !== cwd)
       throw new Error("original HTML requires one regular JSON root in the original cwd");
@@ -158,7 +184,8 @@ export function prepareHtmlContext(
       (context.environment.FORCE_COLOR != null && context.environment.FORCE_COLOR !== "0");
     context.options = {
       cwd,
-      literalTarget: targets[0],
+      // prepareHtmlContexts names each operation's literal target.
+      literalTarget: "",
       rootJson: config.file,
       rootBytes: Array.from(fs.readFileSync(config.file)),
       hostProfile: version,
