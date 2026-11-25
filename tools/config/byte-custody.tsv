@@ -56,9 +56,9 @@ crates/vize_atelier_sfc/src/compile/empty_component.rs	blob:33ee8b8b1f6e8085cccf
 crates/vize_atelier_sfc/src/compile/entry.rs	blob:95358501519df6a022fe4e906d45f02cca6694f7	record-only	tests/fixtures/sfc/parsed-attributes/empty-compile-project-context-source.json
 crates/vize_atelier_sfc/src/compile/entry/root_match.rs	blob:a3d329411a5c3d0d4b85bd6ea8995757a82e7fdd	enforced	tests/native/sfc-empty-project-context-source.ts
 crates/vize_atelier_sfc/src/compile/public.rs	blob:be954cc1594067ee5f5c0a57b061c1074b7ab2d1	record-only	tests/fixtures/sfc/parsed-attributes/empty-compile-project-context-source.json
-crates/vize_atelier_sfc/src/compile/script_context.rs	blob:7c181a24d6478d6c6f854c5de0d468d6c5e16c27	record-only	tests/fixtures/sfc/parsed-attributes/empty-compile-project-context-source.json
+crates/vize_atelier_sfc/src/compile/script_context.rs	blob:1be40c6336989a2c96ae8f51e4844bbecb2b06e4	record-only	tests/fixtures/sfc/parsed-attributes/empty-compile-project-context-source.json
 crates/vize_atelier_sfc/src/croquis/unused/sibling_scripts.rs	blob:cb58215e02303ef103e308eded5183f3597e97b4	enforced	editors/vscode/test/css-hover-source-custody.json
-crates/vize_atelier_sfc/src/css.rs	sha256:6f830803f672e1fa711900dc96aaa46fe05dad2607960c25ac09bdd518a8b0da	enforced	tests/_fixtures/differential/compiler/v-bind-source-map-10712/authority.json
+crates/vize_atelier_sfc/src/css.rs	sha256:6f830803f672e1fa711900dc96aaa46fe05dad2607960c25ac09bdd518a8b0da	record-only	tests/_fixtures/differential/compiler/v-bind-source-map-10712/authority.json
 crates/vize_atelier_sfc/src/css/parser.rs	sha256:89740d4562979b2041a1b86ae1c8b4cd1ccf3f3479fc9059f750e9f8b42dc426	enforced	tests/_fixtures/differential/compiler/v-bind-source-map-10712/authority.json
 crates/vize_atelier_sfc/src/css/parser/engine_boundary.rs	sha256:c033ba38dc3e522ee06af0e94f41a5e64322559fb0d85ab4f7e2ac7645470833	enforced	tests/_fixtures/differential/compiler/v-bind-source-map-10712/authority.json
 crates/vize_atelier_sfc/src/css/parser/source_map.rs	sha256:809eab1b5ca408338c95e011d63d4143f46b82d705a59834c1c1c0a93a3995ef	enforced	tests/_fixtures/differential/compiler/v-bind-source-map-10712/authority.json
