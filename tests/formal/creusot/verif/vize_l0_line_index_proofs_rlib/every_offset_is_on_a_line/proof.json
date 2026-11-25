@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_every_offset_is_on_a_line": { "prover": "alt-ergo", "time": 0.008 }
+    }
+  }
+}

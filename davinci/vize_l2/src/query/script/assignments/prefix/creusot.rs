@@ -39,3 +39,35 @@ pub fn offered_prefix_bytes(first_limit: usize, attempts: &[(usize, usize)]) -> 
     }
     spent
 }
+
+/// A cold retry fits the remaining byte budget: the next limit never exceeds
+/// the first diagnostic offset, is below a nonzero failed end, and spending
+/// `end` bytes now while reserving twice the next limit for every later
+/// attempt stays within twice `end`. The invariant of `offered_prefix_bytes`
+/// is this step, for any sequence of attempts.
+pub fn cold_retries_fit_the_remaining_byte_budget(end: u32, first_label: u32) {
+    let next = frame::retry_limit(end as usize, first_label as usize);
+    proof_assert!(next@ <= first_label@);
+    proof_assert!(end@ == 0 || next@ < end@);
+    proof_assert!(end@ + 2 * next@ <= 2 * end@);
+}
+
+/// Moving a checked source interval into a new file that holds the whole
+/// block keeps it inside the block, keeps its length, and moves back.
+#[requires(length@ <= u32::MAX@ - old_start@ && length@ <= u32::MAX@ - new_start@)]
+#[requires(old_start@ <= left@ && left@ <= right@ && right@ <= old_start@ + length@)]
+pub fn moving_a_checked_source_interval_is_lossless(
+    old_start: u32,
+    new_start: u32,
+    length: u32,
+    left: u32,
+    right: u32,
+) {
+    let start = frame::rebase(left, old_start, new_start);
+    let end = frame::rebase(right, old_start, new_start);
+    proof_assert!(new_start@ <= start@ && start@ <= end@ && end@ <= new_start@ + length@);
+    proof_assert!(end@ - start@ == right@ - left@);
+    let back_start = frame::rebase(start, new_start, old_start);
+    let back_end = frame::rebase(end, new_start, old_start);
+    proof_assert!(back_start == left && back_end == right);
+}

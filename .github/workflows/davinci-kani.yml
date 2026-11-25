@@ -6,14 +6,8 @@ on:
     paths:
       - .github/workflows/davinci-kani.yml
       - .github/scripts/workflows/davinci-kani/**
-      - davinci/vize_l0/src/span.rs
-      - davinci/vize_l0/src/span/proofs.rs
       - davinci/vize_l0/src/source_range.rs
       - davinci/vize_l0/src/source_range/proofs.rs
-      - davinci/vize_l0/src/line_index/kani.rs
-      - davinci/vize_l0/src/line_index/utf16.rs
-      - davinci/vize_l4/src/write/kani.rs
-      - davinci/vize_l4/src/write/line_endings.rs
       - davinci/vize_l4/src/write/source_map/kani.rs
       - davinci/vize_l4/src/write/source_map/vlq.rs
       - davinci/vize_l2/src/query/position/index/intervals.rs
@@ -35,6 +29,8 @@ on:
       - davinci/vize_l0/src/profiler/allocation/kani.rs
       - crates/vize_atelier_sfc/src/css/string_body.rs
       - crates/vize_atelier_sfc/src/css/kani.rs
+      - davinci/vize_l0/src/source_io/utf8.rs
+      - davinci/vize_l0/src/source_io/kani.rs
   workflow_dispatch: null
 permissions:
   contents: read
@@ -54,7 +50,7 @@ jobs:
           kani-version: 0.68.0
           args: --manifest-path davinci/vize_l2/Cargo.toml --features position-index --tests --lib --harness position_queries_ --output-format=terse
   source-coordinates:
-    name: Span, range, UTF-16 column, line terminator and VLQ laws
+    name: Source map lookup and VLQ laws
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
@@ -66,12 +62,21 @@ jobs:
           kani-version: 0.68.0
           command: kani
           args: davinci/vize_l4/src/write/source_map/kani.rs --output-format=terse
-      - name: Verify UTF-16 columns of every short UTF-8 text
-        run: kani davinci/vize_l0/src/line_index/kani.rs --output-format=terse --jobs 2
-      - name: Verify JavaScript line terminators
-        run: kani davinci/vize_l4/src/write/kani.rs --output-format=terse
-      - name: Verify span, range and mapping offsets
-        run: "cargo kani --manifest-path davinci/vize_l0/Cargo.toml --lib --harness span::proofs:: --harness source_range::proofs:: --output-format=terse --jobs 2"
+      - name: Verify the source map lookup
+        run: "cargo kani --manifest-path davinci/vize_l0/Cargo.toml --lib --harness source_range::proofs:: --output-format=terse --jobs 2"
+  utf8-well-formedness:
+    name: UTF-8 well-formedness against the standard decoder
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
+        with:
+          kani-version: 0.68.0
+          command: kani
+          args: davinci/vize_l0/src/source_io/kani.rs --output-format=terse
   l3-reference:
     name: L3 reference incremental update laws
     runs-on: blacksmith-32vcpu-ubuntu-2404

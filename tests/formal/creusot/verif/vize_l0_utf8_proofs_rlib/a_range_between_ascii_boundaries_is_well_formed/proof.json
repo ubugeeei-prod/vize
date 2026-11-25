@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_range_between_ascii_boundaries_is_well_formed": {
+        "prover": "alt-ergo",
+        "time": 0.009
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_later_boundary_follows": { "prover": "alt-ergo", "time": 0.008 }
+    }
+  }
+}

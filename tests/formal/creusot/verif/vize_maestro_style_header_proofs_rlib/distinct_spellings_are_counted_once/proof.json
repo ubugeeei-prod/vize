@@ -1,0 +1,35 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_distinct_spellings_are_counted_once": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.003 },
+              { "prover": "z3", "time": 0.006 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "cvc5", "time": 0.023 },
+                  {
+                    "tactic": "split_vc",
+                    "children": [
+                      { "prover": "cvc4", "time": 0.037 },
+                      { "prover": "cvc4", "time": 0.145 }
+                    ]
+                  },
+                  { "prover": "cvc4", "time": 0.144 }
+                ]
+              },
+              { "prover": "z3", "time": 0.006 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

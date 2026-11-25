@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_spelling_occurs_where_an_attribute_has_it": {
+        "prover": "z3",
+        "time": 0.089
+      }
+    }
+  }
+}

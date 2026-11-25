@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_the_line_starts_increase": { "prover": "alt-ergo", "time": 0.007 }
+    }
+  }
+}
