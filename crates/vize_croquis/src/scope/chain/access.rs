@@ -42,18 +42,6 @@ impl ScopeChain {
     pub fn get_scope(&self, id: ScopeId) -> Option<&Scope> {
         self.scopes.get(id)
     }
-
-    /// Get a scope by ID (unchecked)
-    ///
-    /// # Safety
-    /// Caller must ensure `id` was produced by this `ScopeChain` and the chain has
-    /// not been rebuilt since. The method exists for analyzer hot paths where the
-    /// caller already proved the id through registry traversal.
-    #[inline]
-    pub unsafe fn get_scope_unchecked(&self, id: ScopeId) -> &Scope {
-        // SAFETY: upheld by the caller contract above.
-        unsafe { self.scopes.raw.get_unchecked(id.as_u32() as usize) }
-    }
 }
 
 #[cfg(test)]

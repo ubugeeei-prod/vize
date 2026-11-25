@@ -23,6 +23,9 @@ mod analysis;
 mod batch;
 mod batch_helpers;
 mod batch_results;
+mod batch_targets;
+#[cfg(test)]
+mod batch_targets_tests;
 mod bundler;
 mod codegen_options;
 mod compile;
@@ -40,6 +43,7 @@ mod vue_version;
 pub use analysis::*;
 pub use batch::*;
 pub use batch_results::*;
+pub use batch_targets::*;
 pub use bundler::*;
 pub use compile::*;
 pub use css::*;

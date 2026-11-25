@@ -43,6 +43,7 @@ module.exports.compileCss = nativeBinding.compileCss;
 module.exports.compileJsx = nativeBinding.compileJsx;
 module.exports.compileSfc = nativeBinding.compileSfc;
 module.exports.compileSfcBatch = nativeBinding.compileSfcBatch;
+module.exports.compileSfcBatchForTargets = nativeBinding.compileSfcBatchForTargets;
 module.exports.compileSfcBatchWithResults = nativeBinding.compileSfcBatchWithResults;
 module.exports.compileTsrx = nativeBinding.compileTsrx;
 module.exports.compileVapor = nativeBinding.compileVapor;
