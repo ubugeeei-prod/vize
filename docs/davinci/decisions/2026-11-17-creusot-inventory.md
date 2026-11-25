@@ -148,6 +148,23 @@ SVG, MathML, so every verdict is unchanged. The proofs
 show that one element read backwards (`Seq::reverse`) is itself by the
 `compute_in_goal` tactic, which `why3find.json` now lists.
 
+## JS string escape gate (`crates/vize_atelier_core/src/codegen/helpers`)
+
+No Kani harness stated this law. `escape_js_string` returns its input
+unchanged when no byte of it is flagged by `byte_may_need_js_escaping`, and
+that fast path is sound only if every scalar the slow stages rewrite puts a
+flagged byte into the UTF-8 text. Creusot root: `helpers/creusot.rs`. The
+gate's contract is in `helpers/escape_gate.rs`, the module it moved into so
+the proof crate compiles it alone. The rewritten set comes from the slow path
+and Unicode, not from the gate: `&` (`decode_html_entities`), `\`, `"` and the
+general category `Cc` (U+0000..=U+001F, U+007F..=U+009F); the first UTF-8
+byte follows Unicode Table 3-6.
+
+| Kani harness | Law                                                                                                       | Kani bound | Creusot replacement                                                                                  | Status |
+| ------------ | --------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------- | ------ |
+| none         | every scalar that `decode_html_entities` or `escape_js_string` rewrites starts with a byte the gate flags | —          | `js_escape_gate::no_rewritten_scalar_passes_the_gate` over `byte_may_need_js_escaping`, every scalar | proved |
+| none         | the first byte of every scalar's UTF-8 encoding is below 0x80 or in 0xC2..=0xF4                           | —          | `js_escape_gate::every_scalar_starts_with_a_lead_byte`                                               | proved |
+
 ## Laws no harness states yet
 
 These are added where tractable, after the ports: lossless L1 render equals
@@ -164,6 +181,12 @@ line-terminator kernels go through `str` APIs without a specification
 (`as_bytes`, `char_indices`, `is_char_boundary`), `span.rs` and
 `source_range.rs` derive `serde` and `Hash` and format through
 `fmt::Write`, and the VLQ writer appends to `CompactString`.
+
+The two CSS string-body rows are verified in `davinci-kani.yml`
+(`css-string-bodies`) on `crates/vize_atelier_sfc/src/css/string_body.rs`, the
+step both scoped CSS scanners take inside a quoted string. A Kani step is
+enough here: the step has no loop, and the four-scalar walk holds every
+backslash run of length zero to three before a quote.
 
 The two `owed` rows are whole-string lookups. Kani harnesses for them
 (`LineIndex` over three to five bytes; the emitter's line table, lookup and
@@ -188,6 +211,8 @@ every Kani harness in the repository.
 | `source_mapping_carries_offsets_between_its_ranges`                 | a mapping carries offsets by their distance, clamped into the other range; an equal-length mapping is a bijection                                                        | whole domain                                     | none                | kani   |
 | `source_map_to_generated_uses_the_mapping_that_contains_the_offset` | `SourceMap::to_generated` translates through the first mapping in source order whose source range contains the offset; ranges may be empty, inverted or overlap          | any 3 mappings, any insertion order, whole `u32` | none                | kani   |
 | `source_map_to_source_shifts_into_the_file_without_overflow`        | `SourceMap::to_source` adds the block offset to the first mapping that holds the generated offset, `None` past `u32::MAX`, and never overflows                           | 2 mappings of any shape, whole `u32` values      | none                | kani   |
+| `a_string_body_changes_only_at_a_backslash_or_its_quote`            | the scoped CSS string-body step leaves the string only at its opening quote and escapes only after U+005C; every other scalar, including U+0122 and U+0127, is content   | whole domain (every scalar, both quotes)         | none                | kani   |
+| `a_string_ends_at_its_first_unescaped_quote`                        | a scoped CSS string ends at the first opening quote preceded by an even run of backslashes (CSS Syntax 3, "consume a string token")                                      | every body of 4 scalars                          | none                | kani   |
 | none                                                                | `LineIndex::line_col` is the LF count before the offset and the UTF-16 units from that line's start; `line_col_to_offset` is its inverse on scalar boundaries            | —                                                | owed                | owed   |
 | none                                                                | the emitter's line table starts a line after every terminator, and `resolve_in_table` and `resolve_positions` give each segment the line and UTF-16 column of its offset | —                                                | owed                | owed   |
 

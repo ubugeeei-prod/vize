@@ -12,6 +12,7 @@ use where_selector::add_scope_to_element;
 pub(crate) use where_selector::scope_bare_where;
 
 use crate::css::scoped_selector::split_before_trailing_universal_or_pseudo;
+use crate::css::string_body::StringBody;
 
 use crate::types::{CssModuleMapping, SfcError, SfcStyleBlock, StyleCompileOptions};
 
@@ -109,8 +110,7 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
     let mut output = String::with_capacity(css.len() * 2);
     let mut chars = css.chars().peekable();
     let mut in_selector = true;
-    let mut in_string = false;
-    let mut string_char = '"';
+    let mut string: Option<StringBody> = None;
     let mut in_comment = false;
     let mut in_at_rule = false; // Track if we're in an at-rule header
     let mut brace_depth: u32 = 0;
@@ -134,10 +134,8 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
             continue;
         }
 
-        if in_string {
-            if c == string_char && !current.ends_with("\\\"") && !current.ends_with("\\'") {
-                in_string = false;
-            }
+        if let Some(body) = string {
+            string = body.step(c);
             if !in_selector && !in_at_rule {
                 output.push(c);
             }
@@ -146,8 +144,7 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
 
         match c {
             '"' | '\'' => {
-                in_string = true;
-                string_char = c;
+                string = Some(StringBody::open(c));
                 if !in_selector && !in_at_rule {
                     output.push(c);
                 }

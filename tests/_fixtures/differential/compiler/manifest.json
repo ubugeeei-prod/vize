@@ -3203,6 +3203,61 @@
       }
     },
     {
+      "id": "compiler/sfc/scoped-css-string-ends",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "scoped-css-string-ends",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "37be0944c46a9a1b46a123c94f2cfd283bdb1034d2469b69153c0f4cf76f46c3",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "scoped-css-string-ends/module.expected.txt",
+        "sha256": "953b1cc2871d125a7274ff2babd1a787c6b97e4df2d19574a9cf1f38d49ac45b",
+        "cssPath": "scoped-css-string-ends/style.expected.css",
+        "cssSha256": "b50e3f4fafe34258c4b3a3436a810d6389dd5888ed3cbee68279be510c7b7107",
+        "source": "compiler-cli-ssr-v1 on Layout.vue at the fix. Before it, `.title` stayed unscoped after the escaped backslash in `\"\\\\\"` (plain scoped style), and every CSS-module rule after `\"Ģ\"` stayed unscoped because U+0122's low byte is `\"`. crates/vize_atelier_sfc/src/css/tests/string_bodies.rs pins both scanners on the same strings."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); scoped style compilation remains legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/scoped-deep-nested-list-11109",
       "state": "active",
       "targets": [

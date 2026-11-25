@@ -11,6 +11,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test, type TestContext } from "node:test";
+import * as native from "@vizejs/native";
 import type { Plugin } from "vite";
 
 import type { CompiledModule } from "../types.ts";
@@ -304,6 +305,64 @@ void test("every sign of a filesystem change ends the process epoch", async (t) 
   // The same environment building again comes after a gap nothing reported.
   await host.start();
   assert.deepEqual(await asked(), once([file]));
+});
+
+void test("an epoch holds one type-resolution window until it ends or its holder releases it", () => {
+  const epoch = new FilesystemEpoch();
+  const events: string[] = [];
+  const open = (name: string) => () => {
+    events.push(`open ${name}`);
+    return { close: () => events.push(`close ${name}`) };
+  };
+  epoch.holdTypeResolution(open("first"));
+  epoch.holdTypeResolution(open("unused"));
+  epoch.advance();
+  epoch.holdTypeResolution(open("second"));
+  epoch.releaseTypeResolution();
+  epoch.releaseTypeResolution();
+  // A binding without windows opens none, and the next batch asks again.
+  epoch.holdTypeResolution(() => undefined);
+  epoch.holdTypeResolution(open("third"));
+  epoch.advance();
+  assert.deepEqual(events, [
+    "open first",
+    "close first",
+    "open second",
+    "close second",
+    "open third",
+    "close third",
+  ]);
+});
+
+void test("the batches of a build share their type reads, and the next build reads the edit", async (t) => {
+  const { root, models, components } = barrelProject(t, 12, 8);
+  const build = async () => {
+    const host = await startupHost(root, {
+      plugins: vize({ configMode: false, scanPatterns: ["**/*.vue"], precompileBatchSize: 2 }),
+    });
+    await host.start();
+    const codes = [];
+    for (const file of components) {
+      const result = await host.load(file);
+      codes.push(typeof result === "string" ? result : String((result as { code?: string })?.code));
+    }
+    await host.close();
+    return codes;
+  };
+
+  for (const code of await build()) assert.match(code, /field0/);
+  fs.writeFileSync(models[0], "export interface Model0 {\n  renamed0: number;\n}\n");
+  // The build is over: a compile batch made outside it reads the edit.
+  const [component] = components;
+  const after = native.compileSfcBatchWithResults(
+    [{ path: component, source: fs.readFileSync(component, "utf8") }],
+    { isTs: true },
+  );
+  assert.match(after.results[0].code, /renamed0/);
+  for (const code of await build()) {
+    assert.match(code, /renamed0/);
+    assert.doesNotMatch(code, /field0/);
+  }
 });
 
 // The components are compiled by the opt-in startup scan, or when they are loaded.

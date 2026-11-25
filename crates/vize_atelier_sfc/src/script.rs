@@ -28,7 +28,7 @@ pub(crate) use analyze_script_bindings::get_object_or_array_argument_keys;
 pub use analyze_script_bindings::{analyze_script_bindings, get_object_or_array_expression_keys};
 pub use context::{
     ScriptCompileContext, SfcTypeProject, TypeResolutionBatchGuard, TypeSourceSnapshot,
-    begin_type_resolution_batch,
+    begin_type_resolution_batch, join_type_resolution_batch,
 };
 pub use define_emits::{
     DefineEmitsResult, extract_runtime_emits, gen_runtime_emits, process_define_emits,

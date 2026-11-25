@@ -89,7 +89,7 @@ fn compile_sfc_batch_with_results_inner(
     // later hits of a shared types barrel skip their revalidation syscalls.
     // The named guard must stay alive until the parallel collection has joined.
     #[deny(let_underscore_drop)]
-    let _type_resolution_batch = vize_atelier_sfc::begin_type_resolution_batch();
+    let _type_resolution_batch = vize_atelier_sfc::join_type_resolution_batch();
 
     // Indexed parallel map keeps results in input order (deterministic) and
     // collects lock-free, replacing the previous contended `Mutex<Vec>`.
