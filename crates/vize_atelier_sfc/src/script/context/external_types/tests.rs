@@ -2,8 +2,8 @@ use super::resolution::{resolve_at_src_alias, resolve_import_path};
 use std::path::{Path, PathBuf};
 
 mod differential;
-mod referenced;
 mod reference;
+mod referenced;
 mod sharing;
 mod summaries;
 
