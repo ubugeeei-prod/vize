@@ -13,7 +13,11 @@ use vize_patina::native::{
 };
 
 fn cases() -> serde_json::Value {
-    serde_json::from_str(include_str!("cases.json")).unwrap()
+    serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/linter/native-ir-accessor-compatibility-13674/cases.json"
+    )))
+    .unwrap()
 }
 
 /// Executes the fixture's template-owner contract on a real configured callback.

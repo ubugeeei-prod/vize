@@ -34,7 +34,7 @@ for (const source of patinaNativeIrApiRegistration.sources) {
   original.set(`head:${source.path}`, blob(source.afterBlob));
 }
 for (const input of patinaNativeIrApiRegistration.inputs.files) {
-  const path = `${patinaNativeIrApiRoot}/${input.path}`;
+  const path = input.path;
   original.set(`head:${path}`, readFileSync(new URL(`../../${path}`, import.meta.url)));
 }
 const paths = [...patinaNativeIrApiRegistration.sources.map(({ path }) => path), manifest];
@@ -116,6 +116,18 @@ test("closed IDs, adapters, getter data, paths and test selectors reject substit
         row.inputs.files[0].path = "unrelated.json";
       },
     ],
+    [
+      "fixture root",
+      (row) => {
+        row.inputs.root = "../unreviewed";
+      },
+    ],
+    [
+      "traversal fixture path",
+      (row) => {
+        row.inputs.files[0].path = "../../cases.json";
+      },
+    ],
   ];
   for (const [label, edit] of edits) {
     const result = report(editedCase(edit));
@@ -171,7 +183,7 @@ test("historical registrations still authenticate their current Rust consumer an
   const tree = new Map(original);
   tree.set(`base:${manifest}`, tree.get(`head:${manifest}`)!);
   for (const input of patinaNativeIrApiRegistration.inputs.files) {
-    const key = `head:${patinaNativeIrApiRoot}/${input.path}`;
+    const key = `head:${input.path}`;
     const missing = new Map(tree);
     missing.delete(key);
     assert.equal(report(missing).products[0].state, "invalid-manifest-or-input", key);

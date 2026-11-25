@@ -67,7 +67,6 @@ mod native_focus_callbacks;
 mod native_header_facts;
 mod native_header_rules;
 mod native_inline_style;
-#[path = "../../../tests/_fixtures/differential/linter/native-ir-accessor-compatibility-13674/consumer.rs"]
 mod native_ir_accessor_compat;
 mod native_lint_tag;
 mod native_no_v_html;

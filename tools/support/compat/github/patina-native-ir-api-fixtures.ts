@@ -8,6 +8,8 @@ export const PATINA_NATIVE_IR_API_ID = "linter/rust-api/native-ir-accessors-1367
 export const patinaNativeIrApiRoot =
   "tests/_fixtures/differential/linter/native-ir-accessor-compatibility-13674";
 
+export const patinaNativeIrApiConsumer = "crates/vize_patina/tests/native_ir_accessor_compat.rs";
+
 export const patinaNativeIrApiRegistration = {
   id: PATINA_NATIVE_IR_API_ID,
   state: "active",
@@ -17,14 +19,14 @@ export const patinaNativeIrApiRegistration = {
     root: "native-ir-accessor-compatibility-13674",
     files: [
       {
-        path: "cases.json",
+        path: `${patinaNativeIrApiRoot}/cases.json`,
         role: "getter-contract",
         sha256: "eddc4d895ebe62af5e27cc516c24a9218929ca7f54e60da90e0db5046fbd1802",
       },
       {
-        path: "consumer.rs",
+        path: patinaNativeIrApiConsumer,
         role: "required-rust-consumer",
-        sha256: "5d90a1ed7fa91054b197b9574534875024c318f66eaca2cc1514b820a2f772b7",
+        sha256: "6bb113c95205e96ca08da77925c27cee3251bbb832ef5b2b34cdca20bc4947b5",
       },
     ],
   },
@@ -67,9 +69,9 @@ export const patinaNativeIrApiRegistration = {
     {
       path: "crates/vize_patina/tests/main.rs",
       before: "eb08136b9d56102e8af28fbd8718f8751288c24d55c929cb01dfcb10659a713a",
-      after: "7adb2c4f14d3875f7e1323aafc56d918c218b5ee0ebe5ca4739f1b13dee57db7",
+      after: "5eaddd7f8cf594e47df49b289410d2158d4a9316b2536cc64ccb9d289fae4331",
       beforeBlob: "7550539dca2779eb5e1805b8420ca68db1e2ae51",
-      afterBlob: "3d18fbacd97b073af68e8b15a1ed39e08b46ea04",
+      afterBlob: "9d7872d68e22b69835d4e713066df9608be5da86",
     },
     {
       path: "crates/vize_patina/tests/native_sfc_template_lint/configuration.rs",
@@ -84,15 +86,13 @@ export const patinaNativeIrApiRegistration = {
       target: "integration",
       selector:
         "native_ir_accessor_compat::old_owner_getters_remain_public_with_the_original_borrow_signatures",
-      source:
-        "tests/_fixtures/differential/linter/native-ir-accessor-compatibility-13674/consumer.rs",
+      source: patinaNativeIrApiConsumer,
     },
     {
       target: "integration",
       selector:
         "native_ir_accessor_compat::old_canonical_getter_retains_the_owner_borrow_after_the_lint_wrapper_is_dropped",
-      source:
-        "tests/_fixtures/differential/linter/native-ir-accessor-compatibility-13674/consumer.rs",
+      source: patinaNativeIrApiConsumer,
     },
     {
       target: "lib",
@@ -181,7 +181,7 @@ export function newPatinaNativeIrApiCases(
     equal(row.tests, patinaNativeIrApiRegistration.tests, "selector closure differs");
     equal(row.evidence, patinaNativeIrApiRegistration.evidence, "evidence scope differs");
     for (const input of patinaNativeIrApiRegistration.inputs.files) {
-      pinned(readFile, "head", `${patinaNativeIrApiRoot}/${input.path}`, input.sha256);
+      pinned(readFile, "head", input.path, input.sha256);
     }
     if (old.length) {
       equal(value, old[0], "historical registration changed");
@@ -204,10 +204,10 @@ export function newPatinaNativeIrApiCases(
       '[[test]]\nname = "integration"\npath = "tests/main.rs"',
     ), "Rust integration target is not registered");
     require(read("crates/vize_patina/tests/main.rs").includes(
-      '#[path = "../../../tests/_fixtures/differential/linter/native-ir-accessor-compatibility-13674/consumer.rs"]\nmod native_ir_accessor_compat;',
+      "mod native_ir_accessor_compat;",
     ), "Rust consumer is not registered in the integration target");
-    require(read(`${patinaNativeIrApiRoot}/consumer.rs`).includes(
-      'include_str!("cases.json")',
+    require(read(patinaNativeIrApiConsumer).includes(
+      "/../../tests/_fixtures/differential/linter/native-ir-accessor-compatibility-13674/cases.json",
     ), "Rust consumer does not read getter data");
     require(read("crates/vize_patina/src/native/sfc/tests/ownership.rs").includes(
       "/../../tests/_fixtures/differential/linter/native-ir-accessor-compatibility-13674/cases.json",
