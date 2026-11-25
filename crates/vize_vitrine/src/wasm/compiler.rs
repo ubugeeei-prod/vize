@@ -88,8 +88,8 @@ impl Compiler {
             )
         });
 
-        if !errors.is_empty() {
-            return Err(crate::parse_errors::message(&errors, template).into());
+        if let Some(message) = crate::parse_errors::failure(&errors, template) {
+            return Err(message.into());
         }
 
         let ast = build_ast_json(&root);

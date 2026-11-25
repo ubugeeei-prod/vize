@@ -3,7 +3,7 @@ import { rustEnvironmentKeys } from "./task-shell.ts";
 import type { TaskConfig, TaskInput } from "./task-types.ts";
 
 const executorInputs = [
-  "tools/commands/ci/workspace-task.ts",
+  "tools/ci/commands/workspace-task.ts",
   "tools/config/vite-plus/**",
   "tools/support/ci/automation-commands.ts",
   "tools/support/tasks/**",

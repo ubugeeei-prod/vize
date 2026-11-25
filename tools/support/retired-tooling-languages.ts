@@ -19,7 +19,7 @@ const nearestLineStarts = {
 export const styleHeaderValidation = {
   theorem: "tests/formal/style-format/Header.lean",
   kernel: "crates/vize_maestro/src/source_project/style_format/header.rs",
-  harness: "crates/vize_maestro/src/source_project/style_format/kani.rs",
+  harness: "crates/vize_maestro/src/source_project/style_format/creusot.rs",
 } as const;
 const compilerStringLiterals = {
   theorem: "tests/formal/string-literal/Emission.lean",

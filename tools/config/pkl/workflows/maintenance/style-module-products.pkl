@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Style module products"
 on {
@@ -65,7 +65,6 @@ jobs {
           args = "davinci/vize_l4/src/write/source_map/indexed/kani.rs --output-format=terse"
         }
       }
-      ci.command("Verify authored style attribute names, values and ordering", "kani crates/vize_maestro/src/source_project/style_format/kani.rs --output-format=terse")
       new Dynamic {
         name = "Verify source positions and style attributes for arbitrary finite input"
         run = ci.workflowScript("verify-source-coordinates-and-style-headers.sh")

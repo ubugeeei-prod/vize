@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const command = path.join(root, "tools/commands/ci/fuzz/enforce-result.ts");
+const command = path.join(root, "tools/ci/commands/fuzz/enforce-result.ts");
 
 test("fuzz result policy keeps PRs advisory and release evidence strict", () => {
   const status = (eventName: string, outcome: string): number | null =>
@@ -43,5 +43,5 @@ test("fuzz result command rejects malformed invocation", () => {
   });
 
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /Usage: node tools\/commands\/ci\/fuzz\/enforce-result\.ts/);
+  assert.match(result.stderr, /Usage: node tools\/ci\/commands\/fuzz\/enforce-result\.ts/);
 });

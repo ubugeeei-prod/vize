@@ -13,8 +13,8 @@ import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 const coverageSummaryCommand = path.join(
   repoRoot,
   "tools",
-  "commands",
   "ci",
+  "commands",
   "github",
   "write-coverage-summary.ts",
 );
@@ -39,7 +39,7 @@ test("check workflow runs coverage summary with stable Node", () => {
   );
 
   assert.doesNotMatch(coverageJob, /setup-rust-script/);
-  assert.match(coverageJob, /node tools\/commands\/ci\/github\/write-coverage-summary\.ts/);
+  assert.match(coverageJob, /node tools\/ci\/commands\/github\/write-coverage-summary\.ts/);
   assert.doesNotMatch(coverageJob, /tools\/moon\/cmd\/github\/write_coverage_summary/);
 });
 

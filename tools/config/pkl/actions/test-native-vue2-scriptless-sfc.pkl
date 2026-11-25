@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Capture complete original Vue2 SFC documents"
 description = "Join fresh native whole-source output and frames to independent pinned primary references"

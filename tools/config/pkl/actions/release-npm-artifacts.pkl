@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Restore release npm packages"
 description = "Download the built npm packages and native bindings into npm/ and lay out the native platform packages"

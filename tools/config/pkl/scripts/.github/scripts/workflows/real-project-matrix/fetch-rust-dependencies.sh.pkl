@@ -1,11 +1,11 @@
-amends "../../../../../ShellScript.pkl"
+amends "../../../../../../../ci/lib/ShellScript.pkl"
 
 interpreter = "bash"
 
 commands {
   #"""
   for attempt in 1 2 3; do
-    cargo fetch --locked --target "$(rustc -vV | sed -n -f "$VIZE_CI_FILES/../shared/rust-host-triple.sed")" && exit 0
+    cargo fetch --locked --target "$(rustc -vV | sed -n -f "$VIZE_CI_FILES/../../../../tools/ci/lib/scripts/rust-host-triple.sed")" && exit 0
     echo "::warning title=crates.io fetch::attempt $attempt failed"
     sleep $((attempt * 30))
   done

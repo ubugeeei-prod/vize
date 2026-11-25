@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 // Vitest persistent Vue modules: cold, warm and source-change mounts resolve
 // the same module identities with the source addon.

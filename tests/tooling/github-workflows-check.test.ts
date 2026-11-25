@@ -36,7 +36,7 @@ test("SemVer checks run on exact-SHA release dispatches", () => {
     job,
     /BASELINE_REV:\s*\$\{\{\s*github\.event_name == 'pull_request' && github\.event\.pull_request\.base\.sha \|\| \(github\.event_name == 'push' && github\.event\.before \|\| ''\)\s*\}\}/,
   );
-  const script = readRepoFile("tools", "commands", "ci", "github", "check-semver.ts");
+  const script = readRepoFile("tools", "ci", "commands", "github", "check-semver.ts");
   assert.match(script, /\["rev-parse", "--verify", "-q", "HEAD\^2"\]/);
   assert.match(script, /\["rev-parse", "HEAD\^1"\]/);
 });

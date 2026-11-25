@@ -1,5 +1,5 @@
-import "../../Actions.pkl" as ci
-import "../../RustFeatureTests.pkl" as features
+import "../../../../ci/lib/Actions.pkl" as ci
+import "../../../../ci/lib/RustFeatureTests.pkl" as features
 
 // Every experimental Cargo feature row, for full qualification. Pull requests
 // run their affected rows inside pr-rust-products instead.
@@ -30,7 +30,7 @@ jobs {
       new Dynamic {
         name = "List every feature row"
         id = "plan"
-        run = "node tools/commands/ci/rust-feature-tests.ts matrix"
+        run = "node tools/ci/commands/rust-feature-tests.ts matrix"
       }
     }
   }

@@ -57,7 +57,7 @@ Every Linux GNU artifact (the `@vizejs/native-linux-{x64,arm64}-gnu` bindings an
 `vize-{x86_64,aarch64}-unknown-linux-gnu` CLI archives the editor extensions download) needs
 **glibc 2.17 or newer**. Release builds link against that floor with `cargo zigbuild`, and the
 release fails if any built ELF file needs a newer glibc symbol version
-(`tools/commands/ci/github/verify-glibc-symbols.ts`). Before tagging, the release candidate runs in
+(`tools/ci/commands/github/verify-glibc-symbols.ts`). Before tagging, the release candidate runs in
 containers:
 
 | Container         | glibc | What runs                                                                        |

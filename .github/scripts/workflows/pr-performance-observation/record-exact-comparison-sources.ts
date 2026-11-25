@@ -1,4 +1,4 @@
-import { requiredEnv } from "../shared/files.ts";
+import { requiredEnv } from "../../../../tools/ci/lib/scripts/files.ts";
 import { execFileSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 const git = (...args: string[]) =>

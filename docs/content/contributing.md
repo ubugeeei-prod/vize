@@ -68,7 +68,7 @@ authentication, push, or warmup fails, and always attempts to stop a successfull
 when a task fails:
 
 ```sh
-sh tools/commands/ci/run-testbox-checks.sh
+sh tools/ci/commands/run-testbox-checks.sh
 ```
 
 For Blacksmith Testbox job changes, also validate the workflow shape with

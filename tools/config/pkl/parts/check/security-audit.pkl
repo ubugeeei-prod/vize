@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 needs = "iteration-plan"
 `runs-on` = "${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
@@ -37,7 +37,7 @@ steps = new Listing {
   new Dynamic {
     name = "Audit production npm dependencies"
     `if` = "${{ needs.iteration-plan.outputs.dependencies == 'true' }}"
-    run = "node tools/commands/ci/npm-audit-retry.ts"
+    run = "node tools/ci/commands/npm-audit-retry.ts"
   }
   new Dynamic {
     name = "Install cargo-audit"

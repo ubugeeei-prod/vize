@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "cargo-semver-checks (${{ matrix.crate }})"
 // Check published APIs before tag promotion and when resuming an exact release tag.
@@ -72,6 +72,6 @@ steps = new Listing {
       BASELINE_REV = "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
-    run = #"node tools/commands/ci/github/check-semver.ts "${{ matrix.crate }}""#
+    run = #"node tools/ci/commands/github/check-semver.ts "${{ matrix.crate }}""#
   }
 }

@@ -104,7 +104,7 @@ jobs:
           run-install: false
 
       - name: Seed fuzz corpus from repository fixtures
-        run: node tools/commands/ci/fuzz/seed-corpus.ts
+        run: node tools/ci/commands/fuzz/seed-corpus.ts
 
       - name: Restore grown corpus cache
         if: ${{ github.event_name != 'merge_group' }}
@@ -162,4 +162,4 @@ jobs:
           FUZZ_EVENT_NAME: ${{ github.event_name }}
           FUZZ_OUTCOME: ${{ steps.fuzz.outcome || 'skipped' }}
           FUZZ_TARGET: ${{ matrix.target }}
-        run: node tools/commands/ci/fuzz/enforce-result.ts "$FUZZ_EVENT_NAME" "$FUZZ_TARGET" "$FUZZ_OUTCOME"
+        run: node tools/ci/commands/fuzz/enforce-result.ts "$FUZZ_EVENT_NAME" "$FUZZ_TARGET" "$FUZZ_OUTCOME"

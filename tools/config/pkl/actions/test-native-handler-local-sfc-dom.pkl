@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Original handler block-local SFC runtime"
 description = "Capture complete original local-handler components and pinned Vue execution"

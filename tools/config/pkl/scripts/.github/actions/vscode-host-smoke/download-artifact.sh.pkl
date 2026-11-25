@@ -1,4 +1,4 @@
-amends "../../../../ShellScript.pkl"
+amends "../../../../../../ci/lib/ShellScript.pkl"
 
 interpreter = "bash"
 

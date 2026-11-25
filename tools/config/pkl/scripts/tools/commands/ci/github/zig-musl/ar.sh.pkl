@@ -1,8 +1,0 @@
-amends "../../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-executable = true
-
-commands {
-  #"exec zig ar "$@""#
-}
