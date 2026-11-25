@@ -47,7 +47,7 @@ jobs:
   authored-coordinates:
     name: Authored coordinates and style header proofs
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - name: Check out the workflow's scripts
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -78,7 +78,7 @@ jobs:
   nearest-line-starts:
     name: Prove nearest LSP line starts on ARM64
     runs-on: blacksmith-32vcpu-ubuntu-2404-arm
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
