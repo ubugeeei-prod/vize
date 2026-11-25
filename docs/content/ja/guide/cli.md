@@ -169,6 +169,20 @@ vize fmt --write src
 | `--preset`                         | `vize`、`prettier`、`compact`、`documentation` のフォーマッタ既定値を適用する |
 | `--profile`                        | 処理時間のプロファイルを表示する                       |
 
+### JavaScript から使う
+
+コードジェネレータは、コマンドを実行する代わりに `vize` パッケージから出力を整形できます。
+
+```ts
+import { format, formatSync } from "vize";
+
+const { code, changed } = await format(source, { filename: "src/generated/routes.ts" });
+```
+
+`filename` には書き込み先のファイル名を渡します。ファイル自体は読み書きしません。拡張子で整形方法が決まり、ディレクトリで設定が決まります。どちらも、そのディレクトリで `vize fmt` を実行したときと同じです。返される `code` は、`vize fmt --write` が書き込むバイト列と一致します。オプションは設定と同じ名前（`semi`、`printWidth`、`sortImports`、`preset` など）で、指定したものはフラグと同じく設定値を上書きします。`config: "path/to/vite.config.ts"` を渡すと、設定を探索せずにそのファイルを読みます。`config: false` を渡すと既定値だけで整形します。ignore パターンはコマンドがファイルを選ぶためのもので、ここでは適用されません。
+
+`format` はワーカースレッドで動き、Promise を返します。そのため、Vite の設定を評価している間もイベントループを止めずに、多くのファイルを並行して整形できます。`formatSync` は `await` できないコード向けの同じ呼び出しです。ソースを解析できない場合、`vize fmt` が扱わない種類のファイル（単体の CSS・YAML・Markdown は他のフォーマッタに任せます）の場合、設定が不正な場合は、どちらもフォーマッタのメッセージで例外を投げます。
+
 <a id="糸くず"></a>
 
 ## lint
