@@ -4,8 +4,6 @@
     deprecated,
     reason = "the supported old names remain usable for one minor release"
 )]
-#![expect(clippy::expect_used, reason = "tests assert by panicking")]
-
 use vize_croquis::facts::FactError::NotComputed;
 use vize_croquis::facts::{
     Demand, FactConsumer, FactError, FactGroup, FactManager, FactRegistry, FactTable, FactView,
