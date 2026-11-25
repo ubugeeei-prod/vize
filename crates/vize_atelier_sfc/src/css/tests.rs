@@ -497,7 +497,6 @@ fn test_apply_scoped_css_with_quoted_string() {
     // Test the raw scoping function without LightningCSS
     let css = ".foo { font-family: 'JetBrains Mono', monospace; }";
     let result = apply_scoped_css(&bump, css, "data-v-123");
-    println!("Scoped result: {}", result);
     insta::assert_snapshot!(result);
 }
 
