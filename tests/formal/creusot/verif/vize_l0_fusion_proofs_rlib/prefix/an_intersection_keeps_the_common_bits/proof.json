@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_an_intersection_keeps_the_common_bits": {
+        "prover": "z3",
+        "time": 0.008
+      }
+    }
+  }
+}

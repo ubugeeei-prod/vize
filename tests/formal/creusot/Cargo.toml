@@ -23,6 +23,7 @@ members = [
   "style-header",
   "assignability",
   "utf8",
+  "fusion",
 ]
 
 [workspace.dependencies]

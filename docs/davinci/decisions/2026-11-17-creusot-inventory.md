@@ -13,6 +13,26 @@ the law's verifier: the incremental update machine, by the
 A Kani harness is deleted only when its row is `proved` or `oracle`; Kani
 itself stays for the `kani` rows.
 
+## L0 pass fusion grouping (`davinci/vize_l0/src/pass/fusion/grouped`)
+
+Kani file, deleted: `grouped/kani.rs`. Its bound was five passes with
+arbitrary 64-bit masks. Creusot root: `grouped/creusot.rs` (package
+`tests/formal/creusot/fusion`). `prefix::next_group` carries the grouping
+rule of `fusion.rs` as its contract, for any slice and any classifier: the
+first group is a lone barrier exactly when its first pass is not fusable;
+otherwise it holds every following fusable pass up to the first one that is
+not, and it preserves `meet`, the intersection of its members' masks
+(`first_group`). `the_meet_keeps_exactly_the_common_bits` states the
+intersection per analysis bit, through the bitvector lemma
+`an_intersection_keeps_the_common_bits`. The scanner reads its first pass
+with `first()?` and the rest with `get(1..)?` instead of `split_first()?`,
+which Creusot does not specify; the LLVM IR is the same up to local value
+names.
+
+| Kani harness                                                         | Law                                                                                                                                                  | Kani bound                      | Creusot replacement                                                                                                                                   | Status |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `groups_partition_the_plan_and_preserve_exactly_the_common_analyses` | the groups partition the plan in order, a barrier sits alone, a fusable run is maximal, and a group preserves exactly the analyses every member does | 5 passes, arbitrary `u64` masks | `groups_partition_the_plan_and_preserve_exactly_the_common_analyses` over the contract of `next_group`, with `the_meet_keeps_exactly_the_common_bits` | proved |
+
 ## L3 lattice (`davinci/vize_l3/src/lattice`)
 
 Kani file: `lattice/kani.rs` and `lattice/classify_proofs.rs`, both deleted
