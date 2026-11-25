@@ -13,8 +13,8 @@ import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 const coverageSummaryCommand = path.join(
   repoRoot,
   "tools",
-  "commands",
   "ci",
+  "commands",
   "github",
   "write-coverage-summary.ts",
 );

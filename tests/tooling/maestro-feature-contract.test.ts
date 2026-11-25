@@ -11,8 +11,8 @@ test("check workflow enforces the Maestro non-native feature contract", () => {
   const workflow = checkWorkflowJobSources();
   const command = readRepoFile(
     "tools",
-    "commands",
     "ci",
+    "commands",
     "github",
     "check-maestro-feature-contract.ts",
   );
