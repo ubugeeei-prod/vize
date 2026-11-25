@@ -7,7 +7,7 @@ import { parse } from "yaml";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 test("zizmor workflow audits GitHub Actions with pinned security scanning", () => {
-  const workflow = readRepoFile(".github", "workflows", "zizmor.yml");
+  const workflow = readRepoFile(".github", "workflows", "11-zizmor.yml");
   const parsed = parse(workflow) as {
     name?: string;
     on?: {
@@ -98,7 +98,7 @@ test("zizmor workflow audits GitHub Actions with pinned security scanning", () =
 });
 
 test("zizmor plans with read-only API calls and no candidate checkout", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "zizmor.yml"));
+  const workflow = parse(readRepoFile(".github", "workflows", "11-zizmor.yml"));
   const plan = workflow.jobs.plan;
   assert.equal(plan["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   assert.equal(plan["timeout-minutes"], 5);
@@ -123,7 +123,7 @@ test("zizmor plans with read-only API calls and no candidate checkout", () => {
 });
 
 test("a failed or incomplete audit plan cannot skip the scanner", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "zizmor.yml"));
+  const workflow = parse(readRepoFile(".github", "workflows", "11-zizmor.yml"));
   const condition = workflow.jobs.zizmor.if.slice(3, -2).trim();
   const evaluate = (needs: object, cancelled: () => boolean) =>
     new Script(condition).runInNewContext({ needs, cancelled });

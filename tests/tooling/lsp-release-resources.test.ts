@@ -4,9 +4,7 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 test("the shipping-profile supplement preserves the scheduled ci-opt campaign", () => {
-  const main = parse(
-    readAutomationPrograms(".github", "workflows", "davinci-resource-budgets.yml"),
-  );
+  const main = parse(readAutomationPrograms(".github", "workflows", "03-lsp-resources.yml"));
   assert.equal(main.on.workflow_dispatch.inputs.include_release.default, false);
   assert.equal(
     main.jobs["release-resource"].if,

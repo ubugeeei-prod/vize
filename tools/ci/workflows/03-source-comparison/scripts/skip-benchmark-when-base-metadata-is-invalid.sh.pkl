@@ -1,0 +1,21 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  ###"""
+  {
+    echo "## PR Benchmark"
+    echo
+    echo "Base metadata could not be parsed, so the benchmark was skipped for this PR."
+    echo
+    echo "| status | reason |"
+    echo "| --- | --- |"
+    echo "| skipped | base checkout is not buildable |"
+  } > benchmark-summary.md
+  printf '{"skipped":true,"reason":"base_metadata_invalid","base":"%s","head":"%s"}\n' \
+    "$BENCHMARK_BASE_SHA" \
+    "$BENCHMARK_HEAD_SHA" \
+    > benchmark-results.json
+  """###
+}

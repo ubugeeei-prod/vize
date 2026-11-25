@@ -30,8 +30,8 @@ const shippedMeasureActions = new Map([
 ]);
 const appAction = "./.github/actions/app-e2e-row";
 const appFile = ".github/actions/app-e2e-row/action.yml";
-const docsFile = ".github/workflows/build-docs.yml";
-const e2eFile = ".github/workflows/e2e.yml";
+const docsFile = ".github/workflows/11-docs-build.yml";
+const e2eFile = ".github/workflows/10-app-e2e.yml";
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 const token = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const dynamicPrefixes = new Set([
@@ -63,37 +63,37 @@ const producerHashes = {
   // or the old .github/scripts/workflows/<name>, and shared ones from tools/ci/lib/scripts.
   ".github/actions/stage-workflow-scripts/stage.ts":
     "25af079b7060133e9261d1c99d60dd8aade5298e85fe68cf604ceacc4f0654de",
-  ".github/scripts/workflows/e2e/plan-full-rows.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/plan-full-rows.sh": [
     "48db48b3259ddf195d7b41563c396ef9c6058ee1ccd7123dcc8488e60d645a66",
     "fb74e8bacfa630535f68514899ac0fd7ee714c03c22c4b7e1369b3702be741c6",
     // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
     "d97dd5b74540264b9eec7c3674b378a0c0144d3520c6e7ab604abb29f6e737f6",
   ],
-  ".github/scripts/workflows/e2e/plan-readiness-rows.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/plan-readiness-rows.sh": [
     "1bdf100557be3c0d25eb0217a122750aedf04887daee0e34db294807665a834d",
     "0cd915f52568251954116c9b5e0a20071218df9be50f41e4a9fdb3f583ebb104",
     // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
     "dec2510c81d47bc70efd1c1d6591a98bfbf667cf453d07be146ed7b222b3eada",
   ],
-  ".github/scripts/workflows/e2e/validate-target-sha.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/validate-target-sha.sh": [
     "0a8e0b4584b88fd1712b97387a3b554c1fa8d642c932bb590758159a144420fa",
     "a1c84e218ce74cd77e8e687687cfb3850e8cb9068315aa5a2788275ff1795fbe",
   ],
-  ".github/scripts/workflows/e2e/verify-producer-sha.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/verify-producer-sha.sh": [
     "79b2cd2e878ca1d71373872ded348d38d7bcdd3ddc622d0fec32523cf6c56ef2",
     "cdd052be7763e1a399336f2a55af189a92ec9702bb92cc7898c061ccbb32afff",
   ],
-  ".github/scripts/workflows/e2e/verify-readiness-merge-sha.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/verify-readiness-merge-sha.sh": [
     "e1845eaf90a99bf275e2be08fcffbf7cd5a1d052678dc427d43de4d839cf4f37",
     "37bed01d35ddc40baa321dd7c8844878c44a31bc4b01187564f0b51d19c0baa4",
   ],
-  ".github/scripts/workflows/e2e/write-full-plan-evidence.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/write-full-plan-evidence.sh": [
     "007613ed91016c66a320038841944ab5225390d7461438093af557646c11d991",
     "3e9f329999396fcf93f9d66163abd21c7dacdc10067cb42aee15cd403050ac26",
     // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
     "b0e7bc04e2d4740371c263d6661efb38fb1a00e75f5fd86f52cc5206aa5ed49e",
   ],
-  ".github/scripts/workflows/e2e/write-readiness-plan-evidence.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/write-readiness-plan-evidence.sh": [
     "e7110ceaa0266e4a479b2de79660834f82ace685e217be9a8967d14a56b206d6",
     "b2c01a84ad82128243d5302201ee01d62921bc4012f0cf7915c2b0e0c8bea8af",
     // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
@@ -177,7 +177,7 @@ function ordinaryRole(key) {
 }
 
 function reviewedCssRole(file, job, document, step) {
-  if (file !== ".github/workflows/css-engine-vendor-candidate.yml" || step.uses !== cacheAction)
+  if (file !== ".github/workflows/06-css-engine-forks.yml" || step.uses !== cacheAction)
     return false;
   const key = ["engine", "bundler-before"].includes(job)
     ? "engines-${{ matrix.profile }}"
@@ -322,7 +322,7 @@ export function verifyDocsWasmConsumers(root) {
         assert(
           step.uses === headCacheAction ||
             (step.uses === headScriptAction &&
-              file === ".github/workflows/level-memory-bench.yml" &&
+              file === ".github/workflows/03-level-memory.yml" &&
               job === "memory" &&
               source.has(".github/actions/setup-rust-script/action.yml")) ||
             (qualificationWorkflows.has(file) &&
@@ -396,7 +396,7 @@ export function verifyDocsWasmConsumers(root) {
       if (isCache && key === "docs-napi") {
         if (
           (file === docsFile && job === "build-docs") ||
-          (file === ".github/workflows/ci-walltime-benchmark.yml" && job === "docs")
+          (file === ".github/workflows/03-ci-walltime.yml" && job === "docs")
         )
           assert.deepEqual(step.with, {
             key: "docs-napi",
@@ -410,7 +410,7 @@ export function verifyDocsWasmConsumers(root) {
   assert.equal(delegatedCache, 1, "one reviewed app cache delegation");
   for (const [file, job] of [
     [docsFile, "build-docs"],
-    [".github/workflows/ci-walltime-benchmark.yml", "docs"],
+    [".github/workflows/03-ci-walltime.yml", "docs"],
   ])
     assert(
       napi.some((entry) => entry.file === file && entry.job === job),

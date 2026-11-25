@@ -84,7 +84,7 @@ jobs:
     if: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/level-instruction-counts.yml
   level-dependency-direction:
-    uses: ./.github/workflows/level-dependencies.yml
+    uses: ./.github/workflows/07-level-dependencies.yml
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60

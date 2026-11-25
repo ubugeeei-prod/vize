@@ -1,0 +1,7 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"cat check-gate-summary.md >> "$GITHUB_STEP_SUMMARY""#
+}

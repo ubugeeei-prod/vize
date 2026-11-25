@@ -5,7 +5,7 @@ import { parse } from "yaml";
 
 void test("the scaling workflow supports isolated single and same-runner paired measurements", () => {
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "typecheck-scaling.yml"),
+    readAutomationPrograms(".github", "workflows", "03-typecheck-scaling.yml"),
   ) as {
     on: { workflow_dispatch: { inputs: Record<string, { default?: string; required?: boolean }> } };
     jobs: Record<

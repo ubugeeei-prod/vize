@@ -15,7 +15,7 @@ type Workflow = { jobs?: Record<string, { steps?: Step[] }> };
 
 const CACHES = [
   { workflow: "check.yml", job: "playground-test" },
-  { workflow: "build-docs.yml", job: "build-playground" },
+  { workflow: "11-docs-build.yml", job: "build-playground" },
 ] as const;
 
 /** Every cached path is a directory's wasm-bindgen output glob. */

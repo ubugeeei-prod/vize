@@ -1,0 +1,83 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Canonical corpus objects"
+// Seeds the immutable fixture object cache that the PR and queue canonical
+// observers restore. Only trusted default-branch runs write it; pull requests
+// and merge groups only read it (exact pins first, then the same .gitmodules
+// prefix) and still verify every checked-out byte against the committed tree.
+on {
+  push {
+    branches = List("main")
+    paths = new Listing {
+      ".gitmodules"
+      "tests/_fixtures/_git/**"
+      ".github/workflows/07-canonical-corpus-objects.yml"
+      "tools/ci/workflows/07-canonical-corpus-objects/scripts/**"
+    }
+  }
+  // Daily, so the entry is never evicted as unused.
+  schedule = new Listing {
+    new Dynamic { cron = "41 2 * * *" }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "canonical-corpus-objects-${{ github.ref }}"
+  `cancel-in-progress` = false
+}
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+jobs {
+  seed {
+    name = "Seed canonical fixture objects"
+    `if` = "${{ github.ref == 'refs/heads/main' }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/07-canonical-corpus-objects/scripts"
+    }
+    steps = new Listing {
+      new Dynamic {
+        name = "Checkout trusted main"
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          ref = "${{ github.sha }}"
+        }
+      }
+      new Dynamic {
+        name = "Setup Node"
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Plan canonical corpus identity"
+        id = "corpus-plan"
+        run = "node tools/support/compat/github/canonical-corpus-observer.mjs plan"
+      }
+      new Dynamic {
+        name = "Require a trusted cache writer"
+        `if` = "${{ steps.corpus-plan.outputs.cache-trusted != 'true' }}"
+        run = ci.workflowScript("require-a-trusted-cache-writer.sh")
+      }
+      new Dynamic {
+        name = "Cache immutable trusted fixture objects"
+        id = "objects"
+        uses = ci.cache
+        with {
+          path = ".git/modules/tests/_fixtures/_git"
+          key = "${{ steps.corpus-plan.outputs.cache-key }}"
+          `restore-keys` = "${{ steps.corpus-plan.outputs.cache-restore-key }}"
+        }
+      }
+      new Dynamic {
+        name = "Fetch pinned fixture objects"
+        `if` = "${{ steps.objects.outputs.cache-hit != 'true' }}"
+        run = "git submodule update --init --checkout --depth 1 --jobs 32 -- tests/_fixtures/_git"
+      }
+    }
+  }
+}

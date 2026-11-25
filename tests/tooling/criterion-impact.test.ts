@@ -212,7 +212,7 @@ test("hosted fallback smoke-runs Criterion infrastructure-only changes", () => {
   const result = selectCriterionSuites({
     changedPaths: [
       ".github/workflows/check.yml",
-      ".github/workflows/criterion-bench.yml",
+      ".github/workflows/03-criterion.yml",
       "tools/benchmarks/scripts/criterion-ab.ts",
       "crates/vize_canon/tests/tier_l_incremental/main.rs",
       "tests/tooling/criterion-baselines.test.ts",

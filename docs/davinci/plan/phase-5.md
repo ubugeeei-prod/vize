@@ -38,20 +38,20 @@ Phase 4 was re-cut the same day; nothing has landed yet. These P4 tasks gate thi
 
 Lanes own disjoint paths within this phase. Cross-phase: lane D must not edit phase-4 lane paths (`crates/vize_maestro/src/ide/ecosystem*`, `crates/vize_maestro/src/virtual_code*`, `crates/vize_maestro/src/ide/diagnostics/corsa*`) until their owning P4 task has landed — which is exactly why P5-6b and P5-6c are gated. Registration touchpoints (`Cargo.toml`, `lib.rs`, `budgets.toml`, `test-suites.md`) are the expected rebase conflicts.
 
-| Lane | Tasks               | Owns (only this lane edits)                                                                    |
-| ---- | ------------------- | ---------------------------------------------------------------------------------------------- |
-| A    | P5-1a, P5-1b        | `davinci/vize_davinci/src/key*`, `docs/davinci/plan/key-manifests.md`                          |
-| B    | P5-2, P5-3          | `davinci/vize_davinci/src/summary*`                                                            |
-| C    | P5-4a, P5-4b, P5-5  | `crates/vize_incremental/`                                                                     |
-| D    | P5-6a, P5-6b, P5-6c | `crates/vize_maestro/src/ide/`, `crates/vize_maestro/src/server/`                              |
-| E    | P5-7                | `crates/vize_canon/src/projection/reuse*`                                                      |
-| F    | P5-8                | `crates/vize_canon/src/corsa_session_cache*`, `crates/vize/src/commands/check_server*`         |
-| G    | P5-9                | `tools/commands/davinci/incremental-equivalence*`, `.github/workflows/davinci-incremental.yml` |
-| H    | P5-10               | `davinci/vize_l1_to_l2/src/partial*`, `tests/tooling/lsp-broken-file*`                         |
-| I    | P5-11a, P5-11b      | `tools/commands/davinci/resource-budgets*`, `tests/tooling/davinci-resource-budgets*`          |
-| J    | P5-12               | `tests/editor-conformance/`, `tests/tooling/editor-conformance*`                               |
-| K    | P5-13               | `crates/vize_vitrine/src/napi/plugin_cache*`                                                   |
-| X    | P5-14               | `docs/davinci/plan/phase-5-records/`                                                           |
+| Lane | Tasks               | Owns (only this lane edits)                                                               |
+| ---- | ------------------- | ----------------------------------------------------------------------------------------- |
+| A    | P5-1a, P5-1b        | `davinci/vize_davinci/src/key*`, `docs/davinci/plan/key-manifests.md`                     |
+| B    | P5-2, P5-3          | `davinci/vize_davinci/src/summary*`                                                       |
+| C    | P5-4a, P5-4b, P5-5  | `crates/vize_incremental/`                                                                |
+| D    | P5-6a, P5-6b, P5-6c | `crates/vize_maestro/src/ide/`, `crates/vize_maestro/src/server/`                         |
+| E    | P5-7                | `crates/vize_canon/src/projection/reuse*`                                                 |
+| F    | P5-8                | `crates/vize_canon/src/corsa_session_cache*`, `crates/vize/src/commands/check_server*`    |
+| G    | P5-9                | `tools/commands/davinci/incremental-equivalence*`, `.github/workflows/07-incremental.yml` |
+| H    | P5-10               | `davinci/vize_l1_to_l2/src/partial*`, `tests/tooling/lsp-broken-file*`                    |
+| I    | P5-11a, P5-11b      | `tools/commands/davinci/resource-budgets*`, `tests/tooling/davinci-resource-budgets*`     |
+| J    | P5-12               | `tests/editor-conformance/`, `tests/tooling/editor-conformance*`                          |
+| K    | P5-13               | `crates/vize_vitrine/src/napi/plugin_cache*`                                              |
+| X    | P5-14               | `docs/davinci/plan/phase-5-records/`                                                      |
 
 ## Critical path
 

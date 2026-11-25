@@ -18,7 +18,7 @@ import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 
 const repo = fileURLToPath(new URL("../../", import.meta.url));
-const workflow = parse(readFileSync(path.join(repo, ".github/workflows/rspack-hmr.yml"), "utf8"));
+const workflow = parse(readFileSync(path.join(repo, ".github/workflows/08-rspack.yml"), "utf8"));
 const browser = workflow.jobs.browser.steps.find(
   (step: { name?: string }) => step.name === "Run browser HMR",
 );

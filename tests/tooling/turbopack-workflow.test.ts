@@ -14,7 +14,7 @@ void test(
     skip: process.platform === "win32" ? "the selected Actions job uses Linux bash" : false,
   },
   async () => {
-    const workflow = parse(readAutomationPrograms(".github/workflows/turbopack-consumers.yml"));
+    const workflow = parse(readAutomationPrograms(".github/workflows/08-turbopack.yml"));
     const step = workflow.jobs.consumers.steps.find(
       (step: { name?: string }) =>
         step.name === "Check authored positions and existing Rspack behavior",
@@ -37,11 +37,10 @@ void test(
         readToolingProgram("commands/turbopack-workflow/run-selected-producer.sh"),
         { mode: 0o755 },
       );
-      const failed = spawnSync(
-        "/bin/bash",
-        ["-e", automationShellPath(step.run, "turbopack-consumers")],
-        { env, encoding: "utf8" },
-      );
+      const failed = spawnSync("/bin/bash", ["-e", automationShellPath(step.run, "08-turbopack")], {
+        env,
+        encoding: "utf8",
+      });
       assert.equal(failed.status, 23, failed.stderr);
       assert.equal(
         await fs.readFile(path.join(artifacts, "source-unit.tap"), "utf8"),
@@ -54,11 +53,10 @@ void test(
           mode: 0o755,
         },
       );
-      const passed = spawnSync(
-        "/bin/bash",
-        ["-e", automationShellPath(step.run, "turbopack-consumers")],
-        { env, encoding: "utf8" },
-      );
+      const passed = spawnSync("/bin/bash", ["-e", automationShellPath(step.run, "08-turbopack")], {
+        env,
+        encoding: "utf8",
+      });
       assert.equal(passed.status, 0, passed.stderr);
       assert.equal(
         await fs.readFile(path.join(artifacts, "source-unit.tap"), "utf8"),

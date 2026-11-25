@@ -129,7 +129,7 @@ test("the tool comparison runs the Musea surface by default", () => {
 });
 
 test("the Musea surface publishes the exact six-stage schema without a ratio", () => {
-  // The repo has one drift gate: benchmark.yml compares a lane against the PR
+  // The repo has one drift gate: 03-source-comparison.yml compares a lane against the PR
   // base and, since #3586, against a pinned historical commit on a schedule.
   // A published lane that invented a ratio or carried its own stored baseline
   // would be a second, unreconciled gate. This surface names no baseline

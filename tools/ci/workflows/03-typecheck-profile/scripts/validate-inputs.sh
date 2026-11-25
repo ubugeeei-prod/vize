@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/ci/workflows/03-typecheck-profile/scripts/validate-inputs.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+set -euo pipefail
+echo "head=$HEAD_SHA base=${BASE_SHA:-none} corpora=${CORPORA:-all} lanes=$LANES frequency=$FREQUENCY"
+fail() { echo "::error::$1"; exit 1; }
+[[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || fail "head must be a full 40-hex SHA: $HEAD_SHA"
+if [[ -n "$BASE_SHA" ]]; then
+  [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]] || fail "Profile-Base / base_sha must be a full 40-hex SHA: $BASE_SHA"
+  [[ "$BASE_SHA" != "$HEAD_SHA" ]] || fail "base and head are the same commit"
+fi
+[[ "$CORPORA" =~ ^[a-z0-9,-]*$ ]] || fail "corpora must be comma-separated ids: $CORPORA"
+[[ "$LANES" =~ ^[a-z,-]+$ ]] || fail "lanes must be comma-separated ids: $LANES"
+[[ "$FREQUENCY" =~ ^[1-9][0-9]{1,4}$ ]] || fail "frequency must be 10..99999 Hz: $FREQUENCY"

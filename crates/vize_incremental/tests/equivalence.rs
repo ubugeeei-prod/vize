@@ -7,7 +7,7 @@
 //! Under the `seeded-stale-cache` feature (the firewall's equality weakened
 //! to block lengths) the same run must report stale artifacts, which proves
 //! the harness can see the bug class it exists for. The corpus shard runs
-//! the same harness in CI (`davinci-incremental.yml`).
+//! the same harness in CI (`07-incremental.yml`).
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 

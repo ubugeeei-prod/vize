@@ -1,0 +1,62 @@
+import "../../../lib/Actions.pkl" as ci
+
+`if` = "${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.scoped-cascade == 'true') }}"
+needs = "changes"
+`runs-on` = ci.linux
+`timeout-minutes` = 25
+steps = new Listing {
+  ...ci.stageWorkflow("06-browser-oracles")
+  ci.checkoutAt("${{ env.HEAD_SHA }}")
+  ci.rust("stable")
+  ci.wild()
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "scoped-nesting-specificity"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    uses = ci.setupVp121
+    with {
+      version = "latest"
+      `node-version-file` = "package.json"
+      `run-install` = false
+      cache = true
+      `cache-save` = false
+    }
+  }
+  new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+  new Dynamic {
+    uses = "./.github/actions/install-playwright-browsers"
+    with { workspace = "./tests" }
+  }
+  new Dynamic {
+    name = "Compile current source and retain all prior scoped CSS oracles"
+    env { VIZE_SCOPED_NESTING_CAPTURE = "${{ runner.temp }}/scoped-nesting-modules.json" }
+    run = ci.workflowScript("scoped-nesting-compile-current-source-and-retain-all-prior-scoped-css-oracles.sh")
+  }
+  new Dynamic {
+    name = "Verify complete scoped CSS and real Chromium cascade and pixels"
+    env {
+      VIZE_SCOPED_NESTING_CAPTURE = "${{ runner.temp }}/scoped-nesting-modules.json"
+      VIZE_SCOPED_NESTING_REQUIRE_SOURCE = "1"
+      VIZE_SCOPED_NESTING_RUNTIME_CAPTURE = "${{ runner.temp }}/scoped-nesting-runtime.json"
+    }
+    run = "vp node --test tests/tooling/scoped-nesting-specificity.test.mjs"
+  }
+  new Dynamic {
+    uses = ci.uploadArtifact
+    `if` = "always()"
+    with {
+      name = "scoped-nesting-${{ env.HEAD_SHA }}-${{ github.run_id }}"
+      path = """
+      ${{ runner.temp }}/scoped-nesting-modules.json
+      ${{ runner.temp }}/scoped-nesting-runtime.json
+
+      """
+      `if-no-files-found` = "error"
+      `retention-days` = 14
+    }
+  }
+}

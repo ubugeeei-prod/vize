@@ -21,7 +21,7 @@ type Step = { uses?: string; run?: string };
 type Job = { uses?: string; steps?: Step[] };
 type Workflow = { jobs: Record<string, Job> };
 
-const corpusWorkflow = ".github/workflows/davinci-canonical-corpus.yml";
+const corpusWorkflow = ".github/workflows/07-canonical-corpus.yml";
 const selects = (path: string) => canonicalCorpusRequired([path], "pull_request");
 const exists = (path: string) => existsSync(join(root, path));
 const index = execFileSync("git", ["ls-files", "-z"], {
@@ -73,7 +73,7 @@ await test("the canonical call path and every local action it uses select the co
   assert(steps(yaml(corpusWorkflow)).some((step) => step.uses?.startsWith("actions/setup-node@")));
   assertSelected("package.json", "setup-node runtime");
   for (const unrelated of [
-    ".github/workflows/e2e.yml",
+    ".github/workflows/10-app-e2e.yml",
     ".github/workflows/real-project-matrix.yml",
     ".github/actions/install-playwright-browsers/action.yml",
   ]) {

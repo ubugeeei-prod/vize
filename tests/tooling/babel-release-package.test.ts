@@ -10,7 +10,7 @@ const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 test("the registered Babel package is published and smoked with the native compiler", () => {
   const workflow = read(".github/workflows/release.yml");
   const packages = workflow.match(/^  RELEASE_JS_PACKAGES: (.+)$/m)?.[1].split(" ");
-  const smokePackages = read(".github/workflows/native-smoke.yml")
+  const smokePackages = read(".github/workflows/06-native-smoke.yml")
     .match(/^  RELEASE_JS_PACKAGES: (.+)$/m)?.[1]
     .split(" ");
   assert.ok(packages && smokePackages, "both package inventories are required");

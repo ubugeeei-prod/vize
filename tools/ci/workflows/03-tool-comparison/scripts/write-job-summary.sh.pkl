@@ -1,0 +1,7 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"cat tool-benchmark-summary.md >> "$GITHUB_STEP_SUMMARY""#
+}

@@ -29,10 +29,10 @@ test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
 
   for (const workflow of [
     "../../.github/workflows/check.yml",
-    "../../.github/workflows/benchmark.yml",
-    "../../.github/workflows/fuzz.yml",
-    "../../.github/workflows/e2e.yml",
-    "../../.github/workflows/build-docs.yml",
+    "../../.github/workflows/03-source-comparison.yml",
+    "../../.github/workflows/11-fuzz.yml",
+    "../../.github/workflows/10-app-e2e.yml",
+    "../../.github/workflows/11-docs-build.yml",
     "../../.github/workflows/deploy-docs.yml",
     "../../.github/workflows/release.yml",
   ]) {
@@ -98,7 +98,7 @@ test("production-readiness checklist scopes supported and experimental surfaces"
     "Alpha-supported",
     "Experimental",
     "cargo audit --deny warnings",
-    "fuzz.yml",
+    "11-fuzz.yml",
     "seeded corpus health",
     "real-world fixture coverage",
     "line and branch coverage gates",

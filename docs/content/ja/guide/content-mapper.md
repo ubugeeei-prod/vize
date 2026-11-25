@@ -17,7 +17,7 @@ Content Mapper は、TypeScript が直接解析できない種類のファイル
 [microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712) で
 マージされました。この開発用リポジトリは現在アーカイブされており、ネイティブ TypeScript の
 開発は [microsoft/TypeScript](https://github.com/microsoft/TypeScript) で続いています。
-[Content Mapper の準拠性検証ワークフロー](https://github.com/ubugeeei-prod/vize/blob/main/.github/workflows/content-mapper-conformance.yml)
+[Content Mapper の準拠性検証ワークフロー](https://github.com/ubugeeei-prod/vize/blob/main/.github/workflows/04-content-mapper-conformance.yml)
 で、このページに示すホストの正確な取得方法とビルド手順を確認できます。
 
 Vize の Content Mapper は `vize` npm パッケージに同梱されています。対応する `tsgo` が

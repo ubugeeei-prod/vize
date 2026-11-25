@@ -39,7 +39,7 @@ type Workflow = {
 };
 
 const loadWorkflow = (): Workflow =>
-  parse(readAutomationPrograms(".github", "workflows", "e2e.yml")) as Workflow;
+  parse(readAutomationPrograms(".github", "workflows", "10-app-e2e.yml")) as Workflow;
 const namedStep = (job: Job | undefined, name: string): Step => {
   const found = job?.steps?.find((step) => step.name === name);
   assert.ok(found, `missing step ${name}`);
@@ -78,7 +78,7 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
   const filters = String(changes.with?.filters);
   for (const path of [
     ".github/actions/app-e2e-row/**",
-    ".github/workflows/e2e.yml",
+    ".github/workflows/10-app-e2e.yml",
     "tests/package.json",
     "tests/_fixtures/_git/{elk,misskey,npmx.dev,nuxt-ui,reka-ui,vuefes-2025}",
     "tests/app/dev/{misskey,nuxt-ui}.spec.ts",
@@ -201,7 +201,7 @@ test("every producer and aggregator checks out the exact event target", () => {
 });
 
 test("App E2E producers take their runner from the plan; support jobs stay Blacksmith", () => {
-  const source = readAutomationPrograms(".github", "workflows", "e2e.yml");
+  const source = readAutomationPrograms(".github", "workflows", "10-app-e2e.yml");
   // Which label each row gets is the planner's call and is asserted in
   // app-e2e-plan.test.ts; the workflow only has to defer to it.
   for (const job of ["app-readiness-producer", "app-e2e-producer"]) {

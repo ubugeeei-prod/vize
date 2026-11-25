@@ -182,7 +182,7 @@ void test(
 );
 const fixture = new URL("tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/", root);
 const workflow = parse(
-  readAutomationPrograms(new URL(".github/workflows/nuxt3-module-build.yml", root)),
+  readAutomationPrograms(new URL(".github/workflows/08-nuxt3-module.yml", root)),
 ) as {
   on: { pull_request?: unknown; push: { paths: string[] } };
   jobs: Record<string, { "runs-on": string; "timeout-minutes": number; steps: Step[] }>;
@@ -323,7 +323,7 @@ void test("the development command uses the captured producer and forwards the c
     const current = find("Verify source-bound Nuxt 5 development stylesheets and hydration").run;
     assert.ok(current);
     for (const [name, executable, args] of [
-      ["captured", "/bin/bash", ["-e", automationShellPath(current, "nuxt3-module-build")]],
+      ["captured", "/bin/bash", ["-e", automationShellPath(current, "08-nuxt3-module")]],
       [
         "ambient-before",
         "node",
@@ -387,7 +387,7 @@ void test("the actual development install shell retains npm failure and its raw 
         "-e",
         "-o",
         "pipefail",
-        automationShellPath(step.run, "nuxt3-module-build"),
+        automationShellPath(step.run, "08-nuxt3-module"),
       ],
       {
         encoding: "utf8",

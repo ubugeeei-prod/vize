@@ -106,9 +106,7 @@ test("[resource] pins numbers with their methodology beside every one", () => {
 });
 
 test("the recorded command is the one CI measures with", () => {
-  const workflow = parse(
-    readRepoFile(".github", "workflows", "davinci-resource-budgets.yml"),
-  ) as any;
+  const workflow = parse(readRepoFile(".github", "workflows", "03-lsp-resources.yml")) as any;
   assert.equal(Object.hasOwn(workflow.on, "push"), false);
   assert.ok(workflow.on.schedule);
   assert.equal(Object.hasOwn(workflow.on, "workflow_dispatch"), true);
@@ -135,9 +133,7 @@ test("the recorded command is the one CI measures with", () => {
 
 test("the measured server and the x86_64 gnu release CLI link without Wild", () => {
   // Wild ignores `--icf=all`, so a Wild-linked server would measure 4.8 MiB more than ships.
-  const workflow = parse(
-    readRepoFile(".github", "workflows", "davinci-resource-budgets.yml"),
-  ) as any;
+  const workflow = parse(readRepoFile(".github", "workflows", "03-lsp-resources.yml")) as any;
   const wildSetup = (steps: Array<{ uses?: string; if?: string }>) =>
     steps.filter(
       (step) =>

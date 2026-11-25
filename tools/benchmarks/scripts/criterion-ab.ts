@@ -26,7 +26,7 @@
  * 10% sits above the run-to-run jitter we observe for these microsecond-scale
  * benches on shared runners (so it does not false-positive) while still catching
  * a real algorithmic regression. Set `CRITERION_AB_THRESHOLD: 10` in
- * `.github/workflows/criterion-bench.yml` to flip the report-only lane into a
+ * `.github/workflows/03-criterion.yml` to flip the report-only lane into a
  * hard gate without any code change.
  */
 

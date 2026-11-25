@@ -214,7 +214,7 @@ test("generic compiler build snapshots stay in the blocking build inventory", ()
   const testPackage = JSON.parse(readRepoFile("tests", "package.json")) as {
     scripts?: Record<string, string>;
   };
-  const readinessWorkflow = readRepoFile(".github", "workflows", "e2e.yml");
+  const readinessWorkflow = readRepoFile(".github", "workflows", "10-app-e2e.yml");
   assert.ok(
     packageScripts("tests", testPackage.scripts)?.["test:build"]?.includes(
       "snapshots/build/generic.ts",

@@ -1,0 +1,13 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  node tools/benchmarks/scripts/content-mapper-replay-record.ts \
+    --bin replay-bin/cli/base/vize --tsc tools/benchmarks/typecheck-hosts/node_modules/.bin/tsc \
+    --corpora "$CORPORA" --work "$RUNNER_TEMP/replay" > "$RUNNER_TEMP/streams.args"
+  cat "$RUNNER_TEMP/streams.args"
+  """#
+}

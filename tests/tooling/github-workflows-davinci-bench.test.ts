@@ -76,7 +76,7 @@ test("check workflow uploads Davinci allocation bench reports", () => {
 });
 
 test("Vapor Criterion dispatch validates revisions and selects only its suite", (t) => {
-  const workflow = parse(readAutomationPrograms(".github", "workflows", "criterion-bench.yml")) as {
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "03-criterion.yml")) as {
     on?: Record<string, { inputs?: Record<string, unknown> }>;
     jobs?: Record<string, WorkflowJob>;
   };

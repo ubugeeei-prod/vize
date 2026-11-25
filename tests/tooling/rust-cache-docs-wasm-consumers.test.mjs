@@ -23,7 +23,7 @@ const root = fileURLToPath(new URL("../../", import.meta.url));
 const cache = "./.github/actions/setup-rust-sticky-cache";
 const headCache = "./head/.github/actions/setup-rust-sticky-cache";
 const app = "./.github/actions/app-e2e-row";
-const docs = ".github/workflows/build-docs.yml";
+const docs = ".github/workflows/11-docs-build.yml";
 function fixture(t) {
   const directory = mkdtempSync(join(os.tmpdir(), "vize-docs-wasm-consumers-"));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
@@ -77,7 +77,7 @@ void test("retired readiness inputs cannot return or hide unrelated producer cha
     ],
   ]) {
     const directory = fixture(t);
-    edit(directory, ".github/workflows/e2e.yml", (value) => {
+    edit(directory, ".github/workflows/10-app-e2e.yml", (value) => {
       const changes = value.jobs["app-readiness-plan"].steps.find((step) => step.id === "changes");
       assert.equal(changes.with.filters.split(before).length, 2);
       changes.with.filters = changes.with.filters.replace(before, after);
@@ -220,7 +220,7 @@ void test("WASM conditions, target overrides and native command flags cannot byp
 void test("actual matrix planner and workflow producers cannot introduce new dynamic keys", (t) => {
   for (const plan of ["app-readiness-plan", "app-e2e-plan"]) {
     const directory = fixture(t);
-    edit(directory, ".github/workflows/e2e.yml", (value) => {
+    edit(directory, ".github/workflows/10-app-e2e.yml", (value) => {
       value.jobs[plan].steps.find((step) => step.id === "plan").run = 'echo "matrix=docs-wasm"';
     });
     assert.throws(() => verifyDocsWasmConsumers(directory), /matrix producer changed/);
@@ -283,7 +283,7 @@ void test("the distinct NAPI caller is not silently reclassified as WASM", (t) =
 });
 
 void test("inherited producer environment and defaults cannot redirect the original recipes", (t) => {
-  for (const file of [docs, ".github/workflows/e2e.yml"]) {
+  for (const file of [docs, ".github/workflows/10-app-e2e.yml"]) {
     for (const change of [
       (value) => {
         value.env.CARGO_TARGET_DIR = "elsewhere";
@@ -317,7 +317,7 @@ void test("reviewed command source and its ancestors must remain physical", (t) 
 
 void test("the original app slot keys and separate NAPI inputs remain reviewed", (t) => {
   const directory = fixture(t);
-  edit(directory, ".github/workflows/e2e.yml", (value) => {
+  edit(directory, ".github/workflows/10-app-e2e.yml", (value) => {
     value.jobs["app-readiness-producer"].steps.find((step) => step.uses === app).with["cache-key"] =
       "different-ordinary-role";
   });
@@ -335,7 +335,7 @@ void test("reviewed command producers reject additional source bytes", (t) => {
     "tools/support/github/build-vitrine-wasm.ts",
     "npm/native/scripts/build-ci.mjs",
     "examples/vite-musea/scripts/package-tasks.cjs",
-    ".github/scripts/workflows/e2e/validate-target-sha.sh",
+    "tools/ci/workflows/10-app-e2e/scripts/validate-target-sha.sh",
     ".github/actions/stage-workflow-scripts/action.yml",
   ]) {
     const directory = fixture(t);

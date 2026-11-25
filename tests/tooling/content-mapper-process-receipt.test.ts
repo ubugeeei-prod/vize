@@ -63,7 +63,7 @@ test("the qualified mapper host selects exact Linux and macOS arm64 images", () 
 
 test("the macOS cold-start workflow runs once and retains complete process evidence", () => {
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "content-mapper-cold-start.yml"),
+    readAutomationPrograms(".github", "workflows", "04-content-mapper-cold-start.yml"),
   ) as {
     jobs: Record<
       string,

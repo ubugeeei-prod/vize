@@ -68,7 +68,7 @@ saved; incomplete measurements are not reported as accepted.
 ## Recorded run
 
 The production job is part of the manually dispatched
-`davinci-resource-budgets.yml` workflow. Its artifact is named
+`03-lsp-resources.yml` workflow. Its artifact is named
 `production-lsp-resource-linux-x64-ci`.
 
 The bounded scope completed in [run

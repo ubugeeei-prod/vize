@@ -18,7 +18,7 @@ const inventoryFile = path.join(
   "decisions",
   "2026-11-24-unsafe-model-checking.md",
 );
-const workflowFile = path.join(repoRoot, ".github", "workflows", "davinci-kani.yml");
+const workflowFile = path.join(repoRoot, ".github", "workflows", "07-proofs.yml");
 
 /** Source text with comments and string/char literals blanked (newlines kept). */
 function codeOnly(source: string): string {

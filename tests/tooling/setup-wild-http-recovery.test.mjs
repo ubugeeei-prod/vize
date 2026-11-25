@@ -112,7 +112,7 @@ void test("Core PR and merge gates use the recovery adapter", () => {
   );
   assert.deepEqual(jobsUsingAction(js.jobs, upstream), []);
   const canonical = parse(
-    readAutomationPrograms(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
+    readAutomationPrograms(".github/workflows/07-canonical-corpus.yml", "utf8"),
   );
   const steps = canonical.jobs["canonical-observers"].steps;
   assert.deepEqual(
@@ -136,9 +136,9 @@ void test("Core PR and merge gates use the recovery adapter", () => {
 void test("Release-blocking observers and Fresco use the recovery adapter", () => {
   const local = "./.github/actions/setup-wild-http-recovery";
   const workflows = [
-    [".github/workflows/davinci-plugin-sdk.yml", local, ["plugin-contracts"]],
-    [".github/workflows/build-docs.yml", local, ["build-docs", "build-playground"]],
-    [".github/workflows/fresco.yml", local, ["fresco-rust"]],
+    [".github/workflows/07-plugin-sdk.yml", local, ["plugin-contracts"]],
+    [".github/workflows/11-docs-build.yml", local, ["build-docs", "build-playground"]],
+    [".github/workflows/10-fresco.yml", local, ["fresco-rust"]],
   ];
   for (const [relativePath, actionReference, expectedJobs] of workflows) {
     const workflow = parse(fs.readFileSync(relativePath, "utf8"));

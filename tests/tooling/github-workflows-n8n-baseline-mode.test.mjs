@@ -17,10 +17,7 @@ const action = parse(
   ),
 );
 const workflow = parse(
-  readFileSync(
-    new URL("../../.github/workflows/ci-walltime-benchmark.yml", import.meta.url),
-    "utf8",
-  ),
+  readFileSync(new URL("../../.github/workflows/03-ci-walltime.yml", import.meta.url), "utf8"),
 );
 const pullRequest = parse(
   readFileSync(new URL("../../.github/workflows/pr-js-checks.yml", import.meta.url), "utf8"),

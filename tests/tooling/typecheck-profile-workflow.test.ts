@@ -5,7 +5,7 @@ import { parse } from "yaml";
 
 void test("the type-check profile workflow builds unstripped frame-pointer Vize and records whole trees", () => {
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "typecheck-profile.yml"),
+    readAutomationPrograms(".github", "workflows", "03-typecheck-profile.yml"),
   ) as {
     on: {
       push?: { branches?: string[] };

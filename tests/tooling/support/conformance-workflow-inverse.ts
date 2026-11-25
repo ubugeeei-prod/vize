@@ -53,7 +53,7 @@ function restoreRustToolchainPin(workflow: string): string {
   return workflow.replaceAll('toolchain: "1.100.0"', 'toolchain: "1.99.1"');
 }
 
-/** Restores content-mapper-conformance.yml before its sealed command-local edits. */
+/** Restores 04-content-mapper-conformance.yml before its sealed command-local edits. */
 
 export function restoreConformanceWorkflow(workflow: string): string {
   return restoreConformanceNativeStaging(

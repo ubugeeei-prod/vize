@@ -16,7 +16,7 @@ export function run(overrides: Partial<WorkflowRun> = {}): WorkflowRun {
     id: 38010819888,
     run_attempt: 1,
     workflow_id: 42,
-    path: ".github/workflows/build-docs.yml",
+    path: ".github/workflows/11-docs-build.yml",
     event: "push",
     head_branch: "main",
     head_sha: sourceSha,
