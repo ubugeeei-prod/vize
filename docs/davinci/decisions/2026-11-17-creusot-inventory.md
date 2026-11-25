@@ -109,6 +109,24 @@ Creusot accepts only with a trusted declaration, and the proofs admit none.
 | `an_update_is_recompute_and_reorders_allocate_nothing` | an update equals recompute; a reorder allocates nothing       | 2 roots         | none                | kani   |
 | `allocation_is_exactly_the_inserted_delta`             | allocation is exactly the inserted delta                      | 1 insertion     | none                | kani   |
 
+## L2 script recovery and assignability (`davinci/vize_l2/src/query/script/assignments`)
+
+Kani files, deleted: `assignments/kani.rs` and `assignments/prefix/kani.rs`.
+Their bounds were the whole `u32` domain and every primitive pair with one
+representative value per type. Creusot roots: `assignments/prefix/creusot.rs`
+(package `tests/formal/creusot/recovery`), over the contracts of
+`frame::rebase` and `frame::retry_limit`, and `assignments/creusot.rs`
+(package `tests/formal/creusot/assignability`), over the contract of
+`relation::accepts`: a primitive annotation is assignable from a literal type
+exactly when they are the same primitive. A literal is modelled by its value,
+and the value sets of the three primitives are disjoint.
+
+| Kani harness                                     | Law                                                                                                                  | Kani bound                                 | Creusot replacement                                                                       | Status |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------- | ------ |
+| `cold_retries_fit_the_remaining_byte_budget`     | the next cold-open limit is at most the first label, below a nonzero failed end, and fits twice into the bytes spent | whole `u32` domain                         | `cold_retries_fit_the_remaining_byte_budget` over the contract of `frame::retry_limit`    | proved |
+| `moving_a_checked_source_interval_is_lossless`   | relocating a checked interval keeps it in the new block, keeps its length and moves back                             | whole `u32` domain                         | `moving_a_checked_source_interval_is_lossless` over the contract of `frame::rebase`       | proved |
+| `literal_membership_is_necessary_and_sufficient` | an annotation accepts a literal exactly when the literal's value is in the annotation's value set                    | 3 annotations, every boolean, `u64`, `u16` | `literal_membership_is_necessary_and_sufficient` over the contract of `relation::accepts` | proved |
+
 ## HTML content-model kernel (`crates/vize_patina/src/html_content_model`)
 
 Kani file, deleted with its last harness: `html_content_model/kani.rs`. Its
@@ -164,6 +182,28 @@ byte follows Unicode Table 3-6.
 | ------------ | --------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------- | ------ |
 | none         | every scalar that `decode_html_entities` or `escape_js_string` rewrites starts with a byte the gate flags | —          | `js_escape_gate::no_rewritten_scalar_passes_the_gate` over `byte_may_need_js_escaping`, every scalar | proved |
 | none         | the first byte of every scalar's UTF-8 encoding is below 0x80 or in 0xC2..=0xF4                           | —          | `js_escape_gate::every_scalar_starts_with_a_lead_byte`                                               | proved |
+
+## Style header acceptance (`crates/vize_maestro/src/source_project/style_format`)
+
+Kani file, deleted with its harness: `style_format/kani.rs`. Its bound was
+four attributes per header over five names and four values. Creusot root:
+`style_format/creusot.rs`, which includes `header.rs` verbatim, as
+`style_format.rs` does, over the two fields the policy reads (an attribute's
+name and optional value) and the ordered attribute view. `same_header` carries
+the Lean model's `accepts` as its contract. The law is `accepted_iff` of
+tests/formal/style-format/Header.lean, stated as the Kani harness stated it: a
+header is accepted exactly when it is unchanged, or when its attributes are
+distinct plain flags (`lang`, `scoped`, `module`) and the new header, of the
+same length, spells each of them exactly once. The pigeonhole step from "each
+spelling is found" to "each occurs once" is a lemma over finite sets of
+spellings. Creusot 0.14 has no spec for `Iterator::eq`, `all` or `any`, so the
+policy reads both headers with `get` loops; the flag names are `const` items,
+which contracts can name. `str` equality goes through `PartialEq`'s trait
+contract on the deep model.
+
+| Kani harness                                                                  | Law                                                                                                               | Kani bound                      | Creusot replacement                                                                                                                       | Status |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `accepted_headers_keep_order_or_permute_unique_plain_flags_with_their_values` | a header is accepted exactly when it is unchanged, or a permutation of distinct plain flags that keeps each value | 4 attributes, 5 names, 4 values | `style_header::accepted_headers_keep_order_or_permute_unique_plain_flags_with_their_values` over `same_header`, every length and spelling | proved |
 
 ## Laws no harness states yet
 

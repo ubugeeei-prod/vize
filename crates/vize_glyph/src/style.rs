@@ -11,6 +11,7 @@ mod comment_scan;
 mod declaration;
 mod engine_boundary;
 mod number;
+mod paren_breaks;
 mod preprocessor_layout;
 mod quotes;
 mod rule_layout;

@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_cold_retries_fit_the_remaining_byte_budget": {
+        "prover": "alt-ergo",
+        "time": 0.01
+      },
+      "vc_retry_limit": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}

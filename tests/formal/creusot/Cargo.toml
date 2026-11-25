@@ -16,6 +16,8 @@ members = [
   "reference",
   "js-escape-gate",
   "scope-chain",
+  "style-header",
+  "assignability",
 ]
 
 [workspace.dependencies]
