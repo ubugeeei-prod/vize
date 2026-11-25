@@ -271,14 +271,18 @@ impl SourceMap {
             .find_map(|mapping| mapping.source_to_generated(source_offset))
     }
 
-    /// Map generated offset to source offset.
+    /// Map generated offset to source offset, through the first mapping whose
+    /// generated range contains it, and shift the result by `block_offset`
+    /// into file coordinates.
+    ///
+    /// `None` when no mapping contains the offset, or when the shifted offset
+    /// lies past `u32::MAX`: a file offset beyond 4 GiB has no `u32`
+    /// coordinate, so the map does not invent one.
     pub fn to_source(&self, gen_offset: u32) -> Option<u32> {
-        for mapping in &self.mappings {
-            if let Some(src) = mapping.generated_to_source(gen_offset) {
-                return Some(src + self.block_offset);
-            }
-        }
-        None
+        self.mappings
+            .iter()
+            .find_map(|mapping| mapping.generated_to_source(gen_offset))?
+            .checked_add(self.block_offset)
     }
 
     /// Find mappings containing the source offset.
@@ -397,5 +401,15 @@ mod tests {
         map.add_simple(0, 10, 100, 110);
         assert_eq!(map.to_generated(5), Some(105));
         assert_eq!(map.to_generated(1), Some(101));
+    }
+
+    #[test]
+    fn to_source_has_no_coordinate_past_the_u32_file_range() {
+        let mut map = SourceMap::new();
+        map.add_simple(10, 20, 100, 110);
+        map.set_block_offset(u32::MAX - 15);
+        assert_eq!(map.to_source(105), Some(u32::MAX));
+        assert_eq!(map.to_source(106), None);
+        assert_eq!(map.to_source(99), None);
     }
 }
