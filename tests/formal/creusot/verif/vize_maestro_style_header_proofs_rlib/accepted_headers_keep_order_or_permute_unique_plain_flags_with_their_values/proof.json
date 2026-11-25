@@ -1,0 +1,16 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_accepted_headers_keep_order_or_permute_unique_plain_flags_with_their_values": {
+        "tactic": "split_vc",
+        "children": [
+          { "prover": "z3", "time": 0.008 },
+          { "prover": "z3", "time": 0.003 },
+          { "prover": "z3", "time": 0.017 }
+        ]
+      },
+      "vc_same_header": { "prover": "z3", "time": 0.002 }
+    }
+  }
+}

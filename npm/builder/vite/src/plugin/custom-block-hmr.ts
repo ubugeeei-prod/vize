@@ -20,10 +20,10 @@ export function customBlockModuleIds(file: string, compiled: CompiledModule): st
 }
 
 /** Custom-block modules whose raw content a dev edit must send through again. */
-export async function collectCustomBlockModules(
+export function collectCustomBlockModules(
   server: ViteDevServer,
   file: string,
   compiled: CompiledModule,
-): Promise<Set<ModuleNode>> {
+): Set<ModuleNode> {
   return collectModulesByFile(server, customBlockModuleIds(file, compiled));
 }
