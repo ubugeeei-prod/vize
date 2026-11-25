@@ -274,6 +274,22 @@ fn relative_has_matches_an_element_by_its_own_attributes() {
         ),
         ["<div flex-1 />", "<div><div flex-wrap /></div>"]
     );
+    assert_eq!(
+        found("VElement[name='div']:has(> VStartTag)", template),
+        [
+            "<div flex-wrap><div flex-1 /></div>",
+            "<div flex-1 />",
+            "<div><div flex-wrap /></div>",
+            "<div flex-wrap />"
+        ]
+    );
+    assert_eq!(
+        found("VElement[name='div']:has(> VElement)", template),
+        [
+            "<div flex-wrap><div flex-1 /></div>",
+            "<div><div flex-wrap /></div>"
+        ]
+    );
     // The start tag is a field of its element, not one of its children.
     assert_eq!(
         found("VStartTag ~ VElement", template),
