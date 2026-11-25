@@ -22519,6 +22519,16 @@
             "path": "rules.json",
             "role": "rule-options",
             "sha256": "be4a5c4a6a661ee62eb4a7bc1748bd1a3a72341a768739d2c8aabad34a08f38c"
+          },
+          {
+            "path": "original-drag-table.vue.txt",
+            "role": "pinned-real-project-original",
+            "sha256": "5a18279a18b3e9be581e5a5ca99ba054f1b6934a6bc9b7880a0293902fbbc559"
+          },
+          {
+            "path": "source-provenance.json",
+            "role": "pinned-real-project-source-provenance",
+            "sha256": "6a10475f71a43f55ce0a332e735a41621892fe5fd88fe3971dfbdfa1c855a897"
           }
         ]
       },

@@ -29,7 +29,9 @@ impl Rule for NoEmptyPattern {
     }
 
     fn template_hooks(&self) -> crate::rule::RuleHooks {
-        crate::rule::RuleHooks::DIRECTIVE.union(crate::rule::RuleHooks::INTERPOLATION)
+        crate::rule::RuleHooks::ELEMENT
+            .union(crate::rule::RuleHooks::DIRECTIVE)
+            .union(crate::rule::RuleHooks::INTERPOLATION)
     }
 
     fn check_interpolation<'a>(
