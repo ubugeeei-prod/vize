@@ -1,10 +1,10 @@
 // The readability ratchet: shrink-only counts of the house-style debts that a
 // formatter cannot fix, plus the byte-custody registry check.
 //
-//   node tools/commands/ci/readability-ratchet.ts --check       (part of `vp run check`)
-//   node tools/commands/ci/readability-ratchet.ts --write       lower the baseline
-//   node tools/commands/ci/readability-ratchet.ts --summary     totals per area
-//   node tools/commands/ci/readability-ratchet.ts --files <path>...
+//   node tools/ci/commands/readability-ratchet.ts --check       (part of `vp run check`)
+//   node tools/ci/commands/readability-ratchet.ts --write       lower the baseline
+//   node tools/ci/commands/readability-ratchet.ts --summary     totals per area
+//   node tools/ci/commands/readability-ratchet.ts --files <path>...
 //
 // Options: `--root <dir>` scans another checkout, `--baseline <file>` reads or
 // writes another baseline, `--no-custody` skips the registry, and `--reseed`
@@ -139,7 +139,7 @@ export function describe(findings: Comparison["findings"]): string[] {
 }
 
 const advice = [
-  "The readability ratchet only lets these counts fall (tools/commands/ci/readability/counters.ts).",
+  "The readability ratchet only lets these counts fall (tools/ci/commands/readability/counters.ts).",
   "Drop the issue number from the comment or name: the issue lives in the fixture manifest or",
   "ledger row, or in `TODO(#n)` for open work. Split a file that would pass 500 lines.",
 ];

@@ -1,4 +1,4 @@
-# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/content-mapper-pair/measure.ps1.pkl.
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-cold-pair/mapper-measure.ps1.pkl.
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 if ($env:SIZES -notmatch '^[0-9]+(,[0-9]+)*$' -or $env:RUNS -notmatch '^[1-9][0-9]?$') { throw "invalid inputs" }
 $out = Join-Path $env:RUNNER_TEMP 'pair-out'

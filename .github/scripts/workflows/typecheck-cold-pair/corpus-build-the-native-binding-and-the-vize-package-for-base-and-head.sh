@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-corpus-pair/build-the-native-binding-and-the-vize-package-for-base-and-head.sh.pkl.
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-cold-pair/corpus-build-the-native-binding-and-the-vize-package-for-base-and-head.sh.pkl.
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 roles=(base head)

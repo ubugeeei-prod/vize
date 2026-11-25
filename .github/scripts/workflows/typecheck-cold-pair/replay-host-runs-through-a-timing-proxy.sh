@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/content-mapper-replay/host-runs-through-a-timing-proxy.sh.pkl.
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-cold-pair/replay-host-runs-through-a-timing-proxy.sh.pkl.
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 hosts=tools/benchmarks/typecheck-hosts/node_modules/.bin
