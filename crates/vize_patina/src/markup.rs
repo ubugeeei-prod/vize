@@ -116,6 +116,14 @@ pub use rule::{MarkupLevel, MarkupRule, MarkupTraversal};
 pub use scope::{MarkupConditional, MarkupList};
 pub use visitor::MarkupDocumentVisitor;
 
+/// Whether an authored element belongs to its own or an ancestor's `v-pre` scope.
+pub(crate) fn element_is_frozen<'a>(
+    surface: &'a vize_l1::markup::SurfaceTree<'a>,
+    start: u32,
+) -> bool {
+    l2::surface::element_with_v_pre_at(surface, start).is_some_and(|(_, frozen)| frozen)
+}
+
 /// High-level classification for a markup element.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MarkupElementKind {

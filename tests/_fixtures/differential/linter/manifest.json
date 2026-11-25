@@ -22538,6 +22538,53 @@
       }
     },
     {
+      "id": "linter/no-empty-pattern-slot-scope-dispatch-13703",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-empty-pattern-slot-scope-dispatch-13703",
+        "files": [
+          {
+            "path": "Dispatch.vue.txt",
+            "role": "full-registry-and-filtered-mixed-facade-dispatch-control",
+            "sha256": "296ff73554b218aa5ae1c7441cf8f597b51f6713e4bbf62d83420ab5fd69db45"
+          },
+          {
+            "path": "original-drag-table.vue.txt",
+            "role": "pinned-real-project-original",
+            "sha256": "5a18279a18b3e9be581e5a5ca99ba054f1b6934a6bc9b7880a0293902fbbc559"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "395dc85cee0a8cd18cb2a095001bfefe17109f0acb92b9c117b42065670c255b"
+          },
+          {
+            "path": "source-provenance.json",
+            "role": "pinned-real-project-source-provenance",
+            "sha256": "6a10475f71a43f55ce0a332e735a41621892fe5fd88fe3971dfbdfa1c855a897"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-implied-eval-callable-13000",
       "state": "active",
       "targets": [

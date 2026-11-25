@@ -1,0 +1,12 @@
+<template>
+  <el-table-column>
+    <template slot-scope="{}"><i /></template>
+    <template scope="[]"><b /></template>
+    <template slot-scope="{ row }"><img /></template>
+    <Widget scope="{}" />
+    <th scope="[]" />
+    <Widget slot-scope="{}" />
+    <div v-pre slot-scope="{}" />
+    <div v-pre><template scope="[]"><i /></template></div>
+  </el-table-column>
+</template>
