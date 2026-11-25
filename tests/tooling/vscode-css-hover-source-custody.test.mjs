@@ -364,15 +364,30 @@ await test("historical anchors and the pinned integrated product tree remain qua
   assert.equal(report.reviewedCssChanges.length, 16);
   assert.equal(report.mergedMain.integrationLayer.changes.length, 34);
   assert.equal(report.successorMain.integrationLayer.changes.length, 122);
-  const source = "crates/vize_croquis/src/setup_context/ssr.rs";
-  const frozen = path.join(root, "tests/_fixtures/byte-custody", source);
-  const reviewed = report.successorMain.integrationLayer.changes.find(
-    (change) => change.path === source,
-  );
-  assert.equal(
-    execFileSync("git", ["hash-object", "--no-filters", frozen], { encoding: "utf8" }).trim(),
-    reviewed.after.oid,
-  );
+  // These historical integration inputs follow main outside the owned CSS
+  // closure. Their original bytes remain authenticated as frozen fixtures.
+  for (const [layer, source] of [
+    [
+      report.mergedMain.integrationLayer,
+      "crates/vize_patina/examples/native_image_alt_canonical.rs",
+    ],
+    [
+      report.mergedMain.integrationLayer,
+      "crates/vize_patina/tests/native_canonical_img_alt/refusals.rs",
+    ],
+    [report.successorMain.integrationLayer, "crates/vize_croquis/src/setup_context/ssr.rs"],
+  ]) {
+    const frozen = path.join(root, "tests/_fixtures/byte-custody", source);
+    const reviewed = layer.changes.find((change) => change.path === source);
+    assert.equal(reviewed.after.mode, "100644", source);
+    assert.equal(fs.lstatSync(frozen).isFile(), true, source);
+    assert.equal(fs.statSync(frozen).mode & 0o111, 0, source);
+    assert.equal(
+      execFileSync("git", ["hash-object", "--no-filters", frozen], { encoding: "utf8" }).trim(),
+      reviewed.after.oid,
+      source,
+    );
+  }
   assert.equal(report.currentContracts.changes.length, 1);
   assert.deepEqual(
     report.currentCheckoutLayers.map((layer) => layer.changes.length),

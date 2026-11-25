@@ -25,7 +25,7 @@ pub(in crate::virtual_ts::generator) fn analyze_options_api_script(
 ) -> OptionsApiScriptFacts {
     let mut facts = OptionsApiScriptFacts::default();
     // Preserve the existing default-export-only no-export fast path.
-    if !options_api && !script.contains("export default") {
+    if !options_api && (!script.contains("export") || !script.contains("default")) {
         return facts;
     }
     with_shared_parse(script, SourceType::ts(), |parsed| {
@@ -92,11 +92,8 @@ pub(in crate::virtual_ts::generator) fn find_default_export_targets(
     analyze_options_api_script(script, true, false).default_export
 }
 
-fn default_export_targets(script: &str, program: &Program<'_>) -> DefaultExportTargets {
+fn default_export_targets(_script: &str, program: &Program<'_>) -> DefaultExportTargets {
     let mut targets = DefaultExportTargets::default();
-    if !script.contains("export default") {
-        return targets;
-    }
     for statement in program.body.iter() {
         let Statement::ExportDefaultDeclaration(export) = statement else {
             continue;
@@ -199,8 +196,8 @@ export default {
                 facts.writable_computed,
                 FxHashSet::from_iter([String::from("ratio")])
             );
-            // These two existing helpers keep their original literal guards.
-            assert!(facts.default_export.object.is_none());
+            assert!(facts.default_export.object.is_some());
+            // Unresolved-extends inference keeps its independent gate.
             assert!(!facts.has_unresolved_extends);
         }
     }

@@ -44,8 +44,7 @@ impl<'a> FallthroughComponentScope<'a> {
             summary,
             options,
             syntactic_type_only_imported_names,
-            resolve_component_roots: checks.fallthrough_attributes
-                || (checks.strict_component_attrs() && !checks.fallthrough_attributes_specified),
+            resolve_component_roots: checks.infers_fallthrough_attributes(),
             check_required: checks.fallthrough_attributes
                 && checks.check_required_fallthrough_attributes,
             checks,

@@ -63,6 +63,7 @@ fn typed_use_slots_record() -> &'static Value {
 }
 
 pub(super) fn before_metadata(path: &str, current: String) -> String {
+    let current = super::default_export_projection::source_before(path, current);
     let current = restore_producer(path, current, typed_use_slots_record());
     let current = restore_producer(path, current, script_consumed_slots_record());
     static RECORDS: std::sync::OnceLock<(Value, Value)> = std::sync::OnceLock::new();
@@ -143,6 +144,7 @@ mod tests {
     #[test]
     fn script_consumed_slots_restore_only_the_exact_recorded_producers() {
         assert_exact_producers(script_consumed_slots_record(), |path, current| {
+            let current = super::super::default_export_projection::source_before(path, current);
             restore_producer(path, current, typed_use_slots_record())
         });
     }

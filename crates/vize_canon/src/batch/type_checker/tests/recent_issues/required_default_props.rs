@@ -162,17 +162,17 @@ fn defaulted_required_props_follow_the_published_instance_props() {
             (
                 "src/Invalid.vue".into(),
                 Some(2345),
-                "11:4: Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<__OptionsChild_CheckProps_0, $PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<...>>'.\nProperty 'flag' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'.".into()
+                "11:4: Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<__OptionsChild_CheckProps_0, $PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; }>'.\nProperty 'flag' is missing in type '{ title: string; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly title: string; }'.".into()
             ),
             (
                 "src/Invalid.vue".into(),
                 Some(2345),
-                "13:4: Argument of type '{ title: string; spreadFlag: true; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<string, unknown>>'.\nProperty '\"flag\"' is missing in type '{ title: string; spreadFlag: true; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly spreadFlag: boolean; readonly overriddenLabel?: string | undefined; readonly helperLabel?: string | undefined; readonly title: string; }'.".into()
+                "13:4: Argument of type '{ title: string; spreadFlag: true; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; }>'.\nProperty '\"flag\"' is missing in type '{ title: string; spreadFlag: true; }' but required in type '{ readonly label?: string | undefined; readonly flag: boolean; readonly spreadFlag: boolean; readonly overriddenLabel?: string | undefined; readonly helperLabel?: string | undefined; readonly title: string; }'.".into()
             ),
             (
                 "src/Invalid.vue".into(),
                 Some(2345),
-                "15:4: Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<string, unknown>>'.\nProperty '\"flag\"' is missing in type '{ title: string; }' but required in type '{ readonly title: string; readonly label?: string | undefined; readonly flag: boolean; }'.".into()
+                "15:4: Argument of type '{ title: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { [x: string]: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; }>'.\nProperty '\"flag\"' is missing in type '{ title: string; }' but required in type '{ readonly title: string; readonly label?: string | undefined; readonly flag: boolean; }'.".into()
             ),
             (
                 "src/SetupChild.vue".into(),

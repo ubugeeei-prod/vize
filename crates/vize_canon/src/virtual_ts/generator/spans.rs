@@ -108,6 +108,29 @@ pub(super) fn rewrite_export_default_for_module_scope(
     text.into()
 }
 
+/// The copied value's generated start follows fixed synthetic text and the
+/// preserved keyword trivia. Searching for its text can match a comment.
+pub(super) fn rewritten_default_value_start(
+    text: &str,
+    default_object: Option<(usize, usize, usize)>,
+    default_expr: Option<(usize, usize, usize)>,
+) -> Option<usize> {
+    let (start, inner, _) = default_object.or(default_expr)?;
+    let keyword_end = super::irregular_default::keyword_end(text, start)?;
+    let between = if text.get(start..keyword_end)? == "export default" {
+        0
+    } else {
+        text.get(start + 6..keyword_end - 7)?.len()
+    };
+    let gap = inner.checked_sub(keyword_end)?;
+    let wrapper = if default_object.is_some() {
+        DEFINE_COMPONENT_REF.len() + 1
+    } else {
+        0
+    };
+    Some(start + "const __default__ =".len() + between + gap + wrapper)
+}
+
 /// Rewrite an arbitrary `export default <expr>` to `const __default__ = <expr>`
 /// using the `(export_start, expr_start, expr_end)` offsets (relative to
 /// `text`) located by the AST. The `export default` keyword run
@@ -127,8 +150,8 @@ fn rewrite_default_export_expression(
     if expr_start >= expr_end || export_start >= expr_start {
         return None;
     }
-    let keyword_end = export_start.checked_add(EXPORT_DEFAULT.len())?;
-    if keyword_end > expr_start || text.get(export_start..keyword_end)? != EXPORT_DEFAULT {
+    let keyword_end = super::irregular_default::keyword_end(text, export_start)?;
+    if keyword_end > expr_start {
         return None;
     }
     let before = text.get(..export_start)?;
@@ -141,6 +164,9 @@ fn rewrite_default_export_expression(
     let mut output = String::with_capacity(text.len() + REPLACEMENT.len());
     output.push_str(before);
     output.push_str(REPLACEMENT);
+    if text.get(export_start..keyword_end)? != EXPORT_DEFAULT {
+        output.push_str(text.get(export_start + 6..keyword_end - 7)?);
+    }
     output.push_str(gap);
     output.push_str(expression);
     output.push_str(after);
@@ -162,8 +188,8 @@ fn wrap_default_export_object(
     if object_start >= object_end {
         return None;
     }
-    let keyword_end = export_start.checked_add(EXPORT_DEFAULT.len())?;
-    if keyword_end > object_start || text.get(export_start..keyword_end)? != EXPORT_DEFAULT {
+    let keyword_end = super::irregular_default::keyword_end(text, export_start)?;
+    if keyword_end > object_start {
         return None;
     }
     let before = text.get(..export_start)?;
@@ -178,6 +204,9 @@ fn wrap_default_export_object(
         String::with_capacity(text.len() + DEFINE_COMPONENT_REF.len() + EXPORT_DEFAULT.len());
     output.push_str(before);
     output.push_str("const __default__ =");
+    if text.get(export_start..keyword_end)? != EXPORT_DEFAULT {
+        output.push_str(text.get(export_start + 6..keyword_end - 7)?);
+    }
     output.push_str(gap);
     output.push_str(DEFINE_COMPONENT_REF);
     output.push('(');
@@ -280,6 +309,30 @@ mod tests {
             out.as_str(),
             "const __default__ =\n  defineComponent({\n    name: 'A',\n  })"
         );
+    }
+
+    #[test]
+    fn commented_and_split_keywords_keep_comments_before_the_expression() {
+        for header in [
+            "export /* 日本 */ default",
+            "export\r\ndefault",
+            "export // @ts-ignore\ndefault",
+        ] {
+            let script = vize_carton::cstr!("{header} {{ name: 'A' }}");
+            let out = rewrite(&script);
+            let gap = &header[6..header.len() - 7];
+            assert_eq!(
+                out.as_str(),
+                vize_carton::cstr!(
+                    "const __default__ ={gap} __vizeDefineComponent({{ name: 'A' }})"
+                )
+            );
+            let script = vize_carton::cstr!("{header} defineComponent({{ name: 'A' }})");
+            assert_eq!(
+                rewrite(&script).as_str(),
+                vize_carton::cstr!("const __default__ ={gap} defineComponent({{ name: 'A' }})")
+            );
+        }
     }
 
     #[test]

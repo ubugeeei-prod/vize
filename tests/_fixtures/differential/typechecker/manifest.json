@@ -3532,7 +3532,7 @@
       "sourceRevision": "a58a9ed3a59120922707ac9ec929a8d610ccc531",
       "packReference": {
         "path": "check-unknown-props-config-4918/cases.json",
-        "sha256": "13fd2f6df1b30ee160278e592ceec75f1e043cb879d00a0ff0f6d43bb88ed554"
+        "sha256": "4a859cdb7a271d40bc821d7c675907670bcdb0a5e9689d289ea12eeb33fc018d"
       },
       "inputs": [
         {
@@ -3584,7 +3584,7 @@
       "sourceRevision": "a58a9ed3a59120922707ac9ec929a8d610ccc531",
       "packReference": {
         "path": "check-unknown-props-config-4918/cases.json",
-        "sha256": "13fd2f6df1b30ee160278e592ceec75f1e043cb879d00a0ff0f6d43bb88ed554"
+        "sha256": "4a859cdb7a271d40bc821d7c675907670bcdb0a5e9689d289ea12eeb33fc018d"
       },
       "inputs": [
         {
@@ -3636,7 +3636,7 @@
       "sourceRevision": "a58a9ed3a59120922707ac9ec929a8d610ccc531",
       "packReference": {
         "path": "check-unknown-props-config-4918/cases.json",
-        "sha256": "13fd2f6df1b30ee160278e592ceec75f1e043cb879d00a0ff0f6d43bb88ed554"
+        "sha256": "4a859cdb7a271d40bc821d7c675907670bcdb0a5e9689d289ea12eeb33fc018d"
       },
       "inputs": [
         {
@@ -3693,7 +3693,7 @@
       "sourceRevision": "a58a9ed3a59120922707ac9ec929a8d610ccc531",
       "packReference": {
         "path": "check-unknown-props-config-4918/cases.json",
-        "sha256": "13fd2f6df1b30ee160278e592ceec75f1e043cb879d00a0ff0f6d43bb88ed554"
+        "sha256": "4a859cdb7a271d40bc821d7c675907670bcdb0a5e9689d289ea12eeb33fc018d"
       },
       "inputs": [
         {
@@ -43034,7 +43034,7 @@
       },
       "packReference": {
         "path": "required-default-props/cases.json",
-        "sha256": "652725e01be53de61a16c1a5f532989adc2e3e01115eabae24beac550db87b78"
+        "sha256": "c6f89c54bb50809aa8959bd4667c61a97277dc27757652eb7333bcbf2ba33ef1"
       },
       "inputs": [
         {
@@ -43105,7 +43105,7 @@
       },
       "packReference": {
         "path": "required-default-props/cases.json",
-        "sha256": "652725e01be53de61a16c1a5f532989adc2e3e01115eabae24beac550db87b78"
+        "sha256": "c6f89c54bb50809aa8959bd4667c61a97277dc27757652eb7333bcbf2ba33ef1"
       },
       "inputs": [
         {
@@ -62434,6 +62434,96 @@
               "ts"
             ],
             "selector": "check_nuxt_manifest_ambient_cli::selected_nuxt_import_manifests_declare_their_globals_with_or_without_nuxt_detection; exact #13093 project under plain `vize check`: a tsconfig-selected Nuxt import manifest (`files`/`include`, both manifest paths) stays a program root without Nuxt detection and owns `useTemplateRef` with it. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/component-fallthrough-attributes-13685/fallthrough-listener",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::fallthrough_known_attributes::reported_projects_type_attributes_from_the_fallthrough_root",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-fallthrough-attributes-13685/tsconfig-fallthrough.json.txt",
+          "sha256": "55c67b3897fe903c18ac38bf2109d2523b123c497eb195337287df36e915e221"
+        },
+        {
+          "file": "Foo.vue",
+          "path": "component-fallthrough-attributes-13685/InputRoot.vue.txt",
+          "sha256": "f73717092f61e10fdd075aee658f0534e11e25966b46959b52a6f063dd39eadc"
+        },
+        {
+          "file": "App.vue",
+          "path": "component-fallthrough-attributes-13685/Listener.vue.txt",
+          "sha256": "009c0834cec413024be40b84d5a07497dffe364cd3c369b1b7fdf06585d5663c"
+        },
+        {
+          "file": "cases.json",
+          "path": "component-fallthrough-attributes-13685/cases.json",
+          "sha256": "a8be97dce720dfc70368837ae4e7ac3ddbc4a86f4f82ee7e7c06677d06f26da0"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::fallthrough_known_attributes::reported_projects_type_attributes_from_the_fallthrough_root; with fallthroughAttributes, a listener that falls through to the native root is a known event of the component, typed by the root (KeyboardEvent). Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/component-fallthrough-attributes-13685/unknown-attribute",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::fallthrough_known_attributes::reported_projects_type_attributes_from_the_fallthrough_root",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-fallthrough-attributes-13685/tsconfig.json.txt",
+          "sha256": "81c8101f46ed1ab47df63099059b0dc16bef4dcd9e90d06cbb96c4945643c859"
+        },
+        {
+          "file": "Foo.vue",
+          "path": "component-fallthrough-attributes-13685/ButtonRoot.vue.txt",
+          "sha256": "9ff75bb64f1903a22eb8730a80247839d57db806d9da031975a016f2e0f2f594"
+        },
+        {
+          "file": "App.vue",
+          "path": "component-fallthrough-attributes-13685/Attribute.vue.txt",
+          "sha256": "49c7da943dd0fefd4e1e6a9a029b4245c38c48bf239283b1fe5258868be6f0d9"
+        },
+        {
+          "file": "cases.json",
+          "path": "component-fallthrough-attributes-13685/cases.json",
+          "sha256": "a8be97dce720dfc70368837ae4e7ac3ddbc4a86f4f82ee7e7c06677d06f26da0"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::fallthrough_known_attributes::reported_projects_type_attributes_from_the_fallthrough_root; with strictTemplates, an attribute neither the component nor its native root declares is TS2353 although the component's attributes fall through. Input-only registration; no native parity claim."
           }
         ]
       }

@@ -5,6 +5,7 @@ mod constructor_noinfer_return;
 mod mixed_vue2;
 mod receipt;
 mod shared_listener_args;
+mod unextracted_options_props;
 mod unowned_owned_keys;
 mod verbatim_runs;
 mod with_defaults_undefined;
@@ -276,6 +277,6 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        component_metadata::slots(unowned_successor)
+        unextracted_options_props::slots(unowned_successor)
     );
 }
