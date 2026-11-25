@@ -124,7 +124,9 @@ pub use native_ssr_setup::{
     NativeSetupSsrSfcCompilation, NativeSetupSsrSfcCompileError, compile_native_setup_ssr_sfc,
 };
 pub use parse::parse_sfc;
-pub use script::{TypeResolutionBatchGuard, begin_type_resolution_batch};
+pub use script::{
+    TypeResolutionBatchGuard, begin_type_resolution_batch, join_type_resolution_batch,
+};
 pub use types::{
     BindingMetadata, BindingType, BlockLocation, PadOption, PropsDestructure, ScriptCompileOptions,
     SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcCustomBlock,

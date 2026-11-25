@@ -9,6 +9,7 @@ use super::{
 use std::path::{Path, PathBuf};
 
 mod fields;
+mod window;
 use fields::{custom_blocks, macro_artifacts, module_shape, styles, type_project};
 
 /// The options one build of an app compiles every target with.
