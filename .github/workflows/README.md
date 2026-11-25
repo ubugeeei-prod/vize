@@ -29,7 +29,7 @@ surfaces and are not routine CI-refactor targets.
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 20        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 14        |
-| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 17        |
+| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 18        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 5         |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 7         |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 3         |
@@ -97,25 +97,26 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/performance/)
 
-| ID    | Workflow                            | File                                                               |
-| ----- | ----------------------------------- | ------------------------------------------------------------------ |
-| 03.01 | Benchmark - Source comparison       | [`benchmark.yml`](./benchmark.yml)                                 |
-| 03.02 | Benchmark - CI wall time            | [`ci-walltime-benchmark.yml`](./ci-walltime-benchmark.yml)         |
-| 03.03 | Benchmark - SFC compilation         | [`compile-bench.yml`](./compile-bench.yml)                         |
-| 03.04 | Content Mapper Cold Start           | [`content-mapper-cold-start.yml`](./content-mapper-cold-start.yml) |
-| 03.05 | Benchmark - Criterion suites        | [`criterion-bench.yml`](./criterion-bench.yml)                     |
-| 03.06 | Davinci Canon distinct-host scaling | [`davinci-canon-scaling.yml`](./davinci-canon-scaling.yml)         |
-| 03.07 | Davinci resource budgets            | [`davinci-resource-budgets.yml`](./davinci-resource-budgets.yml)   |
-| 03.08 | Benchmark - Fresco dimensions       | [`fresco-dimension-bench.yml`](./fresco-dimension-bench.yml)       |
-| 03.09 | Level instruction counts            | [`level-instruction-counts.yml`](./level-instruction-counts.yml)   |
-| 03.10 | Benchmark - Level memory            | [`level-memory-bench.yml`](./level-memory-bench.yml)               |
-| 03.11 | Shipped release-profile measure     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)     |
-| 03.12 | Benchmark - Tool comparison         | [`tool-benchmark.yml`](./tool-benchmark.yml)                       |
-| 03.13 | Type-check cold pair                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)             |
-| 03.14 | Type-check profile                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                 |
-| 03.15 | Type-check scaling                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                 |
-| 03.16 | Benchmark - VS Code startup         | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)           |
-| 03.17 | Vue Benchmarks Replay               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)         |
+| ID    | Workflow                            | File                                                                   |
+| ----- | ----------------------------------- | ---------------------------------------------------------------------- |
+| 03.01 | Formatter launch context diagnostic | [`03-formatter-launch-context.yml`](./03-formatter-launch-context.yml) |
+| 03.02 | Benchmark - Source comparison       | [`benchmark.yml`](./benchmark.yml)                                     |
+| 03.03 | Benchmark - CI wall time            | [`ci-walltime-benchmark.yml`](./ci-walltime-benchmark.yml)             |
+| 03.04 | Benchmark - SFC compilation         | [`compile-bench.yml`](./compile-bench.yml)                             |
+| 03.05 | Content Mapper Cold Start           | [`content-mapper-cold-start.yml`](./content-mapper-cold-start.yml)     |
+| 03.06 | Benchmark - Criterion suites        | [`criterion-bench.yml`](./criterion-bench.yml)                         |
+| 03.07 | Davinci Canon distinct-host scaling | [`davinci-canon-scaling.yml`](./davinci-canon-scaling.yml)             |
+| 03.08 | Davinci resource budgets            | [`davinci-resource-budgets.yml`](./davinci-resource-budgets.yml)       |
+| 03.09 | Benchmark - Fresco dimensions       | [`fresco-dimension-bench.yml`](./fresco-dimension-bench.yml)           |
+| 03.10 | Level instruction counts            | [`level-instruction-counts.yml`](./level-instruction-counts.yml)       |
+| 03.11 | Benchmark - Level memory            | [`level-memory-bench.yml`](./level-memory-bench.yml)                   |
+| 03.12 | Shipped release-profile measure     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)         |
+| 03.13 | Benchmark - Tool comparison         | [`tool-benchmark.yml`](./tool-benchmark.yml)                           |
+| 03.14 | Type-check cold pair                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                 |
+| 03.15 | Type-check profile                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                     |
+| 03.16 | Type-check scaling                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                     |
+| 03.17 | Benchmark - VS Code startup         | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)               |
+| 03.18 | Vue Benchmarks Replay               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)             |
 
 ## 04 Type checking and content mapping
 
