@@ -51,12 +51,26 @@ pub fn format_source(
     }
     super::file_support::validate(&path)
         .map_err(|message| cstr!("{}: {message}", filename.display()))?;
-    let snapshot = load_snapshot(&path, config)
-        .map_err(|error| cstr!("Invalid formatter configuration: {error}"))?;
-    let sort_imports = vize_glyph::resolve_sort_imports(snapshot.sort_imports.as_ref())
-        .map_err(|error| cstr!("Invalid formatter configuration: {error}"))?;
-    let mut options = FormatOptions::from_profile(&snapshot.formatter_profile)
-        .map_err(|error| cstr!("Invalid formatter configuration: {error}"))?;
+    let snapshot = load_snapshot(&path, config).map_err(|error| {
+        cstr!(
+            "{}: Invalid formatter configuration: {error}",
+            filename.display()
+        )
+    })?;
+    let sort_imports =
+        vize_glyph::resolve_sort_imports(snapshot.sort_imports.as_ref()).map_err(|error| {
+            cstr!(
+                "{}: Invalid formatter configuration: {error}",
+                filename.display()
+            )
+        })?;
+    let mut options =
+        FormatOptions::from_profile(&snapshot.formatter_profile).map_err(|error| {
+            cstr!(
+                "{}: Invalid formatter configuration: {error}",
+                filename.display()
+            )
+        })?;
     // The command skips this pass only when it reports without writing.
     options.skip_script_stabilization = false;
     let mut settings = FormatSettings {
@@ -64,7 +78,7 @@ pub fn format_source(
         vue_version: snapshot.loaded.features.vue_version.unwrap_or_default(),
         sort_imports,
     };
-    adjust(&mut settings)?;
+    adjust(&mut settings).map_err(|error| cstr!("{}: {error}", filename.display()))?;
     let config_dir = config_dir(&snapshot);
     lint_policy::validate_selected_files(
         std::slice::from_ref(&path),
@@ -72,7 +86,12 @@ pub fn format_source(
         &settings.options,
         &config_dir,
     )
-    .map_err(|error| cstr!("Invalid formatter configuration: {error}"))?;
+    .map_err(|error| {
+        cstr!(
+            "{}: Invalid formatter configuration: {error}",
+            filename.display()
+        )
+    })?;
     let preserve_text = config::matcher::CompilerWhitespacePlan::new(
         snapshot.compiler_whitespace,
         &snapshot.compiler_entries,

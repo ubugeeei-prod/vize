@@ -64,3 +64,16 @@ test("format selects the formatter from the file name", async () => {
   );
   assert.throws(() => formatSync("a", { filename: "" }), TypeError);
 });
+
+test("configuration errors identify the requested file in both APIs", async () => {
+  await project(async (root) => {
+    const config = path.join(root, "missing.config.mjs");
+    const options = { filename: "generated.ts", config };
+    const expected = {
+      code: "GenericFailure",
+      message: `generated.ts: Invalid formatter configuration: config file not found: ${config}`,
+    };
+    await assert.rejects(format("const value = 1", options), expected);
+    assert.throws(() => formatSync("const value = 1", options), expected);
+  });
+});
