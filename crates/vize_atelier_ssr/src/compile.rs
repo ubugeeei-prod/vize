@@ -461,19 +461,15 @@ fn compile_ssr_on_lane_with_runtime<'a>(
                     CompilerError::with_message(ErrorCode::ExtendPoint, diagnostic, None)
                 }));
             }
-            // The mapped legacy emitter alone needs source-owned alias locations.
-            let _mapped_template = experimental_options
-                .source_map
-                .then(|| vize_atelier_core::codegen::prepare_mapped_template(&mut root, source));
-            let mut codegen_ctx = SsrCodegenContext::new_with_experimental_options(
+            inner::generate_legacy(
+                &mut root,
                 allocator,
-                &codegen_options,
                 source,
+                &codegen_options,
                 experimental_options,
-            );
-            codegen_ctx.apply_sfc_context(context);
-            codegen_ctx.set_runtime_module_name(runtime_module_name);
-            profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root))
+                context,
+                runtime_module_name,
+            )
         }
     };
 

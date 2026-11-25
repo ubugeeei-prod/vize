@@ -4,12 +4,11 @@
 //! for: a `v-for` alias, and a component tag read as a setup binding. Both
 //! are still slices of the template the parser cut, so their position is
 //! where the slice starts. A compile that asked for a map hands the template
-//! to [`prepare_mapped_template`] before it generates code; the generator
-//! then anchors those slices inside the recording checks it already makes,
-//! and a compile without a map runs none of this.
+//! to [`with_mapped_template`] before it generates code; the generator
+//! uses those positions only while recording. An unmapped compile does not
+//! prepare this context.
 
 use std::cell::Cell;
-use std::marker::PhantomData;
 
 #[cfg(doc)]
 use super::document::authored_offset;
@@ -22,34 +21,46 @@ std::thread_local! {
     static TEMPLATE: Cell<(usize, usize)> = const { Cell::new((0, 0)) };
 }
 
-/// Prepare `root`, transformed from `source`, for generating code with a
-/// source map: locate its `v-for` aliases and keep `source` for the tags the
-/// generator reads as setup bindings, until the returned guard is dropped.
-/// Nested compiles restore the previous template, including on early returns
-/// and unwinding. The guard borrows the source whose address it records.
+/// Run `generate` with source-owned aliases and component tag positions when
+/// `source_map` is enabled. The private restoration guard cannot escape or be
+/// dropped out of order by a caller. Nested compiles and unwinding restore the
+/// caller's template before returning.
+#[inline]
+pub fn with_mapped_template<'a, R>(
+    root: &mut RootNode<'a>,
+    source: &str,
+    source_map: bool,
+    generate: impl FnOnce(&RootNode<'a>) -> R,
+) -> R {
+    if source_map {
+        mapped(root, source, generate)
+    } else {
+        generate(root)
+    }
+}
+
 #[cold]
 #[inline(never)]
-pub fn prepare_mapped_template<'a>(root: &mut RootNode<'_>, source: &'a str) -> MappedTemplate<'a> {
+fn mapped<'a, R>(
+    root: &mut RootNode<'a>,
+    source: &str,
+    generate: impl FnOnce(&RootNode<'a>) -> R,
+) -> R {
+    struct Restore<'s> {
+        previous: (usize, usize),
+        _source: &'s str,
+    }
+    impl Drop for Restore<'_> {
+        fn drop(&mut self) {
+            TEMPLATE.set(self.previous);
+        }
+    }
     locate_for_aliases(root, source);
-    MappedTemplate {
+    let _restore = Restore {
         previous: TEMPLATE.replace((source.as_ptr() as usize, source.len())),
-        source: PhantomData,
-    }
-}
-
-/// Restore the caller's mapped template when this compile ends.
-#[must_use = "keep the guard until code generation and map serialization finish"]
-pub struct MappedTemplate<'a> {
-    previous: (usize, usize),
-    // The source stays borrowed, and the guard must be dropped on the thread
-    // whose template it changed. The marker makes it neither Send nor Sync.
-    source: PhantomData<(&'a str, *mut ())>,
-}
-
-impl Drop for MappedTemplate<'_> {
-    fn drop(&mut self) {
-        TEMPLATE.set(self.previous);
-    }
+        _source: source,
+    };
+    generate(root)
 }
 
 /// Where `text`, a slice of the prepared template, starts in it.
@@ -64,7 +75,7 @@ pub(super) fn template_offset(text: &str) -> Option<u32> {
 
 #[cfg(test)]
 mod tests {
-    use super::{prepare_mapped_template, template_offset};
+    use super::{template_offset, with_mapped_template};
     use vize_l0::Allocator;
 
     #[test]
@@ -75,22 +86,21 @@ mod tests {
         let (mut outer_root, _) = crate::parser::parse(&allocator, outer);
         let (mut inner_root, _) = crate::parser::parse(&allocator, inner);
         assert_eq!(template_offset(&outer[1..6]), None);
-        {
-            let _outer = prepare_mapped_template(&mut outer_root, outer);
+        with_mapped_template(&mut outer_root, outer, true, |_| {
             assert_eq!(template_offset(&outer[1..6]), Some(1));
-            {
-                let _inner = prepare_mapped_template(&mut inner_root, inner);
+            with_mapped_template(&mut inner_root, inner, true, |_| {
                 assert_eq!(template_offset(&inner[1..6]), Some(1));
                 assert_eq!(template_offset(&outer[1..6]), None);
-            }
+            });
             assert_eq!(template_offset(&outer[1..6]), Some(1));
             assert_eq!(template_offset(&inner[1..6]), None);
-        }
+        });
         assert_eq!(template_offset(&outer[1..6]), None);
         let unwound = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let _outer = prepare_mapped_template(&mut outer_root, outer);
-            assert_eq!(template_offset(&outer[1..6]), Some(1));
-            panic!("mapped compile aborted");
+            with_mapped_template(&mut outer_root, outer, true, |_| {
+                assert_eq!(template_offset(&outer[1..6]), Some(1));
+                panic!("mapped compile aborted");
+            });
         }));
         assert_eq!(
             unwound
@@ -98,6 +108,38 @@ mod tests {
                 .downcast_ref::<&str>(),
             Some(&"mapped compile aborted")
         );
+        assert_eq!(template_offset(&outer[1..6]), None);
+    }
+
+    #[test]
+    fn disabled_or_panicking_nested_generation_keeps_the_outer_source() {
+        let allocator = Allocator::new();
+        let outer = "<Outer />";
+        let inner = "<Inner />";
+        let (mut outer_root, _) = crate::parser::parse(&allocator, outer);
+        let (mut inner_root, _) = crate::parser::parse(&allocator, inner);
+        let returned = with_mapped_template(&mut outer_root, outer, true, |_| {
+            with_mapped_template(&mut inner_root, inner, false, |_| {
+                assert_eq!(template_offset(&outer[1..6]), Some(1));
+                assert_eq!(template_offset(&inner[1..6]), None);
+            });
+            let unwound = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                with_mapped_template(&mut inner_root, inner, true, |_| {
+                    assert_eq!(template_offset(&inner[1..6]), Some(1));
+                    panic!("nested compile aborted");
+                });
+            }));
+            assert_eq!(
+                unwound
+                    .expect_err("nested compile unwound")
+                    .downcast_ref::<&str>(),
+                Some(&"nested compile aborted")
+            );
+            assert_eq!(template_offset(&outer[1..6]), Some(1));
+            assert_eq!(template_offset(&inner[1..6]), None);
+            "generated"
+        });
+        assert_eq!(returned, "generated");
         assert_eq!(template_offset(&outer[1..6]), None);
     }
 }

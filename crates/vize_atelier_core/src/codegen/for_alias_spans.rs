@@ -3,8 +3,8 @@
 //! The `v-for` step builds its alias nodes without a location: nothing but a
 //! source map reads one, and the step runs for every compile. A compile that
 //! asked for a map locates them on the transformed tree before it generates
-//! code (see [`super::prepare_mapped_template`]). The generator then anchors an alias like any
-//! located expression, and a compile without a map never runs any of this.
+//! code (see [`super::with_mapped_template`]). The generator anchors an alias
+//! like any located expression; an unmapped compile never prepares them.
 
 use super::document::authored_offset;
 use crate::{ExpressionNode, RootNode, SourceLocation, TemplateChildNode};

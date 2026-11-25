@@ -213,19 +213,15 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
                 SsrL4Selection::Legacy(_) => {}
                 SsrL4Selection::Emitted(_) => {}
             }
-            // The mapped legacy emitter alone needs source-owned alias locations.
-            let _mapped_template = experimental_options
-                .source_map
-                .then(|| vize_atelier_core::codegen::prepare_mapped_template(&mut root, source));
-            let mut codegen_ctx = SsrCodegenContext::new_with_experimental_options(
+            let result = generate_legacy(
+                &mut root,
                 allocator,
-                &codegen_options,
                 source,
+                &codegen_options,
                 experimental_options,
+                context,
+                runtime_module_name,
             );
-            codegen_ctx.apply_sfc_context(context);
-            codegen_ctx.set_runtime_module_name(runtime_module_name);
-            let result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
             capture.finish(|| {
                 let reason = legacy_reason
                     .map(|reason| cstr!("{reason:?}"))
@@ -241,4 +237,29 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
     };
 
     (root, errors, codegen_result)
+}
+
+/// The legacy AST walker, with alias preparation confined to mapped compiles.
+#[inline]
+pub(super) fn generate_legacy<'a>(
+    root: &mut RootNode<'a>,
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: &SsrCompilerOptions,
+    experimental: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+    runtime_module_name: &str,
+) -> SsrCodegenResult {
+    let source_map = experimental.source_map;
+    vize_atelier_core::codegen::with_mapped_template(root, source, source_map, |root| {
+        let mut codegen_ctx = SsrCodegenContext::new_with_experimental_options(
+            allocator,
+            options,
+            source,
+            experimental,
+        );
+        codegen_ctx.apply_sfc_context(context);
+        codegen_ctx.set_runtime_module_name(runtime_module_name);
+        profile!("atelier.ssr.template.codegen", codegen_ctx.generate(root))
+    })
 }

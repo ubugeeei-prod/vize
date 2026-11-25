@@ -3,7 +3,7 @@ use vize_atelier_core::{
     codegen::{
         CodegenResult, CodegenResultWithSections,
         generate_with_sections_and_experimental_options_slot_scope_and_environment,
-        prepare_mapped_template,
+        with_mapped_template,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{
@@ -204,59 +204,58 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     // both through the same `errors` channel.
     let mut errors = errors.to_vec();
     errors.extend(transform_errors);
-    let _mapped_template = codegen_opts
-        .source_map
-        .then(|| prepare_mapped_template(&mut root, source));
-
-    let l2_emit = l2_emit_after_transform.and_then(|(options, hoisted_scope_id)| {
-        stage_options::try_emit_l2_captured(
-            allocator,
-            source,
-            template_syntax,
-            &options,
-            &codegen_opts,
-            &l2_custom_elements,
-            hoisted_scope_id.as_deref(),
-            experimental_component_name.as_deref(),
-            template_walks,
-            strict_slot_params,
-            no_slotted,
-            development,
-            capture,
-        )
-    });
-    let codegen_result = match l2_emit {
-        Some(result) => source_map::attach_compat_map(
-            &root,
-            &codegen_opts,
-            codegen_experimental_options,
-            no_slotted,
-            development,
-            result,
-        )
-        .finish(capture),
-        None => {
-            // An additive compile recorded its refusal before the transform.
-            if use_l2_emit && codegen_opts.source_map && !additive_source_map {
-                selection::record(Err(DomLegacyReason::EmitRefused));
-            }
-            capture.finish(|| {
-                CaptureOutcome::Legacy(String::from(
-                    l2_refusal.unwrap_or(DomLegacyReason::EmitRefused).id(),
-                ))
-            });
-            profile!(
-                "atelier.dom.template.codegen_compat",
-                generate_with_sections_and_experimental_options_slot_scope_and_environment(
-                    &root,
-                    codegen_opts,
-                    codegen_experimental_options,
-                    no_slotted,
-                    development,
-                )
+    let source_map = codegen_opts.source_map;
+    let codegen_result = with_mapped_template(&mut root, source, source_map, |root| {
+        let l2_emit = l2_emit_after_transform.and_then(|(options, hoisted_scope_id)| {
+            stage_options::try_emit_l2_captured(
+                allocator,
+                source,
+                template_syntax,
+                &options,
+                &codegen_opts,
+                &l2_custom_elements,
+                hoisted_scope_id.as_deref(),
+                experimental_component_name.as_deref(),
+                template_walks,
+                strict_slot_params,
+                no_slotted,
+                development,
+                capture,
             )
+        });
+        match l2_emit {
+            Some(result) => source_map::attach_compat_map(
+                root,
+                &codegen_opts,
+                codegen_experimental_options,
+                no_slotted,
+                development,
+                result,
+            )
+            .finish(capture),
+            None => {
+                // An additive compile recorded its refusal before the transform.
+                if use_l2_emit && codegen_opts.source_map && !additive_source_map {
+                    selection::record(Err(DomLegacyReason::EmitRefused));
+                }
+                capture.finish(|| {
+                    CaptureOutcome::Legacy(String::from(
+                        l2_refusal.unwrap_or(DomLegacyReason::EmitRefused).id(),
+                    ))
+                });
+                profile!(
+                    "atelier.dom.template.codegen_compat",
+                    generate_with_sections_and_experimental_options_slot_scope_and_environment(
+                        root,
+                        codegen_opts,
+                        codegen_experimental_options,
+                        no_slotted,
+                        development,
+                    )
+                )
+            }
         }
-    };
+    });
 
     (root, errors, codegen_result)
 }
@@ -302,16 +301,17 @@ fn additive_map<'a>(
             inputs.hoisted_scope_id,
         )
     );
-    let _mapped_template = prepare_mapped_template(root, source);
-    let compat = profile!(
-        "atelier.dom.template.codegen_sourcemap_compat",
-        generate_with_sections_and_experimental_options_slot_scope_and_environment(
-            root,
-            inputs.codegen_opts,
-            inputs.codegen_experimental_options,
-            inputs.no_slotted,
-            inputs.development,
+    let compat = with_mapped_template(root, source, true, |root| {
+        profile!(
+            "atelier.dom.template.codegen_sourcemap_compat",
+            generate_with_sections_and_experimental_options_slot_scope_and_environment(
+                root,
+                inputs.codegen_opts,
+                inputs.codegen_experimental_options,
+                inputs.no_slotted,
+                inputs.development,
+            )
         )
-    );
+    });
     source_map::with_verified_map(native, compat)
 }

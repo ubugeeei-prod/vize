@@ -13,7 +13,7 @@ mod entry;
 mod expression;
 mod for_alias_spans;
 mod mapped_template;
-pub use mapped_template::prepare_mapped_template;
+pub use mapped_template::with_mapped_template;
 mod generate;
 mod helpers;
 mod node;
