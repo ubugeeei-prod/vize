@@ -51,12 +51,13 @@ function fixture({
   return { api, calls };
 }
 
-void test("coalesces overlapping cleanup runs", () => {
+void test("coalesces actionable cleanup runs separately from skipped PR events", () => {
   const workflow = parse(
     readRepoFile(".github", "workflows", "cleanup-obsolete-merge-groups.yml"),
   ) as { concurrency: { group: string; "cancel-in-progress": boolean } };
   assert.deepEqual(workflow.concurrency, {
-    group: "cleanup-obsolete-merge-groups",
+    group:
+      "cleanup-obsolete-merge-groups-${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.event == 'merge_group' }}",
     "cancel-in-progress": true,
   });
 });
