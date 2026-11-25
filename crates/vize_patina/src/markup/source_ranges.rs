@@ -87,7 +87,9 @@ impl MarkupElement<'_> {
                 }
             }
             MarkupElementInner::JsxElement { node, offset } => {
-                for attribute in &jsx_element_ref(node).opening_element.attributes {
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                for attribute in &unsafe { jsx_element_ref(node) }.opening_element.attributes {
                     match attribute {
                         JSXAttributeItem::Attribute(attr) => {
                             visitor(span_to_range(attr.span, offset));
