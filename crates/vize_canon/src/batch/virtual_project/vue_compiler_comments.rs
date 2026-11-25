@@ -122,11 +122,7 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
     }
     if let Some(value) = unknown_props.or(strict) {
         options.check_unknown_props = value;
-    }
-    if let Some(value) = unknown_props {
         options.check_unknown_fallthrough_props = value;
-    } else if strict == Some(false) {
-        options.check_unknown_fallthrough_props = false;
     }
     if let Some(value) = unknown_components.or(strict) {
         options.check_unknown_components = value;
@@ -149,14 +145,14 @@ mod tests {
     use crate::virtual_ts::VirtualTsCheckOptions;
 
     #[test]
-    fn fallthrough_tightening_requires_an_explicit_prop_option() {
+    fn fallthrough_tightening_follows_the_configured_prop_option() {
         for (source, configured, public, fallthrough) in [
             ("<template><div /></template>", false, false, false),
             (
                 "<!-- @strictTemplates true --><template><div /></template>",
                 false,
                 true,
-                false,
+                true,
             ),
             (
                 "<!-- @strictTemplates true --><template><div /></template>",

@@ -8,6 +8,29 @@ use std::borrow::Cow;
 use vize_carton::{String, append};
 
 impl TemplateRefKeyChecks<'_> {
+    /// Specialize a verbatim authored chunk before an outer projection adds
+    /// synthetic text. All offsets still refer to the original script here.
+    pub(in crate::virtual_ts::generator) fn emit_mapped_chunk(
+        &self,
+        ts: &mut crate::virtual_ts::TextBuf,
+        mappings: &mut Vec<VizeMapping>,
+        text: &str,
+        start: usize,
+        source_offset: &dyn Fn(usize) -> usize,
+    ) {
+        let mut line = Cow::Borrowed(text);
+        let gen_start = ts.len();
+        let sub_spans = self
+            .specialize_tsx_line(&mut line, start, gen_start, source_offset)
+            .unwrap_or_else(|| self.specialize_line(&mut line, start, gen_start, source_offset));
+        ts.push_str(&line);
+        mappings.push(VizeMapping {
+            gen_range: gen_start..ts.len(),
+            src_range: source_offset(start)..source_offset(start + text.len()),
+            sub_spans,
+        });
+    }
+
     /// Append one authored script line with exact spans for specialized callees.
     pub(in crate::virtual_ts::generator) fn emit_line(
         &self,

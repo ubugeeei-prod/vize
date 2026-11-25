@@ -25,6 +25,25 @@ impl PropsConstAssertions {
     }
 
     pub(super) fn splice_line(&mut self, line: &str, line_start: usize) -> Option<String> {
+        let offsets = self.take_line_offsets(line_start, line_start + line.len());
+        if offsets.is_empty() {
+            return None;
+        }
+        let mut output = String::default();
+        let mut copied_until = 0usize;
+        for &offset in offsets {
+            let column = offset - line_start;
+            output.push_str(line.get(copied_until..column)?);
+            output.push_str(" as const");
+            copied_until = column;
+        }
+        output.push_str(line.get(copied_until..)?);
+        Some(output)
+    }
+
+    /// Consume insertions owned by one authored line before other projections
+    /// change its byte offsets.
+    pub(super) fn take_line_offsets(&mut self, line_start: usize, line_end: usize) -> &[usize] {
         while self
             .offsets
             .get(self.index)
@@ -33,44 +52,14 @@ impl PropsConstAssertions {
             self.index += 1;
         }
 
-        let line_end = line_start + line.len();
-        if !self
-            .offsets
-            .get(self.index)
-            .is_some_and(|&offset| offset <= line_end)
-        {
-            return None;
-        }
-
-        let mut output = String::default();
-        let mut copied_until = 0usize;
-        let mut spliced = false;
-
+        let first = self.index;
         while let Some(&offset) = self.offsets.get(self.index) {
             if offset > line_end {
                 break;
             }
             self.index += 1;
-
-            if offset < line_start {
-                continue;
-            }
-            let column = offset - line_start;
-            let Some(segment) = line.get(copied_until..column) else {
-                continue;
-            };
-            output.push_str(segment);
-            output.push_str(" as const");
-            copied_until = column;
-            spliced = true;
         }
-
-        if !spliced {
-            return None;
-        }
-
-        output.push_str(line.get(copied_until..).unwrap_or_default());
-        Some(output)
+        self.offsets.get(first..self.index).unwrap_or_default()
     }
 
     pub(super) fn splice_output_line<'a>(
@@ -85,7 +74,7 @@ impl PropsConstAssertions {
 }
 
 fn find_const_assertion_offsets(script: &str) -> Vec<usize> {
-    if !script.contains("export default") {
+    if !script.contains("export") || !script.contains("default") {
         return Vec::new();
     }
     let allocator = Allocator::default();

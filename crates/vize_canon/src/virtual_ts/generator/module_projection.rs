@@ -1,7 +1,7 @@
 //! Emit an authored module statement with its default-export rewrite and mapping.
 
 use super::options_api::OptionsApiScriptFacts;
-use super::spans::rewrite_export_default_for_module_scope;
+use super::spans::{rewrite_export_default_for_module_scope, rewritten_default_value_start};
 use crate::virtual_ts::VizeMapping;
 
 /// Return whether the statement rewrite declared the default-export alias.
@@ -25,7 +25,7 @@ pub(super) fn emit(
             sub_spans: Vec::new(),
         });
     };
-    if !text.contains("export default") {
+    if !text.contains("export") || !text.contains("default") {
         ts.push_str(text);
         map(mappings, gen_start..ts.len(), 0..text.len());
         ts.push('\n');
@@ -36,11 +36,13 @@ pub(super) fn emit(
     let span_start = start as usize;
     let span_end = end as usize;
     let rebase = |(export_start, inner_start, inner_end): (usize, usize, usize)| {
-        (export_start >= span_start && inner_end <= span_end).then_some((
-            export_start - span_start,
-            inner_start - span_start,
-            inner_end - span_start,
-        ))
+        (export_start >= span_start && inner_end <= span_end).then(|| {
+            (
+                export_start - span_start,
+                inner_start - span_start,
+                inner_end - span_start,
+            )
+        })
     };
     let span_relative_object = options_script.default_export.object.and_then(rebase);
     let span_relative_expr = options_script.default_export.expr.and_then(rebase);
@@ -59,10 +61,12 @@ pub(super) fn emit(
         .map(|(_, inner_start, inner_end)| inner_start..inner_end)
         .filter(|core| prefix <= core.start && core.end <= text_end)
         .and_then(|core| {
-            let generated = rewritten
-                .get(prefix..rewritten_end)?
-                .find(text.get(core.clone())?)?;
-            Some((prefix + generated, core))
+            let generated =
+                rewritten_default_value_start(text, span_relative_object, span_relative_expr)?;
+            (prefix <= generated
+                && generated + core.len() <= rewritten_end
+                && rewritten.get(generated..generated + core.len())? == text.get(core.clone())?)
+            .then_some((generated, core))
         });
     let mut segments = vec![(0..prefix, 0..prefix)];
     match core {
@@ -195,6 +199,96 @@ mod tests {
             "const text = 'export default';\n",
             false,
             &[(0..31, 0..31)],
+        );
+    }
+
+    #[test]
+    fn later_export_containing_default_does_not_rebase_an_earlier_target() {
+        let script =
+            "export default { name: '雪' };\r\nexport interface Props { defaultValue: string }\r\n";
+        let facts = analyze_options_api_script(script, true, false);
+        assert!(facts.default_export.object.is_some());
+        let start = script.find("export interface").unwrap();
+        let text = &script[start..];
+        let mut ts = crate::virtual_ts::TextBuf::from_text("header\n");
+        let mut mappings = Vec::new();
+        assert!(!emit(
+            &mut ts,
+            &mut mappings,
+            text,
+            (start as u32, script.len() as u32),
+            &|offset| 400 + offset,
+            &facts,
+        ));
+        let expected = vize_carton::cstr!("header\n{text}\n");
+        assert_eq!(ts.as_str(), expected.as_str());
+        assert_eq!(
+            mappings,
+            [VizeMapping {
+                gen_range: 7..7 + text.len(),
+                src_range: 400 + start..400 + script.len(),
+                sub_spans: Vec::new(),
+            }]
+        );
+    }
+
+    #[test]
+    fn split_keyword_projection_maps_the_object_and_following_statement_exactly() {
+        use crate::virtual_ts::mapping::{
+            map_generated_offset_to_source, mapping_for_generated_offset,
+        };
+        let text = "export /* 日本 */\r\ndefault { name: 'A' }; const after: number = 'bad';";
+        let facts = analyze_options_api_script(text, true, false);
+        let mut ts = crate::virtual_ts::TextBuf::default();
+        let mut mappings = Vec::new();
+        assert!(emit(
+            &mut ts,
+            &mut mappings,
+            text,
+            (0, text.len() as u32),
+            &|x| x,
+            &facts
+        ));
+        for token in ["name", "after", "'bad'"] {
+            let offset = ts.as_str().find(token).unwrap();
+            let mapping = mapping_for_generated_offset(&mappings, offset).unwrap();
+            assert_eq!(
+                map_generated_offset_to_source(mapping, offset),
+                text.find(token).unwrap()
+            );
+        }
+        assert_eq!(
+            ts.as_str(),
+            "const __default__ = /* 日本 */\r\n __vizeDefineComponent({ name: 'A' }); const after: number = 'bad';void __default__;\n\n"
+        );
+    }
+
+    #[test]
+    fn object_text_in_keyword_comments_cannot_capture_the_value_mapping() {
+        use crate::virtual_ts::mapping::{
+            map_generated_offset_to_source, mapping_for_generated_offset,
+        };
+        let text = "export /* { name: 'A' } */ default { name: 'A' };";
+        let facts = analyze_options_api_script(text, true, false);
+        let mut ts = crate::virtual_ts::TextBuf::default();
+        let mut mappings = Vec::new();
+        assert!(emit(
+            &mut ts,
+            &mut mappings,
+            text,
+            (0, text.len() as u32),
+            &|x| x,
+            &facts
+        ));
+        assert_eq!(
+            ts.as_str(),
+            "const __default__ = /* { name: 'A' } */  __vizeDefineComponent({ name: 'A' });void __default__;\n\n"
+        );
+        let offset = ts.as_str().rfind("name").unwrap();
+        let mapping = mapping_for_generated_offset(&mappings, offset).unwrap();
+        assert_eq!(
+            map_generated_offset_to_source(mapping, offset),
+            text.rfind("name").unwrap()
         );
     }
 }

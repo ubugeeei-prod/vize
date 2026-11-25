@@ -92,8 +92,9 @@ pub fn cases() -> Result<Vec<Case>> {
         ("absent", json!({}), vec![]),
         (
             "strict-defaults",
+            // `strictTemplates` checks unknown props as the explicit option does.
             json!({"strictTemplates":true}),
-            vec![1, 2],
+            vec![0, 1, 2],
         ),
         (
             "strict-component-attrs",

@@ -58,7 +58,9 @@ pub(super) fn resolve(
     checks.check_unknown_props = options.is_none() || strict("checkUnknownProps");
     // A Vize option, strict by default: the outlet really passes those values.
     checks.check_slot_outlet_props = flag("checkSlotOutletProps").unwrap_or(true);
-    checks.check_unknown_fallthrough_props = flag("checkUnknownProps") == Some(true);
+    // Configured unknown-prop checks (explicit or through `strictTemplates`) close the
+    // fallthrough tail; only the unreadable-options fallback keeps it open.
+    checks.check_unknown_fallthrough_props = strict("checkUnknownProps");
     checks.check_unknown_components = strict("checkUnknownComponents");
     checks.check_unknown_events = strict("checkUnknownEvents");
     checks.check_unknown_directives = strict("checkUnknownDirectives");

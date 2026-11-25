@@ -36,6 +36,7 @@ pub(super) struct TemplateRefUsage {
     helper: String,
 }
 
+#[derive(Default)]
 pub(super) struct TemplateRefKeyChecks<'a> {
     calls: &'a [InferredCall],
     helper: &'a str,

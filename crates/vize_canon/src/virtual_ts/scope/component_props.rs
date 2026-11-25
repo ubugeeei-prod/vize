@@ -238,6 +238,7 @@ pub(super) fn generate_component_props(
             preserve_event_navigation: ctx.preserve_event_navigation,
             omit_navigation_references: ctx.omit_navigation_references,
             check_unknown_events: ctx.check_unknown_events,
+            fallthrough_listener_events: ctx.fallthrough_listener_events,
             strict_v_model: ctx.strict_v_model,
             typed_fallthrough_values: ctx.typed_fallthrough_values,
             hoist_shared_preamble: ctx.hoist_shared_preamble,

@@ -222,6 +222,8 @@ pub(super) fn emit_scope_closures(
                 .generic_parameters
                 .is_none_or(|generic| generic.parameters.is_empty()),
         check_unknown_events: check_options.check_unknown_events && check_options.check_emits,
+        fallthrough_listener_events: !options.legacy_vue2
+            && check_options.infers_fallthrough_attributes(),
         strict_v_model: check_options.strict_v_model && check_options.check_emits,
         component_binding_check: options.component_binding_check,
         legacy_vue2: options.legacy_vue2,

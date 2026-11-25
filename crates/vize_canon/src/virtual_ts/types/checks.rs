@@ -29,7 +29,9 @@ pub(crate) struct VirtualTsCheckOptions {
     /// Vue 3 leaves intrinsic attribute names unchecked; an omitted target still
     /// excess-checks them instead of assigning the name to `never`.
     pub(crate) vue_compiler_target: Option<VueVersion>,
-    /// Explicit strict Vue options close the otherwise compatible fallthrough tail.
+    /// Unknown props are checked by configuration (`checkUnknownProps`, or
+    /// `strictTemplates`), not by the fallback for unreadable options: a
+    /// component's fallthrough tail then holds only the keys its root declares.
     pub(crate) check_unknown_fallthrough_props: bool,
     /// Opt in to declared/public attrs and explicitly inferred fallthrough only.
     pub(crate) strict_component_attrs: bool,
@@ -74,6 +76,15 @@ pub(crate) struct VirtualTsCheckOptions {
 impl VirtualTsCheckOptions {
     pub(crate) fn strict_component_attrs(self) -> bool {
         self.strict_component_attrs && self.check_unknown_props
+    }
+
+    /// The attributes a component passes to its root are part of its known
+    /// attributes: `fallthroughAttributes`, or strict component attrs with the
+    /// option omitted. Both the unknown-prop and the unknown-event checks read
+    /// the root's keys under this rule.
+    pub(crate) fn infers_fallthrough_attributes(self) -> bool {
+        self.fallthrough_attributes
+            || (self.strict_component_attrs() && !self.fallthrough_attributes_specified)
     }
 
     /// Vue 3's compiler target accepts intrinsic names absent from `NativeElements`.

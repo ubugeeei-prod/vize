@@ -222,6 +222,56 @@ fn escaped_composable_callees_preserve_authored_spelling() {
 }
 
 #[test]
+fn irregular_exports_compose_callee_and_props_assertion_mappings() {
+    use crate::virtual_ts::generator::{
+        irregular_default::IrregularDefault, options_api::analyze_options_api_script,
+        options_api_props_identifiers::PropsConstAssertions,
+    };
+    use crate::virtual_ts::mapping::{
+        map_generated_offset_to_source, mapping_for_generated_offset,
+    };
+    for (import, line, expected) in [
+        (
+            "import { useTemplateRef } from 'vue';",
+            "const el = useTemplateRef('el'); export /* gap */ default { name: 'A' }; const after: number = 'bad';",
+            "const el = __vizeInferRef('el'); const __default__ = __vizeDefineComponent(       /* gap */         { name: 'A' }); const after: number = 'bad';\n",
+        ),
+        (
+            "import { useTemplateRef as r } from 'vue';",
+            "const el = r('el'); export /* gap */ default { name: 'A' }; const after: number = 'bad';",
+            "const el = __vizeInferRef('el'); const __default__ = __vizeDefineComponent(       /* gap */         { name: 'A' }); const after: number = 'bad';\n",
+        ),
+        (
+            "import { useTemplateRef as r } from 'vue';",
+            "const props = { label: String }; const el = r('el'); export /* gap */ default { props }; const after: number = 'bad';",
+            "const props = { label: String } as const; const el = __vizeInferRef('el'); const __default__ = __vizeDefineComponent(       /* gap */         { props }); const after: number = 'bad';\n",
+        ),
+    ] {
+        let script = vize_carton::cstr!("{import}\n{line}");
+        let line_start = import.len() + 1;
+        let facts = analyze_options_api_script(&script, true, false);
+        let rewrite = IrregularDefault::new(&script, &facts).unwrap();
+        let mut assertions = PropsConstAssertions::new(&script, true);
+        let offsets = assertions.take_line_offsets(line_start, script.len());
+        let projected = rewrite.project_line(line, line_start, offsets).unwrap();
+        let plan = usage(&script);
+        let checks = plan.key_checks(true);
+        let mut generated = crate::virtual_ts::TextBuf::default();
+        let mut mappings = Vec::new();
+        projected.emit(&mut generated, &mut mappings, &checks, line_start, &|x| x);
+        assert_eq!(generated.as_str(), expected);
+        for token in ["'el'", "after", "'bad'"] {
+            let offset = generated.as_str().find(token).unwrap();
+            let mapping = mapping_for_generated_offset(&mappings, offset).unwrap();
+            assert_eq!(
+                map_generated_offset_to_source(mapping, offset),
+                script.find(token).unwrap()
+            );
+        }
+    }
+}
+
+#[test]
 fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
     let script = "const target = useTemplateRe\\u0066('target');\n";
     let usage = usage_with_global(script, true);

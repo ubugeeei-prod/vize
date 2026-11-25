@@ -13,6 +13,7 @@ mod component_hover_gaps;
 mod constructor_emit_export;
 mod constructor_noinfer_return;
 mod current_loose_emit;
+mod default_export_projection;
 mod dependency_ownership;
 mod emit_member_infer;
 mod emit_overload_stall;
