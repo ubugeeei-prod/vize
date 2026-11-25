@@ -21,6 +21,7 @@ use super::source_map::SourceMapBuilder;
 mod authored;
 mod member_columns;
 pub use authored::authored_offset;
+pub use member_columns::composing_sfc_render_map;
 
 /// One generated↔authored link.
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -1,11 +1,14 @@
 use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::{
-        CodegenResult, CodegenResultWithSections, generate_with_sfc_member_columns,
+        CodegenResult, CodegenResultWithSections,
+        generate_with_sections_and_experimental_options_slot_scope_and_environment,
         locate_for_aliases,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
-    options::TemplateSyntaxMode,
+    options::{
+        CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
+    },
     parser::parse_with_options_custom_elements_and_template_syntax,
     walk_probe::WalkCounts,
 };
@@ -31,10 +34,10 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         codegen_experimental_options,
         l2_emit_selection,
         no_slotted,
-        strict_slot_params,
+        sfc_assembly,
         development,
-        additive_source_map,
     } = pipeline_options;
+    let (strict_slot_params, additive_source_map) = (sfc_assembly, sfc_assembly);
     let parser_opts = stage_options::parser_options(&options);
 
     let (mut root, errors) = profile!(
@@ -150,35 +153,22 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         ) {
             selection::record(Ok(()));
             capture.finish(|| CaptureOutcome::Accepted);
-            let transform_opts = stage_options::transform_options(&options);
-            let script_tables = options
-                .script_tables
-                .map(|tables| allocator.alloc_owned(tables));
-            profile!(
-                "atelier.dom.template.transform",
-                transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
-                    allocator,
-                    &mut root,
-                    transform_opts,
-                    script_tables,
+            let mapped = additive_map(
+                allocator,
+                &mut root,
+                source,
+                options,
+                AdditiveMapInputs {
                     custom_elements,
                     template_syntax_quirks,
                     hoisted_scope_id,
-                )
-            );
-            locate_for_aliases(&mut root, source);
-            let compat = profile!(
-                "atelier.dom.template.codegen_sourcemap_compat",
-                generate_with_sfc_member_columns(
-                    &root,
                     codegen_opts,
                     codegen_experimental_options,
                     no_slotted,
                     development,
-                    additive_source_map,
-                )
+                },
+                native,
             );
-            let mapped = source_map::with_verified_map(native, compat);
             return (root, errors.to_vec(), mapped);
         }
         selection::record(Err(DomLegacyReason::EmitRefused));
@@ -261,17 +251,71 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
             });
             profile!(
                 "atelier.dom.template.codegen_compat",
-                generate_with_sfc_member_columns(
+                generate_with_sections_and_experimental_options_slot_scope_and_environment(
                     &root,
                     codegen_opts,
                     codegen_experimental_options,
                     no_slotted,
                     development,
-                    additive_source_map,
                 )
             )
         }
     };
 
     (root, errors, codegen_result)
+}
+
+/// What the compatibility generator needs to map an accepted L2 module.
+struct AdditiveMapInputs {
+    custom_elements: CustomElementMatcher,
+    template_syntax_quirks: bool,
+    hoisted_scope_id: Option<String>,
+    codegen_opts: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
+    development: bool,
+}
+
+/// The map of an additive compile whose L2 module `native` was accepted: the
+/// shipped transform and the compatibility generator run only to supply it.
+/// It is out of line, so every capture sink shares one copy and a compile
+/// without a map does not carry it.
+#[cold]
+#[inline(never)]
+fn additive_map<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    source: &'a str,
+    options: DomCompilerOptions,
+    inputs: AdditiveMapInputs,
+    native: CodegenResultWithSections,
+) -> CodegenResultWithSections {
+    let transform_opts = stage_options::transform_options(&options);
+    let script_tables = options
+        .script_tables
+        .map(|tables| allocator.alloc_owned(tables));
+    profile!(
+        "atelier.dom.template.transform",
+        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+            allocator,
+            root,
+            transform_opts,
+            script_tables,
+            inputs.custom_elements,
+            inputs.template_syntax_quirks,
+            inputs.hoisted_scope_id,
+        )
+    );
+    locate_for_aliases(root, source);
+    let compat = profile!(
+        "atelier.dom.template.codegen_sourcemap_compat",
+        generate_with_sections_and_experimental_options_slot_scope_and_environment(
+            root,
+            inputs.codegen_opts,
+            inputs.codegen_experimental_options,
+            inputs.no_slotted,
+            inputs.development,
+        )
+    );
+    source_map::with_verified_map(native, compat)
 }

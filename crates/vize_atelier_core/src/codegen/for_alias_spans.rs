@@ -12,6 +12,8 @@ use crate::{ExpressionNode, RootNode, SourceLocation, TemplateChildNode};
 /// Give every `v-for` alias that is still the slice of `source` the parser
 /// cut its location. An alias a transform rewrote (an erased annotation, a
 /// prefixed default) is an arena copy and keeps none.
+#[cold]
+#[inline(never)]
 pub fn locate_for_aliases(root: &mut RootNode<'_>, source: &str) {
     locate_in(&mut root.children, source);
 }

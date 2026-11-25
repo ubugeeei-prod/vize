@@ -61,6 +61,13 @@ impl EmitDocument {
         }
     }
 
+    /// Anchor the last `written` bytes, which carry no link of their own, at
+    /// the authored byte `source`.
+    pub fn anchor_written(&mut self, written: u32, source: u32) {
+        let at = self.cursor() - written;
+        self.record(Span::new(at, at), Span::new(source, source), None);
+    }
+
     /// Anchor the byte that will be written at `generated`, an offset this
     /// document has not reached yet, at the authored byte `source`.
     #[cold]

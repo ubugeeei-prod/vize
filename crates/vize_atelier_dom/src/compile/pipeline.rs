@@ -18,13 +18,13 @@ pub(super) struct DomCompilePipelineOptions {
     pub(super) codegen_experimental_options: CodegenExperimentalOptions,
     pub(super) l2_emit_selection: L2EmitSelection,
     pub(super) no_slotted: bool,
-    /// Refuse malformed slot parameters in L2, as the SFC fast path does.
-    pub(super) strict_slot_params: bool,
+    /// The SFC assembly compiles this template. L2 refuses malformed slot
+    /// parameters, as the SFC fast path does, and a requested source map is
+    /// additive: it never changes the module (TS-11). The compile selects its
+    /// emitter as a plain compile does, and the compatibility generator
+    /// supplies a map only when it would emit the same module.
+    pub(super) sfc_assembly: bool,
     pub(super) development: bool,
-    /// A requested source map never changes the module (TS-11): the compile
-    /// selects its emitter as a plain compile does, and the compatibility
-    /// generator supplies a map only when it would emit the same module.
-    pub(super) additive_source_map: bool,
 }
 
 impl DomCompilePipelineOptions {
@@ -38,9 +38,8 @@ impl DomCompilePipelineOptions {
             codegen_experimental_options: CodegenExperimentalOptions::default(),
             l2_emit_selection: L2EmitSelection::Allowed,
             no_slotted: false,
-            strict_slot_params: false,
+            sfc_assembly: false,
             development: true,
-            additive_source_map: false,
         }
     }
 
@@ -55,9 +54,8 @@ impl DomCompilePipelineOptions {
             codegen_experimental_options,
             l2_emit_selection: L2EmitSelection::Allowed,
             no_slotted: false,
-            strict_slot_params: false,
+            sfc_assembly: false,
             development: true,
-            additive_source_map: false,
         }
     }
 
@@ -71,9 +69,8 @@ impl DomCompilePipelineOptions {
             codegen_experimental_options: CodegenExperimentalOptions::default(),
             l2_emit_selection: L2EmitSelection::RequireSections,
             no_slotted: false,
-            strict_slot_params: false,
+            sfc_assembly: false,
             development: true,
-            additive_source_map: false,
         }
     }
 
@@ -88,9 +85,8 @@ impl DomCompilePipelineOptions {
             codegen_experimental_options,
             l2_emit_selection: L2EmitSelection::RequireSections,
             no_slotted: false,
-            strict_slot_params: false,
+            sfc_assembly: false,
             development: true,
-            additive_source_map: false,
         }
     }
 
@@ -106,9 +102,8 @@ impl DomCompilePipelineOptions {
             codegen_experimental_options: CodegenExperimentalOptions::default(),
             l2_emit_selection: L2EmitSelection::Disabled,
             no_slotted: false,
-            strict_slot_params: false,
+            sfc_assembly: false,
             development: true,
-            additive_source_map: false,
         }
     }
 
@@ -126,9 +121,8 @@ impl DomCompilePipelineOptions {
             codegen_experimental_options,
             l2_emit_selection: L2EmitSelection::Refused,
             no_slotted: false,
-            strict_slot_params: false,
+            sfc_assembly: false,
             development: true,
-            additive_source_map: false,
         }
     }
 
@@ -143,9 +137,8 @@ impl DomCompilePipelineOptions {
             codegen_experimental_options,
             l2_emit_selection: L2EmitSelection::Disabled,
             no_slotted: false,
-            strict_slot_params: false,
+            sfc_assembly: false,
             development: true,
-            additive_source_map: false,
         }
     }
 }

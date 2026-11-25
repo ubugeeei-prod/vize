@@ -157,12 +157,11 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
         )
     };
     pipeline_options.no_slotted = no_slotted;
-    // L2 runs before the shipped transform reports malformed slot parameters.
-    pipeline_options.strict_slot_params = true;
+    // L2 runs before the shipped transform reports malformed slot parameters,
+    // and the map composed into the component's must describe the module a
+    // plain compile emits, not select another one.
+    pipeline_options.sfc_assembly = true;
     pipeline_options.development = development;
-    // SFC assembly composes the map into the component's; it must describe
-    // the module a plain compile emits, not select another one.
-    pipeline_options.additive_source_map = true;
 
     // This is the actual compatibility parse entry, not a final emitter
     // selection: the shared pipeline may still emit L2. A native-checked

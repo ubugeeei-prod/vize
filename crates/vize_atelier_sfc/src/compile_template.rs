@@ -24,6 +24,7 @@ pub(crate) use extraction::{
     extract_template_parts, render_fn_runs, slice_template_parts, slice_template_parts_runs,
     template_parts_full,
 };
+pub(crate) use render_map::compile_template_block_with_capture;
 pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::TemplateSyntaxMode;
@@ -120,7 +121,7 @@ pub(crate) fn compile_template_block(
 
 /// Compile a template and observe the backend that supplies its render code.
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
-pub(crate) fn compile_template_block_with_capture(
+fn compile_backend_template(
     allocator: &Allocator,
     template: &SfcTemplateBlock,
     options: &TemplateCompileOptions,
@@ -197,8 +198,7 @@ pub(crate) fn compile_template_block_with_capture(
         // module-load side effect; mismatched JS build/isProd combinations
         // are not inferred from the process environment.
         let ssr_context = vize_atelier_ssr::SsrSfcContext::new(slotted)
-            .with_development(!options.is_prod)
-            .with_sfc_member_columns();
+            .with_development(!options.is_prod);
 
         let (errors, result) = profile!(
             "atelier.sfc.template.ssr",

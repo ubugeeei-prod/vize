@@ -33,7 +33,6 @@ pub(super) fn generate_with_sections_and_options(
     development: bool,
     untracked_children: bool,
     jsx_class: bool,
-    sfc_member_columns: bool,
 ) -> CodegenResultWithSections {
     let mut ctx = CodegenContext::new_with_vnode_factory_merge_props_and_experimentals(
         options,
@@ -199,11 +198,7 @@ pub(super) fn generate_with_sections_and_options(
     // Serialize the document's links (recorded only when the `source_map`
     // flag is on) against the final code before it is moved out. The render
     // `code` itself is unchanged whether or not a map is produced.
-    let map = ctx.source_map(
-        ctx.options.filename.as_str(),
-        root.source,
-        sfc_member_columns,
-    );
+    let map = ctx.source_map(ctx.options.filename.as_str(), root.source);
 
     CodegenResultWithSections {
         result: CodegenResult {

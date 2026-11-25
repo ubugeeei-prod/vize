@@ -1,10 +1,45 @@
 //! Static member positions for render maps composed into Vue files.
+//!
+//! Only the SFC assembly composes a render map into a component's, and only
+//! when it asked for a map, so the request is held for the compile it wraps
+//! rather than passed down every backend's signature: a compile without a
+//! map never reads it, and a standalone compiler keeps its complete map.
+
+use std::cell::Cell;
 
 use super::{EmitDocument, SourceMapBuilder, rewritten_identifier_spans};
 use oxc_syntax::identifier::is_identifier_name;
 use vize_l0::{Span, String};
 
+std::thread_local! {
+    static COMPOSING_SFC_MAP: Cell<bool> = const { Cell::new(false) };
+}
+
+/// Run `compile`, a template compile whose render map the SFC assembly
+/// composes into the component's: every render map it serializes on this
+/// thread also carries the static member columns.
+pub fn composing_sfc_render_map<R>(compile: impl FnOnce() -> R) -> R {
+    struct Restore(bool);
+    impl Drop for Restore {
+        fn drop(&mut self) {
+            COMPOSING_SFC_MAP.set(self.0);
+        }
+    }
+    let _restore = Restore(COMPOSING_SFC_MAP.replace(true));
+    compile()
+}
+
 impl EmitDocument {
+    /// Serialize a backend's render map: with the static member columns
+    /// inside [`composing_sfc_render_map`], the complete map otherwise.
+    pub fn render_source_map(&self, filename: &str, source: &str) -> String {
+        if COMPOSING_SFC_MAP.get() {
+            self.sfc_source_map(filename, source)
+        } else {
+            self.source_map(filename, source)
+        }
+    }
+
     /// Serialize the render map composed into a Vue file, including the
     /// static properties of expressions whose complete rewrite we can verify.
     pub fn sfc_source_map(&self, filename: &str, source: &str) -> String {

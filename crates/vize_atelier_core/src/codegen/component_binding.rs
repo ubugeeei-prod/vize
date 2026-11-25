@@ -1,5 +1,7 @@
 use crate::options::BindingType;
 use crate::{CodegenContext, ElementNode, RuntimeHelper};
+
+use super::document::EmitDocument;
 use vize_l0::{String, ToCompactString, camelize, capitalize};
 
 struct ComponentBinding {
@@ -34,26 +36,7 @@ impl CodegenContext {
         let Some(binding) = self.resolve_component_binding(component) else {
             return false;
         };
-        self.push_resolved_component_binding(binding);
-        true
-    }
 
-    /// Push an element's tag as the setup binding it resolves to; `false`
-    /// when it is not a binding. A resolved asset is anchored where it is
-    /// resolved, but a binding is read in place, so with a map requested the
-    /// read maps to the authored tag name. Nothing else runs without one.
-    pub(in crate::codegen) fn push_component_binding(&mut self, el: &ElementNode<'_>) -> bool {
-        let Some(binding) = self.resolve_component_binding(el.tag) else {
-            return false;
-        };
-        if self.out.is_recording() {
-            self.out.anchor(el.loc.span.start + 1);
-        }
-        self.push_resolved_component_binding(binding);
-        true
-    }
-
-    fn push_resolved_component_binding(&mut self, binding: ComponentBinding) {
         let needs_unref = self.options.inline
             && matches!(
                 binding.binding_type,
@@ -81,6 +64,23 @@ impl CodegenContext {
             self.push(".");
             self.push(suffix.as_str());
         }
+        true
+    }
+
+    /// Anchor the setup binding [`Self::push_component_binding_tag`] just
+    /// wrote for `el` at its authored tag name. A resolved asset is anchored
+    /// where it is resolved, but a binding is read in place. Callers make the
+    /// one recording check after a binding was written, so a tag that is not
+    /// one, and every compile without a map, does what it did before.
+    #[cold]
+    #[inline(never)]
+    pub(in crate::codegen) fn anchor_component_binding(&mut self, el: &ElementNode<'_>) {
+        // Measure the read by writing it again into a scratch document. The
+        // only other effect, using the `unref` helper, is already recorded.
+        let written = std::mem::replace(&mut self.out, EmitDocument::new(false));
+        self.push_component_binding_tag(el.tag);
+        let read = std::mem::replace(&mut self.out, written).len() as u32;
+        self.out.anchor_written(read, el.loc.span.start + 1);
     }
 
     fn resolve_component_binding(&self, component: &str) -> Option<ComponentBinding> {
