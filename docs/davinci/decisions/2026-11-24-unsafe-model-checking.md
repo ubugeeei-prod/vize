@@ -33,7 +33,7 @@ The three L0 harnesses run together in 174 s at 2.7 GB peak.
 
 - `reborrow_markup` (`crates/vize_patina/src/markup.rs`) and the `jsx_*_ref` accessors in `markup/jsx_names.rs` were safe functions that widen a borrow or dereference any raw pointer they are given. They are now `unsafe fn` with a `# Safety` section, and every caller states its `SAFETY:` argument. No undefined behavior was reachable: every caller kept the program and header alive.
 - `ScopeChain::get_scope_unchecked` had no caller in the repository and is deleted.
-- `apply_scoped_css` compares `c as u8` with the open quote inside strings. A non-ASCII scalar whose low byte is `"` or `'` (for example U+0122 `Ģ`) therefore closes a CSS string early. That is a scoping-behavior bug, not a memory one: the output still copies whole scalars.
+- `apply_scoped_css` compared `c as u8` with the open quote inside strings, so a non-ASCII scalar whose low byte is `"` or `'` (for example U+0122 `Ģ`) closed a CSS string early. That was a scoping-behavior bug, not a memory one: the output still copied whole scalars. Fixed: both scoped CSS scanners now take the string-body step in `css/string_body.rs`, which Kani checks against CSS Syntax for every scalar.
 - Product unsafe blocks without a `SAFETY:` comment (`preserved_text.rs`, `raw_mode/unix.rs` `emergency_restore_raw_mode`, `corsa_session/paths/store.rs` and the N-API helpers in `js_value/raw.rs`) now carry one each. The `unsafe fn` declarations in `errno.rs` and the `GlobalAlloc` methods rely on their module or impl comment.
 
 ## Inventory

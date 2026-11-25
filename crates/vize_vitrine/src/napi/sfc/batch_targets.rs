@@ -145,7 +145,7 @@ fn compile_for_targets(
     // One stability window for every target: they share one imported-type
     // graph. The named guard must stay alive until the parallel map has joined.
     #[deny(let_underscore_drop)]
-    let _type_resolution_batch = vize_atelier_sfc::begin_type_resolution_batch();
+    let _type_resolution_batch = vize_atelier_sfc::join_type_resolution_batch();
     let rows: Vec<(Vec<(BatchFileResultNapi, bool)>, bool)> = files
         .into_par_iter()
         .map(|file| {

@@ -1,0 +1,13 @@
+.card[data-v-b84fad59]::before{ content: "\\"; }.title[data-v-b84fad59]{ color: red; }
+
+.bsgbXW_note[data-v-b84fad59]:before {
+  content: "Ģ";
+}
+
+.bsgbXW_note[data-v-b84fad59]:after {
+  content: "\\'";
+}
+
+.bsgbXW_note[data-v-b84fad59] {
+  color: #00f;
+}

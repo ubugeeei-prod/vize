@@ -377,6 +377,12 @@ export function vize(
       },
     },
 
+    // Every compile of this build is done: later compiles in the process read
+    // the imported type files again.
+    buildEnd() {
+      processFilesystemEpoch.releaseTypeResolution();
+    },
+
     watchChange() {
       processFilesystemEpoch.advance();
     },
@@ -410,6 +416,7 @@ export function vize(
     },
 
     closeBundle() {
+      processFilesystemEpoch.releaseTypeResolution();
       if (state.server === null) {
         noteEnvironmentClosed(this.environment, state.filesystemEpoch);
         configBridge.unregisterBuild(this);
