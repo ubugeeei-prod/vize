@@ -225,7 +225,7 @@ jobs:
     permissions: { contents: read, actions: read, pull-requests: read }
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
-    needs: [ pr-rust-shard, rust-feature-tests ]
+    needs: [pr-rust-shard, rust-feature-tests]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:

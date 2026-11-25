@@ -146,7 +146,7 @@ jobs:
     permissions: { contents: read, actions: read }
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
-    needs: [ merge-rust-differential, pr-rust-build ]
+    needs: [merge-rust-differential, pr-rust-build]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
