@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Affected tooling worker"
 description = "Run one planned shard of the PR-tier tooling tests that the change can affect."

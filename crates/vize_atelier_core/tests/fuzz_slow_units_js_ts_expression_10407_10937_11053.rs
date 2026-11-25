@@ -6,7 +6,7 @@
 //! family as the retained #10401 and #10845 inputs. #10407 also carried the
 //! exact #10401 artifact, which `issue-10401.input` already retains. Every
 //! other artifact is kept byte for byte in the regression corpus, seeded into
-//! the fuzz corpus by `tools/commands/ci/fuzz/seed-corpus.ts`, and replayed
+//! the fuzz corpus by `tools/ci/commands/fuzz/seed-corpus.ts`, and replayed
 //! here on the parser: it rejects each input with a bounded arena instead of
 //! speculating for seconds. The shared guard used to admit them because it
 //! read the `/` after their `<ep>!!!` prefix as division, so a backtick inside

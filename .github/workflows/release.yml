@@ -84,7 +84,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/release/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -214,7 +214,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/release/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -262,7 +262,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/release/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -312,7 +312,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/release/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -435,7 +435,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/release/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -486,7 +486,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/release/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -533,7 +533,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/release/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -607,7 +607,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/release/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -655,7 +655,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/release/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -823,7 +823,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/release/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -944,7 +944,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/release/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts

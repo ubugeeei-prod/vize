@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Hydrate app fixtures"
 description = "Checkout only the pinned fixtures exercised by App E2E"

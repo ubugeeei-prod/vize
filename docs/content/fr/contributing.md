@@ -70,7 +70,7 @@ authentification, push ou échauffement échoue, et tente toujours d’arrêter 
 lorsqu’une tâche échoue :
 
 ```sh
-sh tools/commands/ci/run-testbox-checks.sh
+sh tools/ci/commands/run-testbox-checks.sh
 ```
 
 Pour les modifications de tâches de Blacksmith Testbox, validez également la forme du workflow avec

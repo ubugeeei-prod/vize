@@ -154,7 +154,7 @@ export function restoreNativeRuntimeCasePacket(job: Job, original: Job) {
   const verify = selectedStep(job, "Verify configured native runtime toolchain").step;
   const namedFilter = '-f "$VIZE_CI_FILES/../shared/rust-host-triple.sed"';
   const filter = fs.readFileSync(
-    new URL("../../../.github/scripts/workflows/shared/rust-host-triple.sed", import.meta.url),
+    new URL("../../../tools/ci/lib/scripts/rust-host-triple.sed", import.meta.url),
     "utf8",
   );
   assert.equal(filter, "s/^host: //p\n");

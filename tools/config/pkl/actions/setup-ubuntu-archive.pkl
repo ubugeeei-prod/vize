@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Stabilize Ubuntu package archive"
 description = "Avoid unhealthy Blacksmith mirror-list entries before apt-based setup"

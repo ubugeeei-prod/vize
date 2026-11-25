@@ -70,7 +70,7 @@ nix develop .#testbox
 任务失败时：
 
 ```sh
-sh tools/commands/ci/run-testbox-checks.sh
+sh tools/ci/commands/run-testbox-checks.sh
 ```
 
 对于Blacksmith Testbox的工作变更，也要验证工作流程形状，用

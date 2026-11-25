@@ -5,6 +5,7 @@ import {
   packageVscodeExtension,
   stageVscodeTypeScriptPlugin,
   steps,
+  ciCommand,
   defineTasks,
   nodeCommand,
   nodeTool,
@@ -52,10 +53,7 @@ const preparedPackageTests = (packages: readonly PackagePath[]) => {
 const nativePreparedPackageTests = (packages: readonly PackagePath[]) =>
   steps(runTask("build:native:test"), preparedPackageTests(packages));
 
-const prepareToolingTests = steps(
-  runTask("build:native:test"),
-  nodeCommand("ci/verify-tool-layout"),
-);
+const prepareToolingTests = steps(runTask("build:native:test"), ciCommand("verify-tool-layout"));
 const plannedToolingTests = steps(
   prepareToolingTests,
   "node tools/support/compat/github/run-tooling-tests.mjs",
@@ -103,7 +101,7 @@ const rustBranchCoverageMinimums = [
 ];
 const benchmarkDispatcher = (...args: string[]) => nodeCommand("benchmarks/dispatch", ...args);
 const sourceCoverage = (...args: string[]) =>
-  ["node", "tools/commands/ci/source-coverage.ts", ...args].join(" ");
+  ["node", "tools/ci/commands/source-coverage.ts", ...args].join(" ");
 const rustSourceCoverageCommand = steps(
   nodeTool("tasks/prepare-coverage-directory"),
   [

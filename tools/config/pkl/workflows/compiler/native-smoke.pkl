@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 local nativeHostEnv = new Dynamic { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
 
@@ -50,7 +50,7 @@ local nativeHostSteps = new Listing {
   new Dynamic {
     name = "Verify GNU native glibc compatibility"
     `if` = "runner.os == 'Linux' && endsWith(matrix.target, '-gnu')"
-    run = "node tools/commands/ci/github/verify-glibc-symbols.ts --max 2.36 npm/native/*.linux-*-gnu.node"
+    run = "node tools/ci/commands/github/verify-glibc-symbols.ts --max 2.36 npm/native/*.linux-*-gnu.node"
   }
   new Dynamic {
     name = "Smoke @vizejs/native"

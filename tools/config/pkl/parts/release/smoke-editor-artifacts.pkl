@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Smoke release editor hosts"
 needs = List("version", "build-cli", "build-packages", "build-editor-extensions")

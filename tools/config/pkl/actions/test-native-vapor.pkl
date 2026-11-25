@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Native static Vapor runtime"
 description = "Capture genuine original modules and maps and execute the pinned Vapor runtime"

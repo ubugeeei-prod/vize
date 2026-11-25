@@ -126,7 +126,7 @@ de JSON ou texto, inventários e verificações de aprovação/reprovação, cuj
 Mantenha um script em Node (`.mjs`) quando o MoonBit adicionaria atrito em vez de removê-lo:
 
 - Ele é importado como módulo por outro JavaScript ou por uma suíte `node --test` (por exemplo,
-  `tools/commands/ci/github/release-platforms.rs`), então reescrevê-lo dividiria uma fonte em dois idiomas.
+  `tools/ci/commands/github/release-platforms.rs`), então reescrevê-lo dividiria uma fonte em dois idiomas.
   - Depende do ecossistema npm (bibliotecas globbing, ferramentas de pacotes, SDKs de ação do GitHub) ou de
     APIs exclusivas para nós que não têm equivalente ao MoonBit.
 - É grande ou exploratório o suficiente para que seu comportamento ainda não seja definido por um teste de saída completa; Não

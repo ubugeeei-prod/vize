@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "PR Oxlint original project qualification"
 `if` = "${{ inputs.run-original-project }}"

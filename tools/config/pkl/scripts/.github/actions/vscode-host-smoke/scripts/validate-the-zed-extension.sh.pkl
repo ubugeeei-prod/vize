@@ -1,1 +1,1 @@
-amends "../../../../../parts/shell/package-zed-extension.pkl"
+amends "../../../../../../../ci/lib/parts/shell/package-zed-extension.pkl"

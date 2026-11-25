@@ -10,7 +10,7 @@ import { test } from "node:test";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const commandPath = "tools/commands/ci/check-warning-budget.ts";
+const commandPath = "tools/ci/commands/check-warning-budget.ts";
 
 function runWarningBudget(
   body: string,

@@ -1,4 +1,4 @@
-import { requiredEnv } from "../shared/files.ts";
+import { requiredEnv } from "../../../../tools/ci/lib/scripts/files.ts";
 import { pathToFileURL } from "node:url";
 import { resolve as resolveWorkflowInput } from "node:path";
 import assert from "node:assert/strict";
