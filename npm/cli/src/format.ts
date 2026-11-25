@@ -10,6 +10,7 @@ import { assertMatchingNativeVersion } from "./native-version-guard.js";
  */
 export type FormatterOverrides = FormatOptionsNapi;
 
+/** Options for {@link format}: the file name, where its config comes from, and overrides. */
 export interface FormatOptions extends FormatterOverrides {
   /**
    * Name of the file the source is written to. Its extension selects the
@@ -22,10 +23,12 @@ export interface FormatOptions extends FormatterOverrides {
   /**
    * A Vite config file or project directory to read instead of discovering
    * one from `filename`, or `false` to format with defaults only.
+   * @default discovered from the directory of `filename`
    */
   config?: string | false;
 }
 
+/** What {@link format} returns. */
 export interface FormatResult {
   /** The formatted source: the bytes `vize fmt --write` would write. */
   code: string;
