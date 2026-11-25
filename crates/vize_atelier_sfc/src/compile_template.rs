@@ -197,8 +197,8 @@ fn compile_backend_template(
         // Unlike JavaScript compiler bundles, native code has no NODE_ENV
         // module-load side effect; mismatched JS build/isProd combinations
         // are not inferred from the process environment.
-        let ssr_context = vize_atelier_ssr::SsrSfcContext::new(slotted)
-            .with_development(!options.is_prod);
+        let ssr_context =
+            vize_atelier_ssr::SsrSfcContext::new(slotted).with_development(!options.is_prod);
 
         let (errors, result) = profile!(
             "atelier.sfc.template.ssr",
