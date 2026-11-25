@@ -12,6 +12,8 @@ mod css_quotes;
 mod nested_lsp;
 #[cfg(feature = "glyph")]
 mod normalizers;
+#[cfg(feature = "glyph")]
+mod object_wrap;
 mod root;
 mod support;
 mod typecheck;

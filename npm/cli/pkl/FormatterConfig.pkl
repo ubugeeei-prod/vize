@@ -51,6 +51,9 @@ class FormatterConfig {
   /// Quote properties mode (default: "as-needed").
   quoteProps: ("as-needed"|"consistent"|"preserve")? = null
 
+  /// Preserve authored object newlines, or collapse objects that fit (default: "preserve").
+  objectWrap: ("preserve"|"collapse")? = null
+
   /// Force one attribute per line (default: false).
   singleAttributePerLine: Boolean? = null
 

@@ -36,7 +36,7 @@ pub use model::{
     NoMutatingPropsOptions, NoRestrictedGlobalsOptions, NoRestrictedMembersOptions,
     NoRestrictedSyntaxOptions, NoUnnecessaryBooleanLiteralCompareOptions,
     NoUnnecessaryConditionOptions, NoUnnecessaryTypeAssertionOptions, NoUnsafeMemberAccessOptions,
-    NoUnusedScriptVarsOptions, NoUseVIfWithVForOptions, OnlyThrowErrorOptions,
+    NoUnusedScriptVarsOptions, NoUseVIfWithVForOptions, ObjectWrap, OnlyThrowErrorOptions,
     ParseVueVersionError, PreferConstDestructuring, PreferConstOptions,
     PreferPromiseRejectErrorsOptions, PromiseUnionFlag, PropNameCasingOptions, PropNameCasingStyle,
     PropsDestructureMode, QuoteProps, QuotePropsStyle, ResolvedLinterConfig,

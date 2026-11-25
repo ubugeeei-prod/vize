@@ -44,6 +44,15 @@ pub enum QuoteProps {
     Preserve,
 }
 
+/// Whether object literals keep an authored newline after their opening brace.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ObjectWrap {
+    #[default]
+    Preserve,
+    Collapse,
+}
+
 /// Attribute ordering strategy.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -217,6 +226,7 @@ struct RawFormatterKeys {
     sort_imports: Option<super::sort_imports::SortImportsSetting>,
     ignore_patterns: Vec<String>,
     preset: Option<FormatterPreset>,
+    object_wrap: Option<ObjectWrap>,
     normalize_css_quotes: Option<bool>,
     normalize_inline_styles: Option<bool>,
     normalize_v_for_parens: Option<bool>,

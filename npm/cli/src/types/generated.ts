@@ -1096,6 +1096,10 @@ export interface FormatterConfig {
    */
   quoteProps?: "as-needed" | "consistent" | "preserve";
   /**
+   * Preserve authored object newlines, or collapse objects that fit
+   */
+  objectWrap?: "preserve" | "collapse";
+  /**
    * Force one attribute per line
    */
   singleAttributePerLine?: boolean;
