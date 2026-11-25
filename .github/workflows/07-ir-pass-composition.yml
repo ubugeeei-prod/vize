@@ -43,11 +43,6 @@ jobs:
       - name: Check the prefix theorem with Lean
         working-directory: ${{ runner.temp }}
         run: . "${{ env.VIZE_CI_FILES }}/check-the-prefix-theorem-with-lean.sh"
-      - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
-        with:
-          kani-version: 0.68.0
-          command: kani
-          args: crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs --output-format=terse
       - name: Check the editor's Rust projection on arbitrary UTF-8 ranges
         uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
         with:

@@ -24,6 +24,7 @@ members = [
   "assignability",
   "utf8",
   "fusion",
+  "template-labels",
 ]
 
 [workspace.dependencies]

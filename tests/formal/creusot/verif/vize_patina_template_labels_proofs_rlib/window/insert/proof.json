@@ -1,0 +1,16 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_call_impl_32_Fn_40_T_44__32_T_41__32__45__62__32_bool": {
+        "prover": "alt-ergo",
+        "time": 0.006
+      },
+      "vc_elim_Some": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_insert_T": { "prover": "z3", "time": 0.301 },
+      "vc_is_none_T": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_len_Option_T": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_swap_Option_T": { "prover": "alt-ergo", "time": 0.006 }
+    }
+  }
+}

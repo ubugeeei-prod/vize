@@ -274,6 +274,39 @@ contract on the deep model.
 | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | `accepted_headers_keep_order_or_permute_unique_plain_flags_with_their_values` | a header is accepted exactly when it is unchanged, or a permutation of distinct plain flags that keeps each value | 4 attributes, 5 names, 4 values | `style_header::accepted_headers_keep_order_or_permute_unique_plain_flags_with_their_values` over `same_header`, every length and spelling | proved |
 
+## Template complexity labels (`crates/vize_patina/src/rules/facts/max_template_complexity/original`)
+
+Kani file, deleted with its harness: `original/kani.rs`. Its bound was a
+window of five slots, `u8` scores and one insertion. Creusot root:
+`original/creusot.rs`, over the contract of the shipped `window::insert`.
+The laws are those of tests/formal/template-lint/Selection.lean: `insert_full`
+is its unlimited stable insertion (`insertFull`) and `ranking` its fold. They
+hold for every window capacity, any number of rows beyond it and any
+comparison that answers each pair: the laws take the ranking the comparison
+computes as a ghost relation (`rank`), because a closure's postcondition is
+prophetic and cannot appear in a recursive logic function. Creusot 0.14 has no spec for
+`Iterator::find`, so `insert` finds the slot with an index loop; the
+exhaustive `filtering_ties_and_displacement_keep_the_same_label_identities`
+test (4^7 inputs against the sorting reference) pins its output.
+
+| Kani harness                                          | Law                                                                                                                                          | Kani bound           | Creusot replacement                                                                                          | Status |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------ | ------ |
+| `every_displaced_label_is_the_reference_prefix_entry` | inserting into a window that holds the first rows of a ranking leaves the first rows of that ranking with the row inserted (`insert_prefix`) | 5 slots, `u8` scores | `template_labels::every_displaced_label_is_the_reference_prefix_entry` over `window::insert`, every capacity | proved |
+| none                                                  | inserting every row into a free window leaves the first rows of their stable ranking (`fold_prefix`)                                         | —                    | `template_labels::the_window_is_the_prefix_of_the_stable_ranking`                                            | proved |
+
+## Editor template projection (`crates/vize_incremental/src/template`)
+
+`projection::authored` maps a block-relative UTF-8 range to file offsets
+through `str::get`, which has no Creusot 0.14 specification, and the
+character-boundary law needs `str::is_char_boundary`, which has none either.
+Writing one is an `extern_spec`, a trusted declaration the proofs do not
+admit, so the Kani harness stays in `ir-pass-composition.yml` and the row is
+`owed`.
+
+| Kani harness                                                  | Law                                                                                                                                                       | Kani bound                         | Creusot replacement               | Status |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | --------------------------------- | ------ |
+| `all_utf8_ranges_match_the_reference_and_fit_the_source_file` | `authored` accepts exactly the ordered ranges whose ends are character boundaries of the block, and shifts both ends by the block's base without overflow | 5 bytes, whole `u32` base and ends | owed: needs a spec for `str::get` | owed   |
+
 ## Laws no harness states yet
 
 These are added where tractable, after the ports: lossless L1 render equals

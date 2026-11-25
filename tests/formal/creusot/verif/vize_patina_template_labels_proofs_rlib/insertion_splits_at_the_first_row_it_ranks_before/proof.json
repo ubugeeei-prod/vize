@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_insertion_splits_at_the_first_row_it_ranks_before_T": {
+        "prover": "z3",
+        "time": 0.093
+      }
+    }
+  }
+}

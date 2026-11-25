@@ -34,7 +34,7 @@ const positionIndex = {
 export const templateLabelRanking = {
   theorem: "tests/formal/template-lint/Selection.lean",
   kernel: "crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs",
-  harness: "crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs",
+  harness: "crates/vize_patina/src/rules/facts/max_template_complexity/original/creusot.rs",
 } as const;
 export const templateSpanProjection = {
   theorem: "tests/formal/ir-graph/TemplateProjection.lean",
