@@ -21,7 +21,7 @@ struct Case {
 #[test]
 fn object_wrap_matches_the_recorded_oxfmt_outputs_and_fixed_points() {
     let fixtures: Fixtures = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/formatter-object-wrap-13666/cases.json"
+        "../../../tests/_fixtures/differential/formatter/sfc-object-wrap-13666/cases.json"
     ))
     .unwrap();
     for case in fixtures.cases {

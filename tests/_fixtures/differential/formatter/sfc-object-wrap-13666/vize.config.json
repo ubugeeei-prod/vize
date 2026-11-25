@@ -1,0 +1,9 @@
+{
+  "vue": {
+    "version": "3"
+  },
+  "formatter": {
+    "objectWrap": "collapse",
+    "printWidth": 100
+  }
+}
