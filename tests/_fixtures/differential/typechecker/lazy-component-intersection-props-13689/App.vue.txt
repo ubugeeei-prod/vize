@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { LazyFoo, ReverseFoo } from "./lazy";
+</script>
+
+<template>
+  <LazyFoo hydrate-on-idle />
+  <ReverseFoo hydrate-on-idle />
+</template>

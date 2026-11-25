@@ -1,0 +1,5 @@
+import type { DefineComponent } from "vue";
+import Foo from "./Foo.vue";
+
+export declare const LazyFoo: DefineComponent<{ hydrateOnIdle?: number | true }> & typeof Foo;
+export declare const ReverseFoo: typeof Foo & DefineComponent<{ hydrateOnIdle?: number | true }>;

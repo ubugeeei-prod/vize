@@ -45,6 +45,7 @@ const helpers = [
   line(propHelpers, "$RequiredKeys"),
   ...[
     "$IsGeneratedComponent",
+    "$EmitListeners",
     "$HasFallthroughProps",
     "$FallthroughProps",
     "$RequiredFallthroughProps",
@@ -53,6 +54,7 @@ const helpers = [
     "$StaticRawProps",
     "$HasInstanceRawProps",
     "$HasStaticRawProps",
+    "$HasRawProps",
     "$ComponentRawProps",
     "$FallthroughSourceMember",
     "$FallthroughSourceAdmitsEmpty",

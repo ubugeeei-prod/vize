@@ -63398,6 +63398,56 @@
       }
     },
     {
+      "id": "typechecker/lazy-component-intersection-props-13689/lazy-hydration-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::lazy_component_intersection_props::lazy_component_intersections_accept_the_reported_hydration_prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "lazy-component-intersection-props-13689/tsconfig.json.txt",
+          "sha256": "062d41d0f3c3fcf757103158bc299408f5c83810a3a0b0b71140c9c9d3777634"
+        },
+        {
+          "file": "Foo.vue",
+          "path": "lazy-component-intersection-props-13689/Foo.vue.txt",
+          "sha256": "acc43dd168ab619a55bc1ef7fc708c685a2e2eed9474d6bf4e27261fafbb1c75"
+        },
+        {
+          "file": "lazy.ts",
+          "path": "lazy-component-intersection-props-13689/lazy.ts.txt",
+          "sha256": "134f7583dd68c08f1e21bc1045bde6418610bb42079b32045abfa0802cef9d8c"
+        },
+        {
+          "file": "App.vue",
+          "path": "lazy-component-intersection-props-13689/App.vue.txt",
+          "sha256": "222a03b41834f4f723c29e957ce2f7a35f97d1bb66e23212f35c80c5d45d7079"
+        },
+        {
+          "file": "cases.json",
+          "path": "lazy-component-intersection-props-13689/cases.json",
+          "sha256": "842a2975379bafb677726d391c61348549c537d25974b019b907181dc1ca8271"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::lazy_component_intersection_props::lazy_component_intersections_accept_the_reported_hydration_prop; #13689 lazy hydration props survive both orders of an intersection with a generated SFC. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/legacy-js-mixin-receiver-11780/finite-js-methods",
       "state": "active",
       "targets": [

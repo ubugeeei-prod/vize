@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "jsx": "preserve",
+    "lib": ["ESNext", "DOM"]
+  },
+  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
+  "include": ["./*.vue", "./*.ts"],
+  "vueCompilerOptions": { "checkUnknownProps": true }
+}
