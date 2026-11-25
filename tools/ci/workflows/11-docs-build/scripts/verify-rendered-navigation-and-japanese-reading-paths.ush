@@ -1,0 +1,8 @@
+# Verify the rendered navigation and the Japanese editorial pages on their reading routes.
+use $bin::{node}
+use std::path::from_source
+
+let routes = node (from_source "verify-rendered-navigation-and-japanese-reading-paths.ts")
+
+node "docs/scripts/verify-navigation-render.ts" "--routes" routes
+node "docs/scripts/verify-ja-editorial-render.ts"
