@@ -160,10 +160,10 @@ and Unicode, not from the gate: `&` (`decode_html_entities`), `\`, `"` and the
 general category `Cc` (U+0000..=U+001F, U+007F..=U+009F); the first UTF-8
 byte follows Unicode Table 3-6.
 
-| Kani harness | Law | Kani bound | Creusot replacement | Status |
-| ------------ | --- | ---------- | ------------------- | ------ |
-| none | every scalar that `decode_html_entities` or `escape_js_string` rewrites starts with a byte the gate flags | — | `js_escape_gate::no_rewritten_scalar_passes_the_gate` over `byte_may_need_js_escaping`, every scalar | proved |
-| none | the first byte of every scalar's UTF-8 encoding is below 0x80 or in 0xC2..=0xF4 | — | `js_escape_gate::every_scalar_starts_with_a_lead_byte` | proved |
+| Kani harness | Law                                                                                                       | Kani bound | Creusot replacement                                                                                  | Status |
+| ------------ | --------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------- | ------ |
+| none         | every scalar that `decode_html_entities` or `escape_js_string` rewrites starts with a byte the gate flags | —          | `js_escape_gate::no_rewritten_scalar_passes_the_gate` over `byte_may_need_js_escaping`, every scalar | proved |
+| none         | the first byte of every scalar's UTF-8 encoding is below 0x80 or in 0xC2..=0xF4                           | —          | `js_escape_gate::every_scalar_starts_with_a_lead_byte`                                               | proved |
 
 ## Laws no harness states yet
 
