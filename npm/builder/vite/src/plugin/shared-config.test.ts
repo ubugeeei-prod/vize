@@ -37,6 +37,34 @@ await test("Nuxt reads shared Vue settings from the project Vite config", async 
   }
 });
 
+await test("Nuxt's plugin-vue compiler module never shadows the project's Vue compiler settings", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "vize-nuxt-host-compiler-"));
+  try {
+    writeFileSync(
+      path.join(root, "vite.config.ts"),
+      `export default { vue: { compiler: { whitespace: "preserve" } } };\n`,
+    );
+    // Nuxt 4.7 resolves `vite.vue` with the app's `vue/compiler-sfc` module.
+    const compilerSfcModule = "data:text/javascript,export const parse = () => {};";
+    const compilerSfc: object = await import(compilerSfcModule);
+
+    const resolved = await resolveSharedConfig(
+      {},
+      root,
+      env,
+      createLogger(false),
+      {
+        vue: { isProduction: true, script: {}, template: {}, features: {}, compiler: compilerSfc },
+      },
+      "nuxt",
+    );
+
+    assert.equal(resolved?.compiler?.whitespace, "preserve");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 await test("ordinary Vite hosts keep using their already resolved project config", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "vize-vite-shared-config-"));
   try {
