@@ -50,3 +50,15 @@ This proves the projection boundary, not complete Elk compatibility. Acceptance
 requires the existing preview, dev, and VRT Actions jobs with the same pinned
 consumer. No upstream configuration, application assertion, timeout, or visual
 snapshot is changed.
+
+## Superseded: the host owns the whole `vue` key
+
+Nuxt 4.7's Vite builder adds the app's `vue/compiler-sfc` module to the same
+options as `compiler`, and the field allow-list refused it the same way. Each
+new plugin-vue option a Nuxt release or module adds would break the build
+again. Nuxt runs Vite with `configFile: false` and its schema always fills
+`vite.vue` with plugin-vue options, so that key has never carried Vize settings
+in practice: a mixed object was always refused. Inside the explicit Nuxt
+constructor context the projection now omits the `vue` key by provenance,
+without reading it. Vize settings for Nuxt keep coming from the project Vite
+config, `vize.config.*`, and the module options. Other hosts stay strict.

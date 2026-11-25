@@ -119,7 +119,31 @@ void test("only the explicit Nuxt constructor context excludes the complete host
   }
 });
 
-void test("spoofable host flags and all canonical, mixed, unknown or nonplain objects stay strict", async () => {
+void test("Nuxt 4.7's plugin-vue compiler module stays with the host", async () => {
+  // @nuxt/vite-builder 4.7 passes plugin-vue the app's `vue/compiler-sfc` as
+  // `vite.vue.compiler`, next to the schema defaults. The module namespace is
+  // an exotic object whose exports must never be read by the projection.
+  const compiler =
+    await import("data:text/javascript,export const parse = () => {}; export const compileScript = () => {};");
+  const env = { command: "build", mode: "production", isSsrBuild: false };
+  const resolved = elkSetupSfcViteConfig(true);
+  const host = { ...resolved.vue, compiler };
+  const source = Object.freeze({ ...resolved, vue: host });
+  const descriptors = Object.getOwnPropertyDescriptors(host);
+
+  assert.equal(nativeProjectSource(source), source);
+  await assert.rejects(projectViteConfigSource(source, env), /unknown option "script"/);
+  const view = nativeProjectSource(source, "nuxt");
+  assert.equal("vue" in (view as object), false);
+  assert.deepEqual(await projectViteConfigSource(view, env), {
+    typeChecker: { jsxTypecheck: true },
+  });
+  assert.equal(source.vue, host);
+  assert.equal(source.vue.compiler, compiler);
+  assert.deepEqual(Object.getOwnPropertyDescriptors(host), descriptors);
+});
+
+void test("spoofable host flags stay strict outside the explicit Nuxt constructor context", async () => {
   const host = { script: { hoistStatic: true } };
   const spoofed = {
     vue: host,
@@ -130,87 +154,88 @@ void test("spoofable host flags and all canonical, mixed, unknown or nonplain ob
   };
   assert.equal(nativeProjectSource(spoofed), spoofed);
   await assert.rejects(projectViteConfigSource(spoofed), /unknown option "script"/);
+  for (const vue of [{ unknown: true }, { script: {}, compiler: { whitespace: "preserve" } }]) {
+    const source = { vue };
+    assert.equal(nativeProjectSource(source), source);
+    await assert.rejects(projectViteConfigSource(source), /unknown option/);
+  }
+});
+
+void test("in the Nuxt host the whole vue key is host-owned, whatever it holds", async () => {
+  // Nuxt's schema always fills `vite.vue` with plugin-vue options, so it never
+  // carries Vize settings; those come from the project config files.
   for (const vue of [
     {},
     { version: "3" },
     { linter: { enabled: false } },
+    { compiler: { whitespace: "preserve" } },
     { unknown: true },
     { script: {}, version: "3" },
     { script: {}, entries: [{ formatter: {} }] },
     { script: {}, future: true },
     { script: {}, include: [/\.vue$/], compiler: { whitespace: "preserve" } },
     { script: {}, exclude: [], future: true },
+    { script: {}, style: { trim: true }, customElement: /\.ce\.vue$/ },
     Object.assign(Object.create({ version: "3" }), { script: {} }),
     Object.defineProperty({ script: {} }, "compiler", { value: {} }),
     Object.assign({ script: {} }, { [Symbol("native")]: {} }),
+    null,
+    "vue",
+    0,
   ]) {
-    const source = { vue };
-    assert.equal(nativeProjectSource(source, "nuxt"), source);
-    if (Reflect.ownKeys(vue).includes("script") || Reflect.ownKeys(vue).includes("unknown")) {
-      await assert.rejects(projectViteConfigSource(source), /unknown option|must be object/);
-    }
+    const source = Object.freeze({ vue, fmt: { vue: { printWidth: 70 } } });
+    const view = nativeProjectSource(source, "nuxt") as { fmt?: unknown };
+    assert.notEqual(view, source);
+    assert.equal("vue" in view, false);
+    assert.equal(view.fmt, source.fmt);
+    assert.deepEqual(await projectViteConfigSource(view), {
+      typeChecker: { jsxTypecheck: true },
+      formatter: { printWidth: 70 },
+    });
+    assert.equal(source.vue, vue);
   }
   const array = Object.assign([], { vue: { script: {} } });
   assert.equal(nativeProjectSource(array, "nuxt"), array);
   await assert.rejects(projectViteConfigSource(array), /source must be an object/);
-  for (const source of [null, undefined, 0, "config", [], {}, { vue: null }]) {
+  for (const source of [null, undefined, 0, "config", [], {}, Object.create({ vue: {} })]) {
     assert.equal(nativeProjectSource(source, "nuxt"), source);
   }
 });
 
-void test("host root getters are evaluated once and their original descriptors remain intact", async () => {
+void test("host vue getters are never evaluated and the original descriptors remain intact", async () => {
   let reads = 0;
-  const host = { script: {} };
-  const source = Object.defineProperty({ lint: { vue: { enabled: false } } }, "vue", {
-    enumerable: true,
-    get() {
-      reads++;
-      return host;
+  let hookReads = 0;
+  const source = Object.defineProperties(
+    { lint: { vue: { enabled: false } } },
+    {
+      vue: {
+        enumerable: true,
+        get() {
+          reads++;
+          return { unknown: true };
+        },
+      },
+      unrelatedHostHook: {
+        enumerable: true,
+        get() {
+          hookReads++;
+          return {};
+        },
+      },
     },
-  });
-  const before = Object.getOwnPropertyDescriptor(source, "vue");
+  );
+  const before = Object.getOwnPropertyDescriptors(source);
   const view = nativeProjectSource(source, "nuxt");
-  assert.equal(reads, 1);
+  assert.equal(reads, 0);
+  assert.equal(hookReads, 0);
+  assert.deepEqual(
+    Object.getOwnPropertyDescriptor(view, "unrelatedHostHook"),
+    before.unrelatedHostHook,
+  );
   assert.deepEqual(await projectViteConfigSource(view), {
     typeChecker: { jsxTypecheck: true },
     linter: { enabled: false },
   });
-  assert.equal(reads, 1);
-  assert.deepEqual(Object.getOwnPropertyDescriptor(source, "vue"), before);
-});
-
-void test("changing canonical accessor values cannot bypass the one-read strict admission", async () => {
-  for (const first of [
-    { compiler: { enabled: false } },
-    { script: {}, version: "3" },
-    { unknown: true },
-  ]) {
-    let reads = 0;
-    const source = Object.defineProperty({}, "vue", {
-      enumerable: true,
-      get() {
-        return ++reads === 1 ? first : {};
-      },
-    });
-    const descriptor = Object.getOwnPropertyDescriptor(source, "vue");
-    await assert.rejects(
-      projectViteConfigSource(nativeProjectSource(source, "nuxt")),
-      /unknown option/,
-    );
-    assert.equal(reads, 1);
-    assert.deepEqual(Object.getOwnPropertyDescriptor(source, "vue"), descriptor);
-  }
-  let reads = 0;
-  const first = { linter: { enabled: false } };
-  const source = Object.defineProperty({}, "vue", {
-    enumerable: true,
-    get() {
-      return ++reads === 1 ? first : { unknown: true };
-    },
-  });
-  assert.deepEqual(await projectViteConfigSource(nativeProjectSource(source, "nuxt")), {
-    typeChecker: { jsxTypecheck: true },
-    linter: { enabled: false },
-  });
-  assert.equal(reads, 1);
+  assert.equal(reads, 0);
+  assert.deepEqual(Object.getOwnPropertyDescriptors(source), before);
 });
