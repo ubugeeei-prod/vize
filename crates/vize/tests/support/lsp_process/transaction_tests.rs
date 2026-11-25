@@ -28,9 +28,9 @@ fn an_expired_absolute_deadline_refuses_even_an_already_buffered_matching_reply(
     }))
     .unwrap_err();
     let message = panic.downcast_ref::<String>().unwrap();
-    assert!(
-        message.contains("timed out waiting for LSP message; seen: []"),
-        "{message}"
+    assert_eq!(
+        message,
+        "timed out waiting for LSP message; seen: []\nLSP process status: None\nLSP stderr:\n"
     );
     assert_eq!(
         process.messages.try_recv().unwrap().unwrap(),

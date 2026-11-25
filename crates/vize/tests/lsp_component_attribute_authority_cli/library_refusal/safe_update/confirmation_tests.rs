@@ -72,13 +72,20 @@ fn missing_or_foreign_confirmation_cannot_turn_one_empty_prompt_into_success() {
         let panic =
             std::panic::catch_unwind(AssertUnwindSafe(|| publish(&mut fixture))).unwrap_err();
         let message = reason(panic);
-        assert!(
-            message.contains("timed out waiting for LSP message"),
-            "{mode}: {message}"
+        let (failure, transport) = message.split_once("\nLSP process status: ").unwrap();
+        let (rejection, _) = failure.split_once("; seen: ").unwrap();
+        assert_eq!(
+            rejection,
+            format!(
+                "timed out waiting for LSP message: {}",
+                std::sync::mpsc::RecvTimeoutError::Disconnected
+            ),
+            "{mode}: the controlled peer closed without a matching completion"
         );
-        assert!(
-            message.contains("confirmation-peer: saved"),
-            "the scripted save phase was reached: {message}"
+        let (_, stderr) = transport.split_once("\nLSP stderr:\n").unwrap();
+        assert_eq!(
+            stderr, "confirmation-peer: saved\n",
+            "the scripted save phase was reached"
         );
         let packets = fixture.lsp.published_diagnostics();
         assert_eq!(packets.len(), if mode == "missing" { 1 } else { 2 });
@@ -100,9 +107,11 @@ fn missing_or_foreign_confirmation_cannot_turn_one_empty_prompt_into_success() {
 fn a_wrong_whole_payload_rejects_even_with_two_matching_uri_version_packets() {
     let mut fixture = fixture("wrong-payload");
     let panic = std::panic::catch_unwind(AssertUnwindSafe(|| publish(&mut fixture))).unwrap_err();
-    assert!(
-        reason(panic)
-            .contains("whole publication sequence with its authored completion confirmation")
+    assert_eq!(
+        reason(panic).lines().next(),
+        Some(
+            "assertion `left == right` failed: whole publication sequence with its authored completion confirmation"
+        )
     );
     assert_eq!(fixture.mismatches.len(), 1);
     assert_eq!(
@@ -129,7 +138,9 @@ fn late_duplicates_are_retained_and_late_whole_payload_changes_still_reject() {
             );
             let panic =
                 std::panic::catch_unwind(AssertUnwindSafe(|| fixture.shutdown())).unwrap_err();
-            assert!(reason(panic).contains("all whole publication mismatches"));
+            let message = reason(panic);
+            let (rejection, _) = message.split_once(": ").unwrap();
+            assert_eq!(rejection, "all whole publication mismatches");
         }
     }
 }
