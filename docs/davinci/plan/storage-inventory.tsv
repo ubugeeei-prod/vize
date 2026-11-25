@@ -20,9 +20,9 @@ l2	analysis	davinci/vize_l2/src/lang/js/conditional/tests.rs	1	0	0	0	0	0	0	0
 infra	analysis	davinci/vize_l0/src/diag.rs	1	2	1	7	0	0	0	0
 infra	analysis	davinci/vize_l0/src/diag/witness.rs	1	2	0	0	0	0	0	0
 infra	-	davinci/vize_l0/src/diag/witness/key.rs	0	0	1	2	0	0	0	0
-infra	-	davinci/vize_l0/src/fact/alpha.rs	0	0	1	2	0	0	0	0
-infra	-	davinci/vize_l0/src/fact/expression.rs	0	0	1	2	0	0	0	0
-infra	analysis	davinci/vize_l0/src/fact/table.rs	1	7	0	0	0	0	0	0
+infra	-	davinci/vize_l0/src/analysis/alpha.rs	0	0	1	2	0	0	0	0
+infra	-	davinci/vize_l0/src/analysis/expression.rs	0	0	1	2	0	0	0	0
+infra	analysis	davinci/vize_l0/src/analysis/table.rs	1	7	0	0	0	0	0	0
 infra	-	davinci/vize_l0/src/dump.rs	0	0	1	4	0	0	0	0
 infra	contract	davinci/vize_l0/src/dump/collector.rs	1	2	1	7	0	0	0	0
 infra	contract	davinci/vize_l0/src/dump/page.rs	1	2	1	2	0	0	0	0
