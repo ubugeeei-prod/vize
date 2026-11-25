@@ -123,6 +123,10 @@ void test("retains a live queue candidate even after its temporary ref disappear
 
 void test("unbuilt queued entries do not prevent cleanup of obsolete candidates", async () => {
   const { api, calls } = fixture();
+  const built = Array.from({ length: 6 }, (_, index) => ({
+    state: "AWAITING_CHECKS",
+    headCommit: { oid: String(index + 1).repeat(40) },
+  }));
   const results = await cleanObsoleteMergeGroups(async (endpoint) => {
     if (endpoint !== "graphql") return api(endpoint);
     return {
@@ -132,7 +136,8 @@ void test("unbuilt queued entries do not prevent cleanup of obsolete candidates"
             entries: {
               pageInfo: { hasNextPage: false },
               nodes: [
-                { state: "AWAITING_CHECKS", headCommit: { oid: "c".repeat(40) } },
+                ...built,
+                { state: "QUEUED", headCommit: null },
                 { state: "QUEUED", headCommit: null },
               ],
             },
