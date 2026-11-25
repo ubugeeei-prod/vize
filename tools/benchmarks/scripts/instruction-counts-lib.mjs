@@ -23,6 +23,15 @@ export const BENCH_KEYS = ["fixture", "fixture_sha256", "instructions", "window"
 export const ALLOCATOR_PROTOCOL = "counting-mimalloc-reserve128m-preinit64m-purgeoff-v1";
 export const LIBC_DISPATCH =
   "glibc.cpu.hwcaps=-AVX,-AVX2,-AVX512F,-AVX512VL,-AVX512BW,-AVX_Fast_Unaligned_Load,-ERMS,-FSRM,-Prefer_ERMS,-Prefer_FSRM,-SSSE3,-SSE4_1,-SSE4_2";
+// The build clock every benchmark build sees unless the caller pins its own.
+// libmimalloc-sys compiles mimalloc's banner with __DATE__ and __TIME__. The
+// linker's string tail merging folds the standalone "0" and "1" option literals
+// into that banner whenever the date or time ends with the same digit, which
+// moves every later merged string two bytes and changes address-sensitive
+// instruction counts. A wall clock build time picked one of the two layouts at
+// random. "Nov 24 2026" and "15:02:24" end in neither digit, which keeps the
+// layout in which the existing ceilings were recorded.
+export const BUILD_SOURCE_DATE_EPOCH = "1795532544";
 export const GUEST_ENVIRONMENT = Object.freeze({
   PATH: "/usr/bin:/bin",
   LANG: "C",
