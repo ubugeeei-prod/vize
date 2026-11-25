@@ -1,10 +1,17 @@
 //! Collect the types a script imports into its compile context.
 
+#![expect(
+    clippy::disallowed_types,
+    reason = "the components of a batch share one walk's declarations"
+)]
+
 use std::path::Path;
+use std::sync::Arc;
 
 use vize_carton::String;
 
 use super::super::batch_epoch::{NO_EPOCH, current_batch_epoch};
+use super::declarations::Declarations;
 use super::modules::{self, ModuleGraph, ModuleId};
 use super::resolution::{canonical_base_file, path_key, project::Project};
 use super::walk::{RequestedExports, TypeDependency, Visit, Walk};
@@ -24,9 +31,16 @@ impl ScriptCompileContext {
     /// misfired on JS object keys like `type: 'text'` next to any `import`,
     /// which is exactly what the `is_ts` gate cuts off.
     pub fn collect_imported_types_from_path(&mut self, source: &str, filename: &str, is_ts: bool) {
-        let _ = self.try_collect_imported_types_from_path(source, filename, is_ts, None);
+        if let Ok(imported) =
+            self.try_collect_imported_types_from_path(source, filename, is_ts, None)
+        {
+            self.merge_declarations(&imported.declarations);
+        }
     }
 
+    /// Resolve the script's type-bearing imports. What a walk of the batch's
+    /// shared graph declares is returned in `declarations`, unmerged: the
+    /// caller merges it once every script of the component is walked.
     pub(crate) fn try_collect_imported_types_from_path(
         &mut self,
         source: &str,
@@ -69,7 +83,7 @@ impl ScriptCompileContext {
             .filter(|project| project.is_configured())
             .or(discovered.as_deref());
 
-        let (walked, mut dependencies) = self.walk_imported_modules(
+        let (walked, mut dependencies, declarations) = self.walk_imported_declarations(
             &root.dependencies,
             base_file,
             project,
@@ -77,43 +91,34 @@ impl ScriptCompileContext {
         );
         let mut imports = root.imports;
         imports.extend(walked);
-        dependencies.extend(
-            Project::discovery_inputs(base_file)?
-                .iter()
-                .map(|path| path_key(path)),
-        );
+        // The walked names are sorted and distinct; the configuration inputs
+        // are few. Sort those alone and merge them in.
+        let mut inputs: Vec<String> = Project::discovery_inputs(base_file)?
+            .iter()
+            .map(|path| path_key(path))
+            .collect();
         if discovered.is_some() {
-            dependencies.extend(
+            inputs.extend(
                 Project::reference_inputs(base_file)?
                     .iter()
                     .map(|path| path_key(path)),
             );
         }
         if let Some(project) = project {
-            dependencies.extend(project.inputs().iter().map(|path| path_key(path)));
+            inputs.extend(project.inputs().iter().map(|path| path_key(path)));
         }
-        dependencies.sort();
-        dependencies.dedup();
+        inputs.sort();
+        inputs.dedup();
+        dependencies = sorted_union(dependencies, inputs);
         Ok(ImportedTypes {
             imports,
             dependencies,
+            declarations,
         })
     }
 
-    /// Merge the declarations reachable through `roots`, the type-bearing
-    /// imports of the script in `base_file`, and return the imports and the
-    /// sorted dependency names of the walked modules.
-    ///
-    /// In a batch, `shared` is the graph of the batch's stability window. Each
-    /// root import then contributes the closure of the module it resolves to,
-    /// which the graph keeps for all components, and this component merges
-    /// the closure's modules in their walk order. One walk over all
-    /// roots visits the same modules: a module an earlier root already walked
-    /// is skipped together with everything it reaches, and what is left keeps
-    /// its order, so every name keeps the same first declaration.
-    ///
-    /// Outside a batch nothing may be reused across compiles, so one walk over
-    /// a graph of its own merges as it goes.
+    /// [`Self::walk_imported_declarations`], merging every declaration.
+    #[cfg(test)]
     pub(super) fn walk_imported_modules(
         &mut self,
         roots: &[TypeDependency],
@@ -121,18 +126,46 @@ impl ScriptCompileContext {
         project: Option<&Project>,
         shared: Option<&ModuleGraph>,
     ) -> (Vec<(String, String)>, Vec<String>) {
+        let (imports, files, declarations) =
+            self.walk_imported_declarations(roots, base_file, project, shared);
+        self.merge_declarations(&declarations);
+        (imports, files)
+    }
+
+    /// Walk the declarations reachable through `roots`, the type-bearing
+    /// imports of the script in `base_file`, and return the imports and the
+    /// sorted dependency names of the walked modules.
+    ///
+    /// In a batch, `shared` is the graph of the batch's stability window. Each
+    /// root import then contributes the closure of the module it resolves to,
+    /// which the graph keeps for all components, and the closure's
+    /// declarations by name are returned for the caller to merge in root
+    /// order. One walk over all roots visits the same modules: a module an
+    /// earlier root already walked is skipped together with everything it
+    /// reaches, and what is left keeps its order, so every name keeps the same
+    /// first declaration.
+    ///
+    /// Outside a batch nothing may be reused across compiles, so one walk over
+    /// a graph of its own merges as it goes and returns no declarations.
+    pub(super) fn walk_imported_declarations(
+        &mut self,
+        roots: &[TypeDependency],
+        base_file: &Path,
+        project: Option<&Project>,
+        shared: Option<&ModuleGraph>,
+    ) -> WalkedImports {
         let all = RequestedExports::All;
         let requests = roots.iter().filter_map(|dependency| {
             count(Step::Edge, 1);
             let requested = dependency.request(&all)?.into_owned();
             Some((dependency.specifier(), requested))
         });
-        let mut merge = Merge {
-            context: self,
-            imports: Vec::new(),
-        };
         let name = |graph: &ModuleGraph, id: &ModuleId| Some(graph.module(*id)?.key.clone());
         let Some(graph) = shared else {
+            let mut merge = Merge {
+                context: self,
+                imports: Vec::new(),
+            };
             let graph = ModuleGraph::new(NO_EPOCH);
             let mut walk = Walk::new(&graph, project, &mut merge);
             for (specifier, requested) in requests {
@@ -143,8 +176,10 @@ impl ScriptCompileContext {
             let (files, _) = walk.finish();
             count(Step::Dependency, files.len());
             let files = files.iter().filter_map(|id| name(&graph, id)).collect();
-            return (merge.imports, files);
+            return (merge.imports, files, Vec::new());
         };
+        let mut imports = Vec::new();
+        let mut declarations = Vec::new();
         let mut files: Vec<String> = Vec::new();
         for (specifier, requested) in requests {
             let Some(closure) = graph
@@ -153,21 +188,15 @@ impl ScriptCompileContext {
             else {
                 continue;
             };
-            for id in &closure.modules {
-                if let Some(summary) = graph.summary(*id) {
-                    merge.module(*id, summary);
-                }
-            }
+            let walked = closure.declarations(graph);
+            imports.extend(walked.imports.iter().cloned());
+            declarations.push(Arc::clone(walked));
             count(Step::Dependency, closure.files.len());
             // One closure's names are already sorted and distinct.
-            let joins = !files.is_empty();
-            files.extend(closure.files.iter().filter_map(|id| name(graph, id)));
-            if joins {
-                files.sort();
-                files.dedup();
-            }
+            let walked = closure.files.iter().filter_map(|id| name(graph, id));
+            files = sorted_union(files, walked.collect());
         }
-        (merge.imports, files)
+        (imports, files, declarations)
     }
 
     pub(super) fn merge_file_summary(&mut self, summary: &FileTypeSummary) {
@@ -197,6 +226,10 @@ impl ScriptCompileContext {
     }
 }
 
+/// The imports, the sorted dependency names and the unmerged declarations of
+/// one script's walks.
+type WalkedImports = (Vec<(String, String)>, Vec<String>, Vec<Arc<Declarations>>);
+
 /// Merges each visited module into a component's context.
 struct Merge<'a> {
     context: &'a mut ScriptCompileContext,
@@ -207,5 +240,31 @@ impl Visit for Merge<'_> {
     fn module(&mut self, _id: ModuleId, summary: &FileTypeSummary) {
         self.context.merge_file_summary(summary);
         self.imports.extend(summary.imports.iter().cloned());
+    }
+}
+
+/// The sorted, distinct names of two sorted lists, moved rather than copied.
+fn sorted_union(left: Vec<String>, right: Vec<String>) -> Vec<String> {
+    if right.is_empty() {
+        return left;
+    }
+    if left.is_empty() {
+        return right;
+    }
+    let mut union: Vec<String> = Vec::with_capacity(left.len() + right.len());
+    let mut left = left.into_iter().peekable();
+    let mut right = right.into_iter().peekable();
+    loop {
+        let next = match (left.peek(), right.peek()) {
+            (Some(l), Some(r)) if r < l => right.next(),
+            (Some(_), _) => left.next(),
+            (None, _) => right.next(),
+        };
+        let Some(next) = next else {
+            return union;
+        };
+        if union.last() != Some(&next) {
+            union.push(next);
+        }
     }
 }
