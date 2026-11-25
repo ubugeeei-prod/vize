@@ -19,6 +19,7 @@
       imports = [
         ./tools/nix/blacksmith.nix
         ./tools/nix/dev-shell.nix
+        ./tools/nix/kache.nix
         ./tools/nix/packages.nix
         ./tools/nix/pkgs.nix
         ./tools/nix/vp.nix
