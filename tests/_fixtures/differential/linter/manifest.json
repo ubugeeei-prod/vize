@@ -22519,11 +22519,47 @@
             "path": "rules.json",
             "role": "rule-options",
             "sha256": "be4a5c4a6a661ee62eb4a7bc1748bd1a3a72341a768739d2c8aabad34a08f38c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/no-empty-pattern-slot-scope-dispatch-13703",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-empty-pattern-slot-scope-dispatch-13703",
+        "files": [
+          {
+            "path": "Dispatch.vue.txt",
+            "role": "full-registry-and-filtered-mixed-facade-dispatch-control",
+            "sha256": "42d8e55cd54fccaf2b99683bbec45f51a9c4aa0abfb06215169bf7402089dda2"
           },
           {
             "path": "original-drag-table.vue.txt",
             "role": "pinned-real-project-original",
             "sha256": "5a18279a18b3e9be581e5a5ca99ba054f1b6934a6bc9b7880a0293902fbbc559"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "395dc85cee0a8cd18cb2a095001bfefe17109f0acb92b9c117b42065670c255b"
           },
           {
             "path": "source-provenance.json",

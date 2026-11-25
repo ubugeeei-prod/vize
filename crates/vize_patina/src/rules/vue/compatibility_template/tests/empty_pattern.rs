@@ -15,7 +15,10 @@ fn empty_pattern_reads_vue2_slot_scope_attributes() {
 
 #[test]
 fn empty_pattern_runs_with_full_registry_and_markup_facade_rules() {
-    let source = r#"<template><el-table-column><template slot-scope="{}"><i /></template><template scope="[]"><b /></template><template slot-scope="{ row }"><img /></template></el-table-column></template>"#;
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/linter/no-empty-pattern-slot-scope-dispatch-13703/Dispatch.vue.txt"
+    ));
     let expected = ["{}", "[]"].map(|pattern| {
         let start = source.find(pattern).unwrap() as u32;
         (start, start + pattern.len() as u32)
@@ -60,7 +63,7 @@ fn empty_pattern_runs_with_full_registry_and_markup_facade_rules() {
 fn empty_pattern_reports_pinned_vue_element_admin_drag_table() {
     let source = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/../../tests/_fixtures/differential/linter/no-empty-pattern-slot-scope-12336/original-drag-table.vue.txt"
+        "/../../tests/_fixtures/differential/linter/no-empty-pattern-slot-scope-dispatch-13703/original-drag-table.vue.txt"
     ));
     let result = Linter::with_all().lint_sfc(source, "src/views/table/drag-table.vue");
     let diagnostics: Vec<_> = result
