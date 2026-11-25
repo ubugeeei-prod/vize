@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-selected-template/scripts/verify-runtime-sensitive-compiler-patch-flags.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 # The shared target is a build cache, not exact-head evidence. Make the
 # compiler and this capture newer than cached fingerprints before Cargo
 # decides whether to relink the integration test.

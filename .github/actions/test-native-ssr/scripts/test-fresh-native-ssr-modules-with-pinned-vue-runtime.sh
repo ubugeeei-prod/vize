@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-ssr/scripts/test-fresh-native-ssr-modules-with-pinned-vue-runtime.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 cargo test --locked --profile ci -p vize_l4 --test native_ssr --test native_ssr_roles --test native_selected_ssr -- --nocapture
 cargo test --locked --profile ci -p vize_atelier_jsx --test ssr -- --nocapture
 cargo test --locked --profile ci -p vize_atelier_jsx --test falsy_and actual_values_updates_and_hydration_match_jsx_child_semantics -- --exact --nocapture

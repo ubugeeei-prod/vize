@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-vue2-scriptless-sfc.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Capture complete original Vue2 SFC documents
 description: Join fresh native whole-source output and frames to independent pinned primary references
 inputs:

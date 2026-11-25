@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/release/release-verify.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Release verify
 # Post-publish checks for one release. release.yml dispatches it once npm has
 # accepted every package, so npm propagation and these checks never hold the

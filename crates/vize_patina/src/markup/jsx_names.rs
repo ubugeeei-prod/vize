@@ -6,8 +6,13 @@ use oxc_ast::ast::{
     JSXText,
 };
 
+/// # Safety
+/// `node` must point at a live `JSXElement` of an OXC program that stays borrowed,
+/// unmoved and not mutably aliased for `'a`. The markup facade stores such
+/// pointers only through its `from_jsx*` constructors, from references into
+/// the program it borrows.
 #[inline]
-pub(super) fn jsx_element_ref<'a>(node: *const JSXElement<'a>) -> &'a JSXElement<'a> {
+pub(super) unsafe fn jsx_element_ref<'a>(node: *const JSXElement<'a>) -> &'a JSXElement<'a> {
     // SAFETY: the pointer is captured while walking an `oxc_ast::Program`
     // borrowed for the same `'a` lifetime used by the returned markup facade.
     // Markup wrappers are never stored beyond the lint pass that owns the OXC
@@ -16,16 +21,26 @@ pub(super) fn jsx_element_ref<'a>(node: *const JSXElement<'a>) -> &'a JSXElement
     unsafe { &*node }
 }
 
+/// # Safety
+/// `node` must point at a live `JSXFragment` of an OXC program that stays borrowed,
+/// unmoved and not mutably aliased for `'a`. The markup facade stores such
+/// pointers only through its `from_jsx*` constructors, from references into
+/// the program it borrows.
 #[inline]
-pub(super) fn jsx_fragment_ref<'a>(node: *const JSXFragment<'a>) -> &'a JSXFragment<'a> {
+pub(super) unsafe fn jsx_fragment_ref<'a>(node: *const JSXFragment<'a>) -> &'a JSXFragment<'a> {
     // SAFETY: same OXC-program lifetime invariant as `jsx_element_ref`. Fragment
     // pointers originate from visitor callbacks and are dereferenced only while
     // the source program and allocator are still alive for the current lint pass.
     unsafe { &*node }
 }
 
+/// # Safety
+/// `node` must point at a live `JSXAttribute` of an OXC program that stays borrowed,
+/// unmoved and not mutably aliased for `'a`. The markup facade stores such
+/// pointers only through its `from_jsx*` constructors, from references into
+/// the program it borrows.
 #[inline]
-pub(super) fn jsx_attribute_ref<'a>(node: *const JSXAttribute<'a>) -> &'a JSXAttribute<'a> {
+pub(super) unsafe fn jsx_attribute_ref<'a>(node: *const JSXAttribute<'a>) -> &'a JSXAttribute<'a> {
     // SAFETY: attribute pointers are copied from JSX element attributes during
     // traversal and keep the OXC AST lifetime. The wrapper is read-only and does
     // not outlive the program, so dereferencing avoids a clone without changing
@@ -33,8 +48,13 @@ pub(super) fn jsx_attribute_ref<'a>(node: *const JSXAttribute<'a>) -> &'a JSXAtt
     unsafe { &*node }
 }
 
+/// # Safety
+/// `node` must point at a live `JSXText` of an OXC program that stays borrowed,
+/// unmoved and not mutably aliased for `'a`. The markup facade stores such
+/// pointers only through its `from_jsx*` constructors, from references into
+/// the program it borrows.
 #[inline]
-pub(super) fn jsx_text_ref<'a>(node: *const JSXText<'a>) -> &'a JSXText<'a> {
+pub(super) unsafe fn jsx_text_ref<'a>(node: *const JSXText<'a>) -> &'a JSXText<'a> {
     // SAFETY: text pointers are borrowed from immutable JSX children owned by the
     // OXC allocator for the current program. The markup adapter only exposes
     // shared reads, and all adapters are dropped before the program is dropped.

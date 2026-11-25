@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/performance/typecheck-profile.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Type-check profile
 run-name: "Type-check profile ${{ inputs.head_sha || github.sha }}${{ inputs.base_sha && format(' vs {0}', inputs.base_sha) || '' }}"
 # Whole-process-tree perf profiles of tsc + Vize mapper, tsrs + Vize mapper

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/check-workflow-syntax.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Validate workflow syntax and contexts
 description: Run the checksum-pinned workflow checker on the complete workflow inventory
 inputs:

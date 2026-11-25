@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/davinci/level-html-content-model.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Level HTML content model
 
 # P4-11a parser oracle: the checker's committed parser-family verdicts

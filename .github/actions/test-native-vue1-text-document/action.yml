@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-vue1-text-document.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Capture original Vue1 interpolation documents
 description: Join fresh checked Glyph output to independent whole LF goldens and pinned getter outcomes
 inputs:

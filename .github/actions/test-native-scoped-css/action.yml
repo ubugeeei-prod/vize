@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-scoped-css.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Native scoped CSS runtime
 description: Check original SFC scoped CSS and fresh complete native modules in real Vue
 runs:

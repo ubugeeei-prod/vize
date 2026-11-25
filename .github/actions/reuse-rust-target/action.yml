@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/reuse-rust-target.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Reuse a Rust target directory
 description: Keep only Cargo's build cache and give unchanged sources their recorded mtimes
 

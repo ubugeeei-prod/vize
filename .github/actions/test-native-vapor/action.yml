@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-vapor.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Native static Vapor runtime
 description: Capture genuine original modules and maps and execute the pinned Vapor runtime
 runs:

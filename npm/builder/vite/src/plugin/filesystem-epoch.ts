@@ -56,6 +56,7 @@ export class FilesystemEpoch {
   readonly #typeProjects = new Map<string, string>();
   readonly #sourceMetadata = new Map<string, PrecompileFileMetadata>();
   readonly #sources = new Map<string, string>();
+  #generation = 0;
 
   /** A missing parent is shared by every absent path below it, so probes are kept as well. */
   readonly #probe: PhysicalPathProbe = (file) => {
@@ -67,8 +68,14 @@ export class FilesystemEpoch {
     return physical;
   };
 
+  /** Counts the epochs: what was learned in one holds only while this stays the same. */
+  get generation(): number {
+    return this.#generation;
+  }
+
   /** The filesystem may have changed: ask every question again. */
   advance(): void {
+    this.#generation++;
     this.#identities.clear();
     this.#physicalPaths.clear();
     this.#typeProjects.clear();

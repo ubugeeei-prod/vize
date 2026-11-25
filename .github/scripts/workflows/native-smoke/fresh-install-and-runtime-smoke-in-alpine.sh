@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/native-smoke/fresh-install-and-runtime-smoke-in-alpine.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 docker run --rm \
   --env VIZE_SMOKE_TIMING_FILE=/evidence/packed-smoke-timing.jsonl \
   --env "VIZE_SMOKE_EXPECTED_NATIVE_PACKAGE=$NATIVE_PACKAGE" \

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/setup-rust-script.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Setup Rust Script
 description: Install the pinned rust-script runner used by tools/commands
 

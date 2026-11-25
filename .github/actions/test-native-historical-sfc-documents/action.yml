@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-historical-sfc-documents.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Capture original historical Vue text and whole SFC documents
 description: Sequence the actual historical text parent and genuine whole Vue2 child proof
 inputs:

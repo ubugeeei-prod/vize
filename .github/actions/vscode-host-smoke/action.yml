@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/vscode-host-smoke.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Editor real-server end-to-end
 description: Run VS Code, Zed, Neovim, Vim, and Helix real-server scenarios plus packaged specs
 

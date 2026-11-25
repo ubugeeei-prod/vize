@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/typecheck/typecheck-vs-vue-tsc.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Typecheck vs vue-tsc
 
 # One fixed comparative diagnostic/timing packet; ordinary PRs validate pure contracts only.

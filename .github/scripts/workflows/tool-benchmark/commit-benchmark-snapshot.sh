@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/tool-benchmark/commit-benchmark-snapshot.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 node tools/benchmarks/scripts/publish-snapshot.mjs --json tool-benchmark-artifact/tool-benchmark-results.json
 node tools/benchmarks/scripts/publish-snapshot.mjs --check
 git config user.name "github-actions[bot]"

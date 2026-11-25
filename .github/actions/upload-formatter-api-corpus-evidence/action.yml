@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/upload-formatter-api-corpus-evidence.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Retain differential product corpus evidence
 description: Keep formatter API artifacts, product observations and source-built CLI receipts.
 inputs:

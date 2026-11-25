@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/fuzz/create-or-update-fuzz-triage-fix.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 title="fix(fuzz): ${VIZE_MATRIX_TARGET} found a reproducer"
 run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
 artifact_dir="tests/fuzz/artifacts/${VIZE_MATRIX_TARGET}"

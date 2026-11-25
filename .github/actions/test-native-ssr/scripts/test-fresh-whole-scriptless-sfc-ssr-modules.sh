@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-ssr/scripts/test-fresh-whole-scriptless-sfc-ssr-modules.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set +e
 cargo test --locked --profile ci -p vize_atelier_sfc --test native_scriptless_ssr -- --nocapture
 rust_status=$?

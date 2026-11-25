@@ -1,4 +1,6 @@
 #!/bin/sh
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/crates/vize_canon/tests/programs/refuse-native-vue-session.sh.in.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 fail=false
 if [ "{api}" = true ]; then
   for arg in "$@"; do

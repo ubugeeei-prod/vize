@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/e2e.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: App E2E
 
 on:

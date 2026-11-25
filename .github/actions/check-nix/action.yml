@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/check-nix.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Check Nix flake
 description: Qualify the locked flake and refresh a bounded store cache with current build dependencies
 

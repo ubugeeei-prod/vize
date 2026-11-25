@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/setup-cargo-zigbuild.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Setup cargo-zigbuild
 description: >-
   Install a pinned, checksum-verified cargo-zigbuild release binary so Linux

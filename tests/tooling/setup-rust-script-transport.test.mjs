@@ -10,6 +10,7 @@ import { gzipSync } from "node:zlib";
 import { toolingProgram, readToolingProgram } from "./support/program-path.ts";
 import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import { parse } from "yaml";
+import { withoutGeneratedHeader } from "../../tools/support/ci/generated-header.ts";
 
 const actionPath = path.resolve(".github/actions/setup-rust-script");
 const primary =
@@ -69,7 +70,10 @@ function installScript(original) {
   const step = parse(body).runs.steps.find((s) => s.name === "Install rust-script");
   if (!original) return automationShellPath(step.run, "setup-rust-script");
   const file = toolingProgram("workflow/original-rust-script-install.sh");
-  assert.equal(fs.readFileSync(file, "utf8"), "#!/usr/bin/env bash\n" + step.run.trimEnd() + "\n");
+  assert.equal(
+    withoutGeneratedHeader(fs.readFileSync(file, "utf8"), "hash"),
+    "#!/usr/bin/env bash\n" + step.run.trimEnd() + "\n",
+  );
   return file;
 }
 function run(options = {}) {

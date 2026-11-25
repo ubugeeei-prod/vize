@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typechecker-native-phases/verify-the-original-l1-corpus-and-referenced-javascript-contracts.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 cd "$NATIVE_PHASE_SOURCE_ROOT"
 unset VIZE_TEST_DISABLE_TSGO

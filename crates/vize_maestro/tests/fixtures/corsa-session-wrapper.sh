@@ -1,4 +1,6 @@
 #!/bin/sh
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/crates/vize_maestro/tests/fixtures/corsa-session-wrapper.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 wrapper_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 actual_tsgo=$(cat "$wrapper_dir/actual-tsgo.path")
 for argument in "$@"; do

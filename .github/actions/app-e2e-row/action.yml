@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/app-e2e-row.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: App E2E row
 description: Run one validated App E2E planner row on an isolated runner
 

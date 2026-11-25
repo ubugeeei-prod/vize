@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-cold-pair/measure-ext4-and-the-windows-mount.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 [[ "$PROJECTS" =~ ^(vue|monorepo):[0-9]+(,(vue|monorepo):[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
 [[ "$RUNTIME" =~ ^(tsgo|tsrs)$ ]] && [[ "$CHECKERS" =~ ^(1|8)$ ]]

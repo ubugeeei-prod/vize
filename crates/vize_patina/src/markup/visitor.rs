@@ -251,12 +251,18 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             MarkupElementInner::Relief(node) => self.visit_relief_children(&node.children),
             MarkupElementInner::JsxElement { node, offset } => {
                 self.ctx.push_jsx_attribute_value();
-                jsx_roots::visit_attribute_roots(self, jsx_element_ref(node), offset);
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                jsx_roots::visit_attribute_roots(self, unsafe { jsx_element_ref(node) }, offset);
                 self.ctx.pop_jsx_attribute_value();
-                self.visit_jsx_children(&jsx_element_ref(node).children, offset)
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                self.visit_jsx_children(&unsafe { jsx_element_ref(node) }.children, offset)
             }
             MarkupElementInner::JsxFragment { node, offset } => {
-                self.visit_jsx_children(&jsx_fragment_ref(node).children, offset)
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                self.visit_jsx_children(&unsafe { jsx_fragment_ref(node) }.children, offset)
             }
             MarkupElementInner::L2 { op, doc, .. } => self.visit_l2_region(doc, op.children()),
             MarkupElementInner::L2Carrier { doc, region, .. } => {

@@ -1,4 +1,5 @@
 import { readAutomationPrograms } from "./automation-source.ts";
+import { withoutGeneratedHeader } from "../../../tools/support/ci/generated-header.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -6,8 +7,9 @@ import { fileURLToPath } from "node:url";
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 
+// Contract tests read the generated program; the do-not-edit notice is not part of it.
 export function normalizeRepoText(content: string): string {
-  return content.replace(/\r\n?/g, "\n");
+  return withoutGeneratedHeader(content.replace(/\r\n?/g, "\n"), "hash");
 }
 
 export function readRepoFile(...segments: string[]): string {
@@ -55,6 +57,8 @@ export function checkWorkflowJobSources(
   caller = readAutomationPrograms(".github", "workflows", "check.yml"),
   callee = readAutomationPrograms(".github", "workflows", "full-qualification.yml"),
 ): string {
+  caller = normalizeRepoText(caller);
+  callee = normalizeRepoText(callee);
   const expectedCaller = `  full-qualification:
     name: Full qualification
     if: \${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}

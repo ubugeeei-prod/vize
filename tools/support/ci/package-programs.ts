@@ -3,6 +3,7 @@ import path from "node:path";
 import { build } from "vite";
 import { type ConfigValue } from "./repository-yaml.ts";
 import { isProgramInvocation, isProgramCommand } from "./automation-commands.ts";
+import { withGeneratedHeader } from "./generated-header.ts";
 
 export async function packageTaskRuntime(root: string): Promise<string> {
   const result = await build({
@@ -75,21 +76,22 @@ export function renderPackageTasks(
     }
   }
   validatePackageScripts(root, directory, Object.keys(tasks));
-  return (
-    "// Generated from tools/config/pkl/package-tasks/" +
-    directory +
-    "/tasks.pkl\n" +
+  const source = `tools/config/pkl/package-tasks/${directory}/tasks.pkl`;
+  return withGeneratedHeader(
     runtime +
-    "\n\nconst tasks = " +
-    JSON.stringify(
-      tasks,
-      (_key, value: unknown) => {
-        if (value === null) return undefined;
-        if (value && typeof value === "object" && Object.keys(value).length === 0) return undefined;
-        return value;
-      },
-      2,
-    ) +
-    ";\nexports.tasks = tasks;\nif (require.main === module) process.exitCode = exports.runPackageTask(tasks, process.argv.slice(2));\n"
+      "\n\nconst tasks = " +
+      JSON.stringify(
+        tasks,
+        (_key, value: unknown) => {
+          if (value === null) return undefined;
+          if (value && typeof value === "object" && Object.keys(value).length === 0)
+            return undefined;
+          return value;
+        },
+        2,
+      ) +
+      ";\nexports.tasks = tasks;\nif (require.main === module) process.exitCode = exports.runPackageTask(tasks, process.argv.slice(2));\n",
+    "slash",
+    source,
   );
 }

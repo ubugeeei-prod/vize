@@ -2,8 +2,8 @@
  * Records the native SFC compile calls the plugin makes and the files each one
  * compiles, so a suite can assert how compiles are batched.
  *
- * `compiler.ts` takes `compileSfc` and `compileSfcBatchWithResults` off
- * `@vizejs/native` when it is first evaluated. A suite must therefore import
+ * `compiler.ts` and `compile-targets.ts` take the compile functions off
+ * `@vizejs/native` when they are first evaluated. A suite must therefore import
  * this module before it imports the plugin.
  */
 
@@ -13,14 +13,25 @@ import os from "node:os";
 import path from "node:path";
 
 export interface NativeCompileCall {
-  /** `single` is `compileSfc`; `batch` is `compileSfcBatchWithResults`. */
-  api: "single" | "batch";
+  /**
+   * `single` is `compileSfc`; `batch` is `compileSfcBatchWithResults`;
+   * `targets` is `compileSfcBatchForTargets`, which also compiles for `alsoSsr`.
+   */
+  api: "single" | "batch" | "targets";
   ssr: boolean;
+  /** The target a `targets` call compiles besides `ssr`. */
+  alsoSsr?: boolean;
   files: string[];
 }
 
 type CompileOptions = { filename?: string; ssr?: boolean } | undefined;
-type Compile = (this: unknown, input: unknown, options: CompileOptions) => unknown;
+type Targets = { ssr?: boolean }[] | undefined;
+type Compile = (
+  this: unknown,
+  input: unknown,
+  options: CompileOptions,
+  targets?: Targets,
+) => unknown;
 
 const native = createRequire(import.meta.url)("@vizejs/native") as Record<string, Compile>;
 const calls: NativeCompileCall[] = [];
@@ -28,17 +39,20 @@ const calls: NativeCompileCall[] = [];
 for (const [name, api] of [
   ["compileSfc", "single"],
   ["compileSfcBatchWithResults", "batch"],
+  ["compileSfcBatchForTargets", "targets"],
 ] as const) {
   const compile = native[name];
-  native[name] = function recorded(input, options) {
-    calls.push({
-      api,
-      ssr: options?.ssr === true,
-      files: Array.isArray(input)
-        ? input.map((file: { path: string }) => file.path)
-        : [options?.filename ?? ""],
-    });
-    return compile.call(this, input, options);
+  if (typeof compile !== "function") continue;
+  native[name] = function recorded(input, options, targets) {
+    const files = Array.isArray(input)
+      ? input.map((file: { path: string }) => file.path)
+      : [options?.filename ?? ""];
+    calls.push(
+      api === "targets"
+        ? { api, ssr: targets?.[0]?.ssr === true, alsoSsr: targets?.[1]?.ssr === true, files }
+        : { api, ssr: options?.ssr === true, files },
+    );
+    return compile.call(this, input, options, targets);
   };
 }
 

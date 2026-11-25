@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/benchmark/validate-benchmark-shas.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 full_sha='^[0-9a-f]{40}$'
 if [[ ! "$BENCHMARK_BASE_SHA" =~ $full_sha ]]; then
   echo "::error title=Invalid base_sha::base_sha must be a full lowercase 40-character commit SHA"

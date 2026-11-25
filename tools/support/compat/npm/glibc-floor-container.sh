@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/support/compat/npm/glibc-floor-container.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 . /etc/os-release
 echo "container: ${PRETTY_NAME}; $(ldd --version 2>&1 | head -n 1)"

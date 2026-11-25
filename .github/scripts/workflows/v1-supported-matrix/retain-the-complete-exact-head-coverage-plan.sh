@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/v1-supported-matrix/retain-the-complete-exact-head-coverage-plan.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 mkdir -p .qualification
 node tools/commands/release/v1-exact-candidate.ts plan \
   --candidate "$SOURCE_SHA" \

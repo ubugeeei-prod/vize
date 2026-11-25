@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/benchmarks/scripts/typecheck-cold-windows.ps1.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 param([string]$Executable, [string]$Directory, [string]$OutputFile)
 $ErrorActionPreference = 'Stop'
 $start = @{

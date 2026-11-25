@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/editors/lsp-vs-volar.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: LSP vs Vue language tools
 
 # `vize lsp` against @vue/language-server + tsserver with @vue/typescript-plugin

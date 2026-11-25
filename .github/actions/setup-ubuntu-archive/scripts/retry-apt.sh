@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/setup-ubuntu-archive/scripts/retry-apt.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -o pipefail
 
 max_attempts="${VIZE_CI_APT_RETRIES:-4}"

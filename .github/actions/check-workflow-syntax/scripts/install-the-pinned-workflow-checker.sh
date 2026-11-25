@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/check-workflow-syntax/scripts/install-the-pinned-workflow-checker.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 directory="$(mktemp -d "${RUNNER_TEMP}/vize-actionlint-1.7.12.XXXXXX")"
 archive="$directory/actionlint.tar.gz"

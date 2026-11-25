@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-lsp.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Test actual source LSP product responses
 description: Exercise editor features, authored config and project navigation with real native types
 runs:

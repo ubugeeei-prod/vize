@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/smoke-glibc-floor-containers/scripts/load-the-binding-on-centos-7-glibc-2-17.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 archive="$RUNNER_TEMP/node-v24.22.3-linux-x64-glibc-217.tar.xz"
 curl --fail --silent --show-error --location --retry 5 --retry-all-errors --output "$archive" \

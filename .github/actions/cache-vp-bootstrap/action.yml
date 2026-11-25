@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/cache-vp-bootstrap.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Cache Vite+ bootstrap runtime
 description: Restore the Node.js and pnpm that setup-vp downloads while installing the global CLI. Only a trusted default-branch run that asks to save writes the entry.
 

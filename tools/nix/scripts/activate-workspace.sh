@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/nix/scripts/activate-workspace.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 @CLEAR_TESTBOX@
 export VIZE_WORKSPACE_ROOT="$PWD"
 export PATH="@VP@/bin:$VIZE_WORKSPACE_ROOT/node_modules/.bin:$PATH"

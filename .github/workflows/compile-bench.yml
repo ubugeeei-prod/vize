@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/performance/compile-bench.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Benchmark - SFC compilation
 
 # Compile-only measurements on the README runner class: wall, CPU-seconds

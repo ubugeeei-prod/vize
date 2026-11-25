@@ -330,15 +330,19 @@ void test("the original app slot keys and separate NAPI inputs remain reviewed",
   assert.throws(() => verifyDocsWasmConsumers(napiDirectory), assert.AssertionError);
 });
 
-void test("the original dedicated WASM and native command producers cannot change silently", (t) => {
+void test("reviewed command producers reject additional source bytes", (t) => {
   for (const file of [
     "tools/support/github/build-vitrine-wasm.ts",
     "npm/native/scripts/build-ci.mjs",
+    "examples/vite-musea/scripts/package-tasks.cjs",
+    ".github/scripts/workflows/e2e/validate-target-sha.sh",
+    ".github/actions/stage-workflow-scripts/action.yml",
   ]) {
     const directory = fixture(t);
+    const comment = file.endsWith(".sh") || file.endsWith(".yml") ? "#" : "//";
     writeFileSync(
       join(directory, file),
-      readFileSync(join(directory, file), "utf8") + "\n// changed command producer\n",
+      readFileSync(join(directory, file), "utf8") + `\n${comment} changed command producer\n`,
     );
     assert.throws(() => verifyDocsWasmConsumers(directory), /reviewed command producer changed/);
   }

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/rspack-hmr/install-the-isolated-rspack-2-runtime-from-the-hmr-docs.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 runtime="${RUNNER_TEMP}/vize-rspack-hmr-runtime"
 npm install --prefix "$runtime" --legacy-peer-deps \

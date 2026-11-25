@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/maintenance/sticky-disk-maintenance.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Sticky disk maintenance
 # Deletes Blacksmith sticky disks that nothing mounts any more, such as the
 # target lineages retired when target keys gained their toolchain channel.

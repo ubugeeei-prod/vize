@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/collect-job-test-cases.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Collect job test cases
 description: Merge a persistent job capture and upload its structured case packet.
 inputs:

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/pr-js-checks.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: PR JS package checks
 # The package tests, the Oxlint project qualification and the Fresco and UI
 # conformance checks run as parallel jobs. pr-source-checks.yml gates on this

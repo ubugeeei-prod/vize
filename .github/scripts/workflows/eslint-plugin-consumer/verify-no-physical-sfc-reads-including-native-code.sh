@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/eslint-plugin-consumer/verify-no-physical-sfc-reads-including-native-code.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 if ! command -v strace >/dev/null; then sudo apt-get update; sudo apt-get install -y strace; fi
 export VIZE_ESLINT_WATCHED_SOURCE="$RUNNER_TEMP/eslint-source-$SOURCE_SHA/Disk.vue"

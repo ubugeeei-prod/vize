@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/typecheck/typechecker-native-phases.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Type checker native backend phases
 on:
   workflow_dispatch:

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-scaling/install-the-locked-hosts-the-nuxt-app-and-gnu-time.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
 if [[ -n "$NUXT_SIZES" ]]; then npm ci --prefix tools/benchmarks/nuxt-app --ignore-scripts --no-audit --no-fund; fi

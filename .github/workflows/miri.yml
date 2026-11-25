@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/maintenance/miri.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Miri
 run-name: ${{ github.event_name == 'workflow_dispatch' && format('Miri @ {0}', github.sha) || format('Miri scheduled @ {0}', github.sha) }}
 

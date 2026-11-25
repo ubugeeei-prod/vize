@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/fuzz/resolve-max-total-time.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 if [[ "$FUZZ_MODE" == "replay" ]]; then
   # `-runs=0` executes every corpus input once and exits, so no budget
   # applies and the verdict depends only on the corpus.

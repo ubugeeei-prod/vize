@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/restore-artifact-payload.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Restore complete artifact payload
 description: Restore and verify every independent file from the measured envelope
 inputs:

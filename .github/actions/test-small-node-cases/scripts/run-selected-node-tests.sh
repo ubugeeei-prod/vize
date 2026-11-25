@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-small-node-cases/scripts/run-selected-node-tests.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 case "$SMALL_NODE_SUITE" in
   check-js)
     vp run --workspace-root check:iteration

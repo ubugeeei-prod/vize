@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/check-bench.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Benchmark - Type checking gate
 
 # Fail-closed budget/report job for `vize check` (#3283): tools/benchmarks/scripts/check-gate.mjs

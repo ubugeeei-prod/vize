@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-attribute-values-7502/scripts/capture-original-native-values-and-verify-independent-runtime-evidence.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 mkdir -p "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR"
 set +e

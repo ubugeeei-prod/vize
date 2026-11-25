@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/build-docs/check-preview-resource-readiness.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 vp node docs/scripts/ensure-browser.ts
 mkdir -p docs-render-evidence/resource-readiness

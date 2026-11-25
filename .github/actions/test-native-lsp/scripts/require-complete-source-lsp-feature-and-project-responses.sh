@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-lsp/scripts/require-complete-source-lsp-feature-and-project-responses.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 unset VIZE_TEST_DISABLE_TSGO
 node --test --test-concurrency=1 \
   tests/tooling/canon-type-admission.test.ts \

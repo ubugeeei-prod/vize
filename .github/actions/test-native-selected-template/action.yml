@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-selected-template.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Execute original selected-template DOM modules
 description: Capture genuine L1-L4 modules and run their pinned Vue laws
 runs:

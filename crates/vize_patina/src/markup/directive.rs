@@ -72,7 +72,9 @@ impl<'a> MarkupDirective<'a> {
         match self.inner {
             MarkupDirectiveInner::Relief(node) => node.name,
             MarkupDirectiveInner::Jsx { node, .. } => {
-                match jsx_attribute_directive_kind(jsx_attribute_ref(node)) {
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                match jsx_attribute_directive_kind(unsafe { jsx_attribute_ref(node) }) {
                     Some(MarkupBindingKind::On) => "on",
                     _ => "bind",
                 }
@@ -108,7 +110,9 @@ impl<'a> MarkupDirective<'a> {
     pub fn kind(&self) -> MarkupBindingKind {
         match self.inner {
             MarkupDirectiveInner::Jsx { node, .. } => {
-                jsx_attribute_directive_kind(jsx_attribute_ref(node))
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                jsx_attribute_directive_kind(unsafe { jsx_attribute_ref(node) })
                     .unwrap_or(MarkupBindingKind::Bind)
             }
             MarkupDirectiveInner::Relief(_)
@@ -126,7 +130,9 @@ impl<'a> MarkupDirective<'a> {
                 _ => None,
             },
             MarkupDirectiveInner::Jsx { node, .. } => {
-                jsx_attribute_arg_name(jsx_attribute_ref(node))
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                jsx_attribute_arg_name(unsafe { jsx_attribute_ref(node) })
             }
             MarkupDirectiveInner::L2(binding) => binding.arg().map(|(arg, _)| arg),
             MarkupDirectiveInner::Surface { attr, .. } => {
@@ -151,7 +157,9 @@ impl<'a> MarkupDirective<'a> {
                 _ => false,
             },
             MarkupDirectiveInner::Jsx { node, .. } => {
-                jsx_attribute_arg_name(jsx_attribute_ref(node)) == Some(expected)
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                jsx_attribute_arg_name(unsafe { jsx_attribute_ref(node) }) == Some(expected)
             }
             MarkupDirectiveInner::L2(binding) => binding
                 .arg()
@@ -197,7 +205,9 @@ impl<'a> MarkupDirective<'a> {
         match self.inner {
             MarkupDirectiveInner::Relief(node) => loc_to_range(&node.loc),
             MarkupDirectiveInner::Jsx { node, offset } => {
-                span_to_range(jsx_attribute_ref(node).span, offset)
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                span_to_range(unsafe { jsx_attribute_ref(node) }.span, offset)
             }
             MarkupDirectiveInner::L2(binding) => l2_range(binding.span()),
             MarkupDirectiveInner::Surface { attr, doc } => l2_range(attr_span(doc.source, attr)),
@@ -241,7 +251,12 @@ impl<'a> MarkupDirective<'a> {
                 spelling::argument_range(attr, attr_span(doc.source, attr).start)
             }
             MarkupDirectiveInner::Jsx { node, offset } => {
-                Some(span_to_range(jsx_attribute_ref(node).name.span(), offset))
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                Some(span_to_range(
+                    unsafe { jsx_attribute_ref(node) }.name.span(),
+                    offset,
+                ))
             }
         }
     }
@@ -286,7 +301,11 @@ impl<'a> MarkupDirective<'a> {
                 None => binding.expression().is_some(),
             },
             MarkupDirectiveInner::Surface { attr, .. } => spelling::has_value(attr),
-            MarkupDirectiveInner::Jsx { node, .. } => jsx_attribute_ref(node).value.is_some(),
+            // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+            // into the program this facade borrows for `'a`.
+            MarkupDirectiveInner::Jsx { node, .. } => {
+                unsafe { jsx_attribute_ref(node) }.value.is_some()
+            }
         }
     }
 

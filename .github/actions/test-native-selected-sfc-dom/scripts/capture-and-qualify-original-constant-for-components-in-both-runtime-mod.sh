@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-selected-sfc-dom/scripts/capture-and-qualify-original-constant-for-components-in-both-runtime-mod.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 rust_status=0
 cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for_constant::eleven_whole_original_constant_for_components_and_raw_maps_are_captured -- --exact || rust_status=$?
 node_status=0

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/setup-ubuntu-archive/scripts/configure-apt.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 sudo tee /etc/apt/apt.conf.d/80-vize-retry-downloads >/dev/null <<'APT'
 Acquire::Retries "5";

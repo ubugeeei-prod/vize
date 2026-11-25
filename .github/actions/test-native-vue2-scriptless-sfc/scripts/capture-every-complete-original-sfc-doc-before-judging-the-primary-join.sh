@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-vue2-scriptless-sfc/scripts/capture-every-complete-original-sfc-doc-before-judging-the-primary-join.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 rust_log="$RUNNER_TEMP/native-vue2-scriptless-sfc-rust.log"
 oracle_log="$RUNNER_TEMP/native-vue2-scriptless-sfc-oracle.log"
 status_path="$RUNNER_TEMP/native-vue2-scriptless-sfc-status.json"

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/nix/scripts/activate-testbox.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 @ACTIVATE_TESTBOX@
 echo "Blacksmith Testbox tools ready (CLI @BLACKSMITH_VERSION@)."
 echo "Pinned CLI: $VIZE_BLACKSMITH_BIN"

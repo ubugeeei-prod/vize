@@ -144,7 +144,9 @@ impl<'a> MarkupElement<'a> {
             MarkupElementInner::Relief(node) => node.tag,
             MarkupElementInner::Authored { element, .. } => element.tag(),
             MarkupElementInner::JsxElement { node, .. } => {
-                jsx_element_name(&jsx_element_ref(node).opening_element.name)
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                jsx_element_name(&unsafe { jsx_element_ref(node) }.opening_element.name)
             }
             MarkupElementInner::JsxFragment { .. } => "",
             MarkupElementInner::L2 {
@@ -173,7 +175,9 @@ impl<'a> MarkupElement<'a> {
                 ElementType::Template => MarkupElementKind::Template,
             },
             MarkupElementInner::JsxElement { node, .. } => {
-                jsx_element_kind(&jsx_element_ref(node).opening_element.name)
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                jsx_element_kind(&unsafe { jsx_element_ref(node) }.opening_element.name)
             }
             MarkupElementInner::JsxFragment { .. } => MarkupElementKind::Template,
             MarkupElementInner::L2 {
@@ -229,10 +233,14 @@ impl<'a> MarkupElement<'a> {
                 super::authored::range(element, doc)
             }
             MarkupElementInner::JsxElement { node, offset } => {
-                span_to_range(jsx_element_ref(node).span, offset)
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                span_to_range(unsafe { jsx_element_ref(node) }.span, offset)
             }
             MarkupElementInner::JsxFragment { node, offset } => {
-                span_to_range(jsx_fragment_ref(node).span, offset)
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                span_to_range(unsafe { jsx_fragment_ref(node) }.span, offset)
             }
             // An implicit table owner (`tbody` / `tr`) is zero-width at the
             // tag name of the row or cell that opened it, as the parser's
@@ -264,10 +272,20 @@ impl<'a> MarkupElement<'a> {
                 ByteRange::new(start, end.min(node.loc.span.end))
             }
             MarkupElementInner::JsxElement { node, offset } => {
-                span_to_range(jsx_element_ref(node).opening_element.span, offset)
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                span_to_range(
+                    unsafe { jsx_element_ref(node) }.opening_element.span,
+                    offset,
+                )
             }
             MarkupElementInner::JsxFragment { node, offset } => {
-                span_to_range(jsx_fragment_ref(node).opening_fragment.span, offset)
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                span_to_range(
+                    unsafe { jsx_fragment_ref(node) }.opening_fragment.span,
+                    offset,
+                )
             }
             _ => self.range(),
         }
@@ -295,12 +313,16 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxElement { node, offset } => {
-                for child in &jsx_element_ref(node).children {
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                for child in &unsafe { jsx_element_ref(node) }.children {
                     visitor(MarkupNode::from_jsx_child(child, offset));
                 }
             }
             MarkupElementInner::JsxFragment { node, offset } => {
-                for child in &jsx_fragment_ref(node).children {
+                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
+                // into the program this facade borrows for `'a`.
+                for child in &unsafe { jsx_fragment_ref(node) }.children {
                     visitor(MarkupNode::from_jsx_child(child, offset));
                 }
             }

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-canon/scripts/test-inherited-options-api-calls-with-the-authenticated-beta-checker.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 unset VIZE_TEST_DISABLE_TSGO
 capture="$VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR"

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/release/release-build-cache.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Release build cache
 # Populate trusted default-branch caches ahead of a release. This never tags,
 # promotes, or publishes; dispatch also validates these exact build recipes.

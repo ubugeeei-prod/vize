@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/pr-rust-products/select-rust-runtime-envelope.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 case "$GITHUB_EVENT_NAME" in
   pull_request|merge_group) ;;
   *) exit 1 ;;

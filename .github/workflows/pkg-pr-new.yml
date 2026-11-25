@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/release/pkg-pr-new.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: pkg.pr.new
 
 on:

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-affected-tooling.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Affected tooling worker
 description: Run one planned shard of the PR-tier tooling tests that the change can affect.
 inputs:

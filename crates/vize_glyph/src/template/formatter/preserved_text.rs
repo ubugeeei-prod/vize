@@ -92,7 +92,8 @@ impl TemplateFormatter<'_> {
             output.extend_from_slice(source.get(pos..pos + 1).unwrap_or_default());
             pos += 1;
         }
-        // Every source slice has ASCII boundaries; tag/attribute fragments are UTF-8.
+        // SAFETY: every copied source slice starts and ends at ASCII bytes, and
+        // the tag and attribute fragments are UTF-8 strings.
         Ok(unsafe { String::from_utf8_unchecked(output) })
     }
 }

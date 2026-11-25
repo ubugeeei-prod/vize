@@ -1,4 +1,6 @@
 #!/bin/sh
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tests/tooling/programs/workflow/run-testbox-lifecycle.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 git() {
   if [ "$1" = "branch" ]; then printf '%s\n' feature/testbox; fi
 }

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/maintenance/cleanup-obsolete-merge-groups.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Clean obsolete merge groups
 
 on:

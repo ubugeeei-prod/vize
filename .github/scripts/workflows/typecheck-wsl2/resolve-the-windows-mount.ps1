@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-wsl2/resolve-the-windows-mount.ps1.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 $windowsPath = [System.IO.Path]::GetFullPath($env:RUNNER_TEMP)
 $drive = $windowsPath.Substring(0, 1).ToLowerInvariant()
 $tail = $windowsPath.Substring(2).Replace('\', '/')

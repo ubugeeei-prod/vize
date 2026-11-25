@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/setup-cargo-zigbuild/scripts/install-cargo-zigbuild-0-24-1.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 case "$RUNNER_ARCH" in
   X64) arch=x86_64; sha256=32581c8e13f27a807bb244aaaac870522f5b51263c766cf77b1a99771ce9fa5c ;;

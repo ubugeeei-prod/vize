@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-vue1-text-document/scripts/capture-actual-original-callbacks-and-complete-pinned-getter-outcomes.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 rm -f "$VIZE_GLYPH_VUE1_TEXT_CAPTURE" "$VIZE_GLYPH_VUE1_TEXT_ORACLE_CAPTURE"
 set +e
 cargo test --locked --profile ci -p vize_glyph --test native_vue1_text_document whole_lf_goldens_idempotence_and_capture_use_only_original_callback_documents -- --exact

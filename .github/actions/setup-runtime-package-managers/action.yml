@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/setup-runtime-package-managers.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Setup runtime package managers
 description: Install Vite+, Node.js, Corepack shims, and Bun for release runtime smokes.
 inputs:
