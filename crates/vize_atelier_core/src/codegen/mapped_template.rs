@@ -57,7 +57,8 @@ impl Drop for MappedTemplate<'_> {
 pub(super) fn template_offset(text: &str) -> Option<u32> {
     let (address, len) = TEMPLATE.get();
     let start = (text.as_ptr() as usize).checked_sub(address)?;
-    let inside = address != 0 && !text.is_empty() && start + text.len() <= len;
+    let end = start.checked_add(text.len())?;
+    let inside = address != 0 && !text.is_empty() && end <= len;
     inside.then(|| u32::try_from(start).ok()).flatten()
 }
 
@@ -85,6 +86,18 @@ mod tests {
             assert_eq!(template_offset(&outer[1..6]), Some(1));
             assert_eq!(template_offset(&inner[1..6]), None);
         }
+        assert_eq!(template_offset(&outer[1..6]), None);
+        let unwound = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _outer = prepare_mapped_template(&mut outer_root, outer);
+            assert_eq!(template_offset(&outer[1..6]), Some(1));
+            panic!("mapped compile aborted");
+        }));
+        assert_eq!(
+            unwound
+                .expect_err("the compile unwound")
+                .downcast_ref::<&str>(),
+            Some(&"mapped compile aborted")
+        );
         assert_eq!(template_offset(&outer[1..6]), None);
     }
 }

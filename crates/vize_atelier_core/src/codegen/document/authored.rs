@@ -13,7 +13,8 @@ use super::{EmitDocument, expression_links};
 /// transform rewrites its text into an arena copy, which is not one.
 pub fn authored_offset(authored: &str, source_text: &str) -> Option<u32> {
     let start = (authored.as_ptr() as usize).checked_sub(source_text.as_ptr() as usize)?;
-    let inside = !authored.is_empty() && start + authored.len() <= source_text.len();
+    let end = start.checked_add(authored.len())?;
+    let inside = !authored.is_empty() && end <= source_text.len();
     inside.then(|| u32::try_from(start).ok()).flatten()
 }
 
