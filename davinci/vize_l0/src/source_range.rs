@@ -259,22 +259,16 @@ impl SourceMap {
         &self.mappings
     }
 
-    /// Map source offset to generated offset.
+    /// Map source offset to generated offset, through the first mapping in
+    /// source order whose source range contains it.
+    ///
+    /// Mappings may be empty, inverted or overlapping, so source order alone
+    /// does not bound where the containing mapping sits; the lookup checks
+    /// each mapping, as [`Self::to_source`] does.
     pub fn to_generated(&self, source_offset: u32) -> Option<u32> {
-        let idx = self
-            .mappings
-            .binary_search_by(|m| {
-                if m.source.end <= source_offset {
-                    std::cmp::Ordering::Less
-                } else if m.source.start > source_offset {
-                    std::cmp::Ordering::Greater
-                } else {
-                    std::cmp::Ordering::Equal
-                }
-            })
-            .ok()?;
-
-        self.mappings.get(idx)?.source_to_generated(source_offset)
+        self.mappings
+            .iter()
+            .find_map(|mapping| mapping.source_to_generated(source_offset))
     }
 
     /// Map generated offset to source offset.
@@ -379,5 +373,29 @@ mod tests {
 
         assert_eq!(map.to_source(105), Some(15));
         assert_eq!(map.to_source(205), Some(35));
+    }
+
+    #[test]
+    fn to_generated_finds_the_mapping_beside_an_empty_or_inverted_range() {
+        // Kani's counterexample: an empty range inserted after a mapping with
+        // the same start hid the mapping that contains the offset.
+        let mut map = SourceMap::new();
+        map.add_simple(438_272_201, 2_585_755_849, 0, 10);
+        map.add_simple(438_272_201, 438_272_201, 20, 30);
+        map.add_simple(4_280_271_103, 4_293_705_983, 40, 50);
+        assert_eq!(map.to_generated(2_466_300_108), Some(9));
+
+        let mut map = SourceMap::new();
+        map.add_simple(10, 20, 100, 110);
+        map.add_simple(12, 4, 200, 210);
+        map.add_simple(30, 40, 300, 310);
+        assert_eq!(map.to_generated(15), Some(105));
+
+        // Overlapping ranges: the first in source order wins.
+        let mut map = SourceMap::new();
+        map.add_simple(1, 2, 500, 501);
+        map.add_simple(0, 10, 100, 110);
+        assert_eq!(map.to_generated(5), Some(105));
+        assert_eq!(map.to_generated(1), Some(101));
     }
 }
