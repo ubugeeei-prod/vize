@@ -35,7 +35,6 @@ fn every_batch_call_joins_the_window_a_host_holds() {
         .expect("multi-target batch");
     }));
     assert!(leaves_the_host_generation(&|| {
-        compile_sfc_batch_with_results(inputs(&files), Some(options(build, None)))
-            .expect("batch");
+        compile_sfc_batch_with_results(inputs(&files), Some(options(build, None))).expect("batch");
     }));
 }
