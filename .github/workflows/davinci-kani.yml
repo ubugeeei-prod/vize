@@ -42,7 +42,7 @@ jobs:
   position-index:
     name: L2 position queries on original byte intervals
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -54,7 +54,7 @@ jobs:
   source-coordinates:
     name: Span, range, UTF-16 column, line terminator and VLQ laws
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 25
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -73,7 +73,7 @@ jobs:
   graph-certificates:
     name: L3 reachability certificates
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -86,7 +86,7 @@ jobs:
   l3-reference:
     name: L3 reference incremental update laws
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -99,7 +99,7 @@ jobs:
   compiler-string-literals:
     name: Emitted compiler string literals
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
+    timeout-minutes: 10
     steps:
       - name: Check out the workflow's scripts
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -139,7 +139,7 @@ jobs:
   unsafe-text-rebuild:
     name: "Unsafe island: L2 text rebuild fill into spare capacity"
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -151,7 +151,7 @@ jobs:
   unsafe-l0-allocators:
     name: "Unsafe islands: L0 parked values and profiling allocator"
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
