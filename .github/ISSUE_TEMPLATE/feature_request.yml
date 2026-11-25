@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/repository/.github/ISSUE_TEMPLATE/feature_request.yml.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Feature request
 description: Propose a new capability or compatibility target
 title: "feat: "

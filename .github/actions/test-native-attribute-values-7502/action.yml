@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-attribute-values-7502.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Native original attribute values
 description: Qualify pinned original history and the strict current class successor
 runs:

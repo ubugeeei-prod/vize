@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/release-zed-host/package-the-candidate-zed-extension.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 mkdir -p "${RUNNER_TEMP}/zed-extension-scratch"
 wasi_archive="${RUNNER_TEMP}/wasi-sdk-25.0-x86_64-linux.tar.gz"

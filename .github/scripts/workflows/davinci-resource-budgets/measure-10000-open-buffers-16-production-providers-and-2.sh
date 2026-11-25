@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/davinci-resource-budgets/measure-10000-open-buffers-16-production-providers-and-2.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 timeout \
   --signal=TERM \
   --kill-after=30s 45m vp exec node tools/support/compat/davinci/lsp-resources.ts \

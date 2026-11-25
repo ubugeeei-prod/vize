@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/integrations/nuxt3-module-build.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Nuxt 3 module build
 on:
   # #6830: off the PR tier; merge candidates call it and main runs it per commit.

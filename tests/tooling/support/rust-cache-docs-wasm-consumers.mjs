@@ -48,27 +48,47 @@ const dynamicPrefixes = new Set([
 // Complete command/metadata producers reviewed at edc003416dafd322aa6cd100dde488fb112a2abb.
 // The WASM command was re-reviewed as its TypeScript port and imports (#8840).
 // A changed producer requires review, rather than accepting a new dynamic role.
+// Generated producers have two approved whole-file hashes where only the Pkl
+// notice changed. Both bind the complete program, including its remaining comments.
 const producerHashes = {
-  "examples/vite-musea/scripts/package-tasks.cjs":
+  "examples/vite-musea/scripts/package-tasks.cjs": [
     "238c4edc5a633bece09a0f0cad5858e574cb2b2874a3eb2594b785e17e1c26ef",
-  ".github/actions/stage-workflow-scripts/action.yml":
+    "899b639ce694ec20edfaa11e01336ee587f86372defad64d4428ba220a0478a8",
+  ],
+  ".github/actions/stage-workflow-scripts/action.yml": [
     "3964722bfe0474b2a026449850af68bae0eab7f6a7f94b2ae597dac941fdf58c",
+    "631bc9b08a4a78c996b40ca2245079bcc61d5df435285d6a0d3fd5f517b118d1",
+  ],
   ".github/actions/stage-workflow-scripts/stage.ts":
     "1d68c22d65e438704ae91f4a840dabc5619fda69d8a971207a32c6a967384733",
-  ".github/scripts/workflows/e2e/plan-full-rows.sh":
+  ".github/scripts/workflows/e2e/plan-full-rows.sh": [
     "48db48b3259ddf195d7b41563c396ef9c6058ee1ccd7123dcc8488e60d645a66",
-  ".github/scripts/workflows/e2e/plan-readiness-rows.sh":
+    "fb74e8bacfa630535f68514899ac0fd7ee714c03c22c4b7e1369b3702be741c6",
+  ],
+  ".github/scripts/workflows/e2e/plan-readiness-rows.sh": [
     "1bdf100557be3c0d25eb0217a122750aedf04887daee0e34db294807665a834d",
-  ".github/scripts/workflows/e2e/validate-target-sha.sh":
+    "0cd915f52568251954116c9b5e0a20071218df9be50f41e4a9fdb3f583ebb104",
+  ],
+  ".github/scripts/workflows/e2e/validate-target-sha.sh": [
     "0a8e0b4584b88fd1712b97387a3b554c1fa8d642c932bb590758159a144420fa",
-  ".github/scripts/workflows/e2e/verify-producer-sha.sh":
+    "a1c84e218ce74cd77e8e687687cfb3850e8cb9068315aa5a2788275ff1795fbe",
+  ],
+  ".github/scripts/workflows/e2e/verify-producer-sha.sh": [
     "79b2cd2e878ca1d71373872ded348d38d7bcdd3ddc622d0fec32523cf6c56ef2",
-  ".github/scripts/workflows/e2e/verify-readiness-merge-sha.sh":
+    "cdd052be7763e1a399336f2a55af189a92ec9702bb92cc7898c061ccbb32afff",
+  ],
+  ".github/scripts/workflows/e2e/verify-readiness-merge-sha.sh": [
     "e1845eaf90a99bf275e2be08fcffbf7cd5a1d052678dc427d43de4d839cf4f37",
-  ".github/scripts/workflows/e2e/write-full-plan-evidence.sh":
+    "37bed01d35ddc40baa321dd7c8844878c44a31bc4b01187564f0b51d19c0baa4",
+  ],
+  ".github/scripts/workflows/e2e/write-full-plan-evidence.sh": [
     "007613ed91016c66a320038841944ab5225390d7461438093af557646c11d991",
-  ".github/scripts/workflows/e2e/write-readiness-plan-evidence.sh":
+    "3e9f329999396fcf93f9d66163abd21c7dacdc10067cb42aee15cd403050ac26",
+  ],
+  ".github/scripts/workflows/e2e/write-readiness-plan-evidence.sh": [
     "e7110ceaa0266e4a479b2de79660834f82ace685e217be9a8967d14a56b206d6",
+    "b2c01a84ad82128243d5302201ee01d62921bc4012f0cf7915c2b0e0c8bea8af",
+  ],
 
   "tools/commands/ci/github/app-e2e-plan.ts":
     "ca7682cc8f0834fa48a325954fbcc10765241ee1f9e29a0ebef9b60048cbc7d2",
@@ -197,8 +217,11 @@ function verifyRecipes(root, docs, e2e) {
     "8039a8eba4e5a56c1a668ada91829b33f27c9a94450b34cc4a608a6762a330f0",
     "reviewed whole Docs WASM producer changed",
   );
-  for (const [file, expected] of Object.entries(producerHashes))
-    assert.equal(hash(read(root, file)), expected, `${file}: reviewed command producer changed`);
+  for (const [file, expected] of Object.entries(producerHashes)) {
+    const actual = hash(read(root, file));
+    const approved = Array.isArray(expected) ? expected : [expected];
+    assert(approved.includes(actual), `${file}: reviewed command producer changed (${actual})`);
+  }
   // Restore only the retired path for comparison with the unchanged reviewed seal.
   const readiness = structuredClone(e2e.jobs["app-readiness-plan"]);
   const changes = readiness.steps.find((step) => step.id === "changes");

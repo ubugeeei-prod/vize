@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/full-qualification/stage-shared-js-build-artifacts.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 mkdir -p .artifacts/shared-js-build/npm/native
 mkdir -p .artifacts/shared-js-build/npm/cli
 mkdir -p .artifacts/shared-js-build/npm/builder/vite

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/e2e/validate-optional-target-sha.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 if [[ ! "$REQUESTED_TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]; then
   echo "::error title=Invalid target_sha::target_sha must be a full lowercase 40-character commit SHA"
   exit 1

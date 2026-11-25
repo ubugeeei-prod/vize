@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/editors/typescript-plugin.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: TypeScript plugin packed consumer
 on:
   pull_request:

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/check-vue-parity/scripts/settle-hosted-runner-task-budget.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 mkdir -p target/vize-tests/metrics/check-fixtures-topology
 baseline_threads="${VIZE_RUNNER_BASELINE_THREADS:-0}"
 if ! [[ "$baseline_threads" =~ ^[0-9]+$ ]]; then

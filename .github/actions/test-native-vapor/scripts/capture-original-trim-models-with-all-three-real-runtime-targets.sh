@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-vapor/scripts/capture-original-trim-models-with-all-three-real-runtime-targets.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 model_trim_l1_status=0
 cargo test --locked --profile ci -p vize_l1 --lib markup::htmlish::view::operand::model::tests:: -- --nocapture || model_trim_l1_status=$?
 model_trim_l2_status=0

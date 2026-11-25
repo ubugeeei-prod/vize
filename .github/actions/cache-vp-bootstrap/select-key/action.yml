@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/cache-vp-bootstrap/select-key.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Select the Vite+ cache key
 description: Select the Vite+ cache key using the runner Node runtime
 runs:

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-selected-sfc-dom/scripts/capture-new-original-for-key-components-and-execute-both-primary-runtime.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 key_rust_status=0
 cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for_key::nine_whole_original_key_sources_capture_real_bindings_and_maps -- --exact --nocapture || key_rust_status=$?
 key_development_status=0

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/benchmark/compare-base-and-head.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 node head/tools/benchmarks/scripts/compare-pr.ts \
   --input "$GITHUB_WORKSPACE/head/tools/benchmarks/scripts/__in__" \
   --base-bin "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/babel-plugin-hosts/build-the-actual-source-compiler-and-both-public-package-entrypoints.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
 mkdir -p "$RUNNER_TEMP/babel-plugin/packed"

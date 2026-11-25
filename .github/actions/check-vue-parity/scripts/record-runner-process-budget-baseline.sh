@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/check-vue-parity/scripts/record-runner-process-budget-baseline.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 cpu_count() {
   if command -v nproc >/dev/null 2>&1; then
     nproc

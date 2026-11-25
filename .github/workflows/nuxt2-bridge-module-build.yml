@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/integrations/nuxt2-bridge-module-build.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Nuxt 2 Bridge host runtimes
 run-name: Nuxt 2 Bridge host runtime @ ${{ github.event.pull_request.head.sha || github.sha }}
 on:

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-wsl2/measure-editor-load-edits-requests-and-memory.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 [[ "$LSP_FIXTURES" =~ ^scale-(1k|5k|20k|giant-sfc|monorepo)(\ scale-(1k|5k|20k|giant-sfc|monorepo))*$ ]]
 output="$WSL_MOUNT_ROOT/results"

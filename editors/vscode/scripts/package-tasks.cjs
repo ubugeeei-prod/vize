@@ -1,4 +1,5 @@
-// Generated from tools/config/pkl/package-tasks/editors/vscode/tasks.pkl
+// DO NOT EDIT. Generated from tools/config/pkl/package-tasks/editors/vscode/tasks.pkl.
+// Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 //#region \0rolldown/runtime.js
 var __create = Object.create;

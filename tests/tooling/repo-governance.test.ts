@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { generatedBody } from "../../tools/support/ci/generated-header.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -59,7 +60,10 @@ test("CodeRabbit reviews run in strict mode with actionable workflow context", (
 test("release SBOM scans exclude test fixtures and the Zed extension", () => {
   const syft = readRepoFile(".syft.yaml");
 
-  assert.equal(syft, "exclude:\n  - ./tests/**\n  - ./editors/zed/**\n");
+  assert.equal(
+    generatedBody(Buffer.from(syft)).toString(),
+    "exclude:\n  - ./tests/**\n  - ./editors/zed/**\n",
+  );
 });
 
 test("socket.dev configuration scopes dependency and workflow scans", () => {

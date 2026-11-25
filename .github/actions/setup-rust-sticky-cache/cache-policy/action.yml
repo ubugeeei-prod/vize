@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/setup-rust-sticky-cache/cache-policy.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Evaluate the Rust cache policy
 description: Evaluate the Rust cache policy using the runner Node runtime
 runs:

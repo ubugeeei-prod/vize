@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-selected-template-literals/scripts/capture-and-execute-original-selected-template-literal-modules.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 cargo test -p vize_l4 --profile ci --test native_selected_template_output
 cargo test -p vize_l4 --profile ci --doc targets::dom::output
 rm -f "$VIZE_L4_SELECTED_LITERAL_CAPTURE"

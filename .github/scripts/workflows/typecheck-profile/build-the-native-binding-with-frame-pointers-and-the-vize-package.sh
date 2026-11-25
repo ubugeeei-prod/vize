@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-profile/build-the-native-binding-with-frame-pointers-and-the-vize-package.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 roles=(head)
 if [[ -n "$BASE_SHA" ]]; then roles+=(base); fi

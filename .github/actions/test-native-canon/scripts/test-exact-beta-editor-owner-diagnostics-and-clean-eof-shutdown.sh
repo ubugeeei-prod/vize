@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-canon/scripts/test-exact-beta-editor-owner-diagnostics-and-clean-eof-shutdown.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 unset VIZE_TEST_DISABLE_TSGO
 provider="$RUNNER_TEMP/native-beta-10741"

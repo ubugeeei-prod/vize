@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/upload-davinci-compact-storage-bench-reports.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Upload Davinci allocation bench reports
 description: Uploads allocation bench JSON reports for Davinci wall-budget baselines.
 runs:

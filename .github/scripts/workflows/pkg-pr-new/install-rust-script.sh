@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/pkg-pr-new/install-rust-script.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 rustup toolchain install 1.100.0 --profile minimal --no-self-update
 rustup default 1.100.0

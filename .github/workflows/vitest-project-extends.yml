@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/integrations/vitest-project-extends.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Vitest project configuration consumers
 on:
   workflow_dispatch:

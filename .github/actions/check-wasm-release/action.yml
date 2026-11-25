@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/check-wasm-release.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Check the WASM release build
 description: Type-check the exact @vizejs/wasm release crate configuration on its own warm disk.
 runs:

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/repository/.coderabbit.yaml.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 
 language: en-US

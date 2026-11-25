@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/davinci/davinci-reference.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Davinci reference backends
 
 # The independent L3 reference (`davinci_test_support::l3_reference`) against

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/level-html-content-model/first-newline-build-the-actual-cli-and-run-source-bound-browser-observations.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 git rev-parse HEAD > "$RUNNER_TEMP/first-newline-source.txt"
 cargo build --locked --profile ci -p vize
 cargo test --locked --profile ci -p vize_armature --lib

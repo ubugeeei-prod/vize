@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/davinci/davinci-incremental.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Davinci Incremental
 
 # Phase 5 incrementality suites (docs/davinci/plan/test-suites.md):

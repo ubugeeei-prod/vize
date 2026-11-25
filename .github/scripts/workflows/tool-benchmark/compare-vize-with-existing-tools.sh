@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/tool-benchmark/compare-vize-with-existing-tools.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 # Restore benchmark metadata label with:
 node tools/benchmarks/scripts/compare-tools.mjs \
   --input tools/benchmarks/scripts/__in__ \

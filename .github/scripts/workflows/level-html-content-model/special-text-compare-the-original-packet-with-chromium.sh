@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/level-html-content-model/special-text-compare-the-original-packet-with-chromium.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 vp node --test \
   tests/tooling/davinci-document-body-elements.test.ts \
   tests/tooling/davinci-document-disclosure-elements.test.ts \

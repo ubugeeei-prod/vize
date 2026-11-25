@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/davinci-ir-graph/check-resident-template-decisions-across-source-edits.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 "$RUNNER_TEMP/lean-4.33.1-linux/bin/lean" -DwarningAsError=true TemplateProjection.lean | tee "$RUNNER_TEMP/template-projection"
 grep -Fx "'Davinci.TemplateProjection.exact' depends on axioms: [propext]" "$RUNNER_TEMP/template-projection"

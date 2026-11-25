@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/release/release-jsr.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Release JSR
 # Publishes every npm release package to JSR at the same exact version, then
 # installs the compatibility facade from JSR in fresh Node, Deno and Bun projects.

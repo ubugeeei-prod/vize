@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/support/compat/github/native-lexical-dollar.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 # Reuse the Canon ci-opt library compiled immediately before this step.
 set -euo pipefail
 unset VIZE_TEST_DISABLE_TSGO

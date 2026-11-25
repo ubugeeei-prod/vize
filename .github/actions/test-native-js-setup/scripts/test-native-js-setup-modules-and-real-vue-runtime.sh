@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/test-native-js-setup/scripts/test-native-js-setup-modules-and-real-vue-runtime.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 cargo test --locked --profile ci -p vize_atelier_sfc native::setup::tests::eight_whole_setup_modules_and_maps_match_actual_source_bound_pinned_fixtures -- --exact
 cargo test --locked --profile ci -p vize_atelier_sfc native::setup::tests::constants::five_whole_const_setup_modules_and_maps_match_actual_source_bound_pinned_fixtures -- --exact
 cargo test --locked --profile ci -p vize_atelier_sfc native::setup::tests::typescript::three_whole_ts_primitive_setup_modules_and_maps_match_actual_source_bound_pinned_fixtures -- --exact

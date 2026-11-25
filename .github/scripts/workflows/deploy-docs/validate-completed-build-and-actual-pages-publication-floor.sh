@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/deploy-docs/validate-completed-build-and-actual-pages-publication-floor.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 # Preserve trusted main validators when the completed source is older.
 validator="$RUNNER_TEMP/docs-deployment/compat/github"

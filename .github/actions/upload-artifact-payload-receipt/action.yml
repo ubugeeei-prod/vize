@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/upload-artifact-payload-receipt.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Retain complete artifact consumer receipt
 description: Preserve the source-bound consumer receipt even after a failed or cancelled step
 runs:

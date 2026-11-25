@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/davinci-resource-budgets/no-ceiling-is-loosened-against-the-base.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 git fetch --no-tags --depth=1 origin "${BASE_SHA}"
 # Resolve the base revision's path so the directory move itself can

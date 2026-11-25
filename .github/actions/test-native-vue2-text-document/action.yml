@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-vue2-text-document.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Capture original Vue2 interpolation documents
 description: Join fresh original Glyph outputs to complete pinned Vue2 compiler/runtime goldens
 inputs:

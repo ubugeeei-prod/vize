@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-scaling/measure.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 tool_args=()
 if [[ -n "$SCALING_TOOLS" ]]; then tool_args+=(--tools "$SCALING_TOOLS"); fi

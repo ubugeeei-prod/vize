@@ -1,4 +1,6 @@
 #!/bin/sh
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/crates/vize/tests/programs/build-relative-musea.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 if [ "$1" != "build" ]; then
   exit 9
 fi

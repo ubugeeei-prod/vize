@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/content-mapper-conformance/run-authored-syntax-and-setup-binding-conformance.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 cargo test -p vize --test integration -- content_mapper_tsgo_cli::template_expression_syntax:: content_mapper_tsgo_cli::reported_model_events_11390_11391:: content_mapper_tsgo_cli::reported_expression_duplicates_11374:: content_mapper_tsgo_cli::dynamic_template_refs::standard_tsgo_static_template_refs_read_runtime_bindings_and_keep_true_unused --nocapture
 cargo test -p vize --test integration -- content_mapper_tsgo_cli::const_enum_import:: --nocapture
 cargo test -p vize --test integration -- content_mapper_tsgo_cli::type_only_import_use:: --nocapture

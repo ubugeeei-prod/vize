@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/01-rust-feature-tests.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Rust feature tests
 on:
   workflow_call: {}

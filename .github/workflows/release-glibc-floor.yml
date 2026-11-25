@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/release/release-glibc-floor.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Release glibc floor
 # Builds the Linux GNU release artifacts with the exact release recipes, fails
 # when any ELF image needs more than the documented glibc floor

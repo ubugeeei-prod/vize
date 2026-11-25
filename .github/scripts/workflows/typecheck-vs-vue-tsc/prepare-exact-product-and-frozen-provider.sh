@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-vs-vue-tsc/prepare-exact-product-and-frozen-provider.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 mkdir "$RUNNER_TEMP/comparative"
 git fetch --no-tags --depth=1 origin ea22f2cd2aa661b9bdab940e25464eff692b935f
 git worktree add --detach "$RUNNER_TEMP/comparative/source" ea22f2cd2aa661b9bdab940e25464eff692b935f

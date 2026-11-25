@@ -1,4 +1,6 @@
 #!/bin/sh
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tests/tooling/programs/commands/rust-differential-sibling/git.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 if [ "$1" = submodule ]; then
 exec "$NODE" -e 'const fs=require("node:fs"),cp=require("node:child_process"),assert=require("node:assert/strict"),path=require("node:path"),args=process.argv.slice(1);assert.deepEqual(args,@@HYDRATION_ARGS@@);const tree=cp.execFileSync(process.env.REAL_GIT,["ls-tree","HEAD",args.at(-1)],{encoding:"utf8"}).trim();assert.equal(tree,"160000 commit "+process.env.FIXTURE_PIN+"\t"+args.at(-1));fs.appendFileSync(process.env.GIT_LOG,JSON.stringify(args)+"\n");if(process.env.FAIL==="fixture-hydration")process.exit(42);fs.mkdirSync(args.at(-1),{recursive:true});fs.writeFileSync(path.join(args.at(-1),"fixture-pin"),process.env.FIXTURE_PIN);' -- "$@"
 fi

@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/install-formatter-css-browser.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Install CSS formatter reference browser
 description: Provision the Chromium owned by the selected tests package
 runs:

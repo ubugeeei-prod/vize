@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/davinci/ir-pass-composition.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: IR pass composition
 on:
   pull_request:

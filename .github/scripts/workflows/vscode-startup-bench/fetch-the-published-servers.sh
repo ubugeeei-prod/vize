@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/vscode-startup-bench/fetch-the-published-servers.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 mkdir -p ext-builds/server && cd ext-builds/server
 for archive in vize-x86_64-unknown-linux-gnu.tar.gz vize-x86_64-pc-windows-msvc.zip; do

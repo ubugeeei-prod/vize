@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/lsp-vs-volar/stage-the-tsserver-plugin-row-this-commit-s-plugin-and-native-addon.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 # Same profile as the vize rows; published addons use `release`.
 cargo build --profile ci-opt -p vize_vitrine --features napi,legacy
 root="$RUNNER_TEMP/tsserver-plugin/node_modules"

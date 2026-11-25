@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-navigation.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Test native Program and Vue navigation
 description: Query actual retained native owners through source and complete RPC laws
 runs:

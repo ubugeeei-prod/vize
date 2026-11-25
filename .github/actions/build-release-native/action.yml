@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/build-release-native.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Build release native bindings
 description: Shared exact-checkout native bindings recipe for release and trusted cache warming
 inputs:

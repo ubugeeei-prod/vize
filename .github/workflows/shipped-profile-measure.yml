@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/workflows/performance/shipped-profile-measure.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Shipped release-profile measure
 
 # Dispatch-only measurement of the shipped release profile (fat LTO, one codegen

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/style-module-products/check-scoped-components.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 export NODE_PATH="$RUNNER_TEMP/scoped-oracle/node_modules"
 version=$(node "$VIZE_CI_FILES/read-pinned-sass-version.ts")

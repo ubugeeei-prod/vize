@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-historical-text-documents.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Capture original historical Vue text documents
 description: Preserve the existing Vue2 proof and separately qualify original Vue1 documents
 inputs:

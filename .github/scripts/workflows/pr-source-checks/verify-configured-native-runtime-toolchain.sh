@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/pr-source-checks/verify-configured-native-runtime-toolchain.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 # Verify the repository toolchain setup here, before a Cargo proxy can
 # implicitly download missing components inside a runtime test step.

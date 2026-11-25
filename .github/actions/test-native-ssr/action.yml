@@ -1,3 +1,5 @@
+# DO NOT EDIT. Generated from tools/config/pkl/actions/test-native-ssr.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 name: Test fresh native SSR modules
 description: Require source-built module maps and actual pinned Vue SSR executions
 runs:
