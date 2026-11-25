@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_supported_rows_are_reachable": { "prover": "z3", "time": 0.05 }
+    }
+  }
+}

@@ -42,6 +42,26 @@ every bit outside the eight offsets clear, which `is_empty` relies on.
 | `classification_reads_effect_membership_only`                | sets with the same members classify alike                            | whole domain | `lattice::classification_reads_effect_membership_only`                                                   | proved |
 | `only_an_inert_local_binding_is_static`                      | `static` exactly for a local, effect-free, non-escaping binding      | whole domain | `lattice::only_an_inert_local_binding_is_static`                                                         | proved |
 
+## L3 reachability certificates (`davinci/vize_l3/src/query/check`)
+
+Kani file, deleted: `query/check/kani.rs`. Its bound was three operations,
+one edge mask per ordered pair and paths of at most two edges. Creusot root:
+`query/check/creusot.rs` (package `tests/formal/creusot/graph`). `rule.rs`
+states `justifies` and `closed` as their local obligations.
+`accepted_certificates_are_exact` runs the certificate check over every
+vertex and every parent through those two shipped rules, for any number of
+operations and any selected-edge relation, and proves Lean
+`Davinci.exact_answer` (`tests/formal/ir-graph/Reach.lean`): an accepted
+certificate holds exactly the operations reachable from its root.
+`supported_rows_are_reachable` is Lean `supported_sound`, by induction on the
+witness rank, and `closed_rows_hold_every_path` the converse, by induction on
+the path length.
+
+| Kani harness                        | Law                                                                                                           | Kani bound                       | Creusot replacement                                                                                      | Status |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------- | ------ |
+| `machine_word_witness`              | a step is justified exactly when its parent was reached, its edge is selected and it claims the edge's target | whole domain                     | contract of `rule::justifies`                                                                            | proved |
+| `three_node_certificates_are_exact` | a certificate that every row justifies and every selected edge leaves closed is exactly the reachable set     | 3 operations, paths of ≤ 2 edges | `accepted_certificates_are_exact`, with `supported_rows_are_reachable` and `closed_rows_hold_every_path` | proved |
+
 ## L3 reference scheduling contract (`tests/davinci_test_support/src/l3_reference`)
 
 Kani file: `l3_reference/schedule_proofs.rs`, deleted. Bound it had (from the
