@@ -5,9 +5,12 @@ use vize_l0::dialect::FileKind;
 /// Data formats the formatter reads beside Vize source kinds.
 const DATA_EXTENSIONS: &[&str] = &["json", "jsonc", "yaml", "yml", "md", "markdown"];
 
-pub(super) const FORMAT_EXTENSIONS_DISPLAY: &str = ".vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .tsrx, .json, .jsonc, .yaml, .yml, .md, or .markdown";
+/// Standalone stylesheets, formatted as a plain-CSS `<style>` block is.
+const STYLE_EXTENSIONS: &[&str] = &["css"];
 
-pub(super) const FORMAT_PATTERN_HELP: &str = "Vue/JS/TS/TSRX/JSON/JSONC globs; YAML/Markdown formatting is not implemented\n\n[default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.tsrx ./**/*.json ./**/*.jsonc]";
+pub(super) const FORMAT_EXTENSIONS_DISPLAY: &str = ".vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .tsrx, .css, .json, .jsonc, .yaml, .yml, .md, or .markdown";
+
+pub(super) const FORMAT_PATTERN_HELP: &str = "Vue/JS/TS/TSRX/CSS/JSON/JSONC globs; YAML/Markdown formatting is not implemented\n\n[default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.tsrx ./**/*.css ./**/*.json ./**/*.jsonc]";
 
 /// The source kinds Glyph formats.
 const fn formats_kind(kind: FileKind) -> bool {
@@ -19,7 +22,17 @@ const fn formats_kind(kind: FileKind) -> bool {
 
 /// A file the formatter accepts: a formatted source kind or a data format.
 pub(super) fn is_format_target(path: &Path) -> bool {
-    FileKind::of_path(path).map_or_else(|| data_extension(path).is_some(), formats_kind)
+    FileKind::of_path(path).map_or_else(
+        || data_extension(path).is_some() || is_stylesheet(path),
+        formats_kind,
+    )
+}
+
+/// A standalone stylesheet the CSS formatter owns.
+fn is_stylesheet(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| STYLE_EXTENSIONS.contains(&extension))
 }
 
 /// A data format with no formatter yet: refused when named, skipped when
@@ -33,7 +46,8 @@ pub(super) fn default_fmt_patterns() -> Vec<std::string::String> {
     let sources = FileKind::extensions()
         .iter()
         .filter(|(_, kind)| formats_kind(*kind))
-        .map(|(extension, _)| *extension);
+        .map(|(extension, _)| *extension)
+        .chain(STYLE_EXTENSIONS.iter().copied());
     let data = DATA_EXTENSIONS
         .iter()
         .copied()
@@ -57,15 +71,16 @@ fn is_unimplemented_document_extension(extension: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        DATA_EXTENSIONS, FORMAT_EXTENSIONS_DISPLAY, FileKind, default_fmt_patterns, formats_kind,
-        is_format_target, is_unimplemented_document,
+        DATA_EXTENSIONS, FORMAT_EXTENSIONS_DISPLAY, FileKind, STYLE_EXTENSIONS,
+        default_fmt_patterns, formats_kind, is_format_target, is_unimplemented_document,
     };
     use std::path::Path;
 
     #[test]
     fn default_patterns_cover_only_implemented_format_extensions() {
         let expected = [
-            "vue", "js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx", "tsrx", "json", "jsonc",
+            "vue", "js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx", "tsrx", "css", "json",
+            "jsonc",
         ]
         .iter()
         .map(|extension| vize_l0::cstr!("./**/*.{extension}"))
@@ -87,11 +102,12 @@ mod tests {
             "View.tsx",
             "Counter.tsrx",
             "a.json",
+            "style.css",
         ] {
             assert!(is_format_target(Path::new(file)), "{file}");
             assert!(!is_unimplemented_document(Path::new(file)), "{file}");
         }
-        for file in ["index.html", "style.css", "App.VUE", ".vue"] {
+        for file in ["index.html", "style.scss", "style.less", "App.VUE", ".vue"] {
             assert!(!is_format_target(Path::new(file)), "{file}");
         }
     }
@@ -106,7 +122,7 @@ mod tests {
             .iter()
             .filter(|(_, kind)| formats_kind(*kind))
             .map(|(extension, _)| extension);
-        for extension in sources.chain(DATA_EXTENSIONS) {
+        for extension in sources.chain(STYLE_EXTENSIONS).chain(DATA_EXTENSIONS) {
             assert!(
                 display_tokens.contains(extension),
                 "missing .{extension} from display text"

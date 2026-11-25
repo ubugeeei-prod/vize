@@ -1,4 +1,5 @@
-//! Formatting for non-SFC files: JSON/JSONC configs, YAML, and Markdown.
+//! Formatting for non-SFC files: JSON/JSONC configs, standalone CSS, YAML,
+//! and Markdown.
 
 use std::path::Path;
 use vize_glyph::{FormatOptions, FormatResult};
@@ -23,6 +24,16 @@ pub(super) fn format_data_file(
     match extension {
         "yaml" | "yml" => return Some(Ok(plain::format_yaml(source))),
         "md" | "markdown" => return Some(Ok(plain::format_markdown(source))),
+        "css" => {
+            let code = profile!(
+                "cli.fmt.file.format_style",
+                vize_glyph::format_style_file(source, options)
+            );
+            return Some(Ok(FormatResult {
+                changed: code.as_str() != source,
+                code,
+            }));
+        }
         _ => {}
     }
     if !matches!(extension, "json" | "jsonc") {

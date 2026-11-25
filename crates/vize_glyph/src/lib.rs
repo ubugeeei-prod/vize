@@ -122,6 +122,37 @@ pub fn format_style(source: &str, options: &FormatOptions) -> Result<String, For
     style::format_style_content(source, options)
 }
 
+/// Format a standalone CSS file.
+///
+/// The file is formatted exactly as a plain-CSS `<style>` block: CSS the
+/// engine cannot parse keeps its authored text. The output ends with one line
+/// terminator, and a leading byte-order mark is kept.
+pub fn format_style_file(source: &str, options: &FormatOptions) -> String {
+    if let Some(document) = source.strip_prefix('\u{feff}') {
+        let formatted = format_style_file(document, options);
+        let mut output = String::with_capacity(formatted.len() + '\u{feff}'.len_utf8());
+        output.push('\u{feff}');
+        output.push_str(formatted.as_str());
+        return output;
+    }
+    if options.end_of_line == EndOfLine::Auto {
+        return options
+            .format_with_source_line_ending(source, |options| format_style_file(source, options));
+    }
+    let trimmed = source.trim();
+    if trimmed.is_empty() {
+        return String::default();
+    }
+    let formatted = style::format_style_content(source, options);
+    let body = formatted.as_ref().map_or(trimmed, |formatted| {
+        formatted.trim_end_matches(['\r', '\n'])
+    });
+    let mut output = String::with_capacity(body.len() + 2);
+    output.push_str(body);
+    output.push_str(options.newline_string());
+    output
+}
+
 #[cfg(test)]
 mod tests;
 

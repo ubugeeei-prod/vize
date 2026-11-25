@@ -138,7 +138,7 @@ vize fmt --check src
 vize fmt --write src
 ```
 
-Default discovery formats Vue, JavaScript/TypeScript, TSRX and JSON/JSONC files. YAML and Markdown formatting is not implemented: `.yaml`, `.yml`, `.md` and `.markdown` are excluded from defaults, and explicit selection reports an error without changing their bytes. Key options:
+Default discovery formats Vue, JavaScript/TypeScript, TSRX, CSS and JSON/JSONC files. A standalone `.css` file is formatted exactly as a plain-CSS `<style>` block in a Vue file, so CSS the engine cannot parse keeps its authored text; `.scss` and `.less` files are not selected, since their `<style>` blocks are also kept as written by default. YAML and Markdown formatting is not implemented: `.yaml`, `.yml`, `.md` and `.markdown` are excluded from defaults, and explicit selection reports an error without changing their bytes. Key options:
 
 | Option                             | Description                                          |
 | ---------------------------------- | ---------------------------------------------------- |
