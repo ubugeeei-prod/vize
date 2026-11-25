@@ -242,6 +242,21 @@ fn self_closing_html_elements_end_at_their_start_tag() {
     assert_eq!(found("VElement[name='div'] > VText", template), [" text"]);
 }
 
+#[test]
+fn a_slash_in_an_unquoted_attribute_value_does_not_close_the_element() {
+    for value in ["/", "foo/", "/foo/"] {
+        let template = vize_l0::cstr!("<div a={value}> text</div>");
+        assert_eq!(found("VElement[name='div']", &template), [template.clone()]);
+        assert_eq!(found("VElement[name='div'] > VText", &template), [" text"]);
+        let nested = vize_l0::cstr!("<div>{template}</div>");
+        assert_eq!(
+            found("VElement[name='div']", &nested),
+            [nested.clone(), template]
+        );
+        assert_eq!(found("VElement[name='div'] > VText", &nested), [" text"]);
+    }
+}
+
 fn found(selector: &str, template: &str) -> Vec<String> {
     reported(&[(selector, None)], template)
         .into_iter()

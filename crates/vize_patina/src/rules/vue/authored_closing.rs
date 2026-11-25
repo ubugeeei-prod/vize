@@ -75,15 +75,39 @@ fn is_list_parent(name: &str) -> bool {
 }
 
 fn self_closing(bytes: &[u8], start: usize, end: usize) -> bool {
-    bytes
-        .get(start..end.saturating_sub(1))
-        .and_then(|open| {
-            open.iter()
-                .rev()
-                .find(|byte| !byte.is_ascii_whitespace())
-                .copied()
-        })
-        .is_some_and(|byte| byte == b'/')
+    let Some(open) = bytes.get(start..end.saturating_sub(1)) else {
+        return false;
+    };
+    let Some(marker) = open.iter().rposition(|byte| !byte.is_ascii_whitespace()) else {
+        return false;
+    };
+    if open.get(marker) != Some(&b'/') {
+        return false;
+    }
+    // In `<div a=foo/>`, `/` belongs to the unquoted value, while a slash
+    // after a quoted value or after whitespace is a self-closing marker.
+    let mut value = AttributeValue::Outside;
+    for &byte in open.iter().take(marker) {
+        value = match value {
+            AttributeValue::Quoted(quote) if byte == quote => AttributeValue::Outside,
+            AttributeValue::Quoted(quote) => AttributeValue::Quoted(quote),
+            AttributeValue::Unquoted if byte.is_ascii_whitespace() => AttributeValue::Outside,
+            AttributeValue::Unquoted => AttributeValue::Unquoted,
+            AttributeValue::Pending if byte.is_ascii_whitespace() => AttributeValue::Pending,
+            AttributeValue::Pending if matches!(byte, b'\'' | b'"') => AttributeValue::Quoted(byte),
+            AttributeValue::Pending => AttributeValue::Unquoted,
+            AttributeValue::Outside if byte == b'=' => AttributeValue::Pending,
+            AttributeValue::Outside => AttributeValue::Outside,
+        };
+    }
+    matches!(value, AttributeValue::Outside)
+}
+
+enum AttributeValue {
+    Outside,
+    Pending,
+    Unquoted,
+    Quoted(u8),
 }
 
 fn tag_end(bytes: &[u8], mut cursor: usize) -> Option<usize> {
