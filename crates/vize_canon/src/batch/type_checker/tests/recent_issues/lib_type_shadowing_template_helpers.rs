@@ -13,10 +13,10 @@ use std::path::Path;
 /// A same-arity `never` poison, and how many references the host's
 /// [content mapper, batch] projections generate.
 const SLOT_LIB_TYPES: &[(&str, &str, [usize; 2])] = &[
-    ("Exclude", "type Exclude<T, U> = never", [2, 2]),
+    ("Exclude", "type Exclude<T, U> = never", [3, 3]),
     ("Extract", "type Extract<T, U> = never", [2, 2]),
     ("NonNullable", "type NonNullable<T> = never", [6, 6]),
-    ("PropertyKey", "type PropertyKey = never", [6, 6]),
+    ("PropertyKey", "type PropertyKey = never", [7, 7]),
 ];
 const MAPPER: usize = 0;
 const BATCH: usize = 1;

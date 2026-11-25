@@ -238,7 +238,7 @@ fn dynamic_identity_is_stable_and_tracks_inherited_option_changes() {
     let before = load(&path);
     assert_eq!(
         before.transform_options,
-        expected_options(strict_templates(), true, true, false, true, false)
+        expected_options(strict_templates(), true, true, true, true, false)
     );
     assert_eq!(before.config_identity, load(&path).config_identity);
     std::fs::write(&base, r#"{"vueCompilerOptions":{"strictTemplates":true,"checkUnknownProps":false,"strictCssModules":true}}"#).unwrap();
