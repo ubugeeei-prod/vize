@@ -43,7 +43,7 @@ defineProps<{ title: string }>();
         r#"<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
-<template><Child title="ok" model-value="draft" data-test-id="base-input" w-48px /></template>
+<template><Child title="ok" model-value="draft" data-test-id="base-input" /></template>
 "#,
         &[(
             "BaseInput.vue",
@@ -62,7 +62,7 @@ defineProps<{ modelValue?: string }>();
         "fallthrough-component-root-strict",
         &report,
         &[
-            r#"error:4:29 [TS2353] Object literal may only specify known properties, and '"modelValue"' does not exist in type '$ComponentCheckProps<Props, $CheckTail>'. (source: <template><Child title="ok" model-value="draft" data-test-id="base-input" w-48px /></template>)"#,
+            r#"error:4:29 [TS2353] Object literal may only specify known properties, and '"modelValue"' does not exist in type '$ComponentCheckProps<Props, $CheckTail>'. (source: <template><Child title="ok" model-value="draft" data-test-id="base-input" /></template>)"#,
         ],
     );
     // With `fallthroughAttributes`, the root component's props are `Child`'s.
@@ -78,6 +78,18 @@ defineProps<{ modelValue?: string }>();
     .unwrap();
     let report = run_check_json(&project_root, &corsa_path);
     assert_clean("fallthrough-component-root-open", &report);
+    // Root inference does not turn unknown utility attributes into DOM props.
+    let app = project_root.join("src/App.vue");
+    let source = std::fs::read_to_string(&app).unwrap();
+    std::fs::write(&app, source.replace(" />", " w-48px />")).unwrap();
+    let report = run_check_json(&project_root, &corsa_path);
+    assert_error_diagnostics(
+        "fallthrough-component-root-unknown",
+        &report,
+        &[
+            r#"error:4:75 [TS2353] Object literal may only specify known properties, and '"w48px"' does not exist in type '$ComponentCheckProps<Props, $CheckTail>'. (source: <template><Child title="ok" model-value="draft" data-test-id="base-input" w-48px /></template>)"#,
+        ],
+    );
     let _ = std::fs::remove_dir_all(project_root);
 }
 

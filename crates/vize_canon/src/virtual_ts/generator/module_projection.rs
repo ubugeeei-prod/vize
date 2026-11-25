@@ -25,7 +25,7 @@ pub(super) fn emit(
             sub_spans: Vec::new(),
         });
     };
-    if !text.contains("export default") {
+    if !text.contains("export") || !text.contains("default") {
         ts.push_str(text);
         map(mappings, gen_start..ts.len(), 0..text.len());
         ts.push('\n');
@@ -195,6 +195,37 @@ mod tests {
             "const text = 'export default';\n",
             false,
             &[(0..31, 0..31)],
+        );
+    }
+
+    #[test]
+    fn split_keyword_projection_maps_the_object_and_following_statement_exactly() {
+        use crate::virtual_ts::mapping::{
+            map_generated_offset_to_source, mapping_for_generated_offset,
+        };
+        let text = "export /* 日本 */\r\ndefault { name: 'A' }; const after: number = 'bad';";
+        let facts = analyze_options_api_script(text, true, false);
+        let mut ts = crate::virtual_ts::TextBuf::default();
+        let mut mappings = Vec::new();
+        assert!(emit(
+            &mut ts,
+            &mut mappings,
+            text,
+            (0, text.len() as u32),
+            &|x| x,
+            &facts
+        ));
+        for token in ["name", "after", "'bad'"] {
+            let offset = ts.as_str().find(token).unwrap();
+            let mapping = mapping_for_generated_offset(&mappings, offset).unwrap();
+            assert_eq!(
+                map_generated_offset_to_source(mapping, offset),
+                text.find(token).unwrap()
+            );
+        }
+        assert_eq!(
+            ts.as_str(),
+            "const __default__ = /* 日本 */\r\n __vizeDefineComponent({ name: 'A' }); const after: number = 'bad';void __default__;\n\n"
         );
     }
 }

@@ -127,8 +127,8 @@ fn rewrite_default_export_expression(
     if expr_start >= expr_end || export_start >= expr_start {
         return None;
     }
-    let keyword_end = export_start.checked_add(EXPORT_DEFAULT.len())?;
-    if keyword_end > expr_start || text.get(export_start..keyword_end)? != EXPORT_DEFAULT {
+    let keyword_end = super::irregular_default::keyword_end(text, export_start)?;
+    if keyword_end > expr_start {
         return None;
     }
     let before = text.get(..export_start)?;
@@ -141,6 +141,9 @@ fn rewrite_default_export_expression(
     let mut output = String::with_capacity(text.len() + REPLACEMENT.len());
     output.push_str(before);
     output.push_str(REPLACEMENT);
+    if text.get(export_start..keyword_end)? != EXPORT_DEFAULT {
+        output.push_str(text.get(export_start + 6..keyword_end - 7)?);
+    }
     output.push_str(gap);
     output.push_str(expression);
     output.push_str(after);
@@ -162,8 +165,8 @@ fn wrap_default_export_object(
     if object_start >= object_end {
         return None;
     }
-    let keyword_end = export_start.checked_add(EXPORT_DEFAULT.len())?;
-    if keyword_end > object_start || text.get(export_start..keyword_end)? != EXPORT_DEFAULT {
+    let keyword_end = super::irregular_default::keyword_end(text, export_start)?;
+    if keyword_end > object_start {
         return None;
     }
     let before = text.get(..export_start)?;
@@ -178,6 +181,9 @@ fn wrap_default_export_object(
         String::with_capacity(text.len() + DEFINE_COMPONENT_REF.len() + EXPORT_DEFAULT.len());
     output.push_str(before);
     output.push_str("const __default__ =");
+    if text.get(export_start..keyword_end)? != EXPORT_DEFAULT {
+        output.push_str(text.get(export_start + 6..keyword_end - 7)?);
+    }
     output.push_str(gap);
     output.push_str(DEFINE_COMPONENT_REF);
     output.push('(');
@@ -280,6 +286,30 @@ mod tests {
             out.as_str(),
             "const __default__ =\n  defineComponent({\n    name: 'A',\n  })"
         );
+    }
+
+    #[test]
+    fn commented_and_split_keywords_keep_comments_before_the_expression() {
+        for header in [
+            "export /* 日本 */ default",
+            "export\r\ndefault",
+            "export // @ts-ignore\ndefault",
+        ] {
+            let script = vize_carton::cstr!("{header} {{ name: 'A' }}");
+            let out = rewrite(&script);
+            let gap = &header[6..header.len() - 7];
+            assert_eq!(
+                out.as_str(),
+                vize_carton::cstr!(
+                    "const __default__ ={gap} __vizeDefineComponent({{ name: 'A' }})"
+                )
+            );
+            let script = vize_carton::cstr!("{header} defineComponent({{ name: 'A' }})");
+            assert_eq!(
+                rewrite(&script).as_str(),
+                vize_carton::cstr!("const __default__ ={gap} defineComponent({{ name: 'A' }})")
+            );
+        }
     }
 
     #[test]

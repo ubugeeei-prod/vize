@@ -11,6 +11,11 @@ fn unextracted_options_props_survive_comments_mixins_and_models() {
             "export /* component */ default { props: { initial: Number } }",
         ),
         ("newline", "export\ndefault { props: { initial: Number } }"),
+        ("crlf", "export\r\ndefault { props: { initial: Number } }"),
+        (
+            "directive",
+            "export // @ts-ignore\ndefault { props: { initial: Number }, methods: { bad() { return missing; } } }",
+        ),
         (
             "mixin",
             "const M = { props: { initial: Number } }; export default { mixins: [M] }",

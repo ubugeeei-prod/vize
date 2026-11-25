@@ -14,6 +14,7 @@ pub(super) mod generics;
 mod global_components;
 mod glued_import;
 mod imports;
+mod irregular_default;
 mod legacy_vue2;
 mod macro_anchors;
 mod module_projection;
@@ -34,6 +35,7 @@ mod setup_props;
 pub(super) mod setup_scope;
 mod setup_type_exports;
 mod spans;
+mod standard_default;
 mod template_record;
 mod template_ref_keys;
 mod template_refs;
@@ -67,7 +69,7 @@ use self::setup_helpers::{SetupHelperComponentContext, SetupHelperPlan, emit_set
 use self::setup_imports::SetupImportPlan;
 use self::setup_props::{emit_template_context, generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
-use self::spans::{DEFINE_COMPONENT_REF, template_usage};
+use self::spans::template_usage;
 use self::type_only_imports::syntactic_type_only_imported_names;
 use super::{
     macro_type_mappings::MacroTypeMappings,
@@ -186,7 +188,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         Default::default()
     };
     let default_export_object = options_script.default_export.object;
-    let default_export_class = options_script.default_export.class;
+    let irregular_default = (!has_script_setup)
+        .then(|| {
+            script_content.and_then(|script| {
+                irregular_default::IrregularDefault::new(script, &options_script)
+            })
+        })
+        .flatten();
     if default_export_object.is_some() {
         ts.push_lib_text(legacy_vue2::define_component_helper(legacy_vue2, dialect));
     }
@@ -397,9 +405,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 self::script_module::collect_named_value_export_starts(script);
             let mut props_const_assertions = PropsConstAssertions::new(script, options_api);
             let mut ref_keys = module_plan.key_checks(&setup_helpers, has_ref_registry);
-            let mut pending_wrap_close: Option<usize> = None;
-            // Deferred class-component alias: `(class_end, name)`.
-            let mut pending_class_alias: Option<(usize, &str)> = None;
+            let mut pending_default = standard_default::PendingDefault::default();
             let mut emitted_default_alias = false;
             for (src_byte_offset, raw_line) in ambient.script_lines(script) {
                 boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);
@@ -439,119 +445,41 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
                 // Close the `defineComponent(` wrap right after the wrapped
                 // options object's closing brace.
-                if let Some(close_offset) = pending_wrap_close
+                if let Some(close_offset) = pending_default.wrap_close
                     && close_offset > line_start
                     && close_offset <= line_end
                     && let Some((head, tail)) = line.split_at_checked(close_offset - line_start)
                 {
                     output_line = std::borrow::Cow::Owned(cstr!("{head}){tail}").into());
-                    pending_wrap_close = None;
+                    pending_default.wrap_close = None;
                 }
 
-                props_const_assertions.splice_output_line(&mut output_line, line_start);
-                // Strip `export` from non-import lines inside setup scope
-                let trimmed_line = output_line.trim_start();
-                if let Some(default_expr) = trimmed_line
-                    .strip_prefix("export default")
-                    .filter(|rest| options_api_support::follows_default_keyword(rest))
-                    .filter(|_| !module_plan.inside_literal(line_start))
-                {
-                    emitted_default_alias = true;
-                    declared_default_alias = true;
-                    let leading_ws = output_line.strip_suffix(trimmed_line).unwrap_or_default();
-                    // A class default export (the class-component shape) stays
-                    // a real class declaration so `@Component()` decorators
-                    // remain valid (a bare `const __default__ = class {}`
-                    // rewrite moves them onto a class expression — TS1206). The
-                    // `const __default__ = <Name>` alias is deferred until the
-                    // class body closes.
-                    let class_default =
-                        if has_script_setup || matches!(output_line, std::borrow::Cow::Owned(_)) {
-                            None
-                        } else {
-                            default_export_class.filter(
-                                |&(export_start, class_start, class_end, _, _)| {
-                                    export_start >= line_start
-                                        && class_start >= line_start
-                                        && class_start < line_end
-                                        && class_end > line_start
-                                        && class_start - line_start <= line.len()
-                                        && line.is_char_boundary(class_start - line_start)
-                                },
-                            )
-                        };
-                    // Wrap a plain object-literal default export (Options
-                    // API) with `defineComponent` so `this` in
-                    // computed/methods gets Vue's instance typing. Applies
-                    // only to the plain <script> block; any other shape keeps
-                    // the bare `const __default__ =` rewrite.
-                    let wrap_object = if class_default.is_some()
-                        || has_script_setup
-                        || matches!(output_line, std::borrow::Cow::Owned(_))
-                    {
-                        None
-                    } else {
-                        default_export_object.filter(|&(export_start, object_start, _)| {
-                            export_start >= line_start
-                                && object_start >= line_start
-                                && object_start < line_end
-                                && object_start - line_start <= line.len()
-                                && line
-                                    .get(object_start - line_start..)
-                                    .is_some_and(|rest| rest.starts_with('{'))
-                        })
-                    };
-                    if let Some((class_end, name, class_text)) =
-                        class_default.and_then(|(_, cs, ce, ns, ne)| {
-                            Some((ce, script.get(ns..ne)?, line.get(cs - line_start..)?))
-                        })
-                    {
-                        // Drop the `export default ` keyword, keep the class
-                        // (and any same-line trailing decorator) verbatim.
-                        output_line =
-                            std::borrow::Cow::Owned(cstr!("{leading_ws}{class_text}").into());
-                        pending_class_alias = Some((class_end, name));
-                    } else if let Some((object_column, object_end)) =
-                        wrap_object.and_then(|(_, object_start, object_end)| {
-                            let object_column = object_start - line_start;
-                            (line.len() - default_expr.len() <= object_column)
-                                .then_some((object_column, object_end))
-                        })
-                    {
-                        let keyword_end = line.len() - default_expr.len();
-                        let separator = line.get(keyword_end..object_column).unwrap_or_default();
-                        let single_line = (object_end <= line_end)
-                            .then(|| object_end - line_start)
-                            .and_then(|close_column| {
-                                Some((
-                                    line.get(object_column..close_column)?,
-                                    line.get(close_column..)?,
-                                ))
-                            });
-                        if let Some((object, after)) = single_line {
-                            // Single-line `export default { ... }`.
-                            output_line = std::borrow::Cow::Owned(
-                                cstr!(
-                                    "{leading_ws}const __default__ ={separator}{DEFINE_COMPONENT_REF}({object}){after}",
-                                )
-                                .into(),
-                            );
-                        } else {
-                            pending_wrap_close = Some(object_end);
-                            output_line = std::borrow::Cow::Owned(
-                                cstr!(
-                                    "{leading_ws}const __default__ ={separator}{DEFINE_COMPONENT_REF}({}",
-                                    line.get(object_column..).unwrap_or_default(),
-                                )
-                                .into(),
-                            );
-                        }
-                    } else {
-                        output_line = std::borrow::Cow::Owned(
-                            cstr!("{leading_ws}const __default__ ={}", default_expr).into(),
-                        );
+                let irregular_projection = irregular_default.as_ref()
+                    .and_then(|rewrite| rewrite.project_line(&output_line, line_start));
+                if let Some(projected) = &irregular_projection {
+                    output_line = std::borrow::Cow::Owned(projected.text.clone().into());
+                    if projected.declares_alias {
+                        emitted_default_alias = true;
+                        declared_default_alias = true;
                     }
                 }
+                props_const_assertions.splice_output_line(&mut output_line, line_start);
+                if standard_default::rewrite_line(
+                    &mut output_line,
+                    line,
+                    (line_start, line_end),
+                    script,
+                    standard_default::Context {
+                        facts: &options_script,
+                        has_script_setup,
+                        inside_literal: module_plan.inside_literal(line_start),
+                    },
+                    &mut pending_default,
+                ) {
+                    emitted_default_alias = true;
+                    declared_default_alias = true;
+                }
+                let projected_gen_start = ts.len();
                 ref_keys.emit_line(
                     &mut ts,
                     &mut mappings,
@@ -559,20 +487,33 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     (line_start, line),
                     source_offset,
                 );
+                if let Some(projected) = irregular_projection {
+                    projected.map_copied(
+                        &mut mappings,
+                        ts.as_str().get(projected_gen_start..ts.len().saturating_sub(1)).unwrap_or_default(),
+                        projected_gen_start,
+                        line_start,
+                        &source_offset,
+                    );
+                }
+                if let Some(name) = irregular_default.as_ref()
+                    .and_then(|rewrite| rewrite.class_alias(line_start, line_end)) {
+                    append!(ts, "  const __default__ = {name};\n");
+                }
                 // Once the class body has closed, append the deferred
                 // `const __default__ = <Name>` alias for the class component.
-                if let Some((class_end, name)) = pending_class_alias
+                if let Some((class_end, name)) = pending_default.class_alias
                     && class_end <= line_end
                 {
                     append!(ts, "  const __default__ = {name};\n");
-                    pending_class_alias = None;
+                    pending_default.class_alias = None;
                 }
             }
             boundaries.emit_through(script.len(), &mut ts, &mut mappings, source_offset);
             setup_lines::finish_script(
                 &mut ts,
-                pending_class_alias.map(|(_, name)| name),
-                pending_wrap_close.is_some(),
+                pending_default.class_alias.map(|(_, name)| name),
+                pending_default.wrap_close.is_some(),
                 emitted_default_alias,
                 script_gen_start,
                 script.len(),
