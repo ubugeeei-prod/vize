@@ -1,5 +1,9 @@
 # Rust parallel frontend: local opt-in, not a CI or release toolchain
 
+> Superseded in scope by [Rust build accelerators](./2026-11-25-rust-build-accelerators.md):
+> the parallel frontend now runs on the pinned compiler in the dev shell and in CI, and the
+> nightly shell below is removed. The measurements and pitfalls here still apply.
+
 Since `nightly-2026-11-14`, rustc runs its frontend on two threads by default and
 accepts `-Zunstable-options --jobs-frontend=N`
 ([announcement](https://blog.rust-lang.org/2026/11/16/enabling-parallel-frontend-on-nightly/),
