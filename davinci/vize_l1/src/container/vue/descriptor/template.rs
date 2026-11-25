@@ -103,7 +103,7 @@ pub enum TemplateFrameNameRefusal {
 /// A public capture or caller coordinates cannot mint a receipt:
 /// ```compile_fail
 /// use vize_l1::container::vue::TemplateFrameNames;
-/// let _ = TemplateFrameNames { owner: todo!(), selected: todo!(), root: todo!(), names: todo!() };
+/// let _ = TemplateFrameNames { l1ir: todo!(), selected: todo!(), root: todo!(), names: todo!() };
 /// ```
 /// The original descriptor must remain alive:
 /// ```compile_fail

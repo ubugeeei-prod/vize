@@ -112,7 +112,7 @@ impl<'owner, 'arena> VueRenderExpression<'owner, 'arena> {
 /// fn discard(exposure: VueExposure<'_, '_, '_, '_>) {
 ///     let result = build_vue_render_decisions(&exposure).unwrap();
 ///     drop(exposure);
-///     let _ = result.file();
+///     let _ = result.l2ir();
 /// }
 /// ```
 /// The checked access rows have no mutable or neutral conversion:

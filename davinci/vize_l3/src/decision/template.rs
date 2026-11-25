@@ -38,7 +38,7 @@ use vize_l2::{
 /// fn discard(owner: NativeTemplateFile<'_>) {
 ///     let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
 ///     drop(owner);
-///     let _ = analysis.file();
+///     let _ = analysis.l2ir();
 /// }
 /// ```
 /// The completion view cannot be extracted as a neutral analysis or cloned:

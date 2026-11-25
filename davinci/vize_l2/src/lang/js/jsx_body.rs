@@ -58,7 +58,7 @@ pub struct JsxFileProducer<'a> {
 ///
 /// ```compile_fail
 /// use vize_l2::lang::js::JsxFile;
-/// fn forge<'a>() { let _ = JsxFile { observation: (), file: (), records: vec![] }; }
+/// fn forge<'a>() { let _ = JsxFile { observation: todo!(), l2ir: todo!(), records: vec![] }; }
 /// ```
 pub struct JsxFile<'a> {
     observation: ProgramObservation<'a>,

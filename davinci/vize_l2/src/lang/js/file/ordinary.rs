@@ -119,7 +119,7 @@ pub struct OrdinaryIssue {
 /// Options/Ref/template-context classification and output remain separate.
 /// ```compile_fail
 /// use vize_l2::lang::js::VueOrdinaryEmpty;
-/// fn forge() { let _ = VueOrdinaryEmpty { file: true }; }
+/// fn forge() { let _ = VueOrdinaryEmpty { l2ir: todo!(), script: todo!(), original: todo!(), unit: todo!() }; }
 /// ```
 /// ```compile_fail
 /// use vize_l2::lang::js::VueOrdinaryEmpty;
