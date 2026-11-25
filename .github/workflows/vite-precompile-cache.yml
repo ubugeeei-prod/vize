@@ -51,12 +51,8 @@ jobs:
           run-install: false
       - name: Install the locked Vite adapter graph
         run: >-
-          vp install --frozen-lockfile --prefer-offline
-          --filter './npm/builder/vite...'
-          --filter './npm/native...'
+          vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --filter './npm/native...'
       - name: Verify in-memory, persistent and SSR precompile identities
-        run: >-
-          node --test --test-concurrency=1
-          npm/builder/vite/src/plugin/compiled-module-cache.test.ts
-          npm/builder/vite/src/plugin/precompile-cache-path.test.ts
-          npm/builder/vite/src/plugin/precompile.test.ts
+        env:
+          VIZE_CI_FILES: ${{ github.workspace }}/.github/scripts/workflows/vite-precompile-cache
+        run: . "${{ env.VIZE_CI_FILES }}/verify-in-memory-persistent-and-ssr-precompile.sh"

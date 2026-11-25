@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+node npm/native/scripts/test-preparation.mjs node npm/formatter/prettier/test/consumer.mjs \
+  --mode source-native \
+  --expected-node 22.0.0 \
+  --tarball-directory "$RUNNER_TEMP/prettier-source-consumer" \
+  --output "$RUNNER_TEMP/prettier-node22-consumer"

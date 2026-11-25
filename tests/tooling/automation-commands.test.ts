@@ -2,6 +2,7 @@ import type { ConfigValue } from "../../tools/support/ci/repository-yaml.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  automationSizeViolations,
   isProgramInvocation,
   validateAutomationSteps,
   validateShellProgram,
@@ -104,5 +105,28 @@ test("operational text filters load a named file", () => {
   }
   assert.deepEqual(automationProgramReferences('jq -f "$VIZE_CI_FILES/../shared/artifact.jq"'), [
     "../shared/artifact.jq",
+  ]);
+});
+
+test("long inline commands, test lists and conditions belong in named programs", () => {
+  const long = `node tools/run.ts ${"--flag ".repeat(30)}`.trim();
+  const document = {
+    jobs: {
+      build: {
+        if: `\${{ ${"github.event_name == 'push' || ".repeat(8)}false }}`,
+        steps: [
+          { name: "Short", run: "node tools/run.ts --flag" },
+          { name: "Long", run: long },
+          { name: "Tests", run: "node --test a.test.ts b.test.ts c.test.ts" },
+          { name: "Two tests", run: "node --test a.test.ts b.test.mjs" },
+          { name: "Named", run: '. "${{ env.VIZE_CI_FILES }}/long-command.sh"' },
+        ],
+      },
+    },
+  };
+  assert.deepEqual(automationSizeViolations("ci.yml", document), [
+    "ci.yml / build: condition longer than 200 characters",
+    "ci.yml / build / Long: command longer than 160 characters",
+    "ci.yml / build / Tests: more than two inline test files",
   ]);
 });

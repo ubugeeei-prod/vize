@@ -14,6 +14,7 @@ on:
       - "crates/vize_atelier_sfc/**"
       - "crates/vize_vitrine/src/napi/sfc/**"
       - "crates/vize_croquis/src/sfc/**"
+      - tools/config/pkl/parts/rspack-hmr/**
 
 permissions: { contents: read }
 
@@ -51,3 +52,52 @@ jobs:
       - name: Run browser HMR
         # A live browser session needs the selected runtime environment and fresh execution.
         run: vp run --no-cache --filter @vizejs/rspack-plugin test:hmr
+  source-ranges:
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      CARGO_TERM_COLOR: always
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/rspack-hmr/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          version: latest
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: 1.100.0
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with:
+          wild-version: 0.9.0
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: clippy-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install the locked adapter and native dependencies
+        run: vp install --frozen-lockfile --prefer-offline --filter '@vizejs/rspack-plugin...' --filter '@vizejs/builder-shared...' --filter '@vizejs/native...'
+      - name: Prepare the exact source native image
+        run: . "${{ env.VIZE_CI_FILES }}/src-ranges-prepare-the-exact-source-native-image.sh"
+      - name: Retain original src boundaries, complete modules and source maps
+        run: . "${{ env.VIZE_CI_FILES }}/src-ranges-retain-original-src-boundaries-complete-modules-and-source-maps.sh"

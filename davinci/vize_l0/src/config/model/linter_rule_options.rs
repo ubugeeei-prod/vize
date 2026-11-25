@@ -15,6 +15,7 @@ mod attribute_hyphenation;
 mod casing;
 mod component_registration;
 mod configured_vue;
+mod consistent_type_imports;
 mod content_directives;
 mod define_macros_order;
 mod eslint_vue_compatibility;
@@ -53,9 +54,10 @@ pub use casing::{
     TemplateComponentNameCasing,
 };
 pub use configured_vue::{
-    CallAfterAwaitOptions, CallAfterAwaitSpec, ConfiguredVueRuleOptions, MaxPropsOptions,
-    MaxTemplateDepthOptions, RestrictedHtmlElement, RestrictedHtmlElementSpec,
-    RestrictedHtmlElements, RestrictedNames, RestrictedVOn, RestrictedVOnEntry, RestrictedVOnSpec,
+    CallAfterAwaitOptions, CallAfterAwaitSpec, ConfiguredVueRuleOptions,
+    ConsistentTypeImportsOptions, MaxPropsOptions, MaxTemplateDepthOptions, RestrictedHtmlElement,
+    RestrictedHtmlElementSpec, RestrictedHtmlElements, RestrictedNames, RestrictedVOn,
+    RestrictedVOnEntry, RestrictedVOnSpec, TypeImportFixStyle, TypeImportPreference,
     UnsupportedFeaturesOptions,
 };
 pub use define_macros_order::DefineMacrosOrderOptions;

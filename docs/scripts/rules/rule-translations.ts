@@ -15,6 +15,7 @@ import type { RuleLocale } from "./rule-groups.ts";
 import { catalogueAdditionNotes, catalogueAdditionPackets } from "./catalogue-additions-locales.ts";
 import { compatibilityPackets } from "./compatibility-locales.ts";
 import { configuredPackets } from "./compatibility-configured-locales.ts";
+import { consistentTypeImportsPhrases } from "./consistent-type-imports-notes.ts";
 
 export type TranslatedLocale = Exclude<RuleLocale, "en" | "ja">;
 type Packet = readonly [purpose: string, bad: string, good: string];
@@ -56,18 +57,21 @@ const phrases: Record<TranslatedLocale, Map<string, string>> = {
     ...Object.entries(chineseShared),
     ...Object.entries(chineseVueNotes),
     ...Object.entries(catalogueAdditionNotes["zh-CN"]),
+    ...Object.entries(consistentTypeImportsPhrases["zh-CN"]),
   ]),
   "pt-BR": new Map([
     ...commonVueText("pt-BR"),
     ...Object.entries(portugueseShared),
     ...Object.entries(portugueseVueNotes),
     ...Object.entries(catalogueAdditionNotes["pt-BR"]),
+    ...Object.entries(consistentTypeImportsPhrases["pt-BR"]),
   ]),
   fr: new Map([
     ...commonVueText("fr"),
     ...Object.entries(frenchShared),
     ...Object.entries(frenchVueNotes),
     ...Object.entries(catalogueAdditionNotes.fr),
+    ...Object.entries(consistentTypeImportsPhrases.fr),
   ]),
 };
 

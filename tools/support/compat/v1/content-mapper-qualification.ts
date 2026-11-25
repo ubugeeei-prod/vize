@@ -147,7 +147,7 @@ const semanticObligations = [
     requirement: "Nuxt-generated aliases and ambient types participate in the mapper project.",
     issues: [11104, 13018],
     evidenceCandidates: [
-      ".github/workflows/nuxt-generated-membership.yml",
+      ".github/workflows/content-mapper-conformance.yml",
       "crates/vize/tests/check_canon_nuxt_parity_cli.rs",
     ],
   },
@@ -293,7 +293,7 @@ export function buildContentMapperV1Qualification(root: string, requiredCases: r
         scales: [1_000, 5_000, 20_000],
         issues: [10620, 12102, 12109],
         evidenceCandidates: [
-          ".github/workflows/content-mapper-replay.yml",
+          ".github/workflows/typecheck-cold-pair.yml",
           ".github/workflows/content-mapper-cold-start.yml",
         ],
         packetIdentity: "required",

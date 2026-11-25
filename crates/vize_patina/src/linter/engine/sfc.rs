@@ -93,7 +93,9 @@ impl Linter {
         );
         let has_fatal_parse_errors = self.has_fatal_template_parse_errors(&l2);
         let analysis = if !has_fatal_parse_errors
-            && (self.has_active_semantic_template_rules() || self.has_resolved_macro_type_demand())
+            && (self.has_active_semantic_template_rules()
+                || self.has_resolved_macro_type_demand()
+                || super::super::script_rules::has_template_read_demand(self))
         {
             Some(profile!(
                 "patina.sfc.descriptor.croquis",
@@ -113,7 +115,7 @@ impl Linter {
                         scripts.parses(),
                         Some(&l2),
                         self.macro_type_resolution(filename),
-                        self.has_unused_bindings_demand(),
+                        self.read_demand(),
                         derived,
                     )
                 } else {
@@ -121,7 +123,7 @@ impl Linter {
                         scripts.parses(),
                         Some(&l2),
                         self.macro_type_resolution(filename),
-                        self.has_unused_bindings_demand(),
+                        self.read_demand(),
                         derived,
                     )
                 }

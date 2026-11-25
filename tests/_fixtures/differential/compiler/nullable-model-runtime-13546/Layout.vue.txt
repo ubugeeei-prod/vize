@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const count = defineModel<number | null>('count', { required: true })
+const time = defineModel<string | null>('time')
+</script>
+<template><p>{{ count ?? 'none' }} {{ time ?? 'none' }}</p></template>

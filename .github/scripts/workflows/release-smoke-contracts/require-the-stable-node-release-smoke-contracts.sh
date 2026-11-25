@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+node --test \
+  tests/tooling/release/release-smoke-parity-peer-copy.test.ts \
+  tests/tooling/release/release-smoke-install.test.ts \
+  tests/tooling/release/release-smoke-runtime-oracle.test.ts \
+  tests/tooling/release/release-smoke-typescript-runtime.test.ts

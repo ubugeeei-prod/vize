@@ -64,6 +64,13 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
     "`update:modelValue` は引用符なしの JavaScript 識別子として書けないため、宣言内のすべての静的キーを引用符付きにそろえます。",
   ],
   [
+    "script/consistent-type-imports",
+    "`Foo` is imported as a value, but its only use is the type argument of `defineProps`. `Bar` is not reported: the template reads `Bar.label`, which is a value use.",
+    "`Foo` is imported with `import type`, so the import is erased at build time. `Bar` stays a value import because the template evaluates it.",
+    "`Foo` を値としてインポートしていますが、使用箇所は `defineProps` の型引数だけです。`Bar` はテンプレートが `Bar.label` を読み取るため値としての使用であり、報告しません。",
+    "`Foo` を `import type` でインポートするため、ビルド時にインポートが消去されます。`Bar` はテンプレートが評価するので、値のインポートのままです。",
+  ],
+  [
     "script/custom-event-name-casing",
     "The emitted string `my-event` contains a hyphen and violates the default camelCase event naming policy.",
     "Both the declaration and call use `myEvent`, preserving agreement while satisfying the global camelCase default. The `opinionated` preset selects kebab-case instead, and explicit rule options can also select lowercase names such as `transitionstart`.",

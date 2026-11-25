@@ -116,6 +116,13 @@ pub struct SfcScriptContext<'a> {
     /// The SFC's script parses, sharing one semantic pass per block when the
     /// engine holds one (see [`Self::semantic_of`]).
     pub(crate) scripts: Option<&'a dyn crate::linter::sfc_scripts::ScriptParses>,
+    /// What the template and `<style>` `v-bind()` read from the script scope,
+    /// from the SFC's one binding analysis. `Unknown` unless an enabled rule
+    /// demanded it (`has_template_read_demand`) and every block was walked.
+    pub(crate) template_side: super::TemplateSideReads<'a>,
+    /// The `<script setup generic="...">` attribute: type parameters whose
+    /// constraints and defaults can name an import.
+    pub(crate) setup_generic: Option<&'a str>,
 }
 
 impl<'a> SfcScriptContext<'a> {
@@ -136,5 +143,101 @@ impl<'a> SfcScriptContext<'a> {
         program: &oxc_ast::ast::Program<'_>,
     ) -> Option<&'a oxc_semantic::SemanticBuilderReturn<'a>> {
         self.scripts?.semantic_of(program)
+    }
+
+    /// The SFC's other script block, parsed on first read like every block.
+    /// `None` when there is none or its parse failed.
+    pub(crate) fn sibling_block(&self) -> Option<&'a oxc_ast::ast::Program<'a>> {
+        let scripts = self.scripts?;
+        let parsed = if self.is_script_setup {
+            scripts.script()
+        } else {
+            scripts.script_setup()
+        }?;
+        (!parsed.panicked && parsed.diagnostics.is_empty()).then_some(&parsed.program)
+    }
+}
+
+/// What the template side of an SFC reads from its script scope.
+#[derive(Clone, Copy, Default)]
+pub(crate) enum TemplateSideReads<'a> {
+    /// The template side was not analyzed, or a block that can read a script
+    /// name was not walked. No name can be ruled out.
+    #[default]
+    Unknown,
+    /// The SFC has neither a template nor a style block.
+    Nothing,
+    /// The binding analysis recorded the template side's reads. The relation
+    /// itself says whether every block was walked.
+    Analyzed {
+        reads: &'a vize_croquis::croquis::TemplateBindingReads,
+        /// The component's runtime bindings, which a template name resolves
+        /// to before any other source.
+        bindings: &'a vize_croquis::BindingMetadata,
+        /// Whether `bindings` holds every prop. Props typed by an import that
+        /// did not resolve can declare any name.
+        bindings_complete: bool,
+        /// Whether `vue/no-undefined-refs` is active. It reports a template
+        /// expression that reads a name nothing provides.
+        undefined_refs_reported: bool,
+    },
+}
+
+/// The block that evaluates a name no runtime binding provides.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum UnboundRead {
+    /// A template expression.
+    Template,
+    /// A `<style>` `v-bind()` value.
+    StyleBind,
+}
+
+impl TemplateSideReads<'_> {
+    pub(crate) fn is_complete(self) -> bool {
+        match self {
+            Self::Unknown => false,
+            Self::Nothing => true,
+            Self::Analyzed { reads, .. } => reads.is_complete(),
+        }
+    }
+
+    /// Whether the template side may read the script binding `name`.
+    pub(crate) fn may_read(self, name: &str) -> bool {
+        match self {
+            Self::Unknown => true,
+            Self::Nothing => false,
+            Self::Analyzed { reads, .. } => reads.may_read(name),
+        }
+    }
+
+    /// The read of `name` that nothing provides at runtime and no other rule
+    /// reports: no binding, no prop, no JavaScript or Vue global. A
+    /// `$`-prefixed name can be a property a plugin installs on the component
+    /// proxy, as `vue/no-undefined-refs` also assumes.
+    pub(crate) fn unbound_read(self, name: &str) -> Option<UnboundRead> {
+        let Self::Analyzed {
+            reads,
+            bindings,
+            bindings_complete,
+            undefined_refs_reported,
+        } = self
+        else {
+            return None;
+        };
+        if !reads.is_complete()
+            || !bindings_complete
+            || name.starts_with('$')
+            || bindings.contains(name)
+            || vize_croquis::builtins::is_js_global(name)
+            || vize_croquis::builtins::is_vue_builtin(name)
+        {
+            return None;
+        }
+        if !undefined_refs_reported && reads.expression_reads(name) {
+            return Some(UnboundRead::Template);
+        }
+        reads
+            .style_bind_reads(name)
+            .then_some(UnboundRead::StyleBind)
     }
 }

@@ -1,0 +1,598 @@
+# typescript-eslint 8.72.1 `consistent-type-imports`, run with vue-eslint-parser 10.4.2
+# (@typescript-eslint/parser 8.72.1, eslint 10.14.0) on each SFC below: every way a
+# template can use an import as a value, every look-alike that is not a use, and
+# whole-component cases.
+# `typescript-eslint`: its reports. `vize`: the reports of `script/consistent-type-imports`
+# on its defaults. The two agree on which lines are reported, except where `kept`
+# gives the reason.
+=== template[0]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template>{{ Foo }}</template>
+--- typescript-eslint
+--- vize
+=== template[1]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template>{{ Foo.label }}</template>
+--- typescript-eslint
+--- vize
+=== template[2]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template>{{ format(Foo) }}</template>
+--- typescript-eslint
+--- vize
+=== template[3]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p :title="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[4]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p :Foo /></template>
+--- typescript-eslint
+--- vize
+=== template[5]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-bind="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[6]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p @click="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[7]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p @click="Foo()" /></template>
+--- typescript-eslint
+--- vize
+=== template[8]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p @click="(event) => Foo(event)" /></template>
+--- typescript-eslint
+--- vize
+=== template[9]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><input v-model="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[10]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-if="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[11]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-if="item" /><p v-else-if="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[12]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-show="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[13]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-html="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[14]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-text="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[15]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-memo="[Foo]" /></template>
+--- typescript-eslint
+--- vize
+=== template[16]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-for="entry in Foo" :key="entry" /></template>
+--- typescript-eslint
+--- vize
+=== template[17]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-for="entry in [item]" :key="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[18]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-custom="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[19]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p :[Foo]="1" /></template>
+--- typescript-eslint
+--- vize
+=== template[20]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p @[Foo]="item" /></template>
+--- typescript-eslint
+--- vize
+=== template[21]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-custom:[Foo] /></template>
+--- typescript-eslint
+--- vize
+=== template[22]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><Bar><template #[Foo]>x</template></Bar></template>
+--- typescript-eslint
+--- vize
+=== template[23]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><Foo /></template>
+--- typescript-eslint
+--- vize
+=== template[24]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><foo /></template>
+--- typescript-eslint
+--- vize
+=== template[25]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><Foo.Bar /></template>
+--- typescript-eslint
+--- vize
+=== template[26]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><component :is="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[27]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><div is="vue:Foo" /></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+--- kept
+`is="vue:Foo"` renders the setup binding `Foo` like a `<Foo>` tag. typescript-eslint does not count that use, and its fix would leave the tag unresolved at runtime.
+=== template[28]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p ref="Foo" /></template>
+--- typescript-eslint
+--- vize
+=== template[29]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><Bar v-slot="{ value = Foo }">{{ value }}</Bar></template>
+--- typescript-eslint
+--- vize
+=== template[30]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-for="{ label = Foo } in [item]" :key="label">{{ label }}</p></template>
+--- typescript-eslint
+--- vize
+=== template[31]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-for="Foo in [1]" :key="Foo" /><p>{{ Foo }}</p></template>
+--- typescript-eslint
+--- vize
+=== template[32]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p /></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[33]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-for="Foo in [1]" :key="Foo">{{ Foo }}</p></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[34]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-for="(entry, Foo) in [1]" :key="Foo">{{ Foo }}</p></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[35]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><Bar v-slot="{ Foo }">{{ Foo }}</Bar></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[36]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><Bar><template #default="Foo">{{ Foo }}</template></Bar></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[37]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p @click="(Foo) => Foo" /></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[38]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-for="Foo in [1]" :key="Foo"><Bar v-slot="{ value = Foo }">{{ value }}</Bar></p></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[39]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><Bar v-slot="{ Foo = item }">{{ Foo }}</Bar></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[40]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><component is="Foo" /></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[41]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p :title="(item as Foo).label" /></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[42]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p>Foo</p></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[43]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p title="Foo" /></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[44]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><!-- {{ Foo }} --></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[45]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p v-pre>{{ Foo }}</p></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[46]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template>{{ item.Foo }}</template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[47]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p :class="{ Foo: item }" /></template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template[48]
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template>{{ 'Foo' }}</template>
+--- typescript-eslint
+line 2: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 2: All imports in the declaration are only used as types. Use `import type`.
+=== template-read-beside-prop-type
+--- sfc
+<script setup lang="ts">
+import { Bar } from "./Foo";
+import { Foo } from "./Foo";
+
+const { item } = defineProps<{ item: Foo }>();
+</script>
+
+<template>
+  <p>{{ Bar.label }} {{ item.label }}</p>
+</template>
+--- typescript-eslint
+line 3: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 3: All imports in the declaration are only used as types. Use `import type`.
+=== style-v-bind
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p /></template>
+<style>p { color: v-bind(Foo); }</style>
+--- typescript-eslint
+--- vize
+=== style-v-bind-quoted
+--- sfc
+<script setup lang="ts">
+import { Foo } from './foo';
+defineProps<{ item: Foo }>();
+</script>
+<template><p /></template>
+<style scoped>p { color: v-bind('Foo.color'); }</style>
+--- typescript-eslint
+--- vize
+=== kebab-tag
+--- sfc
+<script setup lang="ts">
+import { FooBar } from './foo';
+defineProps<{ item: typeof FooBar }>();
+</script>
+<template><foo-bar /></template>
+--- typescript-eslint
+--- vize
+=== directive
+--- sfc
+<script setup lang="ts">
+import { vFocus } from './foo';
+defineProps<{ item: typeof vFocus }>();
+</script>
+<template><input v-focus /></template>
+--- typescript-eslint
+--- vize
+=== two-blocks
+--- sfc
+<script lang="ts">
+import { A, B, C } from './a';
+export type X = A;
+export const c = D;
+</script>
+<script setup lang="ts">
+import { D, E, F } from './d';
+const b = B;
+type Y = E | C;
+console.log(b);
+</script>
+<template><p>{{ F }}</p></template>
+--- typescript-eslint
+line 2: Imports "A" and "C" are only used as type.
+line 7: Imports "E" are only used as type.
+--- vize
+line 2: Imports "A" and "C" are only used as types.
+line 7: Import "E" is only used as a type.
+=== generic
+--- sfc
+<script setup lang="ts" generic="T extends Base, U = typeof Fallback">
+import { Base, Fallback, Other } from './types';
+defineProps<{ item: T, other: U }>();
+</script>
+<template><p /></template>
+--- typescript-eslint
+line 2: Imports "Base" are only used as type.
+--- vize
+line 2: Imports "Base" and "Fallback" are only used as types.
+=== options-api
+--- sfc
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { Foo } from './foo';
+import Child from './Child.vue';
+export default defineComponent({
+  components: { Child },
+  data: () => ({ item: null as Foo | null }),
+});
+</script>
+<template><Child>{{ Foo }}</Child></template>
+--- typescript-eslint
+line 3: All imports in the declaration are only used as types. Use `import type`.
+--- vize
+line 3: All imports in the declaration are only used as types. Use `import type`.
+=== type-import-read-by-template
+--- sfc
+<script setup lang="ts">
+import type { Shape } from './shape';
+defineProps<{ kind: Shape }>();
+</script>
+<template><p :title="Shape.name" /></template>
+--- typescript-eslint
+--- vize
+line 2: "Shape" is imported as a type, but the template reads it as a value.
+--- kept
+typescript-eslint leaves a type-only import used as a value to the type checker, which cannot see the template. The binding does not exist at runtime, so vize reports the read.

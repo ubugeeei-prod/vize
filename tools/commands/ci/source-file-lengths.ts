@@ -1,5 +1,6 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import fs from "node:fs";
+import { pklGeneratedTargets } from "../../support/ci/pkl-products.ts";
 
 interface SourceFile {
   path: string;
@@ -48,8 +49,11 @@ function hasSegment(file: string, segment: string): boolean {
   return file.startsWith(`${segment}/`) || file.includes(`/${segment}/`);
 }
 
-function isExcluded(file: string): boolean {
+function isExcluded(file: string, generated: ReadonlySet<string>): boolean {
   return (
+    // The length rule governs authored sources. Pkl-generated outputs are exempt because
+    // their Pkl sources are what people edit, and those sources stay under the rule.
+    generated.has(file) ||
     file.endsWith("Cargo.lock") ||
     file.endsWith("pnpm-lock.yaml") ||
     file.endsWith("package-lock.json") ||
@@ -65,7 +69,6 @@ function isExcluded(file: string): boolean {
     file === "docs/davinci/plan/corpus-coverage.md" ||
     file === "package.json" ||
     file.endsWith("/package.json") ||
-    file === ".github/workflows/release.yml" ||
     ["ja", "zh-CN", "pt-BR", "fr"].some((locale) => file.startsWith(`docs/content/${locale}/`)) ||
     // Generated, one row per rule; `generate-patina-rules-page.ts --check` keeps it fresh.
     file === "docs/content/rules/all.md" ||
@@ -198,8 +201,10 @@ function moduleLayoutFailures(paths: readonly string[]): string[] {
 
 function currentFiles(paths: readonly string[]): SourceFile[] {
   const files: SourceFile[] = [];
+  const generated = pklGeneratedTargets(process.cwd());
   for (const file of paths) {
-    if (!sourceSuffixes.some((suffix) => file.endsWith(suffix)) || isExcluded(file)) continue;
+    if (!sourceSuffixes.some((suffix) => file.endsWith(suffix)) || isExcluded(file, generated))
+      continue;
     try {
       if (!fs.lstatSync(file).isFile()) continue;
       files.push({ path: file, lines: lineCount(fs.readFileSync(file, "utf8")) });

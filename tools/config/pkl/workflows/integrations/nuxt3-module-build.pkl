@@ -164,12 +164,12 @@ jobs {
       new Dynamic {
         name = "Verify original Nuxt lint configuration with the source linter"
         `if` = "${{ github.event_name != 'pull_request' }}"
-        run = #"vp env exec node tools/support/compat/nuxt/lint-config-build.ts "$RUNNER_TEMP/nuxt-lint-config-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json""#
+        run = ci.workflowScript("verify-original-nuxt-lint-configuration-with-the-source.sh")
       }
       new Dynamic {
         name = "Verify original Nuxt scoped compiler defaults and whole rendered outputs"
         `if` = "${{ github.event_name != 'pull_request' }}"
-        run = #"vp env exec node tools/support/compat/nuxt/compiler-defaults-build.ts "$RUNNER_TEMP/nuxt-compiler-defaults-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json""#
+        run = ci.workflowScript("verify-original-nuxt-scoped-compiler-defaults-and-whole.sh")
       }
       new Dynamic {
         name = "Install the unchanged reported Vite 8.2.2 dependency cohort"
@@ -180,7 +180,7 @@ jobs {
       new Dynamic {
         name = "Verify original relative glob keys and outside-root Vite and Nuxt runtime"
         `if` = "${{ github.event_name != 'pull_request' }}"
-        run = #"vp env exec node tools/support/compat/nuxt/relative-glob-build.ts "$RUNNER_TEMP/vite-relative-glob-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json""#
+        run = ci.workflowScript("verify-original-relative-glob-keys-and-outside-root-vite.sh")
       }
       new Dynamic {
         name = "Capture the current CLI for the JavaScript workspace consumers"
@@ -190,7 +190,7 @@ jobs {
       new Dynamic {
         name = "Verify real JavaScript Nuxt and Vite workspace products"
         `if` = "${{ github.event_name != 'pull_request' }}"
-        run = #"vp env exec node tools/support/compat/nuxt/javascript-workspace-build.ts "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json""#
+        run = ci.workflowScript("verify-real-javascript-nuxt-and-vite-workspace-products.sh")
       }
       new Dynamic {
         name = "Capture the source producer Node executable"
@@ -216,7 +216,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify SSR environment ownership and original Nuxt 5 inputs"
-        run = "node --test npm/framework/nuxt/src/ssr-runtime.test.ts tests/tooling/nuxt5-runtime.test.ts tests/tooling/nuxt-source-binding.test.mjs"
+        run = ci.workflowScript("verify-ssr-environment-ownership-and-original-nuxt-5.sh")
       }
       // The peer declaration and Nitro dev compatibility remain separate #11795 gates.
       new Dynamic {
@@ -235,7 +235,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify Nitro plugin ownership and frozen development inputs"
-        run = "node --test npm/framework/nuxt/src/server-plugins.test.ts npm/framework/nuxt/src/builder.test.ts tests/tooling/nuxt5-dev-runtime.test.ts"
+        run = ci.workflowScript("verify-nitro-plugin-ownership-and-frozen-development.sh")
       }
       new Dynamic {
         name = "Install the frozen Nuxt 5 development reproduction"

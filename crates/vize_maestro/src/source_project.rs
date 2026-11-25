@@ -41,6 +41,11 @@ pub use script_queries::{ScriptModuleSpecifier, ScriptQueryProducts, ScriptQuery
 #[cfg(feature = "experimental-script-tools")]
 pub use script_queries::tools::{ScriptBlockLint, ScriptToolAnalysis, ScriptToolProducts};
 
+#[cfg(feature = "experimental-component-passes")]
+mod scoped_component;
+#[cfg(feature = "experimental-component-passes")]
+pub use scoped_component::ScopedComponentQueryError;
+
 #[cfg(feature = "experimental-scss-definitions")]
 mod scss;
 #[cfg(feature = "experimental-scss-definitions")]

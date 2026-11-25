@@ -207,7 +207,39 @@ impl Drawer {
     /// source has no node of its own (it is a slice of the directive's
     /// expression) and walks through here directly; its occurrences are
     /// captured with the loop scope, so it passes `note_occurrences = false`.
+    /// The binding demand picks one of two compiled walks: without a demand
+    /// it has no demand test. Only this function is compiled twice.
+    #[inline(always)]
     pub(super) fn check_expression_text_refs(
+        &mut self,
+        content: &str,
+        retained: Option<&JsExpression<'_>>,
+        base_offset: u32,
+        scope_vars: &[CompactString],
+        note_occurrences: bool,
+    ) {
+        if self.binding_demand.any() {
+            self.check_expression_text_refs_in::<true>(
+                content,
+                retained,
+                base_offset,
+                scope_vars,
+                note_occurrences,
+            );
+        } else {
+            self.check_expression_text_refs_in::<false>(
+                content,
+                retained,
+                base_offset,
+                scope_vars,
+                note_occurrences,
+            );
+        }
+    }
+
+    /// `DEMAND`: an unused-binding or read demand is set.
+    #[inline(never)]
+    fn check_expression_text_refs_in<const DEMAND: bool>(
         &mut self,
         content: &str,
         retained: Option<&JsExpression<'_>>,
@@ -224,12 +256,15 @@ impl Drawer {
         // retained AST (P1-5) feed the walk directly; the retained parse is a
         // pure function of the same text, so cache entries stay path-agnostic.
         if !self.ident_cache.contains_key(content) {
-            if self.track_unused_bindings
-                && !self.croquis.unused_bindings.is_empty()
-                && retained.is_none()
-                && extract_identifiers_checked(content).is_none()
-            {
-                self.croquis.unused_bindings.clear();
+            if DEMAND {
+                if self.binding_demand.reads() {
+                    self.refuse_unparsed_expression(content, retained.is_none());
+                } else if !self.croquis.unused_bindings.is_empty()
+                    && retained.is_none()
+                    && extract_identifiers_checked(content).is_none()
+                {
+                    self.croquis.unused_bindings.clear();
+                }
             }
             let computed = profile!(
                 "croquis.template.expression.extract_identifiers",
@@ -252,14 +287,22 @@ impl Drawer {
             self.ident_cache
                 .insert(CompactString::new(content), computed);
         }
-        if note_occurrences {
+        // Inline test, out-of-line capture: both walks share one capture body.
+        if note_occurrences && self.occurrence_capture.is_some() {
             self.note_expression_occurrences(content, base_offset, scope_vars);
         }
         let Some(idents) = self.ident_cache.get(content) else {
             return;
         };
-        if self.track_unused_bindings && idents.iter().any(|name| name == "eval") {
-            self.croquis.unused_bindings.clear();
+        if DEMAND {
+            if self.binding_demand.unused() && idents.iter().any(|name| name == "eval") {
+                self.croquis.unused_bindings.clear();
+            }
+            if self.binding_demand.reads() {
+                self.croquis
+                    .setup_context
+                    .note_template_expression_reads(idents, scope_vars);
+            }
         }
         let report_undefined = self.options.detect_undefined && self.script_drawn;
         // TS-34 input relation for the `UndefinedRefs` spec (debug builds,
@@ -279,7 +322,7 @@ impl Drawer {
 
             let in_scope_vars = scope_vars.iter().any(|v| v.as_str() == ident_str);
             let in_bindings = self.croquis.bindings.contains(ident_str);
-            if self.track_unused_bindings && in_bindings && !in_scope_vars {
+            if DEMAND && self.binding_demand.unused() && in_bindings && !in_scope_vars {
                 self.croquis
                     .unused_bindings
                     .retain(|candidate| candidate != ident);
@@ -316,6 +359,7 @@ impl Drawer {
 ///
 /// Quoted text, template-literal text and comments are not code: an earlier
 /// `'missing'` string must not anchor the undefined `missing` read after it.
+#[inline(always)]
 fn find_identifier_offset(content: &str, ident: &str, start: usize) -> Option<usize> {
     let bytes = content.as_bytes();
     let needle = ident.as_bytes();

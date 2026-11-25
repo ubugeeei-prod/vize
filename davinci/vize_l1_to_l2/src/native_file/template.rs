@@ -312,3 +312,17 @@ pub(super) fn prepare_lexical<'a>(
     }
     template
 }
+
+#[cfg(feature = "component-text-condense")]
+pub(super) fn prepare_condensed<'a>(
+    allocator: &'a Allocator,
+    selected: TemplateView<'_, 'a>,
+    lang: Lang,
+    issues: &mut Vec<NativeSfcIssue>,
+) -> NativeTemplateObservation<'a> {
+    let mut template = prepare(allocator, selected, lang, issues);
+    if let Some(pending) = &mut template.pending {
+        pending.enable_condensed_text();
+    }
+    template
+}

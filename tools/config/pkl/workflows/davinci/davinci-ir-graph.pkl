@@ -8,6 +8,10 @@ on {
       "tests/formal/ir-graph/**"
       "tests/formal/position-index/**"
       ".github/scripts/workflows/davinci-ir-graph/**"
+      "crates/vize_maestro/src/document/store.rs"
+      "crates/vize_maestro/src/source_project/query.rs"
+      "crates/vize_maestro/src/source_project/scoped_component.rs"
+      "crates/vize_maestro/src/source_project/snapshot.rs"
     }
   }
   workflow_dispatch = null

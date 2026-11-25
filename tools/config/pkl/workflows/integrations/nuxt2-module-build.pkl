@@ -103,7 +103,8 @@ jobs {
       }
       new Dynamic {
         name = "Verify version-specific plans and original modern oracle"
-        run = "vp node --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation*.test.ts npm/framework/nuxt/src/builder.test.ts npm/framework/nuxt/src/lint/checker/setup.test.ts"
+        env { VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/nuxt2-module-build" }
+        run = ci.workflowScript("verify-version-specific-plans-and-original-modern-oracle.sh")
       }
       new Dynamic {
         name = "Install the Nuxt 2 reproduction"

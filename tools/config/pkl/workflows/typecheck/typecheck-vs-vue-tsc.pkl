@@ -83,10 +83,7 @@ jobs {
       }
       new Dynamic {
         name = "Build fixed normal product"
-        run = """
-        node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/comparative/source" --target-dir "$RUNNER_TEMP/comparative/target" --binary "$RUNNER_TEMP/comparative/vize" --receipt "$RUNNER_TEMP/comparative/vize.build.json" --role normal
-
-        """
+        run = ci.workflowScript("build-fixed-normal-product.sh")
       }
       new Dynamic {
         name = "Measure"

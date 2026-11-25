@@ -98,7 +98,7 @@ pub(super) fn declarations(ctx: &LintContext<'_>) -> Vec<Declaration> {
                 ctx.type_sources(),
                 ctx.filename,
             )),
-            false,
+            crate::linter::ReadDemand::default(),
             false,
         );
         if append_analyzed_props(

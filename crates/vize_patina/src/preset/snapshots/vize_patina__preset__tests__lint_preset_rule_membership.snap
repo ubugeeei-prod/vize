@@ -1155,6 +1155,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/require-expose",
     "vue/prefer-prop-type-boolean-first",
     "vue/valid-model-definition",
+    "script/consistent-type-imports",
     "musea/require-title",
     "musea/require-component",
     "musea/valid-variant",

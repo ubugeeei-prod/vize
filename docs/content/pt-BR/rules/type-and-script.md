@@ -138,13 +138,14 @@ Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra qua
 | <span id="type-unbound-method"></span>[`type/unbound-method`](./reference/type-unbound-method.md) | Proibir referências a métodos sem o seu recetor (`this`). | `nuxt`, `opinionated` |  |
 | <span id="type-use-unknown-in-catch-callback-variable"></span>[`type/use-unknown-in-catch-callback-variable`](./reference/type-use-unknown-in-catch-callback-variable.md) | Exigir que a variável do callback de catch de uma Promise tenha uma anotação unknown explícita. | `nuxt`, `opinionated` |  |
 
-## Opcionais (16)
+## Opcionais (17)
 
 Não fazem parte de nenhuma predefinição. Ative pelo nome em `linter.rules`, passado a `withVue`.
 
 | Regra | O que verifica | Correção automática |
 | --- | --- | --- |
 | <span id="script-consistent-props-emits-key-quotes"></span>[`script/consistent-props-emits-key-quotes`](./reference/script-consistent-props-emits-key-quotes.md) | Uniformizar chaves entre aspas nas declarações de props e emits. |  |
+| <span id="script-consistent-type-imports"></span>[`script/consistent-type-imports`](./reference/script-consistent-type-imports.md) | Uniformizar o uso de imports de tipo, contando os usos no template como usos de valor. | ✓ |
 | <span id="script-no-next-tick"></span>[`script/no-next-tick`](./reference/script-no-next-tick.md) | Proibir o uso de nextTick() em componentes orientados a Vapor. |  |
 | <span id="script-no-reactive-destructure"></span>[`script/no-reactive-destructure`](./reference/script-no-reactive-destructure.md) | Proibir a desestruturação de objetos reativos que causa perda de reatividade. |  |
 | <span id="script-no-restricted-globals"></span>[`script/no-restricted-globals`](./reference/script-no-restricted-globals.md) | Proibir referências a variáveis globais do ambiente de execução que devem passar por um encapsulamento tipado. |  |

@@ -39,7 +39,8 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: turbopack-consumers, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
-      - run: vp install --filter vize-workspace --filter '@vize/tests' --filter '@vizejs/rspack-plugin...' --filter '@vizejs/turbopack-plugin...' --frozen-lockfile --prefer-offline
+      - name: Install consumer dependencies
+        run: . "${{ env.VIZE_CI_FILES }}/install-consumer-dependencies.sh"
       - name: Build the actual source native image
         run: vp run --filter @vizejs/native build:ci
       - name: Seal native image and source identity

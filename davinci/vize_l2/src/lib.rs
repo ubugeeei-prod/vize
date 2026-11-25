@@ -84,3 +84,6 @@ pub mod module;
 
 /// Source-bound Vue/JS file semantics and its canonical component region.
 pub use file::L2Ir;
+
+#[cfg(feature = "expanded-css")]
+pub mod style;

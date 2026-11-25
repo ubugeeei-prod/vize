@@ -170,6 +170,20 @@ preferConstDef: JsonSchema = new JsonSchema {
   additionalProperties = false
 }
 
+consistentTypeImportsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["prefer"] = new JsonSchema { type = "string"; enum = new Listing { "type-imports"; "no-type-imports" } }
+    ["fixStyle"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "separate-type-imports"; "inline-type-imports" }
+    }
+    ["disallowTypeAnnotations"] = new JsonSchema { type = "boolean" }
+    ["emitDecoratorMetadata"] = new JsonSchema { type = "boolean" }
+  }
+  additionalProperties = false
+}
+
 local namesDef: JsonSchema = new JsonSchema {
   type = "array"
   items = new JsonSchema { type = "string" }

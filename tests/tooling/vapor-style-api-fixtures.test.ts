@@ -39,7 +39,13 @@ for (const source of admission.sourceFiles) {
     maxBuffer: 8 * 1024 * 1024,
   });
   assert.equal(admitted.status, 0, `missing admitted source ${source.path}`);
-  files.set(`head:${source.path}`, admitted.stdout);
+  if (source.path === "crates/vize_atelier_vapor/src/l3/native/emit/element.rs") {
+    const frozen = readFileSync(`tests/_fixtures/byte-custody/${source.path}`);
+    assert.deepEqual(frozen, admitted.stdout);
+    files.set(`head:${source.path}`, frozen);
+  } else {
+    files.set(`head:${source.path}`, admitted.stdout);
+  }
 }
 for (const pin of [...row[0].inputs, ...row[0].witnesses])
   files.set(`head:${pin.path}`, readFileSync(pin.path));

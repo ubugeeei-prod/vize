@@ -53,6 +53,8 @@ const strictRepoCheckCommand = steps(
   iterationRepoCheckCommand,
   // Every project the root tsconfig.json solution references.
   "node tools/support/typescript/check-project.ts",
+  // Shrink-only readability counts and the byte-custody registry.
+  "node tools/commands/ci/readability-ratchet.ts --check",
 );
 const ciVizeAppCheckCommand = steps(
   runInDirectory(

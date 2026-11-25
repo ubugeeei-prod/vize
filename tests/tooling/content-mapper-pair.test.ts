@@ -141,16 +141,16 @@ test("runs of one build that disagree always fail the cell", () => {
 });
 
 test("the workflow measures every filesystem from one build per platform", () => {
-  const workflow = readWorkflowShell("content-mapper-pair");
+  const workflow = readWorkflowShell("typecheck-cold-pair");
   for (const label of ["linux-ext4", "wsl2-ext4", "wsl2-windows-mount", "windows-ntfs"]) {
     assert.match(workflow, new RegExp(label));
   }
   assert.match(
     workflow,
-    /WSLENV: "SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u:VIZE_CI_FILES\/p"/,
+    /WSLENV: SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u:VIZE_CI_FILES\/p$/mu,
   );
   assert.match(workflow, /cargo build --profile ci-opt -p vize --bin vize/);
-  assert.match(workflow, /description: Balanced AB\+BA replicates per build/);
+  assert.match(workflow, /AB\+BA replicates/);
 });
 
 test("the syscall census reads strace lines and collapses generated spellings", async () => {

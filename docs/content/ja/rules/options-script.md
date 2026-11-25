@@ -235,3 +235,77 @@ ESLint から移行する場合は、Vize のルール ID と型付きオプシ�
 ```
 
 追加する設定は、上記の Vite+ 設定で `withVue` に渡す `linter` に指定してください。
+
+## `script/consistent-type-imports`
+
+型としてしか使わないインポートに `import type` を求めるためのルールです。コンポーネント全体を
+読み取るので、`<template>` や `<style>` の `v-bind()` だけが使うインポートは値のインポートのままです。
+`prefer`、`fixStyle`、`disallowTypeAnnotations` は typescript-eslint と同じ名前と意味です。
+
+`emitDecoratorMetadata` には、プロジェクトがその TypeScript オプションでコンパイルされるかどうかを
+指定します。lint は `tsconfig.json` を読みません。既定値の `true` では、デコレーター付きの
+シグネチャが直列化する型（デコレーター付きプロパティの型、デコレーター付きメソッドの引数と
+戻り値の型、デコレーター付きクラスのコンストラクター引数の型）を値としての使用に数えるため、
+自動修正が出力されるメタデータを変えることはありません。デコレーターのメタデータを出力しない
+プロジェクトでは `false` を指定してください。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "script/consistent-type-imports": "warn",
+    },
+    ruleOptions: {
+      "script/consistent-type-imports": {
+        prefer: "type-imports",
+        fixStyle: "inline-type-imports",
+        disallowTypeAnnotations: true,
+        emitDecoratorMetadata: false,
+      },
+    },
+  },
+});
+```
+
+悪い:
+
+```vue
+<script setup lang="ts">
+import Card, { Size } from "./Card.vue";
+
+defineProps<{ size: Size }>();
+</script>
+
+<template>
+  <Card :size="size" />
+</template>
+```
+
+良い:
+
+```vue
+<script setup lang="ts">
+import Card, { type Size } from "./Card.vue";
+
+defineProps<{ size: Size }>();
+</script>
+
+<template>
+  <Card :size="size" />
+</template>
+```
+
+既定の `fixStyle: "separate-type-imports"` では、自動修正は
+`import type { Size } from "./Card.vue";` を独立した行に書き、`import Card from "./Card.vue";` を
+元の位置に残します。`prefer: "no-type-imports"` を指定すると、代わりにすべての `import type` と
+インラインの `type` を報告します。
+
+ESLint から移行する場合は、Vize のルール ID と型付きオプションを別に指定します。
+
+```ts annotate="remove:1;add:2,3"
+ rules: { "@typescript-eslint/consistent-type-imports": ["warn", { fixStyle: "inline-type-imports" }] }
+ rules: { "script/consistent-type-imports": "warn" },
+ ruleOptions: { "script/consistent-type-imports": { fixStyle: "inline-type-imports" } }
+```

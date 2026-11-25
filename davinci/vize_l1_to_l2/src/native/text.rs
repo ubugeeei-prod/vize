@@ -74,3 +74,32 @@ pub(crate) fn decode_references<'a>(
     }
     allocator.alloc_str(output.as_str())
 }
+
+#[cfg(feature = "component-text-condense")]
+impl<'a> Context<'_, 'a> {
+    pub(super) fn component_text_at<R: ConstructionFactory<'a>>(
+        &mut self,
+        region: &mut R,
+        child: &vize_l1::markup::SurfaceChild<'a>,
+        children: &[vize_l1::markup::SurfaceChild<'a>],
+        index: Option<usize>,
+    ) -> bool {
+        let (vize_l1::markup::SurfaceChild::Text(token), Some(lane), Some(index)) =
+            (child, self.text_lane, index)
+        else {
+            return false;
+        };
+        let previous = index.checked_sub(1).and_then(|i| children.get(i));
+        let next = children.get(index + 1);
+        let span = self.token_span(token);
+        let decoded = decode_references(self.allocator, token.text, EntityContext::Text);
+        if let Some(text) = lane.component_text(self.allocator, decoded, span.start, previous, next)
+        {
+            let result = region.text(text, span);
+            self.produced(region, result, "native.text", span, "ui.text");
+        } else {
+            self.record(region, "condense.drop-whitespace", None, span, "");
+        }
+        true
+    }
+}

@@ -216,6 +216,8 @@ mod tests {
         observations: &'component mut NativeObservations<'a>,
     ) -> Context<'component, 'a> {
         Context {
+            #[cfg(feature = "component-text-condense")]
+            text_lane: None,
             allocator: a,
             component: crate::native::block::component_input(component),
             lang: Lang::Js,

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+vp exec node tools/support/compat/davinci/lsp-build-identity.ts target/ci-opt/vize ci-opt "${RUNNER_TEMP}/resource-build.jsonl" "${RUNNER_TEMP}/resource-build-identity.json"

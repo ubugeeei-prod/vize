@@ -14,6 +14,8 @@ use vize_l2::op::Namespace;
 /// A native parser's complete carrier paired with its exact checked source.
 /// Private fields prevent pairing a foreign or modified carrier with a block.
 pub struct NativeComponent<'a> {
+    #[cfg(feature = "component-text-condense")]
+    pub(super) condense: bool,
     allocator: &'a Allocator,
     block: SourceBlock<'a>,
     component: ComponentParse<'a>,
@@ -67,6 +69,8 @@ impl<'a> NativeComponent<'a> {
     ) -> Result<Self, ComponentSourceError> {
         let component = vize_l1::markup::parse_component(allocator, block.source())?;
         Ok(Self {
+            #[cfg(feature = "component-text-condense")]
+            condense: false,
             allocator,
             block,
             component,
@@ -129,6 +133,10 @@ pub(super) fn construct_component<'a, R: ConstructionFactory<'a>>(
     lang: Lang,
 ) {
     let mut cx = Context {
+        #[cfg(feature = "component-text-condense")]
+        text_lane: component
+            .condense
+            .then(|| crate::lower::TextLane::root(true)),
         allocator: component.allocator,
         component: component_input(component),
         lang,

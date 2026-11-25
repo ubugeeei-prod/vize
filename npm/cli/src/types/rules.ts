@@ -79,6 +79,7 @@ export const LINT_RULE_NAMES = [
   "petite-vue/valid-v-scope",
   "script/component-options-name-casing",
   "script/consistent-props-emits-key-quotes",
+  "script/consistent-type-imports",
   "script/custom-event-name-casing",
   "script/define-emits-declaration",
   "script/define-macros-order",

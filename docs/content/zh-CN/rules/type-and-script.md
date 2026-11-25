@@ -138,13 +138,14 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 | <span id="type-unbound-method"></span>[`type/unbound-method`](./reference/type-unbound-method.md) | 禁止在没有接收者（`this`）的情况下引用方法。 | `nuxt`, `opinionated` |  |
 | <span id="type-use-unknown-in-catch-callback-variable"></span>[`type/use-unknown-in-catch-callback-variable`](./reference/type-use-unknown-in-catch-callback-variable.md) | 要求 Promise 的 catch 回调参数使用显式的 unknown 注解。 | `nuxt`, `opinionated` |  |
 
-## 按需启用 (16)
+## 按需启用 (17)
 
 不属于任何预设。在传给 `withVue` 的 `linter.rules` 中按名称启用。
 
 | 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
 | <span id="script-consistent-props-emits-key-quotes"></span>[`script/consistent-props-emits-key-quotes`](./reference/script-consistent-props-emits-key-quotes.md) | 统一 props 和 emits 声明中带引号的键。 |  |
+| <span id="script-consistent-type-imports"></span>[`script/consistent-type-imports`](./reference/script-consistent-type-imports.md) | 统一类型导入的写法，并把模板中的使用计为值使用。 | ✓ |
 | <span id="script-no-next-tick"></span>[`script/no-next-tick`](./reference/script-no-next-tick.md) | 禁止面向 Vapor 的组件使用 nextTick()。 |  |
 | <span id="script-no-reactive-destructure"></span>[`script/no-reactive-destructure`](./reference/script-no-reactive-destructure.md) | 禁止导致响应性丢失的响应式对象解构。 |  |
 | <span id="script-no-restricted-globals"></span>[`script/no-restricted-globals`](./reference/script-no-restricted-globals.md) | 禁止直接引用必须通过类型化包装器访问的运行时环境全局变量。 |  |

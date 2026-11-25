@@ -272,3 +272,10 @@ impl PendingNativeComponent<'_> {
         Some((roots, expressions))
     }
 }
+
+#[cfg(feature = "component-text-condense")]
+impl PendingNativeComponent<'_> {
+    pub(crate) fn enable_condensed_text(&mut self) {
+        self.component.condense = true;
+    }
+}

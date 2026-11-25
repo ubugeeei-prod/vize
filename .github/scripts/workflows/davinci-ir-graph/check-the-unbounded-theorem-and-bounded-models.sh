@@ -19,3 +19,13 @@ result=0
 java -cp "$RUNNER_TEMP/tlc.jar" tlc2.TLC -workers 1 -metadir "$RUNNER_TEMP/tlc-negative" -config Stale.cfg Publication.tla > "$RUNNER_TEMP/stale" 2>&1 || result=$?
 test "$result" = 12
 grep -F 'Invariant CurrentAnswer is violated' "$RUNNER_TEMP/stale"
+tlc=(java -cp "$RUNNER_TEMP/tlc.jar" tlc2.TLC -workers 1)
+"${tlc[@]}" -metadir "$RUNNER_TEMP/request-model" -config Request.cfg Request.tla
+for proof in Version:CurrentRevision Cancelled:LiveRequest Partial:NoPartialOutput; do
+  config=${proof%%:*}
+  invariant=${proof#*:}
+  result=0
+  "${tlc[@]}" -metadir "$RUNNER_TEMP/request-$config" -config "Request$config.cfg" Request.tla > "$RUNNER_TEMP/request-$config.log" 2>&1 || result=$?
+  test "$result" = 12
+  grep -F "Invariant $invariant is violated" "$RUNNER_TEMP/request-$config.log"
+done

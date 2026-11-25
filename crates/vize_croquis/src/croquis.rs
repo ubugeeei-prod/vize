@@ -46,6 +46,7 @@ mod summary_core_tests;
 mod summary_template_tests;
 mod template;
 mod template_components;
+mod template_reads;
 mod vir;
 
 // Re-export all public croquis data types from their focused modules.
@@ -73,6 +74,7 @@ pub use template::{
     TemplateExpressionKind, TemplateInfo,
 };
 pub use template_components::TemplateComponentRegistrations;
+pub use template_reads::TemplateBindingReads;
 
 use crate::hoist::HoistTracker;
 use crate::macros::MacroTracker;

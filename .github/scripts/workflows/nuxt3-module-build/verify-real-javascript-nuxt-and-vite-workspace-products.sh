@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+vp env exec node tools/support/compat/nuxt/javascript-workspace-build.ts "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"

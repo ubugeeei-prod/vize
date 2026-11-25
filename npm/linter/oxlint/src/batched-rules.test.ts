@@ -292,6 +292,12 @@ it("projects v-bind style into the typed CLI-compatible option map", () => {
 
 it("collects every CLI-shaped rule option into one native option map", () => {
   const authored = {
+    "script/consistent-type-imports": {
+      prefer: "type-imports",
+      fixStyle: "inline-type-imports",
+      disallowTypeAnnotations: false,
+      emitDecoratorMetadata: false,
+    },
     "script/define-props-destructuring": { destructure: "always" },
     "html/no-empty-palpable-content": { contentDirectives: ["v-text"] },
     "type/strict-boolean-expressions": { allowString: true },
