@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Build release CLI"
 description = "Shared exact-checkout CLI recipe for release and trusted cache warming"
@@ -80,7 +80,7 @@ runs {
       name = "Configure Zig linker (Linux musl CLI)"
       `if` = "endsWith(inputs.target, '-musl')"
       shell = "bash"
-      run = "node tools/commands/ci/github/configure-zig-musl-linkers.ts"
+      run = "node tools/ci/commands/github/configure-zig-musl-linkers.ts"
     }
     new Dynamic {
       name = "Mount Rust sticky disks (Linux)"

@@ -1,6 +1,6 @@
-amends "../../../../ShellScript.pkl"
+amends "../../../../../../ci/lib/ShellScript.pkl"
 
-interpreter = "sh"
+interpreter = "bash"
 executable = true
 
 // Cargo's rustc wrapper for development shells and CI

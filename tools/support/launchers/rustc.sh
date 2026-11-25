@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/support/launchers/rustc.sh.pkl.
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 # Cargo runs: rustc.sh <rustc or clippy-driver> [rustc] <arguments>

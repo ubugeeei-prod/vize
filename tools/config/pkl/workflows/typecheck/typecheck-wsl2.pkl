@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "WSL2 type-check qualification"
 `run-name` = "WSL2 type-check ${{ inputs.vize }} (${{ inputs.sizes }}; giant ${{ inputs.giant_blocks }}; monorepo ${{ inputs.monorepo_sfcs }})"

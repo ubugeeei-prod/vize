@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Setup Rust sticky cache"
 description = "Cache Rust builds on stable sticky disks that only trusted runs commit"

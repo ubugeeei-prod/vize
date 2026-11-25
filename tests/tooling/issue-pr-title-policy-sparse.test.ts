@@ -38,7 +38,7 @@ test("the real sparse checkout can execute the title policy with stable Node alo
     assert.deepEqual(valid.ghCalls, [patchTitleCall(10418, "fix(canon): preserve source layout")]);
 
     // A full-workspace test must not hide a missing sparse-checkout entry.
-    rmSync(join(root, "tools/commands/ci/github/issue-pr-title-policy.ts"));
+    rmSync(join(root, "tools/ci/commands/github/issue-pr-title-policy.ts"));
     const incomplete = runPolicy(payload, "pull_request_target", { cwd: root });
     assert.notEqual(incomplete.result.status, 0);
     assert.deepEqual(incomplete.ghCalls, []);

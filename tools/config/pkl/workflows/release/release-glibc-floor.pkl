@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Release glibc floor"
 // Builds the Linux GNU release artifacts with the exact release recipes, fails
@@ -27,7 +27,7 @@ on {
       "tools/support/github/elf-dynamic-requirements.ts"
       "tools/support/github/glibc-floor.ts"
       "tools/support/github/release-platforms.ts"
-      "tools/commands/ci/github/verify-glibc-symbols.ts"
+      "tools/ci/commands/github/verify-glibc-symbols.ts"
       "tools/commands/release/npm/smoke-glibc-floor-containers.ts"
       "tools/support/compat/npm/glibc-floor-*"
     }

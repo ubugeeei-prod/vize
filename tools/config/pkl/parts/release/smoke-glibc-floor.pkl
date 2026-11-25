@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Smoke Linux GNU on old glibc - ${{ matrix.platform }}"
 needs = List("version", "build-packages", "build-native", "build-cli")

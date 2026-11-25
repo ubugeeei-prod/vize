@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_reordered_plain_flags_pass_the_scan": {
+        "prover": "z3",
+        "time": 0.01
+      }
+    }
+  }
+}

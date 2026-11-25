@@ -1,4 +1,4 @@
-import { requiredEnv } from "../shared/files.ts";
+import { requiredEnv } from "../../../../tools/ci/lib/scripts/files.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";

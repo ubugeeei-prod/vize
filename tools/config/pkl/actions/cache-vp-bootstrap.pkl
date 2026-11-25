@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Cache Vite+ bootstrap runtime"
 description = "Restore the Node.js and pnpm that setup-vp downloads while installing the global CLI. Only a trusted default-branch run that asks to save writes the entry."
