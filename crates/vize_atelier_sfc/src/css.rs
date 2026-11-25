@@ -17,6 +17,7 @@ mod parser;
 pub(crate) mod scope_mode;
 mod scoped;
 pub(crate) mod scoped_selector;
+pub(crate) mod string_body;
 #[cfg(test)]
 mod tests;
 pub(crate) mod transform;
