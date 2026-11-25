@@ -17,6 +17,7 @@ use super::helpers::is_import_type_only;
 mod attempt;
 mod closure;
 mod collect;
+mod declarations;
 mod modules;
 mod required;
 mod summary_cache;
@@ -26,9 +27,15 @@ pub(super) use modules::retire as retire_shared_modules;
 use work::{Step, count};
 
 #[derive(Default)]
+#[expect(
+    clippy::disallowed_types,
+    reason = "the components of a batch share one walk's declarations"
+)]
 pub(crate) struct ImportedTypes {
     pub imports: Vec<(String, String)>,
     pub dependencies: Vec<String>,
+    /// Declarations walked in the batch's shared graph and not merged yet.
+    pub declarations: Vec<std::sync::Arc<declarations::Declarations>>,
 }
 pub(super) mod resolution;
 mod sources;
