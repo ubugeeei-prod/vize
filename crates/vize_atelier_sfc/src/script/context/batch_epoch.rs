@@ -14,11 +14,14 @@ struct BatchEpochState {
     /// Generations are never recycled, including across overlapping scopes.
     last_epoch: u64,
     active_batches: usize,
+    /// Open windows a host began, which compile calls join.
+    held_windows: usize,
 }
 
 static BATCH_EPOCH_STATE: Mutex<BatchEpochState> = Mutex::new(BatchEpochState {
     last_epoch: NO_EPOCH,
     active_batches: 0,
+    held_windows: 0,
 });
 
 fn next_batch_epoch(state: &mut BatchEpochState) -> u64 {
@@ -40,6 +43,18 @@ fn next_batch_epoch(state: &mut BatchEpochState) -> u64 {
 #[derive(Debug)]
 pub struct TypeResolutionBatchGuard {
     epoch: u64,
+    scope: Scope,
+}
+
+/// How a guard takes part in the generation it holds.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Scope {
+    /// A window a host began: compile calls inside it join it.
+    Held,
+    /// A compile call's own window, begun with no host window open.
+    Own,
+    /// A compile call inside a host window, sharing its generation.
+    Joined,
 }
 
 impl TypeResolutionBatchGuard {
@@ -60,9 +75,15 @@ impl Drop for TypeResolutionBatchGuard {
             "type-resolution batch guard dropped without an active batch"
         );
         state.active_batches = state.active_batches.saturating_sub(1);
+        if self.scope == Scope::Held {
+            state.held_windows = state.held_windows.saturating_sub(1);
+        }
 
         let epoch = if state.active_batches == 0 {
             NO_EPOCH
+        } else if self.scope == Scope::Joined {
+            // A joined call ends inside the window it joined, which goes on.
+            return;
         } else {
             // Never return to an older scope's generation after an out-of-order
             // drop; split the validation window with a fresh generation.
@@ -89,17 +110,49 @@ impl Drop for TypeResolutionBatchGuard {
 /// that is current while it runs, whoever opened it. A compile observes the
 /// current files on its own only while no batch is open.
 ///
+/// This is the host's window: whoever opens it promises that the files hold
+/// still until it ends. Batch compile calls made inside it join it with
+/// [`join_type_resolution_batch`] instead of starting over.
+///
 /// Bind the result to a named variable and keep it alive until all parallel
 /// work joins. `let _ = begin_type_resolution_batch();` drops it immediately.
 pub fn begin_type_resolution_batch() -> TypeResolutionBatchGuard {
     let mut state = BATCH_EPOCH_STATE
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
+    state.held_windows = state.held_windows.saturating_add(1);
+    begin(&mut state, Scope::Held)
+}
+
+/// Open the type-resolution batch of one compile call.
+///
+/// Inside a window a host began with [`begin_type_resolution_batch`], the
+/// call joins that window: the host holds the files still for all of it, so
+/// what an earlier call of the window read is still what is on disk, and the
+/// imported type modules are read once per window instead of once per call.
+/// With no host window open, the call begins a window of its own that ends
+/// with it, and calls that overlap each get a generation of their own.
+pub fn join_type_resolution_batch() -> TypeResolutionBatchGuard {
+    let mut state = BATCH_EPOCH_STATE
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let current = ACTIVE_BATCH_EPOCH.load(Ordering::Relaxed);
+    if state.held_windows == 0 || current == NO_EPOCH {
+        return begin(&mut state, Scope::Own);
+    }
+    state.active_batches = state.active_batches.saturating_add(1);
+    TypeResolutionBatchGuard {
+        epoch: current,
+        scope: Scope::Joined,
+    }
+}
+
+fn begin(state: &mut BatchEpochState, scope: Scope) -> TypeResolutionBatchGuard {
     let active_batches = state.active_batches.saturating_add(1);
-    let epoch = next_batch_epoch(&mut state);
+    let epoch = next_batch_epoch(state);
     state.active_batches = active_batches;
     ACTIVE_BATCH_EPOCH.store(epoch, Ordering::Relaxed);
-    TypeResolutionBatchGuard { epoch }
+    TypeResolutionBatchGuard { epoch, scope }
 }
 
 pub(super) fn current_batch_epoch() -> u64 {
@@ -110,7 +163,9 @@ pub(super) fn current_batch_epoch() -> u64 {
 
 #[cfg(test)]
 pub(super) mod tests {
-    use super::{NO_EPOCH, begin_type_resolution_batch, current_batch_epoch};
+    use super::{
+        NO_EPOCH, begin_type_resolution_batch, current_batch_epoch, join_type_resolution_batch,
+    };
     use std::sync::Mutex;
 
     static TEST_LOCK: Mutex<()> = Mutex::new(());
@@ -143,6 +198,52 @@ pub(super) mod tests {
         let next = begin_type_resolution_batch();
         assert!(next.epoch() > post_inner_epoch);
         drop(next);
+        assert_eq!(current_batch_epoch(), NO_EPOCH);
+    }
+
+    #[test]
+    fn compile_calls_join_the_window_a_host_holds() {
+        let _lock = lock_epoch_state();
+        let host = begin_type_resolution_batch();
+        for _ in 0..3 {
+            let call = join_type_resolution_batch();
+            assert_eq!(call.epoch(), host.epoch());
+            drop(call);
+            assert_eq!(current_batch_epoch(), host.epoch());
+        }
+        drop(host);
+        assert_eq!(current_batch_epoch(), NO_EPOCH);
+    }
+
+    #[test]
+    fn compile_calls_without_a_host_window_never_share_one() {
+        let _lock = lock_epoch_state();
+        let first = join_type_resolution_batch();
+        let overlapping = join_type_resolution_batch();
+        assert!(overlapping.epoch() > first.epoch());
+        drop(first);
+        assert!(current_batch_epoch() > overlapping.epoch());
+        drop(overlapping);
+        assert_eq!(current_batch_epoch(), NO_EPOCH);
+
+        let next = join_type_resolution_batch();
+        drop(next);
+        assert_eq!(current_batch_epoch(), NO_EPOCH);
+    }
+
+    #[test]
+    fn a_call_outliving_its_host_window_moves_to_a_new_generation() {
+        let _lock = lock_epoch_state();
+        let host = begin_type_resolution_batch();
+        let call = join_type_resolution_batch();
+        let window = host.epoch();
+        drop(host);
+        assert!(current_batch_epoch() > window);
+        // The host is gone: the next call cannot join it.
+        let later = join_type_resolution_batch();
+        assert!(later.epoch() > window);
+        drop(later);
+        drop(call);
         assert_eq!(current_batch_epoch(), NO_EPOCH);
     }
 
