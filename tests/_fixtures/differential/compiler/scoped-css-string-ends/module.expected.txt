@@ -1,0 +1,15 @@
+import { ssrRenderAttrs as _ssrRenderAttrs, ssrRenderClass as _ssrRenderClass } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: "card" }, _attrs))} data-v-b84fad59><p class="title" data-v-b84fad59>Title</p><p class="${_ssrRenderClass(_ctx.$style.note)}" data-v-b84fad59>Note</p></div>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+_sfc_main.__cssModules = {
+  "$style": {
+    "note": "bsgbXW_note"
+  }
+}
+export default _sfc_main

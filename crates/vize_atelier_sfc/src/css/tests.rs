@@ -2,6 +2,7 @@
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 mod scoped_regressions;
+mod string_bodies;
 
 #[cfg(feature = "native")]
 use std::{fs, path::PathBuf};
@@ -496,7 +497,6 @@ fn test_apply_scoped_css_with_quoted_string() {
     // Test the raw scoping function without LightningCSS
     let css = ".foo { font-family: 'JetBrains Mono', monospace; }";
     let result = apply_scoped_css(&bump, css, "data-v-123");
-    println!("Scoped result: {}", result);
     insta::assert_snapshot!(result);
 }
 

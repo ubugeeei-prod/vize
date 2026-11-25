@@ -1,3 +1,5 @@
+import * as nativeBinding from "@vizejs/native";
+
 import { compileBatch, type CompileBatchReporting, type NativeBatchResult } from "../compiler.ts";
 import { canCompileForTargets, compileBatchForTargets } from "../compile-targets.ts";
 import { buildCompileBatchOptions } from "../compile-options.ts";
@@ -47,6 +49,12 @@ export function compileScopedBatch(
     const group = groups.get(key);
     if (group) group.files.push(file);
     else groups.set(key, { options, sibling: siblingOptions, files: [file] });
+  }
+  // A build holds its sources still until `buildEnd`, so its batches share
+  // one read of the imported type files. A dev server keeps one window per
+  // batch: files its watcher does not report must still be read again.
+  if (state.server === null) {
+    state.filesystemEpoch?.holdTypeResolution(() => nativeBinding.beginTypeResolutionBatch?.());
   }
   const results: Array<
     ReturnType<typeof compileBatch>["results"][number] | NativeBatchResult["results"][number]

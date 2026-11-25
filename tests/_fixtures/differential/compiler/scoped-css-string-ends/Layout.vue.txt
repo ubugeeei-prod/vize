@@ -1,0 +1,14 @@
+<template>
+  <div class="card"><p class="title">Title</p><p :class="$style.note">Note</p></div>
+</template>
+
+<style scoped>
+.card::before { content: "\\"; }
+.title { color: red; }
+</style>
+
+<style module scoped>
+.note::before { content: "Ģ"; }
+.note::after { content: '\\\''; }
+.note { color: blue; }
+</style>
