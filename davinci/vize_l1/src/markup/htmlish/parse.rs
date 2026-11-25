@@ -20,7 +20,7 @@ use crate::markup::htmlish::surface::{SurfaceChild, SurfaceTree, Token};
 // The dialect-owned component surface provider.
 pub use crate::framework::vue::version::v3::surface::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, parse_component,
-    parse_component_with_authored, parse_component_with_options,
+    parse_component_with_authored, parse_component_with_diagnostics, parse_component_with_options,
 };
 
 /// Which structural recoveries the tree construction reports.
@@ -312,6 +312,28 @@ pub(crate) fn construct_with_tag_facts<'a, const RAW: bool, const TAG_FACTS: boo
         source,
         authored,
         Structure::Off,
+        record,
+    )
+}
+
+/// [`construct_with_tag_facts`] for an owner that reports the complete
+/// parser/template diagnostic vector (missing and stray end tags, nameless
+/// directives) over the same authored Vue template tree.
+pub(crate) fn construct_with_template_diagnostics<'a, const RAW: bool>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    authored: bool,
+    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
+) -> (
+    SurfaceTree<'a>,
+    Option<SurfaceTree<'a>>,
+    Vec<'a, SurfaceError>,
+) {
+    construct_with_tag_facts_and_diagnostics::<RAW, false>(
+        allocator,
+        source,
+        authored,
+        Structure::Template,
         record,
     )
 }

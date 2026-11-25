@@ -38,9 +38,9 @@ pub use grammar::{DirectiveSyntax, MarkupGrammar, Vue};
 pub use htmlish::lex::{Delimiters, LexOptions, Lexer};
 pub use htmlish::parse::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, SurfaceError, SurfaceParseOptions,
-    parse, parse_component, parse_component_with_authored, parse_component_with_options,
-    parse_in_dom_with_authored_diagnostics, parse_with_authored, parse_with_authored_diagnostics,
-    parse_with_options, parse_with_options_and_caps,
+    parse, parse_component, parse_component_with_authored, parse_component_with_diagnostics,
+    parse_component_with_options, parse_in_dom_with_authored_diagnostics, parse_with_authored,
+    parse_with_authored_diagnostics, parse_with_options, parse_with_options_and_caps,
 };
 pub use htmlish::render::{HoleCounts, check_fidelity, hole_counts, render};
 pub use htmlish::surface::{

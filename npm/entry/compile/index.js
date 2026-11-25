@@ -9,6 +9,7 @@ export const compileSfcBatchWithResults = native.compileSfcBatchWithResults;
 export const compileCss = native.compileCss;
 export const parseSfc = native.parseSfc;
 export const parseTemplate = native.parseTemplate;
+export const parseTemplateAst = native.parseTemplateAst;
 export const analyzeSfc = native.analyzeSfc;
 export const compileWithOutputPlugins = native.compileWithOutputPlugins;
 export const compileWithTransformPlugins = native.compileWithTransformPlugins;

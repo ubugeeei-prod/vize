@@ -9,7 +9,8 @@ use vize_l1::markup::{
     parse_with_authored, parse_with_authored_diagnostics, parse_with_options,
 };
 use vize_l1::markup::{
-    parse_component, parse_component_with_authored, parse_component_with_options,
+    parse_component, parse_component_with_authored, parse_component_with_diagnostics,
+    parse_component_with_options,
 };
 
 fn assert_parity(source: &str, options: SurfaceParseOptions) {
@@ -171,4 +172,47 @@ fn native_admission_keeps_component_default_delimiters_and_scoped_v_pre() {
         element.children.first(),
         Some(SurfaceChild::Text(token)) if token.text == "{{ expression }}"
     ));
+}
+
+#[test]
+fn native_diagnostics_constructor_keeps_the_tree_and_reports_structure() {
+    let options = SurfaceParseOptions::default();
+    for fixture in common::WELL_FORMED.iter().chain(common::MALFORMED) {
+        let allocator = Allocator::new();
+        let plain = parse_component_with_options(&allocator, fixture.source, options).unwrap();
+        let checked =
+            parse_component_with_diagnostics(&allocator, fixture.source, options).unwrap();
+        let (_, _, expected) = parse_with_authored_diagnostics(&allocator, fixture.source);
+        let (tree, plain_tree) = (&checked.tree, &plain.tree);
+        assert_eq!(
+            cstr!("{tree:?}"),
+            cstr!("{plain_tree:?}"),
+            "{}",
+            fixture.name
+        );
+        let errors = &checked.errors;
+        assert_eq!(
+            cstr!("{errors:?}"),
+            cstr!("{expected:?}"),
+            "{}",
+            fixture.name
+        );
+    }
+
+    let allocator = Allocator::new();
+    let source = "<div><span>text</div>";
+    let plain = parse_component_with_options(&allocator, source, options).unwrap();
+    assert!(plain.errors.is_empty());
+    let checked = parse_component_with_diagnostics(&allocator, source, options).unwrap();
+    assert!(
+        checked
+            .errors
+            .iter()
+            .any(|error| error.code == ErrorCode::MissingEndTag),
+        "{:?}",
+        checked.errors
+    );
+    let source = "<Transition><div /></Transition>";
+    let self_closing = parse_component_with_diagnostics(&allocator, source, options).unwrap();
+    assert!(self_closing.errors.is_empty(), "{:?}", self_closing.errors);
 }

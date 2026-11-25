@@ -4,6 +4,7 @@
  * This package provides:
  * - CLI binary for compilation, linting, and formatting
  * - Configuration utilities for programmatic use
+ * - The full template tree for JavaScript tools (`parseTemplateAst`)
  */
 
 // Types
@@ -56,3 +57,24 @@ export {
   resolveViteConfigExport,
   normalizeGlobalTypes,
 } from "./config.js";
+
+// Template tree
+export { parseTemplateAst } from "./template.js";
+export type {
+  TemplateAstDiagnostic,
+  TemplateAstOptions,
+  TemplateAstResult,
+  TemplateAttributeNode,
+  TemplateChildNode,
+  TemplateCommentNode,
+  TemplateDirectiveNode,
+  TemplateElementNode,
+  TemplateInterpolationNode,
+  TemplateNode,
+  TemplatePosition,
+  TemplatePropNode,
+  TemplateRootNode,
+  TemplateSimpleExpressionNode,
+  TemplateSourceLocation,
+  TemplateTextNode,
+} from "./template.js";

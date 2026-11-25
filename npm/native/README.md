@@ -28,6 +28,22 @@ const result = compile(source, { filename: "App.vue" });
 const results = compileFiles(["src/App.vue", "src/components/Button.vue"], { threads: 4 });
 ```
 
+### Template tree
+
+`parseTemplateAst` returns the full authored tree of a template: elements, text, comments,
+interpolations, attributes and directives in place, typed as `TemplateRootNode` and friends. Node
+kinds and fields follow `@vue/compiler-core` (`type: "ELEMENT"`, `tagType`, `props`, `rawName`,
+`exp`, `arg`, `modifiers`). Every `loc` counts UTF-16 code units with 1-based lines and columns, so
+`source.slice(loc.start.offset, loc.end.offset)` is the node's text. Parser diagnostics are
+returned in `errors` and `warnings` instead of being thrown. The `vize` package exports the same
+function.
+
+```ts
+import { parseTemplateAst } from "@vizejs/native";
+
+const { ast, errors, warnings } = parseTemplateAst("<Transition><!-- note --><div /></Transition>");
+```
+
 ## Platform Support
 
 | Platform | Architecture | Status |

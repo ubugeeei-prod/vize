@@ -2,6 +2,7 @@
 //!
 //! This module is organized into:
 //! - `template`: Template compilation (compile, compileVapor, parseTemplate)
+//! - `template_ast`: The full authored template tree (parseTemplateAst)
 //! - `sfc`: SFC parsing, compilation, and batch processing
 //! - `art`: Art file parsing, CSF transform, docs, palette, and autogen
 //! - `format`: Vue SFC formatting
@@ -47,6 +48,8 @@ mod plugin_sdk;
 mod sfc;
 #[cfg(feature = "napi")]
 mod template;
+#[cfg(any(test, feature = "napi"))]
+mod template_ast;
 #[cfg(feature = "napi")]
 mod tokens;
 #[cfg(feature = "napi")]
@@ -125,6 +128,8 @@ pub use plugin_sdk::*;
 pub use sfc::*;
 #[cfg(feature = "napi")]
 pub use template::*;
+#[cfg(feature = "napi")]
+pub use template_ast::*;
 #[cfg(feature = "napi")]
 pub use tokens::*;
 #[cfg(feature = "napi")]

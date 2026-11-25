@@ -3,7 +3,10 @@
 use vize_l0::{Allocator, Span, Vec};
 
 use crate::markup::htmlish::event::Recorder;
-use crate::markup::htmlish::parse::{SurfaceError, SurfaceParseOptions, construct_with_tag_facts};
+use crate::markup::htmlish::parse::{
+    SurfaceError, SurfaceParseOptions, construct_with_tag_facts,
+    construct_with_template_diagnostics,
+};
 use crate::markup::htmlish::surface::{SurfaceTree, TagKindFact};
 use crate::markup::{Component, DirectiveNameError, LexOptions, Lexer};
 
@@ -135,7 +138,19 @@ pub fn parse_component_with_options<'a>(
     source: &'a str,
     options: SurfaceParseOptions,
 ) -> Result<ComponentParse<'a>, ComponentSourceError> {
-    projection::<false>(allocator, source, options, false)
+    projection::<false, false>(allocator, source, options, false)
+}
+
+/// [`parse_component_with_options`] that also reports the structural
+/// diagnostics Vue's parser raises (missing and stray end tags, nameless
+/// directives) over the same authored tree, for an owner that returns the
+/// tree and its diagnostics instead of compiling it.
+pub fn parse_component_with_diagnostics<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SurfaceParseOptions,
+) -> Result<ComponentParse<'a>, ComponentSourceError> {
+    projection::<false, true>(allocator, source, options, false)
 }
 
 /// Parse once and retain an authored projection when the construction repairs
@@ -145,7 +160,7 @@ pub fn parse_component_with_authored<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> Result<ComponentParse<'a>, ComponentSourceError> {
-    projection::<false>(allocator, source, SurfaceParseOptions::default(), true)
+    projection::<false, false>(allocator, source, SurfaceParseOptions::default(), true)
 }
 
 /// Private genuine selected-owner construction; no caller can supply facts.
@@ -153,10 +168,10 @@ pub(crate) fn parse_component_with_tag_facts<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> Result<ComponentParse<'a>, ComponentSourceError> {
-    projection::<true>(allocator, source, SurfaceParseOptions::default(), false)
+    projection::<true, false>(allocator, source, SurfaceParseOptions::default(), false)
 }
 
-fn projection<'a, const TAG_FACTS: bool>(
+fn projection<'a, const TAG_FACTS: bool, const DIAGNOSTICS: bool>(
     allocator: &'a Allocator,
     source: &'a str,
     options: SurfaceParseOptions,
@@ -166,29 +181,25 @@ fn projection<'a, const TAG_FACTS: bool>(
         return Err(ComponentSourceError::SourceTooLarge);
     }
     let mut unsupported = Vec::new_in(&allocator);
-    let (tree, authored, errors) = construct_with_tag_facts::<false, TAG_FACTS>(
-        allocator,
-        source,
-        authored,
-        |events, errors| {
-            let recorder = Recorder { events, errors };
-            let sink = VueSink::<Vue3Policy<TAG_FACTS>>::new(
-                allocator,
-                source,
-                recorder,
-                &mut unsupported,
-            );
-            Lexer::<Component, _>::new(
-                source,
-                sink,
-                LexOptions {
-                    in_tag_comments: options.experimental_in_tag_comments,
-                    ..LexOptions::default()
-                },
-            )
-            .run();
-        },
-    );
+    let record = |events: &mut Vec<'a, _>, errors: &mut Vec<'a, _>| {
+        let recorder = Recorder { events, errors };
+        let sink =
+            VueSink::<Vue3Policy<TAG_FACTS>>::new(allocator, source, recorder, &mut unsupported);
+        Lexer::<Component, _>::new(
+            source,
+            sink,
+            LexOptions {
+                in_tag_comments: options.experimental_in_tag_comments,
+                ..LexOptions::default()
+            },
+        )
+        .run();
+    };
+    let (tree, authored, errors) = if DIAGNOSTICS {
+        construct_with_template_diagnostics::<false>(allocator, source, authored, record)
+    } else {
+        construct_with_tag_facts::<false, TAG_FACTS>(allocator, source, authored, record)
+    };
     Ok(ComponentParse {
         tree,
         authored,

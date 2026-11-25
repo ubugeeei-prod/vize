@@ -103,6 +103,7 @@ module.exports.parseDesignTokensFromPath = nativeBinding.parseDesignTokensFromPa
 module.exports.analyzeSfc = nativeBinding.analyzeSfc;
 module.exports.parseSfc = nativeBinding.parseSfc;
 module.exports.parseTemplate = nativeBinding.parseTemplate;
+module.exports.parseTemplateAst = nativeBinding.parseTemplateAst;
 module.exports.printCssAst = nativeBinding.printCssAst;
 module.exports.registerPluginPlan = nativeBinding.registerPluginPlan;
 module.exports.resolveDesignTokenReferences = nativeBinding.resolveDesignTokenReferences;

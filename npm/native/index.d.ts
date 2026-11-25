@@ -1187,6 +1187,16 @@ export declare function parseTemplate(
   options?: CompilerOptions | undefined | null,
 ): any;
 
+/**
+ * Parse a Vue template into its full authored tree. Parser diagnostics are
+ * in `errors` and `warnings`; the call throws only for invalid options or a
+ * source past the 4 GiB coordinate range.
+ */
+export declare function parseTemplateAst(
+  source: string,
+  options?: TemplateAstOptions | undefined | null,
+): TemplateAstResult;
+
 /** Single-file Patina lint options for NAPI */
 export interface PatinaLintOptionsNapi {
   /** Include native fix messages and UTF-8 byte text edits in diagnostics. */
@@ -1598,6 +1608,158 @@ export interface TemplateAssetTagRuleNapi {
 export interface TemplateAssetUrlNapi {
   url: string;
   varName: string;
+}
+
+/** A parser diagnostic. `code` is the stable vize compiler code. */
+export interface TemplateAstDiagnostic {
+  code: string;
+  message: string;
+  loc: TemplateSourceLocation;
+}
+
+/** Options for `parseTemplateAst`. */
+export interface TemplateAstOptions {
+  /**
+   * Tag patterns that are custom elements (`ELEMENT`, never `COMPONENT`),
+   * as `compile`'s `customElements`; `*` matches any substring.
+   */
+  customElements?: Array<string>;
+  /** Accept Vue's experimental `//` comments inside opening tags. */
+  experimentalInTagComments?: boolean;
+}
+
+/**
+ * The result of `parseTemplateAst`: the tree is always returned. `errors`
+ * are syntax errors; `warnings` are recovery notes on valid input.
+ */
+export interface TemplateAstResult {
+  ast: TemplateRootNode;
+  errors: Array<TemplateAstDiagnostic>;
+  warnings: Array<TemplateAstDiagnostic>;
+}
+
+/** A plain attribute. */
+export interface TemplateAttributeNode {
+  type: "ATTRIBUTE";
+  name: string;
+  nameLoc: TemplateSourceLocation;
+  /**
+   * The decoded value; its `loc` includes the quotes. `null` when the
+   * attribute has no value.
+   */
+  value: TemplateTextNode | null;
+  loc: TemplateSourceLocation;
+}
+
+/** A comment in place; `content` is the text between `<!--` and `-->`. */
+export interface TemplateCommentNode {
+  type: "COMMENT";
+  content: string;
+  loc: TemplateSourceLocation;
+}
+
+/**
+ * A directive, shorthand or not: `:a` and `.a` are `bind`, `@a` is `on`
+ * and `#a` is `slot`. `.a` carries the implicit `prop` modifier first.
+ */
+export interface TemplateDirectiveNode {
+  type: "DIRECTIVE";
+  /** The directive name without `v-` (`for`, `if`, `model`, `bind`, ...). */
+  name: string;
+  /** The attribute name as authored (`@click.stop`, `v-slot:item`). */
+  rawName: string;
+  /**
+   * The argument; a dynamic `[arg]` is not static and its `loc` includes
+   * the brackets.
+   */
+  arg: TemplateSimpleExpressionNode | null;
+  modifiers: Array<TemplateSimpleExpressionNode>;
+  /** The decoded value between the quotes; `null` when there is none. */
+  exp: TemplateSimpleExpressionNode | null;
+  loc: TemplateSourceLocation;
+}
+
+/**
+ * An element as authored. A self-closing element (`<div />`) is one element
+ * with `isSelfClosing` and no children, as Vue's compiler parses it.
+ */
+export interface TemplateElementNode {
+  type: "ELEMENT";
+  /** The tag name as authored. */
+  tag: string;
+  /**
+   * How Vue's SFC compiler treats the element: a component (a tag that is
+   * not a platform element, `<component>`, a built-in or a `vue:` cast),
+   * a `<slot>` outlet, a `<template>` with a structural directive, or
+   * plain markup (including everything inside `v-pre`).
+   */
+  tagType: "ELEMENT" | "COMPONENT" | "SLOT" | "TEMPLATE";
+  isSelfClosing: boolean;
+  props: Array<TemplateAttributeNode | TemplateDirectiveNode>;
+  children: Array<
+    TemplateElementNode | TemplateTextNode | TemplateCommentNode | TemplateInterpolationNode
+  >;
+  /**
+   * From `<` to the end tag's `>`, or to the end of the last child when
+   * the end tag is omitted.
+   */
+  loc: TemplateSourceLocation;
+}
+
+/** `{{ expression }}`; `loc` includes the delimiters. */
+export interface TemplateInterpolationNode {
+  type: "INTERPOLATION";
+  /** The trimmed expression. */
+  content: TemplateSimpleExpressionNode;
+  loc: TemplateSourceLocation;
+}
+
+/**
+ * A point in the template. `offset` and `column` count UTF-16 code units,
+ * as JavaScript strings index; `line` and `column` are 1-based. This is
+ * `@vue/compiler-core`'s `Position`.
+ */
+export interface TemplatePosition {
+  offset: number;
+  line: number;
+  column: number;
+}
+
+/** The template itself; `loc` spans the whole source. */
+export interface TemplateRootNode {
+  type: "ROOT";
+  children: Array<
+    TemplateElementNode | TemplateTextNode | TemplateCommentNode | TemplateInterpolationNode
+  >;
+  loc: TemplateSourceLocation;
+}
+
+/** An expression, directive argument or modifier as authored source. */
+export interface TemplateSimpleExpressionNode {
+  type: "SIMPLE_EXPRESSION";
+  content: string;
+  /** `true` for a static argument or a modifier, `false` for JavaScript. */
+  isStatic: boolean;
+  loc: TemplateSourceLocation;
+}
+
+/**
+ * The half-open range `[start, end)` of a node:
+ * `source.slice(loc.start.offset, loc.end.offset)` is its authored text.
+ */
+export interface TemplateSourceLocation {
+  start: TemplatePosition;
+  end: TemplatePosition;
+}
+
+/**
+ * Text with its character references decoded (raw in `<script>` and
+ * `<style>`). Whitespace is kept as authored, never condensed.
+ */
+export interface TemplateTextNode {
+  type: "TEXT";
+  content: string;
+  loc: TemplateSourceLocation;
 }
 
 export declare function toViteBrowserImportPrefix(replacement: string): string;
