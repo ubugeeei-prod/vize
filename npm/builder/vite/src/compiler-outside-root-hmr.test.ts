@@ -36,7 +36,11 @@ async function outsideRootHotUpdate(firstRequest: "virtual" | "plain") {
         name: "observe-outside-root-hmr",
         enforce: "post",
         hotUpdate(options) {
-          if (this.environment.name === "client" && options.file === component) complete?.();
+          if (
+            this.environment.name === "client" &&
+            options.file.replaceAll("\\", "/") === component.replaceAll("\\", "/")
+          )
+            complete?.();
         },
       },
     ],
