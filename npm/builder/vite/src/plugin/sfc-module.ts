@@ -20,6 +20,7 @@ import { normalizeStyleVirtualId } from "./style-request.ts";
 import { registerSfcModule, normalizeVueServerRendererImport } from "./ssr-modules.ts";
 import { createDependencyWatch } from "./dependency-watches.ts";
 import {
+  adoptSiblingCompile,
   compileRequestedSfc,
   readSfcSource,
   reportBatchedWarnings,
@@ -39,6 +40,7 @@ import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import { loadedSfcModule } from "./tree-shaking.ts";
 import { TYPE_PROJECT_CHANGED_MESSAGE, watchTypeProject } from "./type-project-watches.ts";
 import { evictCompiledModule } from "./compiled-module-cache.ts";
+import { siblingTargetFor, type BuildEnvironment } from "./sibling-compiles.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -108,6 +110,7 @@ export function getSfcModuleRequest(state: VizePluginState, id: string): SfcModu
 /** Queue `sfc` for its environment's next batch, unless a placeholder stands in for it. */
 function requestSfc(state: VizePluginState, sfc: SfcModuleRequest, ssr: boolean): void {
   if (getBoundaryPlaceholderCode(sfc.realPath, ssr)) return;
+  adoptSiblingCompile(state, sfc.realPath, sfc.ssrId || ssr);
   requestSfcCompile(getEnvironmentCache(state, sfc.ssrId || ssr), sfc.realPath);
 }
 
@@ -162,6 +165,8 @@ export interface SfcModuleTransformOptions {
   ssr?: boolean;
   addWatchFile?: (id: string) => void;
   resolve?: HostResolve;
+  /** The environment of the request, whose build may have sibling environments. */
+  environment?: BuildEnvironment;
 }
 
 /** Compile the SFC text `code` that the pipeline delivered for `sfc`. */
@@ -190,9 +195,13 @@ export async function transformSfcModule(
     return compileRequestedSfc(state, realPath, code, isSsr, {
       resolve: options.resolve,
       logWarnings,
+      ...(state.server === null
+        ? { sibling: siblingTargetFor(options.environment, isSsr, state.filesystemEpoch) }
+        : {}),
     });
   };
   const watchDependency = createDependencyWatch(state.server, options.addWatchFile);
+  adoptSiblingCompile(state, realPath, isSsr);
   const cached = cache.get(realPath);
   const reused = cached?.source === code ? cached : undefined;
   // Another file's batch may have compiled this one; its warnings belong here.
