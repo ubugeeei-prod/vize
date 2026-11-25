@@ -76,7 +76,9 @@ export function captureHtmlCustody(
   const originals = new Map<string, Buffer>();
   const directories = new Set<string>();
   for (const candidate of [options.cwd, ...candidates]) {
-    const stat = fs.lstatSync(candidate);
+    // A missing literal target beside an HTML-bearing one selects nothing, as in Oxlint.
+    const stat = fs.lstatSync(candidate, { throwIfNoEntry: false });
+    if (!stat) continue;
     if (isStandaloneHtmlFile(candidate) && stat.isFile() && !stat.isSymbolicLink())
       originals.set(candidate, fs.readFileSync(candidate));
     let directory = stat.isDirectory() ? candidate : path.dirname(candidate);

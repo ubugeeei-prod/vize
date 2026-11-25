@@ -7,6 +7,8 @@
  */
 await Promise.all([
   import("../cli/files.test.ts"),
+  import("../cli/html-skip.test.ts"),
+  import("../cli/html-targets.test.ts"),
   import("../cli/output.test.ts"),
   import("../cli/locations.test.ts"),
   import("../original-locations.test.ts"),
