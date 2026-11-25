@@ -48,10 +48,7 @@ test("format selects the formatter from the file name", async () => {
     (await format("<template><div/></template>", { filename: "App.vue", config })).code,
     "<template>\n  <div />\n</template>\n",
   );
-  assert.equal(
-    (await format('{"a":1}', { filename: "data.json", config })).code,
-    '{ "a": 1 }\n',
-  );
+  assert.equal((await format('{"a":1}', { filename: "data.json", config })).code, '{ "a": 1 }\n');
   await assert.rejects(format("# notes", { filename: "notes.md", config }), /notes\.md/);
   await assert.rejects(format("const = ;", { filename: "broken.ts", config }), /broken\.ts/);
   await assert.rejects(

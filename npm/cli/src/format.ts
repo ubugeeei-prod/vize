@@ -1,10 +1,6 @@
 import { createRequire } from "node:module";
 
-import type {
-  FormatFileOptionsNapi,
-  FormatOptionsNapi,
-  FormatResultNapi,
-} from "@vizejs/native";
+import type { FormatFileOptionsNapi, FormatOptionsNapi, FormatResultNapi } from "@vizejs/native";
 
 import { assertMatchingNativeVersion } from "./native-version-guard.js";
 

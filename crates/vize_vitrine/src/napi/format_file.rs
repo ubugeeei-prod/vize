@@ -150,10 +150,9 @@ mod tests {
         let Err(unsupported) = format("notes.md", "# a", None) else {
             panic!("markdown is not formatted");
         };
-        assert!(
-            unsupported.reason.contains("notes.md"),
-            "{}",
-            unsupported.reason
+        assert_eq!(
+            unsupported.reason,
+            "notes.md: YAML and Markdown formatting is not implemented; these formats are excluded from default discovery"
         );
         let Err(invalid) = format(
             "a.ts",
