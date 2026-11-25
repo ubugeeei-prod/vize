@@ -4,6 +4,7 @@ import type { DevEnvironment, EnvironmentModuleNode, HotUpdateOptions } from "vi
 import { compileFile } from "../compiler.ts";
 import { toPluginVisibleVirtualId } from "../virtual.ts";
 import { CompiledModuleCache } from "./compiled-module-cache.ts";
+import { getVueModuleFileCandidates } from "./hmr-module-graph.ts";
 import { handleHotUpdateEnvironmentHook } from "./hot-update-environment.ts";
 import type { VizePluginState } from "./state.ts";
 
@@ -346,4 +347,80 @@ for (const order of [["client", "ssr"], ["ssr", "client"], ["ssr"], ["worker"]])
   assert.deepEqual(invalidated, order);
   assert.equal(state.cache.has(vueFile), false);
   assert.equal(state.ssrCache.has(vueFile), false);
+}
+
+// A type edit reaches every environment's hook. Each must find its owners'
+// modules through the graph's indexes: resolving a candidate runs every
+// plugin's `resolveId`, and an environment without the owners has nothing to do.
+{
+  const state = createState();
+  const dependencyFile = "/src/types.ts";
+  const compiled = { ...state.cache.get(vueFile)!, dependencies: [dependencyFile] };
+  const owners = Array.from({ length: 1000 }, (_, index) => `/src/Item${index}.vue`);
+  state.cache = new CompiledModuleCache();
+  state.ssrCache = new CompiledModuleCache();
+  for (const owner of owners) {
+    state.cache.set(owner, compiled);
+    state.ssrCache.set(owner, compiled);
+  }
+
+  for (const name of ["client", "ssr", "worker"]) {
+    const graph = new Map(
+      name === "worker"
+        ? []
+        : owners.map((owner) => {
+            // Requested by its plain URL, as a direct `transformRequest` does.
+            const id = toPluginVisibleVirtualId(owner);
+            return [id, { id, url: owner } as EnvironmentModuleNode];
+          }),
+    );
+    let lookups = 0;
+    const invalidated: EnvironmentModuleNode[] = [];
+    const environment = {
+      name,
+      moduleGraph: {
+        getModuleById(id: string) {
+          lookups += 1;
+          return graph.get(id);
+        },
+        urlToModuleMap: {
+          get(url: string) {
+            lookups += 1;
+            return graph.get(url);
+          },
+        },
+        getModulesByFile() {
+          lookups += 1;
+          return undefined;
+        },
+        async getModuleByUrl() {
+          assert.fail(`${name} must not resolve an owner candidate`);
+        },
+        async ensureEntryFromUrl() {
+          assert.fail(`${name} must not create an owner module`);
+        },
+        invalidateModule(module: EnvironmentModuleNode) {
+          invalidated.push(module);
+        },
+      },
+      pluginContainer: {
+        async resolveId() {
+          assert.fail(`${name} must not run the plugin pipeline`);
+        },
+      },
+      hot: { send() {} },
+    } as unknown as DevEnvironment;
+
+    const options = createOptions([], dependencyFile);
+    options.read = async () => assert.fail("a dependency update reads no SFC source");
+    const modules = await handleHotUpdateEnvironmentHook(state, environment, options);
+    assert.deepEqual(modules, [...graph.values()], `${name} returns exactly its owner modules`);
+    assert.deepEqual(invalidated, [...graph.values()]);
+    // Three index reads per spelling of each owner: O(dependents), no resolution.
+    assert.equal(lookups, owners.length * 3 * getVueModuleFileCandidates(vueFile).length);
+  }
+  for (const owner of owners) {
+    assert.equal(state.cache.has(owner), false, "the next batched request recompiles the owner");
+    assert.equal(state.ssrCache.has(owner), false);
+  }
 }
