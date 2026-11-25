@@ -154,6 +154,14 @@ mod tests {
             unsupported.reason,
             "notes.md: YAML and Markdown formatting is not implemented; these formats are excluded from default discovery"
         );
+        let Err(stylesheet) = format("theme.css", ".a{}", None) else {
+            panic!("standalone CSS is not a format target");
+        };
+        assert_eq!(stylesheet.status, napi::Status::GenericFailure);
+        assert_eq!(
+            stylesheet.reason,
+            "theme.css: unsupported file type; expected .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .tsrx, .json, .jsonc, .yaml, .yml, .md, or .markdown"
+        );
         let Err(invalid) = format(
             "a.ts",
             "a",

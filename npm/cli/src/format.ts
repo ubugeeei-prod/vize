@@ -13,7 +13,7 @@ export type FormatterOverrides = FormatOptionsNapi;
 export interface FormatOptions extends FormatterOverrides {
   /**
    * Name of the file the source is written to. Its extension selects the
-   * formatter (`.vue`, `.ts`, `.tsx`, `.js`, `.tsrx`, `.css`, `.json`, ...),
+   * formatter (`.vue`, `.ts`, `.tsx`, `.js`, `.tsrx`, `.json`, ...),
    * and its directory selects the configuration the way `vize fmt` run from
    * that directory would. Relative names resolve from `process.cwd()`. The
    * file itself is never read or written.

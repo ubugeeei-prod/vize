@@ -50,6 +50,10 @@ test("format selects the formatter from the file name", async () => {
   );
   assert.equal((await format('{"a":1}', { filename: "data.json", config })).code, '{ "a": 1 }\n');
   await assert.rejects(format("# notes", { filename: "notes.md", config }), /notes\.md/);
+  await assert.rejects(
+    format(".a{}", { filename: "theme.css", config }),
+    /^Error: theme\.css: unsupported file type; expected \.vue, /,
+  );
   await assert.rejects(format("const = ;", { filename: "broken.ts", config }), /broken\.ts/);
   await assert.rejects(
     format("a", { filename: "a.ts", config, quoteProps: "keep" as "preserve" }),
