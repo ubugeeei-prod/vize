@@ -29,6 +29,7 @@ mod lint_policy;
 mod options;
 use format_source::format_file_source;
 mod patterns;
+mod style_file;
 pub(crate) use files::collect_files;
 use ignores::load_fmt_ignore_set;
 pub use options::FmtPreset;

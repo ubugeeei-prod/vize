@@ -27,7 +27,7 @@ pub(super) fn format_data_file(
         "css" => {
             let code = profile!(
                 "cli.fmt.file.format_style",
-                vize_glyph::format_style_file(source, options)
+                super::style_file::format_style_file(source, options)
             );
             return Some(Ok(FormatResult {
                 changed: code.as_str() != source,
