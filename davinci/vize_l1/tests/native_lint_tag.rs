@@ -12,8 +12,8 @@ mod native_lint_tag {
         container::{Vue, vue::DescriptorOptions},
         markup::{
             ChildrenView, Element, ElementClose, OpenTag, OwnedComponent,
-            SelectedTemplateComponent, SurfaceParseOptions, SurfaceTree, TagFactsKind as Kind,
-            TagFactsRefusal as Refusal, TemplateGrammar, Token, check_fidelity, render,
+            SelectedTemplateComponent, SurfaceParseOptions, SurfaceTree, TagAnalysisKind as Kind,
+            TagAnalysisRefusal as Refusal, TemplateGrammar, Token, check_fidelity, render,
         },
     };
 

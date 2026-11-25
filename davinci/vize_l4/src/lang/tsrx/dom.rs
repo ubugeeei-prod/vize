@@ -15,7 +15,7 @@ use vize_l0::{Allocator, Span, String};
 use vize_l1::markup::tsrx::TsrxModule;
 use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_profile};
 use vize_l1_to_l2::{LegacyCaps, Lowered};
-use vize_l2::lang::tsrx::TsrxArtifacts;
+use vize_l2::lang::tsrx::TsrxL2Templates;
 
 use super::component::{self, Component, Form};
 use super::names::{Names, Use};
@@ -31,7 +31,7 @@ const GENERATED: [&str; 5] = ["__props", "_ctx", "_cache", "_defineComponent", "
 pub(super) fn module<'a>(
     allocator: &'a Allocator,
     module: &'a TsrxModule<'a>,
-    artifacts: TsrxArtifacts<'a>,
+    artifacts: TsrxL2Templates<'a>,
 ) -> Result<String, Failure> {
     let source = module.program().source_text;
     let fail = |issue: EmitIssue, span: Span| Failure::emit(issue, span);

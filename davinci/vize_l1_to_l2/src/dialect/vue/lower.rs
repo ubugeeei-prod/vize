@@ -8,7 +8,7 @@ use vize_l0::diag::Diagnostic;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, String};
 use vize_l1::markup::{SurfaceError, SurfaceTree};
 
-use vize_l2::artifact::ArtifactParts;
+use vize_l2::artifact::L2TemplateParts;
 use vize_l2::op::Region;
 use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
 
@@ -27,7 +27,7 @@ pub use element::{BranchKind, Structure, frozen_attribute_name, structure};
 pub use foreign::{ForeignDialect, lower_source_block_with_foreign_expressions};
 #[doc(hidden)]
 pub use frozen::{lower_with_frozen_element_spans, lower_with_frozen_element_spans_and_directives};
-pub use if_keys::{BranchKey, BranchKeyKind, IfFacts, SAME_KEY_MESSAGE};
+pub use if_keys::{BranchKey, BranchKeyKind, IfAnalysis, SAME_KEY_MESSAGE};
 
 // The one-scanner rule (#4365): the L2 passes re-derive binding names
 // with exactly the enumeration the lowering used, never a second one.
@@ -110,7 +110,7 @@ pub struct Lowered<'a, P = StdVec<ProvenanceRecord>> {
     /// The canonical artifact: source, ops, provenance, scopes, compound
     /// text, `ui.for` / `ui.if` facts, fragment carriers and op families,
     /// all validated and published by lowering.
-    pub artifact: ArtifactParts<'a, P>,
+    pub artifact: L2TemplateParts<'a, P>,
     /// How many ops were numbered (page order: every region op and
     /// attached binding, top to bottom). Equals the folio's `ops=`
     /// header.
@@ -330,7 +330,7 @@ fn oversized_source<'a, P: Default>(
 ) -> Lowered<'a, P> {
     Lowered {
         allocator,
-        artifact: ArtifactParts::new(
+        artifact: L2TemplateParts::new(
             source,
             Region {
                 ops: vize_l0::Vec::new_in(&allocator),

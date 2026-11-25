@@ -34,7 +34,7 @@ pub use path::{RouteParam, join_route_path, parse_route_params};
 pub use typing::{RouteDiagnostic, RouteTyping};
 
 use vize_carton::{CompactString, FxHashMap, Span};
-use vize_l0::fact::{Demand, FactGroup, FactProducer, FactTable, FactView};
+use vize_l0::analysis::{Analysis, AnalysisProducer, AnalysisTable, AnalysisView, Demand};
 use vize_l0::pass::AnalysisId;
 
 use super::{AmbientInput, ModuleId, ProjectSources, Provider, ids};
@@ -141,7 +141,7 @@ pub struct NamedRoute {
 /// ordinal (discovery order).
 pub struct RouteTree;
 
-impl FactGroup for RouteTree {
+impl Analysis for RouteTree {
     const ID: AnalysisId = ids::ROUTE_TREE;
     const NAME: &'static str = "route-tree";
     const STRATUM: u8 = 0;
@@ -150,8 +150,8 @@ impl FactGroup for RouteTree {
     type Value = RouterTree;
 }
 
-impl FactProducer<ProjectSources> for RouteTree {
-    fn produce(project: &ProjectSources, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<ProjectSources> for RouteTree {
+    fn produce(project: &ProjectSources, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         (0u32..).zip(records::collect(project)).collect()
     }
 }
@@ -159,7 +159,7 @@ impl FactProducer<ProjectSources> for RouteTree {
 /// Stratum 1: the params of every route name, read off [`RouteTree`].
 pub struct RouteParams;
 
-impl FactGroup for RouteParams {
+impl Analysis for RouteParams {
     const ID: AnalysisId = ids::ROUTE_PARAMS;
     const NAME: &'static str = "route-params";
     const STRATUM: u8 = 1;
@@ -168,10 +168,10 @@ impl FactGroup for RouteParams {
     type Value = NamedRoute;
 }
 
-impl FactProducer<ProjectSources> for RouteParams {
-    fn produce(_: &ProjectSources, inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<ProjectSources> for RouteParams {
+    fn produce(_: &ProjectSources, inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let Ok(trees) = inputs.get::<RouteTree>() else {
-            return FactTable::default();
+            return AnalysisTable::default();
         };
         let mut named: FxHashMap<CompactString, NamedRoute> = FxHashMap::default();
         for (router, tree) in trees.iter() {

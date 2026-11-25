@@ -8,9 +8,9 @@ use vize_l0::diag::Diagnostic;
 use vize_l0::{Allocator, Span};
 use vize_l1::markup::parse;
 use vize_l1_to_l2::lower;
-use vize_l1_to_l2::partial::{HoleFact, HoleKind, PartialFacts, ScopeRole, partial_facts};
+use vize_l1_to_l2::partial::{HoleInfo, HoleKind, PartialAnalysis, ScopeRole, partial_facts};
 
-fn analyze(source: &str) -> (PartialFacts, Vec<Diagnostic>) {
+fn analyze(source: &str) -> (PartialAnalysis, Vec<Diagnostic>) {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let mut lowered = lower(&allocator, &tree, &errors);
@@ -35,7 +35,7 @@ fn at(source: &str, needle: &str) -> u32 {
 fn a_well_formed_template_keeps_its_scopes_and_gains_no_diagnostic() {
     let source = r#"<li v-for="(item, i) in items">{{ item }}</li>"#;
     let (facts, diagnostics) = analyze(source);
-    assert_eq!(facts.holes(), &[] as &[(u32, HoleFact)]);
+    assert_eq!(facts.holes(), &[] as &[(u32, HoleInfo)]);
     assert_eq!(messages(&diagnostics), Vec::<&str>::new());
 
     let item = at(source, "item");

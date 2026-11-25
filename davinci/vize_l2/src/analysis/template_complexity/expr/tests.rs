@@ -1,5 +1,5 @@
 use super::score;
-use crate::analysis::template_complexity::{ComplexityFacts, Contribution, DecisionKind};
+use crate::analysis::template_complexity::{ComplexityAnalysis, Contribution, DecisionKind};
 use crate::expr::js::{JsCoordinates, JsSegment};
 use crate::expr::{ExprRef, JsExpr};
 use oxc_ast::ast::Expression;
@@ -11,8 +11,8 @@ fn span(source: &str, text: &str) -> Span {
     Span::new(start, start + text.len() as u32)
 }
 
-fn expected(source: &str, whole: &str, inner: &str) -> ComplexityFacts {
-    ComplexityFacts {
+fn expected(source: &str, whole: &str, inner: &str) -> ComplexityAnalysis {
+    ComplexityAnalysis {
         cyclomatic: 3,
         cognitive: 2,
         unknown: 0,
@@ -58,7 +58,7 @@ fn checked_wrapper_coordinates_preserve_whole_logical_and_nested_conditional_ran
         let js =
             JsExpr::from_retained_in(&a, &wrapper.expression, expression, authored, coordinates)
                 .unwrap();
-        let mut facts = ComplexityFacts::empty();
+        let mut facts = ComplexityAnalysis::empty();
         score(ExprRef::Js(js), NodeId::from_index(3), 0, &mut facts);
         facts
             .contributions
@@ -74,7 +74,7 @@ fn load_path_identity_coordinates_retain_the_complete_existing_fact_shape() {
     let expression = "ready && (yes ? '😀' : 'no')";
     let file = alloc::format!("作者😀\r\n<p>{{{{ {expression} }}}}</p>");
     let js = JsExpr::parse_in(&a, expression, span(&file, expression)).unwrap();
-    let mut facts = ComplexityFacts::empty();
+    let mut facts = ComplexityAnalysis::empty();
     score(ExprRef::Js(js), NodeId::from_index(3), 0, &mut facts);
     facts
         .contributions
@@ -116,11 +116,11 @@ fn identity_projection_keeps_utf8_bounds_and_authored_overflow_refusals() {
             span: authored,
             coordinates: None,
         };
-        let mut facts = ComplexityFacts::empty();
+        let mut facts = ComplexityAnalysis::empty();
         score(ExprRef::Js(&js), NodeId::from_index(3), 2, &mut facts);
         assert_eq!(
             facts,
-            ComplexityFacts {
+            ComplexityAnalysis {
                 cyclomatic: 1,
                 cognitive: 0,
                 unknown: 1,
@@ -169,7 +169,7 @@ fn terminal_leaves_preserve_facts_and_compounds_still_visit_nested_decisions() {
         "(a && (b ? c : d)).value.deep",
     ] {
         let js = JsExpr::parse_in(&a, expression, Span::new(0, expression.len() as u32)).unwrap();
-        let mut facts = ComplexityFacts::empty();
+        let mut facts = ComplexityAnalysis::empty();
         score(ExprRef::Js(js), NodeId::from_index(3), 0, &mut facts);
         facts
             .contributions
@@ -187,14 +187,14 @@ fn static_members_keep_logical_trees_separate_across_the_object_boundary() {
     let a = Allocator::default();
     let expression = "((a && b).value) || c";
     let js = JsExpr::parse_in(&a, expression, Span::new(0, expression.len() as u32)).unwrap();
-    let mut facts = ComplexityFacts::empty();
+    let mut facts = ComplexityAnalysis::empty();
     score(ExprRef::Js(js), NodeId::from_index(3), 0, &mut facts);
     facts
         .contributions
         .sort_unstable_by_key(Contribution::sort_key);
     assert_eq!(
         facts,
-        ComplexityFacts {
+        ComplexityAnalysis {
             cyclomatic: 3,
             cognitive: 2,
             unknown: 0,
@@ -226,14 +226,14 @@ fn conditional_nesting_restores_before_the_next_sibling_expression() {
     let a = Allocator::default();
     let expression = "[a ? b ? c : d : e, f && g]";
     let js = JsExpr::parse_in(&a, expression, Span::new(0, expression.len() as u32)).unwrap();
-    let mut facts = ComplexityFacts::empty();
+    let mut facts = ComplexityAnalysis::empty();
     score(ExprRef::Js(js), NodeId::from_index(3), 2, &mut facts);
     facts
         .contributions
         .sort_unstable_by_key(Contribution::sort_key);
     assert_eq!(
         facts,
-        ComplexityFacts {
+        ComplexityAnalysis {
             cyclomatic: 4,
             cognitive: 8,
             unknown: 0,
@@ -296,12 +296,12 @@ fn entity_interiors_refuse_the_whole_expression_instead_of_publishing_partial_fa
         cyclomatic: 1,
         cognitive: 1,
     };
-    let mut facts = ComplexityFacts::empty();
+    let mut facts = ComplexityAnalysis::empty();
     facts.push(prior);
     score(ExprRef::Js(js), NodeId::from_index(3), 2, &mut facts);
     assert_eq!(
         facts,
-        ComplexityFacts {
+        ComplexityAnalysis {
             cyclomatic: 2,
             cognitive: 1,
             unknown: 1,

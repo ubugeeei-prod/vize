@@ -4,7 +4,7 @@
 //! This first static HTML family grants analysis authority, not JSX module output.
 
 use super::{JsxFile, JsxFileError, JsxFileProducer, RejectedJsxFile};
-use crate::artifact::ArtifactError;
+use crate::artifact::L2TemplateError;
 use crate::file::L2Ir;
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Span, profile};
@@ -16,7 +16,7 @@ mod whitespace;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsxMarkupIssueKind {
     File(JsxFileError),
-    Artifact(ArtifactError),
+    Artifact(L2TemplateError),
     InvalidRecord,
     RootExpression,
     Fragment,

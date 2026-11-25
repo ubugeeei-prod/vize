@@ -2,7 +2,7 @@
 use alloc::vec::Vec;
 use vize_l0::Allocator;
 use vize_l1::markup::tsrx::{self, TsrxModule};
-use vize_l2::lang::tsrx::{TsrxArtifacts, TsrxIssue, lower};
+use vize_l2::lang::tsrx::{TsrxIssue, TsrxL2Templates, lower};
 
 /// State of the original region producer at this module's revision.
 pub enum RegionLowering<'a> {
@@ -11,7 +11,7 @@ pub enum RegionLowering<'a> {
     /// The module parsed and its regions refused lowering.
     Refused(Vec<TsrxIssue>),
     /// All admitted regions in authored order, including their host expressions.
-    Ready(TsrxArtifacts<'a>),
+    Ready(TsrxL2Templates<'a>),
 }
 
 /// The arena, host Program and canonical regions belong to one parse.

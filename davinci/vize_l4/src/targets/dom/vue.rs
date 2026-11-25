@@ -7,7 +7,7 @@ use vize_l2::file::L2Ir;
 use vize_l2::{expr::ExprRef, resolution::Occurrence};
 use vize_l3::decision::{
     dom::{
-        DomFacts,
+        DomAnalysis,
         vue::{VueReadKind, VueRenderAnalysis, VueRenderExpression},
     },
     template::SelectedSetupDomAnalysis,
@@ -98,7 +98,7 @@ impl<'owner, 'arena> VueRows<'_, '_, 'owner, '_, '_, 'arena> {
             Self::Selected(a) => a.l2ir(),
         }
     }
-    fn dom(&self) -> Option<&DomFacts<'owner, 'arena>> {
+    fn dom(&self) -> Option<&DomAnalysis<'owner, 'arena>> {
         match self {
             Self::Ordinary(a) => a.dom(),
             Self::Selected(a) => a.dom(),

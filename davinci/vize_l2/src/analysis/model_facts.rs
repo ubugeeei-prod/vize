@@ -18,7 +18,7 @@ pub enum ModelFault {
 ///
 /// Entries exist only for faulted models (sparse-table discipline).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ModelFacts {
+pub struct ModelAnalysis {
     /// The first failing check, in the validator's check order.
     pub fault: ModelFault,
 }
@@ -27,11 +27,11 @@ pub struct ModelFacts {
 const _: () = {
     const fn assert_owned<T: 'static>() {}
     assert_owned::<ModelFault>();
-    assert_owned::<ModelFacts>();
+    assert_owned::<ModelAnalysis>();
 };
 
 /// Both types are one-byte product vocabulary on every target.
 const _: () = {
     assert!(core::mem::size_of::<ModelFault>() == 1);
-    assert!(core::mem::size_of::<ModelFacts>() == 1);
+    assert!(core::mem::size_of::<ModelAnalysis>() == 1);
 };

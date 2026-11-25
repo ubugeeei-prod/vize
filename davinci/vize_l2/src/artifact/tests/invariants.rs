@@ -1,7 +1,7 @@
 use super::{
-    Allocator, Artifact, ArtifactError, ArtifactParts, Box, ElementOp, ExprRef, ForBinding, ForOp,
-    IfBranch, IfOp, IfShape, InterpolationOp, JsExpr, Namespace, NodeId, Op, PageWalk,
-    ProvenanceRecord, ScopeTag, Span, String, Vec, opaque, parts, region, scope, text,
+    Allocator, Box, ElementOp, ExprRef, ForBinding, ForOp, IfBranch, IfOp, IfShape,
+    InterpolationOp, JsExpr, L2Template, L2TemplateError, L2TemplateParts, Namespace, NodeId, Op,
+    PageWalk, ProvenanceRecord, ScopeTag, Span, String, Vec, opaque, parts, region, scope, text,
 };
 use alloc::vec;
 
@@ -9,17 +9,18 @@ use alloc::vec;
 fn source_spans_reject_inversion_outside_and_utf8_cuts() {
     let a = Allocator::default();
     for span in [Span::new(3, 1), Span::new(0, 4), Span::new(1, 2)] {
-        let rejected = Artifact::try_new(parts("éx", region(&a, [text(&a, span)]))).unwrap_err();
+        let rejected = L2Template::try_new(parts("éx", region(&a, [text(&a, span)]))).unwrap_err();
         assert_eq!(
             rejected.error,
-            ArtifactError::InvalidSpan {
+            L2TemplateError::InvalidSpan {
                 node: Some(NodeId::FIRST),
                 span
             }
         );
         assert_eq!(rejected.parts.root.ops.len(), 1);
     }
-    let artifact = Artifact::try_new(parts("éx", region(&a, [text(&a, Span::new(2, 3))]))).unwrap();
+    let artifact =
+        L2Template::try_new(parts("éx", region(&a, [text(&a, Span::new(2, 3))]))).unwrap();
     assert_eq!(artifact.node_count(), 1);
 }
 
@@ -38,8 +39,8 @@ fn child_and_expression_ranges_must_stay_in_their_source_owner() {
         ))],
     );
     assert_eq!(
-        Artifact::try_new(parts("abc", root)).unwrap_err().error,
-        ArtifactError::OutsideOwner {
+        L2Template::try_new(parts("abc", root)).unwrap_err().error,
+        L2TemplateError::OutsideOwner {
             node: NodeId::FIRST,
             span: Span::new(1, 3),
             owner: Span::new(0, 2)
@@ -60,8 +61,8 @@ fn child_and_expression_ranges_must_stay_in_their_source_owner() {
         ))],
     );
     assert!(matches!(
-        Artifact::try_new(parts("abc", root)).unwrap_err().error,
-        ArtifactError::OutsideOwner { .. }
+        L2Template::try_new(parts("abc", root)).unwrap_err().error,
+        L2TemplateError::OutsideOwner { .. }
     ));
 }
 
@@ -84,8 +85,8 @@ fn canonical_if_shapes_are_checked_on_native_branches() {
         }
         let root = region(&a, [Op::If(Box::new_in(IfOp { branches, span }, &&a))]);
         assert_eq!(
-            Artifact::try_new(parts("x", root)).unwrap_err().error,
-            ArtifactError::InvalidIf {
+            L2Template::try_new(parts("x", root)).unwrap_err().error,
+            L2TemplateError::InvalidIf {
                 node: NodeId::FIRST,
                 shape: expected
             }
@@ -107,8 +108,8 @@ fn stale_provenance_and_non_introducing_scope_keys_are_rejected() {
         span,
     });
     assert_eq!(
-        Artifact::try_new(input).unwrap_err().error,
-        ArtifactError::DanglingProvenance {
+        L2Template::try_new(input).unwrap_err().error,
+        L2TemplateError::DanglingProvenance {
             record: 0,
             node: stale
         }
@@ -116,14 +117,14 @@ fn stale_provenance_and_non_introducing_scope_keys_are_rejected() {
     let mut input = parts("x", region(&a, [text(&a, span)]));
     input.scopes.insert(NodeId::FIRST, scope(0));
     assert_eq!(
-        Artifact::try_new(input).unwrap_err().error,
-        ArtifactError::InvalidScopeSite {
+        L2Template::try_new(input).unwrap_err().error,
+        L2TemplateError::InvalidScopeSite {
             node: NodeId::FIRST
         }
     );
 }
 
-fn loops<'a>(a: &'a Allocator) -> ArtifactParts<'a> {
+fn loops<'a>(a: &'a Allocator) -> L2TemplateParts<'a> {
     let span = Span::new(0, 1);
     let mut root = region(a, []);
     for _ in 0..2 {
@@ -150,8 +151,8 @@ fn every_scope_site_has_a_unique_dense_tag_even_without_enumerated_names() {
     let a = Allocator::default();
     let second = NodeId::from_index(1).unwrap();
     assert_eq!(
-        Artifact::try_new(loops(&a)).unwrap_err().error,
-        ArtifactError::MissingScope {
+        L2Template::try_new(loops(&a)).unwrap_err().error,
+        L2TemplateError::MissingScope {
             node: NodeId::FIRST
         }
     );
@@ -160,8 +161,8 @@ fn every_scope_site_has_a_unique_dense_tag_even_without_enumerated_names() {
         input.scopes.insert(NodeId::FIRST, scope(0));
         input.scopes.insert(second, scope(tag));
         assert_eq!(
-            Artifact::try_new(input).unwrap_err().error,
-            ArtifactError::InvalidScopeTag {
+            L2Template::try_new(input).unwrap_err().error,
+            L2TemplateError::InvalidScopeTag {
                 node: second,
                 tag: ScopeTag::from_index(tag)
             }
@@ -170,7 +171,7 @@ fn every_scope_site_has_a_unique_dense_tag_even_without_enumerated_names() {
     let mut input = loops(&a);
     input.scopes.insert(second, scope(1));
     input.scopes.insert(NodeId::FIRST, scope(0));
-    assert_eq!(Artifact::try_new(input).unwrap().node_count(), 2);
+    assert_eq!(L2Template::try_new(input).unwrap().node_count(), 2);
 }
 
 #[test]
@@ -195,8 +196,8 @@ fn retained_js_root_uses_its_own_text_coordinates_without_reparsing() {
         ))],
     );
     assert_eq!(
-        Artifact::try_new(parts("x", root)).unwrap_err().error,
-        ArtifactError::InvalidJsSpan {
+        L2Template::try_new(parts("x", root)).unwrap_err().error,
+        L2TemplateError::InvalidJsSpan {
             node: NodeId::FIRST,
             span: Span::new(0, 8)
         }

@@ -6,7 +6,7 @@ use super::{
     AmbientInput, PROJECT_FACTS, PROVIDERS, ProjectSources, Provider, ProviderDesc, ProviderError,
     check_providers, ids, produced,
 };
-use vize_l0::fact::{Demand, FactGroup};
+use vize_l0::analysis::{Analysis, Demand};
 use vize_l0::pass::AnalysisId;
 
 struct FileRoutes;

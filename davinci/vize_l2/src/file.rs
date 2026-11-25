@@ -3,7 +3,7 @@
 //! Bare indices identify rows only inside this owner. Construction belongs to
 //! checked language producers, never a caller-supplied declaration/name list.
 
-use crate::artifact::Artifact;
+use crate::artifact::L2Template;
 use crate::resolution::{BindingId, ResolutionTable};
 use alloc::boxed::Box;
 use vize_l0::id::NodeId;
@@ -52,21 +52,21 @@ pub use records::{
 /// Immutable file facts and the exact canonical tree built with them.
 ///
 /// Arbitrary declarations cannot establish file ownership:
-/// ```compile_fail
-/// use vize_l2::{artifact::Artifact, file::L2Ir};
-/// fn forge(artifact: Artifact<'_>) {
-///     let _ = L2Ir { artifact, facts: Default::default() };
+/// ```compile_fail,E0451
+/// use vize_l2::{artifact::L2Template, file::L2Ir};
+/// fn forge<'a>(artifact: L2Template<'a>, actual: L2Ir<'a>) {
+///     let _ = L2Ir { artifact, ..actual };
 /// }
 /// ```
 pub struct L2Ir<'a> {
-    artifact: Artifact<'a>,
+    artifact: L2Template<'a>,
     /// Read by `crate::query` scans; construction stays with the producers.
-    pub(crate) facts: build::Facts<'a>,
+    pub(crate) facts: build::L2Script<'a>,
 }
 
 impl<'a> L2Ir<'a> {
     #[must_use]
-    pub fn artifact(&self) -> &Artifact<'a> {
+    pub fn artifact(&self) -> &L2Template<'a> {
         &self.artifact
     }
 
@@ -184,7 +184,7 @@ impl<'a> L2Ir<'a> {
         Some(FileResolution { l2ir: self, node })
     }
 
-    pub(crate) fn from_producer(artifact: Artifact<'a>, facts: build::Facts<'a>) -> Self {
+    pub(crate) fn from_producer(artifact: L2Template<'a>, facts: build::L2Script<'a>) -> Self {
         Self { artifact, facts }
     }
 }
@@ -277,8 +277,8 @@ impl<'f, 'a> FileResolution<'f, 'a> {
 
 /// A rejected canonical construction retains its private semantic facts.
 pub struct RejectedFile<'a> {
-    pub(crate) artifact: crate::artifact::RejectedArtifact<'a>,
-    pub(crate) facts: Box<build::Facts<'a>>,
+    pub(crate) artifact: crate::artifact::RejectedL2Template<'a>,
+    pub(crate) facts: Box<build::L2Script<'a>>,
 }
 
 impl core::fmt::Debug for RejectedFile<'_> {
@@ -302,7 +302,7 @@ impl<'a> RejectedFile<'a> {
         &self.facts.scopes
     }
     #[must_use]
-    pub fn artifact(&self) -> &crate::artifact::RejectedArtifact<'a> {
+    pub fn artifact(&self) -> &crate::artifact::RejectedL2Template<'a> {
         &self.artifact
     }
     #[must_use]

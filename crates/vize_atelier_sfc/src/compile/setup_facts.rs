@@ -13,19 +13,19 @@ use vize_l1::embed::{
     EmbedSource, Lang,
     syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
 };
-use vize_l2::framework::vue::{SetupBindingKind, SetupFacts, SetupObserver};
+use vize_l2::framework::vue::{SetupAnalysis, SetupBindingKind, SetupObserver};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
 use crate::types::{BindingMetadata, BindingType, SfcDescriptor, SfcError, TemplateCompileOptions};
 
 /// The setup content's Program and the facts observed over it.
-pub(crate) struct SetupAnalysis<'a> {
+pub(crate) struct SetupCompileAnalysis<'a> {
     content: &'a str,
     syntax: EmbedSyntax<'a>,
-    facts: SetupFacts,
+    facts: SetupAnalysis,
 }
 
-impl<'a> SetupAnalysis<'a> {
+impl<'a> SetupCompileAnalysis<'a> {
     /// Parse and observe `content`, the prepared text of the descriptor's
     /// `<script setup>`.
     pub(crate) fn new(

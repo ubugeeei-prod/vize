@@ -12,9 +12,9 @@ use vize_l1::framework::vue::version::v2::text::TextBoundaryKind;
 use vize_l1::framework::vue::{LegacyVueVersion, version::v2::surface};
 use vize_l1::markup::htmlish::render::check_fidelity;
 
-type Facts<'a> = (&'a str, Vec<(&'a str, Vec<&'a str>)>);
+type TextCase<'a> = (&'a str, Vec<(&'a str, Vec<&'a str>)>);
 
-fn facts<'a>(arena: &'a Allocator, source: &'a str) -> Facts<'a> {
+fn facts<'a>(arena: &'a Allocator, source: &'a str) -> TextCase<'a> {
     let parsed = surface::parse_component(arena, source).expect("small source");
     check_fidelity(parsed.tree()).expect("original bytes");
     let chain = parsed.bindings()[0]

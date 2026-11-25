@@ -1,7 +1,7 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span, id::NodeId};
-use vize_l2::artifact::{ArtifactError, ComponentBody, ComponentFactory};
+use vize_l2::artifact::{ComponentBody, ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
 use vize_l2::file::{
     Declaration, FileIssueKind, TemplateBody, TemplateChildRegion, TemplatePolicy, TemplateScope,
@@ -26,9 +26,9 @@ struct Recorded {
     child: Option<NodeId>,
     interpolation: Option<NodeId>,
     text: Option<NodeId>,
-    error: Option<ArtifactError>,
+    error: Option<L2TemplateError>,
 }
-fn retain(result: Result<NodeId, ArtifactError>, record: &mut Recorded) -> Option<NodeId> {
+fn retain(result: Result<NodeId, L2TemplateError>, record: &mut Recorded) -> Option<NodeId> {
     match result {
         Ok(node) => Some(node),
         Err(error) => {

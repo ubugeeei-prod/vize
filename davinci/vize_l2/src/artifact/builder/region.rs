@@ -1,6 +1,6 @@
 //! Borrowed factory scope; callers cannot replace or finish its owning builder.
 
-use super::{ArtifactError, Builder};
+use super::{Builder, L2TemplateError};
 use crate::expr::ExprRef;
 use crate::op::{Attribute, Namespace};
 use crate::provenance::ProvenanceRecord;
@@ -20,7 +20,7 @@ impl<'a> RegionBuilder<'_, 'a> {
         &mut self,
         content: &'a str,
         span: Span,
-    ) -> Result<(NodeId, super::TextAllocation<'a>), ArtifactError> {
+    ) -> Result<(NodeId, super::TextAllocation<'a>), L2TemplateError> {
         self.builder.native_text(content, span)
     }
 
@@ -31,7 +31,7 @@ impl<'a> RegionBuilder<'_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<(NodeId, super::ElementAllocation<'a>), ArtifactError> {
+    ) -> Result<(NodeId, super::ElementAllocation<'a>), L2TemplateError> {
         self.builder
             .native_element(tag, namespace, attributes, span, children)
     }
@@ -40,47 +40,47 @@ impl<'a> RegionBuilder<'_, 'a> {
         &mut self,
         head: &crate::resolution::ForResolution<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder.begin_original_for(head, span)
     }
     pub(crate) fn begin_native_if(
         &mut self,
         input: &crate::lang::js::NativeConditionalInput<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder.begin_native_if(input, span)
     }
     pub(crate) fn finish_native_if(
         &mut self,
         node: NodeId,
-    ) -> Result<core::ptr::NonNull<crate::op::IfOp<'a>>, ArtifactError> {
+    ) -> Result<core::ptr::NonNull<crate::op::IfOp<'a>>, L2TemplateError> {
         self.builder.finish_native_if(node)
     }
     pub(crate) fn begin_native_else(
         &mut self,
         node: NodeId,
         input: &vize_l1::markup::AttributeElse<'a>,
-    ) -> Result<(), ArtifactError> {
+    ) -> Result<(), L2TemplateError> {
         self.builder.begin_native_else(node, input)
     }
     pub(crate) fn finish_original_for(
         &mut self,
         node: NodeId,
-    ) -> Result<core::ptr::NonNull<crate::op::OriginalForOp<'a>>, ArtifactError> {
+    ) -> Result<core::ptr::NonNull<crate::op::OriginalForOp<'a>>, L2TemplateError> {
         self.builder.finish_original_for(node)
     }
     pub(crate) fn native_on(
         &mut self,
         handler: &crate::resolution::HandlerResolution<'a>,
         span: Span,
-    ) -> Result<(NodeId, core::ptr::NonNull<crate::op::OnOp<'a>>), ArtifactError> {
+    ) -> Result<(NodeId, core::ptr::NonNull<crate::op::OnOp<'a>>), L2TemplateError> {
         self.builder.native_on(handler, span)
     }
     pub(crate) fn native_model(
         &mut self,
         input: &crate::lang::js::NativeModelInput<'a>,
         kind: crate::file::NativeFileModelKind,
-    ) -> Result<(NodeId, core::ptr::NonNull<crate::op::ModelOp<'a>>), ArtifactError> {
+    ) -> Result<(NodeId, core::ptr::NonNull<crate::op::ModelOp<'a>>), L2TemplateError> {
         self.builder.native_model(input, kind)
     }
 
@@ -91,7 +91,7 @@ impl<'a> RegionBuilder<'_, 'a> {
         name_span: Span,
         value: ExprRef<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder.bind(name, name_span, value, span)
     }
 
@@ -108,33 +108,33 @@ impl<'a> RegionBuilder<'_, 'a> {
         name: &'a str,
         value: ExprRef<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder.synthesized_bind(name, value, span)
     }
 
     /// Attach an object spread before this owner's children.
-    pub fn spread(&mut self, value: ExprRef<'a>, span: Span) -> Result<NodeId, ArtifactError> {
+    pub fn spread(&mut self, value: ExprRef<'a>, span: Span) -> Result<NodeId, L2TemplateError> {
         self.builder.spread(value, span)
     }
 
-    pub fn text(&mut self, content: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    pub fn text(&mut self, content: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.builder.text(content, span)
     }
-    pub fn comment(&mut self, content: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    pub fn comment(&mut self, content: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.builder.comment(content, span)
     }
     pub fn interpolation(
         &mut self,
         expression: ExprRef<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder.interpolation(expression, span)
     }
     pub fn child_value(
         &mut self,
         expression: ExprRef<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder.child_value(expression, span)
     }
     /// Create one host-syntax `ui.for`; the callback builds its body, then
@@ -144,7 +144,7 @@ impl<'a> RegionBuilder<'_, 'a> {
         head: super::HostForHead<'a>,
         span: Span,
         regions: impl FnOnce(&mut super::HostForBuilder<'_, 'a>, NodeId),
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder.host_for(head, span, regions)
     }
     /// Create one array callback `ui.for`; the callback builds its region.
@@ -153,7 +153,7 @@ impl<'a> RegionBuilder<'_, 'a> {
         head: super::CallbackForHead<'a>,
         span: Span,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder.callback_for(head, span, children)
     }
     /// Create one `ui.and`; the callback builds the region a truthy `left`
@@ -163,7 +163,7 @@ impl<'a> RegionBuilder<'_, 'a> {
         left: ExprRef<'a>,
         span: Span,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder.and(left, span, children)
     }
     /// Create one `ui.if`; the callback adds its branches in authored order.
@@ -171,7 +171,7 @@ impl<'a> RegionBuilder<'_, 'a> {
         &mut self,
         span: Span,
         branches: impl FnOnce(&mut super::BranchBuilder<'_, 'a>, NodeId),
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder.conditional(span, branches)
     }
     pub fn element(
@@ -181,7 +181,7 @@ impl<'a> RegionBuilder<'_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder
             .element(tag, namespace, attributes, span, children)
     }
@@ -191,10 +191,10 @@ impl<'a> RegionBuilder<'_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.builder.component(name, attributes, span, children)
     }
-    pub fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    pub fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         self.builder.record(record)
     }
 }

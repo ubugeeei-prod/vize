@@ -52,7 +52,7 @@ fn a_sealed_artifact_lints_as_embedded_markup() {
     let (tree, _, errors) = vize_l1::markup::parse_with_authored_diagnostics(&allocator, source);
     let lowered = vize_l1_to_l2::lower_preserving_comments(&allocator, &tree, &errors);
     let artifact =
-        vize_l2::artifact::Artifact::try_new(lowered.artifact).expect("a valid sealed artifact");
+        vize_l2::artifact::L2Template::try_new(lowered.artifact).expect("a valid sealed artifact");
     let markup = L2Markup::from_artifact(&artifact);
     assert!(!markup.is_template());
 

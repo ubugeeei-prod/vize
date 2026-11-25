@@ -1,6 +1,6 @@
 use super::prepare::children;
 use crate::{
-    artifact::{ArtifactError, RegionBuilder},
+    artifact::{L2TemplateError, RegionBuilder},
     lang::js::jsx_body::records::Record,
     op::{Attribute, Namespace},
     resolution::SyntaxKind as Syntax,
@@ -11,7 +11,7 @@ pub(super) fn element<'a>(
     records: &[Record<'a>],
     index: usize,
     region: &mut RegionBuilder<'_, 'a>,
-) -> Result<(), ArtifactError> {
+) -> Result<(), L2TemplateError> {
     let row = records.get(index).ok_or_else(invalid)?;
     let mut body = children(records, index);
     let opening = body.next().ok_or_else(invalid)?;
@@ -57,7 +57,7 @@ pub(super) fn node<'a>(
     records: &[Record<'a>],
     index: usize,
     region: &mut RegionBuilder<'_, 'a>,
-) -> Result<(), ArtifactError> {
+) -> Result<(), L2TemplateError> {
     match records.get(index).ok_or_else(invalid)?.kind {
         Syntax::Element => element(records, index, region),
         Syntax::Fragment => {
@@ -74,7 +74,7 @@ fn child<'a>(
     records: &[Record<'a>],
     index: usize,
     region: &mut RegionBuilder<'_, 'a>,
-) -> Result<(), ArtifactError> {
+) -> Result<(), L2TemplateError> {
     let row = records.get(index).ok_or_else(invalid)?;
     match row.kind {
         Syntax::Element | Syntax::Fragment => node(records, index, region),
@@ -89,8 +89,8 @@ fn child<'a>(
     }
 }
 
-fn invalid() -> ArtifactError {
-    ArtifactError::InvalidSpan {
+fn invalid() -> L2TemplateError {
+    L2TemplateError::InvalidSpan {
         node: None,
         span: vize_l0::Span::new(0, 0),
     }

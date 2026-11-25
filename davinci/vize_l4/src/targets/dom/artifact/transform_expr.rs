@@ -236,7 +236,7 @@ impl<'b> TransformExpressions<'b> {
         &mut self,
         aliases: [Option<&str>; 3],
         spans: [Option<vize_l0::Span>; 3],
-        facts: Option<&vize_l2::scope::ScopeFacts>,
+        facts: Option<&vize_l2::scope::ScopeAnalysis>,
     ) -> TransformScopeMark {
         let mark = TransformScopeMark(self.scope.mark());
         self.scope.push_for_bindings(aliases, spans, facts, false);

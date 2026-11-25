@@ -92,11 +92,11 @@ pub struct ComponentOptions {
 
 /// The facts of one normal `<script>` Program.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OptionsFacts {
+pub struct OptionsAnalysis {
     component: Option<ComponentOptions>,
 }
 
-impl OptionsFacts {
+impl OptionsAnalysis {
     /// The component the `export default` declares, when it declares one.
     #[must_use]
     pub fn component(&self) -> Option<&ComponentOptions> {
@@ -106,7 +106,7 @@ impl OptionsFacts {
 
 /// Why the observed facts do not cover the whole Program.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum OptionsFactsIncomplete {
+pub enum OptionsAnalysisIncomplete {
     NoProgram,
     SecondProgram,
     MissingStatements { observed: usize, expected: usize },
@@ -139,23 +139,23 @@ impl<'a> OptionsObserver<'a> {
     }
 
     /// The facts, once every top-level statement was seen.
-    pub fn finish(self) -> Result<OptionsFacts, OptionsFactsIncomplete> {
+    pub fn finish(self) -> Result<OptionsAnalysis, OptionsAnalysisIncomplete> {
         let Some(program) = self.program else {
-            return Err(OptionsFactsIncomplete::NoProgram);
+            return Err(OptionsAnalysisIncomplete::NoProgram);
         };
         if self.second_program {
-            return Err(OptionsFactsIncomplete::SecondProgram);
+            return Err(OptionsAnalysisIncomplete::SecondProgram);
         }
         if self.overflow {
-            return Err(OptionsFactsIncomplete::SpanOverflow);
+            return Err(OptionsAnalysisIncomplete::SpanOverflow);
         }
         if self.observed != program.statements {
-            return Err(OptionsFactsIncomplete::MissingStatements {
+            return Err(OptionsAnalysisIncomplete::MissingStatements {
                 observed: self.observed,
                 expected: program.statements,
             });
         }
-        Ok(OptionsFacts {
+        Ok(OptionsAnalysis {
             component: Resolver::new(&self.reads).component(),
         })
     }

@@ -1,6 +1,6 @@
 //! Only authentic selected setup membership or original alias rows are visible.
 
-use crate::file::build::Facts;
+use crate::file::build::L2Script;
 use crate::file::{
     Declaration, DeclarationKind, Namespace, ScopeId, ScriptUnitId, TemplateDeclaration,
 };
@@ -14,7 +14,7 @@ pub(crate) struct NativeVisibility {
 impl NativeVisibility {
     pub(super) fn checked(
         selected: &SelectedTemplateComponent<'_>,
-        facts: &Facts<'_>,
+        facts: &L2Script<'_>,
         setup: Option<ScriptUnitId>,
     ) -> Self {
         let setup = setup.and_then(|id| {

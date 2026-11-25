@@ -16,6 +16,7 @@ mod facts;
 use facts::{
     CHECKS, Hidden, Lengths, REGISTRY, RepeatedWord, Repeats, Sentence, Words, repeated_words,
 };
+use vize_l0::analysis::{Analysis, AnalysisError, AnalysisManager, Demand};
 use vize_l0::diag::verify::{
     AuditReport, WitnessAudit, WitnessError, WitnessFailure, unverifiable_witnesses, verify,
     verify_as, verify_chain,
@@ -23,7 +24,6 @@ use vize_l0::diag::verify::{
 use vize_l0::diag::{
     Advisory, Diagnostic, Exemption, Stage, Verdict, WitnessChain, WitnessKey, WitnessLink,
 };
-use vize_l0::fact::{Demand, FactError, FactGroup, FactManager};
 use vize_l0::{Span, String};
 
 /// Words: the@0..3 cat@4..7 saw@8..11 the@12..15 dog@16..19
@@ -71,7 +71,7 @@ fn the_valid_chain() -> WitnessChain {
 
 #[test]
 fn the_rule_emits_one_proven_error_whose_witness_verifies() {
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let view = manager.prepare::<RepeatedWord>(TEXT).expect("registered");
     let found = repeated_words(&view);
     let expected = Diagnostic::proven(
@@ -92,12 +92,12 @@ fn the_rule_emits_one_proven_error_whose_witness_verifies() {
 fn forged_witnesses_are_rejected_with_their_exact_error() {
     use AnalysisGroup::{Hidden as HiddenGroup, Lengths as LengthsGroup, Repeats as R, Words as W};
     let undeclared = if cfg!(debug_assertions) {
-        FactError::Undeclared {
+        AnalysisError::Undeclared {
             consumer: "repeated-word",
             group: Hidden::ID,
         }
     } else {
-        FactError::NotComputed { group: Hidden::ID }
+        AnalysisError::NotComputed { group: Hidden::ID }
     };
     let fixtures: Vec<(&str, WitnessLink, WitnessError)> = vec![
         (
@@ -163,7 +163,7 @@ fn forged_witnesses_are_rejected_with_their_exact_error() {
             },
         ),
     ];
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let view = manager.prepare::<RepeatedWord>(TEXT).expect("registered");
     for (case, forged, expected) in fixtures {
         let error = Diagnostic::proven(
@@ -178,7 +178,7 @@ fn forged_witnesses_are_rejected_with_their_exact_error() {
 
 #[test]
 fn the_first_failing_link_is_reported_by_its_position_in_the_chain() {
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let view = manager.prepare::<RepeatedWord>(TEXT).expect("registered");
     let forged = the_valid_chain().then(link(AnalysisGroup::Sentence, 0, 32, WitnessKey::Artifact));
     assert_eq!(
@@ -194,20 +194,20 @@ fn the_first_failing_link_is_reported_by_its_position_in_the_chain() {
 
 #[test]
 fn a_view_taken_before_the_run_computed_the_group_refuses_the_witness() {
-    let manager = FactManager::new(&REGISTRY);
+    let manager = AnalysisManager::new(&REGISTRY);
     let view = manager.view::<RepeatedWord>();
     assert_eq!(
         verify_chain(&the_valid_chain(), &view, &CHECKS),
         Err(WitnessError::Fact {
             link: 0,
-            error: FactError::NotComputed { group: Words::ID },
+            error: AnalysisError::NotComputed { group: Words::ID },
         })
     );
 }
 
 #[test]
 fn only_chains_are_rechecked_and_a_forged_why_is_refused_too() {
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let view = manager.prepare::<RepeatedWord>(TEXT).expect("registered");
     let exempt = Diagnostic::legacy_error(&EXEMPT, Stage::Surface, Span::new(0, 3), "legacy");
     let plain = Diagnostic::new(Advisory::Warning, Stage::Semantic, Span::new(0, 3), "plain");
@@ -230,7 +230,7 @@ fn only_chains_are_rechecked_and_a_forged_why_is_refused_too() {
 
 #[test]
 fn the_audit_rechecks_every_diagnostic_in_debug_and_is_free_in_release() {
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let view = manager.prepare::<RepeatedWord>(TEXT).expect("registered");
     let mut batch = repeated_words(&view);
     batch.push(Diagnostic::legacy_error(

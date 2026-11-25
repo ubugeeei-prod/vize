@@ -1,6 +1,6 @@
 //! Only the File's genuine original handler receiver calls this attached mint.
 
-use super::super::{ArtifactError, Builder, check};
+use super::super::{Builder, L2TemplateError, check};
 use crate::op::{BindingOp, DynamicName, HandlerId, OnHandlerRef, OnOp};
 use crate::resolution::HandlerResolution;
 use vize_l0::{Box, Span, id::NodeId};
@@ -10,16 +10,16 @@ impl<'a> Builder<'a> {
         &mut self,
         handler: &HandlerResolution<'a>,
         span: Span,
-    ) -> Result<(NodeId, core::ptr::NonNull<OnOp<'a>>), ArtifactError> {
+    ) -> Result<(NodeId, core::ptr::NonNull<OnOp<'a>>), L2TemplateError> {
         let frame = self
             .frames
             .last()
-            .ok_or(ArtifactError::BindingWithoutOwner { span })?;
+            .ok_or(L2TemplateError::BindingWithoutOwner { span })?;
         if !frame.owner.accepts_bindings() {
-            return Err(ArtifactError::BindingWithoutOwner { span });
+            return Err(L2TemplateError::BindingWithoutOwner { span });
         }
         if frame.children_started {
-            return Err(ArtifactError::BindingAfterChild {
+            return Err(L2TemplateError::BindingAfterChild {
                 node: frame.id,
                 span,
             });
@@ -28,7 +28,7 @@ impl<'a> Builder<'a> {
         let input = handler.input().operand();
         let source = input.syntax().source();
         if !core::ptr::eq(source.authored_root(), self.parts.source) {
-            return Err(ArtifactError::MismatchedJsSource {
+            return Err(L2TemplateError::MismatchedJsSource {
                 node: id,
                 span: source.span(),
             });
@@ -37,7 +37,7 @@ impl<'a> Builder<'a> {
         check::owned_span(self.parts.source, id, source.span(), Some(span))?;
         let name = input.argument();
         if name.is_empty() || input.argument_span().slice(self.parts.source) != name {
-            return Err(ArtifactError::InvalidBindingName {
+            return Err(L2TemplateError::InvalidBindingName {
                 node: id,
                 span: input.argument_span(),
             });
@@ -45,7 +45,7 @@ impl<'a> Builder<'a> {
         let frame = self
             .frames
             .last_mut()
-            .ok_or(ArtifactError::BindingWithoutOwner { span })?;
+            .ok_or(L2TemplateError::BindingWithoutOwner { span })?;
         let _ = self.walk.mint_attached();
         let on = Box::new_in(
             OnOp {

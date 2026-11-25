@@ -4,7 +4,7 @@
 use alloc::vec::Vec;
 use vize_l0::{Allocator, Span, id::NodeId};
 use vize_l1::framework::vue::version::v2::surface::{ComponentExpressionPool, RetainedTextRefusal};
-use vize_l2::artifact::{Artifact, ArtifactError, Builder, RejectedArtifact};
+use vize_l2::artifact::{Builder, L2Template, L2TemplateError, RejectedL2Template};
 
 #[cfg(any())]
 mod children;
@@ -23,7 +23,7 @@ pub enum Vue2HoleKind {
     Filter,
     OriginalText(RetainedTextRefusal),
     Expression(crate::native::NativeExpressionError),
-    Construction(ArtifactError),
+    Construction(L2TemplateError),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -37,7 +37,7 @@ pub struct Vue2Hole {
 #[derive(Debug)]
 pub struct NativeVue2Observation<'a> {
     original: ComponentExpressionPool<'a>,
-    artifact: Option<Result<Artifact<'a>, RejectedArtifact<'a>>>,
+    artifact: Option<Result<L2Template<'a>, RejectedL2Template<'a>>>,
     holes: Vec<Vue2Hole>,
 }
 
@@ -45,16 +45,16 @@ impl<'a> NativeVue2Observation<'a> {
     pub fn original(&self) -> &ComponentExpressionPool<'a> {
         &self.original
     }
-    pub fn artifact(&self) -> Option<&Artifact<'a>> {
+    pub fn artifact(&self) -> Option<&L2Template<'a>> {
         self.artifact.as_ref()?.as_ref().ok()
     }
-    pub fn rejected(&self) -> Option<&RejectedArtifact<'a>> {
+    pub fn rejected(&self) -> Option<&RejectedL2Template<'a>> {
         self.artifact.as_ref()?.as_ref().err()
     }
     pub fn holes(&self) -> &[Vue2Hole] {
         &self.holes
     }
-    pub fn admitted(&self) -> Option<&Artifact<'a>> {
+    pub fn admitted(&self) -> Option<&L2Template<'a>> {
         self.holes.is_empty().then(|| self.artifact()).flatten()
     }
 }
@@ -111,7 +111,7 @@ impl Context<'_, '_> {
             .span_of(raw)
             .unwrap_or(self.original.block().span())
     }
-    fn built(&mut self, result: Result<NodeId, ArtifactError>, span: Span) {
+    fn built(&mut self, result: Result<NodeId, L2TemplateError>, span: Span) {
         if let Err(error) = result {
             self.hole(span, Vue2HoleKind::Construction(error));
         }

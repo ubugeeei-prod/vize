@@ -27,7 +27,7 @@ use vize_l0::pass::{Remark, RemarkArg, RemarkSink};
 
 use super::consts::{PropsBlocker, props_blocker};
 use super::lattice::RegionSummary;
-use super::{StaticFacts, StaticLevel};
+use super::{StaticAnalysis, StaticLevel};
 
 /// Whole-subtree hoist eligibility.
 pub const STATIC_SUBTREE: &str = "static-subtree";
@@ -82,7 +82,7 @@ impl<'a> Args<'a> {
 pub(super) fn element<R: RemarkSink>(
     remarks: &mut R,
     element: &ElementOp<'_>,
-    fact: StaticFacts,
+    fact: StaticAnalysis,
     children: &RegionSummary,
 ) {
     let owner = RemarkArg::str("tag", element.tag);
@@ -124,7 +124,7 @@ pub(super) fn element<R: RemarkSink>(
 pub(super) fn component<R: RemarkSink>(
     remarks: &mut R,
     component: &ComponentOp<'_>,
-    fact: StaticFacts,
+    fact: StaticAnalysis,
 ) {
     props(
         remarks,
@@ -141,7 +141,7 @@ fn props<R: RemarkSink>(
     owner: RemarkArg<'_>,
     span: Span,
     (attributes, bindings): (&[Attribute<'_>], &[BindingOp<'_>]),
-    fact: StaticFacts,
+    fact: StaticAnalysis,
 ) {
     if attributes.is_empty() && bindings.is_empty() {
         return;

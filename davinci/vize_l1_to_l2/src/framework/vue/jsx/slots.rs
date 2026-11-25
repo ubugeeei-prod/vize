@@ -24,7 +24,7 @@ use vize_l2::expr::ExprRef;
 use vize_l2::op::{
     BindingOp, DynamicName, ElementOp, Namespace, Op, Region, SlotContentOp, SlotsObjectOp,
 };
-use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
+use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin};
 
 use super::attributes::Owner;
 use super::children::{contains_jsx, element, push_children};
@@ -127,7 +127,7 @@ fn template<'a>(
                 },
             });
         }
-        cx.attach_scope(slot, ScopeFacts { tag, bindings });
+        cx.attach_scope(slot, ScopeAnalysis { tag, bindings });
     }
     cx.observe(OpFamily::SlotCarrier);
     let mut bindings = Vec::new_in(&cx.allocator);

@@ -3,7 +3,7 @@
 //! Population is an explicit Drawer demand. The producer only projects the
 //! stored relation; it never parses script text or guesses usage.
 
-use vize_l0::fact::{Demand, FactGroup, FactProducer, FactTable, FactView, ids};
+use vize_l0::analysis::{Analysis, AnalysisProducer, AnalysisTable, AnalysisView, Demand, ids};
 use vize_l0::pass::AnalysisId;
 
 use super::{Bindings, BindingsTable};
@@ -19,7 +19,7 @@ pub struct UnusedBindingFact {
 /// Unread `<script setup>` bindings, keyed by name.
 pub struct UnusedBindings;
 
-impl FactGroup for UnusedBindings {
+impl Analysis for UnusedBindings {
     const ID: AnalysisId = ids::UNUSED_BINDINGS;
     const NAME: &'static str = "unused-bindings";
     const STRATUM: u8 = 1;
@@ -32,13 +32,13 @@ impl FactGroup for UnusedBindings {
     type Value = UnusedBindingFact;
 }
 
-impl FactProducer<Croquis> for UnusedBindings {
-    fn produce(croquis: &Croquis, view: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Croquis> for UnusedBindings {
+    fn produce(croquis: &Croquis, view: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let Ok(bindings) = view.get::<Bindings>() else {
-            return FactTable::default();
+            return AnalysisTable::default();
         };
         if !bindings.is_script_setup() {
-            return FactTable::default();
+            return AnalysisTable::default();
         }
         croquis
             .unused_bindings
@@ -55,10 +55,10 @@ impl FactProducer<Croquis> for UnusedBindings {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::facts::{CroquisFacts, FactConsumer};
+    use crate::facts::{AnalysisConsumer, CroquisFacts};
 
     struct Reader;
-    impl FactConsumer for Reader {
+    impl AnalysisConsumer for Reader {
         const NAME: &'static str = "test/unused-bindings";
         const DEMAND: Demand = Demand::NONE.with(UnusedBindings::ID);
     }

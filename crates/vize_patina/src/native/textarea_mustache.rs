@@ -6,15 +6,15 @@ use super::{
 };
 use vize_l0::{
     Span,
+    analysis::{AnalysisConsumer, AnalysisError, Demand, ids},
     diag::{Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage, verify::WitnessError},
-    fact::{Demand, FactConsumer, FactError, ids},
 };
 
 /// Typed failures produced while proving textarea interpolation diagnostics.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NativeTextareaLintError {
     /// A required SDK fact table or entry is unavailable.
-    Fact(FactError),
+    Fact(AnalysisError),
     /// The causal witness does not verify against the authentic fact view.
     Witness(WitnessError),
     /// A direct-child counterexample lacks its original marker or witness chain.
@@ -30,8 +30,8 @@ pub enum NativeTextareaLintError {
         span: Span,
     },
 }
-impl From<FactError> for NativeTextareaLintError {
-    fn from(error: FactError) -> Self {
+impl From<AnalysisError> for NativeTextareaLintError {
+    fn from(error: AnalysisError) -> Self {
         Self::Fact(error)
     }
 }
@@ -44,7 +44,7 @@ impl From<WitnessError> for NativeTextareaLintError {
 // Read the existing complete authentic header tables. This demand changes
 // neither the header registry nor the supplied-child presence-only registry.
 struct LiteralContextDemand;
-impl FactConsumer for LiteralContextDemand {
+impl AnalysisConsumer for LiteralContextDemand {
     const NAME: &'static str = "native-textarea-literal-context";
     const DEMAND: Demand = Demand::NONE
         .with(ids::ORIGINAL_LINT_HEADERS)

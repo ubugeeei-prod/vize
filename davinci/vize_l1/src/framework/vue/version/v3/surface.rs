@@ -4,7 +4,7 @@ use vize_l0::{Allocator, Span, Vec};
 
 use crate::markup::htmlish::event::Recorder;
 use crate::markup::htmlish::parse::{SurfaceError, SurfaceParseOptions, construct_with_tag_facts};
-use crate::markup::htmlish::surface::{SurfaceTree, TagKindFact};
+use crate::markup::htmlish::surface::{SurfaceTree, TagKindInfo};
 use crate::markup::{Component, DirectiveNameError, LexOptions, Lexer};
 
 use super::{DirectiveKind, VueDirectives, is_component_tag};
@@ -62,23 +62,23 @@ impl<const TAG_FACTS: bool> SurfacePolicy for Vue3Policy<TAG_FACTS> {
         verbatim: bool,
         exact_pre: bool,
         inherited: bool,
-    ) -> Option<TagKindFact> {
+    ) -> Option<TagKindInfo> {
         // Lexical pre heads may accept modifiers/arguments that default lint
         // freezing does not. Preserve the mode and refuse that semantic gap.
         Some(if verbatim && !exact_pre {
-            TagKindFact::AmbiguousVerbatim
+            TagKindInfo::AmbiguousVerbatim
         } else if inherited && tag == "template" {
             // The registered facade may expose a synthetic L2 Template carrier
             // here. Its category cannot be proved by a literal original header.
-            TagKindFact::InheritedTemplate
+            TagKindInfo::InheritedTemplate
         } else if tag == "slot" {
-            TagKindFact::Slot
+            TagKindInfo::Slot
         } else if tag == "template" && structural_template {
-            TagKindFact::Template
+            TagKindInfo::Template
         } else if is_component_tag(tag, !verbatim) {
-            TagKindFact::Component
+            TagKindInfo::Component
         } else {
-            TagKindFact::Element
+            TagKindInfo::Element
         })
     }
 }

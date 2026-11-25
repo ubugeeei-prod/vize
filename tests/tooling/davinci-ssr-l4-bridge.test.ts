@@ -42,7 +42,7 @@ test("Davinci SSR compile path imports the L4 string-plan bridge", () => {
   assert.match(source, /select::select_from_l2/u);
   assert.match(select, /vize_l2_to_l3::lower/u);
   assert.match(select, /vize_l3::verify::verify/u);
-  assert.match(plan, /PartitionFacts/u);
+  assert.match(plan, /PartitionAnalysis/u);
   // JSX SSR builds L2 itself and enters the same plan lane first.
   const jsx = readRepoFile("crates", "vize_atelier_jsx", "src", "ssr.rs");
   assert.match(jsx, /compile_l2_to_ssr\(/u);

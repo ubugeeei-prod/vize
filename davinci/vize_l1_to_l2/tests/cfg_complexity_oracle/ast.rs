@@ -9,7 +9,7 @@ use oxc_span::{GetSpan as _, SourceType};
 use vize_l0::Allocator;
 
 /// One decision-bearing node of a re-parsed expression.
-pub struct ExprFact {
+pub struct ExprInfo {
     pub kind: &'static str,
     pub start: u32,
     pub end: u32,
@@ -65,7 +65,7 @@ impl<'a> Visit<'a> for Collect {
 
 /// Re-parse `source` and derive every logical tree and `?:` from the
 /// node list's parent links alone.
-pub fn expression_facts(source: &str) -> Vec<ExprFact> {
+pub fn expression_facts(source: &str) -> Vec<ExprInfo> {
     let allocator = Allocator::new();
     let parsed = oxc_parser::Parser::new(allocator.as_oxc(), source, SourceType::ts())
         .parse_expression()
@@ -81,7 +81,7 @@ pub fn expression_facts(source: &str) -> Vec<ExprFact> {
             .filter(|&at| nodes[at].kind == Kind::Conditional)
             .count() as u32;
         match node.kind {
-            Kind::Conditional => facts.push(ExprFact {
+            Kind::Conditional => facts.push(ExprInfo {
                 kind: "conditional",
                 start: node.start,
                 end: node.end,
@@ -117,7 +117,7 @@ pub fn expression_facts(source: &str) -> Vec<ExprFact> {
                     .windows(2)
                     .filter(|pair| pair[0].1 != pair[1].1)
                     .count() as u32;
-                facts.push(ExprFact {
+                facts.push(ExprInfo {
                     kind: "logical",
                     start: node.start,
                     end: node.end,

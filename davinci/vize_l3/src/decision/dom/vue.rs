@@ -1,11 +1,11 @@
 //! Genuine setup membership and reads, without claiming template custody.
 
-use super::{DomFacts, LiteralExpressions, ValueKind};
+use super::{DomAnalysis, LiteralExpressions, ValueKind};
 use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, TargetPolicy, build};
 use alloc::vec::Vec;
 use vize_l0::id::NodeId;
 use vize_l2::{
-    artifact::Artifact,
+    artifact::L2Template,
     file::{BindingRef, FileResolution, L2Ir, vue::VueExposure},
     resolution::Occurrence,
 };
@@ -133,7 +133,7 @@ impl<'owner, 'arena> VueRenderAnalysis<'_, 'owner, '_, '_, 'arena> {
     }
 
     #[must_use]
-    pub fn artifact(&self) -> &'owner Artifact<'arena> {
+    pub fn artifact(&self) -> &'owner L2Template<'arena> {
         self.l2ir().artifact()
     }
 
@@ -148,7 +148,7 @@ impl<'owner, 'arena> VueRenderAnalysis<'_, 'owner, '_, '_, 'arena> {
     }
 
     #[must_use]
-    pub fn dom(&self) -> Option<&DomFacts<'owner, 'arena>> {
+    pub fn dom(&self) -> Option<&DomAnalysis<'owner, 'arena>> {
         self.analysis.dom()
     }
 

@@ -2,7 +2,7 @@ use super::support::{
     LOCALES, NeverLookup, complete, expected, parity, parser, registered, selected, span, warning,
 };
 use vize_l0::{Allocator, Span, cstr};
-use vize_l1::markup::TagFactsRefusal;
+use vize_l1::markup::TagAnalysisRefusal;
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint};
 
 const ALIGN: &str = "CSS `text-align` or `margin: auto`";
@@ -67,7 +67,7 @@ fn modified_and_argument_pre_refuse_parent_and_child_without_erasing_product_out
             assert_eq!(
                 lint.deprecated_attr(element, &NeverLookup).err(),
                 Some(NativeLintRefusal::LintTag {
-                    reason: TagFactsRefusal::AmbiguousVerbatim
+                    reason: TagAnalysisRefusal::AmbiguousVerbatim
                 })
             );
         }
@@ -95,7 +95,7 @@ fn inherited_structural_template_keeps_typed_refusal_and_full_registered_warning
     assert_eq!(
         lint.deprecated_attr(&element, &NeverLookup).err(),
         Some(NativeLintRefusal::LintTag {
-            reason: TagFactsRefusal::InheritedTemplate
+            reason: TagAnalysisRefusal::InheritedTemplate
         })
     );
     for locale in LOCALES {

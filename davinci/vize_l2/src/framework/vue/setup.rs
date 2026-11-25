@@ -43,7 +43,7 @@ pub struct MacroCall {
 
 /// The facts of one `<script setup>` Program.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SetupFacts {
+pub struct SetupAnalysis {
     macro_calls: Vec<MacroCall>,
     runtime_prop_keys: Vec<Span>,
     bindings: Vec<SetupBinding>,
@@ -52,7 +52,7 @@ pub struct SetupFacts {
     contract: ComponentContract,
 }
 
-impl SetupFacts {
+impl SetupAnalysis {
     /// Top-level macro calls in source order.
     #[must_use]
     pub fn macro_calls(&self) -> &[MacroCall] {
@@ -99,7 +99,7 @@ impl SetupFacts {
 
 /// Why the observed facts do not cover the whole Program.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SetupFactsIncomplete {
+pub enum SetupAnalysisIncomplete {
     /// The walk never started a Program.
     NoProgram,
     /// The observer saw a second Program; it observes exactly one.
@@ -151,23 +151,23 @@ impl<'a> SetupObserver<'a> {
     }
 
     /// The facts, once every top-level statement was seen.
-    pub fn finish(self) -> Result<SetupFacts, SetupFactsIncomplete> {
+    pub fn finish(self) -> Result<SetupAnalysis, SetupAnalysisIncomplete> {
         let Some(program) = self.program else {
-            return Err(SetupFactsIncomplete::NoProgram);
+            return Err(SetupAnalysisIncomplete::NoProgram);
         };
         if self.second_program {
-            return Err(SetupFactsIncomplete::SecondProgram);
+            return Err(SetupAnalysisIncomplete::SecondProgram);
         }
         if self.overflow || self.bindings.overflow {
-            return Err(SetupFactsIncomplete::SpanOverflow);
+            return Err(SetupAnalysisIncomplete::SpanOverflow);
         }
         if self.observed != program.statements {
-            return Err(SetupFactsIncomplete::MissingStatements {
+            return Err(SetupAnalysisIncomplete::MissingStatements {
                 observed: self.observed,
                 expected: program.statements,
             });
         }
-        Ok(SetupFacts {
+        Ok(SetupAnalysis {
             macro_calls: self.calls,
             runtime_prop_keys: self.runtime_prop_keys,
             bindings: self.bindings.rows,

@@ -13,7 +13,7 @@
 
 use vize_atelier_core::{ElementNode, ElementType, TemplateChildNode};
 use vize_l0::side_table::SideTable;
-use vize_l1_to_l2::pass::StaticFacts;
+use vize_l1_to_l2::pass::StaticAnalysis;
 use vize_l2::dump::{For, Op as DumpOp, OriginalFor};
 
 use super::hoist::{HoistCounters, Mode, replay_or_dormant, walk_for_body};
@@ -66,7 +66,7 @@ pub fn walk_level(
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
-    facts: &SideTable<StaticFacts>,
+    facts: &SideTable<StaticAnalysis>,
     counters: &mut HoistCounters,
 ) -> bool {
     let o1 = structural(old1);
@@ -119,7 +119,7 @@ pub fn walk_position(
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
-    facts: &SideTable<StaticFacts>,
+    facts: &SideTable<StaticAnalysis>,
     counters: &mut HoistCounters,
 ) -> bool {
     match (o1, o2, op) {
@@ -264,7 +264,7 @@ fn walk_branch_roots(
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
-    facts: &SideTable<StaticFacts>,
+    facts: &SideTable<StaticAnalysis>,
     counters: &mut HoistCounters,
 ) {
     let r1 = structural(c1);

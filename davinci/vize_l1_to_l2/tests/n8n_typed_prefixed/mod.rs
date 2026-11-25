@@ -21,7 +21,7 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::Allocator;
 use vize_l1_to_l2::LegacyCaps;
 use vize_l4::targets::dom::artifact::{
-    DomEmitOptions, EmitError, ObservedPatchFactsEmit,
+    DomEmitOptions, EmitError, ObservedPatchAnalysisEmit,
     emit_dom_source_patch_facts_observed_with_options,
 };
 
@@ -68,7 +68,7 @@ fn compile(
 ) -> (
     CodegenResult,
     Vec<CompilerError>,
-    Result<ObservedPatchFactsEmit, EmitError>,
+    Result<ObservedPatchAnalysisEmit, EmitError>,
 ) {
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("complete original SFC");
     let template = descriptor.template.as_ref().expect("original template");

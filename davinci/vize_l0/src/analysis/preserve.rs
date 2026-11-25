@@ -7,19 +7,19 @@
 //! [`Preserved::NONE`] default) costs a recomputation, never a stale fact.
 //!
 //! The failure mode that design leaves open is a pass that *claims* too
-//! much. [`FactVerifyObserver`] closes it: after a pass it recomputes every
+//! much. [`AnalysisVerifyObserver`] closes it: after a pass it recomputes every
 //! group the pass kept, from scratch on the pass's output, and compares
 //! with exact equality — a mismatch is the exact
-//! [`FactError::StalePreserved`]. The check is chosen by type (P2-3's
-//! static dispatch): [`NoFactVerify`] and a release-build
-//! [`FactVerifyObserver`] compile to nothing, and both are zero-sized.
+//! [`AnalysisError::StalePreserved`]. The check is chosen by type (P2-3's
+//! static dispatch): [`NoAnalysisVerify`] and a release-build
+//! [`AnalysisVerifyObserver`] compile to nothing, and both are zero-sized.
 
 use super::ids::{
     BINDINGS, COMPONENT_USAGES, REACTIVITY, RENDER_TREE, UNDEFINED_REFS, UNUSED_BINDINGS,
 };
-use super::manager::{FactManager, compute_into};
+use super::manager::{AnalysisManager, compute_into};
 use super::view::Tables;
-use super::{Demand, FactError};
+use super::{AnalysisError, Demand};
 use crate::pass::{AnalysisId, PassDesc, Preserved};
 
 /// Facts over element, component and region structure: a pass that
@@ -36,51 +36,51 @@ pub const PRESERVE_BINDINGS: Preserved = Preserved::NONE
     .with(UNUSED_BINDINGS)
     .with(REACTIVITY);
 
-/// Whether [`FactManager::after_pass`] re-checks what a pass preserved.
+/// Whether [`AnalysisManager::after_pass`] re-checks what a pass preserved.
 /// Implemented by zero-sized policy types, so the choice is static dispatch
 /// and the disabled shape costs nothing.
-pub trait FactVerify {
+pub trait AnalysisVerify {
     /// Recompute and compare every kept group after every pass.
     const ENABLED: bool;
 }
 
 /// Verify mode: in debug builds, recompute every preserved group after a
 /// pass and compare it with the kept table by exact equality. In release
-/// builds it is [`NoFactVerify`].
+/// builds it is [`NoAnalysisVerify`].
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct FactVerifyObserver;
+pub struct AnalysisVerifyObserver;
 
-impl FactVerify for FactVerifyObserver {
+impl AnalysisVerify for AnalysisVerifyObserver {
     const ENABLED: bool = cfg!(debug_assertions);
 }
 
 /// No verification: trust every pass's `Preserved` claim.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct NoFactVerify;
+pub struct NoAnalysisVerify;
 
-impl FactVerify for NoFactVerify {
+impl AnalysisVerify for NoAnalysisVerify {
     const ENABLED: bool = false;
 }
 
-const _: () = assert!(size_of::<FactVerifyObserver>() == 0);
-const _: () = assert!(size_of::<NoFactVerify>() == 0);
+const _: () = assert!(size_of::<AnalysisVerifyObserver>() == 0);
+const _: () = assert!(size_of::<NoAnalysisVerify>() == 0);
 
-impl<A: ?Sized + 'static> FactManager<'_, A> {
+impl<A: ?Sized + 'static> AnalysisManager<'_, A> {
     /// Account for a pass that just ran over `artifact`: drop every computed
     /// group outside `desc.preserved`, then — when `V` verifies — recompute
     /// every kept group on `artifact` and compare. Returns the dropped set.
     ///
     /// # Errors
     ///
-    /// [`FactError::StalePreserved`] naming the first kept group (stratum
+    /// [`AnalysisError::StalePreserved`] naming the first kept group (stratum
     /// order, then registration order) whose recomputation differs. Every
     /// stale group is dropped as well, so a later query recomputes it
     /// instead of reading the stale table.
-    pub fn after_pass<V: FactVerify>(
+    pub fn after_pass<V: AnalysisVerify>(
         &mut self,
         artifact: &A,
         desc: &PassDesc,
-    ) -> Result<Demand, FactError> {
+    ) -> Result<Demand, AnalysisError> {
         let kept = self.tables.computed.surviving(desc.preserved);
         let dropped = self.tables.computed.minus(kept);
         self.tables.drop_groups(dropped);
@@ -88,7 +88,7 @@ impl<A: ?Sized + 'static> FactManager<'_, A> {
             && let Some((first, stale)) = self.stale(artifact, kept)
         {
             self.tables.drop_groups(stale);
-            return Err(FactError::StalePreserved {
+            return Err(AnalysisError::StalePreserved {
                 pass: desc.name,
                 group: first,
             });

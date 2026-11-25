@@ -5,7 +5,7 @@ use super::super::facts::REGISTRY;
 use super::super::plugin_cache::{PluginCacheInput, content_key};
 use super::{ProviderCatalog, ProviderOutput, ProviderSpec, custom_batch};
 use serde_json::{Value, json};
-use vize_l0::fact::FactManager;
+use vize_l0::analysis::AnalysisManager;
 
 fn names(items: &[&str]) -> Vec<String> {
     items.iter().map(|name| (*name).to_owned()).collect()
@@ -149,7 +149,7 @@ fn refuses_undeclared_missing_malformed_and_duplicate_table_keys() {
 fn native_batches_expose_only_the_consumers_declared_tables_and_reports_use_host_spans() {
     let source = "<template><button class=\"danger\">Go</button></template>";
     let document = PluginDocument::build(source, "Button.vue").unwrap();
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let custom = json!({"tokens/colors": [[0, "red"]], "tokens/private": [[0, "secret"]]})
         .as_object()
         .unwrap()

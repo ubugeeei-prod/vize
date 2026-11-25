@@ -1,18 +1,18 @@
 //! Fixture groups with α forms over a word list: a keyed number table, a
 //! keyed text table and a single scalar.
 
-use vize_l0::dump::Dump;
-use vize_l0::fact::{
-    AlphaExport, Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView,
-    ProducerEntry,
+use vize_l0::analysis::{
+    AlphaExport, Analysis, AnalysisConsumer, AnalysisProducer, AnalysisRegistry, AnalysisTable,
+    AnalysisView, Demand, ProducerEntry,
 };
+use vize_l0::dump::Dump;
 use vize_l0::pass::AnalysisId;
 use vize_l0::{FxHashMap, String};
 
 pub type Words = [&'static str];
 
 pub struct Lengths;
-impl FactGroup for Lengths {
+impl Analysis for Lengths {
     const ID: AnalysisId = AnalysisId::new(32);
     const NAME: &'static str = "lengths";
     const STRATUM: u8 = 0;
@@ -20,8 +20,8 @@ impl FactGroup for Lengths {
     type Key = u32;
     type Value = u32;
 }
-impl FactProducer<Words> for Lengths {
-    fn produce(words: &Words, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Words> for Lengths {
+    fn produce(words: &Words, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         (0u32..)
             .zip(words.iter().map(|word| word.len() as u32))
             .collect()
@@ -37,18 +37,18 @@ pub struct LengthsAlpha {
 impl AlphaExport for Lengths {
     const ALPHA_SCHEMA: u16 = 1;
     type Alpha = LengthsAlpha;
-    fn export(table: &FactTable<Self>) -> LengthsAlpha {
+    fn export(table: &AnalysisTable<Self>) -> LengthsAlpha {
         LengthsAlpha {
             lengths: table.iter().map(|(key, value)| (*key, *value)).collect(),
         }
     }
-    fn import(alpha: LengthsAlpha) -> FactTable<Self> {
+    fn import(alpha: LengthsAlpha) -> AnalysisTable<Self> {
         alpha.lengths.into_iter().collect()
     }
 }
 
 pub struct Words2;
-impl FactGroup for Words2 {
+impl Analysis for Words2 {
     const ID: AnalysisId = AnalysisId::new(33);
     const NAME: &'static str = "words";
     const STRATUM: u8 = 0;
@@ -56,8 +56,8 @@ impl FactGroup for Words2 {
     type Key = u32;
     type Value = String;
 }
-impl FactProducer<Words> for Words2 {
-    fn produce(words: &Words, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Words> for Words2 {
+    fn produce(words: &Words, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         (0u32..)
             .zip(words.iter().map(|word| String::from(*word)))
             .collect()
@@ -73,7 +73,7 @@ pub struct WordsAlpha {
 impl AlphaExport for Words2 {
     const ALPHA_SCHEMA: u16 = 3;
     type Alpha = WordsAlpha;
-    fn export(table: &FactTable<Self>) -> WordsAlpha {
+    fn export(table: &AnalysisTable<Self>) -> WordsAlpha {
         WordsAlpha {
             words: table
                 .iter()
@@ -81,13 +81,13 @@ impl AlphaExport for Words2 {
                 .collect(),
         }
     }
-    fn import(alpha: WordsAlpha) -> FactTable<Self> {
+    fn import(alpha: WordsAlpha) -> AnalysisTable<Self> {
         alpha.words.into_iter().collect()
     }
 }
 
 pub struct Longest;
-impl FactGroup for Longest {
+impl Analysis for Longest {
     const ID: AnalysisId = AnalysisId::new(34);
     const NAME: &'static str = "longest";
     const STRATUM: u8 = 1;
@@ -95,8 +95,8 @@ impl FactGroup for Longest {
     type Key = ();
     type Value = u32;
 }
-impl FactProducer<Words> for Longest {
-    fn produce(_: &Words, inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Words> for Longest {
+    fn produce(_: &Words, inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let lengths = inputs.get::<Lengths>().expect("declared input");
         let longest = lengths.iter().max_by_key(|(_, len)| **len);
         longest.map(|(at, _)| ((), *at)).into_iter().collect()
@@ -113,7 +113,7 @@ pub struct LongestAlpha {
 impl AlphaExport for Longest {
     const ALPHA_SCHEMA: u16 = 1;
     type Alpha = LongestAlpha;
-    fn export(table: &FactTable<Self>) -> LongestAlpha {
+    fn export(table: &AnalysisTable<Self>) -> LongestAlpha {
         match table.get(&()) {
             Some(index) => LongestAlpha {
                 present: true,
@@ -122,7 +122,7 @@ impl AlphaExport for Longest {
             None => LongestAlpha::default(),
         }
     }
-    fn import(alpha: LongestAlpha) -> FactTable<Self> {
+    fn import(alpha: LongestAlpha) -> AnalysisTable<Self> {
         alpha
             .present
             .then_some(((), alpha.index))
@@ -131,14 +131,14 @@ impl AlphaExport for Longest {
     }
 }
 
-pub const REGISTRY: FactRegistry<Words> = FactRegistry::new(&[
+pub const REGISTRY: AnalysisRegistry<Words> = AnalysisRegistry::new(&[
     ProducerEntry::of::<Lengths>(),
     ProducerEntry::of::<Words2>(),
     ProducerEntry::of::<Longest>(),
 ]);
 
 pub struct Summary;
-impl FactConsumer for Summary {
+impl AnalysisConsumer for Summary {
     const NAME: &'static str = "summary";
     const DEMAND: Demand = Demand::NONE
         .with(Lengths::ID)

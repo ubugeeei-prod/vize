@@ -1,20 +1,20 @@
 //! An observer unwind cannot seal an interrupted admitted Program as complete.
 
-use crate::file::build::Facts;
+use crate::file::build::L2Script;
 pub(super) struct ProgramWalkGuard<'f, 'a> {
-    facts: &'f mut Facts<'a>,
+    facts: &'f mut L2Script<'a>,
     row: usize,
 }
 
 impl<'f, 'a> ProgramWalkGuard<'f, 'a> {
-    pub(super) fn new(facts: &'f mut Facts<'a>) -> Option<Self> {
+    pub(super) fn new(facts: &'f mut L2Script<'a>) -> Option<Self> {
         // The actual checked unit constructor just appended this private row.
         let row = facts.units.len().checked_sub(1)?;
         facts.units.get(row)?;
         Some(Self { facts, row })
     }
 
-    pub(super) fn facts(&mut self) -> &mut Facts<'a> {
+    pub(super) fn facts(&mut self) -> &mut L2Script<'a> {
         self.facts
     }
 

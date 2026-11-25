@@ -11,7 +11,7 @@ use serde_json::{Value, json};
 use vize_l0::hash::StableHasher128;
 use vize_l0::key::{CachedArtifact, KeyManifest, source_block_key};
 use vize_l2::summary::{
-    AlphaEntry, AlphaPages, Facet, GlobalEntry, GlobalFacet, GlobalFacts, GlobalSummary,
+    AlphaEntry, AlphaPages, Facet, GlobalAnalysis, GlobalEntry, GlobalFacet, GlobalSummary,
     SfcSummary, Signature,
 };
 
@@ -65,7 +65,7 @@ fn global() -> GlobalSummary {
             contract: "string".into(),
         }]
     };
-    GlobalSummary::from_facts(GlobalFacts {
+    GlobalSummary::from_facts(GlobalAnalysis {
         components: entry(),
         provides: entry(),
         directives: entry(),

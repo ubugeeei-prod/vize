@@ -9,9 +9,9 @@
 //! through the P4-1a fact API ([`super::group`]) under the consumer's own
 //! declared demand.
 
-use vize_l0::fact::{FactConsumer, FactManager};
+use vize_l0::analysis::{AnalysisConsumer, AnalysisManager};
 
-use super::ComplexityFacts;
+use super::ComplexityAnalysis;
 use super::group::{TEMPLATE_FACTS, TemplateComplexityGroup};
 
 #[cfg(test)]
@@ -27,13 +27,13 @@ use super::{COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE};
 /// manager, reads it through `C`'s declared view, and places the owned
 /// facts in the file.
 #[must_use]
-pub fn template_facts<C: FactConsumer>(
+pub fn template_facts<C: AnalysisConsumer>(
     source: &str,
     start: u32,
     end: u32,
-) -> Option<ComplexityFacts> {
+) -> Option<ComplexityAnalysis> {
     let template = source.get(start as usize..end as usize)?;
-    let mut manager = FactManager::new(&TEMPLATE_FACTS);
+    let mut manager = AnalysisManager::new(&TEMPLATE_FACTS);
     let view = manager.prepare::<C>(template).ok()?;
     let table = view.get::<TemplateComplexityGroup>().ok()?;
     table.get(&()).cloned().map(|facts| facts.shifted(start))
@@ -47,10 +47,10 @@ pub fn template_facts<C: FactConsumer>(
 mod tests {
     use super::super::group::TemplateComplexityGroup;
     use super::{COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, template_facts};
-    use vize_l0::fact::{Demand, FactConsumer, FactGroup};
+    use vize_l0::analysis::{Analysis, AnalysisConsumer, Demand};
 
     struct Probe;
-    impl FactConsumer for Probe {
+    impl AnalysisConsumer for Probe {
         const NAME: &'static str = "cfg-source-probe";
         const DEMAND: Demand = Demand::NONE.with(TemplateComplexityGroup::ID);
     }

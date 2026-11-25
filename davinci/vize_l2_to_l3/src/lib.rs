@@ -16,8 +16,8 @@ mod lower;
 pub mod partition;
 pub mod registry;
 
-pub use crate::partition::dump::{Fact as DumpPartitionFact, Page as PartitionPage};
-pub use crate::partition::{PartitionFact, PartitionFacts, PartitionKind};
+pub use crate::partition::dump::{Page as PartitionPage, PartitionRecord as DumpPartitionRecord};
+pub use crate::partition::{PartitionAnalysis, PartitionInfo, PartitionKind};
 pub use decision::{
     DecisionAnalysis, DecisionBuildError, FileAnalysis, build_decisions, build_dom_decisions,
     build_dom_file_decisions,

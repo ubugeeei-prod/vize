@@ -3,7 +3,7 @@
 use super::DecisionBuildError;
 use vize_l0::id::NodeId;
 use vize_l2::{
-    artifact::Artifact,
+    artifact::L2Template,
     file::{FileAttributeValue, L2Ir, NativeFileAttributeValueState},
     op::ElementOp,
 };
@@ -13,16 +13,16 @@ use vize_l2::{
 /// it is not a new attribute table, target-name policy or decoded-source factory.
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
-/// use vize_l3::decision::OriginalAttributeFacts;
+/// use vize_l3::decision::OriginalAttributeAnalysis;
 /// fn forge<'f,'a>(l2ir: &'f L2Ir<'a>) {
-///     let _ = OriginalAttributeFacts { l2ir, consumed: 0 };
+///     let _ = OriginalAttributeAnalysis { l2ir, consumed: 0 };
 /// }
 /// ```
-pub struct OriginalAttributeFacts<'owner, 'arena> {
+pub struct OriginalAttributeAnalysis<'owner, 'arena> {
     l2ir: &'owner L2Ir<'arena>,
     consumed: usize,
 }
-impl<'owner, 'arena> OriginalAttributeFacts<'owner, 'arena> {
+impl<'owner, 'arena> OriginalAttributeAnalysis<'owner, 'arena> {
     #[must_use]
     pub const fn l2ir(&self) -> &'owner L2Ir<'arena> {
         self.l2ir
@@ -58,7 +58,7 @@ pub(super) struct OriginalAttributeCursor<'owner, 'arena> {
 impl<'owner, 'arena> OriginalAttributeCursor<'owner, 'arena> {
     pub(super) fn new(
         l2ir: &'owner L2Ir<'arena>,
-        artifact: &'owner Artifact<'arena>,
+        artifact: &'owner L2Template<'arena>,
     ) -> Result<Self, DecisionBuildError> {
         if !l2ir.is_complete() {
             return Err(DecisionBuildError::IncompleteFile);
@@ -130,7 +130,7 @@ impl<'owner, 'arena> OriginalAttributeCursor<'owner, 'arena> {
 
     pub(super) fn finish(
         self,
-    ) -> Result<OriginalAttributeFacts<'owner, 'arena>, DecisionBuildError> {
+    ) -> Result<OriginalAttributeAnalysis<'owner, 'arena>, DecisionBuildError> {
         if let Some(error) = self.failure {
             return Err(error);
         }
@@ -140,7 +140,7 @@ impl<'owner, 'arena> OriginalAttributeCursor<'owner, 'arena> {
                 slot: self.next,
             });
         }
-        Ok(OriginalAttributeFacts {
+        Ok(OriginalAttributeAnalysis {
             l2ir: self.l2ir,
             consumed: self.next,
         })

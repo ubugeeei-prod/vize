@@ -1,7 +1,7 @@
 //! A diagnostic-only test recorder; it grants no file-resolution completeness.
 
 use vize_l0::{Span, id::NodeId};
-use vize_l2::artifact::{ArtifactError, ComponentBody, ComponentFactory, RegionBuilder};
+use vize_l2::artifact::{ComponentBody, ComponentFactory, L2TemplateError, RegionBuilder};
 use vize_l2::expr::JsExpr;
 use vize_l2::op::{Attribute, Namespace};
 use vize_l2::provenance::ProvenanceRecord;
@@ -20,17 +20,17 @@ impl<'a> ComponentFactory<'a> for Observed<'_, '_, 'a> {
     fn source(&self) -> &'a str {
         ComponentFactory::source(self.region)
     }
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.text(text, span)
     }
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.comment(text, span)
     }
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let node = ComponentFactory::interpolation(self.region, expression, span)?;
         self.sites.expressions.push((node, expression));
         Ok(node)
@@ -41,7 +41,7 @@ impl<'a> ComponentFactory<'a> for Observed<'_, '_, 'a> {
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let node = ComponentFactory::bind(self.region, name, name_span, expression, span)?;
         self.sites.expressions.push((node, expression));
         Ok(node)
@@ -53,7 +53,7 @@ impl<'a> ComponentFactory<'a> for Observed<'_, '_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let sites = &mut *self.sites;
         self.region
             .element(tag, namespace, attributes, span, |region, node| {
@@ -67,7 +67,7 @@ impl<'a> ComponentFactory<'a> for Observed<'_, '_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let sites = &mut *self.sites;
         self.region
             .component(name, attributes, span, |region, node| {
@@ -75,7 +75,7 @@ impl<'a> ComponentFactory<'a> for Observed<'_, '_, 'a> {
                 body.run(&mut Observed { region, sites }, node);
             })
     }
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         self.region.record(record)
     }
 }

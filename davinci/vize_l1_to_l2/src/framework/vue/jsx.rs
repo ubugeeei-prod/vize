@@ -35,11 +35,11 @@ use vize_l0::dialect::JsxSemantics;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Span};
-use vize_l2::artifact::{ArtifactParts, LoweringFeatures, OpFamily};
+use vize_l2::artifact::{L2TemplateParts, LoweringFeatures, OpFamily};
 use vize_l2::component::{ComponentDef, Exec, RenderScope};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::Region;
-use vize_l2::scope::{ScopeFacts, ScopeTag};
+use vize_l2::scope::{ScopeAnalysis, ScopeTag};
 
 /// How deeply a dialect interprets JavaScript around JSX.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -158,7 +158,7 @@ struct Cx<'a, 's> {
     file: JsxFile<'a, 's>,
     op_count: u32,
     next_scope: u32,
-    scopes: SideTable<ScopeFacts>,
+    scopes: SideTable<ScopeAnalysis>,
     features: LoweringFeatures,
 }
 
@@ -176,7 +176,7 @@ impl<'a> Cx<'a, '_> {
         tag
     }
 
-    fn attach_scope(&mut self, node: Option<NodeId>, facts: ScopeFacts) {
+    fn attach_scope(&mut self, node: Option<NodeId>, facts: ScopeAnalysis) {
         if let Some(id) = node {
             self.scopes.insert(id, facts);
         }
@@ -246,10 +246,10 @@ pub fn lower_component<'a>(
         exec: component.exec,
         scope: RenderScope::Lexical,
         span: span(root_span),
-        body: ArtifactParts {
+        body: L2TemplateParts {
             scopes: cx.scopes,
             features: cx.features,
-            ..ArtifactParts::new(file.source, Region { ops })
+            ..L2TemplateParts::new(file.source, Region { ops })
         },
         op_count: cx.op_count,
     })

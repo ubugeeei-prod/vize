@@ -67,7 +67,7 @@ fn complete_slot_query_and_promise_vectors_preserve_evaluated_values() {
             &allocator,
             case["templateSource"].as_str().expect("whole template"),
         );
-        let l2 = crate::markup::L2Template::lower(
+        let l2 = crate::markup::LintL2Template::lower(
             &allocator,
             case["templateSource"].as_str().expect("whole template"),
         );

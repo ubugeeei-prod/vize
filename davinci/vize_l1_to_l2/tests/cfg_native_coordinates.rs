@@ -4,7 +4,9 @@
 use vize_l0::{Allocator, Span, id::NodeId};
 use vize_l1::embed::Lang;
 use vize_l1_to_l2::native::lower_component_native;
-use vize_l2::analysis::template_complexity::{self, ComplexityFacts, Contribution, DecisionKind};
+use vize_l2::analysis::template_complexity::{
+    self, ComplexityAnalysis, Contribution, DecisionKind,
+};
 
 fn span(source: &str, text: &str) -> Span {
     let start = source.find(text).unwrap() as u32;
@@ -47,7 +49,7 @@ fn native_retained_expressions_keep_full_facts_and_exact_authored_ranges() {
                 template_complexity::run(lowered.artifact.root(), lowered.artifact.node_count());
             assert_eq!(
                 facts,
-                ComplexityFacts {
+                ComplexityAnalysis {
                     cyclomatic: 5,
                     cognitive: 4,
                     unknown: 0,
@@ -116,7 +118,7 @@ fn native_later_expression_holes_remain_explicit_after_scoring_admitted_fragment
     let facts = template_complexity::run(lowered.artifact.root(), lowered.artifact.node_count());
     assert_eq!(
         facts,
-        ComplexityFacts {
+        ComplexityAnalysis {
             cyclomatic: 2,
             cognitive: 1,
             unknown: 0,

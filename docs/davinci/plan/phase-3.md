@@ -144,8 +144,8 @@ annotations if L3 detour measures badly — decide by TS-22). _Accept:_ corpus
 DOM byte-parity (TS-11 empty); patch-flag equivalence fixtures.
 _First slice 2026-09-13:_ see
 [P3-7 record](./phase-3-records/p3-7.md) for the L2→L4 annotation boundary and
-the initial `PatchFacts` split.
-_Second slice 2026-09-13:_ `PatchFactsTable` is now owner-keyed by
+the initial `PatchAnalysis` split.
+_Second slice 2026-09-13:_ `PatchAnalysisTable` is now owner-keyed by
 `ui.element` / `ui.component` `NodeId` and read by the VNode writers before
 printing patch flags or dynamic-props arguments. Subsequent slices integrate
 binding metadata through the reactivity lattice and gate the DOM corpus.

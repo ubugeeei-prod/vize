@@ -1,6 +1,6 @@
 //! Root For tracking modes on the existing authentic rows and frames.
 
-use super::super::{DomBuilder, DomChild, DomChildren, DomExpressionFacts, DomFrame};
+use super::super::{DomBuilder, DomChild, DomChildren, DomExpressionAnalysis, DomFrame};
 use crate::decision::dom::{
     DomDependency, DomFileForHead, DomUnsupported,
     vue::{VueReadKind, policy::FileReads},
@@ -9,7 +9,7 @@ use oxc_ast::ast::Expression;
 use vize_l0::id::NodeId;
 use vize_l2::{op::Op, walk::NodeRef};
 
-impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
 {
     pub(super) fn prepare_for_runtime(

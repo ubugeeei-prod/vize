@@ -33,7 +33,7 @@ pub const RACE_CONDITIONS: AnalysisId = AnalysisId::new(9);
 pub const HTML_ELEMENTS: AnalysisId = AnalysisId::new(10);
 /// `HtmlComposedNesting` — nesting proven only in a parent's context (P4-11b).
 pub const HTML_COMPOSED_NESTING: AnalysisId = AnalysisId::new(11);
-/// `ExpressionFacts` — foreign-dialect expression facts over the P6-1b
+/// `ExpressionAnalysis` — foreign-dialect expression facts over the P6-1b
 /// contract world.
 pub const EXPRESSION_FACTS: AnalysisId = AnalysisId::new(12);
 /// `PartialHoles` — L1 `Unexpected` / `Missing` holes beside a partial page (P5-10).

@@ -2,7 +2,7 @@
 
 use crate::lang::js::{NativeTemplateFile, NativeTemplateOwner};
 use crate::op::Op;
-use crate::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
+use crate::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin, ScopeTag};
 use crate::walk::{NodeEvent, NodeRef};
 use vize_l0::{
     Allocator,
@@ -66,7 +66,7 @@ fn actual_original_for_tree_revalidates_with_file_owned_scope_custody() {
     let start = source.find("item in items").unwrap() as u32;
     assert_eq!(
         facts,
-        &ScopeFacts {
+        &ScopeAnalysis {
             tag: ScopeTag::from_index(0),
             bindings: alloc::vec![ScopeBinding {
                 name: "item".into(),

@@ -1,6 +1,6 @@
 //! Opaque lower diagnostic factory; native admission belongs to its upper owner.
 use super::{RootRegion, TemplatePolicy};
-use crate::artifact::{ArtifactError, ComponentBody, ComponentFactory};
+use crate::artifact::{ComponentBody, ComponentFactory, L2TemplateError};
 use crate::expr::JsExpr;
 use crate::op::{Attribute, Namespace};
 use crate::provenance::ProvenanceRecord;
@@ -18,17 +18,17 @@ impl<'a, P: TemplatePolicy> ComponentFactory<'a> for TemplateRegion<'_, 'a, P> {
     fn source(&self) -> &'a str {
         self.inner.source()
     }
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.inner.text(text, span)
     }
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.inner.comment(text, span)
     }
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.interpolation(expression, span)
     }
     fn bind(
@@ -37,7 +37,7 @@ impl<'a, P: TemplatePolicy> ComponentFactory<'a> for TemplateRegion<'_, 'a, P> {
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.bind(name, name_span, expression, span)
     }
     fn element<B: ComponentBody<'a>>(
@@ -47,7 +47,7 @@ impl<'a, P: TemplatePolicy> ComponentFactory<'a> for TemplateRegion<'_, 'a, P> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.element(tag, namespace, attributes, span, body)
     }
     fn component<B: ComponentBody<'a>>(
@@ -56,10 +56,10 @@ impl<'a, P: TemplatePolicy> ComponentFactory<'a> for TemplateRegion<'_, 'a, P> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.component(name, attributes, span, body)
     }
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         self.inner.record(record)
     }
 }

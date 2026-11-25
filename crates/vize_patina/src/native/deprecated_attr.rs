@@ -4,7 +4,7 @@ use vize_l0::{
     SmallVec, Span, String,
     diag::{Advisory, Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage},
 };
-use vize_l1::markup::{ElementView, TagFactsKind};
+use vize_l1::markup::{ElementView, TagAnalysisKind};
 
 use crate::attribute_policy::deprecated_attr_suggestion;
 
@@ -23,7 +23,7 @@ pub(super) fn check(
             matches.push((name, suggestion, range));
         }
     })?;
-    if receipt.kind() == TagFactsKind::Component {
+    if receipt.kind() == TagAnalysisKind::Component {
         return Ok(Vec::new());
     }
     Ok(matches

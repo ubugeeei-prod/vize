@@ -4,7 +4,7 @@
 use vize_l0::{SourceBlock, SourceFrameError, Span, diag::Diagnostic, pass::PassFailure};
 use vize_l1::container::{ContainerError, vue::DescriptorIssue};
 use vize_l1_to_l2::pass::{
-    cfg::{ComplexityFacts, Contribution},
+    cfg::{ComplexityAnalysis, Contribution},
     template::TemplateAnalysis,
 };
 
@@ -51,7 +51,7 @@ pub struct TemplateRead<'source, 'read> {
 pub struct TemplateReport {
     pub opening: Span,
     pub content: Span,
-    pub complexity: ComplexityFacts,
+    pub complexity: ComplexityAnalysis,
     pub diagnostics: Vec<Diagnostic>,
 }
 

@@ -2,7 +2,7 @@
 
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Allocator, Span};
-use vize_l2::artifact::ArtifactError;
+use vize_l2::artifact::L2TemplateError;
 use vize_l2::file::{BindingRef, L2Ir, RejectedFile, ScriptUnitId};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
@@ -31,7 +31,7 @@ pub struct VueFileProducer<'a> {
 }
 
 impl<'a> VueFileProducer<'a> {
-    pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, ArtifactError> {
+    pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, L2TemplateError> {
         Ok(Self {
             producer: FileProducer::new(allocator, source)?,
             ordinary: None,
@@ -311,7 +311,7 @@ impl<'a> VueFileProducer<'a> {
     pub(crate) fn for_lexical_initializers(
         allocator: &'a Allocator,
         source: &'a str,
-    ) -> Result<Self, ArtifactError> {
+    ) -> Result<Self, L2TemplateError> {
         let mut producer = Self::new(allocator, source)?;
         producer.producer.enable_lexical_arrow_initializers();
         Ok(producer)

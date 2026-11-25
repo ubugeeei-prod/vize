@@ -10,7 +10,7 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{fs, path::PathBuf, sync::OnceLock};
 use vize_atelier_core::{CodegenResult, CompilerError};
-use vize_l4::targets::dom::artifact::{DomEmitOptions, EmitError, ObservedPatchFactsEmit};
+use vize_l4::targets::dom::artifact::{DomEmitOptions, EmitError, ObservedPatchAnalysisEmit};
 
 struct Output {
     root: PathBuf,
@@ -63,7 +63,7 @@ pub(super) fn retain_compile(
     options: &DomEmitOptions<'_>,
     old: &CodegenResult,
     errors: &[CompilerError],
-    native: &Result<ObservedPatchFactsEmit, EmitError>,
+    native: &Result<ObservedPatchAnalysisEmit, EmitError>,
 ) {
     let (name, source, template, lane) = input;
     retain(name, source, lane, || {

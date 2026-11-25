@@ -118,9 +118,9 @@ pub use general::*;
 
 extern crate alloc;
 extern crate self as vize_l0;
+pub mod analysis;
 pub mod diag;
 pub mod dump;
-pub mod fact;
 pub mod id;
 pub mod key;
 pub mod level;

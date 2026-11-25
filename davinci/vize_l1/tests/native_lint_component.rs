@@ -4,11 +4,11 @@
 mod native_lint_component {
     use vize_l0::{Allocator, ErrorCode, SourceRoot, Span, cstr};
     use vize_l1::markup::{
-        ComponentTagFacts, ElementClose, OwnedComponent, SurfaceChild, TagFactsKind,
-        TagFactsRefusal, check_fidelity, render,
+        ComponentTagAnalysis, ElementClose, OwnedComponent, SurfaceChild, TagAnalysisKind,
+        TagAnalysisRefusal, check_fidelity, render,
     };
 
-    fn rendered(owner: &ComponentTagFacts<'_>) -> vize_l0::String {
+    fn rendered(owner: &ComponentTagAnalysis<'_>) -> vize_l0::String {
         let mut source = vize_l0::String::default();
         render(&owner.component().carrier().tree, &mut |piece| {
             source.push_str(piece)
@@ -21,7 +21,7 @@ mod native_lint_component {
         let arena = Allocator::default();
         let source = "<div>Content</div>";
         let block = SourceRoot::new(source).unwrap().whole_block();
-        let owner = ComponentTagFacts::parse_in(&arena, block).unwrap();
+        let owner = ComponentTagAnalysis::parse_in(&arena, block).unwrap();
         let component = owner.component();
         assert!(core::ptr::eq(component.allocator(), &arena));
         assert!(core::ptr::eq(component.block().source(), source));
@@ -37,7 +37,7 @@ mod native_lint_component {
         let tag = element.tag_facts().unwrap();
         assert!(core::ptr::eq(tag.component(), component));
         assert!(core::ptr::eq(tag.element(), element.surface()));
-        assert_eq!(tag.kind(), TagFactsKind::Element);
+        assert_eq!(tag.kind(), TagAnalysisKind::Element);
         assert_eq!(tag.span(), Span::new(1, 4));
         assert!(!tag.header_is_literal());
         assert!(!tag.in_table_context());
@@ -57,7 +57,7 @@ mod native_lint_component {
             .strip_suffix("後置")
             .unwrap();
         let block = root.block(content, "前置".len() as u32).unwrap();
-        let owner = ComponentTagFacts::parse_in(&arena, block).unwrap();
+        let owner = ComponentTagAnalysis::parse_in(&arena, block).unwrap();
         let element = owner.children().next().unwrap().into_element().unwrap();
         let receipt = element.tag_facts().unwrap();
         assert_eq!(receipt.span(), Span::new(7, 10));
@@ -78,12 +78,15 @@ mod native_lint_component {
     fn ordinary_constructor_does_not_gain_lint_receipts() {
         let arena = Allocator::default();
         let block = SourceRoot::new("<MyComponent />").unwrap().whole_block();
-        let bare = ComponentTagFacts::parse_in(&arena, block).unwrap();
+        let bare = ComponentTagAnalysis::parse_in(&arena, block).unwrap();
         let ordinary = OwnedComponent::parse_in(&arena, block).unwrap();
         let before = ordinary.children().next().unwrap().into_element().unwrap();
-        assert_eq!(before.tag_facts().err(), Some(TagFactsRefusal::Unavailable));
+        assert_eq!(
+            before.tag_facts().err(),
+            Some(TagAnalysisRefusal::Unavailable)
+        );
         let lint = bare.children().next().unwrap().into_element().unwrap();
-        assert_eq!(lint.tag_facts().unwrap().kind(), TagFactsKind::Component);
+        assert_eq!(lint.tag_facts().unwrap().kind(), TagAnalysisKind::Component);
         let ordinary_again = OwnedComponent::parse_in(&arena, block).unwrap();
         let after = ordinary_again
             .children()
@@ -91,7 +94,10 @@ mod native_lint_component {
             .unwrap()
             .into_element()
             .unwrap();
-        assert_eq!(after.tag_facts().err(), Some(TagFactsRefusal::Unavailable));
+        assert_eq!(
+            after.tag_facts().err(),
+            Some(TagAnalysisRefusal::Unavailable)
+        );
     }
 
     #[test]
@@ -99,17 +105,17 @@ mod native_lint_component {
         let arena = Allocator::default();
         let source = "<div v-pre.camel><textarea>{{ value }}</textarea></div>";
         let owner =
-            ComponentTagFacts::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+            ComponentTagAnalysis::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
                 .unwrap();
         let parent = owner.children().next().unwrap().into_element().unwrap();
         assert_eq!(
             parent.tag_facts().err(),
-            Some(TagFactsRefusal::AmbiguousVerbatim)
+            Some(TagAnalysisRefusal::AmbiguousVerbatim)
         );
         let child = parent.children().next().unwrap().into_element().unwrap();
         assert_eq!(
             child.tag_facts().err(),
-            Some(TagFactsRefusal::AmbiguousVerbatim)
+            Some(TagAnalysisRefusal::AmbiguousVerbatim)
         );
         assert!(child.surface().open.is_verbatim());
         assert!(matches!(
@@ -124,7 +130,7 @@ mod native_lint_component {
         let arena = Allocator::default();
         let source = "</stray><div>";
         let owner =
-            ComponentTagFacts::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+            ComponentTagAnalysis::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
                 .unwrap();
         let mut children = owner.children();
         assert!(matches!(
@@ -142,7 +148,7 @@ mod native_lint_component {
         let arena = Allocator::default();
         let source = "<!-- @vize:ignore-start --><div>内容</div><!-- @vize:ignore-end -->";
         let owner =
-            ComponentTagFacts::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+            ComponentTagAnalysis::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
                 .unwrap();
         let component = owner.component();
         let children: Vec<_> = owner.children().collect();
@@ -165,7 +171,7 @@ mod native_lint_component {
         let arena = Allocator::default();
         let source = "<div";
         let block = SourceRoot::new(source).unwrap().whole_block();
-        let bare = ComponentTagFacts::parse_in(&arena, block).unwrap();
+        let bare = ComponentTagAnalysis::parse_in(&arena, block).unwrap();
         let ordinary = OwnedComponent::parse_in(&arena, block).unwrap();
         let observations = |component: &OwnedComponent<'_>| {
             component
@@ -185,7 +191,7 @@ mod native_lint_component {
         assert!(element.surface().open.gt.is_missing());
         assert_eq!(
             element.tag_facts().err(),
-            Some(TagFactsRefusal::IncompleteHeader)
+            Some(TagAnalysisRefusal::IncompleteHeader)
         );
     }
 
@@ -203,7 +209,7 @@ mod native_lint_component {
         let head = cstr!("v-pre:[{opens}key{closes}]");
         let source = cstr!("<div {head}>original</div>");
         let block = SourceRoot::new(&source).unwrap().whole_block();
-        let bare = ComponentTagFacts::parse_in(&arena, block).unwrap();
+        let bare = ComponentTagAnalysis::parse_in(&arena, block).unwrap();
         let ordinary = OwnedComponent::parse_in(&arena, block).unwrap();
         let unsupported = &bare.component().carrier().unsupported;
         assert!(unsupported.is_empty());

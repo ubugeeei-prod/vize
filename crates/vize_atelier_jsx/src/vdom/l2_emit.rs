@@ -4,7 +4,7 @@ use vize_l0::pass::NoObserver;
 use vize_l0::{Allocator, String};
 use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_profile};
 use vize_l1_to_l2::{LegacyCaps, Lowered as L2Lowered};
-use vize_l2::artifact::ArtifactParts;
+use vize_l2::artifact::L2TemplateParts;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{
     BindingOp, ComponentOp, DynamicName, ElementOp, ModelOp, Op, Region, VueDirectiveOp,
@@ -45,10 +45,10 @@ pub(super) fn try_emit_l2_vdom<'a>(
 
     let mut lowered = L2Lowered {
         allocator,
-        artifact: ArtifactParts {
+        artifact: L2TemplateParts {
             scopes: l2.scopes,
             features: l2.features,
-            ..ArtifactParts::new(l2.source, l2.root)
+            ..L2TemplateParts::new(l2.source, l2.root)
         },
         op_count: l2.op_count,
         diagnostics: Default::default(),

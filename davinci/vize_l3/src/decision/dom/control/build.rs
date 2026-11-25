@@ -135,13 +135,13 @@ mod tests {
     use alloc::vec::Vec as Owned;
     use vize_l0::{Allocator, Box, Span, Vec, id::NodeId};
     use vize_l2::{
-        artifact::{Artifact, ArtifactParts},
+        artifact::{L2Template, L2TemplateParts},
         expr::{ExprRef, JsExpr},
         op::{ElementOp, IfBranch, IfOp, Namespace, Op, Region},
         walk::{NodeEvent, NodeRef},
     };
 
-    fn fixture(a: &Allocator, first_roots: usize) -> Artifact<'_> {
+    fn fixture(a: &Allocator, first_roots: usize) -> L2Template<'_> {
         let source = "ok";
         let span = Span::new(0, 2);
         let condition = ExprRef::Js(JsExpr::parse_in(a, source, span).unwrap());
@@ -172,7 +172,7 @@ mod tests {
         let mut ops = Vec::new_in(&a);
         ops.push(Op::If(Box::new_in(IfOp { branches, span }, &a)));
         // This checks canonical event ownership, not native directive admission.
-        Artifact::try_new(ArtifactParts::new(source, Region { ops })).unwrap()
+        L2Template::try_new(L2TemplateParts::new(source, Region { ops })).unwrap()
     }
 
     #[test]

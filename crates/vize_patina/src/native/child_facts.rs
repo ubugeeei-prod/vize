@@ -4,11 +4,11 @@
 //! whole body has no markers. Its sealed constructor retains original custody.
 
 use vize_l0::{
+    analysis::{AnalysisConsumer, AnalysisError, AnalysisManager, AnalysisTable, AnalysisView},
     diag::{
         WitnessChain, WitnessLink,
         verify::{WitnessError, verify_chain},
     },
-    fact::{FactConsumer, FactError, FactManager, FactTable, FactView},
 };
 use vize_l1::markup::ChildView;
 
@@ -39,15 +39,15 @@ pub enum NativeChildFactError {
     /// The selected component or child syntax failed native admission.
     Admission(NativeLintRefusal),
     /// A required SDK fact table or entry is unavailable.
-    Fact(FactError),
+    Fact(AnalysisError),
 }
 impl From<NativeLintRefusal> for NativeChildFactError {
     fn from(error: NativeLintRefusal) -> Self {
         Self::Admission(error)
     }
 }
-impl From<FactError> for NativeChildFactError {
-    fn from(error: FactError) -> Self {
+impl From<AnalysisError> for NativeChildFactError {
+    fn from(error: AnalysisError) -> Self {
         Self::Fact(error)
     }
 }
@@ -69,7 +69,7 @@ struct Evidence {
 pub struct NativeChildFacts<'s, 'o, 'a> {
     header: &'s NativeHeaderFacts<'o, 'a>,
     original: ChildView<'s, 'a>,
-    manager: FactManager<'static, Evidence>,
+    manager: AnalysisManager<'static, Evidence>,
 }
 
 impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
@@ -108,7 +108,7 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
             header: header.clone(),
             marker,
         };
-        let mut manager = FactManager::new(&REGISTRY);
+        let mut manager = AnalysisManager::new(&REGISTRY);
         manager.prepare::<TextareaMustacheDemand>(&evidence)?;
         Ok(NativeChildFacts {
             header: self,
@@ -131,21 +131,26 @@ impl<'s, 'o, 'a> NativeChildFacts<'s, 'o, 'a> {
     }
     /// Opens the fact view declared by the consumer's demand.
     #[must_use]
-    pub fn facts<C: FactConsumer>(&self) -> FactView<'_> {
+    pub fn facts<C: AnalysisConsumer>(&self) -> AnalysisView<'_> {
         self.manager.view::<C>()
     }
     /// Returns the admitted direct interpolation markers for this child.
-    pub fn markers(&self) -> Result<&FactTable<NativeDirectInterpolations>, FactError> {
+    pub fn markers(&self) -> Result<&AnalysisTable<NativeDirectInterpolations>, AnalysisError> {
         self.facts::<TextareaMustacheDemand>()
             .get::<NativeDirectInterpolations>()
     }
     /// Returns textarea counterexamples derived for this direct child.
-    pub fn textarea_mustache(&self) -> Result<&FactTable<NativeTextareaMustache>, FactError> {
+    pub fn textarea_mustache(
+        &self,
+    ) -> Result<&AnalysisTable<NativeTextareaMustache>, AnalysisError> {
         self.facts::<TextareaMustacheDemand>()
             .get::<NativeTextareaMustache>()
     }
     /// The actual original header, marker and derived counterexample ranges.
-    pub fn textarea_mustache_chain(&self, child: u32) -> Result<Option<WitnessChain>, FactError> {
+    pub fn textarea_mustache_chain(
+        &self,
+        child: u32,
+    ) -> Result<Option<WitnessChain>, AnalysisError> {
         let facts = self.facts::<TextareaMustacheDemand>();
         let Some(counterexample) = facts.get::<NativeTextareaMustache>()?.get(&child) else {
             return Ok(None);

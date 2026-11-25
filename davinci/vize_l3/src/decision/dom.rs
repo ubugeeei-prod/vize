@@ -34,14 +34,14 @@ pub use model::DomFileModel;
 /// reference against the context registry. Zero-reference nonliterals do not
 /// earn runtime or constant eligibility from the absence of occurrences.
 /// This supplies binding semantics, never target patch bits or guessed purity.
-pub trait DomExpressionFacts {
+pub trait DomExpressionAnalysis {
     fn is_context_only(&self, expression: &JsExpr<'_>) -> bool;
 }
 
 /// Default admission: only retained literal ASTs have supported semantics.
 pub struct LiteralExpressions;
 
-impl DomExpressionFacts for LiteralExpressions {
+impl DomExpressionAnalysis for LiteralExpressions {
     fn is_context_only(&self, _: &JsExpr<'_>) -> bool {
         false
     }
@@ -192,7 +192,7 @@ pub struct DomRoot {
 
 /// Read-only semantic facts tied to the actual immutable L2 owner's borrow.
 #[derive(Debug)]
-pub struct DomFacts<'owner, 'arena> {
+pub struct DomAnalysis<'owner, 'arena> {
     pub(super) root: DomRoot,
     pub(super) nodes: SideTable<DomNode<'owner, 'arena>>,
     pub(super) bindings: SideTable<DomBinding<'owner, 'arena>>,
@@ -206,7 +206,7 @@ pub struct DomFacts<'owner, 'arena> {
     pub(super) child_values: bool,
 }
 
-impl<'owner, 'arena> DomFacts<'owner, 'arena> {
+impl<'owner, 'arena> DomAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn root(&self) -> &DomRoot {
         &self.root

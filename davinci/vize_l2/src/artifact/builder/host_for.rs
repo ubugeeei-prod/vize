@@ -1,10 +1,10 @@
 //! A host-syntax loop: a retained head, one body region and an optional
 //! `@empty` region, checked as they open.
 
-use super::{ArtifactError, Builder, Frame, Owner, RegionBuilder, check};
+use super::{Builder, Frame, L2TemplateError, Owner, RegionBuilder, check};
 use crate::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 use crate::op::{ForBinding, ForOp, HostFor, Op, Region};
-use crate::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
+use crate::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin, ScopeTag};
 use oxc_ast::ast::{BindingIdentifier, ForStatementLeft};
 use oxc_span::GetSpan;
 use vize_l0::{Box, Span, id::NodeId};
@@ -37,7 +37,7 @@ impl<'a> HostForBuilder<'_, 'a> {
     pub fn body(
         &mut self,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<(), ArtifactError> {
+    ) -> Result<(), L2TemplateError> {
         self.builder.host_region(self.node, false, children)
     }
 
@@ -45,7 +45,7 @@ impl<'a> HostForBuilder<'_, 'a> {
     pub fn empty(
         &mut self,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<(), ArtifactError> {
+    ) -> Result<(), L2TemplateError> {
         self.builder.host_region(self.node, true, children)
     }
 }
@@ -60,7 +60,7 @@ impl<'a> Builder<'a> {
         head: HostForHead<'a>,
         span: Span,
         regions: impl FnOnce(&mut HostForBuilder<'_, 'a>, NodeId),
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare(span)?;
         let left = span_of(head.left.span());
         check::owned_span(self.parts.source, id, left, Some(span))?;
@@ -70,7 +70,7 @@ impl<'a> Builder<'a> {
             .get(left.start as usize..left.end as usize)
             != Some(head.left_text)
         {
-            return Err(ArtifactError::InvalidHostFor { node: id });
+            return Err(L2TemplateError::InvalidHostFor { node: id });
         }
         let collection = ExprRef::Js(head.collection);
         check::expression(self.parts.source, id, collection, span)?;
@@ -95,7 +95,7 @@ impl<'a> Builder<'a> {
             });
         }
         let tag = ScopeTag::from_index(
-            u32::try_from(self.parts.scopes.len()).map_err(|_| ArtifactError::NodeLimit)?,
+            u32::try_from(self.parts.scopes.len()).map_err(|_| L2TemplateError::NodeLimit)?,
         );
         let value = self.allocator.alloc(OpaqueExpr {
             reason: OpaqueReason::ForValue,
@@ -103,7 +103,10 @@ impl<'a> Builder<'a> {
             span: left,
         });
         self.mint();
-        let _ = self.parts.scopes.insert(id, ScopeFacts { tag, bindings });
+        let _ = self
+            .parts
+            .scopes
+            .insert(id, ScopeAnalysis { tag, bindings });
         self.frames.push(Frame {
             id,
             owner: Owner::HostFor {
@@ -142,19 +145,19 @@ impl<'a> Builder<'a> {
                 Some(Frame { id: top, owner: Owner::HostFor { body: Some(_), .. }, .. }) if *top == id
             );
         if !finished {
-            return Err(ArtifactError::UnfinishedOwner { node: id });
+            return Err(L2TemplateError::UnfinishedOwner { node: id });
         }
         let frame = self
             .frames
             .pop()
-            .ok_or(ArtifactError::UnfinishedOwner { node: id })?;
+            .ok_or(L2TemplateError::UnfinishedOwner { node: id })?;
         let Owner::HostFor {
             binding,
             host,
             body: Some(region),
         } = frame.owner
         else {
-            return Err(ArtifactError::UnfinishedOwner { node: id });
+            return Err(L2TemplateError::UnfinishedOwner { node: id });
         };
         let host = Some(Box::new_in(host, &self.allocator));
         self.push(Op::For(Box::new_in(
@@ -174,11 +177,11 @@ impl<'a> Builder<'a> {
         node: NodeId,
         empty: bool,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<(), ArtifactError> {
+    ) -> Result<(), L2TemplateError> {
         let frame = self
             .frames
             .last()
-            .ok_or(ArtifactError::UnfinishedOwner { node })?;
+            .ok_or(L2TemplateError::UnfinishedOwner { node })?;
         let in_order = match &frame.owner {
             Owner::HostFor { host, body, .. } if frame.id == node => {
                 if empty {
@@ -187,10 +190,10 @@ impl<'a> Builder<'a> {
                     body.is_none()
                 }
             }
-            _ => return Err(ArtifactError::UnfinishedOwner { node: frame.id }),
+            _ => return Err(L2TemplateError::UnfinishedOwner { node: frame.id }),
         };
         if !in_order {
-            return Err(ArtifactError::InvalidHostFor { node });
+            return Err(L2TemplateError::InvalidHostFor { node });
         }
         let span = frame.span;
         self.frames.push(Frame {
@@ -212,12 +215,12 @@ impl<'a> Builder<'a> {
                 })
             )
         {
-            return Err(ArtifactError::UnfinishedOwner { node });
+            return Err(L2TemplateError::UnfinishedOwner { node });
         }
         let frame = self
             .frames
             .pop()
-            .ok_or(ArtifactError::UnfinishedOwner { node })?;
+            .ok_or(L2TemplateError::UnfinishedOwner { node })?;
         let region = Region { ops: frame.ops };
         if let Some(Frame {
             owner: Owner::HostFor { host, body, .. },

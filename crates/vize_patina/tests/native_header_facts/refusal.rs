@@ -1,6 +1,6 @@
 use super::support::{selected, span};
 use vize_l0::{Allocator, cstr};
-use vize_l1::markup::TagFactsRefusal;
+use vize_l1::markup::TagAnalysisRefusal;
 use vize_patina::native::{
     NativeLintRefusal, NativeSyntaxLint, header_facts::NativeHeaderFactError,
 };
@@ -64,7 +64,7 @@ fn ambiguous_modified_pre_and_inherited_template_cannot_mint_counterexamples() {
         assert_eq!(
             lint.header_facts(&element).err(),
             Some(NativeHeaderFactError::Header(NativeLintRefusal::LintTag {
-                reason: TagFactsRefusal::AmbiguousVerbatim
+                reason: TagAnalysisRefusal::AmbiguousVerbatim
             }))
         );
     }
@@ -77,7 +77,7 @@ fn ambiguous_modified_pre_and_inherited_template_cannot_mint_counterexamples() {
     assert_eq!(
         lint.header_facts(&element).err(),
         Some(NativeHeaderFactError::Header(NativeLintRefusal::LintTag {
-            reason: TagFactsRefusal::InheritedTemplate
+            reason: TagAnalysisRefusal::InheritedTemplate
         }))
     );
 }

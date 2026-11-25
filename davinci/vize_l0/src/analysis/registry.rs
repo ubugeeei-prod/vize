@@ -3,8 +3,8 @@
 use alloc::boxed::Box;
 use core::any::Any;
 
-use super::view::FactView;
-use super::{Demand, FactProducer, FactTable};
+use super::view::AnalysisView;
+use super::{AnalysisProducer, AnalysisTable, Demand};
 use crate::pass::{AnalysisId, MAX_ANALYSES};
 
 /// One fact group as const data — what the stratification check reads.
@@ -41,7 +41,7 @@ pub enum StrataError {
 /// The stratification check: every dependency is registered and sits in a
 /// strictly lower stratum, and no id is registered twice.
 ///
-/// A `const fn`, so [`FactRegistry::new`] runs it at compile time; exposed
+/// A `const fn`, so [`AnalysisRegistry::new`] runs it at compile time; exposed
 /// on its own so the exact error of a rejected set can be asserted.
 ///
 /// # Errors
@@ -105,7 +105,7 @@ pub(crate) type ErasedTable = Box<dyn Any + Send + Sync>;
 pub struct ProducerEntry<A: ?Sized> {
     /// The group this entry computes.
     pub desc: GroupDesc,
-    pub(crate) run: fn(&A, &FactView<'_>) -> ErasedTable,
+    pub(crate) run: fn(&A, &AnalysisView<'_>) -> ErasedTable,
     /// Exact equality of two of this group's tables (P4-1b verify mode).
     pub(crate) eq: fn(&(dyn Any + Send + Sync), &(dyn Any + Send + Sync)) -> bool,
 }
@@ -129,7 +129,7 @@ impl<A: ?Sized> core::fmt::Debug for ProducerEntry<A> {
 impl<A: ?Sized> ProducerEntry<A> {
     /// The entry for group `G`'s producer.
     #[must_use]
-    pub const fn of<G: FactProducer<A>>() -> Self {
+    pub const fn of<G: AnalysisProducer<A>>() -> Self {
         Self {
             desc: G::DESC,
             run: run_erased::<A, G>,
@@ -138,17 +138,20 @@ impl<A: ?Sized> ProducerEntry<A> {
     }
 }
 
-fn run_erased<A: ?Sized, G: FactProducer<A>>(artifact: &A, inputs: &FactView<'_>) -> ErasedTable {
+fn run_erased<A: ?Sized, G: AnalysisProducer<A>>(
+    artifact: &A,
+    inputs: &AnalysisView<'_>,
+) -> ErasedTable {
     Box::new(G::produce(artifact, inputs))
 }
 
-fn eq_erased<A: ?Sized, G: FactProducer<A>>(
+fn eq_erased<A: ?Sized, G: AnalysisProducer<A>>(
     left: &(dyn Any + Send + Sync),
     right: &(dyn Any + Send + Sync),
 ) -> bool {
     match (
-        left.downcast_ref::<FactTable<G>>(),
-        right.downcast_ref::<FactTable<G>>(),
+        left.downcast_ref::<AnalysisTable<G>>(),
+        right.downcast_ref::<AnalysisTable<G>>(),
     ) {
         (Some(left), Some(right)) => left == right,
         _ => false,
@@ -158,16 +161,16 @@ fn eq_erased<A: ?Sized, G: FactProducer<A>>(
 /// Every producer a manager may run over artifacts of type `A`, checked for
 /// stratification when the registry is built.
 ///
-/// Build it as a `const` item: [`FactRegistry::new`] panics on a violation,
+/// Build it as a `const` item: [`AnalysisRegistry::new`] panics on a violation,
 /// and a panic in `const` evaluation is a compile error. A group that
 /// depends on a group of its own stratum does not compile:
 ///
 /// ```compile_fail,E0080
-/// use vize_l0::fact::{Demand, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry};
+/// use vize_l0::analysis::{Demand, Analysis, AnalysisProducer, AnalysisRegistry, AnalysisTable, AnalysisView, ProducerEntry};
 /// use vize_l0::pass::AnalysisId;
 ///
 /// struct Scopes;
-/// impl FactGroup for Scopes {
+/// impl Analysis for Scopes {
 ///     const ID: AnalysisId = AnalysisId::new(0);
 ///     const NAME: &'static str = "scopes";
 ///     const STRATUM: u8 = 1;
@@ -176,7 +179,7 @@ fn eq_erased<A: ?Sized, G: FactProducer<A>>(
 ///     type Value = u32;
 /// }
 /// struct Bindings;
-/// impl FactGroup for Bindings {
+/// impl Analysis for Bindings {
 ///     const ID: AnalysisId = AnalysisId::new(1);
 ///     const NAME: &'static str = "bindings";
 ///     const STRATUM: u8 = 1; // same stratum as its dependency
@@ -184,25 +187,25 @@ fn eq_erased<A: ?Sized, G: FactProducer<A>>(
 ///     type Key = u32;
 ///     type Value = u32;
 /// }
-/// impl FactProducer<str> for Scopes {
-///     fn produce(_: &str, _: &FactView<'_>) -> FactTable<Self> { FactTable::default() }
+/// impl AnalysisProducer<str> for Scopes {
+///     fn produce(_: &str, _: &AnalysisView<'_>) -> AnalysisTable<Self> { AnalysisTable::default() }
 /// }
-/// impl FactProducer<str> for Bindings {
-///     fn produce(_: &str, _: &FactView<'_>) -> FactTable<Self> { FactTable::default() }
+/// impl AnalysisProducer<str> for Bindings {
+///     fn produce(_: &str, _: &AnalysisView<'_>) -> AnalysisTable<Self> { AnalysisTable::default() }
 /// }
-/// const REGISTRY: FactRegistry<str> =
-///     FactRegistry::new(&[ProducerEntry::of::<Scopes>(), ProducerEntry::of::<Bindings>()]);
+/// const REGISTRY: AnalysisRegistry<str> =
+///     AnalysisRegistry::new(&[ProducerEntry::of::<Scopes>(), ProducerEntry::of::<Bindings>()]);
 /// ```
 ///
 /// Nor does the other half of a would-be cycle — a group reading a group in a
 /// higher stratum:
 ///
 /// ```compile_fail,E0080
-/// use vize_l0::fact::{Demand, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry};
+/// use vize_l0::analysis::{Demand, Analysis, AnalysisProducer, AnalysisRegistry, AnalysisTable, AnalysisView, ProducerEntry};
 /// use vize_l0::pass::AnalysisId;
 ///
 /// struct Low;
-/// impl FactGroup for Low {
+/// impl Analysis for Low {
 ///     const ID: AnalysisId = AnalysisId::new(0);
 ///     const NAME: &'static str = "low";
 ///     const STRATUM: u8 = 0;
@@ -211,7 +214,7 @@ fn eq_erased<A: ?Sized, G: FactProducer<A>>(
 ///     type Value = u32;
 /// }
 /// struct High;
-/// impl FactGroup for High {
+/// impl Analysis for High {
 ///     const ID: AnalysisId = AnalysisId::new(1);
 ///     const NAME: &'static str = "high";
 ///     const STRATUM: u8 = 1;
@@ -219,20 +222,20 @@ fn eq_erased<A: ?Sized, G: FactProducer<A>>(
 ///     type Key = u32;
 ///     type Value = u32;
 /// }
-/// impl FactProducer<str> for Low {
-///     fn produce(_: &str, _: &FactView<'_>) -> FactTable<Self> { FactTable::default() }
+/// impl AnalysisProducer<str> for Low {
+///     fn produce(_: &str, _: &AnalysisView<'_>) -> AnalysisTable<Self> { AnalysisTable::default() }
 /// }
-/// impl FactProducer<str> for High {
-///     fn produce(_: &str, _: &FactView<'_>) -> FactTable<Self> { FactTable::default() }
+/// impl AnalysisProducer<str> for High {
+///     fn produce(_: &str, _: &AnalysisView<'_>) -> AnalysisTable<Self> { AnalysisTable::default() }
 /// }
-/// const REGISTRY: FactRegistry<str> =
-///     FactRegistry::new(&[ProducerEntry::of::<Low>(), ProducerEntry::of::<High>()]);
+/// const REGISTRY: AnalysisRegistry<str> =
+///     AnalysisRegistry::new(&[ProducerEntry::of::<Low>(), ProducerEntry::of::<High>()]);
 /// ```
-pub struct FactRegistry<A: ?Sized + 'static> {
+pub struct AnalysisRegistry<A: ?Sized + 'static> {
     producers: &'static [ProducerEntry<A>],
 }
 
-impl<A: ?Sized + 'static> FactRegistry<A> {
+impl<A: ?Sized + 'static> AnalysisRegistry<A> {
     /// A registry over `producers`.
     ///
     /// # Panics

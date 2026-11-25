@@ -9,7 +9,9 @@ use tower_lsp::lsp_types::{
     MarkupKind,
 };
 use vize_croquis::ScopeKind;
-use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
+use vize_croquis::facts::{
+    Analysis, AnalysisConsumer, Bindings, BindingsTable, CroquisFacts, Demand,
+};
 use vize_relief::BindingType;
 
 use crate::ide::IdeContext;
@@ -21,7 +23,7 @@ mod pug_tests;
 /// Analyzed template binding completion reads script bindings.
 struct TemplateBindingCompletion;
 
-impl FactConsumer for TemplateBindingCompletion {
+impl AnalysisConsumer for TemplateBindingCompletion {
     const NAME: &'static str = "maestro/template-binding-completion";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 }

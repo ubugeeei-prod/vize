@@ -1,6 +1,6 @@
 use super::support::{selected, span};
-use vize_l0::{Allocator, cstr, fact::FactGroup};
-use vize_l1::markup::TagFactsKind;
+use vize_l0::{Allocator, analysis::Analysis, cstr};
+use vize_l1::markup::TagAnalysisKind;
 use vize_patina::native::{
     NativeSyntaxLint,
     header_facts::{
@@ -28,7 +28,7 @@ fn actual_original_ordinals_ranges_and_opaque_values_are_retained_in_sdk_tables(
         .get(&u32::try_from(element.ordinal()).unwrap())
         .unwrap();
     assert_eq!(header.tag(), "meta");
-    assert_eq!(header.kind(), TagFactsKind::Element);
+    assert_eq!(header.kind(), TagAnalysisKind::Element);
     assert_eq!(header.span(), span(source, "meta"));
     assert_eq!(
         header.opening(),
@@ -79,7 +79,7 @@ fn actual_original_ordinals_ranges_and_opaque_values_are_retained_in_sdk_tables(
     ));
     assert_eq!(
         NativeUnsupportedAria::DEPENDS,
-        vize_l0::fact::Demand::NONE
+        vize_l0::analysis::Demand::NONE
             .with(NativeLintHeaders::ID)
             .with(NativeLintAttributes::ID)
     );

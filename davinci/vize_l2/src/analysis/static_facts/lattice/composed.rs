@@ -1,7 +1,7 @@
 //! The post-order static lattice and inherited complexity depth over one PageWalk.
 
 use super::{
-    ChildLevel, Contribution, RegionSummary, StaticFacts, children_ns, component_facts,
+    ChildLevel, Contribution, RegionSummary, StaticAnalysis, children_ns, component_facts,
     element_contribution, element_facts, slot_props_static,
 };
 use crate::analysis::{static_facts::remarks, template_complexity as complexity};
@@ -12,14 +12,14 @@ use vize_l0::ensure_sufficient_stack;
 use vize_l0::pass::RemarkSink;
 use vize_l0::{Span, id::NodeId};
 mod owners;
-pub use owners::OwnerFacts;
+pub use owners::OwnerAnalysis;
 
 /// Compiler and tooling observations from a single immutable L2 artifact.
-pub struct TemplateFacts {
+pub struct TemplateAnalysis {
     /// Owner facts indexed by the artifact's original page ids.
-    pub static_facts: OwnerFacts,
+    pub static_facts: OwnerAnalysis,
     /// The same ordered complexity breakdown that the lint and Doctor tools read.
-    pub complexity: complexity::ComplexityFacts,
+    pub complexity: complexity::ComplexityAnalysis,
     /// Number of region operations visited, excluding their attached bindings.
     pub op_visits: u32,
 }
@@ -37,7 +37,7 @@ pub fn run(
     node_count: u32,
     provenance: &mut impl ProvenanceSink,
     remarks: &mut impl RemarkSink,
-) -> TemplateFacts {
+) -> TemplateAnalysis {
     // Root text and comments have no enclosing owner to receive their child
     // contribution and publish no complexity row, provenance or remark.
     let mut roots = region.ops.as_slice();
@@ -48,16 +48,16 @@ pub fn run(
     }
     if roots.is_empty() {
         assert_accounting(&ids, node_count, "hoist-static+template-complexity");
-        return TemplateFacts {
-            static_facts: OwnerFacts::default(),
-            complexity: complexity::ComplexityFacts::empty(),
+        return TemplateAnalysis {
+            static_facts: OwnerAnalysis::default(),
+            complexity: complexity::ComplexityAnalysis::empty(),
             op_visits: ids.visits(),
         };
     }
     let mut pass = Walk {
         ids,
-        static_facts: OwnerFacts::default(),
-        complexity: complexity::ComplexityFacts::empty(),
+        static_facts: OwnerAnalysis::default(),
+        complexity: complexity::ComplexityAnalysis::empty(),
         provenance,
         remarks,
     };
@@ -66,7 +66,7 @@ pub fn run(
     pass.complexity
         .contributions
         .sort_unstable_by_key(complexity::Contribution::sort_key);
-    TemplateFacts {
+    TemplateAnalysis {
         static_facts: pass.static_facts,
         complexity: pass.complexity,
         op_visits: pass.ids.visits(),
@@ -75,14 +75,14 @@ pub fn run(
 
 struct Walk<'s, P, R> {
     ids: PageWalk,
-    static_facts: OwnerFacts,
-    complexity: complexity::ComplexityFacts,
+    static_facts: OwnerAnalysis,
+    complexity: complexity::ComplexityAnalysis,
     provenance: &'s mut P,
     remarks: &'s mut R,
 }
 
 impl<P: ProvenanceSink, R: RemarkSink> Walk<'_, P, R> {
-    fn publish(&mut self, id: Option<NodeId>, owner: &str, span: Span, fact: StaticFacts) {
+    fn publish(&mut self, id: Option<NodeId>, owner: &str, span: Span, fact: StaticAnalysis) {
         if let Some(id) = id {
             publication::record(self.provenance, id, owner, span, fact);
             self.static_facts.insert(id, fact);

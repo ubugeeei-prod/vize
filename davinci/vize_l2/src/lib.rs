@@ -8,7 +8,7 @@
 //! - Entry: built by `vize_l1_to_l2::lower_sfc_native(allocator, source, options)`
 //!   from an `L1Ir`; this crate defines the IR and its queries, not a producer.
 //! - Next level: `vize_l2_to_l3::lower_ir(allocator, &l2ir)` builds a `vize_l3::L3Ir`.
-//! - The DOM and SSR compile paths still read `artifact::ArtifactParts`
+//! - The DOM and SSR compile paths still read `artifact::L2TemplateParts`
 //!   through `vize_l1_to_l2::Lowered` instead of an `L2Ir`
 //!   (`docs/davinci/decisions/2026-11-24-level-ir-names.md`).
 //!

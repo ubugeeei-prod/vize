@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
+  analysisHostPathLayout,
   hostPathLayoutForOriginalLaw,
   movedHostPathLayout,
   originalHostPathLayout,
@@ -11,7 +12,11 @@ void test("the original full host source retains its original layout law", () =>
   assert.equal(hostPathLayoutForOriginalLaw(originalHostPathLayout), originalHostPathLayout);
 });
 
-void test("only the complete mechanical loader move reconstructs the original host law", () => {
+void test("the frozen loader move retains its original layout law", () => {
+  assert.equal(hostPathLayoutForOriginalLaw(movedHostPathLayout), originalHostPathLayout);
+});
+
+void test("the exact analysis-module successor reconstructs the original host law", () => {
   const read = (file: string) => readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
   const actual = {
     foundation: read("davinci/vize_l0/src/lib.rs"),
@@ -19,7 +24,7 @@ void test("only the complete mechanical loader move reconstructs the original ho
     lowerPathExists: true,
     lower: read("davinci/vize_l0/src/path.rs"),
   };
-  assert.deepEqual(actual, movedHostPathLayout);
+  assert.deepEqual(actual, analysisHostPathLayout);
   assert.equal(hostPathLayoutForOriginalLaw(actual), originalHostPathLayout);
 });
 
@@ -38,6 +43,22 @@ void test("missing, mixed and unknown source layouts cannot acquire the historic
       lower: movedHostPathLayout.lower?.replace("path.to_path_buf()", "PathBuf::new()"),
     },
     { ...movedHostPathLayout, foundation: `${movedHostPathLayout.foundation}\npub mod path;\n` },
+    { ...analysisHostPathLayout, foundation: `// unrelated\n${analysisHostPathLayout.foundation}` },
+    {
+      ...analysisHostPathLayout,
+      foundation: `${analysisHostPathLayout.foundation}\npub mod extra;\n`,
+    },
+    {
+      ...analysisHostPathLayout,
+      foundation: analysisHostPathLayout.foundation.replace("pub mod analysis;", "pub mod fact;"),
+    },
+    {
+      ...analysisHostPathLayout,
+      foundation: analysisHostPathLayout.foundation.replace("pub mod analysis;\n", ""),
+    },
+    { ...analysisHostPathLayout, host: originalHostPathLayout.host },
+    { ...analysisHostPathLayout, lower: undefined },
+    { ...analysisHostPathLayout, extra: "unknown" },
   ]) {
     assert.throws(() => hostPathLayoutForOriginalLaw(changed), { name: "AssertionError" });
   }

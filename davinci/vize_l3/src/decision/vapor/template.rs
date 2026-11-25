@@ -1,9 +1,9 @@
 //! Genuine original template completion retains its lower owner through L3.
 
-use super::{VaporFacts, VaporFileAnalysis};
+use super::{VaporAnalysis, VaporFileAnalysis};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l2::{
-    artifact::Artifact,
+    artifact::L2Template,
     file::L2Ir,
     lang::js::{NativeTemplateFile, NativeTemplateView},
 };
@@ -50,11 +50,11 @@ impl<'owner, 'arena> TemplateVaporAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn original_attributes(
         &self,
-    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+    ) -> Option<&crate::decision::OriginalAttributeAnalysis<'owner, 'arena>> {
         self.analysis.original_attributes()
     }
     #[must_use]
-    pub fn artifact(&self) -> &'owner Artifact<'arena> {
+    pub fn artifact(&self) -> &'owner L2Template<'arena> {
         self.analysis.artifact()
     }
     #[must_use]
@@ -62,7 +62,7 @@ impl<'owner, 'arena> TemplateVaporAnalysis<'owner, 'arena> {
         self.analysis.tables()
     }
     #[must_use]
-    pub fn vapor(&self) -> Option<&VaporFacts<'owner, 'arena>> {
+    pub fn vapor(&self) -> Option<&VaporAnalysis<'owner, 'arena>> {
         self.analysis.vapor()
     }
 }

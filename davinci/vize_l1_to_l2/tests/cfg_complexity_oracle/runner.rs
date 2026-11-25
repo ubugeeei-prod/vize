@@ -65,7 +65,7 @@ impl Report {
 }
 
 /// The production facts in the oracle's row shape.
-pub fn production(facts: &cfg::ComplexityFacts) -> Naive {
+pub fn production(facts: &cfg::ComplexityAnalysis) -> Naive {
     let mut rows: Vec<Row> = facts
         .contributions
         .iter()

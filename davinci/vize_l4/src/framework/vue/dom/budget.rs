@@ -69,7 +69,7 @@ pub struct ObservedDomEmit {
 #[cfg(any(test, feature = "legacy-differential"))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[doc(hidden)]
-pub struct ObservedPatchFactsEmit {
+pub struct ObservedPatchAnalysisEmit {
     pub emit: DomEmit,
     pub materialized_entries: usize,
 }
@@ -192,7 +192,7 @@ pub fn emit_dom_source_observed_with_options_captured<C: CaptureSink>(
 pub fn emit_dom_source_patch_facts_observed<'a>(
     allocator: &'a Allocator,
     source: &'a str,
-) -> Result<ObservedPatchFactsEmit, EmitError> {
+) -> Result<ObservedPatchAnalysisEmit, EmitError> {
     emit_dom_source_patch_facts_observed_with_options(
         allocator,
         source,
@@ -208,7 +208,7 @@ pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
     source: &'a str,
     caps: LegacyCaps,
     options: &DomEmitOptions<'_>,
-) -> Result<ObservedPatchFactsEmit, EmitError> {
+) -> Result<ObservedPatchAnalysisEmit, EmitError> {
     let mut observer = vize_l0::pass::NoObserver;
     let observed = emit_dom_source_with_options_and_observer(
         allocator,
@@ -222,7 +222,7 @@ pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
         true,
         None,
     )?;
-    Ok(ObservedPatchFactsEmit {
+    Ok(ObservedPatchAnalysisEmit {
         emit: observed.emit,
         materialized_entries: observed.patch_fact_entries,
     })

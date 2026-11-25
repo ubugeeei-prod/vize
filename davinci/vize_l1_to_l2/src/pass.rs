@@ -24,7 +24,7 @@
 use vize_l0::pass::{
     PassDesc, PassEvent, PassFailure, PassObserver, Pipeline, run_pipeline_remarked,
 };
-use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::pass_facts::L2Analyses;
 
 use crate::lower::Lowered;
 
@@ -39,14 +39,14 @@ pub mod vmodel;
 pub mod vslot;
 pub(crate) mod walk;
 
-pub use cfg::{ComplexityFacts, Contribution, DecisionKind};
+pub use cfg::{ComplexityAnalysis, Contribution, DecisionKind};
 pub use dom::run_dom_transform_with_profile;
-pub use hoist::{StaticFacts, StaticLevel};
+pub use hoist::{StaticAnalysis, StaticLevel};
 pub use plan::TransformProfile;
 pub use vfor::{ForFacts, ForName};
-pub use vif::{BranchKey, BranchKeyKind, IfFacts};
-pub use vmodel::{ModelFacts, ModelFault};
-pub use vslot::{SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams};
+pub use vif::{BranchKey, BranchKeyKind, IfAnalysis};
+pub use vmodel::{ModelAnalysis, ModelFault};
+pub use vslot::{SlotAnalysis, SlotCarrier, SlotGroup, SlotName, SlotParams};
 
 /// The stage name L2 transform pipelines print and parse under.
 // Schema-1 attribution remains stable across physical layer renames.
@@ -95,7 +95,10 @@ const _: () = {
 /// body, or (debug builds) a verifier violation.
 ///
 /// [`VerifyObserver`]: vize_l2::verify::VerifyObserver
-pub fn run_transform<'a, O: PassObserver>(lowered: &mut Lowered<'a>, observer: &mut O) -> L2Facts {
+pub fn run_transform<'a, O: PassObserver>(
+    lowered: &mut Lowered<'a>,
+    observer: &mut O,
+) -> L2Analyses {
     run_transform_with_profile(lowered, observer, TransformProfile::DEFAULT)
 }
 
@@ -104,7 +107,7 @@ pub fn run_transform_with_profile<'a, O: PassObserver>(
     lowered: &mut Lowered<'a>,
     observer: &mut O,
     profile: TransformProfile,
-) -> L2Facts {
+) -> L2Analyses {
     run_transform_with_pass_hook(lowered, observer, profile, |_, _| {})
 }
 
@@ -122,12 +125,12 @@ pub fn run_transform_with_pass_hook<'a, O, H>(
     observer: &mut O,
     profile: TransformProfile,
     mut after_pass: H,
-) -> L2Facts
+) -> L2Analyses
 where
     O: PassObserver,
     H: FnMut(&PassEvent<'_>, &Lowered<'a>),
 {
-    let mut facts = L2Facts::default();
+    let mut facts = L2Analyses::default();
     #[cfg(debug_assertions)]
     let mut verify = vize_l2::verify::VerifyObserver::new();
 

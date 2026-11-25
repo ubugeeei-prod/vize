@@ -4,7 +4,7 @@ use vize_l0::{
     String,
     diag::{Advisory, Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage},
 };
-use vize_l1::markup::{ElementView, TagFactsKind};
+use vize_l1::markup::{ElementView, TagAnalysisKind};
 
 use crate::tag_policy::DEPRECATED_ELEMENTS;
 
@@ -16,7 +16,7 @@ pub(super) fn check(
 ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
     let (kind, opening) = header_rules::inspect(element, |_| {})?;
     let tag = element.surface().tag();
-    if kind == TagFactsKind::Component || !DEPRECATED_ELEMENTS.contains(&tag) {
+    if kind == TagAnalysisKind::Component || !DEPRECATED_ELEMENTS.contains(&tag) {
         return Ok(None);
     }
     let template = messages.lookup("html/deprecated-element.message");

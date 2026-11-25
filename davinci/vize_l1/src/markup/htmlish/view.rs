@@ -28,8 +28,8 @@ pub use operand::{
     ConditionKind, ModelHead, StaticBindingHead,
 };
 pub use selected::{ScriptSelection, SelectedTemplateComponent, TemplateGrammar};
-pub use tag_facts::{TagFacts, TagFactsKind, TagFactsRefusal};
-pub use tag_facts_component::ComponentTagFacts;
+pub use tag_facts::{TagAnalysis, TagAnalysisKind, TagAnalysisRefusal};
+pub use tag_facts_component::ComponentTagAnalysis;
 pub use text::{RootText, RootTextError, RootTextProfile, RootTextView};
 pub use text_value::{TextValue, TextValueError, TextValueFailure, TextValueView};
 

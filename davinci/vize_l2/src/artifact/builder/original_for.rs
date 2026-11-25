@@ -1,9 +1,9 @@
 //! The genuine File receiver alone supplies an original whole iteration head.
 
-use super::{ArtifactError, Builder, Frame, Owner, check};
+use super::{Builder, Frame, L2TemplateError, Owner, check};
 use crate::op::{OriginalForId, OriginalForOp};
 use crate::resolution::ForResolution;
-use crate::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
+use crate::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin, ScopeTag};
 use vize_l0::{Span, id::NodeId};
 
 impl<'a> Builder<'a> {
@@ -11,12 +11,12 @@ impl<'a> Builder<'a> {
         &mut self,
         head: &ForResolution<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare(span)?;
         let operand = head.input().operand();
         let source = operand.syntax().source();
         if !core::ptr::eq(source.authored_root(), self.parts.source) {
-            return Err(ArtifactError::MismatchedJsSource {
+            return Err(L2TemplateError::MismatchedJsSource {
                 node: id,
                 span: source.span(),
             });
@@ -30,7 +30,7 @@ impl<'a> Builder<'a> {
             Some(span),
         )?;
         let tag = ScopeTag::from_index(
-            u32::try_from(self.parts.scopes.len()).map_err(|_| ArtifactError::NodeLimit)?,
+            u32::try_from(self.parts.scopes.len()).map_err(|_| L2TemplateError::NodeLimit)?,
         );
         let key = head.key_declaration();
         let mut bindings = alloc::vec::Vec::with_capacity(1 + usize::from(key.is_some()));
@@ -43,7 +43,10 @@ impl<'a> Builder<'a> {
             });
         }
         self.mint();
-        let _ = self.parts.scopes.insert(id, ScopeFacts { tag, bindings });
+        let _ = self
+            .parts
+            .scopes
+            .insert(id, ScopeAnalysis { tag, bindings });
         self.frames.push(Frame {
             id,
             owner: Owner::OriginalFor(OriginalForId(id)),
@@ -58,25 +61,25 @@ impl<'a> Builder<'a> {
     pub(super) fn finish_original_for(
         &mut self,
         node: NodeId,
-    ) -> Result<core::ptr::NonNull<OriginalForOp<'a>>, ArtifactError> {
+    ) -> Result<core::ptr::NonNull<OriginalForOp<'a>>, L2TemplateError> {
         let frame = self
             .frames
             .last()
-            .ok_or(ArtifactError::UnfinishedOwner { node })?;
+            .ok_or(L2TemplateError::UnfinishedOwner { node })?;
         if frame.id != node || !matches!(&frame.owner, Owner::OriginalFor(id) if id.node() == node)
         {
-            return Err(ArtifactError::UnfinishedOwner { node: frame.id });
+            return Err(L2TemplateError::UnfinishedOwner { node: frame.id });
         }
         if !frame.bindings.is_empty() {
-            return Err(ArtifactError::BindingWithoutOwner { span: frame.span });
+            return Err(L2TemplateError::BindingWithoutOwner { span: frame.span });
         }
         let frame = self
             .frames
             .pop()
-            .ok_or(ArtifactError::UnfinishedOwner { node })?;
+            .ok_or(L2TemplateError::UnfinishedOwner { node })?;
         self.close(frame)
             .original_for
-            .ok_or(ArtifactError::UnfinishedOwner { node })
+            .ok_or(L2TemplateError::UnfinishedOwner { node })
     }
 }
 

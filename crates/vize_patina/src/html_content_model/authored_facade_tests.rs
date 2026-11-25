@@ -2,12 +2,12 @@
 
 use super::{authored_document_skeleton, authored_skeleton};
 use crate::ir::TemplateSyntax;
-use crate::markup::{L2Template, MarkupDocument};
+use crate::markup::{LintL2Template, MarkupDocument};
 use vize_l0::{Allocator, cstr};
 
 fn compare(source: &str) {
     let allocator = Allocator::new();
-    let lowered = L2Template::lower(&allocator, source);
+    let lowered = LintL2Template::lower(&allocator, source);
     let markup = lowered.markup();
     let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
     assert_eq!(
@@ -165,7 +165,7 @@ fn authored_element_queries_match_the_non_repairing_template_facade() {
         )
         .parse();
         let reference = MarkupDocument::new(&root, TemplateSyntax::Vue);
-        let lowered = L2Template::lower(&allocator, source);
+        let lowered = LintL2Template::lower(&allocator, source);
         let markup = lowered.markup();
         let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
         assert_eq!(

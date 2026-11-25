@@ -1,16 +1,16 @@
 use vize_l0::id::NodeId;
 use vize_l0::{SmallVec, String};
 
-use super::PatchFacts;
+use super::PatchAnalysis;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(super) struct StoredPatchFacts {
+pub(super) struct StoredPatchAnalysis {
     flag: i32,
     dynamic_props: SmallVec<[String; 8]>,
 }
 
-impl StoredPatchFacts {
-    pub(super) fn from_patch(facts: &PatchFacts) -> Self {
+impl StoredPatchAnalysis {
+    pub(super) fn from_patch(facts: &PatchAnalysis) -> Self {
         Self {
             flag: facts.flag,
             dynamic_props: facts.dynamic_props.iter().cloned().collect(),
@@ -18,24 +18,28 @@ impl StoredPatchFacts {
     }
 }
 
-pub(in crate::targets::dom::artifact) struct PatchFactsTable {
+pub(in crate::targets::dom::artifact) struct PatchAnalysisTable {
     // Keep owner IDs ordered so every emitted VNode does not scan all earlier
     // facts. Small components still use the inline allocation.
-    entries: SmallVec<[(NodeId, StoredPatchFacts); 16]>,
+    entries: SmallVec<[(NodeId, StoredPatchAnalysis); 16]>,
 }
 
-impl PatchFactsTable {
+impl PatchAnalysisTable {
     pub(in crate::targets::dom::artifact) fn new() -> Self {
         Self {
             entries: SmallVec::new(),
         }
     }
 
-    pub(super) fn materialize(&mut self, owner: Option<NodeId>, facts: PatchFacts) -> PatchFacts {
+    pub(super) fn materialize(
+        &mut self,
+        owner: Option<NodeId>,
+        facts: PatchAnalysis,
+    ) -> PatchAnalysis {
         let Some(owner) = owner else {
             return facts;
         };
-        let stored = StoredPatchFacts::from_patch(&facts);
+        let stored = StoredPatchAnalysis::from_patch(&facts);
         match self.entries.binary_search_by_key(&owner, |(id, _)| *id) {
             Ok(index) => {
                 if let Some(entry) = self.entries.get_mut(index) {
@@ -53,7 +57,7 @@ impl PatchFactsTable {
     }
 
     #[cfg(test)]
-    pub(super) fn get(&self, owner: NodeId) -> Option<&StoredPatchFacts> {
+    pub(super) fn get(&self, owner: NodeId) -> Option<&StoredPatchAnalysis> {
         self.entries
             .binary_search_by_key(&owner, |(id, _)| *id)
             .ok()

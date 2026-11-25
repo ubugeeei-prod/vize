@@ -3,7 +3,7 @@
 use super::{Lowered, cx::Cx, structural, surface_error_span};
 use vize_l0::SourceBlock;
 use vize_l1::markup::{SurfaceError, SurfaceTree};
-use vize_l2::artifact::ArtifactParts;
+use vize_l2::artifact::L2TemplateParts;
 use vize_l2::op::{Namespace, Region};
 use vize_l2::provenance::ProvenanceSink;
 
@@ -56,7 +56,7 @@ fn materialize<'a, P: ProvenanceSink>(
     let op_count = cx.op_count();
     Lowered {
         allocator: cx.allocator,
-        artifact: ArtifactParts {
+        artifact: L2TemplateParts {
             source: block.root_source(),
             root: Region { ops },
             provenance: cx.provenance,

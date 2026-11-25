@@ -2,8 +2,8 @@
 
 use vize_l0::{
     SmallVec, String,
+    analysis::AnalysisError,
     diag::{Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage, verify::WitnessError},
-    fact::FactError,
 };
 
 use super::{
@@ -17,7 +17,7 @@ use super::{
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NativeAriaLintError {
     /// A required SDK fact table or entry is unavailable.
-    Fact(FactError),
+    Fact(AnalysisError),
     /// The causal witness does not verify against the authentic fact view.
     Witness(WitnessError),
     /// The counterexample lacks its original header, attribute, or witness chain.
@@ -26,8 +26,8 @@ pub enum NativeAriaLintError {
         attribute: u32,
     },
 }
-impl From<FactError> for NativeAriaLintError {
-    fn from(error: FactError) -> Self {
+impl From<AnalysisError> for NativeAriaLintError {
+    fn from(error: AnalysisError) -> Self {
         Self::Fact(error)
     }
 }

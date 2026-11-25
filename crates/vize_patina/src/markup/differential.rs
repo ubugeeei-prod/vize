@@ -29,7 +29,7 @@ mod probe;
 
 use crate::context::LintContext;
 use crate::ir::TemplateSyntax;
-use crate::markup::{L2Markup, L2Template, MarkupContext, MarkupDocument};
+use crate::markup::{L2Markup, LintL2Template, MarkupContext, MarkupDocument};
 use vize_atelier_jsx::JsxLang;
 use vize_l0::{Allocator, String};
 
@@ -109,7 +109,7 @@ pub fn compare_template(source: &str) -> Result<TemplateComparison, Divergence> 
         ..vize_relief::ParserOptions::default()
     };
     let (root, _errors) = vize_armature::Parser::with_options(&allocator, source, options).parse();
-    let lowered = L2Template::lower(&allocator, source);
+    let lowered = LintL2Template::lower(&allocator, source);
     if nesting::is_restructured(&root, lowered.surface()) {
         return Ok(TemplateComparison::Restructured);
     }

@@ -8,8 +8,9 @@
 
 use std::sync::{Mutex, MutexGuard};
 
-use vize_l0::fact::{
-    Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry,
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisProducer, AnalysisRegistry, AnalysisTable, AnalysisView,
+    Demand, ProducerEntry,
 };
 use vize_l0::pass::AnalysisId;
 
@@ -24,7 +25,7 @@ pub fn serial() -> MutexGuard<'static, ()> {
 pub type Words = [&'static str];
 
 pub struct Lengths;
-impl FactGroup for Lengths {
+impl Analysis for Lengths {
     const ID: AnalysisId = AnalysisId::new(50);
     const NAME: &'static str = "lengths";
     const STRATUM: u8 = 0;
@@ -32,14 +33,14 @@ impl FactGroup for Lengths {
     type Key = u32;
     type Value = usize;
 }
-impl FactProducer<Words> for Lengths {
-    fn produce(words: &Words, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Words> for Lengths {
+    fn produce(words: &Words, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         (0u32..).zip(words.iter().map(|word| word.len())).collect()
     }
 }
 
 pub struct Vowels;
-impl FactGroup for Vowels {
+impl Analysis for Vowels {
     const ID: AnalysisId = AnalysisId::new(51);
     const NAME: &'static str = "vowels";
     const STRATUM: u8 = 0;
@@ -47,8 +48,8 @@ impl FactGroup for Vowels {
     type Key = u32;
     type Value = usize;
 }
-impl FactProducer<Words> for Vowels {
-    fn produce(words: &Words, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Words> for Vowels {
+    fn produce(words: &Words, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let vowels = |word: &str| word.chars().filter(|c| "aeiou".contains(*c)).count();
         (0u32..)
             .zip(words.iter().map(|word| vowels(word)))
@@ -57,7 +58,7 @@ impl FactProducer<Words> for Vowels {
 }
 
 pub struct Longest;
-impl FactGroup for Longest {
+impl Analysis for Longest {
     const ID: AnalysisId = AnalysisId::new(52);
     const NAME: &'static str = "longest";
     const STRATUM: u8 = 1;
@@ -65,8 +66,8 @@ impl FactGroup for Longest {
     type Key = ();
     type Value = u32;
 }
-impl FactProducer<Words> for Longest {
-    fn produce(_: &Words, inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Words> for Longest {
+    fn produce(_: &Words, inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let lengths = inputs.get::<Lengths>().expect("declared input");
         let longest = lengths.iter().max_by_key(|(_, len)| **len);
         longest.map(|(at, _)| ((), *at)).into_iter().collect()
@@ -75,7 +76,7 @@ impl FactProducer<Words> for Longest {
 
 /// Declares `Lengths` but reads `Vowels`; records what its view answered.
 pub struct Leaky;
-impl FactGroup for Leaky {
+impl Analysis for Leaky {
     const ID: AnalysisId = AnalysisId::new(53);
     const NAME: &'static str = "leaky";
     const STRATUM: u8 = 1;
@@ -83,15 +84,15 @@ impl FactGroup for Leaky {
     type Key = ();
     type Value = vize_l0::String;
 }
-impl FactProducer<Words> for Leaky {
-    fn produce(_: &Words, inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Words> for Leaky {
+    fn produce(_: &Words, inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let seen = inputs.get::<Vowels>().map(|table| table.len());
         [((), vize_l0::cstr!("{seen:?}"))].into_iter().collect()
     }
 }
 
 /// Stratification-checked at compile time.
-pub const REGISTRY: FactRegistry<Words> = FactRegistry::new(&[
+pub const REGISTRY: AnalysisRegistry<Words> = AnalysisRegistry::new(&[
     ProducerEntry::of::<Lengths>(),
     ProducerEntry::of::<Vowels>(),
     ProducerEntry::of::<Longest>(),
@@ -99,26 +100,26 @@ pub const REGISTRY: FactRegistry<Words> = FactRegistry::new(&[
 ]);
 
 pub struct LongestRule;
-impl FactConsumer for LongestRule {
+impl AnalysisConsumer for LongestRule {
     const NAME: &'static str = "longest-rule";
     const DEMAND: Demand = Demand::NONE.with(Longest::ID);
 }
 
 pub struct VowelRule;
-impl FactConsumer for VowelRule {
+impl AnalysisConsumer for VowelRule {
     const NAME: &'static str = "vowel-rule";
     const DEMAND: Demand = Demand::NONE.with(Vowels::ID);
 }
 
 /// Declares `Longest` but also reads `Vowels`.
 pub struct SneakyRule;
-impl FactConsumer for SneakyRule {
+impl AnalysisConsumer for SneakyRule {
     const NAME: &'static str = "sneaky-rule";
     const DEMAND: Demand = Demand::NONE.with(Longest::ID);
 }
 
 pub struct LeakyRule;
-impl FactConsumer for LeakyRule {
+impl AnalysisConsumer for LeakyRule {
     const NAME: &'static str = "leaky-rule";
     const DEMAND: Demand = Demand::NONE.with(Leaky::ID);
 }

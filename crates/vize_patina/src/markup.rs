@@ -108,9 +108,13 @@ pub use element::MarkupElement;
 pub use l2::L2Markup;
 /// An owned L1 surface and L2 artifact, including the lowering decisions
 /// available through its `lowered` accessor.
-pub type L2Template<'a> = l2::L2Template<'a, std::vec::Vec<vize_l2::provenance::ProvenanceRecord>>;
+pub type LintL2Template<'a> =
+    l2::LintL2Template<'a, std::vec::Vec<vize_l2::provenance::ProvenanceRecord>>;
+/// Compatibility name retained for one minor release; use [`LintL2Template`].
+#[deprecated(note = "use LintL2Template; retained for one minor release (#13707)")]
+pub type L2Template<'a> = LintL2Template<'a>;
 /// The linter reads the ops, expression facts and diagnostics.
-pub(crate) type LintInput<'a> = l2::L2Template<'a, vize_l2::provenance::NoProvenance>;
+pub(crate) type LintInput<'a> = l2::LintL2Template<'a, vize_l2::provenance::NoProvenance>;
 pub use node::{MarkupNode, MarkupText};
 pub use rule::{MarkupLevel, MarkupRule, MarkupTraversal};
 pub use scope::{MarkupConditional, MarkupList};
@@ -287,7 +291,7 @@ impl<'a> MarkupDocument<'a> {
 
 /// Reborrow a stack [`L2Markup`] header at a lint context's arena lifetime.
 ///
-/// Lowering owns its artifact on the stack (`L2Template`, a JSX
+/// Lowering owns its artifact on the stack (`LintL2Template`, a JSX
 /// [`vize_atelier_jsx::LowerOutput`]). [`MarkupContext`] ties element borrows
 /// to that arena lifetime, which a local header cannot name. The header's
 /// slices point at arena bytes or the caller's source. The caller keeps the

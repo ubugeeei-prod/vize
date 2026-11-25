@@ -1,6 +1,6 @@
 //! Original empty-default-object eligibility in the sole Program walk.
 
-use crate::file::build::Facts;
+use crate::file::build::L2Script;
 use crate::file::{Export, L2Ir, Namespace, ScopeId, ScriptProfile, ScriptUnit, ScriptUnitId};
 use oxc_parser::{AdmittedProgram, OriginalDefaultExport, ParseOptions};
 use vize_l0::{SourceBlock, Span};
@@ -21,7 +21,7 @@ pub(crate) fn initial(admitted: &AdmittedProgram<'_, '_>) -> bool {
         && admitted.sole_default_export().is_some()
 }
 
-pub(super) fn reject(facts: &mut Facts<'_>, id: ScriptUnitId) {
+pub(super) fn reject(facts: &mut L2Script<'_>, id: ScriptUnitId) {
     if let Some(unit) = facts.units.last_mut()
         && unit.id == id
     {
@@ -42,7 +42,7 @@ pub struct OrdinaryEmptyScript<'f> {
 }
 
 impl<'f> OrdinaryEmptyScript<'f> {
-    pub(crate) fn from_facts(facts: &'f Facts<'_>) -> Option<Self> {
+    pub(crate) fn from_facts(facts: &'f L2Script<'_>) -> Option<Self> {
         let [unit] = facts.units.as_slice() else {
             return None;
         };

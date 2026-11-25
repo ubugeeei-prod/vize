@@ -43,7 +43,7 @@ use oxc_span::GetSpan;
 use vize_l0::{Allocator, Span};
 use vize_l1::markup::tsrx::{RegionSite, TsrxModule};
 
-use crate::artifact::{Artifact, ArtifactError, Builder};
+use crate::artifact::{Builder, L2Template, L2TemplateError};
 use crate::expr::JsExpr;
 use crate::expr::js::{JsCoordinateError, JsCoordinates};
 
@@ -72,7 +72,7 @@ pub enum TsrxIssueKind {
     /// An embedded expression whose coordinates do not fit the module.
     Expression(JsCoordinateError),
     /// A canonical construction invariant.
-    Artifact(ArtifactError),
+    Artifact(L2TemplateError),
 }
 
 /// One refusal at an exact authored range of the module.
@@ -87,7 +87,7 @@ pub struct TsrxIssue {
 pub struct TsrxRegion<'a> {
     span: Span,
     site: RegionSite,
-    artifact: Artifact<'a>,
+    artifact: L2Template<'a>,
 }
 
 impl<'a> TsrxRegion<'a> {
@@ -103,24 +103,24 @@ impl<'a> TsrxRegion<'a> {
     }
 
     #[must_use]
-    pub fn artifact(&self) -> &Artifact<'a> {
+    pub fn artifact(&self) -> &L2Template<'a> {
         &self.artifact
     }
 
     #[must_use]
-    pub fn into_artifact(self) -> Artifact<'a> {
+    pub fn into_artifact(self) -> L2Template<'a> {
         self.artifact
     }
 }
 
 /// Every region of one module, lowered, in source order, except the nested
 /// regions lowered into an enclosing region's artifact.
-pub struct TsrxArtifacts<'a> {
+pub struct TsrxL2Templates<'a> {
     module: &'a TsrxModule<'a>,
     regions: Vec<TsrxRegion<'a>>,
 }
 
-impl<'a> TsrxArtifacts<'a> {
+impl<'a> TsrxL2Templates<'a> {
     /// The parsed module these regions belong to.
     #[must_use]
     pub fn module(&self) -> &'a TsrxModule<'a> {
@@ -142,7 +142,7 @@ impl<'a> TsrxArtifacts<'a> {
 pub fn lower<'a>(
     allocator: &'a Allocator,
     module: &'a TsrxModule<'a>,
-) -> Result<TsrxArtifacts<'a>, Vec<TsrxIssue>> {
+) -> Result<TsrxL2Templates<'a>, Vec<TsrxIssue>> {
     let source = module.program().source_text;
     if !module.is_clean() {
         return Err(alloc::vec![TsrxIssue {
@@ -187,7 +187,7 @@ pub fn lower<'a>(
             artifact,
         });
     }
-    Ok(TsrxArtifacts { module, regions })
+    Ok(TsrxL2Templates { module, regions })
 }
 
 /// Whether a static tag names a component: a member tag, or a name that does

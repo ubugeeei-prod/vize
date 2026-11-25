@@ -1,4 +1,4 @@
-//! [`FactView`], [`FactError`], the per-artifact table store, and the
+//! [`AnalysisView`], [`AnalysisError`], the per-artifact table store, and the
 //! process-global counters that pin "each group at most once per artifact"
 //! and "zero undeclared accesses".
 
@@ -6,7 +6,7 @@ use core::any::{Any, type_name};
 use core::sync::atomic::{AtomicU64, Ordering};
 
 use super::registry::ErasedTable;
-use super::{Demand, FactGroup, FactTable};
+use super::{Analysis, AnalysisTable, Demand};
 use crate::pass::{AnalysisId, MAX_ANALYSES};
 
 pub(crate) const SLOTS: usize = MAX_ANALYSES as usize;
@@ -46,7 +46,7 @@ pub fn undeclared_accesses() -> u64 {
 /// Why a fact query, a run or a preservation check failed. Every variant
 /// names the group, so a test asserts the exact value.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum FactError {
+pub enum AnalysisError {
     /// A consumer (or producer) read a group outside its declared demand.
     /// Reported by the debug detector only.
     Undeclared {
@@ -143,11 +143,11 @@ impl Declared {
         expect(unused_variables, reason = "the detector is empty in release builds")
     )]
     #[inline]
-    fn check(self, group: AnalysisId) -> Result<(), FactError> {
+    fn check(self, group: AnalysisId) -> Result<(), AnalysisError> {
         #[cfg(debug_assertions)]
         if !self.demand.contains(group) {
             UNDECLARED.fetch_add(1, Ordering::Relaxed);
-            return Err(FactError::Undeclared {
+            return Err(AnalysisError::Undeclared {
                 consumer: self.consumer,
                 group,
             });
@@ -161,12 +161,12 @@ impl Declared {
 /// In debug builds it carries the reader's declared demand and refuses
 /// everything outside it; in release builds it is one pointer.
 #[derive(Clone, Copy)]
-pub struct FactView<'m> {
+pub struct AnalysisView<'m> {
     tables: &'m Tables,
     declared: Declared,
 }
 
-impl<'m> FactView<'m> {
+impl<'m> AnalysisView<'m> {
     pub(crate) const fn new(tables: &'m Tables, declared: Declared) -> Self {
         Self { tables, declared }
     }
@@ -175,19 +175,19 @@ impl<'m> FactView<'m> {
     ///
     /// # Errors
     ///
-    /// [`FactError::Undeclared`] (debug builds) when `G` is outside the
-    /// reader's declared demand; [`FactError::NotComputed`] when no run
-    /// demanded `G`; [`FactError::TypeMismatch`] when another group type
+    /// [`AnalysisError::Undeclared`] (debug builds) when `G` is outside the
+    /// reader's declared demand; [`AnalysisError::NotComputed`] when no run
+    /// demanded `G`; [`AnalysisError::TypeMismatch`] when another group type
     /// owns `G`'s id.
-    pub fn get<G: FactGroup>(&self) -> Result<&'m FactTable<G>, FactError> {
+    pub fn get<G: Analysis>(&self) -> Result<&'m AnalysisTable<G>, AnalysisError> {
         self.declared.check(G::ID)?;
         let table = self
             .tables
             .slot(G::ID)
-            .ok_or(FactError::NotComputed { group: G::ID })?;
+            .ok_or(AnalysisError::NotComputed { group: G::ID })?;
         table
-            .downcast_ref::<FactTable<G>>()
-            .ok_or(FactError::TypeMismatch {
+            .downcast_ref::<AnalysisTable<G>>()
+            .ok_or(AnalysisError::TypeMismatch {
                 group: G::ID,
                 expected: type_name::<G>(),
             })

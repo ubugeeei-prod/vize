@@ -101,14 +101,14 @@ impl VaporRoot {
 
 /// Borrowed target facts attached to the exact immutable native analysis.
 #[derive(Debug)]
-pub struct VaporFacts<'owner, 'arena> {
+pub struct VaporAnalysis<'owner, 'arena> {
     pub(super) parts: Vec<VaporPart<'owner, 'arena>>,
     pub(super) roots: Vec<VaporRoot>,
     pub(super) unsupported: Vec<VaporRejection>,
     pub(super) inherit_attrs: Option<NodeId>,
 }
 
-impl<'owner, 'arena> VaporFacts<'owner, 'arena> {
+impl<'owner, 'arena> VaporAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn roots(&self) -> &[VaporRoot] {
         &self.roots

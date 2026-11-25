@@ -1,6 +1,6 @@
 use vize_l0::{Allocator, Box, Span, Vec};
 use vize_l2::{
-    artifact::{Artifact, ArtifactParts},
+    artifact::{L2Template, L2TemplateParts},
     expr::ExprRef,
     op::{
         BindOp, BindingOp, CommentOp, DynamicName, ElementOp, InterpolationOp, Namespace, Op,
@@ -26,8 +26,8 @@ pub fn region<'a>(allocator: &'a Allocator, ops: impl IntoIterator<Item = Op<'a>
     }
 }
 
-pub fn seal(root: Region<'_>) -> Result<Artifact<'_>, &'static str> {
-    Artifact::try_new(ArtifactParts::new(SOURCE, root)).map_err(|_| "canonical DOM fixture")
+pub fn seal(root: Region<'_>) -> Result<L2Template<'_>, &'static str> {
+    L2Template::try_new(L2TemplateParts::new(SOURCE, root)).map_err(|_| "canonical DOM fixture")
 }
 
 pub fn element<'a>(

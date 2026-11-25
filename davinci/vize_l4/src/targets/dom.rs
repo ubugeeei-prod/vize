@@ -11,7 +11,7 @@ use vize_l0::{Span, ensure_sufficient_stack, id::NodeId};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::Op;
 use vize_l2::walk::NodeRef;
-use vize_l3::decision::dom::{DomFacts, DomRootKind, DomUnsupported};
+use vize_l3::decision::dom::{DomAnalysis, DomRootKind, DomUnsupported};
 use vize_l3::decision::{DecisionAnalysis, DecisionTables, policy::TargetPolicy};
 
 use crate::expr::{AccessProvider, EmitError as ExpressionError, ResolvedExpressions};
@@ -107,7 +107,7 @@ fn encode<'owner, 'arena, L: LinkSink>(
     source: &'arena str,
     policy: TargetPolicy,
     tables: &DecisionTables,
-    facts: Option<&DomFacts<'owner, 'arena>>,
+    facts: Option<&DomAnalysis<'owner, 'arena>>,
     expressions: impl ExpressionWriter,
 ) -> Result<Writer<L>, DomError> {
     encode_with_mode(
@@ -124,7 +124,7 @@ fn encode_with_mode<'owner, 'arena, L: LinkSink>(
     source: &'arena str,
     policy: TargetPolicy,
     tables: &DecisionTables,
-    facts: Option<&DomFacts<'owner, 'arena>>,
+    facts: Option<&DomAnalysis<'owner, 'arena>>,
     expressions: impl ExpressionWriter,
     mode: DomMode,
 ) -> Result<Writer<L>, DomError> {
@@ -185,7 +185,7 @@ fn encode_with_mode<'owner, 'arena, L: LinkSink>(
 
 struct Emitter<'s, 'owner, 'arena, E: ExpressionWriter, L: LinkSink> {
     tables: &'s DecisionTables,
-    facts: &'s DomFacts<'owner, 'arena>,
+    facts: &'s DomAnalysis<'owner, 'arena>,
     expressions: E,
     vocabulary: &'static Vocabulary,
     helpers: Helpers,

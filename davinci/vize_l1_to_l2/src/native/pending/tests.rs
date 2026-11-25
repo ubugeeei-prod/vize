@@ -3,7 +3,7 @@ use crate::native::{NativeComponent, NativeHoleKind};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use vize_l0::{Allocator, SourceRoot, String, id::NodeId};
 use vize_l1::embed::Lang;
-use vize_l2::artifact::{ArtifactError, Builder};
+use vize_l2::artifact::{Builder, L2TemplateError};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::Op;
 
@@ -109,7 +109,7 @@ fn caught_actual_callback_keeps_current_observations_and_partial_owner() {
     let rejected = builder.finish().unwrap_err();
     assert_eq!(
         rejected.error,
-        ArtifactError::UnfinishedOwner {
+        L2TemplateError::UnfinishedOwner {
             node: NodeId::FIRST
         }
     );
@@ -234,7 +234,7 @@ fn pre_mint_callback_keeps_current_ast_without_inventing_a_node() {
     let rejected = builder.finish().unwrap_err();
     assert_eq!(
         rejected.error,
-        ArtifactError::UnfinishedOwner {
+        L2TemplateError::UnfinishedOwner {
             node: NodeId::FIRST
         }
     );

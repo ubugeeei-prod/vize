@@ -11,7 +11,7 @@ use vize_l2::op::ModelOp;
 use vize_l2::provenance::ProvenanceSink;
 
 use super::{
-    ARG_ON_ELEMENT_MESSAGE, Channels, ModelFacts, ModelFault, ON_SCOPE_MESSAGE, ScopeName,
+    ARG_ON_ELEMENT_MESSAGE, Channels, ModelAnalysis, ModelFault, ON_SCOPE_MESSAGE, ScopeName,
 };
 
 /// The two legacy checks, in the legacy order, first failure wins.
@@ -59,7 +59,7 @@ pub(super) fn check_model(
             span: model.span,
         });
     if let Some(id) = id {
-        channels.facts.insert(id, ModelFacts { fault });
+        channels.facts.insert(id, ModelAnalysis { fault });
     }
 }
 

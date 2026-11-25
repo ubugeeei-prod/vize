@@ -1,7 +1,7 @@
 //! The hoist-decision projection (P2-9 series 6): the shipped
 //! `hoist_static` decisions — whole-vnode hoists and props hoists,
 //! read from a hoist-armed legacy run's actual mutations — against the
-//! predictions of the L2 analysis facts (`StaticFacts`) driven through
+//! predictions of the L2 analysis facts (`StaticAnalysis`) driven through
 //! the shipped decision procedure's position rules. Decisions, never
 //! realization bytes: what hoists is compared, what the hoisted
 //! `VNodeCall` looks like is P2-11's parity bar.
@@ -50,7 +50,7 @@
 use vize_atelier_core::TemplateChildNode;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
-use vize_l1_to_l2::pass::{StaticFacts, StaticLevel};
+use vize_l1_to_l2::pass::{StaticAnalysis, StaticLevel};
 use vize_l2::dump::Op as DumpOp;
 
 use super::hoist_old::Decision;
@@ -145,7 +145,7 @@ pub fn walk_for_body(
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
-    facts: &SideTable<StaticFacts>,
+    facts: &SideTable<StaticAnalysis>,
     counters: &mut HoistCounters,
 ) {
     match structural(old1).as_slice() {
@@ -214,7 +214,7 @@ pub fn check(
     old1: &[TemplateChildNode<'_>],
     old2: &[TemplateChildNode<'_>],
     s2: &[DumpOp],
-    facts: &SideTable<StaticFacts>,
+    facts: &SideTable<StaticAnalysis>,
     counters: &mut HoistCounters,
 ) {
     let mut next = 0u32;
@@ -295,7 +295,7 @@ pub fn shape_of_l2(ops: &[DumpOp], out: &mut vize_l0::String) {
 }
 
 /// `hoist_for_children` on a single item: static props hoist, VNode stays inline.
-pub fn predict_for_item(fact: &StaticFacts) -> Decision {
+pub fn predict_for_item(fact: &StaticAnalysis) -> Decision {
     if fact.props_hoistable {
         Decision::Props
     } else {
@@ -310,7 +310,7 @@ pub fn predict_for_item(fact: &StaticFacts) -> Decision {
 /// hoisted payload, never the decision). The `ns != Html` arm reads
 /// the fact's own `foreign` bit — the analysis carries the namespace
 /// context precisely because `ui.component` has none of its own.
-pub fn predict(fact: &StaticFacts, is_root: bool, vnodes: bool) -> Decision {
+pub fn predict(fact: &StaticAnalysis, is_root: bool, vnodes: bool) -> Decision {
     let foreign = fact.foreign;
     match fact.level {
         StaticLevel::FullyStatic => {
@@ -341,11 +341,11 @@ pub fn predict(fact: &StaticFacts, is_root: bool, vnodes: bool) -> Decision {
 
 /// The dense-facts lookup: every element/component owner carries one.
 pub fn fact_of<'t>(
-    facts: &'t SideTable<StaticFacts>,
+    facts: &'t SideTable<StaticAnalysis>,
     owner: u32,
     name: &str,
     source: &str,
-) -> &'t StaticFacts {
+) -> &'t StaticAnalysis {
     NodeId::from_index(owner)
         .and_then(|id| facts.get(id))
         .unwrap_or_else(|| panic!("owner {owner} has no static fact in {name}\n{source}"))

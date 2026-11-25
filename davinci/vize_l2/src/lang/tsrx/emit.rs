@@ -9,7 +9,7 @@ use vize_l1::markup::tsrx::{
 
 use super::nested::{self, Folded};
 use super::{TsrxIssue, TsrxIssueKind, expression, is_component, text};
-use crate::artifact::{ArtifactError, HostForHead, OpFamily, RegionBuilder};
+use crate::artifact::{HostForHead, L2TemplateError, OpFamily, RegionBuilder};
 use crate::expr::ExprRef;
 use crate::op::{self, Namespace};
 
@@ -299,20 +299,20 @@ fn slice<'a>(cx: &Context<'a>, span: Span) -> Result<&'a str> {
         .get(span.start as usize..span.end as usize)
         .ok_or_else(|| {
             issue(
-                TsrxIssueKind::Artifact(ArtifactError::InvalidSpan { node: None, span }),
+                TsrxIssueKind::Artifact(L2TemplateError::InvalidSpan { node: None, span }),
                 span,
             )
         })
 }
 
-fn artifact(error: Option<ArtifactError>, span: Span) -> Option<TsrxIssue> {
+fn artifact(error: Option<L2TemplateError>, span: Span) -> Option<TsrxIssue> {
     error.map(|error| issue(TsrxIssueKind::Artifact(error), span))
 }
 
 /// A construct the check pass refuses reached construction: a compiler bug.
 fn unchecked(span: Span) -> TsrxIssue {
     issue(
-        TsrxIssueKind::Artifact(ArtifactError::InvalidSpan { node: None, span }),
+        TsrxIssueKind::Artifact(L2TemplateError::InvalidSpan { node: None, span }),
         span,
     )
 }

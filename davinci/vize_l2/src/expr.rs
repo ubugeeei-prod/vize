@@ -46,7 +46,7 @@ pub mod opaque;
 
 pub use capability::ExprDialect;
 pub use filter::{VueFilterApp, VueFilterExpr};
-pub use foreign::{ForeignExpr, ForeignFact};
+pub use foreign::{ForeignExpr, ForeignInfo};
 pub use js::JsExpr;
 pub use opaque::{OpaqueExpr, OpaqueReason};
 

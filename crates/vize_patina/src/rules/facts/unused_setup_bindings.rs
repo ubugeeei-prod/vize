@@ -8,7 +8,7 @@
 //! blocks are outside the domain.
 
 use vize_croquis::drawer::{extract_identifiers_oxc, parse_v_for_scope_expression};
-use vize_croquis::facts::{Demand, FactConsumer, FactGroup, UnusedBindings};
+use vize_croquis::facts::{Analysis, AnalysisConsumer, Demand, UnusedBindings};
 use vize_l0::{CompactString, FxHashSet};
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
@@ -28,7 +28,7 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoUnusedSetupBindings;
 
-impl FactConsumer for NoUnusedSetupBindings {
+impl AnalysisConsumer for NoUnusedSetupBindings {
     const NAME: &'static str = "vue/no-unused-setup-bindings";
     const DEMAND: Demand = Demand::NONE.with(UnusedBindings::ID);
 }
@@ -98,7 +98,7 @@ impl Rule for NoUnusedSetupBindings {
 }
 
 fn diagnostics(
-    table: &vize_croquis::facts::FactTable<UnusedBindings>,
+    table: &vize_croquis::facts::AnalysisTable<UnusedBindings>,
     v_for_sources: &FxHashSet<CompactString>,
 ) -> Vec<LintDiagnostic> {
     table

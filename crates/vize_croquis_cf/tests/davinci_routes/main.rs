@@ -16,8 +16,8 @@ use std::path::{Path, PathBuf};
 
 use vize_croquis_cf::providers::vue_router::typing::{RouteTyping, WITNESS_CHECKS, check};
 use vize_croquis_cf::providers::{PROJECT_FACTS, ProjectSources};
+use vize_l0::analysis::{AnalysisManager, undeclared_accesses};
 use vize_l0::diag::verify::verify;
-use vize_l0::fact::{FactManager, undeclared_accesses};
 
 fn fixtures_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/davinci-routes")
@@ -90,7 +90,7 @@ fn every_fixture_renders_exactly_and_every_witness_verifies() {
     let mut stale = Vec::new();
     for dir in &dirs {
         let project = project_of(dir);
-        let mut manager = FactManager::new(&PROJECT_FACTS);
+        let mut manager = AnalysisManager::new(&PROJECT_FACTS);
         let view = manager.prepare::<RouteTyping>(&project).unwrap();
         let diagnostics = check(&project, &view).unwrap();
         for finding in &diagnostics {
@@ -134,12 +134,12 @@ fn every_fixture_renders_exactly_and_every_witness_verifies() {
 #[test]
 fn a_forged_unknown_route_witness_against_an_open_tree_fails_verification() {
     use vize_croquis_cf::providers::vue_router::{RouteParams, RouteTree};
+    use vize_l0::analysis::Analysis;
     use vize_l0::diag::verify::{WitnessError, verify_chain};
     use vize_l0::diag::{Verdict, WitnessChain, WitnessLink};
-    use vize_l0::fact::FactGroup;
 
     let project = project_of(&fixtures_root().join("open-tree"));
-    let mut manager = FactManager::new(&PROJECT_FACTS);
+    let mut manager = AnalysisManager::new(&PROJECT_FACTS);
     let view = manager.prepare::<RouteTyping>(&project).unwrap();
     let tree = view.get::<RouteTree>().unwrap().get(&0).unwrap();
     assert!(!tree.is_closed());

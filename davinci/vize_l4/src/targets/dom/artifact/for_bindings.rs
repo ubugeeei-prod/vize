@@ -5,7 +5,7 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::expression_guard::expression_is_safe_to_parse;
 use vize_l0::{Allocator, SmallVec, Span, String};
-use vize_l2::scope::{ScopeFacts, ScopeOrigin};
+use vize_l2::scope::{ScopeAnalysis, ScopeOrigin};
 
 /// Exceptional alias names already observed by the original binding-goal
 /// producer. `Some(empty)` is a refusal, never permission to scan raw text.
@@ -14,7 +14,7 @@ use vize_l2::scope::{ScopeFacts, ScopeOrigin};
 pub fn exceptional_for_binding_names<'a>(
     alias: &str,
     alias_span: Span,
-    facts: Option<&'a ScopeFacts>,
+    facts: Option<&'a ScopeAnalysis>,
 ) -> Option<impl Iterator<Item = &'a str> + use<'a>> {
     if alias.is_ascii() && !alias.contains('\\') {
         return None;

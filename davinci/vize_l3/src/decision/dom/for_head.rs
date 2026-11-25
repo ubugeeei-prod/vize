@@ -5,7 +5,7 @@ use vize_l2::{
     file::{BindingRef, FileForHead},
     op::OriginalForOp,
     resolution::ForResolution,
-    scope::ScopeFacts,
+    scope::ScopeAnalysis,
 };
 
 /// An authentic same-File/allocation receipt with bounded original setup reads,
@@ -18,7 +18,7 @@ use vize_l2::{
 /// use vize_l3::decision::dom::DomFileForHead;
 /// fn forge<'f, 'a>(head: FileForHead<'f, 'a>, original: &'f OriginalForOp<'a>,
 ///     resolution: &'f ForResolution<'a>, collection: BindingRef<'f, 'a>,
-///     scope: &'f vize_l2::scope::ScopeFacts) {
+///     scope: &'f vize_l2::scope::ScopeAnalysis) {
 ///     let _ = DomFileForHead { head, original, resolution, collection, scope, read: None };
 /// }
 /// ```
@@ -43,7 +43,7 @@ pub struct DomFileForHead<'owner, 'arena> {
     pub(in crate::decision::dom) original: &'owner OriginalForOp<'arena>,
     pub(in crate::decision::dom) resolution: &'owner ForResolution<'arena>,
     pub(in crate::decision::dom) collection: BindingRef<'owner, 'arena>,
-    pub(in crate::decision::dom) scope: &'owner ScopeFacts,
+    pub(in crate::decision::dom) scope: &'owner ScopeAnalysis,
     pub(in crate::decision::dom) read: Option<VueRenderRead<'owner, 'arena>>,
 }
 
@@ -79,7 +79,7 @@ impl<'owner, 'arena> DomFileForHead<'owner, 'arena> {
     /// The same File's canonical authored bindings, joined to the retained
     /// original declarations. No copied table or numeric scope cast is used.
     #[must_use]
-    pub const fn scope_facts(&self) -> &'owner ScopeFacts {
+    pub const fn scope_facts(&self) -> &'owner ScopeAnalysis {
         self.scope
     }
     /// The actual setup collection occurrence and its sealed native access kind.

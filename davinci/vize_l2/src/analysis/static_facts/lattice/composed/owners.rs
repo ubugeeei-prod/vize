@@ -2,7 +2,7 @@
 //! Nearby page ids index a single byte. Isolated owners retain their full id
 //! in a sparse map, independently of the total size of the artifact.
 
-use super::StaticFacts;
+use super::StaticAnalysis;
 use crate::analysis::static_facts::StaticLevel;
 use alloc::vec::Vec;
 use vize_l0::{FxHashMap, SmallVec, id::NodeId};
@@ -19,7 +19,7 @@ struct Code(u8);
 const _: () = assert!(core::mem::size_of::<(Key, Code)>() == 5);
 
 impl Code {
-    fn of(fact: StaticFacts) -> Self {
+    fn of(fact: StaticAnalysis) -> Self {
         let level = match fact.level {
             StaticLevel::NotStatic => 0,
             StaticLevel::HasDynamicText => 1,
@@ -39,18 +39,18 @@ impl Code {
         reason = "the private constructor produces exactly the 48 lattice indices"
     )]
     #[inline]
-    fn fact(self) -> &'static StaticFacts {
+    fn fact(self) -> &'static StaticAnalysis {
         &LATTICE[usize::from(self.0)]
     }
 }
 
-const fn decode(index: usize) -> StaticFacts {
+const fn decode(index: usize) -> StaticAnalysis {
     let level = match index / 16 {
         0 => StaticLevel::NotStatic,
         1 => StaticLevel::HasDynamicText,
         _ => StaticLevel::FullyStatic,
     };
-    StaticFacts {
+    StaticAnalysis {
         level,
         props_hoistable: index & 1 != 0,
         nested_static: index & 2 != 0,
@@ -62,7 +62,7 @@ const fn decode(index: usize) -> StaticFacts {
     clippy::indexing_slicing,
     reason = "the loop bound is the length of the same compile-time array"
 )]
-const LATTICE: [StaticFacts; 48] = {
+const LATTICE: [StaticAnalysis; 48] = {
     let mut facts = [decode(0); 48];
     let mut index = 1;
     while index < facts.len() {
@@ -77,15 +77,15 @@ const INLINE: usize = 16;
 
 /// Read-only owner facts in the artifact's original page id space.
 #[derive(Default)]
-pub struct OwnerFacts {
+pub struct OwnerAnalysis {
     dense: SmallVec<[u8; INLINE]>,
     dense_owners: usize,
     first_sparse: Option<NodeId>,
     sparse: FxHashMap<Key, Code>,
 }
 
-impl OwnerFacts {
-    pub(super) fn insert(&mut self, id: NodeId, fact: StaticFacts) {
+impl OwnerAnalysis {
+    pub(super) fn insert(&mut self, id: NodeId, fact: StaticAnalysis) {
         let index = id.index_usize();
         let code = Code::of(fact);
         if let Some(slot) = self.dense.get_mut(index) {
@@ -111,7 +111,7 @@ impl OwnerFacts {
     /// The static lattice value for this owner. Non-owners have no entry.
     #[must_use]
     #[inline]
-    pub fn get(&self, id: NodeId) -> Option<&StaticFacts> {
+    pub fn get(&self, id: NodeId) -> Option<&StaticAnalysis> {
         match self.dense.as_slice().get(id.index_usize()) {
             Some(&code) => LATTICE.get(usize::from(code)),
             None => self.sparse.get(&Key(id)).map(|code| code.fact()),
@@ -133,7 +133,7 @@ impl OwnerFacts {
     }
 
     /// Facts in unspecified order, for folds over the complete result.
-    pub fn iter(&self) -> impl Iterator<Item = (NodeId, &StaticFacts)> {
+    pub fn iter(&self) -> impl Iterator<Item = (NodeId, &StaticAnalysis)> {
         let dense = self.dense.iter().enumerate().filter_map(|(index, &code)| {
             Some((
                 NodeId::from_index(index as u32)?,
@@ -145,7 +145,7 @@ impl OwnerFacts {
 
     /// Materialize the same ascending page order as the standalone side table.
     #[must_use]
-    pub fn sorted_entries(&self) -> Vec<(NodeId, &StaticFacts)> {
+    pub fn sorted_entries(&self) -> Vec<(NodeId, &StaticAnalysis)> {
         let mut entries: Vec<_> = self.iter().collect();
         if !self.sparse.is_empty() {
             entries.sort_unstable_by_key(|(id, _)| *id);
@@ -160,7 +160,7 @@ mod tests {
 
     #[test]
     fn sparse_descendants_and_earlier_parents_keep_full_ids_and_replace_in_place() {
-        let mut owners = OwnerFacts::default();
+        let mut owners = OwnerAnalysis::default();
         let mut original = vize_l0::side_table::SideTable::default();
         for (index, code) in [
             (4, 2),
@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn every_level_and_flag_combination_round_trips_at_full_width_ids() {
-        let mut owners = OwnerFacts::default();
+        let mut owners = OwnerAnalysis::default();
         let last = NodeId::from_index(u32::MAX - 1).unwrap();
         for (index, fact) in LATTICE.iter().enumerate() {
             let id = NodeId::from_index(index as u32).unwrap();

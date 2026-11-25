@@ -19,7 +19,7 @@ use vize_l1_to_l2::{
     pass::{cfg, hoist, template},
 };
 use vize_l2::{
-    analysis::{static_facts::StaticFacts, template_complexity::ComplexityFacts},
+    analysis::{static_facts::StaticAnalysis, template_complexity::ComplexityAnalysis},
     walk::{NodeRef, PageWalk, visit_nodes},
 };
 
@@ -29,7 +29,7 @@ static ALLOCATOR: CountingAllocator<System> = CountingAllocator::system();
 fn independent<O: PassObserver>(
     lowered: &mut Lowered<'_>,
     observer: &mut O,
-) -> (SideTable<StaticFacts>, ComplexityFacts) {
+) -> (SideTable<StaticAnalysis>, ComplexityAnalysis) {
     let mut statics = None;
     let mut complexity = None;
     run_pipeline_remarked(&template::PLAN, observer, |event, remarks| {

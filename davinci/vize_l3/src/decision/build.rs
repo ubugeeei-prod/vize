@@ -10,7 +10,7 @@ pub use error::DecisionBuildError;
 mod levels;
 use super::attribute_value::OriginalAttributeCursor;
 use super::dom::vue::policy::{FileReads, NoReads};
-use super::dom::{DomExpressionFacts, LiteralExpressions, build::DomBuilder};
+use super::dom::{DomExpressionAnalysis, LiteralExpressions, build::DomBuilder};
 use super::ssr::build::SsrBuilder;
 use super::vapor::build::VaporBuilder;
 use levels::Levels;
@@ -20,7 +20,7 @@ use super::{
     policy::{BindingOwner, TargetPolicy},
 };
 use vize_l0::{id::NodeId, side_table::SideTable};
-use vize_l2::{artifact::Artifact, file::L2Ir, lang::js::NativeSelectedSetup};
+use vize_l2::{artifact::L2Template, file::L2Ir, lang::js::NativeSelectedSetup};
 
 /// Compute conservative shared facts for every canonical L2 node.
 ///
@@ -29,7 +29,7 @@ use vize_l2::{artifact::Artifact, file::L2Ir, lang::js::NativeSelectedSetup};
 /// Authored comments, components and control ops stay dynamic. Slot-content
 /// grouping, hoist/cache eligibility and production selection are unfinished.
 pub fn build_decisions<'owner, 'arena>(
-    artifact: &'owner Artifact<'arena>,
+    artifact: &'owner L2Template<'arena>,
     policy: TargetPolicy,
 ) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     build_with(artifact, policy, &LiteralExpressions, None, &NoReads)
@@ -37,16 +37,16 @@ pub fn build_decisions<'owner, 'arena>(
 
 /// Apply explicit native expression-binding semantics in the same DOM walk.
 pub fn build_dom_decisions<'owner, 'arena>(
-    artifact: &'owner Artifact<'arena>,
-    expressions: &impl DomExpressionFacts,
+    artifact: &'owner L2Template<'arena>,
+    expressions: &impl DomExpressionAnalysis,
 ) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     build_with(artifact, TargetPolicy::Dom, expressions, None, &NoReads)
 }
 
 pub(in crate::decision) fn build_with<'owner, 'arena>(
-    artifact: &'owner Artifact<'arena>,
+    artifact: &'owner L2Template<'arena>,
     policy: TargetPolicy,
-    expressions: &impl DomExpressionFacts,
+    expressions: &impl DomExpressionAnalysis,
     file: Option<&'owner L2Ir<'arena>>,
     reads: &impl FileReads<'owner, 'arena>,
 ) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
@@ -63,7 +63,7 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
 pub(in crate::decision) fn build_with_original<'owner, 'arena>(
     l2ir: &'owner L2Ir<'arena>,
     policy: TargetPolicy,
-    expressions: &impl DomExpressionFacts,
+    expressions: &impl DomExpressionAnalysis,
     reads: &impl FileReads<'owner, 'arena>,
 ) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     build_with_context(
@@ -120,9 +120,9 @@ pub(in crate::decision) fn build_with_vapor_setup<'owner, 'arena>(
 }
 
 fn build_with_context<'owner, 'arena>(
-    artifact: &'owner Artifact<'arena>,
+    artifact: &'owner L2Template<'arena>,
     policy: TargetPolicy,
-    expressions: &impl DomExpressionFacts,
+    expressions: &impl DomExpressionAnalysis,
     file: Option<&'owner L2Ir<'arena>>,
     reads: &impl FileReads<'owner, 'arena>,
     context: BuildContext<'_, 'owner, 'arena>,

@@ -1,9 +1,9 @@
-//! [`FactTable`] — one group's facts, as a query returns them.
+//! [`AnalysisTable`] — one group's facts, as a query returns them.
 
 use alloc::vec::Vec;
 use core::fmt;
 
-use super::FactGroup;
+use super::Analysis;
 
 /// One fact group's table: facts sorted by key.
 ///
@@ -12,11 +12,11 @@ use super::FactGroup;
 /// a binary search over contiguous memory, iteration is already in key
 /// order (what folio pages and the P4-2 α export need), and there is no
 /// hashing. Keys are unique.
-pub struct FactTable<G: FactGroup> {
+pub struct AnalysisTable<G: Analysis> {
     entries: Vec<(G::Key, G::Value)>,
 }
 
-impl<G: FactGroup> FactTable<G> {
+impl<G: Analysis> AnalysisTable<G> {
     /// The fact stored under `key`.
     #[must_use]
     pub fn get(&self, key: &G::Key) -> Option<&G::Value> {
@@ -51,7 +51,7 @@ impl<G: FactGroup> FactTable<G> {
     }
 }
 
-impl<G: FactGroup> Default for FactTable<G> {
+impl<G: Analysis> Default for AnalysisTable<G> {
     fn default() -> Self {
         Self {
             entries: Vec::new(),
@@ -59,7 +59,7 @@ impl<G: FactGroup> Default for FactTable<G> {
     }
 }
 
-impl<G: FactGroup> PartialEq for FactTable<G>
+impl<G: Analysis> PartialEq for AnalysisTable<G>
 where
     G::Value: PartialEq,
 {
@@ -68,9 +68,9 @@ where
     }
 }
 
-impl<G: FactGroup> Eq for FactTable<G> where G::Value: Eq {}
+impl<G: Analysis> Eq for AnalysisTable<G> where G::Value: Eq {}
 
-impl<G: FactGroup> fmt::Debug for FactTable<G>
+impl<G: Analysis> fmt::Debug for AnalysisTable<G>
 where
     G::Key: fmt::Debug,
     G::Value: fmt::Debug,
@@ -80,11 +80,11 @@ where
     }
 }
 
-impl<G: FactGroup> FromIterator<(G::Key, G::Value)> for FactTable<G> {
+impl<G: Analysis> FromIterator<(G::Key, G::Value)> for AnalysisTable<G> {
     /// Collect facts; a repeated key keeps its **last** value, as a map
     /// insert would.
     fn from_iter<I: IntoIterator<Item = (G::Key, G::Value)>>(iter: I) -> Self {
-        let mut builder = FactTableBuilder::default();
+        let mut builder = AnalysisTableBuilder::default();
         for (key, value) in iter {
             builder.insert(key, value);
         }
@@ -92,12 +92,12 @@ impl<G: FactGroup> FromIterator<(G::Key, G::Value)> for FactTable<G> {
     }
 }
 
-/// Accumulates a producer's facts, then freezes them into a [`FactTable`].
-pub struct FactTableBuilder<G: FactGroup> {
+/// Accumulates a producer's facts, then freezes them into a [`AnalysisTable`].
+pub struct AnalysisTableBuilder<G: Analysis> {
     entries: Vec<(G::Key, G::Value)>,
 }
 
-impl<G: FactGroup> Default for FactTableBuilder<G> {
+impl<G: Analysis> Default for AnalysisTableBuilder<G> {
     fn default() -> Self {
         Self {
             entries: Vec::new(),
@@ -105,7 +105,7 @@ impl<G: FactGroup> Default for FactTableBuilder<G> {
     }
 }
 
-impl<G: FactGroup> FactTableBuilder<G> {
+impl<G: Analysis> AnalysisTableBuilder<G> {
     /// A builder with room for `capacity` facts.
     #[must_use]
     pub fn with_capacity(capacity: usize) -> Self {
@@ -121,7 +121,7 @@ impl<G: FactGroup> FactTableBuilder<G> {
 
     /// Sort by key and keep the last value of every repeated key.
     #[must_use]
-    pub fn finish(self) -> FactTable<G> {
+    pub fn finish(self) -> AnalysisTable<G> {
         let mut entries = self.entries;
         // Stable, so equal keys stay in insertion order and the last
         // inserted one is the last of its run.
@@ -133,19 +133,19 @@ impl<G: FactGroup> FactTableBuilder<G> {
                 _ => unique.push(entry),
             }
         }
-        FactTable { entries: unique }
+        AnalysisTable { entries: unique }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{FactTable, FactTableBuilder};
-    use crate::fact::{Demand, FactGroup};
+    use super::{AnalysisTable, AnalysisTableBuilder};
+    use crate::analysis::{Analysis, Demand};
     use crate::pass::AnalysisId;
     use alloc::vec::Vec;
 
     struct Names;
-    impl FactGroup for Names {
+    impl Analysis for Names {
         const ID: AnalysisId = AnalysisId::new(0);
         const NAME: &'static str = "names";
         const STRATUM: u8 = 0;
@@ -156,7 +156,7 @@ mod tests {
 
     #[test]
     fn a_built_table_is_key_sorted_and_last_insert_wins() {
-        let mut builder = FactTableBuilder::<Names>::with_capacity(4);
+        let mut builder = AnalysisTableBuilder::<Names>::with_capacity(4);
         builder.insert(9, "nine");
         builder.insert(2, "two");
         builder.insert(9, "NINE");
@@ -170,11 +170,11 @@ mod tests {
 
     #[test]
     fn collecting_is_building() {
-        let table: FactTable<Names> = [(3, "c"), (1, "a"), (3, "C")].into_iter().collect();
-        let mut expected = FactTableBuilder::<Names>::default();
+        let table: AnalysisTable<Names> = [(3, "c"), (1, "a"), (3, "C")].into_iter().collect();
+        let mut expected = AnalysisTableBuilder::<Names>::default();
         expected.insert(1, "a");
         expected.insert(3, "C");
         assert_eq!(table, expected.finish());
-        assert!(FactTable::<Names>::default().is_empty());
+        assert!(AnalysisTable::<Names>::default().is_empty());
     }
 }

@@ -2,7 +2,7 @@
 
 #[derive(Clone, Copy)]
 #[repr(u8)]
-pub(crate) enum TagKindFact {
+pub(crate) enum TagKindInfo {
     Element = 1,
     Component = 2,
     Slot = 3,
@@ -11,7 +11,7 @@ pub(crate) enum TagKindFact {
     InheritedTemplate = 6,
 }
 
-impl TagKindFact {
+impl TagKindInfo {
     pub(crate) fn from_aux(aux: u8) -> Option<Self> {
         match (aux >> 1) & 7 {
             1 => Some(Self::Element),
@@ -27,8 +27,8 @@ impl TagKindFact {
 
 /// Private facts captured together by one original selected opening event.
 #[derive(Default)]
-pub(crate) struct HeaderFacts {
-    pub kind: Option<TagKindFact>,
+pub(crate) struct HeaderAnalysis {
+    pub kind: Option<TagKindInfo>,
     pub literal: bool,
     pub table_context: bool,
     pub recovery_context: bool,

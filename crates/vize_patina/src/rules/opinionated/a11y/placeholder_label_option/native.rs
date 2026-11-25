@@ -7,7 +7,7 @@ use crate::native::template::{
     NativeTemplateLintRefusal as Refusal, NativeTemplateOptionValue, NativeTemplateOwnerProfile,
     NativeTemplateRule,
 };
-use vize_l1::markup::ComponentTagFacts;
+use vize_l1::markup::ComponentTagAnalysis;
 
 impl NativeTemplateRule for PlaceholderLabelOption {
     fn owner_profile(&self) -> NativeTemplateOwnerProfile {
@@ -17,7 +17,7 @@ impl NativeTemplateRule for PlaceholderLabelOption {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
-        root: &ComponentTagFacts<'a>,
+        root: &ComponentTagAnalysis<'a>,
     ) -> Result<(), Refusal> {
         if !core::ptr::eq(context.owner(), root) {
             return Err(Refusal::SourceMismatch);

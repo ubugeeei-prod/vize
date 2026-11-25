@@ -1,9 +1,9 @@
 //! Genuine original styled-template custody through the same sole SSR walk.
 
-use super::{SsrFacts, SsrFileAnalysis, SsrTemplateBuildError};
+use super::{SsrAnalysis, SsrFileAnalysis, SsrTemplateBuildError};
 use crate::decision::DecisionTables;
 use vize_l2::{
-    artifact::Artifact,
+    artifact::L2Template,
     file::L2Ir,
     lang::js::{NativeScopedTemplateView, NativeTemplateFile},
 };
@@ -47,11 +47,11 @@ impl<'owner, 'arena> TemplateScopedSsrAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn original_attributes(
         &self,
-    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+    ) -> Option<&crate::decision::OriginalAttributeAnalysis<'owner, 'arena>> {
         self.analysis.original_attributes()
     }
     #[must_use]
-    pub fn artifact(&self) -> &'owner Artifact<'arena> {
+    pub fn artifact(&self) -> &'owner L2Template<'arena> {
         self.analysis.artifact()
     }
     #[must_use]
@@ -59,7 +59,7 @@ impl<'owner, 'arena> TemplateScopedSsrAnalysis<'owner, 'arena> {
         self.analysis.tables()
     }
     #[must_use]
-    pub fn ssr(&self) -> Option<&SsrFacts<'owner, 'arena>> {
+    pub fn ssr(&self) -> Option<&SsrAnalysis<'owner, 'arena>> {
         self.analysis.ssr()
     }
 }

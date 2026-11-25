@@ -295,7 +295,7 @@ fn span(span: oxc_span::Span) -> Span {
     Span::new(span.start, span.end)
 }
 
-fn artifact(error: Option<crate::artifact::ArtifactError>, span: Span) -> Option<TsrxIssue> {
+fn artifact(error: Option<crate::artifact::L2TemplateError>, span: Span) -> Option<TsrxIssue> {
     error.map(|error| TsrxIssue {
         kind: TsrxIssueKind::Artifact(error),
         span,
@@ -305,7 +305,7 @@ fn artifact(error: Option<crate::artifact::ArtifactError>, span: Span) -> Option
 /// [`structural`] accepted a shape [`lower`] does not build: a compiler bug.
 fn unstructured(span: Span) -> TsrxIssue {
     TsrxIssue {
-        kind: TsrxIssueKind::Artifact(crate::artifact::ArtifactError::InvalidSpan {
+        kind: TsrxIssueKind::Artifact(crate::artifact::L2TemplateError::InvalidSpan {
             node: None,
             span,
         }),

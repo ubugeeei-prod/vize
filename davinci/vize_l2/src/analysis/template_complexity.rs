@@ -134,7 +134,7 @@ pub struct Contribution {
 
 /// One component's own template complexity: the P4-9a fact.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ComplexityFacts {
+pub struct ComplexityAnalysis {
     /// `1 +` every contribution's cyclomatic increment.
     pub cyclomatic: u32,
     /// The sum of every contribution's cognitive increment.
@@ -159,14 +159,14 @@ impl Contribution {
 /// Facts cross compile boundaries with their artifact (P1-11).
 const _: () = {
     const fn assert_owned<T: 'static>() {}
-    assert_owned::<ComplexityFacts>();
+    assert_owned::<ComplexityAnalysis>();
 };
 
 /// 64-bit footprint of one breakdown row.
 #[cfg(target_pointer_width = "64")]
 const _: () = assert!(core::mem::size_of::<Contribution>() == 28);
 
-impl ComplexityFacts {
+impl ComplexityAnalysis {
     /// Facts of an empty template: one path, nothing else.
     #[must_use]
     pub const fn empty() -> Self {
@@ -216,8 +216,8 @@ impl ComplexityFacts {
 /// Panics only on broken id accounting — a compiler bug by the id law,
 /// never an input property.
 #[must_use]
-pub fn run(root: &Region<'_>, node_count: u32) -> ComplexityFacts {
-    let mut facts = ComplexityFacts::empty();
+pub fn run(root: &Region<'_>, node_count: u32) -> ComplexityAnalysis {
+    let mut facts = ComplexityAnalysis::empty();
     let mut walk = PageWalk::new();
     regions::visit_region(&mut walk, &root.ops, 0, &mut facts);
     assert_accounting(&walk, node_count, NAME);

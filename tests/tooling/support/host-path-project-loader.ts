@@ -32,6 +32,16 @@ assert.equal(
 export const originalHostPathLayout = Object.freeze(record.reference);
 export const movedHostPathLayout = Object.freeze(record.moved);
 
+// The level vocabulary successor changes exactly this module declaration;
+// the loader move's original whole-file snapshots remain frozen.
+const originalModules = "pub mod diag;\npub mod dump;\npub mod fact;\n";
+const analysisModules = "pub mod analysis;\npub mod diag;\npub mod dump;\n";
+assert.equal(record.moved.foundation.split(originalModules).length, 2);
+export const analysisHostPathLayout = Object.freeze({
+  ...record.moved,
+  foundation: record.moved.foundation.replace(originalModules, analysisModules),
+});
+
 /** Retain the original caller/host law through this one authenticated move. */
 export function hostPathLayoutForOriginalLaw(layout: HostPathLayout): HostPathLayout {
   if (
@@ -41,6 +51,10 @@ export function hostPathLayoutForOriginalLaw(layout: HostPathLayout): HostPathLa
   ) {
     assert.deepEqual(layout, record.reference, "unknown original host path layout");
     return layout;
+  }
+  if (layout.foundation === analysisHostPathLayout.foundation) {
+    assert.deepEqual(layout, analysisHostPathLayout, "unknown analysis-module host path layout");
+    return record.reference;
   }
   assert.deepEqual(layout, record.moved, "unknown or mixed host path source layout");
   return record.reference;

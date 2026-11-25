@@ -1,10 +1,10 @@
 //! A sole completed File supplies its exact artifact to the canonical walk.
 
-use super::VaporFacts;
+use super::VaporAnalysis;
 use crate::decision::{
     DecisionAnalysis, DecisionBuildError, DecisionTables, build_decisions, policy::TargetPolicy,
 };
-use vize_l2::{artifact::Artifact, file::L2Ir};
+use vize_l2::{artifact::L2Template, file::L2Ir};
 
 /// Target input retains its original completed immutable File owner.
 ///
@@ -36,12 +36,12 @@ impl<'owner, 'arena> VaporFileAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn original_attributes(
         &self,
-    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+    ) -> Option<&crate::decision::OriginalAttributeAnalysis<'owner, 'arena>> {
         self.analysis.original_attributes()
     }
 
     #[must_use]
-    pub fn artifact(&self) -> &'owner Artifact<'arena> {
+    pub fn artifact(&self) -> &'owner L2Template<'arena> {
         self.l2ir.artifact()
     }
     #[must_use]
@@ -49,7 +49,7 @@ impl<'owner, 'arena> VaporFileAnalysis<'owner, 'arena> {
         self.analysis.tables()
     }
     #[must_use]
-    pub fn vapor(&self) -> Option<&VaporFacts<'owner, 'arena>> {
+    pub fn vapor(&self) -> Option<&VaporAnalysis<'owner, 'arena>> {
         self.analysis.vapor()
     }
 }

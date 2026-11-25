@@ -9,14 +9,14 @@ use vize_l0::ensure_sufficient_stack;
 use vize_l0::id::NodeId;
 
 use super::expr::score;
-use super::{ComplexityFacts, Contribution, DecisionKind};
+use super::{ComplexityAnalysis, Contribution, DecisionKind};
 
 /// Visit one region whose ops stand at nesting `depth`.
 pub(super) fn visit_region(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) {
     ensure_sufficient_stack(|| visit_region_guarded(walk, ops, depth, facts));
 }
@@ -25,7 +25,7 @@ fn visit_region_guarded(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) {
     for op in ops {
         let id = walk.mint();
@@ -76,7 +76,7 @@ fn visit_region_guarded(
 }
 
 /// Enter a region at `depth`, recording the deepest depth reached.
-fn visit_nested(walk: &mut PageWalk, ops: &[Op<'_>], depth: u32, facts: &mut ComplexityFacts) {
+fn visit_nested(walk: &mut PageWalk, ops: &[Op<'_>], depth: u32, facts: &mut ComplexityAnalysis) {
     if ops.is_empty() {
         return;
     }
@@ -92,7 +92,7 @@ fn visit_and(
     and: &AndOp<'_>,
     id: Option<NodeId>,
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) {
     control::structure!(and.left.span(), DecisionKind::If, id, depth, facts);
     score(and.left, id, depth, facts);
@@ -107,7 +107,7 @@ fn visit_if(
     if_op: &IfOp<'_>,
     id: Option<NodeId>,
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) {
     for (index, branch) in if_op.branches.iter().enumerate() {
         control::branch!(branch, index, id, depth, facts);
@@ -123,7 +123,7 @@ fn owner_bindings(
     walk: &mut PageWalk,
     bindings: &[BindingOp<'_>],
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) -> u32 {
     // Static owners have no attached ids or expressions to visit. Keep this
     // branch in the caller instead of entering the full binding dispatcher.
@@ -138,7 +138,7 @@ fn score_bindings(
     walk: &mut PageWalk,
     bindings: &[BindingOp<'_>],
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) -> u32 {
     let mut scoped = false;
     for binding in bindings {
@@ -204,7 +204,7 @@ fn dynamic_name(
     name: Option<DynamicName<'_>>,
     id: Option<NodeId>,
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) {
     if let Some(DynamicName::Dynamic(expr)) = name {
         score(expr, id, depth, facts);
@@ -216,7 +216,7 @@ fn scoped_slot(
     span: vize_l0::Span,
     id: Option<NodeId>,
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) -> bool {
     facts.push(Contribution {
         span,
@@ -237,7 +237,7 @@ pub(in crate::analysis) fn observed_bindings(
     walk: &mut PageWalk,
     bindings: &[BindingOp<'_>],
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) -> u32 {
     owner_bindings(walk, bindings, depth, facts)
 }

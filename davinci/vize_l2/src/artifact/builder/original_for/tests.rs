@@ -2,7 +2,7 @@
 
 extern crate std;
 
-use crate::artifact::{Artifact, ArtifactError, Builder};
+use crate::artifact::{Builder, L2Template, L2TemplateError};
 use crate::lang::js::NativeForInput;
 use crate::resolution::{BindingId, BindingLookup, ForResolution, resolve_for_head};
 use crate::scope::{ScopeOrigin, ScopeTag};
@@ -43,7 +43,7 @@ fn original<'a>(arena: &'a Allocator, source: &'a str) -> (ForResolution<'a>, Sp
     )
 }
 
-fn artifact<'a>(arena: &'a Allocator, source: &'a str) -> Artifact<'a> {
+fn artifact<'a>(arena: &'a Allocator, source: &'a str) -> L2Template<'a> {
     let (head, span) = original(arena, source);
     let mut builder = Builder::new(arena, source).unwrap();
     let node = builder.begin_original_for(&head, span).unwrap();
@@ -61,7 +61,7 @@ fn foreign_equal_source_and_invalid_owner_do_not_mint_nodes_or_scopes() {
     let mut builder = Builder::new(&arena, foreign.as_str()).unwrap();
     assert_eq!(
         builder.begin_original_for(&head, span),
-        Err(ArtifactError::MismatchedJsSource {
+        Err(L2TemplateError::MismatchedJsSource {
             node: NodeId::FIRST,
             span: head.input().operand().syntax().source().span(),
         })
@@ -72,7 +72,7 @@ fn foreign_equal_source_and_invalid_owner_do_not_mint_nodes_or_scopes() {
     let invalid_owner = own.input().operand().name_span();
     assert_eq!(
         builder.begin_original_for(&own, invalid_owner),
-        Err(ArtifactError::OutsideOwner {
+        Err(L2TemplateError::OutsideOwner {
             node: NodeId::FIRST,
             span: own.input().operand().syntax().source().span(),
             owner: invalid_owner,
@@ -100,8 +100,8 @@ fn canonical_recheck_rejects_missing_scope_invalid_tags_and_detached_authored_or
     let mut parts = artifact(&arena, source).into_parts();
     parts.scopes.remove(NodeId::FIRST).unwrap();
     assert_eq!(
-        Artifact::try_new(parts).unwrap_err().error,
-        ArtifactError::MissingScope {
+        L2Template::try_new(parts).unwrap_err().error,
+        L2TemplateError::MissingScope {
             node: NodeId::FIRST
         }
     );
@@ -109,8 +109,8 @@ fn canonical_recheck_rejects_missing_scope_invalid_tags_and_detached_authored_or
     let mut parts = artifact(&arena, source).into_parts();
     parts.scopes.get_mut(NodeId::FIRST).unwrap().tag = ScopeTag::from_index(1);
     assert_eq!(
-        Artifact::try_new(parts).unwrap_err().error,
-        ArtifactError::InvalidScopeTag {
+        L2Template::try_new(parts).unwrap_err().error,
+        L2TemplateError::InvalidScopeTag {
             node: NodeId::FIRST,
             tag: ScopeTag::from_index(1)
         }
@@ -132,8 +132,8 @@ fn canonical_recheck_rejects_missing_scope_invalid_tags_and_detached_authored_or
         span: Span::new(0, 1),
     };
     assert_eq!(
-        Artifact::try_new(parts).unwrap_err().error,
-        ArtifactError::OutsideOwner {
+        L2Template::try_new(parts).unwrap_err().error,
+        L2TemplateError::OutsideOwner {
             node: NodeId::FIRST,
             span: Span::new(0, 1),
             owner,
@@ -153,8 +153,8 @@ fn canonical_recheck_rejects_missing_scope_invalid_tags_and_detached_authored_or
         span: Span::new(start + 1, start + 2),
     };
     assert_eq!(
-        Artifact::try_new(parts).unwrap_err().error,
-        ArtifactError::InvalidSpan {
+        L2Template::try_new(parts).unwrap_err().error,
+        L2TemplateError::InvalidSpan {
             node: Some(NodeId::FIRST),
             span: Span::new(start + 1, start + 2),
         }
@@ -177,7 +177,7 @@ fn caught_original_owner_interruption_retains_scope_and_whole_rejected_node() {
     let rejected = builder.finish().unwrap_err();
     assert_eq!(
         rejected.error,
-        ArtifactError::UnfinishedOwner {
+        L2TemplateError::UnfinishedOwner {
             node: NodeId::FIRST
         }
     );
@@ -191,7 +191,7 @@ fn caught_original_owner_interruption_retains_scope_and_whole_rejected_node() {
             .collect::<alloc::vec::Vec<_>>(),
         ["item", "key"]
     );
-    let restored = Artifact::try_new(*rejected.parts).unwrap();
+    let restored = L2Template::try_new(*rejected.parts).unwrap();
     assert_eq!(restored.node_count(), 1);
     assert_eq!(restored.scopes().len(), 1);
 }

@@ -8,7 +8,7 @@ fn duplicate_attribute_advisories_remain_in_the_complete_registered_output() {
     assert!(owner.component().carrier().errors.is_empty());
     let div = owner.children().next().unwrap().into_element().unwrap();
     assert_eq!(div.surface().open.attrs.len(), 2);
-    assert_eq!(div.tag_facts().unwrap().kind(), TagFactsKind::Element);
+    assert_eq!(div.tag_facts().unwrap().kind(), TagAnalysisKind::Element);
     for locale in [Locale::En, Locale::Ja, Locale::Zh] {
         let (_, result) = observed(source, locale, &owner);
         // The duplicate is a Vue 3 parser error beside the two rule warnings.

@@ -1,6 +1,6 @@
 //! Resolve a named method reference in the same lexical scope that attaches the On.
 use super::{FileRegion, ScopedResolution, TemplateChildRegion, TemplatePolicy, TemplateRegion};
-use crate::artifact::{ArtifactError, RegionBuilder};
+use crate::artifact::{L2TemplateError, RegionBuilder};
 use crate::expr::JsExpr;
 use core::ops::DerefMut;
 use vize_l0::{Span, id::NodeId};
@@ -16,7 +16,7 @@ where
         modifiers: vize_l0::Vec<'a, &'a str>,
         handler: Option<&'a JsExpr<'a>>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.with_walk(span, |region| {
             let table = handler.map(|js| region.resolve(js, span)).transpose()?;
             let node = region
@@ -46,7 +46,7 @@ impl<'a, P: TemplatePolicy> TemplateRegion<'_, 'a, P> {
         modifiers: vize_l0::Vec<'a, &'a str>,
         handler: Option<&'a JsExpr<'a>>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.event_reference(name, modifiers, handler, span)
     }
 }
@@ -59,7 +59,7 @@ impl<'a: 'b, 'b, P: TemplatePolicy> TemplateChildRegion<'_, 'b, 'a, P> {
         modifiers: vize_l0::Vec<'a, &'a str>,
         handler: Option<&'a JsExpr<'a>>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.event_reference(name, modifiers, handler, span)
     }
 }

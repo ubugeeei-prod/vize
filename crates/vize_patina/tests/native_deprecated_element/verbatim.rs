@@ -2,7 +2,7 @@ use super::support::{
     LOCALES, NeverLookup, complete, expected, parity, registered, selected, span, warning,
 };
 use vize_l0::{Allocator, cstr};
-use vize_l1::markup::TagFactsRefusal;
+use vize_l1::markup::TagAnalysisRefusal;
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint};
 
 #[test]
@@ -57,7 +57,7 @@ fn modified_and_argument_pre_refuse_without_losing_original_deprecated_findings(
             assert_eq!(
                 lint.deprecated_element(element, &NeverLookup).err(),
                 Some(NativeLintRefusal::LintTag {
-                    reason: TagFactsRefusal::AmbiguousVerbatim
+                    reason: TagAnalysisRefusal::AmbiguousVerbatim
                 })
             );
         }
@@ -84,7 +84,7 @@ fn inherited_template_category_refusal_remains_before_even_nonmatching_rule_look
     assert_eq!(
         lint.deprecated_element(&element, &NeverLookup).err(),
         Some(NativeLintRefusal::LintTag {
-            reason: TagFactsRefusal::InheritedTemplate
+            reason: TagAnalysisRefusal::InheritedTemplate
         })
     );
     for locale in LOCALES {

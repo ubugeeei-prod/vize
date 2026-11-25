@@ -18,7 +18,9 @@ use vize_l1::embed::{
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l1::markup::SurfaceParseOptions;
-use vize_l2::framework::vue::{MACROS, MacroCall, MacroKind, SetupFactsIncomplete, SetupObserver};
+use vize_l2::framework::vue::{
+    MACROS, MacroCall, MacroKind, SetupAnalysisIncomplete, SetupObserver,
+};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
 /// Files where Croquis disagrees with Vue, which is the authority. Croquis
@@ -73,7 +75,7 @@ fn croquis_rows(content: &str) -> Vec<Row> {
         .collect()
 }
 
-fn native(source: &str) -> Option<(String, Result<Vec<Row>, SetupFactsIncomplete>)> {
+fn native(source: &str) -> Option<(String, Result<Vec<Row>, SetupAnalysisIncomplete>)> {
     let (content, base, calls) = observe(source)?;
     let rows = calls.map(|facts| native_rows(&content, base, facts.macro_calls()));
     Some((content, rows))
@@ -227,7 +229,10 @@ fn one_observer_refuses_a_second_program() {
             .program_observed(input, ProgramScope::Module, &mut observer)
             .expect("unit");
     }
-    assert_eq!(observer.finish(), Err(SetupFactsIncomplete::SecondProgram));
+    assert_eq!(
+        observer.finish(),
+        Err(SetupAnalysisIncomplete::SecondProgram)
+    );
 }
 
 /// `(native keys, unclassified)` of a `<script setup lang="ts">` body.

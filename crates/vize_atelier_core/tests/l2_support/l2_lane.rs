@@ -9,8 +9,8 @@
 use vize_l0::String;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
-use vize_l1_to_l2::pass::{ModelFacts, SlotFacts};
-use vize_l2::analysis::if_facts::{BranchKeyKind, IfFacts};
+use vize_l1_to_l2::pass::{ModelAnalysis, SlotAnalysis};
+use vize_l2::analysis::if_facts::{BranchKeyKind, IfAnalysis};
 use vize_l2::analysis::text_facts::TextParts;
 use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp, Page as L2Page};
 
@@ -86,10 +86,10 @@ pub struct L2Projection {
 
 /// The fact tables the walk reads.
 pub struct Tables<'t> {
-    pub if_facts: &'t SideTable<IfFacts>,
-    pub slot_facts: &'t SideTable<SlotFacts>,
+    pub if_facts: &'t SideTable<IfAnalysis>,
+    pub slot_facts: &'t SideTable<SlotAnalysis>,
     pub text_facts: &'t SideTable<TextParts>,
-    pub model_faults: &'t SideTable<ModelFacts>,
+    pub model_faults: &'t SideTable<ModelAnalysis>,
 }
 
 /// Collect every chain, for, slot unit, outlet, text unit and owner

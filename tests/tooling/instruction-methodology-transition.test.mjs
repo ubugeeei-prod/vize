@@ -110,6 +110,49 @@ const cli = (args) =>
     encoding: "utf8",
   });
 
+void test("the historical analysis runtime provider remains frozen with its measured identity", () => {
+  const source = "davinci/vize_l0/benches/fact_runtime.rs";
+  const archived = path.join("tests/_fixtures/byte-custody", source);
+  const file = path.join(root, archived);
+  const stat = fs.lstatSync(file);
+  assert.ok(stat.isFile());
+  assert.equal(stat.mode & 0o111, 0, "historical provider must not be executable");
+  const indexed = spawnSync("git", ["ls-files", "--stage", "--", archived], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  assert.equal(indexed.status, 0, indexed.stderr);
+  assert.match(indexed.stdout, /^100644 [a-f0-9]{40} 0\t/);
+  const { old } = packet(families[0]);
+  for (const id of ["davinci_fact_query_observed", "davinci_fact_query_unobserved"]) {
+    assert.equal(old.instruction[id].fixture, source);
+    assert.equal(digest(fs.readFileSync(file)), old.instruction[id].fixture_sha256);
+  }
+});
+
+void test("the historical markup provider retains both 1.99.1 composite measured identities", () => {
+  const source = "crates/vize_patina/benches/davinci_markup.rs";
+  const archived = path.join("tests/_fixtures/byte-custody", source);
+  const file = path.join(root, archived);
+  const stat = fs.lstatSync(file);
+  assert.ok(stat.isFile());
+  assert.equal(stat.mode & 0o111, 0, "historical provider must not be executable");
+  const indexed = spawnSync("git", ["ls-files", "--stage", "--", archived], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  assert.equal(indexed.status, 0, indexed.stderr);
+  assert.match(indexed.stdout, /^100644 [a-f0-9]{40} 0\t/);
+  const old = loadBudgets(path.join(fixture, "level-rust1991.toml"));
+  for (const [id, input] of [
+    ["patina_jsx_markup_one_root", "synthetic:jsx-one-root-gallery"],
+    ["patina_s2_markup_one_root", "synthetic:l2-one-root-gallery"],
+  ]) {
+    assert.equal(old.instruction[id].fixture, input);
+    assert.equal(fixtureDigest(root, input, file), old.instruction[id].fixture_sha256);
+  }
+});
+
 for (const family of families) {
   void test(`${family.name}: whole original and actual archived evidence stays byte-exact`, () => {
     assert.equal(

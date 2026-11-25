@@ -189,6 +189,20 @@ test("the project-context successor rejects unknown, incomplete and mixed source
   const supporting = read(emptyProjectContextSupportingBlobs);
   const original = emptyCompileSourcesForReference(sources, emptyCompileSourceBlobs, supporting);
   validateEmptyCompileSources(original);
+  const compile = "crates/vize_atelier_sfc/src/compile.rs";
+  const previousSetupName = Buffer.from(
+    Buffer.from(sources[compile])
+      .toString("utf8")
+      .replace("setup_facts::SetupCompileAnalysis::new", "setup_facts::SetupAnalysis::new"),
+  );
+  assert.deepEqual(
+    emptyCompileSourcesForReference(
+      { ...sources, [compile]: previousSetupName },
+      emptyCompileSourceBlobs,
+      supporting,
+    ),
+    original,
+  );
   assert.equal(emptyCompileSourcesForReference(original, emptyCompileSourceBlobs), original);
   for (const [group, input] of [
     ["sources", sources],

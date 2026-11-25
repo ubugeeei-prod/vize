@@ -15,7 +15,7 @@ use vize_l1::markup::Element;
 
 use vize_l2::op::{BindingOp, VueSlotScopeOp};
 use vize_l2::provenance::ProvenanceSink;
-use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
+use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin};
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{AttrForm, Head};
@@ -99,7 +99,7 @@ pub(crate) fn lower_slot_scope<'a>(
         }
         cx.attach_scope(
             node,
-            ScopeFacts {
+            ScopeAnalysis {
                 tag,
                 bindings: scope_bindings,
             },

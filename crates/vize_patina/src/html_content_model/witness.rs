@@ -14,12 +14,12 @@
 //! skeleton-relative (template content offsets), as every fact of a group
 //! is about one kind of span.
 
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisError, AnalysisManager, AnalysisProducer, AnalysisRegistry,
+    AnalysisTable, AnalysisView, Demand, ProducerEntry, ids,
+};
 use vize_l0::diag::verify::{AuditReport, WitnessAudit, WitnessCheck, WitnessChecks, WitnessGroup};
 use vize_l0::diag::{Diagnostic, Stage, WitnessChain, WitnessLink};
-use vize_l0::fact::{
-    Demand, FactConsumer, FactError, FactGroup, FactManager, FactProducer, FactRegistry, FactTable,
-    FactView, ProducerEntry, ids,
-};
 use vize_l0::pass::AnalysisId;
 use vize_l0::{Span, String};
 
@@ -101,7 +101,7 @@ macro_rules! group {
     ($ty:ident, $id:expr, $name:literal, $stratum:expr, $depends:expr, $value:ty) => {
         /// A P4-11b fact group.
         pub struct $ty;
-        impl FactGroup for $ty {
+        impl Analysis for $ty {
             const ID: AnalysisId = $id;
             const NAME: &'static str = $name;
             const STRATUM: u8 = $stratum;
@@ -128,14 +128,14 @@ group!(
     NestingFact
 );
 
-impl FactProducer<NestingEvidence> for HtmlElements {
-    fn produce(evidence: &NestingEvidence, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<NestingEvidence> for HtmlElements {
+    fn produce(evidence: &NestingEvidence, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         (0u32..).zip(evidence.elements.iter().copied()).collect()
     }
 }
 
-impl FactProducer<NestingEvidence> for HtmlComposedNesting {
-    fn produce(evidence: &NestingEvidence, inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<NestingEvidence> for HtmlComposedNesting {
+    fn produce(evidence: &NestingEvidence, inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         // A violation is a fact only when the element it cites is one.
         let elements = inputs.get::<HtmlElements>().ok();
         let cited = |index: &Option<u32>| {
@@ -161,7 +161,7 @@ impl WitnessGroup for HtmlComposedNesting {
     }
 }
 
-static REGISTRY: FactRegistry<NestingEvidence> = FactRegistry::new(&[
+static REGISTRY: AnalysisRegistry<NestingEvidence> = AnalysisRegistry::new(&[
     ProducerEntry::of::<HtmlElements>(),
     ProducerEntry::of::<HtmlComposedNesting>(),
 ]);
@@ -175,7 +175,7 @@ pub static CHECKS: WitnessChecks = WitnessChecks::new(&[
 /// The rule as a fact consumer.
 pub struct CrossComponentNesting;
 
-impl FactConsumer for CrossComponentNesting {
+impl AnalysisConsumer for CrossComponentNesting {
     const NAME: &'static str = "html/cross-component-nesting";
     const DEMAND: Demand = Demand::NONE
         .with(ids::HTML_ELEMENTS)
@@ -186,11 +186,11 @@ impl FactConsumer for CrossComponentNesting {
 ///
 /// # Errors
 ///
-/// A [`FactError`] if the registry cannot compute the demand.
+/// A [`AnalysisError`] if the registry cannot compute the demand.
 pub fn facts(
     evidence: &NestingEvidence,
-) -> Result<FactManager<'static, NestingEvidence>, FactError> {
-    let mut manager = FactManager::new(&REGISTRY);
+) -> Result<AnalysisManager<'static, NestingEvidence>, AnalysisError> {
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager.compute(evidence, CrossComponentNesting::DEMAND)?;
     Ok(manager)
 }

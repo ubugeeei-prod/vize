@@ -1,9 +1,9 @@
 //! Sole-file analysis retains genuine scopes without assigning runtime access.
 
-use super::{DomFacts, LiteralExpressions, vue::policy::NoReads};
+use super::{DomAnalysis, LiteralExpressions, vue::policy::NoReads};
 use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, TargetPolicy, build};
 use vize_l2::{
-    artifact::Artifact,
+    artifact::L2Template,
     file::{FileResolution, L2Ir, ScopeId},
 };
 
@@ -77,12 +77,12 @@ impl<'owner, 'arena> FileAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn original_attributes(
         &self,
-    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+    ) -> Option<&crate::decision::OriginalAttributeAnalysis<'owner, 'arena>> {
         self.analysis.original_attributes()
     }
 
     #[must_use]
-    pub fn artifact(&self) -> &'owner Artifact<'arena> {
+    pub fn artifact(&self) -> &'owner L2Template<'arena> {
         self.l2ir.artifact()
     }
 
@@ -97,7 +97,7 @@ impl<'owner, 'arena> FileAnalysis<'owner, 'arena> {
     }
 
     #[must_use]
-    pub fn dom(&self) -> Option<&DomFacts<'owner, 'arena>> {
+    pub fn dom(&self) -> Option<&DomAnalysis<'owner, 'arena>> {
         self.analysis.dom()
     }
 }

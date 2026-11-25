@@ -5,7 +5,7 @@
 use davinci_harness::alloc::{CountingAllocator, mark_installed, measure, measure_returning};
 use vize_l0::Allocator;
 use vize_patina::ir::TemplateSyntax;
-use vize_patina::markup::{L2Template, MarkupContext, MarkupDocument};
+use vize_patina::markup::{LintL2Template, MarkupContext, MarkupDocument};
 use vize_patina::{LintContext, Linter, RuleRegistry};
 
 #[global_allocator]
@@ -81,7 +81,7 @@ fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {
     }
 
     let allocator = Allocator::new();
-    let lowered = L2Template::lower(&allocator, GALLERY);
+    let lowered = LintL2Template::lower(&allocator, GALLERY);
     assert!(lowered.lowered().diagnostics.is_empty());
     let markup = lowered.markup();
     let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
@@ -136,7 +136,7 @@ fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {
             "<div class=\"a\u{a0}a\">Text</div>",
         ] {
             let allocator = Allocator::new();
-            let lowered = L2Template::lower(&allocator, source);
+            let lowered = LintL2Template::lower(&allocator, source);
             assert!(lowered.lowered().diagnostics.is_empty());
             let markup = lowered.markup();
             let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);

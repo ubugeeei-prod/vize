@@ -9,7 +9,7 @@ use vize_l1::{
     markup::ComponentSourceError,
 };
 use vize_l2::{
-    artifact::ArtifactError,
+    artifact::L2TemplateError,
     file::FileIssue,
     lang::js::{ProgramInputError, SetupIssue},
 };
@@ -88,7 +88,7 @@ pub enum NativeSfcLintRefusal {
     /// The setup program does not match the checked file producer input.
     Program(ProgramInputError),
     /// The script-only semantic file could not be produced.
-    File(ArtifactError),
+    File(L2TemplateError),
     /// The semantic file retained unresolved issues or interrupted programs.
     FileIssues {
         /// File issues retained by the producer.

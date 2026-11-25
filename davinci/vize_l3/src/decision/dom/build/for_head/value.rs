@@ -1,6 +1,6 @@
 //! Current original callback aliases, without script provenance or another walk.
 
-use super::super::{DomBuilder, DomExpressionFacts};
+use super::super::{DomBuilder, DomExpressionAnalysis};
 use crate::decision::dom::vue::{VueReadKind, policy::FileReads};
 use vize_l2::{
     expr::JsExpr,
@@ -9,7 +9,7 @@ use vize_l2::{
     resolution::{ForAliasRole, Occurrence, Usage},
 };
 
-impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
 {
     pub(in crate::decision::dom::build) fn for_alias(

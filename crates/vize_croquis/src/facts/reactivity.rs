@@ -9,8 +9,9 @@
 use crate::Croquis;
 use crate::reactivity::{ReactiveKind, ReactivityLoss};
 use vize_carton::{CompactString, Span};
-use vize_l0::fact::{
-    Demand, FactConsumer, FactGroup, FactProducer, FactTable, FactTableBuilder, FactView, ids,
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisProducer, AnalysisTable, AnalysisTableBuilder,
+    AnalysisView, Demand, ids,
 };
 use vize_l0::pass::AnalysisId;
 use vize_l3::lattice::{
@@ -55,7 +56,7 @@ pub struct SourceFact {
 /// The `Reactivity` fact group.
 pub struct Reactivity;
 
-impl FactGroup for Reactivity {
+impl Analysis for Reactivity {
     const ID: AnalysisId = ids::REACTIVITY;
     const NAME: &'static str = "reactivity";
     const STRATUM: u8 = 0;
@@ -64,11 +65,11 @@ impl FactGroup for Reactivity {
     type Value = ReactivityFact;
 }
 
-impl FactProducer<Croquis> for Reactivity {
-    fn produce(croquis: &Croquis, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Croquis> for Reactivity {
+    fn produce(croquis: &Croquis, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let sources = croquis.reactivity.sources();
         let losses = croquis.reactivity.losses();
-        let mut builder = FactTableBuilder::<Self>::with_capacity(sources.len() + losses.len());
+        let mut builder = AnalysisTableBuilder::<Self>::with_capacity(sources.len() + losses.len());
         for (ordinal, source) in sources.iter().enumerate() {
             let ordinal = u32::try_from(ordinal).unwrap_or(u32::MAX);
             let input = source_kind(source.kind).binding_input(
@@ -117,17 +118,17 @@ fn source_kind(kind: ReactiveKind) -> SourceKind {
 
 struct ReactivityReader;
 
-impl FactConsumer for ReactivityReader {
+impl AnalysisConsumer for ReactivityReader {
     const NAME: &'static str = "croquis/reactivity";
     const DEMAND: Demand = Demand::NONE.with(Reactivity::ID);
 }
 
-fn with_table<T>(croquis: &Croquis, read: impl FnOnce(&FactTable<Reactivity>) -> T) -> T {
+fn with_table<T>(croquis: &Croquis, read: impl FnOnce(&AnalysisTable<Reactivity>) -> T) -> T {
     let mut facts = super::CroquisFacts::new(croquis);
     let view = facts.prepare::<ReactivityReader>();
     match view.get::<Reactivity>() {
         Ok(table) => read(table),
-        Err(_) => read(&FactTable::default()),
+        Err(_) => read(&AnalysisTable::default()),
     }
 }
 
@@ -201,12 +202,12 @@ pub fn reactivity_has_losses(croquis: &Croquis) -> bool {
 mod tests {
     use super::{Reactivity, reactivity_lookup, reactivity_losses, reactivity_sources};
     use crate::drawer::{Drawer, DrawerOptions};
-    use crate::facts::{CroquisFacts, Demand, FactConsumer, FactGroup};
+    use crate::facts::{Analysis, AnalysisConsumer, CroquisFacts, Demand};
     use crate::reactivity::ReactiveKind;
     use vize_l3::lattice::{ReactivityClass, SourceKind, Verdict};
 
     struct Reader;
-    impl FactConsumer for Reader {
+    impl AnalysisConsumer for Reader {
         const NAME: &'static str = "test/reactivity-reader";
         const DEMAND: Demand = Demand::NONE.with(Reactivity::ID);
     }

@@ -1,5 +1,5 @@
 //! Publish the same owned provenance with a static spelling for each lattice value.
-use super::StaticFacts;
+use super::StaticAnalysis;
 use crate::analysis::static_facts::StaticLevel;
 use crate::provenance::{ProvenanceRecord, ProvenanceSink};
 use vize_l0::{Span, String, id::NodeId};
@@ -22,7 +22,7 @@ macro_rules! descriptions {
     };
 }
 
-fn description(fact: StaticFacts) -> String {
+fn description(fact: StaticAnalysis) -> String {
     let spellings = match fact.level {
         StaticLevel::NotStatic => &descriptions!("not-static"),
         StaticLevel::HasDynamicText => &descriptions!("dynamic-text"),
@@ -43,7 +43,7 @@ pub(super) fn record(
     id: NodeId,
     owner: &str,
     span: Span,
-    fact: StaticFacts,
+    fact: StaticAnalysis,
 ) {
     provenance.record(|| ProvenanceRecord {
         rule: vize_l0::String::from("pass.hoist-static.fact"),
@@ -66,7 +66,7 @@ mod tests {
             (StaticLevel::FullyStatic, "fully-static"),
         ] {
             for flags in 0..16 {
-                let fact = StaticFacts {
+                let fact = StaticAnalysis {
                     level,
                     props_hoistable: flags & 4 != 0,
                     nested_static: flags & 2 != 0,

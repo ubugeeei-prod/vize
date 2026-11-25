@@ -13,7 +13,7 @@ use vize_l0::{Span, id::NodeId};
 use vize_l2::{expr::ExprRef, op::Op, walk::NodeRef};
 use vize_l3::decision::{
     DecisionAnalysis,
-    dom::{DomChild, DomFacts, DomRootKind, DomUnsupported},
+    dom::{DomAnalysis, DomChild, DomRootKind, DomUnsupported},
     policy::TargetPolicy,
 };
 
@@ -138,7 +138,7 @@ pub fn emit<L: LinkSink>(
 }
 
 struct Emitter<'s, 'owner, 'arena, L: LinkSink> {
-    facts: &'s DomFacts<'owner, 'arena>,
+    facts: &'s DomAnalysis<'owner, 'arena>,
     expressions: ResolvedExpressions<'s, 'arena>,
     access: access::RenderAccess<'s, 's>,
     receiver: &'s str,

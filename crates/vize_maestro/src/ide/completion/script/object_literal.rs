@@ -214,8 +214,8 @@ fn completion_item(receiver: &str, member: StaticMember) -> CompletionItem {
 /// `maestro/object-literal-completion`'s declared fact demand.
 struct ObjectLiteralCompletion;
 
-impl vize_croquis::facts::FactConsumer for ObjectLiteralCompletion {
+impl vize_croquis::facts::AnalysisConsumer for ObjectLiteralCompletion {
     const NAME: &'static str = "maestro/object-literal-completion";
     const DEMAND: vize_croquis::facts::Demand = vize_croquis::facts::Demand::NONE
-        .with(<vize_croquis::facts::Bindings as vize_croquis::facts::FactGroup>::ID);
+        .with(<vize_croquis::facts::Bindings as vize_croquis::facts::Analysis>::ID);
 }

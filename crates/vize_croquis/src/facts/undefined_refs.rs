@@ -7,7 +7,7 @@
 //! TS-34 spec compares the relation as a multiset of `(name, offset,
 //! context)` facts ([`crate::facts::spec::undefined_refs`]).
 
-use vize_l0::fact::{Demand, FactGroup, FactProducer, FactTable, FactView, ids};
+use vize_l0::analysis::{Analysis, AnalysisProducer, AnalysisTable, AnalysisView, Demand, ids};
 use vize_l0::pass::AnalysisId;
 
 use crate::{Croquis, UndefinedRef};
@@ -15,7 +15,7 @@ use crate::{Croquis, UndefinedRef};
 /// The `UndefinedRefs` fact group.
 pub struct UndefinedRefs;
 
-impl FactGroup for UndefinedRefs {
+impl Analysis for UndefinedRefs {
     const ID: AnalysisId = ids::UNDEFINED_REFS;
     const NAME: &'static str = "undefined-refs";
     const STRATUM: u8 = 0;
@@ -24,8 +24,8 @@ impl FactGroup for UndefinedRefs {
     type Value = UndefinedRef;
 }
 
-impl FactProducer<Croquis> for UndefinedRefs {
-    fn produce(croquis: &Croquis, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Croquis> for UndefinedRefs {
+    fn produce(croquis: &Croquis, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         (0u32..)
             .zip(croquis.undefined_refs.iter().cloned())
             .collect()
@@ -35,12 +35,12 @@ impl FactProducer<Croquis> for UndefinedRefs {
 #[cfg(test)]
 mod tests {
     use super::UndefinedRefs;
-    use crate::facts::{CroquisFacts, Demand, FactConsumer, FactGroup};
+    use crate::facts::{Analysis, AnalysisConsumer, CroquisFacts, Demand};
     use crate::{Croquis, UndefinedRef};
     use vize_carton::CompactString;
 
     struct Reader;
-    impl FactConsumer for Reader {
+    impl AnalysisConsumer for Reader {
         const NAME: &'static str = "test/undefined-refs-reader";
         const DEMAND: Demand = Demand::NONE.with(UndefinedRefs::ID);
     }

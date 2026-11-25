@@ -7,7 +7,7 @@ use davinci_harness::alloc::CountingAllocator;
 use std::alloc::System;
 use vize::plugin_template::{PluginTemplateBatch, PluginTemplateProducts, analyze};
 use vize_croquis_cf::TemplateComplexity;
-use vize_l0::fact::FactManager;
+use vize_l0::analysis::AnalysisManager;
 use vize_patina::plugin_batch::{
     batch::{PluginSpec, build_batch, diagnostics},
     document::PluginDocument,
@@ -22,7 +22,7 @@ fn original_plugin(
     spec: &PluginSpec<'_>,
 ) -> Result<PluginTemplateBatch, vize_patina::plugin_batch::error::HostError> {
     PluginDocument::build(source, name).and_then(|document| {
-        let batch = build_batch(&document, spec, &mut FactManager::new(&REGISTRY))?;
+        let batch = build_batch(&document, spec, &mut AnalysisManager::new(&REGISTRY))?;
         Ok(PluginTemplateBatch { batch, document })
     })
 }

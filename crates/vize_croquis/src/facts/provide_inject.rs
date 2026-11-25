@@ -3,8 +3,9 @@
 //! Provides, injects, and composable calls in tracker order. Cross-file
 //! pairing reads this table; it does not walk `Croquis.provide_inject`.
 
-use vize_l0::fact::{
-    Demand, FactConsumer, FactGroup, FactProducer, FactTable, FactTableBuilder, FactView, ids,
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisProducer, AnalysisTable, AnalysisTableBuilder,
+    AnalysisView, Demand, ids,
 };
 use vize_l0::pass::AnalysisId;
 
@@ -36,7 +37,7 @@ pub enum ProvideInjectFact {
 /// The `ProvideInject` fact group.
 pub struct ProvideInject;
 
-impl FactGroup for ProvideInject {
+impl Analysis for ProvideInject {
     const ID: AnalysisId = ids::PROVIDE_INJECT;
     const NAME: &'static str = "provide-inject";
     const STRATUM: u8 = 0;
@@ -45,10 +46,10 @@ impl FactGroup for ProvideInject {
     type Value = ProvideInjectFact;
 }
 
-impl FactProducer<Croquis> for ProvideInject {
-    fn produce(croquis: &Croquis, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Croquis> for ProvideInject {
+    fn produce(croquis: &Croquis, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let tracker = &croquis.provide_inject;
-        let mut builder = FactTableBuilder::<Self>::with_capacity(
+        let mut builder = AnalysisTableBuilder::<Self>::with_capacity(
             tracker.provides().len() + tracker.injects().len() + tracker.composables().len(),
         );
         for (ordinal, provide) in tracker.provides().iter().enumerate() {
@@ -79,19 +80,19 @@ fn ordinal_of(ordinal: usize) -> u32 {
 
 struct ProvideInjectReader;
 
-impl FactConsumer for ProvideInjectReader {
+impl AnalysisConsumer for ProvideInjectReader {
     const NAME: &'static str = "croquis/provide-inject";
     const DEMAND: Demand = Demand::NONE.with(ProvideInject::ID);
 }
 
-fn with_table<T>(croquis: &Croquis, read: impl FnOnce(&FactTable<ProvideInject>) -> T) -> T {
+fn with_table<T>(croquis: &Croquis, read: impl FnOnce(&AnalysisTable<ProvideInject>) -> T) -> T {
     let mut facts = super::CroquisFacts::new(croquis);
     match facts
         .prepare::<ProvideInjectReader>()
         .get::<ProvideInject>()
     {
         Ok(table) => read(table),
-        Err(_) => read(&FactTable::default()),
+        Err(_) => read(&AnalysisTable::default()),
     }
 }
 
@@ -141,12 +142,12 @@ pub fn composable_calls(croquis: &Croquis) -> Vec<ComposableCall> {
 mod tests {
     use super::{ProvideInject, inject_entries, provide_entries};
     use crate::drawer::{Drawer, DrawerOptions};
-    use crate::facts::{CroquisFacts, Demand, FactConsumer, FactGroup};
+    use crate::facts::{Analysis, AnalysisConsumer, CroquisFacts, Demand};
     use crate::provide::ProvideKey;
     use vize_carton::CompactString;
 
     struct Reader;
-    impl FactConsumer for Reader {
+    impl AnalysisConsumer for Reader {
         const NAME: &'static str = "test/provide-inject-reader";
         const DEMAND: Demand = Demand::NONE.with(ProvideInject::ID);
     }

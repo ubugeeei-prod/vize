@@ -1,6 +1,6 @@
 extern crate std;
 
-use crate::artifact::{Artifact, ArtifactError, Builder};
+use crate::artifact::{Builder, L2Template, L2TemplateError};
 use crate::expr::{ExprRef, JsExpr};
 use crate::op::{BindingOp, DynamicName, Namespace, Op};
 use crate::walk::{NodeEvent, NodeRef};
@@ -80,7 +80,7 @@ fn attached_bindings_are_numbered_before_children_and_retain_the_ast() {
     };
     assert!(core::ptr::eq(value.ast, js.ast));
     assert_eq!(
-        Artifact::try_new(artifact.into_parts())
+        L2Template::try_new(artifact.into_parts())
             .unwrap()
             .node_count(),
         4
@@ -96,7 +96,7 @@ fn root_and_late_bindings_are_rejected_without_consuming_ids() {
         builder
             .region()
             .bind("a", Span::new(4, 5), ExprRef::Js(value), Span::new(3, 9)),
-        Err(ArtifactError::BindingWithoutOwner {
+        Err(L2TemplateError::BindingWithoutOwner {
             span: Span::new(3, 9)
         })
     );
@@ -105,7 +105,7 @@ fn root_and_late_bindings_are_rejected_without_consuming_ids() {
             assert_eq!(r.text("t", Span::new(17, 18)).unwrap().index(), 1);
             assert_eq!(
                 r.bind("a", Span::new(4, 5), ExprRef::Js(value), Span::new(3, 9)),
-                Err(ArtifactError::BindingAfterChild {
+                Err(L2TemplateError::BindingAfterChild {
                     node: owner,
                     span: Span::new(3, 9)
                 })
@@ -126,7 +126,7 @@ fn names_payloads_and_failed_children_are_checked_before_phase_or_mint() {
         .component("x", Vec::new_in(&&a), OWNER, |r, _| {
             assert!(matches!(
                 r.text("", Span::new(22, 23)),
-                Err(ArtifactError::InvalidSpan { .. })
+                Err(L2TemplateError::InvalidSpan { .. })
             ));
             assert!(matches!(
                 r.bind(
@@ -135,15 +135,15 @@ fn names_payloads_and_failed_children_are_checked_before_phase_or_mint() {
                     ExprRef::Js(value),
                     Span::new(3, 9)
                 ),
-                Err(ArtifactError::InvalidBindingName { .. })
+                Err(L2TemplateError::InvalidBindingName { .. })
             ));
             assert!(matches!(
                 r.bind("a", Span::new(4, 5), ExprRef::Js(outside), Span::new(3, 9)),
-                Err(ArtifactError::OutsideOwner { .. })
+                Err(L2TemplateError::OutsideOwner { .. })
             ));
             assert!(matches!(
                 r.bind("a", Span::new(4, 5), ExprRef::Js(value), Span::new(0, 23)),
-                Err(ArtifactError::InvalidSpan { .. })
+                Err(L2TemplateError::InvalidSpan { .. })
             ));
             assert_eq!(
                 r.bind("a", Span::new(4, 5), ExprRef::Js(value), Span::new(3, 9))
@@ -156,7 +156,7 @@ fn names_payloads_and_failed_children_are_checked_before_phase_or_mint() {
     let artifact = builder.finish().unwrap();
     assert_eq!(artifact.node_count(), 2);
     assert_eq!(
-        Artifact::try_new(artifact.into_parts())
+        L2Template::try_new(artifact.into_parts())
             .unwrap()
             .node_count(),
         2
@@ -174,7 +174,7 @@ fn nested_owner_closes_parent_binding_phase() {
                 .unwrap();
             assert_eq!(
                 r.bind("a", Span::new(4, 5), ExprRef::Js(value), Span::new(3, 9)),
-                Err(ArtifactError::BindingAfterChild {
+                Err(L2TemplateError::BindingAfterChild {
                     node: owner,
                     span: Span::new(3, 9)
                 })
@@ -200,11 +200,11 @@ fn caught_unwind_preserves_already_attached_bindings_in_the_partial_owner() {
     let rejected = builder.finish().unwrap_err();
     assert_eq!(
         rejected.error,
-        ArtifactError::UnfinishedOwner {
+        L2TemplateError::UnfinishedOwner {
             node: NodeId::FIRST
         }
     );
-    let partial = Artifact::try_new(*rejected.parts).unwrap();
+    let partial = L2Template::try_new(*rejected.parts).unwrap();
     assert_eq!(partial.node_count(), 2);
     let Some(Op::Element(element)) = partial.root().ops.first() else {
         panic!("owner")

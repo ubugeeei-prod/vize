@@ -6,13 +6,13 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::{Allocator, CompactString, cstr};
 use vize_croquis::Croquis;
 use vize_croquis::facts::{
-    BindingFact, BindingKey, Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer,
-    FactGroup, UnusedBindings,
+    Analysis, AnalysisConsumer, BindingFact, BindingKey, Bindings, BindingsTable, CroquisFacts,
+    Demand, UnusedBindings,
 };
 
 struct DestructureReader;
 
-impl FactConsumer for DestructureReader {
+impl AnalysisConsumer for DestructureReader {
     const NAME: &'static str = "ts-34/destructure-census";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID).with(UnusedBindings::ID);
 }

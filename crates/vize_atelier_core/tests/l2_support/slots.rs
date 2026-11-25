@@ -40,7 +40,7 @@
 use vize_l0::String;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
-use vize_l1_to_l2::pass::SlotFacts;
+use vize_l1_to_l2::pass::SlotAnalysis;
 use vize_l1_to_l2::pass::vslot::{SlotName, SlotParams};
 use vize_l2::dump::{Binding as DumpBinding, Name as DumpName, Op as DumpOp};
 
@@ -134,7 +134,7 @@ pub fn l2_slot_active(bindings: &[DumpBinding], children: &[DumpOp]) -> bool {
 }
 
 /// Project one L2 unit from the pass's published facts.
-pub fn l2_unit(id: Option<NodeId>, facts: &SideTable<SlotFacts>) -> PUnit {
+pub fn l2_unit(id: Option<NodeId>, facts: &SideTable<SlotAnalysis>) -> PUnit {
     let entry = id
         .and_then(|id| facts.get(id))
         .expect("a slot-active component has published slot facts");

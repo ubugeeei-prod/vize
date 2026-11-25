@@ -86,7 +86,7 @@ serialized), driven through `run_pipeline` by
 `pass::run_transform` with the caller's observer plus the P2-6
 `VerifyObserver` between passes in debug (`note` → `check` →
 `check_table` per side table, per its module docs). Facts ride a
-`SideTable<IfFacts>` keyed by the `ui.if` op's page-order id; the pass
+`SideTable<IfAnalysis>` keyed by the `ui.if` op's page-order id; the pass
 re-derives ids by walking in print order and **asserts its count
 against the lowering's minted accounting on every run**. Every
 extraction and every diagnostic leaves provenance

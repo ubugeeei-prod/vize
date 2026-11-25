@@ -1,7 +1,7 @@
 //! Authenticate the original Model's dedicated mutable setup access.
 
 use super::{
-    DomBinding, DomBuilder, DomDependency, DomExpressionFacts, DomUnsupported, PropertyRole,
+    DomBinding, DomBuilder, DomDependency, DomExpressionAnalysis, DomUnsupported, PropertyRole,
     ValueKind,
 };
 use crate::decision::dom::{file::DomFileExpression, vue::policy::FileReads};
@@ -11,7 +11,7 @@ use vize_l2::{
     op::{BindingOp, ModelOp, Op},
 };
 
-impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
 {
     pub(super) fn model_binding(

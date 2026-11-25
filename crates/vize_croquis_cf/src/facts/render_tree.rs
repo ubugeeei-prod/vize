@@ -15,8 +15,10 @@ use vue_authority::vue_specifier_is_redirected;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::facts::components::{LocalComponentBinding, local_component_binding};
-use vize_croquis::facts::{FactGroup, component_identity};
-use vize_l0::fact::{Demand, FactProducer, FactTable, FactTableBuilder, FactView};
+use vize_croquis::facts::{Analysis, component_identity};
+use vize_l0::analysis::{
+    AnalysisProducer, AnalysisTable, AnalysisTableBuilder, AnalysisView, Demand,
+};
 use vize_l0::pass::AnalysisId;
 
 use crate::module_paths::import_candidates;
@@ -40,8 +42,8 @@ pub struct RenderSite {
 /// The project render tree.
 pub struct RenderTree;
 
-impl FactGroup for RenderTree {
-    const ID: AnalysisId = vize_l0::fact::ids::RENDER_TREE;
+impl Analysis for RenderTree {
+    const ID: AnalysisId = vize_l0::analysis::ids::RENDER_TREE;
     const NAME: &'static str = "render-tree";
     const STRATUM: u8 = 0;
     const DEPENDS: Demand = Demand::NONE;
@@ -49,17 +51,17 @@ impl FactGroup for RenderTree {
     type Value = Vec<RenderSite>;
 }
 
-impl FactProducer<ModuleRegistry> for RenderTree {
-    fn produce(registry: &ModuleRegistry, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<ModuleRegistry> for RenderTree {
+    fn produce(registry: &ModuleRegistry, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         evaluate(registry)
     }
 }
 
 /// Naive evaluator: one pass, no cache, import path before a unique name.
-pub fn evaluate(registry: &ModuleRegistry) -> FactTable<RenderTree> {
+pub fn evaluate(registry: &ModuleRegistry) -> AnalysisTable<RenderTree> {
     let mut entries: Vec<&ModuleEntry> = registry.iter().collect();
     entries.sort_by_key(|entry| entry.id);
-    let mut builder = FactTableBuilder::default();
+    let mut builder = AnalysisTableBuilder::default();
     for entry in entries {
         for (key, sites) in edges_of(registry, entry) {
             builder.insert(key, sites);

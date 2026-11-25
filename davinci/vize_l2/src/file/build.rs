@@ -5,12 +5,12 @@ use super::{
     Namespace, Reference, ReferenceTarget, RejectedFile, Scope, ScopeId, ScriptProfile, ScriptUnit,
     ScriptUnitId, TemplateIssue, records::ProgramOrigin,
 };
-use crate::artifact::{ArtifactError, Builder};
+use crate::artifact::{Builder, L2TemplateError};
 use crate::resolution::{BindingId, ResolutionTable};
 use alloc::{boxed::Box, collections::BTreeMap, vec::Vec};
 use vize_l0::{Allocator, Span, String, id::NodeId, side_table::SideTable};
 
-pub(crate) struct Facts<'a> {
+pub(crate) struct L2Script<'a> {
     pub units: Vec<ScriptUnit>,
     pub scopes: Vec<Scope>,
     pub declarations: Vec<Declaration>,
@@ -57,24 +57,24 @@ mod template;
 pub struct FileBuilder<'a> {
     pub(crate) source: &'a str,
     pub(crate) canonical: Builder<'a>,
-    pub(crate) facts: Facts<'a>,
+    pub(crate) facts: L2Script<'a>,
 }
 
 impl<'a> FileBuilder<'a> {
-    pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, ArtifactError> {
+    pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, L2TemplateError> {
         let canonical = Builder::new(allocator, source)?;
         Ok(Self {
             source,
             canonical,
-            facts: Facts::new(source),
+            facts: L2Script::new(source),
         })
     }
 
-    pub fn text(&mut self, content: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    pub fn text(&mut self, content: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.canonical.text(content, span)
     }
 
-    pub fn comment(&mut self, content: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    pub fn comment(&mut self, content: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.canonical.comment(content, span)
     }
 
@@ -103,7 +103,7 @@ pub(crate) struct DeclarationSite<'a> {
     pub direct_program: bool,
 }
 
-impl<'a> Facts<'a> {
+impl<'a> L2Script<'a> {
     pub(crate) fn new(source: &str) -> Self {
         Self {
             units: Vec::new(),

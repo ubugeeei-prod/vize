@@ -7,7 +7,7 @@ use vize_l2::{
 };
 use vize_l3::decision::{
     build_dom_decisions,
-    dom::{ContextOnly, DomChildren, DomExpressionFacts, DomUnsupported, ValueKind},
+    dom::{ContextOnly, DomChildren, DomExpressionAnalysis, DomUnsupported, ValueKind},
 };
 
 mod dom_support;

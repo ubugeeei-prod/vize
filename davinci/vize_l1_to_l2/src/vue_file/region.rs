@@ -2,7 +2,7 @@
 use super::policy::Visibility;
 use super::profile::NativeTemplateProfile;
 use vize_l0::{Span, id::NodeId};
-use vize_l2::artifact::{ArtifactError, ComponentBody, ComponentFactory};
+use vize_l2::artifact::{ComponentBody, ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
 use vize_l2::file::TemplateRegion;
 use vize_l2::op::{Attribute, Namespace};
@@ -42,17 +42,17 @@ impl<'a> ComponentFactory<'a> for VueFileRegion<'_, 'a> {
     fn source(&self) -> &'a str {
         self.inner.source()
     }
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.inner.text(text, span)
     }
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.inner.comment(text, span)
     }
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.interpolation(expression, span)
     }
     fn bind(
@@ -61,7 +61,7 @@ impl<'a> ComponentFactory<'a> for VueFileRegion<'_, 'a> {
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.bind(name, name_span, expression, span)
     }
     fn element<B: ComponentBody<'a>>(
@@ -71,7 +71,7 @@ impl<'a> ComponentFactory<'a> for VueFileRegion<'_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.element(tag, namespace, attributes, span, body)
     }
     fn component<B: ComponentBody<'a>>(
@@ -80,10 +80,10 @@ impl<'a> ComponentFactory<'a> for VueFileRegion<'_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.inner.component(name, attributes, span, body)
     }
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         self.inner.record(record)
     }
 }

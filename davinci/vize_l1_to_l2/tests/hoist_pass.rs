@@ -9,10 +9,10 @@
 use crate::support;
 
 use support::{assert_transformed_sound, with_transformed};
-use vize_l2::analysis::static_facts::{StaticFacts, StaticLevel};
+use vize_l2::analysis::static_facts::{StaticAnalysis, StaticLevel};
 
 /// The facts as `(op index, level, props, nested, native)` rows.
-fn rows(facts: &vize_l0::side_table::SideTable<StaticFacts>) -> Vec<(u32, StaticFacts)> {
+fn rows(facts: &vize_l0::side_table::SideTable<StaticAnalysis>) -> Vec<(u32, StaticAnalysis)> {
     facts
         .sorted_entries()
         .into_iter()
@@ -25,8 +25,8 @@ fn fact(
     props_hoistable: bool,
     nested_static: bool,
     native_descendants: bool,
-) -> StaticFacts {
-    StaticFacts {
+) -> StaticAnalysis {
+    StaticAnalysis {
         level,
         props_hoistable,
         nested_static,
@@ -41,8 +41,8 @@ fn foreign_fact(
     props_hoistable: bool,
     nested_static: bool,
     native_descendants: bool,
-) -> StaticFacts {
-    StaticFacts {
+) -> StaticAnalysis {
+    StaticAnalysis {
         foreign: true,
         ..fact(level, props_hoistable, nested_static, native_descendants)
     }

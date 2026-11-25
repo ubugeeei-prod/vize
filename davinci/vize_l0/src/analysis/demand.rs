@@ -11,7 +11,7 @@ use crate::pass::{AnalysisId, Preserved};
 /// check can read.
 ///
 /// ```
-/// use vize_l0::fact::Demand;
+/// use vize_l0::analysis::Demand;
 /// use vize_l0::pass::AnalysisId;
 ///
 /// const BINDINGS: AnalysisId = AnalysisId::new(3);

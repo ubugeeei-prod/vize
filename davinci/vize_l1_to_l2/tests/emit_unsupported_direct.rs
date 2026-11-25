@@ -10,12 +10,12 @@ use std::vec::Vec as StdVec;
 
 use vize_l0::id::NodeId;
 use vize_l0::{Allocator, Box as ArenaBox, Span, String as VString, Vec as ArenaVec};
-use vize_l1_to_l2::pass::{SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams};
+use vize_l1_to_l2::pass::{SlotAnalysis, SlotCarrier, SlotGroup, SlotName, SlotParams};
 use vize_l1_to_l2::{LegacyCaps, Lowered};
 use vize_l2::analysis::fragment_facts::{FragmentKey, LoopFragment};
-use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::pass_facts::L2Analyses;
 use vize_l2::analysis::text_facts::TextParts;
-use vize_l2::artifact::ArtifactParts;
+use vize_l2::artifact::L2TemplateParts;
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{
     Attribute, BindingContract, BindingOp, ComponentOp, ElementOp, ForBinding, ForOp, HostFor,
@@ -24,7 +24,7 @@ use vize_l2::op::{
 use vize_l2::scope::ScopeOrigin;
 use vize_l4::targets::dom::artifact::{EmitError, UnsupportedReason as Reason, emit_dom};
 
-type Factory = for<'a> fn(&'a Allocator) -> (Lowered<'a>, L2Facts);
+type Factory = for<'a> fn(&'a Allocator) -> (Lowered<'a>, L2Analyses);
 
 const DIRECT: &[(Reason, Factory)] = &[
     (Reason::EmptyCompoundText, empty_compound_text),
@@ -56,7 +56,7 @@ fn reason(error: EmitError) -> Reason {
     }
 }
 
-fn empty_compound_text<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
+fn empty_compound_text<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Analyses) {
     let mut lowered = lowered(a, root_with_compound_child(a));
     lowered.artifact.texts.insert(
         id(1),
@@ -64,25 +64,28 @@ fn empty_compound_text<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
             parts: StdVec::new(),
         },
     );
-    (lowered, L2Facts::default())
+    (lowered, L2Analyses::default())
 }
 
-fn missing_text_facts<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
-    (lowered(a, root_with_compound_child(a)), L2Facts::default())
+fn missing_text_facts<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Analyses) {
+    (
+        lowered(a, root_with_compound_child(a)),
+        L2Analyses::default(),
+    )
 }
 
-fn if_without_branches<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
+fn if_without_branches<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Analyses) {
     let if_op = IfOp {
         branches: av(a),
         span: sp(),
     };
     (
         lowered(a, region(a, [Op::If(ab(a, if_op))])),
-        L2Facts::default(),
+        L2Analyses::default(),
     )
 }
 
-fn if_branch_shape<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
+fn if_branch_shape<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Analyses) {
     let branch = IfBranch {
         condition: Some(js(a, "ok")),
         region: empty_region(a),
@@ -94,19 +97,19 @@ fn if_branch_shape<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
     };
     (
         lowered(a, region(a, [Op::If(ab(a, if_op))])),
-        L2Facts::default(),
+        L2Analyses::default(),
     )
 }
 
-fn for_item_shape<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
+fn for_item_shape<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Analyses) {
     (
         lowered(a, region(a, [for_op(a, js(a, "item"), empty_region(a))])),
-        L2Facts::default(),
+        L2Analyses::default(),
     )
 }
 
 /// A host-syntax head with an `@empty` region; the DOM target has no emission for it yet.
-fn host_for_loop<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
+fn host_for_loop<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Analyses) {
     let source = "for (const item of items);";
     let program = a.alloc(
         oxc_parser::Parser::new(a.as_oxc(), source, oxc_span::SourceType::mjs())
@@ -132,20 +135,23 @@ fn host_for_loop<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
         panic!("expected ui.for");
     };
     for_op.host = Some(ab(a, host));
-    (lowered(a, region(a, [Op::For(for_op)])), L2Facts::default())
+    (
+        lowered(a, region(a, [Op::For(for_op)])),
+        L2Analyses::default(),
+    )
 }
 
-fn for_alias_not_emittable<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
+fn for_alias_not_emittable<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Analyses) {
     (
         lowered(
             a,
             region(a, [for_op(a, foreign(a, "pattern"), empty_region(a))]),
         ),
-        L2Facts::default(),
+        L2Analyses::default(),
     )
 }
 
-fn model_expression_not_js<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
+fn model_expression_not_js<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Analyses) {
     let expr = opaque(a, "bad", OpaqueReason::ParseRejected);
     let model = BindingOp::Model(ab(
         a,
@@ -164,15 +170,15 @@ fn model_expression_not_js<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
             a,
             region(a, [el(a, "input", av1(a, model), empty_region(a))]),
         ),
-        L2Facts::default(),
+        L2Analyses::default(),
     )
 }
 
-fn slot_facts_missing_group<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
-    let mut facts = L2Facts::default();
+fn slot_facts_missing_group<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Analyses) {
+    let mut facts = L2Analyses::default();
     facts.slot_facts.insert(
         NodeId::FIRST,
-        SlotFacts {
+        SlotAnalysis {
             groups: vec![SlotGroup {
                 name: SlotName::Static {
                     text: VString::from("header"),
@@ -190,7 +196,7 @@ fn slot_facts_missing_group<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
     (lowered(a, region(a, [root])), facts)
 }
 
-fn template_dynamic_key_empty<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
+fn template_dynamic_key_empty<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Analyses) {
     let body = region(a, [el(a, "div", av(a), empty_region(a))]);
     let mut lowered = lowered(a, region(a, [for_op(a, js(a, "item"), body)]));
     lowered.artifact.loop_fragments.insert(
@@ -205,7 +211,7 @@ fn template_dynamic_key_empty<'a>(a: &'a Allocator) -> (Lowered<'a>, L2Facts) {
             runtime_directive: None,
         },
     );
-    (lowered, L2Facts::default())
+    (lowered, L2Analyses::default())
 }
 
 fn root_with_compound_child<'a>(a: &'a Allocator) -> Region<'a> {
@@ -233,7 +239,7 @@ fn for_op<'a>(a: &'a Allocator, value: ExprRef<'a>, body: Region<'a>) -> Op<'a> 
 fn lowered<'a>(a: &'a Allocator, root: Region<'a>) -> Lowered<'a> {
     Lowered {
         allocator: a,
-        artifact: ArtifactParts::new("", root),
+        artifact: L2TemplateParts::new("", root),
         op_count: 0,
         diagnostics: StdVec::new(),
         consumed_expressions: StdVec::new(),

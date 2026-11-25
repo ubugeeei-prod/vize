@@ -1,5 +1,5 @@
 //! Check and attach an authored static event before its owner's children.
-use super::{ArtifactError, BindingOp, Box, DynamicName, ExprRef, check};
+use super::{BindingOp, Box, DynamicName, ExprRef, L2TemplateError, check};
 use crate::artifact::RegionBuilder;
 use crate::expr::JsExpr;
 use crate::op::{OnHandlerRef, OnOp};
@@ -12,13 +12,13 @@ impl<'a> RegionBuilder<'_, 'a> {
         modifiers: vize_l0::Vec<'a, &'a str>,
         handler: Option<&'a JsExpr<'a>>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let builder = &mut self.builder;
         let id = builder.prepare_binding(span)?;
         let source = builder.parts.source;
         check::owned_span(source, id, name_span, Some(span))?;
         let name = name_span.slice(source);
-        let invalid_name = ArtifactError::InvalidBindingName {
+        let invalid_name = L2TemplateError::InvalidBindingName {
             node: id,
             span: name_span,
         };
@@ -26,7 +26,7 @@ impl<'a> RegionBuilder<'_, 'a> {
             return Err(invalid_name);
         }
         let root = SourceRoot::new(source)
-            .map_err(|_| ArtifactError::SourceLimit)?
+            .map_err(|_| L2TemplateError::SourceLimit)?
             .whole_block();
         let mut previous_end = name_span.end;
         for &modifier in &modifiers {
@@ -42,7 +42,7 @@ impl<'a> RegionBuilder<'_, 'a> {
                 || handler.span.slice(source) != handler.source
                 || !matches!(handler.ast, oxc_ast::ast::Expression::Identifier(name) if name.name.as_str() == handler.source)
             {
-                return Err(ArtifactError::InvalidJsSpan {
+                return Err(L2TemplateError::InvalidJsSpan {
                     node: id,
                     span: handler.span,
                 });
@@ -51,7 +51,7 @@ impl<'a> RegionBuilder<'_, 'a> {
         let frame = builder
             .frames
             .last_mut()
-            .ok_or(ArtifactError::BindingWithoutOwner { span })?;
+            .ok_or(L2TemplateError::BindingWithoutOwner { span })?;
         let _ = builder.walk.mint_attached();
         frame.bindings.push(BindingOp::On(Box::new_in(
             OnOp {

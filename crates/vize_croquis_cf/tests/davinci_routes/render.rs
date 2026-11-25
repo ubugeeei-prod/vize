@@ -10,8 +10,8 @@ use vize_carton::line_index::LineIndex;
 use vize_croquis_cf::providers::vue_router::typing::RouteDiagnostic;
 use vize_croquis_cf::providers::vue_router::{OpenReason, RouteParams, RouteTree};
 use vize_croquis_cf::providers::{ModuleId, ProjectSources};
+use vize_l0::analysis::{Analysis, AnalysisView};
 use vize_l0::diag::{PartKind, Severity};
-use vize_l0::fact::{FactGroup, FactView};
 
 fn at(project: &ProjectSources, module: ModuleId, span: Span) -> String {
     let source = project.module(module).expect("module of this project");
@@ -30,7 +30,7 @@ fn at(project: &ProjectSources, module: ModuleId, span: Span) -> String {
 
 pub fn fixture(
     project: &ProjectSources,
-    view: &FactView<'_>,
+    view: &AnalysisView<'_>,
     diagnostics: &[RouteDiagnostic],
 ) -> String {
     let mut out = String::new();

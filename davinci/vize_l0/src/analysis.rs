@@ -1,11 +1,11 @@
 //! The fact API — the one typed query surface of charter #5/#8 (P4-1a).
 //!
 //! Every analysis a consumer reads is a **fact group**: a table keyed by
-//! [`FactGroup::Key`], computed by a registered producer, never a field on a
+//! [`Analysis::Key`], computed by a registered producer, never a field on a
 //! god struct. Consumers **declare** the groups they read as const data
-//! ([`FactConsumer::DEMAND`]); a run computes exactly the transitive closure of
+//! ([`AnalysisConsumer::DEMAND`]); a run computes exactly the transitive closure of
 //! the declared union, in stratum order, each group at most once per artifact
-//! ([`FactManager`]).
+//! ([`AnalysisManager`]).
 //!
 //! # Identity
 //!
@@ -16,8 +16,8 @@
 //!
 //! # Stratification — demand cycles are unrepresentable
 //!
-//! A group names a [`FactGroup::STRATUM`] and may depend only on groups in
-//! **strictly lower** strata. [`FactRegistry::new`] checks that in a `const
+//! A group names a [`Analysis::STRATUM`] and may depend only on groups in
+//! **strictly lower** strata. [`AnalysisRegistry::new`] checks that in a `const
 //! fn`, so a registry that breaks it is a compile error; with every edge
 //! pointing strictly downwards no cycle can be written down at all (the Swift
 //! request-evaluator anti-lesson: cycle detection at run time is a design
@@ -25,9 +25,9 @@
 //!
 //! # The undeclared-access detector (TS-35)
 //!
-//! Under `debug_assertions` a [`FactView`] carries its consumer's declared
+//! Under `debug_assertions` a [`AnalysisView`] carries its consumer's declared
 //! demand; reading a group outside it returns the exact
-//! [`FactError::Undeclared`] and bumps a process-global counter
+//! [`AnalysisError::Undeclared`] and bumps a process-global counter
 //! ([`undeclared_accesses`]) even when another consumer's demand happened to
 //! compute the table. In release builds the declared demand is a zero-sized
 //! type (const-asserted) and the check compiles away.
@@ -35,15 +35,15 @@
 //! # Example
 //!
 //! ```
-//! use vize_l0::fact::{
-//!     Demand, FactConsumer, FactGroup, FactManager, FactProducer, FactRegistry, FactTable,
-//!     FactView, ProducerEntry,
+//! use vize_l0::analysis::{
+//!     Demand, AnalysisConsumer, Analysis, AnalysisManager, AnalysisProducer, AnalysisRegistry, AnalysisTable,
+//!     AnalysisView, ProducerEntry,
 //! };
 //! use vize_l0::pass::AnalysisId;
 //!
 //! /// Stratum 0: the length of every word.
 //! struct Lengths;
-//! impl FactGroup for Lengths {
+//! impl Analysis for Lengths {
 //!     const ID: AnalysisId = AnalysisId::new(32);
 //!     const NAME: &'static str = "lengths";
 //!     const STRATUM: u8 = 0;
@@ -51,15 +51,15 @@
 //!     type Key = u32;
 //!     type Value = usize;
 //! }
-//! impl FactProducer<[&str]> for Lengths {
-//!     fn produce(words: &[&str], _: &FactView<'_>) -> FactTable<Self> {
+//! impl AnalysisProducer<[&str]> for Lengths {
+//!     fn produce(words: &[&str], _: &AnalysisView<'_>) -> AnalysisTable<Self> {
 //!         (0u32..).zip(words.iter().map(|word| word.len())).collect()
 //!     }
 //! }
 //!
 //! /// Stratum 1: the longest word, read off `Lengths`.
 //! struct Longest;
-//! impl FactGroup for Longest {
+//! impl Analysis for Longest {
 //!     const ID: AnalysisId = AnalysisId::new(33);
 //!     const NAME: &'static str = "longest";
 //!     const STRATUM: u8 = 1;
@@ -67,25 +67,25 @@
 //!     type Key = ();
 //!     type Value = u32;
 //! }
-//! impl FactProducer<[&str]> for Longest {
-//!     fn produce(_: &[&str], inputs: &FactView<'_>) -> FactTable<Self> {
+//! impl AnalysisProducer<[&str]> for Longest {
+//!     fn produce(_: &[&str], inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
 //!         let lengths = inputs.get::<Lengths>().expect("declared");
 //!         let longest = lengths.iter().max_by_key(|(_, len)| **len).map(|(at, _)| *at);
 //!         longest.map(|at| ((), at)).into_iter().collect()
 //!     }
 //! }
 //!
-//! const REGISTRY: FactRegistry<[&str]> =
-//!     FactRegistry::new(&[ProducerEntry::of::<Lengths>(), ProducerEntry::of::<Longest>()]);
+//! const REGISTRY: AnalysisRegistry<[&str]> =
+//!     AnalysisRegistry::new(&[ProducerEntry::of::<Lengths>(), ProducerEntry::of::<Longest>()]);
 //!
 //! struct LongestWordRule;
-//! impl FactConsumer for LongestWordRule {
+//! impl AnalysisConsumer for LongestWordRule {
 //!     const NAME: &'static str = "longest-word";
 //!     const DEMAND: Demand = Demand::NONE.with(Longest::ID);
 //! }
 //!
 //! let words: &[&str] = &["fact", "demand", "view"];
-//! let mut manager = FactManager::new(&REGISTRY);
+//! let mut manager = AnalysisManager::new(&REGISTRY);
 //! let view = manager.prepare::<LongestWordRule>(words).unwrap();
 //! assert_eq!(view.get::<Longest>().unwrap().get(&()), Some(&1));
 //! ```
@@ -93,12 +93,12 @@
 //! # Module layout
 //!
 //! - [`demand`] — [`Demand`], the const-built group set
-//! - [`registry`] — [`GroupDesc`], [`FactRegistry`] and the stratification
+//! - [`registry`] — [`GroupDesc`], [`AnalysisRegistry`] and the stratification
 //!   check
-//! - [`table`] — [`FactTable`], the borrowed table a query returns
-//! - [`manager`] — [`FactManager`]
-//! - [`view`] — [`FactView`], [`FactError`] and the process-global counters
-//! - [`preserve`] — facts across passes: [`FactManager::after_pass`], the
+//! - [`table`] — [`AnalysisTable`], the borrowed table a query returns
+//! - [`manager`] — [`AnalysisManager`]
+//! - [`view`] — [`AnalysisView`], [`AnalysisError`] and the process-global counters
+//! - [`preserve`] — facts across passes: [`AnalysisManager::after_pass`], the
 //!   named preservation groups and the verify mode (P4-1b)
 //! - [`ids`] — the production fact-group identity table
 //! - [`alpha`] — the α (exported, versioned) form of a group (P4-2)
@@ -117,14 +117,14 @@ pub use alpha::{
     ALPHA_GROUPS, AlphaDesc, AlphaDocError, AlphaDocument, AlphaExport, check_alpha_schema_doc,
 };
 pub use demand::Demand;
-pub use expression::{ExpressionFact, ExpressionFacts, ExpressionFactsAlpha};
-pub use manager::FactManager;
+pub use expression::{ExpressionAnalysis, ExpressionAnalysisAlpha, ExpressionInfo};
+pub use manager::AnalysisManager;
 pub use preserve::{
-    FactVerify, FactVerifyObserver, NoFactVerify, PRESERVE_BINDINGS, PRESERVE_STRUCTURE,
+    AnalysisVerify, AnalysisVerifyObserver, NoAnalysisVerify, PRESERVE_BINDINGS, PRESERVE_STRUCTURE,
 };
-pub use registry::{FactRegistry, GroupDesc, ProducerEntry, StrataError, check_strata};
-pub use table::{FactTable, FactTableBuilder};
-pub use view::{FactError, FactView, produced_count, undeclared_accesses};
+pub use registry::{AnalysisRegistry, GroupDesc, ProducerEntry, StrataError, check_strata};
+pub use table::{AnalysisTable, AnalysisTableBuilder};
+pub use view::{AnalysisError, AnalysisView, produced_count, undeclared_accesses};
 
 use crate::pass::AnalysisId;
 
@@ -134,12 +134,12 @@ use crate::pass::AnalysisId;
 /// Implemented by a unit type per group. Everything is `const` so the
 /// registry can check stratification at compile time and a consumer can
 /// build its demand in a `const` item.
-pub trait FactGroup: Sized + 'static {
+pub trait Analysis: Sized + 'static {
     /// The group's identity — shared with pass-manager preserved masks.
     const ID: AnalysisId;
     /// The group's stable name, used in errors and dumps.
     const NAME: &'static str;
-    /// The group's stratum. Every group in [`FactGroup::DEPENDS`] must sit in
+    /// The group's stratum. Every group in [`Analysis::DEPENDS`] must sit in
     /// a strictly lower one.
     const STRATUM: u8;
     /// The groups this group's producer reads.
@@ -161,8 +161,8 @@ pub trait FactGroup: Sized + 'static {
 
 /// A consumer of facts: a lint rule, a lowering, a projection, an LSP
 /// feature. Its demand is const data, declared once, read by the detector.
-pub trait FactConsumer {
-    /// The consumer's stable name, reported by [`FactError::Undeclared`].
+pub trait AnalysisConsumer {
+    /// The consumer's stable name, reported by [`AnalysisError::Undeclared`].
     const NAME: &'static str;
     /// Every group the consumer reads.
     const DEMAND: Demand;
@@ -170,10 +170,10 @@ pub trait FactConsumer {
 
 /// How a registered producer computes its group over an artifact `A`.
 ///
-/// The producer reads its inputs through a [`FactView`] whose declared
-/// demand is its own [`FactGroup::DEPENDS`], so a producer reading a group it
+/// The producer reads its inputs through a [`AnalysisView`] whose declared
+/// demand is its own [`Analysis::DEPENDS`], so a producer reading a group it
 /// did not declare trips the same detector a consumer does.
-pub trait FactProducer<A: ?Sized>: FactGroup {
+pub trait AnalysisProducer<A: ?Sized>: Analysis {
     /// Compute the whole table for `artifact`.
-    fn produce(artifact: &A, inputs: &FactView<'_>) -> FactTable<Self>;
+    fn produce(artifact: &A, inputs: &AnalysisView<'_>) -> AnalysisTable<Self>;
 }

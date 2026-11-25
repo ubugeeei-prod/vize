@@ -1,7 +1,7 @@
 //! A live whole-driver borrow arms before header/source/policy operations.
 
 use super::{TemplatePolicy, TemplateRegion};
-use crate::artifact::{ArtifactError, ComponentBody, ComponentFactory};
+use crate::artifact::{ComponentBody, ComponentFactory, L2TemplateError};
 use crate::expr::JsExpr;
 use crate::file::template::TemplateWalk;
 use crate::file::{FileIssueKind, TemplateIssue};
@@ -28,7 +28,10 @@ pub struct TemplateWalkRegion<'g, 'f, 'a, P: TemplatePolicy> {
 impl<'f, 'a, P: TemplatePolicy> TemplateRegion<'f, 'a, P> {
     /// Surround the same existing driver, including work before its first mint.
     /// This lower diagnostic API grants no original Component or Vue authority.
-    pub fn walk(&mut self, span: Span) -> Result<TemplateWalkRegion<'_, 'f, 'a, P>, ArtifactError> {
+    pub fn walk(
+        &mut self,
+        span: Span,
+    ) -> Result<TemplateWalkRegion<'_, 'f, 'a, P>, L2TemplateError> {
         if matches!(self.inner.facts.template_walk, TemplateWalk::Pending(_)) {
             return Err(self.inner.reject(span, FileIssueKind::ActiveTemplateWalk));
         }
@@ -87,17 +90,17 @@ impl<'a, P: TemplatePolicy> ComponentFactory<'a> for TemplateWalkRegion<'_, '_, 
     fn source(&self) -> &'a str {
         self.region.source()
     }
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.text(text, span)
     }
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.comment(text, span)
     }
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.interpolation(expression, span)
     }
     fn bind(
@@ -106,7 +109,7 @@ impl<'a, P: TemplatePolicy> ComponentFactory<'a> for TemplateWalkRegion<'_, '_, 
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.bind(name, name_span, expression, span)
     }
     fn element<B: ComponentBody<'a>>(
@@ -116,7 +119,7 @@ impl<'a, P: TemplatePolicy> ComponentFactory<'a> for TemplateWalkRegion<'_, '_, 
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.element(tag, namespace, attributes, span, body)
     }
     fn component<B: ComponentBody<'a>>(
@@ -125,10 +128,10 @@ impl<'a, P: TemplatePolicy> ComponentFactory<'a> for TemplateWalkRegion<'_, '_, 
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.component(name, attributes, span, body)
     }
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         self.region.record(record)
     }
 }

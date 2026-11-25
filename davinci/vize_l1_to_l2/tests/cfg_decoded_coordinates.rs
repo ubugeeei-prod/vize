@@ -3,7 +3,9 @@
 use vize_l0::{Allocator, SourceRoot, Span, id::NodeId};
 use vize_l1::embed::Lang;
 use vize_l1_to_l2::{lower_source_block, native::NativeComponent};
-use vize_l2::analysis::template_complexity::{self, ComplexityFacts, Contribution, DecisionKind};
+use vize_l2::analysis::template_complexity::{
+    self, ComplexityAnalysis, Contribution, DecisionKind,
+};
 use vize_l2::artifact::Builder;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, Op};
@@ -47,7 +49,7 @@ fn actual_native_and_compatibility_producers_agree_on_complete_encoded_expressio
                 let compatibility = lower_source_block(&a, &tree, &errors, block);
                 let facts =
                     template_complexity::run(&compatibility.artifact.root, compatibility.op_count);
-                let expected = ComplexityFacts {
+                let expected = ComplexityAnalysis {
                     cyclomatic: 5,
                     cognitive: 4,
                     unknown: 0,

@@ -19,8 +19,8 @@ mod rules;
 
 use serde_json::Value;
 use vize_carton::config::plugin_plan::{PlannedCapability, PlannedPlugin, VerifiedPluginPlan};
+use vize_l0::analysis::AnalysisManager;
 use vize_l0::config::{DirectiveContract, LintRuleSeverity};
-use vize_l0::fact::FactManager;
 use vize_l0::{FxHashMap, FxHashSet, String, cstr};
 
 use super::batch::{BuiltBatch, PluginSpec, build_batch};
@@ -175,7 +175,7 @@ impl PluginLintJobs {
         let Ok(document) = PluginDocument::build(source, filename) else {
             return Ok(None);
         };
-        let mut facts = FactManager::new(&REGISTRY);
+        let mut facts = AnalysisManager::new(&REGISTRY);
         let batches = self
             .jobs
             .iter()

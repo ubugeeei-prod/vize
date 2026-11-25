@@ -44,7 +44,7 @@ pub enum StaticLevel {
 
 /// Static-analysis facts for one canonical L2 element or component owner.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct StaticFacts {
+pub struct StaticAnalysis {
     /// The owner's static level.
     pub level: StaticLevel,
     /// Whether the non-empty props surface is fully hoistable.
@@ -60,11 +60,11 @@ pub struct StaticFacts {
 // Facts cross compile boundaries with their artifact.
 const _: () = {
     const fn assert_owned<T: 'static>() {}
-    assert_owned::<StaticFacts>();
+    assert_owned::<StaticAnalysis>();
 };
 
 /// Five bytes on every width: one tag byte plus four bools.
-const _: () = assert!(core::mem::size_of::<StaticFacts>() == 5);
+const _: () = assert!(core::mem::size_of::<StaticAnalysis>() == 5);
 
 /// Analyze one complete region using its existing page-order node count.
 ///
@@ -79,7 +79,7 @@ pub fn run(
     root: &Region<'_>,
     op_count: u32,
     provenance: &mut impl ProvenanceSink,
-) -> SideTable<StaticFacts> {
+) -> SideTable<StaticAnalysis> {
     run_remarked(root, op_count, provenance, &mut NoRemarks)
 }
 
@@ -96,7 +96,7 @@ pub fn run_remarked<R: RemarkSink>(
     op_count: u32,
     provenance: &mut impl ProvenanceSink,
     remarks: &mut R,
-) -> SideTable<StaticFacts> {
+) -> SideTable<StaticAnalysis> {
     let mut facts = SideTable::new();
     let mut walk = PageWalk::new();
     lattice::visit_region(

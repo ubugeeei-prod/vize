@@ -47,7 +47,7 @@ use std::time::Instant;
 use napi::Env;
 use napi::bindgen_prelude::{Error, FunctionRef, Result, Status};
 use napi_derive::napi;
-use vize_l0::fact::FactManager;
+use vize_l0::analysis::AnalysisManager;
 
 use batch::{
     PluginDiagnostic, PluginSpec, build_batch, diagnostics, sort, valid_cached, validate_spec,
@@ -189,7 +189,7 @@ pub fn lint_with_plugins(
     let cache_dir = options.cache_dir.as_deref().map(Path::new);
     providers.configure_cache(use_cache, cache_dir);
     let document = PluginDocument::build(&source, &filename).map_err(host_error)?;
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let mut all = Vec::new();
     let mut costs = Vec::with_capacity(plugins.len());
     for plugin in &plugins {

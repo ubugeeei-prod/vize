@@ -3,7 +3,7 @@ use vize_l3::op::{L3Ir, OpId};
 
 pub mod dump;
 
-pub use crate::partition::dump::{Fact as DumpPartitionFact, Page as PartitionPage};
+pub use crate::partition::dump::{Page as PartitionPage, PartitionRecord as DumpPartitionRecord};
 
 /// Static or dynamic partition assigned to one canonical L3 op.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -53,7 +53,7 @@ impl PartitionKind {
 
 /// One exported partition fact.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct PartitionFact {
+pub struct PartitionInfo {
     pub op: OpId,
     pub kind: PartitionKind,
     pub span: Span,
@@ -61,11 +61,11 @@ pub struct PartitionFact {
 
 /// Partition facts computed during L2→L3 lowering.
 #[derive(Debug)]
-pub struct PartitionFacts<'a> {
-    pub ops: Vec<'a, PartitionFact>,
+pub struct PartitionAnalysis<'a> {
+    pub ops: Vec<'a, PartitionInfo>,
 }
 
-impl<'a> PartitionFacts<'a> {
+impl<'a> PartitionAnalysis<'a> {
     /// Empty fact group.
     #[must_use]
     pub fn new(allocator: &'a Allocator) -> Self {
@@ -75,13 +75,13 @@ impl<'a> PartitionFacts<'a> {
     }
 
     /// Add one op fact.
-    pub fn push(&mut self, fact: PartitionFact) {
+    pub fn push(&mut self, fact: PartitionInfo) {
         self.ops.push(fact);
     }
 
     /// Find the partition fact for `op`.
     #[must_use]
-    pub fn get(&self, op: OpId) -> Option<&PartitionFact> {
+    pub fn get(&self, op: OpId) -> Option<&PartitionInfo> {
         self.ops.iter().find(|fact| fact.op == op)
     }
 
@@ -103,8 +103,8 @@ impl<'a> PartitionFacts<'a> {
     }
 }
 
-const _: () = assert!(!core::mem::needs_drop::<PartitionFact>());
+const _: () = assert!(!core::mem::needs_drop::<PartitionInfo>());
 const _: () = assert!(core::mem::size_of::<PartitionKind>() == 1);
 
 #[cfg(target_pointer_width = "64")]
-const _: () = assert!(core::mem::size_of::<PartitionFact>() == 16);
+const _: () = assert!(core::mem::size_of::<PartitionInfo>() == 16);
