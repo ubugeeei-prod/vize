@@ -1,0 +1,130 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_attrs": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_elim_Some": { "prover": "z3", "time": 0.003 },
+      "vc_eq_ref_str": { "prover": "z3", "time": 0.003 },
+      "vc_get_BlockAttr": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_identical": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_len_BlockAttr": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_names": { "prover": "z3", "time": 0.003 },
+      "vc_same_header": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.004 },
+              {
+                "tactic": "compute_in_goal",
+                "children": [{ "prover": "alt-ergo", "time": 0.007 }]
+              },
+              { "prover": "z3", "time": 0.003 },
+              { "prover": "z3", "time": 0.008 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "alt-ergo", "time": 0.009 },
+              { "prover": "alt-ergo", "time": 0.594 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  {
+                    "tactic": "split_vc",
+                    "children": [
+                      {
+                        "tactic": "compute_in_goal",
+                        "children": [{ "prover": "alt-ergo", "time": 0.051 }]
+                      },
+                      { "prover": "z3", "time": 0.029 }
+                    ]
+                  },
+                  { "prover": "z3", "time": 0.03 }
+                ]
+              },
+              { "prover": "z3", "time": 0.011 },
+              { "prover": "alt-ergo", "time": 0.156 },
+              { "prover": "z3", "time": 0.01 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  {
+                    "tactic": "split_vc",
+                    "children": [
+                      {
+                        "tactic": "split_vc",
+                        "children": [
+                          { "prover": "alt-ergo", "time": 0.01 },
+                          { "prover": "alt-ergo", "time": 0.011 }
+                        ]
+                      },
+                      {
+                        "tactic": "compute_in_goal",
+                        "children": [{ "prover": "alt-ergo", "time": 0.011 }]
+                      }
+                    ]
+                  },
+                  {
+                    "tactic": "split_vc",
+                    "children": [
+                      { "prover": "alt-ergo", "time": 0.011 },
+                      { "prover": "alt-ergo", "time": 0.01 }
+                    ]
+                  }
+                ]
+              },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  {
+                    "tactic": "split_vc",
+                    "children": [
+                      {
+                        "tactic": "compute_in_goal",
+                        "children": [{ "prover": "z3", "time": 0.009 }]
+                      },
+                      {
+                        "tactic": "compute_in_goal",
+                        "children": [{ "prover": "z3", "time": 0.009 }]
+                      }
+                    ]
+                  },
+                  {
+                    "tactic": "compute_in_goal",
+                    "children": [{ "prover": "z3", "time": 0.01 }]
+                  }
+                ]
+              },
+              { "prover": "z3", "time": 0.012 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  {
+                    "tactic": "split_vc",
+                    "children": [
+                      {
+                        "tactic": "compute_in_goal",
+                        "children": [{ "prover": "z3", "time": 0.013 }]
+                      },
+                      {
+                        "tactic": "compute_in_goal",
+                        "children": [{ "prover": "z3", "time": 0.012 }]
+                      }
+                    ]
+                  },
+                  {
+                    "tactic": "compute_in_goal",
+                    "children": [{ "prover": "z3", "time": 0.015 }]
+                  }
+                ]
+              },
+              { "prover": "alt-ergo", "time": 0.011 },
+              { "prover": "alt-ergo", "time": 0.008 }
+            ]
+          }
+        ]
+      },
+      "vc_spells": { "prover": "z3", "time": 0.003 },
+      "vc_split_at_BlockAttr": { "prover": "z3", "time": 0.003 }
+    }
+  }
+}

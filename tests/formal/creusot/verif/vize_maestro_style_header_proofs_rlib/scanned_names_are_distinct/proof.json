@@ -1,0 +1,24 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_scanned_names_are_distinct": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "alt-ergo", "time": 0.015 },
+                  { "prover": "alt-ergo", "time": 0.018 }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

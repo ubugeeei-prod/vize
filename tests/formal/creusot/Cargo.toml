@@ -15,6 +15,7 @@ members = [
   "content-model",
   "reference",
   "js-escape-gate",
+  "style-header",
   "assignability",
 ]
 
