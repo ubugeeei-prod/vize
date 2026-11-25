@@ -309,7 +309,7 @@ export function planToolingTests(
   const global = code.some(
     (path) =>
       matchesAny(path, globalInputs) ||
-      /^(?:\.github\/(?:scripts\/workflows\/shared|actions\/stage-workflow-scripts)\/|tools\/config\/pkl\/(?:Actions|ShellScript)\.pkl$)/u.test(
+      /^(?:\.github\/(?:scripts\/workflows\/shared|actions\/stage-workflow-scripts)\/|tools\/config\/pkl\/(?:Actions|ShellScript)\.pkl$|tools\/ci\/lib\/(?:scripts\/|(?:Actions|ShellScript)\.pkl$))/u.test(
         path,
       ),
   );
