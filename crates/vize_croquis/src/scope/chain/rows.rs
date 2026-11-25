@@ -132,8 +132,9 @@ impl<T> Rows<T> {
     #[cfg_attr(creusot, ensures((^self).selected() == self.rows().len()))]
     #[inline]
     pub(crate) fn push_selected(&mut self, row: T) {
-        self.current = self.rows.len();
+        let selected = self.rows.len();
         self.rows.push(row);
+        self.current = selected;
     }
 
     /// Make the row at `index` current if the table has one there, and say
@@ -171,5 +172,23 @@ impl<T> Rows<T> {
     pub(crate) fn current_mut(&mut self) -> &mut T {
         // SAFETY: the type invariant `current < rows.len()`, as in `current`.
         unsafe { self.rows.get_unchecked_mut(self.current) }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Rows;
+
+    #[test]
+    fn a_failed_push_keeps_the_current_row_in_bounds() {
+        // A zero-sized vector reaches the capacity-overflow panic without
+        // allocating. Unwinding must leave the table's previous row selected.
+        let mut table = Rows::from_rows(vec![(); usize::MAX]).unwrap();
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            table.push_selected(());
+        }));
+        assert!(result.is_err());
+        assert_eq!(table.current, 0);
+        assert_eq!(table.rows.len(), usize::MAX);
     }
 }
