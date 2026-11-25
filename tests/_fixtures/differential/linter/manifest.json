@@ -25302,6 +25302,42 @@
       }
     },
     {
+      "id": "linter/relative-has-selectors",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "relative-has-selectors",
+        "files": [
+          {
+            "path": "Foo.vue.txt",
+            "role": "third-party-relative-has-reproduction",
+            "sha256": "827d4d1edbee26c1cc5cc68a2a08e201df646acfd7631496ca4ebc362d09bdb0"
+          },
+          {
+            "path": "selectors.json",
+            "role": "third-party-relative-has-reproduction",
+            "sha256": "6cd337595f6a4bbda55f7813d7ae53c050352549bb39de6498ecb66dbc83d252"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/repeated-macro-groups-10610",
       "state": "active",
       "targets": [

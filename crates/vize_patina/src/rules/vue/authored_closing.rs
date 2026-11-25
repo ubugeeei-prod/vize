@@ -56,6 +56,16 @@ pub(super) fn find(source: &str, from: u32, tag: &str) -> Option<Range<u32>> {
     None
 }
 
+/// Whether the start tag at `range` is written as `<tag ... />`, which closes
+/// the element in a Vue template even for HTML elements that are not void.
+pub(super) fn self_closing_start_tag(source: &str, range: Range<u32>) -> bool {
+    let (Ok(start), Ok(end)) = (usize::try_from(range.start), usize::try_from(range.end)) else {
+        return false;
+    };
+    let bytes = source.as_bytes();
+    bytes.get(end.wrapping_sub(1)) == Some(&b'>') && self_closing(bytes, start, end)
+}
+
 fn is_name_byte(byte: &&u8) -> bool {
     byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b':')
 }
