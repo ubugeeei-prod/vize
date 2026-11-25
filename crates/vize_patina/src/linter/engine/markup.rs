@@ -37,7 +37,9 @@ impl Linter {
         analysis: Option<&'a Croquis>,
         rules: MarkupRules<'_>,
     ) -> LintResult {
-        let markup = crate::markup::reborrow_markup(markup);
+        // SAFETY: the caller's `markup` borrow outlives this call, and the
+        // document built from it is dropped when the walk below returns.
+        let markup = unsafe { crate::markup::reborrow_markup(markup) };
         let document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);
         self.lint_markup_document(allocator, source, filename, document, analysis, rules)
     }

@@ -157,7 +157,9 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
         }
     }
     let markup = input.l2.markup();
-    let markup = crate::markup::reborrow_markup(&markup);
+    // SAFETY: the local header lives to the end of this function, and the
+    // document and visitor built from it are dropped before it.
+    let markup = unsafe { crate::markup::reborrow_markup(&markup) };
     let mut document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);
     if let Some(analysis) = input.analysis {
         document = document.with_analysis(analysis);

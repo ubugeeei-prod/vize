@@ -34,6 +34,12 @@ import type { PrecompileInputOwner } from "./precompile-owner.ts";
 import { compileScopedBatch } from "./precompile-scopes.ts";
 import { prepareSfcSrcRequests } from "./src-requests.ts";
 import { getCompileOptionsForRequest, getEnvironmentCache, type VizePluginState } from "./state.ts";
+import {
+  hasSiblingResults,
+  siblingOptionsKey,
+  takeSiblingResult,
+  type SiblingTarget,
+} from "./sibling-compiles.ts";
 
 interface DemandQueue {
   /** Resolved or loaded `.vue` files not compiled yet, in the order they were seen. */
@@ -99,6 +105,8 @@ export interface DemandCompileOptions {
   resolve?: HostResolve;
   /** Whether the requested file's compiler warnings are printed. @default true */
   logWarnings?: boolean;
+  /** The other target a batch also compiles, for a sibling environment (`sibling-compiles.ts`). */
+  sibling?: SiblingTarget;
 }
 
 /**
@@ -150,7 +158,7 @@ export async function compileRequestedSfc(
       }
       files = prepared;
     }
-    return compileFiles(state, queue, cache, ssr, files, options.logWarnings);
+    return compileFiles(state, queue, cache, ssr, files, options.logWarnings, options.sibling);
   } finally {
     for (const member of keys) {
       if (queue.inFlight.get(member) === batch) queue.inFlight.delete(member);
@@ -180,6 +188,28 @@ export function compileRequestedSfcNow(
     (member) => listSfcSrcRequests(parseSfc, member.path, member.source).length === 0,
   );
   return compileFiles(state, queue, cache, ssr, [{ path: file, source }, ...members]);
+}
+
+/**
+ * Move the result a sibling environment's batch compiled for this environment
+ * into its cache, when it was compiled with this request's options. The cache
+ * then checks it as any result: the text compiled and the type project.
+ */
+export function adoptSiblingCompile(state: VizePluginState, file: string, ssr: boolean): void {
+  const epoch = state.filesystemEpoch;
+  if (!epoch || !hasSiblingResults(epoch)) return;
+  const cache = getEnvironmentCache(state, ssr);
+  if (cache.has(file)) return;
+  const options = siblingOptionsKey(getCompileOptionsForRequest(state, ssr, file));
+  const taken = takeSiblingResult(epoch, file, options);
+  if (!taken) return;
+  cache.set(file, taken.compiled);
+  if (taken.warnings.length > 0) {
+    queueOf(cache).warnings.set(normalizeCachePath(file), {
+      source: taken.compiled.source ?? "",
+      warnings: taken.warnings,
+    });
+  }
 }
 
 /** Print the warnings a batch collected for `file`, once its request reuses the result. */
@@ -275,6 +305,7 @@ function compileFiles(
   ssr: boolean,
   files: BatchFileInput[],
   logWarnings = true,
+  sibling?: SiblingTarget,
 ): CompiledModule {
   const { path: file, source } = files[0];
   // The next reader of a source that did not compile starts from the file.
@@ -295,15 +326,21 @@ function compileFiles(
   let failure: unknown;
   let results: ReturnType<typeof compileScopedBatch>["results"];
   try {
-    ({ results } = compileScopedBatch(files, state, ssr, {
-      log: false,
-      onFileFailure(path, error) {
-        forget(path);
-        if (path !== file) return;
-        failed = true;
-        failure = error;
+    ({ results } = compileScopedBatch(
+      files,
+      state,
+      ssr,
+      {
+        log: false,
+        onFileFailure(path, error) {
+          forget(path);
+          if (path !== file) return;
+          failed = true;
+          failure = error;
+        },
       },
-    }));
+      sibling,
+    ));
   } catch (error) {
     // A failure of the batch as a whole says nothing about the requested file.
     state.logger.log(`transform: batch with ${file} failed, compiling it alone`, error);

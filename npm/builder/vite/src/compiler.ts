@@ -24,6 +24,10 @@ import { generateScopeId, prependInlineStyleInjection } from "./utils/index.ts";
 import type { CompileJsxFn } from "./types.ts";
 
 const { compileSfc, compileSfcBatchWithResults } = native;
+
+/** What a native batch call returns, for one target. */
+export type NativeBatchResult = ReturnType<typeof compileSfcBatchWithResults>;
+type NativeFileResult = NativeBatchResult["results"][number];
 const compileJsx = (native as { compileJsx: CompileJsxFn }).compileJsx;
 
 const registeredPluginPlans = new WeakMap<object, string>();
@@ -239,17 +243,22 @@ export interface CompileBatchReporting {
   log?: boolean;
 }
 
-/**
- * Batch compile multiple files in parallel using native Rust multithreading.
- * Returns per-file results with content hashes for HMR.
- */
-export function compileBatch(
+/** A batch's inputs once their `src` blocks are inlined, and how its files fared. */
+export interface PreparedBatch {
+  files: BatchFileInput[];
+  sources: Map<string, string>;
+  inlined: Map<string, InlinedSfcSource>;
+  failed: Set<string>;
+  isolate: (path: string, run: () => void) => void;
+}
+
+/** Inline each file's `src` blocks and give it its scope, as every batch compiles it. */
+export function prepareBatch(
   files: { path: string; source: string }[],
-  cache: Map<string, CompiledModule>,
   options: CompileBatchOptions,
   reporting: CompileBatchReporting = {},
-): BatchCompileResultWithFiles {
-  const { onFileFailure, log = true } = reporting;
+): PreparedBatch {
+  const { onFileFailure } = reporting;
   const failed = new Set<string>();
   const isolate = (path: string, run: () => void): void => {
     if (!onFileFailure) return run();
@@ -278,7 +287,90 @@ export function compileBatch(
       });
     });
   }
+  return {
+    files: resolvedFiles,
+    sources: new Map(files.map((file) => [file.path, file.source])),
+    inlined: inlinedByPath,
+    failed,
+    isolate,
+  };
+}
 
+/** The module a batch result of `path` compiles to. */
+export function batchCompiledModule(
+  fileResult: NativeFileResult,
+  batch: PreparedBatch,
+): CompiledModule {
+  const inlined = batch.inlined.get(fileResult.path);
+  return {
+    ...(fileResult.typeProject ? { typeProject: fileResult.typeProject } : {}),
+    source: batch.sources.get(fileResult.path),
+    code: fileResult.code,
+    ...(fileResult.map ? { map: fileResult.map } : {}),
+    css: fileResult.css,
+    scopeId: fileResult.scopeId,
+    hasScoped: fileResult.hasScoped,
+    templateHash: fileResult.templateHash,
+    styleHash: fileResult.styleHash,
+    scriptHash: fileResult.scriptHash,
+    macroArtifacts: fileResult.macroArtifacts ?? [],
+    styles: normalizeStyleBlocks(fileResult.styles, inlined),
+    ...customBlockFields(fileResult.customBlocks),
+    dependencies: [...(inlined?.dependencies ?? []), ...(fileResult.dependencies ?? [])],
+    ...(fileResult.moduleShape ? { moduleShape: fileResult.moduleShape } : {}),
+  };
+}
+
+/** Check, cache and report the results of a batch compiled from `batch`. */
+export function finishBatch(
+  result: NativeBatchResult,
+  batch: PreparedBatch,
+  cache: Map<string, CompiledModule>,
+  log = true,
+): NativeBatchResult {
+  const { failed, isolate } = batch;
+  for (const fileResult of result.results) {
+    if (fileResult.errors.length > 0 || failed.has(fileResult.path)) continue;
+    const imports = batch.inlined.get(fileResult.path)?.imports;
+    isolate(fileResult.path, () =>
+      assertSfcStyleSrcImports(fileResult.path, fileResult.styles ?? [], imports),
+    );
+  }
+
+  // Update cache with results
+  for (const fileResult of result.results) {
+    if (failed.has(fileResult.path)) continue;
+    if (fileResult.errors.length === 0) {
+      cache.set(fileResult.path, batchCompiledModule(fileResult, batch));
+    }
+
+    if (!log) continue;
+    // Log errors and warnings
+    if (fileResult.errors.length > 0) {
+      console.error(formatCompileErrorMessage(fileResult.path, fileResult.errors));
+    }
+    if (fileResult.warnings.length > 0) {
+      fileResult.warnings.forEach((warning) => {
+        console.warn(`[vize] Warning in ${fileResult.path}: ${warning}`);
+      });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Batch compile multiple files in parallel using native Rust multithreading.
+ * Returns per-file results with content hashes for HMR.
+ */
+export function compileBatch(
+  files: { path: string; source: string }[],
+  cache: Map<string, CompiledModule>,
+  options: CompileBatchOptions,
+  reporting: CompileBatchReporting = {},
+): BatchCompileResultWithFiles {
+  const batch = prepareBatch(files, options, reporting);
+  const resolvedFiles = batch.files;
   const result = compileSfcBatchWithResults(resolvedFiles, buildCompileBatchOptions(options));
 
   // Released native bindings predating the batch `scopeId` field ignore it and
@@ -300,7 +392,7 @@ export function compileBatch(
       continue;
     }
 
-    isolate(fileResult.path, () => {
+    batch.isolate(fileResult.path, () => {
       const fallback = compileFile(fileResult.path, cache, options, input.source, {
         logWarnings: false,
       });
@@ -322,51 +414,5 @@ export function compileBatch(
     });
   }
 
-  for (const fileResult of result.results) {
-    if (fileResult.errors.length > 0 || failed.has(fileResult.path)) continue;
-    const imports = inlinedByPath.get(fileResult.path)?.imports;
-    isolate(fileResult.path, () =>
-      assertSfcStyleSrcImports(fileResult.path, fileResult.styles ?? [], imports),
-    );
-  }
-
-  // Update cache with results
-  for (const fileResult of result.results) {
-    if (failed.has(fileResult.path)) continue;
-    if (fileResult.errors.length === 0) {
-      cache.set(fileResult.path, {
-        ...(fileResult.typeProject ? { typeProject: fileResult.typeProject } : {}),
-        source: filesByPath.get(fileResult.path)?.source,
-        code: fileResult.code,
-        ...(fileResult.map ? { map: fileResult.map } : {}),
-        css: fileResult.css,
-        scopeId: fileResult.scopeId,
-        hasScoped: fileResult.hasScoped,
-        templateHash: fileResult.templateHash,
-        styleHash: fileResult.styleHash,
-        scriptHash: fileResult.scriptHash,
-        macroArtifacts: fileResult.macroArtifacts ?? [],
-        styles: normalizeStyleBlocks(fileResult.styles, inlinedByPath.get(fileResult.path)),
-        ...customBlockFields(fileResult.customBlocks),
-        dependencies: [
-          ...(inlinedByPath.get(fileResult.path)?.dependencies ?? []),
-          ...(fileResult.dependencies ?? []),
-        ],
-        ...(fileResult.moduleShape ? { moduleShape: fileResult.moduleShape } : {}),
-      });
-    }
-
-    if (!log) continue;
-    // Log errors and warnings
-    if (fileResult.errors.length > 0) {
-      console.error(formatCompileErrorMessage(fileResult.path, fileResult.errors));
-    }
-    if (fileResult.warnings.length > 0) {
-      fileResult.warnings.forEach((warning) => {
-        console.warn(`[vize] Warning in ${fileResult.path}: ${warning}`);
-      });
-    }
-  }
-
-  return result;
+  return finishBatch(result, batch, cache, reporting.log ?? true);
 }
