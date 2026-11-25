@@ -454,15 +454,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     pending_default.wrap_close = None;
                 }
 
-                let mut irregular_projection = irregular_default.as_ref()
-                    .and_then(|rewrite| rewrite.project_line(&output_line, line_start, &[]));
-                if irregular_projection.is_some() {
+                let irregular_projection = irregular_default.as_ref().and_then(|rewrite| {
                     let offsets = props_const_assertions.take_line_offsets(line_start, line_end);
-                    if !offsets.is_empty() {
-                        irregular_projection = irregular_default.as_ref()
-                            .and_then(|rewrite| rewrite.project_line(&output_line, line_start, offsets));
-                    }
-                }
+                    rewrite.project_line(&output_line, line_start, offsets)
+                });
                 if let Some(projected) = irregular_projection {
                     if projected.declares_alias {
                         emitted_default_alias = true;

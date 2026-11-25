@@ -49,7 +49,11 @@ impl<'a> IrregularDefault<'a> {
             let (start, inner, _) = targets.expr?;
             (start, inner, None, None)
         };
-        if script.get(start..inner)?.starts_with("export default") {
+        let before = script.get(..start)?;
+        let line_start = before.rfind('\n').map_or(0, |line| line + 1);
+        if script.get(start..inner)?.starts_with("export default")
+            && before.get(line_start..)?.trim().is_empty()
+        {
             return None;
         }
         let end = keyword_end(script, start)?;
