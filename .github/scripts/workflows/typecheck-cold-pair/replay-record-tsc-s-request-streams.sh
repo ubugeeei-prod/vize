@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/content-mapper-replay/record-tsc-s-request-streams.sh.pkl.
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/scripts/workflows/typecheck-cold-pair/replay-record-tsc-s-request-streams.sh.pkl.
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
 node tools/benchmarks/scripts/content-mapper-replay-record.ts \
