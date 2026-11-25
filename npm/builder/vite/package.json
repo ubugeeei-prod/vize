@@ -66,6 +66,7 @@
     "test:types:real-vite": "vp exec node type-tests/plugin-vue/check.ts"
   },
   "dependencies": {
+    "@rolldown/pluginutils": "1.0.1",
     "@vizejs/native": "workspace:*",
     "@vizejs/unplugin": "workspace:*",
     "jsonc-parser": "^3.3.1",

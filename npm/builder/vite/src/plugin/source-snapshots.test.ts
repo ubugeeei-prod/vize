@@ -21,6 +21,7 @@ import { RESOLVED_CSS_MODULE, toVirtualId } from "../virtual.ts";
 import { vize } from "./index.ts";
 import { LOAD_ID_FILTER, TRANSFORM_ID_FILTER, loadHook, transformHook } from "./load.ts";
 import { resolveIdHook } from "./resolve.ts";
+import { RESOLVE_ID_FILTER } from "./resolve-filter.ts";
 import { getSfcModuleRequest } from "./sfc-module.ts";
 
 type Host = Awaited<ReturnType<typeof startupHost>>;
@@ -343,8 +344,7 @@ void test("the main hooks declare the ids their handlers accept", async (t) => {
   assert.ok(plugin);
   assert.equal((plugin.load as { filter?: { id?: unknown } }).filter?.id, LOAD_ID_FILTER);
   assert.equal((plugin.transform as { filter?: { id?: unknown } }).filter?.id, TRANSFORM_ID_FILTER);
-  // An import from an SFC is resolved whatever its specifier, and a filter cannot see the importer.
-  assert.equal(typeof plugin.resolveId, "function");
+  assert.equal((plugin.resolveId as { filter?: unknown }).filter, RESOLVE_ID_FILTER);
 
   const state = makeState(root);
   const corpus = idCorpus();
