@@ -461,6 +461,10 @@ fn compile_ssr_on_lane_with_runtime<'a>(
                     CompilerError::with_message(ErrorCode::ExtendPoint, diagnostic, None)
                 }));
             }
+            // The mapped legacy emitter alone needs source-owned alias locations.
+            let _mapped_template = experimental_options
+                .source_map
+                .then(|| vize_atelier_core::codegen::prepare_mapped_template(&mut root, source));
             let mut codegen_ctx = SsrCodegenContext::new_with_experimental_options(
                 allocator,
                 &codegen_options,

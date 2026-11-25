@@ -40,12 +40,6 @@ impl SsrCodegenContext<'_> {
         self.out.anchor(source);
     }
 
-    /// Write `code` directly from the node text `authored`: unchanged from a
-    /// slice of the template, it is anchored where that slice was authored.
-    pub(crate) fn push_authored_text(&mut self, code: &str, authored: &str) {
-        self.out.push_authored(code, authored, self.source);
-    }
-
     /// Write `text` directly, anchored at `source` when there is one.
     pub(crate) fn push_optionally_mapped(&mut self, text: &str, source: Option<u32>) {
         match source {

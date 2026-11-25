@@ -142,3 +142,68 @@ fn source_map_is_additive_and_maps_tokens_byte_exactly() {
         ]
     );
 }
+
+#[test]
+fn legacy_loop_alias_maps_require_unchanged_source_owned_spelling() {
+    use crate::compile::{SsrLane, compile_ssr_on_lane};
+    use vize_atelier_core::options::CustomElementMatcher;
+
+    for (source, anchored) in [
+        (
+            r#"<i v-for="(item, key, index) in items">{{ item }}</i>"#,
+            true,
+        ),
+        (
+            r#"<i v-for="(item: number, key: string, index: number) in items">{{ item }}</i>"#,
+            false,
+        ),
+    ] {
+        let compile_legacy = |source_map| {
+            let allocator = Allocator::new();
+            let (_, errors, result) = compile_ssr_on_lane(
+                &allocator,
+                source,
+                SsrCompilerOptions {
+                    is_ts: true,
+                    ..SsrCompilerOptions::default()
+                },
+                TemplateSyntaxMode::Standard,
+                CustomElementMatcher::default(),
+                SsrCompilerExperimentalOptions {
+                    source_map,
+                    ..SsrCompilerExperimentalOptions::default()
+                },
+                true,
+                SsrLane::LegacyOnly,
+            );
+            assert_eq!(errors.len(), 0, "{errors:?}");
+            result
+        };
+        let mapped = compile_legacy(true);
+        let plain = compile_legacy(false);
+        assert_eq!(
+            (&mapped.code, &mapped.preamble),
+            (&plain.code, &plain.preamble)
+        );
+        let map: serde_json::Value = serde_json::from_str(mapped.map.as_ref().unwrap()).unwrap();
+        let segments = decode(map["mappings"].as_str().unwrap());
+        for alias in ["item", "key", "index"] {
+            let authored = source.find(alias).unwrap();
+            let generated = mapped.code.find("(item, key, index)").unwrap()
+                + "(item, key, index)".find(alias).unwrap();
+            let actual: std::vec::Vec<_> = segments
+                .iter()
+                .filter(|(_, _, line, column, _)| {
+                    offset(source, *line as usize, *column) == authored
+                })
+                .map(|(line, column, _, _, name)| (offset(&mapped.code, *line, *column), *name))
+                .collect();
+            let expected = if anchored {
+                vec![(generated, None)]
+            } else {
+                vec![]
+            };
+            assert_eq!(actual, expected, "{alias}: {source}");
+        }
+    }
+}
