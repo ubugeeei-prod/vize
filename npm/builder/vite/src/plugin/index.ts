@@ -18,7 +18,7 @@ import { processFilesystemEpoch } from "./filesystem-epoch.ts";
 import { compileAll, PrecompileDiagnosticsError } from "./precompile-run.ts";
 import { precompileInputOwners } from "./precompile-owner.ts";
 import { resolveIdHook } from "./resolve.ts";
-import { RESOLVE_ID_FILTER } from "./resolve-filter.ts";
+import { withResolveFilter } from "./resolve-filter.ts";
 import { LOAD_ID_FILTER, TRANSFORM_ID_FILTER, loadHook, transformHook } from "./load.ts";
 import { getSfcModuleRequest, requestResolvedSfc, transformSfcModule } from "./sfc-module.ts";
 import { resetDemandCompiles, setCompileInputOwners } from "./demand-compile.ts";
@@ -344,20 +344,17 @@ export function vize(
       state.logger.log("Cache keys:", [...state.cache.keys()].slice(0, 3));
     },
 
-    resolveId: {
-      filter: RESOLVE_ID_FILTER,
-      handler(id, importer, options) {
-        const ssr = resolveHookSsr(this, options);
-        const hookOptions: { ssr: boolean; scan?: boolean } = { ...options, ssr };
-        const resolving = resolveIdHook(this, state, id, importer, hookOptions);
-        // A dependency scan reads SFCs; it does not ask this environment to compile them.
-        if (hookOptions.scan || !id.includes(".vue")) return resolving;
-        return resolving.then((resolved) => {
-          requestResolvedSfc(state, resolved, ssr);
-          return resolved;
-        });
-      },
-    },
+    resolveId: withResolveFilter(function (id, importer, options) {
+      const ssr = resolveHookSsr(this, options);
+      const hookOptions: { ssr: boolean; scan?: boolean } = { ...options, ssr };
+      const resolving = resolveIdHook(this, state, id, importer, hookOptions);
+      // A dependency scan reads SFCs; it does not ask this environment to compile them.
+      if (hookOptions.scan || !id.includes(".vue")) return resolving;
+      return resolving.then((resolved) => {
+        requestResolvedSfc(state, resolved, ssr);
+        return resolved;
+      });
+    }),
 
     load: {
       filter: { id: LOAD_ID_FILTER },

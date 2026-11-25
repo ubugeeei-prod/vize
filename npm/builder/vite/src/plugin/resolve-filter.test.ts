@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { interpreter } from "@rolldown/pluginutils";
 import { build, type Rollup } from "vite";
 import { vize } from "./index.ts";
-import { RESOLVE_ID_FILTER } from "./resolve-filter.ts";
+import { RESOLVE_ID_FILTER, withResolveFilter } from "./resolve-filter.ts";
 import { isPotentialVizeImporter, isPotentialVizeResolveId } from "./resolve.ts";
 
 const require = createRequire(import.meta.url);
@@ -99,14 +99,11 @@ const value = ref(local + injected + bare);
     const plugin = plugins.find((value) => value.name === "vite-plugin-vize");
     assert(plugin?.resolveId && typeof plugin.resolveId === "object");
     const hook = plugin.resolveId;
-    plugin.resolveId = {
-      ...hook,
-      filter: filtered ? hook.filter : undefined,
-      handler(source, importer, options) {
-        seen.push(source.replaceAll("\\", "/"));
-        return hook.handler.call(this, source, importer, options);
-      },
-    };
+    plugin.resolveId = withResolveFilter(function (source, importer, options) {
+      seen.push(source.replaceAll("\\", "/"));
+      return hook.handler.call(this, source, importer, options);
+    });
+    if (!filtered) Object.assign(plugin.resolveId, { filter: undefined });
     let nativeFilters = false;
     plugins.push({
       name: "observe-resolve-filter-host",

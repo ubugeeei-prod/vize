@@ -1,4 +1,5 @@
 import { id, importerId, include, or } from "@rolldown/pluginutils";
+import type { Plugin } from "vite";
 
 // A resolver can act on an SFC's imports whatever the specifier. An id-only
 // filter would drop bare packages, #imports and relative script dependencies.
@@ -14,3 +15,10 @@ export const RESOLVE_ID_FILTER = [
     ),
   ),
 ];
+
+type ResolveHandler = Exclude<NonNullable<Plugin["resolveId"]>, { handler: unknown }>;
+
+/** Vite's public types still expose only id filters; Rolldown builds read this metadata. */
+export function withResolveFilter(handler: ResolveHandler): { handler: ResolveHandler } {
+  return Object.assign({ handler }, { filter: RESOLVE_ID_FILTER });
+}
