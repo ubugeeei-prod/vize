@@ -148,6 +148,23 @@ SVG, MathML, so every verdict is unchanged. The proofs
 show that one element read backwards (`Seq::reverse`) is itself by the
 `compute_in_goal` tactic, which `why3find.json` now lists.
 
+## JS string escape gate (`crates/vize_atelier_core/src/codegen/helpers`)
+
+No Kani harness stated this law. `escape_js_string` returns its input
+unchanged when no byte of it is flagged by `byte_may_need_js_escaping`, and
+that fast path is sound only if every scalar the slow stages rewrite puts a
+flagged byte into the UTF-8 text. Creusot root: `helpers/creusot.rs`. The
+gate's contract is in `helpers/escape_gate.rs`, the module it moved into so
+the proof crate compiles it alone. The rewritten set comes from the slow path
+and Unicode, not from the gate: `&` (`decode_html_entities`), `\`, `"` and the
+general category `Cc` (U+0000..=U+001F, U+007F..=U+009F); the first UTF-8
+byte follows Unicode Table 3-6.
+
+| Kani harness | Law                                                                                                       | Kani bound | Creusot replacement                                                                                  | Status |
+| ------------ | --------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------- | ------ |
+| none         | every scalar that `decode_html_entities` or `escape_js_string` rewrites starts with a byte the gate flags | —          | `js_escape_gate::no_rewritten_scalar_passes_the_gate` over `byte_may_need_js_escaping`, every scalar | proved |
+| none         | the first byte of every scalar's UTF-8 encoding is below 0x80 or in 0xC2..=0xF4                           | —          | `js_escape_gate::every_scalar_starts_with_a_lead_byte`                                               | proved |
+
 ## Laws no harness states yet
 
 These are added where tractable, after the ports: lossless L1 render equals
