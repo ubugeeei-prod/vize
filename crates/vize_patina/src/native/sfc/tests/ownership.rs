@@ -55,6 +55,11 @@ fn normally_owned_program_and_file_origin_survive_owner_move_before_a_short_rebo
     let arena = Allocator::new();
     let owner = NativeSfcLintOwner::parse_in(&arena, SOURCE).unwrap();
     let moved = Box::new(owner);
+    #[allow(deprecated)]
+    {
+        assert!(core::ptr::eq(moved.descriptor(), moved.l1ir()));
+        assert!(core::ptr::eq(moved.file(), moved.l2ir()));
+    }
     let setup = moved.setup().unwrap();
     assert!(core::ptr::eq(setup.owner(), moved.as_ref()));
     assert!(core::ptr::eq(

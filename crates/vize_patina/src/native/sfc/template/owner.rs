@@ -77,6 +77,13 @@ impl<'a> NativeSfcTemplateOwner<'a> {
         &self.l1ir
     }
 
+    /// Deprecated spelling of [`Self::l1ir`], borrowing the same original descriptor.
+    #[deprecated(note = "use `l1ir` instead")]
+    #[must_use]
+    pub fn descriptor(&self) -> &L1Ir<'a> {
+        self.l1ir()
+    }
+
     /// Returns the original selected template component.
     #[must_use]
     pub fn template(&self) -> &SelectedTemplateComponent<'a> {

@@ -67,6 +67,10 @@ impl NativeSfcTemplateRule for Probe {
         owner: &NativeSfcTemplateOwner<'a>,
     ) -> Result<(), NativeTemplateLintRefusal> {
         assert!(core::ptr::eq(context.owner(), owner));
+        #[allow(deprecated)]
+        {
+            assert!(core::ptr::eq(owner.descriptor(), owner.l1ir()));
+        }
         assert!(core::ptr::eq(context.source(), owner.source()));
         assert!(core::ptr::eq(
             context.source(),
