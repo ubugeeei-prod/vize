@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 needs = List("replay-resolve", "replay-build")
 `runs-on` = ci.linux

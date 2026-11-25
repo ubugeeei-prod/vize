@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 `if` = "github.event_name == 'workflow_dispatch' && inputs.mode == 'corpus'"
 `runs-on` = ci.linux

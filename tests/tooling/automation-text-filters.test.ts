@@ -144,7 +144,7 @@ test("The Cargo selector returns the last matching record", { skip: !hasJq }, ()
     .join("\n");
   const options = ["-sr", "--arg", "name", "vize"];
   assert.deepEqual(
-    runFilter("jq", path.join(workflows, "shared/cargo-target-executable.jq"), records, options),
+    runFilter("jq", "tools/ci/lib/scripts/cargo-target-executable.jq", records, options),
     { status: 0, stdout: "null" },
   );
 });

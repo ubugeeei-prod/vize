@@ -498,7 +498,7 @@ export const rustFeatureRows: readonly RustFeatureRow[] = [
 /** Files whose change can alter what any row runs. */
 export const rustFeatureLaneInputs: readonly string[] = [
   "tools/support/ci/rust-feature-tests.ts",
-  "tools/commands/ci/rust-feature-tests.ts",
+  "tools/ci/commands/rust-feature-tests.ts",
   "tools/config/pkl/parts/rust-feature-tests/job.pkl",
   ".github/workflows/pr-rust-products.yml",
   ".github/workflows/01-rust-feature-tests.yml",

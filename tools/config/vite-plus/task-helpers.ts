@@ -5,6 +5,7 @@ export {
   stageVscodeTypeScriptPlugin,
   devApp,
   installVscodeExtensionDependencies,
+  ciCommand,
   localVp,
   nodeCommand,
   nodeCommandFromVscodeExtension,

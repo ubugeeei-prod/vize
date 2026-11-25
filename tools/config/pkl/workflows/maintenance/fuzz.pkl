@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Fuzz"
 
@@ -117,7 +117,7 @@ jobs {
           `run-install` = false
         }
       }
-      ci.command("Seed fuzz corpus from repository fixtures", "node tools/commands/ci/fuzz/seed-corpus.ts")
+      ci.command("Seed fuzz corpus from repository fixtures", "node tools/ci/commands/fuzz/seed-corpus.ts")
       new Dynamic {
         name = "Restore grown corpus cache"
         `if` = "${{ github.event_name != 'merge_group' }}"
@@ -190,7 +190,7 @@ jobs {
           FUZZ_OUTCOME = "${{ steps.fuzz.outcome || 'skipped' }}"
           FUZZ_TARGET = "${{ matrix.target }}"
         }
-        run = #"node tools/commands/ci/fuzz/enforce-result.ts "$FUZZ_EVENT_NAME" "$FUZZ_TARGET" "$FUZZ_OUTCOME""#
+        run = #"node tools/ci/commands/fuzz/enforce-result.ts "$FUZZ_EVENT_NAME" "$FUZZ_TARGET" "$FUZZ_OUTCOME""#
       }
     }
   }

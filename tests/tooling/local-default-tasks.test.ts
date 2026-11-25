@@ -24,11 +24,11 @@ const createFakeBlacksmith = (body: string) => {
   return { directory, executable };
 };
 
-const testboxLifecyclePath = "tools/commands/ci/run-testbox-checks.sh";
+const testboxLifecyclePath = "tools/ci/commands/run-testbox-checks.sh";
 
 const localGraph = (tasks: readonly string[]) =>
   tasks.map((name) => ({ program: "vp", arguments: ["run", "--workspace-root", name] }));
-const testboxDriver = path.join(root, "tools/commands/ci/testbox.ts");
+const testboxDriver = path.join(root, "tools/ci/commands/testbox.ts");
 const runTestbox = (args: string[], env: NodeJS.ProcessEnv) =>
   spawnSync(process.execPath, [testboxDriver, ...args], { encoding: "utf8", env });
 
@@ -47,7 +47,7 @@ test("local defaults and their Testbox aliases execute the same workspace graph"
     assert.equal((remote as { cache: boolean }).cache, false);
     assert.deepEqual(workspaceTaskSteps(local), localGraph(nested));
     assert.deepEqual(workspaceTaskSteps(remote), [
-      { program: "node", arguments: ["tools/commands/ci/testbox.ts", "run", name] },
+      { program: "node", arguments: ["tools/ci/commands/testbox.ts", "run", name] },
     ]);
   }
   assert.deepEqual(
@@ -70,7 +70,7 @@ test("branch coverage reports every metric before enforcing thresholds", () => {
   assert.ok(commands[2]?.arguments?.includes("--branch"));
   assert.ok(!commands[2]?.arguments?.some((arg) => arg.startsWith("--fail-under-")));
   assert.deepEqual(commands[3]?.arguments, [
-    "tools/commands/ci/source-coverage.ts",
+    "tools/ci/commands/source-coverage.ts",
     "--json",
     "target/llvm-cov/source-branch-summary.json",
     "--min-lines",
@@ -124,7 +124,7 @@ test("Testbox lifecycle tasks use the pinned driver", () => {
   for (const operation of ["warmup", "stop"] as const)
     assert.deepEqual(
       workspaceTaskSteps(testboxTasks[("testbox:" + operation) as keyof typeof testboxTasks]),
-      [{ program: "node", arguments: ["tools/commands/ci/testbox.ts", operation] }],
+      [{ program: "node", arguments: ["tools/ci/commands/testbox.ts", operation] }],
     );
 });
 

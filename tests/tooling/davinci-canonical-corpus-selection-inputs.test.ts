@@ -147,7 +147,7 @@ function scriptClosure(roots: string[]) {
       const modules = JSON.parse(
         execFileSync(
           process.execPath,
-          [join(root, "tools/commands/ci/verify-tool-layout.ts"), "--module-closure", script],
+          [join(root, "tools/ci/commands/verify-tool-layout.ts"), "--module-closure", script],
           { cwd: root, encoding: "utf8" },
         ),
       ) as string[];

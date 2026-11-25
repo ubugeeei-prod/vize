@@ -1,5 +1,5 @@
-import "../../Actions.pkl" as ci
-local buildSteps = import("../../parts/typecheck-cold-pair/mapper-build.pkl").steps
+import "../../../../ci/lib/Actions.pkl" as ci
+local buildSteps = import("mapper-build.pkl").steps
 
 `if` = "github.event_name == 'workflow_dispatch' && inputs.mode == 'content-mapper'"
 needs = "test"

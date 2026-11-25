@@ -1,4 +1,4 @@
-import { requiredEnv } from "../shared/files.ts";
+import { requiredEnv } from "../../../../tools/ci/lib/scripts/files.ts";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 writeFileSync(

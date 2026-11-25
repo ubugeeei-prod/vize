@@ -1,5 +1,5 @@
-amends "../../../../ShellScript.pkl"
-import "../../../../NativeChecks.pkl" as native
+amends "../../../../../../ci/lib/ShellScript.pkl"
+import "../../../../../../ci/lib/NativeChecks.pkl" as native
 
 commands {
   module.strictMode
