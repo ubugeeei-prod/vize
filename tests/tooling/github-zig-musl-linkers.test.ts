@@ -29,8 +29,8 @@ test("Zig musl wrappers use rust-lld for final links and normalize cc-rs flags",
   const commandPath = path.join(
     root,
     "tools",
-    "commands",
     "ci",
+    "commands",
     "github",
     "configure-zig-musl-linkers.ts",
   );
@@ -87,8 +87,8 @@ test("musl CLI verifier rejects dynamic interpreters and glibc symbol requiremen
   const commandPath = path.join(
     root,
     "tools",
-    "commands",
     "ci",
+    "commands",
     "github",
     "verify-musl-cli-binary.ts",
   );

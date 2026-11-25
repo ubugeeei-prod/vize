@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { requiredEnv } from "../shared/files.ts";
+import { requiredEnv } from "../../../../tools/ci/lib/scripts/files.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 declare const Bun: {

@@ -38,7 +38,7 @@ test("stacked pull requests retain the trusted title policy", () => {
   assert.ok(
     steps.some(
       (step: { run?: string }) =>
-        step.run === "node tools/commands/ci/github/issue-pr-title-policy.ts",
+        step.run === "node tools/ci/commands/github/issue-pr-title-policy.ts",
     ),
   );
 });

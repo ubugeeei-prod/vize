@@ -210,6 +210,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_maestro_style_header_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
 name = "vize_patina_content_model_proofs"
 version = "0.0.0"
 dependencies = [

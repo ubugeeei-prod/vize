@@ -48,7 +48,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/check/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -195,7 +195,7 @@ jobs:
         env:
           BASELINE_REV: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}
           RUSTUP_TOOLCHAIN: 1.100.0
-        run: node tools/commands/ci/github/check-semver.ts "${{ matrix.crate }}"
+        run: node tools/ci/commands/github/check-semver.ts "${{ matrix.crate }}"
   security-audit:
     needs: iteration-plan
     runs-on: ${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
@@ -212,7 +212,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/check/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -234,7 +234,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - name: Audit production npm dependencies
         if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
-        run: node tools/commands/ci/npm-audit-retry.ts
+        run: node tools/ci/commands/npm-audit-retry.ts
       - name: Install cargo-audit
         if: ${{ needs.iteration-plan.outputs.dependencies == 'true' }}
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
@@ -265,7 +265,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/check/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -367,7 +367,7 @@ jobs:
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Coverage report
-        run: node tools/commands/ci/github/write-coverage-summary.ts
+        run: node tools/ci/commands/github/write-coverage-summary.ts
   source-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 50

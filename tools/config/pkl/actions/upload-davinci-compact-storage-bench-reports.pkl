@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Upload Davinci allocation bench reports"
 description = "Uploads allocation bench JSON reports for Davinci wall-budget baselines."

@@ -1,1 +1,1 @@
-amends "../../../../../parts/shell/pack-babel-plugin.pkl"
+amends "../../../../../../../ci/lib/parts/shell/pack-babel-plugin.pkl"

@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Release verify"
 // Post-publish checks for one release. release.yml dispatches it once npm has

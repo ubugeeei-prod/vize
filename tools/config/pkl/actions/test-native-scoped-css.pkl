@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Native scoped CSS runtime"
 description = "Check original SFC scoped CSS and fresh complete native modules in real Vue"

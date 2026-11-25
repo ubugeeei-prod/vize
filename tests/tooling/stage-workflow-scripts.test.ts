@@ -23,12 +23,15 @@ test("staged drivers survive replacing the product checkout and refuse links out
   const environment = join(root, "github-env");
   const checkout = join(workspace, ".vize-workflow-tools");
   const script = join(checkout, ".github/actions/stage-workflow-scripts/stage.ts");
-  const files = join(checkout, ".github/scripts/workflows");
+  const programs = {
+    acceptance: join(checkout, "tools/ci/workflows/09-acceptance/scripts"),
+    shared: join(checkout, "tools/ci/lib/scripts"),
+  };
   function prepare() {
     mkdirSync(join(checkout, ".github/actions/stage-workflow-scripts"), { recursive: true });
-    for (const name of ["acceptance", "shared"]) {
-      mkdirSync(join(files, name), { recursive: true });
-      writeFileSync(join(files, name, "receipt.ts"), name);
+    for (const [name, directory] of Object.entries(programs)) {
+      mkdirSync(directory, { recursive: true });
+      writeFileSync(join(directory, "receipt.ts"), name);
     }
     copyFileSync(
       new URL("../../.github/actions/stage-workflow-scripts/stage.ts", import.meta.url),
@@ -53,10 +56,11 @@ test("staged drivers survive replacing the product checkout and refuse links out
   assert.match(output, /^VIZE_CI_FILES=[^\r\n]+\n$/u);
   const directory = output.trimEnd().slice("VIZE_CI_FILES=".length);
   assert.equal(readFileSync(join(directory, "receipt.ts"), "utf8"), "acceptance");
-  assert.equal(readFileSync(join(directory, "../shared/receipt.ts"), "utf8"), "shared");
+  // The staged copy keeps the repository layout, so shared programs keep their relative path.
+  assert.equal(readFileSync(join(directory, "../../../lib/scripts/receipt.ts"), "utf8"), "shared");
   if (process.platform !== "win32") {
     prepare();
-    symlinkSync(environment, join(files, "acceptance", "foreign"));
+    symlinkSync(environment, join(programs.acceptance, "foreign"));
     const refused = run();
     assert.notEqual(refused.status, 0);
     assert.match(refused.stderr, /regular file/u);

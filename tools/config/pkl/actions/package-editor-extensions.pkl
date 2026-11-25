@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Package editor extensions"
 description = "Check and package the VS Code, Zed, Neovim, Vim, Helix, and Emacs extensions"

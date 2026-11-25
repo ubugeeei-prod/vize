@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Preserve full-workspace test results and walltime"
 description = "Preserve workspace diagnostics after source failures without running tests"

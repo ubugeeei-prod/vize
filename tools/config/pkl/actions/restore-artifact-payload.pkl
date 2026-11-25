@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Restore complete artifact payload"
 description = "Restore and verify every independent file from the measured envelope"
