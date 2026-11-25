@@ -101,6 +101,28 @@ const indexed: $ComponentRawProps<Indexed> = { required: 1, extra: 1 };
 const unknownIndexed: $ComponentRawProps<Indexed> = { required: 1, unknownAttr: true };
 // @ts-expect-error known members next to an index signature keep their types
 const wrongIndexed: $ComponentRawProps<Indexed> = { required: 1, extra: "wrong" };
+type RawOpen = Generated<Record<string, unknown>, Record<string, unknown> & { hydrateOnIdle?: number | true }>;
+const openGood: $ComponentRawProps<RawOpen> = { hydrateOnIdle: 1, arbitrary: "open" };
+// @ts-expect-error named optional wrapper props stay typed beside an open raw index
+const openWrong: $ComponentRawProps<RawOpen> = { hydrateOnIdle: "wrong" };
+type RawOpenAny = Generated<Record<string, any>, Record<string, any> & { hydrateOnIdle?: number | true }>;
+const openAnyGood: $ComponentRawProps<RawOpenAny> = { hydrateOnIdle: true, arbitrary: "open" };
+// @ts-expect-error a raw any index must not erase a known optional refinement
+const openAnyWrong: $ComponentRawProps<RawOpenAny> = { hydrateOnIdle: "wrong" };
+type DataKeys = { [K in \`data-\${string}\`]: unknown } & { required: number };
+type RawTemplate = Generated<DataKeys, DataKeys & { "data-size"?: number }>;
+const dataGood: $ComponentRawProps<RawTemplate> = { required: 1, "data-other": "open", "data-size": 1 };
+// @ts-expect-error template indexes must not erase a named optional refinement
+const dataWrong: $ComponentRawProps<RawTemplate> = { required: 1, "data-size": "wrong" };
+type PublicUnion = Generated<{ required: number }, { required: number; hydrate?: number } | { [key: string]: any; required: number; count?: number }>;
+const publicUnionA: $ComponentRawProps<PublicUnion> = { required: 1, hydrate: 1 };
+const publicUnionB: $ComponentRawProps<PublicUnion> = { required: 1, count: 1 };
+// @ts-expect-error indexed public branches must not reopen unknown attrs
+const publicUnionUnknown: $ComponentRawProps<PublicUnion> = { required: 1, randomUnknown: true };
+// @ts-expect-error public union refinements keep their value types
+const publicUnionWrong: $ComponentRawProps<PublicUnion> = { required: 1, hydrate: "wrong" };
+type OrdinaryRaw = $ComponentRawProps<typeof Foo>;
+type OrdinaryEmitsRaw = $ComponentRawProps<typeof EmitsFoo>;
 type Old<C, P = $HasInstanceRawProps<C> extends true ? $InstanceRawProps<C> : $HasStaticRawProps<C> extends true ? $StaticRawProps<C> : $PublicProps<C>> = unknown extends P ? Record<string, unknown> : P;
 type Equal<A, B> = [A] extends [B] ? [B] extends [A] ? true : false : false;
 type Assert<T extends true> = T;
@@ -142,4 +164,15 @@ const unmarked: $ComponentRawProps<Unmarked> = { value: "wrong" };
     })),
     [],
   );
+  const checker = program.getTypeChecker();
+  const authored = program.getSourceFile(filename);
+  assert.ok(authored);
+  for (const name of ["OrdinaryRaw", "OrdinaryEmitsRaw"]) {
+    const declaration = authored.statements.find(
+      (statement): statement is ts.TypeAliasDeclaration =>
+        ts.isTypeAliasDeclaration(statement) && statement.name.text === name,
+    );
+    assert.ok(declaration);
+    assert.equal(checker.typeToString(checker.getTypeFromTypeNode(declaration.type)), "Props");
+  }
 });
