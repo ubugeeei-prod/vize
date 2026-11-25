@@ -6,8 +6,17 @@ export PATH="@VP@/bin:$VIZE_WORKSPACE_ROOT/node_modules/.bin:$PATH"
 export PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright"
 export WASM_PACK_CACHE="$PWD/.cache/wasm-pack"
 @DARWIN@
+# Rust build accelerators (docs/davinci/decisions/2026-11-25-rust-build-accelerators.md):
+# kache shares compiled crates across worktrees and target directories, and
+# workspace crates compile with rustc's parallel frontend. Enter the shell
+# with VIZE_KACHE= or VIZE_RUSTC_FRONTEND_JOBS=1 to turn either off.
+case "${RUSTC_WRAPPER:-}" in
+  '' | */tools/support/launchers/rustc.sh) export RUSTC_WRAPPER="$VIZE_WORKSPACE_ROOT/tools/support/launchers/rustc.sh" ;;
+esac
+export VIZE_KACHE="${VIZE_KACHE-@KACHE@/bin/kache}"
+export VIZE_RUSTC_FRONTEND_JOBS="${VIZE_RUSTC_FRONTEND_JOBS:-4}"
 
 echo "Vize dev shell ready."
-echo "Nix provides Node, pnpm, Rust, wasm-pack, wasm-bindgen, and binaryen."
+echo "Nix provides Node, pnpm, Rust, kache, wasm-pack, wasm-bindgen, and binaryen."
 echo "Run: vp install --frozen-lockfile"
 echo "Local defaults: vp check / vp fmt / vp dev / vp build / vp test / vp lint"
