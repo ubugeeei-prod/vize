@@ -3,9 +3,9 @@ use $bin::{node, tee, vp}
 use std::fs::mkdir_p
 
 let evidence = "docs-render-evidence/resource-readiness"
-let log = evidence + "/tests.tap"
+let log = $"$evidence/tests.tap"
 
-vp "node" "docs/scripts/ensure-browser.ts"
-mkdir_p evidence
-node "--test" "--test-reporter=tap" "tests/tooling/docs-preview-readiness-browser.test.ts" |& tee log
-node "tools/support/github/docs-preview-readiness.ts" log evidence
+vp node docs/scripts/ensure-browser.ts
+mkdir_p $evidence
+node --test --test-reporter=tap tests/tooling/docs-preview-readiness-browser.test.ts |& tee $log
+node tools/support/github/docs-preview-readiness.ts $log $evidence

@@ -65,7 +65,8 @@ esac
 # reported, so a stage whose reader reported first was cut off by a
 # reader that stopped early, as `head` does. Its status is SIGPIPE (141),
 # or a write error where the caller ignores SIGPIPE; either way the
-# reader's own status decides.
+# reader's own status decides. An empty diagnostic, as in a condition or
+# `status_of`, sets the status without reporting it.
 __ush_pipe_check() {
   __ush_pipe_statuses=" $1 "
   shift
@@ -75,7 +76,9 @@ __ush_pipe_check() {
     case $__ush_pipe_statuses in
       *" $__ush_pipe_index:0 "*) continue ;;
       *" $__ush_pipe_index:"*) ;;
-      *) __ush_report 1 "$__ush_pipe_message (no exit status)"; return 1 ;;
+      *)
+        [ -z "$__ush_pipe_message" ] || __ush_report 1 "$__ush_pipe_message (no exit status)"
+        return 1 ;;
     esac
     __ush_pipe_code=${__ush_pipe_statuses#*" $__ush_pipe_index:"}
     __ush_pipe_code=${__ush_pipe_code%% *}
@@ -83,7 +86,7 @@ __ush_pipe_check() {
     case $__ush_pipe_earlier in
       *" $((__ush_pipe_index + 1)):"*) continue ;;
     esac
-    __ush_report "$__ush_pipe_code" "$__ush_pipe_message"
+    [ -z "$__ush_pipe_message" ] || __ush_report "$__ush_pipe_code" "$__ush_pipe_message"
     return "$__ush_pipe_code"
   done
 }
@@ -138,20 +141,24 @@ ush_fn_std__path__resolve() {
 }
 
 __ush_at 5 'let evidence = "docs-render-evidence/resource-readiness"'
-evidence='docs-render-evidence/resource-readiness'
-__ush_at 6 'let log = evidence + "/tests.tap"'
-log="${evidence}"'/tests.tap'
-__ush_at 8 'vp "node" "docs/scripts/ensure-browser.ts"'
+__ush_binding_5_evidence='docs-render-evidence/resource-readiness'
+# shellcheck disable=SC2034
+evidence="${__ush_binding_5_evidence}"
+__ush_at 6 'let log = $"$evidence/tests.tap"'
+__ush_binding_6_log="${__ush_binding_5_evidence}"'/tests.tap'
+# shellcheck disable=SC2034
+log="${__ush_binding_6_log}"
+__ush_at 8 'vp node docs/scripts/ensure-browser.ts'
 command vp 'node' 'docs/scripts/ensure-browser.ts'
-__ush_at 9 'mkdir_p evidence'
-( __ush_capture_return='0' __ush_return_path=''; ush_fn_std__fs__mkdir_p "${evidence}" )
-__ush_at 10 'node "--test" "--test-reporter=tap" "tests/tooling/docs-preview-readiness-browser.test.ts" |& tee log'
+__ush_at 9 'mkdir_p $evidence'
+( __ush_capture_return='0' __ush_return_path=''; ush_fn_std__fs__mkdir_p "${__ush_binding_5_evidence}" )
+__ush_at 10 'node --test --test-reporter=tap tests/tooling/docs-preview-readiness-browser.test.ts |& tee $log'
 { __ush_pipe=$(
   exec 7>&1 >&8 8>&-
   set +e
   { (command node '--test' '--test-reporter=tap' 'tests/tooling/docs-preview-readiness-browser.test.ts') 7>&- 2>&1; printf ' 1:%s' "$?" >&7; } |
-  { (command tee "${log}") 7>&-; printf ' 2:%s' "$?" >&7; }
+  { (command tee "${__ush_binding_6_log}") 7>&-; printf ' 2:%s' "$?" >&7; }
 ); } 8>&1
-__ush_pipe_check "$__ush_pipe" 'pipeline stage 1 failed: node "--test" "--test-reporter=tap" "tests/tooling/docs-p...' 'pipeline stage 2 failed: tee log' || exit "$?"
-__ush_at 11 'node "tools/support/github/docs-preview-readiness.ts" log evidence'
-command node 'tools/support/github/docs-preview-readiness.ts' "${log}" "${evidence}"
+__ush_pipe_check "$__ush_pipe" 'pipeline stage 1 failed: node --test --test-reporter=tap tests/tooling/docs-previe...' 'pipeline stage 2 failed: tee $log' || exit "$?"
+__ush_at 11 'node tools/support/github/docs-preview-readiness.ts $log $evidence'
+command node 'tools/support/github/docs-preview-readiness.ts' "${__ush_binding_6_log}" "${__ush_binding_5_evidence}"

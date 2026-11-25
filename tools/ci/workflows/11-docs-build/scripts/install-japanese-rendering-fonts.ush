@@ -1,6 +1,6 @@
 # Install Noto CJK so Japanese pages render with real glyphs, and show the chosen family.
 use $bin::{sudo, "fc-match" as fc_match}
 
-sudo "apt-get" "update"
-sudo "apt-get" "install" "-y" "--no-install-recommends" "fonts-noto-cjk"
-fc_match "--format" "%{family}\n" ":lang=ja"
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+fc_match --format "%{family}\n" :lang=ja

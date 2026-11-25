@@ -118,8 +118,10 @@ ush_fn_std__fs__size() {
 }
 
 __ush_at 5 'let previews = "docs-render-evidence/component-previews"'
-previews='docs-render-evidence/component-previews'
-__ush_at 7 'vp "run" "--no-cache" "--filter" "./docs" "build"'
+__ush_binding_5_previews='docs-render-evidence/component-previews'
+# shellcheck disable=SC2034
+previews="${__ush_binding_5_previews}"
+__ush_at 7 'vp run --no-cache --filter ./docs build'
 command vp 'run' '--no-cache' '--filter' './docs' 'build'
 __ush_at 8 'for evidence in ["browser-evidence.json", "unavailable-storage-evidence.json"] {'
 __ush_match_0__len='2'
@@ -133,12 +135,12 @@ while [ "${__ush_for_list_index_1}" -lt "${__ush_match_0__len}" ]; do
   eval "__ush_for_value_2=\"\${__ush_match_0__${__ush_for_list_index_1}}\""
   evidence="${__ush_for_value_2}"
   __ush_for_list_index_1=$((__ush_for_list_index_1 + 1))
-  __ush_at 9 'if size (previews + "/" + evidence) == 0 {'
+  __ush_at 9 'if (size $"$previews/$evidence") == 0 {'
   if {
-  __ush_value_3="$(__ush_return_path='' __ush_capture_return='1' ush_fn_std__fs__size "${previews}"'/'"${evidence}")" || exit "$?"
+  __ush_value_3="$(__ush_return_path='' __ush_capture_return='1' ush_fn_std__fs__size "${__ush_binding_5_previews}"'/'"${evidence}")" || exit "$?"
   [ "$(if [ "${__ush_value_3}" -eq 0 ]; then printf '%s' true; else printf '%s' false; fi)" = 'true' ]
   }; then
-    __ush_at 10 'fail 1 ("The docs build recorded an empty " + evidence)'
+    __ush_at 10 'fail 1 $"The docs build recorded an empty $evidence"'
     __ush_status=1
     if [ "$__ush_status" -lt 1 ] || [ "$__ush_status" -gt 255 ]; then __ush_status=1; fi
     __ush_report "$__ush_status" 'The docs build recorded an empty '"${evidence}"

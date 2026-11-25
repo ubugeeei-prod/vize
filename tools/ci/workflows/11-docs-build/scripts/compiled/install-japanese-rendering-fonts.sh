@@ -61,9 +61,9 @@ install-japanese-rendering-fonts.ush [--complete [PREFIX]]
     exit 0 ;;
 esac
 
-__ush_at 4 'sudo "apt-get" "update"'
+__ush_at 4 'sudo apt-get update'
 command sudo 'apt-get' 'update'
-__ush_at 5 'sudo "apt-get" "install" "-y" "--no-install-recommends" "fonts-noto-cjk"'
+__ush_at 5 'sudo apt-get install -y --no-install-recommends fonts-noto-cjk'
 command sudo 'apt-get' 'install' '-y' '--no-install-recommends' 'fonts-noto-cjk'
-__ush_at 6 'fc_match "--format" "%{family}\n" ":lang=ja"'
+__ush_at 6 'fc_match --format "%{family}\n" :lang=ja'
 command fc-match '--format' '%{family}'"${__ush_lf}"'' ':lang=ja'

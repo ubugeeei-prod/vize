@@ -75,8 +75,10 @@ ush_fn_std__path__from_source() {
 __ush_at 5 'let routes = node (from_source "verify-rendered-navigation-and-japanese-reading-paths.ts")'
 __ush_value_0="$(__ush_return_path='' __ush_capture_return='1' ush_fn_std__path__from_source 'verify-rendered-navigation-and-japanese-reading-paths.ts')" || exit "$?"
 __ush_value_1="$(__ush_return_path='' __ush_capture_return='1' command node "${__ush_value_0}")" || exit "$?"
-routes="${__ush_value_1}"
-__ush_at 7 'node "docs/scripts/verify-navigation-render.ts" "--routes" routes'
-command node 'docs/scripts/verify-navigation-render.ts' '--routes' "${routes}"
-__ush_at 8 'node "docs/scripts/verify-ja-editorial-render.ts"'
+__ush_binding_5_routes="${__ush_value_1}"
+# shellcheck disable=SC2034
+routes="${__ush_binding_5_routes}"
+__ush_at 7 'node docs/scripts/verify-navigation-render.ts --routes $routes'
+command node 'docs/scripts/verify-navigation-render.ts' '--routes' "${__ush_binding_5_routes}"
+__ush_at 8 'node docs/scripts/verify-ja-editorial-render.ts'
 command node 'docs/scripts/verify-ja-editorial-render.ts'

@@ -4,9 +4,9 @@ use std::fs::size
 
 let previews = "docs-render-evidence/component-previews"
 
-vp "run" "--no-cache" "--filter" "./docs" "build"
+vp run --no-cache --filter ./docs build
 for evidence in ["browser-evidence.json", "unavailable-storage-evidence.json"] {
-  if size (previews + "/" + evidence) == 0 {
-    fail 1 ("The docs build recorded an empty " + evidence)
+  if (size $"$previews/$evidence") == 0 {
+    fail 1 $"The docs build recorded an empty $evidence"
   }
 }

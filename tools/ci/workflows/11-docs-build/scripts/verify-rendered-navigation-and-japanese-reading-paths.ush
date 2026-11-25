@@ -4,5 +4,5 @@ use std::path::from_source
 
 let routes = node (from_source "verify-rendered-navigation-and-japanese-reading-paths.ts")
 
-node "docs/scripts/verify-navigation-render.ts" "--routes" routes
-node "docs/scripts/verify-ja-editorial-render.ts"
+node docs/scripts/verify-navigation-render.ts --routes $routes
+node docs/scripts/verify-ja-editorial-render.ts
