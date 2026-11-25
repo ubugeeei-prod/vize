@@ -179,6 +179,15 @@ pub(crate) fn generate_props_type(
     } else if let Some(options_api_props) = options_api_props {
         exports_props = true;
         emit_options_api_props_type(ts, &generic_decl, options_api_props, "Props", true);
+    } else if emission.has_unextracted_options_props() {
+        // Declared props this projection does not read are unknown, not
+        // absent: keep the contract open so no declared prop is reported.
+        exports_props = true;
+        let record = names::lib("Record");
+        append!(
+            *ts,
+            "{props_head}{generic_decl} = {record}<string, unknown>;\n"
+        );
     } else {
         exports_props = true;
         append!(*ts, "{props_head}{generic_decl} = {{}};\n");

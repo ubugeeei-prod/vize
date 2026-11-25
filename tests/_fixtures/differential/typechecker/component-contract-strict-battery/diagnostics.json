@@ -369,30 +369,6 @@
   },
   {
     "code": 2353,
-    "column": 10,
-    "file": "src/Parent1.vue",
-    "line": 44,
-    "message": "Object literal may only specify known properties, and '\"level\"' does not exist in type '$ComponentCheckProps<$EmitPropsFromOptions<{ change: (n: number) => any; }>, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; ... 678 more ...; zoomAndPan?: unknown; } & { ...; }>'.",
-    "severity": 1
-  },
-  {
-    "code": 2353,
-    "column": 10,
-    "file": "src/Parent1.vue",
-    "line": 46,
-    "message": "Object literal may only specify known properties, and '\"level\"' does not exist in type '$ComponentCheckProps<$EmitPropsFromOptions<{ change: (n: number) => any; }>, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; ... 678 more ...; zoomAndPan?: unknown; } & { ...; }>'.",
-    "severity": 1
-  },
-  {
-    "code": 2353,
-    "column": 10,
-    "file": "src/Parent1.vue",
-    "line": 47,
-    "message": "Object literal may only specify known properties, and '\"level\"' does not exist in type '$ComponentCheckProps<$EmitPropsFromOptions<{ change: (n: number) => any; }>, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; ... 678 more ...; zoomAndPan?: unknown; } & { ...; }>'.",
-    "severity": 1
-  },
-  {
-    "code": 2353,
     "column": 12,
     "file": "src/Parent1.vue",
     "line": 43,

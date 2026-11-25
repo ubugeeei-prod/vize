@@ -201,6 +201,19 @@ impl SetupPropsPlan {
         options_api_props: Option<&OptionsApiPropsSource>,
         type_only_imported_names: &FxHashSet<CompactString>,
     ) {
+        // Options API projection found no props, yet the default export
+        // declares `props`: projection is off, so they were not extracted.
+        // Only a component with no macro props reaches the empty contract, and
+        // the text tests keep the extractor's parse off every other component.
+        let unextracted_options_props = options_api_props.is_none()
+            && summary.macros.define_props().is_none()
+            && summary.macros.props().is_empty()
+            && summary.macros.models().is_empty()
+            && script.is_some_and(|script| {
+                script.contains("export default")
+                    && script.contains("props")
+                    && super::options_api_support::find_options_api_props(script).is_some()
+            });
         generate_props_type(
             ts,
             summary,
@@ -208,7 +221,8 @@ impl SetupPropsPlan {
             generic_param,
             options_api_props,
             type_only_imported_names,
-            self.props_type_emission(),
+            self.props_type_emission()
+                .with_unextracted_options_props(unextracted_options_props),
         );
     }
 

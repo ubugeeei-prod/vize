@@ -177,8 +177,9 @@ fn test_options_api_emits_props_type_from_array_option() {
 
 #[test]
 fn test_options_api_props_type_skipped_without_options_api_flag() {
-    // Without the Options API opt-in, the historical `{}` no-op is preserved so
-    // existing default behavior (and snapshots) is unchanged.
+    // Without the Options API opt-in the declared props are not derived. They
+    // are unknown, not absent, so the contract stays open instead of `{}`,
+    // which a closed unknown-prop check would read as "no props".
     let script = r#"export default {
     props: {
         initial: Number,
@@ -190,7 +191,9 @@ fn test_options_api_props_type_skipped_without_options_api_flag() {
         generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
 
     assert!(
-        output.code.contains("export type Props = {};"),
+        output
+            .code
+            .contains("export type Props = Record<string, unknown>;"),
         "Props derivation must be gated behind the Options API opt-in:\n{}",
         output.code
     );

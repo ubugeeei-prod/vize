@@ -329,6 +329,59 @@ fn component_known_attributes_follow_the_fallthrough_root() {
     assert_eq!(actual, expected);
 }
 
+const OPTIONS_PROPS: &str = r#"<script lang="ts">
+import { defineComponent } from "vue";
+export default defineComponent({
+  props: { level: { type: Number, required: true } },
+});
+</script>
+
+<template>
+  <i />
+</template>
+"#;
+
+const OPTIONS_USAGE: &str = r#"<script setup lang="ts">
+import Bar from "./Bar.vue";
+import Opts from "./Opts.vue";
+</script>
+
+<template>
+  <Opts :level="1" />
+  <Bar baz="qux" />
+</template>
+"#;
+
+/// This batch checker leaves Options API projection off, as
+/// `typeChecker.optionsApi: false` does. The props of an Options API
+/// component are then not extracted, so they are unknown rather than empty:
+/// its declared `level` is no unknown prop. A component whose props are known
+/// still reports an attribute it does not declare.
+#[test]
+fn unextracted_options_api_props_keep_the_component_contract_open() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    assert_eq!(
+        check(
+            "fallthrough-known-attributes-unextracted-options",
+            r#"{ "strictTemplates": true }"#,
+            &[
+                ("src/Opts.vue", OPTIONS_PROPS),
+                ("src/Bar.vue", BUTTON_ROOT),
+                ("src/Usage.vue", OPTIONS_USAGE),
+            ],
+        ),
+        vec![(
+            "src/Usage.vue".into(),
+            Some(2353),
+            vize_carton::cstr!(
+                "8:8:error Object literal may only specify known properties, and '\"baz\"' does not exist in type '{UNKNOWN_ATTRIBUTE_TYPE}'."
+            ),
+        )],
+    );
+}
+
 macro_rules! reported {
     ($file:literal) => {
         include_str!(concat!(
