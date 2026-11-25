@@ -306,7 +306,7 @@ void test("inherited producer environment and defaults cannot redirect the origi
 });
 
 void test("reviewed command source and its ancestors must remain physical", (t) => {
-  for (const file of ["npm/native/scripts/build-ci.mjs", "tools/commands"]) {
+  for (const file of ["npm/native/scripts/build-ci.mjs", "tools/ci/commands"]) {
     const directory = fixture(t);
     const path = join(directory, file);
     renameSync(path, path + ".original");
