@@ -204,9 +204,9 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     // both through the same `errors` channel.
     let mut errors = errors.to_vec();
     errors.extend(transform_errors);
-    if codegen_opts.source_map {
-        prepare_mapped_template(&mut root, source);
-    }
+    let _mapped_template = codegen_opts
+        .source_map
+        .then(|| prepare_mapped_template(&mut root, source));
 
     let l2_emit = l2_emit_after_transform.and_then(|(options, hoisted_scope_id)| {
         stage_options::try_emit_l2_captured(
@@ -302,7 +302,7 @@ fn additive_map<'a>(
             inputs.hoisted_scope_id,
         )
     );
-    prepare_mapped_template(root, source);
+    let _mapped_template = prepare_mapped_template(root, source);
     let compat = profile!(
         "atelier.dom.template.codegen_sourcemap_compat",
         generate_with_sections_and_experimental_options_slot_scope_and_environment(
