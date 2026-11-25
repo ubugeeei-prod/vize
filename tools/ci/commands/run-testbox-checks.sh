@@ -1,5 +1,5 @@
 #!/bin/sh
-# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/commands/ci/run-testbox-checks.sh.pkl.
+# DO NOT EDIT. Generated from tools/config/pkl/scripts/tools/ci/commands/run-testbox-checks.sh.pkl.
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 run_testbox_checks() {
   unset BLACKSMITH_TESTBOX_ID testbox_output

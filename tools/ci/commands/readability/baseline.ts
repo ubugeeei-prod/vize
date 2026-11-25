@@ -20,8 +20,8 @@ export type FileCounts = ReadonlyMap<string, Counts>;
 
 export const baselineHeader = [
   "# Readability ratchet baseline (shrink-only). Generated; do not edit by hand.",
-  "# Lower it with `node tools/commands/ci/readability-ratchet.ts --write`.",
-  "# Counters are defined in tools/commands/ci/readability/counters.ts.",
+  "# Lower it with `node tools/ci/commands/readability-ratchet.ts --write`.",
+  "# Counters are defined in tools/ci/commands/readability/counters.ts.",
 ];
 
 export function parseBaseline(text: string): Map<string, Counts> {

@@ -12,7 +12,7 @@ import {
   parseRegistry,
   registryPath,
   renderRegistry,
-} from "../../tools/commands/ci/byte-custody.ts";
+} from "../../tools/ci/commands/byte-custody.ts";
 
 function repository(files: Record<string, string>): string {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-custody-"));
