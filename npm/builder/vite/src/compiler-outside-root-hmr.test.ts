@@ -95,13 +95,17 @@ async function outsideRootHotUpdate(firstRequest: "virtual" | "plain", initially
       });
       fs.writeFileSync(component, after);
       await updated;
-      // Vite broadcasts after the last hotUpdate hook has returned.
-      const messageDeadline = Date.now() + 5_000;
-      while (
-        !messages.some((message) => message.type === "update" || message.type === "full-reload")
-      ) {
-        assert(Date.now() < messageDeadline, "an outside-root edit must reach the browser");
-        await pause(10);
+      // Vite broadcasts after the last hotUpdate hook has returned. A first
+      // failed transform has no loaded runtime module to update; it must still
+      // be watched and produce fresh output when requested after the repair.
+      if (!initiallyInvalid) {
+        const messageDeadline = Date.now() + 5_000;
+        while (
+          !messages.some((message) => message.type === "update" || message.type === "full-reload")
+        ) {
+          assert(Date.now() < messageDeadline, "an outside-root edit must reach the browser");
+          await pause(10);
+        }
       }
     } finally {
       clearTimeout(timeout);
