@@ -16,6 +16,14 @@ experimental-lexical-arrow-queries = [
 ]
 # Rewrite event rename edits against a retained current component File.
 experimental-component-listeners = ["native", "vize_l1_to_l2/component-listener-queries"]
+# Share a lossless Vue descriptor and a temporary arena across editor passes.
+experimental-component-passes = []
+# Run scoped component passes against the original buffer of a cancellable request.
+experimental-scoped-component-session = [
+  "experimental-component-passes",
+  "experimental-native-scss-session",
+  "vize_atelier_sfc/native-scoped-scss",
+]
 # Reuse original style passes in an explicitly prepared complete component.
 experimental-native-scss-session = [
   "experimental-verified-style-format",
@@ -177,3 +185,12 @@ required-features = ["experimental-versioned-fixes"]
 [[test]]
 name = "original_template_requests"
 required-features = ["vize_l1_to_l2/original-template-queries"]
+
+[[test]]
+name = "component_tool_passes"
+required-features = [
+  "experimental-scoped-component-session",
+  "experimental-literal-products",
+  "vize_l1_to_l2/original-template-queries",
+  "vize_patina/original-template-lint",
+]

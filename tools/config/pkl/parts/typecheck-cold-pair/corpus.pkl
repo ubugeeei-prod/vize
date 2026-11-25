@@ -1,0 +1,97 @@
+import "../../Actions.pkl" as ci
+
+`if` = "github.event_name == 'workflow_dispatch' && inputs.mode == 'corpus'"
+`runs-on` = ci.linux
+`timeout-minutes` = "${{ inputs.owned_pair && 240 || 120 }}"
+env {
+
+  VIZE_PAIR_RUNNER_LABEL = ci.linux
+  BASE_SHA = "${{ inputs.base }}"
+  HEAD_SHA = "${{ inputs.head }}"
+  RUNS = "${{ inputs.runs }}"
+  BATCH = "${{ inputs.batch }}"
+  OWNED_PAIR = "${{ inputs.owned_pair }}"
+  OWNED_WORKLOADS = "${{ inputs.workloads }}"
+  OWNED_LANES = "${{ inputs.lanes }}"
+  FLOORS = "${{ inputs.floors }}"
+  CORPORA = "${{ inputs.corpora }}"
+}
+steps = new Listing {
+  ...ci.stageWorkflowScripts("typecheck-cold-pair")
+  new Dynamic {
+    name = "Validate inputs"
+    run = ci.workflowScript("corpus-validate-inputs.sh")
+  }
+  new Dynamic {
+    uses = ci.checkout
+    with { `persist-credentials` = false }
+  }
+  ci.workspaceVp()
+  ci.rust("1.100.0")
+  ci.wild()
+  ci.use("./.github/actions/setup-rust-script")
+  new Dynamic {
+    name = "Check out base and head beside the driver"
+    run = ci.workflowScript("corpus-check-out-base-and-head-beside-the-driver.sh")
+  }
+  new Dynamic {
+    name = "Hydrate the pinned corpora and install the locked hosts and corpus packages"
+    run = ci.workflowScript("corpus-hydrate-the-pinned-corpora-and-install-the-locked-hosts-and-corpus-packa.sh")
+  }
+  new Dynamic {
+    name = "Test the pair parsers and the byte probe"
+    run = ci.workflowScript("test-the-pair-parsers-and-the-byte-probe.sh")
+  }
+  new Dynamic {
+    name = "Test the opt-in Linux raw runner"
+    `if` = "inputs.owned_pair"
+    env { VIZE_PAIR_RUNNER_LABEL = ci.linux }
+    run = "node --test tests/tooling/typecheck-owned-pair-linux.test.ts"
+  }
+  new Dynamic {
+    name = "Record fresh owned-pair build boundary"
+    `if` = "inputs.owned_pair"
+    run = #"node tools/benchmarks/scripts/typecheck-owned-pair-build.ts "$RUNNER_TEMP/pair-base" "$BASE_SHA" "$RUNNER_TEMP/pair-head" "$HEAD_SHA" "$RUNNER_TEMP/pair-out""#
+  }
+  new Dynamic {
+    name = "Build the native binding and the vize package for base and head"
+    run = ci.workflowScript("corpus-build-the-native-binding-and-the-vize-package-for-base-and-head.sh")
+  }
+  new Dynamic {
+    name = "Measure the corpora"
+    id = "measure"
+    env { VIZE_PAIR_RUNNER_LABEL = ci.linux }
+    run = ci.workflowScript("corpus-measure-the-corpora.sh")
+  }
+  // Reads the traced probe runs the measure step left behind.
+  new Dynamic {
+    name = "Attribute check cost to helpers and projection families"
+    `if` = "always() && !inputs.owned_pair && inputs.attribution"
+    run = #"node tools/benchmarks/scripts/typecheck-cost-attribution.ts --pair "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out""#
+  }
+  // Real components edited to plant one diagnostic per family; the head must report each exactly once.
+  new Dynamic {
+    name = "Check planted diagnostics in the planted corpora"
+    `if` = "${{ !cancelled() && !inputs.owned_pair && steps.measure.outcome != 'skipped' }}"
+    run = ci.workflowScript("check-planted-diagnostics-in-the-planted-corpora.sh")
+  }
+  new Dynamic {
+    name = "Write job summary"
+    `if` = "always()"
+    run = ci.workflowScript("corpus-write-job-summary.sh")
+  }
+  new Dynamic {
+    uses = ci.uploadArtifact
+    `if` = "always()"
+    with {
+      name = "typecheck-corpus-pair-${{ github.run_id }}"
+      path = """
+      ${{ runner.temp }}/pair-out/
+      ${{ runner.temp }}/build-*.log
+
+      """
+      `if-no-files-found` = "warn"
+      `retention-days` = 30
+    }
+  }
+}

@@ -14,6 +14,11 @@ export const frenchRules2 = {
     "La déclaration emits mélange la clé `update:modelValue`, qui doit être entre guillemets, avec la clé `close` sans guillemets.",
     "Toutes les clés statiques de la déclaration sont entre guillemets, car `update:modelValue` ne peut pas être écrit comme identifiant JavaScript sans guillemets.",
   ],
+  "script/consistent-type-imports": [
+    "Uniformiser l’usage des imports de type, en comptant les usages du template comme des usages de valeur",
+    "`Foo` est importé comme une valeur, alors que son seul usage est l’argument de type de `defineProps`. `Bar` n’est pas signalé : le template lit `Bar.label`, ce qui est un usage de valeur.",
+    "`Foo` est importé avec `import type` ; l’import est donc effacé à la compilation. `Bar` reste un import de valeur, car le template l’évalue.",
+  ],
   "script/custom-event-name-casing": [
     "Imposer la casse configurée aux noms des événements personnalisés émis",
     "La chaîne émise `my-event` contient un tiret et enfreint la convention camelCase par défaut pour les noms d’événements.",

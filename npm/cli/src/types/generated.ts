@@ -810,6 +810,12 @@ export interface LintRuleOptions {
     destructuring?: "any" | "all";
     ignoreReadBeforeAssign?: boolean;
   };
+  "script/consistent-type-imports"?: {
+    prefer?: "type-imports" | "no-type-imports";
+    fixStyle?: "separate-type-imports" | "inline-type-imports";
+    disallowTypeAnnotations?: boolean;
+    emitDecoratorMetadata?: boolean;
+  };
   "vue/v-on-handler-style"?:
     | ("method" | "inline" | "inline-function")
     | ("method" | "inline" | "inline-function")[]

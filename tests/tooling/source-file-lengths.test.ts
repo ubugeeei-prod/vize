@@ -79,6 +79,39 @@ test("the default limit accepts 500 lines and rejects the 501st line", () => {
   }
 });
 
+test("Pkl-generated outputs are exempt while authored YAML and Pkl sources are not", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-length-generated-"));
+  const files = {
+    generated: ".github/workflows/generated.yml",
+    authored: ".github/workflows/authored.yml",
+    source: "tools/config/pkl/workflows/ci/generated.pkl",
+  };
+  try {
+    runGit(cwd, ["init", "-q"]);
+    for (const file of Object.values(files)) {
+      fs.mkdirSync(path.join(cwd, path.dirname(file)), { recursive: true });
+      writeLines(path.join(cwd, file), 3);
+    }
+    runGit(cwd, ["add", "-A"]);
+    runGit(cwd, ["-c", "user.name=Vize", "-c", "user.email=v@e.com", "commit", "-qm", "base"]);
+    const baseRef = runGit(cwd, ["rev-parse", "HEAD"]);
+    const check = () => runSourceLengthScript(["--check", "--base-ref", baseRef], cwd);
+    writeLines(path.join(cwd, files.generated), 800);
+    assert.equal(check().status, 0, check().stdout);
+    writeLines(path.join(cwd, files.authored), 501);
+    assert.match(check().stdout, /crossed limit \| `\.github\/workflows\/authored\.yml`/u);
+    writeLines(path.join(cwd, files.authored), 3);
+    writeLines(path.join(cwd, files.source), 501);
+    assert.match(
+      check().stdout,
+      /crossed limit \| `tools\/config\/pkl\/workflows\/ci\/generated\.pkl`/u,
+    );
+    assert.doesNotMatch(check().stdout, /generated\.yml/u);
+  } finally {
+    fs.rmSync(cwd, { recursive: true, force: true });
+  }
+});
+
 test("ordinary Rust child test modules are accepted", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-test-dir-"));
   try {

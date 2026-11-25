@@ -2,8 +2,16 @@
 /**
  * Release-profile measurement of a base/head source pair: level instruction
  * counts (stages, formatter, SFC parsing) and the shipped `vize` CLI and
- * `vize_vitrine` N-API library sizes, with a discarded warm-up and an exact
- * independent A/A twin per side.
+ * `vize_vitrine` N-API library sizes, with an exact independent A/A twin per
+ * side.
+ *
+ * Every build of the pair sees the same clock: SOURCE_DATE_EPOCH is the base
+ * commit's committer time. libmimalloc-sys compiles mimalloc's banner with
+ * __DATE__ and __TIME__, and the linker's string tail merging folds a short
+ * literal such as "0" into that time string when its last digit matches. The
+ * fold moves every later merged string two bytes, and the address-sensitive
+ * string work in the measured windows retires different instruction counts.
+ * With the wall clock, about one build in five moved the same 29 rows.
  *
  * The instruction benches build through `[profile.ci-opt]`, overridden to the
  * release codegen (fat LTO, one codegen unit) with Cargo's profile environment
@@ -47,6 +55,8 @@ export interface InstructionRow {
 export interface Side {
   rows: Record<string, InstructionRow>;
   sizes: Record<string, number>;
+  /** SHA-256 of every measured benchmark executable, by `<package>/<bench>`. */
+  binaries?: Record<string, string>;
 }
 
 /** Fold the three executions of one collect run into one identified measurement per row. */
@@ -111,6 +121,11 @@ export function assertTwin(label: string, primary: Side, twin: Side) {
     `${label} instruction counts are not reproducible`,
   );
   assert.deepEqual(twin.sizes, primary.sizes, `${label} binary sizes are not reproducible`);
+  assert.deepEqual(
+    twin.binaries,
+    primary.binaries,
+    `${label} benchmark executables are not byte-identical`,
+  );
 }
 
 export function validateSha(label: string, value: string | undefined) {
@@ -121,6 +136,7 @@ export function validateSha(label: string, value: string | undefined) {
 export function renderReport(input: {
   baseSha: string;
   headSha: string;
+  sourceDateEpoch?: string;
   base: Side;
   head: Side;
   baseTwin?: Side;
@@ -137,6 +153,11 @@ export function renderReport(input: {
   const lines: string[] = [];
   lines.push("## Release-profile measurement (fat LTO, 1 codegen unit)", "");
   lines.push(`Base \`${input.baseSha.slice(0, 10)}\` · Head \`${input.headSha.slice(0, 10)}\``, "");
+  if (input.sourceDateEpoch !== undefined)
+    lines.push(
+      `Every build uses \`SOURCE_DATE_EPOCH=${input.sourceDateEpoch}\` (the base commit time).`,
+      "",
+    );
   lines.push("### Instruction counts", "");
   const twinCols = baseTwin && headTwin;
   lines.push(
@@ -180,8 +201,18 @@ export function renderReport(input: {
           return primaryAfter === twinAfter && primaryBefore === twinBefore;
         return twinAfter - twinBefore === primaryAfter - primaryBefore;
       });
+    const identical = (primary: Side, twin: Side) =>
+      primary.binaries !== undefined &&
+      JSON.stringify(primary.binaries) === JSON.stringify(twin.binaries);
+    const executables = (primary: Side, twin: Side) =>
+      primary.binaries === undefined
+        ? ""
+        : identical(primary, twin)
+          ? " (byte-identical bench executables)"
+          : " (bench executables differ)";
     lines.push(
-      `A/A: base vs base twin ${aaBase} moved; head vs head twin ${aaHead} moved; ` +
+      `A/A: base vs base twin ${aaBase} moved${executables(base, baseTwin)}; ` +
+        `head vs head twin ${aaHead} moved${executables(head, headTwin)}; ` +
         `twin pair ${agrees ? "repeats every Δ above" : `moves ${twinPair.length} rows (differs from the primary pair)`}.`,
       "",
     );
@@ -210,9 +241,18 @@ function run(executable: string, args: string[], cwd: string, env: NodeJS.Proces
   assert.equal(result.status, 0, `${executable} ${args.join(" ")} failed in ${cwd}`);
 }
 
-/** Build and measure one side into `<out>/<label>`, in a fresh target directory. */
-export function measureSide(source: string, out: string, label: string, scratch: string): Side {
-  const target = join(scratch, `target-${label}`);
+/**
+ * Build and measure one side into `<out>/<label>`. Every side builds in the
+ * same, freshly emptied target directory with the pair's pinned build clock.
+ */
+export function measureSide(
+  source: string,
+  out: string,
+  label: string,
+  scratch: string,
+  sourceDateEpoch: string,
+): Side {
+  const target = join(scratch, "target");
   rmSync(target, { recursive: true, force: true });
   const side = join(out, label);
   mkdirSync(side, { recursive: true });
@@ -220,11 +260,13 @@ export function measureSide(source: string, out: string, label: string, scratch:
     ...process.env,
     CARGO_TARGET_DIR: target,
     CARGO_INCREMENTAL: "0",
+    SOURCE_DATE_EPOCH: sourceDateEpoch,
     // The benches build through [profile.ci-opt]; give it the release codegen.
     CARGO_PROFILE_CI_OPT_LTO: "fat",
     CARGO_PROFILE_CI_OPT_CODEGEN_UNITS: "1",
   };
   const rows: Record<string, InstructionRow> = {};
+  const binaries: Record<string, string> = {};
   for (const [suite, flags] of SUITES) {
     // instruction-counts.mjs keeps its guest links beside the out directory,
     // so every suite gets its own parent.
@@ -239,6 +281,16 @@ export function measureSide(source: string, out: string, label: string, scratch:
     for (const [id, value] of Object.entries(folded)) {
       assert.ok(rows[id] === undefined, `duplicate row ${id}`);
       rows[id] = value;
+    }
+    const built = JSON.parse(readFileSync(join(dir, "binaries.json"), "utf8")) as Array<{
+      pkg: string;
+      bench: string;
+      sha256: string;
+    }>;
+    for (const { pkg, bench, sha256 } of built) {
+      const id = `${pkg}/${bench}`;
+      assert.ok(binaries[id] === undefined, `duplicate benchmark executable ${id}`);
+      binaries[id] = sha256;
     }
   }
   const release = { ...env, VIZE_NATIVE_BUILD_TOKEN: "0".repeat(32) };
@@ -273,7 +325,7 @@ export function measureSide(source: string, out: string, label: string, scratch:
       join(target, linuxTarget, "release", "libvize_vitrine.so"),
     ).size,
   };
-  const result: Side = { rows, sizes };
+  const result: Side = { rows, sizes, binaries };
   writeFileSync(join(side, "side.json"), JSON.stringify(result, null, 2) + "\n");
   rmSync(target, { recursive: true, force: true });
   return result;
@@ -284,11 +336,14 @@ function option(args: string[], name: string) {
   return index < 0 ? undefined : args[index + 1];
 }
 
-function gitHead(dir: string) {
-  const result = spawnSync("git", ["-C", dir, "rev-parse", "HEAD"], { encoding: "utf8" });
-  assert.equal(result.status, 0, `git rev-parse failed in ${dir}`);
+function git(dir: string, ...args: string[]) {
+  const result = spawnSync("git", ["-C", dir, ...args], { encoding: "utf8" });
+  assert.equal(result.status, 0, `git ${args.join(" ")} failed in ${dir}`);
   return result.stdout.trim();
 }
+
+const gitHead = (dir: string) => git(dir, "rev-parse", "HEAD");
+const commitTime = (dir: string) => git(dir, "show", "-s", "--format=%ct", "HEAD");
 
 function load(out: string, label: string): Side | undefined {
   const path = join(out, label, "side.json");
@@ -325,23 +380,26 @@ export function measurePair(
   twins: boolean,
   measure: typeof measureSide = measureSide,
   resolveHead: typeof gitHead = gitHead,
+  resolveEpoch: typeof commitTime = commitTime,
 ) {
   const pair = join(out, "pair.json");
   assert.ok(!existsSync(pair), `refusing to reuse measurement output ${pair}`);
   mkdirSync(out, { recursive: true });
+  const sourceDateEpoch = resolveEpoch(base);
+  assert.match(sourceDateEpoch, /^\d+$/, "base commit time must be a Unix timestamp");
   writeFileSync(
     pair,
-    JSON.stringify({ baseSha: resolveHead(base), headSha: resolveHead(head) }, null, 2) + "\n",
+    JSON.stringify(
+      { baseSha: resolveHead(base), headSha: resolveHead(head), sourceDateEpoch },
+      null,
+      2,
+    ) + "\n",
   );
-  // The first fat-LTO build on a fresh runner can differ from every subsequent
-  // rebuild. Prime the toolchain and Cargo caches, then discard all its output.
-  measure(base, out, "warmup", scratch);
-  rmSync(join(out, "warmup"), { recursive: true, force: true });
-  measure(base, out, "base", scratch);
-  measure(head, out, "head", scratch);
+  measure(base, out, "base", scratch, sourceDateEpoch);
+  measure(head, out, "head", scratch, sourceDateEpoch);
   if (twins) {
-    measure(base, out, "base-twin", scratch);
-    measure(head, out, "head-twin", scratch);
+    measure(base, out, "base-twin", scratch, sourceDateEpoch);
+    measure(head, out, "head-twin", scratch, sourceDateEpoch);
   }
   report(out);
 }

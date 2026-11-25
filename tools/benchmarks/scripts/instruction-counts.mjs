@@ -30,6 +30,7 @@ import {
   ALLOCATOR_PROTOCOL,
   LIBC_DISPATCH,
   GUEST_ENVIRONMENT,
+  BUILD_SOURCE_DATE_EPOCH,
 } from "./instruction-counts-lib.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -108,11 +109,15 @@ function collect(out, registry, formatter, sfc) {
     },
     runs: [],
   };
+  // A caller comparing a source pair may pin its own shared clock.
+  const sourceDateEpoch = process.env.SOURCE_DATE_EPOCH ?? BUILD_SOURCE_DATE_EPOCH;
+  assert.match(sourceDateEpoch, /^\d+$/, "SOURCE_DATE_EPOCH must be a Unix timestamp");
   writeJson(path.join(out, "environment.json"), {
     run_attempt: Number(process.env.GITHUB_RUN_ATTEMPT),
     workflow: process.env.GITHUB_WORKFLOW,
     job: process.env.GITHUB_JOB,
     guest_environment: GUEST_ENVIRONMENT,
+    source_date_epoch: sourceDateEpoch,
     uname: command("uname", ["-a"]),
     cpu: fs.readFileSync("/proc/cpuinfo", "utf8"),
     dpkg: command("dpkg-query", ["-W", "valgrind", "libc6"]),
@@ -133,7 +138,11 @@ function collect(out, registry, formatter, sfc) {
   for (const pkg of new Set(selectedSuites.map(([pkg]) => pkg))) cargoArgs.push("-p", pkg);
   for (const bench of new Set(selectedSuites.map(([, bench]) => bench)))
     cargoArgs.push("--bench", bench);
-  const buildEnv = { ...process.env, RUSTFLAGS: "-C target-cpu=x86-64" };
+  const buildEnv = {
+    ...process.env,
+    RUSTFLAGS: "-C target-cpu=x86-64",
+    SOURCE_DATE_EPOCH: sourceDateEpoch,
+  };
   const freshBuild = process.env.VIZE_INSTRUCTION_REBUILD === "1";
   if (freshBuild) {
     // Bootstrap cross-job proof must not reuse the same benchmark binaries.

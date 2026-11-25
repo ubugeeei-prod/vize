@@ -13,12 +13,11 @@ interface Side {
 }
 const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 
-export function verifyNativeAddons(file: string) {
+export function verifyNativeAddonImages(file: string) {
   const report = JSON.parse(fs.readFileSync(file, "utf8"));
   assert.equal(report.package, "vize_vitrine");
   assert.equal(report.product, "node-addon");
-  assert.deepEqual(report.differences, ["node-addon"]);
-  assert.deepEqual(differences(report.base, report.head), ["node-addon"]);
+  assert.deepEqual(report.differences, differences(report.base, report.head));
   const read = (side: Side, relative: string) => {
     assert.match(side.pluginHostBuildId, /^[a-f0-9]{40}:[a-f0-9]{64}$/u);
     assert.equal(side.pluginHostBuildId.slice(0, 40), side.revision);
@@ -37,6 +36,13 @@ export function verifyNativeAddons(file: string) {
   const base = read(report.base, report.executables.base);
   const head = read(report.head, report.executables.head);
   assert.notEqual(report.base.revision, report.head.revision);
+  return { base, head, raw: [report.base.members[0], report.head.members[0]], report };
+}
+
+export function verifyNativeAddons(file: string) {
+  const { base, head, raw, report } = verifyNativeAddonImages(file);
+  assert.deepEqual(report.differences, ["node-addon"]);
+  assert.deepEqual(differences(report.base, report.head), ["node-addon"]);
   const control = report.pluginIdentityControl;
   assert.equal(control.evidence.revision, report.head.revision);
   assert.equal(control.evidence.pluginHostBuildId, report.head.pluginHostBuildId);
@@ -51,7 +57,7 @@ export function verifyNativeAddons(file: string) {
   return {
     base,
     head,
-    raw: [report.base.members[0], report.head.members[0]],
+    raw,
     controlled: control.evidence.members[0],
   };
 }

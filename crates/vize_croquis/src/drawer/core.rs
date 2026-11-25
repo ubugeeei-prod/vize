@@ -9,8 +9,10 @@ use super::DrawerOptions;
 /// Uses lazy evaluation and efficient data structures to minimize overhead.
 pub struct Drawer {
     pub(crate) options: DrawerOptions,
-    /// Unused binding population is an explicit lint demand.
-    pub(crate) track_unused_bindings: bool,
+    /// Unused-binding population and template read recording are explicit
+    /// lint demands. The template walk tests this once per site and runs
+    /// main's code when neither is demanded.
+    pub(crate) binding_demand: super::unused::BindingDemand,
     /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
     pub(crate) options_api: bool,
     /// Legacy Vue 2.7 / Nuxt 2: implies `options_api` plus Nuxt 2 globals.
@@ -59,7 +61,7 @@ pub struct Drawer {
 
 impl Drawer {
     pub(crate) fn checks_binding_reads(&self) -> bool {
-        self.options.detect_undefined || self.track_unused_bindings
+        self.options.detect_undefined || self.binding_demand.unused()
     }
 
     /// Create a new drawer with default options
@@ -73,7 +75,7 @@ impl Drawer {
     pub fn with_options(options: DrawerOptions) -> Self {
         Self {
             options,
-            track_unused_bindings: false,
+            binding_demand: super::unused::BindingDemand::NONE,
             options_api: false,
             legacy_vue2: false,
             croquis: Croquis::new(),
@@ -101,7 +103,7 @@ impl Drawer {
         let packet = croquis.setup_context.take_ssr_occurrences();
         let drawer = Self {
             options,
-            track_unused_bindings: false,
+            binding_demand: super::unused::BindingDemand::NONE,
             options_api: false,
             legacy_vue2: false,
             croquis,
@@ -126,8 +128,22 @@ impl Drawer {
 
     /// Collect unread setup bindings using the already parsed script AST.
     pub fn with_unused_bindings(mut self) -> Self {
-        self.track_unused_bindings = true;
+        self.binding_demand.demand_unused();
         self
+    }
+
+    /// Record the script names the template reads, during the template walk
+    /// this drawer already makes. See [`crate::croquis::TemplateBindingReads`].
+    pub fn with_template_binding_reads(mut self) -> Self {
+        self.demand_template_binding_reads();
+        self
+    }
+
+    /// [`Self::with_template_binding_reads`] in place, for a caller that
+    /// would otherwise move the whole drawer to set one demand.
+    pub fn demand_template_binding_reads(&mut self) {
+        self.binding_demand.demand_reads();
+        self.croquis.setup_context.demand_template_binding_reads();
     }
 
     /// Compatibility wrapper for the old Analyzer naming.

@@ -72,7 +72,7 @@ jobs {
       }
       new Dynamic {
         name = "Record the measured binary and build identity"
-        run = #"vp exec node tools/support/compat/davinci/lsp-build-identity.ts target/ci-opt/vize ci-opt "${RUNNER_TEMP}/resource-build.jsonl" "${RUNNER_TEMP}/resource-build-identity.json""#
+        run = ci.workflowScript("record-the-measured-binary-and-build-identity.sh")
       }
       new Dynamic {
         name = "Measure the resident server"
@@ -191,11 +191,11 @@ jobs {
       }
       new Dynamic {
         name = "Verify the protocol and controlled edit oracle"
-        run = #"vp exec node tools/support/compat/davinci/lsp-resources.ts --server target/ci-opt/vize --files 2 --runs 1 --idle-seconds 10 --build "ci-opt: release, thin LTO, 16 codegen units" --out "${RUNNER_TEMP}/lsp-resource-smoke.json""#
+        run = ci.workflowScript("verify-the-protocol-and-controlled-edit-oracle.sh")
       }
       new Dynamic {
         name = "Measure 10000 open buffers, 16 production providers, and Corsa"
-        run = #"timeout --signal=TERM --kill-after=30s 45m vp exec node tools/support/compat/davinci/lsp-resources.ts --server target/ci-opt/vize --files 10000 --warm-providers 16 --runs 1 --idle-seconds 10 --build "ci-opt: release, thin LTO, 16 codegen units" --out "${RUNNER_TEMP}/lsp-resource.json""#
+        run = ci.workflowScript("measure-10000-open-buffers-16-production-providers-and.sh")
       }
       new Dynamic {
         name = "Summarize the actual scope and every process"
@@ -214,9 +214,78 @@ jobs {
     }
   }
 
+  // Optional same-SHA supplement on the shipped fat-LTO profile. The scheduled
+  // ci-opt gate and all its ceilings remain unchanged; a fat-LTO pass never
+  // substitutes for a failing ci-opt result.
   `release-resource` {
     name = "Shipped Linux CLI resource comparison"
     `if` = "github.event_name == 'workflow_dispatch' && inputs.include_release"
-    uses = "./.github/workflows/lsp-release-resources.yml"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 60
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/davinci-resource-budgets"
+      CARGO_TERM_COLOR = "always"
+      NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+      ci.command("Install the repository Rust toolchain", ci.workflowScript("install-the-repository-rust-toolchain-2.sh"))
+      // Same default rust-lld, target, default features and fat release profile
+      // as build-release-cli/action.yml. No CI profile or linker override.
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "lsp-release-resources"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Build the shipped Linux CLI recipe"
+        run = ci.workflowScript("build-the-shipped-linux-cli-recipe.sh")
+      }
+      new Dynamic {
+        name = "Record the measured binary and build identity"
+        run = ci.workflowScript("record-the-measured-binary-and-build-identity-2.sh")
+      }
+      new Dynamic {
+        name = "Measure the complete TS-44 campaign with the shipped profile"
+        run = ci.workflowScript("measure-the-complete-ts-44-campaign-with-the-shipped.sh")
+      }
+      new Dynamic {
+        name = "Apply every unchanged TS-44 ceiling to this additional build"
+        run = #"rust-script tools/commands/davinci/resource-budgets.rs --check --measurement "${RUNNER_TEMP}/release-resource.json""#
+      }
+      new Dynamic {
+        name = "Verify the protocol and controlled edit oracle"
+        run = ci.workflowScript("verify-the-protocol-and-controlled-edit-oracle-2.sh")
+      }
+      new Dynamic {
+        name = "Measure 10000 open buffers, 16 production providers, and Corsa"
+        run = ci.workflowScript("measure-10000-open-buffers-16-production-providers-and-2.sh")
+      }
+      new Dynamic {
+        name = "Summarize the separate release measurements"
+        `if` = "${{ !cancelled() }}"
+        run = ci.workflowScript("summarize-the-separate-release-measurements.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "${{ always() }}"
+        with {
+          name = "release-lsp-resources-linux-x64"
+          path = """
+          ${{ runner.temp }}/release-build-identity.json
+          ${{ runner.temp }}/release-resource.json
+          ${{ runner.temp }}/release-lsp-resource*.json
+
+          """
+          `retention-days` = 30
+        }
+      }
+    }
   }
 }

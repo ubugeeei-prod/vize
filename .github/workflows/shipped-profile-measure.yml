@@ -3,9 +3,10 @@ name: Shipped release-profile measure
 # Dispatch-only measurement of the shipped release profile (fat LTO, one codegen
 # unit) for an exact base/head source pair: every level instruction row (stages,
 # formatter, SFC parsing) and the shipped `vize` CLI and `vize_vitrine` N-API
-# library bytes. A discarded base build primes the fresh runner, then each side
-# builds in its own fresh target as base, head, base twin, head twin. The twins
-# must exactly reproduce their primary side. The benches build through
+# library bytes. Each side builds in a freshly emptied target as base, head,
+# base twin, head twin, all with SOURCE_DATE_EPOCH pinned to the base commit
+# time. The twins must reproduce their primary side's counts, sizes and bench
+# executable bytes exactly. The benches build through
 # [profile.ci-opt] with Cargo's profile environment
 # overrides, so no temporary branch edits Cargo.toml. Never on PRs or the queue.
 on:
@@ -77,7 +78,7 @@ jobs:
         with: { wild-version: "0.9.0" }
       - name: Test the report renderer
         run: node --test driver/tools/benchmarks/scripts/release-measure.test.ts
-      - name: Warm up, then measure base, head and twins
+      - name: Measure base, head and twins
         env:
           TWINS: ${{ inputs.twins }}
         run: node driver/tools/benchmarks/scripts/release-measure.ts --actions

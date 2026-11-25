@@ -127,6 +127,7 @@ Cross-crate aggregates — per-product totals, the products with no external con
 | `SymbolFlags`                              | type  | `symbol`                       |
 | `SymbolId`                                 | type  | `symbol`                       |
 | `SymbolTable`                              | type  | `symbol`                       |
+| `TemplateBindingReads`                     | type  | `croquis::template_reads`      |
 | `TemplateComponentRegistrations`           | type  | `croquis::template_components` |
 | `TemplateExpression`                       | type  | `croquis`                      |
 | `TemplateExpressionKind`                   | type  | `croquis`                      |

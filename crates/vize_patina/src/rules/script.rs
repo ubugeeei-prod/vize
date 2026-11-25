@@ -9,6 +9,7 @@ pub use authored::{AuthoredScriptRules, ScriptLintRefusal};
 mod component_options;
 mod component_options_name_casing;
 mod composition_api;
+mod consistent_type_imports;
 mod custom_event_name_casing;
 mod define_emits_declaration;
 mod define_macros_order;
@@ -111,6 +112,7 @@ pub use no_dupe_keys::NoDupeKeysModuleScript;
 pub use props_emits::EmitsModuleScript;
 pub(crate) use props_emits::collect_options_props;
 pub use sfc_context::SfcScriptContext;
+pub(crate) use sfc_context::{TemplateSideReads, UnboundRead};
 pub use template_component_bindings::TemplateComponentBindings;
 
 /// Metadata for a script-level rule

@@ -40,6 +40,8 @@ use super::{Linter, active_builtin_script_rule_entries};
 pub(super) use markers::BlockMarkers;
 use ref_operand::source_may_contain_ref_operand;
 
+const RULE_CONSISTENT_TYPE_IMPORTS: &str = "script/consistent-type-imports";
+
 #[cfg(test)]
 pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
     script_rule_may_match_in(rule_name, &BlockMarkers::new(source))
@@ -183,6 +185,8 @@ pub(super) fn script_rule_may_match_in(rule_name: &str, markers: &BlockMarkers<'
                 || contains(markers, b"sessionStorage")
         }
         RULE_NO_RESTRICTED_MEMBERS => false,
+        // Declarations and `import()` type annotations both spell `import`.
+        RULE_CONSISTENT_TYPE_IMPORTS => contains(markers, b"import"),
         _ => true,
     }
 }
@@ -263,6 +267,7 @@ pub(super) fn script_rule_applies_to_language(rule_name: &str, typescript: bool)
                 | RULE_DEFINE_EMITS_DECLARATION
                 | RULE_REQUIRE_TYPED_OBJECT_PROP
                 | RULE_REQUIRE_TYPED_REF
+                | RULE_CONSISTENT_TYPE_IMPORTS
         )
 }
 

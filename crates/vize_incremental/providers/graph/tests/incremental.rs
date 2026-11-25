@@ -193,20 +193,24 @@ fn original_template_graphs_follow_the_same_toolchain_session() {
     let inputs =
         std::fs::read_to_string(std::env::var_os("VIZE_TOOLCHAIN_HISTORY").unwrap()).unwrap();
     let revisions = inputs.split('\0').collect::<Vec<_>>();
-    assert!(matches!(revisions.len(), 4 | 5));
+    assert!(matches!(revisions.len(), 4..=6));
     let mut db = ResidentDatabase::default();
     let file = db.open("Setup雪🌸.vue", revisions[0]);
     let first = read(&db, file, revisions[0], Lang::Ts);
+    let original_trails = incremental::current_trails::read(&db, file, revisions[0]);
+    assert_eq!(original_trails.len(), 20);
     assert!(!first.0.is_empty());
     assert_eq!(executions(&db), (1, 1));
     let mut previous = first.2.clone();
     for (i, text) in revisions[1..].iter().enumerate() {
         db.edit(file, text);
         let updated = read(&db, file, text, Lang::Ts);
+        let trails = incremental::current_trails::read(&db, file, text);
+        assert_eq!(trails, original_trails);
         assert_eq!(updated.0, first.0);
         assert_eq!(updated.1, first.1);
-        if i == 3 {
-            // Restoring the original style after the template keeps every authored site.
+        if i >= 3 {
+            // Restoring and scoping the style after the template keep every authored site.
             assert_eq!(updated.2, previous);
         } else {
             assert_ne!(updated.2, previous);
@@ -223,6 +227,8 @@ fn original_template_graphs_follow_the_same_toolchain_session() {
     assert_ne!(changed, revisions[3]);
     db.edit(file, &changed);
     let updated = read(&db, file, &changed, Lang::Ts);
+    let changed_trails = incremental::current_trails::read(&db, file, &changed);
+    assert_ne!(changed_trails, original_trails);
     assert_eq!(executions(&db), (1, 1));
     let fresh = ResidentDatabase::default();
     assert_eq!(
@@ -238,6 +244,7 @@ fn original_template_graphs_follow_the_same_toolchain_session() {
 
 mod incremental {
     mod bounded;
+    pub(super) mod current_trails;
     mod recovery;
     mod trails;
 }

@@ -79,6 +79,7 @@ pub(crate) use typeof_refs::{
     annotation_has_value_reads, arguments_have_value_reads, has_value_type_reads,
     parameters_have_value_reads,
 };
+pub use unused::setup_generic_reads;
 pub(crate) use unused::unused_setup_bindings;
 
 #[cfg(test)]

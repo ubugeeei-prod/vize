@@ -313,3 +313,62 @@ fn normal_end_moves_the_same_owner_and_retained_ast_only_once() {
     );
     assert_eq!(builder.finish().unwrap().node_count(), 2);
 }
+
+#[cfg(feature = "component-text-condense")]
+#[test]
+fn a_component_selector_keeps_the_text_policy_of_the_authored_tag_and_namespace() {
+    // Vue 3.5.35 chooses whitespace from the original element before classifying it.
+    for (ancestors, tag, body, expected) in [
+        (&[][..], "pre", "a  b", "a  b"),
+        (&[], "pre", "\r\nx", "x"),
+        (&[], "pre", "\r\r\nx\r\ny", "x\ny"),
+        (&[], "div", "a  b", "a b"),
+        (&[], "title", "\n a  b ", "\n a  b "),
+        (&[], "textarea", "\r\n a  b ", " a  b "),
+        (&[], "textarea", "\r\r\nx", "\r\r\nx"),
+        (&["svg"], "pre", "a  b", "a b"),
+        (&["math"], "pre", "a  b", "a b"),
+        (&["pre", "svg"], "g", "a  b", "a  b"),
+        (&["svg", "foreignObject"], "pre", "a  b", "a  b"),
+    ] {
+        let a = Allocator::default();
+        let mut template = alloc::format!(r#"<{tag} is="vue:CodeBlock">{body}</{tag}>"#);
+        for parent in ancestors.iter().rev() {
+            template = alloc::format!("<{parent}>{template}</{parent}>");
+        }
+        let source = alloc::format!("<template>{template}</template>");
+        let root = SourceRoot::new(&source).unwrap();
+        let start = "<template>".len();
+        let block = root
+            .block(
+                source.get(start..start + template.len()).unwrap(),
+                start as u32,
+            )
+            .unwrap();
+        let owner = NativeComponent::parse_in(&a, block).unwrap();
+        let mut pending = PendingNativeComponent::from_component(owner);
+        pending.enable_condensed_text();
+        let mut builder = Builder::new(&a, &source).unwrap();
+        pending
+            .construct_diagnostic_in(&mut builder.region(), Lang::Js)
+            .unwrap();
+        let built = builder.finish().unwrap();
+        let mut region = built.root();
+        for parent in ancestors {
+            let [Op::Element(element)] = region.ops.as_slice() else {
+                panic!("{template}: expected an enclosing element");
+            };
+            assert_eq!(element.tag, *parent);
+            region = &element.children;
+        }
+        let [Op::Component(component)] = region.ops.as_slice() else {
+            panic!("{template}: expected one lowered component");
+        };
+        assert_eq!(component.name, "CodeBlock");
+        let [Op::Text(text)] = component.children.ops.as_slice() else {
+            panic!("{tag}: expected one original slot text operation");
+        };
+        assert_eq!(text.content, expected, "{template}");
+        assert_eq!(text.span.slice(&source), body, "{tag}");
+    }
+}

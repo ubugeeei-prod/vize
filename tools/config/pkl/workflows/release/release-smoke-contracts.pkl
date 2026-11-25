@@ -134,7 +134,7 @@ jobs {
       new Dynamic {
         name = "Install product build dependencies"
         shell = "bash"
-        run = "vp install --frozen-lockfile --prefer-offline --filter . --filter '@vize/tools' --filter './npm/native...' --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/linter/oxlint...'"
+        run = ci.workflowScript("install-product-build-dependencies.sh")
       }
       new Dynamic {
         name = "Build native provider and Bun-facing packages"
@@ -144,7 +144,7 @@ jobs {
       new Dynamic {
         name = "Compare packed Node and Bun product behavior"
         shell = "bash"
-        run = "node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks npm/native npm/native/npm/* npm/cli npm/builder/vite npm/linter/oxlint"
+        run = ci.workflowScript("compare-packed-node-and-bun-product-behavior.sh")
       }
     }
   }
@@ -214,17 +214,17 @@ jobs {
       new Dynamic {
         name = "Require the stable Node release smoke contracts"
         shell = "bash"
-        run = "node --test tests/tooling/release/release-smoke-parity-peer-copy.test.ts tests/tooling/release/release-smoke-install.test.ts tests/tooling/release/release-smoke-runtime-oracle.test.ts tests/tooling/release/release-smoke-typescript-runtime.test.ts"
+        run = ci.workflowScript("require-the-stable-node-release-smoke-contracts.sh")
       }
       new Dynamic {
         name = "Require installed public native image and existing image-token laws"
         shell = "bash"
-        run = "node --test tests/tooling/release/release-smoke-public-native.test.ts tests/tooling/native-build-token.test.ts tests/tooling/native-binding-identity.test.ts"
+        run = ci.workflowScript("require-installed-public-native-image-and-existing-image.sh")
       }
       new Dynamic {
         name = "Require release caller and fresh-project workflow wiring"
         shell = "bash"
-        run = "node --test tests/tooling/github-workflows-release-build.test.ts tests/tooling/release/release-workflow.test.ts tests/tooling/release/release-smoke-init-fresh.test.ts tests/tooling/release/release-smoke-init-toolchain.test.ts tests/tooling/release/release-smoke-init-workspace.test.ts tests/tooling/release/release-smoke-musl.test.ts"
+        run = ci.workflowScript("require-release-caller-and-fresh-project-workflow-wiring.sh")
       }
     }
   }

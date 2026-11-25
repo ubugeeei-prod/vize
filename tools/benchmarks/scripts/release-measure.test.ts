@@ -20,11 +20,12 @@ const row = (instructions: number) => ({
   window: "routine-return",
   methodology,
 });
-const side = (rows: Record<string, number>, cli = 100, napi = 50): Side => ({
+const side = (rows: Record<string, number>, cli = 100, napi = 50, bench = "a"): Side => ({
   rows: Object.fromEntries(
     Object.entries(rows).map(([id, instructions]) => [id, row(instructions)]),
   ),
   sizes: { "`vize` CLI (stripped)": cli, "`vize_vitrine` N-API library": napi },
+  binaries: { "vize_armature/davinci": bench.repeat(64) },
 });
 
 void test("foldRuns keeps one count per row and rejects disagreeing executions", () => {
@@ -53,6 +54,14 @@ void test("assertTwin requires reproducible counts and binary sizes", () => {
   assert.doesNotThrow(() => assertTwin("base", primary, side({ a: 1, b: 2 })));
   assert.throws(() => assertTwin("base", primary, side({ a: 1, b: 3 })), /instruction counts/);
   assert.throws(() => assertTwin("base", primary, side({ a: 1, b: 2 }, 101)), /binary sizes/);
+});
+
+void test("assertTwin requires byte-identical benchmark executables", () => {
+  const primary = side({ a: 1 });
+  assert.throws(
+    () => assertTwin("head", primary, side({ a: 1 }, 100, 50, "b")),
+    /head benchmark executables are not byte-identical/,
+  );
 });
 
 void test("instruction comparison rejects a changed workload identity", () => {
@@ -84,7 +93,7 @@ void test("renderReport tables every moved row, the identical rest, A/A and size
   assert.match(markdown, /\*\*2 moved, 1 up, 1 identical\*\* of 3 rows\./);
   assert.match(
     markdown,
-    /A\/A: base vs base twin 0 moved; head vs head twin 0 moved; twin pair repeats every Δ above\./,
+    /A\/A: base vs base twin 0 moved \(byte-identical bench executables\); head vs head twin 0 moved \(byte-identical bench executables\); twin pair repeats every Δ above\./,
   );
   assert.match(markdown, /\| `vize` CLI \(stripped\) \| 1,000 \| 996 \| −4 \(−0\.400%\) \|/);
   assert.match(markdown, /\| `vize_vitrine` N-API library \| 500 \| 500 \| 0 \|/);
@@ -129,16 +138,80 @@ void test("measurePair never overwrites an existing pair", () => {
     return measured;
   };
   try {
-    measurePair("base", "head", out, root, false, fakeMeasure, (dir) =>
-      dir === "base" ? "a".repeat(40) : "b".repeat(40),
+    measurePair(
+      "base",
+      "head",
+      out,
+      root,
+      false,
+      fakeMeasure,
+      (dir) => (dir === "base" ? "a".repeat(40) : "b".repeat(40)),
+      () => "1700000000",
     );
     const first = readFileSync(join(out, "pair.json"), "utf8");
     assert.throws(
       () =>
-        measurePair("new-base", "new-head", out, root, false, fakeMeasure, () => "c".repeat(40)),
+        measurePair(
+          "new-base",
+          "new-head",
+          out,
+          root,
+          false,
+          fakeMeasure,
+          () => "c".repeat(40),
+          () => "1700000000",
+        ),
       /refusing to reuse measurement output/,
     );
     assert.equal(readFileSync(join(out, "pair.json"), "utf8"), first);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+void test("measurePair builds base, head and twins once each with the base commit clock", () => {
+  const root = mkdtempSync(join(tmpdir(), "release-measure-"));
+  const out = join(root, "out");
+  const builds: string[] = [];
+  const fakeMeasure = (
+    source: string,
+    target: string,
+    label: string,
+    _scratch: string,
+    epoch: string,
+  ) => {
+    builds.push(`${label}:${source}:${epoch}`);
+    const measured = side({ a: 1 });
+    const directory = join(target, label);
+    mkdirSync(directory, { recursive: true });
+    writeFileSync(join(directory, "side.json"), `${JSON.stringify(measured)}\n`);
+    return measured;
+  };
+  try {
+    measurePair(
+      "base",
+      "head",
+      out,
+      root,
+      true,
+      fakeMeasure,
+      (dir) => (dir === "base" ? "a".repeat(40) : "b".repeat(40)),
+      (dir) => (dir === "base" ? "1700000000" : "1800000000"),
+    );
+    assert.deepEqual(builds, [
+      "base:base:1700000000",
+      "head:head:1700000000",
+      "base-twin:base:1700000000",
+      "head-twin:head:1700000000",
+    ]);
+    assert.equal(
+      JSON.parse(readFileSync(join(out, "pair.json"), "utf8")).sourceDateEpoch,
+      "1700000000",
+    );
+    assert.match(
+      readFileSync(join(out, "summary.md"), "utf8"),
+      /Every build uses `SOURCE_DATE_EPOCH=1700000000` \(the base commit time\)\./,
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -1,5 +1,8 @@
 use super::*;
-use davinci_harness::{alloc, paired::assert_paired_time};
+use davinci_harness::{
+    alloc,
+    paired::{assert_calibrated_paired_time, assert_paired_time},
+};
 use std::{fmt::Write, hint::black_box, sync::Arc};
 
 struct Tools {
@@ -115,7 +118,7 @@ fn complete_tool_products_on_ordinary_setup_and_recovered_inputs() {
     });
     assert!(failures.is_empty(), "heap regressions on {failures:?}");
     for (name, snapshot) in &timed {
-        assert_paired_time(name, 8, |joined| {
+        assert_calibrated_paired_time(name, 8, |joined| {
             drop(run(snapshot, &tools, joined));
         });
     }

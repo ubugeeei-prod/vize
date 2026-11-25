@@ -16,6 +16,13 @@ on {
       "tests/_fixtures/_projects/vitest-project-extends/**"
       ".github/workflows/vitest-project-extends.yml"
       ".github/scripts/workflows/vitest-project-extends/**"
+      "tools/config/pkl/parts/vitest-project-extends/**"
+      "npm/builder/vite/**"
+      "npm/native/**"
+      "crates/vize_atelier_sfc/src/vite_plugin/**"
+      "crates/vize_atelier_sfc/src/vite_plugin.rs"
+      "tools/support/compat/vitest-module-cache.ts"
+      "tools/support/compat/vitest/fixtures/fs-module-cache/**"
     }
   }
 }
@@ -62,4 +69,6 @@ jobs {
       }
     }
   }
+
+  `module-cache` = import("../../parts/vitest-project-extends/module-cache.pkl")
 }

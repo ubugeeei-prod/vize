@@ -134,6 +134,8 @@ fn empty_rejection<'a>(
 }
 
 struct Context<'component, 'a> {
+    #[cfg(feature = "component-text-condense")]
+    text_lane: Option<crate::lower::TextLane>,
     allocator: &'a Allocator,
     component: block::ComponentInput<'component, 'a>,
     lang: Lang,
@@ -144,10 +146,6 @@ struct Context<'component, 'a> {
 }
 
 impl<'a> Context<'_, 'a> {
-    fn block(&self) -> SourceBlock<'a> {
-        self.component.block()
-    }
-
     fn children<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
@@ -155,7 +153,13 @@ impl<'a> Context<'_, 'a> {
         parent: (Namespace, Option<&'a str>),
     ) {
         vize_l0::ensure_sufficient_stack(|| {
+            #[cfg(feature = "component-text-condense")]
+            let mut positions = 0..children.len();
             for child in children {
+                #[cfg(feature = "component-text-condense")]
+                if self.component_text_at(region, child, children, positions.next()) {
+                    continue;
+                }
                 match child {
                     SurfaceChild::Element(element) => self.element(region, element, parent),
                     SurfaceChild::Interpolation(interpolation) => {
@@ -173,10 +177,6 @@ impl<'a> Context<'_, 'a> {
                 }
             }
         });
-    }
-
-    fn token_span(&self, token: &Token<'_>) -> Span {
-        self.block().span_of(token.text).unwrap_or(Span::new(0, 0))
     }
 
     fn record<R: ConstructionFactory<'a>>(
@@ -242,6 +242,14 @@ impl<'a> Context<'_, 'a> {
                 None
             }
         }
+    }
+
+    fn block(&self) -> SourceBlock<'a> {
+        self.component.block()
+    }
+
+    fn token_span(&self, token: &Token<'_>) -> Span {
+        self.block().span_of(token.text).unwrap_or(Span::new(0, 0))
     }
 }
 

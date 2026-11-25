@@ -62,7 +62,9 @@ jobs {
         uses = "./.github/actions/setup-rust-sticky-cache"
         `if` = "env.MEASURE == 'true'"
         with {
-          key = "instruction-counts-v1"
+          // v2: benchmark builds pin SOURCE_DATE_EPOCH, so no cached mimalloc
+          // object keeps a wall clock banner.
+          key = "instruction-counts-v2"
           `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
         }
       }
@@ -155,7 +157,9 @@ jobs {
       new Dynamic {
         uses = "./.github/actions/setup-rust-sticky-cache"
         with {
-          key = "sfc-instructions-v1"
+          // v2: benchmark builds pin SOURCE_DATE_EPOCH, so no cached mimalloc
+          // object keeps a wall clock banner.
+          key = "sfc-instructions-v2"
           `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
         }
       }

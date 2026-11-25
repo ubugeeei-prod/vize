@@ -17,6 +17,12 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "要求 props 和 emits 声明中的键使用一致的引号形式",
     ),
     (
+        "script/consistent-type-imports.description",
+        "Enforce consistent usage of type imports, counting template uses as value uses",
+        "テンプレートでの使用を値の使用として数え、型インポートの書き方を統一する",
+        "统一类型导入的写法，并把模板中的使用计为值使用",
+    ),
+    (
         "script/custom-event-name-casing.description",
         "Enforce configured casing for emitted custom event names",
         "発行するカスタムイベント名を設定した形式に統一する",

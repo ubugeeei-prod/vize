@@ -33,7 +33,7 @@ pub(crate) mod sfc_scripts;
 pub use config::{LintResult, Linter};
 #[cfg(not(target_arch = "wasm32"))]
 pub use engine::PreparedLint;
-pub(crate) use engine::{MacroTypeResolution, analyze_descriptor_for_lint};
+pub(crate) use engine::{MacroTypeResolution, ReadDemand, analyze_descriptor_for_lint};
 
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+node --test \
+  tests/tooling/github-workflows-release-build.test.ts \
+  tests/tooling/release/release-workflow.test.ts \
+  tests/tooling/release/release-smoke-init-fresh.test.ts \
+  tests/tooling/release/release-smoke-init-toolchain.test.ts \
+  tests/tooling/release/release-smoke-init-workspace.test.ts \
+  tests/tooling/release/release-smoke-musl.test.ts

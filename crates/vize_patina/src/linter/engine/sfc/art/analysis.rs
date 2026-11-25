@@ -29,7 +29,10 @@ pub(super) fn script_summary(
         scripts,
         admitted,
         linter.macro_type_resolution(filename),
-        unused,
+        crate::linter::ReadDemand {
+            unused,
+            template_reads: false,
+        },
         false,
     );
     if let Some(l2) = admitted {

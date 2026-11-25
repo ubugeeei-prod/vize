@@ -74,10 +74,14 @@ fn alternating_hosts_and_raw_reads_keep_the_current_native_answer() {
     let good_source = "<template>\n<GlobalBadge :level=\"123\" />\n</template>\n";
     let bad_path = "src/views/Bad.vue";
     let good_path = "src/views/Good.vue";
+    let phased_path = "src/views/Phased.vue";
+    let phased_source = "<script setup lang=\"ts\">\nfunction readLevel(unusedPhaseControl: number) { return 1 }\nconst numberControl: number = 'wrong';\n</script>\n<template>{{ readLevel(numberControl) }}</template>\n";
+    p.write(phased_path, phased_source);
     p.write(bad_path, bad_source);
     p.write(good_path, good_source);
     let bad = p.open(bad_path, bad_source, "vue");
     let good = p.open(good_path, good_source, "vue");
+    let phased = p.open(phased_path, phased_source, "vue");
     let session = p.start();
     crate::runtime::block_on(async {
         for document in [&bad, &good, &bad] {
@@ -92,6 +96,7 @@ fn alternating_hosts_and_raw_reads_keep_the_current_native_answer() {
 
         // A raw reader can consume a cursor whose owner retained the mapped
         // response. It must receive the full generated diagnostic at every read.
+        session.diagnostics(&phased).await.unwrap();
         let mut cursor = session
             .transaction
             .lock()
@@ -106,7 +111,7 @@ fn alternating_hosts_and_raw_reads_keep_the_current_native_answer() {
             .ambient_declaration_inputs(&session.root, &overlays)
             .await
             .unwrap();
-        let path = vize_l0::path::physical_path(&p.path(bad_path));
+        let path = vize_l0::path::physical_path(&p.path(phased_path));
         let overlays = super::super::borrowed(&overlays);
         let declarations = super::super::borrowed(&declarations);
         let read = async |cursor| {
@@ -114,7 +119,7 @@ fn alternating_hosts_and_raw_reads_keep_the_current_native_answer() {
                 .bridge
                 .read_ambient_vue_diagnostics(
                     &path,
-                    bad_source,
+                    phased_source,
                     p.state.canonical_vue_document_options(),
                     &overlays,
                     &options,
@@ -132,7 +137,24 @@ fn alternating_hosts_and_raw_reads_keep_the_current_native_answer() {
                 .collect::<Vec<_>>()
         };
         let expected = packet(&read(None).await);
-        assert!(expected.iter().any(|(_, row)| row["code"] == 2322));
+        let phase_codes: Vec<_> = expected
+            .iter()
+            .filter_map(|(phase, row)| {
+                let code = row["code"].as_i64()?;
+                let from_fixture = code == 2322
+                    || (code == 6133 && row["message"].as_str()?.contains("unusedPhaseControl"));
+                from_fixture.then_some((*phase, code))
+            })
+            .collect();
+        use vize_canon::corsa_bridge::DiagnosticPhase;
+        assert_eq!(
+            phase_codes,
+            [
+                (DiagnosticPhase::Semantic, 2322),
+                (DiagnosticPhase::Suggestion, 6133)
+            ],
+            "{expected:?}"
+        );
         for _ in 0..2 {
             let native = read(cursor.take()).await;
             assert_eq!(packet(&native), expected);
@@ -141,7 +163,7 @@ fn alternating_hosts_and_raw_reads_keep_the_current_native_answer() {
         drop(cursor);
         let request = || vize_canon::corsa_bridge::AmbientVueDiagnosticRequest {
             source_path: &path,
-            content: bad_source,
+            content: phased_source,
             options: p.state.canonical_vue_document_options(),
             overlays: &overlays,
             virtual_ts_options: &options,

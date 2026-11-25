@@ -91,7 +91,7 @@ impl<'a> TemplateRuleEnv<'a> {
 }
 
 pub(crate) use rule_sets::{
-    MacroTypeResolution, TemplateRuleEnv, analyze_descriptor_for_lint,
+    MacroTypeResolution, ReadDemand, TemplateRuleEnv, analyze_descriptor_for_lint,
     analyze_descriptor_for_lint_with_template,
 };
 

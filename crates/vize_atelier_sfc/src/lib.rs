@@ -150,5 +150,7 @@ mod template_tests;
 
 #[cfg(feature = "original-scss-products")]
 pub mod scss;
+#[cfg(feature = "native-scoped-scss")]
+pub use native::style_products::{NativeStyleOptions, NativeStyleOutput, compile_native_styles};
 #[cfg(feature = "native-sfc-scss")]
 pub use native::{NativeScssSession, compile_native_sfc_with_scss};

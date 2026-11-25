@@ -138,13 +138,14 @@ Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
 | <span id="type-unbound-method"></span>[`type/unbound-method`](./reference/type-unbound-method.md) | Disallow referencing methods without their receiver (`this`). | `nuxt`, `opinionated` |  |
 | <span id="type-use-unknown-in-catch-callback-variable"></span>[`type/use-unknown-in-catch-callback-variable`](./reference/type-use-unknown-in-catch-callback-variable.md) | Require Promise catch callback variables to use an explicit unknown annotation. | `nuxt`, `opinionated` |  |
 
-## Opt-in (16)
+## Opt-in (17)
 
 Not in any preset. Turn them on by name in the `linter.rules` passed to `withVue`.
 
 | Rule | What it checks | Auto-fix |
 | --- | --- | --- |
 | <span id="script-consistent-props-emits-key-quotes"></span>[`script/consistent-props-emits-key-quotes`](./reference/script-consistent-props-emits-key-quotes.md) | Require consistent quoted keys in props and emits declarations. |  |
+| <span id="script-consistent-type-imports"></span>[`script/consistent-type-imports`](./reference/script-consistent-type-imports.md) | Enforce consistent usage of type imports, counting template uses as value uses. | ✓ |
 | <span id="script-no-next-tick"></span>[`script/no-next-tick`](./reference/script-no-next-tick.md) | Disallow nextTick() usage in Vapor-oriented components. |  |
 | <span id="script-no-reactive-destructure"></span>[`script/no-reactive-destructure`](./reference/script-no-reactive-destructure.md) | Disallow destructuring reactive objects which loses reactivity. |  |
 | <span id="script-no-restricted-globals"></span>[`script/no-restricted-globals`](./reference/script-no-restricted-globals.md) | Disallow references to runtime-environment globals that must go through a typed wrapper. |  |

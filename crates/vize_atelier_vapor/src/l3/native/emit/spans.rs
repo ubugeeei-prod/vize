@@ -129,13 +129,17 @@ pub(super) fn tag_offset(raw: &str, tag: &str) -> Option<usize> {
     raw.strip_prefix('<')?.starts_with(tag).then_some(1)
 }
 
+/// Authored bytes after the attribute assignment, including its delimiters.
+pub(super) fn attribute_value<'s>(raw: &'s str, name: &str) -> Option<&'s str> {
+    raw.strip_prefix(name)?
+        .trim_start()
+        .strip_prefix('=')
+        .map(str::trim_start)
+}
+
 /// Offset of a literal attribute value in `name = "value"` authored text.
 pub(super) fn value_offset(raw: &str, name: &str, value: &str) -> Option<usize> {
-    let rest = raw
-        .strip_prefix(name)?
-        .trim_start()
-        .strip_prefix('=')?
-        .trim_start();
+    let rest = attribute_value(raw, name)?;
     let rest = rest.strip_prefix(['"', '\'']).unwrap_or(rest);
     rest.starts_with(value).then(|| raw.len() - rest.len())
 }

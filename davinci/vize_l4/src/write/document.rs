@@ -298,7 +298,7 @@ impl EmitDocument {
         builder.finish(&self.text, filename, source)
     }
 
-    #[cfg(feature = "scss-rules")]
+    #[cfg(feature = "expanded-css")]
     pub(crate) fn reserve_text(&mut self, additional: usize) {
         self.text.reserve(additional);
     }
