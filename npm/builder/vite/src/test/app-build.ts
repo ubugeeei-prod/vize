@@ -92,7 +92,13 @@ export async function buildApp(
       try {
         await builder.build(builder.environments[name]);
       } catch (error) {
-        record.error = { environment: name, message: (error as Error).message };
+        // The host prints the stack into the message; which request of a
+        // batch raised the error depends on the order the host requests in.
+        const message = (error as Error).message
+          .split("\n")
+          .filter((line) => !/^\s+at /.test(line))
+          .join("\n");
+        record.error = { environment: name, message };
         break;
       } finally {
         // Environments build one after another, so the calls since the last take are this one's.
