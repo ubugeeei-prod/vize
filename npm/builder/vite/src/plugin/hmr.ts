@@ -184,9 +184,20 @@ async function handleVueFileHotUpdate(
     ? preferAcceptingClientModules(
         collectModulesByFile(server, getVueModuleFileCandidates(file)),
         true,
+        true,
       )
     : undefined;
-  if (initialModules?.size === 0) return [];
+  if (initialModules?.size === 0) {
+    // An unloaded client graph needs no eager compile. Still invalidate the
+    // old products so the next client or SSR request cannot reuse this edit's
+    // previous output, even when a host changes the module's public spelling.
+    evictCompiledModule(state.cache, file);
+    evictCompiledModule(state.ssrCache, file);
+    state.collectedCss.delete(file);
+    state.precompileMetadata.delete(file);
+    state.pendingHmrUpdateTypes.delete(file);
+    return [];
+  }
   const source = await readSource();
   const prevCompiled = state.cache.get(file);
 
@@ -219,6 +230,7 @@ async function handleVueFileHotUpdate(
   const modules = preferAcceptingClientModules(
     collectedModules,
     options.requireAcceptingClientModule,
+    true,
   );
   const customElement = isPluginVueCustomElement(state.mergedOptions, file);
 
