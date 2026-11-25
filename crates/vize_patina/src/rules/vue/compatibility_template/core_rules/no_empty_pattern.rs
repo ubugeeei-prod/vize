@@ -60,6 +60,11 @@ impl Rule for NoEmptyPattern {
             if !is_slot_scope {
                 continue;
             }
+            if ctx.template_surface().is_some_and(|surface| {
+                crate::markup::element_is_frozen(surface, element.loc.span.start)
+            }) {
+                return;
+            }
             let start = attribute.loc.span.start as usize;
             let Some(text) = ctx.source.get(start..attribute.loc.span.end as usize) else {
                 continue;

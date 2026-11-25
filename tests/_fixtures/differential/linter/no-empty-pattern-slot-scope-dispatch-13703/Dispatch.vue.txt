@@ -6,5 +6,7 @@
     <Widget scope="{}" />
     <th scope="[]" />
     <Widget slot-scope="{}" />
+    <div v-pre slot-scope="{}" />
+    <div v-pre><template scope="[]"><i /></template></div>
   </el-table-column>
 </template>
