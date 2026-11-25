@@ -18,7 +18,7 @@ const mergedMainRevision = "116a05062ad5ce4b9fa56bba0c801835498418fa";
 const successorMainRevision = "9c8388e3dde4a03e5be74ee8a0ced20560983aea";
 const vsixInfrastructureRevision = "9e5fa02567cb8757e5740269694e062761acfda6";
 const reviewedVsixPaths = [
-  ".github/workflows/05-vscode-vsix.yml",
+  ".github/workflows/vscode-vsix-validation.yml",
   "tests/tooling/differential-lsp-source-sessions.test.ts",
   "tests/tooling/source-session-tooling-project.test.ts",
   "tests/tooling/vscode-vsix-configuration.test.ts",
