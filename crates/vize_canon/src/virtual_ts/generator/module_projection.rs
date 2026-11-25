@@ -36,11 +36,13 @@ pub(super) fn emit(
     let span_start = start as usize;
     let span_end = end as usize;
     let rebase = |(export_start, inner_start, inner_end): (usize, usize, usize)| {
-        (export_start >= span_start && inner_end <= span_end).then_some((
-            export_start - span_start,
-            inner_start - span_start,
-            inner_end - span_start,
-        ))
+        (export_start >= span_start && inner_end <= span_end).then(|| {
+            (
+                export_start - span_start,
+                inner_start - span_start,
+                inner_end - span_start,
+            )
+        })
     };
     let span_relative_object = options_script.default_export.object.and_then(rebase);
     let span_relative_expr = options_script.default_export.expr.and_then(rebase);
@@ -197,6 +199,36 @@ mod tests {
             "const text = 'export default';\n",
             false,
             &[(0..31, 0..31)],
+        );
+    }
+
+    #[test]
+    fn later_export_containing_default_does_not_rebase_an_earlier_target() {
+        let script =
+            "export default { name: '雪' };\r\nexport interface Props { defaultValue: string }\r\n";
+        let facts = analyze_options_api_script(script, true, false);
+        assert!(facts.default_export.object.is_some());
+        let start = script.find("export interface").unwrap();
+        let text = &script[start..];
+        let mut ts = crate::virtual_ts::TextBuf::from_text("header\n");
+        let mut mappings = Vec::new();
+        assert!(!emit(
+            &mut ts,
+            &mut mappings,
+            text,
+            (start as u32, script.len() as u32),
+            &|offset| 400 + offset,
+            &facts,
+        ));
+        let expected = vize_carton::cstr!("header\n{text}\n");
+        assert_eq!(ts.as_str(), expected.as_str());
+        assert_eq!(
+            mappings,
+            [VizeMapping {
+                gen_range: 7..7 + text.len(),
+                src_range: 400 + start..400 + script.len(),
+                sub_spans: Vec::new(),
+            }]
         );
     }
 

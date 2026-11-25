@@ -60,8 +60,8 @@
     {
       "path": "crates/vize_canon/src/virtual_ts/generator/module_projection.rs",
       "role": "Authored module statement rewrite and generated-to-source mappings",
-      "bytes": 10102,
-      "sha256": "06895b02dd9398b71de2037aa9c4505505f63b7a6d8987630955cc2cfe716732",
+      "bytes": 11255,
+      "sha256": "2ac116547e2fde5121750df47368ae974410b625b28eac679b808feef687a031",
       "callee": "fn emit"
     },
     {
