@@ -37,8 +37,13 @@ mod tests {
     use vize_atelier_core::parser::parse_with_options_custom_elements_and_template_syntax;
     use vize_l0::Allocator;
 
-    /// `parseTemplate`'s outcome under the parser options both bindings use.
+    /// `parseTemplate`'s outcome under the parser options both bindings use,
+    /// in the default `standard` template syntax.
     fn template_failure(source: &str) -> Option<String> {
+        template_failure_in(source, TemplateSyntaxMode::Standard)
+    }
+
+    fn template_failure_in(source: &str, syntax: TemplateSyntaxMode) -> Option<String> {
         let allocator = Allocator::new();
         let (_, errors) = parse_with_options_custom_elements_and_template_syntax(
             &allocator,
@@ -48,7 +53,7 @@ mod tests {
                 ..Default::default()
             },
             CustomElementMatcher::default(),
-            TemplateSyntaxMode::Standard,
+            syntax,
         );
         failure(&errors, source)
     }
@@ -57,6 +62,20 @@ mod tests {
     fn self_closing_non_void_elements_are_not_parse_failures() {
         assert_eq!(template_failure("<Transition><div /></Transition>"), None);
         assert_eq!(template_failure("<div><span /><p /></div>"), None);
+    }
+
+    /// The `strict` template syntax is how a project opts into the error.
+    #[test]
+    fn strict_template_syntax_keeps_the_self_closing_error() {
+        let source = "<Transition><div /></Transition>";
+        let message = template_failure_in(source, TemplateSyntaxMode::Strict)
+            .expect("strict syntax rejects a self-closing non-void element");
+        assert_eq!(message.matches("code: ").count(), 1, "{message}");
+        assert_eq!(
+            message.matches("code: UnexpectedSolidusInTag").count(),
+            1,
+            "{message}"
+        );
     }
 
     #[test]
