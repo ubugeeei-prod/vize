@@ -14,7 +14,7 @@ pub mod napi;
 #[cfg(feature = "wasm")]
 pub mod wasm;
 
-#[cfg(any(feature = "napi", feature = "wasm"))]
+#[cfg(any(test, feature = "napi", feature = "wasm"))]
 mod parse_errors;
 pub mod plugin_output;
 #[cfg(any(test, feature = "napi"))]
