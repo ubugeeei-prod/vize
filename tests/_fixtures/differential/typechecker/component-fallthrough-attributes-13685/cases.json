@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "issue": 13685,
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "fallthrough-listener",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig-fallthrough.json.txt" },
+        { "file": "Foo.vue", "source": "InputRoot.vue.txt" },
+        { "file": "App.vue", "source": "Listener.vue.txt" }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unknown-attribute",
+      "inputs": [
+        { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+        { "file": "Foo.vue", "source": "ButtonRoot.vue.txt" },
+        { "file": "App.vue", "source": "Attribute.vue.txt" }
+      ],
+      "diagnostics": [
+        {
+          "file": "App.vue",
+          "line": 6,
+          "column": 8,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"baz\"' does not exist in type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 671 more ...; zoomAndPan?: unknown...'."
+        }
+      ]
+    }
+  ]
+}

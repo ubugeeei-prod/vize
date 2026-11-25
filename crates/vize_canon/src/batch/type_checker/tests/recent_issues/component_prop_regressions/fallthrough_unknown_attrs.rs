@@ -1,9 +1,10 @@
-//! Native-root fallthrough accepts userland attributes that are not declared as
-//! component props or listed in Vue's native element table (#4461).
+//! Native-root fallthrough under configured unknown-prop checks.
 //!
-//! Oracle: `voicevox` passes `:disable` to a single-`button` wrapper component.
-//! `vue-tsc` treats it as a fallthrough attr, while Vize used to reject it as an
-//! excess component prop.
+//! `voicevox` passes `:disable` to a single-`button` wrapper component without
+//! `vueCompilerOptions`, where `vue-tsc` leaves unknown props unchecked. These
+//! projects use `strictTemplates`, which checks unknown props: an attribute
+//! neither the component nor any native element declares is `TS2353` with or
+//! without a fallthrough target, as `vue-tsc` reports it.
 
 use super::super::super::{
     create_project_case_without_node_modules, resolve_test_tsgo_binary,
@@ -45,7 +46,7 @@ fn create_fallthrough_project_with_native_elements(
 }
 
 #[test]
-fn native_root_fallthrough_accepts_unknown_attrs_without_hiding_required_props() {
+fn native_root_fallthrough_reports_unknown_attrs_under_strict_templates() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
@@ -101,7 +102,17 @@ const uiLocked = true
         return;
     };
 
-    // One diagnostic per binding: the fresh literal's per-prop rendering
+    let unknown_disable = |line: u32, column: u32| {
+        (
+            String::from("src/Parent.vue"),
+            Some(2353),
+            cstr!(
+                "{line}:{column}:error Object literal may only specify known properties, and '\"disable\"' does not exist in type '$ComponentCheckProps<Props, $PublicComponentAttrs & {{ disabled?: unknown; type?: unknown; }} & {{ [x: `data${{Capitalize<string>}}`]: unknown; [x: `data-${{string}}`]: unknown; }}>'."
+            ),
+        )
+    };
+    // `:disable` is unknown on both components. One diagnostic per binding:
+    // the fresh literal's per-prop rendering
     // (`Type '"bad"'`) collapses into the widened elaboration `vue-tsc`
     // reports (#4966). The check-tail text carries the pinned native attr
     // surface plus the custom `data-*` map that same fix admits.
@@ -113,27 +124,16 @@ const uiLocked = true
                 Some(2322),
                 cstr!("10:30:error Type 'string' is not assignable to type 'boolean | undefined'."),
             ),
-            (
-                String::from("src/Parent.vue"),
-                Some(2345),
-                String::from(
-                    "11:4:error Argument of type '{ disable: boolean; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & { disabled?: unknown; type?: unknown; } & { [x: `data${Capitalize<string>}`]: unknown; [x: `data-${string}`]: unknown; } & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ disable: boolean; }' but required in type '{ readonly label: string; readonly disabled?: boolean | undefined; }'."
-                ),
-            ),
-            (
-                String::from("src/Parent.vue"),
-                Some(2353),
-                cstr!(
-                    "12:33:error Object literal may only specify known properties, and '\"disable\"' does not exist in type '$ComponentCheckProps<Props, $PublicComponentAttrs & {{ disabled?: unknown; type?: unknown; }} & {{ [x: `data${{Capitalize<string>}}`]: unknown; [x: `data-${{string}}`]: unknown; }}>'."
-                ),
-            ),
+            unknown_disable(11, 18),
+            unknown_disable(12, 33),
+            unknown_disable(9, 30),
         ],
-        "unknown attrs fall through only when the child has a fallthrough target"
+        "an attribute no element declares is unknown with or without a fallthrough target"
     );
 }
 
 #[test]
-fn generic_native_root_fallthrough_accepts_unknown_attrs() {
+fn generic_native_root_fallthrough_reports_unknown_attrs_under_strict_templates() {
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
@@ -176,20 +176,23 @@ const uiLocked = true
         return;
     };
 
-    assert!(
-        snapshot
-            .iter()
-            .all(|(_, _, message)| !message.contains("'disable'")),
-        "generic native-root fallthrough must keep unknown attrs open: {snapshot:#?}"
-    );
     assert_eq!(
         snapshot,
-        vec![(
-            String::from("src/Parent.vue"),
-            Some(2322),
-            cstr!("11:34:error Type 'number' is not assignable to type 'string'."),
-        )],
-        "generic native-root fallthrough must stay value-open without hiding declared prop checks"
+        vec![
+            (
+                String::from("src/Parent.vue"),
+                Some(2322),
+                cstr!("11:34:error Type 'number' is not assignable to type 'string'."),
+            ),
+            (
+                String::from("src/Parent.vue"),
+                Some(2353),
+                cstr!(
+                    "9:46:error Object literal may only specify known properties, and '\"disable\"' does not exist in type '$SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & {{ disabled?: unknown; type?: unknown; }} & {{ [x: `data${{Capitalize<string>}}`]: unknown; [x: `data-${{string}}`]: unknown; }} & {{ ...; }}'."
+                ),
+            ),
+        ],
+        "generic native-root fallthrough keeps declared prop checks and closes unknown attrs"
     );
 }
 

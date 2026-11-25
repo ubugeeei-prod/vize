@@ -33,6 +33,7 @@ pub(super) fn emit_event_references(
         preserve_event_navigation: ctx.preserve_event_navigation,
         omit_navigation_references: ctx.omit_navigation_references,
         check_unknown_events: ctx.check_unknown_events,
+        fallthrough_listener_events: ctx.fallthrough_listener_events,
         hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
     for &(idx, usage) in checkable_usages {
@@ -74,6 +75,7 @@ pub(super) fn emit_scoped_event_references(
         preserve_event_navigation: ctx.preserve_event_navigation,
         omit_navigation_references: ctx.omit_navigation_references,
         check_unknown_events: ctx.check_unknown_events,
+        fallthrough_listener_events: ctx.fallthrough_listener_events,
         hoist_shared_preamble: ctx.hoist_shared_preamble,
     };
     for &(idx, usage) in usages {
@@ -106,6 +108,7 @@ struct EventNavigationContext<'a> {
     preserve_event_navigation: bool,
     omit_navigation_references: bool,
     check_unknown_events: bool,
+    fallthrough_listener_events: bool,
     hoist_shared_preamble: bool,
 }
 
@@ -300,8 +303,22 @@ fn emit_event_name_checks(
     // raw emits, listener props and kebab aliases all share the same names.
     vize_l0::emit_ts!(
         ts,
-        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{{capitalize}<$ComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
+        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{{capitalize}<$ComponentAttrCamel<K>>}}`]?: unknown }}"
     );
+    if ctx.fallthrough_listener_events {
+        // The listeners of the root the component passes its attributes to
+        // are its events too, from the same surface the prop check reads.
+        let fallthrough_props = if ctx.hoist_shared_preamble {
+            "import(\"vize:virtual-ts\").$FallthroughProps"
+        } else {
+            "$FallthroughProps"
+        };
+        vize_l0::emit_ts!(
+            ts,
+            " & {{ [K in keyof {fallthrough_props}<typeof {component_ref}> & string as K extends `on${{string}}` ? K : never]?: unknown }}"
+        );
+    }
+    ts.push_str(" = {\n");
     let mut emitted_names = FxHashSet::default();
     for event in usage.events.iter().filter(declared_event) {
         let Some(source_range) = event_navigation_source_range(ctx, event) else {

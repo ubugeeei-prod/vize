@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Foo from "./Foo.vue";
+</script>
+
+<template>
+  <Foo @keydown="(event) => event.key" />
+</template>

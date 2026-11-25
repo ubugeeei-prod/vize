@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ variant?: string }>();
+</script>
+
+<template>
+  <button />
+</template>
