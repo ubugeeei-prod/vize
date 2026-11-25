@@ -121,11 +121,11 @@ async function outsideRootHotUpdate(firstRequest: "virtual" | "plain", initially
 }
 
 for (const firstRequest of ["virtual", "plain"] as const) {
-  test(`outside-root ${firstRequest} requests hot-update and reload fresh code`, async () => {
+  void test(`outside-root ${firstRequest} requests hot-update and reload fresh code`, async () => {
     await outsideRootHotUpdate(firstRequest);
   });
 }
 
-test("an outside-root component whose first compile fails recovers after an edit", async () => {
+void test("an outside-root component whose first compile fails recovers after an edit", async () => {
   await outsideRootHotUpdate("virtual", true);
 });
