@@ -67,14 +67,27 @@ impl CodegenContext {
         true
     }
 
-    /// Anchor the setup binding [`Self::push_component_binding_tag`] just
-    /// wrote for `el` at its authored tag name. A resolved asset is anchored
-    /// where it is resolved, but a binding is read in place. Callers make the
-    /// one recording check after a binding was written, so a tag that is not
-    /// one, and every compile without a map, does what it did before.
+    /// Push `el`'s tag as the setup binding it resolves to, as
+    /// [`Self::push_component_binding_tag`] does. A resolved asset is anchored
+    /// where it is resolved, but a binding is read in place, so with a map
+    /// requested the read is anchored at the authored tag name. The one
+    /// recording check follows a written binding: a tag that is not one, and
+    /// every compile without a map, does what it did before.
+    #[inline(always)]
+    pub(in crate::codegen) fn push_component_binding(&mut self, el: &ElementNode<'_>) -> bool {
+        if !self.push_component_binding_tag(el.tag) {
+            return false;
+        }
+        if self.out.is_recording() {
+            self.anchor_component_binding(el);
+        }
+        true
+    }
+
+    /// Anchor the binding [`Self::push_component_binding_tag`] just wrote.
     #[cold]
     #[inline(never)]
-    pub(in crate::codegen) fn anchor_component_binding(&mut self, el: &ElementNode<'_>) {
+    fn anchor_component_binding(&mut self, el: &ElementNode<'_>) {
         // Measure the read by writing it again into a scratch document. The
         // only other effect, using the `unref` helper, is already recorded.
         let written = std::mem::replace(&mut self.out, EmitDocument::new(false));
