@@ -24,6 +24,7 @@ const AXES: &[(&str, &[&str])] = &[
     ("arrowParens", &["\"avoid\""]),
     ("endOfLine", &["\"crlf\"", "\"cr\"", "\"auto\""]),
     ("quoteProps", &["\"consistent\"", "\"preserve\""]),
+    ("objectWrap", &["\"collapse\""]),
     ("singleAttributePerLine", &["true"]),
     ("vueIndentScriptAndStyle", &["true"]),
     ("sortAttributes", &["false"]),
