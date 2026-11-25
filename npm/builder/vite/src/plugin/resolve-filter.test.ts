@@ -12,7 +12,7 @@ import { isPotentialVizeImporter, isPotentialVizeResolveId } from "./resolve.ts"
 
 const require = createRequire(import.meta.url);
 
-test("the host resolve filter retains every request the handler can accept", () => {
+void test("the host resolve filter retains every request the handler can accept", () => {
   const sources = [
     "vue",
     "vue?version=1",
@@ -65,7 +65,7 @@ test("the host resolve filter retains every request the handler can accept", () 
   }
 });
 
-test("actual builds skip ordinary resolver edges and preserve SFC import resolution", async () => {
+void test("actual builds skip ordinary resolver edges and preserve SFC import resolution", async () => {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-resolve-filter-")));
   fs.writeFileSync(path.join(root, "package.json"), '{"type":"module"}');
   fs.writeFileSync(path.join(root, "local.ts"), 'export const local = "relative-probe";');
