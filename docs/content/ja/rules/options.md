@@ -439,6 +439,8 @@ Patina は [esquery](https://github.com/estools/esquery) の次のサブセッ�
 - 属性：`[attr]`、`[a.b.c=value]`、`!=`、`<`、`<=`、`>`、`>=`。値には引用符付き文字列、数値、引用符なし文字列、`/regex/flags` を指定できます（`i`、`m`、`s`、`u` フラグ、Rust の正規表現構文）
 - フィールド：`.left`、`.a.b`
 - 結合子：子孫（空白）、`>`、`~`、`+`、カンマ区切りのリスト
-- `:matches()`、`:is()`、`:not()`、`:has()`（子孫）、`:first-child`、`:last-child`、`:nth-child(n)`、`:nth-last-child(n)`、`:statement`、`:expression`、`:declaration`、`:function`、`:pattern`
+- `:matches()`、`:is()`、`:not()`、`:has()`、`:first-child`、`:last-child`、`:nth-child(n)`、`:nth-last-child(n)`、`:statement`、`:expression`、`:declaration`、`:function`、`:pattern`
 
-`:nth-child(an+b)` 形式、`:has(> …)` の相対セレクター、`[attr=type(...)]`、`:exit` 接尾辞には対応しません。テンプレートは vue-eslint-parser と同様に、`VStartTag`、`VAttribute`、`VDirectiveKey`、`VIdentifier`、`VLiteral`、`VExpressionContainer`、`VText` を子に持つ `VElement[name='template']` として扱います。`VText` は要素や補間の間に書かれたテキストを保持し、要素名は小文字に正規化されます（`rawName` は元の表記を保持します）。式は括弧を除いた TS-ESTree で、vue-eslint-parser が使用する `VOnExpression`、`VForExpression`、`VSlotScopeExpression` の内側にあります。
+先頭に結合子のない `:has()` の引数は、対象ノードの任意の子孫にマッチします。`>`、`~`、`+` で始まる引数は CSS と同様に対象ノードからの相対セレクターです。`VElement:has(> VStartTag > VAttribute[key.name='flex-wrap'])` は自身の開始タグに `flex-wrap` を持つ要素にマッチし、`:has(> A > B)` は子 `B` を持つ子 `A` を対象ノードに要求し、`:has(+ A)` と `:has(~ A)` は対象ノードの後ろの兄弟を調べます。esquery 1.7 は同じ引数を受け付けますが、最後の複合セレクターだけを対象ノードに結び付け（`:has(> A > B)` は自身が `A` で子 `B` を持つ対象ノードにマッチします）、`:has(+ …)` と `:has(~ …)` には何もマッチしません。
+
+`:nth-child(an+b)` 形式、`[attr=type(...)]`、`:exit` 接尾辞には対応しません。テンプレートは vue-eslint-parser と同様に、`VStartTag`、`VAttribute`、`VDirectiveKey`、`VIdentifier`、`VLiteral`、`VExpressionContainer`、`VText` を子に持つ `VElement[name='template']` として扱います。`VText` は要素や補間の間に書かれたテキストを保持し、要素名は小文字に正規化されます（`rawName` は元の表記を保持します）。式は括弧を除いた TS-ESTree で、vue-eslint-parser が使用する `VOnExpression`、`VForExpression`、`VSlotScopeExpression` の内側にあります。
