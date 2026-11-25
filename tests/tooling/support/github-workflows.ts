@@ -57,6 +57,8 @@ export function checkWorkflowJobSources(
   caller = readAutomationPrograms(".github", "workflows", "check.yml"),
   callee = readAutomationPrograms(".github", "workflows", "full-qualification.yml"),
 ): string {
+  caller = normalizeRepoText(caller);
+  callee = normalizeRepoText(callee);
   const expectedCaller = `  full-qualification:
     name: Full qualification
     if: \${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}

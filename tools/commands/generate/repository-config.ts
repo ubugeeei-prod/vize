@@ -99,6 +99,10 @@ const historicalStepBodies = new Set([
   "tests/_fixtures/tooling/native-current-recipe-selected-alias-3984.sh",
 ]);
 
+// The canon qualification custody chain pins these whole files across many layers,
+// so they keep their original bytes instead of carrying the do-not-edit notice.
+const custodyPinnedOutputs = new Set(["pnpm-workspace.yaml"]);
+
 const vendoredDirectories = [
   "upstream/",
   "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/reference/",
@@ -264,7 +268,9 @@ async function main(): Promise<void> {
         );
     }
     const body = renderRepositoryYaml(value, template, !action);
-    const text = withGeneratedHeader(body, "hash", sourcePath);
+    const text = custodyPinnedOutputs.has(target)
+      ? body
+      : withGeneratedHeader(body, "hash", sourcePath);
     if (text !== current) changes.push({ target, text });
   }
   if (sizeViolations.length)
