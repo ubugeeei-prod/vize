@@ -123,8 +123,9 @@ void test("Nuxt 4.7's plugin-vue compiler module stays with the host", async () 
   // @nuxt/vite-builder 4.7 passes plugin-vue the app's `vue/compiler-sfc` as
   // `vite.vue.compiler`, next to the schema defaults. The module namespace is
   // an exotic object whose exports must never be read by the projection.
-  const compiler =
-    await import("data:text/javascript,export const parse = () => {}; export const compileScript = () => {};");
+  const compilerSfc =
+    "data:text/javascript,export const parse = () => {}; export const compileScript = () => {};";
+  const compiler: object = await import(compilerSfc);
   const env = { command: "build", mode: "production", isSsrBuild: false };
   const resolved = elkSetupSfcViteConfig(true);
   const host = { ...resolved.vue, compiler };

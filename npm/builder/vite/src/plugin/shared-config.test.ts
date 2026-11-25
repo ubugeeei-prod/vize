@@ -45,7 +45,8 @@ await test("Nuxt's plugin-vue compiler module never shadows the project's Vue co
       `export default { vue: { compiler: { whitespace: "preserve" } } };\n`,
     );
     // Nuxt 4.7 resolves `vite.vue` with the app's `vue/compiler-sfc` module.
-    const compilerSfc = await import("data:text/javascript,export const parse = () => {};");
+    const compilerSfcModule = "data:text/javascript,export const parse = () => {};";
+    const compilerSfc: object = await import(compilerSfcModule);
 
     const resolved = await resolveSharedConfig(
       {},
