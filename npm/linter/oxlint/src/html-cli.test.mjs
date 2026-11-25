@@ -226,7 +226,9 @@ for (const fixture of [...fixtures, ...targetFixtures])
       const elapsedSeconds = joined.reduce((sum, { elapsedSeconds }) => sum + elapsedSeconds, 0);
       assert.equal(executedFileCount, Object.keys(fixture.selected).length);
       assert.deepEqual(
-        joined.flatMap(({ originals }) => originals.map(({ cwdRelative }) => cwdRelative)).sort(),
+        joined
+          .flatMap(({ originals }) => originals.map(({ cwdRelative }) => cwdRelative))
+          .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0)),
         Object.keys(fixture.selected).sort(),
       );
       const htmlRows = [];
