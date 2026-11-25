@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "vite-plus/test";
 
-import { format, formatSync } from "../src/format.ts";
+import { format, formatSync } from "../dist/index.mjs";
 
 function project(run: (root: string) => Promise<void>): Promise<void> {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-format-api-")));
