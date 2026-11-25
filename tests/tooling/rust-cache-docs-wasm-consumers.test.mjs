@@ -10,6 +10,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import os from "node:os";
+import { runInNewContext } from "node:vm";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -369,3 +370,25 @@ void test("the existing head installer alias cannot authorize a new context or h
   });
   assert.throws(() => verifyDocsWasmConsumers(changed), /Docs WASM/);
 });
+
+for (const [name, separator] of [
+  ["CR", "\r"],
+  ["line separator", "\u2028"],
+  ["paragraph separator", "\u2029"],
+]) {
+  void test(`generated-notice ${name} cannot hide an executable producer statement`, (t) => {
+    const directory = fixture(t);
+    verifyDocsWasmConsumers(directory);
+    const target = join(directory, "examples/vite-musea/scripts/package-tasks.cjs");
+    const source = readFileSync(target, "utf8");
+    const changed = source.replace("\n", separator + "globalThis.__producerNoticeProbe = true;\n");
+    assert.notEqual(changed, source);
+    // Node really treats these bytes as a line break: this is active code,
+    // even though the task table and the generated program body are unchanged.
+    const context = {};
+    runInNewContext(changed.slice(0, changed.indexOf("\n") + 1), context);
+    assert.equal(context.__producerNoticeProbe, true);
+    writeFileSync(target, changed);
+    assert.throws(() => verifyDocsWasmConsumers(directory), /reviewed command producer changed/);
+  });
+}

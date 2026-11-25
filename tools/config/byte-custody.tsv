@@ -457,7 +457,7 @@ editors/vscode/test-fixtures/extension-host/real-vue/tsconfig.json	sha256:e9e112
 editors/vscode/test/run-typescript-provider-host.mjs	sha256:f482766399c13a9e11008d2fdc4a62c26694c7f80ff61c849a5cbb011fa386a9	enforced	tests/_fixtures/tooling/typescript-classification-runtime-11664/custody.json
 editors/vscode/test/suite/classification-provider.cjs	sha256:6bf09098db1c39e4c5c564671daa84511a822e84ec4d88259162651236f5aecb	enforced	tests/_fixtures/tooling/typescript-classification-runtime-11664/custody.json
 editors/vscode/test/suite/typescript-provider-host.cjs	sha256:a9e96ab4424f3dd7c3e20c3bf273d6690522e31eb248c179dc8025f7691eb660	enforced	tests/_fixtures/tooling/typescript-classification-runtime-11664/custody.json
-examples/vite-musea/scripts/package-tasks.cjs	sha256:238c4edc5a633bece09a0f0cad5858e574cb2b2874a3eb2594b785e17e1c26ef	record-only	tests/tooling/support/rust-cache-docs-wasm-consumers.mjs
+examples/vite-musea/scripts/package-tasks.cjs	sha256:238c4edc5a633bece09a0f0cad5858e574cb2b2874a3eb2594b785e17e1c26ef	enforced	tests/tooling/support/rust-cache-docs-wasm-consumers.mjs
 examples/vite-musea/src/components/MuseaBadge.vue	sha256:8eab672b9d7b541cd787cfcbe97808e4cd1001470e9b274d6b0876c5f7dc090c	enforced	docs/davinci/plan/instruction-budgets.toml
 examples/vite-musea/src/main.ts	sha256:1297cf214fa1b84a364b43b5f05c9c364beb4c5385b7c8aa05c48a9bf41323ce	record-only	tests/_fixtures/differential/compat/javascript-workspace-products/corpus.json
 npm/builder/babel/test/hosts/environment.ts	sha256:7f0ed44adb93f7bb0c355e5c59a5d0f5817b9364c4d8896a066beaea5830aaa8	record-only	npm/builder/babel/test/typed-port-manifest.json

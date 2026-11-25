@@ -160,3 +160,62 @@ test("a rename away from a product still checks the deleted product input", () =
     rmSync(cwd, { recursive: true, force: true });
   }
 });
+
+test("moved workflow definitions and programs retain their product integrations", () => {
+  for (const [stem, expected] of [
+    ["08-nuxt-styles", { nuxt: true, "musea-native": false, "musea-browser": false }],
+    ["10-musea-browser", { nuxt: false, "musea-native": true, "musea-browser": true }],
+  ] as const) {
+    for (const suffix of [
+      "workflow.pkl",
+      "scripts/select-changed-product-inputs.sh",
+      "scripts/select-changed-product-inputs.sh.pkl",
+      "scripts/future-helper.ts",
+    ]) {
+      const file = `tools/ci/workflows/${stem}/${suffix}`;
+      assert.deepEqual(planProductIntegrations([file]), expected, file);
+    }
+  }
+  for (const file of [
+    "tools/ci/workflows/03-compile/scripts/measure.cjs",
+    "docs/content/guide/example.md",
+    "tools/ci/workflows/08-nuxt-styles-neighbor/workflow.pkl",
+    "tools/ci/workflows/10-musea-browser-neighbor/workflow.pkl",
+  ]) {
+    assert.deepEqual(planProductIntegrations([file]), {
+      nuxt: false,
+      "musea-native": false,
+      "musea-browser": false,
+    });
+  }
+});
+
+test("a push changing only a moved workflow program runs the owning products", () => {
+  for (const [stem, expected] of [
+    ["08-nuxt-styles", { nuxt: true, "musea-native": false, "musea-browser": false }],
+    ["10-musea-browser", { nuxt: false, "musea-native": true, "musea-browser": true }],
+  ] as const) {
+    const cwd = mkdtempSync(path.join(os.tmpdir(), "vize-workflow-program-plan-"));
+    const git = (...args: string[]) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+    try {
+      git("init", "--quiet");
+      git("config", "user.name", "Integration planner test");
+      git("config", "user.email", "test@example.invalid");
+      const directory = path.join(cwd, "tools/ci/workflows", stem, "scripts");
+      mkdirSync(directory, { recursive: true });
+      const script = path.join(directory, "select-changed-product-inputs.sh");
+      writeFileSync(script, "echo before\n");
+      git("add", ".");
+      git("commit", "--quiet", "-m", "add workflow program");
+      const base = git("rev-parse", "HEAD");
+      writeFileSync(script, "echo after\n");
+      git("commit", "--quiet", "-am", "change workflow program only");
+      assert.deepEqual(
+        productIntegrationPlanForEvent("push", base, git("rev-parse", "HEAD"), cwd),
+        expected,
+      );
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  }
+});
