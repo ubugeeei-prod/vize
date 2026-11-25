@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 `runs-on` = ci.linux
 `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
@@ -22,5 +22,5 @@ steps = new Listing {
   }
   // The fixture-coverage runner evaluates the SFC Pkl fixtures.
   ci.command("Install Pkl CLI", "npm install --global @pkl-community/pkl@0.27.2")
-  ci.command("Coverage report", "node tools/commands/ci/github/write-coverage-summary.ts")
+  ci.command("Coverage report", "node tools/ci/commands/github/write-coverage-summary.ts")
 }

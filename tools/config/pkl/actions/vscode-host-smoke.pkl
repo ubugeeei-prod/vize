@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Editor real-server end-to-end"
 description = "Run VS Code, Zed, Neovim, Vim, and Helix real-server scenarios plus packaged specs"

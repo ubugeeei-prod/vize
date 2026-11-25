@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 
 export const stagedWorkflowAction = "./.vize-workflow-tools/.github/actions/stage-workflow-scripts";
 export function verifyWorkflowStage(owner: string, checkout: unknown, stage: unknown): void {
@@ -12,9 +13,10 @@ export function verifyWorkflowStage(owner: string, checkout: unknown, stage: unk
       "persist-credentials": false,
       "sparse-checkout-cone-mode": false,
       "sparse-checkout":
-        "/.github/actions/stage-workflow-scripts/\n/.github/scripts/workflows/shared/\n/.github/scripts/workflows/" +
-        owner +
-        "/",
+        "/.github/actions/stage-workflow-scripts/\n/tools/ci/lib/scripts/\n" +
+        (existsSync(new URL(`../../../tools/ci/workflows/${owner}/`, import.meta.url))
+          ? `/tools/ci/workflows/${owner}/scripts/`
+          : `/.github/scripts/workflows/${owner}/`),
     },
   });
   assert.deepEqual(stage, {

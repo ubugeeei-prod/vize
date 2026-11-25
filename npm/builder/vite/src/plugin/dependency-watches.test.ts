@@ -3,7 +3,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { createDependencyWatch } from "./dependency-watches.ts";
+import {
+  buildWatchScope,
+  createDependencyWatch,
+  resetBuildWatches,
+  UNWATCHED_DEPENDENCY,
+} from "./dependency-watches.ts";
 import { CompiledModuleCache, ownersOfDependency } from "./compiled-module-cache.ts";
 
 void test("dev compiler inputs are watched without entering the module import graph", () => {
@@ -138,4 +143,79 @@ void test("separate build modules each retain their own watch dependencies", () 
     watch!("/project/types.ts");
   }
   assert.deepEqual(watched, [["/project/types.ts"], ["/project/types.ts"]]);
+});
+
+const barrel = Array.from({ length: 800 }, (_, index) => `/project/src/models/Model${index}.ts`);
+const rolldownMeta = { rolldownVersion: "1.3.3" };
+
+/** Each module's transform registers every type input of a component typed through `barrel`. */
+function transformModules(scope: ReturnType<typeof buildWatchScope>, modules: number): number {
+  let calls = 0;
+  for (let module = 0; module < modules; module += 1) {
+    const watch = createDependencyWatch(null, () => (calls += 1), scope);
+    if (watch === UNWATCHED_DEPENDENCY) continue;
+    for (const input of barrel) watch!(input);
+  }
+  return calls;
+}
+
+void test("a build that does not watch registers no compiler input", () => {
+  const environment = { config: { build: {} } };
+  const scope = buildWatchScope({ meta: { ...rolldownMeta, watchMode: false }, environment });
+  assert.equal(scope, false);
+  assert.equal(createDependencyWatch(null, undefined, scope), UNWATCHED_DEPENDENCY);
+  assert.equal(transformModules(scope, 1000), 0);
+});
+
+void test("a full Rolldown rebuild registers each input once per environment build", () => {
+  const client = { config: { build: {} } };
+  const ssr = { config: { build: {} } };
+  const meta = { ...rolldownMeta, watchMode: true };
+  assert.equal(buildWatchScope({ meta, environment: client }), client);
+  assert.equal(transformModules(client, 1000), barrel.length);
+  assert.equal(transformModules(ssr, 1000), barrel.length, "each environment has its own watcher");
+  assert.equal(transformModules(client, 1000), 0, "the same build registered them already");
+  resetBuildWatches(client);
+  assert.equal(transformModules(client, 1000), barrel.length, "a rebuild collects them again");
+});
+
+void test("rebuilds that re-transform only changed modules keep per-module inputs", () => {
+  const incremental = {
+    config: { build: { rolldownOptions: { experimental: { incrementalBuild: true } } } },
+  };
+  const watching = { watchMode: true };
+  for (const context of [
+    { meta: { ...rolldownMeta, ...watching }, environment: incremental },
+    // Rollup's watch cache reuses a module unless one of its own inputs changed.
+    { meta: watching, environment: { config: { build: {} } } },
+    // A standalone Rolldown build has no environment to scope a registration to.
+    { meta: { ...rolldownMeta, ...watching } },
+  ]) {
+    const scope = buildWatchScope(context);
+    assert.equal(scope, "module");
+    assert.equal(transformModules(scope, 3), barrel.length * 3);
+  }
+});
+
+void test("the dev server watches only inputs outside the root its watcher covers", () => {
+  const watched: string[] = [];
+  const server = {
+    config: { root: "/project" },
+    watcher: { add: (file: string) => watched.push(file) },
+  };
+  for (let module = 0; module < 3; module += 1) {
+    const watch = createDependencyWatch(server, () => assert.fail("not a module import"));
+    for (const input of ["/project/src/types.ts", "/project-ui/types.ts", "/shared/tsconfig.json"])
+      watch!(input);
+  }
+  assert.deepEqual(watched, ["/project-ui/types.ts", "/shared/tsconfig.json"]);
+
+  const windows: string[] = [];
+  const windowsServer = {
+    config: { root: "C:/app" },
+    watcher: { add: (f: string) => windows.push(f) },
+  };
+  const watch = createDependencyWatch(windowsServer, undefined)!;
+  for (const input of ["\\\\?\\C:\\app\\src\\types.ts", "C:\\shared\\types.ts"]) watch(input);
+  assert.deepEqual(windows, ["C:\\shared\\types.ts"]);
 });

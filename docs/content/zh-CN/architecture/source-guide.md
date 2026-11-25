@@ -126,7 +126,7 @@ vp run --workspace-root source:lengths
 当 MoonBit 会增加摩擦而不是删除它时，在 Node (`.mjs`) 中保留一个脚本：
 
 - 它由其他 JavaScript 或 `node --test` 套件作为模块导入（例如
-  `tools/commands/ci/github/release-platforms.rs`），因此重写它会将一个源代码拆分为两种语言。
+  `tools/ci/commands/github/release-platforms.rs`），因此重写它会将一个源代码拆分为两种语言。
 - 这取决于 npm 生态系统（全局库、包工具、GitHub Action SDK）或
   仅节点 API，没有 MoonBit 等效项。
 - 它足够大或具有探索性，其行为尚未通过全输出测试来确定；不

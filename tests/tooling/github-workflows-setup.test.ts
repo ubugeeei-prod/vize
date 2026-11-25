@@ -195,7 +195,7 @@ test("native smoke workflow covers host platforms before release tags", () => {
   assert.match(job, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.match(
     job,
-    /node tools\/commands\/ci\/github\/verify-glibc-symbols\.ts --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/,
+    /node tools\/ci\/commands\/github\/verify-glibc-symbols\.ts --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/,
   );
   assert.match(
     workflowProgram("native-smoke", job, "smoke-vizejs-native.cjs"),

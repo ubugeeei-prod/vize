@@ -1,4 +1,4 @@
-import { requiredEnv } from "../shared/files.ts";
+import { requiredEnv } from "../../../../tools/ci/lib/scripts/files.ts";
 import { readFileSync, copyFileSync } from "node:fs";
 import { join } from "node:path";
 const directory = join(requiredEnv("RUNNER_TEMP"), "native");

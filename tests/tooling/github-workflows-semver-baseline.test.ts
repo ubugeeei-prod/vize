@@ -13,7 +13,7 @@ import {
   hasRegistryBaseline,
   renamedPackages,
   verifyChecksum,
-} from "../../tools/commands/ci/github/semver-baseline.ts";
+} from "../../tools/ci/commands/github/semver-baseline.ts";
 import { repoRoot } from "./_helpers/tool-commands.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
@@ -83,7 +83,7 @@ test("registry failures cannot turn the first-publish baseline into a skipped ch
       const result = spawnSync(
         process.execPath,
         [
-          path.join(repoRoot, "tools/commands/ci/github/semver-baseline.ts"),
+          path.join(repoRoot, "tools/ci/commands/github/semver-baseline.ts"),
           "vize_l1_to_l2",
           output,
         ],
@@ -155,7 +155,7 @@ test("a renamed package uses the exact Git parent source and version before regi
     spawnSync(
       process.execPath,
       [
-        path.join(repoRoot, "tools/commands/ci/github/semver-baseline.ts"),
+        path.join(repoRoot, "tools/ci/commands/github/semver-baseline.ts"),
         "vize_l1_to_l2",
         fs.mkdtempSync(path.join(root, "baseline-")),
         revision,
@@ -226,7 +226,7 @@ test("release SemVer invokes the required check with the immutable baseline and 
       "commands/fixture-tool-matrix-compiler/vize-requires-explicit-zero-file-expectation.js",
     ),
   );
-  const script = path.join(repoRoot, "tools/commands/ci/github/check-semver.ts");
+  const script = path.join(repoRoot, "tools/ci/commands/github/check-semver.ts");
   const run = (extra: NodeJS.ProcessEnv = {}) => {
     fs.writeFileSync(log, "");
     fs.writeFileSync(helperLog, "");

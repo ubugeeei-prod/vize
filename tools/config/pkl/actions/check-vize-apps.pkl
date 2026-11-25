@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Check Vize applications"
 description = "Build the current-source CLI and verify the affected product applications"
@@ -43,7 +43,7 @@ runs {
     new Dynamic {
       name = "Lint authored source with the opinionated preset"
       shell = "bash"
-      run = "vp node tools/commands/ci/opinionated-source-lint.ts"
+      run = "vp node tools/ci/commands/opinionated-source-lint.ts"
     }
     new Dynamic {
       name = "Test gallery Markdown renderer"

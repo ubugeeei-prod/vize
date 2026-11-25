@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "PR Oxlint Windows JSON config"
 `if` = "${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}"

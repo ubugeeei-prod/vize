@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Check Davinci inventories"
 description = "Validate committed source witnesses and publish generated run ledgers"

@@ -41,7 +41,7 @@ test("dispatch target validation binds the requested ref to one exact SHA", () =
 test("planner CLI rejects unknown suites with a nonzero exit", () => {
   const result = spawnSync(
     process.execPath,
-    ["tools/commands/ci/github/app-e2e-plan.ts", "--profile", "full", "--suite", "missing"],
+    ["tools/ci/commands/github/app-e2e-plan.ts", "--profile", "full", "--suite", "missing"],
     { cwd: root, encoding: "utf8" },
   );
   assert.notEqual(result.status, 0);

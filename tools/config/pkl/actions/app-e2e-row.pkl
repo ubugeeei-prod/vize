@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "App E2E row"
 description = "Run one validated App E2E planner row on an isolated runner"

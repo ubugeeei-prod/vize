@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Native JS setup runtime"
 description = "Check source-bound native SFC modules and preserve real Vue renders"
