@@ -250,7 +250,7 @@ impl<'a> SsrCodegenContext<'a> {
 
         let map = self.out.is_recording().then(|| {
             self.out
-                .render_source_map(self.source_map_filename.as_str(), self.source)
+                .source_map(self.source_map_filename.as_str(), self.source)
         });
         let code = self.out.into_string();
 

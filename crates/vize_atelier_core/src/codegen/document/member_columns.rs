@@ -9,7 +9,7 @@ use std::cell::Cell;
 
 use super::{EmitDocument, SourceMapBuilder, rewritten_identifier_spans};
 use oxc_syntax::identifier::is_identifier_name;
-use vize_l0::{Span, String};
+use vize_l0::Span;
 
 std::thread_local! {
     static COMPOSING_SFC_MAP: Cell<bool> = const { Cell::new(false) };
@@ -29,22 +29,17 @@ pub fn composing_sfc_render_map<R>(compile: impl FnOnce() -> R) -> R {
     compile()
 }
 
-impl EmitDocument {
-    /// Serialize a backend's render map: with the static member columns
-    /// inside [`composing_sfc_render_map`], the complete map otherwise.
-    pub fn render_source_map(&self, filename: &str, source: &str) -> String {
-        if COMPOSING_SFC_MAP.get() {
-            self.sfc_source_map(filename, source)
-        } else {
-            self.source_map(filename, source)
-        }
-    }
+/// Whether the render map being serialized is composed into a Vue file.
+pub(super) fn composing_sfc_map() -> bool {
+    COMPOSING_SFC_MAP.get()
+}
 
-    /// Serialize the render map composed into a Vue file, including the
-    /// static properties of expressions whose complete rewrite we can verify.
-    pub fn sfc_source_map(&self, filename: &str, source: &str) -> String {
-        let mut builder = SourceMapBuilder::new();
-        self.write_segments(&mut builder);
+impl EmitDocument {
+    /// Add the static properties of expressions whose complete rewrite we
+    /// can verify, for a render map composed into a Vue file.
+    #[cold]
+    #[inline(never)]
+    pub(super) fn write_member_columns(&self, builder: &mut SourceMapBuilder, source: &str) {
         for link in self.links().iter().filter(|link| link.name.is_none()) {
             let Some(authored) =
                 source.get(link.authored.start as usize..link.authored.end as usize)
@@ -66,7 +61,6 @@ impl EmitDocument {
                 builder.add_raw((link.generated.start + out.start) as usize, at.start);
             });
         }
-        builder.finish(self.as_str(), filename, source)
     }
 
     fn is_string_content(&self, span: Span) -> bool {
@@ -139,14 +133,14 @@ mod tests {
             doc.push_linked(text, span);
             doc.push_char(quote);
             assert_eq!(
-                doc.sfc_source_map("a.vue", text),
+                super::composing_sfc_render_map(|| doc.source_map("a.vue", text)),
                 doc.source_map("a.vue", text)
             );
         }
         let mut read = EmitDocument::default();
         read.push_expression(text, span, text);
         assert_ne!(
-            read.sfc_source_map("a.vue", text),
+            super::composing_sfc_render_map(|| read.source_map("a.vue", text)),
             read.source_map("a.vue", text)
         );
     }

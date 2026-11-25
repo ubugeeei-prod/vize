@@ -301,10 +301,15 @@ impl EmitDocument {
         }
     }
 
-    /// Serialize the links as a Source Map v3 document for `source`.
+    /// Serialize the links as a Source Map v3 document for `source`. Inside
+    /// [`composing_sfc_render_map`] the map also carries the static member
+    /// columns a Vue file's composed map needs.
     pub fn source_map(&self, filename: &str, source: &str) -> String {
         let mut builder = SourceMapBuilder::new();
         self.write_segments(&mut builder);
+        if member_columns::composing_sfc_map() {
+            self.write_member_columns(&mut builder, source);
+        }
         builder.finish(&self.text, filename, source)
     }
 }
