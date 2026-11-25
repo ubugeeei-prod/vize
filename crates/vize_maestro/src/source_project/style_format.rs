@@ -181,7 +181,7 @@ fn style_at<'o, 'a>(
     #[cfg(feature = "experimental-scoped-component-session")]
     let selection = l1ir.admitted_styles();
     #[cfg(not(feature = "experimental-scoped-component-session"))]
-    let selection = descriptor.admitted();
+    let selection = l1ir.admitted();
     selection
         .map_err(|_| StyleFormatError::Descriptor)?
         .styles()
