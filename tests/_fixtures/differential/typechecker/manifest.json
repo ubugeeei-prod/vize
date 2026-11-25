@@ -13615,6 +13615,46 @@
       }
     },
     {
+      "id": "typechecker/dom-property-bindings/prop-bindings",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::dom_property_bindings::prop_bindings_check_the_element_dom_properties",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dom-property-bindings/tsconfig.json.txt",
+          "sha256": "41988ec149e99ceb3997f1e9baccfaee21031a44e9e9550cf6d173ba5f1aa3d0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dom-property-bindings/App.vue.txt",
+          "sha256": "cb0984f0a36a7406cbfa7902a187695c3044da09af9d9244f2c4ab8a6179998e"
+        },
+        {
+          "file": "cases.json",
+          "path": "dom-property-bindings/cases.json",
+          "sha256": "3cbcab29a9942f86745a2f557f9702c5558c7111e4370f8b07096c89cadb0579"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::dom_property_bindings::prop_bindings_check_the_element_dom_properties; a .prop binding is checked against the element's DOM interface: srcObject is accepted, a wrong value and an undeclared property are reported, and SVG elements resolve through the SVG tag-name map. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/dynamic-component-setup-props-4494/dynamic-component-correct-prop",
       "state": "active",
       "targets": [

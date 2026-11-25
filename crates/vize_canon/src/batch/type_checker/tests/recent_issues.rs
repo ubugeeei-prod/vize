@@ -24,6 +24,7 @@ mod define_model_template_unwrap;
 mod diagnostic_normalization;
 mod directive_anchors;
 mod directive_values;
+mod dom_property_bindings;
 mod dynamic_component_index_targets;
 mod dynamic_component_scoped_aliases;
 mod dynamic_component_union_listener;

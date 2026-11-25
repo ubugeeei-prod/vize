@@ -4,7 +4,11 @@
 
 use crate::{
     template_diagnostic_directives::{DirectivePolicy, TemplateDiagnosticDirectives},
-    virtual_ts::VizeMapping,
+    virtual_ts::{
+        VizeMapping,
+        expressions::{binds_dom_property, dom_property_key, push_dom_element_lookup},
+        helpers::push_ts_string_literal,
+    },
 };
 use vize_carton::{FxHashSet, append, is_native_tag};
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
@@ -89,6 +93,17 @@ fn visit(
                     if !argument.is_static {
                         continue;
                     }
+                    if binds_dom_property(directive) {
+                        emit_dom_property_name(
+                            ts,
+                            mappings,
+                            element,
+                            &dom_property_key(directive, argument.content),
+                            &argument.loc,
+                            offset,
+                        );
+                        continue;
+                    }
                     (argument.content, &argument.loc)
                 }
                 _ => continue,
@@ -135,6 +150,41 @@ fn visit(
             expected_native_owners,
         );
     }
+}
+
+/// A `.prop` binding assigns a property of the mounted element, so its key is
+/// excess-checked against the element's DOM interface (`HTMLVideoElement`
+/// declares `srcObject`, which no attribute type lists). A tag the DOM
+/// tag-name map does not list accepts any key.
+fn emit_dom_property_name(
+    ts: &mut crate::virtual_ts::TextBuf,
+    mappings: &mut Vec<VizeMapping>,
+    element: &vize_relief::ElementNode<'_>,
+    key: &str,
+    location: &vize_relief::SourceLocation,
+    offset: u32,
+) {
+    let partial = crate::virtual_ts::generated_names::lib("Partial");
+    append!(
+        *ts,
+        "  const __vize_native_key_{}: {partial}<",
+        location.span.start
+    );
+    push_dom_element_lookup(ts, element.tag, element.ns);
+    ts.push_str("__E : { [key: string]: unknown })> = { ");
+    let key_start = ts.len();
+    push_ts_string_literal(ts, key);
+    let key_end = ts.len();
+    append!(
+        *ts,
+        ": undefined as never }};\n  void __vize_native_key_{};\n",
+        location.span.start
+    );
+    mappings.push(VizeMapping {
+        gen_range: key_start..key_end,
+        src_range: (offset + location.span.start) as usize..(offset + location.span.end) as usize,
+        sub_spans: Vec::new(),
+    });
 }
 
 /// A `<template v-if>` / `<template v-for>` renders no element, so a prop
