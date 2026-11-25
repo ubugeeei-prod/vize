@@ -3,6 +3,7 @@ import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { recoverFixtureCheckout, validateHydration } from "./canonical-corpus-hydration.mjs";
+import { needsNativeWalk } from "./canonical-corpus-logical-walk.ts";
 import { validateNativeWalk } from "./canonical-corpus-native-walk.ts";
 import { verifyCommittedInventory } from "./canonical-corpus-inventory.mjs";
 import {
@@ -173,6 +174,11 @@ export function validateObserverArtifact(observer, directory) {
   assert.equal(receipt.outcome, "success", "Canonical observer did not succeed");
   const identity = readJson(join(directory, "identity.json"));
   sameCorpus(receipt.identity, identity);
+  const nativeRecapture = needsNativeWalk(identity.gitlinks) || identity.nativeWalk !== undefined;
+  if (nativeRecapture) {
+    assert(identity.nativeWalk, "Missing native snapshot identity");
+    assert(receipt.recapture, "Missing native snapshot-to-record relation");
+  }
   assert.equal(
     validateHydration(directory, identity),
     receipt.hydrationSha256,
@@ -193,7 +199,7 @@ export function validateObserverArtifact(observer, directory) {
     "Canonical file manifest was replaced",
   );
   validateNativeWalk(directory, identity, proof, files);
-  if (identity.nativeWalk)
+  if (nativeRecapture)
     validateRecordRecapture(directory, identity, files, proof, receipt.recapture);
   else assert.equal(receipt.recapture, undefined, "Unexpected native recapture relation");
   const bytes = readFileSync(join(directory, observerLogs[observer]));
@@ -248,7 +254,9 @@ export function recordObserver(observer, outcome, cwd, env = process.env) {
   const identity = readJson(join(directory, "identity.json"));
   const files = readJson(join(directory, "files.json"));
   const proof = readJson(join(directory, "committed-corpus.json"));
-  const recapture = identity.nativeWalk
+  const nativeRecapture = needsNativeWalk(identity.gitlinks) || identity.nativeWalk !== undefined;
+  if (nativeRecapture) assert(identity.nativeWalk, "Missing native snapshot identity");
+  const recapture = nativeRecapture
     ? captureRecordRecapture(cwd, env, directory, identity, files, proof)
     : undefined;
   if (!recapture) sameCorpus(identity, captureCorpus(cwd, env).identity);

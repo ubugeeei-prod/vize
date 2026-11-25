@@ -1,4 +1,9 @@
 import assert from "node:assert/strict";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { validateObserverArtifact } from "../../tools/support/compat/github/canonical-corpus-observer.mjs";
+import { cycleOwner } from "../../tools/support/compat/github/canonical-corpus-logical-walk.ts";
 import { test } from "node:test";
 import { validateRecordRecapture } from "../../tools/support/compat/github/canonical-corpus-recapture-archive.mjs";
 
@@ -71,5 +76,38 @@ await test("record relation cannot replace strict source/run/head/phase custody"
       /Canonical corpus|gitlink ownership/u,
       key,
     );
+  }
+});
+
+await test("final observer validation derives mandatory relation from owned gitlinks even if markers are removed", () => {
+  const directory = mkdtempSync(join(tmpdir(), "canonical-recapture-downgrade-"));
+  const write = (name: string, value: unknown) =>
+    writeFileSync(join(directory, name), JSON.stringify(value));
+  try {
+    for (const variant of ["both removed", "identity removed", "relation removed"]) {
+      const identity = {
+        gitlinks: [{ path: cycleOwner.repository, sha: cycleOwner.revision }],
+        ...(variant === "relation removed" ? { nativeWalk: {} } : {}),
+      };
+      write("identity.json", identity);
+      write("observer.json", {
+        schema: "vize.canonical-corpus-observer",
+        version: 1,
+        observer: "reach",
+        outcome: "success",
+        identity,
+        ...(variant === "identity removed" ? { recapture: {} } : {}),
+      });
+      // Both receipt and archive identity carry the same downgrade, which the
+      // ordinary equality comparator alone cannot detect. This must fail in
+      // the actual final validator before hydration/archive reads can begin.
+      assert.throws(
+        () => validateObserverArtifact("reach", directory),
+        /Missing native snapshot identity|Missing native snapshot-to-record relation/u,
+        variant,
+      );
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
   }
 });

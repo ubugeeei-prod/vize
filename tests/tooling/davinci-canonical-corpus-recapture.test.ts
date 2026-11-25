@@ -381,6 +381,23 @@ test("finite and original bytes, aliases, modes and symlink owner cannot drift",
       },
     ],
     [
+      "shared physical source size",
+      ({ raw, baseline }) => {
+        for (const observation of [raw, baseline.raw])
+          observation.physical!.find((row) => row.path === at(0, "A.vue"))!.size += 1;
+      },
+    ],
+    [
+      "shared unknown physical symlink",
+      ({ raw, baseline }) => {
+        for (const observation of [raw, baseline.raw]) {
+          const entry = observation.physical!.find((row) => row.path === at(0, ".git"))!;
+          entry.mode = 0o120777;
+          entry.targetBase64 = Buffer.from("outside").toString("base64");
+        }
+      },
+    ],
+    [
       "shared physical symlink target",
       ({ raw, baseline }) => {
         for (const observation of [raw, baseline.raw])
@@ -406,4 +423,98 @@ test("finite and original bytes, aliases, modes and symlink owner cannot drift",
     mutate(context);
     assert.throws(() => qualify(context), undefined, name);
   }
+});
+
+test("an existing metadata refusal outside the finite cut cannot disappear", () => {
+  const context = fixture();
+  const plain = Buffer.from("plain source");
+  const target = Buffer.from("Plain.txt");
+  for (const [name, mode, source] of [
+    ["Plain.txt", "100644", plain],
+    ["Trace.txt", "120000", target],
+  ] as const) {
+    const path = at(0, name);
+    context.nodes.set(path, {
+      path,
+      mode,
+      id: blob(source),
+      repository: cycleOwner.repository,
+      revision: cycleOwner.revision,
+      ...(mode === "120000" ? { target: source.toString("utf8") } : {}),
+    });
+    context.children.get("jellyfin-vue")!.add(name);
+    context.baseline.raw.physical!.push({
+      path,
+      mode: mode === "120000" ? 0o120777 : 0o100644,
+      size: source.length,
+      mtimeMs: 1,
+      ctimeMs: 2,
+      ...(mode === "120000" ? { targetBase64: source.toString("base64") } : {}),
+    });
+  }
+  const metadata: MetadataEntry[] = [{ path: "jellyfin-vue", isDirectory: true, followed: 0 }];
+  const original: VueFile[] = [];
+  const success = (path: string, isDirectory: boolean, followed?: number) =>
+    metadata.push({ path, isDirectory, ...(followed === undefined ? {} : { followed }) });
+  // Three owned levels are independently authored. Trace is non-Vue, with one
+  // additional finite link: its existing refusal at level one is outside cut.
+  const frame = (depth: number) => {
+    success(at(depth, ".git"), false);
+    success(at(depth, "A.vue"), false, depth);
+    original.push(vue(at(depth, "A.vue"), "A"));
+    success(at(depth, "Plain.txt"), false);
+    if (depth > 0) metadata.push(error(at(depth, "Trace.txt"), depth + 1));
+    else success(at(depth, "Trace.txt"), false);
+    if (depth === 2) metadata.push(error(at(depth, "copy"), 3));
+    else {
+      success(at(depth, "copy"), true, depth === 0 ? 1 : undefined);
+      success(at(depth, "copy/B.vue"), false, depth + 1);
+      original.push(vue(at(depth, "copy/B.vue"), "B"));
+    }
+    success(at(depth, "packaging"), true, depth === 0 ? 0 : undefined);
+    success(at(depth, "packaging/deb"), true, depth === 0 ? 0 : undefined);
+    if (depth === 2) metadata.push(error(at(depth, "packaging/deb/root"), 3));
+    else {
+      success(at(depth, "packaging/deb/root"), true, depth === 0 ? 1 : undefined);
+      frame(depth + 1);
+    }
+    success(at(depth, "sub"), true, depth === 0 ? 0 : undefined);
+    success(at(depth, "sub/B.vue"), false, depth);
+    original.push(vue(at(depth, "sub/B.vue"), "B"));
+  };
+  frame(0);
+  const rejected = metadata
+    .filter((row) => row.error)
+    .map((row) => ({
+      path: row.path,
+      code: "ELOOP",
+      followed: row.followed!,
+    }));
+  context.baseline.raw.metadata = metadata;
+  context.baseline.raw.files = original;
+  context.baseline.raw.rejected = rejected;
+  context.baseline.raw.successfulFollows = 2;
+  context.baseline.boundary = { code: "ELOOP", firstRejected: 3, rejected };
+  const before = structuredClone(context.baseline.raw);
+  qualifyRecapturedObservation(
+    context.nodes,
+    context.children,
+    context.baseline,
+    before,
+    context.baseline.boundary,
+  );
+  const removed = at(1, "Trace.txt");
+  before.metadata![before.metadata!.findIndex((row) => row.path === removed)] = {
+    path: removed,
+    isDirectory: false,
+  };
+  before.rejected = before.rejected.filter((row) => row.path !== removed);
+  assert.throws(
+    () =>
+      qualifyRecapturedObservation(context.nodes, context.children, context.baseline, before, {
+        ...context.baseline.boundary,
+        rejected: before.rejected,
+      }),
+    /outside repeated finite descendants/u,
+  );
 });

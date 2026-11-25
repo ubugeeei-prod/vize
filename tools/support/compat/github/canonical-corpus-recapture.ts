@@ -44,7 +44,10 @@ function physicalTree(nodes: CorpusNodes, observation: NativeObservation) {
     names.push(posix.basename(entry.path));
     children.set(owner, names);
     const node = nodes.get(entry.path);
-    if (!node) continue; // Git metadata is observed, but cannot provide Vue sources.
+    if (!node) {
+      assert.notEqual(entry.mode & 0o170000, 0o120000, "Foreign uncommitted physical symlink");
+      continue; // Ordinary Git metadata files/directories cannot provide Vue sources.
+    }
     const mode = entry.mode & 0o170000;
     if (isDirectory(node.mode))
       assert.equal(mode, 0o040000, "Committed physical directory changed");
@@ -96,6 +99,15 @@ export function qualifyRecapturedObservation(
   const original = walkCommittedGraph(nodes, children, baseline.boundary).files;
   assert.deepEqual(fileIdentity(baseline.raw.files), original, "Initial original vector changed");
   const plan = finiteCommittedPlan(nodes, children);
+  assert(
+    Array.isArray(baseline.raw.metadata) && Array.isArray(raw.metadata),
+    "Missing recapture metadata observation",
+  );
+  assert.deepEqual(
+    raw.metadata.filter((row) => !below(row.path, plan.cut)),
+    baseline.raw.metadata.filter((row) => !below(row.path, plan.cut)),
+    "Changed metadata is outside repeated finite descendants",
+  );
   assert.deepEqual(fileIdentity(baseline.files), plan.files, "Finite actual vector changed");
   assert.deepEqual(raw.physical, baseline.raw.physical, "Recapture physical observation changed");
   assert.equal(boundary.code, baseline.boundary.code, "Recapture boundary code changed");
@@ -118,6 +130,9 @@ export function qualifyRecapturedObservation(
     );
     const source = resolveLogical(nodes, row[0]);
     assert.equal(source.id, row[3], "Finite committed source blob changed");
+    const entry = physical.entries.get(source.path);
+    assert(entry && (entry.mode & 0o170000) === 0o100000, "Missing finite physical source");
+    assert.equal(entry.size, row[2], "Physical source size differs from whole bytes");
     const previous = sources.get(source.path);
     if (previous) assert.deepEqual(previous.slice(1), row.slice(1), "Finite source bytes disagree");
     sources.set(source.path, row);
