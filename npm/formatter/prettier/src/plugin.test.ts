@@ -32,6 +32,7 @@ void test("one native format per nonempty file with explicit host option precede
     singleQuote: true,
     jsxSingleQuote: true,
     quoteProps: "consistent",
+    objectWrap: "collapse",
     trailingComma: "none",
     arrowParens: "avoid",
     bracketSpacing: false,
@@ -50,6 +51,7 @@ void test("one native format per nonempty file with explicit host option precede
     singleQuote: true,
     jsxSingleQuote: true,
     quoteProps: "consistent",
+    objectWrap: "collapse",
     trailingComma: "none",
     arrowParens: "avoid",
     bracketSpacing: false,
@@ -68,6 +70,36 @@ void test("one native format per nonempty file with explicit host option precede
     (await getFileInfo("Example.art", { plugins: [plugin] })).inferredParser,
     "vize-art",
   );
+});
+
+void test("Prettier honors objectWrap with comment, width and array controls", async () => {
+  const fixtures = JSON.parse(
+    fs.readFileSync(
+      path.join(root, "tests/_fixtures/differential/formatter/sfc-object-wrap-13666/cases.json"),
+      "utf8",
+    ),
+  ) as {
+    cases: { id: string; printWidth: number; source: string; preserve: string; collapse: string }[];
+  };
+  for (const fixture of fixtures.cases) {
+    const source = `<script setup lang="ts">\n${fixture.source}</script>\n`;
+    const options: Options = {
+      filepath: "Objects.vue",
+      plugins: [plugin],
+      printWidth: fixture.printWidth,
+    };
+    assert.equal(
+      await format(source, options),
+      `<script setup lang="ts">\n${fixture.preserve}</script>\n`,
+      `${fixture.id}: default preserves`,
+    );
+    for (const objectWrap of ["preserve", "collapse"] as const) {
+      const expected = `<script setup lang="ts">\n${fixture[objectWrap]}</script>\n`;
+      const actual = await format(source, { ...options, objectWrap });
+      assert.equal(actual, expected, `${fixture.id}: ${objectWrap}`);
+      assert.equal(await format(actual, { ...options, objectWrap }), actual);
+    }
+  }
 });
 
 void test("preserve keeps lint-owned props and emits key quotes", async () => {
@@ -233,7 +265,6 @@ void test("unsupported option and ignore requests fail before native formatting"
     { vueIndentScriptAndStyle: true },
     { embeddedLanguageFormatting: "off" },
     { proseWrap: "always" },
-    { objectWrap: "collapse" },
     { experimentalTernaries: true },
     { experimentalOperatorPosition: "start" },
     { printWidth: 0 },
