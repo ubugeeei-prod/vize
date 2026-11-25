@@ -22,7 +22,7 @@ fn per_file(source_len: u32) -> ScopeChain {
             ScopeBinding::new(BindingType::JsGlobalUniversal, 0),
         );
     }
-    let mut chain = ScopeChain::with_root(index_vec::IndexVec::from_vec(vec![root]));
+    let mut chain = ScopeChain::with_root(super::Rows::with_capacity(1, root));
     for (runtime, list) in [
         (JsRuntime::Browser, BROWSER_GLOBALS),
         (JsRuntime::Node, NODE_GLOBALS),

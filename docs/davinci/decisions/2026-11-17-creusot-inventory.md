@@ -216,6 +216,14 @@ every Kani harness in the repository.
 | none                                                                | `LineIndex::line_col` is the LF count before the offset and the UTF-16 units from that line's start; `line_col_to_offset` is its inverse on scalar boundaries            | —                                                | owed                | owed   |
 | none                                                                | the emitter's line table starts a line after every terminator, and `resolve_in_table` and `resolve_positions` give each segment the line and UTF-16 column of its offset | —                                                | owed                | owed   |
 
+## Preconditions of unsafe sites
+
+These laws discharge the precondition of an `unsafe` call in shipped code. No Kani harness stated them; round 1 of the [unsafe record](./2026-11-24-unsafe-model-checking.md) could not bound them in CBMC.
+
+| Law                                                                                                              | Kernel                                        | Creusot proof                                                                                                            | Status |
+| ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------ |
+| the current scope row exists (`current < rows.len()`), so `get_unchecked` and `get_unchecked_mut` read in bounds | `crates/vize_croquis/src/scope/chain/rows.rs` | type invariant of `Rows`; `Rows::current`, `Rows::current_mut`; `the_current_row_exists_after_every_transition_sequence` | proved |
+
 ## Kernel items outside the proof
 
 Compiled out of the proof crate with `cfg(not(creusot))` because they are not
