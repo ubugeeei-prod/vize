@@ -25,7 +25,7 @@ jobs {
   `source-frames` {
     name = "UTF-8 span bytes and block-relative holes"
     `runs-on` = ci.linux
-    `timeout-minutes` = 20
+    `timeout-minutes` = 10
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
