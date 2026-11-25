@@ -5,6 +5,10 @@ import { createHash } from "node:crypto";
 import { lstatSync, readFileSync, readdirSync } from "node:fs";
 import { basename, join, relative } from "node:path";
 import { parse } from "yaml";
+import {
+  commentStyle,
+  withoutGeneratedHeader,
+} from "../../../tools/support/ci/generated-header.ts";
 
 const cacheAction = "./.github/actions/setup-rust-sticky-cache";
 const headCacheAction = "./head/.github/actions/setup-rust-sticky-cache";
@@ -46,60 +50,31 @@ const dynamicPrefixes = new Set([
 ]);
 
 // Complete command/metadata producers reviewed at edc003416dafd322aa6cd100dde488fb112a2abb.
-// The WASM command was re-reviewed as its TypeScript port and imports (#8840).
+// The WASM command was re-reviewed as its TypeScript port and imports.
 // A changed producer requires review, rather than accepting a new dynamic role.
-// Generated producers have two approved whole-file hashes where only the Pkl
-// notice changed. Both bind the complete program, including its remaining comments.
+// Generated producers are hashed without their do-not-edit notice, so moving a Pkl
+// source changes no digest; the CI library move re-reviewed the app-e2e plan paths.
 const producerHashes = {
-  "examples/vite-musea/scripts/package-tasks.cjs": [
-    "238c4edc5a633bece09a0f0cad5858e574cb2b2874a3eb2594b785e17e1c26ef",
-    "899b639ce694ec20edfaa11e01336ee587f86372defad64d4428ba220a0478a8",
-  ],
-  ".github/actions/stage-workflow-scripts/action.yml": [
+  "examples/vite-musea/scripts/package-tasks.cjs":
+    "e800e066194a02037ebe2b59ec41880a084d0c3f8287e75399c7faf727e509f4",
+  ".github/actions/stage-workflow-scripts/action.yml":
     "3964722bfe0474b2a026449850af68bae0eab7f6a7f94b2ae597dac941fdf58c",
-    "631bc9b08a4a78c996b40ca2245079bcc61d5df435285d6a0d3fd5f517b118d1",
-  ],
-  // Re-reviewed for the CI library move: programs stage from tools/ci/workflows/<name>/scripts
-  // or the old .github/scripts/workflows/<name>, and shared ones from tools/ci/lib/scripts.
   ".github/actions/stage-workflow-scripts/stage.ts":
     "25af079b7060133e9261d1c99d60dd8aade5298e85fe68cf604ceacc4f0654de",
-  "tools/ci/workflows/10-app-e2e/scripts/plan-full-rows.sh": [
-    "48db48b3259ddf195d7b41563c396ef9c6058ee1ccd7123dcc8488e60d645a66",
-    "fb74e8bacfa630535f68514899ac0fd7ee714c03c22c4b7e1369b3702be741c6",
-    // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
-    "d97dd5b74540264b9eec7c3674b378a0c0144d3520c6e7ab604abb29f6e737f6",
-  ],
-  "tools/ci/workflows/10-app-e2e/scripts/plan-readiness-rows.sh": [
-    "1bdf100557be3c0d25eb0217a122750aedf04887daee0e34db294807665a834d",
-    "0cd915f52568251954116c9b5e0a20071218df9be50f41e4a9fdb3f583ebb104",
-    // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
-    "dec2510c81d47bc70efd1c1d6591a98bfbf667cf453d07be146ed7b222b3eada",
-  ],
-  "tools/ci/workflows/10-app-e2e/scripts/validate-target-sha.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/plan-full-rows.sh":
+    "93682d1978a92102a05c4c52c70d2e3dac27b8a43f0636988e92f071f87aff26",
+  "tools/ci/workflows/10-app-e2e/scripts/plan-readiness-rows.sh":
+    "d586fd7bfaa7ba5dfdc8ab168ab738a80f0085909a742317e664d69d116a589f",
+  "tools/ci/workflows/10-app-e2e/scripts/validate-target-sha.sh":
     "0a8e0b4584b88fd1712b97387a3b554c1fa8d642c932bb590758159a144420fa",
-    "a1c84e218ce74cd77e8e687687cfb3850e8cb9068315aa5a2788275ff1795fbe",
-  ],
-  "tools/ci/workflows/10-app-e2e/scripts/verify-producer-sha.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/verify-producer-sha.sh":
     "79b2cd2e878ca1d71373872ded348d38d7bcdd3ddc622d0fec32523cf6c56ef2",
-    "cdd052be7763e1a399336f2a55af189a92ec9702bb92cc7898c061ccbb32afff",
-  ],
-  "tools/ci/workflows/10-app-e2e/scripts/verify-readiness-merge-sha.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/verify-readiness-merge-sha.sh":
     "e1845eaf90a99bf275e2be08fcffbf7cd5a1d052678dc427d43de4d839cf4f37",
-    "37bed01d35ddc40baa321dd7c8844878c44a31bc4b01187564f0b51d19c0baa4",
-  ],
-  "tools/ci/workflows/10-app-e2e/scripts/write-full-plan-evidence.sh": [
-    "007613ed91016c66a320038841944ab5225390d7461438093af557646c11d991",
-    "3e9f329999396fcf93f9d66163abd21c7dacdc10067cb42aee15cd403050ac26",
-    // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
-    "b0e7bc04e2d4740371c263d6661efb38fb1a00e75f5fd86f52cc5206aa5ed49e",
-  ],
-  "tools/ci/workflows/10-app-e2e/scripts/write-readiness-plan-evidence.sh": [
-    "e7110ceaa0266e4a479b2de79660834f82ace685e217be9a8967d14a56b206d6",
-    "b2c01a84ad82128243d5302201ee01d62921bc4012f0cf7915c2b0e0c8bea8af",
-    // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
-    "84bad58cff17649cef276be7bfac7583b47733ffc8704bf99ee04eebd6f067ad",
-  ],
-
+  "tools/ci/workflows/10-app-e2e/scripts/write-full-plan-evidence.sh":
+    "c961a984a1ac38ee19684f387940f7d6ac84c66d72bf6e3691499ffe9eb420e1",
+  "tools/ci/workflows/10-app-e2e/scripts/write-readiness-plan-evidence.sh":
+    "f12fe858bba8a54142180614bfbb680495ca258632f09f8a3708735ab712668d",
   "tools/ci/commands/github/app-e2e-plan.ts":
     "ca7682cc8f0834fa48a325954fbcc10765241ee1f9e29a0ebef9b60048cbc7d2",
   "tools/support/compat/github/app-e2e-plan.ts":
@@ -228,7 +203,7 @@ function verifyRecipes(root, docs, e2e) {
     "reviewed whole Docs WASM producer changed",
   );
   for (const [file, expected] of Object.entries(producerHashes)) {
-    const actual = hash(read(root, file));
+    const actual = hash(withoutGeneratedHeader(read(root, file), commentStyle(file)));
     const approved = Array.isArray(expected) ? expected : [expected];
     assert(approved.includes(actual), `${file}: reviewed command producer changed (${actual})`);
   }
@@ -244,10 +219,10 @@ function verifyRecipes(root, docs, e2e) {
     anchor,
     anchor + "  - '.github/actions/setup-moonbit/**'\n",
   );
-  // Re-reviewed for the CI library move: only tools/ci/commands and tools/ci/lib/scripts paths changed.
+  // Re-reviewed for the CI moves: only the tools/ci paths and the 10-app-e2e file name changed.
   for (const [job, expected] of [
-    ["app-readiness-plan", "75b8495e69687cd38f88562fd71bfef57e57d363e3803c297d4c175ef2287a73"],
-    ["app-e2e-plan", "edd733e6f39fa5f8893eab375c9ace575fbb83b8a169ed2af3000c6f876ab9fa"],
+    ["app-readiness-plan", "a57074f33fd9843d50ecfec54cf60bf9a4639ab9a840aa073cad6d3e325cf0f5"],
+    ["app-e2e-plan", "40363b39c9652dc32c1f5f6208cfeee24943ffd929be4363f925062a2af8527e"],
   ])
     assert.equal(
       hash(JSON.stringify(job === "app-readiness-plan" ? readiness : e2e.jobs[job])),
