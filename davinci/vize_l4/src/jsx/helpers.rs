@@ -18,7 +18,7 @@ pub(super) struct SelectedHelpers {
 }
 
 pub(super) fn selected(analysis: &JsxAnalysis<'_>) -> Result<SelectedHelpers, JsxEmitError> {
-    let file = analysis.owner().file();
+    let file = analysis.owner().l2ir();
     let node = one(file, "createVNode")?;
     let text = analysis
         .decisions()
@@ -30,7 +30,7 @@ pub(super) fn selected(analysis: &JsxAnalysis<'_>) -> Result<SelectedHelpers, Js
     Ok(SelectedHelpers { node, text })
 }
 
-fn one(file: &L2Ir<'_>, name: &str) -> Result<SelectedHelper, JsxEmitError> {
+fn one(l2ir: &L2Ir<'_>, name: &str) -> Result<SelectedHelper, JsxEmitError> {
     let runtime = vocabulary(Runtime::VueDom);
     let failure = || JsxEmitError {
         kind: JsxEmitErrorKind::RuntimeHelper,
@@ -42,11 +42,11 @@ fn one(file: &L2Ir<'_>, name: &str) -> Result<SelectedHelper, JsxEmitError> {
         let alias = cstr!("_vize_{name}{index}");
         // Every lexical scope matters: a function parameter can shadow imports.
         // References also prevent capturing an unrelated unresolved global read.
-        if file.bindings().any(|binding| {
+        if l2ir.bindings().any(|binding| {
             binding
                 .declaration()
                 .is_some_and(|declaration| declaration.name.as_str() == alias)
-        }) || file
+        }) || l2ir
             .references()
             .iter()
             .any(|reference| reference.name.as_str() == alias)

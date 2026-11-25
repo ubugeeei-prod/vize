@@ -14,8 +14,8 @@ struct Template {
     syntax_errors: usize,
 }
 
-fn template<'a>(arena: &'a Allocator, owner: &L1Ir<'a>) -> Template {
-    let selected = owner.admitted_template().unwrap().unwrap();
+fn template<'a>(arena: &'a Allocator, l1ir: &L1Ir<'a>) -> Template {
+    let selected = l1ir.admitted_template().unwrap().unwrap();
     let session = OriginalTemplate::analyze(arena, selected, &mut NoObserver).unwrap();
     let mut text = String::default();
     render(session.l1ir(), &mut |part| text.push_str(part));
@@ -26,9 +26,9 @@ fn template<'a>(arena: &'a Allocator, owner: &L1Ir<'a>) -> Template {
     }
 }
 
-fn style(owner: &L1Ir<'_>, map: bool) -> Result<NativeStyleOutput, NativeSfcCompileError> {
+fn style(l1ir: &L1Ir<'_>, map: bool) -> Result<NativeStyleOutput, NativeSfcCompileError> {
     compile_native_styles(
-        owner,
+        l1ir,
         NativeStyleOptions {
             filename: "joint.vue",
             scope_id: None,

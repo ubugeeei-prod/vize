@@ -39,13 +39,13 @@ fn nested_same_name_collection_borrows_parent_alias_before_child_shadowing() {
     assert_eq!(inner_row.head().enclosing_scope(), outer_row.head().scope());
     assert_eq!(
         analysis
-            .file()
+            .l2ir()
             .lookup(inner_row.head().scope().unwrap(), "item", Namespace::Value)
             .unwrap()
             .id(),
         inner_alias.id()
     );
-    let handler = analysis.file().handler_for(on).unwrap();
+    let handler = analysis.l2ir().handler_for(on).unwrap();
     let event_row = analysis.handler(handler.id().node()).unwrap();
     assert_eq!(event_row.handler().scope(), inner_row.head().scope());
     assert_eq!(

@@ -93,19 +93,19 @@ fn original_file(arena: &Allocator) -> Result<NativeTemplateFile<'_>, &'static s
     Ok(output)
 }
 
-fn original_for<'f, 'a>(file: &'f L2Ir<'a>) -> Result<&'f OriginalForOp<'a>, &'static str> {
-    let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
+fn original_for<'f, 'a>(l2ir: &'f L2Ir<'a>) -> Result<&'f OriginalForOp<'a>, &'static str> {
+    let [Op::OriginalFor(original)] = l2ir.artifact().root().ops.as_slice() else {
         return Err("real original For root");
     };
     Ok(original)
 }
 
-fn assert_original_custody(file: &L2Ir<'_>) -> Result<(), &'static str> {
-    let original = original_for(file)?;
-    let head = file
+fn assert_original_custody(l2ir: &L2Ir<'_>) -> Result<(), &'static str> {
+    let original = original_for(l2ir)?;
+    let head = l2ir
         .for_head_for(original)
         .ok_or("same actual allocation")?;
-    assert!(core::ptr::eq(head.file(), file));
+    assert!(core::ptr::eq(head.l2ir(), l2ir));
     assert!(head.accepts(original));
     assert_eq!(head.id().node().index(), 0);
     let resolution = head.resolution().ok_or("normally retained whole head")?;
@@ -116,7 +116,7 @@ fn assert_original_custody(file: &L2Ir<'_>) -> Result<(), &'static str> {
         .ok_or("authentic alias BindingId")?
         .template_declaration()
         .ok_or("actual template declaration")?;
-    assert!(core::ptr::eq(declaration.file(), file));
+    assert!(core::ptr::eq(declaration.l2ir(), l2ir));
     assert_eq!(declaration.declaration().origin(), original.id());
     assert_eq!(
         declaration
@@ -187,7 +187,7 @@ fn generic_lowering_retains_dynamic_body_but_has_no_neutral_head_operands()
     let output = original_file(&arena)?;
     let file = output.file().ok_or("actual File")?;
     let lowered = lower(&arena, file.artifact().root());
-    let program = &lowered.program;
+    let program = &lowered.l3ir;
     assert_eq!(
         program.ops.iter().map(|op| op.kind).collect::<Vec<_>>(),
         [OpKind::For, OpKind::InsertNode, OpKind::SetText]

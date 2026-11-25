@@ -49,14 +49,13 @@ fn source(stem: &str) -> String {
     std::fs::read_to_string(fixtures.join(format!("{stem}.template.txt"))).unwrap()
 }
 
-fn next_op_id(program: &L3Ir<'_>) -> OpId {
-    OpId::new(program.ops.iter().map(|op| op.id.index()).max().unwrap() + 1)
+fn next_op_id(l3ir: &L3Ir<'_>) -> OpId {
+    OpId::new(l3ir.ops.iter().map(|op| op.id.index()).max().unwrap() + 1)
 }
 
-fn next_effect_id(program: &L3Ir<'_>) -> EffectId {
+fn next_effect_id(l3ir: &L3Ir<'_>) -> EffectId {
     EffectId::new(
-        program
-            .effects
+        l3ir.effects
             .iter()
             .map(|effect| effect.id.index() + 1)
             .max()
@@ -65,40 +64,40 @@ fn next_effect_id(program: &L3Ir<'_>) -> EffectId {
 }
 
 /// Returns false when the scenario does not apply to this program.
-fn mutate(program: &mut L3Ir<'_>, scenario: &str) -> bool {
-    let first = program.ops[0].id;
-    let last = program.ops[program.ops.len() - 1].id;
+fn mutate(l3ir: &mut L3Ir<'_>, scenario: &str) -> bool {
+    let first = l3ir.ops[0].id;
+    let last = l3ir.ops[l3ir.ops.len() - 1].id;
     match scenario {
         "built" => {}
-        "scheduled" => program.phase = Phase::Scheduled,
+        "scheduled" => l3ir.phase = Phase::Scheduled,
         "scheduled-reversed-ops" => {
-            program.phase = Phase::Scheduled;
-            program.ops.reverse();
+            l3ir.phase = Phase::Scheduled;
+            l3ir.ops.reverse();
         }
         "scheduled-reversed-first-edge" => {
-            let Some(edge) = program.edges.first_mut() else {
+            let Some(edge) = l3ir.edges.first_mut() else {
                 return false;
             };
             core::mem::swap(&mut edge.from, &mut edge.to);
-            program.phase = Phase::Scheduled;
+            l3ir.phase = Phase::Scheduled;
         }
         "scheduled-self-edge" => {
-            program.phase = Phase::Scheduled;
-            program.push_edge(StateEdge::new(first, first, EdgeKind::DomOrder));
+            l3ir.phase = Phase::Scheduled;
+            l3ir.push_edge(StateEdge::new(first, first, EdgeKind::DomOrder));
         }
         "dangling-target" => {
-            let missing = next_op_id(program);
-            program.push_edge(StateEdge::new(first, missing, EdgeKind::DataDependency));
+            let missing = next_op_id(l3ir);
+            l3ir.push_edge(StateEdge::new(first, missing, EdgeKind::DataDependency));
         }
         "duplicate-last-op" => {
-            let op = program.ops[program.ops.len() - 1];
-            program.push_op(op);
+            let op = l3ir.ops[l3ir.ops.len() - 1];
+            l3ir.push_op(op);
         }
         "foreign-scope-edge" => {
-            let Some(effect) = program.effects.first().map(|effect| effect.id) else {
+            let Some(effect) = l3ir.effects.first().map(|effect| effect.id) else {
                 return false;
             };
-            program.push_edge(StateEdge::scoped(
+            l3ir.push_edge(StateEdge::scoped(
                 first,
                 last,
                 EdgeKind::EffectOrder,
@@ -106,8 +105,8 @@ fn mutate(program: &mut L3Ir<'_>, scenario: &str) -> bool {
             ));
         }
         "missing-scope-edge" => {
-            let missing = next_effect_id(program);
-            program.push_edge(StateEdge::scoped(
+            let missing = next_effect_id(l3ir);
+            l3ir.push_edge(StateEdge::scoped(
                 first,
                 last,
                 EdgeKind::EffectOrder,
@@ -129,7 +128,7 @@ fn schedule_contract_codes_match_the_independent_reference() {
             let (tree, errors) = vize_l1::markup::parse(&allocator, source.trim_end());
             assert!(errors.is_empty(), "{errors:?}");
             let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-            let mut program = vize_l2_to_l3::lower(&allocator, &s2.artifact.root).program;
+            let mut program = vize_l2_to_l3::lower(&allocator, &s2.artifact.root).l3ir;
             assert_eq!(verify(&program), [], "{stem} must lower to valid L3");
             if !mutate(&mut program, scenario) {
                 continue;

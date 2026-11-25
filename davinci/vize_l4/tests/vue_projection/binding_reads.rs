@@ -19,7 +19,7 @@ fn genuine_template_binding_write_rows_are_refused_without_mutating_original_res
             let resolution = observed
                 .file()
                 .unwrap()
-                .file()
+                .l2ir()
                 .expression(embed.node.unwrap())
                 .unwrap();
             let rows = resolution.table().unwrap().occurrences();

@@ -222,7 +222,7 @@ fn script_only_file_has_two_empty_results_and_no_catalog_effects() {
     let source = "<script setup>const value = 1</script>";
     let lowering = lower_sfc_native(&arena, source, options());
     let lint = NativeCanonicalLint::from_vue(lowering.admitted().unwrap());
-    assert_eq!(lint.file().artifact().node_count(), 0);
+    assert_eq!(lint.l2ir().artifact().node_count(), 0);
     let catalog = OrderedCatalog::default();
     let (tab, image) = group::requested(&lint, &catalog);
     assert!(tab.unwrap().is_empty() && image.unwrap().is_empty());

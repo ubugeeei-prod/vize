@@ -1,6 +1,7 @@
 import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Clean obsolete merge groups"
+local actionable = "${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.event == 'merge_group' }}"
 
 on {
   workflow_run {
@@ -10,7 +11,8 @@ on {
   workflow_dispatch = null
 }
 concurrency {
-  group = "cleanup-obsolete-merge-groups"
+  // Skipped PR events must not cancel a manual or merge-group cleanup.
+  group = "cleanup-obsolete-merge-groups-\(actionable)"
   `cancel-in-progress` = true
 }
 
@@ -18,7 +20,7 @@ permissions { contents = "read" }
 
 jobs {
   cleanup {
-    `if` = "${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.event == 'merge_group' }}"
+    `if` = actionable
     `runs-on` = ci.linux
     `timeout-minutes` = 10
     permissions {

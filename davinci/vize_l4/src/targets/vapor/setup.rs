@@ -121,7 +121,7 @@ pub fn emit_selected_setup_component<L: LinkSink>(
                 body.push("_unref(");
             }
             let resolution = expression.resolution();
-            if !core::ptr::eq(resolution.file(), analysis.file()) || resolution.node() != *node {
+            if !core::ptr::eq(resolution.l2ir(), analysis.l2ir()) || resolution.node() != *node {
                 return Err(error(VaporErrorKind::ForeignRoot));
             }
             let table = resolution

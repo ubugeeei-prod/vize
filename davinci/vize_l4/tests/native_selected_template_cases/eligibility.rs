@@ -37,7 +37,7 @@ fn target_role_refusal_preserves_complete_original_root_and_nested_search_owners
         check(core::ptr::eq(view.file().ok_or("view File")?, file))?;
         let analysis = build_template_dom_decisions(view).map_err(|_| "original DOM analysis")?;
         check(core::ptr::eq(analysis.owner(), &original))?;
-        check(core::ptr::eq(analysis.file(), file))?;
+        check(core::ptr::eq(analysis.l2ir(), file))?;
         check(core::ptr::eq(analysis.artifact(), file.artifact()))?;
         check(core::ptr::eq(analysis.artifact().source(), source))?;
         equal(analysis.artifact().node_count(), nodes)?;

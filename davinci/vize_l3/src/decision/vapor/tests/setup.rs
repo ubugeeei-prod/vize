@@ -35,7 +35,7 @@ fn original_setup_reads_borrow_the_same_complete_file_and_occurrences() {
         let selected = observation.admitted().unwrap();
         let setup = selected.setup();
         let analysis = build_selected_setup_vapor_decisions(setup).unwrap();
-        assert!(core::ptr::eq(analysis.file(), setup.file()));
+        assert!(core::ptr::eq(analysis.l2ir(), setup.l2ir()));
         assert!(core::ptr::eq(analysis.owner(), setup.owner()));
         assert_eq!(
             analysis.tables().nodes.len(),
@@ -53,9 +53,9 @@ fn original_setup_reads_borrow_the_same_complete_file_and_occurrences() {
         };
         assert_eq!(expression.kind(), kind);
         let row = expression.resolution();
-        assert!(core::ptr::eq(row.file(), setup.file()));
+        assert!(core::ptr::eq(row.l2ir(), setup.l2ir()));
         assert_eq!(row.node(), *node);
-        assert!(setup.file().native_interpolation(*node).is_some());
+        assert!(setup.l2ir().native_interpolation(*node).is_some());
         for occurrence in row.table().unwrap().occurrences() {
             assert!(
                 setup
@@ -89,7 +89,7 @@ fn original_decoded_string_hazards_refuse_only_the_vapor_target() {
             let observation = lower_selected_setup_sfc_native(&arena, &source, options());
             assert_eq!(observation.original().issues(), [], "{source}");
             let selected = observation.admitted().unwrap();
-            assert!(selected.setup().file().is_complete());
+            assert!(selected.setup().l2ir().is_complete());
             let analysis = build_selected_setup_vapor_decisions(selected.setup()).unwrap();
             assert_eq!(
                 analysis.vapor().unwrap().unsupported()[0].reason,
@@ -136,7 +136,7 @@ fn genuine_completed_control_handler_and_nested_inputs_keep_vapor_target_refusal
         let observation = lower_selected_setup_sfc_native(&arena, &source, options());
         assert_eq!(observation.original().issues(), [], "{source}");
         let selected = observation.admitted().unwrap();
-        assert!(selected.setup().file().is_complete());
+        assert!(selected.setup().l2ir().is_complete());
         let analysis = build_selected_setup_vapor_decisions(selected.setup()).unwrap();
         assert_eq!(analysis.vapor().unwrap().unsupported()[0].reason, reason);
     }

@@ -41,8 +41,8 @@ impl<'owner, 'arena> TemplateScopedSsrAnalysis<'owner, 'arena> {
         self.view.owner()
     }
     #[must_use]
-    pub fn file(&self) -> &'owner L2Ir<'arena> {
-        self.analysis.file()
+    pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.analysis.l2ir()
     }
     #[must_use]
     pub fn original_attributes(
@@ -69,7 +69,7 @@ impl<'owner, 'arena> TemplateScopedSsrAnalysis<'owner, 'arena> {
 pub fn build_scoped_template_ssr_decisions<'owner, 'arena>(
     view: NativeScopedTemplateView<'owner, 'arena>,
 ) -> Result<TemplateScopedSsrAnalysis<'owner, 'arena>, SsrTemplateBuildError> {
-    let analysis = super::file::build_original_file_decisions(view.file())
+    let analysis = super::file::build_original_file_decisions(view.l2ir())
         .map_err(SsrTemplateBuildError::Decision)?;
     Ok(TemplateScopedSsrAnalysis { view, analysis })
 }

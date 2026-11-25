@@ -6,7 +6,8 @@
 //! Supported: node types and `*`, attributes (`[a]`, `[a.b=value]`, `!=`,
 //! `<`, `<=`, `>`, `>=`, quoted, numeric, bare and `/regex/flags` values),
 //! fields (`.left`), the descendant, `>`, `~` and `+` combinators, selector
-//! lists, and `:matches()`, `:is()`, `:not()`, `:has()`, `:first-child`,
+//! lists, and `:matches()`, `:is()`, `:not()`, `:has()` (with relative
+//! `>`, `~` and `+` arguments), `:first-child`,
 //! `:last-child`, `:nth-child()`, `:nth-last-child()`, `:statement`,
 //! `:expression`, `:declaration`, `:function` and `:pattern`.
 
@@ -36,10 +37,22 @@ pub enum Simple {
     Field(Vec<String>),
     Matches(Vec<Selector>),
     Not(Vec<Selector>),
-    Has(Vec<Selector>),
+    Has(Vec<HasArgument>),
     NthChild(usize),
     NthLastChild(usize),
     Class(String),
+}
+
+/// One comma-separated argument of `:has()`.
+#[derive(Debug, Clone, PartialEq)]
+pub enum HasArgument {
+    /// `:has(A > B)`: some descendant of the subject matches the selector.
+    Descendant(Selector),
+    /// `:has(> A ~ B)`: a relative selector anchored at the subject. The first
+    /// compound is reached from the subject by the leading combinator, and
+    /// each later compound from the previous one by its own combinator, as in
+    /// CSS `:has()`.
+    Relative(Vec<(Combinator, Vec<Simple>)>),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

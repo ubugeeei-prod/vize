@@ -58,8 +58,8 @@ fn normally_owned_program_and_file_origin_survive_owner_move_before_a_short_rebo
     let setup = moved.setup().unwrap();
     assert!(core::ptr::eq(setup.owner(), moved.as_ref()));
     assert!(core::ptr::eq(
-        setup.semantic().exposure().file(),
-        moved.file()
+        setup.semantic().exposure().l2ir(),
+        moved.l2ir()
     ));
     let bindings: Vec<_> = setup
         .semantic()

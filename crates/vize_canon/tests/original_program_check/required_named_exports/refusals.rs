@@ -102,7 +102,7 @@ fn actual_named_export_supplies_module_goal_without_a_fabricated_force_requireme
         expected(case, checked.source_uri())
     );
     assert!(checked.authored_spans().is_empty());
-    assert!(core::ptr::eq(checked.projection().file(), &original));
+    assert!(core::ptr::eq(checked.projection().l2ir(), &original));
     assert_eq!(checked.source_path(), path.canonicalize().unwrap());
     assert_eq!(std::fs::read(&path).unwrap(), source.as_bytes());
     assert_eq!(std::fs::read(&config).unwrap(), config_bytes);

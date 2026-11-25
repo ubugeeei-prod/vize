@@ -59,7 +59,7 @@ fn six_whole_original_for_value_components_and_raw_maps_are_captured() -> Result
         );
         let view = mapped.observation().admitted().ok_or("same envelope")?;
         let setup = view.setup();
-        let file = setup.file();
+        let file = setup.l2ir();
         let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
             return Err(cstr!("{id}: original root"));
         };
@@ -163,7 +163,7 @@ fn six_whole_original_for_value_components_and_raw_maps_are_captured() -> Result
                 && body_read.binding().id() == alias.id()
                 && body_read.binding().same_owner(alias)
                 && body_resolution.scope() == head.scope()
-                && core::ptr::eq(body_resolution.file(), file),
+                && core::ptr::eq(body_resolution.l2ir(), file),
             "{id}: current original callback value and scope, never ScriptUnit"
         );
         let original_body = file

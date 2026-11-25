@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_weights_are_nonnegative": { "prover": "alt-ergo", "time": 0.008 }
+    }
+  }
+}

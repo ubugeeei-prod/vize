@@ -58,7 +58,7 @@ fn main() {
             },
         );
         let native = original.admitted().unwrap();
-        let file = native.file().file();
+        let file = native.file().l2ir();
         let offset = source.rfind("value").unwrap() as u32;
         let model = Model::new(file);
         let index = ExpressionPositionIndex::new(file);
@@ -127,7 +127,7 @@ fn streaming_component_spelling() {
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected = owner.descriptor().admitted().unwrap();
+    let selected = owner.l1ir().admitted().unwrap();
     let program = owner.scripts()[0]
         .syntax()
         .unwrap()

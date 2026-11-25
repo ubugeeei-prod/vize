@@ -14,7 +14,7 @@ use vize_l2::{
 /// Authenticate the normally completed original factory, not numeric IDs alone.
 /// Callers separately establish their canonical root/target event and exposure.
 pub(super) fn checked<'owner, 'arena>(
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
     element_node: NodeId,
     element: &'owner ElementOp<'arena>,
     node: NodeId,
@@ -32,7 +32,7 @@ pub(super) fn checked<'owner, 'arena>(
     {
         return None;
     }
-    let original = file.native_model(node)?;
+    let original = l2ir.native_model(node)?;
     if original.state() != NativeFileModelState::Admitted(node)
         || !original.accepts(model)
         || !original.accepts_element(element_node, element)
@@ -47,10 +47,10 @@ pub(super) fn checked<'owner, 'arena>(
             let [attribute] = element.attributes.as_slice() else {
                 return None;
             };
-            let [_record] = file.native_attribute_values() else {
+            let [_record] = l2ir.native_attribute_values() else {
                 return None;
             };
-            let value = file.native_attribute_value_for(0, element, 0)?;
+            let value = l2ir.native_attribute_value_for(0, element, 0)?;
             let observation = value.observation()?;
             if attribute.name != "type"
                 || attribute.value != Some("checkbox")
@@ -58,7 +58,7 @@ pub(super) fn checked<'owner, 'arena>(
                 || observation.source().decode_map().is_some()
                 || !core::ptr::eq(
                     observation.source().authored_root(),
-                    file.artifact().source(),
+                    l2ir.artifact().source(),
                 )
                 || attribute.span.start != observation.name_span().start
                 || attribute.span.end != observation.full_value_span().end
@@ -82,7 +82,7 @@ pub(super) fn checked<'owner, 'arena>(
     match (modifier, model.attributes.as_slice()) {
         (None, []) => {}
         (Some((name, span)), [attribute]) => {
-            let authored = file
+            let authored = l2ir
                 .artifact()
                 .source()
                 .get(span.start as usize..span.end as usize)?;
@@ -104,12 +104,12 @@ pub(super) fn checked<'owner, 'arena>(
         || !original.input().matches_expression(read)
         || !core::ptr::eq(
             original.input().operand().syntax().source().authored_root(),
-            file.artifact().source(),
+            l2ir.artifact().source(),
         )
     {
         return None;
     }
-    let resolution = file.expression(node)?;
+    let resolution = l2ir.expression(node)?;
     let table = resolution.table()?;
     let retained = table.expression();
     let coordinates = match (retained.coordinates, read.coordinates) {
@@ -122,7 +122,7 @@ pub(super) fn checked<'owner, 'arena>(
         || !core::ptr::eq(retained.source, read.source)
         || retained.span != read.span
         || !coordinates
-        || !file
+        || !l2ir
             .scopes()
             .get(original.scope().index() as usize)
             .is_some_and(|row| row.id == original.scope())
@@ -134,7 +134,7 @@ pub(super) fn checked<'owner, 'arena>(
     };
     let target = resolution.binding(occurrence.binding)?;
     let declaration = target.declaration()?;
-    let [unit] = file.units() else { return None };
+    let [unit] = l2ir.units() else { return None };
     let identifier = read.ast.get_identifier_reference()?;
     let authored = read.authored_span(occurrence.span)?;
     if !resolution.accepts(target)
@@ -157,7 +157,7 @@ pub(super) fn checked<'owner, 'arena>(
         || identifier.name.as_str() != occurrence.name
         || read.source != occurrence.name
         || read.ast_span_to_source(identifier.span) != Some(occurrence.span)
-        || file
+        || l2ir
             .artifact()
             .source()
             .get(authored.start as usize..authored.end as usize)

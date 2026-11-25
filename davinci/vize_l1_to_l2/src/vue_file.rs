@@ -172,7 +172,7 @@ impl<'a> VueFileProducer<'a> {
         }
         match file {
             Ok(file) if file.is_complete() && self.issues.is_empty() => Ok(VueFile {
-                file,
+                l2ir: file,
                 ordinary: self.ordinary,
                 setup: self.setup,
                 declarations: self.declarations,
@@ -191,7 +191,7 @@ impl<'a> VueFileProducer<'a> {
 /// Completeness of the admitted Vue file family; descriptor membership remains
 /// the native SFC assembler's checked obligation.
 pub struct VueFile<'a> {
-    file: L2Ir<'a>,
+    l2ir: L2Ir<'a>,
     ordinary: Option<VueScriptReceipt>,
     setup: Option<VueScriptReceipt>,
     declarations: Vec<VueDeclaration>,
@@ -207,8 +207,8 @@ impl core::fmt::Debug for VueFile<'_> {
 }
 impl<'a> VueFile<'a> {
     #[must_use]
-    pub fn file(&self) -> &L2Ir<'a> {
-        &self.file
+    pub fn l2ir(&self) -> &L2Ir<'a> {
+        &self.l2ir
     }
     #[must_use]
     pub fn ordinary(&self) -> Option<&VueScriptReceipt> {
@@ -224,7 +224,7 @@ impl<'a> VueFile<'a> {
     }
     #[must_use]
     pub fn exposure<'f>(&'f self, binding: BindingRef<'f, 'a>) -> Option<VueExposure<'f, 'a>> {
-        if !core::ptr::eq(binding.file(), &self.file)
+        if !core::ptr::eq(binding.l2ir(), &self.l2ir)
             || !Visibility::new(self.ordinary, self.setup).accepts(binding.declaration()?)
         {
             return None;

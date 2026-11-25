@@ -36,7 +36,7 @@ fn original_lexical_listener_edits() {
             };
             let file = owner
                 .file()
-                .map(|f| f.file())
+                .map(|f| f.l2ir())
                 .or_else(|| owner.rejected_file()?.file())
                 .unwrap();
             if !file.bindings().filter_map(|b| b.declaration()).any(|d| {

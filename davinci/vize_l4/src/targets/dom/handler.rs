@@ -8,7 +8,7 @@ use vize_l3::decision::dom::{DomFacts, PropertyRole};
 
 pub(super) fn write<L: LinkSink>(
     writer: &mut Writer<L>,
-    file: &L2Ir<'_>,
+    l2ir: &L2Ir<'_>,
     facts: Option<&DomFacts<'_, '_>>,
     node: NodeId,
     on: &OnOp<'_>,
@@ -22,7 +22,7 @@ pub(super) fn write<L: LinkSink>(
     let row = facts
         .file_handler(node)
         .ok_or_else(|| fail(DomErrorKind::MissingBinding))?;
-    if !core::ptr::eq(row.handler().file(), file)
+    if !core::ptr::eq(row.handler().l2ir(), l2ir)
         || row.handler().id().node() != node
         || !core::ptr::eq(row.on(), on)
         || !facts
@@ -32,7 +32,7 @@ pub(super) fn write<L: LinkSink>(
         return Err(fail(DomErrorKind::FileOwnerMismatch));
     }
     let source = row.resolution().input().operand().syntax().source();
-    if !core::ptr::eq(source.authored_root(), file.artifact().source()) {
+    if !core::ptr::eq(source.authored_root(), l2ir.artifact().source()) {
         return Err(fail(DomErrorKind::FileOwnerMismatch));
     }
     // Semantic syntax/access classification was sealed at the actual L3 On

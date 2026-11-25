@@ -59,7 +59,7 @@ fn three_source_owned_annotation_modules_and_maps_are_captured() -> Result<(), S
         );
         let owner = mapped.observation();
         let admitted = owner.admitted().ok_or("actual original native SFC")?;
-        let file = admitted.file().file();
+        let file = admitted.file().l2ir();
         require!(file.is_complete(), "{id}: actual complete File");
         require!(
             core::ptr::eq(file.artifact().source(), source),
@@ -81,7 +81,7 @@ fn three_source_owned_annotation_modules_and_maps_are_captured() -> Result<(), S
             "{id}: original parsed block pointer"
         );
         let selected = owner
-            .descriptor()
+            .l1ir()
             .admitted()
             .map_err(|_| "descriptor")?
             .setup()
@@ -103,7 +103,7 @@ fn three_source_owned_annotation_modules_and_maps_are_captured() -> Result<(), S
         );
         for (binding, name) in setup.bindings().zip(expected) {
             require!(
-                core::ptr::eq(binding.file(), file),
+                core::ptr::eq(binding.l2ir(), file),
                 "{id}: same binding owner"
             );
             let declaration = binding.declaration().ok_or("original declaration")?;
@@ -138,7 +138,7 @@ fn three_source_owned_annotation_modules_and_maps_are_captured() -> Result<(), S
         let mut cursor = block.start();
         for annotation in setup.type_annotations() {
             require!(
-                core::ptr::eq(annotation.file(), file),
+                core::ptr::eq(annotation.l2ir(), file),
                 "{id}: same annotation owner"
             );
             let span = annotation.span();

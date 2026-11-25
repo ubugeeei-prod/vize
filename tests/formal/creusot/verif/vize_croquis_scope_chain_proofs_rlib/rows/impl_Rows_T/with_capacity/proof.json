@@ -1,0 +1,10 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_push_T": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_with_capacity_T": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_with_capacity_T'0": { "prover": "z3", "time": 0.01 }
+    }
+  }
+}

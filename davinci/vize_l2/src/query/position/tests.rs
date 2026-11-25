@@ -47,9 +47,9 @@ fn offset(source: &str, needle: &str) -> u32 {
     source.find(needle).unwrap() as u32
 }
 
-fn refused(owner: &L2Ir<'_>) {
-    super::index::tests::assert_equivalent(owner);
-    let declaration = owner
+fn refused(l2ir: &L2Ir<'_>) {
+    super::index::tests::assert_equivalent(l2ir);
+    let declaration = l2ir
         .bindings()
         .next()
         .and_then(|binding| binding.declaration())
@@ -57,19 +57,19 @@ fn refused(owner: &L2Ir<'_>) {
     for at in [
         0,
         declaration,
-        owner.artifact().source().len() as u32,
+        l2ir.artifact().source().len() as u32,
         u32::MAX,
     ] {
         assert!(matches!(
-            Model::new(&owner).scope_at_offset(at),
+            Model::new(&l2ir).scope_at_offset(at),
             Err(Error::IncompleteFile)
         ));
         assert!(matches!(
-            Model::new(&owner).binding_at_offset(at),
+            Model::new(&l2ir).binding_at_offset(at),
             Err(Error::IncompleteFile)
         ));
         assert!(matches!(
-            Model::new(&owner).reference_at_offset(at),
+            Model::new(&l2ir).reference_at_offset(at),
             Err(Error::IncompleteFile)
         ));
     }
@@ -99,7 +99,7 @@ fn moving_an_owned_position_snapshot_keeps_its_file_and_queries_together() {
         .binding_at_offset(offset(source, "name;"))
         .unwrap()
         .unwrap();
-    assert!(core::ptr::eq(binding.file(), moved.model().file()));
+    assert!(core::ptr::eq(binding.l2ir(), moved.model().l2ir()));
     assert_eq!(binding.declaration().unwrap().span, Span::new(6, 10));
     super::index::tests::assert_equivalent(&moved.into_file());
 }

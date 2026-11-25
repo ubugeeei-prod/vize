@@ -91,18 +91,14 @@ impl<'a> PartitionFacts<'a> {
     /// export is current. The P3-3 contract requires `None` after every
     /// optional pass.
     #[must_use]
-    pub fn stale(&self, program: &L3Ir<'_>) -> Option<usize> {
-        let mismatch = self
-            .ops
-            .iter()
-            .zip(program.ops.iter())
-            .position(|(fact, op)| {
-                fact.op != op.id
-                    || fact.span != op.span
-                    || fact.kind.is_dynamic() != op.effect.is_some()
-            });
+    pub fn stale(&self, l3ir: &L3Ir<'_>) -> Option<usize> {
+        let mismatch = self.ops.iter().zip(l3ir.ops.iter()).position(|(fact, op)| {
+            fact.op != op.id
+                || fact.span != op.span
+                || fact.kind.is_dynamic() != op.effect.is_some()
+        });
         mismatch.or_else(|| {
-            (self.ops.len() != program.ops.len()).then(|| self.ops.len().min(program.ops.len()))
+            (self.ops.len() != l3ir.ops.len()).then(|| self.ops.len().min(l3ir.ops.len()))
         })
     }
 }

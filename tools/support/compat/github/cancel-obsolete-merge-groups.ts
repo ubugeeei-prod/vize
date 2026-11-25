@@ -15,7 +15,7 @@ type Queue = {
       mergeQueue: {
         entries: {
           pageInfo: { hasNextPage: boolean };
-          nodes: { headCommit: { oid: string } | null }[];
+          nodes: { state: string; headCommit: { oid: string } | null }[];
         };
       } | null;
     };
@@ -70,7 +70,7 @@ async function loadMergeQueueHeads(api: Api, repository: string): Promise<Readon
       query: `query($owner:String!, $name:String!) {
         repository(owner:$owner, name:$name) {
           mergeQueue(branch:"main") {
-            entries(first:100) { pageInfo { hasNextPage } nodes { headCommit { oid } } }
+            entries(first:100) { pageInfo { hasNextPage } nodes { state headCommit { oid } } }
           }
         }
       }`,
@@ -83,6 +83,10 @@ async function loadMergeQueueHeads(api: Api, repository: string): Promise<Readon
   }
   const heads = new Set<string>();
   for (const entry of entries.nodes) {
+    // Entries beyond the queue's build limit have no synthetic commit yet.
+    // They cannot name a running candidate; a fresh ref still protects any
+    // candidate materialized after this snapshot.
+    if (entry.state === "QUEUED" && entry.headCommit === null) continue;
     const oid = entry.headCommit?.oid;
     if (!oid || !/^[a-f0-9]{40}$/u.test(oid)) {
       throw new Error("Refusing cancellation with an unresolved queue head");

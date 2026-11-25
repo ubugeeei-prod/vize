@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_dropping_a_trailing_ascii_byte_keeps_a_sequence_well_formed": {
+        "prover": "alt-ergo",
+        "time": 0.024
+      }
+    }
+  }
+}

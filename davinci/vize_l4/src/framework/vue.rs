@@ -50,8 +50,8 @@ impl<'o, 'a> VueProjection<'o, 'a> {
     }
 
     #[must_use]
-    pub fn file(&self) -> &'o L2Ir<'a> {
-        self.original.file().file()
+    pub fn l2ir(&self) -> &'o L2Ir<'a> {
+        self.original.file().l2ir()
     }
 
     #[must_use]
@@ -154,13 +154,11 @@ fn project<'o, 'a, L: LinkSink>(
     #[cfg(feature = "vue-style-projection")] omitted_style_bytes: Option<usize>,
 ) -> Result<VueProjection<'o, 'a>, VueProjectionError> {
     let observation = original.observation();
-    if !crate::registry::TargetOptions::for_file(observation.descriptor().dialect())
-        .vue_projection()
-    {
+    if !crate::registry::TargetOptions::for_file(observation.l1ir().dialect()).vue_projection() {
         return Err(VueProjectionError::UnsupportedDialect);
     }
     let descriptor = observation
-        .descriptor()
+        .l1ir()
         .admitted()
         .map_err(|_| VueProjectionError::Custody)?;
     if descriptor.styles().len() != 0 {
@@ -174,7 +172,7 @@ fn project<'o, 'a, L: LinkSink>(
     if original.file().ordinary().is_some() || observation.scripts().len() > 1 {
         return Err(VueProjectionError::UnsupportedScripts);
     }
-    let file = original.file().file();
+    let file = original.file().l2ir();
     let source = file.artifact().source();
     u32::try_from(source.len()).map_err(|_| VueProjectionError::SourceTooLarge)?;
     let setup = original.file().setup();
@@ -343,7 +341,7 @@ impl<'o, 'a> StyledVueInput<'o, 'a> {
     pub fn prepare(original: NativeSfc<'o, 'a>) -> Result<Self, VueProjectionError> {
         let original = original.observation();
         let descriptor = original
-            .descriptor()
+            .l1ir()
             .admitted()
             .map_err(|_| VueProjectionError::Custody)?;
         let styles = descriptor.styles();

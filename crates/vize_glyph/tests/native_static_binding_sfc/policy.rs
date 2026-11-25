@@ -14,9 +14,9 @@ pub(super) fn empty_refusal(
 ) {
     assert_eq!(owner.source(), source);
     assert!(core::ptr::eq(owner.source(), source));
-    assert!(core::ptr::eq(owner.descriptor().source(), source));
+    assert!(core::ptr::eq(owner.l1ir().source(), source));
     assert_eq!(owner.options(), policy);
-    assert_eq!(owner.descriptor().options(), policy.descriptor);
+    assert_eq!(owner.l1ir().options(), policy.descriptor);
     assert!(owner.binding_operands().is_empty());
     assert!(owner.attribute_operands().is_empty());
     assert!(owner.operands().is_empty());
@@ -56,8 +56,8 @@ fn default_and_existing_conditional_policy_keep_exact_strict_binding_refusal_and
                 },
             }),
         );
-        assert_eq!(owner.descriptor().issues(), []);
-        assert_eq!(owner.descriptor().container().errors.as_slice(), []);
+        assert_eq!(owner.l1ir().issues(), []);
+        assert_eq!(owner.l1ir().container().errors.as_slice(), []);
         assert!(owner.selected().is_some());
     }
 }
@@ -118,8 +118,8 @@ fn recognized_unsupported_heads_refuse_before_value_observation_and_other_famili
                 refusal,
             }),
         );
-        assert_eq!(owner.descriptor().issues(), []);
-        assert_eq!(owner.descriptor().container().errors.as_slice(), []);
+        assert_eq!(owner.l1ir().issues(), []);
+        assert_eq!(owner.l1ir().container().errors.as_slice(), []);
     }
 }
 

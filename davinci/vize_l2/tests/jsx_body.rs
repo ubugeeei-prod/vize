@@ -72,17 +72,17 @@ fn completed_owner_survives_moves_with_original_ast_comments_values_and_real_sco
             owner.observation().admitted().required()?.source(),
             raw
         ));
-        assert!(core::ptr::eq(owner.file().artifact().source(), source));
+        assert!(core::ptr::eq(owner.l2ir().artifact().source(), source));
         assert_eq!(owner.observation().comments().len(), 1);
         assert!(!owner.observation().diagnostics().has_errors());
-        assert!(owner.file().is_complete());
+        assert!(owner.l2ir().is_complete());
         let actual = owner
-            .file()
+            .l2ir()
             .references()
             .iter()
             .map(|reference| {
                 let binding = owner
-                    .file()
+                    .l2ir()
                     .lookup(reference.scope, reference.name.as_str(), Namespace::Value)
                     .required()?;
                 Ok((
@@ -202,7 +202,7 @@ fn nested_function_scope_is_recorded_by_actual_file_and_foreign_node_owner_is_di
         .find(|node| node.kind() == Some(SyntaxKind::Element))
         .required()?;
     assert!(!element.same_owner(foreign));
-    let unit = one.file().units().first().required()?;
+    let unit = one.l2ir().units().first().required()?;
     assert_ne!(element.scope().required()?, unit.scope);
     let scope = element.scope().required()?;
     let rows = element
@@ -211,7 +211,7 @@ fn nested_function_scope_is_recorded_by_actual_file_and_foreign_node_owner_is_di
         .iter()
         .map(|row| {
             let binding = one
-                .file()
+                .l2ir()
                 .lookup(scope, row.name.as_str(), Namespace::Value)
                 .required()?;
             Ok((

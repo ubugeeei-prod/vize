@@ -160,12 +160,12 @@ fn alias(kind: ValueKind, text: &str) -> Result<Option<&str>> {
 /// must agree. The verifier rejects duplicate ids, so ids below the region
 /// count index a dense table.
 pub(super) fn controlled_regions<'a>(
-    program: &L3Ir<'_>,
+    l3ir: &L3Ir<'_>,
     alloc: &'a Allocator,
 ) -> Result<Vec<'a, bool>> {
-    let count = program.regions.len();
+    let count = l3ir.regions.len();
     let mut meta = super::filled(alloc, (None, None), count);
-    for region in &program.regions {
+    for region in &l3ir.regions {
         *meta
             .get_mut(region.id.index() as usize)
             .ok_or(AdmissionFailure::Invalid("region ids are not dense"))? =
@@ -173,7 +173,7 @@ pub(super) fn controlled_regions<'a>(
     }
     let mut memo: Vec<'_, Option<bool>> = super::filled(alloc, None, count);
     let mut path = Vec::new_in(&alloc);
-    for region in &program.regions {
+    for region in &l3ir.regions {
         path.clear();
         let mut cursor: Option<RegionId> = Some(region.id);
         let mut controlled = false;
@@ -193,7 +193,7 @@ pub(super) fn controlled_regions<'a>(
             // Slot content and outlet fallbacks are partitioned as dynamic too.
             if owner.is_some_and(|owner: OpId| {
                 matches!(
-                    program.ops.get(owner.index() as usize).map(|op| op.kind),
+                    l3ir.ops.get(owner.index() as usize).map(|op| op.kind),
                     Some(OpKind::If | OpKind::For | OpKind::CreateComponent | OpKind::SlotOutlet)
                 )
             }) {

@@ -49,7 +49,7 @@ pub(super) fn assert_current(arena: &Allocator, source: &str) -> Result<(), &'st
         let joined = file
             .native_attribute_value_for(index, element, slot)
             .ok_or("actual File/Element/slot")?;
-        check(core::ptr::eq(joined.file(), file))?;
+        check(core::ptr::eq(joined.l2ir(), file))?;
         check(core::ptr::eq(joined.element(), &**element))?;
         let value = joined
             .observation()

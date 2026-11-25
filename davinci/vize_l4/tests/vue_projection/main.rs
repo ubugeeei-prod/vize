@@ -37,8 +37,8 @@ fn original_setup_and_each_template_read_keep_exact_owners_text_kind_and_links()
         let observed = lower_sfc_native(&arena, &source, options());
         let projection = project_vue(observed.admitted().unwrap()).unwrap();
         let plain = project_vue_no_links(observed.admitted().unwrap()).unwrap();
-        let original_file = observed.file().unwrap().file();
-        assert!(core::ptr::eq(projection.file(), original_file));
+        let original_file = observed.file().unwrap().l2ir();
+        assert!(core::ptr::eq(projection.l2ir(), original_file));
         assert!(core::ptr::eq(
             projection.original().observation(),
             &observed
@@ -74,7 +74,7 @@ fn original_setup_and_each_template_read_keep_exact_owners_text_kind_and_links()
         );
         assert_eq!(observed.template().unwrap().embeds().len(), 2);
         for embed in observed.template().unwrap().embeds() {
-            let resolution = projection.file().expression(embed.node.unwrap()).unwrap();
+            let resolution = projection.l2ir().expression(embed.node.unwrap()).unwrap();
             assert!(core::ptr::eq(
                 resolution.table().unwrap().expression().ast,
                 embed.syntax.expression().unwrap()
@@ -171,8 +171,8 @@ fn scriptless_literals_and_line_comments_keep_complete_native_sources() {
         let observed = lower_sfc_native(&arena, source, options());
         let projection = project_vue(observed.admitted().unwrap()).unwrap();
         assert!(core::ptr::eq(
-            projection.file(),
-            observed.file().unwrap().file()
+            projection.l2ir(),
+            observed.file().unwrap().l2ir()
         ));
         assert_eq!(projection.source_kind(), SourceKind::JavaScript);
         if source.contains("raw tail") {
@@ -199,7 +199,7 @@ fn template_bindings_require_original_whole_unit_primitive_proof_without_restric
             );
             let observed = lower_sfc_native(&arena, &source, options());
             assert!(observed.admitted().is_some(), "{:?}", observed.issues());
-            let file = observed.file().unwrap().file();
+            let file = observed.file().unwrap().l2ir();
             let embed = observed.template().unwrap().embeds().first().unwrap();
             let resolution = file.expression(embed.node.unwrap()).unwrap();
             let occurrences = resolution.table().unwrap().occurrences();
@@ -310,7 +310,7 @@ fn completed_owners_refuse_unchecked_sfc_type_families_without_losing_observatio
         assert!(
             matches!(project_vue(observed.admitted().unwrap()), Err(actual) if actual == error)
         );
-        assert!(observed.file().unwrap().file().is_complete());
+        assert!(observed.file().unwrap().l2ir().is_complete());
         assert!(observed.template().unwrap().component().is_some());
     }
     for source in [

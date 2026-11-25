@@ -25,17 +25,17 @@ fn opaque_child_is_dynamic_and_keeps_its_semantic_role_and_authored_expression()
         ),
     };
     let mut result = lower(&allocator, &root);
-    assert_eq!(verify(&result.program), []);
-    assert_eq!(result.program.ops.len(), 1);
-    assert_eq!(result.program.ops[0].kind, OpKind::SetChildValue);
+    assert_eq!(verify(&result.l3ir), []);
+    assert_eq!(result.l3ir.ops.len(), 1);
+    assert_eq!(result.l3ir.ops[0].kind, OpKind::SetChildValue);
     assert_eq!(result.partition.ops[0].kind, PartitionKind::Dynamic);
-    assert_eq!(result.program.operands.len(), 1);
-    assert_eq!(result.program.operands[0].role, OperandRole::ChildValue);
-    assert_eq!(result.program.operands[0].value.text, "state.value");
-    assert_eq!(result.program.operands[0].value.span, span);
-    result.program.operands[0].role = OperandRole::Text;
+    assert_eq!(result.l3ir.operands.len(), 1);
+    assert_eq!(result.l3ir.operands[0].role, OperandRole::ChildValue);
+    assert_eq!(result.l3ir.operands[0].value.text, "state.value");
+    assert_eq!(result.l3ir.operands[0].value.span, span);
+    result.l3ir.operands[0].role = OperandRole::Text;
     assert!(
-        !verify(&result.program).is_empty(),
+        !verify(&result.l3ir).is_empty(),
         "a child value must never be retagged as display text"
     );
 }

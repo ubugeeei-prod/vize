@@ -57,7 +57,7 @@ fn original_header_body_and_file_handlers_preserve_owner_binding_child_order()
         .handler_for(blur)
         .ok_or("blur same File and actual On")?;
     check(click.same_owner(nested))?;
-    check(core::ptr::eq(click.file(), file))?;
+    check(core::ptr::eq(click.l2ir(), file))?;
     equal(click.scope().ok_or("scope")?.index(), 0)?;
     let facts = click.resolution().ok_or("whole handler facts")?;
     equal(

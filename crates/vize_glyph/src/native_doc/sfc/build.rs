@@ -37,7 +37,7 @@ pub fn observe_native_sfc_in<'a>(
     options: NativeSfcOptions,
 ) -> NativeSfcObservation<'a> {
     let mut observation = NativeSfcObservation {
-        descriptor: Vue.observe_descriptor(allocator, source, options.descriptor),
+        l1ir: Vue.observe_descriptor(allocator, source, options.descriptor),
         selected: None,
         operands: std::vec::Vec::new(),
         interpolation_failure: None,
@@ -60,10 +60,10 @@ fn build<'a>(
     allocator: &'a Allocator,
 ) -> Result<Doc<'a>, NativeSfcRefusal> {
     let admitted = observation
-        .descriptor
+        .l1ir
         .admitted()
         .map_err(|_| NativeSfcRefusal::Descriptor)?;
-    refuse_other_roles(&observation.descriptor, admitted)?;
+    refuse_other_roles(&observation.l1ir, admitted)?;
     let template = admitted
         .template()
         .ok_or(NativeSfcRefusal::MissingTemplate)?;
@@ -108,7 +108,7 @@ fn build<'a>(
         }
     };
     frame(
-        &observation.descriptor,
+        &observation.l1ir,
         selected,
         index,
         content,
@@ -118,7 +118,7 @@ fn build<'a>(
 }
 
 fn refuse_other_roles(
-    descriptor: &L1Ir<'_>,
+    l1ir: &L1Ir<'_>,
     admitted: AdmittedDescriptor<'_, '_>,
 ) -> Result<(), NativeSfcRefusal> {
     let candidates = [
@@ -144,15 +144,14 @@ fn refuse_other_roles(
         .flatten()
         .min_by_key(|(index, _)| *index)
     {
-        let block =
-            descriptor
-                .container()
-                .blocks
-                .get(index)
-                .ok_or(NativeSfcRefusal::SourceFrame {
-                    span: Span::new(0, 0),
-                    error: SourceFrameError::BlockOutOfBounds,
-                })?;
+        let block = l1ir
+            .container()
+            .blocks
+            .get(index)
+            .ok_or(NativeSfcRefusal::SourceFrame {
+                span: Span::new(0, 0),
+                error: SourceFrameError::BlockOutOfBounds,
+            })?;
         return Err(NativeSfcRefusal::UnsupportedBlock {
             index,
             span: block.open_tag,
@@ -163,7 +162,7 @@ fn refuse_other_roles(
 }
 
 fn frame<'a>(
-    descriptor: &L1Ir<'a>,
+    l1ir: &L1Ir<'a>,
     selected: &SelectedTemplateComponent<'a>,
     index: usize,
     content: Span,
@@ -174,10 +173,10 @@ fn frame<'a>(
         span: content,
         error,
     };
-    let root = descriptor
+    let root = l1ir
         .root()
         .ok_or_else(|| invalid(SourceFrameError::BlockOutOfBounds))?;
-    let block = descriptor
+    let block = l1ir
         .container()
         .blocks
         .get(index)
@@ -186,7 +185,7 @@ fn frame<'a>(
     if selected.template_index() != index
         || block.content != content
         || selected_block.span() != content
-        || !core::ptr::eq(selected_block.root_source(), descriptor.source())
+        || !core::ptr::eq(selected_block.root_source(), l1ir.source())
     {
         return Err(invalid(SourceFrameError::BlockNotRootSlice));
     }
@@ -203,11 +202,11 @@ fn frame<'a>(
     {
         return Err(invalid(SourceFrameError::BlockOutOfBounds));
     }
-    let prefix = descriptor
+    let prefix = l1ir
         .source()
         .get(..content.start as usize)
         .ok_or_else(|| invalid(SourceFrameError::BlockBoundary))?;
-    let suffix = descriptor
+    let suffix = l1ir
         .source()
         .get(content.end as usize..)
         .ok_or_else(|| invalid(SourceFrameError::BlockBoundary))?;

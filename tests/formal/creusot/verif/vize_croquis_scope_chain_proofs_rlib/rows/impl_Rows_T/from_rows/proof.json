@@ -1,0 +1,10 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_deref_Vec_T_Global": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_from_rows_T": { "prover": "alt-ergo", "time": 0.013 },
+      "vc_is_empty_T": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}

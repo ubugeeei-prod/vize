@@ -56,7 +56,7 @@ pub struct NativeSelectedSfcIssue {
 /// }
 /// ```
 pub struct NativeSelectedSfcObservation<'a> {
-    descriptor: L1Ir<'a>,
+    l1ir: L1Ir<'a>,
     template: Option<NativeTemplateFile<'a>>,
     style: Option<StyleSyntax<'a>>,
     rejected_creation: Option<Box<RejectedNativeTemplateOwner<'a>>>,
@@ -68,7 +68,7 @@ impl core::fmt::Debug for NativeSelectedSfcObservation<'_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
             .debug_struct("NativeSelectedSfcObservation")
-            .field("descriptor", &self.descriptor)
+            .field("descriptor", &self.l1ir)
             .field("issues", &self.issues)
             .field("has_template", &self.template.is_some())
             .field("interpolation_failure", &self.interpolation_failure)
@@ -78,8 +78,8 @@ impl core::fmt::Debug for NativeSelectedSfcObservation<'_> {
 
 impl<'a> NativeSelectedSfcObservation<'a> {
     #[must_use]
-    pub fn descriptor(&self) -> &L1Ir<'a> {
-        &self.descriptor
+    pub fn l1ir(&self) -> &L1Ir<'a> {
+        &self.l1ir
     }
     #[must_use]
     pub fn template(&self) -> Option<&NativeTemplateFile<'a>> {
@@ -108,7 +108,7 @@ impl<'a> NativeSelectedSfcObservation<'a> {
         if !self.issues.is_empty() {
             return None;
         }
-        let descriptor = self.descriptor.admitted().ok()?;
+        let descriptor = self.l1ir.admitted().ok()?;
         let original = self.template.as_ref()?;
         let selected = descriptor.template()?;
         let block = original.selected().component().block();
@@ -196,7 +196,7 @@ pub(super) fn observe<'a>(
 ) -> NativeSelectedSfcObservation<'a> {
     let descriptor = Vue.observe_descriptor(allocator, source, options);
     let mut observation = NativeSelectedSfcObservation {
-        descriptor,
+        l1ir: descriptor,
         template: None,
         style: None,
         rejected_creation: None,
@@ -204,7 +204,7 @@ pub(super) fn observe<'a>(
         issues: Vec::new(),
     };
     let whole = Span::new(0, source.len() as u32);
-    let descriptor = match observation.descriptor.admitted() {
+    let descriptor = match observation.l1ir.admitted() {
         Ok(view) => view,
         Err(_) => {
             observation.issues.push(NativeSelectedSfcIssue {
@@ -232,7 +232,7 @@ pub(super) fn observe<'a>(
         if !observation.issues.is_empty() {
             return observation;
         }
-        match super::selected_scoped::observe(&observation.descriptor) {
+        match super::selected_scoped::observe(&observation.l1ir) {
             Ok((style, issue)) => {
                 observation.style = Some(style);
                 observation.issues.extend(issue);

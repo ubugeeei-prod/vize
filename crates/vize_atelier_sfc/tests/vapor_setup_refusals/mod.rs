@@ -41,7 +41,7 @@ fn unsupported_whole_setup_sources_preserve_the_authentic_observation() {
                 compilation.result()
             );
             assert!(core::ptr::eq(
-                compilation.observation().original().descriptor().source(),
+                compilation.observation().original().l1ir().source(),
                 source
             ));
             assert!(compilation.observation().admitted().is_none());
@@ -74,7 +74,7 @@ fn complete_original_control_and_handler_files_remain_vapor_target_refusals() {
             "{source}"
         );
         let selected = compilation.observation().admitted().unwrap();
-        assert!(selected.setup().file().is_complete());
+        assert!(selected.setup().l2ir().is_complete());
         let Err(NativeVaporSetupSfcCompileError::Vapor(error)) = compilation.result() else {
             panic!("target refusal: {source}")
         };
@@ -137,7 +137,7 @@ fn complete_original_hazardous_strings_are_precise_all_or_nothing_target_refusal
                         "{source}"
                     );
                     let selected = compilation.observation().admitted().unwrap();
-                    assert!(selected.setup().file().is_complete());
+                    assert!(selected.setup().l2ir().is_complete());
                     let Err(NativeVaporSetupSfcCompileError::Vapor(error)) = compilation.result()
                     else {
                         panic!("genuine hazardous value refuses all output")
@@ -232,7 +232,7 @@ fn original_nested_whitespace_is_a_source_refusal_before_vapor() {
     );
     assert_eq!(issue.span, vize_l0::Span::new(44, 59));
     assert!(!original.template().unwrap().file().unwrap().is_complete());
-    assert!(core::ptr::eq(original.descriptor().source(), source));
+    assert!(core::ptr::eq(original.l1ir().source(), source));
 }
 
 #[test]
@@ -267,13 +267,13 @@ fn complete_original_comments_preserve_authored_content_in_setup_components() {
             );
             let observation = compilation.observation();
             assert!(core::ptr::eq(
-                observation.original().descriptor().source(),
+                observation.original().l1ir().source(),
                 source.as_str()
             ));
             assert_eq!(observation.original().issues(), [], "{source}");
             let selected = observation.admitted().unwrap();
             let setup = selected.setup();
-            assert!(setup.file().is_complete());
+            assert!(setup.l2ir().is_complete());
             let analysis = build_selected_setup_vapor_decisions(setup).unwrap();
             let facts = analysis.vapor().unwrap();
             assert!(facts.unsupported().is_empty(), "genuine L3 admission");

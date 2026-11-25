@@ -27,7 +27,7 @@ impl<'f, 'a> ImportedComponentSite<'f, 'a> {
         &self,
         mut visit: impl FnMut(ImportedComponentListener<'f, 'a>),
     ) -> Result<(), ComponentListenerIssue> {
-        let file = self.binding.file();
+        let file = self.binding.l2ir();
         let root = SourceRoot::new(file.artifact().source())
             .map_err(|_| ComponentListenerIssue::OriginalSource)?
             .whole_block();

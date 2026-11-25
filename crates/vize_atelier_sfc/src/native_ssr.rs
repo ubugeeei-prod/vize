@@ -165,7 +165,7 @@ fn emit<L: LinkSink>(
         .into_document();
     let source_map = options
         .source_map
-        .then(|| document.source_map(options.filename, observation.descriptor().source()));
+        .then(|| document.source_map(options.filename, observation.l1ir().source()));
     Ok(NativeSsrSfcOutput {
         document,
         source_map,

@@ -35,7 +35,7 @@ fn compare(source: &str, count: &mut Counts, path: &std::path::Path) {
         return;
     };
     #[cfg(feature = "script-queries")]
-    let view = parsed.descriptor.admitted().unwrap();
+    let view = parsed.l1ir.admitted().unwrap();
     #[cfg(feature = "script-queries")]
     view.with_script_programs(&arena, |programs| {
         let produce = || {
@@ -73,7 +73,7 @@ fn compare_file<'a>(
     count: &mut Counts,
     path: &std::path::Path,
 ) {
-    let view = parsed.descriptor.admitted().unwrap();
+    let view = parsed.l1ir.admitted().unwrap();
     let source = view.source();
     if [ordinary_syntax, setup_syntax]
         .into_iter()
@@ -112,32 +112,32 @@ fn compare_file<'a>(
         (scope, observer.finish())
     });
     let control = control.finish().unwrap();
-    assert_eq!(candidate.file().issues(), control.issues(), "{path:?}");
+    assert_eq!(candidate.l2ir().issues(), control.issues(), "{path:?}");
     assert_eq!(
-        candidate.file().is_complete(),
+        candidate.l2ir().is_complete(),
         control.is_complete(),
         "{path:?}"
     );
     // Include all original lexical rows and their targets, even on refused Files.
-    let rows = |f: &L2Ir<'_>| {
+    let rows = |l2ir: &L2Ir<'_>| {
         std::format!(
             "{:?}{:?}{:?}{:?}{:?}{:?}{:?}",
-            f.units(),
-            f.scopes(),
-            f.bindings()
+            l2ir.units(),
+            l2ir.scopes(),
+            l2ir.bindings()
                 .map(|r| r.declaration())
                 .collect::<alloc::vec::Vec<_>>(),
-            f.references(),
-            f.imports(),
-            f.exports(),
-            f.issues()
+            l2ir.references(),
+            l2ir.imports(),
+            l2ir.exports(),
+            l2ir.issues()
         )
     };
-    assert_eq!(rows(candidate.file()), rows(&control), "{path:?}");
+    assert_eq!(rows(candidate.l2ir()), rows(&control), "{path:?}");
     if !control.is_complete() {
         assert_eq!(model.contract(), Err(VueQueryError::IncompleteFile));
         assert_eq!(model.options(), Err(VueQueryError::IncompleteFile));
-        for binding in candidate.file().bindings() {
+        for binding in candidate.l2ir().bindings() {
             assert_eq!(
                 model.binding_kind(binding),
                 Err(VueQueryError::IncompleteFile)
@@ -185,7 +185,7 @@ fn compare_file<'a>(
             Err(VueQueryError::NotObserved(VueFamily::Options))
         );
     }
-    for binding in candidate.file().bindings() {
+    for binding in candidate.l2ir().bindings() {
         let row = binding.declaration().unwrap();
         let expected = if row.namespace != Namespace::Value {
             Ok(None)

@@ -289,7 +289,7 @@ fn compile_sfc_batch_with_results_inner(
                         styles,
                         custom_blocks,
                         macro_artifacts,
-                        dependencies: dependencies_to_napi(&result.dependencies),
+                        dependencies: dependencies_to_napi(result.dependencies),
                     }
                 }
                 Err(error) => BatchFileResultNapi {

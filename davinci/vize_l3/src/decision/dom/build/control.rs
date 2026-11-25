@@ -102,7 +102,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         let [read] = row.reads() else { return false };
         let resolution = row.resolution();
         record.input().matches_expression(expression)
-            && core::ptr::eq(resolution.file(), file)
+            && core::ptr::eq(resolution.l2ir(), file)
             && resolution.node() == id
             && resolution.scope() == Some(record.scope())
             && row.value() == value

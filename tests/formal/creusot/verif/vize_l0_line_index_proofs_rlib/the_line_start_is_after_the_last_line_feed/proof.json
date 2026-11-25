@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_the_line_start_is_after_the_last_line_feed": {
+        "prover": "alt-ergo",
+        "time": 0.012
+      }
+    }
+  }
+}

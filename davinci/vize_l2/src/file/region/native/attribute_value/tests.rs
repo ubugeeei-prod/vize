@@ -87,8 +87,8 @@ fn lower_setup<'a>(
     }
     Ok(core::hint::black_box(original.finish()))
 }
-fn element<'f, 'a>(file: &'f L2Ir<'a>, index: usize) -> Result<&'f ElementOp<'a>, &'static str> {
-    match file.artifact().root().ops.get(index) {
+fn element<'f, 'a>(l2ir: &'f L2Ir<'a>, index: usize) -> Result<&'f ElementOp<'a>, &'static str> {
+    match l2ir.artifact().root().ops.get(index) {
         Some(Op::Element(element)) => Ok(element),
         _ => Err("actual Element"),
     }

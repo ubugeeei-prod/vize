@@ -12,12 +12,12 @@ use crate::op::{L3Ir, Op, OpId, OpKind};
 use crate::placement::facts::{Index, contains};
 use crate::placement::{Placement, PlacementRecord};
 
-pub(super) fn check(program: &L3Ir<'_>, out: &mut Vec<Violation>) {
-    if program.placements.is_empty() {
+pub(super) fn check(l3ir: &L3Ir<'_>, out: &mut Vec<Violation>) {
+    if l3ir.placements.is_empty() {
         return;
     }
-    let index = Index::new(program);
-    let mut records: Vec<(OpId, u32)> = program
+    let index = Index::new(l3ir);
+    let mut records: Vec<(OpId, u32)> = l3ir
         .placements
         .iter()
         .enumerate()
@@ -29,7 +29,7 @@ pub(super) fn check(program: &L3Ir<'_>, out: &mut Vec<Violation>) {
         records: &records,
     };
     let mut previous = None;
-    for record in &program.placements {
+    for record in &l3ir.placements {
         let (Some(op), Some(position)) = (index.op(record.op), index.position(record.op)) else {
             push(
                 out,
@@ -75,7 +75,7 @@ impl Plan<'_, '_, '_> {
         let start = self.records.partition_point(|entry| entry.0 < op);
         let (id, position) = *self.records.get(start)?;
         (id == op)
-            .then(|| self.index.program.placements.get(position as usize))
+            .then(|| self.index.l3ir.placements.get(position as usize))
             .flatten()
     }
 
@@ -140,7 +140,7 @@ impl Plan<'_, '_, '_> {
             return Some(cstr!("hoist for {} is outside every control region", op.id));
         }
         let covered = index
-            .program
+            .l3ir
             .ops
             .iter()
             .enumerate()
@@ -265,7 +265,7 @@ impl Plan<'_, '_, '_> {
     /// crossing only ops `member` places in the same group.
     fn reaches(&self, op: OpId, leader: OpId, member: impl Fn(&PlacementRecord) -> bool) -> bool {
         let mut current = self.index.keyed_pred(op);
-        for _ in 0..self.index.program.ops.len() {
+        for _ in 0..self.index.l3ir.ops.len() {
             match current {
                 Some(pred) if pred == leader => return true,
                 Some(pred)
@@ -284,7 +284,7 @@ impl Plan<'_, '_, '_> {
     fn hoisted_ancestor(&self, op: &Op) -> Option<OpId> {
         let index = self.index;
         let mut region = index.region(op.region);
-        for _ in 0..=index.program.regions.len() {
+        for _ in 0..=index.l3ir.regions.len() {
             let owner = region?.owner?;
             if self
                 .record(owner)

@@ -58,7 +58,7 @@ fn computed_outlet_name_is_owned_by_the_checked_graph() {
     let allocator = Allocator::new();
     let mut s3 = super::lowered_source(&allocator, r#"<slot :name="original"></slot>"#);
     let name = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| operand.role == vize_l3::operand::OperandRole::Name)
@@ -83,7 +83,7 @@ fn computed_content_name_is_owned_by_the_checked_graph() {
         r#"<MyComp><template #[original]>content</template></MyComp>"#,
     );
     let name = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| {

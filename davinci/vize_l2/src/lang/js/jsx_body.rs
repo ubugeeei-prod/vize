@@ -58,11 +58,11 @@ pub struct JsxFileProducer<'a> {
 ///
 /// ```compile_fail
 /// use vize_l2::lang::js::JsxFile;
-/// fn forge<'a>() { let _ = JsxFile { observation: (), file: (), records: vec![] }; }
+/// fn forge<'a>() { let _ = JsxFile { observation: todo!(), l2ir: todo!(), records: vec![] }; }
 /// ```
 pub struct JsxFile<'a> {
     observation: ProgramObservation<'a>,
-    file: L2Ir<'a>,
+    l2ir: L2Ir<'a>,
     records: alloc::vec::Vec<records::Record<'a>>,
 }
 
@@ -195,7 +195,7 @@ impl<'a> JsxFileProducer<'a> {
         }
         Ok(JsxFile {
             observation: rejection.observation,
-            file,
+            l2ir: file,
             records: rejection.records,
         })
     }
@@ -207,8 +207,8 @@ impl<'a> JsxFile<'a> {
         &self.observation
     }
     #[must_use]
-    pub fn file(&self) -> &L2Ir<'a> {
-        &self.file
+    pub fn l2ir(&self) -> &L2Ir<'a> {
+        &self.l2ir
     }
     #[must_use]
     pub fn node(&self, index: usize) -> Option<JsxNode<'_, 'a>> {

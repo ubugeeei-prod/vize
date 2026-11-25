@@ -119,7 +119,7 @@ impl CorsaBridge {
         let projection = project_vue(original).map_err(NativeVueError::Projection)?;
         let bounds =
             identity::Bounds::checked(&self.config, authored_path, projection.source_kind())?;
-        let source = projection.file().artifact().source();
+        let source = projection.l2ir().artifact().source();
         bounds.verify(source)?;
         let source_uri = crate::file_uri::path_to_file_uri(&bounds.source);
         let projection_uri = crate::file_uri::path_to_file_uri(&bounds.projected);

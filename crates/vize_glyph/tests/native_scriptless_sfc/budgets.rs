@@ -45,7 +45,7 @@ fn refused(owner: &NativeSfcObservation<'_>, source: &str, expected: NativeSfcRe
     assert_eq!(owner.refusal(), Some(expected));
     assert_eq!(owner.document().unwrap_err(), expected);
     assert_eq!(owner.format().unwrap_err(), expected);
-    assert_eq!(owner.options().descriptor, owner.descriptor().options());
+    assert_eq!(owner.options().descriptor, owner.l1ir().options());
     for operand in owner.operands() {
         assert!(core::ptr::eq(
             operand.syntax().source().authored_root(),
@@ -101,7 +101,7 @@ fn output(source: &str, expression: &str, flat_at: usize) {
             assert_eq!(result.code, expected, "width={width} ending={ending:?}");
             assert_eq!(result.changed, result.code != source);
             let reparsed = observe_native_sfc_in(&arena, &result.code, options);
-            assert!(reparsed.descriptor().admitted().is_ok());
+            assert!(reparsed.l1ir().admitted().is_ok());
             assert_eq!(reparsed.operands().len(), 1);
             assert_eq!(reparsed.operands()[0].syntax().hole(), None);
             assert_eq!(
@@ -237,7 +237,7 @@ fn missing_component_and_uncertain_outer_boundaries_keep_native_descriptor_error
         refused(&owner, source, NativeSfcRefusal::Descriptor);
         let empty = source == "<!-- only -->";
         assert_eq!(
-            owner.descriptor().issues().first(),
+            owner.l1ir().issues().first(),
             Some(&DescriptorIssue {
                 code: if empty {
                     Code::MissingComponentBlock
@@ -261,14 +261,14 @@ fn missing_component_and_uncertain_outer_boundaries_keep_native_descriptor_error
         );
         if source == "<template>{{1n}}" {
             assert_eq!(
-                owner.descriptor().container().errors.as_slice(),
+                owner.l1ir().container().errors.as_slice(),
                 &[vize_l1::container::ContainerError {
                     code: ContainerErrorCode::MissingCloseTag,
                     offset: 0
                 }]
             );
         } else {
-            assert!(owner.descriptor().container().errors.is_empty());
+            assert!(owner.l1ir().container().errors.is_empty());
         }
         assert!(owner.selected().is_none());
         assert!(owner.operands().is_empty());
@@ -278,13 +278,10 @@ fn missing_component_and_uncertain_outer_boundaries_keep_native_descriptor_error
         let source = vize_l0::cstr!("<template>{{{{&#39;//x&#39;{terminator}}}}}</template>");
         let owner = observe_native_sfc_in(&arena, &source, NativeSfcOptions::default());
         refused(&owner, &source, NativeSfcRefusal::Descriptor);
-        assert_eq!(
-            owner.descriptor().issues()[0].code,
-            Code::UnsupportedBoundary
-        );
+        assert_eq!(owner.l1ir().issues()[0].code, Code::UnsupportedBoundary);
         assert!(
             owner
-                .descriptor()
+                .l1ir()
                 .container()
                 .errors
                 .iter()
@@ -300,7 +297,7 @@ fn original_raw_double_closer_refuses_at_the_earliest_selected_safety_boundary()
     let arena = Allocator::default();
     let source = "<template>{{1n}}<p>{{/*原*/ {a:1n,b(){}} }}</p>{{later}}</template>tail";
     let owner = observe_native_sfc_in(&arena, source, NativeSfcOptions::default());
-    assert!(owner.descriptor().admitted().is_ok());
+    assert!(owner.l1ir().admitted().is_ok());
     assert_eq!(owner.operands().len(), 2);
     let current = &owner.operands()[1];
     assert_eq!(current.raw_content(), "/*原*/ {a:1n,b(){");

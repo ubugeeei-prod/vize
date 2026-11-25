@@ -77,7 +77,7 @@ fn whole_public_selected_class_components_preserve_once_decoding_and_complete_so
             assert!(ssr.observation().admitted().is_some());
             let ssr_output = ssr.result().unwrap();
             for observation in [dom.observation(), ssr.observation()] {
-                assert!(core::ptr::eq(observation.descriptor().source(), source));
+                assert!(core::ptr::eq(observation.l1ir().source(), source));
                 let file = observation.template().unwrap().file().unwrap();
                 assert!(file.is_complete());
                 for record in file.native_attribute_values() {

@@ -26,9 +26,9 @@ pub struct Page {
 impl Page {
     /// Mirror the live placement overlay into the owned document model.
     #[must_use]
-    pub fn of(program: &L3Ir<'_>) -> Self {
+    pub fn of(l3ir: &L3Ir<'_>) -> Self {
         Self {
-            placements: program
+            placements: l3ir
                 .placements
                 .iter()
                 .map(|record| Record(*record))

@@ -51,7 +51,7 @@ fn authored_argument_is_the_original_operand_use_and_editor_position() {
     let new = shorthand(&arena, source, VueVersion::V3);
     let native = new.admitted().unwrap();
     let embeds = new.template().unwrap().embeds();
-    let file = native.file().file();
+    let file = native.file().l2ir();
     let mut actual = Vec::new();
     native
         .for_each_authored_template_operand(|op| {

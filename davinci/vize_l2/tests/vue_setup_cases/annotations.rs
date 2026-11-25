@@ -29,7 +29,7 @@ fn original_keyword_annotations_keep_same_file_program_colon_spans_and_order() -
         (SetupPrimitiveType::Undefined, ":undefined"),
         (SetupPrimitiveType::Symbol, ":symbol"),
     ]) {
-        require!(core::ptr::eq(annotation.file(), &file));
+        require!(core::ptr::eq(annotation.l2ir(), &file));
         equal!(annotation.kind(), kind);
         let span = annotation.span();
         require!(setup.source().contains_block_span(span));
@@ -217,8 +217,7 @@ fn actual_annotation_event_interruption_cannot_complete_the_file_or_expose_recei
     )?;
     let script = original.script()?;
     for point in [Point::Unit, Point::Statement, Point::Declared] {
-        let mut producer =
-            FileProducer::new(&arena, original.descriptor.source()).map_err(|_| "file")?;
+        let mut producer = FileProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
         let interruption = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             producer
                 .program_observed(
@@ -249,7 +248,7 @@ fn actual_annotation_event_interruption_cannot_complete_the_file_or_expose_recei
         );
         require!(core::ptr::eq(
             file.artifact().source(),
-            original.descriptor.source()
+            original.l1ir.source()
         ));
     }
     equal!(

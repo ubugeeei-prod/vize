@@ -47,15 +47,15 @@ fn all_twenty_four_pinned_static_root_packets_retain_complete_file_and_l3_order(
             .map_err(|_| "genuine owner analysis")?;
         check(core::ptr::eq(analysis.owner(), &output))?;
         check(core::ptr::eq(
-            analysis.file(),
+            analysis.l2ir(),
             output.file().ok_or("sole File")?,
         ))?;
         check(core::ptr::eq(
             analysis.artifact(),
-            analysis.file().artifact(),
+            analysis.l2ir().artifact(),
         ))?;
         check(core::ptr::eq(analysis.artifact().source(), source))?;
-        check(analysis.file().is_complete())?;
+        check(analysis.l2ir().is_complete())?;
         let actual = analysis
             .artifact()
             .root()

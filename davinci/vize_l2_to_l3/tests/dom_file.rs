@@ -36,7 +36,7 @@ fn genuine_file_rows_keep_original_ast_coordinates_scope_and_dynamic_facts() {
     assert!(native.is_supported());
     let file = producer.finish().unwrap();
     let result = build_dom_file_decisions(&file).unwrap();
-    assert!(core::ptr::eq(result.file(), &file));
+    assert!(core::ptr::eq(result.l2ir(), &file));
     assert!(core::ptr::eq(result.artifact(), file.artifact()));
     assert_eq!(result.policy(), TargetPolicy::Dom);
     let facts = result.dom().unwrap();
@@ -49,7 +49,7 @@ fn genuine_file_rows_keep_original_ast_coordinates_scope_and_dynamic_facts() {
         let node = embed.node.unwrap();
         let row = facts.file_expression(node).unwrap();
         assert_eq!(row.scope(), Some(file.units().last().unwrap().scope));
-        assert!(core::ptr::eq(row.resolution().file(), &file));
+        assert!(core::ptr::eq(row.resolution().l2ir(), &file));
         let table = row.resolution().table().unwrap();
         assert!(core::ptr::eq(
             table.expression().ast,
@@ -278,8 +278,8 @@ fn equal_numeric_nodes_and_bindings_keep_distinct_file_owners_and_original_ast_r
     let foreign = second_row.binding(second_use.binding).unwrap();
     assert!(!actual.same_owner(foreign));
     assert!(!first_row.accepts(foreign));
-    assert!(core::ptr::eq(first_row.file(), first_result.file()));
-    assert!(core::ptr::eq(second_row.file(), second_result.file()));
+    assert!(core::ptr::eq(first_row.l2ir(), first_result.l2ir()));
+    assert!(core::ptr::eq(second_row.l2ir(), second_result.l2ir()));
     assert!(!core::ptr::eq(
         first_row.table().unwrap().expression().ast,
         second_row.table().unwrap().expression().ast

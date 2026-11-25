@@ -24,7 +24,7 @@ impl<'owner, 'arena> NativeSelectedSetup<'owner, 'arena> {
             kind,
             span: self.source().span(),
         };
-        if !core::ptr::eq(binding.file(), self.file()) {
+        if !core::ptr::eq(binding.l2ir(), self.l2ir()) {
             return Err(reject(Kind::ForeignBinding));
         }
         let declaration = binding
@@ -52,12 +52,12 @@ impl<'owner, 'arena> NativeSelectedSetup<'owner, 'arena> {
     }
     /// Original declaration order from this actual unit and root scope only.
     pub fn bindings(&self) -> impl Iterator<Item = BindingRef<'owner, 'arena>> + '_ {
-        self.file()
+        self.l2ir()
             .bindings()
             .filter(|binding| self.binding(*binding).is_ok())
     }
     /// Original source order, using only annotation rows from the sole walk.
     pub fn type_annotations(&self) -> impl Iterator<Item = SetupAnnotation<'owner, 'arena>> + '_ {
-        self.file().setup_annotations_for_unit(self.unit())
+        self.l2ir().setup_annotations_for_unit(self.unit())
     }
 }

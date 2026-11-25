@@ -36,7 +36,7 @@ fn exact_original_late_class_header_has_whole_public_dom_ssr_successors() {
             },
         );
         for observation in [dom.observation(), ssr.observation()] {
-            assert!(core::ptr::eq(observation.descriptor().source(), source));
+            assert!(core::ptr::eq(observation.l1ir().source(), source));
             let file = observation.template().unwrap().file().unwrap();
             assert!(file.is_complete());
             assert_eq!(file.native_attribute_values().len(), 2);

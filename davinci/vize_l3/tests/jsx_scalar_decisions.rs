@@ -59,7 +59,7 @@ fn jsx_and_tsx_scalar_body_reads_are_bound_to_the_genuine_original_function_scop
         };
         if name != "message"
             || reference.target != ReferenceTarget::Resolved(binding)
-            || reference.scope == analysis.owner().file().units().first().ok_or("unit")?.scope
+            || reference.scope == analysis.owner().l2ir().units().first().ok_or("unit")?.scope
             || !core::ptr::eq(read.node().owner(), analysis.owner())
         {
             return Err("same owning function binding");
@@ -123,7 +123,7 @@ fn scalar_support_keeps_compound_body_and_attribute_expressions_refused() -> Res
             .body
             .as_ptr()
             != original
-            || !rejected.owner().file().is_complete()
+            || !rejected.owner().l2ir().is_complete()
             || !rejected
                 .issues()
                 .iter()

@@ -253,7 +253,7 @@ fn unsupported_module_semantics_are_whole_typed_refusals() -> Result<(), &'stati
                 .get(error.span.start as usize..error.span.end as usize)
                 .is_some()
         );
-        assert_eq!(analysis.owner().file().artifact().source(), source);
+        assert_eq!(analysis.owner().l2ir().artifact().source(), source);
         assert_eq!(emit_js_module::<NoLinks>(&analysis).unwrap_err(), error);
     }
     Ok(())

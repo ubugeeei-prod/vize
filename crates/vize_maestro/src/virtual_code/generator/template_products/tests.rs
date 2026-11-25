@@ -29,7 +29,7 @@ fn observe<'a>(arena: &'a Allocator, source: &'a str) -> NativeSfcObservation<'a
 }
 
 fn separate(native: &NativeSfc<'_, '_>, descriptor: &SfcDescriptor<'_>) -> TemplateOperandProducts {
-    let checker = project_template_expression_document(native.file().file().artifact().root());
+    let checker = project_template_expression_document(native.file().l2ir().artifact().root());
     let arena = Allocator::default();
     let expressions = descriptor.template.as_ref().map_or_else(Vec::new, |t| {
         let (ast, _) = vize_armature::parse(&arena, &t.content);

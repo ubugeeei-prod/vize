@@ -31,7 +31,7 @@ impl VirtualCodeGenerator {
         descriptor: &SfcDescriptor<'_>,
         base_uri: &str,
     ) -> Result<TemplateOperandProducts, TemplateProductRefusal> {
-        let original = native.observation().descriptor();
+        let original = native.observation().l1ir();
         let selected = original
             .admitted()
             .map_err(|_| TemplateProductRefusal::Descriptor)?;

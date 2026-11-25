@@ -22,7 +22,7 @@ fn pinned_root_and_sibling_prefix_boundaries_return_no_whole_output() {
         );
         assert!(compilation.result().is_err());
         assert!(core::ptr::eq(
-            compilation.observation().descriptor().source(),
+            compilation.observation().l1ir().source(),
             source
         ));
         assert!(compilation.observation().template().is_some());
@@ -67,7 +67,7 @@ fn active_block_proof_cannot_admit_mixed_outer_roles_or_unsupported_envelopes() 
         );
         assert!(compilation.result().is_err(), "{template}");
         assert!(core::ptr::eq(
-            compilation.observation().descriptor().source(),
+            compilation.observation().l1ir().source(),
             source.as_str()
         ));
         assert!(compilation.observation().template().is_some());
@@ -93,7 +93,7 @@ fn active_block_proof_cannot_admit_mixed_outer_roles_or_unsupported_envelopes() 
         );
         assert!(compilation.observation().admitted().is_none());
         assert!(core::ptr::eq(
-            compilation.observation().descriptor().source(),
+            compilation.observation().l1ir().source(),
             source.as_str()
         ));
     }

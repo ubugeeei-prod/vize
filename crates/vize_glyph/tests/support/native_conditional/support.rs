@@ -25,11 +25,11 @@ pub(crate) fn assert_original(
     options: NativeSfcOptions,
 ) {
     assert!(core::ptr::eq(owner.source(), source));
-    assert!(core::ptr::eq(owner.descriptor().source(), source));
+    assert!(core::ptr::eq(owner.l1ir().source(), source));
     assert_eq!(owner.options(), options);
-    assert_eq!(owner.descriptor().options(), options.descriptor);
-    assert!(owner.descriptor().issues().is_empty());
-    assert!(owner.descriptor().container().errors.is_empty());
+    assert_eq!(owner.l1ir().options(), options.descriptor);
+    assert!(owner.l1ir().issues().is_empty());
+    assert!(owner.l1ir().container().errors.is_empty());
     let selected = owner.selected().unwrap();
     assert!(core::ptr::eq(
         selected.component().block().root_source(),

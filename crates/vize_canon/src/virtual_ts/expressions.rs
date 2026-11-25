@@ -25,6 +25,7 @@ mod incomplete;
 mod model_modifiers;
 pub(super) mod model_update;
 mod native_props;
+pub(crate) use native_props::{binds_dom_property, dom_property_key, push_dom_element_lookup};
 #[cfg(test)]
 mod native_props_tests;
 #[cfg(test)]

@@ -383,7 +383,7 @@ fn compile_file_for_targets(
                         } else {
                             vec![]
                         },
-                        dependencies: dependencies_to_napi(&result.dependencies),
+                        dependencies: dependencies_to_napi(result.dependencies),
                     };
                     (file_result, true)
                 }

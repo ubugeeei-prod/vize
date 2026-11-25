@@ -96,14 +96,14 @@ impl ScopeChain {
     #[inline]
     pub fn lookup(&self, name: &str) -> Option<(&Scope, &ScopeBinding)> {
         self.lookup_location(name)
-            .and_then(|(id, binding)| self.scopes.get(id).map(|scope| (scope, binding)))
+            .and_then(|(id, binding)| self.scopes.get(id.as_u32()).map(|scope| (scope, binding)))
     }
 
     /// Carry the physical slot chosen by the original immutable lookup.
     fn lookup_location(&self, name: &str) -> Option<(ScopeId, &ScopeBinding)> {
         let scope_count = self.scopes.len();
         let mut visited = ScopeVisitSet::default();
-        let mut queue: SmallVec<[ScopeId; 8]> = smallvec![self.current];
+        let mut queue: SmallVec<[ScopeId; 8]> = smallvec![self.current_id()];
 
         while let Some(id) = queue.pop() {
             if !visited.insert(id, scope_count) {
@@ -112,7 +112,7 @@ impl ScopeChain {
 
             // Safe callers can construct ids and edit public Scope::parents.
             // Ignore absent parents, as the mutable and visibility walks do.
-            let Some(scope) = self.scopes.get(id) else {
+            let Some(scope) = self.scopes.get(id.as_u32()) else {
                 continue;
             };
             if let Some(binding) = scope.get_binding(name) {
@@ -149,7 +149,7 @@ impl ScopeChain {
         };
         if let Some(binding) = self
             .scopes
-            .get_mut(id)
+            .get_mut(id.as_u32())
             .and_then(|scope| scope.get_binding_mut(name))
         {
             binding.mark_used();
@@ -163,7 +163,7 @@ impl ScopeChain {
         };
         if let Some(binding) = self
             .scopes
-            .get_mut(id)
+            .get_mut(id.as_u32())
             .and_then(|scope| scope.get_binding_mut(name))
         {
             binding.mark_used();
@@ -173,7 +173,7 @@ impl ScopeChain {
 
     /// Check if a binding has been marked as used (searches through all scopes)
     pub fn is_used(&self, name: &str) -> bool {
-        for scope in &self.scopes {
+        for scope in self.scopes.as_slice() {
             if let Some(binding) = scope.get_binding(name) {
                 return binding.is_used();
             }
@@ -188,7 +188,7 @@ impl ScopeChain {
         };
         if let Some(binding) = self
             .scopes
-            .get_mut(id)
+            .get_mut(id.as_u32())
             .and_then(|scope| scope.get_binding_mut(name))
         {
             binding.mark_mutated();
@@ -269,13 +269,13 @@ mod tests {
     // The original mark_used body is retained independently from the new helper.
     fn original_mark_used(chain: &mut ScopeChain, name: &str) {
         let mut visited: SmallVec<[ScopeId; 8]> = SmallVec::new();
-        let mut queue: SmallVec<[ScopeId; 8]> = smallvec![chain.current];
+        let mut queue: SmallVec<[ScopeId; 8]> = smallvec![chain.current_id()];
         while let Some(id) = queue.pop() {
             if visited.contains(&id) {
                 continue;
             }
             visited.push(id);
-            let Some(scope) = chain.scopes.get_mut(id) else {
+            let Some(scope) = chain.scopes.get_mut(id.as_u32()) else {
                 continue;
             };
             if let Some(binding) = scope.get_binding_mut(name) {
@@ -349,9 +349,9 @@ mod tests {
         assert_eq!(scope.kind, ScopeKind::EventHandler);
         assert_eq!(binding.declaration_offset, 33);
         assert!(binding.is_used());
-        for scope in &public.scopes {
+        for scope in public.scopes.as_slice() {
             if let Some(binding) = scope.get_binding("shared") {
-                assert_eq!(binding.is_used(), scope.id == public.current);
+                assert_eq!(binding.is_used(), scope.id == public.current_id());
             }
         }
     }
@@ -360,7 +360,7 @@ mod tests {
     fn fused_resolution_uses_physical_slot_when_public_scope_id_changes() {
         let mut original = graph(true);
         let mut fused = graph(true);
-        let physical = original.current;
+        let physical = original.current_id();
         original.current_scope_mut().id = ScopeId::ROOT;
         fused.current_scope_mut().id = ScopeId::ROOT;
         for name in ["shared", "local", "Math", "$event", "missing", "shared"] {
@@ -404,7 +404,7 @@ mod tests {
             chain.enter_scope(ScopeKind::Block);
         }
 
-        let deepest = chain.current;
+        let deepest = chain.current_id();
         assert_eq!(chain.depth(deepest), 300);
         assert_eq!(chain.lookup("target").unwrap().1.declaration_offset, 1);
 

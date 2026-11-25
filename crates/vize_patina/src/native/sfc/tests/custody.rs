@@ -37,14 +37,14 @@ fn original_program_body_identity_survives_equal_source_and_equal_file_indices()
     let arena = Allocator::new();
     let first = NativeSfcLintOwner::parse_in(&arena, SOURCE).unwrap();
     let foreign = NativeSfcLintOwner::parse_in(&arena, SOURCE).unwrap();
-    let script = first.descriptor().admitted().unwrap().setup().unwrap();
+    let script = first.l1ir().admitted().unwrap().setup().unwrap();
     let expected = SetupIssue {
         span: script_span(SOURCE),
         kind: SetupIssueKind::Exposure(ExposureIssueKind::ProgramOrigin),
     };
     assert_eq!(
         VueSetup::checked(
-            first.file(),
+            first.l2ir(),
             script,
             foreign.syntax().admitted_program().unwrap()
         )
@@ -54,7 +54,7 @@ fn original_program_body_identity_survives_equal_source_and_equal_file_indices()
     );
     assert_eq!(
         VueSetup::checked(
-            foreign.file(),
+            foreign.l2ir(),
             script,
             first.syntax().admitted_program().unwrap()
         )
@@ -107,7 +107,7 @@ impl<'a> FileObserver<'a> for Interrupt {
 fn actual_declaration_interruption_cannot_become_a_whole_primitive_setup_receipt() {
     let arena = Allocator::new();
     let original = NativeSfcLintOwner::parse_in(&arena, SOURCE).unwrap();
-    let script = original.descriptor().admitted().unwrap().setup().unwrap();
+    let script = original.l1ir().admitted().unwrap().setup().unwrap();
     let program = original.syntax().admitted_program().unwrap();
     let mut producer = FileProducer::new(&arena, SOURCE).unwrap();
     let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {

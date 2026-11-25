@@ -21,12 +21,12 @@ fn genuine_styled_ssr_view_consumes_the_same_original_value_slots() -> Test {
     let analysis = ssr::build_scoped_template_ssr_decisions(view.into_scoped_template_view())
         .map_err(|_| "scoped original cursor")?;
     check(core::ptr::eq(analysis.owner(), selected))?;
-    check(core::ptr::eq(analysis.file(), file))?;
+    check(core::ptr::eq(analysis.l2ir(), file))?;
     check(core::ptr::eq(analysis.scoped().style_syntax(), style))?;
     let facts = analysis
         .original_attributes()
         .ok_or("normal all-row finish")?;
-    check(core::ptr::eq(facts.file(), file) && facts.len() == 2)?;
+    check(core::ptr::eq(facts.l2ir(), file) && facts.len() == 2)?;
     let parent = element(file, 0)?;
     let [Op::Element(child)] = parent.children.ops.as_slice() else {
         return Err("original nested Element");

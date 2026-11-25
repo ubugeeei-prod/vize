@@ -46,7 +46,7 @@ fn a_foreign_original_row_with_equal_index_and_buffer_cannot_forge_this_view() {
     assert_eq!(genuine.container_index(), 2);
     assert_eq!(other.container_index(), 2);
     let forged = TemplateView {
-        owner: &owner,
+        l1ir: &owner,
         selected: other.selected,
     };
     assert_eq!(

@@ -384,7 +384,7 @@ pub fn compile<D: ExprDialect + Default>(
         return Err(Error::new(cstr!("{diagnostic:?}"), template.content));
     }
     let program = crate::lower(&allocator, &lowered.artifact.root)?;
-    Target::new(&D::default(), &bindings).module(View::new(&program.program), &imports, &body)
+    Target::new(&D::default(), &bindings).module(View::new(&program.l3ir), &imports, &body)
 }
 
 fn is_member_path(js: &str) -> bool {

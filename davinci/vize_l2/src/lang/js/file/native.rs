@@ -208,8 +208,8 @@ impl<'a> NativeTemplateOwner<'a> {
 /// Keep original Component and canonical File together across movement/failure.
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, lang::js::NativeTemplateFile};
-/// fn replace<'a>(owner: &mut NativeTemplateFile<'a>, file: L2Ir<'a>) {
-///     owner.outcome = Ok(file);
+/// fn replace<'a>(owner: &mut NativeTemplateFile<'a>, l2ir: L2Ir<'a>) {
+///     owner.outcome = Ok(l2ir);
 /// }
 /// ```
 /// ```compile_fail

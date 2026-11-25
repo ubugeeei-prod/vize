@@ -77,7 +77,7 @@ fn original_five_primitive_let_var_models_keep_one_real_readwrite_and_no_alias_s
         let setup = output.setup().unwrap();
         let file = output.file().unwrap();
         assert!(file.is_complete() && output.view().is_ok());
-        assert!(core::ptr::eq(setup.file(), file));
+        assert!(core::ptr::eq(setup.l2ir(), file));
         let [unit] = file.units() else {
             panic!("one actual Program")
         };

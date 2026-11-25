@@ -7,8 +7,10 @@ import { parse as parseYaml } from "yaml";
 
 // docs/davinci/decisions/2026-11-24-unsafe-model-checking.md: every `unsafe`
 // token in product Rust (the module trees of crates/*/src and davinci/*/src,
-// without `#[cfg(test)]` modules) is a row of the inventory, and every Kani
-// harness the inventory names exists and runs in the Davinci Kani workflow.
+// without `#[cfg(test)]` modules) is a row of the inventory, every Kani
+// harness the inventory names exists and runs in the Davinci Kani workflow, and
+// every Creusot proof it names sits in a kernel the Davinci Creusot workflow
+// replays.
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const inventoryFile = path.join(
@@ -19,6 +21,8 @@ const inventoryFile = path.join(
   "2026-11-24-unsafe-model-checking.md",
 );
 const workflowFile = path.join(repoRoot, ".github", "workflows", "07-proofs.yml");
+const creusotWorkflowFile = path.join(repoRoot, ".github", "workflows", "07-proofs-creusot.yml");
+const creusotDir = path.join(repoRoot, "tests", "formal", "creusot");
 
 /** Source text with comments and string/char literals blanked (newlines kept). */
 function codeOnly(source: string): string {
@@ -206,14 +210,14 @@ test("every inventory row names its item, class and verifier", () => {
     assert.match(row.kind, /^\((?:a|b|c)\)/u, `${row.file} ${row.item} has a class`);
     assert.match(
       row.verifier,
-      /kani `|miri `|fuzz `|test `|out of scope/u,
+      /kani `|creusot `|miri `|fuzz `|test `|out of scope/u,
       `${row.file} ${row.item} names a verifier`,
     );
     if (row.kind.startsWith("(a)")) {
       assert.match(
         row.verifier,
-        /kani `|not model-checked/u,
-        `${row.file} ${row.item}: class (a) is Kani-checked or says why not`,
+        /kani `|creusot `|not model-checked/u,
+        `${row.file} ${row.item}: class (a) is Kani-checked, Creusot-proved or says why not`,
       );
     }
   }
@@ -258,6 +262,51 @@ test("every listed Kani harness exists and the Kani workflow runs it", () => {
           [...line.matchAll(/--harness (\w+)/gu)].some((filter) => name.includes(filter[1]!)),
       ),
       `a Davinci Kani job runs ${name} from ${manifest}`,
+    );
+  }
+});
+
+/** Repository-relative proof roots of the Creusot workspace and the modules they declare. */
+function creusotKernels(): Set<string> {
+  const workspace = fs.readFileSync(path.join(creusotDir, "Cargo.toml"), "utf8");
+  const members = [
+    ...(workspace.match(/^members = \[([^\]]*)\]$/mu)?.[1] ?? "").matchAll(/"([^"]+)"/gu),
+  ];
+  const kernels = new Set<string>();
+  for (const member of members) {
+    const manifest = fs.readFileSync(path.join(creusotDir, member[1]!, "Cargo.toml"), "utf8");
+    const lib = manifest.match(/^\[lib\]\npath = "([^"]+)"$/mu)?.[1];
+    assert.ok(lib, `${member[1]} names its library root`);
+    const root = path.resolve(creusotDir, member[1]!, lib);
+    kernels.add(path.relative(repoRoot, root).split(path.sep).join("/"));
+    for (const match of fs.readFileSync(root, "utf8").matchAll(/^\s*(?:pub\s+)?mod (\w+);$/gmu)) {
+      const target = path.join(path.dirname(root), `${match[1]!}.rs`);
+      kernels.add(path.relative(repoRoot, target).split(path.sep).join("/"));
+    }
+  }
+  return kernels;
+}
+
+test("every listed Creusot proof is in a replayed kernel", () => {
+  const workflow = parseYaml(fs.readFileSync(creusotWorkflowFile, "utf8")) as Workflow;
+  const kernels = creusotKernels();
+  const proofs = inventoryRows().flatMap((row) =>
+    [...row.verifier.matchAll(/creusot `([^`:]+)::([\w:]+)`/gu)].map((match) => ({
+      file: match[1]!,
+      item: match[2]!,
+      row,
+    })),
+  );
+  assert.ok(proofs.length > 0, "the inventory names Creusot proofs");
+  for (const { file, item, row } of proofs) {
+    assert.ok(kernels.has(file), `${file} is a Creusot proof root or one of its modules`);
+    assert.equal(file, row.file, `${row.file} ${row.item} is proved in its own file`);
+    const source = fs.readFileSync(path.join(repoRoot, file), "utf8");
+    const name = item.split("::").at(-1)!;
+    assert.match(source, new RegExp(`\\bfn ${name}\\b`, "u"), `${file} defines ${item}`);
+    assert.ok(
+      workflow.on.pull_request.paths.includes(file),
+      `Creusot workflow paths include ${file}`,
     );
   }
 });

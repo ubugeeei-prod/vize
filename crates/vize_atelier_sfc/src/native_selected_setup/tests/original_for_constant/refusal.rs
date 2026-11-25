@@ -15,7 +15,7 @@ fn constant_same_owner_generic_and_neutral_policies_still_refuse_operation() {
     let view = compiled.observation().admitted().unwrap();
     let selected = build_selected_setup_dom_decisions(view.setup()).unwrap();
     assert!(selected.dom().unwrap().unsupported().is_empty());
-    let generic = vize_l3::decision::build_dom_file_decisions(view.setup().file()).unwrap();
+    let generic = vize_l3::decision::build_dom_file_decisions(view.setup().l2ir()).unwrap();
     assert_eq!(
         generic.dom().unwrap().unsupported()[0].reason,
         DomUnsupported::Operation
@@ -52,7 +52,7 @@ fn stable_mode_keeps_exact_outer_grouped_mixed_nested_and_literal_body_refusals(
             NativeSelectedSfcDomOptions::default(),
         );
         let view = compiled.observation().admitted().unwrap();
-        assert!(view.setup().file().is_complete());
+        assert!(view.setup().l2ir().is_complete());
         assert!(
             matches!(compiled.result().err(), Some(NativeSelectedSetupSfcDomError::Dom(DomError {
             kind: DomErrorKind::Unsupported(actual), ..

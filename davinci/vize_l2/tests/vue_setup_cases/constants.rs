@@ -21,7 +21,7 @@ fn genuine_const_primitives_keep_original_declaration_kinds_and_order() -> Resul
         ("mutable", DeclarationKind::Let),
         ("previous", DeclarationKind::Var),
     ]) {
-        require!(core::ptr::eq(binding.file(), &file));
+        require!(core::ptr::eq(binding.l2ir(), &file));
         let declaration = binding.declaration().ok_or("actual binding")?;
         equal!(declaration.name.as_str(), name);
         equal!(declaration.kind, kind);

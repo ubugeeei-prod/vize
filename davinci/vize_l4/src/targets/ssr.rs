@@ -251,7 +251,7 @@ pub fn emit_render_analysis<L: LinkSink>(
     receipt: &vize_l3::decision::ServerRenderAnalysis<'_, '_>,
 ) -> Result<Writer<L>, SsrError> {
     encode(
-        receipt.file().artifact().source(),
+        receipt.l2ir().artifact().source(),
         Some(receipt.facts()),
         None,
         None,

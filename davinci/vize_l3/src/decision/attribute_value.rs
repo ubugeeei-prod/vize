@@ -14,18 +14,18 @@ use vize_l2::{
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::OriginalAttributeFacts;
-/// fn forge<'f,'a>(file: &'f L2Ir<'a>) {
-///     let _ = OriginalAttributeFacts { file, consumed: 0 };
+/// fn forge<'f,'a>(l2ir: &'f L2Ir<'a>) {
+///     let _ = OriginalAttributeFacts { l2ir, consumed: 0 };
 /// }
 /// ```
 pub struct OriginalAttributeFacts<'owner, 'arena> {
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
     consumed: usize,
 }
 impl<'owner, 'arena> OriginalAttributeFacts<'owner, 'arena> {
     #[must_use]
-    pub const fn file(&self) -> &'owner L2Ir<'arena> {
-        self.file
+    pub const fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.l2ir
     }
     #[must_use]
     pub const fn len(&self) -> usize {
@@ -46,31 +46,31 @@ impl<'owner, 'arena> OriginalAttributeFacts<'owner, 'arena> {
         if index >= self.consumed {
             return None;
         }
-        self.file.native_attribute_value_for(index, element, slot)
+        self.l2ir.native_attribute_value_for(index, element, slot)
     }
 }
 
 pub(super) struct OriginalAttributeCursor<'owner, 'arena> {
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
     next: usize,
     failure: Option<DecisionBuildError>,
 }
 impl<'owner, 'arena> OriginalAttributeCursor<'owner, 'arena> {
     pub(super) fn new(
-        file: &'owner L2Ir<'arena>,
+        l2ir: &'owner L2Ir<'arena>,
         artifact: &'owner Artifact<'arena>,
     ) -> Result<Self, DecisionBuildError> {
-        if !file.is_complete() {
+        if !l2ir.is_complete() {
             return Err(DecisionBuildError::IncompleteFile);
         }
-        if !core::ptr::eq(file.artifact(), artifact) {
+        if !core::ptr::eq(l2ir.artifact(), artifact) {
             return Err(DecisionBuildError::OriginalAttributeValue {
                 node: None,
                 slot: 0,
             });
         }
         Ok(Self {
-            file,
+            l2ir,
             next: 0,
             failure: None,
         })
@@ -93,21 +93,21 @@ impl<'owner, 'arena> OriginalAttributeCursor<'owner, 'arena> {
                 return Some(true);
             }
             let joined = self
-                .file
+                .l2ir
                 .native_attribute_value_for(self.next, element, slot)?;
-            let record = self.file.native_attribute_values().get(self.next)?;
+            let record = self.l2ir.native_attribute_values().get(self.next)?;
             if record.state() != (NativeFileAttributeValueState::Attached { node, slot }) {
                 return None;
             }
             let value = joined.observation()?;
             let source = value.source();
-            if !core::ptr::eq(source.authored_root(), self.file.artifact().source())
+            if !core::ptr::eq(source.authored_root(), self.l2ir.artifact().source())
                 || source.span() != value.value_span()
                 || attribute.span.start != value.name_span().start
                 || attribute.span.end != value.full_value_span().end
                 || !core::ptr::eq(
                     value.raw_value(),
-                    self.file
+                    self.l2ir
                         .artifact()
                         .source()
                         .get(value.value_span().start as usize..value.value_span().end as usize)?,
@@ -134,14 +134,14 @@ impl<'owner, 'arena> OriginalAttributeCursor<'owner, 'arena> {
         if let Some(error) = self.failure {
             return Err(error);
         }
-        if self.next != self.file.native_attribute_values().len() {
+        if self.next != self.l2ir.native_attribute_values().len() {
             return Err(DecisionBuildError::OriginalAttributeValue {
                 node: None,
                 slot: self.next,
             });
         }
         Ok(OriginalAttributeFacts {
-            file: self.file,
+            l2ir: self.l2ir,
             consumed: self.next,
         })
     }

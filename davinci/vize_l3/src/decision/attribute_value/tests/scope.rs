@@ -23,7 +23,7 @@ fn genuine_js_ts_setup_for_alias_and_original_handler_scopes_survive_value_consu
         }
         let original = original.finish();
         let setup = original.setup().map_err(|_| "same normal setup")?;
-        let file = setup.file();
+        let file = setup.l2ir();
         let [Op::OriginalFor(actual_for)] = file.artifact().root().ops.as_slice() else {
             return Err("original For allocation");
         };
@@ -53,7 +53,7 @@ fn genuine_js_ts_setup_for_alias_and_original_handler_scopes_survive_value_consu
         ] {
             let facts = facts.ok_or("complete whole row gate")?;
             let value = facts.value(0, actual, 0).ok_or("same actual allocation")?;
-            check(facts.len() == 1 && core::ptr::eq(value.file(), file))?;
+            check(facts.len() == 1 && core::ptr::eq(value.l2ir(), file))?;
             check(value.observation().ok_or("original value")?.source().text() == "&lt;")?;
         }
         check(handler.scope() == head.scope() && head.scope() != head.enclosing_scope())?;

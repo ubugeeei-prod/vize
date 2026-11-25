@@ -1,0 +1,23 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_forms_continue_after_a_boundary": {
+        "tactic": "split_vc",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "alt-ergo", "time": 0.006 },
+              { "prover": "alt-ergo", "time": 0.007 },
+              { "prover": "alt-ergo", "time": 0.005 }
+            ]
+          },
+          { "prover": "alt-ergo", "time": 0.006 },
+          { "prover": "alt-ergo", "time": 0.006 },
+          { "prover": "alt-ergo", "time": 0.007 }
+        ]
+      }
+    }
+  }
+}

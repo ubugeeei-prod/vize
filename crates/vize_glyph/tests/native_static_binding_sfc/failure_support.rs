@@ -10,7 +10,7 @@ pub(super) fn refused(owner: &NativeSfcObservation<'_>, source: &str, expected: 
     assert_eq!(owner.source(), source);
     assert!(core::ptr::eq(owner.source(), source));
     assert_eq!(owner.options(), options(200, 2, LineEnding::Lf));
-    assert_eq!(owner.descriptor().options(), owner.options().descriptor);
+    assert_eq!(owner.l1ir().options(), owner.options().descriptor);
     for _ in 0..2 {
         assert_eq!(owner.refusal(), Some(expected));
         assert_eq!(owner.document().unwrap_err(), expected);

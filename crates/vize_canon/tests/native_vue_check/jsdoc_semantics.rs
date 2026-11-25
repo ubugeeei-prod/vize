@@ -38,7 +38,7 @@ fn original_jsdoc_vectors_remain_recorded_but_actual_template_bindings_refuse() 
         let resolution = original
             .file()
             .unwrap()
-            .file()
+            .l2ir()
             .expression(embed.node.unwrap())
             .unwrap();
         assert!(std::ptr::eq(
@@ -94,8 +94,8 @@ fn original_jsdoc_script_and_literal_template_keep_every_real_diagnostic_and_aut
         &original
     ));
     assert!(std::ptr::eq(
-        checked.projection().file(),
-        original.file().unwrap().file()
+        checked.projection().l2ir(),
+        original.file().unwrap().l2ir()
     ));
     assert_eq!(
         checked.diagnostic_configuration_path(),

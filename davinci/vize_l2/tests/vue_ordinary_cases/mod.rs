@@ -28,7 +28,7 @@ fn original_js_ts_empty_default_spans_comments_directives_and_layout_stay_bound(
             let statement = preflight.statement_span();
             let file = core::hint::black_box(producer.finish().map_err(|_| "File")?);
             let view = original.checked(&file)?.map_err(|_| "ordinary proof")?;
-            check(core::ptr::eq(view.file(), &file))?;
+            check(core::ptr::eq(view.l2ir(), &file))?;
             check(core::ptr::eq(view.source().root_source(), source.as_str()))?;
             check(core::ptr::eq(view.program().program(), parser.program()))?;
             equal(view.program().program().body.as_ptr(), body_pointer)?;
@@ -92,7 +92,7 @@ fn normally_moved_parser_and_file_owners_keep_the_original_certificate() -> Resu
     let view = original.checked(&file)?.map_err(|_| "moved proof")?;
     equal(view.program().program().body.as_ptr(), body)?;
     equal(view.program().program().comments.as_ptr(), comments)?;
-    check(core::ptr::eq(view.file(), &*file))?;
+    check(core::ptr::eq(view.l2ir(), &*file))?;
     equal(view.source().source(), "/*kept*/export default {};")?;
     Ok(())
 }

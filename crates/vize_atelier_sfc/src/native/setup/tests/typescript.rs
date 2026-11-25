@@ -50,7 +50,7 @@ fn ts_type_bearing_and_strict_invalid_bodies_keep_actual_owners_and_refuse_outpu
         );
         let owner = compilation.observation();
         require!(
-            core::ptr::eq(owner.descriptor().source(), source.as_str()),
+            core::ptr::eq(owner.l1ir().source(), source.as_str()),
             "original root"
         );
         let script = owner.scripts().first().ok_or("actual script")?;

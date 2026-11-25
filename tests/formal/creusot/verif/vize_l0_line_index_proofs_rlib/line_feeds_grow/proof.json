@@ -1,0 +1,6 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": { "vc_line_feeds_grow": { "prover": "alt-ergo", "time": 0.007 } }
+  }
+}

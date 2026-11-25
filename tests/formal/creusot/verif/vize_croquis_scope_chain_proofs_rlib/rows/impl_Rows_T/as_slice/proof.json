@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_as_slice_T": { "prover": "alt-ergo", "time": 0.008 },
+      "vc_deref_Vec_T_Global": { "prover": "alt-ergo", "time": 0.006 }
+    }
+  }
+}

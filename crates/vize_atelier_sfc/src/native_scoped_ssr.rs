@@ -185,7 +185,7 @@ fn emit<L: LinkSink>(
     parts.scope_id = Some(scope);
     parts.placement = RenderFunctionName::SsrRender.placement();
     let document = assemble(parts).map_err(Error::Assembly)?.into_document();
-    let source = observation.original().descriptor().source();
+    let source = observation.original().l1ir().source();
     let source_map = options
         .source_map
         .then(|| document.source_map(options.filename, source));

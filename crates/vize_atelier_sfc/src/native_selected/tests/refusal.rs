@@ -31,8 +31,8 @@ fn whole_script_style_custom_external_and_profile_refusals_retain_the_original_e
         assert!(observation.admitted().is_none());
         assert!(observation.template().is_none());
         assert!(!observation.issues().is_empty());
-        assert!(core::ptr::eq(observation.descriptor().source(), source));
-        assert!(!observation.descriptor().container().blocks.is_empty());
+        assert!(core::ptr::eq(observation.l1ir().source(), source));
+        assert!(!observation.l1ir().container().blocks.is_empty());
         for issue in observation.issues() {
             assert!(
                 source
@@ -74,10 +74,7 @@ fn controls_aliases_nested_text_entities_and_other_handler_families_do_not_gain_
         );
         assert!(compilation.result().is_err(), "{template}");
         let observation = compilation.observation();
-        assert!(core::ptr::eq(
-            observation.descriptor().source(),
-            source.as_str()
-        ));
+        assert!(core::ptr::eq(observation.l1ir().source(), source.as_str()));
         assert!(
             observation.template().is_some(),
             "original template remains: {template}"

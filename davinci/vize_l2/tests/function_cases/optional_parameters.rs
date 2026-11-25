@@ -153,7 +153,7 @@ fn genuine_tsx_owner_retains_optional_parameters_and_the_authored_fragment() {
     let owner = producer
         .finish()
         .unwrap_or_else(|rejected| panic!("whole TSX: {:?}", rejected.error()));
-    let file = owner.file();
+    let file = owner.l2ir();
     assert!(file.is_complete());
     assert!(file.units()[0].profile.typescript);
     assert!(file.units()[0].profile.jsx);

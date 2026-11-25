@@ -53,7 +53,7 @@ fn genuine_vue_ref_types_keep_script_diagnostics_but_refuse_unproven_template_un
                 let resolution = original
                     .file()
                     .unwrap()
-                    .file()
+                    .l2ir()
                     .expression(embed.node.unwrap())
                     .unwrap();
                 assert_eq!(resolution.table().unwrap().occurrences().len(), 1);

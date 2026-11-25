@@ -39,7 +39,7 @@ fn original_output_keeps_whole_source_frame_and_five_line_terminators() -> Resul
         );
         check(core::ptr::eq(output.analysis().owner(), &original))?;
         check(core::ptr::eq(
-            output.analysis().file(),
+            output.analysis().l2ir(),
             original.file().ok_or("File")?,
         ))?;
         check(core::ptr::eq(
@@ -133,8 +133,8 @@ fn byte_equal_foreign_originals_keep_distinct_output_owners() -> Result<(), &'st
     check(core::ptr::eq(left_output.analysis().owner(), &left))?;
     check(core::ptr::eq(right_output.analysis().owner(), &right))?;
     check(!core::ptr::eq(
-        left_output.analysis().file(),
-        right_output.analysis().file(),
+        left_output.analysis().l2ir(),
+        right_output.analysis().l2ir(),
     ))?;
     check(core::ptr::eq(
         left_output.source_block().root_source(),
@@ -194,7 +194,7 @@ fn refused_output_retains_original_analysis_file_and_whole_input() -> Result<(),
         equal(failure.error(), TemplateDomOutputError::Dom(expected))?;
         check(core::ptr::eq(failure.analysis().owner(), &original))?;
         let file = original.file().ok_or("retained complete File")?;
-        check(file.is_complete() && core::ptr::eq(failure.analysis().file(), file))?;
+        check(file.is_complete() && core::ptr::eq(failure.analysis().l2ir(), file))?;
         check(core::ptr::eq(
             failure.analysis().artifact().source(),
             source,

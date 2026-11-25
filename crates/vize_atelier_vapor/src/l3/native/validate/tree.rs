@@ -12,7 +12,7 @@ use crate::l3::{AdmissionFailure, LegacyReason};
 /// their control node, whose body starts a separate template. Owned regions
 /// move their members into the owner; the unowned root region stays.
 pub(super) fn assemble<'a>(
-    program: &L3Ir<'_>,
+    l3ir: &L3Ir<'_>,
     nodes: &mut [Node<'a>],
     slots: &Slots,
     regions: &mut [Vec<'a, usize>],
@@ -20,7 +20,7 @@ pub(super) fn assemble<'a>(
 ) -> Result<Vec<'a, Option<usize>>> {
     let mut owned = super::filled(alloc, false, nodes.len());
     let mut parents = super::filled(alloc, None, nodes.len());
-    for region in &program.regions {
+    for region in &l3ir.regions {
         let Some(owner) = region.owner else { continue };
         let Some(&Some((index, _))) = slots.get(owner.index() as usize) else {
             return Err(LegacyReason::Structure.into());

@@ -17,7 +17,7 @@ pub(super) fn classify<'owner, 'arena>(
     node: NodeId,
     expression: &JsExpr<'arena>,
 ) -> Result<SsrSetupExpression<'owner, 'arena>, SsrUnsupported> {
-    let file = setup.file();
+    let file = setup.l2ir();
     let record = file
         .native_interpolation(node)
         .ok_or(SsrUnsupported::FileExpression)?;

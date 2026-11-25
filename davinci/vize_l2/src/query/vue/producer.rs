@@ -138,7 +138,7 @@ impl<'a> VueFileProducer<'a> {
 
     pub fn finish(self) -> Result<VueFile<'a>, RejectedFile<'a>> {
         Ok(VueFile {
-            file: self.producer.finish()?,
+            l2ir: self.producer.finish()?,
             facts: self.facts,
         })
     }

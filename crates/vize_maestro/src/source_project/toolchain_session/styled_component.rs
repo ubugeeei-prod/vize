@@ -17,7 +17,7 @@ pub(super) fn restore_formatted_style(
     let live = snapshots.capture(docs, uri).unwrap();
     let arena = Allocator::new();
     let session = NativeScssSession::new(&arena, live.source(), options);
-    let owner = session.observation().descriptor();
+    let owner = session.observation().l1ir();
     check_source(owner, &live);
     let types = live
         .prepare_literal_products(docs, owner, ROLE)

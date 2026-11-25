@@ -50,11 +50,11 @@ fn invalid_ordinary_does_not_discard_later_valid_setup_or_template() {
             .admitted_program()
             .is_some()
     );
-    assert_eq!(observed.descriptor().container().blocks.len(), 3);
+    assert_eq!(observed.l1ir().container().blocks.len(), 3);
     let partial = observed.file().unwrap();
     assert!(partial.ordinary().is_none());
     assert!(partial.setup().is_some());
-    assert_eq!(partial.file().units().len(), 1);
+    assert_eq!(partial.l2ir().units().len(), 1);
     assert!(observed.template().unwrap().produced().is_some());
 }
 
@@ -130,8 +130,8 @@ fn descriptor_refusal_preserves_blocks_without_parsing_untrusted_children() {
     ] {
         let observed = lower_sfc_native(&arena, source, options());
         assert!(observed.admitted().is_none());
-        assert!(observed.descriptor().admitted().is_err());
-        assert!(!observed.descriptor().container().blocks.is_empty());
+        assert!(observed.l1ir().admitted().is_err());
+        assert!(!observed.l1ir().container().blocks.is_empty());
         assert!(observed.scripts().is_empty());
         assert!(observed.template().is_none());
         assert!(observed.file().is_none());
@@ -144,7 +144,7 @@ fn opaque_style_custody_does_not_discard_original_script_and_template_owners() {
     let arena = Allocator::default();
     let source = "<style lang=scss scoped module=theme>p{color:v-bind(color)}</style><script>const value=1</script><template><p/></template><style>raw &amp;</style>";
     let observed = lower_sfc_native(&arena, source, options());
-    let descriptor = observed.descriptor().admitted().unwrap();
+    let descriptor = observed.l1ir().admitted().unwrap();
     assert_eq!(descriptor.styles().len(), 2);
     assert!(observed.admitted().is_some());
     assert_eq!(observed.scripts().len(), 1);
@@ -157,7 +157,7 @@ fn opaque_style_custody_does_not_discard_original_script_and_template_owners() {
         template.component().unwrap().block().root_source(),
         source
     ));
-    let file = observed.file().unwrap().file();
+    let file = observed.file().unwrap().l2ir();
     assert!(core::ptr::eq(file.artifact().source(), source));
     for index in [0, 3] {
         let style = descriptor
@@ -166,7 +166,7 @@ fn opaque_style_custody_does_not_discard_original_script_and_template_owners() {
             .unwrap();
         assert!(core::ptr::eq(
             style.original_block(),
-            &observed.descriptor().container().blocks[index]
+            &observed.l1ir().container().blocks[index]
         ));
     }
 }
@@ -180,7 +180,7 @@ fn component_and_control_refusals_retain_real_template_and_partial_file() {
     ] {
         let observed = lower_sfc_native(&arena, source, options());
         assert!(observed.admitted().is_none());
-        assert!(observed.descriptor().admitted().is_ok());
+        assert!(observed.l1ir().admitted().is_ok());
         let produced = observed.template().unwrap().produced().unwrap();
         assert!(!produced.component.carrier().tree.children.is_empty());
         assert!(observed.rejected_file().is_some() || !produced.holes.is_empty());

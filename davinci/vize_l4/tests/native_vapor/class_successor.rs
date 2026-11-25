@@ -17,7 +17,7 @@ pub(crate) fn assert_current(owner: &NativeTemplateFile<'_>, source: &str) {
     assert!(file.is_complete());
     let analysis = build_template_vapor_decisions(view).unwrap();
     assert!(core::ptr::eq(analysis.owner(), owner));
-    assert!(core::ptr::eq(analysis.file(), file));
+    assert!(core::ptr::eq(analysis.l2ir(), file));
     assert!(core::ptr::eq(analysis.artifact(), file.artifact()));
     assert!(core::ptr::eq(analysis.artifact().source(), source));
     assert_eq!(analysis.artifact().node_count(), 2);
@@ -28,7 +28,7 @@ pub(crate) fn assert_current(owner: &NativeTemplateFile<'_>, source: &str) {
     assert_eq!(element.span, Span::new(10, 34));
     assert_eq!(element.attributes.len(), 1);
     let facts = analysis.original_attributes().unwrap();
-    assert!(core::ptr::eq(facts.file(), file));
+    assert!(core::ptr::eq(facts.l2ir(), file));
     assert_eq!(facts.len(), 1);
     let [record] = file.native_attribute_values() else {
         panic!("one whole original class observation");
@@ -41,7 +41,7 @@ pub(crate) fn assert_current(owner: &NativeTemplateFile<'_>, source: &str) {
         }
     );
     let joined = facts.value(0, element, 0).unwrap();
-    assert!(core::ptr::eq(joined.file(), file));
+    assert!(core::ptr::eq(joined.l2ir(), file));
     let value = joined.observation().unwrap();
     assert!(core::ptr::eq(value, record.observation().unwrap()));
     let attribute = joined.attribute().unwrap();
@@ -116,16 +116,16 @@ fn span(span: Span) -> serde_json::Value {
 fn debug_rows<T: std::fmt::Debug>(rows: &[T]) -> Vec<std::string::String> {
     rows.iter().map(|row| format!("{row:#?}")).collect()
 }
-fn file_observation(file: &L2Ir<'_>, source: &str) -> Value {
-    let artifact = file.artifact();
+fn file_observation(l2ir: &L2Ir<'_>, source: &str) -> Value {
+    let artifact = l2ir.artifact();
     let provenance: Vec<_> = artifact.provenance().iter().map(|record|json!({
         "rule":record.rule.as_str(),"node":record.node.map(|node|node.index()),
         "before":record.before.as_str(),"after":record.after.as_str(),"span":span(record.span)
     })).collect();
-    let bindings: Vec<_> = file.bindings().map(|binding|json!({
+    let bindings: Vec<_> = l2ir.bindings().map(|binding|json!({
         "id":binding.id().index(),"declarationDebug":binding.declaration().map(|row|format!("{row:#?}"))
     })).collect();
-    let attributes: Vec<_> = file
+    let attributes: Vec<_> = l2ir
         .native_attribute_values()
         .iter()
         .enumerate()
@@ -137,10 +137,10 @@ fn file_observation(file: &L2Ir<'_>, source: &str) -> Value {
             })
         })
         .collect();
-    let interpolations: Vec<_> = file.native_interpolations().iter().map(|row|json!({
+    let interpolations: Vec<_> = l2ir.native_interpolations().iter().map(|row|json!({
         "state":format!("{:?}",row.state()),"inputDebug":format!("NativeInterpolationInput {{ full_span: {:?}, content_span: {:?}, raw_content: {:?}, syntax: {:#?} }}",row.input().operand().full_span(),row.input().operand().content_span(),row.input().operand().raw_content(),row.input().operand().syntax())
     })).collect();
-    let interpolation_failures: Vec<_> = file
+    let interpolation_failures: Vec<_> = l2ir
         .native_interpolation_failures()
         .iter()
         .map(|row| {
@@ -151,23 +151,23 @@ fn file_observation(file: &L2Ir<'_>, source: &str) -> Value {
         .collect();
     json!({
         "source":artifact.source(),"sameSource":core::ptr::eq(artifact.source(),source),
-        "complete":file.is_complete(),"artifactDebug":format!("{artifact:#?}"),
+        "complete":l2ir.is_complete(),"artifactDebug":format!("{artifact:#?}"),
         "nodeCount":artifact.node_count(),"rootDebug":format!("{:#?}",artifact.root()),
         "artifactScopesDebug":format!("{:#?}",artifact.scopes()),"provenance":provenance,
-        "units":debug_rows(file.units()),"scopes":debug_rows(file.scopes()),"bindings":bindings,
-        "references":debug_rows(file.references()),"exports":debug_rows(file.exports()),
-        "imports":debug_rows(file.imports()),"issues":debug_rows(file.issues()),
-        "templateIssues":debug_rows(file.template_issues()),
-        "diagnosticCounts":{"issues":file.issues().len(),"templateIssues":file.template_issues().len(),
-            "templateInterruption":usize::from(file.template_interruption().is_some()),
-            "interruptedPrograms":file.interrupted_programs().count(),
-            "interpolationFailures":file.native_interpolation_failures().len()},
-        "templateInterruption":file.template_interruption().map(|issue|format!("{issue:#?}")),
-        "interruptedPrograms":file.interrupted_programs().map(|issue|format!("{issue:#?}")).collect::<Vec<_>>(),
-        "rejectedHandlers":debug_rows(file.rejected_handlers()),
-        "unattachedHandlers":file.unattached_handlers().map(|input|format!("{input:#?}")).collect::<Vec<_>>(),
-        "unattachedForHeads":file.unattached_for_heads().map(|input|format!("{input:#?}")).collect::<Vec<_>>(),
-        "rejectedForHeads":debug_rows(file.rejected_for_heads()),"interpolations":interpolations,
+        "units":debug_rows(l2ir.units()),"scopes":debug_rows(l2ir.scopes()),"bindings":bindings,
+        "references":debug_rows(l2ir.references()),"exports":debug_rows(l2ir.exports()),
+        "imports":debug_rows(l2ir.imports()),"issues":debug_rows(l2ir.issues()),
+        "templateIssues":debug_rows(l2ir.template_issues()),
+        "diagnosticCounts":{"issues":l2ir.issues().len(),"templateIssues":l2ir.template_issues().len(),
+            "templateInterruption":usize::from(l2ir.template_interruption().is_some()),
+            "interruptedPrograms":l2ir.interrupted_programs().count(),
+            "interpolationFailures":l2ir.native_interpolation_failures().len()},
+        "templateInterruption":l2ir.template_interruption().map(|issue|format!("{issue:#?}")),
+        "interruptedPrograms":l2ir.interrupted_programs().map(|issue|format!("{issue:#?}")).collect::<Vec<_>>(),
+        "rejectedHandlers":debug_rows(l2ir.rejected_handlers()),
+        "unattachedHandlers":l2ir.unattached_handlers().map(|input|format!("{input:#?}")).collect::<Vec<_>>(),
+        "unattachedForHeads":l2ir.unattached_for_heads().map(|input|format!("{input:#?}")).collect::<Vec<_>>(),
+        "rejectedForHeads":debug_rows(l2ir.rejected_for_heads()),"interpolations":interpolations,
         "interpolationFailures":interpolation_failures,"attributeValues":attributes
     })
 }

@@ -25,13 +25,13 @@ impl<'a> ImportedComponentSite<'_, 'a> {
     /// statement walk saw no ECMAScript module exports.
     #[must_use]
     pub fn nonexporting_setup(&self) -> Option<vize_l0::SourceBlock<'a>> {
-        let [unit] = self.binding.file().units() else {
+        let [unit] = self.binding.l2ir().units() else {
             return None;
         };
         if !unit.walk_completed() || unit.origin.has_export {
             return None;
         }
-        let text = self.binding.file().artifact().source();
+        let text = self.binding.l2ir().artifact().source();
         let source = text.get(unit.span.start as usize..unit.span.end as usize)?;
         SourceRoot::new(text)
             .ok()?
@@ -47,7 +47,7 @@ impl<'a> ImportedComponentSite<'_, 'a> {
         mut visit: impl FnMut(ImportedComponentProp<'a>),
     ) -> Result<(), ComponentPropIssue> {
         let owner = self.component;
-        let source = SourceRoot::new(self.binding.file().artifact().source())
+        let source = SourceRoot::new(self.binding.l2ir().artifact().source())
             .map_err(|_| ComponentPropIssue::OriginalSource)?
             .whole_block();
         let mut attributes = owner.attributes.iter().peekable();

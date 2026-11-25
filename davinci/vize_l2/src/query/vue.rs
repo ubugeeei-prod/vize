@@ -60,24 +60,24 @@ struct OrdinaryFamilies {
 
 /// An immutable File plus the fact families requested from its own producer.
 pub struct VueFile<'a> {
-    file: L2Ir<'a>,
+    l2ir: L2Ir<'a>,
     facts: VueFacts,
 }
 impl<'a> VueFile<'a> {
     #[must_use]
-    pub fn file(&self) -> &L2Ir<'a> {
-        &self.file
+    pub fn l2ir(&self) -> &L2Ir<'a> {
+        &self.l2ir
     }
     #[must_use]
     pub fn model(&self) -> VueModel<'_, 'a> {
         VueModel {
-            model: Model::new(&self.file),
+            model: Model::new(&self.l2ir),
             facts: Some(&self.facts),
         }
     }
     #[must_use]
     pub fn into_file(self) -> L2Ir<'a> {
-        self.file
+        self.l2ir
     }
 }
 
@@ -106,7 +106,7 @@ impl<'f, 'a> Model<'f, 'a> {
     }
     /// Attach only an observation belonging to this exact immutable File.
     pub fn with_vue(self, owner: &'f VueFile<'a>) -> Result<VueModel<'f, 'a>, VueQueryError> {
-        if !core::ptr::eq(self.file(), owner.file()) {
+        if !core::ptr::eq(self.l2ir(), owner.l2ir()) {
             return Err(VueQueryError::ForeignFile);
         }
         Ok(owner.model())
@@ -121,7 +121,7 @@ pub enum VueBinding {
 
 impl<'f, 'a> VueModel<'f, 'a> {
     fn complete(self) -> Result<(), VueQueryError> {
-        if self.model.file().is_complete() {
+        if self.model.l2ir().is_complete() {
             Ok(())
         } else {
             Err(VueQueryError::IncompleteFile)
@@ -171,7 +171,7 @@ impl<'f, 'a> VueModel<'f, 'a> {
         self,
         binding: BindingRef<'_, '_>,
     ) -> Result<Option<VueBinding>, VueQueryError> {
-        if !core::ptr::eq(self.model.file(), binding.file()) {
+        if !core::ptr::eq(self.model.l2ir(), binding.l2ir()) {
             return Err(VueQueryError::ForeignFile);
         }
         self.complete()?;

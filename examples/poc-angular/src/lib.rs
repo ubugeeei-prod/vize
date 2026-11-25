@@ -52,7 +52,7 @@ pub fn compile(source: &str) -> Result<String, Error> {
     let region = dialect::Lowering::new(&allocator, source).region(tree.children.iter())?;
     let lowered = poc_support::lower(&allocator, &region)?;
     let mut target = target::Component::new(component.class);
-    let (template_fn, decls, vars) = target.root(View::new(&lowered.program))?;
+    let (template_fn, decls, vars) = target.root(View::new(&lowered.l3ir))?;
 
     let class = component.class;
     let mut definition = cstr!(

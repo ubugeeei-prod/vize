@@ -50,7 +50,7 @@ fn primitive_const_leaf_reads_keep_real_class_owner_and_constant_value() {
         };
         assert_eq!(read.kind(), VueReadKind::SetupConst);
         assert_eq!(read.occurrence().usage, Usage::Read);
-        assert!(core::ptr::eq(read.binding().file(), &file));
+        assert!(core::ptr::eq(read.binding().l2ir(), &file));
         let declaration = read.binding().declaration().unwrap();
         assert_eq!(declaration.kind, DeclarationKind::Const);
         assert_eq!(declaration.initializer, initializer_kind);
@@ -109,7 +109,7 @@ fn mutable_and_mixed_const_reads_keep_dynamic_semantics_and_duplicate_order() {
         {
             assert!(core::ptr::eq(read.occurrence(), occurrence));
             assert_eq!(read.binding().id(), occurrence.binding);
-            assert!(core::ptr::eq(read.binding().file(), &file));
+            assert!(core::ptr::eq(read.binding().l2ir(), &file));
         }
         if row.reads().len() == 3 {
             assert_eq!(row.reads()[0].binding().id(), row.reads()[2].binding().id());

@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_intersects": { "prover": "alt-ergo", "time": 0.026 },
+      "vc_is_empty": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}

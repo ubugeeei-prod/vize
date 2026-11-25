@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_an_ascii_byte_splits_a_well_formed_range": {
+        "prover": "alt-ergo",
+        "time": 0.012
+      }
+    }
+  }
+}

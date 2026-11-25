@@ -87,7 +87,7 @@ fn shared(source: &str, resolved_sites: bool, select_arrow_file: bool) -> Option
     let imports = owner.setup_component_imports().ok()?;
     let file = owner
         .file()
-        .map(|f| f.file())
+        .map(|f| f.l2ir())
         .or_else(|| owner.rejected_file()?.file())?;
     if select_arrow_file
         && !file.bindings().filter_map(|b| b.declaration()).any(|d| {

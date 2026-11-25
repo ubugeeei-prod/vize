@@ -111,7 +111,7 @@ pub(crate) struct Model<'i, 'p, 'a> {
 
 impl<'i, 'p, 'a> Model<'i, 'p, 'a> {
     pub(crate) fn new(index: &'i Index<'p, 'a>) -> Self {
-        let program = index.program;
+        let program = index.l3ir;
         let mut texts: Vec<(u8, &'a str)> = Vec::new();
         let mut payload = 0u64;
         for operand in program.operands.iter() {
@@ -178,7 +178,7 @@ impl<'i, 'p, 'a> Model<'i, 'p, 'a> {
 
     /// Measure `plan`, one choice per op position.
     pub(crate) fn measure(&self, plan: &[Choice]) -> Metrics {
-        let ops = &self.index.program.ops;
+        let ops = &self.index.l3ir.ops;
         let footprint = self.footprint(plan);
         let mut weight = alloc::vec![0u64; self.region_parent.len()];
         for (state, region) in footprint.iter().zip(&self.op_region) {
@@ -246,7 +246,7 @@ impl<'i, 'p, 'a> Model<'i, 'p, 'a> {
 
     /// Hoisted roots and every op their subtree covers.
     fn footprint(&self, plan: &[Choice]) -> Vec<Footprint> {
-        let ops = &self.index.program.ops;
+        let ops = &self.index.l3ir.ops;
         let hoisted = |position: usize| {
             plan.get(position)
                 .is_some_and(|choice| choice.placement == Placement::Hoist)

@@ -65,7 +65,7 @@ fn original_whole_sfc_modules_keep_selected_custody_and_complete_maps() {
             fixture["id"],
             observation.issues()
         );
-        assert!(core::ptr::eq(observation.descriptor().source(), source));
+        assert!(core::ptr::eq(observation.l1ir().source(), source));
         let admitted = observation.admitted().unwrap();
         assert!(core::ptr::eq(admitted.observation(), observation));
         let view = admitted.into_template_view();
@@ -79,7 +79,7 @@ fn original_whole_sfc_modules_keep_selected_custody_and_complete_maps() {
                 let on = original_on(file.artifact().root()).unwrap();
                 let handler = file.handler_for(on).unwrap();
                 assert!(handler.accepts_on(on));
-                assert!(core::ptr::eq(handler.file(), file));
+                assert!(core::ptr::eq(handler.l2ir(), file));
                 let resolution = handler.resolution().unwrap();
                 let input = resolution.input();
                 let syntax = input.operand().syntax();
@@ -194,7 +194,7 @@ fn refusals() -> Vec<serde_json::Value> {
             compile_native_ssr_sfc(&arena, source, NativeSsrSfcCompileOptions::default());
         let error = compilation.result().unwrap_err();
         assert!(core::ptr::eq(
-            compilation.observation().descriptor().source(),
+            compilation.observation().l1ir().source(),
             source
         ));
         match error {
@@ -333,7 +333,7 @@ fn checked_runtime_and_original_profile_refuse_without_output() {
     options.descriptor.version = VueVersion::V2;
     let compilation = compile_native_ssr_sfc(&arena, source, options);
     assert_eq!(
-        compilation.observation().descriptor().options(),
+        compilation.observation().l1ir().options(),
         options.descriptor
     );
     assert!(compilation.observation().admitted().is_none());

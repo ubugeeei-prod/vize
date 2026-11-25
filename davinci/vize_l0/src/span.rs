@@ -17,9 +17,32 @@
 //! boundaries, so well-formed spans always land on `char` boundaries of that
 //! source. [`Span::slice`] is nevertheless total: it never panics on
 //! malformed input, it clamps and snaps as documented there.
+//!
+//! Creusot proves the offset arithmetic below for every `u32` value
+//! (`tests/formal/creusot/coordinates`, root `../creusot.rs`). The contracts
+//! restate this documentation. Under `cfg(creusot)` only `Clone` and `Copy`
+//! are derived, and the string slicing and hashing are compiled out: no span
+//! law reads them, and the Rust oracles named in
+//! `docs/davinci/decisions/2026-11-17-creusot-inventory.md` cover them. The
+//! product build keeps the original derive list and every item.
+#[cfg(creusot)]
+use creusot_std::prelude::{Int, ensures, logic};
 
 /// A half-open byte range `[start, end)` into an authored source string.
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(
+    not(creusot),
+    derive(
+        Copy,
+        Clone,
+        PartialEq,
+        Eq,
+        Hash,
+        Debug,
+        serde::Serialize,
+        serde::Deserialize
+    )
+)]
+#[cfg_attr(creusot, derive(Copy))]
 pub struct Span {
     /// Start byte offset (inclusive).
     pub start: u32,
@@ -34,18 +57,25 @@ impl Span {
     /// Create a new span. No ordering is enforced; consumers treat an
     /// inverted span (`start > end`) as empty.
     #[inline]
+    #[cfg_attr(creusot, ensures(result.start == start && result.end == end))]
     pub const fn new(start: u32, end: u32) -> Self {
         Self { start, end }
     }
 
     /// Byte length of the span. Inverted spans (`start > end`) saturate to 0.
     #[inline]
+    #[cfg_attr(creusot, ensures(result@ == if self.start@ <= self.end@ {
+        self.end@ - self.start@
+    } else {
+        0
+    }))]
     pub const fn len(&self) -> u32 {
         self.end.saturating_sub(self.start)
     }
 
     /// Whether the span covers no bytes (`start >= end`).
     #[inline]
+    #[cfg_attr(creusot, ensures(result == forall<offset: Int> !self.covers(offset)))]
     pub const fn is_empty(&self) -> bool {
         self.start >= self.end
     }
@@ -65,6 +95,7 @@ impl Span {
     /// `&source[start..end]`. Callers slicing a *different* string than the
     /// one the span was measured against get deterministic garbage, not a
     /// panic; that mismatch is a caller bug the type cannot detect.
+    #[cfg(not(creusot))]
     #[inline]
     pub fn slice<'a>(&self, source: &'a str) -> &'a str {
         let end = (self.end as usize).min(source.len());
@@ -81,6 +112,16 @@ impl Span {
     /// starts before the block degenerates toward an empty span at the block
     /// start instead of wrapping.
     #[inline]
+    #[cfg_attr(creusot, ensures(result.start@ == if self.start@ >= block_start@ {
+        self.start@ - block_start@
+    } else {
+        0
+    }))]
+    #[cfg_attr(creusot, ensures(result.end@ == if self.end@ >= block_start@ {
+        self.end@ - block_start@
+    } else {
+        0
+    }))]
     pub const fn to_block_relative(self, block_start: u32) -> Span {
         Span {
             start: self.start.saturating_sub(block_start),
@@ -95,9 +136,30 @@ impl Span {
     ///
     /// Exactly equivalent to `self.to_block_relative(block_start)` hashed
     /// with the derived [`core::hash::Hash`] impl.
+    #[cfg(not(creusot))]
     #[inline]
     pub fn hash_relative<H: core::hash::Hasher>(&self, hasher: &mut H, block_start: u32) {
         core::hash::Hash::hash(&self.to_block_relative(block_start), hasher);
+    }
+}
+
+/// The proof crate's `Clone`: a copy. Creusot's `Clone` derive does not
+/// resolve on a struct of machine integers.
+#[cfg(creusot)]
+impl Clone for Span {
+    #[ensures(result == *self)]
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+/// The laws' reading of a span: the offsets it covers.
+#[cfg(creusot)]
+impl Span {
+    /// `offset` lies in the half-open range `[start, end)`.
+    #[logic(open)]
+    pub fn covers(self, offset: Int) -> bool {
+        pearlite! { self.start@ <= offset && offset < self.end@ }
     }
 }
 
@@ -105,6 +167,7 @@ impl Span {
 ///
 /// `index` must be `<= source.len()` (callers clamp first). A UTF-8 sequence
 /// is at most 4 bytes, so at most 3 probes run.
+#[cfg(not(creusot))]
 #[inline]
 fn floor_char_boundary(source: &str, mut index: usize) -> usize {
     while !source.is_char_boundary(index) {
@@ -112,9 +175,6 @@ fn floor_char_boundary(source: &str, mut index: usize) -> usize {
     }
     index
 }
-
-#[cfg(kani)]
-mod proofs;
 
 #[cfg(test)]
 mod tests {

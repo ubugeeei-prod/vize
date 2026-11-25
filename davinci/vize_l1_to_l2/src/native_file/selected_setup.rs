@@ -49,7 +49,7 @@ impl<'a> NativeSelectedSetupSfcObservation<'a> {
         if !self.original.issues().is_empty() {
             return None;
         }
-        let descriptor = self.original.descriptor().admitted().ok()?;
+        let descriptor = self.original.l1ir().admitted().ok()?;
         if descriptor.ordinary().is_some() || descriptor.styles().len() != 0 {
             return None;
         }
@@ -73,7 +73,7 @@ impl<'a> NativeSelectedSetupSfcObservation<'a> {
             || !core::ptr::eq(block.source(), template.block().source())
             || !core::ptr::eq(block.root_source(), descriptor.source())
             || !core::ptr::eq(file.artifact().source(), descriptor.source())
-            || !core::ptr::eq(setup.file(), file)
+            || !core::ptr::eq(setup.l2ir(), file)
             || !core::ptr::eq(setup.owner(), original)
             || setup.selected().container_index() != script.container_index()
             || setup.selected().block().span() != script.block().span()

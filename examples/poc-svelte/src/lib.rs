@@ -43,7 +43,7 @@ pub fn compile(source: &str) -> Result<String, Error> {
     let region = dialect::Lowering::new(&allocator, source).root(&tree)?;
     let lowered = poc_support::lower(&allocator, &region)?;
     let mut module = target::Module::new(&runes);
-    let mount = module.mount(View::new(&lowered.program))?;
+    let mount = module.mount(View::new(&lowered.l3ir))?;
 
     let mut out = Writer::<NoLinks>::with_capacity(source.len() * 2);
     out.push("import * as $ from \"svelte/internal/client\";\n\n");

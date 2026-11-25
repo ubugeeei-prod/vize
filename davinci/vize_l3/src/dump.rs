@@ -34,13 +34,13 @@ pub struct Page {
 impl Page {
     /// Mirror a live arena program into the owned document model.
     #[must_use]
-    pub fn of(program: &L3Ir<'_>) -> Self {
+    pub fn of(l3ir: &L3Ir<'_>) -> Self {
         Self {
-            phase: String::from(program.phase.as_str()),
-            regions: program.regions.iter().map(Region::from).collect(),
-            ops: program.ops.iter().map(Op::from).collect(),
-            edges: program.edges.iter().map(Edge::from).collect(),
-            effects: program.effects.iter().map(Effect::from).collect(),
+            phase: String::from(l3ir.phase.as_str()),
+            regions: l3ir.regions.iter().map(Region::from).collect(),
+            ops: l3ir.ops.iter().map(Op::from).collect(),
+            edges: l3ir.edges.iter().map(Edge::from).collect(),
+            effects: l3ir.effects.iter().map(Effect::from).collect(),
         }
     }
 }

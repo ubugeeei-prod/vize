@@ -63,13 +63,13 @@ impl<'a> NativeFileTextValue<'a> {
 /// ```compile_fail
 /// use vize_l2::{file::{L2Ir, FileTextValue}, op::TextOp};
 /// use vize_l0::id::NodeId;
-/// fn forge<'f, 'a>(file: &'f L2Ir<'a>, text: &'f TextOp<'a>) {
-///     let _ = FileTextValue { file, text, node: NodeId::FIRST };
+/// fn forge<'f, 'a>(l2ir: &'f L2Ir<'a>, text: &'f TextOp<'a>) {
+///     let _ = FileTextValue { l2ir, text, node: NodeId::FIRST };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct FileTextValue<'f, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     text: &'f TextOp<'a>,
     node: NodeId,
 }
@@ -101,7 +101,7 @@ impl<'a> L2Ir<'a> {
             return None;
         }
         Some(FileTextValue {
-            file: self,
+            l2ir: self,
             text,
             node,
         })
@@ -115,8 +115,8 @@ impl<'a> RejectedFile<'a> {
 }
 impl<'f, 'a> FileTextValue<'f, 'a> {
     #[must_use]
-    pub const fn file(self) -> &'f L2Ir<'a> {
-        self.file
+    pub const fn l2ir(self) -> &'f L2Ir<'a> {
+        self.l2ir
     }
     #[must_use]
     pub const fn text(self) -> &'f TextOp<'a> {
@@ -128,6 +128,6 @@ impl<'f, 'a> FileTextValue<'f, 'a> {
     }
     #[must_use]
     pub fn observation(self) -> Option<&'f TextValue<'a>> {
-        self.file.native_text_values().first()?.observation()
+        self.l2ir.native_text_values().first()?.observation()
     }
 }

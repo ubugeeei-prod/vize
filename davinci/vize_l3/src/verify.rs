@@ -23,8 +23,8 @@ pub use violation::{Violation, ViolationCode};
 
 /// Validate all invariants required by the artifact's current phase.
 #[must_use]
-pub fn verify(program: &L3Ir<'_>) -> Vec<Violation> {
-    let program = &Tables::new(program);
+pub fn verify(l3ir: &L3Ir<'_>) -> Vec<Violation> {
+    let program = &Tables::new(l3ir);
     let mut out = Vec::new();
     check_duplicates(program, &mut out);
     check_root(program, &mut out);

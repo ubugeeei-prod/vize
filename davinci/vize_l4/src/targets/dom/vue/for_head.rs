@@ -33,7 +33,7 @@ pub(super) fn write<L: LinkSink>(
         .ok_or_else(|| reject(DomErrorKind::RuntimeAccessUnavailable))?;
     if !matches!(read.kind(), VueReadKind::SetupConst | VueReadKind::SetupLet)
         || !core::ptr::eq(read.occurrence(), row.resolution().collection_occurrence())
-        || !core::ptr::eq(read.binding().file(), analysis.file())
+        || !core::ptr::eq(read.binding().l2ir(), analysis.l2ir())
         || analysis.setup().binding(read.binding()).is_err()
     {
         return Err(reject(DomErrorKind::RuntimeAccessUnavailable));

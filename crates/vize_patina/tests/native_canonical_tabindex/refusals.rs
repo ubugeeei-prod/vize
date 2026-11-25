@@ -11,7 +11,7 @@ fn later_vue_markup_comment_refuses_the_whole_query_without_mutating_the_owner()
     let source = "<template><p tabindex='1'/><!-- vize-disable a11y/tabindex-no-positive --><p tabindex='2'/></template>";
     let owner = lower_sfc_native(&a, source, options());
     let admitted = owner.admitted().unwrap();
-    let before = owner.file().unwrap().file().artifact().node_count();
+    let before = owner.file().unwrap().l2ir().artifact().node_count();
     let lint = NativeCanonicalLint::from_vue(admitted);
     let messages = translator().for_locale(Locale::En);
     let start = source.find("<!--").unwrap() as u32;
@@ -22,7 +22,7 @@ fn later_vue_markup_comment_refuses_the_whole_query_without_mutating_the_owner()
             span: Span::new(start, end)
         }
     );
-    assert_eq!(owner.file().unwrap().file().artifact().node_count(), before);
+    assert_eq!(owner.file().unwrap().l2ir().artifact().node_count(), before);
     assert!(owner.admitted().is_some());
 }
 
@@ -45,7 +45,7 @@ fn original_jsx_comments_cannot_hide_behind_empty_canonical_containers() {
                 span: Span::new(start, end)
             }
         );
-        assert!(owner.file().is_complete());
+        assert!(owner.l2ir().is_complete());
     }
 }
 
@@ -123,8 +123,8 @@ fn later_unprovided_jsx_shapes_never_create_a_partial_native_lint_context() {
             continue;
         }
         let owner = refused.owner().unwrap();
-        assert!(owner.file().is_complete());
-        assert_eq!(owner.file().artifact().node_count(), 0);
+        assert!(owner.l2ir().is_complete());
+        assert_eq!(owner.l2ir().artifact().node_count(), 0);
         // Only JsxMarkupFile can construct the lint context. This retained
         // original JsxFile is deliberately not such a capability.
         assert!(owner.observation().admitted().is_some());

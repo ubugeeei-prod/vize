@@ -25,7 +25,7 @@ fn no_script_uses_vue_js_and_retains_the_original_component_and_expression() {
     assert!(vue.ordinary().is_none());
     assert!(vue.setup().is_none());
     let table = vue
-        .file()
+        .l2ir()
         .expression(native.embeds[0].node.unwrap())
         .unwrap()
         .table()
@@ -66,7 +66,7 @@ fn setup_receipt_selects_actual_js_or_ts_without_a_template_language_argument() 
         assert_eq!(receipt.span(), script_block.span());
         assert_eq!(receipt.unit().index(), 7);
         let resolution = vue
-            .file()
+            .l2ir()
             .expression(native.embeds[0].node.unwrap())
             .unwrap();
         assert_eq!(resolution.scope(), Some(receipt.scope()));

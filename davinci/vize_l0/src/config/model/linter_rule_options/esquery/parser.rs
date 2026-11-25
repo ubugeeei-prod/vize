@@ -1,4 +1,4 @@
-use super::{Combinator, Operator, Selector, Simple, Value};
+use super::{Combinator, HasArgument, Operator, Selector, Simple, Value};
 use crate::String;
 
 /// Parse a selector list. `None` means the selector leaves the supported subset.
@@ -54,20 +54,53 @@ impl Parser {
         let mut selector = Selector::Compound(self.compound()?);
         loop {
             let spaced = self.skip_space();
-            let combinator = match self.peek() {
-                Some('>') => Combinator::Child,
-                Some('~') => Combinator::Sibling,
-                Some('+') => Combinator::Adjacent,
-                Some(',' | ')') | None => return Some(selector),
-                Some(_) if spaced => Combinator::Descendant,
-                Some(_) => return None,
+            let combinator = match self.symbolic_combinator() {
+                Some(combinator) => combinator,
+                None => match self.peek() {
+                    Some(',' | ')') | None => return Some(selector),
+                    Some(_) if spaced => Combinator::Descendant,
+                    Some(_) => return None,
+                },
             };
             if combinator != Combinator::Descendant {
-                self.at += 1;
                 self.skip_space();
             }
             let right = Selector::Compound(self.compound()?);
             selector = Selector::Relation(Box::new(selector), combinator, Box::new(right));
+        }
+    }
+
+    /// Consume `>`, `~` or `+`.
+    fn symbolic_combinator(&mut self) -> Option<Combinator> {
+        let combinator = match self.peek()? {
+            '>' => Combinator::Child,
+            '~' => Combinator::Sibling,
+            '+' => Combinator::Adjacent,
+            _ => return None,
+        };
+        self.at += 1;
+        Some(combinator)
+    }
+
+    /// The arguments of `:has()`: selectors, each optionally led by `>`, `~`
+    /// or `+` to anchor it at the subject.
+    fn has_arguments(&mut self) -> Option<Vec<HasArgument>> {
+        let mut arguments = Vec::new();
+        loop {
+            self.skip_space();
+            let argument = match self.symbolic_combinator() {
+                None => HasArgument::Descendant(self.selector()?),
+                Some(leading) => {
+                    let mut steps = Vec::new();
+                    flatten(self.selector()?, leading, &mut steps);
+                    HasArgument::Relative(steps)
+                }
+            };
+            arguments.push(argument);
+            self.skip_space();
+            if !self.eat(',') {
+                return Some(arguments);
+            }
         }
     }
 
@@ -246,7 +279,15 @@ impl Parser {
         match name.as_str() {
             "matches" | "is" => argument(self).map(Simple::Matches),
             "not" => argument(self).map(Simple::Not),
-            "has" => argument(self).map(Simple::Has),
+            "has" => {
+                self.skip_space();
+                if !self.eat('(') {
+                    return None;
+                }
+                let arguments = self.has_arguments()?;
+                self.skip_space();
+                self.eat(')').then_some(Simple::Has(arguments))
+            }
             "first-child" => Some(Simple::NthChild(1)),
             "last-child" => Some(Simple::NthLastChild(1)),
             "nth-child" | "nth-last-child" => {
@@ -283,6 +324,18 @@ impl Parser {
                 Some(Simple::Class(name))
             }
             _ => None,
+        }
+    }
+}
+
+/// Unfold a left-nested relation into its compounds in source order, the
+/// first reached by `leading`.
+fn flatten(selector: Selector, leading: Combinator, steps: &mut Vec<(Combinator, Vec<Simple>)>) {
+    match selector {
+        Selector::Compound(parts) => steps.push((leading, parts)),
+        Selector::Relation(left, combinator, right) => {
+            flatten(*left, leading, steps);
+            flatten(*right, combinator, steps);
         }
     }
 }

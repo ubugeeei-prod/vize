@@ -230,7 +230,7 @@ fn main() {
             profile::trails::profile(lowered.l3ir(), siblings);
             profile::bounded::profile(lowered.l3ir(), siblings);
         }
-        profile::checks::profile(&mut lowered.program, siblings);
+        profile::checks::profile(&mut lowered.l3ir, siblings);
     }
     batch_profile();
     profile("<div/>", "one");

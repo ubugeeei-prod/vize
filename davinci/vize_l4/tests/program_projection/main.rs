@@ -42,7 +42,7 @@ fn admitted_whole_modules_preserve_exact_bytes_kind_owner_links_and_bindings() {
         assert!(file.is_complete(), "{source}: {:?}", file.issues());
         let projection = project_program(&file).unwrap();
         let plain = project_program_no_links(&file).unwrap();
-        assert!(core::ptr::eq(projection.file(), &file));
+        assert!(core::ptr::eq(projection.l2ir(), &file));
         assert!(core::ptr::eq(
             projection.unit(),
             file.units().first().unwrap()
@@ -74,7 +74,7 @@ fn admitted_whole_modules_preserve_exact_bytes_kind_owner_links_and_bindings() {
             let binding = file
                 .lookup(projection.unit().scope, "日本語", Namespace::Value)
                 .unwrap();
-            assert!(core::ptr::eq(binding.file(), projection.file()));
+            assert!(core::ptr::eq(binding.l2ir(), projection.l2ir()));
         }
     }
     assert_eq!(SourceKind::JavaScript.extension(), "mjs");
@@ -249,9 +249,9 @@ fn equal_copy_source_is_rejected_before_file_unit_mint() {
     );
     let file = support::file(&arena, &source, Lang::Js).unwrap();
     let projection = project_program(&file).unwrap();
-    assert!(core::ptr::eq(projection.file(), &file));
+    assert!(core::ptr::eq(projection.l2ir(), &file));
     assert_eq!(
-        projection.file().artifact().source().as_ptr(),
+        projection.l2ir().artifact().source().as_ptr(),
         source.as_ptr()
     );
 }
