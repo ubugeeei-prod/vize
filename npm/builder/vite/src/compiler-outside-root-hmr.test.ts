@@ -13,13 +13,13 @@ const require = createRequire(import.meta.url);
 const before = '<template><h1 data-state="before">before</h1></template>';
 const after = '<template><h1 data-state="after">after</h1></template>';
 
-async function outsideRootHotUpdate(firstRequest: "virtual" | "plain") {
+async function outsideRootHotUpdate(firstRequest: "virtual" | "plain", initiallyInvalid = false) {
   const workspace = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-outside-hmr-")));
   const root = path.join(workspace, "apps", "host");
   const component = path.join(workspace, "apps", "shared", "src", "Page.vue");
   fs.mkdirSync(path.join(root, "src"), { recursive: true });
   fs.mkdirSync(path.dirname(component), { recursive: true });
-  fs.writeFileSync(component, before);
+  fs.writeFileSync(component, initiallyInvalid ? "<template><div>" : before);
   fs.writeFileSync(
     path.join(root, "src", "main.ts"),
     `export const page = () => import(${JSON.stringify(component.replaceAll("\\", "/"))});`,
@@ -71,13 +71,15 @@ async function outsideRootHotUpdate(firstRequest: "virtual" | "plain") {
     assert(address && typeof address !== "string");
     const origin = `http://127.0.0.1:${address.port}`;
     const url = `/@fs/${component.replaceAll("\\", "/")}${firstRequest === "virtual" ? "?vue&vize" : ""}`;
-    const request = async (url: string) => {
+    const request = async (url: string, status = 200) => {
       const response = await fetch(`${origin}${url}`);
-      assert.equal(response.status, 200);
+      assert.equal(response.status, status);
       return response.text();
     };
     if (firstRequest === "virtual") await request("/src/main.ts");
-    assert.match(await request(url), /data-state.*before/u);
+    const initial = await request(url, initiallyInvalid ? 500 : 200);
+    if (!initiallyInvalid) assert.match(initial, /data-state.*before/u);
+    messages.length = 0;
     // A source supplied by a plugin bypasses Vite's fallback filesystem load.
     // It still needs a watcher registration when it is outside the root.
     const deadline = Date.now() + 5_000;
@@ -119,3 +121,7 @@ for (const firstRequest of ["virtual", "plain"] as const) {
     await outsideRootHotUpdate(firstRequest);
   });
 }
+
+test("an outside-root component whose first compile fails recovers after an edit", async () => {
+  await outsideRootHotUpdate("virtual", true);
+});
