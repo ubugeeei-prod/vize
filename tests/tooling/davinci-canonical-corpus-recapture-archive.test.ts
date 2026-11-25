@@ -5,12 +5,15 @@ import { join } from "node:path";
 import { validateObserverArtifact } from "../../tools/support/compat/github/canonical-corpus-observer.mjs";
 import { cycleOwner } from "../../tools/support/compat/github/canonical-corpus-logical-walk.ts";
 import { test } from "node:test";
-import { validateRecordRecapture } from "../../tools/support/compat/github/canonical-corpus-recapture-archive.mjs";
+import {
+  validateRecordRecapture,
+  type SnapshotIdentity,
+} from "../../tools/support/compat/github/canonical-corpus-recapture-archive.ts";
 
 await test("record relation cannot replace strict source/run/head/phase custody", () => {
   // These controls must refuse before any archive I/O. A relation is an
   // explicit later-phase claim, never permission on an ordinary corpus proof.
-  const identity = {
+  const identity: SnapshotIdentity = {
     schema: "vize.canonical-corpus",
     version: 1,
     repository: "ubugeeei-prod/vize",
@@ -27,7 +30,12 @@ await test("record relation cannot replace strict source/run/head/phase custody"
     files: 1,
     filesSha256: "e".repeat(64),
     committedSha256: "f".repeat(64),
-    nativeWalk: { vectorSha256: "0".repeat(64) },
+    nativeWalk: {
+      sourceSha256: "0".repeat(64),
+      bodySha256: "0".repeat(64),
+      boundarySha256: "0".repeat(64),
+      vectorSha256: "0".repeat(64),
+    },
     gitlinks: [],
   };
   const relation = {
@@ -37,15 +45,22 @@ await test("record relation cannot replace strict source/run/head/phase custody"
     nativeAcceptanceCredit: false,
     baselineIdentity: identity,
   };
+  const proof: Parameters<typeof validateRecordRecapture>[3] = {
+    schema: "authored",
+    version: 1,
+    repositories: [],
+    kernelBoundary: { code: "ELOOP", firstRejected: 2, rejected: [] },
+    traversal: "finite-physical-edges",
+  };
   const validate = (value: unknown) =>
-    validateRecordRecapture("/no-archive-read-authorized", identity, [], {}, value);
+    validateRecordRecapture("/no-archive-read-authorized", identity, [], proof, value);
   assert.throws(() => validate(undefined), /Missing snapshot-to-record/);
   for (const [key, value] of [
     ["schema", "foreign"],
     ["version", 2],
     ["phase", "snapshot"],
     ["nativeAcceptanceCredit", true],
-  ])
+  ] as const)
     assert.throws(
       () => validate({ ...relation, [key]: value }),
       /recapture|native acceptance/u,

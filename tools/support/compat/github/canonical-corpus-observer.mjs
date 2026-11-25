@@ -24,7 +24,7 @@ import {
 import {
   captureRecordRecapture,
   validateRecordRecapture,
-} from "./canonical-corpus-recapture-archive.mjs";
+} from "./canonical-corpus-recapture-archive.ts";
 import { hasProcessSegments, validateShardedObserver } from "./canonical-corpus-shard-evidence.ts";
 
 export const observerLogs = { dom: "dom-corpus.log", "ssr-pug": "ssr-pug.log", reach: "reach.log" };
