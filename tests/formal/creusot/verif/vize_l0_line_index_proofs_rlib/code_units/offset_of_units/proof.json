@@ -32,7 +32,7 @@
               { "prover": "z3", "time": 0.004 },
               {
                 "tactic": "split_vc",
-                "children": [ { "prover": "z3", "time": 0.011 } ]
+                "children": [{ "prover": "z3", "time": 0.011 }]
               },
               { "prover": "z3", "time": 0.004 },
               { "prover": "z3", "time": 0.004 },
@@ -44,7 +44,7 @@
               { "prover": "z3", "time": 0.005 },
               {
                 "tactic": "split_vc",
-                "children": [ { "prover": "z3", "time": 0.004 } ]
+                "children": [{ "prover": "z3", "time": 0.004 }]
               },
               { "prover": "z3", "time": 0.004 },
               { "prover": "z3", "time": 0.024 },
@@ -79,7 +79,7 @@
                 "children": [
                   {
                     "tactic": "split_vc",
-                    "children": [ { "prover": "z3", "time": 0.037 } ]
+                    "children": [{ "prover": "z3", "time": 0.037 }]
                   },
                   { "prover": "z3", "time": 0.023 }
                 ]
@@ -93,7 +93,7 @@
               },
               {
                 "tactic": "split_vc",
-                "children": [ { "prover": "z3", "time": 0.105 } ]
+                "children": [{ "prover": "z3", "time": 0.105 }]
               },
               { "prover": "z3", "time": 0.014 },
               { "prover": "cvc5", "time": 0.039 },

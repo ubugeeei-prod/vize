@@ -26,7 +26,7 @@
                 "children": [
                   {
                     "tactic": "compute_specified",
-                    "children": [ { "prover": "alt-ergo", "time": 0.016 } ]
+                    "children": [{ "prover": "alt-ergo", "time": 0.016 }]
                   }
                 ]
               },

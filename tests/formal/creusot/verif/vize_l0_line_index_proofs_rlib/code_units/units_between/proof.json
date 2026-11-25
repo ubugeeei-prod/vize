@@ -29,7 +29,7 @@
                     "children": [
                       {
                         "tactic": "compute_in_goal",
-                        "children": [ { "prover": "z3", "time": 0.014 } ]
+                        "children": [{ "prover": "z3", "time": 0.014 }]
                       }
                     ]
                   }
@@ -43,7 +43,7 @@
                     "children": [
                       {
                         "tactic": "compute_in_goal",
-                        "children": [ { "prover": "z3", "time": 0.011 } ]
+                        "children": [{ "prover": "z3", "time": 0.011 }]
                       }
                     ]
                   }
@@ -57,7 +57,7 @@
                     "children": [
                       {
                         "tactic": "compute_in_goal",
-                        "children": [ { "prover": "z3", "time": 0.013 } ]
+                        "children": [{ "prover": "z3", "time": 0.013 }]
                       }
                     ]
                   }
@@ -71,7 +71,7 @@
                     "children": [
                       {
                         "tactic": "compute_in_goal",
-                        "children": [ { "prover": "z3", "time": 0.013 } ]
+                        "children": [{ "prover": "z3", "time": 0.013 }]
                       }
                     ]
                   }
@@ -87,7 +87,7 @@
                 "children": [
                   {
                     "tactic": "split_vc",
-                    "children": [ { "prover": "z3", "time": 0.003 } ]
+                    "children": [{ "prover": "z3", "time": 0.003 }]
                   }
                 ]
               },
@@ -101,7 +101,7 @@
                       { "prover": "z3", "time": 0.011 },
                       {
                         "tactic": "compute_in_goal",
-                        "children": [ { "prover": "z3", "time": 0.052 } ]
+                        "children": [{ "prover": "z3", "time": 0.052 }]
                       }
                     ]
                   },

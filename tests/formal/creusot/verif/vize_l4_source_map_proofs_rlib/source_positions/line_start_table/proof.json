@@ -18,7 +18,7 @@
                 "children": [
                   {
                     "tactic": "compute_in_goal",
-                    "children": [ { "prover": "z3", "time": 0.003 } ]
+                    "children": [{ "prover": "z3", "time": 0.003 }]
                   },
                   { "prover": "z3", "time": 0.003 },
                   { "prover": "z3", "time": 0.003 },

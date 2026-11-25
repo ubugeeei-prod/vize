@@ -21,7 +21,7 @@
               { "prover": "z3", "time": 0.003 },
               {
                 "tactic": "split_vc",
-                "children": [ { "prover": "z3", "time": 0.007 } ]
+                "children": [{ "prover": "z3", "time": 0.007 }]
               },
               { "prover": "z3", "time": 0.101 },
               { "prover": "z3", "time": 0.004 },
