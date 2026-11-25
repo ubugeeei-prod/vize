@@ -93,6 +93,13 @@ impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
         self.l2ir
     }
 
+    /// Deprecated spelling of [`Self::l2ir`], borrowing the same retained IR.
+    #[deprecated(note = "use `l2ir` instead")]
+    #[must_use]
+    pub fn file(&self) -> &'o L2Ir<'a> {
+        self.l2ir()
+    }
+
     /// Shared static attribute policy and complete localized L0 diagnostics.
     /// Dynamic binding expressions remain opaque; only producer-decoded static
     /// values participate. No source decoding, AST parse or fix is introduced.

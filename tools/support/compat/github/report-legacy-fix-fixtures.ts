@@ -51,6 +51,7 @@ export {
 } from "./legacy-fix-fixture-report.ts";
 import { newNativeDocumentIdentityCases } from "./native-document-identity-fixtures.ts";
 import { newNativeIdentitySuccessor } from "./native-document-identity-successor.ts";
+import { newPatinaNativeIrApiCases } from "./patina-native-ir-api-fixtures.ts";
 
 export type Product = "compiler" | "formatter" | "linter" | "lsp" | "typechecker";
 type Side = "base" | "head";
@@ -114,6 +115,7 @@ interface Manifest {
   jsxChildApiCases?: unknown;
   jsxEntryCases?: unknown;
   diagnosticPhaseCases?: unknown;
+  rustApiCases?: unknown;
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
@@ -327,6 +329,10 @@ function checkProduct(
       manifest.runtimeCases,
       readFile,
     );
+    const rustApi =
+      product === "linter"
+        ? newPatinaNativeIrApiCases(before?.rustApiCases, manifest.rustApiCases, readFile)
+        : { ids: [] as string[], sources: new Set<string>() };
     const productPaths = paths.filter((path) =>
       path.startsWith(product === "linter" ? "crates/vize_patina/src/" : "crates/vize_canon/src/"),
     );
@@ -335,6 +341,7 @@ function checkProduct(
         ? productPaths.some(
             (path) =>
               !runtime.sources.has(path) &&
+              !rustApi.sources.has(path) &&
               !languageProject.sources.has(path) &&
               !currentObserver.sources.has(path) &&
               !logical.sources.has(path) &&
@@ -403,6 +410,7 @@ function checkProduct(
         ...cases,
         ...protocols,
         ...runtime.ids,
+        ...rustApi.ids,
         ...cssApi,
         ...vaporIds,
         ...jsxIds,
