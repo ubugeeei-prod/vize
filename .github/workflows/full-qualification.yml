@@ -450,7 +450,7 @@ jobs:
       - uses: ./.github/actions/vscode-host-smoke
   nuxt-module-qualification:
     name: Nuxt and Vite release products
-    uses: ./.github/workflows/nuxt-vite-release-products.yml
+    uses: ./.github/workflows/08-nuxt-vite-products.yml
   branch-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}

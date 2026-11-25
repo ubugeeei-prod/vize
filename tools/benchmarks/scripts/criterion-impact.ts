@@ -26,7 +26,7 @@ const isResolveNode = (value: unknown): value is ResolveNode =>
   (value.dependencies == null || isStringArray(value.dependencies));
 
 const FULL_SWEEP_PATHS = new Set([
-  ".github/workflows/criterion-bench.yml",
+  ".github/workflows/03-criterion.yml",
   "Cargo.lock",
   "Cargo.toml",
   "tools/benchmarks/scripts/criterion-ab.ts",

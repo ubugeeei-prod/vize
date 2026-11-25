@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 const workflow = readAutomationPrograms(
-  new URL("../../.github/workflows/typecheck-wsl2.yml", import.meta.url),
+  new URL("../../.github/workflows/04-typecheck-wsl2.yml", import.meta.url),
   "utf8",
 );
 
@@ -30,7 +30,7 @@ test("editor qualification keeps native TypeScript and tsrs fast as distinct lan
   const program = "measure-editor-load-edits-requests-and-memory.cjs";
   assert.ok(workflow.includes('tsrs_spec=$(node "$VIZE_CI_FILES/' + program + '")'));
   assert.match(
-    workflowProgram("typecheck-wsl2", workflow, program),
+    workflowProgram("04-typecheck-wsl2", workflow, program),
     /typecheck-hosts\/package\.json"\)\.dependencies\.tsrs/,
   );
   assert.match(workflow, /--vize "published-tsgo=\$tools\/node_modules\/\.bin\/vize"/);

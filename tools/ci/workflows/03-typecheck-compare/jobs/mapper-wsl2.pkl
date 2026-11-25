@@ -1,0 +1,66 @@
+import "../../../lib/Actions.pkl" as ci
+local buildSteps = import("mapper-build.pkl").steps
+
+needs = "mapper-build-linux"
+// WSL2 needs nested virtualization; Blacksmith Windows runners lack it.
+`runs-on` = "windows-2025"
+`timeout-minutes` = 150
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/03-typecheck-compare/scripts"
+}
+steps = new Listing {
+  new Dynamic {
+    uses = ci.checkout
+    with { `persist-credentials` = false }
+  }
+  new Dynamic {
+    uses = "Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364"  // v7.0.0
+    with {
+      distribution = "Ubuntu-24.04"
+      `wsl-version` = "2"
+      `wsl-shell-user` = "root"
+      `additional-packages` = "ca-certificates curl time xz-utils"
+    }
+  }
+  new Dynamic {
+    uses = ci.downloadArtifact
+    with {
+      name = "pair-bin-linux"
+      path = "pair-bin"
+    }
+  }
+  new Dynamic {
+    name = "Resolve the Windows mount"
+    shell = "pwsh"
+    run = ci.workflowScript("mapper-resolve-the-windows-mount.ps1")
+  }
+  new Dynamic {
+    name = "Install Node 24 in WSL2"
+    shell = "wsl-bash {0}"
+    env {
+      WSLENV = "VIZE_CI_FILES/p"
+    }
+    run = ci.wslScript("mapper-install-node-24-in-wsl2.sh")
+  }
+  new Dynamic {
+    name = "Measure ext4 and the Windows mount"
+    shell = "wsl-bash {0}"
+    env {
+      WSLENV = "SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p"
+      SIZES = "${{ inputs.sizes }}"
+      RUNS = "${{ inputs.runs }}"
+      ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
+      REFERENCE = "${{ inputs.reference_mapper }}"
+    }
+    run = ci.wslScript("mapper-measure-ext4-and-the-windows-mount.sh")
+  }
+  new Dynamic {
+    uses = ci.uploadArtifact
+    `if` = "always()"
+    with {
+      name = "pair-wsl2"
+      path = "${{ runner.temp }}/vize-pair/out/"
+      `if-no-files-found` = "warn"
+    }
+  }
+}

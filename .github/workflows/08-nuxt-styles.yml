@@ -1,0 +1,127 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/08-nuxt-styles/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Nuxt scoped style build
+on:
+  # #6830: off the PR tier; main runs it per commit and nightly.
+  push:
+    branches: [main, davinci]
+  workflow_call:
+  schedule:
+    - cron: "29 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuxt-style-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  plan:
+    name: Select affected Nuxt integration
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 3
+    outputs:
+      nuxt: ${{ steps.plan.outputs.nuxt }}
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/08-nuxt-styles/scripts"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Select changed product inputs
+        id: plan
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
+        run: . "${{ env.VIZE_CI_FILES }}/select-changed-product-inputs.sh"
+
+  nuxt-style-build:
+    name: Nuxt 4 ${{ matrix.case }}
+    needs: plan
+    if: ${{ needs.plan.outputs.nuxt == 'true' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - case: scoped CSS
+            fixture: tests/_fixtures/_projects/nuxt-scoped-style-build
+            script: style-build.ts
+            proof: nuxt-style-proof
+            browser: false
+          - case: critical CSS
+            fixture: tests/_fixtures/_projects/nuxt-critical-css-build
+            script: critical-css-build.ts
+            proof: nuxt-critical-css-proof
+            browser: true
+          - case: dev SSR styles
+            fixture: tests/_fixtures/_projects/nuxt-dev-ssr-style
+            script: dev-ssr-style.mjs
+            proof: nuxt-dev-style-proof
+            browser: true
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/08-nuxt-styles/scripts"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install adapter and browser test dependencies
+        run: vp install --filter './npm/builder/vite...' --filter './npm/framework/nuxt...' --filter './tests' --frozen-lockfile --prefer-offline
+      - name: Build the candidate JavaScript adapter
+        working-directory: npm/builder/vite
+        run: vp pack
+      - name: Build the candidate Nuxt integration
+        working-directory: npm/framework/nuxt
+        run: vp pack
+      - name: Cache pinned fixture package downloads
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: ~/.npm
+          key: nuxt-fixture-npm-${{ runner.os }}-${{ hashFiles(format('{0}/package-lock.json', matrix.fixture)) }}
+          restore-keys: nuxt-fixture-npm-${{ runner.os }}-
+      - name: Install the exact published Nuxt reproduction
+        working-directory: ${{ matrix.fixture }}
+        run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Cache Chromium
+        if: ${{ matrix.browser }}
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+      - uses: ./.github/actions/setup-ubuntu-archive
+        if: ${{ matrix.browser }}
+      - name: Install Chromium
+        if: ${{ matrix.browser }}
+        working-directory: tests
+        run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
+      - name: Verify stock, released failure, and candidate behavior
+        env:
+          REGRESSION_SCRIPT: ${{ matrix.script }}
+          PROOF: ${{ matrix.proof }}
+        run: node "tools/support/compat/nuxt/$REGRESSION_SCRIPT" "$RUNNER_TEMP/$PROOF"
+      - name: Retain the exact compared JavaScript adapters
+        if: ${{ always() }}
+        env:
+          FIXTURE: ${{ matrix.fixture }}
+          PROOF: ${{ matrix.proof }}
+        run: . "${{ env.VIZE_CI_FILES }}/retain-the-exact-compared-javascript-adapters.sh"
+      - name: Upload build and SSR evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ matrix.proof }}-${{ github.sha }}
+          # The proof workspaces link their complete npm installation. Retain
+          # observations, fixtures and compared adapters without re-uploading it.
+          path: |
+            ${{ runner.temp }}/${{ matrix.proof }}
+            !${{ runner.temp }}/${{ matrix.proof }}/**/node_modules/**
+          if-no-files-found: ignore

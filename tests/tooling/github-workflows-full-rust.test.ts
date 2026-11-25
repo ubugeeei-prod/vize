@@ -289,7 +289,7 @@ void test("full-only extraction preserves all seventeen complete original job ob
   delete original["v1-supported-matrix"];
   assert.deepEqual(original["nuxt-module-qualification"], {
     name: "Nuxt and Vite release products",
-    uses: "./.github/workflows/nuxt-vite-release-products.yml",
+    uses: "./.github/workflows/08-nuxt-vite-products.yml",
   });
   delete original["nuxt-module-qualification"];
   // #6853/#6854 add a record-only census over the runners' bundle entries.

@@ -9,16 +9,14 @@ import { parse } from "yaml";
 import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import { installToolingProgram, toolingProgram } from "./support/program-path.ts";
 
-const workflow = parse(
-  readAutomationPrograms(".github", "workflows", "nuxt3-module-build.yml"),
-) as {
+const workflow = parse(readAutomationPrograms(".github", "workflows", "08-nuxt3-module.yml")) as {
   jobs: Record<string, { steps: Array<{ name?: string; run?: string }> }>;
 };
 const setup = workflow.jobs["nuxt3-module-build"].steps.find(
   (step) => step.name === "Download Chromium dependencies while building the current CLI",
 )?.run;
 assert.ok(setup);
-const setupFile = automationShellPath(setup, "nuxt3-module-build");
+const setupFile = automationShellPath(setup, "08-nuxt3-module");
 
 function probe(downloadStatus: number, cliStatus: number, installStatus = 0, cancel = false) {
   const dir = mkdtempSync(path.join(tmpdir(), "vize-nuxt-cli-browser-"));

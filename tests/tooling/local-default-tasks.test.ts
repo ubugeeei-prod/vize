@@ -175,7 +175,7 @@ test("Testbox warmup distinguishes origin failures from an unpushed branch", () 
     assert.doesNotMatch(success.stderr, /host Blacksmith/);
     assert.match(
       fs.readFileSync(blacksmithLog, "utf8"),
-      /^testbox warmup \.github\/workflows\/e2e\.yml --ref feature\/testbox --job testbox\n$/,
+      /^testbox warmup \.github\/workflows\/10-app-e2e\.yml --ref feature\/testbox --job testbox\n$/,
     );
   } finally {
     fs.rmSync(fake.directory, { recursive: true, force: true });

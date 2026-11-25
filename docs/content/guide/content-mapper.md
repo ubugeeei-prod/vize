@@ -15,7 +15,7 @@ identifies them as the TS Server plugin replacement needed by Vue. The initial A
 [microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712).
 That staging repository is now archived; native TypeScript development continues in
 [microsoft/TypeScript](https://github.com/microsoft/TypeScript).
-The [Content Mapper conformance workflow](https://github.com/ubugeeei-prod/vize/blob/main/.github/workflows/content-mapper-conformance.yml)
+The [Content Mapper conformance workflow](https://github.com/ubugeeei-prod/vize/blob/main/.github/workflows/04-content-mapper-conformance.yml)
 shows the exact checkout and build steps for the host described below.
 
 Vize ships a conforming content mapper inside the `vize` npm package: a `tsgo` build with

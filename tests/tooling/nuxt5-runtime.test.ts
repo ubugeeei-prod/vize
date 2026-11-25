@@ -30,12 +30,10 @@ type Workflow = {
   >;
 };
 const root = new URL("../../", import.meta.url);
-const workflowScripts = fileURLToPath(
-  new URL(".github/scripts/workflows/nuxt3-module-build/", root),
-);
+const workflowScripts = fileURLToPath(new URL("tools/ci/workflows/08-nuxt3-module/scripts/", root));
 const fixture = new URL("tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/", root);
 const workflow = parse(
-  readAutomationPrograms(new URL(".github/workflows/nuxt3-module-build.yml", root)),
+  readAutomationPrograms(new URL(".github/workflows/08-nuxt3-module.yml", root)),
 ) as Workflow;
 const job = workflow.jobs["nuxt3-module-build"];
 const step = (name: string) => {
@@ -216,7 +214,7 @@ void test("the actual frozen install shell preserves npm failure through raw log
     const install = step("Install the frozen Nuxt 5 production reproduction");
     assert.equal(install.shell, "bash");
     assert.ok(install.run);
-    const script = automationShellPath(install.run, "nuxt3-module-build");
+    const script = automationShellPath(install.run, "08-nuxt3-module");
     for (const [variant, args, expected] of [
       ["default-no-pipefail", ["-e", script], 0],
       ["explicit-bash", ["--noprofile", "--norc", "-e", "-o", "pipefail", script], 17],
@@ -264,7 +262,7 @@ void test("the Nuxt controller uses the source runtime while forwarding the cons
     };
     const captured = spawnSync(
       "/bin/bash",
-      ["-e", automationShellPath(capture, "nuxt3-module-build")],
+      ["-e", automationShellPath(capture, "08-nuxt3-module")],
       {
         encoding: "utf8",
         env: environment,
@@ -301,11 +299,7 @@ void test("the Nuxt controller uses the source runtime while forwarding the cons
           path.join(directory, "nuxt5-runtime-proof/acceptance"),
         ],
       ],
-      [
-        "source-controller",
-        "/bin/bash",
-        ["-e", automationShellPath(current, "nuxt3-module-build")],
-      ],
+      ["source-controller", "/bin/bash", ["-e", automationShellPath(current, "08-nuxt3-module")]],
     ] as const) {
       const observation = path.join(directory, variant);
       fs.mkdirSync(observation);

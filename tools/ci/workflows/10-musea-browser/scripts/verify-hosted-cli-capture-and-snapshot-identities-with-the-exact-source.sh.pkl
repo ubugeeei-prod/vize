@@ -1,0 +1,8 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("vp", List("exec", "tsx", "--test", "gallery/components/hosted-vrt.browser.test.ts"))
+  module.command("vp", List("exec", "tsx", "--test", "gallery/components/snapshot-identities.browser.test.ts"))
+}

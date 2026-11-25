@@ -1,0 +1,123 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "n8n adoption fixture"
+
+// Historical before/after source builds and the complete adoption corpus are
+// a nightly campaign. Current compiler and editor regressions stay in Check.
+on {
+  schedule = new Listing {
+    new Dynamic { cron = "17 4 * * *" }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+
+concurrency {
+  group = "n8n-adoption-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+jobs {
+  fixture {
+    name = "Pinned n8n adoption corpus"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.workspaceVp()
+      ci.command("Hydrate the read-only licensed n8n fixture", "git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n")
+      new Dynamic {
+        name = "Verify complete fixture and frozen adoption configuration"
+        env { VIZE_N8N_FIXTURE_REQUIRED = "1" }
+        run = "vp node --test tests/tooling/n8n-adoption-fixture.test.ts"
+      }
+    }
+  }
+
+  `authored-editor` {
+    name = "Authored n8n navigation and type diagnostics"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/09-n8n-adoption/scripts"
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+      VIZE_LSP_BIN = "target/ci/vize"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.workspaceVp()
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"  // stable
+        with { toolchain = "stable" }
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "n8n-authored-editor"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.command("Install pinned source and typechecker dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Build and authenticate the current-source LSP"
+        run = ci.workflowScript("build-and-authenticate-the-current-source-lsp.sh")
+      }
+      new Dynamic {
+        name = "Preserve ordinary default-export navigation"
+        run = "cargo test --profile ci -p vize_maestro --lib ide::definition::service::import_target::default_export::tests -- --nocapture"
+      }
+      new Dynamic {
+        name = "Check original n8n navigation and unsaved diagnostic repair"
+        run = "vp node --test tests/tooling/n8n-authored-editor.test.ts"
+      }
+      new Dynamic {
+        name = "Build the current public CLI config export"
+        run = "vp pack"
+        `working-directory` = "npm/cli"
+      }
+      ci.command("Hydrate unchanged licensed n8n CLI inputs", "git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n")
+      new Dynamic {
+        name = "Verify current-source CLI configuration, entries and independent witnesses"
+        run = ci.workflowScript("verify-current-source-cli-configuration-entries-and-independent-witnesse.sh")
+      }
+      new Dynamic {
+        name = "Verify both slot modifier options through whole source CLI and JSON-RPC packets"
+        run = #"vp node tests/tooling/support/n8n-slot-options-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/slot-options""#
+      }
+      new Dynamic {
+        name = "Verify retained parameter grammar through whole source CLI and JSON-RPC packets"
+        run = ci.workflowScript("verify-retained-parameter-grammar-through-whole-source-cli-and-json-rpc.sh")
+      }
+      new Dynamic {
+        name = "Compare whole-corpus lint findings with eslint-plugin-vue"
+        run = #"vp node tests/tooling/support/n8n-lint-parity.ts target/ci/vize "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/lint-parity""#
+      }
+      new Dynamic {
+        name = "Upload whole CLI and independent oracle packets"
+        `if` = "${{ !cancelled() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "n8n-cli-config-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = """
+          target/n8n-cli-config
+          target/differential/lsp-sessions
+          target/differential/slot-parameter-source-packets.json
+          target/differential/slot-parameter-legacy-packets.json
+
+          """
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}

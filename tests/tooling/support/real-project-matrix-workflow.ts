@@ -56,13 +56,13 @@ export function readRealProjectMatrixWorkflow(): RealProjectMatrixWorkflow {
 
 export function readCanonicalCorpusWorkflow(): RealProjectMatrixWorkflow {
   return parse(
-    readAutomationPrograms(".github", "workflows", "davinci-canonical-corpus.yml"),
+    readAutomationPrograms(".github", "workflows", "07-canonical-corpus.yml"),
   ) as RealProjectMatrixWorkflow;
 }
 
 export function readDivergenceWorkflow(): RealProjectMatrixWorkflow {
   return parse(
-    readAutomationPrograms(".github", "workflows", "canonical-corpus-divergence.yml"),
+    readAutomationPrograms(".github", "workflows", "07-canonical-corpus-divergence.yml"),
   ) as RealProjectMatrixWorkflow;
 }
 

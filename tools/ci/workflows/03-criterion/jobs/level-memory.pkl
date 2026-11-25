@@ -1,0 +1,7 @@
+`if` = "${{ inputs.level_memory_only }}"
+uses = "./.github/workflows/03-level-memory.yml"
+with {
+  base_sha = "${{ inputs.base_sha }}"
+  head_sha = "${{ inputs.head_sha }}"
+  conflicting_modes = "${{ inputs.production_only || inputs.vapor_only }}"
+}

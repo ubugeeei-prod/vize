@@ -1,8 +1,0 @@
-amends "../../../../../../../ci/lib/ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  module.command("vp", List("exec", "cargo", "test", "-p", "vize_atelier_vapor", "--features", "davinci-benchmark", "--lib", "compile::benchmark::tests"))
-  module.command("vp", List("exec", "cargo", "clippy", "-p", "vize_atelier_sfc", "--features", "davinci-production-bench", "--example", "davinci_production_perf", "--", "-D", "warnings", "-D", "clippy::wildcard_imports"))
-}

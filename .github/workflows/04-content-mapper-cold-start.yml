@@ -1,0 +1,73 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/04-content-mapper-cold-start/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Content Mapper Cold Start
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/04-content-mapper-cold-start.yml
+      - tools/ci/workflows/04-content-mapper-cold-start/scripts/**
+      - crates/vize/Cargo.toml
+      - crates/vize/tests/content_mapper_tsgo_cli/memo_expression.rs
+      - tests/tooling/content-mapper-process-receipt.test.ts
+      - tools/support/compat/content-mapper/process-receipt.ts
+      - tools/support/release/type-admission-mapper-host.ts
+  # Still the full qualification of every main commit (no paths), but post-merge:
+  # not a required check, so a queue run gated nothing while it competed with
+  # every queue entry for runners. cancel-in-progress coalesces merge bursts.
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: content-mapper-cold-start-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  macos-arm64:
+    runs-on: blacksmith-12vcpu-macos-15
+    timeout-minutes: 20
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/04-content-mapper-cold-start/scripts"
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: content-mapper-cold-start
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Setup Vite Plus
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: true
+      - name: Prepare the exact macOS Content Mapper host
+        run: . "${{ env.VIZE_CI_FILES }}/prepare-the-exact-macos-content-mapper-host.sh"
+      - name: Capture the first post-build mapper process
+        run: >-
+          cargo test --locked -p vize --test integration --
+          content_mapper_tsgo_cli::memo_expression::memo_dependencies_check_members_and_preserve_unused_controls
+          --exact --nocapture --test-threads=1
+      - name: Upload mapper process and provider receipts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: content-mapper-cold-start-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/cold-content-mapper-receipts/
+            ${{ runner.temp }}/cold-content-mapper-host-proof/
+          if-no-files-found: error
+          retention-days: 14

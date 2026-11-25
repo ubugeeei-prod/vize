@@ -1,9 +1,0 @@
-amends "../../../../../../../ci/lib/ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #"""
-  test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
-  """#
-}

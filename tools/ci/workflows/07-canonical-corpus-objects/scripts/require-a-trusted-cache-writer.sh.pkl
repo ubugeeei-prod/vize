@@ -1,0 +1,7 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  "echo 'Only trusted default-branch runs seed canonical fixture objects.' >&2; exit 1"
+}

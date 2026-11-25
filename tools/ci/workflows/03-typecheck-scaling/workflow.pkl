@@ -1,0 +1,240 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Type-check scaling"
+`run-name` = "Type-check scaling ${{ inputs.base_sha && format('{0} -> {1}', inputs.base_sha, inputs.sha) || inputs.sha }} (${{ inputs.sizes }}; tools ${{ inputs.tools || 'default' }}; giant ${{ inputs.giant_blocks }}; monorepo ${{ inputs.monorepo_sfcs }}; nuxt ${{ inputs.nuxt_sizes }})"
+on {
+  workflow_dispatch {
+    inputs {
+      sha {
+        description = "Full 40-hex commit to build and measure (paired head when base_sha is set)"
+        type = "string"
+        required = true
+      }
+      base_sha {
+        description = "Optional full base commit; enables one-runner alternating paired qualification"
+        type = "string"
+        ["default"] = ""
+      }
+      sizes {
+        description = "Comma-separated SFC counts of the single generated projects"
+        type = "string"
+        ["default"] = "1000,5000,20000"
+      }
+      runs {
+        description = "Fresh timed runs per tool and size (median and deviation; first cold run is extra)"
+        type = "string"
+        ["default"] = "3"
+      }
+      tools {
+        description = "Comma-separated tool IDs; blank keeps the standard comparison surface"
+        type = "string"
+        ["default"] = ""
+      }
+      monorepo_sfcs {
+        description = "SFCs of the project-references monorepo (0 skips it)"
+        type = "string"
+        ["default"] = "5000"
+      }
+      giant_blocks {
+        description = "Template blocks in one oversized SFC (0 skips it)"
+        type = "string"
+        ["default"] = "10000"
+      }
+      nuxt_sizes {
+        description = "Comma-separated SFC counts of generated Nuxt apps (empty skips them)"
+        type = "string"
+        ["default"] = ""
+      }
+    }
+  }
+  // Registers the dispatch-only workflow from its PR; the job runs only on dispatch.
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/03-typecheck-scaling.yml"
+      "tools/ci/workflows/03-typecheck-scaling/scripts/**"
+      "tools/benchmarks/scripts/typecheck-scaling*.ts"
+      "tests/tooling/typecheck-scaling*.test.ts"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "typecheck-scaling-${{ github.event.pull_request.number || inputs.sha }}-${{ inputs.base_sha || 'single' }}-${{ inputs.sizes }}-${{ inputs.tools || 'default' }}-${{ inputs.giant_blocks }}-${{ inputs.monorepo_sfcs }}"
+  `cancel-in-progress` = true
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+  CARGO_INCREMENTAL = "0"
+}
+jobs {
+  measure {
+    `if` = "github.event_name == 'workflow_dispatch' && inputs.base_sha == ''"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 330
+    env {
+
+      SHA = "${{ inputs.sha }}"
+      SIZES = "${{ inputs.sizes }}"
+      RUNS = "${{ inputs.runs }}"
+      SCALING_TOOLS = "${{ inputs.tools }}"
+      MONOREPO_SFCS = "${{ inputs.monorepo_sfcs }}"
+      GIANT_BLOCKS = "${{ inputs.giant_blocks }}"
+      NUXT_SIZES = "${{ inputs.nuxt_sizes }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflow("03-typecheck-scaling")
+      new Dynamic {
+        name = "Validate inputs"
+        run = ci.workflowScript("validate-inputs.sh")
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.workspaceVp()
+      ci.rust("1.100.0")
+      ci.wild()
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Check out the measured commit beside the driver"
+        run = ci.workflowScript("check-out-the-measured-commit-beside-the-driver.sh")
+      }
+      new Dynamic {
+        name = "Install the locked hosts, the Nuxt app and GNU time"
+        run = ci.workflowScript("install-the-locked-hosts-the-nuxt-app-and-gnu-time.sh")
+      }
+      new Dynamic {
+        name = "Test the generator, gate and report"
+        run = "node --test tests/tooling/scale-project-generator.test.ts tests/tooling/typecheck-scaling.test.ts"
+      }
+      new Dynamic {
+        name = "Build the native binding and the vize package"
+        `working-directory` = "${{ runner.temp }}/scaling-target"
+        run = ci.workflowScript("build-the-native-binding-and-the-vize-package.sh")
+      }
+      new Dynamic {
+        name = "Measure"
+        env { VIZE_SCALING_RUNNER_LABEL = ci.linux }
+        run = ci.workflowScript("measure.sh")
+      }
+      new Dynamic {
+        name = "Write job summary"
+        `if` = "always()"
+        run = ci.workflowScript("write-job-summary.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "typecheck-scaling-${{ github.run_id }}"
+          path = """
+          ${{ runner.temp }}/scaling-out/
+          ${{ runner.temp }}/build-native.log
+
+          """
+          `if-no-files-found` = "warn"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+  paired {
+    `if` = "github.event_name == 'workflow_dispatch' && inputs.base_sha != ''"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 180
+    env {
+
+      BASE_SHA = "${{ inputs.base_sha }}"
+      HEAD_SHA = "${{ inputs.sha }}"
+      DRIVER_SHA = "${{ github.workflow_sha }}"
+      SIZES = "${{ inputs.sizes }}"
+      CARGO_INCREMENTAL = "0"
+      CARGO_BUILD_JOBS = "8"
+      GOMAXPROCS = "8"
+      // Both checkouts build on one compiler, even across a toolchain bump.
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflow("03-typecheck-scaling")
+      new Dynamic {
+        name = "Validate paired inputs"
+        run = ci.workflowScript("validate-paired-inputs.sh")
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "driver"
+          ref = "${{ env.DRIVER_SHA }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "base"
+          ref = "${{ env.BASE_SHA }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "head"
+          ref = "${{ env.HEAD_SHA }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Record exact source pair"
+        run = ci.workflowScript("record-exact-source-pair.sh")
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "driver/package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Install the pinned measurement provider"
+        `working-directory` = "driver"
+        run = "vp install --frozen-lockfile --prefer-offline"
+      }
+      new Dynamic {
+        name = "Test paired order, diagnostic identity and nonlinear controls"
+        `working-directory` = "driver"
+        run = "node --test tests/tooling/typecheck-scaling.test.ts tools/benchmarks/scripts/pr-performance-build.test.ts"
+      }
+      new Dynamic {
+        name = "Build source binaries in independent fresh targets"
+        run = ci.workflowScript("build-source-binaries-in-independent-fresh-targets.sh")
+      }
+      new Dynamic {
+        name = "Measure five alternating paired cycles on one runner"
+        run = ci.workflowScript("measure-five-alternating-paired-cycles-on-one-runner.sh")
+      }
+      new Dynamic {
+        name = "Write paired summary"
+        `if` = "always()"
+        run = ci.workflowScript("write-paired-summary.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "typecheck-scaling-paired-${{ github.run_id }}"
+          path = """
+          paired-scaling/build/*.json
+          paired-scaling/measurements/
+
+          """
+          `if-no-files-found` = "warn"
+          `retention-days` = 90
+        }
+      }
+    }
+  }
+}

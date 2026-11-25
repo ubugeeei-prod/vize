@@ -2,7 +2,7 @@
  * Lane catalogue for the PR and long-baseline benchmark gates.
  *
  * `tools/benchmarks/scripts/compare-pr.ts` times each lane defined here for a base and a head
- * `vize` binary. `.github/workflows/benchmark.yml` runs that comparison twice:
+ * `vize` binary. `.github/workflows/03-source-comparison.yml` runs that comparison twice:
  * per pull request against the PR base, and weekly against one fixed
  * historical SHA (#3586). Both runs read this list, so a surface is only
  * protected from long-term drift once it has a lane in it.

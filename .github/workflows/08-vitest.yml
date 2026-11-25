@@ -1,0 +1,121 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/08-vitest/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Vitest project configuration consumers
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "crates/vize_carton/src/config/loader/vite-runtime.*"
+      - "npm/cli/src/config*"
+      - "npm/cli/src/config/**"
+      - "npm/builder/vite/src/config.ts"
+      - "npm/builder/vite/src/plugin/shared-config.ts"
+      - "npm/builder/vite/src/plugin/host-config-source.ts"
+      - "tests/consumers/vitest-project-extends.ts"
+      - "tests/tooling/vitest-project-extends.test.ts"
+      - "tests/_fixtures/_projects/vitest-project-extends/**"
+      - ".github/workflows/08-vitest.yml"
+      - "tools/ci/workflows/08-vitest/scripts/**"
+      - tools/ci/workflows/08-vitest/jobs/**
+      - npm/builder/vite/**
+      - npm/native/**
+      - crates/vize_atelier_sfc/src/vite_plugin/**
+      - crates/vize_atelier_sfc/src/vite_plugin.rs
+      - tools/support/compat/vitest-module-cache.ts
+      - tools/support/compat/vitest/fixtures/fs-module-cache/**
+permissions: { contents: read }
+concurrency:
+  group: vitest-project-extends-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  consumers:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/08-vitest/scripts"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - run: vp install --filter './npm/builder/vite...' --filter './npm/cli...' --frozen-lockfile --prefer-offline
+      - name: Build both source configuration adapters
+        run: . "${{ env.VIZE_CI_FILES }}/build-both-source-configuration-adapters.sh"
+      - name: Install the exact released reproduction
+        working-directory: tests/_fixtures/_projects/vitest-project-extends
+        run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Compare published failure and source adapter behavior in real Vitest projects
+        run: node tests/consumers/vitest-project-extends.ts "$RUNNER_TEMP/vitest-project-extends"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: vitest-project-extends-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/vitest-project-extends
+          if-no-files-found: error
+          retention-days: 14
+  module-cache:
+    env:
+      CARGO_TERM_COLOR: always
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    name: Cold and repeated warm Vue mount
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/08-vitest/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          node-version-file: package.json
+          version: latest
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with:
+          toolchain: stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with:
+          wild-version: 0.9.0
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: module-cache
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install candidate workspace dependencies
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'
+      - name: Build the actual source addon and Vite adapter
+        run: . "${{ env.VIZE_CI_FILES }}/module-cache-build-the-actual-source-addon-and-vite-adapter.sh"
+      - name: Install the locked Vitest and Vue fixture
+        working-directory: tools/support/compat/vitest/fixtures/fs-module-cache
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Resolve persisted module identities with the source addon
+        run: node npm/native/scripts/test-preparation.mjs node npm/builder/vite/src/plugin/resolve-relative-vue.test.ts
+      - name: Execute cold, warm, warm again, failure and source-change controls
+        run: . "${{ env.VIZE_CI_FILES }}/execute-cold-warm-warm-again-failure-and-source-change.sh"
+      - name: Retain successful and failed cache observations
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: vitest-module-cache-${{ env.SOURCE_SHA }}-${{ github.run_attempt }}
+          path: |
+            target/vitest-module-cache/
+            !target/vitest-module-cache/**/node_modules/**
+            npm/native/.artifacts/native/formatter-history/**
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

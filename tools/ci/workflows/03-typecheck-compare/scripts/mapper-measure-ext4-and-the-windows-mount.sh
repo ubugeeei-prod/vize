@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/ci/workflows/03-typecheck-compare/scripts/mapper-measure-ext4-and-the-windows-mount.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+set -euo pipefail
+[[ "$SIZES" =~ ^[0-9]+(,[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
+# Binaries run from ext4 in both cells; only the project location differs.
+bin="$HOME/pair-bin"
+mkdir -p "$bin/base" "$bin/head" "$WSL_MOUNT_ROOT"
+cp pair-bin/base/vize "$bin/base/vize" && cp pair-bin/head/vize "$bin/head/vize"
+chmod +x "$bin"/*/vize
+summary_path=$(wslpath "$GITHUB_STEP_SUMMARY")
+reference=()
+if [[ "$REFERENCE" == "true" ]]; then
+  # Install on ext4: a node_modules on the Windows mount would also time 9P module loading.
+  mkdir -p "$HOME/hosts"
+  cp tools/benchmarks/typecheck-hosts/package.json tools/benchmarks/typecheck-hosts/package-lock.json "$HOME/hosts/"
+  npm ci --prefix "$HOME/hosts" --ignore-scripts --no-audit --no-fund > /dev/null
+  reference=(--reference "vue-mapper=$HOME/hosts/node_modules/@vue/content-mapper/server.js" --typescript "$HOME/hosts/node_modules/typescript")
+fi
+for entry in "wsl2-ext4=$HOME/vize-pair" "wsl2-windows-mount=$WSL_MOUNT_ROOT/projects"; do
+  label=${entry%%=*}
+  node tools/benchmarks/scripts/content-mapper-pair.ts \
+    --bin "base=$bin/base/vize" --bin "head=$bin/head/vize" "${reference[@]}" \
+    --root "${entry#*=}" --sizes "$SIZES" --runs "$RUNS" $ALLOW \
+    --label "$label" --out "$WSL_MOUNT_ROOT/out" > /dev/null
+  cat "$WSL_MOUNT_ROOT/out/pair-$label.md" >> "$summary_path"
+done

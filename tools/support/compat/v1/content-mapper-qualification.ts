@@ -30,7 +30,7 @@ const semanticObligations = [
     requirement: "Vue 2.7 host and current Vue 3 SFC diagnostics remain exact.",
     issues: [13018],
     evidenceCandidates: [
-      ".github/workflows/content-mapper-conformance.yml",
+      ".github/workflows/04-content-mapper-conformance.yml",
       "crates/vize/tests/check_vue2_vuetify_props_cli.rs",
     ],
   },
@@ -130,7 +130,7 @@ const semanticObligations = [
     issues: [12102, 13018],
     evidenceCandidates: [
       "crates/vize/tests/content_mapper_tsgo_cli/shipped_declarations_12968.rs",
-      ".github/workflows/content-mapper-conformance.yml",
+      ".github/workflows/04-content-mapper-conformance.yml",
     ],
   },
   {
@@ -147,7 +147,7 @@ const semanticObligations = [
     requirement: "Nuxt-generated aliases and ambient types participate in the mapper project.",
     issues: [11104, 13018],
     evidenceCandidates: [
-      ".github/workflows/content-mapper-conformance.yml",
+      ".github/workflows/04-content-mapper-conformance.yml",
       "crates/vize/tests/check_canon_nuxt_parity_cli.rs",
     ],
   },
@@ -185,7 +185,7 @@ const diagnosticObligations = [
       "Related information retains its authored file and range without generated leakage.",
     issues: [13018, 13037],
     evidenceCandidates: [
-      ".github/workflows/content-mapper-conformance.yml",
+      ".github/workflows/04-content-mapper-conformance.yml",
       "tests/tooling/content-mapper-admission-hosts.test.ts",
     ],
   },
@@ -235,7 +235,7 @@ const boundaryExamples = [
 
 function pinnedTypeScriptRevision(root: string): string {
   const workflow = readFileSync(
-    path.join(root, ".github/workflows/content-mapper-conformance.yml"),
+    path.join(root, ".github/workflows/04-content-mapper-conformance.yml"),
     "utf8",
   );
   const revision = /CONTENT_MAPPER_TYPESCRIPT_SHA:\s*"([0-9a-f]{40})"/u.exec(workflow)?.[1];
@@ -293,8 +293,8 @@ export function buildContentMapperV1Qualification(root: string, requiredCases: r
         scales: [1_000, 5_000, 20_000],
         issues: [10620, 12102, 12109],
         evidenceCandidates: [
-          ".github/workflows/typecheck-cold-pair.yml",
-          ".github/workflows/content-mapper-cold-start.yml",
+          ".github/workflows/03-typecheck-compare.yml",
+          ".github/workflows/04-content-mapper-cold-start.yml",
         ],
         packetIdentity: "required",
         baseHeadComparison: "required",

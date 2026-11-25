@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/ci/workflows/04-content-mapper-cold-start/scripts/prepare-the-exact-macos-content-mapper-host.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+set -euo pipefail
+provider="$RUNNER_TEMP/cold-content-mapper-host"
+proof="$RUNNER_TEMP/cold-content-mapper-host-proof"
+receipts="$RUNNER_TEMP/cold-content-mapper-receipts"
+mkdir -p "$receipts"
+printf '{"source":"%s","runId":"%s","attempt":"%s"}\n' \
+  "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > "$receipts/invocation.json"
+env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN -u NODE_OPTIONS -u NODE_PATH \
+  node tools/support/release/type-admission-mapper-host.ts "$provider" "$proof"
+runtime="$provider/node_modules/@typescript/typescript-darwin-arm64/lib/tsc"
+test -x "$runtime"
+{
+  printf 'VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO=%s\n' "$runtime"
+  printf 'VIZE_TEST_MEMO_PROCESS_RECEIPT_DIR=%s\n' "$receipts"
+  printf 'VIZE_TEST_NODE=%s\n' "$(command -v node)"
+  printf 'VIZE_TEST_REQUIRE_TSGO=1\n'
+} >> "$GITHUB_ENV"

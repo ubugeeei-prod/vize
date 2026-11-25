@@ -43,7 +43,7 @@ v1 alpha 系列采用以下规则：
 其中包声明支持。CI兼容性作业涵盖声明的节点层和
 当前项目节点版本。
 
-全新安装的烟雾矩阵（`.github/workflows/native-smoke.yml`）每周运行一次
+全新安装的烟雾矩阵（`.github/workflows/06-native-smoke.yml`）每周运行一次
 节奏和按需，而不是每次公关宣传都要这样。它对已发布的软件包安装路径进行演练
 GitHub托管的Linux-x64-GNU、Linux-arm64-gnu、darwin-arm64和win32-x64-msvc运行程序;该
 剩余的Darwin-X64和Win32-ARM64-MSVC目标仍保留在特定架构的托管运行器上。

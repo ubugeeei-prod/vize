@@ -1,0 +1,219 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "LSP vs Vue language tools"
+
+// `vize lsp` against @vue/language-server + tsserver with @vue/typescript-plugin
+// (what VS Code runs for "Vue (Official)"), driven over stdio by one scripted
+// editing session on pinned real projects and generated ones. Reports cold
+// start, process-tree CPU and PSS/RSS, CPU per edit and p50/p99 latency of
+// correct answers; the scale-<n>k fixtures add each metric against SFC count.
+// Performance remains report-only. The 5k fixture gates Vize diagnostic
+// convergence because a completed benchmark can otherwise retain failed samples
+// only in its artifact. Pinned to `cpus` cores so the numbers resemble a
+// developer laptop; `compare_ref` adds a second vize row for before/after.
+// The tsserver row is Vize's backend for TypeScript 5.7-6.x: the project's
+// tsserver with this commit's @vizejs/typescript-vue-plugin, the like-for-like
+// counterpart of the Volar row.
+//
+on {
+  workflow_dispatch {
+    inputs {
+      fixtures {
+        description = "Space-separated fixture ids (scale-1k, scale-5k, scale-20k, scale-giant-sfc, scale-monorepo)"
+        required = true
+        ["default"] = "scale-1k scale-giant-sfc scale-monorepo"
+      }
+      compare_ref {
+        description = #"Optional branch or SHA built as a second vize row (the "before" of a perf change)"#
+        required = false
+        ["default"] = ""
+      }
+      rounds {
+        description = "Recorded sessions per editor"
+        required = true
+        ["default"] = "3"
+      }
+      cycles {
+        description = "Edit/request cycles per session"
+        required = true
+        ["default"] = "5"
+      }
+      cpus {
+        description = "Cores the benchmark may use"
+        required = true
+        ["default"] = "8"
+      }
+      tsgo_mapper {
+        description = "Optional TypeScript native version (e.g. 7.1.0-beta) for a third row, its own LSP checking .vue through the Vize content mapper"
+        required = false
+        ["default"] = ""
+      }
+      mapper_vize {
+        description = "npm spec of the vize package whose content mapper the tsgo row loads"
+        required = false
+        ["default"] = "latest"
+      }
+      tsserver_plugin {
+        description = "Add the project-TypeScript row, tsserver with this commit's @vizejs/typescript-vue-plugin"
+        type = "boolean"
+        ["default"] = true
+      }
+      vize_env {
+        description = "Optional space-separated KEY=VALUE pairs for every vize row (diagnosis runs, e.g. VIZE_TRACE_EDITOR_PREPARATION=1)"
+        required = false
+        ["default"] = ""
+      }
+    }
+  }
+  // Changes to the benchmark itself measure once before they merge.
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/05-lsp-vs-volar.yml"
+      "tools/ci/workflows/05-lsp-vs-volar/scripts/**"
+      "tools/benchmarks/scripts/lsp-vs-volar*.ts"
+      "tests/tooling/lsp-vs-volar-*.test.ts"
+      "tests/tooling/support/lsp-vs-volar-*.ts"
+    }
+  }
+}
+
+concurrency {
+  group = "lsp-vs-volar-${{ github.event.pull_request.number || github.ref }}-${{ inputs.compare_ref || '' }}"
+  `cancel-in-progress` = true
+}
+
+permissions { contents = "read" }
+
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  COMPARE_REF = "${{ inputs.compare_ref || '' }}"
+  ROUNDS = "${{ inputs.rounds || '3' }}"
+  CYCLES = "${{ inputs.cycles || '5' }}"
+  CPUS = "${{ inputs.cpus || '8' }}"
+  VIZE_ENV = "${{ inputs.vize_env || '' }}"
+  TSGO_MAPPER = "${{ inputs.tsgo_mapper || '' }}"
+  MAPPER_VIZE = "${{ inputs.mapper_vize || 'latest' }}"
+  // Pull requests measure it too; only a dispatch can turn it off.
+  TSSERVER_PLUGIN = "${{ github.event_name == 'pull_request' || inputs.tsserver_plugin }}"
+}
+
+jobs {
+  plan {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    outputs { jobs = "${{ steps.plan.outputs.jobs }}" }
+    steps = new Listing {
+      ...ci.stageWorkflow("05-lsp-vs-volar")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          ref = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          `sparse-checkout` = "tools/benchmarks/scripts"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      // One job per fixture, except that the fixtures of one size curve run
+      // sequentially in one job: every point of the curve is then measured on the
+      // same machine with the same build, and rounds interleave the sizes.
+      new Dynamic {
+        id = "plan"
+        env { FIXTURES = "${{ inputs.fixtures || 'scale-1k scale-giant-sfc scale-monorepo' }}" }
+        run = ci.workflowScript("plan.sh")
+      }
+    }
+  }
+
+  bench {
+    name = "lsp-vs-volar (${{ matrix.job.name }})"
+    needs = "plan"
+    `runs-on` = ci.linux
+    // A size curve runs every size in one job; 20k SFCs alone take hours across three editors.
+    `timeout-minutes` = 720
+    strategy {
+      `fail-fast` = false
+      matrix { job = "${{ fromJSON(needs.plan.outputs.jobs) }}" }
+    }
+    steps = new Listing {
+      ...ci.stageWorkflow("05-lsp-vs-volar")
+      ci.checkoutAt("${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        name = "Install repository Rust toolchain"
+        run = ci.workflowScript("install-repository-rust-toolchain.sh")
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "lsp-vs-volar"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Validate measurement evidence contracts"
+        run = "node --test tests/tooling/lsp-vs-volar-evidence.test.ts tests/tooling/lsp-vs-volar-scale.test.ts"
+      }
+      new Dynamic {
+        name = "Build this commit"
+        run = ci.workflowScript("build-this-commit.sh")
+      }
+      new Dynamic {
+        name = "Build the compare ref"
+        `if` = "${{ env.COMPARE_REF != '' }}"
+        run = ci.workflowScript("build-the-compare-ref.sh")
+      }
+      new Dynamic {
+        name = "Install the repository's pinned Vue language tools and Corsa"
+        run = ci.workflowScript("install-the-repository-s-pinned-vue-language-tools-and-corsa.sh")
+      }
+      new Dynamic {
+        name = "Stage the tsserver plugin row (this commit's plugin and native addon)"
+        `if` = "${{ env.TSSERVER_PLUGIN == 'true' }}"
+        run = ci.workflowScript("stage-the-tsserver-plugin-row-this-commit-s-plugin-and-native-addon.sh")
+      }
+      new Dynamic {
+        name = "Install the content-mapper row (TypeScript native LSP + published vize mapper)"
+        `if` = "${{ env.TSGO_MAPPER != '' }}"
+        run = ci.workflowScript("install-the-content-mapper-row-typescript-native-lsp-published-vize-mapp.sh")
+      }
+      new Dynamic {
+        name = "Measure"
+        env {
+          JOB = "${{ matrix.job.name }}"
+          FIXTURE_IDS = "${{ matrix.job.ids }}"
+        }
+        run = ci.workflowScript("measure.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "lsp-vs-volar-${{ matrix.job.name }}"
+          path = """
+          lsp-vs-volar-${{ matrix.job.name }}.md
+          lsp-vs-volar-${{ matrix.job.name }}.json
+          lsp-vs-volar-logs-${{ matrix.job.name }}/
+
+          """
+          // Sessions write their JSON as they finish; a failed run keeps what it measured.
+          `if-no-files-found` = "warn"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

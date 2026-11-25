@@ -6,7 +6,7 @@ import { parse } from "yaml";
 
 import { localImportInputs } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 
-const file = ".github/workflows/nuxt2-bridge-module-build.yml";
+const file = ".github/workflows/08-nuxt2-bridge.yml";
 const workflow = parse(readFileSync(new URL(`../../${file}`, import.meta.url), "utf8")) as {
   on: Record<string, { paths: string[] }>;
   jobs: Record<string, { steps: Array<{ uses?: string }> }>;

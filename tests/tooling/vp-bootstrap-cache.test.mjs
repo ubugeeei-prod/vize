@@ -134,7 +134,7 @@ void test("both Musea callers restore the bootstrap runtime before their unchang
     restore.if,
     "${{ steps.key.outputs.key != '' && steps.key.outputs.save != 'true' }}",
   );
-  const callers = Object.entries(workflow(".github/workflows/musea-browser.yml").jobs).flatMap(
+  const callers = Object.entries(workflow(".github/workflows/10-musea-browser.yml").jobs).flatMap(
     ([name, job]) =>
       (job.steps ?? []).flatMap((step, index, steps) => {
         if (step.uses !== "./.github/actions/cache-vp-bootstrap") return [];

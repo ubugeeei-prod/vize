@@ -1,0 +1,35 @@
+import "../../../lib/Actions.pkl" as ci
+
+name = "pr-benchmark-comment"
+`runs-on` = ci.linux
+`timeout-minutes` = 5
+`if` = "${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}"
+needs = List("pr-benchmark")
+permissions {
+  actions = "read"
+  contents = "read"
+  issues = "write"
+  `pull-requests` = "write"
+}
+steps = new Listing {
+  new Dynamic {
+    name = "Checkout trusted base"
+    uses = ci.checkout
+    with { ref = "${{ github.event.pull_request.base.sha }}" }
+  }
+  new Dynamic {
+    name = "Download benchmark results"
+    uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+    with { name = "pr-benchmark" }
+  }
+  new Dynamic {
+    name = "Comment on PR"
+    `continue-on-error` = true
+    env {
+      GITHUB_TOKEN = "${{ github.token }}"
+      PR_NUMBER = "${{ github.event.pull_request.number }}"
+      BENCHMARK_COMMENT_KEY = "${{ github.event.pull_request.head.sha }}"
+    }
+    run = #"node tools/benchmarks/scripts/comment-pr.mjs --body benchmark-summary.md --comment-key "$BENCHMARK_COMMENT_KEY""#
+  }
+}

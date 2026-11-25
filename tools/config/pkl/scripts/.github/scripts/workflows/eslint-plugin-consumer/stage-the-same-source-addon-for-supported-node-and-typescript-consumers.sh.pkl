@@ -1,8 +1,0 @@
-amends "../../../../../../../ci/lib/ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  module.strictMode
-  #"node "$VIZE_CI_FILES/stage-the-same-source-addon-for-supported-node-and-typescript-consumers.ts""#
-}

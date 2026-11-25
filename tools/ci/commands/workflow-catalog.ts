@@ -107,7 +107,7 @@ const startHere = [
   ["04", "pr-rust-products.yml", "Affected Rust product matrix"],
   ["05", "pr-js-checks.yml", "Affected JavaScript package matrix"],
   ["06", "full-qualification.yml", "Full-suite escalation path"],
-  ["07", "tool-benchmark.yml", "Published cross-tool benchmark pipeline"],
+  ["07", "03-tool-comparison.yml", "Published cross-tool benchmark pipeline"],
   ["08", "release.yml", "Protected release orchestration; do not casually edit"],
 ] as const;
 

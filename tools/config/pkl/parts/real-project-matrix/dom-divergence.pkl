@@ -6,7 +6,7 @@ permissions {
   issues = "write"
   `pull-requests` = "write"
 }
-uses = "./.github/workflows/canonical-corpus-divergence.yml"
+uses = "./.github/workflows/07-canonical-corpus-divergence.yml"
 with {
   observer = "dom"
   evidence = "canonical-corpus-dom"

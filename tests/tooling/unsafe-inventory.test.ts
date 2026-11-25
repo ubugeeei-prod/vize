@@ -20,8 +20,8 @@ const inventoryFile = path.join(
   "decisions",
   "2026-11-24-unsafe-model-checking.md",
 );
-const workflowFile = path.join(repoRoot, ".github", "workflows", "davinci-kani.yml");
-const creusotWorkflowFile = path.join(repoRoot, ".github", "workflows", "davinci-creusot.yml");
+const workflowFile = path.join(repoRoot, ".github", "workflows", "07-proofs.yml");
+const creusotWorkflowFile = path.join(repoRoot, ".github", "workflows", "07-proofs-creusot.yml");
 const creusotDir = path.join(repoRoot, "tests", "formal", "creusot");
 
 /** Source text with comments and string/char literals blanked (newlines kept). */

@@ -130,7 +130,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
       "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
     );
     assert.equal(caller.needs, "davinci-dom-corpus");
-    assert.equal(caller.uses, "./.github/workflows/canonical-corpus-divergence.yml");
+    assert.equal(caller.uses, "./.github/workflows/07-canonical-corpus-divergence.yml");
     assert.deepEqual(caller.with, { observer, evidence });
   }
   const divergence = readDivergenceWorkflow();

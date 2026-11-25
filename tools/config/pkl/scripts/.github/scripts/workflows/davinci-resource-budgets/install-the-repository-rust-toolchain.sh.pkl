@@ -1,8 +1,0 @@
-amends "../../../../../../../ci/lib/ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  module.installRustToolchain
-  module.command("cargo", List("--version"))
-}

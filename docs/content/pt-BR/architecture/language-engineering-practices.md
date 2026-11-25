@@ -51,8 +51,8 @@ memória.
 | Lane       | Use quando a mudança toca                                                                                                                                        | Evidências a registrar                                                                                                                                                                                                                                                                           |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Segurança  | Gerenciamento de URLs, saída HTML ou SSR, carregamento de sistema de arquivos/configuração, carregamento nativo, publicação de pacotes, CI ou credenciais.       | `security-audit` em `.github/workflows/check.yml`, `vp exec pnpm audit --prod --audit-level moderate`, `cargo audit --deny warnings`, verificações de runtime de instalação de fumaça, checagens fixadas de Ações do GitHub e qualquer regressão focada que cubra a entrada ou limite arriscado. |
-| Desempenho | Analisador, compilador, linter, formatador, verificador de tipos, cache, percorrimento de grafos de projeto, saída gerada ou I/O CLI.                            | `.github/workflows/benchmark.yml`, `tools/benchmarks/scripts/compare-pr.ts`, `tools/benchmarks/scripts/enforce-pr-budget.ts`, o status `pr-benchmark-budget`, tarefas locais de `bench:*` e `vize lint --profile`, `vize check --profile``vize fmt --profile` ou quando a regressão precisa de atribuição.                           |
-| Fuzzing    | Análise sintáctica orientada a bytes, recuperação de sintaxe, análise sintática CSS, análise de expressões JS/TS, lexing de templates ou recuperação de codegen. | `.github/workflows/fuzz.yml`, `tests/fuzz/Cargo.toml`, `tools/ci/commands/fuzz/seed-corpus.ts`, `cargo +nightly fuzz run <target>`, artefatos `fuzz-reproducers-*` carregados e uma regressão determinística minimizada após o crash, timeout ou OOM foi compreendida.                                      |
+| Desempenho | Analisador, compilador, linter, formatador, verificador de tipos, cache, percorrimento de grafos de projeto, saída gerada ou I/O CLI.                            | `.github/workflows/03-source-comparison.yml`, `tools/benchmarks/scripts/compare-pr.ts`, `tools/benchmarks/scripts/enforce-pr-budget.ts`, o status `pr-benchmark-budget`, tarefas locais de `bench:*` e `vize lint --profile`, `vize check --profile``vize fmt --profile` ou quando a regressão precisa de atribuição.                           |
+| Fuzzing    | Análise sintáctica orientada a bytes, recuperação de sintaxe, análise sintática CSS, análise de expressões JS/TS, lexing de templates ou recuperação de codegen. | `.github/workflows/11-fuzz.yml`, `tests/fuzz/Cargo.toml`, `tools/ci/commands/fuzz/seed-corpus.ts`, `cargo +nightly fuzz run <target>`, artefatos `fuzz-reproducers-*` carregados e uma regressão determinística minimizada após o crash, timeout ou OOM foi compreendida.                                      |
 
 ## Política Básica
 
@@ -93,10 +93,10 @@ Vize mantém essas práticas executáveis em vez de depender da memória:
 - `CONTRIBUTING.md` nomeia a disciplina de classe de mudança para os colaboradores.
 - `.github/PULL_REQUEST_TEMPLATE.md` pede referências comportamentais, riscos e evidências de verificação.
 - `tools/benchmarks/scripts/test-inventory.ts` reporta o inventário atual de ativos de teste no PR CI.
-- `.github/workflows/benchmark.yml` compara o desempenho da CLI base e da chefe e aplica um orçamento de relações públicas.
+- `.github/workflows/03-source-comparison.yml` compara o desempenho da CLI base e da chefe e aplica um orçamento de relações públicas.
 - `.github/workflows/check.yml` executa o trabalho `security-audit` para npm de produção e Rust
   avisos de dependência.
-- `.github/workflows/fuzz.yml` roda o espaço de trabalho `tests/fuzz` cargo-fuzz e os uploads travam
+- `.github/workflows/11-fuzz.yml` roda o espaço de trabalho `tests/fuzz` cargo-fuzz e os uploads travam
   reprodutores para triagem de analisadores/compiladores.
 - `docs/release/production-readiness.md` e `docs/release/vue-parity-matrix.md` definem quando um
   comportamento pode ser chamado de pronto para produção ou compatível.

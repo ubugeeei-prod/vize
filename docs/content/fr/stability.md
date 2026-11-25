@@ -43,7 +43,7 @@ Le flux de travail de release développe des paquets natifs pour macOS, Linux et
 où le paquet déclare le support. Les tâches de compatibilité CI couvrent le plancher Node déclaré ainsi que la version
 actuelle du projet Node.
 
-La matrice de fumée entièrement fraîche (`.github/workflows/native-smoke.yml`) fonctionne sur une cadence hebdomadaire
+La matrice de fumée entièrement fraîche (`.github/workflows/06-native-smoke.yml`) fonctionne sur une cadence hebdomadaire
 et à la demande, pas à chaque poussée de relations publiques. Il exerce le chemin d’installation de paquets publié sur
 runners hébergés sur GitHub pour linux-x64-gnu, linux-arm64-gnu, darwin-arm64 et win32-x64-msvc ; Les
 cibles restantes Darwin-x64 et Win32-ARM64-MSVC restent sur des runners hébergés spécifiques à l’architecture.

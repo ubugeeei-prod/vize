@@ -4,8 +4,12 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { workflowProgramsDirectory } from "./support/automation-source.ts";
 
-const workflows = ".github/scripts/workflows";
+const workflowFile = (entry: string) => {
+  const [owner, file] = entry.split("/") as [string, string];
+  return path.join(workflowProgramsDirectory(owner), file);
+};
 
 function runFilter(tool: string, file: string, input: string, options: string[] = []) {
   const result = spawnSync(tool, [...options, "-f", file], { input, encoding: "utf8" });
@@ -23,7 +27,7 @@ test(
   "the benchmark reads the same exact package keys and pins as the workspace catalog",
   { skip: !hasAwk },
   () => {
-    const file = path.join(workflows, "lsp-vs-volar/catalog-version.awk");
+    const file = workflowFile("05-lsp-vs-volar/catalog-version.awk");
     const pin = (text: string, name: string) =>
       runFilter("awk", file, text, ["-v", "package_name=" + name]);
     const source = readFileSync("pnpm-workspace.yaml", "utf8");
@@ -60,7 +64,7 @@ test(
     assert.deepEqual(
       runFilter(
         "awk",
-        path.join(workflows, "typecheck-cold-pair/mapper-median-memory-row.awk"),
+        workflowFile("03-typecheck-compare/mapper-median-memory-row.awk"),
         "1024 1 2 3\n2048 2.5 1 2.75\n4096 3 4 5\n",
         ["-v", "label=head"],
       ),
@@ -69,7 +73,7 @@ test(
     assert.deepEqual(
       runFilter(
         "awk",
-        path.join(workflows, "typecheck-cold-pair/replay-perf-report-lines.awk"),
+        workflowFile("03-typecheck-compare/replay-perf-report-lines.awk"),
         "# perf\n\nfirst\n# skip\nsecond\nthird\n",
         ["-v", "limit=2"],
       ),
@@ -81,12 +85,12 @@ test(
       'read(2, "c", 3) = 3',
     ].join("\n");
     assert.deepEqual(
-      runFilter(
-        "awk",
-        path.join(workflows, "typecheck-cold-pair/replay-syscall-io.awk"),
-        syscalls,
-        ["-v", "side=head", "-v", "corpus=small"],
-      ),
+      runFilter("awk", workflowFile("03-typecheck-compare/replay-syscall-io.awk"), syscalls, [
+        "-v",
+        "side=head",
+        "-v",
+        "corpus=small",
+      ]),
       { status: 0, stdout: "| small | head | write(1) | 2 | 0.0 | 1 |" },
     );
   },
@@ -98,17 +102,17 @@ test(
   () => {
     const checks = [
       [
-        "davinci-ir-graph/check-directed-graph.jq",
+        "07-ir-graph/check-directed-graph.jq",
         "Exact",
         ["DisconnectedCycle", "MissedSuccessor", "ParallelCycle"],
       ],
       [
-        "davinci-ir-graph/check-edge-trails.jq",
+        "07-ir-graph/check-edge-trails.jq",
         "ExactTrails",
         ["DistinctSelfLoops", "ParallelReturn", "SingleEdgeReturnsOnlyOnReuse"],
       ],
       [
-        "declaration-source-products/check-immutable-bindings.jq",
+        "07-declaration-products/check-immutable-bindings.jq",
         "SameTrace",
         ["LaterWrite", "NonemptyTrace", "RepeatedName"],
       ],
@@ -119,8 +123,7 @@ test(
       );
       const original = { ...commands, [theorem]: { type: "check", solution: [] } };
       const check = (model: object) =>
-        runFilter("jq", path.join(workflows, file), JSON.stringify({ commands: model }), ["-e"])
-          .status;
+        runFilter("jq", workflowFile(file), JSON.stringify({ commands: model }), ["-e"]).status;
       assert.equal(check(original), 0, file);
       assert.equal(check({ ...original, Extra: {} }), 1, file);
       assert.equal(check({ ...original, [theorem]: { type: "check", solution: [{}] } }), 1, file);

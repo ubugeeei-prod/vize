@@ -1,0 +1,8 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("vp", List("run", "--filter", "@vizejs/rspack-plugin", "build"))
+  module.command("vp", List("run", "--filter", "@vizejs/turbopack-plugin", "build"))
+}

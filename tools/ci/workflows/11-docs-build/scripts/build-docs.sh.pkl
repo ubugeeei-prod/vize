@@ -1,0 +1,11 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  vp run --no-cache --filter './docs' build
+  test -s docs-render-evidence/component-previews/browser-evidence.json
+  test -s docs-render-evidence/component-previews/unavailable-storage-evidence.json
+  """#
+}
