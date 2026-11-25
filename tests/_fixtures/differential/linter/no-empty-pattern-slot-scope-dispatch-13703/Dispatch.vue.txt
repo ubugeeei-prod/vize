@@ -1,1 +1,10 @@
-<template><el-table-column><template slot-scope="{}"><i /></template><template scope="[]"><b /></template><template slot-scope="{ row }"><img /></template></el-table-column></template>
+<template>
+  <el-table-column>
+    <template slot-scope="{}"><i /></template>
+    <template scope="[]"><b /></template>
+    <template slot-scope="{ row }"><img /></template>
+    <Widget scope="{}" />
+    <th scope="[]" />
+    <Widget slot-scope="{}" />
+  </el-table-column>
+</template>

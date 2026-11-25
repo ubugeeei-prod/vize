@@ -19,8 +19,13 @@ fn empty_pattern_runs_with_full_registry_and_markup_facade_rules() {
         env!("CARGO_MANIFEST_DIR"),
         "/../../tests/_fixtures/differential/linter/no-empty-pattern-slot-scope-dispatch-13703/Dispatch.vue.txt"
     ));
-    let expected = ["{}", "[]"].map(|pattern| {
-        let start = source.find(pattern).unwrap() as u32;
+    let expected = [
+        ("<template slot-scope=\"{}\">", "{}"),
+        ("<template scope=\"[]\">", "[]"),
+        ("<Widget slot-scope=\"{}\" />", "{}"),
+    ]
+    .map(|(marker, pattern)| {
+        let start = (source.find(marker).unwrap() + marker.find(pattern).unwrap()) as u32;
         (start, start + pattern.len() as u32)
     });
 

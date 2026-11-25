@@ -55,7 +55,9 @@ impl Rule for NoEmptyPattern {
             let PropNode::Attribute(attribute) = prop else {
                 continue;
             };
-            if !matches!(attribute.name, "slot-scope" | "scope") {
+            let is_slot_scope = attribute.name == "slot-scope"
+                || (attribute.name == "scope" && element.tag == "template");
+            if !is_slot_scope {
                 continue;
             }
             let start = attribute.loc.span.start as usize;
