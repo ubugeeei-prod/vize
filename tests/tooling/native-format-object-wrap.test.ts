@@ -5,7 +5,10 @@ import { formatSfc } from "../../npm/native/index.js";
 
 const fixtures = JSON.parse(
   fs.readFileSync(
-      new URL("../_fixtures/differential/formatter/sfc-object-wrap-13666/cases.json", import.meta.url),
+    new URL(
+      "../_fixtures/differential/formatter/sfc-object-wrap-13666/cases.json",
+      import.meta.url,
+    ),
     "utf8",
   ),
 ) as {
