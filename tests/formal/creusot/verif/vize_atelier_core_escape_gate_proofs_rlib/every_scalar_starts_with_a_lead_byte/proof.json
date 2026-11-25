@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_every_scalar_starts_with_a_lead_byte": {
+        "prover": "alt-ergo",
+        "time": 0.02
+      }
+    }
+  }
+}

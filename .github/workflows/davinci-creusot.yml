@@ -14,6 +14,8 @@ on:
       - ".github/workflows/davinci-creusot.yml"
       - "tools/nix/creusot/**"
       - "tests/formal/creusot/**"
+      - crates/vize_atelier_core/src/codegen/helpers/creusot.rs
+      - crates/vize_atelier_core/src/codegen/helpers/escape_gate.rs
       - crates/vize_patina/src/html_content_model/creusot.rs
       - crates/vize_patina/src/html_content_model/tri.rs
       - crates/vize_patina/src/html_content_model/walk.rs
@@ -31,11 +33,13 @@ on:
       - tests/davinci_test_support/src/l3_reference/schedule.rs
       - tests/davinci_test_support/src/l3_reference/trace.rs
   push:
-    branches: [main]
+    branches: [ main ]
     paths:
       - ".github/workflows/davinci-creusot.yml"
       - "tools/nix/creusot/**"
       - "tests/formal/creusot/**"
+      - crates/vize_atelier_core/src/codegen/helpers/creusot.rs
+      - crates/vize_atelier_core/src/codegen/helpers/escape_gate.rs
       - crates/vize_patina/src/html_content_model/creusot.rs
       - crates/vize_patina/src/html_content_model/tri.rs
       - crates/vize_patina/src/html_content_model/walk.rs
