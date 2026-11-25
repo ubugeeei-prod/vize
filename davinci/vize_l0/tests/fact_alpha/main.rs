@@ -66,6 +66,37 @@ fn an_alpha_page_prints_its_group_and_schema_version() {
 }
 
 #[test]
+fn expression_alpha_retains_its_schema_one_text_after_the_rust_type_rename() {
+    use vize_l0::analysis::{ExpressionAnalysis, ExpressionInfo};
+
+    let table: AnalysisTable<ExpressionAnalysis> = [(
+        7,
+        ExpressionInfo {
+            references: String::from("first,second"),
+            exact: true,
+            constant: false,
+        },
+    )]
+    .into_iter()
+    .collect();
+    let historical = "[fact-alpha]\ngroup=expression-facts\nschema_version=1\n\n\
+                      [expression-facts-alpha]\n\n\
+                      [expression-facts-alpha.references]\n7=first,second\n\n\
+                      [expression-facts-alpha.exact]\n7=true\n\n\
+                      [expression-facts-alpha.constant]\n7=false\n\n";
+    assert_eq!(round_trip::<ExpressionAnalysis>(&table), historical);
+    let parsed = AlphaDocument::<ExpressionAnalysis>::parse(historical)
+        .expect("the original schema-one expression page remains readable");
+    assert!(parsed.import() == table);
+    assert!(
+        AlphaDocument::<ExpressionAnalysis>::parse(
+            &historical.replace("expression-facts-alpha", "expression-analysis-alpha")
+        )
+        .is_err()
+    );
+}
+
+#[test]
 fn a_page_under_another_version_or_group_is_refused_exactly() {
     let text = "[fact-alpha]\ngroup=words\nschema_version=2\n\n[words-alpha]\n\n";
     assert_eq!(

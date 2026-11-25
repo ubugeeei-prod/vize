@@ -14,7 +14,7 @@ const bytes = readFileSync(
 );
 assert.equal(
   createHash("sha256").update(bytes).digest("hex"),
-  "63e951f808d888fa7efdde6abe0bc78451ba67a2283aff58ea1eeeba7bf54b22",
+  "0e354fb17cb1bd34e1d00a5c34489ccefa4161fb00ef12774ab4a5d17e7262b7",
 );
 const record = JSON.parse(bytes.toString("utf8")) as {
   schema: string;
@@ -32,6 +32,16 @@ assert.equal(
 export const originalHostPathLayout = Object.freeze(record.reference);
 export const movedHostPathLayout = Object.freeze(record.moved);
 
+// The level vocabulary successor changes exactly this module declaration;
+// the loader move's original whole-file snapshots remain frozen.
+const originalModules = "pub mod diag;\npub mod dump;\npub mod fact;\n";
+const analysisModules = "pub mod analysis;\npub mod diag;\npub mod dump;\n";
+assert.equal(record.moved.foundation.split(originalModules).length, 2);
+export const analysisHostPathLayout = Object.freeze({
+  ...record.moved,
+  foundation: record.moved.foundation.replace(originalModules, analysisModules),
+});
+
 /** Retain the original caller/host law through this one authenticated move. */
 export function hostPathLayoutForOriginalLaw(layout: HostPathLayout): HostPathLayout {
   if (
@@ -41,6 +51,10 @@ export function hostPathLayoutForOriginalLaw(layout: HostPathLayout): HostPathLa
   ) {
     assert.deepEqual(layout, record.reference, "unknown original host path layout");
     return layout;
+  }
+  if (layout.foundation === analysisHostPathLayout.foundation) {
+    assert.deepEqual(layout, analysisHostPathLayout, "unknown analysis-module host path layout");
+    return record.reference;
   }
   assert.deepEqual(layout, record.moved, "unknown or mixed host path source layout");
   return record.reference;

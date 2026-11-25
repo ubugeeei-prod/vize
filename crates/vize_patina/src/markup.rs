@@ -110,6 +110,9 @@ pub use l2::L2Markup;
 /// available through its `lowered` accessor.
 pub type LintL2Template<'a> =
     l2::LintL2Template<'a, std::vec::Vec<vize_l2::provenance::ProvenanceRecord>>;
+/// Compatibility name retained for one minor release; use [`LintL2Template`].
+#[deprecated(note = "use LintL2Template; retained for one minor release (#13707)")]
+pub type L2Template<'a> = LintL2Template<'a>;
 /// The linter reads the ops, expression facts and diagnostics.
 pub(crate) type LintInput<'a> = l2::LintL2Template<'a, vize_l2::provenance::NoProvenance>;
 pub use node::{MarkupNode, MarkupText};

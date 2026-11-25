@@ -85,6 +85,28 @@ pub use vize_l0::analysis::{
     AnalysisView, Demand, ProducerEntry,
 };
 
+/// Compatibility name retained for one minor release; use [`Analysis`].
+#[deprecated(note = "use Analysis; retained for one minor release (#13707)")]
+pub use vize_l0::analysis::Analysis as FactGroup;
+/// Compatibility name retained for one minor release; use [`AnalysisConsumer`].
+#[deprecated(note = "use AnalysisConsumer; retained for one minor release (#13707)")]
+pub use vize_l0::analysis::AnalysisConsumer as FactConsumer;
+/// Compatibility name retained for one minor release; use [`AnalysisError`].
+#[deprecated(note = "use AnalysisError; retained for one minor release (#13707)")]
+pub use vize_l0::analysis::AnalysisError as FactError;
+/// Compatibility name retained for one minor release; use [`AnalysisManager`].
+#[deprecated(note = "use AnalysisManager; retained for one minor release (#13707)")]
+pub type FactManager<'r, A> = AnalysisManager<'r, A>;
+/// Compatibility name retained for one minor release; use [`AnalysisRegistry`].
+#[deprecated(note = "use AnalysisRegistry; retained for one minor release (#13707)")]
+pub type FactRegistry<A> = AnalysisRegistry<A>;
+/// Compatibility name retained for one minor release; use [`AnalysisTable`].
+#[deprecated(note = "use AnalysisTable; retained for one minor release (#13707)")]
+pub type FactTable<G> = AnalysisTable<G>;
+/// Compatibility name retained for one minor release; use [`AnalysisView`].
+#[deprecated(note = "use AnalysisView; retained for one minor release (#13707)")]
+pub type FactView<'a> = AnalysisView<'a>;
+
 use crate::Croquis;
 
 /// Every Croquis fact group, stratified at compile time.

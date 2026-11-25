@@ -159,6 +159,18 @@ pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<V
 
 /** Later reviewed edits to an integrated source, removed before its law is checked. */
 function reviewedSourceSuccessor(file: string, bytes: Uint8Array): Uint8Array {
+  // The SFC setup owner now has a distinct name from the L2 setup analysis.
+  // Its constructor, arguments and the rest of this source are unchanged.
+  if (
+    file === "crates/vize_atelier_sfc/src/compile.rs" &&
+    blob(bytes) === "6fe53a971db59aff6fac446803cf161e1d6054d8"
+  ) {
+    const text = Buffer.from(bytes).toString("utf8");
+    const current = "setup_facts::SetupCompileAnalysis::new";
+    assert.equal(text.split(current).length, 2, "unique reviewed setup-owner rename");
+    bytes = Buffer.from(text.replace(current, "setup_facts::SetupAnalysis::new"));
+    assert.equal(blob(bytes), "b80c1e46486d2aaec325c748aae5b8791826daff");
+  }
   // The levels name the component render binding by concept (`_sfc_render` is
   // unchanged): `RenderFunctionName::SfcRender` became `ComponentRender`.
   if (

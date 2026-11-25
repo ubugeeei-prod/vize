@@ -36,11 +36,15 @@ use policy::TargetPolicy;
 /// Keeping the borrow also prevents unsealing the owner while this result lives.
 ///
 /// Arbitrary complete tables cannot claim an owner's identity:
-/// ```compile_fail
-/// use vize_l2::artifact::Artifact;
+/// ```compile_fail,E0451
+/// use vize_l2::artifact::L2Template;
 /// use vize_l3::decision::{DecisionTables, DecisionAnalysis};
-/// fn forge<'o, 'a>(artifact: &'o Artifact<'a>, tables: DecisionTables) {
-///     let _ = DecisionAnalysis { artifact, tables };
+/// fn forge<'o, 'a>(
+///     artifact: &'o L2Template<'a>,
+///     tables: DecisionTables,
+///     actual: DecisionAnalysis<'o, 'a>,
+/// ) {
+///     let _ = DecisionAnalysis { artifact, tables, ..actual };
 /// }
 /// ```
 /// Its tables cannot be modified through the analysis:
@@ -51,10 +55,10 @@ use policy::TargetPolicy;
 /// }
 /// ```
 /// Unsealing the owner cannot invalidate live decisions:
-/// ```compile_fail
-/// use vize_l2::artifact::Artifact;
+/// ```compile_fail,E0505
+/// use vize_l2::artifact::L2Template;
 /// use vize_l3::decision::{build_decisions, policy::TargetPolicy};
-/// fn unseal(artifact: Artifact<'_>) {
+/// fn unseal(artifact: L2Template<'_>) {
 ///     let analysis = build_decisions(&artifact, TargetPolicy::Ssr).unwrap();
 ///     let _parts = artifact.into_parts();
 ///     let _ = analysis.tables();

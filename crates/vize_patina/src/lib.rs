@@ -139,6 +139,9 @@ pub use markup::{
     MarkupContext, MarkupDirective, MarkupDocument, MarkupDocumentVisitor, MarkupElement,
     MarkupElementKind, MarkupList, MarkupNode, MarkupRule, MarkupText,
 };
+/// Compatibility name retained for one minor release; use [`LintL2Template`].
+#[deprecated(note = "use LintL2Template; retained for one minor release (#13707)")]
+pub type L2Template<'a> = markup::LintL2Template<'a>;
 pub use output::{
     OutputFormat, format_results, format_summary, register_plugin_rule_docs, rule_docs_path,
 };

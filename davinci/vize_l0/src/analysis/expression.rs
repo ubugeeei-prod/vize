@@ -16,7 +16,7 @@ use super::{AlphaExport, Analysis, AnalysisTable, Demand, ids};
 use crate::dump::Dump;
 use crate::pass::AnalysisId;
 
-/// The group: one [`ExpressionFact`] per expression id.
+/// The group: one [`ExpressionInfo`] per expression id.
 pub struct ExpressionAnalysis;
 
 /// What a dialect answered about one expression.
@@ -42,6 +42,7 @@ impl Analysis for ExpressionAnalysis {
 
 /// The α page: the three answers as three id-keyed sections.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
+#[dump(name = "expression-facts-alpha")]
 pub struct ExpressionAnalysisAlpha {
     pub references: FxHashMap<u32, String>,
     pub exact: FxHashMap<u32, bool>,

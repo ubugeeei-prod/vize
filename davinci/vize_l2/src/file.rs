@@ -52,10 +52,10 @@ pub use records::{
 /// Immutable file facts and the exact canonical tree built with them.
 ///
 /// Arbitrary declarations cannot establish file ownership:
-/// ```compile_fail
-/// use vize_l2::{artifact::Artifact, file::L2Ir};
-/// fn forge(artifact: Artifact<'_>) {
-///     let _ = L2Ir { artifact, facts: Default::default() };
+/// ```compile_fail,E0451
+/// use vize_l2::{artifact::L2Template, file::L2Ir};
+/// fn forge<'a>(artifact: L2Template<'a>, actual: L2Ir<'a>) {
+///     let _ = L2Ir { artifact, ..actual };
 /// }
 /// ```
 pub struct L2Ir<'a> {

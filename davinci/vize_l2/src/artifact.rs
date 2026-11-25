@@ -3,7 +3,7 @@
 //! [`L2TemplateParts`] is the one artifact every producer hands to L2
 //! consumers: ops plus semantic side tables. The transitional Vue lowering
 //! holds it unsealed beside its conversion bookkeeping; native producers
-//! seal it into an [`Artifact`].
+//! seal it into an [`L2Template`].
 //!
 //! Construction consumes the existing region and retained `ExprRef`
 //! payloads: it neither parses expressions nor materializes a dump. The
@@ -44,7 +44,7 @@ mod tests;
 /// source slice. Side tables are keyed by exact page-local node ids. Target
 /// choices, input capabilities and conversion bookkeeping have no fields
 /// here. `P` is the provenance sink the producer chose; only the default,
-/// record-keeping sink can be sealed into an [`Artifact`].
+/// record-keeping sink can be sealed into an [`L2Template`].
 pub struct L2TemplateParts<'a, P = Vec<ProvenanceRecord>> {
     /// The complete authored source, borrowed for this compile.
     pub source: &'a str,
