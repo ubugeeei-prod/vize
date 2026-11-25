@@ -1,0 +1,38 @@
+amends "../../../../ShellScript.pkl"
+
+interpreter = "sh"
+executable = true
+
+// Cargo's rustc wrapper for development shells and CI
+// (docs/davinci/decisions/2026-11-25-rust-build-accelerators.md).
+commands {
+  #"""
+  # Cargo runs: rustc.sh <rustc or clippy-driver> [rustc] <arguments>
+  case "${VIZE_RUSTC_FRONTEND_JOBS:-1}" in
+    '' | 0 | 1) ;;
+    *)
+      workspace="${0%/tools/support/launchers/rustc.sh}"
+      case "${CARGO_MANIFEST_DIR:-}" in
+        "$workspace"/*)
+          previous=
+          for argument in "$@"; do
+            if [ "$previous" = --crate-name ]; then
+              if [ "$argument" = "${CARGO_CRATE_NAME:-}" ]; then
+                RUSTC_BOOTSTRAP="$argument"
+                export RUSTC_BOOTSTRAP
+                set -- "$@" -Zunstable-options "--jobs-frontend=$VIZE_RUSTC_FRONTEND_JOBS"
+              fi
+              break
+            fi
+            previous="$argument"
+          done
+          ;;
+      esac
+      ;;
+  esac
+  if [ -n "${VIZE_KACHE:-}" ]; then
+    exec "$VIZE_KACHE" "$@"
+  fi
+  exec "$@"
+  """#
+}

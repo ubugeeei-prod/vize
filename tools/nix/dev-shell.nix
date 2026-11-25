@@ -33,6 +33,7 @@
           pnpm
           config.packages.vp
           rustDevToolchain
+          config.packages.kache
           pkgs.git
           pkgs.rust-analyzer
           pkgs.wasm-pack
@@ -52,6 +53,7 @@
         shellHook = renderScript ./scripts/activate-workspace.sh {
           CLEAR_TESTBOX = clearTestboxEnvironment;
           VP = "${config.packages.vp}";
+          KACHE = "${config.packages.kache}";
           DARWIN = darwinEnvironment;
         };
       };
@@ -70,36 +72,11 @@
           });
       });
 
-      # `nix develop .#parallel-frontend`: opt-in for local check/clippy/test
-      # loops only. rustc's parallel frontend is nightly-only
-      # (`-Zunstable-options --jobs-frontend=N`); the default shell, CI, release
-      # builds and measurements keep the pinned `rust-toolchain.toml` compiler
-      # (docs/davinci/decisions/2026-11-17-rust-parallel-frontend.md). The flag
-      # is appended so the Darwin link flags survive, and the target directory
-      # is per thread count. Run the final clippy and tests in the default shell.
-      parallelFrontendToolchain = pkgs.rust-bin.nightly."2026-11-16".default.override {
-        extensions = [
-          "clippy"
-          "rust-src"
-          "rustfmt"
-        ];
-      };
-
-      parallelFrontendDevShell = devShell.overrideAttrs (previous: {
-        nativeBuildInputs = [
-          parallelFrontendToolchain
-        ]
-        ++ lib.remove rustDevToolchain (previous.nativeBuildInputs or [ ]);
-        RUST_SRC_PATH = "${parallelFrontendToolchain}/lib/rustlib/src/rust/library";
-        shellHook =
-          (previous.shellHook or "") + (builtins.readFile ./scripts/activate-parallel-frontend.sh);
-      });
     in
     {
       devShells = {
         default = devShell;
         testbox = testboxDevShell;
-        parallel-frontend = parallelFrontendDevShell;
       };
 
       checks = {
