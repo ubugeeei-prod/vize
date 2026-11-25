@@ -86,6 +86,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .entry(template)
             .and_then(|entry| self.vnode_entry_object(&entry, None));
         self.leave_loop(mark);
+        let aliases = aliases.list;
         Ok(cstr!(
             "_renderList({source}, ({aliases}) => {{ return {} }})",
             entry?

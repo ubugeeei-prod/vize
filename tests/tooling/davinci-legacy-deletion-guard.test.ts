@@ -106,10 +106,40 @@ void test("the checked-in compiler routes retain every guarded witness", () => {
       "crates/vize_atelier_dom/src/compile/inner.rs",
       "crates/vize_atelier_dom/src/compile/sfc.rs",
       "crates/vize_atelier_ssr/src/compile.rs",
+      "crates/vize_atelier_ssr/src/compile/inner.rs",
       "crates/vize_atelier_vapor/src/compile/inner.rs",
     ].map((file) => [file, fs.readFileSync(path.join(root, file), "utf8")]),
   );
   assert.deepEqual(missingLegacyRouteWitnesses(files), []);
+});
+
+void test("factoring the mapped and unmapped SSR fallback retains the connected legacy route", () => {
+  const entry = "crates/vize_atelier_ssr/src/compile.rs";
+  const helper = "crates/vize_atelier_ssr/src/compile/inner.rs";
+  const original = { [entry]: "codegen_ctx.generate(&root)" };
+  const retained = {
+    [entry]: fs.readFileSync(path.join(root, entry), "utf8"),
+    [helper]: fs.readFileSync(path.join(root, helper), "utf8"),
+  };
+  assert.deepEqual(retiredLegacyRouteWitnesses(original, retained), []);
+  assert.deepEqual(retiredLegacyRouteWitnesses(retained, original), []);
+  for (const removed of [
+    { ...retained, [entry]: "" },
+    { ...retained, [helper]: undefined },
+    {
+      ...retained,
+      [helper]: retained[helper].replace("pub(super) fn generate_legacy<'a>(", ""),
+    },
+    { ...retained, [helper]: retained[helper].replace("codegen_ctx.generate(root)", "") },
+  ]) {
+    // A stranded helper or an entry with no emitter still requires the audit.
+    assert.deepEqual(retiredLegacyRouteWitnesses(original, removed), [
+      `SSR compatibility emitter (${entry})`,
+    ]);
+    assert.deepEqual(retiredLegacyRouteWitnesses(retained, removed), [
+      `SSR compatibility emitter (${entry})`,
+    ]);
+  }
 });
 
 void test("the existing PR and merge-group check runs the conditional deletion guard", () => {

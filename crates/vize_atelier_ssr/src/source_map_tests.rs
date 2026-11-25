@@ -144,21 +144,33 @@ fn source_map_is_additive_and_maps_tokens_byte_exactly() {
 }
 
 #[test]
-fn legacy_loop_alias_maps_require_unchanged_source_owned_spelling() {
+fn loop_alias_maps_require_unchanged_source_owned_spelling_on_both_lanes() {
     use crate::compile::{SsrLane, compile_ssr_on_lane};
     use vize_atelier_core::options::CustomElementMatcher;
 
     for (source, anchored) in [
         (
             r#"<i v-for="(item, key, index) in items">{{ item }}</i>"#,
-            true,
+            [true; 3],
         ),
         (
             r#"<i v-for="(item: number, key: string, index: number) in items">{{ item }}</i>"#,
-            false,
+            [false; 3],
+        ),
+        (
+            r#"<Foo><template v-for="(item, key, index) in items" #[key]>{{ item }}</template></Foo>"#,
+            [true; 3],
+        ),
+        (
+            r#"<Foo><template v-for="(item: number, key: string, index: number) in items" #[key]>{{ item }}</template></Foo>"#,
+            [false; 3],
+        ),
+        (
+            r#"<Foo><template v-for="(item: number, key, index) in items" #[key]>{{ item }}</template></Foo>"#,
+            [false, true, true],
         ),
     ] {
-        let compile_legacy = |source_map| {
+        let compile_lane = |source_map, lane| {
             let allocator = Allocator::new();
             let (_, errors, result) = compile_ssr_on_lane(
                 &allocator,
@@ -174,23 +186,30 @@ fn legacy_loop_alias_maps_require_unchanged_source_owned_spelling() {
                     ..SsrCompilerExperimentalOptions::default()
                 },
                 true,
-                SsrLane::LegacyOnly,
+                lane,
             );
             assert_eq!(errors.len(), 0, "{errors:?}");
             result
         };
-        let mapped = compile_legacy(true);
-        let plain = compile_legacy(false);
+        let mapped = compile_lane(true, SsrLane::LegacyOnly);
+        let plain = compile_lane(false, SsrLane::LegacyOnly);
         assert_eq!(
             (&mapped.code, &mapped.preamble),
             (&plain.code, &plain.preamble)
         );
+        let selected = compile_lane(true, SsrLane::Selected);
+        assert_eq!(selected.code, mapped.code, "{source}");
+        assert_eq!(selected.preamble, mapped.preamble, "{source}");
+        assert_eq!(selected.map, mapped.map, "{source}");
+        let selected_plain = compile_lane(false, SsrLane::Selected);
+        assert_eq!(selected_plain.code, mapped.code, "{source}");
+        assert_eq!(selected_plain.preamble, mapped.preamble, "{source}");
         let map: serde_json::Value = serde_json::from_str(mapped.map.as_ref().unwrap()).unwrap();
         let segments = decode(map["mappings"].as_str().unwrap());
-        for alias in ["item", "key", "index"] {
+        let callback = mapped.code.find("(item").unwrap();
+        for (alias, anchored) in ["item", "key", "index"].into_iter().zip(anchored) {
             let authored = source.find(alias).unwrap();
-            let generated = mapped.code.find("(item, key, index)").unwrap()
-                + "(item, key, index)".find(alias).unwrap();
+            let generated = callback + mapped.code[callback..].find(alias).unwrap();
             let actual: std::vec::Vec<_> = segments
                 .iter()
                 .filter(|(_, _, line, column, _)| {

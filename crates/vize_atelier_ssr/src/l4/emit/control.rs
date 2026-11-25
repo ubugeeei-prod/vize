@@ -135,7 +135,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         };
         // The source is written once its aliases are spelled: with a map
         // requested, its recording check is where they are anchored.
-        self.push_for_source(&source, binding, [Some(value), key, index], &aliases);
+        self.push_for_source(&source, binding, &aliases);
         self.ctx.push(", (");
         // No check here: `push_for_source` anchored what the walker anchors.
         for (index, alias) in aliases.iter().flatten().enumerate() {
@@ -182,11 +182,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// written after it at the alias the loop authored, like the walker: an
     /// alias spelled as authored maps to its own bytes, a rewritten one to
     /// nothing.
-    fn push_for_source(
+    pub(super) fn push_for_source(
         &mut self,
         code: &str,
         binding: &l2::ForBinding<'_>,
-        authored: [Option<&str>; 3],
         aliases: &[Option<vize_l0::String>; 3],
     ) {
         let Some(span) = expression_span(&binding.source) else {
@@ -194,7 +193,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             return;
         };
         self.ctx.push_expression_text_then(code, span, |out, end| {
-            anchor_for_aliases(out, end, binding, authored, aliases);
+            anchor_for_aliases(out, end, binding, aliases);
         });
     }
 
@@ -230,9 +229,13 @@ fn anchor_for_aliases(
     out: &mut EmitDocument,
     end: u32,
     binding: &l2::ForBinding<'_>,
-    authored: [Option<&str>; 3],
     aliases: &[Option<vize_l0::String>; 3],
 ) {
+    let authored = [
+        alias(&binding.value).ok(),
+        binding.key.as_ref().and_then(|expr| alias(expr).ok()),
+        binding.index.as_ref().and_then(|expr| alias(expr).ok()),
+    ];
     let spans = [
         Some(binding.value.span()),
         binding.key.as_ref().map(|alias| alias.span()),

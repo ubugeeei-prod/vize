@@ -6,10 +6,15 @@ const legacyManifest =
 const auditWorkflow = ".github/workflows/level-deletion-readiness.yml";
 const shaPattern = /^[0-9a-f]{40}$/;
 
-interface LegacyRouteWitness {
-  readonly route: string;
+interface RouteMarker {
   readonly path: string;
   readonly marker: string;
+}
+
+interface LegacyRouteWitness extends RouteMarker {
+  readonly route: string;
+  /** A factored route retains its entry call, helper, and emitter together. */
+  readonly relocated?: readonly [RouteMarker, ...RouteMarker[]];
 }
 
 const legacyRouteWitnesses: readonly LegacyRouteWitness[] = [
@@ -37,6 +42,17 @@ const legacyRouteWitnesses: readonly LegacyRouteWitness[] = [
     route: "SSR compatibility emitter",
     path: "crates/vize_atelier_ssr/src/compile.rs",
     marker: "codegen_ctx.generate(&root)",
+    relocated: [
+      { path: "crates/vize_atelier_ssr/src/compile.rs", marker: "inner::generate_legacy(" },
+      {
+        path: "crates/vize_atelier_ssr/src/compile/inner.rs",
+        marker: "pub(super) fn generate_legacy<'a>(",
+      },
+      {
+        path: "crates/vize_atelier_ssr/src/compile/inner.rs",
+        marker: "codegen_ctx.generate(root)",
+      },
+    ],
   },
   {
     route: "Vapor compatibility transform",
@@ -52,6 +68,16 @@ const legacyRouteWitnesses: readonly LegacyRouteWitness[] = [
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+
+function retainsRoute(
+  witness: LegacyRouteWitness,
+  files: Readonly<Record<string, string | undefined>>,
+): boolean {
+  return (
+    files[witness.path]?.includes(witness.marker) === true ||
+    witness.relocated?.every(({ path, marker }) => files[path]?.includes(marker) === true) === true
+  );
+}
 
 export function removedLegacyManifests(nameStatus: string): string[] {
   const removed: string[] = [];
@@ -70,8 +96,8 @@ export function retiredLegacyRouteWitnesses(
   candidateFiles: Readonly<Record<string, string | undefined>>,
 ): string[] {
   return legacyRouteWitnesses
-    .filter(({ path, marker }) => baseFiles[path]?.includes(marker) === true)
-    .filter(({ path, marker }) => candidateFiles[path]?.includes(marker) !== true)
+    .filter((witness) => retainsRoute(witness, baseFiles))
+    .filter((witness) => !retainsRoute(witness, candidateFiles))
     .map(({ route, path }) => `${route} (${path})`);
 }
 
@@ -79,7 +105,7 @@ export function missingLegacyRouteWitnesses(
   files: Readonly<Record<string, string | undefined>>,
 ): string[] {
   return legacyRouteWitnesses
-    .filter(({ path, marker }) => files[path]?.includes(marker) !== true)
+    .filter((witness) => !retainsRoute(witness, files))
     .map(({ route, path }) => `${route} (${path})`);
 }
 
@@ -129,10 +155,14 @@ function fileAt(sha: string, path: string): string | undefined {
 
 function filesAt(sha: string): Readonly<Record<string, string | undefined>> {
   return Object.fromEntries(
-    [...new Set(legacyRouteWitnesses.map(({ path }) => path))].map((path) => [
-      path,
-      fileAt(sha, path),
-    ]),
+    [
+      ...new Set(
+        legacyRouteWitnesses.flatMap(({ path, relocated }) => [
+          path,
+          ...(relocated?.map((marker) => marker.path) ?? []),
+        ]),
+      ),
+    ].map((path) => [path, fileAt(sha, path)]),
   );
 }
 

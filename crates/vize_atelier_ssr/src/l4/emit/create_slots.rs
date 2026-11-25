@@ -13,7 +13,6 @@ use vize_l4::targets::dom::artifact::TransformContent;
 
 use super::control::alias;
 use super::slots::{ComponentSlots, SlotSpec, slot_pattern};
-use super::spans::expression_span;
 use super::{Emitter, Result};
 use crate::codegen::element::props::quoted_js_string;
 use crate::l4::AdmissionFailure;
@@ -34,6 +33,13 @@ pub(super) enum Dynamic {
 pub(super) struct Entry {
     pub(super) name: String,
     pub(super) spec: SlotSpec,
+}
+
+/// Keep the already-rendered pieces until their mapped push, alongside the
+/// list shared with the VNode fallback. Neither spelling is regenerated.
+pub(super) struct LoopAliases {
+    pub(super) list: String,
+    parts: [Option<String>; 3],
 }
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
@@ -143,7 +149,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         at: usize,
     ) -> Result<(
         String,
-        String,
+        LoopAliases,
         vize_l4::targets::dom::artifact::TransformScopeMark,
     )> {
         let Source::For(for_op) = self.segment(at)?.source else {
@@ -169,7 +175,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .flatten()
             .map(String::as_str)
             .collect::<std::vec::Vec<_>>();
-        Ok((source, list.join(", ").to_compact_string(), mark))
+        let aliases = LoopAliases {
+            list: list.join(", ").to_compact_string(),
+            parts: texts,
+        };
+        Ok((source, aliases, mark))
     }
 
     pub(super) fn leave_loop(&mut self, mark: vize_l4::targets::dom::artifact::TransformScopeMark) {
@@ -263,14 +273,13 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             ))?;
         self.ctx.use_core_helper(RuntimeHelper::RenderList);
         let (source, aliases, mark) = self.enter_loop(at)?;
-        let span = match self.segment(at)?.source {
-            Source::For(for_op) => expression_span(&for_op.binding.source),
-            _ => None,
+        let Source::For(for_op) = self.segment(at)?.source else {
+            return Err(AdmissionFailure::Invalid("createSlots loop is not a v-for"));
         };
         self.ctx.push("_renderList(");
-        self.push_expression(&source, span);
+        self.push_for_source(&source, &for_op.binding, &aliases.parts);
         self.ctx.push(", (");
-        self.ctx.push(&aliases);
+        self.ctx.push(&aliases.list);
         self.ctx.push(") => {\n");
         self.ctx.indent_level += 1;
         self.ctx.push_indent();
