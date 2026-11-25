@@ -1,0 +1,13 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_len": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_span_block_relative_form_never_grows_and_inverts_the_shift": {
+        "prover": "alt-ergo",
+        "time": 0.008
+      },
+      "vc_to_block_relative": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}

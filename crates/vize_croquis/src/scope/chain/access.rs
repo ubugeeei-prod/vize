@@ -7,40 +7,27 @@ impl ScopeChain {
     #[inline]
     pub(crate) fn reserve_scopes(&mut self, capacity: usize) {
         let additional = capacity.saturating_sub(self.scopes.len());
-        self.scopes.raw.reserve_exact(additional);
+        self.scopes.reserve_exact(additional);
     }
 
     /// Get the current scope
     #[inline]
     pub fn current_scope(&self) -> &Scope {
-        // SAFETY: `current` is initialized to `ROOT`, and every scope transition
-        // either appends before selecting a new slot or validates a public id in
-        // `set_current` (including an externally edited parent in `exit_scope`).
-        // Safe accessors expose individual Scope values, never the storage Vec;
-        // changing Scope::id/parents cannot remove the current physical slot.
-        // This unchecked access remains on every identifier lookup path.
-        unsafe {
-            self.scopes
-                .raw
-                .get_unchecked(self.current.as_u32() as usize)
-        }
+        // The scope table proves that its current row exists (`rows.rs`).
+        // This read stays unchecked on every identifier lookup path.
+        self.scopes.current()
     }
 
     /// Get the current scope mutably
     #[inline]
     pub fn current_scope_mut(&mut self) -> &mut Scope {
-        let idx = self.current.as_u32() as usize;
-        // SAFETY: same invariant as `current_scope`: `idx` comes from a
-        // ScopeId minted by this chain and therefore addresses an existing scope.
-        // The `&mut self` receiver guarantees no competing borrow of the scope
-        // vector while returning this mutable reference.
-        unsafe { self.scopes.raw.get_unchecked_mut(idx) }
+        self.scopes.current_mut()
     }
 
     /// Get a scope by ID
     #[inline]
     pub fn get_scope(&self, id: ScopeId) -> Option<&Scope> {
-        self.scopes.get(id)
+        self.scopes.get(id.as_u32())
     }
 }
 

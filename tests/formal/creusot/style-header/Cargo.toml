@@ -1,0 +1,14 @@
+[package]
+name = "vize_maestro_style_header_proofs"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "../../../../crates/vize_maestro/src/source_project/style_format/creusot.rs"
+
+[dependencies]
+creusot-std = { workspace = true }
+
+[lints]
+workspace = true

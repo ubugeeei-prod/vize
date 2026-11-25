@@ -7,8 +7,6 @@ on {
     paths = new Listing {
       ".github/workflows/davinci-kani.yml"
       ".github/scripts/workflows/davinci-kani/**"
-      "davinci/vize_l0/src/span.rs"
-      "davinci/vize_l0/src/span/proofs.rs"
       "davinci/vize_l0/src/source_range.rs"
       "davinci/vize_l0/src/source_range/proofs.rs"
       "davinci/vize_l4/src/write/source_map/kani.rs"
@@ -65,7 +63,7 @@ jobs {
     }
   }
   `source-coordinates` {
-    name = "Span, range and VLQ laws"
+    name = "Source map lookup and VLQ laws"
     `runs-on` = ci.linux
     `timeout-minutes` = 10
     steps = new Listing {
@@ -81,7 +79,7 @@ jobs {
           args = "davinci/vize_l4/src/write/source_map/kani.rs --output-format=terse"
         }
       }
-      ci.command("Verify span, range and mapping offsets", "cargo kani --manifest-path davinci/vize_l0/Cargo.toml --lib --harness span::proofs:: --harness source_range::proofs:: --output-format=terse --jobs 2")
+      ci.command("Verify the source map lookup", "cargo kani --manifest-path davinci/vize_l0/Cargo.toml --lib --harness source_range::proofs:: --output-format=terse --jobs 2")
     }
   }
 

@@ -1,0 +1,10 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_current_mut_T": { "prover": "alt-ergo", "time": 0.034 },
+      "vc_deref_mut_Vec_T_Global": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_get_unchecked_mut_T": { "prover": "alt-ergo", "time": 0.006 }
+    }
+  }
+}

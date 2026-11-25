@@ -16,18 +16,17 @@ impl ScopeChain {
     /// Enter a new scope
     #[inline]
     pub fn enter_scope(&mut self, kind: ScopeKind) -> ScopeId {
-        let id = self.scopes.next_idx();
-        let scope = Scope::new(id, Some(self.current), kind);
-        self.scopes.push(scope);
-        self.current = id;
+        let id = self.next_id();
+        let scope = Scope::new(id, Some(self.current_id()), kind);
+        self.scopes.push_selected(scope);
         id
     }
 
     /// Enter a new scope with Vue global access (for template scopes)
     #[inline]
     pub fn enter_scope_with_vue_global(&mut self, kind: ScopeKind) -> ScopeId {
-        let id = self.scopes.next_idx();
-        let mut parents: ParentScopes = smallvec![self.current];
+        let id = self.next_id();
+        let mut parents: ParentScopes = smallvec![self.current_id()];
 
         // Add Vue global scope as additional parent if it exists
         if let Some(vue_id) = self.find_scope_by_kind(ScopeKind::VueGlobal)
@@ -37,8 +36,7 @@ impl ScopeChain {
         }
 
         let scope = Scope::with_parents(id, parents, kind);
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -52,7 +50,7 @@ impl ScopeChain {
 
     /// Enter a v-for scope with the given data
     pub fn enter_v_for_scope(&mut self, data: VForScopeData, start: u32, end: u32) -> ScopeId {
-        let id = self.scopes.next_idx();
+        let id = self.next_id();
         let parents = self.build_template_parents();
         let mut scope = Scope::with_span_parents(id, parents, ScopeKind::VFor, start, end);
 
@@ -82,8 +80,7 @@ impl ScopeChain {
         }
 
         scope.set_data(ScopeData::VFor(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -100,7 +97,7 @@ impl ScopeChain {
         start: u32,
         end: u32,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
+        let id = self.next_id();
         let parents = self.build_template_parents();
         let mut scope = Scope::with_span_parents(id, parents, ScopeKind::VSlot, start, end);
 
@@ -116,8 +113,7 @@ impl ScopeChain {
         if !name_is_static {
             self.dynamic_v_slot_scopes.insert(id);
         }
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -128,7 +124,7 @@ impl ScopeChain {
         start: u32,
         end: u32,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
+        let id = self.next_id();
         let parents = self.build_template_parents();
         let mut scope = Scope::with_span_parents(id, parents, ScopeKind::EventHandler, start, end);
 
@@ -149,8 +145,7 @@ impl ScopeChain {
         }
 
         scope.set_data(ScopeData::EventHandler(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -161,9 +156,10 @@ impl ScopeChain {
         start: u32,
         end: u32,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
+        let id = self.next_id();
         // Script callbacks only have current scope as parent (no vue global)
-        let mut scope = Scope::with_span(id, Some(self.current), ScopeKind::Callback, start, end);
+        let mut scope =
+            Scope::with_span(id, Some(self.current_id()), ScopeKind::Callback, start, end);
 
         // Add parameter names as bindings
         for param_name in &data.param_names {
@@ -174,8 +170,7 @@ impl ScopeChain {
         }
 
         scope.set_data(ScopeData::Callback(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -186,7 +181,7 @@ impl ScopeChain {
         start: u32,
         end: u32,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
+        let id = self.next_id();
         let parents = self.build_template_parents();
         let mut scope = Scope::with_span_parents(id, parents, ScopeKind::Callback, start, end);
 
@@ -199,17 +194,15 @@ impl ScopeChain {
         }
 
         scope.set_data(ScopeData::Callback(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
     /// Enter a module scope
     pub fn enter_module_scope(&mut self, start: u32, end: u32) -> ScopeId {
-        let id = self.scopes.next_idx();
-        let scope = Scope::with_span(id, Some(self.current), ScopeKind::Module, start, end);
-        self.scopes.push(scope);
-        self.current = id;
+        let id = self.next_id();
+        let scope = Scope::with_span(id, Some(self.current_id()), ScopeKind::Module, start, end);
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -220,12 +213,16 @@ impl ScopeChain {
         start: u32,
         end: u32,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
-        let mut scope =
-            Scope::with_span(id, Some(self.current), ScopeKind::ScriptSetup, start, end);
+        let id = self.next_id();
+        let mut scope = Scope::with_span(
+            id,
+            Some(self.current_id()),
+            ScopeKind::ScriptSetup,
+            start,
+            end,
+        );
         scope.set_data(ScopeData::ScriptSetup(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -236,17 +233,16 @@ impl ScopeChain {
         start: u32,
         end: u32,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
+        let id = self.next_id();
         let mut scope = Scope::with_span(
             id,
-            Some(self.current),
+            Some(self.current_id()),
             ScopeKind::NonScriptSetup,
             start,
             end,
         );
         scope.set_data(ScopeData::NonScriptSetup(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -257,11 +253,16 @@ impl ScopeChain {
         start: u32,
         end: u32,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
-        let mut scope = Scope::with_span(id, Some(self.current), ScopeKind::Universal, start, end);
+        let id = self.next_id();
+        let mut scope = Scope::with_span(
+            id,
+            Some(self.current_id()),
+            ScopeKind::Universal,
+            start,
+            end,
+        );
         scope.set_data(ScopeData::Universal(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -273,10 +274,10 @@ impl ScopeChain {
         start: u32,
         end: u32,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
+        let id = self.next_id();
 
         // Build parents: current scope + !js (browser globals)
-        let mut parents: ParentScopes = smallvec![self.current];
+        let mut parents: ParentScopes = smallvec![self.current_id()];
         if let Some(browser_id) = self.find_scope_by_kind(ScopeKind::JsGlobalBrowser)
             && !parents.contains(&browser_id)
         {
@@ -285,8 +286,7 @@ impl ScopeChain {
 
         let mut scope = Scope::with_span_parents(id, parents, ScopeKind::ClientOnly, start, end);
         scope.set_data(ScopeData::ClientOnly(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -297,10 +297,10 @@ impl ScopeChain {
         start: u32,
         end: u32,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
+        let id = self.next_id();
         let scope_kind = data.runtime.to_scope_kind();
         let binding_type = data.runtime.to_binding_type();
-        let mut scope = Scope::with_span(id, Some(self.current), scope_kind, start, end);
+        let mut scope = Scope::with_span(id, Some(self.current_id()), scope_kind, start, end);
 
         // Add JS globals as bindings with runtime-specific type
         for global in &data.globals {
@@ -308,8 +308,7 @@ impl ScopeChain {
         }
 
         scope.set_data(ScopeData::JsGlobal(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -318,10 +317,9 @@ impl ScopeChain {
         &mut self,
         globals: &'static StandardGlobals,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
+        let id = self.next_id();
         self.scopes
-            .push(Scope::standard(id, Some(self.current), globals));
-        self.current = id;
+            .push_selected(Scope::standard(id, Some(self.current_id()), globals));
         id
     }
 
@@ -332,8 +330,14 @@ impl ScopeChain {
         start: u32,
         end: u32,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
-        let mut scope = Scope::with_span(id, Some(self.current), ScopeKind::VueGlobal, start, end);
+        let id = self.next_id();
+        let mut scope = Scope::with_span(
+            id,
+            Some(self.current_id()),
+            ScopeKind::VueGlobal,
+            start,
+            end,
+        );
 
         // Add Vue globals as bindings
         for global in &data.globals {
@@ -344,8 +348,7 @@ impl ScopeChain {
         }
 
         scope.set_data(ScopeData::VueGlobal(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
@@ -356,24 +359,24 @@ impl ScopeChain {
         start: u32,
         end: u32,
     ) -> ScopeId {
-        let id = self.scopes.next_idx();
+        let id = self.next_id();
         let mut scope = Scope::with_span(
             id,
-            Some(self.current),
+            Some(self.current_id()),
             ScopeKind::ExternalModule,
             start,
             end,
         );
         scope.set_data(ScopeData::ExternalModule(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
     /// Enter a closure scope (function declaration, function expression, arrow function)
     pub fn enter_closure_scope(&mut self, data: ClosureScopeData, start: u32, end: u32) -> ScopeId {
-        let id = self.scopes.next_idx();
-        let mut scope = Scope::with_span(id, Some(self.current), ScopeKind::Closure, start, end);
+        let id = self.next_id();
+        let mut scope =
+            Scope::with_span(id, Some(self.current_id()), ScopeKind::Closure, start, end);
 
         // Add parameter names as bindings
         for param in &data.param_names {
@@ -384,18 +387,16 @@ impl ScopeChain {
         }
 
         scope.set_data(ScopeData::Closure(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 
     /// Enter a block scope (if, for, switch, try, catch, etc.)
     pub fn enter_block_scope(&mut self, data: BlockScopeData, start: u32, end: u32) -> ScopeId {
-        let id = self.scopes.next_idx();
-        let mut scope = Scope::with_span(id, Some(self.current), ScopeKind::Block, start, end);
+        let id = self.next_id();
+        let mut scope = Scope::with_span(id, Some(self.current_id()), ScopeKind::Block, start, end);
         scope.set_data(ScopeData::Block(data));
-        self.scopes.push(scope);
-        self.current = id;
+        self.scopes.push_selected(scope);
         id
     }
 }

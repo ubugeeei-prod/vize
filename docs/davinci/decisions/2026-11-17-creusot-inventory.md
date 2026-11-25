@@ -109,6 +109,24 @@ Creusot accepts only with a trusted declaration, and the proofs admit none.
 | `an_update_is_recompute_and_reorders_allocate_nothing` | an update equals recompute; a reorder allocates nothing       | 2 roots         | none                | kani   |
 | `allocation_is_exactly_the_inserted_delta`             | allocation is exactly the inserted delta                      | 1 insertion     | none                | kani   |
 
+## L2 script recovery and assignability (`davinci/vize_l2/src/query/script/assignments`)
+
+Kani files, deleted: `assignments/kani.rs` and `assignments/prefix/kani.rs`.
+Their bounds were the whole `u32` domain and every primitive pair with one
+representative value per type. Creusot roots: `assignments/prefix/creusot.rs`
+(package `tests/formal/creusot/recovery`), over the contracts of
+`frame::rebase` and `frame::retry_limit`, and `assignments/creusot.rs`
+(package `tests/formal/creusot/assignability`), over the contract of
+`relation::accepts`: a primitive annotation is assignable from a literal type
+exactly when they are the same primitive. A literal is modelled by its value,
+and the value sets of the three primitives are disjoint.
+
+| Kani harness                                     | Law                                                                                                                  | Kani bound                                 | Creusot replacement                                                                       | Status |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------- | ------ |
+| `cold_retries_fit_the_remaining_byte_budget`     | the next cold-open limit is at most the first label, below a nonzero failed end, and fits twice into the bytes spent | whole `u32` domain                         | `cold_retries_fit_the_remaining_byte_budget` over the contract of `frame::retry_limit`    | proved |
+| `moving_a_checked_source_interval_is_lossless`   | relocating a checked interval keeps it in the new block, keeps its length and moves back                             | whole `u32` domain                         | `moving_a_checked_source_interval_is_lossless` over the contract of `frame::rebase`       | proved |
+| `literal_membership_is_necessary_and_sufficient` | an annotation accepts a literal exactly when the literal's value is in the annotation's value set                    | 3 annotations, every boolean, `u64`, `u16` | `literal_membership_is_necessary_and_sufficient` over the contract of `relation::accepts` | proved |
+
 ## HTML content-model kernel (`crates/vize_patina/src/html_content_model`)
 
 Kani file, deleted with its last harness: `html_content_model/kani.rs`. Its
@@ -165,20 +183,70 @@ byte follows Unicode Table 3-6.
 | none         | every scalar that `decode_html_entities` or `escape_js_string` rewrites starts with a byte the gate flags | —          | `js_escape_gate::no_rewritten_scalar_passes_the_gate` over `byte_may_need_js_escaping`, every scalar | proved |
 | none         | the first byte of every scalar's UTF-8 encoding is below 0x80 or in 0xC2..=0xF4                           | —          | `js_escape_gate::every_scalar_starts_with_a_lead_byte`                                               | proved |
 
+## L0 spans and source ranges (`davinci/vize_l0/src`)
+
+Kani file: `span/proofs.rs`, deleted, and the four range and mapping
+harnesses of `source_range/proofs.rs`; `source_map_to_generated_*` stays
+there under Kani (see
+[Laws no harness states yet](#laws-no-harness-states-yet)). Each harness had no
+loop, so Kani checked every `u32` and `i32` value. Creusot states each law for
+every value instead: the functions in the proof root `creusot.rs` (package
+`tests/formal/creusot/coordinates`) call the shipped `span.rs` and
+`source_range.rs` and assert the law over their contracts. The contracts
+restate the documentation: a span or range is the half-open set of offsets
+`[start, end)` (`covers`); `is_empty` covers no offset; `intersects` shares
+one; `union` is the least range whose endpoints enclose both;
+`intersection` covers exactly the offsets in both, and is `None` when no
+offset is in both; `offset` and `extend` move each endpoint in the integers
+and clamp it into `u32` (`shifted`); a mapping carries an offset by its
+distance from the range start, clamped to the last offset of the other range
+(`carried`). `offset_u32` spells `amount.unsigned_abs()` as
+`amount.abs_diff(0)`, which Creusot specifies; the LLVM IR is unchanged.
+
+| Kani harness                                              | Law                                                                                                                                                 | Kani bound   | Creusot replacement                                                                                                     | Status |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------- | ------ |
+| `span_length_counts_the_offsets_it_covers`                | `Span::len` is the number of offsets in `[start, end)`, zero exactly when the span is empty                                                         | whole domain | `span_length_counts_the_offsets_it_covers` over the `len` and `is_empty` contracts                                      | proved |
+| `span_block_relative_form_ignores_where_the_block_starts` | the block-relative span never grows, inverts the shift inside the block and is invariant under moving span and block                                | whole domain | `span_block_relative_form_never_grows_and_inverts_the_shift`, `span_block_relative_form_ignores_where_the_block_starts` | proved |
+| `source_range_union_is_the_least_enclosing_range`         | `SourceRange::union` is commutative, associative, idempotent and the least range enclosing both                                                     | whole domain | `source_range_union_is_the_least_enclosing_range` over the `union` contract                                             | proved |
+| `source_range_intersection_is_the_offsets_in_both`        | `intersection` holds exactly the offsets in both, is `Some` exactly when they `intersects`, and is a semilattice meet                               | whole domain | `source_range_intersection_is_the_offsets_in_both`, with `a_nonempty_range_is_its_offsets`                              | proved |
+| `source_range_shifts_saturate_and_invert`                 | `offset` moves each endpoint by the shift clamped into `u32`; without saturation the opposite shift restores the range; `extend` encloses the range | whole domain | `source_range_shifts_saturate`, `source_range_shifts_invert`                                                            | proved |
+| `source_mapping_carries_offsets_between_its_ranges`       | a mapping carries offsets by their distance, clamped into the other range; an equal-length mapping is a bijection                                   | whole domain | `source_mapping_carries_offsets_between_its_ranges` over the `source_to_generated` and `generated_to_source` contracts  | proved |
+
+## Style header acceptance (`crates/vize_maestro/src/source_project/style_format`)
+
+Kani file, deleted with its harness: `style_format/kani.rs`. Its bound was
+four attributes per header over five names and four values. Creusot root:
+`style_format/creusot.rs`, which includes `header.rs` verbatim, as
+`style_format.rs` does, over the two fields the policy reads (an attribute's
+name and optional value) and the ordered attribute view. `same_header` carries
+the Lean model's `accepts` as its contract. The law is `accepted_iff` of
+tests/formal/style-format/Header.lean, stated as the Kani harness stated it: a
+header is accepted exactly when it is unchanged, or when its attributes are
+distinct plain flags (`lang`, `scoped`, `module`) and the new header, of the
+same length, spells each of them exactly once. The pigeonhole step from "each
+spelling is found" to "each occurs once" is a lemma over finite sets of
+spellings. Creusot 0.14 has no spec for `Iterator::eq`, `all` or `any`, so the
+policy reads both headers with `get` loops; the flag names are `const` items,
+which contracts can name. `str` equality goes through `PartialEq`'s trait
+contract on the deep model.
+
+| Kani harness                                                                  | Law                                                                                                               | Kani bound                      | Creusot replacement                                                                                                                       | Status |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `accepted_headers_keep_order_or_permute_unique_plain_flags_with_their_values` | a header is accepted exactly when it is unchanged, or a permutation of distinct plain flags that keeps each value | 4 attributes, 5 names, 4 values | `style_header::accepted_headers_keep_order_or_permute_unique_plain_flags_with_their_values` over `same_header`, every length and spelling | proved |
+
 ## Laws no harness states yet
 
 These are added where tractable, after the ports: lossless L1 render equals
 source, span monotonicity, and lowering totality. Each gets a row here when
 its proof or oracle lands.
 
-The span, range and VLQ kernels below are verified by Kani in
-`davinci-kani.yml` (`source-coordinates`), each against a spec written from
-the format's definition, not from the kernel. Where the bound is "whole
-domain", the harness has no loop over its input, or a loop Kani unwinds
-completely, so Kani checks every value of the domain and the check is
-exhaustive. Creusot does not reach these kernels without changing them:
-`span.rs` and `source_range.rs` derive `serde` and `Hash` and format through
-`fmt::Write`, and the VLQ writer appends to `CompactString`.
+The remaining source-map lookup and VLQ kernels below are verified by
+Kani in `davinci-kani.yml` (`source-coordinates`), each against a spec
+written from the format's definition. The VLQ writer appends to
+`CompactString`, and `SourceMap` sorts and searches with `sort_by_key` and
+`find_map`, which have no Creusot specification. The span, range and
+mapping laws are proved instead; see
+[L0 spans and source ranges](#l0-spans-and-source-ranges-davincivize_l0src).
 
 The two CSS string-body rows are verified in `davinci-kani.yml`
 (`css-string-bodies`) on `crates/vize_atelier_sfc/src/css/string_body.rs`, the
@@ -224,12 +292,6 @@ every Kani harness in the repository.
 | `utf16_offset_is_the_boundary_with_that_many_units`                 | `utf16_offset` returns exactly the scalar boundary with that many UTF-16 units, and `None` for any other column                                                          | 4 bytes, whole `u32` column                      | `line_index::offset_of_units` over `code_units::offset_of_units`, every text and `usize` column                                                                               | proved |
 | `utf16_len_counts_the_units_of_every_scalar`                        | `utf16_len` counts two UTF-16 units for a four-byte scalar and one for any other                                                                                         | 4 bytes                                          | `line_index::units_between` over `code_units::units_between`, every text                                                                                                      | proved |
 | `utf16_prefix_counts_the_units_of_whole_scalars`                    | `prefix_len` counts the units of every scalar that starts before the offset, a mid-scalar offset counting that scalar whole, so it never panics and is monotone          | 4 bytes, whole `usize` offset                    | `line_index::units_between` over `code_units::units_between`, every text and offset                                                                                           | proved |
-| `span_length_counts_the_offsets_it_covers`                          | `Span::len` is the number of offsets in `[start, end)`, zero exactly when the span is empty                                                                              | whole domain                                     | none                                                                                                                                                                          | kani   |
-| `span_block_relative_form_ignores_where_the_block_starts`           | the block-relative span never grows, inverts the shift inside the block and is invariant under moving span and block                                                     | whole domain                                     | none                                                                                                                                                                          | kani   |
-| `source_range_union_is_the_least_enclosing_range`                   | `SourceRange::union` is commutative, associative, idempotent and the least range enclosing both                                                                          | whole domain                                     | none                                                                                                                                                                          | kani   |
-| `source_range_intersection_is_the_offsets_in_both`                  | `intersection` holds exactly the offsets in both, is `Some` exactly when they `intersects`, and is a semilattice meet                                                    | whole domain                                     | none                                                                                                                                                                          | kani   |
-| `source_range_shifts_saturate_and_invert`                           | `offset` moves each endpoint by the shift clamped into `u32`; without saturation the opposite shift restores the range; `extend` encloses the range                      | whole domain                                     | none                                                                                                                                                                          | kani   |
-| `source_mapping_carries_offsets_between_its_ranges`                 | a mapping carries offsets by their distance, clamped into the other range; an equal-length mapping is a bijection                                                        | whole domain                                     | none                                                                                                                                                                          | kani   |
 | `source_map_to_generated_uses_the_mapping_that_contains_the_offset` | `SourceMap::to_generated` translates through the first mapping in source order whose source range contains the offset; ranges may be empty, inverted or overlap          | any 3 mappings, any insertion order, whole `u32` | none                                                                                                                                                                          | kani   |
 | `source_map_to_source_shifts_into_the_file_without_overflow`        | `SourceMap::to_source` adds the block offset to the first mapping that holds the generated offset, `None` past `u32::MAX`, and never overflows                           | 2 mappings of any shape, whole `u32` values      | none                                                                                                                                                                          | kani   |
 | `a_string_body_changes_only_at_a_backslash_or_its_quote`            | the scoped CSS string-body step leaves the string only at its opening quote and escapes only after U+005C; every other scalar, including U+0122 and U+0127, is content   | whole domain (every scalar, both quotes)         | none                                                                                                                                                                          | kani   |
@@ -237,6 +299,14 @@ every Kani harness in the repository.
 | none                                                                | `LineIndex::line_col` is the LF count before the offset and the UTF-16 units from that line's start; `line_col_to_offset` is its inverse on scalar boundaries            | —                                                | `line_index::line_col`, `offset_at` over `line_table.rs`; `line_col_is_one_to_one_on_boundaries`, `the_column_counts_the_units_since_the_line_start`; every text and LF table | proved |
 | none                                                                | `LineIndex::new` builds 0 and the offset after each LF, in order: the table the lookups require (`lf_table`)                                                             | —                                                | oracle `vize_l0` `line_index::tests::line_starts_follow_every_line_feed` (`memchr`)                                                                                           | oracle |
 | none                                                                | the emitter's line table starts a line after every terminator, and `resolve_in_table` and `resolve_positions` give each segment the line and UTF-16 column of its offset | —                                                | `source_map::line_start_table`, `resolve_in_table`, `resolve_positions` over `source_positions.rs`; every text, table and sorted segment list                                 | proved |
+
+## Preconditions of unsafe sites
+
+These laws discharge the precondition of an `unsafe` call in shipped code. No Kani harness stated them; round 1 of the [unsafe record](./2026-11-24-unsafe-model-checking.md) could not bound them in CBMC.
+
+| Law                                                                                                              | Kernel                                        | Creusot proof                                                                                                            | Status |
+| ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------ |
+| the current scope row exists (`current < rows.len()`), so `get_unchecked` and `get_unchecked_mut` read in bounds | `crates/vize_croquis/src/scope/chain/rows.rs` | type invariant of `Rows`; `Rows::current`, `Rows::current_mut`; `the_current_row_exists_after_every_transition_sequence` | proved |
 
 ## Kernel items outside the proof
 
@@ -258,6 +328,11 @@ Rust test.
 | `EffectKind::bit` in the product (`1 << (self as u8)`; the proof crate's twin matches)  | enum-to-discriminant cast                  | `vize_l3` `tests/lattice.rs` `each_effect_discriminant_is_its_set_offset`                                                                                                                   |
 | `EffectKind`, `BindingOrigin`, `EscapeKind`: derived `Debug`, `PartialEq`, `Eq`, `Hash` | discriminant intrinsics                    | `vize_l3` `tests/lattice.rs` `every_folio_spelling_roundtrips`                                                                                                                              |
 | `EffectSet`: derived `Debug`, `Default`, `PartialEq`, `Eq`, `Hash`                      | `fmt` and `Hasher` calls                   | `vize_l3` `tests/lattice.rs` `effect_set_derives_observe_membership_only`                                                                                                                   |
+| `Span`: derives other than `Clone` and `Copy`; `hash_relative`                          | `Hasher`, `fmt` and `serde` calls          | `vize_l0` `span::tests` `hash_relative_matches_derived_hash_of_rebased_span`                                                                                                                |
+| `Span::slice` and its `floor_char_boundary`                                             | `str::is_char_boundary`, `str::get`        | Kani `original_source_span_preserves_the_selected_bytes`; `vize_l0` `span::tests`                                                                                                           |
+| `SourceRange`: derives other than `Clone` and `Copy`; `Display`                         | `fmt` and `serde` calls                    | `vize_l0` `tests/source_range_intersections.rs` and `source_range::tests`                                                                                                                   |
+| `SourceMapping`, `MappingData`, `SourceMap`: derives                                    | `fmt` calls; no law reads them             | none needed: no law, test or diagnostic reads them                                                                                                                                          |
+| `SourceMap` methods                                                                     | `sort_by_key`, `find_map`                  | Kani `source_map_to_generated_uses_the_mapping_that_contains_the_offset`; `test_source_map`                                                                                                 |
 
 ## Trusted items
 

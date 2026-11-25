@@ -1,0 +1,10 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_extend": { "prover": "alt-ergo", "time": 0.014 },
+      "vc_saturating_add": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_saturating_sub": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}

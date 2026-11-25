@@ -18,6 +18,10 @@ members = [
   "unicode",
   "line-index",
   "source-map",
+  "coordinates",
+  "scope-chain",
+  "style-header",
+  "assignability",
 ]
 
 [workspace.dependencies]

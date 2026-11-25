@@ -6,8 +6,6 @@ on:
     paths:
       - .github/workflows/davinci-kani.yml
       - .github/scripts/workflows/davinci-kani/**
-      - davinci/vize_l0/src/span.rs
-      - davinci/vize_l0/src/span/proofs.rs
       - davinci/vize_l0/src/source_range.rs
       - davinci/vize_l0/src/source_range/proofs.rs
       - davinci/vize_l4/src/write/source_map/kani.rs
@@ -52,7 +50,7 @@ jobs:
           kani-version: 0.68.0
           args: --manifest-path davinci/vize_l2/Cargo.toml --features position-index --tests --lib --harness position_queries_ --output-format=terse
   source-coordinates:
-    name: Span, range and VLQ laws
+    name: Source map lookup and VLQ laws
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
@@ -64,8 +62,8 @@ jobs:
           kani-version: 0.68.0
           command: kani
           args: davinci/vize_l4/src/write/source_map/kani.rs --output-format=terse
-      - name: Verify span, range and mapping offsets
-        run: "cargo kani --manifest-path davinci/vize_l0/Cargo.toml --lib --harness span::proofs:: --harness source_range::proofs:: --output-format=terse --jobs 2"
+      - name: Verify the source map lookup
+        run: "cargo kani --manifest-path davinci/vize_l0/Cargo.toml --lib --harness source_range::proofs:: --output-format=terse --jobs 2"
   graph-certificates:
     name: L3 reachability certificates
     runs-on: blacksmith-32vcpu-ubuntu-2404
