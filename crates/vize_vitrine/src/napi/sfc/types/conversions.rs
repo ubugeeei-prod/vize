@@ -29,6 +29,23 @@ pub(crate) fn dependencies_to_napi(dependencies: Vec<vize_l0::String>) -> Option
     })
 }
 
+pub(crate) fn macro_artifacts_to_napi(
+    artifacts: Vec<vize_atelier_sfc::SfcMacroArtifact>,
+) -> Vec<MacroArtifactNapi> {
+    artifacts
+        .into_iter()
+        .map(|artifact| MacroArtifactNapi {
+            kind: artifact.kind.into(),
+            name: artifact.name.into(),
+            source: artifact.source.into(),
+            content: artifact.content.into(),
+            module_code: artifact.module_code.map(Into::into),
+            start: artifact.start as u32,
+            end: artifact.end as u32,
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::dependencies_to_napi;
@@ -61,21 +78,4 @@ mod tests {
             Some(vec![r"C:\repo\types.ts".into()]),
         );
     }
-}
-
-pub(crate) fn macro_artifacts_to_napi(
-    artifacts: Vec<vize_atelier_sfc::SfcMacroArtifact>,
-) -> Vec<MacroArtifactNapi> {
-    artifacts
-        .into_iter()
-        .map(|artifact| MacroArtifactNapi {
-            kind: artifact.kind.into(),
-            name: artifact.name.into(),
-            source: artifact.source.into(),
-            content: artifact.content.into(),
-            module_code: artifact.module_code.map(Into::into),
-            start: artifact.start as u32,
-            end: artifact.end as u32,
-        })
-        .collect()
 }

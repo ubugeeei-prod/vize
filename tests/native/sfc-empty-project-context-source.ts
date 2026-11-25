@@ -42,7 +42,7 @@ function dependencyOwnershipPredecessor(file: string, bytes: Uint8Array): Uint8A
     file === "crates/vize_vitrine/src/napi/sfc/compile.rs"
       ? ["20a0b1d7a67747d64ee22ad54d2c37211d45de26", "8ec4b58ac5b5fa47c2c1b3859368c08b8481152a"]
       : file === "crates/vize_vitrine/src/napi/sfc/types/conversions.rs"
-        ? ["02f38d75f69fe24c97e7993e3e15ace19ccb2e7a", "c3a1d0e4cfffa709e5512252701cd1385b597d1b"]
+        ? ["e6defb2f305801c24eb8979bb633278afdf68fb0", "c3a1d0e4cfffa709e5512252701cd1385b597d1b"]
         : undefined;
   if (!expected || blob(bytes) !== expected[0]) return bytes;
   let text = Buffer.from(bytes).toString("utf8");
@@ -71,9 +71,8 @@ function dependencyOwnershipPredecessor(file: string, bytes: Uint8Array): Uint8A
         "                    .map_or_else(|| path.to_owned(), Into::into)",
     );
     const start = text.indexOf("\n#[cfg(test)]\nmod tests {");
-    const end = text.indexOf("\npub(crate) fn macro_artifacts_to_napi", start);
-    assert(start >= 0 && end > start, "reviewed converter's complete test module");
-    text = text.slice(0, start) + text.slice(end);
+    assert(start >= 0, "reviewed converter's complete trailing test module");
+    text = text.slice(0, start);
   }
   const predecessor = Buffer.from(text);
   assert.equal(blob(predecessor), expected[1], "dependency packet law keeps its exact predecessor");

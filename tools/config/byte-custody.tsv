@@ -386,7 +386,7 @@ crates/vize_vitrine/src/napi/language_code.rs	sha256:7954365cd0a7d91c5c411fb3e56
 crates/vize_vitrine/src/napi/sfc/compile.rs	blob:20a0b1d7a67747d64ee22ad54d2c37211d45de26	enforced	tests/native/sfc-empty-project-context-source.ts
 crates/vize_vitrine/src/napi/sfc/css.rs	sha256:13ceded5b546d42ef25cf0d5e6300ae5f5eebacc94c6a651cfe88883227f296a	record-only	tests/_fixtures/differential/css-engine-boundary-3295/source-baseline/source-affinity.json
 crates/vize_vitrine/src/napi/sfc/types.rs	blob:0399155317ff085588b2cfc8e52fc261dac0efae	enforced	tests/native/sfc-empty-project-context-source.ts
-crates/vize_vitrine/src/napi/sfc/types/conversions.rs	blob:02f38d75f69fe24c97e7993e3e15ace19ccb2e7a	enforced	tests/native/sfc-empty-project-context-source.ts
+crates/vize_vitrine/src/napi/sfc/types/conversions.rs	blob:e6defb2f305801c24eb8979bb633278afdf68fb0	enforced	tests/native/sfc-empty-project-context-source.ts
 crates/vize_vitrine/src/wasm/cross_file.rs	blob:937e80c1ca7b257f0ec26e5fee193d9cb5ef1550	enforced	editors/vscode/test/css-hover-source-custody.json
 crates/vize_vitrine/src/wasm/cross_file/effect_summary.rs	blob:46e741eb1ee0687966826432d656e0bbdf85e4ca	enforced	editors/vscode/test/css-hover-source-custody.json
 crates/vize_vitrine/src/wasm/cross_file/effect_summary/tests.rs	blob:6bb750362789a6d95f7988ec4b4cbd6065fee006	enforced	editors/vscode/test/css-hover-source-custody.json
