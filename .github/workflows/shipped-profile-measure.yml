@@ -96,5 +96,6 @@ jobs:
             ${{ runner.temp }}/release-measure/out/pair.json
             ${{ runner.temp }}/release-measure/out/*/side.json
             ${{ runner.temp }}/release-measure/out/*/*/measurement/measurement.json
+            ${{ runner.temp }}/release-measure/out/*/*/measurement/run-1/*.callgrind*
           if-no-files-found: warn
           retention-days: 30
