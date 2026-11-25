@@ -57,8 +57,29 @@ fn normally_owned_program_and_file_origin_survive_owner_move_before_a_short_rebo
     let moved = Box::new(owner);
     #[allow(deprecated)]
     {
-        assert!(core::ptr::eq(moved.descriptor(), moved.l1ir()));
-        assert!(core::ptr::eq(moved.file(), moved.l2ir()));
+        let fixture: serde_json::Value = serde_json::from_str(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/native-ir-accessor-compatibility-13674/cases.json"
+        )))
+        .unwrap();
+        let getters: Vec<_> = fixture["getters"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|getter| getter["owner"] == "NativeSfcLintOwner")
+            .collect();
+        assert_eq!(getters.len(), 2);
+        for getter in getters {
+            match (getter["legacy"].as_str(), getter["canonical"].as_str()) {
+                (Some("descriptor"), Some("l1ir")) => {
+                    assert!(core::ptr::eq(moved.descriptor(), moved.l1ir()));
+                }
+                (Some("file"), Some("l2ir")) => {
+                    assert!(core::ptr::eq(moved.file(), moved.l2ir()));
+                }
+                _ => panic!("unregistered setup getter"),
+            }
+        }
     }
     let setup = moved.setup().unwrap();
     assert!(core::ptr::eq(setup.owner(), moved.as_ref()));

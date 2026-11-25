@@ -1,0 +1,10 @@
+{
+  "schema": "vize.patina.native-ir-accessor-compatibility",
+  "version": 1,
+  "getters": [
+    { "owner": "NativeCanonicalLint", "legacy": "file", "canonical": "l2ir" },
+    { "owner": "NativeSfcLintOwner", "legacy": "descriptor", "canonical": "l1ir" },
+    { "owner": "NativeSfcLintOwner", "legacy": "file", "canonical": "l2ir" },
+    { "owner": "NativeSfcTemplateOwner", "legacy": "descriptor", "canonical": "l1ir" }
+  ]
+}
