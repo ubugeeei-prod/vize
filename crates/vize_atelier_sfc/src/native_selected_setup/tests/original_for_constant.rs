@@ -82,7 +82,7 @@ fn eleven_whole_original_constant_for_components_and_raw_maps_are_captured() -> 
             );
             let view = mapped.observation().admitted().ok_or("normal owner")?;
             let setup = view.setup();
-            let file = setup.file();
+            let file = setup.l2ir();
             let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
                 return Err(cstr!("{id}: original root"));
             };

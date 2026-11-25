@@ -59,7 +59,7 @@ fn ten_whole_original_for_components_and_maps_are_captured() -> Result<(), Strin
         );
         let view = mapped.observation().admitted().ok_or("same envelope")?;
         let setup = view.setup();
-        let file = setup.file();
+        let file = setup.l2ir();
         let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
             return Err(cstr!("{id}: original root"));
         };
@@ -195,10 +195,10 @@ fn foreign_original_for_and_bindings_never_join_equal_source_or_numeric_ids() {
     );
     let av = a.observation().admitted().unwrap();
     let bv = b.observation().admitted().unwrap();
-    let [Op::OriginalFor(ao)] = av.setup().file().artifact().root().ops.as_slice() else {
+    let [Op::OriginalFor(ao)] = av.setup().l2ir().artifact().root().ops.as_slice() else {
         panic!("For")
     };
-    let [Op::OriginalFor(bo)] = bv.setup().file().artifact().root().ops.as_slice() else {
+    let [Op::OriginalFor(bo)] = bv.setup().l2ir().artifact().root().ops.as_slice() else {
         panic!("For")
     };
     let analysis = build_selected_setup_dom_decisions(av.setup()).unwrap();
@@ -214,7 +214,7 @@ fn foreign_original_for_and_bindings_never_join_equal_source_or_numeric_ids() {
     assert_eq!(row.collection().id(), foreign.id());
     assert!(!row.collection().same_owner(foreign));
     assert!(av.setup().binding(foreign).is_err());
-    assert!(av.setup().file().for_head_for(bo).is_none());
+    assert!(av.setup().l2ir().for_head_for(bo).is_none());
 }
 
 #[test]
@@ -233,12 +233,12 @@ fn moving_complete_for_output_keeps_whole_program_params_collection_and_maps() {
     );
     let (program, collection, parameter) = {
         let view = compiled.observation().admitted().unwrap();
-        let [Op::OriginalFor(op)] = view.setup().file().artifact().root().ops.as_slice() else {
+        let [Op::OriginalFor(op)] = view.setup().l2ir().artifact().root().ops.as_slice() else {
             panic!("For")
         };
         let resolution = view
             .setup()
-            .file()
+            .l2ir()
             .for_head_for(op)
             .unwrap()
             .resolution()
@@ -251,12 +251,12 @@ fn moving_complete_for_output_keeps_whole_program_params_collection_and_maps() {
     };
     let moved = Box::new(compiled);
     let view = moved.observation().admitted().unwrap();
-    let [Op::OriginalFor(op)] = view.setup().file().artifact().root().ops.as_slice() else {
+    let [Op::OriginalFor(op)] = view.setup().l2ir().artifact().root().ops.as_slice() else {
         panic!("For")
     };
     let resolution = view
         .setup()
-        .file()
+        .l2ir()
         .for_head_for(op)
         .unwrap()
         .resolution()

@@ -46,7 +46,7 @@ fn original_primitive_receipts_join_real_file_ast_and_source_in_the_sole_l3_visi
         let analysis = build_template_dom_decisions(output.view().map_err(|_| "view")?)
             .map_err(|_| "sole original L3 visit")?;
         check(core::ptr::eq(analysis.owner(), &output))?;
-        let file = analysis.file();
+        let file = analysis.l2ir();
         check(file.is_complete())?;
         check(core::ptr::eq(file.artifact().source(), source))?;
         let input = file
@@ -76,7 +76,7 @@ fn original_primitive_receipts_join_real_file_ast_and_source_in_the_sole_l3_visi
         let row = analysis
             .expression(NodeId::FIRST)
             .ok_or("same-walk expression fact")?;
-        check(core::ptr::eq(row.resolution().file(), file))?;
+        check(core::ptr::eq(row.resolution().l2ir(), file))?;
         let resolved = row
             .resolution()
             .table()
@@ -119,7 +119,7 @@ fn legacy_literals_and_regexp_retain_original_complete_file_and_full_span_refusa
         let output = completed(&arena, source)?;
         let analysis = build_template_dom_decisions(output.view().map_err(|_| "view")?)
             .map_err(|_| "sole L3 visit")?;
-        let file = analysis.file();
+        let file = analysis.l2ir();
         check(file.is_complete())?;
         let input = file
             .native_interpolation(NodeId::FIRST)

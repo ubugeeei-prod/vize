@@ -100,7 +100,7 @@ fn conditional_slot_condition_is_owned_by_the_checked_payload() {
     let allocator = Allocator::new();
     let mut lowered = lowered_source(&allocator, SOURCES[0]);
     let condition = lowered
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| operand.role == vize_l3::operand::OperandRole::Condition)
@@ -120,7 +120,7 @@ fn loop_slot_source_is_owned_by_the_checked_payload() {
     let source = r#"<Child><template v-for="item in items" #[item]>{{item}}</template></Child>"#;
     let mut lowered = lowered_source(&allocator, source);
     let source = lowered
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| operand.role == vize_l3::operand::OperandRole::ForSource)

@@ -77,7 +77,7 @@ fn checked_teleport_payload_owns_runtime_kind_and_target() {
         r#"<Teleport to="body"><div>content</div></Teleport>"#,
     );
     let target = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| {

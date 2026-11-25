@@ -46,12 +46,12 @@ pub enum NativeCanonicalLintRefusal {
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_patina::native::canonical::NativeCanonicalLint;
-/// fn forge<'a>(file: &L2Ir<'a>) {
+/// fn forge<'a>(l2ir: &L2Ir<'a>) {
 ///     let _ = NativeCanonicalLint { file };
 /// }
 /// ```
 pub struct NativeCanonicalLint<'o, 'a> {
-    file: &'o L2Ir<'a>,
+    l2ir: &'o L2Ir<'a>,
 }
 
 impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
@@ -59,7 +59,7 @@ impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
     #[must_use]
     pub fn from_vue(owner: NativeSfc<'o, 'a>) -> Self {
         Self {
-            file: owner.file().file(),
+            l2ir: owner.file().l2ir(),
         }
     }
 
@@ -68,7 +68,7 @@ impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
     pub fn from_jsx(owner: &'o JsxMarkupFile<'a>) -> Result<Self, NativeCanonicalLintRefusal> {
         if let Some(comment) = owner.owner().observation().comments().first() {
             let base = owner
-                .file()
+                .l2ir()
                 .units()
                 .first()
                 .ok_or(NativeCanonicalLintRefusal::SourceMismatch)?
@@ -84,13 +84,13 @@ impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
                 span: Span::new(start, end),
             });
         }
-        Ok(Self { file: owner.file() })
+        Ok(Self { l2ir: owner.l2ir() })
     }
 
     /// Returns the authentic canonical file retained from the admitted owner.
     #[must_use]
-    pub fn file(&self) -> &'o L2Ir<'a> {
-        self.file
+    pub fn l2ir(&self) -> &'o L2Ir<'a> {
+        self.l2ir
     }
 
     /// Shared static attribute policy and complete localized L0 diagnostics.
@@ -113,7 +113,7 @@ impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
         let mut findings = Vec::new();
         let mut refusal = None;
         let mut rendered = None;
-        visit_markup_nodes(self.file, &mut |_, node| {
+        visit_markup_nodes(self.l2ir, &mut |_, node| {
             if refusal.is_some() {
                 return;
             }
@@ -159,15 +159,15 @@ pub use accessibility::AccessibilityFindings;
 
 #[inline]
 fn visit_markup_nodes<'s, 'a>(
-    file: &'s L2Ir<'a>,
+    l2ir: &'s L2Ir<'a>,
     visit: &mut impl FnMut(vize_l0::id::NodeId, NodeRef<'s, 'a>),
 ) -> Result<(), vize_l2::walk::NodeLimit> {
     #[cfg(feature = "canonical-rule-group")]
     {
-        file.artifact().visit_markup_preorder(visit)
+        l2ir.artifact().visit_markup_preorder(visit)
     }
     #[cfg(not(feature = "canonical-rule-group"))]
     {
-        file.artifact().visit_nodes(visit)
+        l2ir.artifact().visit_nodes(visit)
     }
 }

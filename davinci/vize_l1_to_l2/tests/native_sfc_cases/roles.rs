@@ -17,7 +17,7 @@ fn setup_only_and_script_only_need_no_synthetic_ordinary_or_template() {
     let script = observed.scripts().first().unwrap();
     assert_eq!(script.role(), ScriptRole::Setup);
     assert_eq!(script.container_index(), 0);
-    let binding = native.file().file().bindings().next().unwrap();
+    let binding = native.file().l2ir().bindings().next().unwrap();
     assert_eq!(
         native.file().exposure(binding).unwrap().role(),
         VueScriptRole::Setup
@@ -32,7 +32,7 @@ fn ordinary_only_is_real_script_file_without_setup_exposure() {
     let native = observed.admitted().unwrap();
     assert!(observed.template().is_none());
     assert!(native.file().setup().is_none());
-    let binding = native.file().file().bindings().next().unwrap();
+    let binding = native.file().l2ir().bindings().next().unwrap();
     assert_eq!(binding.declaration().unwrap().name.as_str(), "value");
     assert!(native.file().exposure(binding).is_none());
 }
@@ -59,12 +59,12 @@ fn reversed_authored_order_preserves_indices_and_constructs_ordinary_first() {
         native.file().ordinary().unwrap().scope(),
         native.file().setup().unwrap().scope()
     );
-    let bindings: Vec<_> = native.file().file().bindings().collect();
+    let bindings: Vec<_> = native.file().l2ir().bindings().collect();
     assert_eq!(bindings.len(), 2);
     for binding in bindings {
         assert!(native.file().exposure(binding).is_some());
     }
-    assert!(!native.file().file().references().is_empty());
+    assert!(!native.file().l2ir().references().is_empty());
 }
 
 #[test]
@@ -101,7 +101,7 @@ fn type_only_setup_identity_never_becomes_runtime_exposure() {
     let native = observed.admitted().unwrap();
     let mut found_type = false;
     let mut found_value = false;
-    for binding in native.file().file().bindings() {
+    for binding in native.file().l2ir().bindings() {
         let declaration = binding.declaration().unwrap();
         if declaration.namespace == Namespace::Type {
             found_type = true;
@@ -126,7 +126,7 @@ fn empty_template_and_static_template_without_scripts_are_real_files() {
         let observed = lower_sfc_native(&arena, source, options());
         let native = observed.admitted().unwrap();
         assert!(observed.scripts().is_empty());
-        assert!(native.file().file().units().is_empty());
+        assert!(native.file().l2ir().units().is_empty());
         let produced = observed.template().unwrap().produced().unwrap();
         assert!(produced.is_supported());
         assert!(core::ptr::eq(
@@ -146,7 +146,7 @@ fn template_call_retains_genuine_exposed_reference_facts_without_script_call_adm
     let embed = produced.embeds.first().unwrap();
     let resolution = native
         .file()
-        .file()
+        .l2ir()
         .expression(embed.node.unwrap())
         .unwrap();
     let table = resolution.table().unwrap();
@@ -156,7 +156,7 @@ fn template_call_retains_genuine_exposed_reference_facts_without_script_call_adm
     ));
     let mut names = Vec::new();
     for occurrence in table.occurrences() {
-        let binding = native.file().file().binding(occurrence.binding).unwrap();
+        let binding = native.file().l2ir().binding(occurrence.binding).unwrap();
         names.push(binding.declaration().unwrap().name.as_str());
         assert!(native.file().exposure(binding).is_some());
         assert!(resolution.accepts(binding));

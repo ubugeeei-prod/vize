@@ -31,7 +31,7 @@ use vize_l2::{
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::vapor::build_template_vapor_decisions;
-/// fn forge(file: &L2Ir<'_>) { let _ = build_template_vapor_decisions(file); }
+/// fn forge(l2ir: &L2Ir<'_>) { let _ = build_template_vapor_decisions(file); }
 /// ```
 pub struct TemplateVaporAnalysis<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,
@@ -44,8 +44,8 @@ impl<'owner, 'arena> TemplateVaporAnalysis<'owner, 'arena> {
         self.view.owner()
     }
     #[must_use]
-    pub fn file(&self) -> &'owner L2Ir<'arena> {
-        self.analysis.file()
+    pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.analysis.l2ir()
     }
     #[must_use]
     pub fn original_attributes(

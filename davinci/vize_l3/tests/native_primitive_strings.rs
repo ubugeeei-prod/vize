@@ -70,7 +70,7 @@ fn genuine_selected_dom_and_ssr_reads_preserve_all_original_primitive_classes() 
             assert_eq!(row.unit, setup.unit());
             assert_eq!(row.scope, setup.scope());
             assert!(setup.binding(read.binding()).is_ok());
-            assert!(core::ptr::eq(read.binding().file(), setup.file()));
+            assert!(core::ptr::eq(read.binding().l2ir(), setup.l2ir()));
 
             let ssr = build_selected_setup_ssr_decisions(setup).unwrap();
             let facts = ssr.ssr().unwrap();
@@ -90,7 +90,7 @@ fn genuine_selected_dom_and_ssr_reads_preserve_all_original_primitive_classes() 
                 }
             );
             assert_eq!(ssr_read.binding().id(), read.binding().id());
-            assert!(core::ptr::eq(ssr_read.binding().file(), setup.file()));
+            assert!(core::ptr::eq(ssr_read.binding().l2ir(), setup.l2ir()));
             assert!(setup.binding(ssr_read.binding()).is_ok());
             assert_eq!(
                 ssr_read.binding().declaration().unwrap().initializer,

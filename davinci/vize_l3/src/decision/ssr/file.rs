@@ -17,21 +17,21 @@ use vize_l2::{artifact::Artifact, file::L2Ir};
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::ssr::build_ssr_file_decisions;
-/// fn discard(file: L2Ir<'_>) {
+/// fn discard(l2ir: L2Ir<'_>) {
 ///     let analysis = build_ssr_file_decisions(&file).unwrap();
 ///     drop(file);
 ///     let _ = analysis.file();
 /// }
 /// ```
 pub struct SsrFileAnalysis<'owner, 'arena> {
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
     analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
 impl<'owner, 'arena> SsrFileAnalysis<'owner, 'arena> {
     #[must_use]
-    pub const fn file(&self) -> &'owner L2Ir<'arena> {
-        self.file
+    pub const fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.l2ir
     }
     #[must_use]
     pub fn original_attributes(
@@ -42,7 +42,7 @@ impl<'owner, 'arena> SsrFileAnalysis<'owner, 'arena> {
 
     #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
-        self.file.artifact()
+        self.l2ir.artifact()
     }
     #[must_use]
     pub fn tables(&self) -> &DecisionTables {
@@ -57,24 +57,24 @@ impl<'owner, 'arena> SsrFileAnalysis<'owner, 'arena> {
 /// Reject incomplete or interrupted file admission before the sole decision walk.
 /// This proves native file completion, not original SFC custody or product parity.
 pub fn build_ssr_file_decisions<'owner, 'arena>(
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
 ) -> Result<SsrFileAnalysis<'owner, 'arena>, DecisionBuildError> {
-    if !file.is_complete() {
+    if !l2ir.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
     }
-    let analysis = build_decisions(file.artifact(), TargetPolicy::Ssr)?;
-    Ok(SsrFileAnalysis { file, analysis })
+    let analysis = build_decisions(l2ir.artifact(), TargetPolicy::Ssr)?;
+    Ok(SsrFileAnalysis { l2ir, analysis })
 }
 
 // Called only after the real selected template entry derives its own File.
 pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
 ) -> Result<SsrFileAnalysis<'owner, 'arena>, DecisionBuildError> {
     let analysis = crate::decision::build::build_with_original(
-        file,
+        l2ir,
         TargetPolicy::Ssr,
         &crate::decision::dom::LiteralExpressions,
         &crate::decision::dom::vue::policy::NoReads,
     )?;
-    Ok(SsrFileAnalysis { file, analysis })
+    Ok(SsrFileAnalysis { l2ir, analysis })
 }

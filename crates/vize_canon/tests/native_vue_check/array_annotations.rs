@@ -54,8 +54,8 @@ fn original_array_vue_keeps_script_and_literal_checks_but_refuses_bound_template
                 &observed
             ));
             assert!(core::ptr::eq(
-                checked.projection().file(),
-                observed.file().unwrap().file()
+                checked.projection().l2ir(),
+                observed.file().unwrap().l2ir()
             ));
             assert_eq!(
                 checked.projection().document().as_str(),

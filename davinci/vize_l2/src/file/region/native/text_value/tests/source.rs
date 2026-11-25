@@ -30,7 +30,7 @@ fn eight_original_root_values_keep_whole_source_maps_and_actual_single_event() -
         let view = file
             .native_text_value_for(NodeId::FIRST, actual)
             .ok_or("actual Text join")?;
-        check(core::ptr::eq(view.file(), file) && core::ptr::eq(view.text(), actual))?;
+        check(core::ptr::eq(view.l2ir(), file) && core::ptr::eq(view.text(), actual))?;
         let value = view.observation().ok_or("whole preparation")?;
         let prepared = value.source();
         same(value.raw_text(), raw)?;

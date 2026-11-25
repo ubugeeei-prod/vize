@@ -237,5 +237,5 @@ fn diagnostic_normal_return_cannot_admit_or_extract_the_started_sfc_row() {
             .unwrap()
     ));
     assert_eq!(builder.finish().unwrap().node_count(), 2);
-    assert_eq!(producer.finish().unwrap().file().artifact().node_count(), 0);
+    assert_eq!(producer.finish().unwrap().l2ir().artifact().node_count(), 0);
 }

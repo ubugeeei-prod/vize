@@ -104,7 +104,7 @@ fn component_payload_mutations_drive_generation() {
     let allocator = Allocator::new();
     let source = r#"<div><MyComp title="t" :count="n" @change="save">{{ label }}</MyComp><slot name="aside" :item="row" /></div>"#;
     let mut s3 = lowered_source(&allocator, source);
-    for operand in &mut s3.program.operands {
+    for operand in &mut s3.l3ir.operands {
         match (operand.role, operand.value.text) {
             (OperandRole::Tag, "MyComp") => operand.value.text = "Other",
             (OperandRole::Attribute, "t") => operand.value.text = "u",

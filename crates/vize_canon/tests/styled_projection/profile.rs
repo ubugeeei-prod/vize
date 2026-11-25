@@ -56,7 +56,7 @@ fn paired(owner: &NativeSfcObservation<'_>, source: usize) {
     }
     eprintln!(
         "styled_doc={source} input={} calls={}/{} peak={}/{} pairs={pairs:?}",
-        owner.descriptor().source().len(),
+        owner.l1ir().source().len(),
         a.calls,
         b.calls,
         a.peak_bytes_over_start,
@@ -101,7 +101,7 @@ fn main() {
             let Some(owner) = observation.admitted() else {
                 continue;
             };
-            if observation.descriptor().admitted().unwrap().styles().len() > 0
+            if observation.l1ir().admitted().unwrap().styles().len() > 0
                 && StyledVueInput::prepare(owner)
                     .and_then(|v| v.project())
                     .is_ok()

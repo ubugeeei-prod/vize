@@ -29,7 +29,7 @@ pub(super) fn classify<'owner, 'arena>(
     model: &'owner ModelOp<'arena>,
 ) -> Result<SsrSetupExpression<'owner, 'arena>, SsrUnsupported> {
     let resolution =
-        crate::decision::model::checked(setup.file(), element_node, element, node, binding, model)
+        crate::decision::model::checked(setup.l2ir(), element_node, element, node, binding, model)
             .ok_or(SsrUnsupported::FileBinding)?;
     let [occurrence] = resolution
         .table()
@@ -58,7 +58,7 @@ impl<'owner, 'arena> SelectedSetupSsrAnalysis<'_, 'owner, 'arena> {
         element_node: NodeId,
         element: &'owner ElementOp<'arena>,
     ) -> Result<Option<SsrFileModel<'owner, 'arena>>, SsrUnsupported> {
-        let file = self.file();
+        let file = self.l2ir();
         let original = match file.native_models() {
             [] => return Ok(None),
             [original] => original,
@@ -83,7 +83,7 @@ impl<'owner, 'arena> SelectedSetupSsrAnalysis<'_, 'owner, 'arena> {
         };
         let checked = classify(self.setup(), element_node, element, node, binding, model)?;
         let resolution = row.resolution();
-        if !core::ptr::eq(resolution.file(), checked.resolution().file())
+        if !core::ptr::eq(resolution.l2ir(), checked.resolution().l2ir())
             || resolution.node() != checked.resolution().node()
             || resolution.scope() != checked.resolution().scope()
             || !self

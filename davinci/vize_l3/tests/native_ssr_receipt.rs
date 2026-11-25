@@ -55,7 +55,7 @@ fn original_completed_owner_supplies_all_ssr_decisions_after_descriptor_drop() {
         let original = file.artifact().provenance().to_vec();
         let receipt = build_template_ssr_decisions(output.view().unwrap()).unwrap();
         assert!(core::ptr::eq(receipt.owner(), &output));
-        assert!(core::ptr::eq(receipt.file(), file));
+        assert!(core::ptr::eq(receipt.l2ir(), file));
         assert!(core::ptr::eq(receipt.artifact(), file.artifact()));
         assert!(core::ptr::eq(receipt.artifact().source(), source));
         assert_eq!(

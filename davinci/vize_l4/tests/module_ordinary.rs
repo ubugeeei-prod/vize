@@ -25,7 +25,7 @@ use vize_l4::{
 mod module_ordinary_cases;
 
 struct Observed<'a> {
-    descriptor: L1Ir<'a>,
+    l1ir: L1Ir<'a>,
     syntax: EmbedSyntax<'a>,
 }
 impl<'a> Observed<'a> {
@@ -49,10 +49,13 @@ impl<'a> Observed<'a> {
             EmbedSource::authored(source, script.block().span()).map_err(|_| "actual source")?,
             ProgramOptions::module(script.lang()),
         );
-        Ok(Self { descriptor, syntax })
+        Ok(Self {
+            l1ir: descriptor,
+            syntax,
+        })
     }
     fn script(&self) -> Result<ScriptView<'_, 'a>, &'static str> {
-        self.descriptor
+        self.l1ir
             .admitted()
             .map_err(|_| "original descriptor")?
             .ordinary()
@@ -60,8 +63,7 @@ impl<'a> Observed<'a> {
     }
     fn file(&self, arena: &'a Allocator) -> Result<L2Ir<'a>, &'static str> {
         let script = self.script()?;
-        let mut producer =
-            FileProducer::new(arena, self.descriptor.source()).map_err(|_| "File")?;
+        let mut producer = FileProducer::new(arena, self.l1ir.source()).map_err(|_| "File")?;
         producer
             .program(
                 ProgramInput::checked(
@@ -77,10 +79,10 @@ impl<'a> Observed<'a> {
     }
     fn checked<'f>(
         &self,
-        file: &'f L2Ir<'a>,
+        l2ir: &'f L2Ir<'a>,
     ) -> Result<VueOrdinaryEmpty<'f, '_, '_, 'a>, &'static str> {
         VueOrdinaryEmpty::checked(
-            file,
+            l2ir,
             self.script()?,
             self.syntax.admitted_program().ok_or("original parser")?,
         )

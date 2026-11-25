@@ -21,7 +21,7 @@ use vize_l2::{
 /// Original SSR render facts and the selected File that owns their nodes and attributes.
 pub struct ServerRenderAnalysis<'owner, 'arena> {
     owner: &'owner NativeTemplateFile<'arena>,
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
     attributes: OriginalAttributeFacts<'owner, 'arena>,
     facts: SsrFacts<'owner, 'arena>,
 }
@@ -29,8 +29,8 @@ impl<'owner, 'arena> ServerRenderAnalysis<'owner, 'arena> {
     pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
         self.owner
     }
-    pub fn file(&self) -> &'owner L2Ir<'arena> {
-        self.file
+    pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.l2ir
     }
     pub fn original_attributes(&self) -> &OriginalAttributeFacts<'owner, 'arena> {
         &self.attributes
@@ -63,7 +63,7 @@ impl<'owner, 'arena> ClientServerDecisions<'owner, 'arena> {
 // Only this producer can associate a completed DOM table with the selected view.
 pub(in crate::decision) struct CompletedTarget<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
     analysis: DecisionAnalysis<'owner, 'arena>,
 }
 impl<'owner, 'arena> CompletedTarget<'owner, 'arena> {
@@ -74,7 +74,7 @@ impl<'owner, 'arena> CompletedTarget<'owner, 'arena> {
         &'owner L2Ir<'arena>,
         DecisionAnalysis<'owner, 'arena>,
     ) {
-        (self.view, self.file, self.analysis)
+        (self.view, self.l2ir, self.analysis)
     }
 }
 
@@ -84,10 +84,10 @@ struct RenderPass<'owner, 'arena> {
     binding_owner: Option<(NodeId, BindingOwner)>,
 }
 impl<'owner, 'arena> RenderPass<'owner, 'arena> {
-    fn new(file: &'owner L2Ir<'arena>) -> Result<Self, DecisionBuildError> {
+    fn new(l2ir: &'owner L2Ir<'arena>) -> Result<Self, DecisionBuildError> {
         Ok(Self {
             server: SsrBuilder::new(),
-            attributes: Some(OriginalAttributeCursor::new(file, file.artifact())?),
+            attributes: Some(OriginalAttributeCursor::new(l2ir, l2ir.artifact())?),
             binding_owner: None,
         })
     }
@@ -95,7 +95,7 @@ impl<'owner, 'arena> RenderPass<'owner, 'arena> {
     fn finish(
         self,
         owner: &'owner NativeTemplateFile<'arena>,
-        file: &'owner L2Ir<'arena>,
+        l2ir: &'owner L2Ir<'arena>,
     ) -> Result<ServerRenderAnalysis<'owner, 'arena>, DecisionBuildError> {
         let attributes = self
             .attributes
@@ -103,7 +103,7 @@ impl<'owner, 'arena> RenderPass<'owner, 'arena> {
             .finish()?;
         Ok(ServerRenderAnalysis {
             owner,
-            file,
+            l2ir,
             attributes,
             facts: self.server.finish(),
         })
@@ -156,12 +156,12 @@ impl<'owner, 'arena> RenderPass<'owner, 'arena> {
 type ClientPass<'owner, 'arena> = Builder<'owner, 'owner, 'arena, LiteralExpressions, NoReads>;
 
 fn client_pass<'owner, 'arena>(
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
 ) -> Result<ClientPass<'owner, 'arena>, DecisionBuildError> {
-    let artifact = file.artifact();
+    let artifact = l2ir.artifact();
     Ok(Builder {
         policy: TargetPolicy::Dom,
-        original_attributes: Some(OriginalAttributeCursor::new(file, artifact)?),
+        original_attributes: Some(OriginalAttributeCursor::new(l2ir, artifact)?),
         node_count: artifact.node_count(),
         frames: Vec::new(),
         nodes: SideTable::with_capacity(artifact.node_count() as usize),
@@ -169,7 +169,7 @@ fn client_pass<'owner, 'arena>(
         dom: Some(DomBuilder::new(
             &LiteralExpressions,
             artifact.root().ops.len(),
-            Some(file),
+            Some(l2ir),
             &NoReads,
         )),
         ssr: None,
@@ -180,7 +180,7 @@ fn client_pass<'owner, 'arena>(
 fn finish_client<'owner, 'arena>(
     mut client: ClientPass<'owner, 'arena>,
     view: NativeTemplateView<'owner, 'arena>,
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
 ) -> Result<TemplateDomAnalysis<'owner, 'arena>, DecisionBuildError> {
     let original_attributes = client
         .original_attributes
@@ -189,7 +189,7 @@ fn finish_client<'owner, 'arena>(
         .transpose()?;
     let dom = client.dom.take().map(DomBuilder::finish);
     let analysis = DecisionAnalysis {
-        artifact: file.artifact(),
+        artifact: l2ir.artifact(),
         tables: client.finish()?,
         original_attributes,
         dom,
@@ -198,7 +198,7 @@ fn finish_client<'owner, 'arena>(
     };
     Ok(TemplateDomAnalysis::from_pair(CompletedTarget {
         view,
-        file,
+        l2ir,
         analysis,
     }))
 }

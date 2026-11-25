@@ -39,12 +39,12 @@ fn original_js_ts_whole_program_and_actual_unit_survive_owner_moves() -> Result<
             moved.retained_setup().ok_or("retained after move")?,
         ))?;
         check(core::ptr::eq(
-            setup.file(),
+            setup.l2ir(),
             moved.file().ok_or("actual File")?,
         ))?;
         check(core::ptr::eq(
             setup.unit_record(),
-            setup.file().units().first().ok_or("actual unit")?,
+            setup.l2ir().units().first().ok_or("actual unit")?,
         ))?;
         check(core::ptr::eq(setup.selected().owner(), moved.selected()))?;
         check(setup.unit() == unit && unit.index() as usize == script.container_index())?;
@@ -55,8 +55,8 @@ fn original_js_ts_whole_program_and_actual_unit_survive_owner_moves() -> Result<
             setup.program().source_type().is_typescript()
                 == (script.lang() == vize_l1::embed::Lang::Ts),
         )?;
-        check(setup.file().bindings().count() == 4)?;
-        for binding in setup.file().bindings() {
+        check(setup.l2ir().bindings().count() == 4)?;
+        for binding in setup.l2ir().bindings() {
             let row = binding.declaration().ok_or("direct declaration")?;
             check(row.unit == unit && row.scope == setup.scope() && row.is_direct_program())?;
         }
@@ -89,7 +89,7 @@ fn equal_sources_and_shared_buffer_owners_keep_distinct_whole_program_file_ident
     ] {
         check(a.program().source() == other.program().source())?;
         check(!core::ptr::eq(a.owner(), other.owner()))?;
-        check(!core::ptr::eq(a.file(), other.file()))?;
+        check(!core::ptr::eq(a.l2ir(), other.l2ir()))?;
         check(!core::ptr::eq(a.syntax(), other.syntax()))?;
         check(a.program().program().body.as_ptr() != other.program().program().body.as_ptr())?;
     }

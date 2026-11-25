@@ -170,7 +170,7 @@ fn genuine_tsx_owner_retains_each_original_keyword_return_and_fragment_on_move()
             Box::new(producer.finish().unwrap_or_else(|rejected| {
                 panic!("complete TSX {keyword}: {:?}", rejected.error())
             }));
-        let file = owner.file();
+        let file = owner.l2ir();
         assert!(file.is_complete(), "{:?}", file.issues());
         assert!(file.units()[0].profile.typescript);
         assert!(file.units()[0].profile.jsx);
@@ -199,7 +199,7 @@ fn genuine_tsx_owner_retains_each_original_keyword_return_and_fragment_on_move()
         for _ in 0..2 {
             let queried = Model::new(&file).binding_at_offset(at).unwrap().unwrap();
             assert_eq!(queried.id(), parameter.id());
-            assert!(core::ptr::eq(queried.file(), file));
+            assert!(core::ptr::eq(queried.l2ir(), file));
         }
     }
 }

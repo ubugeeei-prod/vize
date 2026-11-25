@@ -9,22 +9,22 @@ use crate::resolution::{HandlerBindingRef, HandlerLocalId, HandlerScopeId};
 use vize_l0::Span;
 
 pub(super) fn visit<'f, 'a>(
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     mut visit: impl FnMut(TemplateSiteRef<'f, 'a>),
 ) -> Result<(), Error> {
-    for (node, _) in file.facts.handlers.iter() {
-        let handler = file
+    for (node, _) in l2ir.facts.handlers.iter() {
+        let handler = l2ir
             .handler(HandlerId(node))
             .ok_or(Error::OriginalMembership)?;
         handlers(handler, &mut visit)?;
     }
-    for (node, record) in file.facts.for_heads.iter() {
+    for (node, record) in l2ir.facts.for_heads.iter() {
         // An interrupted body can retain aliases before attaching its actual op.
         // Incomplete File refusal precedes this scan; never silently skip a row.
         if record.original.is_none() {
             return Err(Error::OriginalMembership);
         }
-        let head = file
+        let head = l2ir
             .for_head(OriginalForId(node))
             .ok_or(Error::OriginalMembership)?;
         for_head(head, &mut visit)?;
@@ -40,7 +40,7 @@ fn handlers<'f, 'a>(
     let syntax = resolution.input().operand().syntax();
     if !core::ptr::eq(
         syntax.source().authored_root(),
-        handler.file().artifact().source(),
+        handler.l2ir().artifact().source(),
     ) || !syntax
         .body()
         .is_some_and(|body| core::ptr::eq(body, resolution.input().body()))
@@ -51,7 +51,7 @@ fn handlers<'f, 'a>(
         let span = resolution
             .authored_span(row.span)
             .map_err(|_| Error::Projection)?;
-        checked_span(handler.file(), span)?;
+        checked_span(handler.l2ir(), span)?;
         check_scope(handler, row.scope)?;
         visit(TemplateSiteRef {
             symbol: TemplateSymbolRef::HandlerLocal(local(handler, row.binding)?),
@@ -65,13 +65,13 @@ fn handlers<'f, 'a>(
         let span = resolution
             .authored_span(row.span)
             .map_err(|_| Error::Projection)?;
-        checked_span(handler.file(), span)?;
+        checked_span(handler.l2ir(), span)?;
         check_scope(handler, row.scope)?;
         let symbol = match row.binding {
             HandlerBindingRef::Local(id) => TemplateSymbolRef::HandlerLocal(local(handler, id)?),
             HandlerBindingRef::Outer(id) => TemplateSymbolRef::File(
                 handler
-                    .file()
+                    .l2ir()
                     .binding(id)
                     .ok_or(Error::OriginalMembership)?,
             ),
@@ -120,16 +120,16 @@ fn for_head<'f, 'a>(
             .syntax()
             .source()
             .authored_root(),
-        head.file().artifact().source(),
+        head.l2ir().artifact().source(),
     ) {
         return Err(Error::OriginalMembership);
     }
     let collection = resolution.collection();
     let span = resolution.collection_authored_span();
-    checked_span(head.file(), span)?;
+    checked_span(head.l2ir(), span)?;
     visit(TemplateSiteRef {
         symbol: TemplateSymbolRef::File(
-            head.file()
+            head.l2ir()
                 .binding(collection.binding)
                 .ok_or(Error::OriginalMembership)?,
         ),
@@ -156,7 +156,7 @@ fn for_head<'f, 'a>(
             return Err(Error::OriginalMembership);
         }
         let span = original.authored_span();
-        checked_span(head.file(), span)?;
+        checked_span(head.l2ir(), span)?;
         visit(TemplateSiteRef {
             symbol: TemplateSymbolRef::File(binding),
             span,
@@ -168,9 +168,9 @@ fn for_head<'f, 'a>(
     Ok(())
 }
 
-fn checked_span(file: &L2Ir<'_>, span: Span) -> Result<(), Error> {
+fn checked_span(l2ir: &L2Ir<'_>, span: Span) -> Result<(), Error> {
     if span.start >= span.end
-        || file
+        || l2ir
             .artifact()
             .source()
             .get(span.start as usize..span.end as usize)

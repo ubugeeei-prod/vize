@@ -10,7 +10,7 @@ fn unavailable_style_profiles_never_disappear_into_a_successful_module() {
     ] {
         let arena = Allocator::default();
         let compilation = compile_native_sfc(&arena, source, NativeSfcCompileOptions::default());
-        let descriptor = compilation.observation().descriptor().admitted().unwrap();
+        let descriptor = compilation.observation().l1ir().admitted().unwrap();
         let style = descriptor.styles().next().unwrap();
         assert_eq!(
             compilation.result().unwrap_err(),

@@ -42,7 +42,7 @@ fn equal_numeric_nodes_do_not_authorize_a_foreign_retained_literal() {
         .file_expression(node)
         .unwrap()
         .resolution();
-    assert!(!core::ptr::eq(original.file(), foreign.file()));
+    assert!(!core::ptr::eq(original.l2ir(), foreign.l2ir()));
     let original_expression = original.table().unwrap().expression();
     let foreign_expression = foreign.table().unwrap().expression();
     assert_eq!(original_expression.span, foreign_expression.span);
@@ -57,7 +57,7 @@ fn equal_numeric_nodes_do_not_authorize_a_foreign_retained_literal() {
     writer.indent();
     writer.use_helper(helper);
     let error = FileExpressions {
-        file: first_analysis.file(),
+        l2ir: first_analysis.l2ir(),
         facts: first_analysis.dom(),
     }
     .write(&mut writer, node, ExprRef::Js(foreign_expression))
@@ -138,7 +138,7 @@ fn equal_binding_ids_keep_real_owners_and_reference_refusal_is_atomic() {
     let mut writer = Writer::<Recorded>::default();
     writer.push("prefix");
     let error = FileExpressions {
-        file: first_analysis.file(),
+        l2ir: first_analysis.l2ir(),
         facts: first_analysis.dom(),
     }
     .write(&mut writer, node, ExprRef::Js(expression))

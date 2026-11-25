@@ -11,7 +11,7 @@ use vize_l0::String;
 fn sample(source: &str, repetitions: u32, fused: bool) -> u128 {
     let arena = Allocator::default();
     let parsed = Parsed::new(&arena, source).unwrap();
-    let view = parsed.descriptor.admitted().unwrap().ordinary().unwrap();
+    let view = parsed.l1ir.admitted().unwrap().ordinary().unwrap();
     let syntax = parsed.ordinary.as_ref().unwrap();
     let input = || {
         ProgramInput::checked(

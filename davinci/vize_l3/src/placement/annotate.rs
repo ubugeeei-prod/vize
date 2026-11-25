@@ -17,10 +17,10 @@ use crate::op::{L3Ir, OpId, OpKind, RegionId};
 ///
 /// This never touches ops, regions, edges, effects, or operands, so partition
 /// facts exported for the canonical program stay exact.
-pub fn annotate(program: &mut L3Ir<'_>) {
-    let records = enumerate(&Index::new(program));
-    program.placements.clear();
-    program.placements.extend(records);
+pub fn annotate(l3ir: &mut L3Ir<'_>) {
+    let records = enumerate(&Index::new(l3ir));
+    l3ir.placements.clear();
+    l3ir.placements.extend(records);
 }
 
 struct Shapes {
@@ -32,7 +32,7 @@ struct Shapes {
 }
 
 fn enumerate(index: &Index<'_, '_>) -> Vec<PlacementRecord> {
-    let program = index.program;
+    let program = index.l3ir;
     let shapes = shapes(index);
     let hoistable: Vec<bool> = (0..program.ops.len())
         .map(|position| hoistable(index, &shapes, position))
@@ -64,7 +64,7 @@ fn enumerate(index: &Index<'_, '_>) -> Vec<PlacementRecord> {
 }
 
 fn shapes(index: &Index<'_, '_>) -> Shapes {
-    let program = index.program;
+    let program = index.l3ir;
     let statics: Vec<bool> = program
         .ops
         .iter()
@@ -98,7 +98,7 @@ fn shapes(index: &Index<'_, '_>) -> Shapes {
 }
 
 fn hoistable(index: &Index<'_, '_>, shapes: &Shapes, position: usize) -> bool {
-    let Some(op) = index.program.ops.get(position) else {
+    let Some(op) = index.l3ir.ops.get(position) else {
         return false;
     };
     if op.kind != OpKind::InsertNode
@@ -118,7 +118,7 @@ fn hoistable(index: &Index<'_, '_>, shapes: &Shapes, position: usize) -> bool {
         .iter()
         .take_while(|entry| entry.0 == op.region)
         .all(|entry| {
-            (index.program.ops.get(entry.1 as usize))
+            (index.l3ir.ops.get(entry.1 as usize))
                 .is_none_or(|other| !contains(op.span, other.span))
         });
     children_static && attached_static
@@ -126,7 +126,7 @@ fn hoistable(index: &Index<'_, '_>, shapes: &Shapes, position: usize) -> bool {
 
 /// Whether the element owning this op's region is itself a hoist root.
 fn inside_hoistable(index: &Index<'_, '_>, hoistable: &[bool], position: usize) -> bool {
-    (index.program.ops.get(position))
+    (index.l3ir.ops.get(position))
         .and_then(|op| index.region(op.region))
         .and_then(|region| region.owner)
         .and_then(|owner| index.position(owner))
@@ -134,7 +134,7 @@ fn inside_hoistable(index: &Index<'_, '_>, hoistable: &[bool], position: usize) 
 }
 
 fn group_leader(index: &Index<'_, '_>, leaders: &[Option<OpId>], position: usize) -> Option<OpId> {
-    let ops = &index.program.ops;
+    let ops = &index.l3ir.ops;
     let op = ops.get(position)?;
     let reference = index.reference(op)?;
     let pred = index.keyed_pred(op.id)?;

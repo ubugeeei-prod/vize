@@ -15,7 +15,7 @@ use classify::{binding_kind, binding_partition, binding_span, region_span};
 #[derive(Debug)]
 pub struct Lowered<'a> {
     /// Flat L3 program in the `built` phase.
-    pub program: L3Ir<'a>,
+    pub l3ir: L3Ir<'a>,
     /// Static/dynamic partition facts exported beside the program.
     pub partition: PartitionFacts<'a>,
 }
@@ -28,7 +28,7 @@ pub fn lower<'a>(allocator: &'a Allocator, root: &l2::Region<'_>) -> Lowered<'a>
 
 struct Cx<'a> {
     allocator: &'a Allocator,
-    program: L3Ir<'a>,
+    l3ir: L3Ir<'a>,
     partition: PartitionFacts<'a>,
     next_op: u32,
     next_region: u32,
@@ -40,7 +40,7 @@ impl<'a> Cx<'a> {
     fn new(allocator: &'a Allocator) -> Self {
         Self {
             allocator,
-            program: L3Ir::new(allocator, Phase::Built),
+            l3ir: L3Ir::new(allocator, Phase::Built),
             partition: PartitionFacts::new(allocator),
             next_op: 0,
             next_region: 0,
@@ -53,10 +53,10 @@ impl<'a> Cx<'a> {
         let root_span = region_span(root, Span::new(0, 0));
         let root_id = self.mint_region();
         debug_assert_eq!(root_id, RegionId::ROOT);
-        self.program.push_region(Region::root(root_span));
+        self.l3ir.push_region(Region::root(root_span));
         self.lower_ops(root, root_id, PartitionKind::Static);
         Lowered {
-            program: self.program,
+            l3ir: self.l3ir,
             partition: self.partition,
         }
     }
@@ -71,7 +71,7 @@ impl<'a> Cx<'a> {
     ) -> RegionId {
         let id = self.mint_region();
         let span = region_span(region, fallback_span);
-        self.program
+        self.l3ir
             .push_region(Region::child(id, parent, owner, span));
         self.lower_ops(region, id, inherited);
         id
@@ -88,7 +88,7 @@ impl<'a> Cx<'a> {
             for op in &region.ops {
                 let id = self.lower_op(op, target_region, inherited);
                 if let Some(from) = previous {
-                    self.program
+                    self.l3ir
                         .push_edge(StateEdge::new(from, id, EdgeKind::DomOrder));
                 }
                 previous = Some(id);
@@ -269,7 +269,7 @@ impl<'a> Cx<'a> {
             let id = self.push_op(binding_kind(binding), target_region, span, partition);
             self.capture_binding(id, target, binding);
             if let Some(from) = previous {
-                self.program
+                self.l3ir
                     .push_edge(StateEdge::new(from, id, EdgeKind::DomOrder));
             }
             previous = Some(id);
@@ -288,19 +288,19 @@ impl<'a> Cx<'a> {
         if partition.is_dynamic() {
             let effect = self.mint_effect();
             op = op.with_effect(effect);
-            self.program.push_effect(EffectScope {
+            self.l3ir.push_effect(EffectScope {
                 id: effect,
                 owner: id,
                 region,
                 span,
             });
             if let Some(previous) = self.last_effectful {
-                self.program
+                self.l3ir
                     .push_edge(StateEdge::new(previous, id, EdgeKind::EffectOrder));
             }
             self.last_effectful = Some(id);
         }
-        self.program.push_op(op);
+        self.l3ir.push_op(op);
         self.partition.push(PartitionFact {
             op: id,
             kind: partition,

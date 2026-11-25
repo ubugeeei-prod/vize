@@ -99,7 +99,7 @@ fn eighteen_whole_original_root_if_components_and_maps_are_captured() -> Result<
                     .admitted()
                     .ok_or("original setup owner")?;
                 let setup = view.setup();
-                let file = setup.file();
+                let file = setup.l2ir();
                 let [Op::If(original)] = file.artifact().root().ops.as_slice() else {
                     return Err(cstr!("{id}: actual single original If"));
                 };
@@ -165,7 +165,7 @@ fn eighteen_whole_original_root_if_components_and_maps_are_captured() -> Result<
                     return Err(cstr!("{id}: one actual resolver occurrence"));
                 };
                 require!(
-                    core::ptr::eq(resolution.file(), file)
+                    core::ptr::eq(resolution.l2ir(), file)
                         && resolution.node() == node
                         && resolution.scope() == Some(record.scope())
                         && read.binding().same_owner(binding)

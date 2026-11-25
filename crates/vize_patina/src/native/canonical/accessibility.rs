@@ -38,14 +38,14 @@ impl NativeCanonicalLint<'_, '_> {
         &self,
         messages: &(impl MessageLookup + ?Sized),
     ) -> AccessibilityFindings {
-        if self.file.artifact().root().ops.is_empty() {
+        if self.l2ir.artifact().root().ops.is_empty() {
             return AccessibilityFindings {
                 tabindex_no_positive: Ok(Vec::new()),
                 img_alt: Ok(Vec::new()),
             };
         }
         let mut candidates = Candidates::default();
-        candidates.collect(self.file);
+        candidates.collect(self.l2ir);
         let tabindex_no_positive = candidates.tabindex.render(
             TABINDEX_NO_POSITIVE_RULE,
             || tabindex_no_positive::Messages::new(messages),

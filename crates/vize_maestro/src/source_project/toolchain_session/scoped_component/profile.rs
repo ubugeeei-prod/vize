@@ -13,7 +13,7 @@ fn compile_and_lint(
     rules: &CssLinter,
     share: bool,
 ) -> (NativeSfcOutput, Vec<CssLintResult>) {
-    let owner = session.observation().descriptor();
+    let owner = session.observation().l1ir();
     let (prepared, results): (Vec<_>, Vec<_>) = owner
         .admitted()
         .unwrap()

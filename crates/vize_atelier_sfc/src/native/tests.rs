@@ -65,11 +65,8 @@ fn whole_native_sfc_modules_match_complete_pinned_render_references() {
                 .unwrap()
                 .is_empty()
         );
-        assert!(core::ptr::eq(
-            mapped.observation().descriptor().source(),
-            source
-        ));
-        let file = mapped.observation().file().unwrap().file();
+        assert!(core::ptr::eq(mapped.observation().l1ir().source(), source));
+        let file = mapped.observation().file().unwrap().l2ir();
         assert!(file.is_complete());
         assert!(core::ptr::eq(file.artifact().source(), source));
         for link in output.document().links() {
@@ -150,7 +147,7 @@ fn external_blocks_are_never_loaded_and_keep_every_original_capture() {
         };
         let Some(block) = compilation
             .observation()
-            .descriptor()
+            .l1ir()
             .container()
             .blocks
             .get(container_index)
@@ -159,7 +156,7 @@ fn external_blocks_are_never_loaded_and_keep_every_original_capture() {
         };
         assert_eq!(block.attr("src").unwrap().span, span);
         assert!(core::ptr::eq(
-            compilation.observation().descriptor().source(),
+            compilation.observation().l1ir().source(),
             source
         ));
         assert!(compilation.observation().admitted().is_none());
@@ -201,13 +198,13 @@ fn custom_template_languages_and_jsx_profiles_keep_descriptor_refusals() {
         assert!(
             compilation
                 .observation()
-                .descriptor()
+                .l1ir()
                 .issues()
                 .iter()
                 .any(|actual| actual.code == issue)
         );
         assert!(core::ptr::eq(
-            compilation.observation().descriptor().source(),
+            compilation.observation().l1ir().source(),
             source
         ));
         assert!(compilation.observation().scripts().is_empty());
@@ -255,7 +252,7 @@ fn runtime_and_descriptor_profile_refusals_never_return_partial_modules() {
         assert!(
             refused
                 .observation()
-                .descriptor()
+                .l1ir()
                 .issues()
                 .iter()
                 .any(|actual| actual.code == issue)
@@ -271,7 +268,7 @@ fn runtime_and_descriptor_profile_refusals_never_return_partial_modules() {
     assert!(
         refused
             .observation()
-            .descriptor()
+            .l1ir()
             .issues()
             .iter()
             .any(|actual| actual.code == DescriptorIssueCode::UnsupportedOptions)
@@ -289,7 +286,7 @@ fn malformed_template_refusal_retains_original_diagnostics_and_structural_file()
     );
     let observed = compilation.observation();
     assert!(observed.admitted().is_none());
-    let file = observed.file().unwrap().file();
+    let file = observed.file().unwrap().l2ir();
     assert!(file.is_complete());
     assert!(core::ptr::eq(file.artifact().source(), source));
     let template = observed.template().unwrap();

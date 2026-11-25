@@ -68,7 +68,7 @@ fn main() -> Result<(), &'static str> {
         let native = producer.finish_markup().map_err(|_| "native markup")?;
         let finished = at.elapsed().as_nanos();
         let at = Instant::now();
-        let artifact = native.file().artifact();
+        let artifact = native.l2ir().artifact();
         let facts = template_complexity::run(artifact.root(), artifact.node_count());
         if artifact.node_count() != children as u32 + 1
             || facts != template_complexity::ComplexityFacts::empty()

@@ -58,10 +58,7 @@ fn rejected_template_and_recovery_return_original_typed_issues_not_empty_success
         let original = query.snapshot().clone();
         let arena = Allocator::default();
         let observed = lower_sfc_native(&arena, original.source(), options());
-        assert!(core::ptr::eq(
-            observed.descriptor().source(),
-            original.source()
-        ));
+        assert!(core::ptr::eq(observed.l1ir().source(), original.source()));
         assert!(observed.scripts()[0].syntax().is_some());
         assert!(observed.admitted().is_none());
         let expected_issues = observed.issues().to_vec();
@@ -122,7 +119,7 @@ fn primitive_keyword_annotation_keeps_real_snapshot_and_full_sfc_comment_project
         .admitted()
         .expect("actual complete original keyword File");
     assert!(core::ptr::eq(
-        native.file().file().artifact().source(),
+        native.file().l2ir().artifact().source(),
         retained.source()
     ));
     let ready = block_on(query_sfc_comments(query, options())).unwrap();

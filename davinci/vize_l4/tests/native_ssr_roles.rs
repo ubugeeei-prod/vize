@@ -76,7 +76,7 @@ fn original_selected_search_elements_keep_neutral_structure_but_refuse_vue_ssr_r
         assert_eq!(search.tag, "search");
         assert_eq!(search.namespace, Namespace::Html);
         let analysis = build_ssr_file_decisions(file).unwrap();
-        assert!(core::ptr::eq(analysis.file(), file));
+        assert!(core::ptr::eq(analysis.l2ir(), file));
         let error = emit_file::<Recorded>(&analysis).unwrap_err();
         assert_eq!(
             error.kind,

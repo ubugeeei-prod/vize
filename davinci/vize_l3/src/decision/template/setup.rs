@@ -53,8 +53,8 @@ impl<'view, 'owner, 'arena> SelectedSetupDomAnalysis<'view, 'owner, 'arena> {
         self.setup
     }
     #[must_use]
-    pub fn file(&self) -> &'owner L2Ir<'arena> {
-        self.setup.file()
+    pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.setup.l2ir()
     }
     #[must_use]
     pub fn owner(&self) -> &'owner vize_l2::lang::js::NativeTemplateFile<'arena> {
@@ -68,7 +68,7 @@ impl<'view, 'owner, 'arena> SelectedSetupDomAnalysis<'view, 'owner, 'arena> {
     }
     #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
-        self.file().artifact()
+        self.l2ir().artifact()
     }
     #[must_use]
     pub fn policy(&self) -> TargetPolicy {
@@ -125,7 +125,7 @@ pub fn build_selected_setup_dom_decisions<'view, 'owner, 'arena>(
         .view()
         .map_err(|_| DecisionBuildError::IncompleteFile)?;
     let file = template.file().ok_or(DecisionBuildError::IncompleteFile)?;
-    if !core::ptr::eq(file, setup.file()) {
+    if !core::ptr::eq(file, setup.l2ir()) {
         return Err(DecisionBuildError::IncompleteFile);
     }
     let analysis = build::build_with_original(

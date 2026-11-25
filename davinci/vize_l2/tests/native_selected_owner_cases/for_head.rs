@@ -51,7 +51,7 @@ fn original_for_introduces_real_alias_rows_before_resolving_earlier_and_nested_e
     let joined = file
         .for_head_for(original_for)
         .ok_or("exact For allocation")?;
-    check(core::ptr::eq(joined.file(), file))?;
+    check(core::ptr::eq(joined.l2ir(), file))?;
     check(joined.accepts(original_for))?;
     let facts = joined.resolution().ok_or("whole original head facts")?;
     let scope = joined.scope().ok_or("real alias scope")?;
@@ -96,7 +96,7 @@ fn original_for_introduces_real_alias_rows_before_resolving_earlier_and_nested_e
     let value_row = value.template_declaration().ok_or("template value row")?;
     let key_row = key.template_declaration().ok_or("template key row")?;
     check(value_row.same_owner(&key_row))?;
-    check(core::ptr::eq(value_row.file(), file))?;
+    check(core::ptr::eq(value_row.l2ir(), file))?;
     for (row, parameter, role) in [
         (&value_row, &facts.input().aliases()[0], ForAliasRole::Value),
         (&key_row, &facts.input().aliases()[1], ForAliasRole::Key),

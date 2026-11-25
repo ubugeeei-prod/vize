@@ -65,10 +65,10 @@ fn kind<T>(result: Result<T, NativeTemplateIssue>) -> Result<Kind, &'static str>
 }
 fn syntax<'a>(
     arena: &'a Allocator,
-    view: &L1Ir<'a>,
+    l1ir: &L1Ir<'a>,
     setup: bool,
 ) -> Result<EmbedSyntax<'a>, &'static str> {
-    let admitted = view.admitted().map_err(|_| "descriptor")?;
+    let admitted = l1ir.admitted().map_err(|_| "descriptor")?;
     let script = if setup {
         admitted.setup()
     } else {
@@ -77,7 +77,7 @@ fn syntax<'a>(
     .ok_or("script")?;
     Ok(parse_program_once(
         arena,
-        EmbedSource::authored(view.source(), script.block().span()).map_err(|_| "source")?,
+        EmbedSource::authored(l1ir.source(), script.block().span()).map_err(|_| "source")?,
         ProgramOptions::module(script.lang()),
     ))
 }

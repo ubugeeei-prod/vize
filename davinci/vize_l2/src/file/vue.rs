@@ -41,10 +41,10 @@ pub struct ExposureIssue {
 /// ```
 /// ```compile_fail
 /// use vize_l2::file::{L2Ir, vue::VueExposure};
-/// fn forge(file: &L2Ir<'_>) { let _ = VueExposure { file }; }
+/// fn forge(l2ir: &L2Ir<'_>) { let _ = VueExposure { file }; }
 /// ```
 pub struct VueExposure<'f, 'd, 'p, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     script: ScriptView<'d, 'a>,
     program: AdmittedProgram<'p, 'a>,
     unit: ScriptUnitId,
@@ -53,7 +53,7 @@ pub struct VueExposure<'f, 'd, 'p, 'a> {
 
 impl<'f, 'd, 'p, 'a> VueExposure<'f, 'd, 'p, 'a> {
     pub fn checked(
-        file: &'f L2Ir<'a>,
+        l2ir: &'f L2Ir<'a>,
         script: ScriptView<'d, 'a>,
         program: AdmittedProgram<'p, 'a>,
     ) -> Result<Self, ExposureIssue> {
@@ -64,7 +64,7 @@ impl<'f, 'd, 'p, 'a> VueExposure<'f, 'd, 'p, 'a> {
         if script.role() != ScriptRole::Setup {
             return Err(reject(ExposureIssueKind::Role));
         }
-        if !core::ptr::eq(file.artifact().source(), script.source())
+        if !core::ptr::eq(l2ir.artifact().source(), script.source())
             || !core::ptr::eq(program.source(), script.block().source())
         {
             return Err(reject(ExposureIssueKind::Source));
@@ -81,7 +81,7 @@ impl<'f, 'd, 'p, 'a> VueExposure<'f, 'd, 'p, 'a> {
         {
             return Err(reject(ExposureIssueKind::Profile));
         }
-        let Some(unit) = file
+        let Some(unit) = l2ir
             .units()
             .iter()
             .find(|unit| unit.id.index() as usize == script.container_index())
@@ -106,7 +106,7 @@ impl<'f, 'd, 'p, 'a> VueExposure<'f, 'd, 'p, 'a> {
         {
             return Err(reject(ExposureIssueKind::ProgramOrigin));
         }
-        if !file.is_complete() || !unit.walk_completed() {
+        if !l2ir.is_complete() || !unit.walk_completed() {
             return Err(reject(ExposureIssueKind::IncompleteFile));
         }
         if unit.origin.has_call {
@@ -119,7 +119,7 @@ impl<'f, 'd, 'p, 'a> VueExposure<'f, 'd, 'p, 'a> {
             return Err(reject(ExposureIssueKind::ReservedName));
         }
         Ok(Self {
-            file,
+            l2ir,
             script,
             program,
             unit: unit.id,
@@ -128,8 +128,8 @@ impl<'f, 'd, 'p, 'a> VueExposure<'f, 'd, 'p, 'a> {
     }
 
     #[must_use]
-    pub fn file(&self) -> &'f L2Ir<'a> {
-        self.file
+    pub fn l2ir(&self) -> &'f L2Ir<'a> {
+        self.l2ir
     }
 
     #[must_use]
@@ -158,7 +158,7 @@ impl<'f, 'd, 'p, 'a> VueExposure<'f, 'd, 'p, 'a> {
         binding: BindingRef<'f, 'a>,
     ) -> Result<BindingRef<'f, 'a>, ExposureIssue> {
         let reject = |kind, span| ExposureIssue { kind, span };
-        if !core::ptr::eq(binding.file(), self.file) {
+        if !core::ptr::eq(binding.l2ir(), self.l2ir) {
             return Err(reject(
                 ExposureIssueKind::ForeignBinding,
                 self.script.block().span(),

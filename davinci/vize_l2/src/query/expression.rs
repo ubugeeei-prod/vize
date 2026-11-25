@@ -47,8 +47,8 @@ impl<'f, 'a> Model<'f, 'a> {
         self,
         mut visit: impl FnMut(ExpressionReferenceRef<'f, 'a>),
     ) -> Result<(), TemplateQueryError> {
-        check_template_offset(self.file, 0)?;
-        visit_rows(self.file, |_, site| {
+        check_template_offset(self.l2ir, 0)?;
+        visit_rows(self.l2ir, |_, site| {
             visit(site);
             Ok(())
         })
@@ -60,7 +60,7 @@ impl<'f, 'a> Model<'f, 'a> {
         binding: BindingRef<'_, '_>,
         mut visit: impl FnMut(ExpressionReferenceRef<'f, 'a>),
     ) -> Result<(), TemplateQueryError> {
-        if !core::ptr::eq(self.file, binding.file()) {
+        if !core::ptr::eq(self.l2ir, binding.l2ir()) {
             return Err(TemplateQueryError::ForeignSymbol);
         }
         self.for_each_expression_reference(|site| {
@@ -75,18 +75,18 @@ impl<'f, 'a> Model<'f, 'a> {
         self,
         offset: u32,
     ) -> Result<Option<ExpressionReferenceRef<'f, 'a>>, TemplateQueryError> {
-        check_template_offset(self.file, offset)?;
-        scan_at(self.file, offset)
+        check_template_offset(self.l2ir, offset)?;
+        scan_at(self.l2ir, offset)
     }
 }
 
 fn scan_at<'f, 'a>(
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     offset: u32,
 ) -> Result<Option<ExpressionReferenceRef<'f, 'a>>, TemplateQueryError> {
     let mut found = None;
     let mut ambiguous = false;
-    visit_rows(file, |_, site| {
+    visit_rows(l2ir, |_, site| {
         if site.span.start <= offset && offset < site.span.end {
             ambiguous |= found.replace(site).is_some();
         }
@@ -101,10 +101,10 @@ fn scan_at<'f, 'a>(
 }
 
 fn visit_rows<'f, 'a>(
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     mut visit: impl FnMut(usize, ExpressionReferenceRef<'f, 'a>) -> Result<(), TemplateQueryError>,
 ) -> Result<(), TemplateQueryError> {
-    for (node, resolved) in file.facts.expressions.iter() {
+    for (node, resolved) in l2ir.facts.expressions.iter() {
         // The expression factory checked this table against the File's source
         // before attaching it. Project only the original occurrence range.
         let expression = resolved.table.expression();
@@ -112,7 +112,7 @@ fn visit_rows<'f, 'a>(
             let span = expression
                 .authored_span(occurrence.span)
                 .ok_or(TemplateQueryError::Projection)?;
-            let binding = file
+            let binding = l2ir
                 .binding(occurrence.binding)
                 .ok_or(TemplateQueryError::OriginalMembership)?;
             visit(

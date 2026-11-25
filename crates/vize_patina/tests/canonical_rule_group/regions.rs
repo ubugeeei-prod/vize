@@ -28,7 +28,7 @@ fn original_region_events() {
         let arena = Allocator::default();
         let owner = lower_sfc_native(&arena, &source, options());
         let file = owner.admitted().expect(name);
-        let artifact = file.file().file().artifact();
+        let artifact = file.file().l2ir().artifact();
         let mut events = Vec::new();
         artifact
             .visit_events(&mut |event| match event {

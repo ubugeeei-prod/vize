@@ -133,10 +133,10 @@ fn moved_analysis_retains_original_program_file_and_complete_component_roots() -
         original,
     )?;
     equal(
-        core::ptr::eq(analysis.owner().file().artifact().source(), source),
+        core::ptr::eq(analysis.owner().l2ir().artifact().source(), source),
         true,
     )?;
-    equal(analysis.owner().file().is_complete(), true)?;
+    equal(analysis.owner().l2ir().is_complete(), true)?;
     let components = analysis
         .decisions()
         .filter_map(|row| match row.kind() {
@@ -151,7 +151,7 @@ fn moved_analysis_retains_original_program_file_and_complete_component_roots() -
     equal(
         analysis
             .owner()
-            .file()
+            .l2ir()
             .references()
             .iter()
             .all(|row| matches!(row.target, ReferenceTarget::Resolved(_))),
@@ -176,7 +176,7 @@ fn jsx_and_tsx_function_scopes_keep_their_own_resolved_component_authority() -> 
             .first()
             .required()?;
         equal(
-            row.scope == analysis.owner().file().units().first().required()?.scope,
+            row.scope == analysis.owner().l2ir().units().first().required()?.scope,
             false,
         )?;
         equal(matches!(row.target, ReferenceTarget::Resolved(_)), true)?;
@@ -240,7 +240,7 @@ fn unsupported_constructs_refuse_whole_view_and_retain_original_custody() -> Law
                 .as_ptr(),
             original,
         )?;
-        equal(rejected.owner().file().is_complete(), true)?;
+        equal(rejected.owner().l2ir().is_complete(), true)?;
         equal(rejected.issues().iter().any(|row| row.kind == issue), true)?;
         for row in rejected.issues() {
             equal(
@@ -259,7 +259,7 @@ fn complete_original_non_jsx_expressions_keep_custody_without_jsx_reinterpretati
     let arena = Allocator::default();
     let source = "const before = 1 + 2; const view = <div/>;";
     let owner = lower(&arena, source, SourceType::jsx())?;
-    equal(owner.file().is_complete(), true)?;
+    equal(owner.l2ir().is_complete(), true)?;
     let admitted = build_jsx_decisions(owner).required()?;
     equal(
         admitted
@@ -269,7 +269,7 @@ fn complete_original_non_jsx_expressions_keep_custody_without_jsx_reinterpretati
             .collect::<Vec<_>>(),
         vec!["1 + 2", "1", "2"],
     )?;
-    equal(admitted.owner().file().artifact().source(), source)
+    equal(admitted.owner().l2ir().artifact().source(), source)
 }
 
 #[test]
@@ -281,7 +281,7 @@ fn embedded_unicode_offsets_link_to_whole_original_file_without_reslicing_identi
     let owner = embedded(&arena, source, Span::new(start, end), SourceType::jsx())?;
     let analysis = build_jsx_decisions(owner).required()?;
     equal(
-        analysis.owner().file().units().first().required()?.span,
+        analysis.owner().l2ir().units().first().required()?.span,
         Span::new(start, end),
     )?;
     for row in analysis.decisions() {

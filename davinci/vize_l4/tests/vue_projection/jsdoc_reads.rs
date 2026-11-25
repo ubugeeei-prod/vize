@@ -27,7 +27,7 @@ fn original_jsdoc_read_refusal_retains_complete_owner_and_script_literal_copies(
             let resolution = observed
                 .file()
                 .unwrap()
-                .file()
+                .l2ir()
                 .expression(embed.node.unwrap())
                 .unwrap();
             let ast = resolution.table().unwrap().expression().ast;
@@ -51,7 +51,7 @@ fn original_jsdoc_read_refusal_retains_complete_owner_and_script_literal_copies(
             }
             assert_eq!(syntax.admitted_program().unwrap().source(), script.as_str());
             assert!(core::ptr::eq(ast, embed.syntax.expression().unwrap()));
-            assert!(observed.file().unwrap().file().is_complete());
+            assert!(observed.file().unwrap().l2ir().is_complete());
 
             for template in ["", "<template>{{1}}</template>"] {
                 let source = cstr!("<script setup{attribute}>{script}</script>{template}");
@@ -73,8 +73,8 @@ fn original_jsdoc_read_refusal_retains_complete_owner_and_script_literal_copies(
                 assert_eq!(projection.document().as_str(), plain.document().as_str());
                 assert!(plain.document().links().is_empty());
                 assert!(core::ptr::eq(
-                    projection.file(),
-                    observed.file().unwrap().file()
+                    projection.l2ir(),
+                    observed.file().unwrap().l2ir()
                 ));
                 let first = projection.document().links().first().unwrap();
                 assert_eq!(projection.map_span(first.generated), Ok(first.authored));

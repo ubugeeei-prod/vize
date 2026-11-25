@@ -21,7 +21,7 @@ pub(super) fn capture(
         .admitted()
         .ok_or("actual setup owner")?;
     let setup = view.setup();
-    let file = setup.file();
+    let file = setup.l2ir();
     require!(
         file.is_complete() && file.units().len() == 1 && file.scopes().len() == 2,
         "{id}: complete original File/Program/scope"
@@ -169,7 +169,7 @@ pub(super) fn capture(
             && core::ptr::eq(row.occurrence().ok_or("original occurrence")?, occurrence)
             && row.binding().ok_or("original binding")?.same_owner(binding)
             && row.resolution().node() == node
-            && core::ptr::eq(row.resolution().file(), file)
+            && core::ptr::eq(row.resolution().l2ir(), file)
             && row.authored_span() == Some(authored)
             && file.native_interpolations().is_empty(),
         "{id}: dedicated canonical Model role, no fake interpolation or generic write permission"

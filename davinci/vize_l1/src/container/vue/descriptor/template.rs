@@ -18,13 +18,13 @@ pub(super) struct TemplateSelection<'a> {
 /// Checked original ordinary HTML template content.
 #[derive(Debug, Clone, Copy)]
 pub struct TemplateView<'o, 'a> {
-    pub(super) owner: &'o L1Ir<'a>,
+    pub(super) l1ir: &'o L1Ir<'a>,
     pub(super) selected: &'o TemplateSelection<'a>,
 }
 
 impl<'o, 'a> TemplateView<'o, 'a> {
     pub fn source(&self) -> &'a str {
-        self.owner.source()
+        self.l1ir.source()
     }
     pub fn container_index(&self) -> usize {
         self.selected.selection.index
@@ -52,14 +52,14 @@ impl<'o, 'a> TemplateView<'o, 'a> {
     /// ```
     pub fn frame_names(self) -> Result<TemplateFrameNames<'o, 'a>, TemplateFrameNameRefusal> {
         use TemplateFrameNameRefusal::{IncompleteBoundary, SourceMismatch};
-        let selected = self.owner.template.as_ref().ok_or(IncompleteBoundary)?;
+        let selected = self.l1ir.template.as_ref().ok_or(IncompleteBoundary)?;
         if !core::ptr::eq(selected, self.selected) {
             return Err(SourceMismatch);
         }
-        let root = self.owner.root.ok_or(SourceMismatch)?;
+        let root = self.l1ir.root.ok_or(SourceMismatch)?;
         let names = selected.names.as_ref().ok_or(IncompleteBoundary)?;
         let block = self
-            .owner
+            .l1ir
             .container
             .blocks
             .get(self.container_index())
@@ -80,7 +80,7 @@ impl<'o, 'a> TemplateView<'o, 'a> {
             return Err(SourceMismatch);
         }
         Ok(TemplateFrameNames {
-            owner: self.owner,
+            l1ir: self.l1ir,
             selected,
             root,
             names,
@@ -153,7 +153,7 @@ pub enum TemplateFrameNameRefusal {
 /// Template views have no public constructor:
 /// ```compile_fail
 /// use vize_l1::container::vue::{L1Ir, TemplateView};
-/// fn forge(owner: &L1Ir<'_>) {
+/// fn forge(l1ir: &L1Ir<'_>) {
 ///     let _ = TemplateView { owner, selected: todo!() };
 /// }
 /// ```
@@ -164,7 +164,7 @@ pub enum TemplateFrameNameRefusal {
 /// requires_clone::<TemplateFrameNames<'static, 'static>>();
 /// ```
 pub struct TemplateFrameNames<'o, 'a> {
-    owner: &'o L1Ir<'a>,
+    l1ir: &'o L1Ir<'a>,
     selected: &'o TemplateSelection<'a>,
     root: SourceRoot<'a>,
     names: &'o TemplateNamePair,
@@ -184,7 +184,7 @@ impl<'o, 'a> TemplateFrameNames<'o, 'a> {
     #[must_use]
     pub fn template(&self) -> TemplateView<'o, 'a> {
         TemplateView {
-            owner: self.owner,
+            l1ir: self.l1ir,
             selected: self.selected,
         }
     }
@@ -206,7 +206,7 @@ impl<'o, 'a> TemplateFrameNames<'o, 'a> {
     }
     #[must_use]
     pub fn accepts(&self, view: &TemplateView<'_, 'a>) -> bool {
-        core::ptr::eq(self.owner, view.owner) && core::ptr::eq(self.selected, view.selected)
+        core::ptr::eq(self.l1ir, view.l1ir) && core::ptr::eq(self.selected, view.selected)
     }
 }
 

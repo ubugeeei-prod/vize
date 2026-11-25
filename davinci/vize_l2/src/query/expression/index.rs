@@ -23,16 +23,16 @@ pub struct ExpressionPositionIndex<F> {
 impl<'f, 'a> ExpressionPositionIndex<&'f L2Ir<'a>> {
     /// Borrow one exact File, without inspecting its rows.
     #[must_use]
-    pub fn new(file: &'f L2Ir<'a>) -> Self {
-        Self::attach(file)
+    pub fn new(l2ir: &'f L2Ir<'a>) -> Self {
+        Self::attach(l2ir)
     }
 }
 
 impl<'a> ExpressionPositionIndex<L2Ir<'a>> {
     /// Own the File and its index in one movable snapshot.
     #[must_use]
-    pub fn from_file(file: L2Ir<'a>) -> Self {
-        Self::attach(file)
+    pub fn from_file(l2ir: L2Ir<'a>) -> Self {
+        Self::attach(l2ir)
     }
 }
 
@@ -96,10 +96,10 @@ impl<F> ExpressionPositionIndex<F> {
     }
 }
 
-fn prepare(file: &L2Ir<'_>) -> Prepared {
+fn prepare(l2ir: &L2Ir<'_>) -> Prepared {
     // Count short tables as well: a single expression can contain many uses.
     const MIN_SITES: usize = 12;
-    let count = file
+    let count = l2ir
         .facts
         .expressions
         .iter()
@@ -109,7 +109,7 @@ fn prepare(file: &L2Ir<'_>) -> Prepared {
         return Ok(None);
     }
     SiteIntervals::try_from_sized_sites(count, |push| {
-        visit_rows(file, |index, site| {
+        visit_rows(l2ir, |index, site| {
             let index = u32::try_from(index).map_err(|_| TemplateQueryError::Projection)?;
             push(site.span, (site.node, index));
             Ok(())

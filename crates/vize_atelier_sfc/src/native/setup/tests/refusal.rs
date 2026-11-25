@@ -53,7 +53,7 @@ fn generated_operations_and_parameter_names_refuse_before_any_partial_output() -
             .observation()
             .file()
             .ok_or("original File")?
-            .file();
+            .l2ir();
         let declaration = file
             .bindings()
             .next()
@@ -106,7 +106,7 @@ fn prohibited_script_families_and_collisions_keep_their_original_program_observa
             "prohibited original source: {source}"
         );
         require!(
-            core::ptr::eq(compilation.observation().descriptor().source(), source),
+            core::ptr::eq(compilation.observation().l1ir().source(), source),
             "same original descriptor"
         );
         require!(

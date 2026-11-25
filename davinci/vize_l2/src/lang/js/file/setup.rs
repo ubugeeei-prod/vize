@@ -61,14 +61,14 @@ pub(super) fn record_annotation(
 /// fn forge() { let _ = SetupAnnotation { span: true }; }
 /// ```
 pub struct SetupAnnotation<'owner, 'arena> {
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
     original: &'owner SetupAnnotationRecord,
 }
 
 impl<'owner, 'arena> SetupAnnotation<'owner, 'arena> {
     #[must_use]
-    pub fn file(&self) -> &'owner L2Ir<'arena> {
-        self.file
+    pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.l2ir
     }
     #[must_use]
     pub fn span(&self) -> Span {
@@ -133,7 +133,7 @@ pub struct SetupIssue {
 /// use oxc_parser::AdmittedProgram;
 /// use vize_l1::container::vue::ScriptView;
 /// use vize_l2::{file::L2Ir, lang::js::VueSetup};
-/// fn discard<'d, 'p, 'a>(file: L2Ir<'a>, script: ScriptView<'d, 'a>,
+/// fn discard<'d, 'p, 'a>(l2ir: L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     program: AdmittedProgram<'p, 'a>) {
 ///     let setup = VueSetup::checked(&file, script, program).unwrap();
 ///     drop(file);
@@ -144,7 +144,7 @@ pub struct SetupIssue {
 /// ```compile_fail
 /// use vize_l1::{container::vue::ScriptView, embed::syntax::EmbedSyntax};
 /// use vize_l2::{file::L2Ir, lang::js::VueSetup};
-/// fn discard<'d, 'a>(file: &L2Ir<'a>, script: ScriptView<'d, 'a>,
+/// fn discard<'d, 'a>(l2ir: &L2Ir<'a>, script: ScriptView<'d, 'a>,
 ///     syntax: EmbedSyntax<'a>) {
 ///     let setup = VueSetup::checked(file, script, syntax.admitted_program().unwrap()).unwrap();
 ///     drop(syntax);
@@ -157,24 +157,24 @@ pub struct VueSetup<'owner, 'descriptor, 'program, 'arena> {
 
 impl<'owner, 'descriptor, 'program, 'arena> VueSetup<'owner, 'descriptor, 'program, 'arena> {
     pub fn checked(
-        file: &'owner L2Ir<'arena>,
+        l2ir: &'owner L2Ir<'arena>,
         script: ScriptView<'descriptor, 'arena>,
         program: AdmittedProgram<'program, 'arena>,
     ) -> Result<Self, SetupIssue> {
         let span = script.block().span();
         let reject = |kind| SetupIssue { span, kind };
-        let exposure = VueExposure::checked(file, script, program)
+        let exposure = VueExposure::checked(l2ir, script, program)
             .map_err(|issue| reject(SetupIssueKind::Exposure(issue.kind)))?;
         if !matches!(exposure.script().lang(), Lang::Js | Lang::Ts) {
             return Err(reject(SetupIssueKind::Profile));
         }
-        let unit = file
+        let unit = l2ir
             .units()
             .iter()
             .find(|unit| unit.id == exposure.unit())
             .ok_or_else(|| reject(SetupIssueKind::Scope))?;
         if unit.scope.index() == 0
-            || !file
+            || !l2ir
                 .scopes()
                 .get(unit.scope.index() as usize)
                 .is_some_and(|scope| {
@@ -202,7 +202,7 @@ impl<'owner, 'descriptor, 'program, 'arena> VueSetup<'owner, 'descriptor, 'progr
     /// Original declaration order, actual unit/root scope and same owner only.
     pub fn bindings(&self) -> impl Iterator<Item = BindingRef<'owner, 'arena>> + '_ {
         self.exposure
-            .file()
+            .l2ir()
             .bindings()
             .filter(|binding| self.exposure.binding(*binding).is_ok())
     }
@@ -211,7 +211,7 @@ impl<'owner, 'descriptor, 'program, 'arena> VueSetup<'owner, 'descriptor, 'progr
     /// The complete File/Program capability grants the receipt, not raw indices.
     pub fn type_annotations(&self) -> impl Iterator<Item = SetupAnnotation<'owner, 'arena>> + '_ {
         self.exposure
-            .file()
+            .l2ir()
             .setup_annotations_for_unit(self.exposure.unit())
     }
 }
@@ -226,7 +226,7 @@ impl<'arena> L2Ir<'arena> {
             .iter()
             .filter(move |row| row.unit == unit)
             .map(move |original| SetupAnnotation {
-                file: self,
+                l2ir: self,
                 original,
             })
     }

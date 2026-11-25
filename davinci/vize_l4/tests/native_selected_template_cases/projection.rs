@@ -17,7 +17,7 @@ pub(crate) fn inspect<'owner, 'a>(
     let file = original.file().ok_or("original File")?;
     check(file.is_complete())?;
     check(core::ptr::eq(analysis.owner(), original))?;
-    check(core::ptr::eq(analysis.file(), file))?;
+    check(core::ptr::eq(analysis.l2ir(), file))?;
     check(core::ptr::eq(analysis.artifact(), file.artifact()))?;
     check(core::ptr::eq(
         file.artifact().source(),

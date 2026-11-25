@@ -44,8 +44,8 @@ pub struct NativeReferenceRef<'o, 'a> {
 
 impl<'o, 'a> NativeReferenceRef<'o, 'a> {
     #[must_use]
-    pub fn file(self) -> &'o L2Ir<'a> {
-        self.binding.file()
+    pub fn l2ir(self) -> &'o L2Ir<'a> {
+        self.binding.l2ir()
     }
     #[must_use]
     pub fn binding(self) -> BindingRef<'o, 'a> {
@@ -98,7 +98,7 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
         &self,
         offset: u32,
     ) -> Result<Option<NativeReferenceRef<'o, 'a>>, NativePositionQueryError> {
-        Model::new(self.file().file())
+        Model::new(self.file().l2ir())
             .reference_at_offset(offset)
             .map_err(NativePositionQueryError::File)?;
         let mut found = None;
@@ -123,7 +123,7 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
         &self,
         offset: u32,
     ) -> Result<Option<BindingRef<'o, 'a>>, NativePositionQueryError> {
-        let script = Model::new(self.file().file())
+        let script = Model::new(self.file().l2ir())
             .binding_at_offset(offset)
             .map_err(NativePositionQueryError::File)?;
         let Some(reference) = self.reference_at_offset(offset)? else {
@@ -145,7 +145,7 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
         binding: BindingRef<'_, '_>,
         mut visit: impl FnMut(NativeReferenceRef<'o, 'a>),
     ) -> Result<(), NativePositionQueryError> {
-        if !core::ptr::eq(binding.file(), self.file().file()) {
+        if !core::ptr::eq(binding.l2ir(), self.file().l2ir()) {
             return Err(NativePositionQueryError::ForeignBinding);
         }
         self.for_each_reference(|row| {
@@ -159,7 +159,7 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
         &self,
         mut visit: impl FnMut(NativeReferenceRef<'o, 'a>),
     ) -> Result<(), NativePositionQueryError> {
-        let file = self.file().file();
+        let file = self.file().l2ir();
         if !file.is_complete() {
             return Err(NativePositionQueryError::File(
                 PositionQueryError::IncompleteFile,

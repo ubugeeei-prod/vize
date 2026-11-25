@@ -150,7 +150,7 @@ pub fn capture() -> Vec<serde_json::Value> {
         let error = compilation.result().unwrap_err();
         let observation = compilation.observation();
         assert!(core::ptr::eq(
-            observation.original().descriptor().source(),
+            observation.original().l1ir().source(),
             source
         ));
         let diagnostics = match expected {
@@ -188,7 +188,7 @@ pub fn capture() -> Vec<serde_json::Value> {
                 );
                 let admitted = observation.admitted().unwrap();
                 let setup = admitted.setup();
-                let file = setup.file();
+                let file = setup.l2ir();
                 assert!(file.is_complete());
                 if name == "for" {
                     let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
@@ -196,7 +196,7 @@ pub fn capture() -> Vec<serde_json::Value> {
                     };
                     let head = file.for_head_for(original).unwrap();
                     assert!(head.accepts(original));
-                    assert!(core::ptr::eq(head.file(), file));
+                    assert!(core::ptr::eq(head.l2ir(), file));
                     let input = head.resolution().unwrap().input();
                     assert_eq!(input.operand().raw_value(), "item in rows");
                     assert!(core::ptr::eq(
@@ -216,7 +216,7 @@ pub fn capture() -> Vec<serde_json::Value> {
                     matches!(error, Error::Setup(error) if error.kind == SetupEmitErrorKind::GeneratedBindingCollision),
                     "{name}: {error:?}"
                 );
-                assert!(observation.admitted().unwrap().setup().file().is_complete());
+                assert!(observation.admitted().unwrap().setup().l2ir().is_complete());
                 serde_json::json!([])
             }
             Expected::Handler(expected) => {
@@ -290,7 +290,7 @@ fn original_profile_and_runtime_vocabulary_remain_checked() {
     options.descriptor.version = VueVersion::V2;
     let compilation = compile_native_setup_ssr_sfc(&arena, source, options);
     assert_eq!(
-        compilation.observation().original().descriptor().options(),
+        compilation.observation().original().l1ir().options(),
         options.descriptor
     );
     assert!(compilation.observation().admitted().is_none());

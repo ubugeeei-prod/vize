@@ -26,7 +26,7 @@ pub const JS: ValueKind = ValueKind::Js;
 pub const LIT: ValueKind = ValueKind::Literal;
 
 pub struct Build<'a> {
-    pub program: L3Ir<'a>,
+    pub l3ir: L3Ir<'a>,
     last_effect: Option<u32>,
 }
 
@@ -35,13 +35,13 @@ impl<'a> Build<'a> {
         let mut program = L3Ir::new(allocator, Phase::Built);
         program.push_region(Region::root(Span::new(span.0, span.1)));
         Self {
-            program,
+            l3ir: program,
             last_effect: None,
         }
     }
 
     pub fn region(&mut self, id: u32, parent: u32, owner: u32, span: (u32, u32)) {
-        self.program.push_region(Region::child(
+        self.l3ir.push_region(Region::child(
             RegionId::new(id),
             RegionId::new(parent),
             OpId::new(owner),
@@ -55,21 +55,21 @@ impl<'a> Build<'a> {
         let mut op = Op::new(OpId::new(id), kind, RegionId::new(region), span);
         if dynamic {
             op = op.with_effect(EffectId::new(id));
-            self.program.push_effect(EffectScope {
+            self.l3ir.push_effect(EffectScope {
                 id: EffectId::new(id),
                 owner: OpId::new(id),
                 region: RegionId::new(region),
                 span,
             });
             if let Some(previous) = self.last_effect.replace(id) {
-                self.program.push_edge(StateEdge::new(
+                self.l3ir.push_edge(StateEdge::new(
                     OpId::new(previous),
                     OpId::new(id),
                     EdgeKind::EffectOrder,
                 ));
             }
         }
-        self.program.push_op(op);
+        self.l3ir.push_op(op);
     }
 
     pub fn operand(
@@ -81,7 +81,7 @@ impl<'a> Build<'a> {
         text: &'a str,
     ) {
         let span = self.span_of(op);
-        self.program.operands.push(Operand {
+        self.l3ir.operands.push(Operand {
             op: OpId::new(op),
             role,
             target: target.map(OpId::new),
@@ -103,16 +103,12 @@ impl<'a> Build<'a> {
 
     pub fn attribute(&mut self, op: u32, name: &'a str, value: &'a str) {
         self.operand(op, OperandRole::Attribute, None, LIT, value);
-        self.program.operands.last_mut().expect("just pushed").name = Some(name);
+        self.l3ir.operands.last_mut().expect("just pushed").name = Some(name);
     }
 
     pub fn condition(&mut self, op: u32, region: u32, text: &'a str) {
         self.operand(op, OperandRole::Condition, None, JS, text);
-        self.program
-            .operands
-            .last_mut()
-            .expect("just pushed")
-            .region = Some(RegionId::new(region));
+        self.l3ir.operands.last_mut().expect("just pushed").region = Some(RegionId::new(region));
     }
 
     pub fn element(&mut self, id: u32, tag: &'a str, region: u32, span: (u32, u32), dynamic: bool) {
@@ -152,7 +148,7 @@ impl<'a> Build<'a> {
 
     fn op_of(&self, id: u32) -> Op {
         *self
-            .program
+            .l3ir
             .ops
             .iter()
             .find(|op| op.id == OpId::new(id))
@@ -167,7 +163,7 @@ impl<'a> Build<'a> {
         let set = alternatives
             .iter()
             .fold(PlacementSet::EMPTY, |set, placement| set.with(*placement));
-        self.program.placements.push(PlacementRecord::new(
+        self.l3ir.placements.push(PlacementRecord::new(
             OpId::new(op),
             set,
             leader.map(OpId::new),
@@ -176,7 +172,7 @@ impl<'a> Build<'a> {
 
     pub fn choose(&mut self, op: u32, chosen: Placement) {
         let record = self
-            .program
+            .l3ir
             .placements
             .iter_mut()
             .find(|record| record.op == OpId::new(op))
@@ -214,8 +210,8 @@ pub fn fixture<'a>(allocator: &'a Allocator, text6: Value<'a>) -> Build<'a> {
     build
 }
 
-pub fn messages(program: &L3Ir<'_>) -> Vec<String> {
-    verify(program)
+pub fn messages(l3ir: &L3Ir<'_>) -> Vec<String> {
+    verify(l3ir)
         .into_iter()
         .map(|violation| cstr!("{violation}"))
         .collect()

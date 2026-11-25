@@ -39,8 +39,8 @@ fn original_jsx_path_and_configured_module_refusals_preserve_complete_owners() {
             Err(OriginalProgramError::OutsideProject)
         ));
         block_on(bridge.spawn()).unwrap();
-        assert!(original.file().imports().is_empty());
-        assert!(original.file().exports().is_empty());
+        assert!(original.l2ir().imports().is_empty());
+        assert!(original.l2ir().exports().is_empty());
         let checked = block_on(bridge.check_original_jsx(&original, &path));
         assert!(
             matches!(
@@ -57,7 +57,7 @@ fn original_jsx_path_and_configured_module_refusals_preserve_complete_owners() {
         ));
         configuration(root.path(), false, false);
         assert_eq!(std::fs::read(&path).unwrap(), source.as_bytes());
-        assert!(original.file().is_complete());
+        assert!(original.l2ir().is_complete());
         assert_eq!(original.observation().admitted().unwrap().source(), source);
     }
     block_on(bridge.shutdown()).unwrap();

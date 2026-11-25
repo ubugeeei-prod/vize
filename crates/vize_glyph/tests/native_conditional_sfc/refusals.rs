@@ -18,9 +18,9 @@ fn refused(owner: &NativeSfcObservation<'_>, source: &str, expected: NativeTempl
     assert_eq!(owner.source(), source);
     assert!(core::ptr::eq(owner.source(), source));
     assert_eq!(owner.options(), options(200, 2, LineEnding::Lf));
-    assert_eq!(owner.descriptor().options(), owner.options().descriptor);
-    assert_eq!(owner.descriptor().issues(), []);
-    assert_eq!(owner.descriptor().container().errors.as_slice(), []);
+    assert_eq!(owner.l1ir().options(), owner.options().descriptor);
+    assert_eq!(owner.l1ir().issues(), []);
+    assert_eq!(owner.l1ir().container().errors.as_slice(), []);
     assert_eq!(
         owner.selected().unwrap().component().block().source(),
         &source[10..source.len() - 11]

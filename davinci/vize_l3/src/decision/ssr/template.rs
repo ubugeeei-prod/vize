@@ -25,7 +25,7 @@ pub enum SsrTemplateBuildError {
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_l3::decision::ssr::build_template_ssr_decisions;
-/// fn promote(file: &L2Ir<'_>) { let _ = build_template_ssr_decisions(file); }
+/// fn promote(l2ir: &L2Ir<'_>) { let _ = build_template_ssr_decisions(file); }
 /// ```
 /// Diagnostic SSR analysis cannot construct this receipt:
 /// ```compile_fail
@@ -65,8 +65,8 @@ impl<'owner, 'arena> TemplateSsrAnalysis<'owner, 'arena> {
         self.view.owner()
     }
     #[must_use]
-    pub fn file(&self) -> &'owner L2Ir<'arena> {
-        self.analysis.file()
+    pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.analysis.l2ir()
     }
     #[must_use]
     pub fn original_attributes(

@@ -62,7 +62,7 @@ fn syntax_access_name_and_header_order_refusals_keep_exact_original_windows() {
         let source = format!("<!--雪🌸--><template><button {attribute}/></template>");
         let owner = completed(&arena, &source);
         let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
-        let file = analysis.file();
+        let file = analysis.l2ir();
         let original_on = on(file.artifact().root());
         let lower = file.handler_for(original_on).unwrap();
         let resolution = lower.resolution().unwrap();

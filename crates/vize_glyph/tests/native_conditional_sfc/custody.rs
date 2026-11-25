@@ -37,7 +37,7 @@ fn actual_full_owner_moves_keep_both_original_prefix_vectors_and_reject_equal_fo
         (
             owner.source().as_ptr(),
             owner.options(),
-            owner.descriptor().container().blocks.as_ptr().cast::<()>(),
+            owner.l1ir().container().blocks.as_ptr().cast::<()>(),
             owner.operands().as_ptr().cast::<()>(),
             owner.attribute_operands().as_ptr().cast::<()>(),
             owner

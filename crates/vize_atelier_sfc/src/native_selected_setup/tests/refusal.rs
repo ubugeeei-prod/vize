@@ -28,7 +28,7 @@ fn unsupported_original_programs_and_whole_envelopes_remain_owned_refusals() {
             "{source}"
         );
         let original = compiled.observation().original();
-        assert!(core::ptr::eq(original.descriptor().source(), source));
+        assert!(core::ptr::eq(original.l1ir().source(), source));
         assert!(!original.issues().is_empty());
         assert!(compiled.observation().admitted().is_none());
         if let Some(template) = original.template() {
@@ -57,7 +57,7 @@ fn compound_escaped_and_outer_handler_reads_never_gain_setup_target_authority() 
         );
         assert!(compiled.result().is_err(), "{template}");
         assert!(core::ptr::eq(
-            compiled.observation().original().descriptor().source(),
+            compiled.observation().original().l1ir().source(),
             source.as_str()
         ));
         assert!(
@@ -101,7 +101,7 @@ fn genuine_original_constant_empty_for_retains_custody_and_emits_stable_module()
         expected.native_map
     );
     let admitted = compiled.observation().admitted().unwrap();
-    let file = admitted.setup().file();
+    let file = admitted.setup().l2ir();
     let vize_l2::op::Op::OriginalFor(original) = &file.artifact().root().ops[0] else {
         panic!("actual original For")
     };
@@ -161,6 +161,6 @@ fn unavailable_runtime_retains_complete_actual_setup_and_file_without_output() {
         Some(NativeSelectedSetupSfcDomError::Assembly(_))
     ));
     let admitted = compiled.observation().admitted().unwrap();
-    assert!(admitted.setup().file().is_complete());
+    assert!(admitted.setup().l2ir().is_complete());
     assert!(admitted.setup().syntax().diagnostics().count() == 0);
 }

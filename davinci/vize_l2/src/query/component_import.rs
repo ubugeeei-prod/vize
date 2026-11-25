@@ -74,7 +74,7 @@ impl<'f, 'a> Model<'f, 'a> {
         template: TemplateView<'_, 'a>,
         mut visit: impl FnMut(ImportedComponentSite<'f, 'a>),
     ) -> Result<(), ComponentImportIssue> {
-        let file = self.file;
+        let file = self.l2ir;
         let [unit] = file.units() else {
             return Err(ComponentImportIssue::OriginalProgram);
         };
@@ -254,7 +254,7 @@ impl<'f, 'a> Model<'f, 'a> {
         {
             return Err(ComponentImportIssue::UnresolvedTag(span));
         }
-        if let Some(exact) = self.file.lookup(scope, tag, Namespace::Value) {
+        if let Some(exact) = self.l2ir.lookup(scope, tag, Namespace::Value) {
             return Ok(exact);
         }
         let (first, tail) = tag
@@ -287,7 +287,7 @@ impl<'f, 'a> Model<'f, 'a> {
             let lookup = |bytes: &[u8]| {
                 core::str::from_utf8(bytes)
                     .ok()
-                    .and_then(|name| self.file.lookup(scope, name, Namespace::Value))
+                    .and_then(|name| self.l2ir.lookup(scope, name, Namespace::Value))
             };
             let camel = lookup(key);
             key.first_mut()
@@ -299,7 +299,7 @@ impl<'f, 'a> Model<'f, 'a> {
                 _ => Err(ComponentImportIssue::UnresolvedTag(span)),
             };
         }
-        let mut matches = self.file.facts.declarations.iter().filter(|decl| {
+        let mut matches = self.l2ir.facts.declarations.iter().filter(|decl| {
             decl.scope == scope
                 && decl.namespace == Namespace::Value
                 && component_spelling(
@@ -317,7 +317,7 @@ impl<'f, 'a> Model<'f, 'a> {
         if matches.next().is_some() {
             return Err(ComponentImportIssue::AmbiguousTag(span));
         }
-        self.file
+        self.l2ir
             .binding(declaration.id)
             .ok_or(ComponentImportIssue::UnresolvedTag(span))
     }

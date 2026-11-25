@@ -10,7 +10,7 @@ pub fn setup(
     analysis: &SelectedSetupSsrAnalysis<'_, '_, '_>,
     handler: bool,
 ) -> serde_json::Value {
-    let source = setup.file().artifact().source();
+    let source = setup.l2ir().artifact().source();
     let descriptor_source = setup.syntax().source().authored_root();
     assert!(core::ptr::eq(descriptor_source, source));
     assert!(core::ptr::eq(
@@ -30,11 +30,11 @@ pub fn setup(
         setup.syntax().program().unwrap().body.as_ptr(),
         setup.program().program().body.as_ptr()
     ));
-    assert!(setup.file().is_complete());
+    assert!(setup.l2ir().is_complete());
     assert!(setup.unit_record().interruption().is_none());
     assert_eq!(setup.unit_record().span, setup.source().span());
     let bindings: Vec<_> = setup.bindings().map(|binding| {
-        assert!(core::ptr::eq(binding.file(), setup.file()));
+        assert!(core::ptr::eq(binding.l2ir(), setup.l2ir()));
         assert!(binding.same_owner(setup.binding(binding).unwrap()));
         let declaration = binding.declaration().unwrap();
         assert_eq!(declaration.unit, setup.unit());
@@ -47,7 +47,7 @@ pub fn setup(
     let annotations: Vec<_> = setup
         .type_annotations()
         .map(|annotation| {
-            assert!(core::ptr::eq(annotation.file(), setup.file()));
+            assert!(core::ptr::eq(annotation.l2ir(), setup.l2ir()));
             let span = annotation.span();
             assert!(setup.source().contains_block_span(span));
             serde_json::json!({"span":{"start":span.start,"end":span.end},
@@ -56,7 +56,7 @@ pub fn setup(
         .collect();
     let interpolations: Vec<_> = analysis.ssr().unwrap().parts().iter().filter_map(|part| {
         let SsrPart::Interpolation { node, interpolation } = part else { return None; };
-        let record = setup.file().native_interpolation(*node).unwrap();
+        let record = setup.l2ir().native_interpolation(*node).unwrap();
         let operand = record.input().operand();
         assert_eq!(operand.full_span(), interpolation.span);
         assert_eq!(operand.content_span().slice(source), operand.raw_content());
@@ -65,10 +65,10 @@ pub fn setup(
         assert!(core::ptr::eq(syntax.source().authored_root(), source));
         let row = analysis.expression(*node).unwrap();
         let resolution = row.resolution();
-        assert!(core::ptr::eq(resolution.file(), setup.file()));
+        assert!(core::ptr::eq(resolution.l2ir(), setup.l2ir()));
         assert_eq!(resolution.node(), *node);
         let region_scope = resolution.scope().unwrap();
-        assert_eq!(setup.file().scopes()[region_scope.index() as usize].id, region_scope);
+        assert_eq!(setup.l2ir().scopes()[region_scope.index() as usize].id, region_scope);
         assert_eq!(region_scope, setup.scope());
         let table = resolution.table().unwrap();
         assert_eq!(row.reads().len(), table.occurrences().len());
@@ -97,15 +97,15 @@ pub fn setup(
             "regionScope":region_scope.index(),"reads":reads}))
     }).collect();
     let handlers = if handler {
-        let Some(Op::Element(element)) = setup.file().artifact().root().ops.first() else {
+        let Some(Op::Element(element)) = setup.l2ir().artifact().root().ops.first() else {
             panic!("original button")
         };
         let [BindingOp::On(on)] = element.bindings.as_slice() else {
             panic!("original On")
         };
-        let handler = setup.file().handler_for(on).unwrap();
+        let handler = setup.l2ir().handler_for(on).unwrap();
         assert!(handler.accepts_on(on));
-        assert!(core::ptr::eq(handler.file(), setup.file()));
+        assert!(core::ptr::eq(handler.l2ir(), setup.l2ir()));
         assert_eq!(handler.scope(), Some(setup.scope()));
         let resolution = handler.resolution().unwrap();
         let input = resolution.input();
@@ -118,7 +118,7 @@ pub fn setup(
         let HandlerBindingRef::Outer(id) = reference.binding else {
             panic!("actual outer binding")
         };
-        let binding = setup.file().binding(id).unwrap();
+        let binding = setup.l2ir().binding(id).unwrap();
         assert!(handler.accepts(binding));
         assert!(setup.binding(binding).is_ok());
         vec![

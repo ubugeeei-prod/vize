@@ -102,7 +102,7 @@ fn fourteen_whole_original_root_if_else_composite_components_and_raw_maps_are_ca
                 );
                 let view = mapped.observation().admitted().ok_or("setup owner")?;
                 let setup = view.setup();
-                let file = setup.file();
+                let file = setup.l2ir();
                 require!(
                     file.is_complete()
                         && file.units().len() == 1
@@ -188,7 +188,7 @@ fn fourteen_whole_original_root_if_else_composite_components_and_raw_maps_are_ca
                     VueReadKind::SetupLet
                 };
                 require!(
-                    core::ptr::eq(resolution.file(), file)
+                    core::ptr::eq(resolution.l2ir(), file)
                         && resolution.node() == node
                         && resolution.scope() == Some(record.scope())
                         && read.binding().same_owner(binding)
@@ -334,7 +334,7 @@ fn fourteen_whole_original_root_if_else_composite_components_and_raw_maps_are_ca
                                         && core::ptr::eq(syntax.source().text(), actual.source)
                                         && core::ptr::eq(syntax.source().authored_root(), source)
                                         && syntax.source().span() == actual.span
-                                        && core::ptr::eq(text_row.resolution().file(), file)
+                                        && core::ptr::eq(text_row.resolution().l2ir(), file)
                                         && text_row.resolution().node() == text_node
                                         && text_row.resolution().scope() == Some(setup.scope())
                                         && core::ptr::eq(retained.ast, actual.ast)

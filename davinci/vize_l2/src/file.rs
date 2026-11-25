@@ -87,7 +87,7 @@ impl<'a> L2Ir<'a> {
         {
             return None;
         }
-        Some(BindingRef { file: self, id })
+        Some(BindingRef { l2ir: self, id })
     }
 
     /// Script rows followed by authentic original-template rows in mint order.
@@ -96,11 +96,11 @@ impl<'a> L2Ir<'a> {
             .declarations
             .iter()
             .map(|declaration| BindingRef {
-                file: self,
+                l2ir: self,
                 id: declaration.id,
             })
             .chain(self.template_declarations().map(|declaration| BindingRef {
-                file: self,
+                l2ir: self,
                 id: declaration.declaration().id(),
             }))
     }
@@ -181,7 +181,7 @@ impl<'a> L2Ir<'a> {
     #[must_use]
     pub fn expression(&self, node: NodeId) -> Option<FileResolution<'_, 'a>> {
         self.facts.expressions.get(node)?;
-        Some(FileResolution { file: self, node })
+        Some(FileResolution { l2ir: self, node })
     }
 
     pub(crate) fn from_producer(artifact: Artifact<'a>, facts: build::Facts<'a>) -> Self {
@@ -193,20 +193,20 @@ impl<'a> L2Ir<'a> {
 ///
 /// ```compile_fail
 /// use vize_l2::{file::{BindingRef, L2Ir}, resolution::BindingId};
-/// fn forge(file: &L2Ir<'_>) {
+/// fn forge(l2ir: &L2Ir<'_>) {
 ///     let _ = BindingRef { file, id: BindingId::new(0) };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct BindingRef<'f, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     id: BindingId,
 }
 
 impl<'f, 'a> BindingRef<'f, 'a> {
     #[must_use]
-    pub fn file(self) -> &'f L2Ir<'a> {
-        self.file
+    pub fn l2ir(self) -> &'f L2Ir<'a> {
+        self.l2ir
     }
 
     #[must_use]
@@ -218,12 +218,12 @@ impl<'f, 'a> BindingRef<'f, 'a> {
     /// original parameter through `template_declaration` instead.
     #[must_use]
     pub fn declaration(self) -> Option<&'f Declaration> {
-        self.file.facts.declarations.get(self.id.index() as usize)
+        self.l2ir.facts.declarations.get(self.id.index() as usize)
     }
 
     #[must_use]
     pub fn same_owner(self, other: BindingRef<'_, '_>) -> bool {
-        core::ptr::eq(self.file, other.file)
+        core::ptr::eq(self.l2ir, other.l2ir)
     }
 }
 
@@ -232,20 +232,20 @@ impl<'f, 'a> BindingRef<'f, 'a> {
 /// ```compile_fail
 /// use vize_l0::id::NodeId;
 /// use vize_l2::file::{L2Ir, FileResolution};
-/// fn forge(file: &L2Ir<'_>) {
+/// fn forge(l2ir: &L2Ir<'_>) {
 ///     let _ = FileResolution { file, node: NodeId::FIRST };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct FileResolution<'f, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     node: NodeId,
 }
 
 impl<'f, 'a> FileResolution<'f, 'a> {
     #[must_use]
-    pub fn file(self) -> &'f L2Ir<'a> {
-        self.file
+    pub fn l2ir(self) -> &'f L2Ir<'a> {
+        self.l2ir
     }
 
     #[must_use]
@@ -255,23 +255,23 @@ impl<'f, 'a> FileResolution<'f, 'a> {
 
     #[must_use]
     pub fn table(self) -> Option<&'f ResolutionTable<'a>> {
-        Some(&self.file.facts.expressions.get(self.node)?.table)
+        Some(&self.l2ir.facts.expressions.get(self.node)?.table)
     }
 
     /// The lexical scope captured by the actual expression factory.
     #[must_use]
     pub fn scope(self) -> Option<ScopeId> {
-        Some(self.file.facts.expressions.get(self.node)?.scope)
+        Some(self.l2ir.facts.expressions.get(self.node)?.scope)
     }
 
     #[must_use]
     pub fn binding(self, id: BindingId) -> Option<BindingRef<'f, 'a>> {
-        self.file.binding(id)
+        self.l2ir.binding(id)
     }
 
     #[must_use]
     pub fn accepts(self, binding: BindingRef<'_, '_>) -> bool {
-        core::ptr::eq(self.file, binding.file)
+        core::ptr::eq(self.l2ir, binding.l2ir)
     }
 }
 

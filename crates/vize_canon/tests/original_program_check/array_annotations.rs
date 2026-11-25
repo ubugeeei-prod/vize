@@ -117,8 +117,8 @@ fn configured_original_array_ts_tsx_preserve_complete_reports_and_related_author
             }
             .unwrap();
             assert_diagnosing_options(&checked);
-            let file = if tsx { owner.file() } else { &original };
-            assert!(core::ptr::eq(checked.projection().file(), file));
+            let file = if tsx { owner.l2ir() } else { &original };
+            assert!(core::ptr::eq(checked.projection().l2ir(), file));
             assert_eq!(
                 checked.projection().source_kind(),
                 if tsx {
@@ -153,7 +153,7 @@ fn configured_original_array_ts_tsx_preserve_complete_reports_and_related_author
             assert_eq!(std::fs::read(&path).unwrap(), source.as_bytes());
             if tsx {
                 assert!(matches!(
-                    block_on(bridge.check_original_program(owner.file(), &path)),
+                    block_on(bridge.check_original_program(owner.l2ir(), &path)),
                     Err(OriginalProgramError::Projection(
                         ProjectionError::UnsupportedProfile
                     ))

@@ -46,8 +46,8 @@ fn lowering_copies_expression_classification_without_reinterpreting_source() {
         }
         lower(&l3_arena, &Region { ops })
     };
-    assert_eq!(verify(&lowered.program), []);
-    let operands = &lowered.program.operands;
+    assert_eq!(verify(&lowered.l3ir), []);
+    let operands = &lowered.l3ir.operands;
     assert_eq!(operands.len(), 4);
     for (operand, (kind, qualifier, source, span)) in operands.iter().zip([
         (ValueKind::Js, "", "value", Span::new(0, 5)),

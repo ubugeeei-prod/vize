@@ -74,7 +74,7 @@ fn actual_key_role_keeps_its_original_parameter_scope_occurrence_and_canonical_r
         let observation = lower_selected_setup_sfc_native(&arena, source, options());
         let view = observation.admitted().unwrap();
         let setup = view.setup();
-        let file = setup.file();
+        let file = setup.l2ir();
         let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
             panic!("one authentic original For");
         };
@@ -92,7 +92,7 @@ fn actual_key_role_keeps_its_original_parameter_scope_occurrence_and_canonical_r
         assert_eq!(retained.declaration().id(), key.id());
         assert_eq!(retained.declaration().origin(), original.id());
         assert_eq!(retained.declaration().scope(), head.head().scope().unwrap());
-        assert!(core::ptr::eq(retained.file(), file));
+        assert!(core::ptr::eq(retained.l2ir(), file));
         assert!(core::ptr::eq(
             retained_declaration.parameter(),
             declaration.parameter()
@@ -158,8 +158,8 @@ fn key_receipt_refuses_equal_foreign_files_copied_occurrences_value_roles_and_fo
     let view = observation.admitted().unwrap();
     let foreign_view = other.admitted().unwrap();
     let setup = view.setup();
-    let file = setup.file();
-    let foreign = foreign_view.setup().file();
+    let file = setup.l2ir();
+    let foreign = foreign_view.setup().l2ir();
     let [root @ Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
         panic!("For");
     };

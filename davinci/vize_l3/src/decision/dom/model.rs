@@ -33,7 +33,7 @@ pub(super) fn get<'owner, 'arena>(
         return None;
     };
     let resolution = facts.file_expression(node)?.resolution();
-    let original = resolution.file().native_model(node)?;
+    let original = resolution.l2ir().native_model(node)?;
     let (ExprRef::Js(read), ExprRef::Js(write)) = (model.contract.read, model.contract.write)
     else {
         return None;

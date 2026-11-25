@@ -48,7 +48,7 @@ fn standalone<'a>(
     file.is_complete().then_some(file)
 }
 
-fn count_arrows(file: &L2Ir<'_>) -> usize {
+fn count_arrows(l2ir: &L2Ir<'_>) -> usize {
     file.bindings()
         .filter_map(|b| b.declaration())
         .filter(|d| {
@@ -182,7 +182,7 @@ fn original_modules_and_component_files() {
             }
             spelling += 1;
             let arena = Allocator::new();
-            let mut compare = |file: &L2Ir<'_>, block, ty| {
+            let mut compare = |l2ir: &L2Ir<'_>, block, ty| {
                 let count = count_arrows(file);
                 if count == 0 {
                     return;

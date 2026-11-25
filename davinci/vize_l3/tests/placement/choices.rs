@@ -12,7 +12,7 @@ fn records_must_resolve() {
     let mut build = fixture(&arena, (LIT, "hi"));
     build.record(42, &[Inline, Cache], None);
     assert_eq!(
-        messages(&build.program),
+        messages(&build.l3ir),
         ["L3V010 @0:0 placement for op#42 does not resolve"]
     );
 }
@@ -21,10 +21,10 @@ fn records_must_resolve() {
 fn records_follow_op_order_once_per_op() {
     let arena = Allocator::default();
     let mut build = fixture(&arena, (LIT, "hi"));
-    annotate(&mut build.program);
-    build.program.placements.swap(0, 1);
+    annotate(&mut build.l3ir);
+    build.l3ir.placements.swap(0, 1);
     assert_eq!(
-        messages(&build.program),
+        messages(&build.l3ir),
         ["L3V010 @5:15 placement for op#1 is not in op order"]
     );
 
@@ -32,7 +32,7 @@ fn records_follow_op_order_once_per_op() {
     build.record(1, &[Inline, Cache], None);
     build.record(1, &[Inline, Cache], None);
     assert_eq!(
-        messages(&build.program),
+        messages(&build.l3ir),
         ["L3V010 @5:15 placement for op#1 is not in op order"]
     );
 }
@@ -44,7 +44,7 @@ fn records_list_inline_and_another_alternative() {
     build.record(1, &[Inline], None);
     build.record(2, &[Cache], None);
     assert_eq!(
-        messages(&build.program),
+        messages(&build.l3ir),
         [
             "L3V010 @5:15 placement for op#1 must list inline and another alternative",
             "L3V010 @16:25 placement for op#2 must list inline and another alternative",
@@ -59,7 +59,7 @@ fn choices_come_from_the_alternatives() {
     build.record(1, &[Inline, Cache], None);
     build.choose(1, Hoist);
     assert_eq!(
-        messages(&build.program),
+        messages(&build.l3ir),
         ["L3V010 @5:15 placement for op#1 chooses hoist outside its alternatives"]
     );
 }
@@ -71,7 +71,7 @@ fn leaders_accompany_exactly_the_group_alternative() {
     build.record(1, &[Inline, Cache], Some(2));
     build.record(3, &[Inline, Group], None);
     assert_eq!(
-        messages(&build.program),
+        messages(&build.l3ir),
         [
             "L3V010 @5:15 placement for op#1 names leader op#2 without the group alternative",
             "L3V010 @30:40 placement for op#3 lists group without a leader",
@@ -86,10 +86,10 @@ fn a_chosen_group_is_contiguous_with_its_committed_unit() {
     build.text(0, 0, (0, 10), (JS, "count"), false);
     build.text(1, 0, (10, 20), (JS, "count"), false);
     build.text(2, 0, (20, 30), (JS, "count"), false);
-    annotate(&mut build.program);
+    annotate(&mut build.l3ir);
     build.choose(2, Group);
     assert_eq!(
-        messages(&build.program),
+        messages(&build.l3ir),
         ["L3V010 @20:30 chosen group for op#2 is not contiguous with committed leader op#0"]
     );
 }
@@ -102,11 +102,11 @@ fn a_chosen_hoist_is_never_nested_in_another() {
     build.record(5, &[Inline, Hoist], None);
     build.record(8, &[Inline, Hoist], None);
     build.choose(8, Hoist);
-    assert_eq!(messages(&build.program), [""; 0]);
+    assert_eq!(messages(&build.l3ir), [""; 0]);
 
     build.choose(5, Hoist);
     assert_eq!(
-        messages(&build.program),
+        messages(&build.l3ir),
         ["L3V010 @60:70 chosen hoist for op#8 is nested inside hoisted op#5"]
     );
 }
@@ -119,7 +119,7 @@ fn every_defect_is_reported_once_in_record_order() {
     build.record(6, &[Inline, Hoist], None);
     build.choose(6, Hoist);
     assert_eq!(
-        messages(&build.program),
+        messages(&build.l3ir),
         [
             "L3V010 @30:40 group leader op#1 for op#3 is not a dynamic direct-reference leaf update",
             "L3V010 @50:70 hoist for op#6 requires an insert-node",

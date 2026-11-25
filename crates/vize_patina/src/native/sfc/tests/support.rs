@@ -62,8 +62,8 @@ impl NativeSfcSetupRule for Audit {
     ) -> Result<(), NativeSfcLintRefusal> {
         assert!(core::ptr::eq(context.owner(), setup.owner()));
         assert!(core::ptr::eq(
-            setup.semantic().exposure().file(),
-            context.owner().file()
+            setup.semantic().exposure().l2ir(),
+            context.owner().l2ir()
         ));
         let bindings: Vec<_> = setup
             .semantic()

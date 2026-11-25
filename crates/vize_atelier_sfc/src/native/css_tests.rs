@@ -72,7 +72,7 @@ fn complete_plain_css_result_matches_the_existing_result_shape_and_original_byte
             );
             assert_eq!(output.code(), base.result().unwrap().code());
             assert!(core::ptr::eq(
-                native.observation().descriptor().source(),
+                native.observation().l1ir().source(),
                 source.as_str()
             ));
             assert!(native.observation().admitted().is_some());
@@ -98,12 +98,12 @@ fn original_setup_and_css_outputs_preserve_their_shared_source_owners() {
     assert_eq!(output.code(), reference.result().unwrap().code());
     assert_eq!(output.css(), Some("/* 雪🌸 */p{color:red}"));
     let observation = compilation.observation();
-    let descriptor = observation.descriptor().admitted().unwrap();
+    let descriptor = observation.l1ir().admitted().unwrap();
     assert_eq!(descriptor.styles().len(), 1);
     assert_eq!(descriptor.setup().unwrap().block().source(), "let count=1");
     assert!(observation.admitted().is_some());
     assert!(core::ptr::eq(
-        observation.file().unwrap().file().artifact().source(),
+        observation.file().unwrap().l2ir().artifact().source(),
         source.as_str()
     ));
     let script = observation.scripts().first().unwrap();
@@ -150,7 +150,7 @@ fn mapped_and_unmapped_css_preserve_original_whole_file_coordinates() {
         assert_eq!(output.code(), plain.result().unwrap().code());
         assert_eq!(output.css(), plain.result().unwrap().css());
         let document = output.css_document().unwrap();
-        let styles = mapped.observation().descriptor().admitted().unwrap();
+        let styles = mapped.observation().l1ir().admitted().unwrap();
         assert_eq!(styles.styles().len(), 2);
         let map: serde_json::Value =
             serde_json::from_str(output.css_source_map().unwrap()).unwrap();
@@ -211,7 +211,7 @@ fn conservative_binding_refusals_keep_exact_original_spans_and_every_owner() {
                 span: Span::new(start, start + evidence.len() as u32),
             }
         );
-        let descriptor = compilation.observation().descriptor().admitted().unwrap();
+        let descriptor = compilation.observation().l1ir().admitted().unwrap();
         assert_eq!(descriptor.styles().len(), 2);
         assert_eq!(descriptor.styles().next().unwrap().block().source(), css);
         assert!(core::ptr::eq(descriptor.source(), source.as_str()));

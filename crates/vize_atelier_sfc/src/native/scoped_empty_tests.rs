@@ -85,7 +85,7 @@ fn three_original_empty_sfc_modules_css_maps_and_scope_id_match_whole_contracts(
                 .observation()
                 .file()
                 .unwrap()
-                .file()
+                .l2ir()
                 .artifact()
                 .source(),
             source
@@ -233,7 +233,7 @@ fn unproven_empty_syntax_retains_complete_custody_and_no_partial_product() {
         assert_eq!(
             compilation
                 .observation()
-                .descriptor()
+                .l1ir()
                 .admitted()
                 .unwrap()
                 .styles()
@@ -245,7 +245,7 @@ fn unproven_empty_syntax_retains_complete_custody_and_no_partial_product() {
                 .observation()
                 .file()
                 .unwrap()
-                .file()
+                .l2ir()
                 .is_complete()
         );
         assert!(compilation.observation().admitted().is_some());
@@ -273,7 +273,7 @@ fn unproven_empty_syntax_retains_complete_custody_and_no_partial_product() {
         compilation.result().unwrap_err(),
         NativeSfcCompileError::Descriptor
     );
-    let descriptor = compilation.observation().descriptor();
+    let descriptor = compilation.observation().l1ir();
     assert!(
         descriptor.issues().iter().any(|issue| issue.code
             == vize_l1::container::vue::DescriptorIssueCode::UnsupportedAttribute)

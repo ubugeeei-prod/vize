@@ -107,14 +107,14 @@ struct StyleSelection<'a> {
 /// Nor can its retained original capture be mutated:
 /// ```compile_fail
 /// use vize_l1::container::vue::L1Ir;
-/// fn change(owner: &mut L1Ir<'_>) {
+/// fn change(l1ir: &mut L1Ir<'_>) {
 ///     owner.container().blocks.clear();
 /// }
 /// ```
 /// An admitted view itself has no public constructor:
 /// ```compile_fail
 /// use vize_l1::container::vue::{AdmittedDescriptor, L1Ir};
-/// fn forge(owner: &L1Ir<'_>) {
+/// fn forge(l1ir: &L1Ir<'_>) {
 ///     let view = AdmittedDescriptor { owner, root: owner.root().unwrap() };
 /// }
 /// ```
@@ -192,7 +192,7 @@ impl<'a> L1Ir<'a> {
             && self.issues.is_empty()
             && self.container.errors.is_empty()
         {
-            Ok(AdmittedDescriptor { owner: self, root })
+            Ok(AdmittedDescriptor { l1ir: self, root })
         } else {
             Err(DescriptorRefusal {
                 issues: &self.issues,
@@ -221,7 +221,7 @@ impl DescriptorRefusal<'_> {
 /// Opaque, read-only capability borrowing its original descriptor observation.
 #[derive(Debug, Clone, Copy)]
 pub struct AdmittedDescriptor<'o, 'a> {
-    owner: &'o L1Ir<'a>,
+    l1ir: &'o L1Ir<'a>,
     root: SourceRoot<'a>,
 }
 
@@ -230,60 +230,60 @@ impl<'o, 'a> AdmittedDescriptor<'o, 'a> {
         self.root
     }
     pub fn source(self) -> &'a str {
-        self.owner.source()
+        self.l1ir.source()
     }
     pub fn ordinary(self) -> Option<ScriptView<'o, 'a>> {
-        self.owner.ordinary.map(|selected| ScriptView {
-            owner: self.owner,
+        self.l1ir.ordinary.map(|selected| ScriptView {
+            l1ir: self.l1ir,
             selected,
             role: ScriptRole::Ordinary,
         })
     }
     pub fn setup(self) -> Option<ScriptView<'o, 'a>> {
-        self.owner.setup.map(|selected| ScriptView {
-            owner: self.owner,
+        self.l1ir.setup.map(|selected| ScriptView {
+            l1ir: self.l1ir,
             selected,
             role: ScriptRole::Setup,
         })
     }
     pub fn template(self) -> Option<TemplateView<'o, 'a>> {
-        self.owner.template.as_ref().map(|selected| TemplateView {
-            owner: self.owner,
+        self.l1ir.template.as_ref().map(|selected| TemplateView {
+            l1ir: self.l1ir,
             selected,
         })
     }
     /// Opaque style sources in authored order; this grants no CSS semantics.
     pub fn styles(self) -> impl ExactSizeIterator<Item = StyleView<'o, 'a>> {
-        self.owner
+        self.l1ir
             .styles
             .iter()
             .copied()
             .map(move |selected| StyleView {
-                owner: self.owner,
+                l1ir: self.l1ir,
                 selected,
             })
     }
     /// Matching real script roles determine template language; no scripts means JS.
     pub fn template_lang(self) -> Lang {
-        self.owner.dialect.lang()
+        self.l1ir.dialect.lang()
     }
     /// The same resolved descriptor every downstream level consumes.
     pub const fn dialect(self) -> FileDialect {
-        self.owner.dialect
+        self.l1ir.dialect
     }
 }
 
 /// Authentic script role and checked authored content; first policy is JS/TS Module.
 #[derive(Debug, Clone, Copy)]
 pub struct ScriptView<'o, 'a> {
-    owner: &'o L1Ir<'a>,
+    l1ir: &'o L1Ir<'a>,
     selected: Selection<'a>,
     role: ScriptRole,
 }
 
 impl<'a> ScriptView<'_, 'a> {
     pub fn source(&self) -> &'a str {
-        self.owner.source()
+        self.l1ir.source()
     }
     pub fn container_index(&self) -> usize {
         self.selected.index
@@ -305,19 +305,19 @@ impl<'a> ScriptView<'_, 'a> {
 /// A public capture cannot forge an original style capability:
 /// ```compile_fail
 /// use vize_l1::container::vue::{L1Ir, StyleView};
-/// fn forge(owner: &L1Ir<'_>) {
+/// fn forge(l1ir: &L1Ir<'_>) {
 ///     let view = StyleView { owner, selected: todo!() };
 /// }
 /// ```
 #[derive(Debug, Clone, Copy)]
 pub struct StyleView<'o, 'a> {
-    owner: &'o L1Ir<'a>,
+    l1ir: &'o L1Ir<'a>,
     selected: StyleSelection<'a>,
 }
 
 impl<'o, 'a> StyleView<'o, 'a> {
     pub fn source(&self) -> &'a str {
-        self.owner.source()
+        self.l1ir.source()
     }
     pub fn container_index(&self) -> usize {
         self.selected.index
@@ -330,7 +330,7 @@ impl<'o, 'a> StyleView<'o, 'a> {
         reason = "Only the original splitter records indices; the owner exposes no mutable blocks"
     )]
     pub fn original_block(&self) -> &'o crate::container::Block<'a> {
-        &self.owner.container.blocks[self.selected.index]
+        &self.l1ir.container.blocks[self.selected.index]
     }
     pub fn attrs(&self) -> &'o [crate::container::BlockAttr<'a>] {
         &self.original_block().attrs

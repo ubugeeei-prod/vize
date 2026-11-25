@@ -72,7 +72,7 @@ fn module_link_late_lone_surrogate_refuses_after_a_genuine_valid_prefix() {
         let original = view.view.for_each(|_| visited += 1).unwrap_err();
         assert_eq!(visited, 1);
         assert_eq!(original.kind, ModuleSourceErrorKind::LoneSurrogateRequest);
-        assert_eq!(query.file.imports().len(), 2);
+        assert_eq!(query.l2ir.imports().len(), 2);
         assert_eq!(
             collect(query, view, || false),
             Err(ModuleOperandRefusal::Sources(original))

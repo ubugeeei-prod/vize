@@ -62,13 +62,13 @@ pub fn query(
         messages,
         calls: core::cell::Cell::new(0),
     };
-    let before = lint.file().artifact().node_count();
+    let before = lint.l2ir().artifact().node_count();
     let output = lint.img_alt(&counted).unwrap();
     let lookups = if output.is_empty() { 0 } else { 2 };
     assert_eq!(counted.calls.get(), lookups);
     let repeated = lint.img_alt(&counted).unwrap();
     assert_eq!(counted.calls.get(), lookups * 2);
-    assert_eq!(lint.file().artifact().node_count(), before);
+    assert_eq!(lint.l2ir().artifact().node_count(), before);
     assert_eq!(
         output.iter().map(native).collect::<Vec<_>>(),
         repeated.iter().map(native).collect::<Vec<_>>()
@@ -102,7 +102,7 @@ pub fn source_parity(dialect: Dialect, source: &str, locale: Locale) -> Vec<Valu
                 .admitted()
                 .unwrap_or_else(|| panic!("{source}: {:?}", owner.issues()));
             let lint = NativeCanonicalLint::from_vue(admitted);
-            assert!(core::ptr::eq(lint.file(), owner.file().unwrap().file()));
+            assert!(core::ptr::eq(lint.l2ir(), owner.file().unwrap().l2ir()));
             let findings = query(&lint, &messages);
             let reference = linter.lint_sfc(source, "native.vue");
             drop(owner);
@@ -111,7 +111,7 @@ pub fn source_parity(dialect: Dialect, source: &str, locale: Locale) -> Vec<Valu
         Dialect::Jsx | Dialect::Tsx => {
             let owner = jsx(&a, source, matches!(dialect, Dialect::Tsx));
             let lint = NativeCanonicalLint::from_jsx(&owner).unwrap();
-            assert!(core::ptr::eq(lint.file(), owner.file()));
+            assert!(core::ptr::eq(lint.l2ir(), owner.l2ir()));
             let findings = query(&lint, &messages);
             let lang = if matches!(dialect, Dialect::Tsx) {
                 vize_atelier_jsx::JsxLang::Tsx

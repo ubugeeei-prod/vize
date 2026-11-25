@@ -34,7 +34,7 @@ pub(super) fn options() -> DescriptorOptions {
 }
 
 pub(super) fn sites(native: &NativeSfc<'_, '_>) -> Vec<u32> {
-    let file = native.file().file();
+    let file = native.file().l2ir();
     let mut scalar = vec![0, file.artifact().source().len() as u32];
     let mut add = |span: vize_l0::Span| scalar.extend([span.start, span.end]);
     for binding in file.bindings() {

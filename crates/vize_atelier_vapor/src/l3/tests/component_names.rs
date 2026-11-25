@@ -80,7 +80,7 @@ fn checked_component_name_payload_owns_generated_keys() {
         &allocator,
         r#"<Child :[propName]="value" @[eventName]="save" />"#,
     );
-    for operand in &mut s3.program.operands {
+    for operand in &mut s3.l3ir.operands {
         if operand.role == vize_l3::operand::OperandRole::Name {
             match operand.value.text {
                 "propName" => operand.value.text = "otherProp",

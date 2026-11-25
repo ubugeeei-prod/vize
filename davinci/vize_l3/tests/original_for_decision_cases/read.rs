@@ -22,7 +22,7 @@ fn original_primitive_string_refinements_preserve_const_collection_read_classifi
                 .initializer
                 .is_primitive()
         );
-        assert!(core::ptr::eq(read.binding().file(), analysis.file()));
+        assert!(core::ptr::eq(read.binding().l2ir(), analysis.l2ir()));
         assert!(read.binding().same_owner(row.collection()));
         assert_eq!(
             analysis.dom().unwrap().unsupported()[0].reason,
@@ -57,7 +57,7 @@ fn js_ts_const_let_and_var_classify_the_actual_retained_setup_collection_read() 
                 read.occurrence(),
                 row.resolution().collection_occurrence()
             ));
-            assert!(core::ptr::eq(read.binding().file(), analysis.file()));
+            assert!(core::ptr::eq(read.binding().l2ir(), analysis.l2ir()));
             assert!(read.binding().same_owner(row.collection()));
             assert_eq!(read.binding().id(), actual.binding);
             assert_eq!(read.occurrence().usage, Usage::Read);
@@ -147,7 +147,7 @@ fn a_parent_alias_retains_original_custody_and_gets_distinct_access_refusal() {
     assert!(core::ptr::eq(
         inner_row.resolution().input().collection(),
         analysis
-            .file()
+            .l2ir()
             .for_head_for(inner)
             .unwrap()
             .resolution()
@@ -210,7 +210,7 @@ fn movement_preserves_the_normally_owned_occurrence_source_and_read_binding() {
         original_collection
     ));
     assert_eq!(read.binding().id(), binding_id);
-    assert!(core::ptr::eq(read.binding().file(), analysis.file()));
+    assert!(core::ptr::eq(read.binding().l2ir(), analysis.l2ir()));
     assert_eq!(read.kind(), VueReadKind::SetupLet);
 }
 

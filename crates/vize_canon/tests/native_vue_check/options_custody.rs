@@ -59,7 +59,7 @@ fn inherited_options_changed_at_lsp_startup_refuse_without_sfc_or_root_writes() 
             ))
         ));
         assert_eq!(
-            observed.file().unwrap().file().artifact().source(),
+            observed.file().unwrap().l2ir().artifact().source(),
             source.as_str()
         );
         assert_eq!(

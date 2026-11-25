@@ -231,13 +231,7 @@ fn emit<L: LinkSink>(
 ) -> Result<NativeSfcOutput, NativeSfcCompileError> {
     // Refusal classification reads retained block metadata, never source text
     // or an external file. It grants no descriptor or compilation authority.
-    for (container_index, block) in observation
-        .descriptor()
-        .container()
-        .blocks
-        .iter()
-        .enumerate()
-    {
+    for (container_index, block) in observation.l1ir().container().blocks.iter().enumerate() {
         if let Some(attribute) = block
             .attrs
             .iter()
@@ -250,7 +244,7 @@ fn emit<L: LinkSink>(
         }
     }
     let descriptor = observation
-        .descriptor()
+        .l1ir()
         .admitted()
         .map_err(|_| NativeSfcCompileError::Descriptor)?;
     let scope_id = scope::for_component(descriptor, options.scope_id, options.filename)?;
@@ -277,7 +271,7 @@ fn emit<L: LinkSink>(
                 || (script.role() == ScriptRole::Ordinary
                     && descriptor.setup().is_none()
                     && observation.admitted().is_some_and(|admitted| {
-                        admitted.file().file().ordinary_empty_script().is_some()
+                        admitted.file().l2ir().ordinary_empty_script().is_some()
                     })))
             || !matches!(script.lang(), Lang::Js | Lang::Ts)
             || observation.admitted().is_none()
@@ -302,7 +296,7 @@ fn emit<L: LinkSink>(
         ModuleParts::for_runtime(Runtime::VueDom, options.runtime_version, COMPONENT_BINDING)
             .map_err(NativeSfcCompileError::Assembly)?;
     if observation.scripts().is_empty() {
-        let analysis = build_dom_file_decisions(admitted.file().file())
+        let analysis = build_dom_file_decisions(admitted.file().l2ir())
             .map_err(NativeSfcCompileError::Analysis)?;
         parts.render = Some(emit_file::<L>(&analysis).map_err(NativeSfcCompileError::Dom)?);
     } else if descriptor.ordinary().is_some() {
@@ -317,8 +311,7 @@ fn emit<L: LinkSink>(
         .into_document();
     #[cfg(feature = "native-sfc-scss")]
     if use_shared_positions {
-        let index =
-            vize_l4::write::source_map::SourceMapIndex::new(observation.descriptor().source());
+        let index = vize_l4::write::source_map::SourceMapIndex::new(observation.l1ir().source());
         let source_map = Some(index.source_map(&document, options.filename));
         let css_source_map = css
             .as_ref()
@@ -333,11 +326,11 @@ fn emit<L: LinkSink>(
     }
     let source_map = options
         .source_map
-        .then(|| document.source_map(options.filename, observation.descriptor().source()));
+        .then(|| document.source_map(options.filename, observation.l1ir().source()));
     let css_source_map = css.as_ref().and_then(|document| {
         options
             .source_map
-            .then(|| document.source_map(options.filename, observation.descriptor().source()))
+            .then(|| document.source_map(options.filename, observation.l1ir().source()))
     });
     Ok(NativeSfcOutput {
         document,

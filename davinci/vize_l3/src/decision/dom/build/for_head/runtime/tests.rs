@@ -48,7 +48,7 @@ fn caught_enter_unwind_keeps_normal_program_collection_params_and_alias_scope() 
     );
     let view = observation.admitted().unwrap();
     let setup = view.setup();
-    let file = setup.file();
+    let file = setup.l2ir();
     let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
         panic!("For")
     };

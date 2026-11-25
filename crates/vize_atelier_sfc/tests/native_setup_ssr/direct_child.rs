@@ -34,15 +34,15 @@ fn module(fixture: &serde_json::Value) -> serde_json::Value {
         fixture["name"]
     );
     assert!(core::ptr::eq(
-        observation.original().descriptor().source(),
+        observation.original().l1ir().source(),
         source
     ));
     let admitted = observation.admitted().unwrap();
     let setup = admitted.setup();
-    let file = setup.file();
+    let file = setup.l2ir();
     assert!(file.is_complete());
     let analysis = build_selected_setup_ssr_decisions(setup).unwrap();
-    assert!(core::ptr::eq(analysis.file(), file));
+    assert!(core::ptr::eq(analysis.l2ir(), file));
     let facts = analysis.ssr().unwrap();
     assert!(facts.unsupported().is_empty());
     assert!(!facts.fragment());
@@ -104,7 +104,7 @@ fn refuse(fixture: &serde_json::Value) -> serde_json::Value {
         compile_native_setup_ssr_sfc(&arena, source, NativeSsrSfcCompileOptions::default());
     let error = compilation.result().unwrap_err();
     assert!(core::ptr::eq(
-        compilation.observation().original().descriptor().source(),
+        compilation.observation().original().l1ir().source(),
         source
     ));
     if let Some(expected) = fixture["ssrReason"].as_str() {
@@ -192,11 +192,11 @@ fn equal_source_foreign_setup_bindings_cannot_substitute_for_the_original_owner(
     assert!(setup_b.binding(binding_a).is_err());
     assert!(!binding_a.same_owner(binding_b));
     let vize_l2::file::NativeFileInterpolationState::Admitted(node_a) =
-        setup_a.file().native_interpolations()[0].state()
+        setup_a.l2ir().native_interpolations()[0].state()
     else {
         panic!("original node")
     };
-    let resolution_a = setup_a.file().expression(node_a).unwrap();
+    let resolution_a = setup_a.l2ir().expression(node_a).unwrap();
     assert!(resolution_a.accepts(binding_a));
     assert!(!resolution_a.accepts(binding_b));
 }

@@ -100,7 +100,7 @@ fn borrowed_handles_distinguish_files_even_when_numeric_ids_match() {
     assert_eq!(a.id(), b.id());
     assert!(a.same_owner(a));
     assert!(!a.same_owner(b));
-    assert!(core::ptr::eq(a.file(), &first));
+    assert!(core::ptr::eq(a.l2ir(), &first));
 }
 
 #[test]

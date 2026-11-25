@@ -19,7 +19,7 @@ impl RetainedNavigation<'_, '_> {
                 })
                 .map_err(NavigationRefusal::NativeQuery)?;
         } else {
-            Model::new(self.file).for_each_reference_to(binding, |site| {
+            Model::new(self.l2ir).for_each_reference_to(binding, |site| {
                 let row = site.reference();
                 sites.push((row.span, Some(row.usage)));
             });

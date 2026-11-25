@@ -51,7 +51,7 @@ fn original_program_and_template_uses_share_one_borrowed_file_without_new_arena_
     let source = "<script setup>const value=1;value;</script><template><p :title='value'>{{value}}</p></template>";
     let owner = observe(&arena, source);
     let native = owner.admitted().unwrap();
-    let file = native.file().file();
+    let file = native.file().l2ir();
     let before = arena.allocated_bytes();
     let declaration = native
         .binding_at_offset(at(source, "value", 0))
@@ -76,7 +76,7 @@ fn original_program_and_template_uses_share_one_borrowed_file_without_new_arena_
             .reference_at_offset(at(source, "value", index))
             .unwrap()
             .unwrap();
-        assert!(core::ptr::eq(reference.file(), file));
+        assert!(core::ptr::eq(reference.l2ir(), file));
         assert!(reference.binding().same_owner(declaration));
         assert_eq!(reference.binding().id(), declaration.id());
         assert_eq!(reference.span(), spelling(source, "value", index));
@@ -240,7 +240,7 @@ fn original_refused_assembly_cannot_mint_a_query_view_from_partial_file_facts() 
         let original = observe(&arena, source);
         assert!(original.admitted().is_none());
         assert!(!original.issues().is_empty());
-        assert!(core::ptr::eq(original.descriptor().source(), source));
+        assert!(core::ptr::eq(original.l1ir().source(), source));
         if source.contains("external") {
             let rejected = original.rejected_file().unwrap();
             let issues = if let Some(file) = rejected.file() {

@@ -75,8 +75,8 @@ fn producer<'a>(
     Ok(producer)
 }
 
-fn facts(file: &L2Ir<'_>) -> vize_l0::String {
-    let units: Vec<_> = file
+fn facts(l2ir: &L2Ir<'_>) -> vize_l0::String {
+    let units: Vec<_> = l2ir
         .units()
         .iter()
         .map(|unit| {
@@ -92,19 +92,19 @@ fn facts(file: &L2Ir<'_>) -> vize_l0::String {
             )
         })
         .collect();
-    let declarations: Vec<_> = file
+    let declarations: Vec<_> = l2ir
         .bindings()
         .filter_map(|binding| binding.declaration())
         .collect();
     cstr!(
         "{units:?}|{:?}|{declarations:?}|{:?}|{:?}|{:?}|{:?}|{:?}|{:?}",
-        file.scopes(),
-        file.references(),
-        file.imports(),
-        file.exports(),
-        file.issues(),
-        file.template_issues(),
-        file.template_interruption()
+        l2ir.scopes(),
+        l2ir.references(),
+        l2ir.imports(),
+        l2ir.exports(),
+        l2ir.issues(),
+        l2ir.template_issues(),
+        l2ir.template_interruption()
     )
 }
 
@@ -120,7 +120,7 @@ fn same_original_file_populates_complete_static_tree_and_preserves_all_script_fa
                 .finish()
                 .map_err(|_| "ordinary finish")?;
             assert_eq!(
-                old.file().artifact().node_count(),
+                old.l2ir().artifact().node_count(),
                 0,
                 "original gap stays reproducible through existing API"
             );
@@ -134,10 +134,10 @@ fn same_original_file_populates_complete_static_tree_and_preserves_all_script_fa
                 .as_ptr();
             let native = native.finish_markup().map_err(|_| "native markup")?;
             assert!(core::ptr::eq(
-                native.file().artifact().source(),
+                native.l2ir().artifact().source(),
                 source.as_str()
             ));
-            assert!(core::ptr::eq(native.file(), native.owner().file()));
+            assert!(core::ptr::eq(native.l2ir(), native.owner().l2ir()));
             assert_eq!(
                 native
                     .owner()
@@ -151,8 +151,8 @@ fn same_original_file_populates_complete_static_tree_and_preserves_all_script_fa
             );
             assert_eq!(native.owner().observation().comments().len(), 2);
             assert_eq!(
-                facts(native.file()),
-                facts(old.file()),
+                facts(native.l2ir()),
+                facts(old.l2ir()),
                 "all retained File rows unchanged"
             );
             let outer = "<section id=\"root\" hidden aria-label=\"a\"><img src=\"a.png\" alt=\"\" />hi😀{/*kept*/}<br/></section>";
@@ -186,10 +186,10 @@ fn same_original_file_populates_complete_static_tree_and_preserves_all_script_fa
                     ),
                 ],
             )];
-            assert_eq!(tree(&native.file().artifact().root().ops)?, expected);
-            assert_eq!(native.file().artifact().node_count(), 4);
+            assert_eq!(tree(&native.l2ir().artifact().root().ops)?, expected);
+            assert_eq!(native.l2ir().artifact().node_count(), 4);
             assert_eq!(
-                template_complexity::run(native.file().artifact().root(), 4),
+                template_complexity::run(native.l2ir().artifact().root(), 4),
                 template_complexity::ComplexityFacts::empty(),
                 "shared analysis consumes native canonical Region"
             );
@@ -261,8 +261,8 @@ fn unsupported_static_boundary_refuses_whole_markup_before_any_partial_publicati
             }]
         );
         let owner = rejected.owner().ok_or("complete refused original owner")?;
-        assert_eq!(owner.file().artifact().node_count(), 0);
-        assert_eq!(facts(owner.file()), facts(expected.file()));
+        assert_eq!(owner.l2ir().artifact().node_count(), 0);
+        assert_eq!(facts(owner.l2ir()), facts(expected.l2ir()));
         assert!(rejected.rejected_owner().is_none());
     }
     Ok(())

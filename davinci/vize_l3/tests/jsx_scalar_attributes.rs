@@ -48,7 +48,7 @@ fn scalar_attributes_keep_actual_values_and_read_binding_after_owner_movement()
             body
         );
         assert!(core::ptr::eq(
-            analysis.owner().file().artifact().source(),
+            analysis.owner().l2ir().artifact().source(),
             source
         ));
         let mut names = Vec::new();
@@ -123,13 +123,13 @@ fn scalar_attributes_keep_actual_values_and_read_binding_after_owner_movement()
         assert_eq!(
             analysis
                 .owner()
-                .file()
+                .l2ir()
                 .lookup(reference.scope, name, Namespace::Value)
                 .ok_or("same File binding")?
                 .id(),
             binding
         );
-        assert_ne!(reference.scope, analysis.owner().file().units()[0].scope);
+        assert_ne!(reference.scope, analysis.owner().l2ir().units()[0].scope);
     }
     Ok(())
 }
@@ -181,7 +181,7 @@ fn exact_former_attribute_refusals_and_escaped_shadow_reads_have_original_custod
         assert_eq!(
             analysis
                 .owner()
-                .file()
+                .l2ir()
                 .lookup(reference.scope, name, Namespace::Value)
                 .ok_or("genuine scope")?
                 .id(),
@@ -191,9 +191,9 @@ fn exact_former_attribute_refusals_and_escaped_shadow_reads_have_original_custod
             assert_ne!(
                 analysis
                     .owner()
-                    .file()
+                    .l2ir()
                     .lookup(
-                        analysis.owner().file().units()[0].scope,
+                        analysis.owner().l2ir().units()[0].scope,
                         name,
                         Namespace::Value,
                     )
@@ -248,7 +248,7 @@ fn complex_or_non_whitelisted_attributes_refuse_the_complete_view() -> Result<()
                 .as_ptr(),
             body
         );
-        assert!(rejected.owner().file().is_complete());
+        assert!(rejected.owner().l2ir().is_complete());
         assert!(
             rejected.issues().iter().any(|issue| issue.kind == expected),
             "{attribute}"

@@ -54,16 +54,16 @@ pub struct RecoveredCursor {
 
 fn selected<'s>(
     snap: &'s SourceSnapshot,
-    owner: &L1Ir<'_>,
+    l1ir: &L1Ir<'_>,
     role: ScriptRole,
 ) -> Result<(SourceBlock<'s>, Option<ScriptRole>), RecoveredScriptError> {
     if snap.language_id() != "vue" {
         return Err(RecoveredScriptError::Document);
     }
-    if !core::ptr::eq(snap.source(), owner.source()) {
+    if !core::ptr::eq(snap.source(), l1ir.source()) {
         return Err(RecoveredScriptError::Source);
     }
-    let desc = owner
+    let desc = l1ir
         .admitted()
         .map_err(|_| RecoveredScriptError::Descriptor)?;
     let script = match role {
@@ -90,12 +90,12 @@ impl SourceSnapshot {
     pub fn open_literal_prefix<'s>(
         &'s self,
         docs: &DocumentStore,
-        owner: &L1Ir<'_>,
+        l1ir: &L1Ir<'_>,
         role: ScriptRole,
     ) -> Result<PreviousScript<'s>, RecoveredScriptError> {
         self.check_current(docs)
             .map_err(RecoveredScriptError::Host)?;
-        let (block, _) = selected(self, owner, role)?;
+        let (block, _) = selected(self, l1ir, role)?;
         let index = LiteralPrefixIndex::open(block, SourceType::ts()).map_err(|e| match e {
             PrefixOpenError::Syntax(reason) => RecoveredScriptError::Syntax(reason),
             PrefixOpenError::Evidence(reason) => RecoveredScriptError::Evidence(reason),
@@ -113,12 +113,12 @@ impl SourceSnapshot {
     pub fn retain_literal_prefix<'s>(
         &'s self,
         docs: &DocumentStore,
-        owner: &L1Ir<'_>,
+        l1ir: &L1Ir<'_>,
         role: ScriptRole,
     ) -> Result<PreviousScript<'s>, RecoveredScriptError> {
         self.check_current(docs)
             .map_err(RecoveredScriptError::Host)?;
-        let (block, _) = selected(self, owner, role)?;
+        let (block, _) = selected(self, l1ir, role)?;
         let arena = Allocator::new();
         let syntax = AuthoredProgram::parse(&arena, block, SourceType::ts());
         let model = LiteralAssignments::new(&syntax).map_err(RecoveredScriptError::Syntax)?;
@@ -140,7 +140,7 @@ impl PreviousScript<'_> {
         &'idx self,
         docs: &DocumentStore,
         current: &'s SourceSnapshot,
-        owner: &L1Ir<'_>,
+        l1ir: &L1Ir<'_>,
     ) -> Result<RecoveredScript<'idx, 's>, RecoveredScriptError> {
         current
             .check_current(docs)
@@ -148,7 +148,7 @@ impl PreviousScript<'_> {
         if self.snapshot.uri() != current.uri() || self.snapshot.revision() > current.revision() {
             return Err(RecoveredScriptError::Document);
         }
-        let (block, hover_role) = selected(current, owner, self.role)?;
+        let (block, hover_role) = selected(current, l1ir, self.role)?;
         let local = self
             .index
             .revalidate(block, SourceType::ts())

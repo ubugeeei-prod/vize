@@ -99,7 +99,7 @@ fn twelve_whole_original_root_if_else_components_and_raw_maps_are_captured() -> 
                 );
                 let view = mapped.observation().admitted().ok_or("setup owner")?;
                 let setup = view.setup();
-                let file = setup.file();
+                let file = setup.l2ir();
                 require!(
                     file.is_complete()
                         && file.units().len() == 1
@@ -188,7 +188,7 @@ fn twelve_whole_original_root_if_else_components_and_raw_maps_are_captured() -> 
                     VueReadKind::SetupConst
                 };
                 require!(
-                    core::ptr::eq(resolution.file(), file)
+                    core::ptr::eq(resolution.l2ir(), file)
                         && resolution.node() == node
                         && resolution.scope() == Some(record.scope())
                         && read.binding().same_owner(binding)

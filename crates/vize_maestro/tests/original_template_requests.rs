@@ -55,10 +55,10 @@ fn compute(
 fn template_response<'a>(
     snapshot: &SourceSnapshot,
     arena: &'a Allocator,
-    desc: &L1Ir<'a>,
+    l1ir: &L1Ir<'a>,
 ) -> Response {
     let source = snapshot.source();
-    let selected = desc.admitted_template().unwrap().unwrap();
+    let selected = l1ir.admitted_template().unwrap().unwrap();
     let template = OriginalTemplate::analyze(arena, selected, &mut NoObserver).unwrap();
     let mut text = vize_l0::String::default();
     render(template.l1ir(), &mut |s| text.push_str(s));
@@ -83,7 +83,7 @@ fn template_response<'a>(
         text,
         condition,
         diagnostics: template.l2ir().diagnostics.len(),
-        whole: desc.admitted().is_ok(),
+        whole: l1ir.admitted().is_ok(),
     }
 }
 

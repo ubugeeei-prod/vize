@@ -33,7 +33,7 @@ fn whole_original_setup_program_and_ssr_reads_keep_full_modules_and_maps() {
             observation.original().issues()
         );
         assert!(core::ptr::eq(
-            observation.original().descriptor().source(),
+            observation.original().l1ir().source(),
             source
         ));
         let admitted = observation.admitted().unwrap();
@@ -45,9 +45,9 @@ fn whole_original_setup_program_and_ssr_reads_keep_full_modules_and_maps() {
             analysis.owner(),
             observation.original().template().unwrap()
         ));
-        let file = setup.file();
+        let file = setup.l2ir();
         assert!(file.is_complete());
-        assert!(core::ptr::eq(analysis.file(), file));
+        assert!(core::ptr::eq(analysis.l2ir(), file));
         assert!(core::ptr::eq(file.artifact().source(), source));
         let provenance = file.artifact().provenance().to_vec();
         let setup_rows = rows::setup(setup, &analysis, fixture["handler"] == true);

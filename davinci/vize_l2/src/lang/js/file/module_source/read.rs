@@ -18,7 +18,7 @@ impl<'f, 'p, 'a> OriginalModuleSources<'f, 'p, 'a> {
         mut visit: impl FnMut(OriginalModuleSource<'f, 'p, 'a>),
     ) -> Result<(), ModuleSourceError> {
         for row in self
-            .file
+            .l2ir
             .imports()
             .iter()
             .filter(|row| row.unit == self.unit.id)
@@ -27,7 +27,7 @@ impl<'f, 'p, 'a> OriginalModuleSources<'f, 'p, 'a> {
         }
         let mut previous = None;
         for row in self
-            .file
+            .l2ir
             .exports()
             .iter()
             .filter(|row| row.unit == self.unit.id)
@@ -132,7 +132,7 @@ impl<'f, 'p, 'a> OriginalModuleSources<'f, 'p, 'a> {
             .authored(statement.span())
             .ok_or_else(|| reject(ModuleSourceErrorKind::OriginalSite))?;
         Ok(OriginalModuleSource {
-            file: self.file,
+            l2ir: self.l2ir,
             row,
             literal,
             raw,

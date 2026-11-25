@@ -52,8 +52,8 @@ fn base<'a>(allocator: &'a Allocator, phase: Phase) -> L3Ir<'a> {
     program
 }
 
-fn messages(program: &L3Ir<'_>) -> Vec<String> {
-    verify(program)
+fn messages(l3ir: &L3Ir<'_>) -> Vec<String> {
+    verify(l3ir)
         .into_iter()
         .map(|violation| cstr!("{violation}"))
         .collect()

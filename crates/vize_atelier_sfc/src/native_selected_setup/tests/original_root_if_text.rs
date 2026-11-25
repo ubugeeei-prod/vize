@@ -107,7 +107,7 @@ fn eight_whole_original_root_if_text_components_and_raw_maps_are_captured() -> R
                     .admitted()
                     .ok_or("original setup owner")?;
                 let setup = view.setup();
-                let file = setup.file();
+                let file = setup.l2ir();
                 require!(
                     file.is_complete() && file.units().len() == 1 && file.scopes().len() == 2,
                     "{id}: same complete File and sole setup scope without alias scope"
@@ -226,7 +226,7 @@ fn eight_whole_original_root_if_text_components_and_raw_maps_are_captured() -> R
                     let declaration = binding.declaration().ok_or("real script declaration")?;
                     let retained = table.expression();
                     require!(
-                        core::ptr::eq(resolution.file(), file)
+                        core::ptr::eq(resolution.l2ir(), file)
                             && resolution.node() == node
                             && resolution.scope() == Some(setup.scope())
                             && condition_record.scope() == setup.scope()

@@ -25,7 +25,7 @@ pub use template::{
 /// model but never the File:
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, query::Model};
-/// fn discard(file: L2Ir<'_>, offset: u32) {
+/// fn discard(l2ir: L2Ir<'_>, offset: u32) {
 ///     let binding = Model::new(&file).binding_at_offset(offset).unwrap().unwrap();
 ///     drop(file);
 ///     let _ = binding.declaration();
@@ -33,19 +33,19 @@ pub use template::{
 /// ```
 #[derive(Clone, Copy)]
 pub struct Model<'f, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
 }
 
 impl<'f, 'a> Model<'f, 'a> {
     #[must_use]
-    pub const fn new(file: &'f L2Ir<'a>) -> Self {
-        Self { file }
+    pub const fn new(l2ir: &'f L2Ir<'a>) -> Self {
+        Self { l2ir }
     }
 
     /// The File every answer of this model borrows.
     #[must_use]
-    pub const fn file(self) -> &'f L2Ir<'a> {
-        self.file
+    pub const fn l2ir(self) -> &'f L2Ir<'a> {
+        self.l2ir
     }
 }
 

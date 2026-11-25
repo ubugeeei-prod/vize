@@ -23,13 +23,13 @@ pub enum PositionQueryError {
 ///
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, query::ReferenceRef};
-/// fn substitute<'f, 'a>(file: &'f L2Ir<'a>, row: ReferenceRef<'f, 'a>) {
+/// fn substitute<'f, 'a>(l2ir: &'f L2Ir<'a>, row: ReferenceRef<'f, 'a>) {
 ///     let _ = ReferenceRef { file, reference: row.reference() };
 /// }
 /// ```
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, query::Model};
-/// fn discard(file: L2Ir<'_>, offset: u32) {
+/// fn discard(l2ir: L2Ir<'_>, offset: u32) {
 ///     let row = Model::new(&file).reference_at_offset(offset).unwrap().unwrap();
 ///     drop(file);
 ///     let _ = row.binding();
@@ -37,14 +37,14 @@ pub enum PositionQueryError {
 /// ```
 #[derive(Clone, Copy)]
 pub struct ReferenceRef<'file, 'arena> {
-    file: &'file L2Ir<'arena>,
+    l2ir: &'file L2Ir<'arena>,
     reference: &'file Reference,
 }
 
 impl<'file, 'arena> ReferenceRef<'file, 'arena> {
     #[must_use]
-    pub fn file(self) -> &'file L2Ir<'arena> {
-        self.file
+    pub fn l2ir(self) -> &'file L2Ir<'arena> {
+        self.l2ir
     }
 
     #[must_use]
@@ -56,7 +56,7 @@ impl<'file, 'arena> ReferenceRef<'file, 'arena> {
     #[must_use]
     pub fn binding(self) -> Option<BindingRef<'file, 'arena>> {
         match self.reference.target {
-            ReferenceTarget::Resolved(id) => self.file.binding(id),
+            ReferenceTarget::Resolved(id) => self.l2ir.binding(id),
             ReferenceTarget::Unresolved => None,
         }
     }
@@ -66,20 +66,20 @@ impl<'file, 'arena> ReferenceRef<'file, 'arena> {
 ///
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, query::ScopeRef};
-/// fn substitute<'f, 'a>(file: &'f L2Ir<'a>, row: ScopeRef<'f, 'a>) {
+/// fn substitute<'f, 'a>(l2ir: &'f L2Ir<'a>, row: ScopeRef<'f, 'a>) {
 ///     let _ = ScopeRef { file, scope: row.scope() };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct ScopeRef<'file, 'arena> {
-    file: &'file L2Ir<'arena>,
+    l2ir: &'file L2Ir<'arena>,
     scope: &'file Scope,
 }
 
 impl<'file, 'arena> ScopeRef<'file, 'arena> {
     #[must_use]
-    pub fn file(self) -> &'file L2Ir<'arena> {
-        self.file
+    pub fn l2ir(self) -> &'file L2Ir<'arena> {
+        self.l2ir
     }
 
     #[must_use]
@@ -91,19 +91,19 @@ impl<'file, 'arena> ScopeRef<'file, 'arena> {
     #[must_use]
     pub fn parent(self) -> Option<Self> {
         let scope = self
-            .file
+            .l2ir
             .facts
             .scopes
             .get(self.scope.parent?.index() as usize)?;
         Some(Self {
-            file: self.file,
+            l2ir: self.l2ir,
             scope,
         })
     }
 
     #[must_use]
     pub fn lookup(self, name: &str, namespace: Namespace) -> Option<BindingRef<'file, 'arena>> {
-        self.file.lookup(self.scope.id, name, namespace)
+        self.l2ir.lookup(self.scope.id, name, namespace)
     }
 }
 
@@ -119,10 +119,10 @@ impl<'f, 'a> Model<'f, 'a> {
         self,
         offset: u32,
     ) -> Result<Option<ReferenceRef<'f, 'a>>, PositionQueryError> {
-        let Some(unit) = query_unit(self.file, offset)? else {
+        let Some(unit) = query_unit(self.l2ir, offset)? else {
             return Ok(None);
         };
-        query_reference(self.file, unit, offset)
+        query_reference(self.l2ir, unit, offset)
     }
 
     /// Find an original declaration, or the actual target of an original use.
@@ -135,11 +135,11 @@ impl<'f, 'a> Model<'f, 'a> {
         self,
         offset: u32,
     ) -> Result<Option<BindingRef<'f, 'a>>, PositionQueryError> {
-        let Some(unit) = query_unit(self.file, offset)? else {
+        let Some(unit) = query_unit(self.l2ir, offset)? else {
             return Ok(None);
         };
-        let declaration = query_declaration(self.file, unit, offset)?;
-        let reference = query_reference(self.file, unit, offset)?;
+        let declaration = query_declaration(self.l2ir, unit, offset)?;
+        let reference = query_reference(self.l2ir, unit, offset)?;
         match (declaration, reference) {
             (Some(_), Some(_)) => Err(PositionQueryError::AmbiguousSite),
             (Some(binding), None) => Ok(Some(binding)),
@@ -161,7 +161,7 @@ impl<'f, 'a> Model<'f, 'a> {
         self,
         offset: u32,
     ) -> Result<Option<ScopeRef<'f, 'a>>, PositionQueryError> {
-        let file = self.file;
+        let file = self.l2ir;
         let Some(unit) = query_unit(file, offset)? else {
             return Ok(None);
         };
@@ -194,7 +194,7 @@ impl<'f, 'a> Model<'f, 'a> {
                 }
             }
         }
-        Ok(Some(ScopeRef { file, scope }))
+        Ok(Some(ScopeRef { l2ir: file, scope }))
     }
 
     /// Visit the original script uses whose actual target is `binding`.
@@ -206,14 +206,14 @@ impl<'f, 'a> Model<'f, 'a> {
         binding: BindingRef<'_, '_>,
         mut visit: impl FnMut(ReferenceRef<'f, 'a>),
     ) {
-        if !core::ptr::eq(self.file, binding.file()) {
+        if !core::ptr::eq(self.l2ir, binding.l2ir()) {
             return;
         }
         let target = ReferenceTarget::Resolved(binding.id());
-        for reference in self.file.references() {
+        for reference in self.l2ir.references() {
             if reference.target == target {
                 visit(ReferenceRef {
-                    file: self.file,
+                    l2ir: self.l2ir,
                     reference,
                 });
             }
@@ -222,13 +222,13 @@ impl<'f, 'a> Model<'f, 'a> {
 }
 
 fn query_unit<'f>(
-    file: &'f L2Ir<'_>,
+    l2ir: &'f L2Ir<'_>,
     offset: u32,
 ) -> Result<Option<&'f ScriptUnit>, PositionQueryError> {
-    if !file.is_complete() {
+    if !l2ir.is_complete() {
         return Err(PositionQueryError::IncompleteFile);
     }
-    let source = file.artifact().source();
+    let source = l2ir.artifact().source();
     if offset as usize > source.len() {
         return Err(PositionQueryError::OutOfBounds);
     }
@@ -236,47 +236,47 @@ fn query_unit<'f>(
         return Err(PositionQueryError::NotCharBoundary);
     }
     unique(
-        file.units()
+        l2ir.units()
             .iter()
             .filter(|unit| contains(unit.span, offset)),
     )
 }
 
 fn query_reference<'f, 'a>(
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     unit: &ScriptUnit,
     offset: u32,
 ) -> Result<Option<ReferenceRef<'f, 'a>>, PositionQueryError> {
     unique(
-        file.references()
+        l2ir.references()
             .iter()
             .filter(|row| row.unit == unit.id && contains(row.span, offset)),
     )
-    .map(|row| row.map(|reference| ReferenceRef { file, reference }))
+    .map(|row| row.map(|reference| ReferenceRef { l2ir, reference }))
 }
 
 fn query_declaration<'f, 'a>(
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     unit: &ScriptUnit,
     offset: u32,
 ) -> Result<Option<BindingRef<'f, 'a>>, PositionQueryError> {
     unique(
-        file.facts
+        l2ir.facts
             .declarations
             .iter()
             .filter(|row| row.unit == unit.id && contains(row.span, offset)),
     )
-    .map(|row| row.and_then(|declaration| file.binding(declaration.id)))
+    .map(|row| row.and_then(|declaration| l2ir.binding(declaration.id)))
 }
 
-fn scope_descends(file: &L2Ir<'_>, mut scope: ScopeId, ancestor: ScopeId) -> bool {
+fn scope_descends(l2ir: &L2Ir<'_>, mut scope: ScopeId, ancestor: ScopeId) -> bool {
     // Parents are recorded before their children by the existing factory.
     // A bounded read also prevents malformed ancestry from looping.
-    for _ in 0..file.facts.scopes.len() {
+    for _ in 0..l2ir.facts.scopes.len() {
         if scope == ancestor {
             return true;
         }
-        let Some(parent) = file
+        let Some(parent) = l2ir
             .facts
             .scopes
             .get(scope.index() as usize)
@@ -310,8 +310,8 @@ pub(in crate::query) mod index;
 
 #[cfg(feature = "template-operand-queries")]
 impl<'f, 'a> ScopeRef<'f, 'a> {
-    pub(super) fn from_id(file: &'f L2Ir<'a>, id: ScopeId) -> Option<Self> {
-        let scope = file.scopes().get(id.index() as usize)?;
-        (scope.id == id).then_some(Self { file, scope })
+    pub(super) fn from_id(l2ir: &'f L2Ir<'a>, id: ScopeId) -> Option<Self> {
+        let scope = l2ir.scopes().get(id.index() as usize)?;
+        (scope.id == id).then_some(Self { l2ir, scope })
     }
 }

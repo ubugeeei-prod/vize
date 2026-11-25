@@ -92,10 +92,10 @@ enum VueRows<'read, 'view, 'owner, 'descriptor, 'program, 'arena> {
     Selected(&'read SelectedSetupDomAnalysis<'view, 'owner, 'arena>),
 }
 impl<'owner, 'arena> VueRows<'_, '_, 'owner, '_, '_, 'arena> {
-    fn file(&self) -> &'owner L2Ir<'arena> {
+    fn l2ir(&self) -> &'owner L2Ir<'arena> {
         match self {
-            Self::Ordinary(a) => a.file(),
-            Self::Selected(a) => a.file(),
+            Self::Ordinary(a) => a.l2ir(),
+            Self::Selected(a) => a.l2ir(),
         }
     }
     fn dom(&self) -> Option<&DomFacts<'owner, 'arena>> {
@@ -129,7 +129,7 @@ impl ExpressionWriter for VueExpressions<'_, '_, '_, '_, '_, '_> {
         node: NodeId,
         on: &vize_l2::op::OnOp<'_>,
     ) -> Result<(), DomError> {
-        super::handler::write(writer, self.analysis.file(), self.analysis.dom(), node, on)
+        super::handler::write(writer, self.analysis.l2ir(), self.analysis.dom(), node, on)
     }
     fn write<L: LinkSink>(
         &self,
@@ -150,12 +150,12 @@ impl ExpressionWriter for VueExpressions<'_, '_, '_, '_, '_, '_> {
             .expression(node)
             .ok_or_else(|| fail(DomErrorKind::MissingFileExpression))?;
         let resolution = row.resolution();
-        if !core::ptr::eq(resolution.file(), self.analysis.file()) || resolution.node() != node {
+        if !core::ptr::eq(resolution.l2ir(), self.analysis.l2ir()) || resolution.node() != node {
             return Err(fail(DomErrorKind::FileOwnerMismatch));
         }
         if !resolution.scope().is_some_and(|scope| {
             self.analysis
-                .file()
+                .l2ir()
                 .scopes()
                 .get(scope.index() as usize)
                 .is_some_and(|record| record.id == scope)
@@ -211,7 +211,7 @@ impl ExpressionWriter for VueExpressions<'_, '_, '_, '_, '_, '_> {
         }
         write_expression(
             writer,
-            self.analysis.file().artifact().source(),
+            self.analysis.l2ir().artifact().source(),
             table,
             &SetupReads {
                 row,

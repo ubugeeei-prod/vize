@@ -36,7 +36,7 @@ fn main() -> Result<()> {
         .file()
         .ok_or_else(|| failure("missing genuine Vue File"))?;
     ensure(
-        core::ptr::eq(lint.file(), file.file()),
+        core::ptr::eq(lint.l2ir(), file.l2ir()),
         "same genuine Vue File",
     )?;
     let mut observations = vec![image_alt_measurement::measure(
@@ -82,7 +82,7 @@ fn main() -> Result<()> {
         let lint = NativeCanonicalLint::from_jsx(&owner)
             .map_err(|error| failure(&vize_l0::cstr!("native JSX context refused: {error:?}")))?;
         ensure(
-            core::ptr::eq(lint.file(), owner.file()),
+            core::ptr::eq(lint.l2ir(), owner.l2ir()),
             "same genuine JSX File",
         )?;
         observations.push(image_alt_measurement::measure(

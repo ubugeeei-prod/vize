@@ -1,5 +1,5 @@
 use super::{
-    Allocator, TemplateSiteScope, TemplateSymbolRef, at, attempt, file, native, site, uses,
+    Allocator, TemplateSiteScope, TemplateSymbolRef, at, attempt, l2ir_of, native, site, uses,
 };
 use crate::query::Model;
 
@@ -8,7 +8,7 @@ fn original_for_alias_declarations_and_collection_keep_distinct_real_file_origin
     let arena = Allocator::default();
     let source = "<script setup>const items=2;</script><template><div @click='item' v-for='(item,index) in items'><span @blur='index'/></div></template>";
     let output = native(&arena, source);
-    let file = file(&output);
+    let file = l2ir_of(&output);
     let alias = site(file, source, "item,index");
     let key = site(file, source, "index) in");
     let collection = site(file, source, "items'>");
@@ -48,7 +48,7 @@ fn original_nested_for_collection_resolves_parent_alias_before_its_own_shadowing
     let arena = Allocator::default();
     let source = "<script setup>const items=2;</script><template><div v-for='item in items'><span v-for='item in item' @click='item'/><span @blur='item'/></div></template>";
     let output = native(&arena, source);
-    let file = file(&output);
+    let file = l2ir_of(&output);
     let parent = site(file, source, "item in items");
     let nested = site(file, source, "item in item'");
     let collection = site(file, source, "item' @click");
@@ -82,7 +82,7 @@ fn original_for_unicode_sites_and_entity_refusals_keep_actual_source_namespaces(
     let arena = Allocator::default();
     let source = "<script setup>const items=2;</script><template><div v-for='café in items' @click='café'/></template>";
     let output = native(&arena, source);
-    let file = file(&output);
+    let file = l2ir_of(&output);
     let alias = site(file, source, "café in");
     let collection = site(file, source, "items' @click");
     let reference = site(file, source, "café'/>");

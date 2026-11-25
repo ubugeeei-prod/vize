@@ -109,8 +109,8 @@ fn real_native_vue_checker_retains_complete_js_ts_diagnostics_and_original_owner
             &observed
         ));
         assert!(std::ptr::eq(
-            result.projection().file(),
-            observed.file().unwrap().file()
+            result.projection().l2ir(),
+            observed.file().unwrap().l2ir()
         ));
         assert_eq!(result.source_path(), path.canonicalize().unwrap());
         assert_eq!(

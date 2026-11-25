@@ -13,7 +13,7 @@ impl SelectedNavigation<'_, '_> {
         };
         let mut sites = Vec::new();
         // Discard all callback work on a late original provider refusal.
-        vize_l2::query::Model::new(self.file)
+        vize_l2::query::Model::new(self.l2ir)
             .for_each_template_reference_to(symbol, |site| sites.push((site.span(), site.usage())))
             .map_err(NavigationRefusal::TemplateQuery)?;
         sites.extend(

@@ -11,20 +11,20 @@ pub(super) fn contains(owner: Span, child: Span) -> bool {
 /// record with an id is the one at that index; otherwise lookups scan for the
 /// first record, exactly as before.
 pub(super) struct Tables<'p, 'a> {
-    program: &'p L3Ir<'a>,
+    l3ir: &'p L3Ir<'a>,
     pub(super) dense_ops: bool,
     pub(super) dense_regions: bool,
     pub(super) dense_effects: bool,
 }
 
 impl<'p, 'a> Tables<'p, 'a> {
-    pub(super) fn new(program: &'p L3Ir<'a>) -> Self {
+    pub(super) fn new(l3ir: &'p L3Ir<'a>) -> Self {
         Self {
-            program,
-            dense_ops: (program.ops.iter().enumerate()).all(|(i, op)| op.id.index() as usize == i),
-            dense_regions: (program.regions.iter().enumerate())
+            l3ir,
+            dense_ops: (l3ir.ops.iter().enumerate()).all(|(i, op)| op.id.index() as usize == i),
+            dense_regions: (l3ir.regions.iter().enumerate())
                 .all(|(i, region)| region.id.index() as usize == i),
-            dense_effects: (program.effects.iter().enumerate())
+            dense_effects: (l3ir.effects.iter().enumerate())
                 .all(|(i, effect)| effect.id.index() as usize == i),
         }
     }
@@ -34,7 +34,7 @@ impl<'a> core::ops::Deref for Tables<'_, 'a> {
     type Target = L3Ir<'a>;
 
     fn deref(&self) -> &L3Ir<'a> {
-        self.program
+        self.l3ir
     }
 }
 

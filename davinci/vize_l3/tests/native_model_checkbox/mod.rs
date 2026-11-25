@@ -53,7 +53,7 @@ fn original_checkbox_type_and_real_mutable_binding_reach_all_three_consumers() -
             .admitted()
             .ok_or("normally closed original File")?;
         let setup = view.setup();
-        let file = setup.file();
+        let file = setup.l2ir();
         let before = file.artifact().provenance().to_vec();
         let [original] = file.native_models() else {
             return Err("one original Model".into());
@@ -143,7 +143,7 @@ fn original_checkbox_type_and_real_mutable_binding_reach_all_three_consumers() -
                 vapor_model.occurrence().ok_or("occurrence")?,
             ),
         ] {
-            assert!(core::ptr::eq(resolution.file(), file));
+            assert!(core::ptr::eq(resolution.l2ir(), file));
             assert_eq!(resolution.node(), node);
             assert_eq!(resolution.scope(), Some(setup.scope()));
             assert!(resolution.accepts(binding) && setup.binding(binding).is_ok());

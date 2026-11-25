@@ -128,13 +128,13 @@ pub struct VueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena> {
 
 impl<'owner, 'arena> VueRenderAnalysis<'_, 'owner, '_, '_, 'arena> {
     #[must_use]
-    pub fn file(&self) -> &'owner L2Ir<'arena> {
-        self.exposure.file()
+    pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.exposure.l2ir()
     }
 
     #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
-        self.file().artifact()
+        self.l2ir().artifact()
     }
 
     #[must_use]
@@ -163,7 +163,7 @@ impl<'owner, 'arena> VueRenderAnalysis<'_, 'owner, '_, '_, 'arena> {
 pub fn build_vue_render_decisions<'view, 'owner, 'descriptor, 'program, 'arena>(
     exposure: &'view VueExposure<'owner, 'descriptor, 'program, 'arena>,
 ) -> Result<VueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena>, DecisionBuildError> {
-    let file = exposure.file();
+    let file = exposure.l2ir();
     if !file.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
     }

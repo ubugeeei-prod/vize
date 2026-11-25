@@ -30,12 +30,12 @@ fn complete_original_setup_components_and_maps_match_independent_expectations() 
         let output = compilation.result().unwrap();
         let observation = compilation.observation();
         assert!(core::ptr::eq(
-            observation.original().descriptor().source(),
+            observation.original().l1ir().source(),
             source
         ));
         let selected = observation.admitted().unwrap();
         let setup = selected.setup();
-        let file = setup.file();
+        let file = setup.l2ir();
         assert!(file.is_complete());
         assert!(core::ptr::eq(file.artifact().source(), source));
         assert!(core::ptr::eq(

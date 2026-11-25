@@ -56,11 +56,11 @@ impl NativeStyleOutput {
 /// Compile styles directly from an original L1 descriptor. The owner supplies
 /// every block and mapping coordinate. Prepared SCSS must belong to this source.
 pub fn compile_native_styles<'p, 's: 'p>(
-    owner: &L1Ir<'_>,
+    l1ir: &L1Ir<'_>,
     options: NativeStyleOptions<'_>,
     prepared: impl IntoIterator<Item = &'p ScssProducts<'s>>,
 ) -> Result<NativeStyleOutput, NativeSfcCompileError> {
-    emit(owner, None, options, &mut prepared.into_iter(), true)
+    emit(l1ir, None, options, &mut prepared.into_iter(), true)
 }
 
 impl NativeScssSession<'_, '_> {
@@ -69,7 +69,7 @@ impl NativeScssSession<'_, '_> {
         &self,
         prepared: impl IntoIterator<Item = &'p ScssProducts<'s>>,
     ) -> Result<NativeStyleOutput, NativeSfcCompileError> {
-        let owner = self.observation.descriptor();
+        let owner = self.observation.l1ir();
         let syntax = owner
             .admitted()
             .is_ok()
@@ -85,20 +85,20 @@ impl NativeScssSession<'_, '_> {
 }
 
 fn emit<'p, 's: 'p>(
-    owner: &L1Ir<'_>,
+    l1ir: &L1Ir<'_>,
     retained: Option<&[StyleSyntax<'_>]>,
     options: NativeStyleOptions<'_>,
     prepared: &mut dyn Iterator<Item = &'p ScssProducts<'s>>,
     scoped_scss: bool,
 ) -> Result<NativeStyleOutput, NativeSfcCompileError> {
-    let descriptor = owner.admitted_styles().map_err(|refusal| {
+    let descriptor = l1ir.admitted_styles().map_err(|refusal| {
         refusal
             .issues()
             .iter()
             .find_map(|issue| {
                 let index = issue.container_index?;
                 (issue.code == DescriptorIssueCode::ExternalSource
-                    && owner.container().blocks.get(index)?.name == "style")
+                    && l1ir.container().blocks.get(index)?.name == "style")
                     .then_some(NativeSfcCompileError::ExternalBlock {
                         container_index: index,
                         span: issue.span,

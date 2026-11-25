@@ -65,9 +65,9 @@ fn original_file_handler_crosses_as_a_typed_id_without_js_source_or_diagnostic_a
         1
     );
     let s3 = lower(&l3_arena, file.artifact().root());
-    assert_eq!(verify(&s3.program), []);
+    assert_eq!(verify(&s3.l3ir), []);
     let operand = s3
-        .program
+        .l3ir
         .operands
         .iter()
         .find(|operand| operand.value.kind == ValueKind::NativeHandler)
@@ -78,7 +78,7 @@ fn original_file_handler_crosses_as_a_typed_id_without_js_source_or_diagnostic_a
     assert_eq!(operand.value.qualifier, "");
     assert_eq!(operand.value.span, on.span);
     assert_eq!(operand.op.index(), id.node().index());
-    let page = Page::of(&s3.program);
+    let page = Page::of(&s3.l3ir);
     let dump = page.print_to_string(Mode::Full);
     let native_row = page.operands.iter().find(|row| row.1 == Some(1)).unwrap();
     let mut native_dump = vize_l0::String::default();

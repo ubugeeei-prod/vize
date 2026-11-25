@@ -142,9 +142,9 @@ fn configured_original_primitive_return_ts_tsx_preserve_whole_raw_reports_and_re
             }
             .unwrap();
             assert_diagnosing_options(&checked);
-            let file = if tsx { owner.file() } else { &original };
+            let file = if tsx { owner.l2ir() } else { &original };
             let projection = checked.projection();
-            assert!(core::ptr::eq(projection.file(), file));
+            assert!(core::ptr::eq(projection.l2ir(), file));
             assert!(core::ptr::eq(file.artifact().source(), source));
             assert_eq!(
                 projection.source_kind(),
@@ -163,7 +163,7 @@ fn configured_original_primitive_return_ts_tsx_preserve_whole_raw_reports_and_re
                 .binding_at_offset(source.rfind(name).unwrap() as u32)
                 .unwrap()
                 .unwrap();
-            assert!(core::ptr::eq(binding.file(), file));
+            assert!(core::ptr::eq(binding.l2ir(), file));
             assert_eq!(
                 binding.declaration().unwrap().kind,
                 DeclarationKind::Parameter

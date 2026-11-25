@@ -28,7 +28,7 @@ pub(super) fn capture(
         .admitted()
         .ok_or("actual completed setup owner")?;
     let setup = view.setup();
-    let file = setup.file();
+    let file = setup.l2ir();
     let [record] = file.native_models() else {
         return Err("one actual Model".into());
     };
@@ -205,7 +205,7 @@ pub(super) fn capture(
     };
     if target_resolution.node() != node
         || target_resolution.scope() != resolution.scope()
-        || !core::ptr::eq(target_resolution.file(), file)
+        || !core::ptr::eq(target_resolution.l2ir(), file)
         || !target_resolution.accepts(binding)
     {
         return Err("target same-File identity".into());

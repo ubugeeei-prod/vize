@@ -21,7 +21,7 @@ fn complete_check(
     assert!(original.is_complete(), "{:?}", original.issues());
     let result = block_on(bridge.check_original_program(&original, &path)).unwrap();
     assert_diagnosing_options(&result);
-    assert!(std::ptr::eq(result.projection().file(), &original));
+    assert!(std::ptr::eq(result.projection().l2ir(), &original));
     assert_eq!(serde_json::to_value(result.report()).unwrap(), *expected);
     let spans: Vec<_> = result
         .authored_spans()

@@ -147,7 +147,7 @@ fn real_vue_jsx_and_tsx_keep_complete_raw_diagnostics_types_and_authored_owners(
                     .any(|project| project.id == observed.project().id)
             );
         }
-        assert!(std::ptr::eq(result.projection().file(), original.file()));
+        assert!(std::ptr::eq(result.projection().l2ir(), original.l2ir()));
         assert_eq!(result.projection().source_kind(), kind);
         assert_eq!(
             result.projection().document().as_str(),
@@ -197,7 +197,7 @@ fn real_vue_jsx_and_tsx_keep_complete_raw_diagnostics_types_and_authored_owners(
         assert_eq!(original.observation().comments().len(), 1);
         assert_eq!(std::fs::read(&path).unwrap(), source.as_bytes());
         assert!(matches!(
-            block_on(bridge.check_original_program(original.file(), &path)),
+            block_on(bridge.check_original_program(original.l2ir(), &path)),
             Err(OriginalProgramError::Projection(
                 ProjectionError::UnsupportedProfile
             ))

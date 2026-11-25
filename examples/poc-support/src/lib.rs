@@ -47,7 +47,7 @@ impl fmt::Display for Error {
 /// Lower one neutral L2 region to L3, refusing a program the L3 verifier rejects.
 pub fn lower<'a>(allocator: &'a Allocator, root: &Region<'_>) -> Result<Lowered<'a>, Error> {
     let lowered = vize_l2_to_l3::lower(allocator, root);
-    match vize_l3::verify::verify(&lowered.program).first() {
+    match vize_l3::verify::verify(&lowered.l3ir).first() {
         Some(violation) => Err(Error::new(
             cstr!("L3 verifier: {}", violation.code.as_str()),
             violation.span,
@@ -59,19 +59,19 @@ pub fn lower<'a>(allocator: &'a Allocator, root: &Region<'_>) -> Result<Lowered<
 /// A tree view over one flat L3 program.
 #[derive(Clone, Copy)]
 pub struct View<'p, 'a> {
-    program: &'p L3Ir<'a>,
+    l3ir: &'p L3Ir<'a>,
 }
 
 impl<'p, 'a> View<'p, 'a> {
     #[must_use]
-    pub fn new(program: &'p L3Ir<'a>) -> Self {
-        Self { program }
+    pub fn new(l3ir: &'p L3Ir<'a>) -> Self {
+        Self { l3ir }
     }
 
     /// Child-position ops of `region` in document order. Binding ops are
     /// reached through their target with [`Node::bindings`].
     pub fn children(self, region: RegionId) -> impl Iterator<Item = Node<'p, 'a>> {
-        self.program
+        self.l3ir
             .ops
             .iter()
             .filter(move |op| op.region == region)
@@ -116,7 +116,7 @@ impl<'p, 'a> Node<'p, 'a> {
     pub fn operands(self, role: OperandRole) -> impl Iterator<Item = &'p Operand<'a>> {
         let id = self.op.id;
         self.view
-            .program
+            .l3ir
             .operands
             .iter()
             .filter(move |operand| operand.op == id && operand.role == role)
@@ -150,7 +150,7 @@ impl<'p, 'a> Node<'p, 'a> {
     pub fn bindings(self) -> impl Iterator<Item = Node<'p, 'a>> {
         let view = self.view;
         let id = self.op.id;
-        view.program
+        view.l3ir
             .ops
             .iter()
             .map(move |op| Node { view, op })
@@ -162,7 +162,7 @@ impl<'p, 'a> Node<'p, 'a> {
     pub fn regions(self) -> impl Iterator<Item = RegionId> + 'p {
         let id = self.op.id;
         self.view
-            .program
+            .l3ir
             .regions
             .iter()
             .filter(move |region| region.owner == Some(id))

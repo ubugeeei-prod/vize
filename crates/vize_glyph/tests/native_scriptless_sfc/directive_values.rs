@@ -18,10 +18,10 @@ fn refused(source: &str, expected: Span, index: usize) {
     });
     assert!(core::ptr::eq(owner.source(), source));
     assert_eq!(owner.options(), policy);
-    assert_eq!(owner.descriptor().options(), policy.descriptor);
-    assert!(owner.descriptor().admitted().is_ok());
-    assert!(owner.descriptor().issues().is_empty());
-    assert!(owner.descriptor().container().errors.is_empty());
+    assert_eq!(owner.l1ir().options(), policy.descriptor);
+    assert!(owner.l1ir().admitted().is_ok());
+    assert!(owner.l1ir().issues().is_empty());
+    assert!(owner.l1ir().container().errors.is_empty());
     for _ in 0..2 {
         assert_eq!(owner.refusal(), Some(refusal));
         assert_eq!(owner.document().unwrap_err(), refusal);

@@ -37,11 +37,11 @@ fn original_setup_reads_retain_actual_occurrences_bindings_and_scope_roles() {
         let observation = lower_selected_setup_sfc_native(&arena, source, descriptor());
         let admitted = observation.admitted().unwrap();
         let setup = admitted.setup();
-        let file = setup.file();
+        let file = setup.l2ir();
         let provenance = file.artifact().provenance().to_vec();
         let analysis = build_selected_setup_ssr_decisions(setup).unwrap();
         assert!(core::ptr::eq(analysis.setup(), setup));
-        assert!(core::ptr::eq(analysis.file(), file));
+        assert!(core::ptr::eq(analysis.l2ir(), file));
         assert!(core::ptr::eq(
             analysis.owner(),
             observation.original().template().unwrap()
@@ -70,7 +70,7 @@ fn original_setup_reads_retain_actual_occurrences_bindings_and_scope_roles() {
         assert_eq!(original.input().operand().full_span(), interpolation.span);
         let expression = analysis.expression(*node).unwrap();
         let resolution = expression.resolution();
-        assert!(core::ptr::eq(resolution.file(), file));
+        assert!(core::ptr::eq(resolution.l2ir(), file));
         assert_eq!(resolution.scope(), Some(setup.scope()));
         let table = resolution.table().unwrap();
         let [occurrence] = table.occurrences() else {
@@ -128,8 +128,8 @@ fn original_primitive_literals_have_complete_same_file_resolution_without_reads(
                 .is_empty()
         );
         assert!(core::ptr::eq(
-            expression.resolution().file(),
-            admitted.setup().file()
+            expression.resolution().l2ir(),
+            admitted.setup().l2ir()
         ));
     }
 }
@@ -148,7 +148,7 @@ fn complete_original_expressions_keep_the_exact_bounded_target_refusal() {
             format!("<script setup>const value='ab'</script><template>{template}</template>");
         let observation = lower_selected_setup_sfc_native(&arena, &source, descriptor());
         let admitted = observation.admitted().unwrap();
-        assert!(admitted.setup().file().is_complete());
+        assert!(admitted.setup().l2ir().is_complete());
         let analysis = build_selected_setup_ssr_decisions(admitted.setup()).unwrap();
         let rejected = &analysis.ssr().unwrap().unsupported()[0];
         assert_eq!(rejected.reason, expected);

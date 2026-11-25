@@ -84,9 +84,9 @@ fn file_remarks(path: &str, source: &str, out: &mut Vec<CorpusRemark>) {
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let mut lowered = vize_l2_to_l3::lower(&allocator, &s2.artifact.root);
     let mut collector = RemarkCollector::new();
-    optimize(&mut lowered.program, OptTier::O3, &mut collector).expect("closed pipeline");
-    assert_eq!(verify(&lowered.program), [], "{path}");
-    assert_eq!(lowered.partition.stale(&lowered.program), None, "{path}");
+    optimize(&mut lowered.l3ir, OptTier::O3, &mut collector).expect("closed pipeline");
+    assert_eq!(verify(&lowered.l3ir), [], "{path}");
+    assert_eq!(lowered.partition.stale(&lowered.l3ir), None, "{path}");
     for mut remark in collector.finish() {
         remark.span = Span::new(remark.span.start + offset, remark.span.end + offset);
         out.push(CorpusRemark {

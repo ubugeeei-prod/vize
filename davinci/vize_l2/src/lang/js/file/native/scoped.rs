@@ -36,7 +36,7 @@ pub struct NativeScopedTemplateIssue {
 /// ```compile_fail
 /// use vize_l1::{container::vue::AdmittedDescriptor, css::EmptyClassStyle};
 /// use vize_l2::{file::L2Ir, lang::js::{NativeScopedTemplateView, NativeTemplateView}};
-/// fn forge<'o, 'a>(template: NativeTemplateView<'o, 'a>, file: &'o L2Ir<'a>,
+/// fn forge<'o, 'a>(template: NativeTemplateView<'o, 'a>, l2ir: &'o L2Ir<'a>,
 ///     descriptor: AdmittedDescriptor<'o, 'a>, empty: EmptyClassStyle<'o, 'a>) {
 ///     let _ = NativeScopedTemplateView { template, file, descriptor, empty };
 /// }
@@ -49,7 +49,7 @@ pub struct NativeScopedTemplateIssue {
 /// ```compile_fail
 /// use vize_l1::{container::vue::L1Ir, css::StyleSyntax};
 /// use vize_l2::lang::js::NativeTemplateFile;
-/// fn discard_style<'a>(owner: &NativeTemplateFile<'a>, original: &L1Ir<'a>, syntax: StyleSyntax<'a>) {
+/// fn discard_style<'a>(owner: &NativeTemplateFile<'a>, l1ir: &L1Ir<'a>, syntax: StyleSyntax<'a>) {
 ///     let view = owner.scoped_view(original, &syntax).unwrap();
 ///     drop(syntax); let _ = view.file();
 /// }
@@ -57,14 +57,14 @@ pub struct NativeScopedTemplateIssue {
 /// ```compile_fail
 /// use vize_l1::{container::vue::L1Ir, css::StyleSyntax};
 /// use vize_l2::lang::js::NativeTemplateFile;
-/// fn discard_descriptor<'a>(owner: &NativeTemplateFile<'a>, original: L1Ir<'a>, syntax: &StyleSyntax<'a>) {
+/// fn discard_descriptor<'a>(owner: &NativeTemplateFile<'a>, l1ir: L1Ir<'a>, syntax: &StyleSyntax<'a>) {
 ///     let view = owner.scoped_view(&original, syntax).unwrap();
 ///     drop(original); let _ = view.file();
 /// }
 /// ```
 pub struct NativeScopedTemplateView<'owner, 'arena> {
     template: NativeTemplateView<'owner, 'arena>,
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
     descriptor: AdmittedDescriptor<'owner, 'arena>,
     empty: EmptyClassStyle<'owner, 'arena>,
 }
@@ -74,8 +74,8 @@ impl<'owner, 'arena> NativeScopedTemplateView<'owner, 'arena> {
         self.template.owner()
     }
     #[must_use]
-    pub fn file(&self) -> &'owner L2Ir<'arena> {
-        self.file
+    pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.l2ir
     }
     #[must_use]
     pub fn descriptor(&self) -> AdmittedDescriptor<'owner, 'arena> {
@@ -98,19 +98,19 @@ impl<'arena> NativeTemplateFile<'arena> {
     /// to public callers as well as the private normally owned lower route.
     pub fn scoped_view<'owner>(
         &'owner self,
-        original: &'owner L1Ir<'arena>,
+        l1ir: &'owner L1Ir<'arena>,
         syntax: &'owner StyleSyntax<'arena>,
     ) -> Result<NativeScopedTemplateView<'owner, 'arena>, NativeScopedTemplateIssue> {
         use NativeScopedTemplateIssueKind as Kind;
-        let whole = Span::new(0, original.source().len() as u32);
+        let whole = Span::new(0, l1ir.source().len() as u32);
         let reject = |kind| NativeScopedTemplateIssue { span: whole, kind };
-        let options = original.options();
-        if !crate::registry::native_scoped_template(original.dialect())
+        let options = l1ir.options();
+        if !crate::registry::native_scoped_template(l1ir.dialect())
             || options.template != SurfaceParseOptions::default()
         {
             return Err(reject(Kind::Profile));
         }
-        let descriptor = original.admitted().map_err(|_| reject(Kind::Descriptor))?;
+        let descriptor = l1ir.admitted().map_err(|_| reject(Kind::Descriptor))?;
         let template = self.view().map_err(|issue| NativeScopedTemplateIssue {
             span: issue.span,
             kind: Kind::Completion(issue),
@@ -176,7 +176,7 @@ impl<'arena> NativeTemplateFile<'arena> {
             })?;
         Ok(NativeScopedTemplateView {
             template,
-            file,
+            l2ir: file,
             descriptor,
             empty,
         })

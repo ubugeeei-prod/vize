@@ -22,7 +22,7 @@ fn ordered_duplicate_reads_keep_exact_occurrences_bindings_and_owner() {
     let file = observed.file(&arena, &[js]).unwrap();
     let exposure = observed.exposure(&file).unwrap();
     let analysis = build_vue_render_decisions(&exposure).unwrap();
-    assert!(core::ptr::eq(analysis.file(), &file));
+    assert!(core::ptr::eq(analysis.l2ir(), &file));
     assert!(core::ptr::eq(analysis.artifact(), file.artifact()));
     assert_eq!(analysis.tables().nodes.len(), 1);
     assert!(analysis.dom().unwrap().unsupported().is_empty());
@@ -41,7 +41,7 @@ fn ordered_duplicate_reads_keep_exact_occurrences_bindings_and_owner() {
     assert_eq!(resolution.scope(), Some(exposure.scope()));
     for (read, occurrence) in row.reads().iter().zip(table.occurrences()) {
         assert!(core::ptr::eq(read.occurrence(), occurrence));
-        assert!(core::ptr::eq(read.binding().file(), &file));
+        assert!(core::ptr::eq(read.binding().l2ir(), &file));
         assert_eq!(read.binding().id(), occurrence.binding);
         assert_eq!(read.kind(), VueReadKind::SetupLet);
         assert_eq!(occurrence.usage, Usage::Read);
@@ -96,8 +96,8 @@ fn literal_rows_have_complete_empty_reads_and_nonnumeric_owner_identity() {
     assert!(row.reads().is_empty());
     assert_eq!(row.value(), ValueKind::LiteralConstant);
     assert!(row.resolution().table().unwrap().occurrences().is_empty());
-    assert!(core::ptr::eq(row.resolution().file(), &first));
-    assert!(!core::ptr::eq(row.resolution().file(), &second));
+    assert!(core::ptr::eq(row.resolution().l2ir(), &first));
+    assert!(!core::ptr::eq(row.resolution().l2ir(), &second));
     assert_eq!(
         first.artifact().node_count(),
         second.artifact().node_count()
@@ -218,6 +218,6 @@ fn equal_numeric_binding_ids_in_two_real_files_preserve_distinct_read_owners() {
         first_read.occurrence(),
         second_read.occurrence()
     ));
-    assert!(core::ptr::eq(first_read.binding().file(), &first));
-    assert!(core::ptr::eq(second_read.binding().file(), &second));
+    assert!(core::ptr::eq(first_read.binding().l2ir(), &first));
+    assert!(core::ptr::eq(second_read.binding().l2ir(), &second));
 }

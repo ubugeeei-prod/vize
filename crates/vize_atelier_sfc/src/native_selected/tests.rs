@@ -100,7 +100,7 @@ fn five_whole_original_click_components_and_maps_are_captured() -> Result<(), St
         let original = admitted.into_template_view();
         let file = original.file().ok_or("whole original File")?;
         require!(
-            core::ptr::eq(file.artifact().source(), observation.descriptor().source()),
+            core::ptr::eq(file.artifact().source(), observation.l1ir().source()),
             "{id}: same original source"
         );
         require!(

@@ -81,13 +81,13 @@ fn three_whole_ordinary_empty_modules_and_maps_are_captured() -> Result<(), Stri
         );
         let owner = mapped.observation();
         let admitted = owner.admitted().ok_or("original admitted SFC")?;
-        let file = admitted.file().file();
+        let file = admitted.file().l2ir();
         require!(file.is_complete(), "{id}: actual complete File");
         require!(
             core::ptr::eq(file.artifact().source(), source),
             "{id}: original root source"
         );
-        let descriptor = owner.descriptor().admitted().map_err(|_| "descriptor")?;
+        let descriptor = owner.l1ir().admitted().map_err(|_| "descriptor")?;
         require!(
             descriptor.setup().is_none(),
             "{id}: actual no setup sibling"

@@ -15,17 +15,17 @@ use vize_l1::markup::SurfaceChild;
 
 fn refused(owner: &NativeSfcObservation<'_>, source: &str, expected: NativeSfcRefusal) {
     assert!(core::ptr::eq(owner.source(), source));
-    assert!(core::ptr::eq(owner.descriptor().source(), source));
-    assert_eq!(owner.options().descriptor, owner.descriptor().options());
-    let issues = owner.descriptor().issues().to_vec();
-    let errors = owner.descriptor().container().errors.to_vec();
+    assert!(core::ptr::eq(owner.l1ir().source(), source));
+    assert_eq!(owner.options().descriptor, owner.l1ir().options());
+    let issues = owner.l1ir().issues().to_vec();
+    let errors = owner.l1ir().container().errors.to_vec();
     for _ in 0..2 {
         assert_eq!(owner.refusal(), Some(expected));
         assert_eq!(owner.document().unwrap_err(), expected);
         assert_eq!(owner.format().unwrap_err(), expected);
     }
-    assert_eq!(owner.descriptor().issues(), issues);
-    assert_eq!(owner.descriptor().container().errors.as_slice(), errors);
+    assert_eq!(owner.l1ir().issues(), issues);
+    assert_eq!(owner.l1ir().container().errors.as_slice(), errors);
     for operand in owner.operands() {
         assert!(core::ptr::eq(
             operand.syntax().source().authored_root(),
@@ -75,7 +75,7 @@ fn even_empty_script_setup_and_style_roles_refuse_before_any_template_observatio
     for (source, (index, spelling, role)) in sources.into_iter().zip(evidence) {
         let arena = Allocator::default();
         let owner = observe_native_sfc_in(&arena, source, NativeSfcOptions::default());
-        assert!(owner.descriptor().admitted().is_ok());
+        assert!(owner.l1ir().admitted().is_ok());
         let expected = NativeSfcRefusal::UnsupportedBlock {
             index,
             span: span(source, spelling),
@@ -86,9 +86,7 @@ fn even_empty_script_setup_and_style_roles_refuse_before_any_template_observatio
         assert!(owner.operands().is_empty());
         assert!(owner.interpolation_failure().is_none());
         assert_eq!(
-            owner.descriptor().container().blocks[index]
-                .content
-                .slice(source),
+            owner.l1ir().container().blocks[index].content.slice(source),
             ""
         );
     }
@@ -119,28 +117,28 @@ fn original_descriptor_policy_issues_precede_roles_with_exact_authored_evidence(
         let owner = observe_native_sfc_in(&arena, source, NativeSfcOptions::default());
         refused(&owner, source, NativeSfcRefusal::Descriptor);
         assert_eq!(
-            owner.descriptor().issues().first(),
+            owner.l1ir().issues().first(),
             Some(&DescriptorIssue {
                 code,
                 container_index: Some(index),
                 span: span(source, spelling)
             })
         );
-        assert!(owner.descriptor().admitted().is_err());
+        assert!(owner.l1ir().admitted().is_err());
         assert!(owner.selected().is_none());
         assert!(owner.operands().is_empty());
         assert!(owner.interpolation_failure().is_none());
         if code == Code::DuplicateRole {
             assert_eq!(
-                owner.descriptor().container().errors[0].code,
+                owner.l1ir().container().errors[0].code,
                 ContainerErrorCode::DuplicateBlock
             );
             assert_eq!(
-                owner.descriptor().container().errors[0].offset,
+                owner.l1ir().container().errors[0].offset,
                 span(source, spelling).start
             );
         } else {
-            assert!(owner.descriptor().container().errors.is_empty());
+            assert!(owner.l1ir().container().errors.is_empty());
         }
     }
 }
@@ -177,7 +175,7 @@ fn native_version_dialect_and_surface_options_are_retained_without_fallback() {
         refused(&owner, source, NativeSfcRefusal::Descriptor);
         assert_eq!(owner.options(), options);
         assert_eq!(
-            owner.descriptor().issues(),
+            owner.l1ir().issues(),
             &[DescriptorIssue {
                 code,
                 container_index: None,
@@ -301,7 +299,7 @@ fn genuine_recovered_parent_failure_keeps_actual_failure_without_a_fabricated_cu
     let arena = Allocator::default();
     let source = "<template>{{1n}}<p>{{b}}</template>tail";
     let owner = observe_native_sfc_in(&arena, source, NativeSfcOptions::default());
-    assert!(owner.descriptor().admitted().is_ok());
+    assert!(owner.l1ir().admitted().is_ok());
     assert!(
         owner
             .selected()

@@ -94,7 +94,7 @@ fn four_source_bound_scoped_modules_css_and_default_identity_match_complete_cont
                 .observation()
                 .file()
                 .unwrap()
-                .file()
+                .l2ir()
                 .artifact()
                 .source(),
             source
@@ -232,7 +232,7 @@ fn unsupported_scoped_css_and_invalid_scope_options_never_return_partial_product
         assert_eq!(
             compilation
                 .observation()
-                .descriptor()
+                .l1ir()
                 .admitted()
                 .unwrap()
                 .styles()
@@ -245,7 +245,7 @@ fn unsupported_scoped_css_and_invalid_scope_options_never_return_partial_product
                 .observation()
                 .file()
                 .unwrap()
-                .file()
+                .l2ir()
                 .is_complete()
         );
     }

@@ -66,7 +66,7 @@ pub(super) fn with_oxc(
     rows.sorted()
 }
 
-pub(super) fn file(file: &L2Ir<'_>) -> Symbols {
+pub(super) fn file(l2ir: &L2Ir<'_>) -> Symbols {
     let mut rows = Symbols::default();
     for binding in file.bindings() {
         let decl = binding.declaration().unwrap();

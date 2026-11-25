@@ -75,7 +75,7 @@ fn original_canonical_nodes_match_complete_pinned_mounted_dom_and_independent_so
                     rejected
                         .owner()
                         .ok_or("retained refused owner")?
-                        .file()
+                        .l2ir()
                         .artifact()
                         .node_count(),
                     0
@@ -83,7 +83,7 @@ fn original_canonical_nodes_match_complete_pinned_mounted_dom_and_independent_so
                 continue;
             }
             let native = result.map_err(|_| "formatted static markup rejected")?;
-            let artifact = native.file().artifact();
+            let artifact = native.l2ir().artifact();
             assert_eq!(
                 dom(&artifact.root().ops)?,
                 *output.get("dom").ok_or("complete DOM")?

@@ -46,7 +46,7 @@ impl std::error::Error for OriginalProgramError {}
 /// use std::path::Path;
 /// use vize_canon::CorsaBridge;
 /// use vize_l2::{file::L2Ir, lang::js::JsxFile};
-/// async fn discard(bridge: &CorsaBridge, file: L2Ir<'_>, path: &Path) {
+/// async fn discard(bridge: &CorsaBridge, l2ir: L2Ir<'_>, path: &Path) {
 ///     let result = bridge.check_original_program(&file, path).await.unwrap();
 ///     drop(file);
 ///     let _ = result.report();
@@ -119,10 +119,10 @@ impl CorsaBridge {
     /// root config or genuine import/export facts. .mjs/.mts are intrinsic Modules.
     pub async fn check_original_program<'file, 'arena>(
         &self,
-        file: &'file L2Ir<'arena>,
+        l2ir: &'file L2Ir<'arena>,
         authored_path: &Path,
     ) -> Result<OriginalProgramCheck<'file, 'arena>, OriginalProgramError> {
-        let projection = project_program(file).map_err(OriginalProgramError::Projection)?;
+        let projection = project_program(l2ir).map_err(OriginalProgramError::Projection)?;
         self.check_original_projection(projection, authored_path)
             .await
     }
@@ -158,7 +158,7 @@ impl CorsaBridge {
         projection: ProgramProjection<'file, 'arena>,
         authored_path: &Path,
     ) -> Result<OriginalProgramCheck<'file, 'arena>, OriginalProgramError> {
-        let file = projection.file();
+        let file = projection.l2ir();
         let root = self
             .config
             .working_dir

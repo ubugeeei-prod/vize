@@ -58,7 +58,7 @@ impl<'f, 'a> ResolvedTemplateOperand<'f, 'a> {
         mut visit: impl FnMut(ExpressionReferenceRef<'f, 'a>),
     ) -> Result<(), TemplateQueryError> {
         let table = &self.row.table;
-        let file = self.scope.file();
+        let file = self.scope.l2ir();
         for occurrence in table.occurrences() {
             let span = table
                 .expression()
@@ -82,8 +82,8 @@ impl<'f, 'a> ResolvedTemplateOperand<'f, 'a> {
 impl<'f, 'a> Model<'f, 'a> {
     /// Number of original expression operands in this completed File.
     pub fn resolved_template_operand_count(self) -> Result<usize, TemplateQueryError> {
-        check_template_offset(self.file, 0)?;
-        Ok(self.file.facts.expressions.len())
+        check_template_offset(self.l2ir, 0)?;
+        Ok(self.l2ir.facts.expressions.len())
     }
 
     /// Read the operand minted for this node in this File's own ID space.
@@ -91,8 +91,8 @@ impl<'f, 'a> Model<'f, 'a> {
         self,
         node: NodeId,
     ) -> Result<Option<ResolvedTemplateOperand<'f, 'a>>, TemplateQueryError> {
-        check_template_offset(self.file, 0)?;
-        self.file
+        check_template_offset(self.l2ir, 0)?;
+        self.l2ir
             .facts
             .expressions
             .get(node)
@@ -105,7 +105,7 @@ impl<'f, 'a> Model<'f, 'a> {
         node: NodeId,
         row: &'f ScopedResolution<'a>,
     ) -> Result<ResolvedTemplateOperand<'f, 'a>, TemplateQueryError> {
-        let scope = ScopeRef::from_id(self.file, row.scope)
+        let scope = ScopeRef::from_id(self.l2ir, row.scope)
             .ok_or(TemplateQueryError::OriginalMembership)?;
         Ok(ResolvedTemplateOperand { node, scope, row })
     }
@@ -117,8 +117,8 @@ impl<'f, 'a> Model<'f, 'a> {
         self,
         mut visit: impl FnMut(ResolvedTemplateOperand<'f, 'a>),
     ) -> Result<(), TemplateQueryError> {
-        check_template_offset(self.file, 0)?;
-        for (node, row) in self.file.facts.expressions.iter() {
+        check_template_offset(self.l2ir, 0)?;
+        for (node, row) in self.l2ir.facts.expressions.iter() {
             visit(self.operand(node, row)?);
         }
         Ok(())

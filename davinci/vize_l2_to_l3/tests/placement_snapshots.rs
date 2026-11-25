@@ -31,20 +31,20 @@ fn placements(source: &str, graph_page: bool) -> String {
     let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let mut lowered = lower(&allocator, &s2.artifact.root);
-    let graph = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);
+    let graph = L3Page::of(&lowered.l3ir).print_to_string(DumpMode::Full);
     let partition = lowered.partition.ops.to_vec();
 
-    annotate(&mut lowered.program);
+    annotate(&mut lowered.l3ir);
 
-    assert_eq!(verify(&lowered.program), []);
+    assert_eq!(verify(&lowered.l3ir), []);
     assert_eq!(
-        L3Page::of(&lowered.program).print_to_string(DumpMode::Full),
+        L3Page::of(&lowered.l3ir).print_to_string(DumpMode::Full),
         graph
     );
     assert_eq!(lowered.partition.ops.to_vec(), partition);
     let mut output = if graph_page { graph } else { String::default() };
     output.push_str(
-        PlacementPage::of(&lowered.program)
+        PlacementPage::of(&lowered.l3ir)
             .print_to_string(DumpMode::Full)
             .as_str(),
     );

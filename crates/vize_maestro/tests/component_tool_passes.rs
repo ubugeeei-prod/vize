@@ -83,14 +83,14 @@ impl Editor {
     }
 
     fn run(&self, shared: bool) -> Products {
-        let script = |snapshot: &SourceSnapshot, owner: &L1Ir<'_>| {
+        let script = |snapshot: &SourceSnapshot, l1ir: &L1Ir<'_>| {
             snapshot
                 .prepare_literal_products(&self.docs, owner, ScriptRole::Setup)
                 .unwrap()
                 .publish(&self.docs, Some(self.binding))
                 .unwrap()
         };
-        let style = |snapshot: &SourceSnapshot, owner: &L1Ir<'_>| {
+        let style = |snapshot: &SourceSnapshot, l1ir: &L1Ir<'_>| {
             let (selected, ()) = snapshot
                 .prepare_scss_with(&self.docs, owner, 0, |_| ())
                 .unwrap();
@@ -135,7 +135,7 @@ struct Template {
     warning: Option<LintDiagnostic>,
 }
 
-fn template<'a>(arena: &'a Allocator, owner: &L1Ir<'a>) -> Template {
+fn template<'a>(arena: &'a Allocator, l1ir: &L1Ir<'a>) -> Template {
     let selected = owner.admitted_template().unwrap().unwrap();
     let pass = OriginalTemplate::analyze(arena, selected, &mut NoObserver).unwrap();
     let mut body = vize_l0::String::default();

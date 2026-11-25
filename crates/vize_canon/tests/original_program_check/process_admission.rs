@@ -79,7 +79,7 @@ fn admitted_process_fixture_and_leaf_are_complete_genuine_modules() {
         assert!(original.is_complete(), "{key}: {:?}", original.issues());
         assert!(original.issues().is_empty());
         let projection = project_program(&original).unwrap();
-        assert!(core::ptr::eq(projection.file(), &original));
+        assert!(core::ptr::eq(projection.l2ir(), &original));
         assert!(core::ptr::eq(original.artifact().source(), source));
         assert_eq!(original.artifact().source(), source);
     }
