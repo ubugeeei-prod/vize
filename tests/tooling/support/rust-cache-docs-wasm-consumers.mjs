@@ -59,15 +59,21 @@ const producerHashes = {
     "3964722bfe0474b2a026449850af68bae0eab7f6a7f94b2ae597dac941fdf58c",
     "631bc9b08a4a78c996b40ca2245079bcc61d5df435285d6a0d3fd5f517b118d1",
   ],
+  // Re-reviewed for the CI library move: programs stage from tools/ci/workflows/<name>/scripts
+  // or the old .github/scripts/workflows/<name>, and shared ones from tools/ci/lib/scripts.
   ".github/actions/stage-workflow-scripts/stage.ts":
-    "1d68c22d65e438704ae91f4a840dabc5619fda69d8a971207a32c6a967384733",
+    "25af079b7060133e9261d1c99d60dd8aade5298e85fe68cf604ceacc4f0654de",
   ".github/scripts/workflows/e2e/plan-full-rows.sh": [
     "48db48b3259ddf195d7b41563c396ef9c6058ee1ccd7123dcc8488e60d645a66",
     "fb74e8bacfa630535f68514899ac0fd7ee714c03c22c4b7e1369b3702be741c6",
+    // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
+    "d97dd5b74540264b9eec7c3674b378a0c0144d3520c6e7ab604abb29f6e737f6",
   ],
   ".github/scripts/workflows/e2e/plan-readiness-rows.sh": [
     "1bdf100557be3c0d25eb0217a122750aedf04887daee0e34db294807665a834d",
     "0cd915f52568251954116c9b5e0a20071218df9be50f41e4a9fdb3f583ebb104",
+    // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
+    "dec2510c81d47bc70efd1c1d6591a98bfbf667cf453d07be146ed7b222b3eada",
   ],
   ".github/scripts/workflows/e2e/validate-target-sha.sh": [
     "0a8e0b4584b88fd1712b97387a3b554c1fa8d642c932bb590758159a144420fa",
@@ -84,13 +90,17 @@ const producerHashes = {
   ".github/scripts/workflows/e2e/write-full-plan-evidence.sh": [
     "007613ed91016c66a320038841944ab5225390d7461438093af557646c11d991",
     "3e9f329999396fcf93f9d66163abd21c7dacdc10067cb42aee15cd403050ac26",
+    // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
+    "b0e7bc04e2d4740371c263d6661efb38fb1a00e75f5fd86f52cc5206aa5ed49e",
   ],
   ".github/scripts/workflows/e2e/write-readiness-plan-evidence.sh": [
     "e7110ceaa0266e4a479b2de79660834f82ace685e217be9a8967d14a56b206d6",
     "b2c01a84ad82128243d5302201ee01d62921bc4012f0cf7915c2b0e0c8bea8af",
+    // The CI library move only repoints app-e2e-plan.ts at tools/ci/commands.
+    "84bad58cff17649cef276be7bfac7583b47733ffc8704bf99ee04eebd6f067ad",
   ],
 
-  "tools/commands/ci/github/app-e2e-plan.ts":
+  "tools/ci/commands/github/app-e2e-plan.ts":
     "ca7682cc8f0834fa48a325954fbcc10765241ee1f9e29a0ebef9b60048cbc7d2",
   "tools/support/compat/github/app-e2e-plan.ts":
     "67799c81a7a38031b96e5a0f1cd1ea5bd2ae77a30eaf750a389f33f26e290ad7",
@@ -234,9 +244,10 @@ function verifyRecipes(root, docs, e2e) {
     anchor,
     anchor + "  - '.github/actions/setup-moonbit/**'\n",
   );
+  // Re-reviewed for the CI library move: only tools/ci/commands and tools/ci/lib/scripts paths changed.
   for (const [job, expected] of [
-    ["app-readiness-plan", "1479bb7068aacef5c40c05601b3ef4d223bcdf7d3d79b9ca5084e0021c60299a"],
-    ["app-e2e-plan", "782b8e00e62cd7dcd80ecfe4aec75fea411a0edfc25fcea0ef3d7feea0bc5733"],
+    ["app-readiness-plan", "75b8495e69687cd38f88562fd71bfef57e57d363e3803c297d4c175ef2287a73"],
+    ["app-e2e-plan", "edd733e6f39fa5f8893eab375c9ace575fbb83b8a169ed2af3000c6f876ab9fa"],
   ])
     assert.equal(
       hash(JSON.stringify(job === "app-readiness-plan" ? readiness : e2e.jobs[job])),

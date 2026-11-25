@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Release cadence"
 // Starts a release on its own. After every completed Check or Release on main

@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Capture original Vue1 interpolation documents"
 description = "Join fresh checked Glyph output to independent whole LF goldens and pinned getter outcomes"

@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { repoRoot } from "./_helpers/tool-commands.ts";
 
-const command = path.join(repoRoot, "tools/commands/ci/source-file-lengths.ts");
+const command = path.join(repoRoot, "tools/ci/commands/source-file-lengths.ts");
 
 function git(cwd: string, ...args: string[]) {
   const result = spawnSync("git", args, { cwd, encoding: "utf8" });

@@ -1,5 +1,5 @@
-amends "../../../../ShellScript.pkl"
-import "../../../../BootstrapAssets.pkl" as assets
+amends "../../../../../../ci/lib/ShellScript.pkl"
+import "../../../../../../ci/lib/BootstrapAssets.pkl" as assets
 
 interpreter = "bash"
 

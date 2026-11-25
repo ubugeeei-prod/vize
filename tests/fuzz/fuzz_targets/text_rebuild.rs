@@ -8,7 +8,7 @@
 // byte for byte, for every inline and heap length.
 //
 // The corpus is seeded from the `<template>` blocks of repository .vue
-// fixtures by `tools/commands/ci/fuzz/seed-corpus.ts`.
+// fixtures by `tools/ci/commands/fuzz/seed-corpus.ts`.
 use libfuzzer_sys::fuzz_target;
 use vize_l0::{Span, String};
 use vize_l2::analysis::text_facts::{TextPart, rebuild_source};

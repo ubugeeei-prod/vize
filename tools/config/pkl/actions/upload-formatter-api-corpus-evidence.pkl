@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Retain differential product corpus evidence"
 description = "Keep formatter API artifacts, product observations and source-built CLI receipts."

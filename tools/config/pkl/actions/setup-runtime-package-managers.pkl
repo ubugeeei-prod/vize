@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Setup runtime package managers"
 description = "Install Vite+, Node.js, Corepack shims, and Bun for release runtime smokes."

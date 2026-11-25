@@ -1,3 +1,4 @@
+import { restoreCiLibraryPaths } from "./support/ci-library-paths.ts";
 import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -56,9 +57,8 @@ const workflows = selectors.map((specification) => {
     "utf8",
   );
   assert.equal(createHash("sha256").update(before).digest("hex"), specification.original);
-  const after = readAutomationPrograms(
-    new URL("../../" + specification.file, import.meta.url),
-    "utf8",
+  const after = restoreCiLibraryPaths(
+    readAutomationPrograms(new URL("../../" + specification.file, import.meta.url), "utf8"),
   );
   const workflow = parse(after) as Workflow;
   if (specification.name === "check") {

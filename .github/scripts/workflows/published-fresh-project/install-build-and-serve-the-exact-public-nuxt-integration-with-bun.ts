@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { requiredEnv } from "../shared/files.ts";
+import { requiredEnv } from "../../../../tools/ci/lib/scripts/files.ts";
 
 const root = requiredEnv("PROJECT");
 const version = process.env.RELEASE_VERSION;

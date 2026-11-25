@@ -49,7 +49,7 @@ test("check workflow runs JS package unit tests and production dependency audit"
   assert.match(jsPackageGate, /require-needs-success\.ts --full-js-packages/);
   const jsSetup = readRepoFile(".github", "actions", "setup-js-package-tests", "action.yml");
   assert.match(jsSetup, /key:\s*test-js-packages/);
-  assert.match(auditJob, /node tools\/commands\/ci\/npm-audit-retry\.ts/);
+  assert.match(auditJob, /node tools\/ci\/commands\/npm-audit-retry\.ts/);
   assert.doesNotMatch(auditJob, /setup-rust-script|rust-script/);
   assert.match(auditJob, /tool:\s*cargo-audit/);
   assert.match(auditJob, /cargo audit --deny warnings/);

@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Test small Node case list"
 description = "Run one fixed Check test list and retain its shared case packet"

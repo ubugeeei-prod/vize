@@ -1,0 +1,21 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_distinct_spellings_found_in_an_equal_header_occur_once": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "cvc5", "time": 0.241 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
