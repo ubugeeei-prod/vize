@@ -6,6 +6,7 @@ mod reference;
 mod referenced;
 mod sharing;
 mod summaries;
+mod targets;
 
 /// A batch generation no open batch has: live generations count up from one,
 /// these count down from the top. Tests pass them explicitly instead of

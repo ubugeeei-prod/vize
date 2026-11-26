@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_breaks_never_decrease": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}

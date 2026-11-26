@@ -2462,6 +2462,18 @@
           },
           "additionalProperties": false
         },
+        "vue/no-undefined-refs": {
+          "type": "object",
+          "properties": {
+            "globals": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/sfc-element-order": {
           "type": "object",
           "properties": {

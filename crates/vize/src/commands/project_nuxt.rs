@@ -3,6 +3,7 @@
 //! Only literal values count. Anything dynamic reads as unknown so callers can
 //! keep their conservative default.
 
+pub(crate) mod auto_imports;
 pub(crate) mod host_authority;
 mod static_render;
 
@@ -45,28 +46,35 @@ pub(super) struct NuxtConfig {
 pub(super) fn find(root: &Path) -> Option<NuxtConfig> {
     let mut directory = Some(root);
     while let Some(dir) = directory {
-        for name in NUXT_CONFIG_NAMES {
-            let path = dir.join(name);
-            if path.exists() {
-                return Some(NuxtConfig {
-                    dir: dir.to_path_buf(),
-                    source: fs::read_to_string(path).ok().map(String::from),
-                });
-            }
+        if let Some(path) = config_file(dir) {
+            return Some(NuxtConfig {
+                dir: dir.to_path_buf(),
+                source: fs::read_to_string(path).ok().map(String::from),
+            });
         }
-        // A command launched in src/ still belongs to its application. Stop at
-        // a nested package or Vite project instead of borrowing an outer app's
-        // configuration for a separately owned application.
-        if dir.join("package.json").is_file()
-            || VITE_CONFIG_NAMES
-                .iter()
-                .any(|name| dir.join(name).is_file())
-        {
+        if owns_an_application(dir) {
             return None;
         }
         directory = dir.parent();
     }
     None
+}
+
+fn config_file(dir: &Path) -> Option<PathBuf> {
+    NUXT_CONFIG_NAMES
+        .iter()
+        .map(|name| dir.join(name))
+        .find(|path| path.exists())
+}
+
+/// A command launched in src/ still belongs to its application. Stop at a
+/// nested package or Vite project instead of borrowing an outer app's
+/// configuration for a separately owned application.
+fn owns_an_application(dir: &Path) -> bool {
+    dir.join("package.json").is_file()
+        || VITE_CONFIG_NAMES
+            .iter()
+            .any(|name| dir.join(name).is_file())
 }
 
 pub(super) enum Lookup<'a> {
