@@ -5,12 +5,12 @@ export const plannedBusyRunner = "blacksmith-32vcpu-ubuntu-2404";
 export const plannedIdleRunner = "ubuntu-24.04";
 
 export const plannedRunnerJobs: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-  "check.yml": {
+  "01-check.yml": {
     "security-audit": "needs.iteration-plan.outputs.dependencies == 'true'",
     "node-engine-compat": "needs.iteration-plan.outputs.engines == 'true'",
     "check-vize-apps": "needs.iteration-plan.outputs.apps == 'true'",
   },
-  "pr-source-checks.yml": {
+  "01-pr-source.yml": {
     "wasm-release-check":
       "contains(fromJSON(needs.pr-source-plan.outputs.rust-plan).packages, 'vize_vitrine')",
     "ci-selection-tests": "needs.pr-source-plan.outputs.tooling == 'true'",

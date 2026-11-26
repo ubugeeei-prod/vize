@@ -5,7 +5,7 @@ import { parse } from "yaml";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 test("Check validates pull requests against every stacked base branch", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "check.yml"));
+  const workflow = parse(readRepoFile(".github", "workflows", "01-check.yml"));
   assert.ok(Object.hasOwn(workflow.on, "pull_request"));
   assert.equal(workflow.on.pull_request?.branches, undefined);
   assert.equal(workflow.on.pull_request?.["branches-ignore"], undefined);
@@ -16,7 +16,7 @@ test("Check validates pull requests against every stacked base branch", () => {
 });
 
 test("stacked pull requests retain the trusted title policy", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "title-policy.yml"));
+  const workflow = parse(readRepoFile(".github", "workflows", "01-title-policy.yml"));
   const trigger = workflow.on.pull_request_target;
   assert.ok(trigger);
   assert.equal(trigger.branches, undefined);

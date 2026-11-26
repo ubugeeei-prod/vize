@@ -76,8 +76,8 @@ test("genuine value producers, consumers, writers and capture dependencies quali
     "tools/support/compat/github/native-attribute-values-7502-capture.mjs",
     "tools/support/compat/github/plan-tooling-tests.mjs",
     ".github/actions/test-native-attribute-values-7502/action.yml",
-    ".github/workflows/pr-source-checks.yml",
-    ".github/workflows/check.yml",
+    ".github/workflows/01-pr-source.yml",
+    ".github/workflows/01-check.yml",
   ])
     assert.equal(nativeAttributeValues7502CaptureRequired([file]), true, file);
   assert.equal(nativeAttributeValues7502CaptureRequired([]), false);
@@ -187,7 +187,7 @@ export function assertNativeAttributeValues7502SharedHooks(root: string) {
     planner,
     /native-attribute-values-7502-capture=\$\{nativeAttributeValues7502CaptureRequired\(capturePaths\)\}/,
   );
-  const pr = read(".github/workflows/pr-source-checks.yml");
+  const pr = read(".github/workflows/01-pr-source.yml");
   assert.match(
     pr,
     /native-attribute-values-7502-capture: \$\{\{ steps\.tooling-plan\.outputs\.native-attribute-values-7502-capture \}\}/,
@@ -205,7 +205,7 @@ export function assertNativeAttributeValues7502SharedHooks(root: string) {
   assert(pr.indexOf(action) < pr.indexOf("- name: Test selected PR tooling scripts"));
   assert(pr.indexOf(action) < pr.indexOf("- name: Test tooling scripts"));
   assert.doesNotMatch(step, /continue-on-error|hashFiles|existsSync/);
-  const check = read(".github/workflows/check.yml");
+  const check = read(".github/workflows/01-check.yml");
   const fullStart = check.lastIndexOf("      - name:", check.indexOf(action));
   const full = check.slice(fullStart, check.indexOf("      - name:", fullStart + 1));
   assert(full.includes(action));

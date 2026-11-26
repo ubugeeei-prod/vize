@@ -1,9 +1,0 @@
-amends "../../../../../../../ci/lib/ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #"""
-  test -s "$VIZE_TEST_CASES"
-  """#
-}

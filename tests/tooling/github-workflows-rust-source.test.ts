@@ -43,18 +43,18 @@ type Workflow = {
 };
 const workflow = (name: string): Workflow =>
   parse(readAutomationPrograms(".github", "workflows", name));
-const check = workflow("check.yml");
-const source = workflow("pr-source-checks.yml");
-const rust = workflow("pr-rust-checks.yml");
-const products = workflow("pr-rust-products.yml");
-const js = workflow("pr-js-checks.yml");
+const check = workflow("01-check.yml");
+const source = workflow("01-pr-source.yml");
+const rust = workflow("01-pr-rust.yml");
+const products = workflow("01-pr-rust-products.yml");
+const js = workflow("01-pr-js.yml");
 const commands = (job: Job): string => (job.steps ?? []).map((step) => step.run ?? "").join("\n");
 const needs = (job: Job): string[] =>
   typeof job.needs === "string" ? [job.needs] : (job.needs ?? []);
 
 void test("required source reports include selected product gates and mandatory Rust acceptance", () => {
   const entry = check.jobs["pr-source-checks"];
-  assert.equal(entry.uses, "./.github/workflows/pr-source-checks.yml");
+  assert.equal(entry.uses, "./.github/workflows/01-pr-source.yml");
   for (const event of ["pull_request", "merge_group"]) assert.ok(entry.if?.includes(`'${event}'`));
   assert.ok(Object.hasOwn(source.on ?? {}, "workflow_call"));
   assert.ok(needs(check.jobs["test-report"]).includes("pr-source-checks"));
@@ -76,19 +76,19 @@ void test("required source reports include selected product gates and mandatory 
   }
   for (const name of ["pr-source-plan", "canonical-corpus"])
     assert.ok(needs(source.jobs["source-report"]).includes(name), name);
-  assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/pr-rust-checks.yml");
+  assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/01-pr-rust.yml");
   assert.equal(source.jobs["pr-rust-source"].with?.["run-rust"], true);
   assert.equal(
     source.jobs["pr-rust-source"].with?.["rust-plan"],
     "${{ needs.pr-source-plan.outputs.rust-plan }}",
   );
-  assert.equal(source.jobs["pr-rust-products"].uses, "./.github/workflows/pr-rust-products.yml");
+  assert.equal(source.jobs["pr-rust-products"].uses, "./.github/workflows/01-pr-rust-products.yml");
   assert.equal(source.jobs["pr-rust-products"].with?.["run-rust"], true);
   assert.equal(
     source.jobs["pr-rust-products"].with?.["rust-plan"],
     "${{ needs.pr-source-plan.outputs.rust-plan }}",
   );
-  assert.equal(source.jobs["pr-js-packages"].uses, "./.github/workflows/pr-js-checks.yml");
+  assert.equal(source.jobs["pr-js-packages"].uses, "./.github/workflows/01-pr-js.yml");
   assert.equal(
     source.jobs["source-report"].if,
     "${{ always() && !contains(needs.*.result, 'cancelled') }}",
@@ -179,11 +179,11 @@ void test("PR and queue cohorts build in place from the warm disk and run filter
 
 void test("full repository ratchets and coverage remain scheduled or explicitly requested", () => {
   const caller = check.jobs["full-qualification"];
-  assert.equal(caller.uses, "./.github/workflows/full-qualification.yml");
+  assert.equal(caller.uses, "./.github/workflows/01-full-qualification.yml");
   assert.ok(caller.if?.includes("github.event_name == 'schedule'"));
   assert.ok(caller.if?.includes("github.event_name == 'workflow_dispatch'"));
   assert.ok(!caller.if?.includes("pull_request"));
-  const full = workflow("full-qualification.yml");
+  const full = workflow("01-full-qualification.yml");
   for (const [physical, command] of [
     [full, /check-skeleton-todos\.ts --check/],
     [check, /write-coverage-summary\.ts/],
@@ -199,7 +199,7 @@ void test("full repository ratchets and coverage remain scheduled or explicitly 
 });
 
 void test("trusted main and scheduled runs seed the CI profiles while candidate mounts stay read-only", () => {
-  const seed = workflow("rust-pr-target-seed.yml");
+  const seed = workflow("01-rust-target-seed.yml");
   assert.deepEqual(Object.keys(seed.on ?? {}).sort(), ["push", "schedule"]);
   assert.deepEqual((seed.on?.push as { branches?: string[] })?.branches, ["main"]);
   assert.equal(seed.concurrency?.["cancel-in-progress"], false);
@@ -238,11 +238,11 @@ const productJobs = ["pr-rust-shard", "rust-feature-tests"];
 const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
 
 function requireSplitRustRecipes(
-  sourceWorkflow = rustWorkflow("pr-rust-checks.yml"),
-  productWorkflow = rustWorkflow("pr-rust-products.yml"),
+  sourceWorkflow = rustWorkflow("01-pr-rust.yml"),
+  productWorkflow = rustWorkflow("01-pr-rust-products.yml"),
 ) {
   const contracts = requireDailySourceContracts(
-    rustWorkflow("pr-source-checks.yml"),
+    rustWorkflow("01-pr-source.yml"),
     sourceWorkflow,
   );
   const source = sourceWorkflow.jobs;
@@ -271,7 +271,7 @@ function requireSplitRustRecipes(
       const writePlan = job.steps.find((step) => step.name === "Materialize affected Rust plan");
       assert.equal(writePlan?.run, 'node "$VIZE_CI_FILES/materialize-affected-rust-plan.cjs"');
       const program = workflowProgram(
-        "pr-rust-checks",
+        "01-pr-rust",
         writePlan.run,
         "materialize-affected-rust-plan.cjs",
       );
@@ -396,7 +396,7 @@ test("whole split preservation refuses changed current policy and unrelated prod
     "doctest-duplicate",
     "unrelated-command",
   ]) {
-    const changed = rustWorkflow("pr-rust-checks.yml");
+    const changed = rustWorkflow("01-pr-rust.yml");
     const job = changed.jobs["pr-rust-build"];
     const contracts = job.steps.findIndex(
       (step) => step.name === "Require current-tree source, API and reviewed-doc contracts",
@@ -449,8 +449,8 @@ test("whole split preservation refuses changed current policy and unrelated prod
 });
 
 test("actual job selectors keep ordinary workers and source checks while only footprint products can skip", () => {
-  const source = rustWorkflow("pr-rust-checks.yml").jobs;
-  const products = rustWorkflow("pr-rust-products.yml").jobs;
+  const source = rustWorkflow("01-pr-rust.yml").jobs;
+  const products = rustWorkflow("01-pr-rust-products.yml").jobs;
   const selector =
     (job: RustJob) =>
     (context: Record<string, string | boolean>): unknown =>

@@ -91,7 +91,7 @@ test("evidence artifact identity preserves its prefix and separates jobs, shards
 test("the full tooling gate retains failed observations after its extracted tests", () => {
   const full = parse(checkWorkflowJobSources()) as Workflow;
   const fullProducer = parse(
-    readAutomationPrograms(".github", "workflows", "full-source-cli.yml"),
+    readAutomationPrograms(".github", "workflows", "01-full-source-cli.yml"),
   ) as Workflow;
   const fullWorker = {
     ...full.jobs["test-scripts"],
@@ -102,7 +102,7 @@ test("the full tooling gate retains failed observations after its extracted test
     ).runs.steps,
   };
   assert.deepEqual(fullWorker.needs, ["full-source-cli", "tooling-plan"]);
-  assert.equal(full.jobs["full-source-cli"].uses, "./.github/workflows/full-source-cli.yml");
+  assert.equal(full.jobs["full-source-cli"].uses, "./.github/workflows/01-full-source-cli.yml");
   const call = full.jobs["test-scripts"].steps.find(
     (step) => step.uses === "./.github/actions/test-full-tooling",
   );
@@ -158,9 +158,9 @@ test("the full tooling gate retains failed observations after its extracted test
 test("the current PR native runtime lane remains connected to required source and Check reports", () => {
   const full = parse(checkWorkflowJobSources()) as Workflow;
   const pr = parse(
-    readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"),
+    readAutomationPrograms(".github", "workflows", "01-pr-source.yml"),
   ) as Workflow;
-  assert.equal(full.jobs["pr-source-checks"].uses, "./.github/workflows/pr-source-checks.yml");
+  assert.equal(full.jobs["pr-source-checks"].uses, "./.github/workflows/01-pr-source.yml");
   const outerNeeds = full.jobs["test-report"].needs;
   assert.ok(Array.isArray(outerNeeds));
   assert.ok(outerNeeds.includes("pr-source-checks"));

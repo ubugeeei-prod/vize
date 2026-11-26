@@ -176,7 +176,7 @@ test("all CLI producers, copied declarations, fixtures and selector changes reta
     "davinci/vize_l0/src/lib.rs",
     "vendor/typechecker-runtime/src/lib.rs",
     ".cargo/config.toml",
-    ".github/workflows/full-qualification.yml",
+    ".github/workflows/01-full-qualification.yml",
     "npm/cli/content-mapper-helpers.d.ts",
     "npm/cli/generated/content-mapper-types.d.ts",
     "tests/fixtures/typechecker/undeclared-instance-globals-10617/authority.json",

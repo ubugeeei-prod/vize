@@ -42,7 +42,7 @@ const check = parse(checkWorkflowJobSources()) as {
   on: { workflow_dispatch: { inputs: Record<string, { default: boolean }> } };
   jobs: Record<string, Job>;
 };
-const seed = parse(readAutomationPrograms(".github", "workflows", "rust-pr-target-seed.yml")) as {
+const seed = parse(readAutomationPrograms(".github", "workflows", "01-rust-target-seed.yml")) as {
   jobs: Record<string, Job>;
 };
 const workspace = check.jobs["full-rust-workspace"];
@@ -267,7 +267,7 @@ void test("expensive original-profile comparison is opt-in and requested parity 
 });
 
 void test("full-only extraction preserves all seventeen complete original job objects", () => {
-  const full = parse(readAutomationPrograms(".github/workflows/full-qualification.yml"));
+  const full = parse(readAutomationPrograms(".github/workflows/01-full-qualification.yml"));
   const original = structuredClone(full.jobs);
   // This later transfer from Check has a separate complete job contract.
   assert.equal(
@@ -283,7 +283,7 @@ void test("full-only extraction preserves all seventeen complete original job ob
   delete original["rust-feature-tests"];
   assert.deepEqual(original["v1-supported-matrix"], {
     if: "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
-    uses: "./.github/workflows/v1-supported-matrix.yml",
+    uses: "./.github/workflows/01-v1-matrix.yml",
     with: { enforce_complete: true },
   });
   delete original["v1-supported-matrix"];

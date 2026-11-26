@@ -1,0 +1,497 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/01-full-qualification/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Full qualification
+on:
+  workflow_call:
+    inputs:
+      compare-rust-test-profile: { type: boolean, default: false }
+permissions: { contents: read }
+env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
+jobs:
+  v1-supported-matrix:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/01-v1-matrix.yml
+    with: { enforce_complete: true }
+  full-source-cli:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/01-full-source-cli.yml
+  tooling-plan:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/01-full-tooling-plan.yml
+  test-scripts:
+    name: Tooling (${{ matrix.name }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }} # Preserve independent checks after producer failure; stop superseded runs.
+    timeout-minutes: 30
+    needs: [full-source-cli, tooling-plan]
+    strategy: { fail-fast: false, matrix: "${{ fromJSON(needs.tooling-plan.outputs.matrix) }}" }
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.full-source-cli.outputs.receipt-sha256 }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - uses: ./.github/actions/test-full-tooling
+        with:
+          producer: ${{ toJSON(needs.full-source-cli.outputs) }}
+          shard: ${{ matrix.index }}
+          total: ${{ matrix.total }}
+  test-scripts-gate:
+    name: test-scripts # Release preflight requires exactly one successful job with this exact name.
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    timeout-minutes: 5
+    needs: [full-source-cli, tooling-plan, test-scripts]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/report-full-js-qualification
+        with: { needs-json: "${{ toJSON(needs) }}" }
+  build-js-packages:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 30
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/01-full-qualification/scripts"
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: build-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify declarations, build native package, and check UI package
+        run: . "${{ env.VIZE_CI_FILES }}/verify-declarations-build-native-package-and-check-ui-package.sh"
+      - name: Check composable hydration and Vapor conformance
+        # Independent of the UI package check above; it only needs the native
+        # binding that step built, so a UI failure must not hide this result.
+        if: ${{ !cancelled() }}
+        run: vp run --filter './npm/compose/core' check:conformance
+      - name: Build JS packages
+        run: vp run --workspace-root build:packages
+      - name: Stage shared JS build artifacts
+        run: . "${{ env.VIZE_CI_FILES }}/stage-shared-js-build-artifacts.sh"
+      - name: Upload shared JS build artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: shared-js-build
+          path: .artifacts/shared-js-build/
+          if-no-files-found: error
+          retention-days: 7
+  full-js-package-tests:
+    name: Full JS package tests (${{ matrix.group }})
+    strategy:
+      fail-fast: false
+      matrix: { group: [builders, ui, oxlint] }
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/setup-js-package-tests
+      - name: Test JS packages
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/test-js-packages-with-history
+        with: { partition: "${{ matrix.group }}" }
+  full-js-original-project:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/setup-js-package-tests
+      - name: Qualify original Oxlint projects
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/test-js-packages-with-history
+        with: { partition: original-project }
+  test-js-packages:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    timeout-minutes: 5
+    needs: [full-js-package-tests, full-js-original-project]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", cache: false, run-install: false }
+      - name: Require every full JS partition to succeed
+        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
+        run: node tools/support/compat/github/require-needs-success.ts --full-js-packages
+  full-rust-workspace:
+    name: Full Rust workspace and doctests
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    timeout-minutes: 45
+    outputs:
+      producer-attempt: ${{ steps.workspace.outputs.producer-attempt }}
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/01-full-qualification/scripts"
+      CARGO_BUILD_JOBS: "24"
+      RUST_TEST_THREADS: "4"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
+      VIZE_TEST_REQUIRE_TSGO: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: true }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install Pkl CLI and hydrate pinned native fixture
+        run: . "${{ env.VIZE_CI_FILES }}/install-pkl-cli-and-hydrate-pinned-native-fixture.sh"
+      - name: Install full-workspace nextest
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with: { tool: cargo-nextest@0.9.146 }
+      - name: Provision the locked Full Rust native runtime
+        run: node tools/support/compat/github/full-rust-runtime.ts
+      - name: Run the original test profile for same-source comparison
+        if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.compare-rust-test-profile }}
+        run: node tools/support/compat/github/run-rust-workspace-tests.ts --cargo-profile test --output target/nextest/full/workspace-reference-timing.json
+      - name: Run and inventory every workspace test and doctest
+        id: workspace
+        if: ${{ !cancelled() }}
+        run: node tools/support/compat/github/run-rust-workspace-tests.ts --cargo-profile ci --capture-typechecker-workspace
+      - name: Preserve full-workspace test results and walltime
+        if: ${{ always() }}
+        uses: ./.github/actions/upload-rust-full-workspace-results
+      - uses: ./.github/actions/retain-sfc-runtime
+        if: ${{ always() }}
+  full-rust-report:
+    name: full-rust-report
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    if: ${{ always() && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    needs: [full-rust-workspace, clippy-and-test]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Require workspace and native differential jobs
+        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
+        run: node tools/support/compat/github/require-needs-success.ts
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          # A failed-job rerun can retain this successful producer. Its output
+          # binds the actual attempt that wrote the immutable workspace artifact.
+          name: rust-full-workspace-${{ github.sha }}-${{ needs.full-rust-workspace.outputs.producer-attempt }}
+          path: .artifacts/rust-full-workspace
+      - name: Require the requested same-source test and ci inventories
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.compare-rust-test-profile }}
+        env: { PRODUCER_ATTEMPT: "${{ needs.full-rust-workspace.outputs.producer-attempt }}" }
+        run: node tools/support/compat/github/rust-workspace-inventory.ts compare .artifacts/rust-full-workspace/workspace-inventory-test.json .artifacts/rust-full-workspace/workspace-inventory-ci.json "$PRODUCER_ATTEMPT"
+      - name: Verify complete same-head workspace execution
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          PRODUCER_ATTEMPT: ${{ needs.full-rust-workspace.outputs.producer-attempt }}
+        run: node tools/support/compat/github/rust-workspace-inventory.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace "$PRODUCER_ATTEMPT"
+      - name: Require real workspace typechecker and TS40 observations
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          PRODUCER_ATTEMPT: ${{ needs.full-rust-workspace.outputs.producer-attempt }}
+        run: node tests/differential/typechecker-workspace.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace "$GITHUB_RUN_ID" "$PRODUCER_ATTEMPT"
+  # Publishes the T1 native-only acceptance census and zero-fallback verdict
+  # from the bundle entries the product runners above wrote (#6853, #6854).
+  # Record-only: missing or failed producers show up as unmeasured coordinates.
+  differential-acceptance:
+    name: differential-acceptance
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    if: ${{ always() && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    needs: [full-rust-workspace, test-scripts]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Download product runner evidence
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: formatter-api-corpus-${{ github.run_id }}-${{ github.run_attempt }}-*
+          path: .artifacts/differential-t1
+      - name: Download the full workspace typechecker observation
+        id: workspace
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: rust-full-workspace-${{ github.sha }}-${{ needs.full-rust-workspace.outputs.producer-attempt }}
+          path: .artifacts/rust-full-workspace
+      - name: Record the verified typechecker bundle entry
+        if: ${{ steps.workspace.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          PRODUCER_ATTEMPT: ${{ needs.full-rust-workspace.outputs.producer-attempt }}
+        run: node tests/differential/typechecker-bundle.ts "$SOURCE_SHA" .artifacts/rust-full-workspace "$GITHUB_RUN_ID" "$PRODUCER_ATTEMPT" .artifacts/differential-t1/typechecker/bundle
+      - name: Publish native-only acceptance and zero-fallback census
+        run: node tests/differential/native-acceptance.ts --out .artifacts/differential-acceptance --bundle-out .artifacts/differential-acceptance/bundle .artifacts/differential-t1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: differential-acceptance-t1-${{ github.sha }}-${{ github.run_attempt }}
+          path: .artifacts/differential-acceptance
+          if-no-files-found: error
+          retention-days: 30
+  rust-clippy-portability:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    env:
+      {
+        VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/01-full-qualification/scripts",
+        VIZE_NUXT_CONFIG_ITERATIONS: "100",
+      }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: clippy-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Clippy
+        run: . "${{ env.VIZE_CI_FILES }}/clippy.sh"
+      - name: Davinci no_std stage-library portability lanes (TS-24)
+        run: . "${{ env.VIZE_CI_FILES }}/davinci-no-std-stage-library-portability-lanes-ts-24.sh"
+  rust-davinci-allocations:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    env:
+      {
+        VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/01-full-qualification/scripts",
+        VIZE_NUXT_CONFIG_ITERATIONS: "100",
+      }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: clippy-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Davinci allocation gate
+        run: . "${{ env.VIZE_CI_FILES }}/davinci-allocation-gate.sh"
+      - name: Upload Davinci allocation bench reports
+        if: ${{ always() }}
+        uses: ./.github/actions/upload-davinci-compact-storage-bench-reports
+  rust-native-differential:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    env:
+      {
+        VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/01-full-qualification/scripts",
+        VIZE_NUXT_CONFIG_ITERATIONS: "100",
+      }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: clippy-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install Pkl CLI and hydrate pinned native fixture
+        run: . "${{ env.VIZE_CI_FILES }}/install-pkl-cli-and-hydrate-pinned-native-fixture.sh"
+      - name: Test
+        env: { VIZE_TEST_REQUIRE_TSGO: "1" }
+        uses: ./.github/actions/test-rust-workspace-differential
+        # The required full-rust-report verifies the sibling's source-bound
+        # complete inventory, JUnit and doctests as well as this native tail.
+        with: { workspace-already-tested: "true" }
+      - uses: ./.github/actions/retain-sfc-runtime
+        if: ${{ always() }}
+  clippy-and-test:
+    # Keep the release gate's identity while every original producer must succeed.
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    needs: [rust-clippy-portability, rust-davinci-allocations, rust-native-differential]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Require Clippy, portability, allocations and native differential execution
+        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
+        run: node tools/support/compat/github/require-needs-success.ts
+  rust-feature-tests:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/01-rust-feature-tests.yml
+  playground-test:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 30
+    needs:
+      - build-js-packages
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      # Rust is always needed for @vizejs/native (used by vite-plugin-vize)
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, targets: wasm32-unknown-unknown }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: playground-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Cache WASM build
+        id: cache-wasm
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: playground/src/wasm/vize_vitrine* # outputs only; tests/tooling/github-wasm-cache.test.ts
+          key: ${{ runner.os }}-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}
+      - name: Install wasm-bindgen-cli
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: wasm-bindgen-cli@0.2.129
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Build WASM
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        run: node tools/support/github/build-vitrine-wasm.ts playground/src/wasm
+      - name: Install JS dependencies
+        run: node tools/support/github/vp-install.ts --filter './playground...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...'
+      - name: Download shared JS build artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: shared-js-build
+          path: .
+      - name: Cache Playwright browsers
+        id: cache-playwright
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Install Playwright browsers
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        uses: ./.github/actions/install-playwright-browsers
+      - name: Run playground tests
+        run: vp run --filter './playground' test:browser
+      - name: Run VRT
+        run: vp run --filter './playground' test:vrt
+        id: vrt
+      - name: Upload VRT report
+        if: failure() && steps.vrt.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playground-vrt-report
+          path: playground/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload VRT diff artifacts
+        if: failure() && steps.vrt.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vrt-diff
+          path: playground/e2e/vrt/test-results/
+          retention-days: 7
+  editor-extensions:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/package-editor-extensions
+  editor-host-smoke:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/vscode-host-smoke
+  nuxt-module-qualification:
+    name: Nuxt and Vite release products
+    uses: ./.github/workflows/08-nuxt-vite-products.yml
+  branch-coverage:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 45
+    # Keep the strict nightly instrumentation gate on scheduled and explicit runs.
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_CI_FILES: ${{ github.workspace }}/tools/ci/workflows/01-full-qualification/scripts
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # nightly
+        with: { toolchain: nightly, components: llvm-tools-preview }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-script
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: coverage-branch
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-llvm-cov
+      - name: Branch coverage report
+        run: vp run --workspace-root coverage:source:branch
+      - name: Verify branch coverage summary
+        run: . "${{ env.VIZE_CI_FILES }}/verify-branch-coverage-summary.sh"
+      - name: Upload branch coverage summary
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-branch-coverage-summary
+          path: target/llvm-cov/source-branch-summary.json
+          if-no-files-found: error
+          retention-days: 14

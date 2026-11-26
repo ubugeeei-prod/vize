@@ -1,0 +1,68 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Full source CLI producer"
+on {
+  workflow_call {
+    outputs {
+      sha256 { value = "${{ jobs.cli.outputs.sha256 }}" }
+      `receipt-sha256` { value = "${{ jobs.cli.outputs.receipt-sha256 }}" }
+      `producer-attempt` { value = "${{ jobs.cli.outputs.producer-attempt }}" }
+    }
+  }
+}
+permissions { contents = "read" }
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+}
+jobs {
+  cli {
+    name = "Build original full-suite CLI and SFC oracle"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    outputs {
+      sha256 = "${{ steps.pack.outputs.sha256 }}"
+      `receipt-sha256` = "${{ steps.pack.outputs.receipt-sha256 }}"
+      `producer-attempt` = "${{ steps.pack.outputs.producer-attempt }}"
+    }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/01-full-source-cli/scripts"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      ci.rust("stable")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "test-scripts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Build vize CLI and SFC oracle with original receipts"
+        run = ci.workflowScript("build-vize-cli-and-sfc-oracle-with-original-receipts.sh")
+      }
+      new Dynamic {
+        name = "Pack original source binaries and receipt"
+        id = "pack"
+        run = #"node tools/support/compat/github/source-cli-artifact.ts pack "$RUNNER_TEMP/source-cli.tar.gz""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        with {
+          name = "source-cli-${{ github.run_id }}-${{ steps.pack.outputs.producer-attempt }}"
+          path = "${{ runner.temp }}/source-cli.tar.gz"
+          `if-no-files-found` = "error"
+          `compression-level` = 0
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

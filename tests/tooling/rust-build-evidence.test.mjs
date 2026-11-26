@@ -23,7 +23,7 @@ import {
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 // The source-plan job runs these commands before installing workspace dependencies.
-const workflowSource = readWorkflowShell("pr-rust-products");
+const workflowSource = readWorkflowShell("01-pr-rust-products");
 function workflowStep(name) {
   const marker = `      - name: ${name}\n`;
   const start = workflowSource.indexOf(marker);
@@ -170,7 +170,7 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
         ...process.env,
         PATH: `${bin}:${dirname(process.execPath)}:${process.env.PATH}`,
         RUNNER_TEMP: directory,
-        VIZE_CI_FILES: join(root, ".github/scripts/workflows/pr-rust-products"),
+        VIZE_CI_FILES: join(root, "tools/ci/workflows/01-pr-rust-products/scripts"),
         RUST_PLAN_JSON: JSON.stringify(plan),
         NEXTEST_PROFILE: "pr",
         NEXTEST_FILTER: "package(=vize_l0)",

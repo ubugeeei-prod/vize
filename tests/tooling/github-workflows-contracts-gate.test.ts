@@ -32,8 +32,8 @@ type Workflow = {
     }
   >;
 };
-const check = parse(readRepoFile(".github/workflows/check.yml")) as Workflow;
-const source = parse(readRepoFile(".github/workflows/pr-source-checks.yml")) as Workflow;
+const check = parse(readRepoFile(".github/workflows/01-check.yml")) as Workflow;
+const source = parse(readRepoFile(".github/workflows/01-pr-source.yml")) as Workflow;
 const topPrior = [
   "iteration-plan",
   "fmt-rust",
@@ -64,7 +64,7 @@ test("retiring the WIT lane preserves the required source report and existing Ch
     name: "PR source checks",
     permissions: { contents: "read", actions: "read", checks: "read", "pull-requests": "read" },
     if: "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
-    uses: "./.github/workflows/pr-source-checks.yml",
+    uses: "./.github/workflows/01-pr-source.yml",
   });
   assert.deepEqual(source.on, { workflow_call: null });
   assert.equal(Object.hasOwn(source.jobs, "wit-contracts"), false);

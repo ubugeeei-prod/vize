@@ -1,0 +1,330 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Seed PR Rust target"
+// Trusted writer of the sticky disks that PR and merge-queue Rust jobs mount
+// read-only. `nextest-ci` repeats a workspace-scope PR's and the queue
+// producer's exact toolchain, linker, package list and Cargo commands;
+// `clippy-test` repeats the queue's differential feature recipe. A candidate
+// clone then only rebuilds what its change touches.
+on {
+  push {
+    branches = List("main")
+    paths = new Listing {
+      "Cargo.toml"
+      "Cargo.lock"
+      "rust-toolchain.toml"
+      ".cargo/**"
+      "crates/**"
+      "davinci/**"
+      "upstream/forks/**"
+      "tools/benchmarks/crates/**"
+      "tests/davinci_test_support/**"
+      "tests/vize_test_runner/**"
+      ".github/actions/setup-rust-sticky-cache/**"
+      ".github/actions/reuse-rust-target/**"
+      ".github/actions/cache-vp-bootstrap/**"
+      ".github/workflows/01-rust-target-seed.yml"
+      "tools/ci/workflows/01-rust-target-seed/scripts/**"
+      "package.json"
+      "pnpm-lock.yaml"
+    }
+  }
+  // Daily 02:41 UTC, ahead of the full Check run.
+  schedule = new Listing {
+    new Dynamic { cron = "41 2 * * *" }
+  }
+}
+// A newer push replaces a waiting seed but never a running one: a seed that is
+// cancelled on every merge would leave the disks stale during a merge train.
+concurrency {
+  group = "${{ github.workflow }}-${{ github.ref }}"
+  `cancel-in-progress` = false
+}
+permissions { contents = "read" }
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `rust-pr-target-seed` {
+    name = "Seed PR Rust target"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/01-rust-target-seed/scripts"
+      CARGO_BUILD_JOBS = "24"
+      VIZE_TEST_DISABLE_TSGO = "1"
+      VIZE_NUXT_CONFIG_ITERATIONS = "100"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          components = "clippy"
+          toolchain = "1.100.0"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nextest-ci"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Plan every PR Rust crate"
+        run = #"node tools/support/compat/github/plan-affected-rust.ts "$GITHUB_SHA" "$GITHUB_SHA" merge_group "$RUNNER_TEMP/rust-plan.json""#
+      }
+      new Dynamic {
+        name = "Clippy every PR Rust crate"
+        run = #"node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports"#
+      }
+      new Dynamic {
+        name = "Build every PR Rust test binary"
+        run = #"node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --no-run"#
+      }
+      new Dynamic {
+        name = "Build the merge-queue workspace producer"
+        // The queue runs these two builds over the whole workspace.
+        run = ci.workflowScript("build-the-merge-queue-workspace-producer.sh")
+      }
+      new Dynamic {
+        name = "Build the PR feature lanes"
+        run = ci.workflowScript("build-the-pr-feature-lanes.sh")
+      }
+      new Dynamic {
+        name = "Seed native Program and Vue navigation"
+        uses = "./.github/actions/test-native-navigation"
+      }
+    }
+  }
+
+  `wasm-check-target-seed` {
+    name = "Seed WASM release check target"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env { CARGO_BUILD_JOBS = "24" }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.use("./.github/actions/check-wasm-release")
+    }
+  }
+
+  // No trusted run wrote this disk before, so every queue candidate compiled the
+  // differential feature builds, and the producer its ci profile, from scratch.
+  `rust-differential-target-seed` {
+    name = "Seed merge-queue differential target"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    env {
+      CARGO_BUILD_JOBS = "24"
+      RUST_TEST_THREADS = "4"
+      VIZE_NUXT_CONFIG_ITERATIONS = "100"
+      VIZE_TEST_REQUIRE_TSGO = "1"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          components = "clippy"
+          toolchain = "1.100.0"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = true
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "clippy-test"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      ci.command("Install Pkl CLI", "npm install --global @pkl-community/pkl@0.27.2")
+      new Dynamic {
+        name = "Run the merge-queue differential recipe"
+        uses = "./.github/actions/test-rust-workspace-differential"
+        with { `workspace-already-tested` = "true" }
+      }
+    }
+  }
+
+  // PR JS package lanes, affected tooling workers and the source CLI producer
+  // mount these disks read-only. Only the daily Full run wrote them, so each PR
+  // rebuilt all 29 workspace crates; repeat their native builds on every push.
+  `js-native-target-seed` {
+    name = "Seed ${{ matrix.lane }} target"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    strategy {
+      `fail-fast` = false
+      matrix {
+        lane = List("js-packages", "tooling-worker", "source-cli")
+      }
+    }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/01-rust-target-seed/scripts"
+      NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = false
+        }
+      }
+      ci.rust("stable")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        `if` = "${{ matrix.lane == 'js-packages' }}"
+        with {
+          key = "test-js-packages"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        `if` = "${{ matrix.lane == 'tooling-worker' }}"
+        with {
+          key = "test-scripts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}-shard-1"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        `if` = "${{ matrix.lane == 'source-cli' }}"
+        with {
+          key = "test-scripts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Build the source CLI and SFC oracle like the producer"
+        `if` = "${{ matrix.lane == 'source-cli' }}"
+        run = ci.workflowScript("build-the-source-cli-and-sfc-oracle-like-the-producer.sh")
+      }
+      new Dynamic {
+        name = "Install native package dependencies"
+        `if` = "${{ matrix.lane != 'source-cli' }}"
+        run = "vp install --frozen-lockfile --prefer-offline --filter './npm/native...'"
+      }
+      new Dynamic {
+        name = "Build the debug addon like package tests and tooling workers"
+        `if` = "${{ matrix.lane != 'source-cli' }}"
+        run = "vp run --workspace-root build:native:test"
+      }
+      new Dynamic {
+        name = "Build the CI addon like UI conformance"
+        `if` = "${{ matrix.lane == 'js-packages' }}"
+        run = "vp run --filter './npm/native' build:ci"
+      }
+    }
+  }
+
+  // Writes the Node.js LTS and pinned pnpm that setup-vp would otherwise
+  // download on every fresh runner. Pull requests only restore this entry.
+  // This job is the only saver: the differential seed beside it must not
+  // reserve the same key.
+  `seed-vp-bootstrap` {
+    name = "Seed Vite+ runtime"
+    permissions {
+      contents = "read"
+      actions = "write"
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = "./.github/actions/cache-vp-bootstrap"
+        with { save = "true" }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = false
+          `run-install` = false
+        }
+      }
+    }
+  }
+
+  // The Linux x64 Rust workers and check-js restore this same dependency-store
+  // key, but never race to save it. Bootstrap runtime caching remains separate.
+  // Explicit latest preserves the old action's installer default; the new
+  // action otherwise auto-selects the project's Vite+ dependency version.
+  `seed-vp-dependencies` {
+    name = "Seed source workers' JS dependency store"
+    `if` = "github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'schedule')"
+    permissions {
+      contents = "read"
+      actions = "write"
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/01-rust-target-seed/scripts"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = true
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Require the source and runtime identity used by Rust workers"
+        run = ci.workflowScript("require-the-source-and-runtime-identity-used-by-rust-workers.sh")
+      }
+      new Dynamic {
+        name = "Validate the complete frozen dependency store before saving"
+        run = ci.workflowScript("validate-the-complete-frozen-dependency-store-before-saving.sh")
+      }
+    }
+  }
+}

@@ -76,11 +76,11 @@ const canonDeferred = [
   },
 ];
 type Step = { name?: string; run?: string; if?: string; with?: Record<string, string> };
-const workflow = parse(readAutomationPrograms(".github", "workflows", "pr-rust-products.yml")) as {
+const workflow = parse(readAutomationPrograms(".github", "workflows", "01-pr-rust-products.yml")) as {
   jobs: Record<string, { steps: Step[]; env: Record<string, string> }>;
 };
 const sourceWorkflow = parse(
-  readAutomationPrograms(".github", "workflows", "pr-rust-checks.yml"),
+  readAutomationPrograms(".github", "workflows", "01-pr-rust.yml"),
 ) as typeof workflow;
 
 test("only the present audited real-TSGO cases leave the PR default filter", () => {

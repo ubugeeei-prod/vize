@@ -18,7 +18,7 @@
  * variables, so no temporary branch has to edit `Cargo.toml`. The binaries
  * whose bytes ship are built with `--release`.
  *
- * Usage (Actions; see .github/workflows/shipped-profile-measure.yml):
+ * Usage (Actions; see .github/workflows/03-release-profile.yml):
  *   node tools/benchmarks/scripts/release-measure.ts --base <dir> --head <dir> --out <dir> [--no-twins]
  *   node tools/benchmarks/scripts/release-measure.ts --report <out-dir>
  */

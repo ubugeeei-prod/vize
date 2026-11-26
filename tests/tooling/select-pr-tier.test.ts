@@ -26,7 +26,7 @@ test("a PR runs affected checks and explicitly requests duplicate heavy qualific
     "playground/src/app.vue",
     "Cargo.lock",
     "pnpm-lock.yaml",
-    ".github/workflows/pr-js-checks.yml",
+    ".github/workflows/01-pr-js.yml",
     ".github/actions/setup-rust-sticky-cache/action.yml",
     "tools/support/compat/github/canonical-corpus-selection.mjs",
     "tests/davinci_test_support/src/corpus.rs",
@@ -56,7 +56,7 @@ test("other PRs and hotfixes leave the heavy lanes to the queue", () => {
 type Job = { if?: string; with?: Record<string, string>; outputs?: Record<string, string> };
 
 test("the three heavy lanes follow the tier and the report still checks every lane", () => {
-  const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
+  const source = parse(readRepoFile(".github", "workflows", "01-pr-source.yml")) as {
     jobs: Record<
       string,
       Job & { steps?: { id?: string; run?: string; env?: Record<string, string> }[] }
@@ -76,7 +76,7 @@ test("the three heavy lanes follow the tier and the report still checks every la
   );
   assert.equal(plan.outputs?.playground, "${{ steps.plan.outputs.playground }}");
   assert.equal(source.jobs["pr-js-packages"].with?.["run-original-project"], false);
-  const js = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml")) as {
+  const js = parse(readRepoFile(".github", "workflows", "01-pr-js.yml")) as {
     on: { workflow_call: { inputs: Record<string, { required: boolean; type: string }> } };
     jobs: Record<string, Job>;
   };

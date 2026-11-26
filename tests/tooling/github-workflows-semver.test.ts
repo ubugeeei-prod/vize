@@ -6,7 +6,7 @@ import { resolveSemverChangeMarker } from "../../tools/ci/commands/github/semver
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 test("release SemVer checks classify the exact candidate without push metadata", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = readRepoFile(".github", "workflows", "01-check.yml");
   const job = workflowJobBody(workflow, "semver-checks");
 
   assert.deepEqual(parse(workflow).jobs["semver-checks"].permissions, { contents: "read" });

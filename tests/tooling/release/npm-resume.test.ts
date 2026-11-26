@@ -64,7 +64,7 @@ test("npm resume accepts only a finished release run with its complete immutable
   }
 
   const wrong = valid();
-  wrong.run.workflowPath = ".github/workflows/check.yml";
+  wrong.run.workflowPath = ".github/workflows/01-check.yml";
   wrong.run.headSha = "b".repeat(40);
   wrong.artifactNames = ["npm-packages"];
   wrong.incompleteHigherPackages = ["@vizejs/native-win32-arm64-msvc@0.506.0"];

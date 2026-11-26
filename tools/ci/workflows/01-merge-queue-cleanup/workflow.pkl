@@ -1,0 +1,67 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Clean obsolete merge groups"
+local actionable = "${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.event == 'merge_group' }}"
+
+on {
+  workflow_run {
+    workflows = List("Check")
+    types = List("requested", "completed")
+  }
+  workflow_dispatch = null
+}
+concurrency {
+  // Skipped PR events must not cancel a manual or merge-group cleanup.
+  group = "cleanup-obsolete-merge-groups-\(actionable)"
+  `cancel-in-progress` = true
+}
+
+permissions { contents = "read" }
+
+jobs {
+  cleanup {
+    `if` = actionable
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    permissions {
+      contents = "read"
+      actions = "write"
+      `pull-requests` = "read"
+    }
+    // workflow_run has write authority: execute only trusted default-branch code.
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.repository.default_branch }}"
+          `persist-credentials` = false
+          `sparse-checkout-cone-mode` = false
+          `sparse-checkout` = """
+          /package.json
+          /tools/support/compat/github/cancel-obsolete-merge-groups.ts
+
+          """
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with { `node-version` = "24" }
+      }
+      new Dynamic {
+        name = "Cancel only superseded queue candidates"
+        run = "node tools/support/compat/github/cancel-obsolete-merge-groups.ts"
+        env { GH_TOKEN = "${{ github.token }}" }
+      }
+      new Dynamic {
+        name = "Retain cancellation evidence"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "obsolete-merge-groups-${{ github.run_id }}"
+          path = "${{ runner.temp }}/obsolete-merge-groups.json"
+          `if-no-files-found` = "ignore"
+        }
+      }
+    }
+  }
+}

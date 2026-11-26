@@ -15,7 +15,7 @@ with `--features legacy` (`[[test]] required-features`). The shipped
 dual-run without it would compare S2's rewrite against an inert Vue 3
 tree. The default workspace suite still pins the Vue 3 battery.
 `clippy-and-test` invokes the new target on the existing Test step
-line (`check.yml` line count unchanged).
+line (`01-check.yml` line count unchanged).
 
 `compare_with` carries the dialect. Vue 3 keeps calling `compare`
 (default `VueVersion::V3`). Vue 2 passes `VueVersion::V2` into both

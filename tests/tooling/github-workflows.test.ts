@@ -19,13 +19,13 @@ test("repo text helpers normalize line endings before workflow matching", () => 
 test("GitHub workflows opt JavaScript actions into Node 24", () => {
   for (const workflowName of [
     "11-docs-build.yml",
-    "check.yml",
+    "01-check.yml",
     "deploy-docs.yml",
     "11-miri.yml",
     "06-native-smoke.yml",
     "pkg-pr-new.yml",
     "release.yml",
-    "title-policy.yml",
+    "01-title-policy.yml",
     "03-tool-comparison.yml",
     "11-zizmor.yml",
   ]) {
@@ -39,7 +39,7 @@ test("GitHub workflows use the current cache action", () => {
     ".github/actions/setup-rust-sticky-cache/action.yml",
     ".github/workflows/03-source-comparison.yml",
     ".github/workflows/11-docs-build.yml",
-    ".github/workflows/check.yml",
+    ".github/workflows/01-check.yml",
     ".github/workflows/deploy-docs.yml",
     ".github/workflows/10-app-e2e.yml",
     ".github/workflows/11-miri.yml",
@@ -107,11 +107,11 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
 
   assert.deepEqual(violations, []);
 
-  const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
+  const checkWorkflow = readRepoFile(".github", "workflows", "01-check.yml");
   const nativeWorkflow = readRepoFile(".github", "workflows", "06-native-smoke.yml");
   const releasePlatforms = readRepoFile("tools", "support", "github", "release-platforms.ts");
 
-  // check.yml runs every job on the same Linux runner — we accept either the
+  // 01-check.yml runs every job on the same Linux runner — we accept either the
   // GitHub-hosted label or any Blacksmith Ubuntu SKU so changing vCPU size
   // (or temporarily reverting to GitHub-hosted) doesn't churn this test.
   assert.match(checkWorkflow, new RegExp(`runs-on:\\s*${hostedOrBlacksmith("ubuntu-24.04")}`));
@@ -179,7 +179,7 @@ test("GitHub workflow actions are pinned by full commit SHA", () => {
 });
 
 test("title policy workflow mutates only issue and PR metadata", () => {
-  const workflow = readRepoFile(".github", "workflows", "title-policy.yml");
+  const workflow = readRepoFile(".github", "workflows", "01-title-policy.yml");
   const job = workflowJobBody(workflow, "issue-pr-title-policy");
   const parsed = parse(workflow) as {
     jobs?: {
@@ -276,7 +276,7 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
   for (const relativePath of [
     ".github/workflows/03-source-comparison.yml",
     ".github/workflows/11-docs-build.yml",
-    ".github/workflows/check.yml",
+    ".github/workflows/01-check.yml",
     ".github/workflows/03-criterion.yml",
     // App E2E runs every row through the shared composite action.
     ".github/actions/app-e2e-row/action.yml",
@@ -284,7 +284,7 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
     ".github/workflows/03-tool-comparison.yml",
     // Release CLIs link with zig (GNU, at the glibc floor) or rust-lld (musl), never Wild.
     ".github/actions/build-release-native/action.yml",
-    ".github/workflows/full-source-cli.yml",
+    ".github/workflows/01-full-source-cli.yml",
   ]) {
     const file = readRepoFile(...relativePath.split("/"));
     assert.ok(
@@ -317,7 +317,7 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
 
   for (const workflowName of [
     "11-docs-build.yml",
-    "check.yml",
+    "01-check.yml",
     "03-criterion.yml",
     "11-fuzz.yml",
     "11-miri.yml",

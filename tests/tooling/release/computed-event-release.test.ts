@@ -257,7 +257,7 @@ test("unpublished, foreign, failed, incomplete or mismatched release facts refus
     [
       "wrong workflow",
       (f) => {
-        f.record("actions/runs/42").path = ".github/workflows/check.yml";
+        f.record("actions/runs/42").path = ".github/workflows/01-check.yml";
       },
     ],
     [

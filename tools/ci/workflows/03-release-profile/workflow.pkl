@@ -1,0 +1,129 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Shipped release-profile measure"
+
+// Dispatch-only measurement of the shipped release profile (fat LTO, one codegen
+// unit) for an exact base/head source pair: every level instruction row (stages,
+// formatter, SFC parsing) and the shipped `vize` CLI and `vize_vitrine` N-API
+// library bytes. Each side builds in a freshly emptied target as base, head,
+// base twin, head twin, all with SOURCE_DATE_EPOCH pinned to the base commit
+// time. The twins must reproduce their primary side's counts, sizes and bench
+// executable bytes exactly. The benches build through
+// [profile.ci-opt] with Cargo's profile environment
+// overrides, so no temporary branch edits Cargo.toml. Never on PRs or the queue.
+on {
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Exact base commit (40 hex characters)"
+        required = true
+        type = "string"
+      }
+      head_sha {
+        description = "Exact head commit (40 hex characters)"
+        required = true
+        type = "string"
+      }
+      twins {
+        description = "Also build and measure an independent A/A twin of each side"
+        required = false
+        ["default"] = true
+        type = "boolean"
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+concurrency {
+  group = "shipped-profile-measure-${{ inputs.base_sha }}-${{ inputs.head_sha }}"
+  `cancel-in-progress` = false
+}
+env {
+  CARGO_INCREMENTAL = "0"
+  CARGO_TERM_COLOR = "never"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  RUSTUP_TOOLCHAIN = "1.100.0"
+  BASE_SHA = "${{ inputs.base_sha }}"
+  HEAD_SHA = "${{ inputs.head_sha }}"
+}
+
+jobs {
+  measure {
+    name = "Release-profile instructions and sizes"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 360
+    steps = new Listing {
+      ...ci.stageWorkflow("03-release-profile")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "driver"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "base"
+          ref = "${{ inputs.base_sha }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "head"
+          ref = "${{ inputs.head_sha }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "driver/package.json"
+          `run-install` = false
+        }
+      }
+      ci.command("Validate the source pair", "node driver/tools/benchmarks/scripts/release-measure.ts --validate-inputs")
+      new Dynamic {
+        uses = "goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406"  // v2
+        with { version = "0.15.1" }
+      }
+      ci.use("./driver/.github/actions/setup-cargo-zigbuild")
+      ci.command("Install pinned Rust", "rustup toolchain install 1.100.0 --profile minimal --target x86_64-unknown-linux-gnu")
+      ci.command("Install Callgrind", ci.workflowScript("install-callgrind.sh"))
+      new Dynamic {
+        uses = "./driver/.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      ci.command("Test the report renderer", "node --test driver/tools/benchmarks/scripts/release-measure.test.ts")
+      new Dynamic {
+        name = "Measure base, head and twins"
+        env { TWINS = "${{ inputs.twins }}" }
+        run = "node driver/tools/benchmarks/scripts/release-measure.ts --actions"
+      }
+      new Dynamic {
+        name = "Publish the report"
+        `if` = "always()"
+        run = #"node driver/tools/benchmarks/scripts/release-measure.ts --publish "$RUNNER_TEMP/release-measure/out""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "release-measure-${{ github.run_id }}"
+          path = """
+          ${{ runner.temp }}/release-measure/out/summary.md
+          ${{ runner.temp }}/release-measure/out/pair.json
+          ${{ runner.temp }}/release-measure/out/*/side.json
+          ${{ runner.temp }}/release-measure/out/*/*/measurement/measurement.json
+
+          """
+          `if-no-files-found` = "warn"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

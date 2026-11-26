@@ -14,9 +14,9 @@ import { localImportInputs } from "../../tools/support/compat/github/plan-toolin
 const root = fileURLToPath(new URL("../../", import.meta.url));
 type Step = { uses?: string; run?: string; with?: Record<string, unknown> };
 const reports = [
-  [".github/workflows/pr-rust-products.yml", "rust-product-report"],
-  [".github/workflows/pr-rust-checks.yml", "rust-source-report"],
-  [".github/workflows/pr-source-checks.yml", "source-report"],
+  [".github/workflows/01-pr-rust-products.yml", "rust-product-report"],
+  [".github/workflows/01-pr-rust.yml", "rust-source-report"],
+  [".github/workflows/01-pr-source.yml", "source-report"],
 ] as const;
 
 for (const [file, id] of reports) {

@@ -23,14 +23,14 @@ type Job = {
   uses?: string;
 };
 type Workflow = { name: string; on?: Record<string, unknown>; jobs?: Record<string, Job> };
-const workflow = parse(readAutomationPrograms(".github", "workflows", "check.yml")) as Workflow;
+const workflow = parse(readAutomationPrograms(".github", "workflows", "01-check.yml")) as Workflow;
 const instructionWorkflow = parse(
-  readAutomationPrograms(".github", "workflows", "level-instruction-counts.yml"),
+  readAutomationPrograms(".github", "workflows", "03-instruction-counts.yml"),
 ) as Workflow;
 
 test("instruction ceilings are required in the queue and scheduled qualification", () => {
   const caller = workflow.jobs?.["instruction-counts"];
-  assert.equal(caller?.uses, "./.github/workflows/level-instruction-counts.yml");
+  assert.equal(caller?.uses, "./.github/workflows/03-instruction-counts.yml");
   assert.equal(caller?.["continue-on-error"], undefined);
   assert.equal(instructionWorkflow.jobs?.["instruction-counts"]?.["continue-on-error"], undefined);
   assert.equal(

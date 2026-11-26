@@ -84,7 +84,7 @@ test("wrong workflow/repo/branch/run/tag/manifest and producer ancestry are refu
       f.run.repository.full_name = "foreign/repo";
     },
     (f) => {
-      f.run.path = ".github/workflows/check.yml";
+      f.run.path = ".github/workflows/01-check.yml";
     },
     (f) => {
       f.run.head_branch = "feature";

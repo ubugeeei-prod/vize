@@ -28,10 +28,10 @@ type Action = { inputs: Record<string, { required?: boolean }>; runs: { steps: S
 const full = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
-const source = parse(readAutomationPrograms(".github", "workflows", "pr-source-checks.yml")) as {
+const source = parse(readAutomationPrograms(".github", "workflows", "01-pr-source.yml")) as {
   jobs: Record<string, Job>;
 };
-const producer = parse(readAutomationPrograms(".github", "workflows", "full-source-cli.yml")) as {
+const producer = parse(readAutomationPrograms(".github", "workflows", "01-full-source-cli.yml")) as {
   jobs: Record<string, Job>;
   on: { workflow_call: { outputs: Record<string, { value: string }> } };
 };
@@ -61,7 +61,7 @@ const alwaysFullCondition =
   "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}";
 
 void test("scheduled tooling owns the CLI producer without delaying independent PR source lanes", () => {
-  assert.equal(full.jobs["full-source-cli"].uses, "./.github/workflows/full-source-cli.yml");
+  assert.equal(full.jobs["full-source-cli"].uses, "./.github/workflows/01-full-source-cli.yml");
   assert.equal(full.jobs["full-source-cli"].if, fullCondition);
   assert.equal(full.jobs["tooling-plan"].if, fullCondition);
   assert.equal(

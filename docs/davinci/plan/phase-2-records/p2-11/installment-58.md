@@ -11,7 +11,7 @@ remains a separate hydrated fixture operation.
 
 The durable witnesses are:
 
-- [`check.yml`](../../../../../.github/workflows/check.yml)
+- [`01-check.yml`](../../../../../.github/workflows/01-check.yml)
   - runs `davinci_dom_corpus` explicitly after `cargo test --workspace`.
 - [`davinci-lowering-ci-lane.test.ts`](../../../../../tests/tooling/davinci-lowering-ci-lane.test.ts)
   - pins the check-job command and Cargo feature registration.

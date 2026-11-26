@@ -37,13 +37,13 @@ const fastEvents = ["pull_request", "merge_group", "push"];
 const selectors = [
   {
     name: "check",
-    file: ".github/workflows/check.yml",
+    file: ".github/workflows/01-check.yml",
     jobs: ["iteration-plan", "fmt-rust", "check-js", "security-audit", "node-engine-compat"],
     original: "0577d82da5d8cd83b109422085d84902edb51c0a0e45407f09301f54c9a1b451",
   },
   {
     name: "pr-source-checks",
-    file: ".github/workflows/pr-source-checks.yml",
+    file: ".github/workflows/01-pr-source.yml",
     jobs: ["pr-source-plan", "ci-selection-tests"],
     original: "8e0cd4235906c25bbe58bc670fd2689c070aacd7321d6b770764c11ecfcc41fb",
   },

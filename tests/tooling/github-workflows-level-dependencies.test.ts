@@ -19,7 +19,7 @@ type Job = {
   }>;
 };
 type Workflow = { jobs: Record<string, Job> };
-const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as Workflow;
+const workflow = parse(readRepoFile(".github", "workflows", "01-check.yml")) as Workflow;
 const dependencyWorkflow = parse(
   readRepoFile(".github", "workflows", "07-level-dependencies.yml"),
 ) as Workflow;

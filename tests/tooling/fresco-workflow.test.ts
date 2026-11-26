@@ -105,7 +105,7 @@ test("repeated Fresco measurements stay outside ordinary PR and queue checks", (
 });
 
 test("affected Fresco conformance keeps NAPI compilation, strict lints and consumer checks daily", () => {
-  const workflow = parse(readAutomationPrograms(".github", "workflows", "pr-js-checks.yml"));
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "01-pr-js.yml"));
   const job = workflow.jobs["pr-js-package-conformance"];
   const build = workflowStep(job, "Check Fresco native declarations and consumer types");
   const lint = workflowStep(job, "Lint Fresco NAPI call sites and test corpus");

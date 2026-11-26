@@ -211,7 +211,7 @@ test("lockfiles and shared benchmark infrastructure select the full inventory", 
 test("hosted fallback smoke-runs Criterion infrastructure-only changes", () => {
   const result = selectCriterionSuites({
     changedPaths: [
-      ".github/workflows/check.yml",
+      ".github/workflows/01-check.yml",
       ".github/workflows/03-criterion.yml",
       "tools/benchmarks/scripts/criterion-ab.ts",
       "crates/vize_canon/tests/tier_l_incremental/main.rs",

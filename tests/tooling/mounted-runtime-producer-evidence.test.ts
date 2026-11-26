@@ -288,7 +288,7 @@ function rustCaptureWiring(workflow: RustWorkflow) {
 }
 
 await test("the exact Rust invocation captures failures and uploads only attempt-qualified streams", () => {
-  const source = readAutomationPrograms(".github/workflows/pr-rust-products.yml");
+  const source = readAutomationPrograms(".github/workflows/01-pr-rust-products.yml");
   const workflow = parse(source) as RustWorkflow;
   rustCaptureWiring(workflow);
   const reformatted = stringify(workflow, { lineWidth: 0 });

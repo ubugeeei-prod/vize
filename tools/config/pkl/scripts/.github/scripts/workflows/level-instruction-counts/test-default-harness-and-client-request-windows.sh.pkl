@@ -1,8 +1,0 @@
-amends "../../../../../../../ci/lib/ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  module.command("cargo", List("test", "--locked", "-p", "davinci_harness", "--lib"))
-  module.command("cargo", List("test", "--locked", "-p", "davinci_harness", "--lib", "--features", "instruction-counts"))
-}

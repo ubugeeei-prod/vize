@@ -20,7 +20,7 @@ const workflow = parse(
   readFileSync(new URL("../../.github/workflows/03-ci-walltime.yml", import.meta.url), "utf8"),
 );
 const pullRequest = parse(
-  readFileSync(new URL("../../.github/workflows/pr-js-checks.yml", import.meta.url), "utf8"),
+  readFileSync(new URL("../../.github/workflows/01-pr-js.yml", import.meta.url), "utf8"),
 );
 const controller = "node npm/linter/oxlint/scripts/check-project-transport.mjs";
 const selector = new URL(

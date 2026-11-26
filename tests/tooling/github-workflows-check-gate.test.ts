@@ -287,7 +287,7 @@ test("full JS qualification retains independent native builds and strictly gates
   assert.equal(full.if, ALWAYS_FULL_ONLY);
   const fullJobs = ["full-qualification", "check-js", "instruction-counts"];
   assert.deepEqual(full.needs, fullJobs);
-  const callee = parse(readRepoFile(".github", "workflows", "full-qualification.yml")) as {
+  const callee = parse(readRepoFile(".github", "workflows", "01-full-qualification.yml")) as {
     jobs: Record<string, Job & { "continue-on-error"?: boolean }>;
   };
   for (const id of ["test-js-packages", "build-js-packages", "test-scripts", "full-source-cli"]) {

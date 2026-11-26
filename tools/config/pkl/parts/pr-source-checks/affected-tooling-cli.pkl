@@ -1,2 +1,0 @@
-name = "Affected tooling CLI"
-uses = "./.github/workflows/full-source-cli.yml"

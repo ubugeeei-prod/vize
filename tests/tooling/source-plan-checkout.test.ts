@@ -17,7 +17,7 @@ import { parse } from "yaml";
 import { readAutomationPrograms } from "./support/automation-source.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const workflow = parse(readAutomationPrograms(".github/workflows/pr-source-checks.yml"));
+const workflow = parse(readAutomationPrograms(".github/workflows/01-pr-source.yml"));
 const job = workflow.jobs["pr-source-plan"];
 const checkoutInputs = job.steps.find((step: { uses?: string }) =>
   step.uses?.startsWith("actions/checkout@"),

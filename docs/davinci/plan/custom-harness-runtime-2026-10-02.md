@@ -39,7 +39,7 @@ requires normal terse discovery to print one `CASE: test` line, ignored
 discovery to print nothing, and `CASE --nocapture --exact` to execute the
 actual case. Discovery must not enter a measured window.
 
-An ordinary PR uses `.github/workflows/pr-rust-checks.yml`:
+An ordinary PR uses `.github/workflows/01-pr-rust.yml`:
 
 1. `pr-rust-build`, **Build and archive affected Rust tests once**, includes
    the affected owning package in the source-bound archive.

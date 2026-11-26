@@ -109,7 +109,7 @@ void test("pull-request setup-vp restores the bootstrap runtime and does not ins
     }
   }
 
-  const seed = workflow(".github/workflows/rust-pr-target-seed.yml");
+  const seed = workflow(".github/workflows/01-rust-target-seed.yml");
   assert.deepEqual(Object.keys(seed.on).sort(), ["push", "schedule"]);
   const seedJob = seed.jobs["seed-vp-bootstrap"];
   assert.equal(seedJob.steps.at(-1).uses?.startsWith("voidzero-dev/setup-vp@"), true);
@@ -161,26 +161,26 @@ void test("both Musea callers restore the bootstrap runtime before their unchang
 
 const dependencyAction = "voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af";
 const dependencyConsumers = [
-  ["check.yml", "check-js"],
-  ["check.yml", "security-audit"],
-  ["check.yml", "node-engine-compat", "matrix"],
-  ["pr-js-checks.yml", "pr-js-package-tests"],
-  ["pr-js-checks.yml", "pr-oxlint-project-qualification"],
-  ["pr-js-checks.yml", "pr-js-package-conformance"],
-  ["pr-source-checks.yml", "pr-native-runtime"],
-  ["pr-source-checks.yml", "pr-playground-test"],
-  ["pr-rust-products.yml", "pr-rust-shard"],
-  ["pr-rust-differential.yml", "differential"],
-  ["rust-pr-target-seed.yml", "rust-differential-target-seed"],
+  ["01-check.yml", "check-js"],
+  ["01-check.yml", "security-audit"],
+  ["01-check.yml", "node-engine-compat", "matrix"],
+  ["01-pr-js.yml", "pr-js-package-tests"],
+  ["01-pr-js.yml", "pr-oxlint-project-qualification"],
+  ["01-pr-js.yml", "pr-js-package-conformance"],
+  ["01-pr-source.yml", "pr-native-runtime"],
+  ["01-pr-source.yml", "pr-playground-test"],
+  ["01-pr-rust-products.yml", "pr-rust-shard"],
+  ["01-pr-rust-differential.yml", "differential"],
+  ["01-rust-target-seed.yml", "rust-differential-target-seed"],
 ];
 
 const frontendConsumerRunners = new Map([
-  ["check.yml/check-js", "blacksmith-32vcpu-ubuntu-2404"],
+  ["01-check.yml/check-js", "blacksmith-32vcpu-ubuntu-2404"],
   // #6830: a planner-selected skip runs hosted; selected work keeps the maximum runner.
-  ["check.yml/security-audit", plannedRunner(plannedRunnerJobs["check.yml"]["security-audit"])],
+  ["01-check.yml/security-audit", plannedRunner(plannedRunnerJobs["01-check.yml"]["security-audit"])],
   [
-    "check.yml/node-engine-compat",
-    plannedRunner(plannedRunnerJobs["check.yml"]["node-engine-compat"]),
+    "01-check.yml/node-engine-compat",
+    plannedRunner(plannedRunnerJobs["01-check.yml"]["node-engine-compat"]),
   ],
 ]);
 
@@ -254,19 +254,19 @@ void test("Linux source consumers retain the same dependency identity without ca
 
 void test("frontend consumers use maximum Linux resources for all event modes", () => {
   assert.equal(frontendConsumerRunners.size, 3);
-  const job = workflow(".github/workflows/check.yml").jobs["check-js"];
+  const job = workflow(".github/workflows/01-check.yml").jobs["check-js"];
   assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
 });
 
 void test("one trusted main producer owns the selected Linux source dependency-store writes", () => {
-  const seed = workflow(".github/workflows/rust-pr-target-seed.yml");
+  const seed = workflow(".github/workflows/01-rust-target-seed.yml");
   const producer = seed.jobs["seed-vp-dependencies"];
   assert.deepEqual(Object.keys(seed.on).sort(), ["push", "schedule"]);
   assert.deepEqual(seed.on.push.branches, ["main"]);
   for (const file of [
     "package.json",
     "pnpm-lock.yaml",
-    ".github/workflows/rust-pr-target-seed.yml",
+    ".github/workflows/01-rust-target-seed.yml",
   ])
     assert.ok(seed.on.push.paths.includes(file), `producer must refresh after ${file}`);
   assert.equal(seed.concurrency["cancel-in-progress"], false);
@@ -305,7 +305,7 @@ void test("one trusted main producer owns the selected Linux source dependency-s
 
   const commands = producer.steps.map((step) => step.run ?? "").join("\n");
   const identity = workflowProgram(
-    "rust-pr-target-seed",
+    "01-rust-target-seed",
     commands,
     "require-the-source-and-runtime-identity-used-by-rust-workers.ts",
   );

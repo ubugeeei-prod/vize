@@ -17,7 +17,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const job = parse(readFileSync(join(root, ".github/workflows/check.yml"), "utf8")).jobs[
+const job = parse(readFileSync(join(root, ".github/workflows/01-check.yml"), "utf8")).jobs[
   "test-report"
 ];
 const checkoutInputs =

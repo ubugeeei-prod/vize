@@ -86,8 +86,8 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tools/support/compat/github/plan-source-checks.ts",
     "tools/benchmarks/scripts/vue-benchmarks-replay.ts",
     ".github/workflows/07-canonical-corpus.yml",
-    ".github/workflows/pr-source-checks.yml",
-    ".github/workflows/check.yml",
+    ".github/workflows/01-pr-source.yml",
+    ".github/workflows/01-check.yml",
     ".github/actions/setup-rust-script/action.yml",
     ".github/actions/setup-rust-sticky-cache/cache-policy.ts",
     "davinci/vize_l1/src/lib.rs",
@@ -158,9 +158,9 @@ await test("a required canonical execution cannot be skipped, failed or hidden b
 });
 
 await test("ordinary source and queue reports require the strict reusable execution", () => {
-  const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml"));
+  const source = parse(readRepoFile(".github", "workflows", "01-pr-source.yml"));
   const corpus = parse(readRepoFile(".github", "workflows", "07-canonical-corpus.yml"));
-  const matrix = parse(readRepoFile(".github", "workflows", "real-project-matrix.yml"));
+  const matrix = parse(readRepoFile(".github", "workflows", "01-real-project-matrix.yml"));
   const worker = corpus.jobs["canonical-observers"];
   assert.equal(corpus.jobs["davinci-dom-corpus"].needs, "canonical-observers");
   assert.equal(corpus.jobs["davinci-dom-corpus"].if, "${{ always() }}");
@@ -195,7 +195,7 @@ await test("ordinary source and queue reports require the strict reusable execut
     checks: "read",
   });
   assert.deepEqual(
-    parse(readRepoFile(".github", "workflows", "check.yml")).jobs["pr-source-checks"].permissions,
+    parse(readRepoFile(".github", "workflows", "01-check.yml")).jobs["pr-source-checks"].permissions,
     { contents: "read", actions: "read", checks: "read", "pull-requests": "read" },
   );
   assert.deepEqual(corpus.env, {

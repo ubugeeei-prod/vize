@@ -48,7 +48,7 @@ void test("source, fixture, build and manually loaded runtime inputs retain both
     "tests/tooling/support/davinci-mounted-trace.mjs",
     "tests/tooling/support/art-lint-source-binding.cjs",
     "tools/support/compat/github/native-setup-capture.mjs",
-    ".github/workflows/pr-source-checks.yml",
+    ".github/workflows/01-pr-source.yml",
     ".cargo/config.toml",
     "Cargo.toml",
     "Cargo.lock",

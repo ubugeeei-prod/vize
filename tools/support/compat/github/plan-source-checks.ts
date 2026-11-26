@@ -143,7 +143,7 @@ if (process.argv[1]?.endsWith("/plan-source-checks.ts")) {
     throw new Error("expected full base and head commit SHAs");
   }
   // A new branch or an unavailable predecessor gets both gates, never a pass.
-  const paths = /^0+$/.test(base) ? [".github/workflows/check.yml"] : changedPaths(base!, head!);
+  const paths = /^0+$/.test(base) ? [".github/workflows/01-check.yml"] : changedPaths(base!, head!);
   if (!["pull_request", "merge_group"].includes(eventName as string))
     throw new Error("invalid source planning context");
   const plan = paths.length

@@ -14,11 +14,11 @@ export const receiptExtensionSources = {
 export const receiptCallerPaths = [
   ".github/actions/check-computed-inlay/run.sh",
   ".github/actions/check-vue-parity/action.yml",
-  ".github/workflows/check.yml",
+  ".github/workflows/01-check.yml",
   ".github/workflows/lsp-current-baseline.yml",
   ".github/workflows/n8n-adoption.yml",
   ".github/workflows/nuxt3-module-build.yml",
-  ".github/workflows/pr-source-checks.yml",
+  ".github/workflows/01-pr-source.yml",
   "tests/_helpers/realworld-build-errors.ts",
   "tests/differential/compiler.mjs",
   "tests/differential/formatter-css-grouping.ts",

@@ -330,10 +330,10 @@ export function verifyDocsWasmConsumers(root) {
               qualificationActions.has(step.uses) &&
               source.has(qualificationActions.get(step.uses))) ||
             (step.uses === performanceRecoveryAction &&
-              file === ".github/workflows/pr-performance-observation.yml" &&
+              file === ".github/workflows/03-pr-performance.yml" &&
               job === "observe" &&
               source.has(".github/actions/setup-wild-http-recovery/action.yml")) ||
-            (file === ".github/workflows/shipped-profile-measure.yml" &&
+            (file === ".github/workflows/03-release-profile.yml" &&
               job === "measure" &&
               shippedMeasureActions.has(step.uses) &&
               source.has(shippedMeasureActions.get(step.uses))) ||

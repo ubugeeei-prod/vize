@@ -85,7 +85,7 @@ void test("the actual reader remains Node-only and Docs checks do not build the 
   assert.ok(japaneseReading.includes("node docs/scripts/verify-ja-editorial-render.ts"));
   assert.doesNotMatch(rendering, /verify-og-images/);
   assert.doesNotMatch(
-    readAutomationPrograms(join(root, ".github/workflows/pr-source-checks.yml")),
+    readAutomationPrograms(join(root, ".github/workflows/01-pr-source.yml")),
     /pr-source-cli|test:scripts:pr/,
   );
 });
@@ -179,7 +179,7 @@ void test("mixed product, workflow, native and shared contracts retain their act
     "npm/native/src/index.ts",
     "npm/cli/schemas/vize.config.schema.json",
     "docs/davinci/plan/budgets.toml",
-    ".github/workflows/pr-source-checks.yml",
+    ".github/workflows/01-pr-source.yml",
     ".github/actions/test-native-js-setup/action.yml",
     "Cargo.lock",
   ]) {

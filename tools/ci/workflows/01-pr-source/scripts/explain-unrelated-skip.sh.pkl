@@ -1,0 +1,7 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"echo 'No CI selection inputs changed.' >> "$GITHUB_STEP_SUMMARY""#
+}

@@ -28,7 +28,7 @@ const retained =
 const command =
   "node .github/actions/test-js-packages-with-history/native-fault-evidence.ts --ui-conformance";
 const workflow = parse(
-  readFileSync(new URL("../../.github/workflows/pr-js-checks.yml", import.meta.url), "utf8"),
+  readFileSync(new URL("../../.github/workflows/01-pr-js.yml", import.meta.url), "utf8"),
 ) as { jobs: Record<string, ConformanceJob> };
 const job = workflow.jobs["pr-js-package-conformance"];
 assert.ok(job);

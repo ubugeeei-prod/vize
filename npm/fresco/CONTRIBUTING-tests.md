@@ -9,7 +9,7 @@ quotes through literally, so quote glob arguments with double quotes
 
 ## CI lanes
 
-The Linux workspace gates (`check.yml`) run the Fresco JS check/build/test
+The Linux workspace gates (`01-check.yml`) run the Fresco JS check/build/test
 tasks and `cargo test --workspace` on every PR. In addition, the `fresco`
 workflow (`.github/workflows/10-fresco.yml`) re-runs the focused suites —
 `check`/`build`/`test` here plus `cargo test -p vize_fresco` — on Linux,

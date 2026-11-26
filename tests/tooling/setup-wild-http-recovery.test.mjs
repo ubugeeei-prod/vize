@@ -97,7 +97,7 @@ void test("Wild delegation is complementary for every unsupported host or input"
         }
 });
 void test("Core PR and merge gates use the recovery adapter", () => {
-  const pr = parse(readAutomationPrograms(".github/workflows/pr-source-checks.yml", "utf8"));
+  const pr = parse(readAutomationPrograms(".github/workflows/01-pr-source.yml", "utf8"));
   const local = "./.github/actions/setup-wild-http-recovery";
   assert.equal(pr.jobs["pr-playground-test"].steps.filter((s) => s.uses === local).length, 1);
   assert.deepEqual(
@@ -105,7 +105,7 @@ void test("Core PR and merge gates use the recovery adapter", () => {
     new Set(["pr-native-runtime", "pr-playground-test"]),
   );
   assert.deepEqual(jobsUsingAction(pr.jobs, upstream), []);
-  const js = parse(readAutomationPrograms(".github/workflows/pr-js-checks.yml", "utf8"));
+  const js = parse(readAutomationPrograms(".github/workflows/01-pr-js.yml", "utf8"));
   assert.deepEqual(
     jobsUsingAction(js.jobs, local),
     Object.keys(js.jobs).filter((name) => name !== "pr-oxlint-windows-json-config"),
@@ -128,7 +128,7 @@ void test("Core PR and merge gates use the recovery adapter", () => {
     undefined,
   );
   const instructions = parse(
-    readAutomationPrograms(".github/workflows/level-instruction-counts.yml", "utf8"),
+    readAutomationPrograms(".github/workflows/03-instruction-counts.yml", "utf8"),
   );
   assert.deepEqual(jobsUsingAction(instructions.jobs, local), ["instruction-counts", "sfc-parse"]);
   assert.deepEqual(jobsUsingAction(instructions.jobs, upstream), []);

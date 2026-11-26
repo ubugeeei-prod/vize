@@ -1,0 +1,36 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "PR JS package checks"
+// The package tests, the Oxlint project qualification and the Fresco and UI
+// conformance checks run as parallel jobs. 01-pr-source.yml gates on this
+// whole workflow through its `pr-js-packages` job.
+on {
+  workflow_call {
+    inputs {
+      `run-js` {
+        required = true
+        type = "boolean"
+      }
+      `run-original-project` {
+        required = true
+        type = "boolean"
+      }
+      `js-plan` {
+        type = "string"
+        required = false
+        ["default"] = #"{"matrix":{"group":["builders","ui","oxlint"]},"conformance":{"fresco":true,"ui":true}}"#
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `pr-js-package-tests` = import("jobs/pr-js-package-tests.pkl")
+  `pr-oxlint-project-qualification` = import("jobs/pr-oxlint-project-qualification.pkl")
+  `pr-oxlint-windows-json-config` = import("jobs/pr-oxlint-windows-json-config.pkl")
+  `pr-js-package-conformance` = import("jobs/pr-js-package-conformance.pkl")
+}

@@ -166,7 +166,7 @@ const workflow = (file: string) =>
   parse(readRepoFile(".github", "workflows", file)) as { jobs: Record<string, Job> };
 
 test("each test job names its case packet after itself and the report downloads them all", () => {
-  const consumer = workflow("check.yml").jobs["test-report"].steps.find(
+  const consumer = workflow("01-check.yml").jobs["test-report"].steps.find(
     (step) => step.id === "cases",
   );
   assert.deepEqual(consumer?.with, {
@@ -174,7 +174,7 @@ test("each test job names its case packet after itself and the report downloads 
     path: "${{ runner.temp }}/test-cases",
   });
 
-  const rust = workflow("pr-rust-products.yml").jobs["pr-rust-shard"];
+  const rust = workflow("01-pr-rust-products.yml").jobs["pr-rust-shard"];
   const record = rust.steps.find((step) => step.id === "cases");
   assert.equal(record?.env?.TEST_CASES_JOB, rust.name);
   assert.equal(rust.name, "Rust tests (${{ matrix.name }})");
@@ -189,7 +189,7 @@ test("each test job names its case packet after itself and the report downloads 
     "${{ runner.temp }}/test-cases-rust-${{ matrix.cohort }}.json",
   );
 
-  const tooling = workflow("pr-source-checks.yml").jobs["affected-tooling"];
+  const tooling = workflow("01-pr-source.yml").jobs["affected-tooling"];
   const action = tooling.steps.find(
     (step) => step.uses === "./.github/actions/test-affected-tooling",
   );
@@ -210,7 +210,7 @@ test("each test job names its case packet after itself and the report downloads 
   );
   assert.equal(upload.if, "${{ !cancelled() && steps.tests.outcome != 'skipped' }}");
 
-  const packages = workflow("pr-js-checks.yml").jobs["pr-js-package-tests"];
+  const packages = workflow("01-pr-js.yml").jobs["pr-js-package-tests"];
   const packageTests = packages.steps.find((step) => step.name === "Test JS package group");
   assert.equal(packageTests?.id, "tests");
   assert.equal(packageTests?.env?.TEST_CASES_JOB, packages.name);
@@ -255,7 +255,7 @@ test("each test job names its case packet after itself and the report downloads 
     packet: string,
     name: string,
   ) => {
-    const step = workflow("check.yml").jobs[job].steps.find(
+    const step = workflow("01-check.yml").jobs[job].steps.find(
       (candidate) => candidate.name === stepName,
     );
     assert.equal(step?.uses, "./.github/actions/test-small-node-cases");
@@ -291,14 +291,14 @@ test("each test job names its case packet after itself and the report downloads 
     "test-cases-${{ inputs.packet }}-${{ github.run_attempt }}",
   );
   assertNodeJob(
-    "pr-source-checks.yml",
+    "01-pr-source.yml",
     "ci-selection-tests",
     "Test CI selection when its inputs change",
     "test-cases-ci-selection.json",
     "test-cases-ci-selection-${{ github.run_attempt }}",
   );
 
-  const rustSource = workflow("pr-rust-checks.yml").jobs["pr-rust-build"];
+  const rustSource = workflow("01-pr-rust.yml").jobs["pr-rust-build"];
   assert.equal(rustSource.env?.VIZE_TEST_CASES, "test-cases-rust-source-${{ matrix.lane }}.json");
   const rustSourceUpload = rustSource.steps.find(
     (step) => step.name === "Upload Rust source test cases",
@@ -309,7 +309,7 @@ test("each test job names its case packet after itself and the report downloads 
   );
   assert.equal(rustSourceUpload?.with?.["if-no-files-found"], "error");
 
-  const differential = workflow("pr-rust-differential.yml").jobs.differential;
+  const differential = workflow("01-pr-rust-differential.yml").jobs.differential;
   assert.equal(
     differential.env?.VIZE_TEST_CASES,
     "test-cases-rust-differential-${{ matrix.lane }}.json",

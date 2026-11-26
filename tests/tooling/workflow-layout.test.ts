@@ -43,12 +43,12 @@ const approvedRunnerLabels = new Set([
 // They only read plans, gate `needs`, or publish reports: no Rust toolchain,
 // sticky disk or build cache.
 const hostedZeroComputeJobs: Readonly<Record<string, readonly string[]>> = {
-  "check.yml": ["iteration-plan", "test-report"],
+  "01-check.yml": ["iteration-plan", "test-report"],
   "01-rust-feature-tests.yml": ["rust-feature-plan"],
   "06-browser-oracles.yml": ["changes"],
-  "pr-rust-checks.yml": ["rust-source-report"],
-  "pr-rust-products.yml": ["rust-product-report"],
-  "pr-source-checks.yml": ["pr-source-plan", "affected-tooling-report", "source-report"],
+  "01-pr-rust.yml": ["rust-source-report"],
+  "01-pr-rust-products.yml": ["rust-product-report"],
+  "01-pr-source.yml": ["pr-source-plan", "affected-tooling-report", "source-report"],
 };
 const hostedZeroComputeRunner = "ubuntu-24.04";
 
@@ -177,10 +177,10 @@ test("only reviewed planner conditions may route a job to hosted Ubuntu", () => 
   const job = (runner: string) => `jobs:\n  security-audit:\n    runs-on: ${runner}\n`;
   const reviewed =
     "${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}";
-  assert.deepEqual(workflowRunnerLabels(job(reviewed), [], "check.yml"), [plannedBusyRunner]);
+  assert.deepEqual(workflowRunnerLabels(job(reviewed), [], "01-check.yml"), [plannedBusyRunner]);
   for (const [file, runner] of [
     ["other.yml", reviewed],
-    ["check.yml", reviewed.replace("dependencies", "engines")],
+    ["01-check.yml", reviewed.replace("dependencies", "engines")],
   ])
     assert.deepEqual(
       workflowRunnerLabels(job(runner), [], file).filter(

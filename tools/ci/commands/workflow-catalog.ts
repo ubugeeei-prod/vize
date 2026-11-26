@@ -101,12 +101,12 @@ const groups = [
 ] as const satisfies readonly WorkflowGroup[];
 
 const startHere = [
-  ["01", "check.yml", "Top-level required-check fan-out and final gate"],
-  ["02", "pr-source-checks.yml", "Source-change planner and affected qualification"],
-  ["03", "pr-rust-checks.yml", "Rust source checks and tooling shards"],
-  ["04", "pr-rust-products.yml", "Affected Rust product matrix"],
-  ["05", "pr-js-checks.yml", "Affected JavaScript package matrix"],
-  ["06", "full-qualification.yml", "Full-suite escalation path"],
+  ["01", "01-check.yml", "Top-level required-check fan-out and final gate"],
+  ["02", "01-pr-source.yml", "Source-change planner and affected qualification"],
+  ["03", "01-pr-rust.yml", "Rust source checks and tooling shards"],
+  ["04", "01-pr-rust-products.yml", "Affected Rust product matrix"],
+  ["05", "01-pr-js.yml", "Affected JavaScript package matrix"],
+  ["06", "01-full-qualification.yml", "Full-suite escalation path"],
   ["07", "03-tool-comparison.yml", "Published cross-tool benchmark pipeline"],
   ["08", "release.yml", "Protected release orchestration; do not casually edit"],
 ] as const;

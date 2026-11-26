@@ -11,7 +11,7 @@ export function retriedMatrixEvidence(template: "legacy" | "named" = "legacy") {
     run_attempt: 2,
     head_sha: headSha,
     head_branch: "release/v0.435.1",
-    path: ".github/workflows/real-project-matrix.yml",
+    path: ".github/workflows/01-real-project-matrix.yml",
     status: "completed",
     conclusion: "success",
     created_at: "2026-10-08T00:00:00Z",

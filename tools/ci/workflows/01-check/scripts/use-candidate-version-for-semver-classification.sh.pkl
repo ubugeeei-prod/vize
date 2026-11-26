@@ -1,0 +1,7 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #": > "$RUNNER_TEMP/semver-change-marker.txt""#
+}

@@ -1,9 +1,0 @@
-name = "PR source checks"
-permissions {
-  contents = "read"
-  actions = "read"
-  checks = "read"
-  `pull-requests` = "read"
-}
-`if` = "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}"
-uses = "./.github/workflows/pr-source-checks.yml"

@@ -70,7 +70,7 @@ test("every ignored advisory names why Vize is unaffected and what removes the w
 });
 
 test("the audit gate itself stays strict while advisories are waived", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = readRepoFile(".github", "workflows", "01-check.yml");
 
   assert.match(
     workflow,

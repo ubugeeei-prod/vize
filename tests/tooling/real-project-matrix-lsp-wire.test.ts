@@ -20,7 +20,7 @@ const prefix =
 test("passive native LSP capture retains the complete original Matrix workflow", () => {
   const original = parse(originalBytes);
   const current = parse(
-    restoreWorkflowNames(readAutomationPrograms(".github/workflows/real-project-matrix.yml")),
+    restoreWorkflowNames(readAutomationPrograms(".github/workflows/01-real-project-matrix.yml")),
   );
   // Core tools and the divergence report qualify Vize on the checker the LSP
   // step pins, never on a fixture's own declared native preview.

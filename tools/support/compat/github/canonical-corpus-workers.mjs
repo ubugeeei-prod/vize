@@ -258,7 +258,7 @@ export function selectCanonicalWorkers(context, run, jobs, artifacts) {
     "Unexpected canonical event",
   );
   assert(
-    [".github/workflows/check.yml", ".github/workflows/real-project-matrix.yml"].includes(run.path),
+    [".github/workflows/01-check.yml", ".github/workflows/01-real-project-matrix.yml"].includes(run.path),
     "Unexpected canonical caller",
   );
   assert.equal(run.repository?.full_name, repository, "Foreign canonical repository");

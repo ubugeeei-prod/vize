@@ -102,7 +102,7 @@ export function integrationIdentity(value: unknown) {
     .map(object)
     .filter((run) => run.head_sha === sha && run.event === "push" && run.head_branch === "main")
     .map((run) => {
-      same(run.path, ".github/workflows/check.yml", "delivery Check workflow mismatch");
+      same(run.path, ".github/workflows/01-check.yml", "delivery Check workflow mismatch");
       return {
         id: number(run.id),
         workflow_id: number(run.workflow_id),

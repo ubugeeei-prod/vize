@@ -26,13 +26,13 @@ type Job = {
   env?: Record<string, string>;
   strategy?: { matrix?: unknown };
 };
-const source = parse(readAutomationPrograms(".github", "workflows", "pr-source-checks.yml")) as {
+const source = parse(readAutomationPrograms(".github", "workflows", "01-pr-source.yml")) as {
   jobs: Record<string, Job>;
 };
 const check = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
-const jsChecks = parse(readAutomationPrograms(".github", "workflows", "pr-js-checks.yml")) as {
+const jsChecks = parse(readAutomationPrograms(".github", "workflows", "01-pr-js.yml")) as {
   jobs: Record<string, Job>;
 };
 const recipe = parse(
@@ -41,14 +41,14 @@ const recipe = parse(
   inputs: Record<string, { default: string }>;
   runs: { using: string; steps: Step[] };
 };
-const rust = parse(readAutomationPrograms(".github", "workflows", "pr-rust-checks.yml")) as {
+const rust = parse(readAutomationPrograms(".github", "workflows", "01-pr-rust.yml")) as {
   jobs: Record<string, Job>;
 };
 const products = parse(
-  readAutomationPrograms(".github/workflows/pr-rust-products.yml"),
+  readAutomationPrograms(".github/workflows/01-pr-rust-products.yml"),
 ) as typeof rust;
 const differential = parse(
-  readAutomationPrograms(".github", "workflows", "pr-rust-differential.yml"),
+  readAutomationPrograms(".github", "workflows", "01-pr-rust-differential.yml"),
 ) as {
   jobs: Record<string, Job>;
 };
@@ -114,8 +114,8 @@ test("queue scope reaches the planner and every selected source lane remains req
   ]) {
     assert.ok(check.jobs["test-report"].needs?.includes(required), `${required} remains mandatory`);
   }
-  assert.equal(check.jobs["pr-source-checks"].uses, "./.github/workflows/pr-source-checks.yml");
-  assert.equal(source.jobs["pr-js-packages"].uses, "./.github/workflows/pr-js-checks.yml");
+  assert.equal(check.jobs["pr-source-checks"].uses, "./.github/workflows/01-pr-source.yml");
+  assert.equal(source.jobs["pr-js-packages"].uses, "./.github/workflows/01-pr-js.yml");
   const jsCommands = Object.values(jsChecks.jobs).map(commands).join("\n");
   assert.match(jsCommands, /vp run --workspace-root "test:js:\$VIZE_JS_PACKAGE_GROUP"/);
   assert.match(jsCommands, /node npm\/linter\/oxlint\/scripts\/check-project-transport\.mjs/);
@@ -170,7 +170,7 @@ test("queue scope reaches the planner and every selected source lane remains req
   assert.notEqual(vrt["continue-on-error"], true);
 });
 test("queue Rust keeps affected doctests beside archive builds and the differential feature tail", () => {
-  assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/pr-rust-checks.yml");
+  assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/01-pr-rust.yml");
   assert.equal(source.jobs["pr-rust-source"].with?.["run-rust"], true);
   const build = rust.jobs["pr-rust-build"];
   assert.equal(build.needs, undefined, "Clippy and doctests must start beside the test archive");
@@ -210,7 +210,7 @@ test("queue Rust keeps affected doctests beside archive builds and the different
   assert.equal(rust.jobs["merge-rust-differential"].needs, undefined);
   assert.equal(
     rust.jobs["merge-rust-differential"].uses,
-    "./.github/workflows/pr-rust-differential.yml",
+    "./.github/workflows/01-pr-rust-differential.yml",
   );
   const manual = check.jobs["rust-native-differential"].steps?.find((step) => step.name === "Test");
   assert.equal(manual?.uses, actionPath);

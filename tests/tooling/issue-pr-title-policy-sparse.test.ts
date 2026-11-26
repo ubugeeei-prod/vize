@@ -8,7 +8,7 @@ import { patchTitleCall, repoRoot, runPolicy } from "./support/title-policy.ts";
 
 test("the real sparse checkout can execute the title policy with stable Node alone", () => {
   const workflow = parseYaml(
-    readFileSync(join(repoRoot, ".github/workflows/title-policy.yml"), "utf8"),
+    readFileSync(join(repoRoot, ".github/workflows/01-title-policy.yml"), "utf8"),
   ) as {
     jobs: Record<string, { steps: Array<{ uses?: string; with?: Record<string, string> }> }>;
   };

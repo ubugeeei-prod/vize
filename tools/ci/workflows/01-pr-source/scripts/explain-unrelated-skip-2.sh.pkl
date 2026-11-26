@@ -1,0 +1,7 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"echo 'No native runtime inputs changed.' >> "$GITHUB_STEP_SUMMARY""#
+}

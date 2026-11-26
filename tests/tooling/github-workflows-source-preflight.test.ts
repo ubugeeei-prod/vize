@@ -20,7 +20,7 @@ interface Job {
   readonly needs?: readonly string[] | string;
   readonly steps?: readonly Step[];
 }
-const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
+const source = parse(readRepoFile(".github", "workflows", "01-pr-source.yml")) as {
   jobs: Record<string, Job>;
 };
 
@@ -100,8 +100,8 @@ test("full checks retain required inventory preflights and exhaustive tooling be
   assert.equal(action.runs.steps[0].run, "node tools/support/compat/davinci/source-inventories.ts");
   assert.equal(action.runs.steps[0]["continue-on-error"], undefined);
 
-  assert.equal(check.jobs["full-source-cli"].uses, "./.github/workflows/full-source-cli.yml");
-  assert.equal(check.jobs["tooling-plan"].uses, "./.github/workflows/full-tooling-plan.yml");
+  assert.equal(check.jobs["full-source-cli"].uses, "./.github/workflows/01-full-source-cli.yml");
+  assert.equal(check.jobs["tooling-plan"].uses, "./.github/workflows/01-full-tooling-plan.yml");
   assert.deepEqual(check.jobs["test-scripts"].needs, ["full-source-cli", "tooling-plan"]);
   assert.ok(
     check.jobs["test-scripts"].steps?.some(

@@ -28,10 +28,10 @@ type Job = {
   with?: Record<string, string>;
   "continue-on-error"?: boolean;
 };
-const source = parse(readAutomationPrograms(".github", "workflows", "pr-source-checks.yml")) as {
+const source = parse(readAutomationPrograms(".github", "workflows", "01-pr-source.yml")) as {
   jobs: Record<string, Job>;
 };
-const rust = parse(readAutomationPrograms(".github", "workflows", "pr-rust-checks.yml")) as {
+const rust = parse(readAutomationPrograms(".github", "workflows", "01-pr-rust.yml")) as {
   jobs: Record<string, Job>;
   on: {
     workflow_call: {
@@ -39,7 +39,7 @@ const rust = parse(readAutomationPrograms(".github", "workflows", "pr-rust-check
     };
   };
 };
-const products = parse(readAutomationPrograms(".github", "workflows", "pr-rust-products.yml")) as {
+const products = parse(readAutomationPrograms(".github", "workflows", "01-pr-rust-products.yml")) as {
   jobs: Record<string, Job>;
   on: {
     workflow_call: {
@@ -99,7 +99,7 @@ test("source planning uses Node and offline metadata before selecting affected p
     ciSelection?.run,
     'node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./tools/support/compat/github/test-case-reporter.ts --test-reporter-destination="$RUNNER_TEMP/test-cases-ci-selection.json" tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-build-evidence.test.mjs tests/tooling/pinned-fixture-hydration.test.ts tests/tooling/native-preparation-identity.test.ts tests/tooling/native-formatter-build-custody.test.mjs tests/tooling/native-ci-formatter-custody.test.mjs tests/tooling/native-history-profile.test.ts tests/tooling/native-history-toolchain.test.ts tests/tooling/publish-npm-package*.test.ts tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts',
   );
-  const check = parse(readAutomationPrograms(".github", "workflows", "check.yml")) as typeof source;
+  const check = parse(readAutomationPrograms(".github", "workflows", "01-check.yml")) as typeof source;
   const js = check.jobs["check-js"].steps ?? [];
   const install = js.findIndex((step) => step.name === "Install JS dependencies");
   const fast = js.findIndex((step) => step.name === "Check fast JS/TS");
@@ -264,7 +264,7 @@ test("the Rust report waits for the builder and every named test cohort", () => 
     "run-install": false,
   });
   assert.equal(gate, reportSteps.length - 1, "no worker selection follows the tier gate");
-  const check = parse(readAutomationPrograms(".github", "workflows", "check.yml"));
+  const check = parse(readAutomationPrograms(".github", "workflows", "01-check.yml"));
   assert.deepEqual(check.jobs["pr-source-checks"].permissions, {
     contents: "read",
     actions: "read",
@@ -363,7 +363,7 @@ test("existing source CLI producer qualifies every formatter semantic case with 
   const action = parse(
     readAutomationPrograms(".github/actions/test-native-lsp/action.yml"),
   ) as Action;
-  const check = parse(readAutomationPrograms(".github", "workflows", "check.yml")) as typeof source;
+  const check = parse(readAutomationPrograms(".github", "workflows", "01-check.yml")) as typeof source;
   const requireReplay = (flow: typeof source, producer: typeof action, outer: typeof check) => {
     const job = flow.jobs["pr-native-runtime"];
     const steps = job.steps ?? [];
@@ -416,12 +416,12 @@ test("existing source CLI producer qualifies every formatter semantic case with 
     assert.equal(job["continue-on-error"], undefined);
     assert.equal(job.needs, "pr-source-plan");
     assert.ok(flow.jobs["source-report"].needs?.includes("pr-native-runtime"));
-    assert.equal(outer.jobs["pr-source-checks"].uses, "./.github/workflows/pr-source-checks.yml");
+    assert.equal(outer.jobs["pr-source-checks"].uses, "./.github/workflows/01-pr-source.yml");
     assert.ok(outer.jobs["test-report"].needs?.includes("pr-source-checks"));
   };
   requireReplay(source, action, check);
   for (const path of [
-    ".github/workflows/pr-source-checks.yml",
+    ".github/workflows/01-pr-source.yml",
     "tests/tooling/formatter-expression-width-semantics.test.mjs",
     "tests/tooling/formatter-continuation-prefix-width.test.mjs",
     "tests/tooling/support/formatter-expression-width-semantics.mjs",

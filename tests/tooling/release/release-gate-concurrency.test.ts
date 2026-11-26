@@ -13,7 +13,7 @@ type Workflow = {
 
 const exactShaGates = [
   [
-    "check.yml",
+    "01-check.yml",
     "check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('full-{0}', github.sha) || (github.event.pull_request.number || github.ref) }}",
   ],
   ["11-miri.yml", "miri-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}"],

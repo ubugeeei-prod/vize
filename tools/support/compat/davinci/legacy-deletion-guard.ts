@@ -3,7 +3,7 @@ import { pathToFileURL } from "node:url";
 
 const legacyManifest =
   /^crates\/(?:vize_armature|vize_relief|vize_croquis(?:_cf)?|vize_atelier_[^/]+)\/Cargo\.toml$/;
-const auditWorkflow = ".github/workflows/level-deletion-readiness.yml";
+const auditWorkflow = ".github/workflows/07-level-deletion-readiness.yml";
 const shaPattern = /^[0-9a-f]{40}$/;
 
 interface LegacyRouteWitness {
@@ -113,7 +113,7 @@ function ensureCommit(sha: string): void {
 
 function successfulAuditAt(repository: string, sha: string): boolean {
   const query =
-    `repos/${repository}/actions/workflows/level-deletion-readiness.yml/runs` +
+    `repos/${repository}/actions/workflows/07-level-deletion-readiness.yml/runs` +
     `?event=workflow_dispatch&head_sha=${sha}&status=success&per_page=100`;
   const response: unknown = JSON.parse(command("gh", ["api", query]));
   return hasExactSuccessfulAudit(response, sha);

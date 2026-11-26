@@ -342,7 +342,7 @@ await test("scheduled and manual qualification never select away checks", () => 
 
 await test("changing selector and task definitions exercises every affected consumer", () => {
   for (const path of [
-    ".github/workflows/check.yml",
+    ".github/workflows/01-check.yml",
     "tools/support/compat/github/plan-check-inputs.ts",
     "tools/support/github/opinionated-source-inputs.ts",
     "tools/config/vite-plus/tasks/check.ts",

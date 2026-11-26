@@ -11,7 +11,7 @@ import { vueParityAction } from "./support/check-vue-parity-action.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 test("the full typecheck divergence ratchet runs on schedule and dispatch", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = readRepoFile(".github", "workflows", "01-check.yml");
 
   const events = (parse(workflow) as { on: Record<string, unknown> }).on;
   assert.deepEqual(events.pull_request, {}, "stacked PRs must keep the normal Check entry");
@@ -24,7 +24,7 @@ test("the full typecheck divergence ratchet runs on schedule and dispatch", () =
 });
 
 test("Vue parity structurally gates compiler fixtures and incremental LSP behavior", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const workflow = readRepoFile(".github", "workflows", "01-check.yml");
   const job = workflowJobBody(workflow, "vue-parity");
   const action = vueParityAction();
   const testsPackage = JSON.parse(readRepoFile("tests", "package.json"));

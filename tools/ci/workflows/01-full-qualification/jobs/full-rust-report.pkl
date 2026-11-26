@@ -1,0 +1,54 @@
+import "../../../lib/Actions.pkl" as ci
+
+name = "full-rust-report"
+`runs-on` = ci.linux
+`timeout-minutes` = 5
+`if` = "${{ always() && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+needs = List("full-rust-workspace", "clippy-and-test")
+steps = new Listing {
+  ci.use(ci.checkout)
+  new Dynamic {
+    uses = ci.setupNode
+    with {
+      `node-version-file` = "package.json"
+      `package-manager-cache` = false
+    }
+  }
+  new Dynamic {
+    name = "Require workspace and native differential jobs"
+    env { NEEDS_JSON = "${{ toJSON(needs) }}" }
+    run = "node tools/support/compat/github/require-needs-success.ts"
+  }
+  new Dynamic {
+    uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+    // A failed-job rerun can retain this successful producer. Its output
+    // binds the actual attempt that wrote the immutable workspace artifact.
+    with {
+      name = "rust-full-workspace-${{ github.sha }}-${{ needs.full-rust-workspace.outputs.producer-attempt }}"
+      path = ".artifacts/rust-full-workspace"
+    }
+  }
+  new Dynamic {
+    name = "Require the requested same-source test and ci inventories"
+    `if` = "${{ github.event_name == 'workflow_dispatch' && inputs.compare-rust-test-profile }}"
+    env { PRODUCER_ATTEMPT = "${{ needs.full-rust-workspace.outputs.producer-attempt }}" }
+    run = #"node tools/support/compat/github/rust-workspace-inventory.ts compare .artifacts/rust-full-workspace/workspace-inventory-test.json .artifacts/rust-full-workspace/workspace-inventory-ci.json "$PRODUCER_ATTEMPT""#
+  }
+  new Dynamic {
+    name = "Verify complete same-head workspace execution"
+    env {
+      SOURCE_SHA = "${{ github.sha }}"
+      NEEDS_JSON = "${{ toJSON(needs) }}"
+      PRODUCER_ATTEMPT = "${{ needs.full-rust-workspace.outputs.producer-attempt }}"
+    }
+    run = #"node tools/support/compat/github/rust-workspace-inventory.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace "$PRODUCER_ATTEMPT""#
+  }
+  new Dynamic {
+    name = "Require real workspace typechecker and TS40 observations"
+    env {
+      SOURCE_SHA = "${{ github.sha }}"
+      PRODUCER_ATTEMPT = "${{ needs.full-rust-workspace.outputs.producer-attempt }}"
+    }
+    run = #"node tests/differential/typechecker-workspace.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace "$GITHUB_RUN_ID" "$PRODUCER_ATTEMPT""#
+  }
+}

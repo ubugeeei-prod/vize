@@ -11,7 +11,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 // (Davinci P4-9a). The matrix-plane half and the hand-computed pins ride
 // `cargo test --workspace` in clippy-and-test; this gate runs the corpus
 // half in the test-scripts job over exactly the submodules that job
-// already hydrates (check.yml, "Hydrate CLI diagnostic fixture"), the
+// already hydrates (01-check.yml, "Hydrate CLI diagnostic fixture"), the
 // metamorphic lane's shard. The full-corpus recipe — and the distribution
 // the metric spec pins its thresholds from — is the same env var pointed at
 // tests/_fixtures/_git (docs/davinci/plan/complexity-metrics.md).

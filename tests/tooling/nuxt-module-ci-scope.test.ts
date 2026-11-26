@@ -71,8 +71,8 @@ test("main and merge candidates retain source-built Nuxt 3 SSR, hydration and na
 test("merge, main and manual runs retain every extended campaign and source receipt", () => {
   assert.ok(Object.hasOwn(workflow.on, "workflow_call"));
   assert.equal(Object.hasOwn(workflow.on, "merge_group"), false, "one required reusable execution");
-  const source = parse(readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"));
-  const check = parse(readAutomationPrograms(".github", "workflows", "check.yml"));
+  const source = parse(readAutomationPrograms(".github", "workflows", "01-pr-source.yml"));
+  const check = parse(readAutomationPrograms(".github", "workflows", "01-check.yml"));
   assert.deepEqual(source.jobs["nuxt-module-qualification"], {
     name: "Nuxt and Vite release products",
     if: "${{ github.event_name == 'merge_group' }}",
@@ -162,7 +162,7 @@ test("the required integration product edge closes every supported Nuxt and Vite
     );
   }
 
-  const full = parse(readAutomationPrograms(".github", "workflows", "full-qualification.yml"));
+  const full = parse(readAutomationPrograms(".github", "workflows", "01-full-qualification.yml"));
   assert.deepEqual(full.jobs["nuxt-module-qualification"], {
     name: "Nuxt and Vite release products",
     uses: "./.github/workflows/08-nuxt-vite-products.yml",

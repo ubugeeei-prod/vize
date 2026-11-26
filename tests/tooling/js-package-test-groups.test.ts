@@ -45,7 +45,7 @@ type Job = {
   needs?: string[];
 };
 
-const jsChecks = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml")) as {
+const jsChecks = parse(readRepoFile(".github", "workflows", "01-pr-js.yml")) as {
   jobs: Record<string, Job>;
 };
 const check = parse(checkWorkflowJobSources()) as {
@@ -293,7 +293,7 @@ void test("PR CI runs each affected group once and keeps qualification and confo
   const cacheKey = (job: Job | undefined) =>
     job?.steps?.find((step) => step.uses === "./.github/actions/setup-rust-sticky-cache")?.with
       ?.key;
-  // Trusted check.yml jobs write these roles with the same native builds.
+  // Trusted 01-check.yml jobs write these roles with the same native builds.
   assert.equal(cacheKey(jsChecks.jobs["pr-js-package-tests"]), "test-js-packages");
   assert.equal(cacheKey(jsChecks.jobs["pr-oxlint-project-qualification"]), "test-js-packages");
   assert.equal(cacheKey(jsChecks.jobs["pr-js-package-conformance"]), "build-js-packages");

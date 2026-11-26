@@ -106,7 +106,7 @@ const run = {
   head_sha: job.head_sha,
   check_suite_id: retainedCheck.check_suite.id,
   event: context.event,
-  path: ".github/workflows/check.yml",
+  path: ".github/workflows/01-check.yml",
   repository: { id: context.repositoryId, full_name: context.repository },
   head_repository: { id: context.providerRepositoryId },
 };

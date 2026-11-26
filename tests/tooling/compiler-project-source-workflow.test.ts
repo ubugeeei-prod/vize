@@ -12,7 +12,7 @@ import { planAffectedJs } from "../../tools/support/compat/github/plan-affected-
 import { planToolingTests } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const workflowPath = ".github/workflows/pr-js-checks.yml";
+const workflowPath = ".github/workflows/01-pr-js.yml";
 const driver = "tests/native/imported-type-project-stats.ts";
 const testPath = "tests/tooling/compiler-project-source-workflow.test.ts";
 const proofName = "Verify imported type projects with the built native image";
@@ -68,7 +68,7 @@ test("failed or cancelled source project execution retains raw receipts in the e
   assert.equal(upload["continue-on-error"], undefined);
   assert.ok(steps.indexOf(upload) > steps.indexOf(required(proofName)));
   const source = parse(
-    readAutomationPrograms(path.join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
+    readAutomationPrograms(path.join(root, ".github/workflows/01-pr-source.yml"), "utf8"),
   ) as Workflow;
   assert.ok(source.jobs["source-report"]!.needs?.includes("pr-js-packages"));
 });

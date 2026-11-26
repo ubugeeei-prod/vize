@@ -1,0 +1,12 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  echo "selected=$SELECTED cli=$CLI workers=$WORKERS"
+  [[ "$CLI" == success ]]
+  if [[ "$SELECTED" == true ]]; then [[ "$WORKERS" == success ]]
+  else [[ "$SELECTED" == false && "$WORKERS" == skipped ]]; fi
+  """#
+}

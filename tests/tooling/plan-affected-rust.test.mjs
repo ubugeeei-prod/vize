@@ -69,7 +69,7 @@ void test("global inputs, shared corpora, deleted crates and unknown paths valid
     "Cargo.lock",
     ".cargo/config.toml",
     "rust-toolchain.toml",
-    ".github/workflows/check.yml",
+    ".github/workflows/01-check.yml",
     ".config/nextest.toml",
     "tests/_fixtures/template.vue",
     "tests/expected/template.snap",

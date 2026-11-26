@@ -12,16 +12,16 @@ Read the orchestration files first, then follow the reusable workflows they call
 Release and trusted-publishing files are listed for navigation, but remain protected
 surfaces and are not routine CI-refactor targets.
 
-| Step | File                                                 | Why read it                                           |
-| ---- | ---------------------------------------------------- | ----------------------------------------------------- |
-| 01   | [`check.yml`](./check.yml)                           | Top-level required-check fan-out and final gate       |
-| 02   | [`pr-source-checks.yml`](./pr-source-checks.yml)     | Source-change planner and affected qualification      |
-| 03   | [`pr-rust-checks.yml`](./pr-rust-checks.yml)         | Rust source checks and tooling shards                 |
-| 04   | [`pr-rust-products.yml`](./pr-rust-products.yml)     | Affected Rust product matrix                          |
-| 05   | [`pr-js-checks.yml`](./pr-js-checks.yml)             | Affected JavaScript package matrix                    |
-| 06   | [`full-qualification.yml`](./full-qualification.yml) | Full-suite escalation path                            |
-| 07   | [`03-tool-comparison.yml`](./03-tool-comparison.yml) | Published cross-tool benchmark pipeline               |
-| 08   | [`release.yml`](./release.yml)                       | Protected release orchestration; do not casually edit |
+| Step | File                                                       | Why read it                                           |
+| ---- | ---------------------------------------------------------- | ----------------------------------------------------- |
+| 01   | [`01-check.yml`](./01-check.yml)                           | Top-level required-check fan-out and final gate       |
+| 02   | [`01-pr-source.yml`](./01-pr-source.yml)                   | Source-change planner and affected qualification      |
+| 03   | [`01-pr-rust.yml`](./01-pr-rust.yml)                       | Rust source checks and tooling shards                 |
+| 04   | [`01-pr-rust-products.yml`](./01-pr-rust-products.yml)     | Affected Rust product matrix                          |
+| 05   | [`01-pr-js.yml`](./01-pr-js.yml)                           | Affected JavaScript package matrix                    |
+| 06   | [`01-full-qualification.yml`](./01-full-qualification.yml) | Full-suite escalation path                            |
+| 07   | [`03-tool-comparison.yml`](./03-tool-comparison.yml)       | Published cross-tool benchmark pipeline               |
+| 08   | [`release.yml`](./release.yml)                             | Protected release orchestration; do not casually edit |
 
 ## Group index
 
@@ -29,7 +29,7 @@ surfaces and are not routine CI-refactor targets.
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 16        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 13        |
-| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 18        |
+| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 19        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 5         |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 8         |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 4         |
@@ -37,7 +37,7 @@ surfaces and are not routine CI-refactor targets.
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 14        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 4         |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 3         |
-| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 8         |
+| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 7         |
 
 ## 01 Pull request orchestration
 
@@ -45,24 +45,24 @@ Start here for required checks, change planning, merge queues, and full qualific
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/checks/)
 
-| ID    | Workflow                          | File                                                                             |
-| ----- | --------------------------------- | -------------------------------------------------------------------------------- |
-| 01.01 | Rust feature tests                | [`01-rust-feature-tests.yml`](./01-rust-feature-tests.yml)                       |
-| 01.02 | Check                             | [`check.yml`](./check.yml)                                                       |
-| 01.03 | Full qualification                | [`full-qualification.yml`](./full-qualification.yml)                             |
-| 01.04 | Full source CLI producer          | [`full-source-cli.yml`](./full-source-cli.yml)                                   |
-| 01.05 | Full tooling plan                 | [`full-tooling-plan.yml`](./full-tooling-plan.yml)                               |
-| 01.06 | PR JS package checks              | [`pr-js-checks.yml`](./pr-js-checks.yml)                                         |
-| 01.07 | PR performance observation        | [`pr-performance-observation.yml`](./pr-performance-observation.yml)             |
-| 01.08 | Rust source checks                | [`pr-rust-checks.yml`](./pr-rust-checks.yml)                                     |
-| 01.09 | Required Rust differential checks | [`pr-rust-differential.yml`](./pr-rust-differential.yml)                         |
-| 01.10 | Rust product checks               | [`pr-rust-products.yml`](./pr-rust-products.yml)                                 |
-| 01.11 | PR source checks                  | [`pr-source-checks.yml`](./pr-source-checks.yml)                                 |
-| 01.12 | Real Project Matrix differential  | [`real-project-matrix-differential.yml`](./real-project-matrix-differential.yml) |
-| 01.13 | Real Project Matrix               | [`real-project-matrix.yml`](./real-project-matrix.yml)                           |
-| 01.14 | Seed PR Rust target               | [`rust-pr-target-seed.yml`](./rust-pr-target-seed.yml)                           |
-| 01.15 | Title Policy                      | [`title-policy.yml`](./title-policy.yml)                                         |
-| 01.16 | V1 qualification manifest         | [`v1-supported-matrix.yml`](./v1-supported-matrix.yml)                           |
+| ID    | Workflow                          | File                                                                     |
+| ----- | --------------------------------- | ------------------------------------------------------------------------ |
+| 01.01 | Check                             | [`01-check.yml`](./01-check.yml)                                         |
+| 01.02 | Full qualification                | [`01-full-qualification.yml`](./01-full-qualification.yml)               |
+| 01.03 | Full source CLI producer          | [`01-full-source-cli.yml`](./01-full-source-cli.yml)                     |
+| 01.04 | Full tooling plan                 | [`01-full-tooling-plan.yml`](./01-full-tooling-plan.yml)                 |
+| 01.05 | Clean obsolete merge groups       | [`01-merge-queue-cleanup.yml`](./01-merge-queue-cleanup.yml)             |
+| 01.06 | PR JS package checks              | [`01-pr-js.yml`](./01-pr-js.yml)                                         |
+| 01.07 | Required Rust differential checks | [`01-pr-rust-differential.yml`](./01-pr-rust-differential.yml)           |
+| 01.08 | Rust product checks               | [`01-pr-rust-products.yml`](./01-pr-rust-products.yml)                   |
+| 01.09 | Rust source checks                | [`01-pr-rust.yml`](./01-pr-rust.yml)                                     |
+| 01.10 | PR source checks                  | [`01-pr-source.yml`](./01-pr-source.yml)                                 |
+| 01.11 | Real Project Matrix differential  | [`01-real-project-differential.yml`](./01-real-project-differential.yml) |
+| 01.12 | Real Project Matrix               | [`01-real-project-matrix.yml`](./01-real-project-matrix.yml)             |
+| 01.13 | Rust feature tests                | [`01-rust-feature-tests.yml`](./01-rust-feature-tests.yml)               |
+| 01.14 | Seed PR Rust target               | [`01-rust-target-seed.yml`](./01-rust-target-seed.yml)                   |
+| 01.15 | Title Policy                      | [`01-title-policy.yml`](./01-title-policy.yml)                           |
+| 01.16 | V1 qualification manifest         | [`01-v1-matrix.yml`](./01-v1-matrix.yml)                                 |
 
 ## 02 Release and public acceptance
 
@@ -92,26 +92,27 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/performance/)
 
-| ID    | Workflow                            | File                                                             |
-| ----- | ----------------------------------- | ---------------------------------------------------------------- |
-| 03.01 | Davinci Canon distinct-host scaling | [`03-canon-scaling.yml`](./03-canon-scaling.yml)                 |
-| 03.02 | Benchmark - Type checking gate      | [`03-check-gate.yml`](./03-check-gate.yml)                       |
-| 03.03 | Benchmark - CI wall time            | [`03-ci-walltime.yml`](./03-ci-walltime.yml)                     |
-| 03.04 | Benchmark - SFC compilation         | [`03-compile.yml`](./03-compile.yml)                             |
-| 03.05 | Benchmark - Criterion suites        | [`03-criterion.yml`](./03-criterion.yml)                         |
-| 03.06 | Benchmark - Fresco dimensions       | [`03-fresco-layout.yml`](./03-fresco-layout.yml)                 |
-| 03.07 | Benchmark - Level memory            | [`03-level-memory.yml`](./03-level-memory.yml)                   |
-| 03.08 | Davinci resource budgets            | [`03-lsp-resources.yml`](./03-lsp-resources.yml)                 |
-| 03.09 | Benchmark - Source comparison       | [`03-source-comparison.yml`](./03-source-comparison.yml)         |
-| 03.10 | Benchmark - Tool comparison         | [`03-tool-comparison.yml`](./03-tool-comparison.yml)             |
-| 03.11 | Type-check cold pair                | [`03-typecheck-compare.yml`](./03-typecheck-compare.yml)         |
-| 03.12 | Type-check profile                  | [`03-typecheck-profile.yml`](./03-typecheck-profile.yml)         |
-| 03.13 | Type-check scaling                  | [`03-typecheck-scaling.yml`](./03-typecheck-scaling.yml)         |
-| 03.14 | Typecheck vs vue-tsc                | [`03-typecheck-vs-vue-tsc.yml`](./03-typecheck-vs-vue-tsc.yml)   |
-| 03.15 | Benchmark - VS Code startup         | [`03-vscode-startup.yml`](./03-vscode-startup.yml)               |
-| 03.16 | Vue Benchmarks Replay               | [`03-vue-benchmarks.yml`](./03-vue-benchmarks.yml)               |
-| 03.17 | Level instruction counts            | [`level-instruction-counts.yml`](./level-instruction-counts.yml) |
-| 03.18 | Shipped release-profile measure     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)   |
+| ID    | Workflow                            | File                                                           |
+| ----- | ----------------------------------- | -------------------------------------------------------------- |
+| 03.01 | Davinci Canon distinct-host scaling | [`03-canon-scaling.yml`](./03-canon-scaling.yml)               |
+| 03.02 | Benchmark - Type checking gate      | [`03-check-gate.yml`](./03-check-gate.yml)                     |
+| 03.03 | Benchmark - CI wall time            | [`03-ci-walltime.yml`](./03-ci-walltime.yml)                   |
+| 03.04 | Benchmark - SFC compilation         | [`03-compile.yml`](./03-compile.yml)                           |
+| 03.05 | Benchmark - Criterion suites        | [`03-criterion.yml`](./03-criterion.yml)                       |
+| 03.06 | Benchmark - Fresco dimensions       | [`03-fresco-layout.yml`](./03-fresco-layout.yml)               |
+| 03.07 | Level instruction counts            | [`03-instruction-counts.yml`](./03-instruction-counts.yml)     |
+| 03.08 | Benchmark - Level memory            | [`03-level-memory.yml`](./03-level-memory.yml)                 |
+| 03.09 | Davinci resource budgets            | [`03-lsp-resources.yml`](./03-lsp-resources.yml)               |
+| 03.10 | PR performance observation          | [`03-pr-performance.yml`](./03-pr-performance.yml)             |
+| 03.11 | Shipped release-profile measure     | [`03-release-profile.yml`](./03-release-profile.yml)           |
+| 03.12 | Benchmark - Source comparison       | [`03-source-comparison.yml`](./03-source-comparison.yml)       |
+| 03.13 | Benchmark - Tool comparison         | [`03-tool-comparison.yml`](./03-tool-comparison.yml)           |
+| 03.14 | Type-check cold pair                | [`03-typecheck-compare.yml`](./03-typecheck-compare.yml)       |
+| 03.15 | Type-check profile                  | [`03-typecheck-profile.yml`](./03-typecheck-profile.yml)       |
+| 03.16 | Type-check scaling                  | [`03-typecheck-scaling.yml`](./03-typecheck-scaling.yml)       |
+| 03.17 | Typecheck vs vue-tsc                | [`03-typecheck-vs-vue-tsc.yml`](./03-typecheck-vs-vue-tsc.yml) |
+| 03.18 | Benchmark - VS Code startup         | [`03-vscode-startup.yml`](./03-vscode-startup.yml)             |
+| 03.19 | Vue Benchmarks Replay               | [`03-vue-benchmarks.yml`](./03-vue-benchmarks.yml)             |
 
 ## 04 Type checking and content mapping
 
@@ -173,14 +174,14 @@ Davinci migration, Canon ownership, Level lowering, and cross-file graph contrac
 | 07.06 | Davinci Incremental                    | [`07-incremental.yml`](./07-incremental.yml)                                 |
 | 07.07 | Davinci IR graph queries               | [`07-ir-graph.yml`](./07-ir-graph.yml)                                       |
 | 07.08 | IR pass composition                    | [`07-ir-pass-composition.yml`](./07-ir-pass-composition.yml)                 |
-| 07.09 | Level dependencies                     | [`07-level-dependencies.yml`](./07-level-dependencies.yml)                   |
-| 07.10 | Davinci Plugin SDK                     | [`07-plugin-sdk.yml`](./07-plugin-sdk.yml)                                   |
-| 07.11 | Davinci Creusot                        | [`07-proofs-creusot.yml`](./07-proofs-creusot.yml)                           |
-| 07.12 | Davinci authored source frames         | [`07-proofs-source-frames.yml`](./07-proofs-source-frames.yml)               |
-| 07.13 | Davinci Kani                           | [`07-proofs.yml`](./07-proofs.yml)                                           |
-| 07.14 | Davinci reference backends             | [`07-reference-backends.yml`](./07-reference-backends.yml)                   |
-| 07.15 | Style module products                  | [`07-style-module-products.yml`](./07-style-module-products.yml)             |
-| 07.16 | Level deletion readiness               | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)             |
+| 07.09 | Level deletion readiness               | [`07-level-deletion-readiness.yml`](./07-level-deletion-readiness.yml)       |
+| 07.10 | Level dependencies                     | [`07-level-dependencies.yml`](./07-level-dependencies.yml)                   |
+| 07.11 | Davinci Plugin SDK                     | [`07-plugin-sdk.yml`](./07-plugin-sdk.yml)                                   |
+| 07.12 | Davinci Creusot                        | [`07-proofs-creusot.yml`](./07-proofs-creusot.yml)                           |
+| 07.13 | Davinci authored source frames         | [`07-proofs-source-frames.yml`](./07-proofs-source-frames.yml)               |
+| 07.14 | Davinci Kani                           | [`07-proofs.yml`](./07-proofs.yml)                                           |
+| 07.15 | Davinci reference backends             | [`07-reference-backends.yml`](./07-reference-backends.yml)                   |
+| 07.16 | Style module products                  | [`07-style-module-products.yml`](./07-style-module-products.yml)             |
 
 ## 08 Builders and framework integrations
 
@@ -236,13 +237,12 @@ Security audits, dependency upkeep, scheduled maintenance, docs, and repository 
 
 [Edit the Pkl sources](../../tools/config/pkl/workflows/maintenance/)
 
-| ID    | Workflow                      | File                                                                       |
-| ----- | ----------------------------- | -------------------------------------------------------------------------- |
-| 11.01 | Docs build                    | [`11-docs-build.yml`](./11-docs-build.yml)                                 |
-| 11.02 | Fuzz                          | [`11-fuzz.yml`](./11-fuzz.yml)                                             |
-| 11.03 | Miri                          | [`11-miri.yml`](./11-miri.yml)                                             |
-| 11.04 | Sticky disk maintenance       | [`11-sticky-disk.yml`](./11-sticky-disk.yml)                               |
-| 11.05 | Zizmor                        | [`11-zizmor.yml`](./11-zizmor.yml)                                         |
-| 11.06 | Clean obsolete merge groups   | [`cleanup-obsolete-merge-groups.yml`](./cleanup-obsolete-merge-groups.yml) |
-| 11.07 | Deploy docs                   | [`deploy-docs.yml`](./deploy-docs.yml)                                     |
-| 11.08 | Language project fixture laws | [`language-project-fixtures.yml`](./language-project-fixtures.yml)         |
+| ID    | Workflow                      | File                                                               |
+| ----- | ----------------------------- | ------------------------------------------------------------------ |
+| 11.01 | Docs build                    | [`11-docs-build.yml`](./11-docs-build.yml)                         |
+| 11.02 | Fuzz                          | [`11-fuzz.yml`](./11-fuzz.yml)                                     |
+| 11.03 | Miri                          | [`11-miri.yml`](./11-miri.yml)                                     |
+| 11.04 | Sticky disk maintenance       | [`11-sticky-disk.yml`](./11-sticky-disk.yml)                       |
+| 11.05 | Zizmor                        | [`11-zizmor.yml`](./11-zizmor.yml)                                 |
+| 11.06 | Deploy docs                   | [`deploy-docs.yml`](./deploy-docs.yml)                             |
+| 11.07 | Language project fixture laws | [`language-project-fixtures.yml`](./language-project-fixtures.yml) |

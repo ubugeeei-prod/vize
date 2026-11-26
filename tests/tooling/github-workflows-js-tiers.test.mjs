@@ -26,9 +26,9 @@ import { aggregateNeedsResults } from "../../tools/support/compat/github/require
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const workflow = parse(
-  readAutomationPrograms(join(root, ".github/workflows/pr-source-checks.yml")),
+  readAutomationPrograms(join(root, ".github/workflows/01-pr-source.yml")),
 );
-const jsChecksPath = "./.github/workflows/pr-js-checks.yml";
+const jsChecksPath = "./.github/workflows/01-pr-js.yml";
 const jsChecks = parse(readAutomationPrograms(join(root, jsChecksPath)));
 const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
 const inputJs = "${{ inputs.run-js }}";

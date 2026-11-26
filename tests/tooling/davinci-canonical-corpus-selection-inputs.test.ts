@@ -44,13 +44,13 @@ function assertSelected(path: string, reason: string) {
 }
 
 await test("the canonical call path and every local action it uses select the corpus", () => {
-  const check = yaml(".github/workflows/check.yml");
-  const source = yaml(".github/workflows/pr-source-checks.yml");
-  assert.equal(check.jobs["pr-source-checks"]?.uses, "./.github/workflows/pr-source-checks.yml");
+  const check = yaml(".github/workflows/01-check.yml");
+  const source = yaml(".github/workflows/01-pr-source.yml");
+  assert.equal(check.jobs["pr-source-checks"]?.uses, "./.github/workflows/01-pr-source.yml");
   assert.equal(source.jobs["canonical-corpus"]?.uses, `./${corpusWorkflow}`);
   for (const workflow of [
-    ".github/workflows/check.yml",
-    ".github/workflows/pr-source-checks.yml",
+    ".github/workflows/01-check.yml",
+    ".github/workflows/01-pr-source.yml",
     corpusWorkflow,
   ])
     assertSelected(workflow, "canonical workflow");
@@ -74,7 +74,7 @@ await test("the canonical call path and every local action it uses select the co
   assertSelected("package.json", "setup-node runtime");
   for (const unrelated of [
     ".github/workflows/10-app-e2e.yml",
-    ".github/workflows/real-project-matrix.yml",
+    ".github/workflows/01-real-project-matrix.yml",
     ".github/actions/install-playwright-browsers/action.yml",
   ]) {
     assert(exists(unrelated), unrelated);
@@ -221,7 +221,7 @@ await test("every script, import and literal fixture read of the canonical jobs 
   // The source plan and source report run the selection itself; its path
   // predicates are not reads, but its code must select the corpus.
   const selection = [
-    ...readRepoFile(".github/workflows/pr-source-checks.yml").matchAll(scriptPattern),
+    ...readRepoFile(".github/workflows/01-pr-source.yml").matchAll(scriptPattern),
   ]
     .map((match) => match[1] as string)
     .filter((path) => path.includes("canonical-corpus"));

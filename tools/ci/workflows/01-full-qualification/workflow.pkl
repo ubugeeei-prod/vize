@@ -1,0 +1,48 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Full qualification"
+on {
+  workflow_call {
+    inputs {
+      `compare-rust-test-profile` {
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `v1-supported-matrix` = import("jobs/v1-supported-matrix.pkl")
+  `full-source-cli` = import("jobs/full-source-cli.pkl")
+  `tooling-plan` = import("jobs/tooling-plan.pkl")
+  `test-scripts` = import("jobs/test-scripts.pkl")
+  `test-scripts-gate` = import("jobs/test-scripts-gate.pkl")
+  `build-js-packages` = import("jobs/build-js-packages.pkl")
+  `full-js-package-tests` = import("jobs/full-js-package-tests.pkl")
+  `full-js-original-project` = import("jobs/full-js-original-project.pkl")
+  `test-js-packages` = import("jobs/test-js-packages.pkl")
+  `full-rust-workspace` = import("jobs/full-rust-workspace.pkl")
+  `full-rust-report` = import("jobs/full-rust-report.pkl")
+  // Publishes the T1 native-only acceptance census and zero-fallback verdict
+  // from the bundle entries the product runners above wrote (#6853, #6854).
+  // Record-only: missing or failed producers show up as unmeasured coordinates.
+  `differential-acceptance` = import("jobs/differential-acceptance.pkl")
+  `rust-clippy-portability` = import("jobs/rust-clippy-portability.pkl")
+  `rust-davinci-allocations` = import("jobs/rust-davinci-allocations.pkl")
+  `rust-native-differential` = import("jobs/rust-native-differential.pkl")
+  `clippy-and-test` = import("jobs/clippy-and-test.pkl")
+  `rust-feature-tests` {
+    `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+    uses = "./.github/workflows/01-rust-feature-tests.yml"
+  }
+  `playground-test` = import("jobs/playground-test.pkl")
+  `editor-extensions` = import("jobs/editor-extensions.pkl")
+  `editor-host-smoke` = import("jobs/editor-host-smoke.pkl")
+  `nuxt-module-qualification` = import("jobs/nuxt-module-qualification.pkl")
+  `branch-coverage` = import("jobs/branch-coverage.pkl")
+}

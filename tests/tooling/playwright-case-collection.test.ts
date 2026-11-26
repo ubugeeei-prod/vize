@@ -16,7 +16,7 @@ type Step = {
 
 test("the playground job uploads browser and visual test cases", () => {
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"),
+    readAutomationPrograms(".github", "workflows", "01-pr-source.yml"),
   ) as {
     jobs: Record<string, { name?: string; steps: Step[] }>;
   };

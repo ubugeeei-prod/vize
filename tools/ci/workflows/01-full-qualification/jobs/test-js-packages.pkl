@@ -1,0 +1,22 @@
+import "../../../lib/Actions.pkl" as ci
+
+`runs-on` = ci.linux
+`if` = "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+`timeout-minutes` = 5
+needs = List("full-js-package-tests", "full-js-original-project")
+steps = new Listing {
+  ci.use(ci.checkout)
+  new Dynamic {
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "package.json"
+      cache = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Require every full JS partition to succeed"
+    env { NEEDS_JSON = "${{ toJSON(needs) }}" }
+    run = "node tools/support/compat/github/require-needs-success.ts --full-js-packages"
+  }
+}

@@ -1,0 +1,89 @@
+import "../../../lib/Actions.pkl" as ci
+
+name = "Plan PR source checks"
+`if` = "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}"
+`runs-on` = "ubuntu-24.04"
+`timeout-minutes` = 5
+outputs {
+  `comparison-base` = "${{ steps.comparison.outputs.base }}"
+  // PRs opt into queue-only canonical/browser qualification with `full-ci`.
+  heavy = "${{ steps.plan.outputs.heavy }}"
+  `canonical-corpus` = "${{ steps.plan.outputs.heavy == 'true' && steps.canonical-corpus-plan.outputs.canonical-corpus || 'false' }}"
+  rust = "${{ steps.plan.outputs.rust }}"
+  `rust-plan` = "${{ steps.plan.outputs.rust-plan }}"
+  `source-contracts` = "${{ steps.plan.outputs.source-contracts }}"
+  js = "${{ steps.plan.outputs.js }}"
+  `js-plan` = "${{ steps.plan.outputs.js-plan }}"
+  `native-runtime-matrix` = "${{ steps.plan.outputs.native-runtime-matrix }}"
+  playground = "${{ steps.plan.outputs.playground }}"
+  tooling = "${{ steps.plan.outputs.tooling }}"
+  `affected-tooling` = "${{ steps.tooling-plan.outputs.tooling }}"
+  `affected-tooling-matrix` = "${{ steps.tooling-plan.outputs.tooling-matrix }}"
+}
+steps = new Listing {
+  ...ci.stageWorkflow("01-pr-source")
+  new Dynamic {
+    uses = ci.checkout
+    with {
+      `sparse-checkout-cone-mode` = false
+      `sparse-checkout` = "/.github/source-plan-sparse-checkout"
+    }
+  }
+  new Dynamic {
+    name = "Expand the source planner checkout"
+    run = #". "${{ env.VIZE_CI_FILES }}/expand-the-source-planner-checkout.sh""#
+  }
+  new Dynamic {
+    uses = ci.setupNode
+    with {
+      `node-version-file` = "package.json"
+      `package-manager-cache` = false
+    }
+  }
+  new Dynamic {
+    name = "Resolve and fetch comparison base"
+    id = "comparison"
+    env {
+      EVENT_BASE_SHA = "${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}"
+      PR_HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
+    }
+    run = #". "${{ env.VIZE_CI_FILES }}/resolve-and-fetch-comparison-base.sh""#
+  }
+  new Dynamic {
+    name = "Plan source checks"
+    id = "plan"
+    env {
+      BASE_SHA = "${{ steps.comparison.outputs.base }}"
+      PR_LABELS = "${{ toJSON(github.event.pull_request.labels.*.name) }}"
+    }
+    run = #"node tools/support/compat/github/plan-pr-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME""#
+  }
+  new Dynamic {
+    name = "Require legacy fix differential inputs"
+    `if` = "${{ github.event_name == 'pull_request' }}"
+    env {
+      BASE_SHA = "${{ steps.comparison.outputs.base }}"
+      PR_TITLE = "${{ github.event.pull_request.title }}"
+      PR_CREATED_AT = "${{ github.event.pull_request.created_at }}"
+    }
+    run = #"node tools/support/compat/github/report-legacy-fix-fixtures.ts "$BASE_SHA" "$GITHUB_SHA""#
+  }
+  new Dynamic {
+    name = "Hold the Clippy test-target ratchet"
+    `if` = "${{ github.event_name == 'pull_request' }}"
+    env { BASE_SHA = "${{ steps.comparison.outputs.base }}" }
+    run = #"node tools/support/compat/github/clippy-test-targets.ts hold "$BASE_SHA""#
+  }
+  new Dynamic {
+    name = "Plan canonical corpus inputs"
+    id = "canonical-corpus-plan"
+    env { BASE_SHA = "${{ steps.comparison.outputs.base }}" }
+    run = #"node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME""#
+  }
+  new Dynamic {
+    name = "Plan affected tooling tests"
+    id = "tooling-plan"
+    env { BASE_SHA = "${{ steps.comparison.outputs.base }}" }
+    run = #"node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json" --github-output"#
+  }
+}

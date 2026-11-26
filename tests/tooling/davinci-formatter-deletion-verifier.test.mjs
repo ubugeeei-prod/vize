@@ -243,7 +243,7 @@ void test("formatter verifier rejects reduced shards, forged reports and stale i
 void test("the real-project matrix records the formatter verifier artifact on every shard", () => {
   const workflow = parse(
     readAutomationPrograms(
-      new URL("../../.github/workflows/real-project-matrix.yml", import.meta.url),
+      new URL("../../.github/workflows/01-real-project-matrix.yml", import.meta.url),
     ),
   );
   const steps = workflow.jobs["real-project-matrix"].steps;

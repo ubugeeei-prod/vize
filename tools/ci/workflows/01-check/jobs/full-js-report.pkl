@@ -1,0 +1,15 @@
+import "../../../lib/Actions.pkl" as ci
+
+name = "full-js-report"
+`runs-on` = ci.linux
+`timeout-minutes` = 5
+`if` = "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+// Whole callee success retains all four original full-product dependencies.
+needs = List("full-qualification", "check-js", "instruction-counts")
+steps = new Listing {
+  ci.use(ci.checkout)
+  new Dynamic {
+    uses = "./.github/actions/report-full-js-qualification"
+    with { `needs-json` = "${{ toJSON(needs) }}" }
+  }
+}

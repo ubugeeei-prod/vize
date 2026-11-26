@@ -1,0 +1,350 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/01-real-project-matrix/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Real Project Matrix
+# "enforced" gates every surface. "release-gated" is the exact release dispatch:
+# tool surfaces and the Davinci corpus enforce, lint and LSP parity record their
+# raw outcomes, and typecheck divergence is skipped. Every other combination is
+# "observational".
+run-name: >-
+  Real Project Matrix ${{ inputs.project && 'scoped-diagnostic' || (inputs.core_tools_mode || 'enforce') == 'enforce' &&
+  (inputs.typecheck_dependencies_mode || 'enforce') == 'enforce' &&
+  (inputs.davinci_dom_corpus_mode || 'enforce') == 'enforce' &&
+  ((inputs.lint_divergence_mode || 'enforce') == 'enforce' &&
+  (inputs.lsp_mode || 'enforce') == 'enforce' &&
+  (inputs.typecheck_divergence_mode || 'enforce') == 'enforce' &&
+  'enforced' ||
+  (inputs.lint_divergence_mode || 'enforce') == 'record-only' &&
+  (inputs.lsp_mode || 'enforce') == 'record-only' &&
+  (inputs.typecheck_divergence_mode || 'enforce') == 'skip' &&
+  'release-gated') || 'observational' }} @ ${{ github.sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: "Optional exact fixture ID for a scoped diagnostic; empty runs the full matrix"
+        required: false
+        default: ""
+        type: string
+      core_tools_mode:
+        description: "Core tool surface handling"
+        required: false
+        default: "enforce"
+        type: choice
+        options:
+          - enforce
+          - record-only
+      core_tools_timeout_ms:
+        description: "Per-project core tool timeout in milliseconds"
+        required: false
+        default: "2400000"
+        type: string
+      typecheck_dependencies_mode:
+        description: "Typecheck baseline dependency preparation handling"
+        required: false
+        default: "enforce"
+        type: choice
+        options:
+          - enforce
+          - record-only
+      lint_divergence_mode:
+        description: "Patina lint divergence gate handling"
+        required: false
+        default: "enforce"
+        type: choice
+        options:
+          - enforce
+          - record-only
+      lint_baseline_reference_mode:
+        description: "ESLint scorecard memory mode; unbounded-6g is diagnostic only"
+        required: false
+        default: "bounded"
+        type: choice
+        options:
+          - bounded
+          - unbounded-6g
+      lsp_mode:
+        description: "LSP lifecycle gate handling"
+        required: false
+        default: "enforce"
+        type: choice
+        options:
+          - enforce
+          - record-only
+      typecheck_divergence_mode:
+        description: "Typechecker baseline divergence gate handling"
+        required: false
+        default: "enforce"
+        type: choice
+        options:
+          - enforce
+          - record-only
+          - skip
+      davinci_dom_corpus_mode:
+        description: "Davinci L2 DOM corpus gate handling"
+        required: false
+        default: "enforce"
+        type: choice
+        options:
+          - enforce
+          - record-only
+  schedule:
+    # Nightly full ecosystem sweep. Manual dispatches provide on-demand release evidence.
+    - cron: "37 5 * * *"
+
+concurrency:
+  group: real-project-matrix-${{ github.ref }}${{ inputs.project && format('-scoped-{0}', inputs.project) || '' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  plan-projects:
+    name: select ecosystem projects
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 3
+    outputs:
+      matrix: ${{ steps.projects.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false, ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Name every project in its fixture partition
+        id: projects
+        env:
+          SELECTED_PROJECT: ${{ inputs.project || '' }}
+        run: node tools/support/compat/github/real-project-matrix-plan.ts matrix --project "$SELECTED_PROJECT"
+
+  real-project-matrix:
+    name: real projects (${{ matrix.name }})
+    needs: plan-projects
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      # The hosted release fallback must fit the documented Free plan floor:
+      # 20 concurrent standard hosted jobs, so 22 shards can take two waves.
+      max-parallel: 6
+      matrix: ${{ fromJSON(needs.plan-projects.outputs.matrix) }}
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/01-real-project-matrix/scripts"
+      FIXTURE_SHARD_COUNT: ${{ matrix.shardCount || '22' }}
+      FIXTURE_SHARD_INDEX: ${{ matrix.shard }}
+      FIXTURE_REPORT_DIR: real-project-results/shard-${{ matrix.shard }}
+    steps:
+      - name: Checkout matrix commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Enable package manager shims
+        run: corepack enable
+
+      - name: Select and hydrate fixture shard
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/select-and-hydrate-fixture-shard.sh"
+
+      - name: Install pinned typecheck baseline dependencies
+        id: typecheck_dependencies
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: . "${{ env.VIZE_CI_FILES }}/install-pinned-typecheck-baseline-dependencies.sh"
+
+      - name: Audit formatter waiver owners
+        id: waiver_audit
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: . "${{ env.VIZE_CI_FILES }}/audit-formatter-waiver-owners.sh"
+
+      - name: Setup Wild linker
+        uses: ./.github/actions/setup-wild-http-recovery
+        with:
+          wild-version: "0.9.0"
+
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: real-project-matrix-${{ matrix.shard }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+
+      - name: Install JavaScript dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      # v0.450.0 lost a shard to a stalled crates.io download; retry only the fetch.
+      - name: Fetch Rust dependencies
+        env: { CARGO_NET_RETRY: "10" }
+        run: . "${{ env.VIZE_CI_FILES }}/fetch-rust-dependencies.sh"
+      - name: Build Vize CLI
+        run: cargo build --profile ci -p vize
+      - name: Classify pinned Misskey generated diagnostics
+        if: ${{ !cancelled() && contains(matrix.name, 'misskey') }}
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_TEST_MISSKEY_GENERATED_DIAGNOSTICS_9516: "1"
+          VIZE_TEST_REQUIRE_TSGO: "1"
+          VIZE_TEST_FIX_HISTORY_CAPTURE_DIR: ${{ github.workspace }}/${{ env.FIXTURE_REPORT_DIR }}/misskey-generated-diagnostics-9516
+        run: >-
+          cargo test --locked --profile ci -p vize_canon --lib
+          pinned_misskey_preserves_current_and_tuple_diagnostic_boundaries
+          -- --nocapture --test-threads=1
+      - name: Exercise real projects with every core tool
+        id: core_tools
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        timeout-minutes: 60 # Green shards take at most 14 min; one project may use its 40.
+        env:
+          # Qualify Vize on the one supported checker, not a fixture's own preview.
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          CORE_TOOLS_TIMEOUT_MS: ${{ inputs.core_tools_timeout_ms || '2400000' }}
+        run: . "${{ env.VIZE_CI_FILES }}/exercise-real-projects-with-every-core-tool.sh"
+
+      - name: Check real-project LSP lifecycle
+        id: lsp
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        timeout-minutes: 30 # Green shards take at most 11 min.
+        env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          REAL_PROJECT_LSP_TIMEOUT_MS: "600000"
+          VIZE_LSP_BIN: target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+          VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci -p vize"
+        run: . "${{ env.VIZE_CI_FILES }}/check-real-project-lsp-lifecycle.sh"
+
+      - name: Validate source-bound LSP wire
+        if: ${{ always() }}
+        run: node tests/tooling/support/lsp/verify-session-captures.ts verify "$FIXTURE_REPORT_DIR/lsp-wire-before.json" "$FIXTURE_REPORT_DIR/lsp-wire-integrity.json"
+
+      - name: Measure real-project lint divergence
+        id: lint_divergence
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          LINT_DIVERGENCE_MODE: ${{ inputs.lint_divergence_mode || 'enforce' }}
+          LINT_BASELINE_REFERENCE_MODE: ${{ inputs.lint_baseline_reference_mode || 'bounded' }}
+          LINT_BASELINE_SHARD_MAX_BYTES: "8388608"
+          LINT_BASELINE_SHARD_MAX_FILES: "32"
+          LINT_BASELINE_SHARD_MAX_OUTPUT_BYTES: "268435456"
+          NODE_OPTIONS: ${{ inputs.lint_baseline_reference_mode == 'unbounded-6g' && '--max-old-space-size=6144' || '' }}
+          VIZE_LINT_BASELINE_PROGRESS: "1"
+          VIZE_LINT_BASELINE_UNBOUNDED: ${{ inputs.lint_baseline_reference_mode == 'unbounded-6g' && '1' || '0' }}
+        run: . "${{ env.VIZE_CI_FILES }}/measure-real-project-lint-divergence.sh"
+
+      - name: Record linter deletion-readiness evidence
+        if: ${{ !cancelled() }}
+        run: . "${{ env.VIZE_CI_FILES }}/record-linter-deletion-readiness-evidence.sh"
+      - name: Check real-project syntax highlighting
+        id: syntax_highlighter
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          SYNTAX_HIGHLIGHTER_TIMEOUT_MS: "600000"
+        run: . "${{ env.VIZE_CI_FILES }}/check-real-project-syntax-highlighting.sh"
+
+      - name: Check glyph formatter corpus properties
+        id: glyph
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          VIZE_TEST_BIN: target/ci/vize
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/check-glyph-formatter-corpus-properties.sh"
+      - name: Record formatter deletion-readiness evidence
+        if: ${{ !cancelled() }}
+        run: . "${{ env.VIZE_CI_FILES }}/record-formatter-deletion-readiness-evidence.sh"
+      - name: Enforce typechecker baseline divergence
+        id: typecheck_divergence
+        if: ${{ !cancelled() && (inputs.typecheck_divergence_mode || 'enforce') != 'skip' }}
+        continue-on-error: true
+        timeout-minutes: 100
+        env:
+          BUDGET_MODE: ${{ inputs.typecheck_divergence_mode || 'enforce' }}
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_TYPECHECK_DIVERGENCE_PROGRESS: "1"
+        run: . "${{ env.VIZE_CI_FILES }}/enforce-typechecker-baseline-divergence.sh"
+      - name: Enforce all real-project surface verdicts
+        id: surface_verdict
+        if: ${{ always() }}
+        shell: bash
+        env:
+          CORE_TOOLS_MODE: ${{ inputs.core_tools_mode || 'enforce' }}
+          TYPECHECK_DEPENDENCIES_MODE: ${{ inputs.typecheck_dependencies_mode || 'enforce' }}
+          LINT_DIVERGENCE_MODE: ${{ inputs.lint_divergence_mode || 'enforce' }}
+          LSP_MODE: ${{ inputs.lsp_mode || 'enforce' }}
+          TYPECHECK_DIVERGENCE_MODE: ${{ inputs.typecheck_divergence_mode || 'enforce' }}
+          VIZE_WAIVER_AUDIT_OUTCOME: ${{ steps.waiver_audit.outcome }}
+          VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: ${{ steps.typecheck_dependencies.outcome }}
+          VIZE_CORE_TOOLS_OUTCOME: ${{ steps.core_tools.outcome }}
+          VIZE_LSP_OUTCOME: ${{ steps.lsp.outcome }}
+          VIZE_LINT_DIVERGENCE_OUTCOME: ${{ steps.lint_divergence.outcome }}
+          VIZE_SYNTAX_HIGHLIGHTER_OUTCOME: ${{ steps.syntax_highlighter.outcome }}
+          VIZE_GLYPH_OUTCOME: ${{ steps.glyph.outcome }}
+          VIZE_TYPECHECK_DIVERGENCE_OUTCOME: ${{ steps.typecheck_divergence.outcome }}
+        run: node tools/commands/fixtures/real-project-surface-verdict.ts --from-workflow-env --output "$FIXTURE_REPORT_DIR/surface-verdict.json"
+
+      - name: Publish shard summary
+        if: ${{ always() }}
+        shell: bash
+        run: node tools/ci/commands/github/publish-real-project-shard-summary.ts
+
+      - name: Upload shard report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: real-project-matrix-${{ matrix.shard }}
+          path: ${{ env.FIXTURE_REPORT_DIR }}
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 30
+
+      - name: Upload source-bound LSP wire evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: real-project-lsp-wire-${{ matrix.shard }}-${{ github.sha }}
+          path: |
+            target/differential/lsp-sessions
+            target/ci/vize.differential-build.json
+          if-no-files-found: error
+          retention-days: 30
+
+  davinci-dom-corpus:
+    permissions: { contents: read, actions: read, checks: read }
+    uses: ./.github/workflows/07-canonical-corpus.yml
+    with:
+      davinci_dom_corpus_mode: ${{ inputs.davinci_dom_corpus_mode || 'enforce' }}
+
+  dom-divergence:
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    needs: davinci-dom-corpus
+    permissions: { contents: write, actions: read, issues: write, pull-requests: write }
+    uses: ./.github/workflows/07-canonical-corpus-divergence.yml
+    with: { observer: dom, evidence: canonical-corpus-dom }
+
+  ssr-divergence:
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    needs: davinci-dom-corpus
+    permissions: { contents: write, actions: read, issues: write, pull-requests: write }
+    uses: ./.github/workflows/07-canonical-corpus-divergence.yml
+    with: { observer: ssr, evidence: canonical-corpus-ssr-pug }
+
+  reach-divergence:
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    needs: davinci-dom-corpus
+    permissions: { contents: write, actions: read, issues: write, pull-requests: write }
+    uses: ./.github/workflows/07-canonical-corpus-divergence.yml
+    with: { observer: reach, evidence: canonical-corpus-reach }

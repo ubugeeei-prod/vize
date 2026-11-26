@@ -14,7 +14,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const sha = "a".repeat(40);
 const run = {
   head_sha: sha,
-  path: ".github/workflows/level-deletion-readiness.yml",
+  path: ".github/workflows/07-level-deletion-readiness.yml",
   event: "workflow_dispatch",
   conclusion: "success",
 };
@@ -50,7 +50,7 @@ void test("audit lookup rejects absent, stale, or unrelated runs", () => {
   for (const changed of [
     { conclusion: "failure" },
     { event: "push" },
-    { path: ".github/workflows/check.yml" },
+    { path: ".github/workflows/01-check.yml" },
   ]) {
     assert.equal(
       hasExactSuccessfulAudit({ total_count: 1, workflow_runs: [{ ...run, ...changed }] }, sha),
@@ -113,7 +113,7 @@ void test("the checked-in compiler routes retain every guarded witness", () => {
 });
 
 void test("the existing PR and merge-group check runs the conditional deletion guard", () => {
-  const workflow = fs.readFileSync(path.join(root, ".github/workflows/check.yml"), "utf8");
+  const workflow = fs.readFileSync(path.join(root, ".github/workflows/01-check.yml"), "utf8");
   assert.match(workflow, /- name: Guard legacy crate deletion\n\s+if: .*pull_request.*merge_group/);
   assert.match(workflow, /BASE_SHA: .*pull_request\.base\.sha.*merge_group\.base_sha/);
   assert.match(workflow, /CANDIDATE_SHA: .*pull_request\.head\.sha.*merge_group\.head_sha/);

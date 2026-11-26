@@ -5,8 +5,8 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/09-lint-reference-coverage.yml"
-      ".github/workflows/real-project-matrix.yml"
-      ".github/scripts/workflows/real-project-matrix/**"
+      ".github/workflows/01-real-project-matrix.yml"
+      "tools/ci/workflows/01-real-project-matrix/scripts/**"
       "tools/commands/fixtures/lint-divergence-report.*"
       "tools/support/fixtures/lint_reference_coverage.ts"
       "tools/support/fixtures/lint_divergence/**"

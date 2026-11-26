@@ -44,8 +44,8 @@ await test("original native Vapor source qualifies a fresh affected-PR capture w
     "tests/tooling/support/native-vapor-process-capture.mjs",
     "tests/tooling/support/vue-vapor-release.mjs",
     ".github/actions/test-native-vapor/action.yml",
-    ".github/workflows/check.yml",
-    ".github/workflows/pr-source-checks.yml",
+    ".github/workflows/01-check.yml",
+    ".github/workflows/01-pr-source.yml",
   ]) {
     assert.equal(nativeVaporCaptureRequired([path]), true, path);
     assert(planNativeRuntime([path]).matrix.lane.includes("vapor"), path);
@@ -132,7 +132,7 @@ function assertRuntimeToolchainPreparation(workflow, configuration) {
 
 const nativeRuntimeWorkflow = parse(
   readAutomationPrograms(
-    new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
+    new URL("../../.github/workflows/01-pr-source.yml", import.meta.url),
     "utf8",
   ),
 );

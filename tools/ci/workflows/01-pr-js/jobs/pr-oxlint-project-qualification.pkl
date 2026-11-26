@@ -1,0 +1,112 @@
+import "../../../lib/Actions.pkl" as ci
+
+name = "PR Oxlint original project qualification"
+`if` = "${{ inputs.run-original-project }}"
+`runs-on` = ci.linux
+`timeout-minutes` = 35
+env {
+
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  CARGO_BUILD_JOBS = "12"
+}
+steps = new Listing {
+  ...ci.stageWorkflow("01-pr-js")
+  new Dynamic {
+    name = "Explain documentation-only skip"
+    `if` = "${{ !inputs.run-js }}"
+    run = #". "${{ env.VIZE_CI_FILES }}/explain-documentation-only-skip-2.sh""#
+  }
+  new Dynamic {
+    uses = ci.checkout
+    `if` = "${{ inputs.run-js }}"
+  }
+  new Dynamic {
+    uses = "./.github/actions/cache-vp-bootstrap"
+    `if` = "${{ inputs.run-js }}"
+  }
+  new Dynamic {
+    uses = ci.setupVp121
+    `if` = "${{ inputs.run-js }}"
+    with {
+      version = "latest"
+      `node-version-file` = "package.json"
+      cache = true
+      `cache-save` = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    uses = ci.setupRust
+    with { toolchain = "stable" }
+    `if` = "${{ inputs.run-js }}"
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-wild-http-recovery"
+    `if` = "${{ inputs.run-js }}"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    `if` = "${{ inputs.run-js }}"
+    with {
+      key = "test-js-packages"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    name = "Install JS dependencies"
+    `if` = "${{ inputs.run-js }}"
+    run = "node tools/support/compat/github/install-js-checks.ts original-project"
+  }
+  // The qualification reads the source addon receipt from this job's own
+  // debug build and the bundles that the oxlint package test packs.
+  new Dynamic {
+    name = "Build the source addon and Oxlint bundles"
+    `if` = "${{ inputs.run-js }}"
+    run = "vp run --workspace-root build:oxlint-qualification"
+  }
+  new Dynamic {
+    name = "Qualify original project checks with both real Oxlint hosts"
+    id = "original-project-qualification"
+    `if` = "${{ inputs.run-js }}"
+    env { VIZE_N8N_BASELINE_MODE = "partitioned" }
+    run = "node npm/linter/oxlint/scripts/check-project-transport.mjs"
+  }
+  new Dynamic {
+    name = "Preserve public native formatter evidence"
+    `if` = "${{ !cancelled() && inputs.run-js }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}"
+      path = "npm/native/.artifacts/native/formatter-history/**"
+      `if-no-files-found` = "warn"
+      `retention-days` = 14
+    }
+  }
+  new Dynamic {
+    name = "Preserve original Oxlint bridge locations"
+    id = "original-project-evidence"
+    `if` = "${{ !cancelled() && inputs.run-js }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}"
+      path = """
+      target/oxlint-original-locations-7904.json
+      target/oxlint-original-project-checks-7903.json
+      target/oxlint-script-safe-carrier-7903.json
+      target/oxlint-original-project-transport/**
+      target/oxlint-original-html-binding-7903/**
+      target/vize-tests/original-sfc-host-7004-7005-*/**
+
+      """
+      `if-no-files-found` = "warn"
+      `retention-days` = 14
+    }
+  }
+  new Dynamic {
+    name = "Clean completed original project staging after evidence upload"
+    `if` = "${{ always() && steps.original-project-qualification.outcome == 'success' && steps.original-project-evidence.outcome == 'success' }}"
+    env { VIZE_OXLINT_STAGING_DIRECTORY = "${{ steps.original-project-qualification.outputs.staging-directory }}" }
+    run = "node npm/linter/oxlint/scripts/project-native-staging.ts --cleanup"
+  }
+}

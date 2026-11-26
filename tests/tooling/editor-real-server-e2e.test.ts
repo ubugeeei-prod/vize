@@ -296,7 +296,7 @@ test("CI executes the packaged Emacs ERT suite", () => {
   assert.ok(setupIndex < runIndex, "Emacs setup must run before the ERT suite");
 });
 
-test("check.yml keeps the editor real-server job in scheduled and manual Check", () => {
+test("01-check.yml keeps the editor real-server job in scheduled and manual Check", () => {
   const workflow = checkWorkflowJobSources();
 
   assert.match(

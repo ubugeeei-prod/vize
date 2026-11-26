@@ -75,7 +75,7 @@ test("daily source contracts cover the real Rust/docs failures without widening 
       "tests/tooling/typecheck-baseline-usability.test.ts",
       "tests/tooling/typecheck-baseline-provider.test.ts",
       "tools/commands/fixtures/baseline_usability.rs",
-      ".github/workflows/pr-rust-checks.yml",
+      ".github/workflows/01-pr-rust.yml",
       "Cargo.lock",
       "new-runtime/lib.rs",
     ]) {

@@ -38,7 +38,7 @@ test("scheduled full tooling requires the original current-source CLI receipt be
   ).runs.steps;
   const build = steps.findIndex((step) => step.uses === "./.github/actions/restore-source-cli");
   const producer =
-    (parse(readAutomationPrograms(".github", "workflows", "full-source-cli.yml")) as Workflow).jobs
+    (parse(readAutomationPrograms(".github", "workflows", "01-full-source-cli.yml")) as Workflow).jobs
       .cli.steps ?? [];
   const originalBuild = producer.find((step) =>
     /cargo build --profile ci -p vize/.test(step.run ?? ""),
@@ -60,7 +60,7 @@ test("scheduled full tooling requires the original current-source CLI receipt be
     assert.notEqual(step["continue-on-error"], true);
     assert.equal(step.if, undefined);
   }
-  assert.equal(workflow.jobs["full-source-cli"].uses, "./.github/workflows/full-source-cli.yml");
+  assert.equal(workflow.jobs["full-source-cli"].uses, "./.github/workflows/01-full-source-cli.yml");
   assert.equal(
     workflow.jobs["full-source-cli"].if,
     "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
@@ -104,7 +104,7 @@ test("scheduled full tooling requires the original current-source CLI receipt be
 
 test("PR product lanes stay independent of the affected tooling producer", () => {
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"),
+    readAutomationPrograms(".github", "workflows", "01-pr-source.yml"),
   ) as Workflow;
   assert.equal(workflow.jobs["pr-source-cli"], undefined);
   assert.equal(workflow.jobs["pr-tooling-scripts"], undefined);
@@ -117,7 +117,7 @@ test("PR product lanes stay independent of the affected tooling producer", () =>
     assert.equal(workflow.jobs[name].needs, "pr-source-plan", name);
   // Only the affected tooling lane builds and consumes the source CLI.
   for (const [name, job] of Object.entries(workflow.jobs)) {
-    if (job.uses === "./.github/workflows/full-source-cli.yml")
+    if (job.uses === "./.github/workflows/01-full-source-cli.yml")
       assert.equal(name, "affected-tooling-cli");
     for (const step of job.steps ?? []) {
       assert.notEqual(step.uses, "./.github/actions/test-full-tooling");
@@ -130,7 +130,7 @@ test("PR product lanes stay independent of the affected tooling producer", () =>
 
 test("the real tooling report requires the source CLI and every selected worker", () => {
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"),
+    readAutomationPrograms(".github", "workflows", "01-pr-source.yml"),
   ) as Workflow;
   const report = workflow.jobs["affected-tooling-report"];
   assert.deepEqual(report.needs, ["pr-source-plan", "affected-tooling-cli", "affected-tooling"]);

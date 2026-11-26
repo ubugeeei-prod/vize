@@ -25,7 +25,7 @@ test("capture never replaces the actual diagnostic assertion and the full tier s
     "expected data must never substitute for actual diagnostics",
   );
   const workflow = fs.readFileSync(
-    path.join(root, ".github/workflows/pr-rust-products.yml"),
+    path.join(root, ".github/workflows/01-pr-rust-products.yml"),
     "utf8",
   );
   // Queue cohorts run the same assertions in place; only full qualification captures.

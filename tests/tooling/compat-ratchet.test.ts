@@ -2,7 +2,7 @@ import { readToolingProgram } from "./support/program-path.ts";
 /**
  * Per-PR drop-in compatibility ratchet (part of the #3227 compat roadmap).
  *
- * The weekly real-project matrix (.github/workflows/real-project-matrix.yml)
+ * The weekly real-project matrix (.github/workflows/01-real-project-matrix.yml)
  * is the baseline-refresh authority: it typechecks the full pinned ecosystem
  * with installed dependencies and records the authoritative divergence ledger
  * (schema vize.fixtureTypecheckDivergence). This suite is the per-PR gate over

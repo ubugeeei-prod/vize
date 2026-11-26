@@ -1,0 +1,76 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/01-v1-matrix/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: V1 qualification manifest
+
+on:
+  # #6830: off the PR tier; nightly Full qualification calls it.
+  workflow_call:
+    inputs:
+      enforce_complete:
+        description: Reject every unresolved v1 qualification row
+        required: false
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      enforce_complete:
+        description: Reject every unresolved v1 qualification row
+        required: false
+        type: boolean
+        default: false
+
+permissions: { contents: read }
+concurrency:
+  group: v1-supported-matrix-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory-contract:
+    name: Generated fail-closed inventory contract
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /tools/ci/lib/scripts/
+            /tools/ci/workflows/01-v1-matrix/scripts/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - name: Verify the exact source checkout
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/verify-the-exact-source-checkout.sh"
+      - name: Reject a stale generated manifest
+        run: node tools/commands/release/v1-support-matrix.ts --check
+      - name: Verify closed support, boundary and identity inventories
+        run: >-
+          node --test
+          tests/tooling/v1-supported-matrix.test.ts
+          tests/tooling/v1-exact-candidate.test.ts
+      - name: Retain the complete exact-head coverage plan
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/retain-the-complete-exact-head-coverage-plan.sh"
+      - name: Upload the exact-head coverage receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: v1-exact-candidate-plan-${{ github.event.pull_request.head.sha || github.sha }}
+          path: .qualification/v1-exact-candidate-plan.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Enforce complete exact-candidate qualification
+        if: ${{ inputs.enforce_complete }}
+        run: node tools/commands/release/v1-support-matrix.ts --check --enforce-complete

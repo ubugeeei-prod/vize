@@ -65,7 +65,7 @@ test("the Node job shim preserves PID and transport through filtered environment
 });
 
 test("every selected native runtime lane uploads one merged case packet", () => {
-  const job = workflow("pr-source-checks.yml").jobs["pr-native-runtime"];
+  const job = workflow("01-pr-source.yml").jobs["pr-native-runtime"];
   assert.equal(job.env?.TEST_CASES_JOB, "Native runtime (${{ matrix.lane }})");
   assert.equal(job.env?.VIZE_TEST_CASES, "test-cases-native-${{ matrix.lane }}.json");
   const prepare = job.steps.find(
@@ -84,7 +84,7 @@ test("every selected native runtime lane uploads one merged case packet", () => 
 });
 
 test("UI conformance reports its node and package-runner cases", () => {
-  const job = workflow("pr-js-checks.yml").jobs["pr-js-package-conformance"];
+  const job = workflow("01-pr-js.yml").jobs["pr-js-package-conformance"];
   assert.equal(job.env?.TEST_CASES_JOB, "PR package conformance (${{ matrix.surface }})");
   const prepare = job.steps.find(
     (step) => step.name === "Prepare UI conformance test case capture",

@@ -11,7 +11,7 @@ interface WorkflowJob {
 }
 
 test("check workflow runs declared Node engine compatibility matrix", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "check.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "01-check.yml");
   const parsed = parse(workflow) as { jobs?: Record<string, WorkflowJob> };
   const parsedJob = parsed.jobs?.["node-engine-compat"];
   const job = workflowJobBody(workflow, "node-engine-compat");

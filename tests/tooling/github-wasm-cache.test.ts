@@ -14,7 +14,7 @@ type Step = { name?: string; uses?: string; with?: Record<string, string> };
 type Workflow = { jobs?: Record<string, { steps?: Step[] }> };
 
 const CACHES = [
-  { workflow: "check.yml", job: "playground-test" },
+  { workflow: "01-check.yml", job: "playground-test" },
   { workflow: "11-docs-build.yml", job: "build-playground" },
 ] as const;
 
@@ -23,7 +23,7 @@ const OUTPUT_GLOB = /^(?:npm\/wasm|playground\/src\/wasm)\/vize_vitrine\*$/;
 
 function wasmCacheStep(workflow: string, job: string): Step {
   const parsed = parse(
-    workflow === "check.yml"
+    workflow === "01-check.yml"
       ? checkWorkflowJobSources()
       : readRepoFile(".github", "workflows", workflow),
   ) as Workflow;

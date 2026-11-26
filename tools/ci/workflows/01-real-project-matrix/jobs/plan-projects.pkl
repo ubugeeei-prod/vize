@@ -1,0 +1,22 @@
+import "../../../lib/Actions.pkl" as ci
+
+name = "select ecosystem projects"
+`runs-on` = ci.linux
+`timeout-minutes` = 3
+outputs { matrix = "${{ steps.projects.outputs.matrix }}" }
+steps = new Listing {
+  ci.checkoutAt("${{ github.sha }}")
+  new Dynamic {
+    uses = ci.setupNode
+    with {
+      `node-version-file` = "package.json"
+      `package-manager-cache` = false
+    }
+  }
+  new Dynamic {
+    name = "Name every project in its fixture partition"
+    id = "projects"
+    env { SELECTED_PROJECT = "${{ inputs.project || '' }}" }
+    run = #"node tools/support/compat/github/real-project-matrix-plan.ts matrix --project "$SELECTED_PROJECT""#
+  }
+}

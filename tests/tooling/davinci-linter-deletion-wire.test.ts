@@ -15,7 +15,7 @@ import { linterProjects } from "../differential/linter-deletion-verifier.ts";
 void test("Matrix records the blocked preflight without registering linter deletion credit", () => {
   const workflow = parse(
       readAutomationPrograms(
-        new URL("../../.github/workflows/real-project-matrix.yml", import.meta.url),
+        new URL("../../.github/workflows/01-real-project-matrix.yml", import.meta.url),
       ),
     ) as { jobs: Record<string, { steps: Array<Record<string, unknown>> }> },
     steps = workflow.jobs["real-project-matrix"].steps,

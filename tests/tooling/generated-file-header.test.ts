@@ -64,12 +64,12 @@ test("comment style follows the output's language", () => {
 });
 
 test("checked-in outputs carry the notice", () => {
-  const workflow = readFileSync(path.join(root, ".github/workflows/check.yml"), "utf8");
+  const workflow = readFileSync(path.join(root, ".github/workflows/01-check.yml"), "utf8");
   const catalog = readFileSync(path.join(root, ".github/workflows/README.md"), "utf8");
 
   assert.equal(
     workflow.split("\n")[0],
-    "# DO NOT EDIT. Generated from tools/config/pkl/workflows/checks/check.pkl.",
+    "# DO NOT EDIT. Generated from tools/ci/workflows/01-check/workflow.pkl.",
   );
   assert.equal(
     catalog.split("\n")[0],

@@ -18,7 +18,7 @@ The durable witnesses are:
   - defines the emit-only benchmark window and the synthetic P2-11 DOM surface.
 - [`budgets.toml`](../../budgets.toml)
   - registers `s1_to_s2_emit_p2_11_dom_surface` with `allocs = 60`.
-- [`check.yml`](../../../../../.github/workflows/check.yml)
+- [`01-check.yml`](../../../../../.github/workflows/01-check.yml)
   - runs the benchmark and `bench-compare` row in the Davinci allocation gate.
 - [`davinci-budgets.test.ts`](../../../../../tests/tooling/davinci-budgets.test.ts)
   - keeps the budget row reconciled with the bench source and asserts the

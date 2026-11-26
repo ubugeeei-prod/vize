@@ -39,7 +39,7 @@ test("native Program and Vue whole responses share the same actual feature valid
 });
 
 test("affected Maestro source builds require real native feature tests before required Rust aggregation", () => {
-  const workflow = parse(readAutomationPrograms(".github", "workflows", "pr-rust-checks.yml"));
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "01-pr-rust.yml"));
   const build = workflow.jobs["pr-rust-build"];
   assert.equal(build.if, "${{ inputs.run-rust }}");
   assert.equal(build.strategy.matrix.lane, RUST_SOURCE_LANES);
@@ -68,13 +68,13 @@ test("affected Maestro source builds require real native feature tests before re
 test("affected merge candidates require the same native navigation recipe in the differential lane", () => {
   assert.ok(differentialMatrix(["vize_maestro"]).lane.includes("navigation"));
   assert.equal(differentialMatrix(["vize_atelier_ssr"]).lane.includes("navigation"), false);
-  const workflow = parse(readAutomationPrograms(".github", "workflows", "pr-rust-checks.yml"));
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "01-pr-rust.yml"));
   const merge = workflow.jobs["merge-rust-differential"];
   assert.equal(merge.if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
   assert.equal(merge.with["rust-plan"], "${{ inputs.rust-plan }}");
   assert.ok(workflow.jobs["rust-source-report"].needs.includes("merge-rust-differential"));
   const differential = parse(
-    readAutomationPrograms(".github", "workflows", "pr-rust-differential.yml"),
+    readAutomationPrograms(".github", "workflows", "01-pr-rust-differential.yml"),
   );
   const job = differential.jobs.differential;
   assert.equal(job.if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");

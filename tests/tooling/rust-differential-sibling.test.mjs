@@ -22,9 +22,9 @@ import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const workflow = (path) => parse(readAutomationPrograms(join(root, path)));
-const rust = workflow(".github/workflows/pr-rust-checks.yml");
-const products = workflow(".github/workflows/pr-rust-products.yml");
-const differential = workflow(".github/workflows/pr-rust-differential.yml");
+const rust = workflow(".github/workflows/01-pr-rust.yml");
+const products = workflow(".github/workflows/01-pr-rust-products.yml");
+const differential = workflow(".github/workflows/01-pr-rust-differential.yml");
 const job = differential.jobs.differential;
 const recipePath = ".github/actions/test-rust-workspace-differential";
 const runnerPath = "tools/support/compat/github/rust-differential-lanes.ts";
@@ -45,11 +45,11 @@ const disk = (steps) =>
 await test("affected differential lanes share the full recipe and remain required beside the producer", () => {
   const sibling = rust.jobs["merge-rust-differential"];
   const cohort = products.jobs["pr-rust-shard"];
-  const seed = workflow(".github/workflows/rust-pr-target-seed.yml");
+  const seed = workflow(".github/workflows/01-rust-target-seed.yml");
   const producer = seed.jobs["rust-differential-target-seed"];
   assert.equal(sibling.needs, undefined);
   assert.equal(sibling.if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
-  assert.equal(sibling.uses, "./.github/workflows/pr-rust-differential.yml");
+  assert.equal(sibling.uses, "./.github/workflows/01-pr-rust-differential.yml");
   assert.equal(sibling.with["rust-plan"], "${{ inputs.rust-plan }}");
   assert.equal(sibling.with["run-rust"], "${{ inputs.run-rust }}");
   for (const [report, requiredJobs] of [
@@ -163,7 +163,7 @@ function fixture(lane) {
     delete env.VIZE_TEST_DISABLE_TSGO;
     delete env.TEST_CASES_JOB;
     delete env.VIZE_TEST_CASES;
-    const scripts = join(root, ".github/scripts/workflows/pr-rust-differential");
+    const scripts = join(root, "tools/ci/workflows/01-pr-rust-differential/scripts");
     const action = join(root, ".github/actions/test-native-navigation");
     let result;
     for (const step of selectedSteps(lane)) {

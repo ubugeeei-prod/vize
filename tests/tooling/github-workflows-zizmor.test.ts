@@ -241,9 +241,9 @@ test("only complete, unchanged maintainer source PRs skip zizmor", async () => {
 
 test("workflow edits and renamed workflows scan every stacked PR", async () => {
   for (const files of [
-    [{ filename: ".github/workflows/check.yml" }],
+    [{ filename: ".github/workflows/01-check.yml" }],
     [{ filename: ".github/actions/custom/action.yml" }],
-    [{ filename: "moved-check.yml", previous_filename: ".github/workflows/check.yml" }],
+    [{ filename: "moved-check.yml", previous_filename: ".github/workflows/01-check.yml" }],
   ]) {
     assert.equal((await runSelector({ files })).audit, "true");
   }
@@ -251,7 +251,7 @@ test("workflow edits and renamed workflows scan every stacked PR", async () => {
   const files = Array.from({ length: 101 }, (_, index) => ({
     filename: `crates/file-${index}.rs`,
   }));
-  files.push({ filename: ".github/workflows/check.yml" });
+  files.push({ filename: ".github/workflows/01-check.yml" });
   assert.equal((await runSelector({ files })).audit, "true");
 });
 

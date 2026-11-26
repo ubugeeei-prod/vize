@@ -12,7 +12,7 @@ const rust = fs.readFileSync(
   "utf8",
 );
 const workflow = readAutomationPrograms(
-  new URL("../../.github/workflows/pr-rust-products.yml", import.meta.url),
+  new URL("../../.github/workflows/01-pr-rust-products.yml", import.meta.url),
 );
 const digest = (text: string) => createHash("sha256").update(text).digest("hex");
 function section(text: string, from: string, to: string) {

@@ -12,7 +12,7 @@ type Job = Record<string, unknown> & { steps: Record<string, unknown>[] };
 const hostedReportRunner = "ubuntu-24.04";
 const reports = [
   {
-    file: ".github/workflows/pr-rust-products.yml",
+    file: ".github/workflows/01-pr-rust-products.yml",
     id: "rust-product-report",
     needs: ["pr-rust-shard", "rust-feature-tests"],
     permissions: {
@@ -34,7 +34,7 @@ const reports = [
     },
   },
   {
-    file: ".github/workflows/pr-rust-checks.yml",
+    file: ".github/workflows/01-pr-rust.yml",
     id: "rust-source-report",
     needs: ["merge-rust-differential", "pr-rust-build"],
     permissions: {
@@ -53,7 +53,7 @@ const reports = [
     },
   },
   {
-    file: ".github/workflows/pr-source-checks.yml",
+    file: ".github/workflows/01-pr-source.yml",
     id: "source-report",
     needs: [
       "pr-source-plan",
@@ -85,7 +85,7 @@ const reports = [
     },
   },
   {
-    file: ".github/workflows/check.yml",
+    file: ".github/workflows/01-check.yml",
     id: "test-report",
     needs: [
       "iteration-plan",

@@ -35,7 +35,7 @@ void test("mixed census changes retain every native, workflow and shared configu
     "tests/expected/native/setup.snap",
     "tests/tooling/native-sfc-js-setup-reference.test.ts",
     ".github/actions/test-native-js-setup/action.yml",
-    ".github/workflows/pr-source-checks.yml",
+    ".github/workflows/01-pr-source.yml",
     "Cargo.lock",
     ".cargo/config.toml",
     "npm/cli/schemas/vize.config.schema.json",
@@ -134,7 +134,7 @@ void test("census stays metadata-only in queue while workflow changes and unknow
   const census = "docs/davinci/plan/croquis-consumption/vize_l1.md";
   assert.deepEqual(planAffectedRust(metadata, [census], "merge_group").packages, []);
   for (const path of [
-    ".github/workflows/pr-source-checks.yml",
+    ".github/workflows/01-pr-source.yml",
     ".github/actions/test-native-js-setup/action.yml",
     "Cargo.lock",
     ".cargo/config.toml",

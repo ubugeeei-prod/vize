@@ -22,7 +22,7 @@ import {
 void test("compiler and CI changes run both source gates", () => {
   for (const path of [
     "crates/vize_croquis_cf/src/rules/provide_inject/index.rs",
-    ".github/workflows/check.yml",
+    ".github/workflows/01-check.yml",
     "Cargo.lock",
   ]) {
     assert.deepEqual(
@@ -30,7 +30,7 @@ void test("compiler and CI changes run both source gates", () => {
       {
         rust: true,
         js: true,
-        tooling: path === ".github/workflows/check.yml",
+        tooling: path === ".github/workflows/01-check.yml",
         playground: path !== "crates/vize_croquis_cf/src/rules/provide_inject/index.rs",
       },
       path,

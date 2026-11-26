@@ -113,7 +113,7 @@ void test("the Rust-only gate matches Lean workflow tokens without substring fal
   assert.equal(
     formal(
       memory({
-        ".github/workflows/cleanup-obsolete-merge-groups.yml": "",
+        ".github/workflows/01-merge-queue-cleanup.yml": "",
         ".github/workflows/patina-boolean-public.yml": "",
         ".github/workflows/patina-native-boolean-protocol.yml": "",
         "tests/formal/ir-graph/Reach.lean": "",

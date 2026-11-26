@@ -73,8 +73,8 @@ void test("the ratchet only grows while its crates exist", () => {
 
 void test("PR Clippy runs the ratchet and the plan job holds it", () => {
   const command = "node tools/support/compat/github/clippy-test-targets.ts";
-  const prRust = read(".github/workflows/pr-rust-checks.yml");
+  const prRust = read(".github/workflows/01-pr-rust.yml");
   assert.equal(prRust.split(`${command} touched "$RUNNER_TEMP/rust-plan.json"`).length, 2);
-  const prSource = read(".github/workflows/pr-source-checks.yml");
+  const prSource = read(".github/workflows/01-pr-source.yml");
   assert.equal(prSource.split(`${command} hold "$BASE_SHA"`).length, 2);
 });

@@ -14,7 +14,7 @@ type Step = { uses?: string; with?: Record<string, unknown>; [key: string]: unkn
 type Job = { steps: [Step, ...Step[]] };
 type Workflow = { jobs: Record<string, Job> };
 const current = parse(
-  readAutomationPrograms(new URL("../../.github/workflows/check.yml", import.meta.url), "utf8"),
+  readAutomationPrograms(new URL("../../.github/workflows/01-check.yml", import.meta.url), "utf8"),
 ) as Workflow;
 const archived = parse(
   fs.readFileSync(
@@ -92,6 +92,6 @@ test("both workflow inputs explicitly select their whole runner contract guard",
     "utf8",
   );
   const references = proseReferences(source);
-  for (const path of [".github/workflows/check.yml", ".github/workflows/pr-source-checks.yml"])
+  for (const path of [".github/workflows/01-check.yml", ".github/workflows/01-pr-source.yml"])
     assert.equal(readsProse(path, [references]), true, path);
 });

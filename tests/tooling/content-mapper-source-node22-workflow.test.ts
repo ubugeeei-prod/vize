@@ -22,7 +22,7 @@ const actorInputs = [
   "tools/support/compat/content-mapper/direct-child-props-runtime-11809.ts",
   "tests/tooling/content-mapper-direct-child-props.test.ts",
 ];
-const workflowPath = ".github/workflows/pr-js-checks.yml";
+const workflowPath = ".github/workflows/01-pr-js.yml";
 const contract = "tests/tooling/content-mapper-source-node22-workflow.test.ts";
 const proofName = "Verify packaged direct-child props with source native on Node 22";
 type Step = {
@@ -94,7 +94,7 @@ test("source reporter raw archives and receipts survive failure and cancellation
   assert.equal(upload.with?.["if-no-files-found"], "error");
   assert.equal(upload["continue-on-error"], undefined);
   const source = parse(
-    readAutomationPrograms(path.join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
+    readAutomationPrograms(path.join(root, ".github/workflows/01-pr-source.yml"), "utf8"),
   ) as Workflow;
   assert.ok(source.jobs["source-report"]!.needs?.includes("pr-js-packages"));
 });

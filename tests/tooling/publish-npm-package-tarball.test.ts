@@ -364,7 +364,7 @@ await test("already-created versions verify the exact archive without requiring 
 });
 
 await test("ordinary PR and merge-group source plans execute the complete publisher regression family", () => {
-  const workflow = readRepoFile(".github", "workflows", "pr-source-checks.yml");
+  const workflow = readRepoFile(".github", "workflows", "01-pr-source.yml");
   const plan = workflowJobBody(workflow, "pr-source-plan");
   assert.match(plan, /github.event_name == 'pull_request' \|\| github.event_name == 'merge_group'/);
   const job = workflowJobBody(workflow, "ci-selection-tests");

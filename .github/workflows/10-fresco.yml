@@ -4,7 +4,7 @@ name: Fresco
 
 # Cross-platform lanes for the Fresco terminal UI stack (#3113 M0).
 #
-# The Linux workspace gates in check.yml already run the Fresco JS
+# The Linux workspace gates in 01-check.yml already run the Fresco JS
 # check/build/test tasks and `cargo test --workspace`. Terminal behavior is
 # platform-sensitive (console backends, IME platform modules, path and shell
 # differences), so this workflow re-runs the focused Fresco suites nightly

@@ -96,7 +96,7 @@ test("actual historical capture composition preserves original Vue2 order and th
   assert.deepEqual(hooks[0].with, {
     "comparison-base": "${{ github.sha }}",
   });
-  assert.ok(read(".github/workflows/pr-source-checks.yml").split("\n").length - 1 <= 500);
+  assert.ok(read(".github/workflows/01-pr-source.yml").split("\n").length - 1 <= 500);
 });
 
 test("actual historical selectors run every full qualification and fail closed for PR comparisons", () => {
@@ -132,7 +132,7 @@ test("actual historical selectors run every full qualification and fail closed f
     "tests/tooling/support/vue1-text-document-judge.ts",
     "tests/_fixtures/reference/vue1/vue.common.cjs.gz",
     ".github/actions/test-native-historical-text-documents/action.yml",
-    ".github/workflows/pr-source-checks.yml",
+    ".github/workflows/01-pr-source.yml",
   ])
     assert.deepEqual(
       selection("pull_request", [path]),

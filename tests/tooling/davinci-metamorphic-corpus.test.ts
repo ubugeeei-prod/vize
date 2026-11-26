@@ -11,7 +11,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 // matrix-plane half rides `cargo test --workspace` in clippy-and-test;
 // this gate runs the corpus half in the test-scripts job over exactly
 // the submodules that job already hydrates for the CLI diagnostic
-// fixture (check.yml, "Hydrate CLI diagnostic fixture"), so the shard
+// fixture (01-check.yml, "Hydrate CLI diagnostic fixture"), so the shard
 // costs no extra checkout. The full-corpus recipe is the same env var
 // pointed at tests/_fixtures/_git (see the P2-15 record).
 const shard = ["tests/_fixtures/_git/ant-design-vue", "tests/_fixtures/_git/create-vue"];

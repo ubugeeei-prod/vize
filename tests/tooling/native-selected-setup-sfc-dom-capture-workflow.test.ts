@@ -367,7 +367,7 @@ test("the PR planner requires the setup lane and its chained selected-SFC captur
   }
   const workflow = parse(
     fs.readFileSync(
-      new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
+      new URL("../../.github/workflows/01-pr-source.yml", import.meta.url),
       "utf8",
     ),
   );

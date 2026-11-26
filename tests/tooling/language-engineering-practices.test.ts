@@ -75,7 +75,7 @@ test("language engineering practices document upstream-derived compiler workflow
     "tests/snapshots/lint",
     "tools/benchmarks/scripts/test-inventory.ts",
     ".github/workflows/03-source-comparison.yml",
-    ".github/workflows/check.yml",
+    ".github/workflows/01-check.yml",
     ".github/workflows/11-fuzz.yml",
     "tests/fuzz/Cargo.toml",
     "tools/ci/commands/fuzz/seed-corpus.ts",

@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 export const realProjectShardCount = 22;
 export const realProjectRegistryPath = "tests/_fixtures/vue-ecosystem-fixtures.json";
-export const realProjectWorkflowPath = ".github/workflows/real-project-matrix.yml";
+export const realProjectWorkflowPath = ".github/workflows/01-real-project-matrix.yml";
 export const realProjectJobTemplate = "real projects (${{ matrix.name }})";
 const legacyJobTemplate = "real projects (${{ matrix.shard }}/22)";
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");

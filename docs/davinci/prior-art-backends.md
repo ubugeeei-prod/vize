@@ -186,7 +186,7 @@ skipped.
 [llvm-compile-time-tracker](https://github.com/nikic/llvm-compile-time-tracker)
 measured instructions retired per commit. Making regressions visible per
 commit, rather than per release, reversed the trend.
-_Davinci state:_ `level-instruction-counts.yml` gates instruction ceilings
+_Davinci state:_ `03-instruction-counts.yml` gates instruction ceilings
 in the merge queue on the shipped release profile. Every PR reports a
 measurement table.
 

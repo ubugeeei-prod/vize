@@ -43,7 +43,7 @@ const run = {
     full_name: context.repository,
     id: 99,
   },
-  path: ".github/workflows/check.yml",
+  path: ".github/workflows/01-check.yml",
 };
 const commands = [
   "Run L2 DOM differential corpus",

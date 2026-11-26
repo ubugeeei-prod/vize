@@ -21,7 +21,7 @@ the section they operate, and the release captain owns the final go/no-go decisi
 ## Pre-Tag Gate
 
 - [ ] All alpha qualification checks are green on the exact source commit selected for release: ([PT-1 evidence](./davinci-v1-evidence.md#pre-tag-gate))
-  - [Check](../../.github/workflows/check.yml)
+  - [Check](../../.github/workflows/01-check.yml)
   - [Benchmark](../../.github/workflows/03-source-comparison.yml)
   - [App E2E](../../.github/workflows/10-app-e2e.yml) for `dev`, `preview`, and `build`
   - [Docs Build](../../.github/workflows/11-docs-build.yml) evidence on the exact target commit

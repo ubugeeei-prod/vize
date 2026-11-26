@@ -75,8 +75,8 @@ const exactInputs = new Set([
   "tools/support/compat/github/plan-tooling-tests.mjs",
   "tools/config/vite-plus/tooling-test-scopes.ts",
   ".github/actions/test-native-attribute-values-7502/action.yml",
-  ".github/workflows/pr-source-checks.yml",
-  ".github/workflows/check.yml",
+  ".github/workflows/01-pr-source.yml",
+  ".github/workflows/01-check.yml",
 ]);
 export function nativeAttributeValues7502CaptureRequired(paths) {
   return paths.some(

@@ -53,7 +53,7 @@ function fixture({
 
 void test("coalesces actionable cleanup runs separately from skipped PR events", () => {
   const workflow = parse(
-    readRepoFile(".github", "workflows", "cleanup-obsolete-merge-groups.yml"),
+    readRepoFile(".github", "workflows", "01-merge-queue-cleanup.yml"),
   ) as { concurrency: { group: string; "cancel-in-progress": boolean } };
   assert.deepEqual(workflow.concurrency, {
     group:

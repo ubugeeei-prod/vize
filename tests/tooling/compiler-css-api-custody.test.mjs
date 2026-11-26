@@ -245,7 +245,7 @@ await test("actual Cargo and tracked JS dependency graphs select required native
 await test("the required UI-conformance producer cannot be skipped, swallowed or detached from source-report", () => {
   const { parse } = createRequire(import.meta.url)("yaml");
   const workflow = parse(
-    fs.readFileSync(path.join(root, ".github/workflows/pr-js-checks.yml"), "utf8"),
+    fs.readFileSync(path.join(root, ".github/workflows/01-pr-js.yml"), "utf8"),
   );
   const steps = workflow.jobs["pr-js-package-conformance"].steps;
   const proof = steps.find(
@@ -261,10 +261,10 @@ await test("the required UI-conformance producer cannot be skipped, swallowed or
   assert.equal(proof.env.VIZE_CSS_MAP_SOURCE_SHA, "${{ github.sha }}");
   assert.equal(proof.if, steps.find((step) => step.name === "Check UI package conformance").if);
   const outer = parse(
-    fs.readFileSync(path.join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
+    fs.readFileSync(path.join(root, ".github/workflows/01-pr-source.yml"), "utf8"),
   );
   assert.ok(outer.jobs["source-report"].needs.includes("pr-js-packages"));
-  assert.equal(outer.jobs["pr-js-packages"].uses, "./.github/workflows/pr-js-checks.yml");
+  assert.equal(outer.jobs["pr-js-packages"].uses, "./.github/workflows/01-pr-js.yml");
   assert.equal(outer.jobs["pr-js-packages"]["continue-on-error"], undefined);
   const needs = {
     "pr-source-plan": { result: "success", outputs: { "canonical-corpus": "true" } },

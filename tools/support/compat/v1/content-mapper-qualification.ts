@@ -308,7 +308,7 @@ export function buildContentMapperV1Qualification(root: string, requiredCases: r
         id: "node-bun-hosts",
         issues: [13038],
         evidenceCandidates: [
-          ".github/workflows/pr-js-checks.yml",
+          ".github/workflows/01-pr-js.yml",
           "npm/cli/tests/content-mapper-bun.test.ts",
         ],
       },
@@ -319,8 +319,8 @@ export function buildContentMapperV1Qualification(root: string, requiredCases: r
         id: "real-projects",
         issues: [13044],
         evidenceCandidates: [
-          ".github/workflows/real-project-matrix.yml",
-          ".github/workflows/real-project-matrix-differential.yml",
+          ".github/workflows/01-real-project-matrix.yml",
+          ".github/workflows/01-real-project-differential.yml",
         ],
       },
       requiredCases,

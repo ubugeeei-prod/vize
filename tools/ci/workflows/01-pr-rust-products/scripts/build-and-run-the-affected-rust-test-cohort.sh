@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# DO NOT EDIT. Generated from tools/ci/workflows/01-pr-rust-products/scripts/build-and-run-the-affected-rust-test-cohort.sh.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+node "$VIZE_CI_FILES/build-and-run-the-affected-rust-test-cohort.cjs"
+evidence="$RUNNER_TEMP/rust-build-evidence"
+node tools/support/compat/github/rust-build-evidence.ts before "$evidence"
+set -o pipefail
+phase_started=$SECONDS
+if node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo nextest run @packages@ --cargo-profile ci --timings --cargo-message-format=json-render-diagnostics --profile "$NEXTEST_PROFILE" -E "$NEXTEST_FILTER" --no-tests=pass | tee "$evidence/cargo.jsonl"; then phase_exit=0; else phase_exit=$?; fi
+mkdir -p "target/nextest/$NEXTEST_PROFILE"
+printf '{"phase":"workspace-cohort","cohort":"%s","elapsed_seconds":%d,"exit_code":%d}\n' "$COHORT" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
+exit "$phase_exit"

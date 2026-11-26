@@ -28,7 +28,7 @@ test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
   }
 
   for (const workflow of [
-    "../../.github/workflows/check.yml",
+    "../../.github/workflows/01-check.yml",
     "../../.github/workflows/03-source-comparison.yml",
     "../../.github/workflows/11-fuzz.yml",
     "../../.github/workflows/10-app-e2e.yml",

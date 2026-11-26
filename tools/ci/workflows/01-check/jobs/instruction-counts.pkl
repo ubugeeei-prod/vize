@@ -1,0 +1,3 @@
+name = "Instruction ceilings"
+`if` = "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+uses = "./.github/workflows/03-instruction-counts.yml"

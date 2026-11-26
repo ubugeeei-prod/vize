@@ -50,11 +50,11 @@ const evidence = {
   patina: [
     "docs/scripts/generate-patina-rules-page.ts",
     "docs/content/rules/index.md",
-    ".github/workflows/pr-rust-checks.yml",
+    ".github/workflows/01-pr-rust.yml",
   ],
   glyph: [
     "docs/content/guide/formatter.md",
-    ".github/workflows/pr-rust-checks.yml",
+    ".github/workflows/01-pr-rust.yml",
     "crates/vize_glyph/src/lib.rs",
   ],
   davinci: [

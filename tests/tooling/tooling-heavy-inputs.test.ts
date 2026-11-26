@@ -50,7 +50,7 @@ void test("Rust corpus inputs include compiler, hydrated shards, matrix, harness
     "Cargo.lock",
     ".cargo/config.toml",
     "rust-toolchain.toml",
-    ".github/workflows/pr-source-checks.yml",
+    ".github/workflows/01-pr-source.yml",
     "tests/_fixtures/_git/create-vue",
     "tests/_fixtures/_git/ant-design-vue",
     "tests/_fixtures/_git/layoutit-grid",

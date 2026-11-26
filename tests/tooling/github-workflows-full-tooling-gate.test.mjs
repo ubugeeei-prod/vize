@@ -19,8 +19,8 @@ const root = new URL("../../", import.meta.url);
 const read = (file) => readFileSync(new URL(file, root), "utf8");
 const yaml = (file) =>
   parse(
-    file === ".github/workflows/check.yml"
-      ? checkWorkflowJobSources(read(file), read(".github/workflows/full-qualification.yml"))
+    file === ".github/workflows/01-check.yml"
+      ? checkWorkflowJobSources(read(file), read(".github/workflows/01-full-qualification.yml"))
       : read(file),
   );
 const fullCondition =
@@ -32,10 +32,10 @@ const planCommand =
   'node tools/support/compat/github/plan-tooling-tests.mjs 0000000000000000000000000000000000000000 "$GITHUB_SHA" --tier merge --output "$RUNNER_TEMP/tooling-plan.json"';
 
 void test("one planner owns the exhaustive matrix that every full worker regenerates", () => {
-  const jobs = yaml(".github/workflows/check.yml").jobs;
+  const jobs = yaml(".github/workflows/01-check.yml").jobs;
   assert.equal(jobs["tooling-plan"].if, fullCondition);
-  assert.equal(jobs["tooling-plan"].uses, "./.github/workflows/full-tooling-plan.yml");
-  const workflow = yaml(".github/workflows/full-tooling-plan.yml");
+  assert.equal(jobs["tooling-plan"].uses, "./.github/workflows/01-full-tooling-plan.yml");
+  const workflow = yaml(".github/workflows/01-full-tooling-plan.yml");
   assert.deepEqual(workflow.on.workflow_call.outputs, {
     matrix: { value: "${{ jobs.plan.outputs.matrix }}" },
   });
@@ -89,7 +89,7 @@ function enabled(
 }
 
 void test("full workers accept failed producers but never start after cancellation", () => {
-  const condition = yaml(".github/workflows/check.yml").jobs["test-scripts"].if;
+  const condition = yaml(".github/workflows/01-check.yml").jobs["test-scripts"].if;
   for (const event of ["schedule", "workflow_dispatch", "pull_request", "merge_group", "push"])
     for (const prior of ["success", "failure", "skipped"])
       for (const cancelled of [false, true])
@@ -125,7 +125,7 @@ void test("independent native and package execution stops on cancellation withou
         }
 
   const js = ["full-js-package-tests", "full-js-original-project"].map((name) =>
-    yaml(".github/workflows/check.yml").jobs[name].steps.find(
+    yaml(".github/workflows/01-check.yml").jobs[name].steps.find(
       (step) => step.uses === "./.github/actions/test-js-packages-with-history",
     ),
   );
@@ -209,7 +209,7 @@ void test("failure uploads and strict full aggregators retain cancellation evide
       assert.doesNotMatch(upload.if, /cancelled\(\)/, name);
     }
   }
-  const jobs = yaml(".github/workflows/check.yml").jobs;
+  const jobs = yaml(".github/workflows/01-check.yml").jobs;
   for (const name of ["test-scripts-gate", "full-js-report"]) {
     const job = jobs[name];
     assert.equal(job.if, alwaysFullCondition);

@@ -364,7 +364,7 @@ test("an existing provider receipt is retained and prevents a new environment ex
 
 test("actual workflow carrier precedes both full profiles and its receipt is uploaded", () => {
   type Step = { name?: string; run?: string; uses?: string; with?: { path?: string } };
-  const workflow = parse(readRepoFile(".github/workflows/full-qualification.yml")) as {
+  const workflow = parse(readRepoFile(".github/workflows/01-full-qualification.yml")) as {
     jobs: Record<string, { steps: Step[] }>;
   };
   const steps = workflow.jobs["full-rust-workspace"].steps;
@@ -422,7 +422,7 @@ test("source coverage uses the same carrier before full native tests and retains
     uses?: string;
     with?: { path?: string; name?: string };
   };
-  const workflow = parse(readRepoFile(".github/workflows/check.yml")) as {
+  const workflow = parse(readRepoFile(".github/workflows/01-check.yml")) as {
     jobs: Record<string, { steps: Step[] }>;
   };
   const steps = workflow.jobs["source-coverage"].steps;

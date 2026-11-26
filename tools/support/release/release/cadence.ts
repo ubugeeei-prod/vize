@@ -80,7 +80,7 @@ export async function releaseRunning(
 /** Reads the cadence inputs from the GitHub API. `lastTag` is the highest release tag. */
 export async function readCadenceInput(lastTag: string | null): Promise<CadenceInput> {
   const runs = await api(
-    "actions/workflows/check.yml/runs?branch=main&event=push&status=success&per_page=1",
+    "actions/workflows/01-check.yml/runs?branch=main&event=push&status=success&per_page=1",
   );
   const run = (runs.workflow_runs as Json[] | undefined)?.[0];
   const greenSha = typeof run?.head_sha === "string" ? run.head_sha : null;

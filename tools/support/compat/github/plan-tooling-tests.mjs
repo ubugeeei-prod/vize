@@ -425,7 +425,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     else throw new Error(`unknown option: ${options[index]}`);
   }
   const paths = /^0+$/.test(base) ? [] : changedPaths(base, head, root);
-  const capturePaths = /^0+$/.test(base) ? [".github/workflows/check.yml"] : paths;
+  const capturePaths = /^0+$/.test(base) ? [".github/workflows/01-check.yml"] : paths;
   // Matrix entry 1 also runs these captures; packing reserves their measured time there.
   const plan = {
     ...planToolingTests(paths, { tier }),

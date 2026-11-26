@@ -24,7 +24,7 @@ const runtimeFiles = [
   "tools/support/github/opinionated-source-inputs.ts",
 ];
 const plannerPath = "tools/support/compat/github/plan-check-inputs.ts";
-const workflow = parse(readAutomationPrograms(join(root, ".github/workflows/check.yml"), "utf8"));
+const workflow = parse(readAutomationPrograms(join(root, ".github/workflows/01-check.yml"), "utf8"));
 const job = workflow.jobs["iteration-plan"];
 const checkoutInputs = job.steps.find((step: { uses?: string }) =>
   step.uses?.startsWith("actions/checkout@"),

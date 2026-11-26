@@ -34,7 +34,7 @@ function runCoverageSummary(cwd: string, env: NodeJS.ProcessEnv) {
 
 test("check workflow runs coverage summary with stable Node", () => {
   const coverageJob = workflowJobBody(
-    readRepoFile(".github", "workflows", "check.yml"),
+    readRepoFile(".github", "workflows", "01-check.yml"),
     "coverage",
   );
 

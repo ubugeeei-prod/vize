@@ -1,0 +1,119 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/03-instruction-counts/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Level instruction counts
+
+on:
+  # Check calls the measurement once per queue candidate and scheduled run.
+  # Avoid a second standalone PR run of the same instruction campaign.
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: instruction-counts-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  RUSTUP_TOOLCHAIN: "1.100.0"
+
+jobs:
+  instruction-counts:
+    name: Per-stage instruction ceilings
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      # Reusable workflows retain the caller's workflow name.
+      VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/03-instruction-counts/scripts"
+      MEASURE: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.workflow == 'Level instruction counts' }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+      - name: Install pinned measurement Rust
+        if: env.MEASURE == 'true'
+        run: rustup toolchain install 1.100.0 --profile minimal
+      - name: Install Callgrind and matching client request headers
+        if: env.MEASURE == 'true'
+        run: . "${{ env.VIZE_CI_FILES }}/install-callgrind-and-matching-client-request-headers.sh"
+      - uses: ./.github/actions/setup-wild-http-recovery
+        if: env.MEASURE == 'true'
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: env.MEASURE == 'true'
+        with:
+          key: instruction-counts-v2
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Test instruction parser and gates
+        run: node --test tests/tooling/level-instruction-counts.test.mjs tests/tooling/formatter-instruction-counts.test.ts
+      - name: Test default harness and client request windows
+        if: env.MEASURE == 'true'
+        run: . "${{ env.VIZE_CI_FILES }}/test-default-harness-and-client-request-windows.sh"
+      - name: Measure original formatter routines three times without Criterion sampling
+        if: env.MEASURE == 'true'
+        run: node tools/benchmarks/scripts/instruction-counts.mjs --formatter --collect --out "${RUNNER_TEMP}/formatter-instruction-counts"
+      - name: Measure each stage three times without Criterion sampling
+        if: env.MEASURE == 'true'
+        run: node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts"
+      - name: Verify pinned registry and immutable base ratchet
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+        run: . "${{ env.VIZE_CI_FILES }}/verify-pinned-registry-and-immutable-base-ratchet.sh"
+      - name: Enforce pinned ceilings
+        if: env.MEASURE == 'true'
+        run: . "${{ env.VIZE_CI_FILES }}/enforce-pinned-ceilings.sh"
+      - name: Enforce original formatter ceilings
+        if: env.MEASURE == 'true'
+        run: . "${{ env.VIZE_CI_FILES }}/enforce-original-formatter-ceilings.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() && env.MEASURE == 'true' }}
+        with:
+          name: instruction-counts-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/instruction-counts
+          if-no-files-found: warn
+          retention-days: 30
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() && env.MEASURE == 'true' }}
+        with:
+          name: formatter-instruction-counts-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/formatter-instruction-counts
+          if-no-files-found: error
+          retention-days: 30
+
+  sfc-parse:
+    name: Template-only SFC instruction parity
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/03-instruction-counts/scripts"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Install measurement tools
+        run: . "${{ env.VIZE_CI_FILES }}/install-measurement-tools.sh"
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: sfc-instructions-v2
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Verify native descriptor compatibility
+        run: . "${{ env.VIZE_CI_FILES }}/verify-native-descriptor-compatibility.sh"
+      - name: Measure both parsers three times and enforce parity
+        run: . "${{ env.VIZE_CI_FILES }}/measure-both-parsers-three-times-and-enforce-parity.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: sfc-instructions-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/sfc-instructions
+          if-no-files-found: warn

@@ -92,8 +92,8 @@ function verifyRun(runId, tier, sourceRevision, day) {
       run.conclusion === "success" &&
       run.created_at?.slice(0, 10) === day &&
       (tier === "T1"
-        ? run.path === ".github/workflows/check.yml" && run.event === "merge_group"
-        : run.path === ".github/workflows/real-project-matrix.yml" &&
+        ? run.path === ".github/workflows/01-check.yml" && run.event === "merge_group"
+        : run.path === ".github/workflows/01-real-project-matrix.yml" &&
           ["schedule", "workflow_dispatch"].includes(run.event))
     );
   } catch {

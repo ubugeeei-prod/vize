@@ -1,0 +1,9 @@
+name = "PR JS packages"
+`if` = "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}"
+needs = "pr-source-plan"
+uses = "./.github/workflows/01-pr-js.yml"
+with {
+  `run-js` = "${{ needs.pr-source-plan.outputs.js == 'true' }}"
+  `run-original-project` = false
+  `js-plan` = "${{ needs.pr-source-plan.outputs.js-plan }}"
+}

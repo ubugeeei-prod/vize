@@ -1,0 +1,4 @@
+name = "Full qualification"
+`if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+uses = "./.github/workflows/01-full-qualification.yml"
+with { `compare-rust-test-profile` = "${{ inputs.compare-rust-test-profile == true }}" }

@@ -54,15 +54,15 @@ export function restoreRustToolchainPin(
 
 /** Inspect the actual caller and its closed full-only callee without rewriting jobs. */
 export function checkWorkflowJobSources(
-  caller = readAutomationPrograms(".github", "workflows", "check.yml"),
-  callee = readAutomationPrograms(".github", "workflows", "full-qualification.yml"),
+  caller = readAutomationPrograms(".github", "workflows", "01-check.yml"),
+  callee = readAutomationPrograms(".github", "workflows", "01-full-qualification.yml"),
 ): string {
   caller = normalizeRepoText(caller);
   callee = normalizeRepoText(callee);
   const expectedCaller = `  full-qualification:
     name: Full qualification
     if: \${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
-    uses: ./.github/workflows/full-qualification.yml
+    uses: ./.github/workflows/01-full-qualification.yml
     with:
       compare-rust-test-profile: \${{ inputs.compare-rust-test-profile == true }}`;
   assert.equal(workflowJobBody(caller, "full-qualification"), expectedCaller);

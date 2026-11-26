@@ -243,7 +243,7 @@ void test("PRs opened before the requirement started stay report-only", () => {
 
 void test("the PR planner enforces the requirement on pull requests", () => {
   const workflow = readFileSync(
-    new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
+    new URL("../../.github/workflows/01-pr-source.yml", import.meta.url),
     "utf8",
   );
   const step = /- name: Require legacy fix differential inputs\n((?:\s{8,}.*\n)+)/.exec(workflow);

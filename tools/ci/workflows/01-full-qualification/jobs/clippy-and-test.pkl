@@ -1,0 +1,21 @@
+import "../../../lib/Actions.pkl" as ci
+
+`runs-on` = ci.linux
+`timeout-minutes` = 5
+`if` = "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+needs = List("rust-clippy-portability", "rust-davinci-allocations", "rust-native-differential")
+steps = new Listing {
+  ci.use(ci.checkout)
+  new Dynamic {
+    uses = ci.setupNode
+    with {
+      `node-version-file` = "package.json"
+      `package-manager-cache` = false
+    }
+  }
+  new Dynamic {
+    name = "Require Clippy, portability, allocations and native differential execution"
+    env { NEEDS_JSON = "${{ toJSON(needs) }}" }
+    run = "node tools/support/compat/github/require-needs-success.ts"
+  }
+}

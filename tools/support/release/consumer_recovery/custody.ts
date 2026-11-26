@@ -264,7 +264,7 @@ export function verifyIntegration(github: Json, expected: Identity, read = api) 
     "original integration parent mismatch",
   );
   const gates = read(
-    `actions/workflows/check.yml/runs?head_sha=${field("Protected-candidate")}&per_page=100`,
+    `actions/workflows/01-check.yml/runs?head_sha=${field("Protected-candidate")}&per_page=100`,
   );
   assert.ok(
     (gates.workflow_runs as unknown[])
@@ -287,7 +287,7 @@ export function verifyStoredIntegration(github: Json, expected: Identity, value:
   const responses: Record<string, Json> = {
     [`pulls/${identity.integration.number}`]: object(snapshot.integration),
     [`commits/${identity.merge.sha}`]: object(snapshot.merge),
-    [`actions/workflows/check.yml/runs?head_sha=${identity.merge.sha}&per_page=100`]: object(
+    [`actions/workflows/01-check.yml/runs?head_sha=${identity.merge.sha}&per_page=100`]: object(
       snapshot.gates,
     ),
   };

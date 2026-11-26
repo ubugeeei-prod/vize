@@ -101,8 +101,8 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "tests/tooling/support/native-sfc-setup-ssr-loader.ts",
     "tests/tooling/support/native-ssr-direct-child-successor.ts",
     ".github/actions/test-native-ssr/action.yml",
-    ".github/workflows/pr-source-checks.yml",
-    ".github/workflows/check.yml",
+    ".github/workflows/01-pr-source.yml",
+    ".github/workflows/01-check.yml",
     "tools/support/compat/github/native-ssr-capture.mjs",
     "tools/support/compat/github/native-ssr-capture.ts",
     "pnpm-lock.yaml",
@@ -139,7 +139,7 @@ void test("prose, generated ledgers and independent target consumers do not gran
 void test("the native runtime matrix requires SSR for affected sources and broad qualification", () => {
   const workflow = parse(
     fs.readFileSync(
-      new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
+      new URL("../../.github/workflows/01-pr-source.yml", import.meta.url),
       "utf8",
     ),
   );

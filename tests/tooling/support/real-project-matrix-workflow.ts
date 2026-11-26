@@ -50,7 +50,7 @@ export const shardSummaryCommandPath =
 
 export function readRealProjectMatrixWorkflow(): RealProjectMatrixWorkflow {
   return parse(
-    readAutomationPrograms(".github", "workflows", "real-project-matrix.yml"),
+    readAutomationPrograms(".github", "workflows", "01-real-project-matrix.yml"),
   ) as RealProjectMatrixWorkflow;
 }
 

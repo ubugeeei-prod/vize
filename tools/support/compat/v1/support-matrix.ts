@@ -289,7 +289,7 @@ const profiles: readonly Profile[] = [
         "Rule applicability is partitioned; this is not an all-rules by all-languages claim.",
       evidence: [
         ".github/workflows/09-lint-reference-coverage.yml",
-        ".github/workflows/real-project-matrix.yml",
+        ".github/workflows/01-real-project-matrix.yml",
         "tests/tooling/differential-linter-api.test.ts",
       ],
     },
@@ -867,7 +867,7 @@ export function buildV1SupportMatrix(root = process.cwd()) {
       binary: ["native build token", "server sha256", "package version", "target triple"],
       producers: [
         ".github/workflows/06-native-smoke.yml",
-        ".github/workflows/real-project-matrix.yml",
+        ".github/workflows/01-real-project-matrix.yml",
         ".github/workflows/05-editor-conformance.yml",
         ".github/workflows/04-typecheck-wsl2.yml",
       ],
