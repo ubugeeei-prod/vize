@@ -4752,6 +4752,47 @@
       }
     },
     {
+      "id": "lsp/regression/template-ref-key-definition",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "template-ref-key-definition",
+        "files": [
+          {
+            "path": "KeyedRef.vue.txt",
+            "sha256": "ac54cbf3d284ce1d378d923b3889a59d9e638890bf5812598999e2eeaf699269"
+          }
+        ]
+      },
+      "case": {
+        "path": "template-ref-key-definition/case.json",
+        "sha256": "3c14993427e2cff26d80e0ce4dd66d7a8c97ac7219b9706aa3517fd052f1e5ad"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/template-slot-completion-9907",
       "state": "active",
       "targets": [
