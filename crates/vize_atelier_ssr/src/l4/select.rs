@@ -86,7 +86,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink, M: RenderMapMode>(
                 .collect::<std::vec::Vec<String>>(),
         );
     }
-    record_bridge_counters(
+    record_bridge_counters::<M>(
         lowered.plan.segments.len() as u64,
         lowered.plan.partition.static_segments as u64,
         lowered.plan.partition.dynamic_segments as u64,
@@ -105,8 +105,8 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink, M: RenderMapMode>(
         experimental.clone(),
     );
     ctx.apply_sfc_context(context);
-    ctx.set_runtime_module_name(runtime_module_name);
-    ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));
+    ctx.set_runtime_module_name::<M>(runtime_module_name);
+    ctx.begin_render::<M>(artifact.root_origin.map_or(0, |span| span.start));
     match emit::emit_plan::<M>(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
         Ok(()) => SsrL4Selection::Emitted(ctx.finish_render::<M>()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),
@@ -160,7 +160,7 @@ pub(super) fn select_from_l2_plain<'a, 'e, M: RenderMapMode>(
                 .collect::<std::vec::Vec<String>>(),
         );
     }
-    record_bridge_counters(
+    record_bridge_counters::<M>(
         lowered.plan.segments.len() as u64,
         lowered.plan.partition.static_segments as u64,
         lowered.plan.partition.dynamic_segments as u64,
@@ -179,8 +179,8 @@ pub(super) fn select_from_l2_plain<'a, 'e, M: RenderMapMode>(
         experimental.clone(),
     );
     ctx.apply_sfc_context(context);
-    ctx.set_runtime_module_name(runtime_module_name);
-    ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));
+    ctx.set_runtime_module_name::<M>(runtime_module_name);
+    ctx.begin_render::<M>(artifact.root_origin.map_or(0, |span| span.start));
     match emit::emit_plan::<M>(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
         Ok(()) => SsrL4Selection::Emitted(ctx.finish_render::<M>()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),

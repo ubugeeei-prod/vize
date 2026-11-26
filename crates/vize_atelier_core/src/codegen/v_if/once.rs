@@ -18,7 +18,7 @@ use super::super::{
 use super::branch::generate_if_branch_nodes;
 
 /// Whether `v-once` sits on the chain's own `v-if` element.
-pub(super) fn chain_is_once(if_node: &IfNode<'_>) -> bool {
+pub(super) fn chain_is_once<M: RenderMapMode>(if_node: &IfNode<'_>) -> bool {
     matches!(
         if_node.branches.first().map(|branch| branch.children.as_slice()),
         Some([TemplateChildNode::Element(el)]) if has_v_once(el)
@@ -33,7 +33,7 @@ pub(super) fn generate_if_branch_content<M: RenderMapMode>(
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
-    let once = matches!(children, [TemplateChildNode::Element(el)] if wrapped_once(el));
+    let once = matches!(children, [TemplateChildNode::Element(el)] if wrapped_once::<M>(el));
     generate::<M>(ctx, children, branch, branch_index, once);
 }
 
@@ -79,7 +79,7 @@ fn generate<M: RenderMapMode>(
     }
 }
 
-fn wrapped_once(el: &ElementNode<'_>) -> bool {
+fn wrapped_once<M: RenderMapMode>(el: &ElementNode<'_>) -> bool {
     el.tag_type == ElementType::Template
         && matches!(
             el.children.as_slice(),

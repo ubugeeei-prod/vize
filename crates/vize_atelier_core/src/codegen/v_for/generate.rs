@@ -101,25 +101,26 @@ pub fn generate_for_item<M: RenderMapMode>(
                     ctx.use_helper(RuntimeHelper::Fragment);
                     ctx.push("(");
                     if !ctx.untracked_children {
-                        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+                        ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
                         ctx.push("(), ");
                     }
-                    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
+                    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
                     ctx.push("(");
                     ctx.push(ctx.helper(RuntimeHelper::Fragment));
                 } else {
                     // Stable fragment: use createElementVNode without block wrapper
                     ctx.use_helper(RuntimeHelper::CreateElementVNode);
-                    ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
+                    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementVNode);
                     ctx.push("(\"");
                     let node_el = unwrapped_child.unwrap_or(el);
-                    ctx.push_tag(node_el);
+                    ctx.push_tag::<M>(node_el);
                     ctx.push("\"");
                 }
 
                 // Props with key and all other props
                 let props_el = unwrapped_child.unwrap_or(el);
-                let emitted_props = generate_for_item_props(ctx, props_el, key_exp, is_dynamic);
+                let emitted_props =
+                    generate_for_item_props::<M>(ctx, props_el, key_exp, is_dynamic);
 
                 // Children
                 let children_el = unwrapped_child.unwrap_or(el);
@@ -129,7 +130,7 @@ pub fn generate_for_item<M: RenderMapMode>(
                     if gen_is_template {
                         generate_template_for_children::<M>(ctx, &children_el.children);
                     } else {
-                        ctx.with_parent_namespace(child_namespace(children_el), |ctx| {
+                        ctx.with_parent_namespace::<M, _>(child_namespace(children_el), |ctx| {
                             generate_children::<M>(ctx, &children_el.children);
                         });
                     }
@@ -178,14 +179,14 @@ pub fn generate_for_item<M: RenderMapMode>(
                 ctx.use_helper(RuntimeHelper::OpenBlock);
                 ctx.push("(");
                 if !ctx.untracked_children {
-                    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+                    ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
                     ctx.push("(), ");
                 }
 
                 if is_component {
                     // Component: use createBlock
                     ctx.use_helper(RuntimeHelper::CreateBlock);
-                    ctx.push_vnode_helper(RuntimeHelper::CreateBlock);
+                    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateBlock);
                     ctx.push("(");
                     // Handle dynamic component
                     if is_dynamic {
@@ -233,29 +234,30 @@ pub fn generate_for_item<M: RenderMapMode>(
                     // Template with multiple children: use Fragment
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
                     ctx.use_helper(RuntimeHelper::Fragment);
-                    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
+                    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
                     ctx.push("(");
                     ctx.push(ctx.helper(RuntimeHelper::Fragment));
                 } else if let Some(child_el) = unwrapped_child {
                     // Template with single child: unwrap to child element
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
-                    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
+                    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
                     ctx.push("(\"");
-                    ctx.push_tag(child_el);
+                    ctx.push_tag::<M>(child_el);
                     ctx.push("\"");
                 } else {
                     // Regular element
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
-                    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
+                    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
                     ctx.push("(\"");
-                    ctx.push_tag(el);
+                    ctx.push_tag::<M>(el);
                     ctx.push("\"");
                 }
 
                 // Props with key and all other props
                 // For unwrapped template child, use child's props with template's key
                 let props_el = unwrapped_child.unwrap_or(el);
-                let emitted_props = generate_for_item_props(ctx, props_el, key_exp, is_dynamic);
+                let emitted_props =
+                    generate_for_item_props::<M>(ctx, props_el, key_exp, is_dynamic);
 
                 // Children
                 let children_el = unwrapped_child.unwrap_or(el);
@@ -276,17 +278,23 @@ pub fn generate_for_item<M: RenderMapMode>(
                     } else if ctx.skip_v_memo {
                         // v-for + v-memo: force array form for children
                         if children_el.tag_type == ElementType::Element {
-                            ctx.with_parent_namespace(child_namespace(children_el), |ctx| {
-                                generate_children_force_array::<M>(ctx, &children_el.children);
-                            });
+                            ctx.with_parent_namespace::<M, _>(
+                                child_namespace(children_el),
+                                |ctx| {
+                                    generate_children_force_array::<M>(ctx, &children_el.children);
+                                },
+                            );
                         } else {
                             generate_children_force_array::<M>(ctx, &children_el.children);
                         }
                     } else {
                         if children_el.tag_type == ElementType::Element {
-                            ctx.with_parent_namespace(child_namespace(children_el), |ctx| {
-                                generate_children::<M>(ctx, &children_el.children);
-                            });
+                            ctx.with_parent_namespace::<M, _>(
+                                child_namespace(children_el),
+                                |ctx| {
+                                    generate_children::<M>(ctx, &children_el.children);
+                                },
+                            );
                         } else {
                             generate_children::<M>(ctx, &children_el.children);
                         }
@@ -411,7 +419,7 @@ pub fn generate_for_item<M: RenderMapMode>(
 }
 
 /// Generate props for v-for item, including key and all other props
-pub(crate) fn generate_for_item_props(
+pub(crate) fn generate_for_item_props<M: RenderMapMode>(
     ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     key_exp: Option<&ExpressionNode<'_>>,
@@ -423,15 +431,15 @@ pub(crate) fn generate_for_item_props(
         el.tag_type == ElementType::Element,
     );
     let emitted = if el.tag_type == ElementType::Component {
-        ctx.with_component_props(|ctx| for_item_props(ctx, el, key_exp, skip_is_prop))
+        ctx.with_component_props::<M, _>(|ctx| for_item_props::<M>(ctx, el, key_exp, skip_is_prop))
     } else {
-        for_item_props(ctx, el, key_exp, skip_is_prop)
+        for_item_props::<M>(ctx, el, key_exp, skip_is_prop)
     };
     ctx.props_is_plain_element = plain;
     emitted
 }
 
-fn for_item_props(
+fn for_item_props<M: RenderMapMode>(
     ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     key_exp: Option<&ExpressionNode<'_>>,
@@ -442,7 +450,7 @@ fn for_item_props(
             .iter()
             .any(|prop| !is_is_prop(prop) && !should_skip_prop(prop))
     } else {
-        has_other_props(el)
+        has_other_props::<M>(el)
     };
     // skip_scope_id suppresses duplicate scope attrs for synthetic prop objects.
     let scope_id = if ctx.skip_scope_id {
@@ -482,7 +490,7 @@ fn for_item_props(
     let has_von_spread = super::super::props::has_von_object(&el.props);
 
     if has_vbind_spread || has_von_spread {
-        generate_for_item_props_merged(
+        generate_for_item_props_merged::<M>(
             ctx,
             el,
             key_exp,
@@ -646,7 +654,7 @@ fn for_item_props(
 }
 
 /// Generate props using _mergeProps when v-bind/v-on object spreads are present.
-fn generate_for_item_props_merged(
+fn generate_for_item_props_merged<M: RenderMapMode>(
     ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     key_exp: Option<&ExpressionNode<'_>>,
@@ -674,7 +682,7 @@ fn generate_for_item_props_merged(
             continue;
         }
 
-        flush_for_item_props_segment(
+        flush_for_item_props_segment::<M>(
             ctx,
             el.props.get(seg_start..index).unwrap_or_default(),
             key_exp,
@@ -703,7 +711,7 @@ fn generate_for_item_props_merged(
         }
     }
 
-    flush_for_item_props_segment(
+    flush_for_item_props_segment::<M>(
         ctx,
         el.props.get(seg_start..).unwrap_or_default(),
         key_exp,
@@ -716,7 +724,7 @@ fn generate_for_item_props_merged(
     ctx.push(")");
 }
 
-fn flush_for_item_props_segment(
+fn flush_for_item_props_segment<M: RenderMapMode>(
     ctx: &mut CodegenContext,
     props: &[PropNode<'_>],
     key_exp: Option<&ExpressionNode<'_>>,

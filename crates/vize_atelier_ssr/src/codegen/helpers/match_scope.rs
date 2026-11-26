@@ -18,8 +18,8 @@ impl<'a> SsrCodegenContext<'a> {
         disable_comment: bool,
         inherit_attrs: bool,
     ) {
-        self.flush_push();
-        self.push_indent();
+        self.flush_push::<M>();
+        self.push_indent::<M>();
         self.push("{ const ");
         if let Some(value) = &for_node.value_alias {
             self.push_expression(value);
@@ -39,11 +39,11 @@ impl<'a> SsrCodegenContext<'a> {
             disable_comment,
             inherit_attrs,
         );
-        self.flush_push();
+        self.flush_push::<M>();
         self.pop_scoped_params();
 
         self.indent_level -= 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("}\n");
     }
 }

@@ -3,6 +3,7 @@
 //! Keeps the parse/transform option wiring out of `lib.rs` so the pipeline
 //! entry points stay focused on flow.
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::options::{ParserOptions, TransformOptions};
 
 use crate::compile::get_namespace;
@@ -26,7 +27,9 @@ pub(crate) fn parser_options(options: &SsrCompilerOptions) -> ParserOptions {
 /// Transform options for the SSR pipeline.
 ///
 /// SSR always uses prefix identifiers and disables hoisting/caching.
-pub(crate) fn transform_options(options: &SsrCompilerOptions) -> TransformOptions {
+pub(crate) fn transform_options<M: RenderMapMode>(
+    options: &SsrCompilerOptions,
+) -> TransformOptions {
     TransformOptions {
         prefix_identifiers: true, // SSR always uses prefix
         hoist_static: false,      // No hoisting in SSR

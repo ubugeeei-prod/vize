@@ -18,6 +18,7 @@ pub use l2_input::{
 };
 
 use vize_atelier_core::TemplateSyntaxMode;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::config::VueVersion;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String, profile, profiler::global_profiler};
@@ -225,7 +226,7 @@ std::thread_local! {
 
 /// Run the direct lane's debug oracle without recording its selection.
 #[cfg(debug_assertions)]
-pub(crate) fn as_oracle_run<R>(f: impl FnOnce() -> R) -> R {
+pub(crate) fn as_oracle_run<M: RenderMapMode, R>(f: impl FnOnce() -> R) -> R {
     let previous = ORACLE_RUN.with(|flag| flag.replace(true));
     let result = f();
     ORACLE_RUN.with(|flag| flag.set(previous));
@@ -249,7 +250,7 @@ pub(super) fn record_selection(selection: &SsrL4Selection) {
     profiler.record_counter_enabled(counter, 1);
 }
 
-pub(super) fn record_bridge_counters(
+pub(super) fn record_bridge_counters<M: RenderMapMode>(
     segments: u64,
     static_segments: u64,
     dynamic_segments: u64,

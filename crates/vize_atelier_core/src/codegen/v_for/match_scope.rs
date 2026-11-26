@@ -67,10 +67,10 @@ pub(crate) fn generate_scope_body<M: RenderMapMode>(
             ctx.use_helper(RuntimeHelper::Fragment);
             ctx.push("(");
             if !ctx.untracked_children {
-                ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+                ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
                 ctx.push("(), ");
             }
-            ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
+            ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
             ctx.push("(");
             ctx.push(ctx.helper(RuntimeHelper::Fragment));
             ctx.push(", null, [");

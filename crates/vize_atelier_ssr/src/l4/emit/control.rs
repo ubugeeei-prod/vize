@@ -31,21 +31,21 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             match (index, &branch.condition) {
                 (_, Some(condition)) => {
                     let text = self.expr(condition, TransformContent::Decoded)?;
-                    let span =
-                        expression_span(condition).map(|span| quoted_value(self.ctx.source, span));
+                    let span = expression_span(condition)
+                        .map(|span| quoted_value::<M>(self.ctx.source, span));
                     conditions.push(Some((text, span)));
                 }
                 (0, None) => return Err(LegacyReason::Structure.into()),
                 (_, None) => conditions.push(None),
             }
         }
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         for (index, (branch, condition)) in if_op.branches.iter().zip(conditions).enumerate() {
             self.close(
                 Kind::Branch,
                 |source| matches!(source, Source::Branch(open) if core::ptr::eq(*open, branch)),
             )?;
-            self.ctx.push_indent();
+            self.ctx.push_indent::<M>();
             // Each branch opens at its authored unit, as the AST walker's does.
             let unit = branch.span.start;
             match (index, condition) {
@@ -55,11 +55,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     self.ctx.push(") {\n");
                 }
                 (_, Some((condition, span))) => {
-                    self.ctx.push_then_mapped("} ", "else if (", unit);
+                    self.ctx.push_then_mapped::<M>("} ", "else if (", unit);
                     self.push_expression(&condition, span);
                     self.ctx.push(") {\n");
                 }
-                (_, None) => self.ctx.push_then_mapped("} ", "else {\n", unit),
+                (_, None) => self.ctx.push_then_mapped::<M>("} ", "else {\n", unit),
             }
             self.ctx.indent_level += 1;
             let shape = self.scan_region(self.pos)?;
@@ -74,7 +74,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             });
             self.branch_key = None;
             emitted?;
-            self.ctx.flush_push();
+            self.ctx.flush_push::<M>();
             self.ctx.indent_level -= 1;
             self.close(
                 Kind::CloseBranch,
@@ -87,14 +87,14 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .all(|branch| branch.condition.is_some())
             && (!disable_comments || self.ctx.options.vapor)
         {
-            self.ctx.push_indent();
+            self.ctx.push_indent::<M>();
             self.ctx.push("} else {\n");
             self.ctx.indent_level += 1;
             self.ctx.push_string_part_static("<!---->");
-            self.ctx.flush_push();
+            self.ctx.flush_push::<M>();
             self.ctx.indent_level -= 1;
         }
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("}\n");
         self.close(
             Kind::CloseIf,
@@ -117,13 +117,13 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let key = binding.key.as_ref().map(alias).transpose()?;
         let index = binding.index.as_ref().map(alias).transpose()?;
 
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderList);
         if !disable_nested_fragments {
-            self.ctx.push_indent();
+            self.ctx.push_indent::<M>();
             self.ctx.push("_push(`<!--[-->`)\n");
         }
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push_mapped("_ssrRenderList(", for_op.span.start);
         self.push_expression(&source, expression_span(&binding.source));
         let mark = self.enter_for_bindings(for_op, [Some(value), key, index], fact);
@@ -137,7 +137,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         };
         self.ctx.push(", (");
         if M::COMPOSED && self.ctx.spans_enabled() {
-            anchor_for_aliases(
+            anchor_for_aliases::<M>(
                 &mut self.ctx.out,
                 binding,
                 [Some(value), key, index],
@@ -170,12 +170,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.exprs.leave(mark);
         body?;
 
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("})\n");
         if !disable_nested_fragments {
-            self.ctx.push_indent();
+            self.ctx.push_indent::<M>();
             self.ctx.push("_push(`<!--]-->`)\n");
         }
         self.close(
@@ -213,7 +213,7 @@ pub(super) fn alias<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
 /// nothing.
 #[cold]
 #[inline(never)]
-fn anchor_for_aliases(
+fn anchor_for_aliases<M: RenderMapMode>(
     out: &mut EmitDocument,
     binding: &l2::ForBinding<'_>,
     authored: [Option<&str>; 3],

@@ -9,6 +9,7 @@
 //! published compile path always selects.
 
 use core::cell::{Cell, RefCell};
+use vize_atelier_core::codegen::RenderMapMode;
 
 use crate::compile::SsrLane;
 use crate::l4::SsrL4Selection;
@@ -54,7 +55,7 @@ pub(crate) fn production_lane() -> SsrLane {
 }
 
 /// Record a selected-lane verdict while [`record_lanes`] is active.
-pub(crate) fn record_verdict(selection: &SsrL4Selection) {
+pub(crate) fn record_verdict<M: RenderMapMode>(selection: &SsrL4Selection) {
     VERDICTS.with(|verdicts| {
         if let Some(verdicts) = verdicts.borrow_mut().as_mut() {
             verdicts.push(lane_label(selection));
@@ -65,7 +66,7 @@ pub(crate) fn record_verdict(selection: &SsrL4Selection) {
 /// Run `f` without recording lane verdicts: the direct lane's debug oracle
 /// recompiles on the full path, and that compile is not a production one.
 #[cfg(debug_assertions)]
-pub(crate) fn unrecorded<R>(f: impl FnOnce() -> R) -> R {
+pub(crate) fn unrecorded<M: RenderMapMode, R>(f: impl FnOnce() -> R) -> R {
     let previous = VERDICTS.with(|verdicts| verdicts.replace(None));
     let result = f();
     VERDICTS.with(|verdicts| verdicts.replace(previous));
@@ -73,7 +74,7 @@ pub(crate) fn unrecorded<R>(f: impl FnOnce() -> R) -> R {
 }
 
 /// Record the verdict of a compile the direct lane emitted.
-pub(crate) fn record_emitted() {
+pub(crate) fn record_emitted<M: RenderMapMode>() {
     VERDICTS.with(|verdicts| {
         if let Some(verdicts) = verdicts.borrow_mut().as_mut() {
             verdicts.push("s4");

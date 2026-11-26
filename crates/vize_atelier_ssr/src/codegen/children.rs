@@ -61,7 +61,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         let fallthrough_child_index = if inherit_attrs && !as_fragment {
-            single_fallthrough_child_index(children).unwrap_or(usize::MAX)
+            single_fallthrough_child_index::<M>(children).unwrap_or(usize::MAX)
         } else {
             usize::MAX
         };

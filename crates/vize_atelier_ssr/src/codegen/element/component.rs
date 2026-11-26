@@ -27,12 +27,12 @@ impl<'a> SsrCodegenContext<'a> {
             self.process_teleport::<M>(el);
             return;
         }
-        if super::transparent_builtin::is_server_transparent_builtin(el.tag) {
+        if super::transparent_builtin::is_server_transparent_builtin::<M>(el.tag) {
             self.process_transparent_builtin::<M>(el, inherit_attrs);
             return;
         }
 
-        self.flush_push();
+        self.flush_push::<M>();
         self.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
 
         let tag = &el.tag;
@@ -53,16 +53,16 @@ impl<'a> SsrCodegenContext<'a> {
         let props = self.with_fallthrough_attrs(props, inherit_attrs);
 
         if is_dynamic_component {
-            self.process_dynamic_component(el, &props);
+            self.process_dynamic_component::<M>(el, &props);
             return;
         }
 
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("_push(_ssrRenderComponent(");
         if let Some(binding_expr) = setup_binding.as_deref() {
             if M::COMPOSED {
                 // A composed map anchors the read at the authored tag.
-                self.push_anchored(binding_expr, el.loc.span.start + 1);
+                self.push_anchored::<M>(binding_expr, el.loc.span.start + 1);
             } else {
                 self.push(binding_expr);
             }
@@ -94,7 +94,7 @@ impl<'a> SsrCodegenContext<'a> {
         // `v-slot` directly on the component (`<Comp v-slot="{ item }">`)
         // makes every child part of that single slot; dropping the directive
         // would compile its params against the instance (`_ctx.item`).
-        if let Some(slot) = self.component_self_slot(el) {
+        if let Some(slot) = self.component_self_slot::<M>(el) {
             self.use_core_helper(RuntimeHelper::WithCtx);
             self.push("{\n");
             self.indent_level += 1;
@@ -105,11 +105,11 @@ impl<'a> SsrCodegenContext<'a> {
                 &slot.params,
                 ComponentSlotChildren::Slice(slot.children),
             );
-            self.push_indent();
+            self.push_indent::<M>();
             self.push(self.component_slot_flag(el));
             self.push("\n");
             self.indent_level -= 1;
-            self.push_indent();
+            self.push_indent::<M>();
             self.push("}");
             return;
         }
@@ -128,7 +128,7 @@ impl<'a> SsrCodegenContext<'a> {
             std::vec::Vec::new();
         let mut named_slots: std::vec::Vec<ComponentTemplateSlot<'node, 'a>> = std::vec::Vec::new();
         for child in children {
-            if let Some(slot) = self.component_template_slot(child) {
+            if let Some(slot) = self.component_template_slot::<M>(child) {
                 named_slots.push(slot);
             } else {
                 default_children.push(child);
@@ -162,11 +162,11 @@ impl<'a> SsrCodegenContext<'a> {
             );
         }
 
-        self.push_indent();
+        self.push_indent::<M>();
         self.push(self.component_slot_flag(el));
         self.push("\n");
         self.indent_level -= 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("}");
     }
 
@@ -207,7 +207,7 @@ impl<'a> SsrCodegenContext<'a> {
             if self.is_dynamic_slot_source(child) {
                 continue;
             }
-            if let Some(slot) = self.component_template_slot(child) {
+            if let Some(slot) = self.component_template_slot::<M>(child) {
                 static_slots.push(slot);
             } else {
                 default_children.push(child);
@@ -235,10 +235,10 @@ impl<'a> SsrCodegenContext<'a> {
                 ComponentSlotChildren::Slice(slot.children),
             );
         }
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("_: 2 /* DYNAMIC */\n");
         self.indent_level -= 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("}, [\n");
         self.indent_level += 1;
 
@@ -248,7 +248,7 @@ impl<'a> SsrCodegenContext<'a> {
                 TemplateChildNode::For(for_node)
                     if slot_template_in_children(&for_node.children).is_some() =>
                 {
-                    self.push_dynamic_slot_separator(&mut first);
+                    self.push_dynamic_slot_separator::<M>(&mut first);
                     self.process_looped_slot_entry::<M>(for_node);
                 }
                 TemplateChildNode::If(if_node)
@@ -257,13 +257,13 @@ impl<'a> SsrCodegenContext<'a> {
                         .iter()
                         .any(|branch| slot_template_in_children(&branch.children).is_some()) =>
                 {
-                    self.push_dynamic_slot_separator(&mut first);
+                    self.push_dynamic_slot_separator::<M>(&mut first);
                     self.process_conditional_slot_entry::<M>(if_node);
                 }
                 TemplateChildNode::Element(el)
                     if el.tag_type == ElementType::Template && template_slot_is_dynamic(el) =>
                 {
-                    self.push_dynamic_slot_separator(&mut first);
+                    self.push_dynamic_slot_separator::<M>(&mut first);
                     self.process_dynamic_slot_entry::<M>(el);
                 }
                 _ => {}
@@ -273,17 +273,17 @@ impl<'a> SsrCodegenContext<'a> {
         self.indent_level -= 1;
         if !first {
             self.push("\n");
-            self.push_indent();
+            self.push_indent::<M>();
         }
         self.push("])");
     }
 
-    fn push_dynamic_slot_separator(&mut self, first: &mut bool) {
+    fn push_dynamic_slot_separator<M: RenderMapMode>(&mut self, first: &mut bool) {
         if !*first {
             self.push(",\n");
         }
         *first = false;
-        self.push_indent();
+        self.push_indent::<M>();
     }
 
     /// `_renderList(source, (alias...) => { return { name, fn } })`
@@ -312,14 +312,14 @@ impl<'a> SsrCodegenContext<'a> {
 
         let params = super::super::helpers::collect_for_scoped_params(for_node, self.source);
         self.push_scoped_params(params);
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("return ");
         self.push_slot_object_entry::<M>(template_el, None);
         self.push("\n");
         self.pop_scoped_params();
 
         self.indent_level -= 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("})");
     }
 
@@ -377,11 +377,11 @@ impl<'a> SsrCodegenContext<'a> {
 
         self.push("{\n");
         self.indent_level += 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("name: ");
         self.push(&name);
         self.push(",\n");
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("fn: ");
         self.emit_slot_fn::<M>(
             Some(template_el.loc.span.start),
@@ -391,14 +391,14 @@ impl<'a> SsrCodegenContext<'a> {
         );
         if let Some(key) = key_index {
             self.push(",\n");
-            self.push_indent();
+            self.push_indent::<M>();
             self.push("key: \"");
             self.push(&key.to_compact_string());
             self.push("\"");
         }
         self.push("\n");
         self.indent_level -= 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("}");
     }
 
@@ -442,7 +442,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    fn component_template_slot<'node>(
+    fn component_template_slot<'node, M: RenderMapMode>(
         &self,
         child: &'node TemplateChildNode<'a>,
     ) -> Option<ComponentTemplateSlot<'node, 'a>> {
@@ -452,13 +452,13 @@ impl<'a> SsrCodegenContext<'a> {
         if el.tag_type != ElementType::Template {
             return None;
         }
-        self.component_self_slot(el)
+        self.component_self_slot::<M>(el)
     }
 
     /// Build the slot description carried by a `v-slot` directive on `el`
     /// itself — either a `<template v-slot>` child or a component carrying
     /// `v-slot` directly (`<Comp v-slot="{ item }">`).
-    pub(super) fn component_self_slot<'node>(
+    pub(super) fn component_self_slot<'node, M: RenderMapMode>(
         &self,
         el: &'node ElementNode<'a>,
     ) -> Option<ComponentTemplateSlot<'node, 'a>> {
@@ -561,7 +561,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Process Vue's built-in <Teleport> component.
     fn process_teleport<M: RenderMapMode>(&mut self, el: &ElementNode<'a>) {
-        self.flush_push();
+        self.flush_push::<M>();
         self.use_ssr_helper(RuntimeHelper::SsrRenderTeleport);
 
         let target = self
@@ -571,13 +571,13 @@ impl<'a> SsrCodegenContext<'a> {
             .static_or_bound_prop_expression(el, "disabled")
             .unwrap_or_else(|| "false".to_compact_string());
 
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("_ssrRenderTeleport(_push, (_push) => {\n");
         self.indent_level += 1;
         self.process_children::<M>(&el.children, false, false, false);
-        self.flush_push();
+        self.flush_push::<M>();
         self.indent_level -= 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("}, ");
         self.push(&target);
         self.push(", ");

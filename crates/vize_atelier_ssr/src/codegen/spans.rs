@@ -8,6 +8,7 @@
 //! requested nothing is recorded and every part stays link-free, so the
 //! emitted bytes are identical either way (TS-11).
 
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{DirectiveNode, codegen::document::EmitDocument};
 use vize_l0::Span;
 
@@ -27,27 +28,31 @@ impl SsrCodegenContext<'_> {
     /// Write `text` directly, anchored at the authored byte `source` while a
     /// map is recorded: one flag test and the plain write without one.
     #[inline]
-    pub(crate) fn push_anchored(&mut self, text: &str, source: u32) {
+    pub(crate) fn push_anchored<M: RenderMapMode>(&mut self, text: &str, source: u32) {
         if self.spans_enabled() {
-            self.anchor_at(source);
+            self.anchor_at::<M>(source);
         }
         self.push(text);
     }
 
     #[cold]
     #[inline(never)]
-    fn anchor_at(&mut self, source: u32) {
+    fn anchor_at<M: RenderMapMode>(&mut self, source: u32) {
         self.out.anchor(source);
     }
 
     /// Write `code` directly from the node text `authored`: unchanged from a
     /// slice of the template, it is anchored where that slice was authored.
-    pub(crate) fn push_authored_text(&mut self, code: &str, authored: &str) {
+    pub(crate) fn push_authored_text<M: RenderMapMode>(&mut self, code: &str, authored: &str) {
         self.out.push_authored(code, authored, self.source);
     }
 
     /// Write `text` directly, anchored at `source` when there is one.
-    pub(crate) fn push_optionally_mapped(&mut self, text: &str, source: Option<u32>) {
+    pub(crate) fn push_optionally_mapped<M: RenderMapMode>(
+        &mut self,
+        text: &str,
+        source: Option<u32>,
+    ) {
         match source {
             Some(source) => self.push_mapped(text, source),
             None => self.push(text),
@@ -55,7 +60,12 @@ impl SsrCodegenContext<'_> {
     }
 
     /// Write `lead` unanchored, then `text` anchored at `source`.
-    pub(crate) fn push_then_mapped(&mut self, lead: &str, text: &str, source: u32) {
+    pub(crate) fn push_then_mapped<M: RenderMapMode>(
+        &mut self,
+        lead: &str,
+        text: &str,
+        source: u32,
+    ) {
         self.push(lead);
         self.push_mapped(text, source);
     }
@@ -101,7 +111,7 @@ impl SsrCodegenContext<'_> {
     }
 
     /// Push a template-literal part wrapping an expression authored at `span`.
-    pub(crate) fn push_wrapped_expression_part(
+    pub(crate) fn push_wrapped_expression_part<M: RenderMapMode>(
         &mut self,
         prefix: &str,
         code: &str,
@@ -113,7 +123,12 @@ impl SsrCodegenContext<'_> {
     }
 
     /// Push `_ssrRenderAttr("name", exp)` for a statically named `v-bind`.
-    pub(crate) fn push_bound_attr_part(&mut self, name: &str, dir: &DirectiveNode<'_>, exp: &str) {
+    pub(crate) fn push_bound_attr_part<M: RenderMapMode>(
+        &mut self,
+        name: &str,
+        dir: &DirectiveNode<'_>,
+        exp: &str,
+    ) {
         let mut piece = EmitDocument::plain("_ssrRenderAttr(\"");
         match (&dir.arg, self.spans_enabled()) {
             (Some(arg), true) => piece.push_mapped(name, arg.loc().span.start),
@@ -149,7 +164,7 @@ impl SsrCodegenContext<'_> {
 
     /// Write a static template-literal part, escaping `` ` `` and `${`, and
     /// rebasing its links onto the escaped output.
-    pub(super) fn push_template_static(&mut self, part: &EmitDocument) {
+    pub(super) fn push_template_static<M: RenderMapMode>(&mut self, part: &EmitDocument) {
         self.out.push_escaped(part, &[("`", "\\`"), ("${", "\\${")]);
     }
 }

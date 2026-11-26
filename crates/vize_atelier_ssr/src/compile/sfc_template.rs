@@ -144,7 +144,7 @@ pub(crate) fn emit_on_direct_lane<M: RenderMapMode>(
         return None;
     };
     #[cfg(feature = "legacy-differential")]
-    crate::differential::record_emitted();
+    crate::differential::record_emitted::<M>();
     #[cfg(debug_assertions)]
     {
         let full_path = || {
@@ -163,9 +163,10 @@ pub(crate) fn emit_on_direct_lane<M: RenderMapMode>(
             (errors, full)
         };
         #[cfg(feature = "legacy-differential")]
-        let (errors, full) = crate::differential::unrecorded(|| l4::as_oracle_run(full_path));
+        let (errors, full) =
+            crate::differential::unrecorded::<M, _>(|| l4::as_oracle_run::<M, _>(full_path));
         #[cfg(not(feature = "legacy-differential"))]
-        let (errors, full) = l4::as_oracle_run(full_path);
+        let (errors, full) = l4::as_oracle_run::<M, _>(full_path);
         debug_assert!(
             errors.is_empty(),
             "the direct SSR lane emitted a template the full path diagnoses: {errors:?}\n{source}"

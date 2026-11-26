@@ -131,7 +131,7 @@ fn generate_effective_children_inner<M: RenderMapMode>(
         && !effective.is_empty()
         && effective
             .iter()
-            .all(|child| is_static_cacheable_element(child))
+            .all(|child| is_static_cacheable_element::<M>(child))
     {
         generate_cached_static_children_array::<M>(ctx, effective);
         return;
@@ -243,11 +243,11 @@ fn generate_effective_children_inner<M: RenderMapMode>(
             }
             ctx.newline();
             first_output = false;
-            if !force_array && can_cache_static && is_static_cacheable_element(node) {
+            if !force_array && can_cache_static && is_static_cacheable_element::<M>(node) {
                 if let TemplateChildNode::Element(el) = node {
                     generate_cached_static_element::<M>(ctx, el);
                 }
-            } else if ctx.in_cached_static && is_static_cacheable_element(node) {
+            } else if ctx.in_cached_static && is_static_cacheable_element::<M>(node) {
                 // Plain descendant inside an already-cached static subtree.
                 if let TemplateChildNode::Element(el) = node {
                     generate_cached_static_vnode::<M>(ctx, el, false);
@@ -264,7 +264,7 @@ fn generate_effective_children_inner<M: RenderMapMode>(
     ctx.push("]");
 }
 
-fn is_static_cacheable_element(child: &TemplateChildNode<'_>) -> bool {
+fn is_static_cacheable_element<M: RenderMapMode>(child: &TemplateChildNode<'_>) -> bool {
     matches!(child, TemplateChildNode::Element(_)) && is_static_node(child)
 }
 
@@ -322,9 +322,9 @@ fn generate_cached_static_vnode<M: RenderMapMode>(
     cached: bool,
 ) {
     ctx.use_helper(RuntimeHelper::CreateElementVNode);
-    ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
+    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementVNode);
     ctx.push("(\"");
-    ctx.push_tag(el);
+    ctx.push_tag::<M>(el);
     ctx.push("\"");
 
     if has_renderable_props(el) {
@@ -342,7 +342,7 @@ fn generate_cached_static_vnode<M: RenderMapMode>(
         // the cache wrapper and the per-descendant CACHED flag while recursing.
         let prev_in_cached = ctx.in_cached_static;
         ctx.in_cached_static = true;
-        ctx.with_parent_namespace(child_namespace(el), |ctx| {
+        ctx.with_parent_namespace::<M, _>(child_namespace(el), |ctx| {
             generate_children::<M>(ctx, &el.children);
         });
         ctx.in_cached_static = prev_in_cached;

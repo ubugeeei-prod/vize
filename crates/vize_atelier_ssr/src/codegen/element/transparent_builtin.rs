@@ -35,12 +35,12 @@ impl<'a> SsrCodegenContext<'a> {
     /// (vuejs/core#5351) and nested fragments, and an `appear` transition
     /// hydrates from a `<template>`.
     fn process_transition<M: RenderMapMode>(&mut self, el: &ElementNode<'a>, inherit_attrs: bool) {
-        let appear = has_static_or_bound_prop(el, "appear");
+        let appear = has_static_or_bound_prop::<M>(el, "appear");
         if appear {
             self.push_string_part_static("<template>");
         }
         let fallthrough = if inherit_attrs {
-            single_fallthrough_child_index(&el.children)
+            single_fallthrough_child_index::<M>(&el.children)
         } else {
             None
         };
@@ -65,7 +65,7 @@ impl<'a> SsrCodegenContext<'a> {
 
 /// Vue's `findProp(node, name, false, true)`: a static attribute or a
 /// static-name `v-bind`, whatever its value.
-fn has_static_or_bound_prop(el: &ElementNode<'_>, name: &str) -> bool {
+fn has_static_or_bound_prop<M: RenderMapMode>(el: &ElementNode<'_>, name: &str) -> bool {
     el.props.iter().any(|prop| match prop {
         PropNode::Attribute(attr) => attr.name == name,
         PropNode::Directive(dir) => {
@@ -75,7 +75,7 @@ fn has_static_or_bound_prop(el: &ElementNode<'_>, name: &str) -> bool {
     })
 }
 
-pub(super) fn is_server_transparent_builtin(tag: &str) -> bool {
+pub(super) fn is_server_transparent_builtin<M: RenderMapMode>(tag: &str) -> bool {
     matches!(
         tag,
         "Transition"

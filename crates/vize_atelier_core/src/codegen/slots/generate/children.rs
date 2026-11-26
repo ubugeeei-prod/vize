@@ -17,7 +17,7 @@ pub(in crate::codegen::slots) fn generate_slot_children<M: RenderMapMode>(
     #[cfg(feature = "legacy")]
     if children.iter().any(is_raw) && children.iter().all(is_text) {
         ctx.newline();
-        generate_slot_text_run(ctx, children);
+        generate_slot_text_run::<M>(ctx, children);
         return;
     }
     generate_slot_children_where::<M>(ctx, children, |_| true);
@@ -55,7 +55,7 @@ pub(in crate::codegen::slots) fn generate_slot_children_where<M: RenderMapMode>(
             {
                 index += 1;
             }
-            generate_slot_text_run(ctx, children.get(start..index).unwrap_or_default());
+            generate_slot_text_run::<M>(ctx, children.get(start..index).unwrap_or_default());
         } else {
             generate_slot_child_node::<M>(ctx, child);
             index += 1;
@@ -75,7 +75,10 @@ fn is_text(child: &TemplateChildNode<'_>) -> bool {
     )
 }
 
-fn generate_slot_text_run(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
+fn generate_slot_text_run<M: RenderMapMode>(
+    ctx: &mut CodegenContext,
+    children: &[TemplateChildNode<'_>],
+) {
     ctx.use_helper(RuntimeHelper::CreateText);
     ctx.push(ctx.helper(RuntimeHelper::CreateText));
     ctx.push("(");
@@ -97,12 +100,12 @@ fn generate_slot_text_run(ctx: &mut CodegenContext, children: &[TemplateChildNod
                 #[cfg(not(feature = "legacy"))]
                 let raw = false;
                 if raw {
-                    generate_slot_expression(ctx, &interp.content);
+                    generate_slot_expression::<M>(ctx, &interp.content);
                 } else {
                     ctx.use_helper(RuntimeHelper::ToDisplayString);
                     ctx.push(ctx.helper(RuntimeHelper::ToDisplayString));
                     ctx.push("(");
-                    generate_slot_expression(ctx, &interp.content);
+                    generate_slot_expression::<M>(ctx, &interp.content);
                     ctx.push(")");
                 }
             }
@@ -136,13 +139,13 @@ fn generate_slot_child_node<M: RenderMapMode>(
             let raw = false;
             if raw {
                 // Generate expression, stripping _ctx. prefix for slot params
-                generate_slot_expression(ctx, &interp.content);
+                generate_slot_expression::<M>(ctx, &interp.content);
             } else {
                 ctx.use_helper(RuntimeHelper::ToDisplayString);
                 ctx.push(ctx.helper(RuntimeHelper::ToDisplayString));
                 ctx.push("(");
                 // Generate expression, stripping _ctx. prefix for slot params
-                generate_slot_expression(ctx, &interp.content);
+                generate_slot_expression::<M>(ctx, &interp.content);
                 ctx.push(")");
             }
             ctx.push(", 1 /* TEXT */)");
@@ -154,7 +157,7 @@ fn generate_slot_child_node<M: RenderMapMode>(
 }
 
 /// Generate expression for slot content, stripping _ctx. prefix for slot parameters
-fn generate_slot_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>) {
+fn generate_slot_expression<M: RenderMapMode>(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>) {
     match expr {
         ExpressionNode::Simple(exp) => {
             if exp.is_static {
@@ -163,7 +166,7 @@ fn generate_slot_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>)
                 ctx.push("\"");
             } else {
                 // Strip _ctx. prefix for slot parameters
-                let content = strip_ctx_prefix_for_slot_params(ctx, exp.content);
+                let content = strip_ctx_prefix_for_slot_params::<M>(ctx, exp.content);
                 ctx.push_expression(&content, exp.loc.span);
             }
         }
@@ -176,7 +179,7 @@ fn generate_slot_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>)
                             ctx.push(exp.content);
                             ctx.push("\"");
                         } else {
-                            let content = strip_ctx_prefix_for_slot_params(ctx, exp.content);
+                            let content = strip_ctx_prefix_for_slot_params::<M>(ctx, exp.content);
                             ctx.push_expression(&content, exp.loc.span);
                         }
                     }

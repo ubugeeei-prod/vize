@@ -3,6 +3,7 @@
 //! Provides parameter extraction, destructuring pattern parsing,
 //! and utility predicates for v-for rendering.
 
+use crate::codegen::RenderMapMode;
 use crate::{ElementNode, ExpressionNode, PropNode};
 use vize_l0::{SmallVec, String, ToCompactString};
 
@@ -205,7 +206,7 @@ where
 }
 
 /// Check if element has props besides the key
-pub(crate) fn has_other_props(el: &ElementNode<'_>) -> bool {
+pub(crate) fn has_other_props<M: RenderMapMode>(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|p| match p {
         PropNode::Attribute(_) => true,
         PropNode::Directive(dir) => {

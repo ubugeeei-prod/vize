@@ -80,7 +80,7 @@ fn generate_create_slots_base<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
             !child_is_slot_template(child) && !matches!(child, TemplateChildNode::Comment(_))
         })
         .collect();
-    let has_default_children = slot_children_have_meaningful_content(&default_children);
+    let has_default_children = slot_children_have_meaningful_content::<M>(&default_children);
     // A `v-slots` spread combined with `v-if`/`v-for` slot templates keeps the
     // `createSlots` shape: the forwarded entries go into the base object, which
     // `createSlots` then extends with the conditional/looped ones. `_: 2` stays
@@ -258,7 +258,7 @@ fn generate_slot_object_entry<M: RenderMapMode>(
 
         // name
         ctx.push("name: ");
-        generate_slot_entry_name(ctx, dir, &slot_name);
+        generate_slot_entry_name::<M>(ctx, dir, &slot_name);
         ctx.push(",");
         ctx.newline();
 
@@ -269,7 +269,7 @@ fn generate_slot_object_entry<M: RenderMapMode>(
         ctx.push("(");
 
         // Slot props
-        let params = if let Some((processed, params)) = slot_parameters(dir, ctx) {
+        let params = if let Some((processed, params)) = slot_parameters::<M>(dir, ctx) {
             ctx.push("(");
             ctx.push(&processed);
             ctx.push(")");

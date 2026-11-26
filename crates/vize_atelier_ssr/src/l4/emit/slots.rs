@@ -277,7 +277,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 self.slot_property::<M>(named)?;
             }
         }
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         match &slots.forwarded {
             Some(expression) => {
                 // No synthesized compiled flag: Vue must normalize raw forwarded
@@ -293,20 +293,21 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         }
         self.ctx.push("\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("}");
         Ok(())
     }
 
     pub(super) fn slot_property<M: RenderMapMode>(&mut self, spec: &SlotSpec) -> Result<()> {
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         // The name maps to its authored `v-slot` argument, as the walker's does.
         if is_valid_js_identifier(&spec.name) {
-            self.ctx.push_optionally_mapped(&spec.name, spec.anchor.0);
+            self.ctx
+                .push_optionally_mapped::<M>(&spec.name, spec.anchor.0);
         } else {
             let quoted = quoted_js_string(&spec.name);
             self.ctx.push("\"");
-            self.ctx.push_optionally_mapped(
+            self.ctx.push_optionally_mapped::<M>(
                 quoted.get(1..quoted.len() - 1).unwrap_or_default(),
                 spec.anchor.0,
             );
@@ -321,11 +322,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// Emit a push-form `_withCtx` slot function with VNode fallback.
     pub(super) fn slot_fn<M: RenderMapMode>(&mut self, spec: &SlotSpec) -> Result<()> {
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
-        self.ctx.push_optionally_mapped("_withCtx((", spec.anchor.1);
+        self.ctx
+            .push_optionally_mapped::<M>("_withCtx((", spec.anchor.1);
         self.ctx.push(spec.pattern.as_deref().unwrap_or("_"));
         self.ctx.push(", _push, _parent, _scopeId) => {\n");
         self.ctx.indent_level += 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("if (_push) {\n");
         self.ctx.indent_level += 1;
 
@@ -342,7 +344,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.scoped_params.push(params.clone());
         }
         let pushed = self.slot_children::<M>(&spec.ranges);
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         if scoped {
             self.scoped_params.pop();
         }
@@ -362,18 +364,18 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let fallback = fallback?;
 
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("} else {\n");
         self.ctx.indent_level += 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("return ");
         self.ctx.push(&fallback);
         self.ctx.push("\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("}\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("})");
         Ok(())
     }

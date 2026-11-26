@@ -25,9 +25,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let end = self.region_end(self.pos)?;
         let mut implicit = std::vec::Vec::new();
         let mut dynamic = false;
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("_ssrRenderSuspense(_push, {\n");
         self.ctx.indent_level += 1;
         for start in children {
@@ -37,8 +37,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 }
                 continue;
             };
-            self.ctx.push_indent();
-            self.suspense_name(slot)?;
+            self.ctx.push_indent::<M>();
+            self.suspense_name::<M>(slot)?;
             dynamic |= matches!(slot.name, Some(DynamicName::Dynamic(_)));
             let inner = start + 1 + element.attributes.len() + element.bindings.len();
             let ranges = self.direct_children(inner)?;
@@ -54,27 +54,26 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             implicit.clear();
         }
         if !implicit.is_empty() {
-            self.ctx.push_indent();
+            self.ctx.push_indent::<M>();
             self.ctx.push("default");
             self.suspense_body::<M>(&implicit, flags)?;
         }
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push(if dynamic { "_: 2\n" } else { "_: 1\n" });
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("})\n");
         self.pos = end;
         Ok(())
     }
 
-    #[inline(always)]
-    fn suspense_name(&mut self, slot: &l2::SlotContentOp<'_>) -> Result<()> {
+    fn suspense_name<M: RenderMapMode>(&mut self, slot: &l2::SlotContentOp<'_>) -> Result<()> {
         match &slot.name {
             None => self.ctx.push("default"),
             Some(DynamicName::Static(name)) => {
                 let start = super::slots::slot_name_start(self.ctx.source, slot);
                 if is_simple_identifier(name) {
-                    self.ctx.push_optionally_mapped(name, start);
+                    self.ctx.push_optionally_mapped::<M>(name, start);
                 } else {
                     let key = quoted_js_string(name);
                     let inner = key
@@ -82,7 +81,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                         .and_then(|key| key.strip_suffix('"'))
                         .unwrap_or_default();
                     self.ctx.push("\"");
-                    self.ctx.push_optionally_mapped(inner, start);
+                    self.ctx.push_optionally_mapped::<M>(inner, start);
                     self.ctx.push("\"");
                 }
             }
@@ -119,37 +118,37 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if vapor {
             self.ctx.push_string_part_static("<!--]-->");
         }
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         self.ctx.current_template_parts = saved;
         self.ctx.indent_level -= 1;
         result?;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("},\n");
         Ok(())
     }
 
     /// `_ssrRenderSuspense(_push, { default: () => { ... }, _: 1 })`.
     fn suspense_default<M: RenderMapMode>(&mut self, flags: Flags) -> Result<()> {
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("_ssrRenderSuspense(_push, {\n");
         self.ctx.indent_level += 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("default: () => {\n");
         self.ctx.indent_level += 1;
         self.children::<M>(Flags {
             as_fragment: flags.as_fragment || self.ctx.options.vapor,
             ..flags
         })?;
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("},\n");
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("_: 1\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("})\n");
         Ok(())
     }

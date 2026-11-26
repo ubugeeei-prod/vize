@@ -4,6 +4,7 @@ use super::{
     ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     ToCompactString, cstr, quoted_js_string,
 };
+use vize_atelier_core::codegen::RenderMapMode;
 
 impl<'a> SsrCodegenContext<'a> {
     /// Get an attribute value from an element
@@ -97,7 +98,7 @@ impl<'a> SsrCodegenContext<'a> {
         None
     }
 
-    pub(super) fn has_dynamic_bind(&self, el: &ElementNode, name: &str) -> bool {
+    pub(super) fn has_dynamic_bind<M: RenderMapMode>(&self, el: &ElementNode, name: &str) -> bool {
         el.props.iter().any(|prop| {
             let PropNode::Directive(dir) = prop else {
                 return false;

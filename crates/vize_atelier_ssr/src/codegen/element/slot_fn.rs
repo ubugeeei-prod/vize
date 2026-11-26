@@ -24,14 +24,14 @@ impl<'a> SsrCodegenContext<'a> {
         params: &FxHashSet<String>,
         children: ComponentSlotChildren<'node, 'a>,
     ) {
-        self.push_indent();
+        self.push_indent::<M>();
         let name_start = anchor.and_then(|anchor| anchor.name);
         if is_valid_js_identifier(name) {
-            self.push_optionally_mapped(name, name_start);
+            self.push_optionally_mapped::<M>(name, name_start);
         } else {
             let quoted = quoted_js_string(name);
             self.push("\"");
-            self.push_optionally_mapped(
+            self.push_optionally_mapped::<M>(
                 quoted.get(1..quoted.len() - 1).unwrap_or_default(),
                 name_start,
             );
@@ -59,11 +59,11 @@ impl<'a> SsrCodegenContext<'a> {
     ) {
         self.use_core_helper(RuntimeHelper::WithCtx);
         // The slot function opens at the authored unit carrying the slot.
-        self.push_optionally_mapped("_withCtx((", unit);
+        self.push_optionally_mapped::<M>("_withCtx((", unit);
         self.push(props_pattern.unwrap_or("_"));
         self.push(", _push, _parent, _scopeId) => {\n");
         self.indent_level += 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("if (_push) {\n");
         self.indent_level += 1;
 
@@ -74,7 +74,7 @@ impl<'a> SsrCodegenContext<'a> {
             self.push_scoped_params(params.clone());
         }
         self.process_component_slot_children::<M>(&children);
-        self.flush_push();
+        self.flush_push::<M>();
         if !params.is_empty() {
             self.pop_scoped_params();
         }
@@ -82,7 +82,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.current_template_parts = old_parts;
 
         self.indent_level -= 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("} else {\n");
         self.indent_level += 1;
         if !params.is_empty() {
@@ -92,15 +92,15 @@ impl<'a> SsrCodegenContext<'a> {
         if !params.is_empty() {
             self.pop_scoped_params();
         }
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("return ");
         self.push(&fallback);
         self.push("\n");
         self.indent_level -= 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("}\n");
         self.indent_level -= 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("})");
     }
 

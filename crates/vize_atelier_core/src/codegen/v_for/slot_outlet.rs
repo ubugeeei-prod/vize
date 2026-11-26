@@ -51,12 +51,12 @@ pub(super) fn generate_for_slot_outlet<M: RenderMapMode>(
         }
         ctx.deindent();
         ctx.newline();
-        ctx.finish_slot_outlet("])", true, true);
+        ctx.finish_slot_outlet::<M>("])", true, true);
     } else if has_slot_props {
         ctx.push(", ");
         generate_slot_outlet_props(ctx, el);
-        ctx.finish_slot_outlet(")", false, true);
+        ctx.finish_slot_outlet::<M>(")", false, true);
     } else {
-        ctx.finish_slot_outlet(")", false, false);
+        ctx.finish_slot_outlet::<M>(")", false, false);
     }
 }

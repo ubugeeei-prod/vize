@@ -137,13 +137,16 @@ pub(super) fn push_component_binding<M: RenderMapMode>(
     el: &ElementNode<'_>,
 ) -> bool {
     if M::COMPOSED {
-        push_composed_component_binding(ctx, el)
+        push_composed_component_binding::<M>(ctx, el)
     } else {
         ctx.push_component_binding_tag(el.tag)
     }
 }
 
-fn push_composed_component_binding(ctx: &mut CodegenContext, el: &ElementNode<'_>) -> bool {
+fn push_composed_component_binding<M: RenderMapMode>(
+    ctx: &mut CodegenContext,
+    el: &ElementNode<'_>,
+) -> bool {
     if ctx.resolve_component_binding(el.tag).is_none() {
         return false;
     }

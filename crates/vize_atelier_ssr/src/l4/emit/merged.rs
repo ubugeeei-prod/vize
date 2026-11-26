@@ -8,6 +8,7 @@
 //! `<textarea>`) may own the element's content through a `_temp` binding.
 
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
@@ -35,7 +36,7 @@ pub(super) struct Merged {
 
 /// Vue's `needMergeProps`: an object spread or dynamic-key bind, or a custom
 /// directive.
-pub(super) fn needs_merged(attached: &Attached<'_, '_>) -> bool {
+pub(super) fn needs_merged<M: RenderMapMode>(attached: &Attached<'_, '_>) -> bool {
     attached.iter().any(|segment| match segment.source {
         Source::Binding(l2::BindingOp::Bind(bind)) => {
             !matches!(bind.name, Some(DynamicName::Static(_)))
@@ -66,28 +67,27 @@ fn has_static_type(attached: &Attached<'_, '_>) -> bool {
 impl Emitter<'_, '_, '_, '_, '_, '_> {
     /// `_ssrRenderAttrs(props[, "tag"])` plus temp-owned content. The cursor
     /// sits on the element's first child.
-    pub(super) fn merged_attrs(
+    pub(super) fn merged_attrs<M: RenderMapMode>(
         &mut self,
         attached: &Attached<'_, '_>,
         tag: &str,
         inherit: bool,
         css_vars: bool,
     ) -> Result<Option<Merged>> {
-        self.merged_attrs_for::<false>(attached, tag, inherit, css_vars)
+        self.merged_attrs_for::<M, false>(attached, tag, inherit, css_vars)
     }
 
-    #[inline(always)]
-    pub(super) fn group_attrs(
+    pub(super) fn group_attrs<M: RenderMapMode>(
         &mut self,
         attached: &Attached<'_, '_>,
         tag: &str,
         inherit: bool,
         css_vars: bool,
     ) -> Result<Option<Merged>> {
-        self.merged_attrs_for::<true>(attached, tag, inherit, css_vars)
+        self.merged_attrs_for::<M, true>(attached, tag, inherit, css_vars)
     }
 
-    fn merged_attrs_for<const GROUP: bool>(
+    fn merged_attrs_for<M: RenderMapMode, const GROUP: bool>(
         &mut self,
         attached: &Attached<'_, '_>,
         tag: &str,
@@ -141,7 +141,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                     }
                     _ => "\"\"".to_compact_string(),
                 };
-                let temp = self.ctx.alloc_temp();
+                let temp = self.ctx.alloc_temp::<M>();
                 merged = assigned(&temp, &merged);
                 self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
                 content = Some(cstr!(
@@ -149,7 +149,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 ));
             }
         } else if tag != "input" && directives > 0 && children.is_empty() && !content_override {
-            let temp = self.ctx.alloc_temp();
+            let temp = self.ctx.alloc_temp::<M>();
             merged = assigned(&temp, &merged);
             self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
             content = Some(cstr!(

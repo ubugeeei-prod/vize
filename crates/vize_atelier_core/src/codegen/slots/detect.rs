@@ -3,6 +3,7 @@
 mod forwarded;
 pub use forwarded::has_forwarded_slot_outlet;
 
+use crate::codegen::RenderMapMode;
 use crate::codegen::context::CodegenContext;
 use crate::codegen::expression::scope_prefix::strip_scope_prefixes_for_slot_params;
 use crate::steps::v_slot::{collect_slots, has_v_slot};
@@ -441,11 +442,11 @@ pub(super) fn has_conditional_or_loop_slots(el: &ElementNode<'_>) -> bool {
     })
 }
 
-pub(super) fn has_authored_slot_template(el: &ElementNode<'_>) -> bool {
+pub(super) fn has_authored_slot_template<M: RenderMapMode>(el: &ElementNode<'_>) -> bool {
     el.children.iter().any(child_is_slot_template)
 }
 
-pub(super) fn child_is_implicit_default(
+pub(super) fn child_is_implicit_default<M: RenderMapMode>(
     child: &TemplateChildNode<'_>,
     has_slot_template: bool,
 ) -> bool {
@@ -478,7 +479,9 @@ pub(super) fn child_is_slot_template(child: &TemplateChildNode<'_>) -> bool {
     }
 }
 
-pub(super) fn slot_children_have_meaningful_content(children: &[&TemplateChildNode<'_>]) -> bool {
+pub(super) fn slot_children_have_meaningful_content<M: RenderMapMode>(
+    children: &[&TemplateChildNode<'_>],
+) -> bool {
     children.iter().any(|child| match child {
         TemplateChildNode::Text(text) => !text.content.trim().is_empty(),
         TemplateChildNode::Comment(_) => false,

@@ -115,15 +115,15 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext, el: &Element
                 generate_slot_outlet_fallback::<M>(ctx, &el.children);
                 ctx.deindent();
                 ctx.newline();
-                ctx.finish_slot_outlet("])", true, true);
+                ctx.finish_slot_outlet::<M>("])", true, true);
             } else if has_slot_props {
                 ctx.push(", ");
                 generate_slot_outlet_props(ctx, el);
                 ctx.skip_scope_id = prev_skip_scope_id;
-                ctx.finish_slot_outlet(")", false, true);
+                ctx.finish_slot_outlet::<M>(")", false, true);
             } else {
                 ctx.skip_scope_id = prev_skip_scope_id;
-                ctx.finish_slot_outlet(")", false, false);
+                ctx.finish_slot_outlet::<M>(")", false, false);
             }
         }
         ElementType::Template => {
@@ -191,11 +191,11 @@ pub(super) fn generate_native_vnode<M: RenderMapMode>(
 
     ctx.push_pure();
     ctx.use_helper(RuntimeHelper::CreateElementVNode);
-    ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
+    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementVNode);
     ctx.push("(\"");
     // Anchor the generated tag name at the authored tag name (the byte
     // after the open tag's `<`). No-op without `source_map`.
-    ctx.push_tag(el);
+    ctx.push_tag::<M>(el);
     ctx.push("\"");
 
     // Calculate patch flag and dynamic props
@@ -225,7 +225,7 @@ pub(super) fn generate_native_vnode<M: RenderMapMode>(
     // Generate children
     if !el.children.is_empty() {
         ctx.push(", ");
-        ctx.with_parent_namespace(child_namespace(el), |ctx| {
+        ctx.with_parent_namespace::<M, _>(child_namespace(el), |ctx| {
             if once {
                 generate_children_force_array::<M>(ctx, &el.children);
             } else {
@@ -304,7 +304,7 @@ pub(super) fn generate_component_vnode<M: RenderMapMode>(
 
     ctx.push_pure();
     ctx.use_helper(RuntimeHelper::CreateVNode);
-    ctx.push_vnode_helper(RuntimeHelper::CreateVNode);
+    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateVNode);
     ctx.push("(");
 
     // Check for dynamic component (<component :is="..."> or <Component is="...">)
@@ -394,7 +394,7 @@ pub(super) fn generate_component_vnode<M: RenderMapMode>(
         if is_dynamic {
             ctx.skip_is_prop = true;
         }
-        ctx.with_component_props(|ctx| generate_props(ctx, &el.props));
+        ctx.with_component_props::<M, _>(|ctx| generate_props(ctx, &el.props));
         ctx.skip_is_prop = false;
     } else if !el.children.is_empty() || has_patch_info {
         ctx.push(", null");

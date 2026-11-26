@@ -4,6 +4,7 @@ mod slot_outlet;
 mod spans;
 mod vnode_factory;
 
+use crate::codegen::RenderMapMode;
 use crate::options::CodegenOptions;
 use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
@@ -175,12 +176,12 @@ impl CodegenContext {
 
     /// Byte length of the code generated so far.
     #[inline]
-    pub(super) fn code_len(&self) -> usize {
+    pub(super) fn code_len<M: RenderMapMode>(&self) -> usize {
         self.out.len()
     }
 
     /// Run codegen while treating `ns` as the current native parent namespace.
-    pub(super) fn with_parent_namespace<T>(
+    pub(super) fn with_parent_namespace<M: RenderMapMode, T>(
         &mut self,
         ns: Namespace,
         f: impl FnOnce(&mut Self) -> T,
@@ -197,7 +198,7 @@ impl CodegenContext {
     /// Branch keys are unique across the whole template, matching Vue's
     /// shared counter, so two sibling conditional blocks never collide on
     /// `{ key: n }`.
-    pub(super) fn next_v_if_branch_key(&mut self) -> usize {
+    pub(super) fn next_v_if_branch_key<M: RenderMapMode>(&mut self) -> usize {
         let key = self.v_if_branch_counter;
         self.v_if_branch_counter = self.v_if_branch_counter.saturating_add(1);
         key
@@ -241,7 +242,10 @@ impl CodegenContext {
     }
 
     /// Run `generate` while emitting the props of a component.
-    pub(super) fn with_component_props<R>(&mut self, generate: impl FnOnce(&mut Self) -> R) -> R {
+    pub(super) fn with_component_props<M: RenderMapMode, R>(
+        &mut self,
+        generate: impl FnOnce(&mut Self) -> R,
+    ) -> R {
         let previous = std::mem::replace(&mut self.props_is_component, true);
         let result = generate(self);
         self.props_is_component = previous;

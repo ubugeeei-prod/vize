@@ -69,14 +69,16 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         };
         if let Some(tag) = &tag {
             self.ctx.push_string_part_static("<");
-            self.group_tag(tag);
+            self.group_tag::<M>(tag);
             let attrs: std::vec::Vec<_> = attached
                 .iter()
                 .copied()
                 .enumerate()
                 .filter_map(|(at, segment)| (Some(at) != index).then_some(segment))
                 .collect();
-            if let Some(merged) = self.group_attrs(&attrs, name, inherit, css_vars && !inherit)? {
+            if let Some(merged) =
+                self.group_attrs::<M>(&attrs, name, inherit, css_vars && !inherit)?
+            {
                 self.ctx.push_string_part_dynamic_spanned(merged.attrs);
             }
             if let Some(scope) = &self.ctx.options.scope_id {
@@ -94,13 +96,13 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         })?;
         if let Some(tag) = &tag {
             self.ctx.push_string_part_static("</");
-            self.group_tag(tag);
+            self.group_tag::<M>(tag);
             self.ctx.push_string_part_static(">");
         }
         Ok(())
     }
 
-    fn group_tag(&mut self, tag: &Tag) {
+    fn group_tag<M: RenderMapMode>(&mut self, tag: &Tag) {
         match tag {
             Tag::Static(value, start) => self.ctx.push_string_part_static_mapped(value, *start),
             Tag::Dynamic(value) => self.ctx.push_string_part_dynamic_spanned(value.clone()),

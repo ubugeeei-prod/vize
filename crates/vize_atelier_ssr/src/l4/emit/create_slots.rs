@@ -198,17 +198,17 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         for named in &slots.named {
             self.slot_property::<M>(named)?;
         }
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("_: 2 /* DYNAMIC */\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("}, [\n");
         self.ctx.indent_level += 1;
         for (index, dynamic) in slots.dynamic.iter().enumerate() {
             if index > 0 {
                 self.ctx.push(",\n");
             }
-            self.ctx.push_indent();
+            self.ctx.push_indent::<M>();
             match *dynamic {
                 Dynamic::Conditional(at) => self.conditional_entry::<M>(at)?,
                 Dynamic::Looped(at) => self.looped_entry::<M>(at)?,
@@ -221,7 +221,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.indent_level -= 1;
         if !slots.dynamic.is_empty() {
             self.ctx.push("\n");
-            self.ctx.push_indent();
+            self.ctx.push_indent::<M>();
         }
         self.ctx.push("])");
         Ok(())
@@ -277,7 +277,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push(&aliases);
         self.ctx.push(") => {\n");
         self.ctx.indent_level += 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("return ");
         let written = self
             .entry(template)
@@ -286,7 +286,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         written?;
         self.ctx.push("\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("})");
         Ok(())
     }
@@ -295,21 +295,21 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     fn entry_object<M: RenderMapMode>(&mut self, entry: &Entry, key: Option<usize>) -> Result<()> {
         self.ctx.push("{\n");
         self.ctx.indent_level += 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("name: ");
         self.ctx.push(&entry.name);
         self.ctx.push(",\n");
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("fn: ");
         self.slot_fn::<M>(&entry.spec)?;
         if let Some(key) = key {
             self.ctx.push(",\n");
-            self.ctx.push_indent();
+            self.ctx.push_indent::<M>();
             self.ctx.push(&cstr!("key: \"{key}\""));
         }
         self.ctx.push("\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("}");
         Ok(())
     }

@@ -31,10 +31,10 @@ impl<'a> SsrCodegenContext<'a> {
         el: &ElementNode<'a>,
         css_vars: bool,
     ) {
-        self.flush_push();
+        self.flush_push::<M>();
         self.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
 
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("_ssrRenderSuspense(_push, {\n");
         self.indent_level += 1;
         if el.children.iter().any(|child| {
@@ -46,11 +46,11 @@ impl<'a> SsrCodegenContext<'a> {
         }) {
             self.process_suspense_template_slots::<M>(el, css_vars);
             self.indent_level -= 1;
-            self.push_indent();
+            self.push_indent::<M>();
             self.push("})\n");
             return;
         }
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("default: () => {\n");
         self.indent_level += 1;
 
@@ -67,16 +67,16 @@ impl<'a> SsrCodegenContext<'a> {
                 template_wrapper: true,
             },
         );
-        self.flush_push();
+        self.flush_push::<M>();
         self.current_template_parts = old_parts;
 
         self.indent_level -= 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("},\n");
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("_: 1\n");
         self.indent_level -= 1;
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("})\n");
     }
 
@@ -95,7 +95,7 @@ impl<'a> SsrCodegenContext<'a> {
             let TemplateChildNode::Element(template) = child else {
                 continue;
             };
-            self.push_indent();
+            self.push_indent::<M>();
             match &slot.arg {
                 Some(ExpressionNode::Simple(arg)) if arg.is_static => {
                     if super::props::is_simple_identifier(arg.content) {
@@ -106,7 +106,7 @@ impl<'a> SsrCodegenContext<'a> {
                             .strip_prefix('"')
                             .and_then(|key| key.strip_suffix('"'))
                             .unwrap_or_default();
-                        self.push_then_mapped("\"", inner, arg.loc.span.start);
+                        self.push_then_mapped::<M>("\"", inner, arg.loc.span.start);
                         self.push("\"");
                     }
                 }
@@ -133,15 +133,15 @@ impl<'a> SsrCodegenContext<'a> {
                     template_wrapper: true,
                 },
             );
-            self.flush_push();
+            self.flush_push::<M>();
             self.current_template_parts = old_parts;
             self.indent_level -= 1;
-            self.push_indent();
+            self.push_indent::<M>();
             self.push("},\n");
         }
         super::normalize_implicit_slot_children(&mut implicit);
         if !implicit.is_empty() {
-            self.push_indent();
+            self.push_indent::<M>();
             self.push("default: () => {\n");
             self.indent_level += 1;
             let old_parts = std::mem::take(&mut self.current_template_parts);
@@ -157,13 +157,13 @@ impl<'a> SsrCodegenContext<'a> {
                     },
                 );
             }
-            self.flush_push();
+            self.flush_push::<M>();
             self.current_template_parts = old_parts;
             self.indent_level -= 1;
-            self.push_indent();
+            self.push_indent::<M>();
             self.push("},\n");
         }
-        self.push_indent();
+        self.push_indent::<M>();
         self.push(if dynamic { "_: 2\n" } else { "_: 1\n" });
     }
 }

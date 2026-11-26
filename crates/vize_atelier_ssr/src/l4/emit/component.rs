@@ -181,7 +181,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 ..no_inherit
             })?,
             "component" | "Component" if has_dynamic_tag_source(component, self.ctx.source) => {
-                self.dynamic_component(component, attached, inherit, css_vars)?
+                self.dynamic_component::<M>(component, attached, inherit, css_vars)?
             }
             _ => self.render_component::<M>(name, component, attached, inherit, css_vars)?,
         }
@@ -191,7 +191,6 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// `_push(_ssrRenderComponent(callee, props, slots, _parent))`.
-    #[inline(always)]
     fn render_component<M: RenderMapMode>(
         &mut self,
         name: &str,
@@ -210,7 +209,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let props = self.component_props_with_css_vars(attached, css_vars && !inherit)?;
         // The runtime captures scope on the VNode, outside forwarded $attrs.
         let props = self.with_fallthrough_attrs(props, inherit);
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
         // The resolved name maps to the authored tag, as the AST walker's does.
         let callee = match binding {
@@ -225,7 +224,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 .ctx
                 .component_callee(name, Some(component.span.start + 1)),
         };
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("_push(_ssrRenderComponent(");
         self.ctx.push_spanned(&callee);
         self.ctx.push(", ");
@@ -250,7 +249,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `<component :is>`: `_ssrRenderVNode(_push, _createVNode(
     /// _resolveDynamicComponent(is), props, vnodeSlots), _parent)`. The
     /// legacy lane registers `ssrRenderComponent` before it branches.
-    fn dynamic_component(
+    fn dynamic_component<M: RenderMapMode>(
         &mut self,
         component: &'r l2::ComponentOp<'a>,
         attached: &Attached<'_, '_>,
@@ -272,11 +271,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         } else {
             self.vnode_slots(component)?
         };
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderVNode);
         self.ctx.use_core_helper(RuntimeHelper::CreateVNode);
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("_ssrRenderVNode(_push, _createVNode(");
         self.ctx.push(&callee);
         self.ctx.push(", ");
@@ -319,15 +318,15 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     ) -> Result<()> {
         let target = self.static_or_bound(attached, "to")?;
         let disabled = self.static_or_bound(attached, "disabled")?;
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderTeleport);
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("_ssrRenderTeleport(_push, (_push) => {\n");
         self.ctx.indent_level += 1;
         self.children::<M>(flags)?;
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("}, ");
         self.ctx.push(target.as_deref().unwrap_or("undefined"));
         self.ctx.push(", ");

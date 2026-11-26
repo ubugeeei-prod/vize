@@ -86,13 +86,13 @@ pub(super) fn generate_with_sections_and_options<M: RenderMapMode>(
     ctx.newline();
 
     // Generate component/directive resolution
-    let assets_start = ctx.code_len();
+    let assets_start = ctx.code_len::<M>();
     profile!("atelier.codegen.assets", generate_assets(&mut ctx, root));
-    let assets_end = ctx.code_len();
+    let assets_end = ctx.code_len::<M>();
 
     // Generate return statement
     ctx.push("return ");
-    let return_expr_start = ctx.code_len();
+    let return_expr_start = ctx.code_len::<M>();
 
     // Generate root node
     if root_children.is_empty() {
@@ -110,10 +110,10 @@ pub(super) fn generate_with_sections_and_options<M: RenderMapMode>(
         ctx.use_helper(RuntimeHelper::Fragment);
         ctx.push("(");
         if !ctx.untracked_children {
-            ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+            ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
             ctx.push("(), ");
         }
-        ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
+        ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
         ctx.push("(");
         ctx.push(ctx.helper(RuntimeHelper::Fragment));
         ctx.push(", null, ");
@@ -133,7 +133,7 @@ pub(super) fn generate_with_sections_and_options<M: RenderMapMode>(
             ctx.push(", 64 /* STABLE_FRAGMENT */))");
         }
     }
-    let return_expr_end = ctx.code_len();
+    let return_expr_end = ctx.code_len::<M>();
 
     ctx.deindent();
     ctx.newline();
@@ -145,14 +145,14 @@ pub(super) fn generate_with_sections_and_options<M: RenderMapMode>(
     // We don't merge ALL root.helpers because transform may add helpers that
     // get optimized away during codegen (e.g., createElementVNode -> createElementBlock)
     let mut all_helpers: Vec<RuntimeHelper> = ctx.used_helpers.iter().collect();
-    let mut all_helper_bits = retain_unique_helpers(&mut all_helpers);
+    let mut all_helper_bits = retain_unique_helpers::<M>(&mut all_helpers);
     if root.helpers.contains(&RuntimeHelper::Unref) {
-        push_unique_helper(RuntimeHelper::Unref, &mut all_helpers, &mut all_helper_bits);
+        push_unique_helper::<M>(RuntimeHelper::Unref, &mut all_helpers, &mut all_helper_bits);
     }
     if root.helpers.contains(&RuntimeHelper::IsRef) {
-        push_unique_helper(RuntimeHelper::IsRef, &mut all_helpers, &mut all_helper_bits);
+        push_unique_helper::<M>(RuntimeHelper::IsRef, &mut all_helpers, &mut all_helper_bits);
     }
-    // Collect helpers from hoisted nodes - generate_hoists() takes &CodegenContext (immutable)
+    // Collect helpers from hoisted nodes - generate_hoists::<M>() takes &CodegenContext (immutable)
     // so helpers used in hoisted VNodes aren't tracked via use_helper(). Pre-scan them here.
     profile!(
         "atelier.codegen.collect_hoist_helpers",
@@ -166,32 +166,32 @@ pub(super) fn generate_with_sections_and_options<M: RenderMapMode>(
             false
         }
     });
-    all_helpers.retain(|helper| ctx.should_import_helper(*helper));
-    all_helper_bits = retain_unique_helpers(&mut all_helpers);
+    all_helpers.retain(|helper| ctx.should_import_helper::<M>(*helper));
+    all_helper_bits = retain_unique_helpers::<M>(&mut all_helpers);
 
     let mut ordered_helpers = Vec::with_capacity(all_helpers.len());
     let mut ordered_helper_bits = 0;
     for helper in root.helpers.iter().copied() {
-        if has_helper(all_helper_bits, helper) {
-            push_unique_helper(helper, &mut ordered_helpers, &mut ordered_helper_bits);
+        if has_helper::<M>(all_helper_bits, helper) {
+            push_unique_helper::<M>(helper, &mut ordered_helpers, &mut ordered_helper_bits);
         }
     }
     for helper in all_helpers {
-        push_unique_helper(helper, &mut ordered_helpers, &mut ordered_helper_bits);
+        push_unique_helper::<M>(helper, &mut ordered_helpers, &mut ordered_helper_bits);
     }
-    ordered_helpers.sort_by_key(|helper| vue_helper_import_rank(*helper));
+    ordered_helpers.sort_by_key(|helper| vue_helper_import_rank::<M>(*helper));
 
     let mut preamble = profile!(
         "atelier.codegen.preamble",
         generate_preamble_from_helpers(&ctx, &ordered_helpers)
     );
     let imports_len = preamble.len();
-    if ctx.needs_open_block_shim() {
+    if ctx.needs_open_block_shim::<M>() {
         preamble.push_str("const _openBlock = () => {}\n");
     }
 
     // Generate hoisted variable declarations (appended to preamble)
-    let hoists_code = profile!("atelier.codegen.hoists", generate_hoists(&ctx, root));
+    let hoists_code = profile!("atelier.codegen.hoists", generate_hoists::<M>(&ctx, root));
     if !hoists_code.is_empty() {
         preamble.push('\n');
         preamble.push_str(&hoists_code);
@@ -218,24 +218,24 @@ pub(super) fn generate_with_sections_and_options<M: RenderMapMode>(
     }
 }
 
-fn retain_unique_helpers(helpers: &mut Vec<RuntimeHelper>) -> u128 {
+fn retain_unique_helpers<M: RenderMapMode>(helpers: &mut Vec<RuntimeHelper>) -> u128 {
     let mut helper_bits = 0;
-    helpers.retain(|helper| push_helper_bit(*helper, &mut helper_bits));
+    helpers.retain(|helper| push_helper_bit::<M>(*helper, &mut helper_bits));
     helper_bits
 }
 
-fn push_unique_helper(
+fn push_unique_helper<M: RenderMapMode>(
     helper: RuntimeHelper,
     helpers: &mut Vec<RuntimeHelper>,
     helper_bits: &mut u128,
 ) {
-    if push_helper_bit(helper, helper_bits) {
+    if push_helper_bit::<M>(helper, helper_bits) {
         helpers.push(helper);
     }
 }
 
-fn push_helper_bit(helper: RuntimeHelper, helper_bits: &mut u128) -> bool {
-    let bit = helper_bit(helper);
+fn push_helper_bit<M: RenderMapMode>(helper: RuntimeHelper, helper_bits: &mut u128) -> bool {
+    let bit = helper_bit::<M>(helper);
     if *helper_bits & bit != 0 {
         return false;
     }
@@ -243,17 +243,17 @@ fn push_helper_bit(helper: RuntimeHelper, helper_bits: &mut u128) -> bool {
     true
 }
 
-fn has_helper(helper_bits: u128, helper: RuntimeHelper) -> bool {
-    helper_bits & helper_bit(helper) != 0
+fn has_helper<M: RenderMapMode>(helper_bits: u128, helper: RuntimeHelper) -> bool {
+    helper_bits & helper_bit::<M>(helper) != 0
 }
 
-fn helper_bit(helper: RuntimeHelper) -> u128 {
+fn helper_bit<M: RenderMapMode>(helper: RuntimeHelper) -> u128 {
     let index = helper as u8;
     debug_assert!(index < 128);
     1u128 << index
 }
 
-fn vue_helper_import_rank(helper: RuntimeHelper) -> u8 {
+fn vue_helper_import_rank<M: RenderMapMode>(helper: RuntimeHelper) -> u8 {
     match helper {
         RuntimeHelper::ResolveComponent
         | RuntimeHelper::ResolveDynamicComponent

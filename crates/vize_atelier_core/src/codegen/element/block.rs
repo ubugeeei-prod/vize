@@ -109,13 +109,13 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
             generate_slot_outlet_fallback::<M>(ctx, &el.children);
             ctx.deindent();
             ctx.newline();
-            ctx.finish_slot_outlet("])", true, true);
+            ctx.finish_slot_outlet::<M>("])", true, true);
         } else if has_slot_outlet_props(el) {
             ctx.push(", ");
             generate_slot_outlet_props(ctx, el);
-            ctx.finish_slot_outlet(")", false, true);
+            ctx.finish_slot_outlet::<M>(")", false, true);
         } else {
-            ctx.finish_slot_outlet(")", false, false);
+            ctx.finish_slot_outlet::<M>(")", false, false);
         }
 
         // Close withMemo wrapper if v-memo was present (unlikely but safe)
@@ -137,7 +137,7 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
         // Open block wrapper, anchored at the element opening the block.
         ctx.push_mapped("(", el.loc.span.start);
         if !ctx.untracked_children {
-            ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+            ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
             ctx.push("(), ");
         }
     }
@@ -145,11 +145,11 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
     match el.tag_type {
         ElementType::Element => {
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
-            ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
+            ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
             ctx.push("(\"");
             // Anchor the generated tag name at the authored tag name (the byte
             // after the open tag's `<`). No-op without `source_map`.
-            ctx.push_tag(el);
+            ctx.push_tag::<M>(el);
             ctx.push("\"");
 
             // Calculate patch flag and dynamic props
@@ -180,11 +180,11 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
                 ctx.push(", ");
                 // Custom directives and v-memo require array children with createTextVNode
                 if has_custom_dirs || memo_cache_index.is_some() {
-                    ctx.with_parent_namespace(child_namespace(el), |ctx| {
+                    ctx.with_parent_namespace::<M, _>(child_namespace(el), |ctx| {
                         generate_children_force_array::<M>(ctx, &el.children);
                     });
                 } else {
-                    ctx.with_parent_namespace(child_namespace(el), |ctx| {
+                    ctx.with_parent_namespace::<M, _>(child_namespace(el), |ctx| {
                         generate_children::<M>(ctx, &el.children);
                     });
                 }
@@ -237,10 +237,10 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
         ElementType::Component => {
             if is_memo_component {
                 ctx.use_helper(RuntimeHelper::CreateVNode);
-                ctx.push_vnode_helper(RuntimeHelper::CreateVNode);
+                ctx.push_vnode_helper::<M>(RuntimeHelper::CreateVNode);
             } else {
                 ctx.use_helper(RuntimeHelper::CreateBlock);
-                ctx.push_vnode_helper(RuntimeHelper::CreateBlock);
+                ctx.push_vnode_helper::<M>(RuntimeHelper::CreateBlock);
             }
             ctx.push("(");
 
@@ -338,7 +338,7 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
                 if is_dynamic {
                     ctx.skip_is_prop = true;
                 }
-                ctx.with_component_props(|ctx| generate_props(ctx, &el.props));
+                ctx.with_component_props::<M, _>(|ctx| generate_props(ctx, &el.props));
                 ctx.skip_is_prop = false;
             } else if !el.children.is_empty() || has_patch_info {
                 ctx.push(", null");
@@ -434,19 +434,19 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
                 generate_slot_outlet_fallback::<M>(ctx, &el.children);
                 ctx.deindent();
                 ctx.newline();
-                ctx.finish_slot_outlet("])", true, true);
+                ctx.finish_slot_outlet::<M>("])", true, true);
             } else if has_slot_props {
                 ctx.push(", ");
                 generate_slot_outlet_props(ctx, el);
-                ctx.finish_slot_outlet(")", false, true);
+                ctx.finish_slot_outlet::<M>(")", false, true);
             } else {
-                ctx.finish_slot_outlet(")", false, false);
+                ctx.finish_slot_outlet::<M>(")", false, false);
             }
         }
         ElementType::Template => {
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
             ctx.use_helper(RuntimeHelper::Fragment);
-            ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
+            ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
             ctx.push("(");
             ctx.push(ctx.helper(RuntimeHelper::Fragment));
             ctx.push(", null, ");

@@ -10,7 +10,6 @@ use super::helpers::{escape_js_string, to_valid_asset_identifier};
 use vize_l0::{String, camelize, capitalize, js_string::push_js_string_literal};
 
 /// Check if a root-level text node is ignorable whitespace.
-#[inline(always)]
 pub(super) fn is_ignorable_root_text(child: &TemplateChildNode<'_>) -> bool {
     matches!(child, TemplateChildNode::Text(text) if text.content.chars().all(|c| c.is_whitespace()))
 }

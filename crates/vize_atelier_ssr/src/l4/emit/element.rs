@@ -84,11 +84,13 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let content = content(attached, tag);
 
         self.ctx.push_string_part_static("<");
-        self.ctx
-            .push_string_part_static_mapped(tag, open_tag_anchor(self.ctx.source, element, tag));
+        self.ctx.push_string_part_static_mapped(
+            tag,
+            open_tag_anchor::<M>(self.ctx.source, element, tag),
+        );
         let mut owned_content = None;
-        if inherit || css_vars || merged::needs_merged(attached) {
-            if let Some(merged) = self.merged_attrs(attached, tag, inherit, css_vars)? {
+        if inherit || css_vars || merged::needs_merged::<M>(attached) {
+            if let Some(merged) = self.merged_attrs::<M>(attached, tag, inherit, css_vars)? {
                 self.ctx.push_string_part_dynamic_spanned(merged.attrs);
                 owned_content = merged.content;
             }
@@ -101,7 +103,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.ctx.push_string_part_static(scope_id);
         }
         if tag == "option" {
-            model::emit_option_selected(self, attached)?;
+            model::emit_option_selected::<M>(self, attached)?;
         }
         self.ctx.push_string_part_static(">");
 
@@ -112,7 +114,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
         } else if let Some(owned) = owned_content {
             self.ctx.push_string_part_dynamic(&owned);
-            self.skip_children()?;
+            self.skip_children::<M>()?;
         } else {
             self.content::<M>(content)?;
         }
@@ -142,7 +144,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 let value = html.value.as_ref().ok_or(LegacyReason::Binding)?;
                 let exp = self.expr(value, TransformContent::Decoded)?;
                 self.ctx.push_string_part_dynamic(&cstr!("({exp}) ?? ''"));
-                self.skip_children()
+                self.skip_children::<M>()
             }
             Content::Text(text) => {
                 let value = text.value.as_ref().ok_or(LegacyReason::Binding)?;
@@ -150,14 +152,14 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
                 self.ctx
                     .push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
-                self.skip_children()
+                self.skip_children::<M>()
             }
             Content::TextareaModel(model) => {
                 let exp = self.expr(&model.contract.read, TransformContent::Decoded)?;
                 self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
                 self.ctx
                     .push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
-                self.skip_children()
+                self.skip_children::<M>()
             }
             Content::SelectModel(model) => {
                 let exp = self.expr(&model.contract.read, TransformContent::Decoded)?;
@@ -171,8 +173,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// Consume a child list the legacy walker never renders (the element's
     /// directive owns its content), keeping the plan balanced.
-    #[inline(never)]
-    fn skip_children(&mut self) -> Result<()> {
+    fn skip_children<M: RenderMapMode>(&mut self) -> Result<()> {
         self.pos = self.region_end(self.pos)?;
         Ok(())
     }
@@ -184,7 +185,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 /// has no tag in the source: its span starts at the triggering child's `<`,
 /// and the legacy walker anchors the synthesized name one byte later than
 /// that (zero-width loc at the child tag name, then `start + 1`).
-fn open_tag_anchor(source: &str, element: &l2::ElementOp<'_>, tag: &str) -> u32 {
+fn open_tag_anchor<M: RenderMapMode>(source: &str, element: &l2::ElementOp<'_>, tag: &str) -> u32 {
     let start = element.span.start;
     let authored = source.get(start as usize..).is_some_and(|rest| {
         let Some(name) = rest.strip_prefix('<') else {

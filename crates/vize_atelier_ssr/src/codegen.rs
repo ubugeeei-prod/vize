@@ -170,7 +170,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    pub(crate) fn set_runtime_module_name(&mut self, runtime_module_name: &str) {
+    pub(crate) fn set_runtime_module_name<M: RenderMapMode>(&mut self, runtime_module_name: &str) {
         self.runtime_module_name = String::from(runtime_module_name);
     }
 
@@ -215,9 +215,9 @@ impl<'a> SsrCodegenContext<'a> {
             self.use_core_helper(RuntimeHelper::Unref);
         }
 
-        let is_fragment = css_vars::root_is_fragment(&root.children);
+        let is_fragment = css_vars::root_is_fragment::<M>(&root.children);
 
-        self.begin_render(root.loc.span.start);
+        self.begin_render::<M>(root.loc.span.start);
         self.process_root_children::<M>(&root.children, is_fragment, false, false);
         self.finish_render::<M>()
     }
@@ -225,7 +225,7 @@ impl<'a> SsrCodegenContext<'a> {
     /// Open `ssrRender`: the signature and the CSS-variable prelude. Shared
     /// by the legacy walker and the L4 string-plan emitter. The signature is
     /// anchored at `template_start`, the template section's authored start.
-    pub(crate) fn begin_render(&mut self, template_start: u32) {
+    pub(crate) fn begin_render<M: RenderMapMode>(&mut self, template_start: u32) {
         self.push_mapped(
             "function ssrRender(_ctx, _push, _parent, _attrs",
             template_start,
@@ -237,25 +237,25 @@ impl<'a> SsrCodegenContext<'a> {
         self.indent_level += 1;
 
         if let Some(css_vars) = &self.options.ssr_css_vars {
-            self.push_indent();
+            self.push_indent::<M>();
             self.push("const _cssVars = { style: ");
             self.push(css_vars);
             self.push(" }\n");
             self.use_core_helper(RuntimeHelper::MergeProps);
-            self.push_indent();
+            self.push_indent::<M>();
             self.push("_attrs = _mergeProps(_attrs, _cssVars)\n");
         }
-        self.mark_body_start();
+        self.mark_body_start::<M>();
     }
 
     /// Close `ssrRender` and assemble the module parts.
     pub(crate) fn finish_render<M: RenderMapMode>(mut self) -> SsrCodegenResult {
-        self.flush_push();
+        self.flush_push::<M>();
         self.indent_level -= 1;
         self.push("}\n");
-        self.declare_temps();
+        self.declare_temps::<M>();
 
-        let preamble = self.build_preamble();
+        let preamble = self.build_preamble::<M>();
 
         let map = self.out.is_recording().then(|| {
             if M::COMPOSED {
@@ -301,7 +301,7 @@ impl<'a> SsrCodegenContext<'a> {
     /// only a handful of static/dynamic pieces. Taking the buffer here lets the
     /// context reuse the allocation for subsequent chunks while writing directly
     /// into the final byte buffer.
-    pub(crate) fn flush_push(&mut self) {
+    pub(crate) fn flush_push<M: RenderMapMode>(&mut self) {
         if self.current_template_parts.is_empty() {
             return;
         }
@@ -309,13 +309,13 @@ impl<'a> SsrCodegenContext<'a> {
         // Take ownership of parts to avoid borrow issues
         let parts = std::mem::take(&mut self.current_template_parts);
 
-        self.push_indent();
+        self.push_indent::<M>();
         self.push("_push(`");
 
         for part in &parts {
             match part {
                 TemplatePart::Static(s) => {
-                    self.push_template_static(s);
+                    self.push_template_static::<M>(s);
                 }
                 TemplatePart::Dynamic(expr) => {
                     self.push("${");
@@ -356,7 +356,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Push indentation
-    pub(crate) fn push_indent(&mut self) {
+    pub(crate) fn push_indent<M: RenderMapMode>(&mut self) {
         for _ in 0..self.indent_level {
             self.out.push_str("  ");
         }

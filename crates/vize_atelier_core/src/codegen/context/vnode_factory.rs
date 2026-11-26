@@ -1,3 +1,4 @@
+use crate::codegen::RenderMapMode;
 use vize_l0::{FxHashMap, String, ToCompactString};
 
 use crate::codegen::document::EmitDocument;
@@ -106,7 +107,10 @@ impl CodegenContext {
     }
 
     /// Emit a vnode creation helper and track its default runtime import.
-    pub(in crate::codegen) fn push_vnode_helper(&mut self, helper: RuntimeHelper) {
+    pub(in crate::codegen) fn push_vnode_helper<M: RenderMapMode>(
+        &mut self,
+        helper: RuntimeHelper,
+    ) {
         debug_assert!(is_vnode_factory_helper(helper));
         let Some(helper) = self.child_value_helper(helper) else {
             return;
@@ -124,12 +128,15 @@ impl CodegenContext {
     }
 
     /// Whether a helper still needs a Vue runtime import.
-    pub(in crate::codegen) fn should_import_helper(&self, helper: RuntimeHelper) -> bool {
+    pub(in crate::codegen) fn should_import_helper<M: RenderMapMode>(
+        &self,
+        helper: RuntimeHelper,
+    ) -> bool {
         self.vnode_factory.is_none() || !is_vnode_factory_helper(helper)
     }
 
     /// Whether custom-factory output needs the inert block-tracking shim.
-    pub(in crate::codegen) fn needs_open_block_shim(&self) -> bool {
+    pub(in crate::codegen) fn needs_open_block_shim<M: RenderMapMode>(&self) -> bool {
         self.vnode_factory.is_some() && self.used_helpers.contains(RuntimeHelper::OpenBlock)
     }
 }

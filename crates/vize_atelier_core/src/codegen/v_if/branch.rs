@@ -170,7 +170,7 @@ fn generate_if_branch_slot<M: RenderMapMode>(
             generate_node::<M>(ctx, child);
         }
     }
-    ctx.finish_slot_outlet(if has_fallback { "])" } else { ")" }, has_fallback, true);
+    ctx.finish_slot_outlet::<M>(if has_fallback { "])" } else { ")" }, has_fallback, true);
 }
 
 /// Generate component for if branch.
@@ -199,10 +199,10 @@ fn generate_if_branch_component<M: RenderMapMode>(
     ctx.use_helper(RuntimeHelper::CreateBlock);
     ctx.push_mapped("(", el.loc.span.start);
     if !ctx.untracked_children {
-        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+        ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
         ctx.push("(), ");
     }
-    ctx.push_vnode_helper(RuntimeHelper::CreateBlock);
+    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateBlock);
     ctx.push("(");
     // Generate component name
     // Handle dynamic component (<component :is="..."> / <Component :is="...">)
@@ -268,7 +268,7 @@ fn generate_if_branch_component<M: RenderMapMode>(
     let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
 
     ctx.push(", ");
-    ctx.with_component_props(|ctx| {
+    ctx.with_component_props::<M, _>(|ctx| {
         generate_if_branch_props(ctx, el, branch, branch_index, is_dynamic);
     });
 
@@ -362,12 +362,12 @@ fn generate_if_branch_element<M: RenderMapMode>(
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.push_mapped("(", el.loc.span.start);
     if !ctx.untracked_children {
-        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+        ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
         ctx.push("(), ");
     }
-    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
+    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
     ctx.push("(\"");
-    ctx.push_tag(el);
+    ctx.push_tag::<M>(el);
     ctx.push("\"");
 
     ctx.push(", ");
@@ -381,7 +381,7 @@ fn generate_if_branch_element<M: RenderMapMode>(
             ctx.push_text(text);
             ctx.push("\"");
         } else {
-            ctx.with_parent_namespace(child_namespace(el), |ctx| {
+            ctx.with_parent_namespace::<M, _>(child_namespace(el), |ctx| {
                 generate_if_branch_children::<M>(ctx, &el.children);
             });
         }
@@ -435,10 +435,10 @@ fn generate_if_branch_template_fragment<M: RenderMapMode>(
     ctx.use_helper(RuntimeHelper::Fragment);
     ctx.push_mapped("(", branch.loc.span.start);
     if !ctx.untracked_children {
-        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+        ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
         ctx.push("(), ");
     }
-    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
+    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
     ctx.push("(");
     ctx.push(ctx.helper(RuntimeHelper::Fragment));
     ctx.push(", { key: ");

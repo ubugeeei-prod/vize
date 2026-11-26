@@ -7,6 +7,7 @@
 //! exactly the bytes a plain `push` would write, so the emitted JavaScript is
 //! identical with maps on or off (TS-11).
 
+use crate::codegen::RenderMapMode;
 use vize_l0::Span;
 
 use super::CodegenContext;
@@ -56,7 +57,7 @@ impl CodegenContext {
     /// Push an element's tag name anchored at the authored tag name, the byte
     /// after the element's opening `<`.
     #[inline]
-    pub(in crate::codegen) fn push_tag(&mut self, el: &ElementNode<'_>) {
+    pub(in crate::codegen) fn push_tag<M: RenderMapMode>(&mut self, el: &ElementNode<'_>) {
         let start = el.loc.span.start + 1;
         self.push_linked(el.tag, Span::new(start, start + el.tag.len() as u32));
     }
@@ -71,7 +72,11 @@ impl CodegenContext {
     /// Push a slot's emitted name anchored at the `v-slot` argument that
     /// authored it; an argument-less `v-slot` authors no name token.
     #[inline]
-    pub(in crate::codegen) fn push_slot_name(&mut self, code: &str, dir: &DirectiveNode<'_>) {
+    pub(in crate::codegen) fn push_slot_name<M: RenderMapMode>(
+        &mut self,
+        code: &str,
+        dir: &DirectiveNode<'_>,
+    ) {
         match &dir.arg {
             Some(arg) => self.push_linked(code, arg.loc().span),
             None => self.push(code),
@@ -81,7 +86,7 @@ impl CodegenContext {
     /// Push the `_withCtx` helper opening a slot function, anchored at the
     /// authored unit that carries the slot (`<template #name>` or the
     /// component with a root `v-slot`).
-    pub(in crate::codegen) fn push_slot_function(&mut self, unit_start: u32) {
+    pub(in crate::codegen) fn push_slot_function<M: RenderMapMode>(&mut self, unit_start: u32) {
         self.use_helper(RuntimeHelper::WithCtx);
         self.push_mapped(self.helper(RuntimeHelper::WithCtx), unit_start);
     }

@@ -79,9 +79,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
         let name = self.outlet_name(slot)?;
         let props = self.slot_props(attached)?;
-        self.ctx.flush_push();
+        self.ctx.flush_push::<M>();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSlot);
-        self.ctx.push_indent();
+        self.ctx.push_indent::<M>();
         self.ctx.push("_ssrRenderSlot(_ctx.$slots, ");
         self.ctx.push(&name);
         self.ctx.push(", ");
@@ -100,15 +100,15 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 inherit_attrs: false,
                 css_vars: false,
             });
-            self.ctx.flush_push();
+            self.ctx.flush_push::<M>();
             self.ctx.current_template_parts = saved;
             fallback?;
             self.ctx.indent_level -= 1;
-            self.ctx.push_indent();
+            self.ctx.push_indent::<M>();
             self.ctx.push("}");
         }
         self.ctx.push(", _push, _parent");
-        self.ctx.push_slot_scope_id();
+        self.ctx.push_slot_scope_id::<M>();
         self.ctx.push(")\n");
         self.close(
             Kind::CloseSlot,

@@ -6,6 +6,7 @@
 mod collect_helpers;
 mod static_vnode;
 
+use crate::codegen::RenderMapMode;
 use crate::{
     DynamicProps, ExpressionNode, JsChildNode, PropsExpression, RootNode, RuntimeHelper,
     TemplateChildNode, TemplateTextChildNode, VNodeCall, VNodeChildren, VNodeTag,
@@ -20,7 +21,10 @@ use vize_l0::ToCompactString;
 use vize_l0::ensure_sufficient_stack;
 
 /// Generate hoisted variable declarations.
-pub(super) fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> String {
+pub(super) fn generate_hoists<M: RenderMapMode>(
+    ctx: &CodegenContext,
+    root: &RootNode<'_>,
+) -> String {
     let mut hoists_code = String::default();
 
     for (i, hoist) in root.hoists.iter().enumerate() {

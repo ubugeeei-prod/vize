@@ -445,10 +445,10 @@ fn compile_ssr_on_lane_with_runtime<'a, M: RenderMapMode>(
     };
     #[cfg(feature = "legacy-differential")]
     if lane == SsrLane::Selected {
-        crate::differential::record_verdict(&selection);
+        crate::differential::record_verdict::<M>(&selection);
     }
 
-    let transform_opts = crate::stage_options::transform_options(&codegen_options);
+    let transform_opts = crate::stage_options::transform_options::<M>(&codegen_options);
     let transform_errors = profile!(
         "atelier.ssr.template.transform",
         transform_with_frozen_elements(
@@ -483,7 +483,7 @@ fn compile_ssr_on_lane_with_runtime<'a, M: RenderMapMode>(
                 experimental_options,
             );
             codegen_ctx.apply_sfc_context(context);
-            codegen_ctx.set_runtime_module_name(runtime_module_name);
+            codegen_ctx.set_runtime_module_name::<M>(runtime_module_name);
             profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root))
         }
     };

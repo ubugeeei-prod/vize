@@ -19,7 +19,7 @@ use vize_l0::ToCompactString;
 
 /// Generate if node.
 pub fn generate_if<M: RenderMapMode>(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
-    if once::chain_is_once(if_node) {
+    if once::chain_is_once::<M>(if_node) {
         super::element::generate_v_once_cached(ctx, |ctx| generate_if_chain::<M>(ctx, if_node));
     } else {
         generate_if_chain::<M>(ctx, if_node);
@@ -39,7 +39,7 @@ fn generate_if_chain<M: RenderMapMode>(ctx: &mut CodegenContext, if_node: &IfNod
         // snapshotted and reset around the branch's content so a nested
         // v-if inside this branch starts at 0 again, matching Vue's
         // recursive transform. (#961)
-        let branch_key = ctx.next_v_if_branch_key();
+        let branch_key = ctx.next_v_if_branch_key::<M>();
         if let Some(condition) = &branch.condition {
             if i == 0 {
                 // First branch: output condition with parentheses

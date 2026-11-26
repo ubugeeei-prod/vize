@@ -74,10 +74,10 @@ fn generate_for_inner<M: RenderMapMode>(
 
     ctx.push_mapped("(", for_node.loc.span.start);
     if !ctx.untracked_children {
-        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
+        ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
         ctx.push(if is_stable { "(), " } else { "(true), " });
     }
-    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
+    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
     ctx.push("(");
     ctx.push(ctx.helper(RuntimeHelper::Fragment));
     if let Some(generate_key) = generate_fragment_key {

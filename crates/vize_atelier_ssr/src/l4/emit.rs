@@ -194,12 +194,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             (Kind::Text, Source::Text(op)) => {
                 self.pos += 1;
                 let content = plan_source(&segment, SsrStringPayloadKind::Text)?;
-                text::emit_text(self.ctx, content, op.span.start)
+                text::emit_text::<M>(self.ctx, content, op.span.start)
             }
             (Kind::DynamicText, Source::Interpolation(interpolation)) => {
                 self.pos += 1;
                 require_dynamic(&segment)?;
-                text::emit_interpolation(self, &segment, interpolation)
+                text::emit_interpolation::<M>(self, &segment, interpolation)
             }
             (Kind::If, Source::If(if_op)) => vize_l0::ensure_sufficient_stack(|| {
                 self.if_chain::<M>(

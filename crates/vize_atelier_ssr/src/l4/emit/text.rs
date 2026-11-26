@@ -2,6 +2,7 @@
 //! into one compound op; the SSR lane renders each recorded part in place.
 
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::Span;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
@@ -21,7 +22,11 @@ use crate::l4::{AdmissionFailure, LegacyReason};
 /// The shipped parser condenses whitespace *after* decoding, while L2
 /// condenses the raw text; an entity that decodes to whitespace would make
 /// the two disagree, so that text keeps the legacy lane.
-pub(super) fn emit_text(ctx: &mut SsrCodegenContext<'_>, content: &str, start: u32) -> Result<()> {
+pub(super) fn emit_text<M: RenderMapMode>(
+    ctx: &mut SsrCodegenContext<'_>,
+    content: &str,
+    start: u32,
+) -> Result<()> {
     let decoded = decode_ssr_static_text(content);
     admit_decoded(content, &decoded)?;
     // Anchored at the authored text, as the AST walker anchors a text node.
@@ -55,7 +60,7 @@ pub(super) fn legacy_child_count(
     })
 }
 
-pub(super) fn emit_interpolation(
+pub(super) fn emit_interpolation<M: RenderMapMode>(
     em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
     segment: &SsrStringSegment<'_, '_>,
     interpolation: &l2::InterpolationOp<'_>,
@@ -64,10 +69,10 @@ pub(super) fn emit_interpolation(
         for part in parts {
             if part.dynamic {
                 let rewritten = decode_interpolation_js(em.text_expr(part.text.as_str())?);
-                let content = spans::interpolation_content(em.ctx.source, part.span);
-                push_interpolate(em, rewritten, content.unwrap_or(part.span));
+                let content = spans::interpolation_content::<M>(em.ctx.source, part.span);
+                push_interpolate::<M>(em, rewritten, content.unwrap_or(part.span));
             } else {
-                emit_text(em.ctx, part.text.as_str(), part.span.start)?;
+                emit_text::<M>(em.ctx, part.text.as_str(), part.span.start)?;
             }
         }
         return Ok(());
@@ -77,8 +82,8 @@ pub(super) fn emit_interpolation(
     };
     let rewritten =
         decode_interpolation_js(em.expr(&interpolation.expression, TransformContent::Padded)?);
-    let content = spans::trimmed(em.ctx.source, js.span);
-    push_interpolate(em, rewritten, content);
+    let content = spans::trimmed::<M>(em.ctx.source, js.span);
+    push_interpolate::<M>(em, rewritten, content);
     Ok(())
 }
 
@@ -95,10 +100,14 @@ pub(super) fn decode_interpolation_js(text: vize_l0::String) -> vize_l0::String 
 
 /// `_ssrInterpolate(exp)`, anchored at the authored content `span` as the AST
 /// walker anchors an interpolation.
-fn push_interpolate(em: &mut Emitter<'_, '_, '_, '_, '_, '_>, text: vize_l0::String, span: Span) {
+fn push_interpolate<M: RenderMapMode>(
+    em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
+    text: vize_l0::String,
+    span: Span,
+) {
     em.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
     em.ctx
-        .push_wrapped_expression_part("_ssrInterpolate(", &text, ")", span);
+        .push_wrapped_expression_part::<M>("_ssrInterpolate(", &text, ")", span);
 }
 
 /// The validated parts of a compound interpolation, or `None` for a plain one.

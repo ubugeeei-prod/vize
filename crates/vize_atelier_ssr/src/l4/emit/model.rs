@@ -2,6 +2,7 @@
 //! the dynamic-type helper, and `selected` on options of a modelled select.
 
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
@@ -196,7 +197,7 @@ pub(super) fn collect_root(
 }
 
 /// `selected` on an `<option>` inside a `<select v-model>`.
-pub(super) fn emit_option_selected(
+pub(super) fn emit_option_selected<M: RenderMapMode>(
     em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
     attached: &Attached<'_, '_>,
 ) -> Result<()> {

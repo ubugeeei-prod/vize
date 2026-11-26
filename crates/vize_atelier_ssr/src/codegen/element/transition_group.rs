@@ -43,8 +43,8 @@ impl<'a> SsrCodegenContext<'a> {
         });
         if let Some(tag) = &tag {
             self.push_string_part_static("<");
-            self.push_group_tag(tag, dynamic.as_ref());
-            if let Some(merged) = self.transition_group_attrs(
+            self.push_group_tag::<M>(tag, dynamic.as_ref());
+            if let Some(merged) = self.transition_group_attrs::<M>(
                 el,
                 inherit_attrs,
                 css_vars && !inherit_attrs,
@@ -72,12 +72,16 @@ impl<'a> SsrCodegenContext<'a> {
 
         if let Some(tag) = &tag {
             self.push_string_part_static("</");
-            self.push_group_tag(tag, dynamic.as_ref());
+            self.push_group_tag::<M>(tag, dynamic.as_ref());
             self.push_string_part_static(">");
         }
     }
 
-    fn push_group_tag(&mut self, tag: &GroupTag<'_, 'a>, dynamic: Option<&EmitDocument>) {
+    fn push_group_tag<M: RenderMapMode>(
+        &mut self,
+        tag: &GroupTag<'_, 'a>,
+        dynamic: Option<&EmitDocument>,
+    ) {
         match tag {
             GroupTag::Static(text) => {
                 self.push_string_part_static_mapped(text.content, text.loc.span.start);
