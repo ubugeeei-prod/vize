@@ -44,7 +44,7 @@ pub fn on_both_lanes<R>(compile: impl Fn() -> R) -> (R, std::vec::Vec<&'static s
 }
 
 /// The lane a production compile takes on this thread.
-pub(crate) fn production_lane() -> SsrLane {
+pub fn production_lane() -> SsrLane {
     if PINNED_LEGACY.with(Cell::get) {
         SsrLane::LegacyOnly
     } else {
@@ -52,9 +52,9 @@ pub(crate) fn production_lane() -> SsrLane {
     }
 }
 
-/// Record a selected-lane verdict, its [`crate::l4::lane_label`], while
-/// [`record_lanes`] is active.
-pub(crate) fn record_verdict(label: &'static str) {
+/// Record a selected-lane verdict, its `lane_label`, while [`record_lanes`]
+/// is active.
+pub fn record_verdict(label: &'static str) {
     VERDICTS.with(|verdicts| {
         if let Some(verdicts) = verdicts.borrow_mut().as_mut() {
             verdicts.push(label);
@@ -65,7 +65,7 @@ pub(crate) fn record_verdict(label: &'static str) {
 /// Run `f` without recording lane verdicts: the direct lane's debug oracle
 /// recompiles on the full path, and that compile is not a production one.
 #[cfg(debug_assertions)]
-pub(crate) fn unrecorded<R>(f: impl FnOnce() -> R) -> R {
+pub fn unrecorded<R>(f: impl FnOnce() -> R) -> R {
     let previous = VERDICTS.with(|verdicts| verdicts.replace(None));
     let result = f();
     VERDICTS.with(|verdicts| verdicts.replace(previous));
@@ -73,7 +73,7 @@ pub(crate) fn unrecorded<R>(f: impl FnOnce() -> R) -> R {
 }
 
 /// Record the verdict of a compile the direct lane emitted.
-pub(crate) fn record_emitted() {
+pub fn record_emitted() {
     VERDICTS.with(|verdicts| {
         if let Some(verdicts) = verdicts.borrow_mut().as_mut() {
             verdicts.push("s4");

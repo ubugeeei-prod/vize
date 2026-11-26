@@ -24,7 +24,14 @@ pub(super) fn compile(
 ) -> (Vec<CompilerError>, SsrCodegenResult) {
     let direct = vize_atelier_ssr::sfc_direct_lane_enabled()
         && vize_atelier_dom::sfc_template_source_is_direct(source, &options.directive_contracts);
-    vize_atelier_ssr::compile_ssr_sfc_template(
+    // A requested map is composed into the component's, and only the composed
+    // copy of the SSR compile records the links that needs.
+    let compile = if experimental_options.source_map {
+        vize_atelier_ssr_composed::compile_ssr_sfc_template
+    } else {
+        vize_atelier_ssr::compile_ssr_sfc_template
+    };
+    compile(
         allocator,
         source,
         options,

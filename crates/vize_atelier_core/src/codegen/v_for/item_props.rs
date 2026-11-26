@@ -2,14 +2,14 @@
 
 use crate::{ElementNode, ElementType, PropNode, TemplateChildNode};
 
-use super::super::{
+use super::{generate::generate_single_prop, helpers::should_skip_prop};
+use crate::codegen::{
     context::CodegenContext,
     element::helpers::is_is_prop,
     props::{
         StaticMerge, duplicate_von_event_keys, generate_merged_event_handlers, get_von_event_key,
     },
 };
-use super::{generate::generate_single_prop, helpers::should_skip_prop};
 use vize_l0::{FxHashSet, String};
 
 pub(super) enum EventPropAction {

@@ -19,8 +19,8 @@ use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_core::options::{BindingMetadata, BindingType, CustomElementMatcher};
 use vize_l0::Allocator;
 
-use super::super::compile::{SsrLane, compile_ssr_on_lane};
 use super::{SsrL4Request, SsrL4Selection, select_ssr_lane};
+use crate::compile::{SsrLane, compile_ssr_on_lane};
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 
 /// The option surfaces every admitted fixture runs under.
@@ -215,8 +215,7 @@ fn refused_fixtures_stay_on_the_legacy_lane_with_parity() {
     }
 }
 
-use super::super::compile::compile_ssr_on_lane_with_context;
-use crate::SsrSfcContext;
+use crate::{SsrSfcContext, compile::compile_ssr_on_lane_with_context};
 
 fn comment_arguments(code: &str) -> std::vec::Vec<&str> {
     code.split("_createCommentVNode(")

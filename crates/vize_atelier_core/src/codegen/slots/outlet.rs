@@ -121,7 +121,7 @@ pub(crate) fn has_slot_outlet_props(el: &ElementNode<'_>) -> bool {
 }
 
 pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
-    let static_merge = super::super::props::StaticMerge::from_props(&el.props);
+    let static_merge = crate::codegen::props::StaticMerge::from_props(&el.props);
 
     let has_dynamic_class = el.props.iter().any(|prop| match prop {
         PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name == "bind" => {

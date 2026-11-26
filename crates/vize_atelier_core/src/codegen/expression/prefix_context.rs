@@ -171,9 +171,9 @@ pub(super) fn prefix_node_in_scope(
 
 #[cfg(test)]
 mod tests {
-    use super::super::super::context::CodegenContext;
-    use super::super::super::expression::generate_event_handler;
     use super::prefix_identifiers_with_context_node;
+    use crate::codegen::context::CodegenContext;
+    use crate::codegen::expression::generate_event_handler;
     use crate::options::CodegenOptions;
     use crate::{ExpressionNode, SimpleExpressionNode, SourceLocation};
     use oxc_span::{GetSpan, SourceType};
@@ -373,7 +373,7 @@ mod tests {
             },
             None,
         );
-        let code = super::super::super::generate(
+        let code = crate::codegen::generate(
             &root,
             CodegenOptions {
                 prefix_identifiers: true,

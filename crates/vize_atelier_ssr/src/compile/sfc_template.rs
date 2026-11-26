@@ -6,9 +6,11 @@ use vize_atelier_core::{
 };
 use vize_l0::Allocator;
 
-use super::super::l4::{self, SsrL4Request, SsrL4Selection};
 use super::{SsrLane, compile_ssr_on_lane_with_runtime};
-use crate::{SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions, SsrSfcContext};
+use crate::{
+    SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions, SsrSfcContext,
+    l4::{self, SsrL4Request, SsrL4Selection},
+};
 
 /// Compile one SFC template block for SSR, returning what the SFC compiler
 /// keeps: the diagnostics and the generated module. No template tree comes
@@ -37,26 +39,6 @@ pub fn compile_ssr_sfc_template(
     codegen_options: &vize_atelier_core::CodegenOptions,
     direct: bool,
 ) -> (Vec<CompilerError>, SsrCodegenResult) {
-    // The SFC assembly composes a requested map into the component's.
-    sfc_map_copy! {
-        plain {
-            #[cfg(not(test))]
-            if experimental_options.source_map {
-                return crate::composed::compile::compile_ssr_sfc_template(
-                    allocator,
-                    source,
-                    options,
-                    template_syntax,
-                    custom_elements,
-                    experimental_options,
-                    context,
-                    codegen_options,
-                    direct,
-                );
-            }
-        }
-        composed {}
-    }
     #[cfg(feature = "legacy-differential")]
     let lane = crate::differential::production_lane();
     #[cfg(not(feature = "legacy-differential"))]

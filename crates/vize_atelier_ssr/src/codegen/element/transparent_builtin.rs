@@ -2,9 +2,9 @@
 
 use vize_atelier_core::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
-use super::super::super::codegen::SsrCodegenContext;
-use super::super::super::codegen::css_vars::RootCssVars;
-use super::super::super::codegen::helpers::single_fallthrough_child_index;
+use crate::codegen::SsrCodegenContext;
+use crate::codegen::css_vars::RootCssVars;
+use crate::codegen::helpers::single_fallthrough_child_index;
 
 impl<'a> SsrCodegenContext<'a> {
     /// `<Transition>` and `<KeepAlive>` are client-side concerns: the server

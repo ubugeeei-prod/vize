@@ -39,13 +39,13 @@ use vize_l2::expr::ExprRef;
 use vize_l2_to_l3::PartitionKind;
 use vize_l4::targets::dom::artifact::{TransformContent, TransformExpressions};
 
-use super::super::codegen::SsrCodegenContext;
-use super::super::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params;
 use super::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringPlan, SsrStringSegment,
     SsrStringSegmentKind as Kind,
 };
 use super::{AdmissionFailure, LegacyReason};
+use crate::codegen::SsrCodegenContext;
+use crate::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params;
 use region::is_close;
 
 type Result<T> = core::result::Result<T, AdmissionFailure>;

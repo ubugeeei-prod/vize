@@ -59,11 +59,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.push_indent();
         self.push("_push(_ssrRenderComponent(");
         if let Some(binding_expr) = setup_binding.as_deref() {
-            sfc_map_copy! {
-                plain { self.push(binding_expr); }
-                // A composed map anchors a setup binding read at the tag.
-                composed { self.push_anchored(binding_expr, el.loc.span.start + 1); }
-            }
+            push_setup_binding!(self, binding_expr, el.loc.span.start + 1);
         } else {
             let callee = self.component_callee(tag, Some(el.loc.span.start + 1));
             self.push_spanned(&callee);

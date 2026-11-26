@@ -8,10 +8,10 @@ use vize_l0::{Allocator, Span};
 use vize_l2::op::Region;
 use vize_l4::targets::dom::artifact::TransformExpressions;
 
-use super::super::codegen::SsrCodegenResult;
 use super::emit::PlanFacts;
 use super::select::{L2Artifact, select_from_l2_plain};
 use super::{LegacyReason, SsrL4Selection, record_selection};
+use crate::codegen::SsrCodegenResult;
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 
 /// Emit the `ssrRender` module for a caller-built L2 render root from the L4

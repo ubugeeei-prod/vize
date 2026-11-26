@@ -73,6 +73,9 @@ function isExcluded(file: string, generated: ReadonlySet<string>): boolean {
     ["ja", "zh-CN", "pt-BR", "fr"].some((locale) => file.startsWith(`docs/content/${locale}/`)) ||
     // Generated, one row per rule; `generate-patina-rules-page.ts --check` keeps it fresh.
     file === "docs/content/rules/all.md" ||
+    // Generated copies of a crate; `generate/composed-crates.ts --check` keeps them fresh,
+    // and their sources stay under the rule.
+    /^crates\/[a-z0-9_]+_composed\//u.test(file) ||
     file.includes(".min.") ||
     [
       "_fixtures",

@@ -288,10 +288,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 // Check for built-in components (Teleport, KeepAlive, Suspense)
                 ctx.use_helper(builtin);
                 ctx.push(ctx.helper(builtin));
-            } else if render_map_copy!(
-                plain { ctx.push_component_binding_tag(el.tag) }
-                composed { ctx.push_composed_component_binding(el) }
-            ) {
+            } else if push_component_binding!(ctx, el) {
             } else {
                 ctx.push(&to_valid_asset_identifier("component", el.tag));
             }

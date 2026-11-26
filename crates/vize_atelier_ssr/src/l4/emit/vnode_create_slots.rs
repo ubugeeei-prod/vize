@@ -5,10 +5,10 @@ use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, cstr};
 use vize_l4::targets::dom::artifact::TransformContent;
 
-use super::super::super::l4::AdmissionFailure;
 use super::create_slots::{Dynamic, Entry};
 use super::slots::ComponentSlots;
 use super::{Emitter, Result};
+use crate::l4::AdmissionFailure;
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// The VNode fallback's `_createSlots({ ... }, [ ... ])` expression.

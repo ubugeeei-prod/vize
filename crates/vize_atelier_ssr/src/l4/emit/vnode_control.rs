@@ -9,13 +9,11 @@ use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
-use super::super::super::codegen::element::props::quoted_js_string;
-use super::super::super::l4::string_plan::{
-    SsrSegmentSource as Source, SsrStringSegmentKind as Kind,
-};
-use super::super::super::l4::{AdmissionFailure, LegacyReason};
 use super::vnode::array;
 use super::{Emitter, Result};
+use crate::codegen::element::props::quoted_js_string;
+use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
+use crate::l4::{AdmissionFailure, LegacyReason};
 
 fn node(fact: u32) -> Result<NodeId> {
     NodeId::from_index(fact).ok_or(AdmissionFailure::Invalid(

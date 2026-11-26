@@ -10,11 +10,11 @@ use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op as l2;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_ssr_static_text};
 
-use super::super::super::codegen::SsrCodegenContext;
-use super::super::super::codegen::helpers::escape_html;
-use super::super::super::l4::string_plan::SsrStringSegment;
-use super::super::super::l4::{AdmissionFailure, LegacyReason};
 use super::{Emitter, Result, spans};
+use crate::codegen::SsrCodegenContext;
+use crate::codegen::helpers::escape_html;
+use crate::l4::string_plan::SsrStringSegment;
+use crate::l4::{AdmissionFailure, LegacyReason};
 
 /// Static text: the shipped parser decodes entities, the SSR lane re-escapes.
 ///

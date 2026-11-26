@@ -7,13 +7,13 @@ use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op as l2;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_ssr_static_text};
 
-use super::super::super::codegen::element::props::quoted_js_string;
-use super::super::super::l4::string_plan::{
-    SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegmentKind as Kind,
-};
-use super::super::super::l4::{AdmissionFailure, LegacyReason};
 use super::slots::Ranges;
 use super::{Emitter, Result, plan_source, text};
+use crate::codegen::element::props::quoted_js_string;
+use crate::l4::string_plan::{
+    SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegmentKind as Kind,
+};
+use crate::l4::{AdmissionFailure, LegacyReason};
 
 /// `[a, b]` over already rendered children.
 pub(super) fn array(expressions: &[String]) -> String {
@@ -330,10 +330,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     pub(super) fn vnode_slot_fn(&mut self, spec: &super::slots::SlotSpec) -> Result<String> {
         let mut params = vize_l0::FxHashSet::default();
         if let Some(pattern) = spec.pattern.as_deref() {
-            super::super::super::codegen::helpers::extract_destructure_params(
-                pattern.trim(),
-                &mut params,
-            );
+            crate::codegen::helpers::extract_destructure_params(pattern.trim(), &mut params);
         }
         let mark = self.exprs.enter_slot(spec.pattern.as_deref().unwrap_or(""));
         let scoped = !params.is_empty();
@@ -360,5 +357,5 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 }
 
 fn is_identifier(name: &str) -> bool {
-    super::super::super::codegen::element::props::is_valid_js_identifier(name)
+    crate::codegen::element::props::is_valid_js_identifier(name)
 }

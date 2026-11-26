@@ -120,6 +120,9 @@ function productFiles(): Map<string, string> {
   };
   for (const group of ["crates", "davinci"]) {
     for (const crate of fs.readdirSync(path.join(repoRoot, group)).sort()) {
+      // A generated copy compiles its plain crate's source, whose rows cover
+      // it (tools/commands/generate/composed-crates.ts).
+      if (crate.endsWith("_composed")) continue;
       const src = path.join(repoRoot, group, crate, "src");
       for (const root of ["lib.rs", "main.rs"]) {
         if (fs.existsSync(path.join(src, root))) visit(path.join(src, root), src);

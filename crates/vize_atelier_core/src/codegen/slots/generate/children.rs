@@ -6,7 +6,7 @@ use super::slot_params::strip_ctx_prefix_for_slot_params;
 use crate::{ExpressionNode, RuntimeHelper, TemplateChildNode};
 
 /// Generate adjacent text runs without crossing a slot or node boundary.
-pub(in super::super::super::slots) fn generate_slot_children(
+pub(in crate::codegen::slots) fn generate_slot_children(
     ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
 ) {
@@ -22,7 +22,7 @@ pub(in super::super::super::slots) fn generate_slot_children(
     generate_slot_children_where(ctx, children, |_| true);
 }
 
-pub(in super::super::super::slots) fn generate_slot_children_where(
+pub(in crate::codegen::slots) fn generate_slot_children_where(
     ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
     selected: impl Fn(&TemplateChildNode<'_>) -> bool,

@@ -202,18 +202,24 @@ pub(crate) fn compile_template_block_with_capture(
         let (errors, result) = profile!(
             "atelier.sfc.template.ssr",
             if let Some(capture) = capture {
-                let (_, errors, result) =
-                    vize_atelier_ssr::compile_ssr_with_sfc_context_codegen_options_and_capture(
-                        allocator,
-                        &template.content,
-                        ssr_opts,
-                        template_syntax,
-                        custom_elements.clone(),
-                        ssr_experimental_options,
-                        ssr_context,
-                        codegen_options,
-                        capture,
-                    );
+                // Only the composed copy of the SSR compile records the links
+                // a map composed into the component's needs.
+                let compile = if ssr_experimental_options.source_map {
+                    vize_atelier_ssr_composed::compile_ssr_with_sfc_context_codegen_options_and_capture
+                } else {
+                    vize_atelier_ssr::compile_ssr_with_sfc_context_codegen_options_and_capture
+                };
+                let (_, errors, result) = compile(
+                    allocator,
+                    &template.content,
+                    ssr_opts,
+                    template_syntax,
+                    custom_elements.clone(),
+                    ssr_experimental_options,
+                    ssr_context,
+                    codegen_options,
+                    capture,
+                );
                 (errors, result)
             } else {
                 ssr_direct::compile(
@@ -328,9 +334,16 @@ pub(crate) fn compile_template_block_with_capture(
     // result stops before the legacy entry. Only appended option metadata
     // needs rollback to preserve the eager preflight's exact error boundary.
     let before_preflight = capture.as_deref().map(|capture| capture.options.len());
+    // A requested map is composed into the component's, and only the composed
+    // copy of the DOM compile records the links that needs.
+    let compile = if dom_opts.source_map {
+        vize_atelier_dom_composed::compile_sfc_template_with_preflight_and_environment
+    } else {
+        vize_atelier_dom::compile_sfc_template_with_preflight_and_environment
+    };
     let (errors, result) = profile!(
         "atelier.sfc.template.dom",
-        vize_atelier_dom::compile_sfc_template_with_preflight_and_environment(
+        compile(
             allocator,
             &template.content,
             dom_opts,

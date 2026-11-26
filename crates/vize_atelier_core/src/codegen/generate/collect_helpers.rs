@@ -14,7 +14,7 @@ use crate::{
 use vize_l0::ensure_sufficient_stack;
 
 /// Collect runtime helpers needed by hoisted nodes.
-pub(in super::super) fn collect_hoist_helpers(
+pub(in crate::codegen) fn collect_hoist_helpers(
     root: &RootNode<'_>,
     helpers: &mut Vec<RuntimeHelper>,
 ) {

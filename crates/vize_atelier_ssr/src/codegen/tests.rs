@@ -9,8 +9,7 @@ mod ssr_codegen_tests {
     #[cfg(feature = "legacy")]
     #[test]
     fn vue1_triple_mustache_emits_raw_html_without_the_escape_helper() {
-        use super::super::super::compile::compile_ssr_with_options;
-        use crate::SsrCompilerOptions;
+        use crate::{SsrCompilerOptions, compile_ssr_with_options};
         use vize_l0::{Allocator, config::VueVersion};
 
         let allocator = Allocator::new();

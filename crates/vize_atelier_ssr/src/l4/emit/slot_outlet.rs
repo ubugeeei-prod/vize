@@ -5,16 +5,16 @@ use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
-use super::super::super::codegen::element::props::{
+use super::attrs::{Attached, admit_value};
+use super::{Emitter, Flags, Result, plan_source, require_dynamic};
+use crate::codegen::element::props::{
     component_prop_entry, component_props_object, normalize_prop_entries, quoted_js_string,
 };
-use super::super::super::l4::string_plan::{
+use crate::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
     SsrStringSegmentKind as Kind,
 };
-use super::super::super::l4::{AdmissionFailure, LegacyReason};
-use super::attrs::{Attached, admit_value};
-use super::{Emitter, Flags, Result, plan_source, require_dynamic};
+use crate::l4::{AdmissionFailure, LegacyReason};
 
 /// Outlet attachments the plan emitter owns: static props and `v-bind`.
 /// Every other directive renders nothing on an outlet, matching the legacy

@@ -4632,6 +4632,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_atelier_core_composed"
+version = "0.474.0"
+dependencies = [
+ "compact_str",
+ "memoffset",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_codegen",
+ "oxc_diagnostics",
+ "oxc_semantic",
+ "oxc_span",
+ "oxc_syntax",
+ "oxc_transformer",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "vize_armature",
+ "vize_atelier_core",
+ "vize_croquis",
+ "vize_l0",
+ "vize_l2",
+ "vize_oxc_parser",
+ "vize_relief",
+]
+
+[[package]]
 name = "vize_atelier_dom"
 version = "0.474.0"
 dependencies = [
@@ -4651,6 +4678,20 @@ dependencies = [
  "vize_l1_to_l2",
  "vize_l4",
  "vize_oxc_parser",
+]
+
+[[package]]
+name = "vize_atelier_dom_composed"
+version = "0.474.0"
+dependencies = [
+ "phf 0.13.1",
+ "serde",
+ "thiserror 2.0.21",
+ "vize_atelier_core_composed",
+ "vize_atelier_dom",
+ "vize_l0",
+ "vize_l1_to_l2",
+ "vize_l4",
 ]
 
 [[package]]
@@ -4716,7 +4757,9 @@ dependencies = [
  "vize_armature",
  "vize_atelier_core",
  "vize_atelier_dom",
+ "vize_atelier_dom_composed",
  "vize_atelier_ssr",
+ "vize_atelier_ssr_composed",
  "vize_atelier_vapor",
  "vize_carton",
  "vize_croquis",
@@ -4745,6 +4788,24 @@ dependencies = [
  "vize_atelier_core",
  "vize_atelier_sfc",
  "vize_curator",
+ "vize_l0",
+ "vize_l1",
+ "vize_l1_to_l2",
+ "vize_l2",
+ "vize_l2_to_l3",
+ "vize_l3",
+ "vize_l4",
+ "vize_relief",
+]
+
+[[package]]
+name = "vize_atelier_ssr_composed"
+version = "0.474.0"
+dependencies = [
+ "serde",
+ "vize_armature",
+ "vize_atelier_core_composed",
+ "vize_atelier_ssr",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",

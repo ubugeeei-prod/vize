@@ -1,0 +1,467 @@
+// DO NOT EDIT. Generated from crates/vize_atelier_core/src/steps/v_for.rs by `node tools/commands/generate/composed-crates.ts`.
+// Edit the source and run the command again.
+//! v-for directive transform.
+//!
+//! Transforms elements with v-for directive into ForNode.
+
+use vize_l0::{Allocator, Box};
+
+mod alias_rewrite;
+mod bindings;
+
+pub(crate) use alias_rewrite::{erase_for_alias, process_for_alias};
+pub(crate) use bindings::alias_needs_expression_rewrite;
+
+use crate::lane::TransformContext;
+use crate::{
+    ElementNode, ElementType, ExpressionNode, ForParseResult, PropNode, RuntimeHelper,
+    SimpleExpressionNode, SourceLocation, TemplateChildNode,
+};
+
+/// A `v-for` alias without its TypeScript annotation (`item: string` is
+/// `item`), the name the loop binds. An alias with a default keeps its text:
+/// a `:` after `=` belongs to the default.
+pub fn untyped_for_alias(alias: &str) -> &str {
+    let mut depth = 0usize;
+    let mut quote = None;
+    for (index, byte) in alias.bytes().enumerate() {
+        match (quote, byte) {
+            (Some(open), _) if byte == open => quote = None,
+            (Some(_), _) => {}
+            (None, b'\'' | b'"' | b'`') => quote = Some(byte),
+            (None, b'(' | b'[' | b'{') => depth += 1,
+            (None, b')' | b']' | b'}') => depth = depth.saturating_sub(1),
+            (None, b'=') if depth == 0 => return alias,
+            (None, b':') if depth == 0 => {
+                let head = alias.get(..index).unwrap_or(alias).trim_end();
+                return head.strip_suffix('?').map_or(head, str::trim_end);
+            }
+            _ => {}
+        }
+    }
+    alias
+}
+
+/// The component a bare `<template v-for>` renders as its loop item.
+///
+/// Like Vue's transformFor, a template carrying only `v-for` and `:key` around
+/// one key-less component renders that component as the item vnode, keyed by
+/// the template; there is no Fragment, so its props cannot be hoisted.
+pub(crate) fn template_item_component<'a, 'b>(
+    template: &'b ElementNode<'a>,
+) -> Option<&'b ElementNode<'a>> {
+    if template.tag_type != ElementType::Template
+        || !template.props.iter().all(|prop| {
+            is_key_bind(prop) || matches!(prop, PropNode::Directive(dir) if dir.name == "for")
+        })
+    {
+        return None;
+    }
+    match template.children.as_slice() {
+        [TemplateChildNode::Element(child)]
+            if child.tag_type == ElementType::Component && !child.props.iter().any(is_key_bind) =>
+        {
+            Some(child)
+        }
+        _ => None,
+    }
+}
+
+pub(crate) fn is_key_bind(prop: &PropNode<'_>) -> bool {
+    matches!(
+        prop,
+        PropNode::Directive(dir)
+            if dir.name == "bind"
+                && matches!(&dir.arg, Some(ExpressionNode::Simple(arg)) if arg.content == "key")
+    )
+}
+
+/// Check if an element has a v-for directive
+pub fn has_v_for(el: &ElementNode<'_>) -> bool {
+    el.props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "for"))
+}
+
+/// Get the v-for expression from an element
+pub fn get_for_expression<'a>(el: &'a ElementNode<'a>) -> Option<&'a ExpressionNode<'a>> {
+    for prop in el.props.iter() {
+        if let PropNode::Directive(dir) = prop
+            && dir.name == "for"
+        {
+            return dir.exp.as_ref();
+        }
+    }
+    None
+}
+
+/// Remove v-for directive from element props
+pub fn remove_for_directive(el: &mut ElementNode<'_>) {
+    let mut i = 0;
+    while let Some(prop) = el.props.get(i) {
+        if let PropNode::Directive(dir) = prop
+            && dir.name == "for"
+        {
+            el.props.remove(i);
+            return;
+        }
+        i += 1;
+    }
+}
+
+/// Parse v-for expression into parts.
+pub fn parse_for_expression<'a>(
+    allocator: &'a Allocator,
+    content: &'a str,
+    loc: &SourceLocation,
+) -> Option<ForParseResult<'a>> {
+    parse_for_expression_with_options(allocator, content, loc, false)
+}
+
+/// Parse v-for expression with optional template syntax quirk compatibility.
+///
+/// Vue's compiler currently strips a leading `(` or trailing `)` independently
+/// from the v-for alias via `stripParensRE`. That means expressions like
+/// `item) in items` are accepted by Vue even though they look malformed. Vize
+/// keeps strict parsing by default and exposes the compatibility path behind
+/// `template_syntax_quirks`.
+///
+/// Upstream references:
+/// - https://github.com/vuejs/core/blob/main/packages/compiler-core/src/utils.ts#L571
+/// - https://github.com/vuejs/core/blob/main/packages/compiler-core/src/parser.ts#L493-L530
+pub fn parse_for_expression_with_options<'a>(
+    allocator: &'a Allocator,
+    content: &'a str,
+    loc: &SourceLocation,
+    template_syntax_quirks: bool,
+) -> Option<ForParseResult<'a>> {
+    let (alias_end, source_start) = find_for_separator(content)?;
+    let alias_part = content.get(..alias_end).unwrap_or_default();
+    let source_part = content.get(source_start..).unwrap_or_default();
+    let source_str = source_part.trim();
+    let alias_str = alias_part.trim();
+
+    if source_str.is_empty() {
+        return None;
+    }
+
+    // Give the source expression its real sub-span within the v-for
+    // expression so downstream diagnostics (e.g. an unparseable source)
+    // point at the right characters. `find_for_separator` already skips
+    // whitespace, so `source_start` is the first byte of the source text.
+    let source_loc = if loc.span.is_empty() {
+        SourceLocation::default()
+    } else {
+        let start = loc.span.start + source_start as u32;
+        SourceLocation::new(start, start + source_str.len() as u32)
+    };
+
+    let source = ExpressionNode::Simple(Box::new_in(
+        SimpleExpressionNode::new(source_str, false, source_loc),
+        &allocator,
+    ));
+
+    let aliases = split_for_aliases(alias_str, template_syntax_quirks)?;
+
+    let value = aliases
+        .first()
+        .and_then(|alias| bindings::alias_node(allocator, alias));
+    let key = aliases
+        .get(1)
+        .and_then(|alias| bindings::alias_node(allocator, alias));
+    let index = aliases
+        .get(2)
+        .and_then(|alias| bindings::alias_node(allocator, alias));
+
+    Some(ForParseResult::new(source, value, key, index))
+}
+
+fn find_for_separator(content: &str) -> Option<(usize, usize)> {
+    let chars: std::vec::Vec<_> = content.char_indices().collect();
+
+    for (keyword_idx, pair) in chars.windows(2).enumerate() {
+        match pair {
+            [(_, 'i'), (_, 'n')] | [(_, 'o'), (_, 'f')] => {}
+            _ => continue,
+        };
+
+        let is_space_at = |idx: usize| chars.get(idx).is_some_and(|(_, ch)| ch.is_whitespace());
+        let has_space_before = keyword_idx.checked_sub(1).is_some_and(is_space_at);
+        let after_keyword_idx = keyword_idx + 2;
+        let has_space_after = is_space_at(after_keyword_idx);
+
+        if !has_space_before || !has_space_after {
+            continue;
+        }
+
+        let mut alias_idx = keyword_idx;
+        while alias_idx.checked_sub(1).is_some_and(is_space_at) {
+            alias_idx -= 1;
+        }
+        let alias_end = chars
+            .get(alias_idx)
+            .map(|(byte_idx, _)| *byte_idx)
+            .unwrap_or(content.len());
+
+        let mut source_idx = after_keyword_idx;
+        while is_space_at(source_idx) {
+            source_idx += 1;
+        }
+        let source_start = chars.get(source_idx)?.0;
+
+        return Some((alias_end, source_start));
+    }
+
+    None
+}
+
+fn split_for_aliases(alias: &str, template_syntax_quirks: bool) -> Option<Vec<&str>> {
+    let trimmed = alias.trim();
+    if trimmed.is_empty() {
+        return Some(Vec::new());
+    }
+
+    let starts_with_paren = trimmed.starts_with('(');
+    let ends_with_paren = trimmed.ends_with(')');
+    let inner = if starts_with_paren && ends_with_paren {
+        if trimmed.len() < 2 {
+            return None;
+        }
+        trimmed.get(1..trimmed.len() - 1).unwrap_or_default()
+    } else if starts_with_paren || ends_with_paren {
+        if !template_syntax_quirks {
+            return None;
+        }
+
+        if starts_with_paren {
+            trimmed.get(1..).unwrap_or_default()
+        } else {
+            trimmed.get(..trimmed.len() - 1).unwrap_or_default()
+        }
+    } else {
+        trimmed
+    };
+
+    Some(split_top_level_aliases(inner.trim()))
+}
+
+fn split_top_level_aliases(input: &str) -> Vec<&str> {
+    let bytes = input.as_bytes();
+    let mut aliases = Vec::with_capacity(3);
+    let mut start = 0usize;
+    let mut paren_depth = 0u32;
+    let mut brace_depth = 0u32;
+    let mut bracket_depth = 0u32;
+    let mut in_string: Option<u8> = None;
+    let mut escaped = false;
+
+    for (idx, &byte) in bytes.iter().enumerate() {
+        if let Some(quote) = in_string {
+            if escaped {
+                escaped = false;
+                continue;
+            }
+
+            if byte == b'\\' {
+                escaped = true;
+                continue;
+            }
+
+            if byte == quote {
+                in_string = None;
+            }
+            continue;
+        }
+
+        match byte {
+            b'\'' | b'"' | b'`' => in_string = Some(byte),
+            b'(' => paren_depth += 1,
+            b')' => paren_depth = paren_depth.saturating_sub(1),
+            b'{' => brace_depth += 1,
+            b'}' => brace_depth = brace_depth.saturating_sub(1),
+            b'[' => bracket_depth += 1,
+            b']' => bracket_depth = bracket_depth.saturating_sub(1),
+            b',' if paren_depth == 0 && brace_depth == 0 && bracket_depth == 0 => {
+                aliases.push(input.get(start..idx).unwrap_or_default().trim());
+                start = idx + 1;
+            }
+            _ => {}
+        }
+    }
+
+    aliases.push(input.get(start..).unwrap_or_default().trim());
+    aliases
+}
+
+/// Process v-for structural directive - adds helpers
+pub fn process_v_for(ctx: &mut TransformContext<'_>) {
+    ctx.helper(RuntimeHelper::RenderList);
+    ctx.helper(RuntimeHelper::OpenBlock);
+    ctx.helper(RuntimeHelper::CreateBlock);
+    ctx.helper(RuntimeHelper::Fragment);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        ExpressionNode, ForParseResult, SourceLocation, has_v_for, parse_for_expression,
+        parse_for_expression_with_options, untyped_for_alias,
+    };
+    use crate::TemplateChildNode;
+    use crate::parser::parse;
+    use vize_l0::Allocator;
+
+    fn parse_for<'a>(allocator: &'a Allocator, content: &'a str) -> ForParseResult<'a> {
+        parse_for_expression(allocator, content, &SourceLocation::STUB)
+            .expect("expected valid v-for expression")
+    }
+
+    #[test]
+    fn untyped_for_alias_drops_only_a_top_level_annotation() {
+        for (alias, name) in [
+            ("item: string", "item"),
+            ("index?: number", "index"),
+            ("{ a, b: c }: Row", "{ a, b: c }"),
+            ("[x, y]: [number, number]", "[x, y]"),
+            ("item", "item"),
+            ("{ a: b }", "{ a: b }"),
+            ("item = ok ? a : b", "item = ok ? a : b"),
+        ] {
+            assert_eq!(untyped_for_alias(alias), name, "{alias}");
+        }
+    }
+
+    #[test]
+    fn test_has_v_for() {
+        let allocator = Allocator::new();
+        let (root, _) = parse(&allocator, r#"<div v-for="item in items">{{ item }}</div>"#);
+
+        if let TemplateChildNode::Element(el) = &root.children[0] {
+            assert!(has_v_for(el));
+        }
+    }
+
+    #[test]
+    fn test_parse_simple_for() {
+        let allocator = Allocator::new();
+        let result = parse_for(&allocator, "item in items");
+
+        if let ExpressionNode::Simple(source) = &result.source {
+            assert_eq!(source.content, "items");
+        }
+        assert!(result.value.is_some());
+    }
+
+    #[test]
+    fn test_parse_for_with_index() {
+        let allocator = Allocator::new();
+        let result = parse_for(&allocator, "(item, index) in items");
+
+        if let ExpressionNode::Simple(source) = &result.source {
+            assert_eq!(source.content, "items");
+        }
+        assert!(result.value.is_some());
+        assert!(result.key.is_some());
+    }
+
+    #[test]
+    fn test_parse_for_with_index_without_parens() {
+        let allocator = Allocator::new();
+        let result = parse_for(&allocator, "item, index in items");
+
+        if let ExpressionNode::Simple(source) = &result.source {
+            assert_eq!(source.content, "items");
+        }
+        match result.value.as_ref() {
+            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content, "item"),
+            _ => panic!("expected value alias"),
+        }
+        match result.key.as_ref() {
+            Some(ExpressionNode::Simple(key)) => assert_eq!(key.content, "index"),
+            _ => panic!("expected key alias"),
+        }
+    }
+
+    #[test]
+    fn test_parse_for_with_destructure_and_index_without_parens() {
+        let allocator = Allocator::new();
+        let result = parse_for(&allocator, "{ id, name }, index of items");
+
+        if let ExpressionNode::Simple(source) = &result.source {
+            assert_eq!(source.content, "items");
+        }
+        match result.value.as_ref() {
+            Some(ExpressionNode::Simple(value)) => {
+                assert_eq!(value.content, "{ id, name }")
+            }
+            _ => panic!("expected destructured value alias"),
+        }
+        match result.key.as_ref() {
+            Some(ExpressionNode::Simple(key)) => assert_eq!(key.content, "index"),
+            _ => panic!("expected key alias"),
+        }
+    }
+
+    #[test]
+    fn test_parse_for_supports_newline_separator() {
+        let allocator = Allocator::new();
+        let result = parse_for(&allocator, "item\nin\nitems");
+
+        if let ExpressionNode::Simple(source) = &result.source {
+            assert_eq!(source.content, "items");
+        }
+        match result.value.as_ref() {
+            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content, "item"),
+            _ => panic!("expected value alias"),
+        }
+    }
+
+    #[test]
+    fn test_parse_for_rejects_missing_source() {
+        let allocator = Allocator::new();
+        let result = parse_for_expression(&allocator, "item in  ", &SourceLocation::STUB);
+
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_parse_for_rejects_unmatched_edge_parens_by_default() {
+        let allocator = Allocator::new();
+
+        assert!(
+            parse_for_expression(&allocator, "item) in items", &SourceLocation::STUB).is_none()
+        );
+        assert!(
+            parse_for_expression(&allocator, "(item in items", &SourceLocation::STUB).is_none()
+        );
+    }
+
+    #[test]
+    fn test_parse_for_template_syntax_quirks_strips_unmatched_edge_parens() {
+        let allocator = Allocator::new();
+
+        let trailing = parse_for_expression_with_options(
+            &allocator,
+            "item) in items",
+            &SourceLocation::STUB,
+            true,
+        )
+        .expect("template syntax quirk mode should strip trailing parens");
+        match trailing.value.as_ref() {
+            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content, "item"),
+            _ => panic!("expected trailing-paren value alias"),
+        }
+
+        let leading = parse_for_expression_with_options(
+            &allocator,
+            "(item in items",
+            &SourceLocation::STUB,
+            true,
+        )
+        .expect("template syntax quirk mode should strip leading parens");
+        match leading.value.as_ref() {
+            Some(ExpressionNode::Simple(value)) => assert_eq!(value.content, "item"),
+            _ => panic!("expected leading-paren value alias"),
+        }
+    }
+}

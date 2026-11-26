@@ -65,9 +65,8 @@ pub(crate) fn strip_scope_prefixes_for_slot_params(ctx: &CodegenContext, content
 
 #[cfg(test)]
 mod tests {
-    use super::super::super::CodegenContext;
     use super::strip_scope_prefixes_for_slot_params;
-    use crate::options::CodegenOptions;
+    use crate::{codegen::CodegenContext, options::CodegenOptions};
     use vize_l0::String;
 
     #[test]

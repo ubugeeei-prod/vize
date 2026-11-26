@@ -9,15 +9,15 @@ use vize_l4::targets::dom::artifact::{
     TransformContent, TransformExpressions, decode_template_entities,
 };
 
-use super::super::super::codegen::element::VNodePropEntry;
-use super::super::super::codegen::element::props::{
+use super::attrs::Attached;
+use super::{Emitter, Result, plan_source};
+use crate::codegen::element::VNodePropEntry;
+use crate::codegen::element::props::{
     component_prop_entry, component_props_object, is_valid_js_identifier, normalize_prop_entries,
     quoted_js_string, wrap_call,
 };
-use super::super::super::l4::LegacyReason;
-use super::super::super::l4::string_plan::{SsrSegmentSource as Source, SsrStringPayloadKind};
-use super::attrs::Attached;
-use super::{Emitter, Result, plan_source};
+use crate::l4::LegacyReason;
+use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringPayloadKind};
 
 enum Segment {
     Entries(std::vec::Vec<VNodePropEntry>),
@@ -64,7 +64,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             return Ok(self.ctx_key(&text));
         }
         Ok(
-            super::super::super::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params(
+            crate::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params(
                 &self.scoped_params,
                 &text,
             ),
@@ -72,7 +72,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
     }
 
     fn ctx_key(&self, name: &str) -> String {
-        super::super::super::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params(
+        crate::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params(
             &self.scoped_params,
             &cstr!("_ctx.{name}"),
         )

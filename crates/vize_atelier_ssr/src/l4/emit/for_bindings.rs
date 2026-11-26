@@ -7,8 +7,8 @@ use vize_l4::targets::dom::artifact::{
     TransformScopeMark, exceptional_for_binding_names, rewrite_for_alias_expressions,
 };
 
-use super::super::super::codegen::helpers::extract_destructure_params;
 use super::{Emitter, Result};
+use crate::codegen::helpers::extract_destructure_params;
 
 impl Emitter<'_, '_, '_, '_, '_, '_> {
     pub(super) fn enter_for_bindings(

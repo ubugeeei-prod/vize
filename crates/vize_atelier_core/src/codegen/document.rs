@@ -18,9 +18,21 @@ use vize_l0::{Span, String};
 use super::rewrite_spans::rewritten_identifier_spans;
 use super::source_map::SourceMapBuilder;
 
-mod authored;
-mod member_columns;
-pub use authored::authored_offset;
+render_map_copy! {
+    plain {
+        #[cfg(test)]
+        mod authored;
+        #[cfg(test)]
+        mod member_columns;
+        #[cfg(test)]
+        pub(super) use authored::authored_offset;
+    }
+    composed {
+        mod authored;
+        mod member_columns;
+        pub use authored::authored_offset;
+    }
+}
 
 /// One generated↔authored link.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -346,8 +358,8 @@ pub fn expression_links(code: &str, span: Span, source_text: &str) -> Vec<SpanLi
 
 #[cfg(test)]
 mod tests {
-    use super::super::source_map::SourceMapBuilder;
     use super::{EmitDocument, SpanLink, expression_links};
+    use crate::codegen::source_map::SourceMapBuilder;
     use vize_l0::{Span, String};
 
     fn link(generated: (u32, u32), authored: (u32, u32), name: Option<&str>) -> SpanLink {

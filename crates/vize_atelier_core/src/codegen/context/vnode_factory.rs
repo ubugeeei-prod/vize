@@ -1,7 +1,7 @@
 use vize_l0::{FxHashMap, String, ToCompactString};
 
-use super::super::document::EmitDocument;
-use super::super::helpers::default_helper_alias;
+use crate::codegen::document::EmitDocument;
+use crate::codegen::helpers::default_helper_alias;
 use crate::options::{CodegenExperimentalOptions, CodegenOptions};
 use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
@@ -14,7 +14,7 @@ impl CodegenContext {
         Self::new_with_vnode_factory_and_merge_props(options, None, true)
     }
 
-    pub(in super::super) fn new_with_vnode_factory_and_merge_props(
+    pub(in crate::codegen) fn new_with_vnode_factory_and_merge_props(
         options: CodegenOptions,
         vnode_factory: Option<&str>,
         merge_props: bool,
@@ -28,7 +28,7 @@ impl CodegenContext {
         )
     }
 
-    pub(in super::super) fn new_with_vnode_factory_merge_props_and_experimentals(
+    pub(in crate::codegen) fn new_with_vnode_factory_merge_props_and_experimentals(
         options: CodegenOptions,
         vnode_factory: Option<&str>,
         merge_props: bool,
@@ -75,7 +75,7 @@ impl CodegenContext {
     }
 
     /// Name used for vnode creation helpers under the optional JSX factory.
-    pub(in super::super) fn vnode_helper(&self, helper: RuntimeHelper) -> &str {
+    pub(in crate::codegen) fn vnode_helper(&self, helper: RuntimeHelper) -> &str {
         debug_assert!(is_vnode_factory_helper(helper));
         let helper = self.child_value_helper(helper).unwrap_or(helper);
         match (&self.vnode_factory, helper) {
@@ -88,7 +88,7 @@ impl CodegenContext {
         }
     }
 
-    pub(in super::super) fn child_value_helper(
+    pub(in crate::codegen) fn child_value_helper(
         &self,
         helper: RuntimeHelper,
     ) -> Option<RuntimeHelper> {
@@ -106,7 +106,7 @@ impl CodegenContext {
     }
 
     /// Emit a vnode creation helper and track its default runtime import.
-    pub(in super::super) fn push_vnode_helper(&mut self, helper: RuntimeHelper) {
+    pub(in crate::codegen) fn push_vnode_helper(&mut self, helper: RuntimeHelper) {
         debug_assert!(is_vnode_factory_helper(helper));
         let Some(helper) = self.child_value_helper(helper) else {
             return;
@@ -124,12 +124,12 @@ impl CodegenContext {
     }
 
     /// Whether a helper still needs a Vue runtime import.
-    pub(in super::super) fn should_import_helper(&self, helper: RuntimeHelper) -> bool {
+    pub(in crate::codegen) fn should_import_helper(&self, helper: RuntimeHelper) -> bool {
         self.vnode_factory.is_none() || !is_vnode_factory_helper(helper)
     }
 
     /// Whether custom-factory output needs the inert block-tracking shim.
-    pub(in super::super) fn needs_open_block_shim(&self) -> bool {
+    pub(in crate::codegen) fn needs_open_block_shim(&self) -> bool {
         self.vnode_factory.is_some() && self.used_helpers.contains(RuntimeHelper::OpenBlock)
     }
 }
@@ -156,7 +156,7 @@ fn is_member_expression_chain(factory: &str) -> bool {
     !factory.is_empty()
         && factory
             .split('.')
-            .all(super::super::helpers::is_valid_js_identifier)
+            .all(crate::codegen::helpers::is_valid_js_identifier)
 }
 
 fn is_vnode_factory_helper(helper: RuntimeHelper) -> bool {

@@ -1,0 +1,36 @@
+# DO NOT EDIT. Generated from crates/vize_atelier_dom/Cargo.toml by `node tools/commands/generate/composed-crates.ts`.
+# Edit the source and run the command again.
+[package]
+name = "vize_atelier_dom_composed"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Generated copy of vize_atelier_dom whose SFC template compile records the render maps the SFC assembly composes"
+metadata.vize.stability = "alpha-supported"
+autotests = false
+
+[features]
+legacy = ["vize_atelier_core_composed/legacy", "vize_atelier_dom/legacy"]
+
+legacy-differential = ["vize_atelier_dom/legacy-differential"]
+
+[dependencies]
+vize_l0 = { workspace = true }
+vize_atelier_core_composed = { workspace = true }
+vize_l1_to_l2 = { workspace = true }
+vize_l4 = { workspace = true, features = ["typescript"] }
+
+phf = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+vize_atelier_dom = { workspace = true }
+
+[lints]
+workspace = true
+
+[lib]
+test = false
+doctest = false
+bench = false

@@ -1,11 +1,11 @@
 //! Region navigation over the flat plan: open/close pairing, direct child
 //! ranges, and the legacy child-list shape of a region.
 
-use super::super::super::l4::string_plan::{
+use super::{Emitter, Result, text};
+use crate::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringSegment, SsrStringSegmentKind as Kind,
 };
-use super::super::super::l4::{AdmissionFailure, LegacyReason};
-use super::{Emitter, Result, text};
+use crate::l4::{AdmissionFailure, LegacyReason};
 
 /// Segments that open a nested region (their close pairs by depth).
 pub(super) const fn is_open(kind: Kind) -> bool {
@@ -173,7 +173,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     pub(super) fn take_attached(
         &mut self,
         len: usize,
-    ) -> Result<std::vec::Vec<super::super::super::l4::string_plan::SsrStringSegment<'r, 'a>>> {
+    ) -> Result<std::vec::Vec<crate::l4::string_plan::SsrStringSegment<'r, 'a>>> {
         let key = self.branch_key.take();
         let end = self.pos + len;
         let attached = self

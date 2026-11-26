@@ -7,12 +7,12 @@ use vize_l0::cstr;
 use vize_l2::op as l2;
 use vize_l4::targets::dom::artifact::TransformContent;
 
-use super::super::super::l4::LegacyReason;
-use super::super::super::l4::string_plan::{
+use super::{Emitter, Flags, Result, attrs, merged, model, plan_source};
+use crate::l4::LegacyReason;
+use crate::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
     SsrStringSegmentKind as Kind,
 };
-use super::{Emitter, Flags, Result, attrs, merged, model, plan_source};
 
 /// Elements whose content model or runtime helpers are outside the plan
 /// emitter: script/style raw text and the outlet / dynamic component tags.

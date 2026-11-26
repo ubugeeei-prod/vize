@@ -1,6 +1,5 @@
-use super::CodegenContext;
 use crate::options::BindingType;
-use crate::RuntimeHelper;
+use crate::{CodegenContext, RuntimeHelper};
 use vize_l0::{String, ToCompactString, camelize, capitalize};
 
 struct ComponentBinding {
@@ -69,19 +68,22 @@ impl CodegenContext {
     render_map_copy! {
         plain {}
         composed {
-        /// [`Self::push_component_binding_tag`] for `el`, its read anchored at the
-        /// authored tag name: a resolved asset is anchored where it is resolved,
-        /// but a binding is read in place. Only the composed copy calls this.
-        #[inline(never)]
-        pub(super) fn push_composed_component_binding(&mut self, el: &crate::ElementNode<'_>) -> bool {
-            if self.resolve_component_binding(el.tag).is_none() {
-                return false;
+            /// [`Self::push_component_binding_tag`] for `el`, its read
+            /// anchored at the authored tag name: a resolved asset is anchored
+            /// where it is resolved, but a binding is read in place.
+            #[inline(never)]
+            pub(super) fn push_composed_component_binding(
+                &mut self,
+                el: &crate::ElementNode<'_>,
+            ) -> bool {
+                if self.resolve_component_binding(el.tag).is_none() {
+                    return false;
+                }
+                if self.out.is_recording() {
+                    self.out.anchor(el.loc.span.start + 1);
+                }
+                self.push_component_binding_tag(el.tag)
             }
-            if self.out.is_recording() {
-                self.out.anchor(el.loc.span.start + 1);
-            }
-            self.push_component_binding_tag(el.tag)
-        }
         }
     }
 

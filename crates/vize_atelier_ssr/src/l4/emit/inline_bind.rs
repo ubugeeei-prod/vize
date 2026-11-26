@@ -7,10 +7,10 @@ use vize_atelier_core::RuntimeHelper;
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{String, cstr};
 
-use super::super::super::codegen::element::props::{merge_prop_values, quoted_js_string};
 use super::attrs::{Attached, Bind, BindName, static_value};
 use super::spans::argument_start;
 use super::{Emitter, Result};
+use crate::codegen::element::props::{merge_prop_values, quoted_js_string};
 
 pub(super) fn emit(
     em: &mut Emitter<'_, '_, '_, '_, '_, '_>,

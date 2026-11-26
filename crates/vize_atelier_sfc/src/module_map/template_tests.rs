@@ -171,7 +171,7 @@ fn resolve(result: &SfcCompileResult, needle: &str) -> Option<(u32, u32)> {
         .filter(|&(generated_line, generated_column, _, _)| {
             generated_line == line && generated_column <= column
         })
-        .last()
+        .next_back()
         .map(|(_, _, authored_line, authored_column)| (authored_line + 1, authored_column))
 }
 

@@ -2,8 +2,8 @@
 
 #[cfg(test)]
 mod tests {
-    use super::super::super::super::context::CodegenContext;
     use super::super::generate_event_handler;
+    use crate::codegen::context::CodegenContext;
     use crate::options::CodegenOptions;
     use crate::{ExpressionNode, SimpleExpressionNode, SourceLocation};
     use vize_l0::{Allocator, Box, Span};

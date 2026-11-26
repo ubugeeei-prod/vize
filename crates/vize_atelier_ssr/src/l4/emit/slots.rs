@@ -5,13 +5,11 @@ use vize_l0::{FxHashSet, String, ToCompactString};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::TransformExpressions;
 
-use super::super::super::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
-use super::super::super::codegen::helpers::extract_destructure_params;
-use super::super::super::l4::string_plan::{
-    SsrSegmentSource as Source, SsrStringSegmentKind as Kind,
-};
-use super::super::super::l4::{AdmissionFailure, LegacyReason};
 use super::{Emitter, PLAIN, Result};
+use crate::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
+use crate::codegen::helpers::extract_destructure_params;
+use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
+use crate::l4::{AdmissionFailure, LegacyReason};
 
 /// Plan ranges `[start, end)` of slot children.
 pub(super) type Ranges = std::vec::Vec<(usize, usize)>;

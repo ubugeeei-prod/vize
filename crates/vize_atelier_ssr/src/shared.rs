@@ -1,11 +1,7 @@
-//! What the plain compile and its composed copy share: the host context a
-//! compile takes, the result it returns, the lane that owns it, and which
-//! copy a module is in.
-//!
-//! The SFC assembly composes a template's render map into the component's,
-//! and that map needs links no plain map carries. The modules that generate
-//! it are compiled twice: once as themselves, and once inside
-//! [`crate::composed`], where [`composed`] holds for every module.
+//! What this crate shares with its composed copy, `vize_atelier_ssr_composed`:
+//! the host context a compile takes, the result it returns, and the lane
+//! that owns it. The copy names these items through this module, so a host
+//! hands either compile the same values.
 
 use vize_l0::String;
 
@@ -25,9 +21,12 @@ pub struct SsrCodegenResult {
 #[doc(hidden)]
 #[derive(Clone, Copy)]
 pub struct SsrSfcContext {
-    pub(crate) slotted: bool,
-    pub(crate) development: bool,
-    pub(crate) jsx_closure: bool,
+    #[doc(hidden)]
+    pub slotted: bool,
+    #[doc(hidden)]
+    pub development: bool,
+    #[doc(hidden)]
+    pub jsx_closure: bool,
 }
 
 impl SsrSfcContext {
@@ -62,7 +61,7 @@ impl SsrSfcContext {
 /// Which emitter owns a compile. Production always asks the L4 selector;
 /// the differential battery pins the legacy walker on the same input.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum SsrLane {
+pub enum SsrLane {
     Selected,
     #[cfg(any(test, feature = "legacy-differential"))]
     LegacyOnly,

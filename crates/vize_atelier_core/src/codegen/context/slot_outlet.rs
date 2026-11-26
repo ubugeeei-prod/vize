@@ -4,7 +4,7 @@ use super::CodegenContext;
 
 impl CodegenContext {
     #[inline(always)]
-    pub(in super::super) fn finish_slot_outlet(
+    pub(in crate::codegen) fn finish_slot_outlet(
         &mut self,
         default_suffix: &'static str,
         has_fallback: bool,

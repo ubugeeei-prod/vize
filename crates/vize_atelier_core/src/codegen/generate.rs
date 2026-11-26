@@ -77,7 +77,7 @@ fn generate_js_child_node_to_bytes_guarded(
                 match &prop.key {
                     ExpressionNode::Simple(exp) => {
                         let key = &exp.content;
-                        let needs_quote = !super::helpers::is_valid_js_identifier(key);
+                        let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
                         if needs_quote {
                             out.push('"');
                             out.push_str(key);
@@ -213,7 +213,7 @@ fn generate_props_expression_to_bytes(
                 match &prop.key {
                     ExpressionNode::Simple(exp) => {
                         let key = &exp.content;
-                        let needs_quote = !super::helpers::is_valid_js_identifier(key);
+                        let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
                         if needs_quote {
                             out.push('"');
                             out.push_str(key);

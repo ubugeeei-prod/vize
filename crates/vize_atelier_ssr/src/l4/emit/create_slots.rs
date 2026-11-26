@@ -11,15 +11,13 @@ use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::TransformContent;
 
-use super::super::super::codegen::element::props::quoted_js_string;
-use super::super::super::l4::AdmissionFailure;
-use super::super::super::l4::string_plan::{
-    SsrSegmentSource as Source, SsrStringSegmentKind as Kind,
-};
 use super::control::alias;
 use super::slots::{ComponentSlots, SlotSpec, slot_pattern};
 use super::spans::expression_span;
 use super::{Emitter, Result};
+use crate::codegen::element::props::quoted_js_string;
+use crate::l4::AdmissionFailure;
+use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
 
 /// A `createSlots` entry source, by the plan position of its content child.
 #[derive(Clone, Copy)]

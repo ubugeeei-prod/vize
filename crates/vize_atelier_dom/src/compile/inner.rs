@@ -17,9 +17,14 @@ use super::{pipeline::DomCompilePipelineOptions, source_map, stage_options};
 use crate::options::DomCompilerOptions;
 
 mod capture;
-mod composed;
 pub(super) use capture::compile_template_inner_with_sections_captured;
-pub(super) use composed::compile_composed_template_with_sections_captured;
+dom_map_copy! {
+    plain {}
+    composed {
+        mod composed;
+        pub(super) use composed::compile_composed_template_with_sections_captured;
+    }
+}
 
 pub(super) fn compile_template_inner<'a>(
     allocator: &'a Allocator,

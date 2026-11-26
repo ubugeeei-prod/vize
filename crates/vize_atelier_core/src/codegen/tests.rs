@@ -249,7 +249,7 @@ fn test_codegen_duplicate_attribute_keeps_first_occurrence() {
         crate::options::TransformOptions::default(),
         None,
     );
-    let result = super::generate(&root, crate::options::CodegenOptions::default());
+    let result = crate::codegen::generate(&root, crate::options::CodegenOptions::default());
     assert!(!result.code.is_empty(), "compiled output must not be empty");
     assert!(
         result.code.contains(r#"id: "a""#),

@@ -22,7 +22,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Form model comparisons consume the first authored bound expression
     /// or quoted static value, matching Vue's property lookup.
-    pub(in super::super::super::super::codegen::element) fn model_attr_value(
+    pub(in crate::codegen::element) fn model_attr_value(
         &mut self,
         el: &ElementNode,
         name: &str,
@@ -47,7 +47,7 @@ impl<'a> SsrCodegenContext<'a> {
         None
     }
 
-    pub(in super::super::super::super::codegen::element) fn checkbox_model_checked(
+    pub(in crate::codegen::element) fn checkbox_model_checked(
         &mut self,
         el: &ElementNode,
         exp: &str,
@@ -74,7 +74,7 @@ impl<'a> SsrCodegenContext<'a> {
     /// `el`, if any. Used by SSR v-model lowering to find `:type` on
     /// `<input :type="t" v-model>` so the dynamic-model helper kicks in.
     /// (#962)
-    pub(in super::super::super::super::codegen::element) fn get_dynamic_bind_exp(
+    pub(in crate::codegen::element) fn get_dynamic_bind_exp(
         &mut self,
         el: &ElementNode,
         name: &str,

@@ -4,8 +4,8 @@ use vize_atelier_core::RuntimeHelper;
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::TransformContent;
 
-use super::super::super::codegen::element::props::{is_simple_identifier, quoted_js_string};
-use super::super::super::l4::string_plan::{SsrStringPayloadKind, SsrStringSegmentKind as Kind};
+use crate::codegen::element::props::{is_simple_identifier, quoted_js_string};
+use crate::l4::string_plan::{SsrStringPayloadKind, SsrStringSegmentKind as Kind};
 
 use super::spans::expression_span;
 use super::{Emitter, Flags, Result, plan_source};
@@ -108,7 +108,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.pos = start;
             self.child(self.segment(start)?, flags, false)?;
             if self.pos != end {
-                return Err(super::super::super::l4::AdmissionFailure::Invalid(
+                return Err(crate::l4::AdmissionFailure::Invalid(
                     "Suspense child emission left its original plan range",
                 ));
             }

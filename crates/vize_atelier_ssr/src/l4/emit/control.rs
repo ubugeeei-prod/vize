@@ -6,12 +6,10 @@ use vize_l2::expr::ExprRef;
 use vize_l2::op as l2;
 use vize_l4::targets::dom::artifact::TransformContent;
 
-use super::super::super::l4::LegacyReason;
-use super::super::super::l4::string_plan::{
-    SsrSegmentSource as Source, SsrStringSegmentKind as Kind,
-};
 use super::spans::{expression_span, quoted_value};
 use super::{Emitter, Flags, Result};
+use crate::l4::LegacyReason;
+use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `process_if`: one `if` / `else if` / `else` block per branch, and an
@@ -140,12 +138,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             plain {}
             composed {
                 if self.ctx.spans_enabled() {
-                    anchor_for_aliases(
-                        &mut self.ctx.out,
-                        binding,
-                        [Some(value), key, index],
-                        &aliases,
-                    );
+                    anchor_for_aliases(&mut self.ctx.out, binding, [Some(value), key, index], &aliases);
                 }
             }
         }
@@ -215,10 +208,10 @@ pub(super) fn alias<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
 sfc_map_copy! {
     plain {}
     composed {
-        /// Anchor each alias about to be written, from the document's cursor, at
-        /// the alias the loop authored, as the walker does for a composed map: an
-        /// alias spelled as authored maps to its own bytes, a rewritten one to
-        /// nothing.
+        /// Anchor each alias about to be written, from the document's cursor,
+        /// at the alias the loop authored, as the walker does for a composed
+        /// map: an alias spelled as authored maps to its own bytes, a
+        /// rewritten one to nothing.
         #[cold]
         #[inline(never)]
         fn anchor_for_aliases(

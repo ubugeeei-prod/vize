@@ -7,8 +7,8 @@
 
 use vize_atelier_core::{ForNode, TemplateChildNode};
 
-use super::super::super::codegen::SsrCodegenContext;
 use super::{collect_for_scoped_params, rendered_child_count};
+use crate::codegen::SsrCodegenContext;
 
 impl<'a> SsrCodegenContext<'a> {
     pub(crate) fn process_match_scope(

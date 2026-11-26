@@ -1,7 +1,7 @@
 //! Own the real dynamic template without falling back to the legacy walker.
 
-use super::super::super::compile::{SsrLane, compile_ssr_on_lane};
 use super::{SsrCompilerExperimentalOptions, SsrCompilerOptions, SsrL4Selection};
+use crate::compile::{SsrLane, compile_ssr_on_lane};
 use vize_atelier_core::{TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_l0::Allocator;
 

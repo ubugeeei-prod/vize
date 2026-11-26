@@ -8,14 +8,14 @@ use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
-use super::super::super::codegen::element::props::quoted_js_string;
-use super::super::super::l4::string_plan::{
+use super::attrs::{Attached, admit_value};
+use super::{Emitter, Flags, Result, plan_source, require_dynamic};
+use crate::codegen::element::props::quoted_js_string;
+use crate::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
     SsrStringSegmentKind as Kind,
 };
-use super::super::super::l4::{AdmissionFailure, LegacyReason};
-use super::attrs::{Attached, admit_value};
-use super::{Emitter, Flags, Result, plan_source, require_dynamic};
+use crate::l4::{AdmissionFailure, LegacyReason};
 
 /// Authored and JSX-synthesized selectors retain their existing source roles.
 pub(super) fn has_dynamic_tag_source(component: &l2::ComponentOp<'_>, source: &str) -> bool {

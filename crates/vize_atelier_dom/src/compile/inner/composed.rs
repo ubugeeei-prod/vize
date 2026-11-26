@@ -4,13 +4,15 @@
 //! so the map must describe the module a compile without one emits: it is
 //! additive and never selects another emitter. This compile makes the plain
 //! compile's L2 attempt and keeps its module and its diagnostics; the shipped
-//! transform and the composed copy of the compatibility generator then run
+//! transform and the compatibility generator then run
 //! only to supply the map. A compile without a map never reaches this file.
 
 use vize_atelier_core::{
     CompilerError, RootNode,
-    codegen::{CodegenResult, CodegenResultWithSections, CodegenSections, locate_for_aliases},
-    composed_codegen,
+    codegen::{
+        CodegenResult, CodegenResultWithSections, locate_for_aliases,
+        generate_with_sections_and_experimental_options_slot_scope_and_environment,
+    },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{
         CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
@@ -18,10 +20,10 @@ use vize_atelier_core::{
     parser::parse_with_options_custom_elements_and_template_syntax,
 };
 use vize_l0::dump::capture::{CaptureOutcome, CaptureSink};
-use vize_l0::{Allocator, String, profile};
+use vize_l0::{Allocator, String, profile, profiler::with_active_profiler};
 
 use crate::compile::selection::{self, DomLegacyReason};
-use crate::compile::{pipeline::DomCompilePipelineOptions, source_map, stage_options};
+use crate::compile::{pipeline::DomCompilePipelineOptions, stage_options};
 use crate::options::DomCompilerOptions;
 
 /// [`super::compile_template_inner_with_sections_captured`] for an SFC
@@ -139,7 +141,7 @@ pub(in crate::compile) fn compile_composed_template_with_sections_captured<'a, C
                 return (
                     root,
                     errors.to_vec(),
-                    source_map::with_verified_map(native, compat),
+                    with_verified_map(native, compat),
                 );
             }
             selection::record(Err(DomLegacyReason::EmitRefused));
@@ -200,7 +202,7 @@ fn compat_map<'a>(
     locate_for_aliases(root, source);
     let composed = profile!(
         "atelier.dom.template.codegen_compat",
-        composed_codegen::generate_with_sections_and_experimental_options_slot_scope_and_environment(
+        generate_with_sections_and_experimental_options_slot_scope_and_environment(
             root,
             inputs.codegen_opts,
             inputs.codegen_experimental_options,
@@ -210,41 +212,29 @@ fn compat_map<'a>(
     );
     (
         transform_errors.into_iter().collect(),
-        plain_result(composed),
+        composed,
     )
 }
 
-/// The composed generator's result as the plain generator's type.
-fn plain_result(
-    composed: composed_codegen::CodegenResultWithSections,
+/// The module of an additive mapped compile: `native`, carrying the composed
+/// map only when the compatibility generator emits the same module. A
+/// disagreement leaves the module unmapped instead of replacing it.
+fn with_verified_map(
+    mut native: CodegenResultWithSections,
+    composed: CodegenResultWithSections,
 ) -> CodegenResultWithSections {
-    let composed_codegen::CodegenResultWithSections { result, sections } = composed;
-    let composed_codegen::CodegenResult {
-        code,
-        preamble,
-        map,
-    } = result;
-    CodegenResultWithSections {
-        result: CodegenResult {
-            code,
-            preamble,
-            map,
-        },
-        sections: sections.map(|sections| {
-            let composed_codegen::CodegenSections {
-                imports_len,
-                assets_start,
-                assets_end,
-                return_expr_start,
-                return_expr_end,
-            } = sections;
-            CodegenSections {
-                imports_len,
-                assets_start,
-                assets_end,
-                return_expr_start,
-                return_expr_end,
+    let same = native.result.preamble == composed.result.preamble
+        && native.result.code == composed.result.code
+        && native.sections == composed.sections;
+    if same {
+        native.result.map = composed.result.map;
+    } else {
+        // Beside the selection counter, which still records `accepted`.
+        with_active_profiler(|profiler| {
+            if profiler.is_enabled() {
+                profiler.record_counter_enabled("l2.dom.source_map.unmapped", 1);
             }
-        }),
+        });
     }
+    native
 }

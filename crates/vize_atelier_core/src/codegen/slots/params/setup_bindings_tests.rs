@@ -1,5 +1,5 @@
-use super::super::super::context::CodegenContext;
 use super::prefix_slot_defaults_with_context;
+use crate::codegen::context::CodegenContext;
 use crate::{BindingMetadata, CodegenOptions};
 use serde_json::{Value, json};
 

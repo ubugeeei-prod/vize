@@ -1,0 +1,242 @@
+// DO NOT EDIT. Generated from crates/vize_atelier_ssr/src/compile/inner.rs by `node tools/commands/generate/composed-crates.ts`.
+// Edit the source and run the command again.
+//! SSR compile lane and its optional native stage observation.
+
+use super::{
+    Allocator, CaptureOutcome, CaptureSink, CompilerError, CustomElementMatcher, ErrorCode, Level,
+    Parser, RootNode, SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions,
+    SsrCompilerOptions, SsrL4Request, SsrL4Selection, SsrLane, SsrSfcContext, String,
+    TemplateSyntaxMode, cstr, l4, profile, transform_with_frozen_elements,
+};
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC options plus an opt-in capture sink"
+)]
+pub(super) fn compile_ssr_inner_captured<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+    capture: &mut C,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner_captured_with_runtime(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        context,
+        "vue",
+        capture,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC metadata, generated runtime and capture"
+)]
+pub(super) fn compile_ssr_inner_captured_with_runtime<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+    runtime_module_name: &str,
+    capture: &mut C,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    #[cfg(feature = "legacy-differential")]
+    let lane = crate::differential::production_lane();
+    #[cfg(not(feature = "legacy-differential"))]
+    let lane = SsrLane::Selected;
+    compile_ssr_on_lane_captured(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        context,
+        lane,
+        runtime_module_name,
+        capture,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC metadata, lane and opt-in capture"
+)]
+fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    context: SsrSfcContext,
+    lane: SsrLane,
+    runtime_module_name: &str,
+    capture: &mut C,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    capture.effective_option("template_syntax", || cstr!("{template_syntax:?}"));
+    capture.effective_option("dialect", || cstr!("{:?}", options.dialect));
+    capture.effective_option("is_ts", || cstr!("{}", options.is_ts));
+    capture.effective_option("inline", || cstr!("{}", options.inline));
+    capture.effective_option("comments", || cstr!("{}", options.comments));
+    capture.effective_option("scope_id", || {
+        options
+            .scope_id
+            .clone()
+            .unwrap_or_else(|| String::from("<none>"))
+    });
+    capture.effective_option("slotted", || cstr!("{}", context.slotted));
+    if context.development {
+        capture.effective_option("development", || cstr!("true"));
+    }
+    capture.effective_option("source_map", || {
+        cstr!("{}", experimental_options.source_map)
+    });
+    capture.effective_option("custom_elements", || {
+        cstr!("{}", !custom_elements.is_empty())
+    });
+    let codegen_options = options.clone();
+    let parser_opts = crate::stage_options::parser_options(&options);
+
+    let (mut root, errors, frozen_elements) = profile!(
+        "atelier.ssr.template.parse",
+        Parser::with_options_custom_elements_and_template_syntax(
+            allocator,
+            source,
+            parser_opts,
+            custom_elements.clone(),
+            template_syntax,
+        )
+        .parse_with_frozen_elements()
+    );
+    if errors.iter().any(|e| !e.is_recoverable()) {
+        capture.finish(|| CaptureOutcome::Rejected(String::from("SSR parser rejected template")));
+        return (
+            root,
+            errors.to_vec(),
+            SsrCodegenResult {
+                code: String::default(),
+                preamble: String::default(),
+                map: None,
+            },
+        );
+    }
+
+    let selection = match lane {
+        SsrLane::Selected => l4::select_ssr_lane_captured(
+            allocator,
+            source,
+            &SsrL4Request {
+                options: &options,
+                experimental: &experimental_options,
+                context,
+                runtime_module_name,
+                template_syntax,
+                has_custom_elements: !custom_elements.is_empty(),
+                frozen: Some((&root, &frozen_elements)),
+            },
+            capture,
+        ),
+        #[cfg(any(test, feature = "legacy-differential"))]
+        SsrLane::LegacyOnly => SsrL4Selection::Legacy(l4::LegacyReason::Options),
+    };
+    #[cfg(feature = "legacy-differential")]
+    if lane == SsrLane::Selected {
+        crate::differential::record_verdict(l4::lane_label(&selection));
+    }
+
+    let transform_opts = crate::stage_options::transform_options(&codegen_options);
+    let transform_errors = profile!(
+        "atelier.ssr.template.transform",
+        transform_with_frozen_elements(
+            allocator,
+            source,
+            &mut root,
+            transform_opts,
+            options
+                .script_tables
+                .map(|tables| allocator.alloc_owned(tables)),
+            custom_elements,
+            template_syntax.is_quirks(),
+            None,
+            frozen_elements,
+        )
+    );
+
+    let mut errors = errors.to_vec();
+    errors.extend(transform_errors);
+    let codegen_result = match selection {
+        SsrL4Selection::Emitted(result) => {
+            if !result.code.is_empty() {
+                // Match SFC render-chunk assembly. Later SFC script
+                // composition is a separate product step.
+                capture.page(Level::L4, "emit", || {
+                    let mut module =
+                        String::with_capacity(result.preamble.len() + result.code.len() + 2);
+                    module.push_str(&result.preamble);
+                    module.push('\n');
+                    module.push_str(&result.code);
+                    module.push('\n');
+                    module
+                });
+            }
+            capture.finish(|| {
+                if result.code.is_empty() {
+                    CaptureOutcome::Rejected(String::from("SSR emitter returned empty render code"))
+                } else {
+                    CaptureOutcome::Accepted
+                }
+            });
+            result
+        }
+        other => {
+            let legacy_reason = match &other {
+                SsrL4Selection::Legacy(reason) => Some(*reason),
+                SsrL4Selection::Rejected(_) => None,
+                SsrL4Selection::Emitted(_) => None,
+            };
+            match other {
+                SsrL4Selection::Rejected(diagnostics) => {
+                    errors.extend(diagnostics.into_iter().map(|diagnostic| {
+                        CompilerError::with_message(ErrorCode::ExtendPoint, diagnostic, None)
+                    }));
+                }
+                SsrL4Selection::Legacy(_) => {}
+                SsrL4Selection::Emitted(_) => {}
+            }
+            let mut codegen_ctx = SsrCodegenContext::new_with_experimental_options(
+                allocator,
+                &codegen_options,
+                source,
+                experimental_options,
+            );
+            codegen_ctx.apply_sfc_context(context);
+            codegen_ctx.set_runtime_module_name(runtime_module_name);
+            let result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
+            capture.finish(|| {
+                let reason = legacy_reason
+                    .map(|reason| cstr!("{reason:?}"))
+                    .unwrap_or_else(|| String::from("native SSR bridge rejected"));
+                if result.code.is_empty() {
+                    CaptureOutcome::Rejected(reason)
+                } else {
+                    CaptureOutcome::Legacy(reason)
+                }
+            });
+            result
+        }
+    };
+
+    (root, errors, codegen_result)
+}

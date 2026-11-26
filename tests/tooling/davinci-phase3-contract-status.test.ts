@@ -85,7 +85,7 @@ const retirementSentinels = [
   },
   {
     label: "SSR legacy selector",
-    path: "crates/vize_atelier_ssr/src/l4/mod.rs",
+    path: "crates/vize_atelier_ssr/src/l4.rs",
     pattern: /enum SsrL4Selection[\s\S]*?Legacy\(LegacyReason\)/u,
   },
   {

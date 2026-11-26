@@ -1252,7 +1252,7 @@ crates/vize_atelier_sfc/tests/vapor_runtime_contracts/template_refs.rs	0	0	1	0	0
 crates/vize_atelier_sfc/tests/vapor_setup_resolution.rs	0	0	1	0	0	1	0
 crates/vize_atelier_sfc/tests/vapor_slot_defaults.rs	0	0	1	0	0	1	0
 crates/vize_atelier_sfc/tests/vapor_trailing_line_comments.rs	0	0	1	0	0	1	0
-crates/vize_atelier_ssr/src/codegen/mod.rs	0	0	1	0	4	1	1
+crates/vize_atelier_ssr/src/codegen.rs	0	0	1	0	4	1	1
 crates/vize_atelier_ssr/src/codegen/children.rs	0	0	0	0	0	1	0
 crates/vize_atelier_ssr/src/codegen/component_binding.rs	0	0	0	0	0	1	0
 crates/vize_atelier_ssr/src/codegen/element.rs	0	0	0	0	0	1	0
@@ -1270,10 +1270,10 @@ crates/vize_atelier_ssr/src/codegen/element/vnode.rs	0	0	1	0	0	0	0
 crates/vize_atelier_ssr/src/codegen/element/vnode_control.rs	0	0	0	0	0	1	0
 crates/vize_atelier_ssr/src/codegen/helpers.rs	0	0	0	0	8	1	0
 crates/vize_atelier_ssr/src/codegen/module_parts.rs	0	0	0	0	0	1	0
-crates/vize_atelier_ssr/src/compile/mod.rs	0	0	0	0	0	1	0
+crates/vize_atelier_ssr/src/compile.rs	0	0	0	0	0	1	0
 crates/vize_atelier_ssr/src/compile/inner.rs	0	1	0	0	0	0	0
 crates/vize_atelier_ssr/src/empty_directive_tests.rs	0	0	0	0	0	1	0
-crates/vize_atelier_ssr/src/l4/mod.rs	0	0	0	0	0	1	0
+crates/vize_atelier_ssr/src/l4.rs	0	0	0	0	0	1	0
 crates/vize_atelier_ssr/src/l4/differential_tests/scoped_dynamic.rs	0	0	0	0	0	1	0
 crates/vize_atelier_ssr/src/l4/emit/attrs.rs	0	0	0	0	0	1	0
 crates/vize_atelier_ssr/src/l4/emit/merged.rs	0	0	0	0	0	1	0

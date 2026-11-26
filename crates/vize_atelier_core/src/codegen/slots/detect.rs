@@ -3,8 +3,8 @@
 mod forwarded;
 pub use forwarded::has_forwarded_slot_outlet;
 
-use super::super::context::CodegenContext;
-use super::super::expression::scope_prefix::strip_scope_prefixes_for_slot_params;
+use crate::codegen::context::CodegenContext;
+use crate::codegen::expression::scope_prefix::strip_scope_prefixes_for_slot_params;
 use crate::steps::v_slot::{collect_slots, has_v_slot};
 use crate::{
     CompoundExpressionChild, ElementNode, ExpressionNode, PropNode, TemplateChildNode,

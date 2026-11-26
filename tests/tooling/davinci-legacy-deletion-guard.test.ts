@@ -105,7 +105,7 @@ void test("the checked-in compiler routes retain every guarded witness", () => {
       "crates/vize/src/commands/build/runner/compile_stats.rs",
       "crates/vize_atelier_dom/src/compile/inner.rs",
       "crates/vize_atelier_dom/src/compile/sfc.rs",
-      "crates/vize_atelier_ssr/src/compile/mod.rs",
+      "crates/vize_atelier_ssr/src/compile.rs",
       "crates/vize_atelier_vapor/src/compile/inner.rs",
     ].map((file) => [file, fs.readFileSync(path.join(root, file), "utf8")]),
   );

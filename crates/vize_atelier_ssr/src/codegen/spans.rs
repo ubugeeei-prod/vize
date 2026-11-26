@@ -27,16 +27,16 @@ impl SsrCodegenContext<'_> {
     sfc_map_copy! {
         plain {}
         composed {
-        /// Write `text` directly, anchored at the authored byte `source` while a
-        /// map is recorded.
-        #[cold]
-        #[inline(never)]
-        pub(crate) fn push_anchored(&mut self, text: &str, source: u32) {
-            if self.spans_enabled() {
-                self.out.anchor(source);
+            /// Write `text` directly, anchored at the authored byte `source`
+            /// while a map is recorded.
+            #[cold]
+            #[inline(never)]
+            pub(crate) fn push_anchored(&mut self, text: &str, source: u32) {
+                if self.spans_enabled() {
+                    self.out.anchor(source);
+                }
+                self.push(text);
             }
-            self.push(text);
-        }
         }
     }
 

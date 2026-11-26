@@ -1,6 +1,6 @@
 //! Slot parameter helpers (scoped slot props parsing and prefixing).
 
-use super::super::context::CodegenContext;
+use crate::codegen::context::CodegenContext;
 use crate::options::BindingType;
 use crate::steps::expression::is_template_global as is_global_allowed;
 use crate::{DirectiveNode, ExpressionNode};

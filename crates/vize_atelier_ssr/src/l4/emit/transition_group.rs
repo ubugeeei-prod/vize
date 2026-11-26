@@ -4,10 +4,10 @@ use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
-use super::super::super::l4::string_plan::SsrSegmentSource as Source;
 use super::attrs::Attached;
 use super::spans::attribute_value_start;
 use super::{Emitter, Flags, Result};
+use crate::l4::string_plan::SsrSegmentSource as Source;
 
 enum Tag {
     Static(vize_l0::String, u32),
@@ -115,11 +115,9 @@ mod tests {
         reason = "exact original plan custody in negative controls"
     )]
 
-    use super::super::super::super::l4::AdmissionFailure;
-    use super::super::super::super::l4::string_plan::{
-        SsrSegmentSource as Source, lower_l2_to_string_plan,
-    };
     use super::admit_directives;
+    use crate::l4::AdmissionFailure;
+    use crate::l4::string_plan::{SsrSegmentSource as Source, lower_l2_to_string_plan};
     use vize_l0::Allocator;
     use vize_l2::op as l2;
     use vize_l2_to_l3::PartitionKind;
