@@ -30,12 +30,16 @@ mod attribute_priority_tests;
 #[cfg(test)]
 mod attribute_segment_tests;
 #[cfg(test)]
+mod nesting_tests;
+#[cfg(test)]
 mod semantic_attribute_order_tests;
 
 use crate::{error::FormatError, options::FormatOptions};
 use vize_l0::String;
 
 use formatter::TemplateFormatter;
+#[cfg(test)]
+pub(crate) use formatter::nesting::MAX_ELEMENT_NESTING_DEPTH;
 use helpers::is_whitespace;
 
 /// Format Vue template content.

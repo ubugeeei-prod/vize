@@ -10,6 +10,7 @@ use oxc_ast::ast::{Expression, Statement};
 use oxc_formatter::{QuoteStyle, format_program};
 use oxc_span::SourceType;
 use unicode_width::UnicodeWidthStr;
+use vize_l0::expression_guard::expression_is_safe_to_parse;
 use vize_l0::{String, ToCompactString};
 
 #[inline]
@@ -144,6 +145,9 @@ pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<Strin
 }
 
 /// Format an expression from a TSRX region, where nested JSX is valid syntax.
+///
+/// The text is a span of the TSRX module the caller has already parsed, so it
+/// does not pass the template-expression guard, which does not read JSX.
 pub(crate) fn format_tsx_expression(expr: &str, options: &FormatOptions) -> Option<String> {
     format_expression_with_layout(
         expr,
@@ -174,13 +178,12 @@ pub(crate) fn format_js_expression_in_attribute_with_layout(
     attribute_value: &str,
     trimmed_attribute_value: &str,
 ) -> Option<FormattedExpression> {
-    format_expression_with_layout(
+    format_template_expression(
         expr,
         options,
         Some(QuoteStyle::Single),
         Some(attribute_depth),
         Some((attribute_name, attribute_value, trimmed_attribute_value)),
-        SourceType::ts().with_module(true),
     )
 }
 
@@ -189,12 +192,30 @@ pub(crate) fn format_js_expression_with_quote_style(
     options: &FormatOptions,
     quote_style: Option<QuoteStyle>,
 ) -> Option<FormattedExpression> {
+    format_template_expression(expr, options, quote_style, None, None)
+}
+
+/// Format expression text authored in a Vue template.
+///
+/// This is where that text first meets the recursive parser, so it passes the
+/// guard every compiler parse site shares. Refused text is answered like text
+/// that does not parse: `None`, and the caller keeps what was authored.
+fn format_template_expression(
+    expr: &str,
+    options: &FormatOptions,
+    quote_style: Option<QuoteStyle>,
+    attribute_depth: Option<usize>,
+    attribute_layout: Option<(&str, &str, &str)>,
+) -> Option<FormattedExpression> {
+    if !expression_is_safe_to_parse(trim_expression(expr)) {
+        return None;
+    }
     format_expression_with_layout(
         expr,
         options,
         quote_style,
-        None,
-        None,
+        attribute_depth,
+        attribute_layout,
         SourceType::ts().with_module(true),
     )
 }

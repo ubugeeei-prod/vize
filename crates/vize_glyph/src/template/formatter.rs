@@ -21,6 +21,7 @@ mod child_width;
 mod closing_width;
 mod inline_breaks;
 mod interpolation;
+pub(crate) mod nesting;
 mod opening_attributes;
 mod preserved_text;
 mod suppression;
@@ -284,6 +285,7 @@ impl<'a> TemplateFormatter<'a> {
                     } else {
                         output.push('>');
                         if !is_void {
+                            nesting::open_element(depth)?;
                             depth += 1;
                             joiner.opened_element(pos, end_pos, tag_name.len());
                         }

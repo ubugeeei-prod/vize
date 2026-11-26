@@ -6,6 +6,14 @@ use lightningcss::error::{Error, ParserError};
 use lightningcss::stylesheet::{ParserOptions, StyleSheet};
 
 pub(crate) fn parse_stylesheet(source: &str) -> Result<StyleSheet<'_>, Error<ParserError<'_>>> {
+    // Past this depth the engine only reports a parse error, after
+    // exponential work; report invalid CSS without it.
+    if vize_l0::css_nesting::css_nesting_exceeds_max_depth(source) {
+        return Err(Error {
+            kind: ParserError::InvalidValue,
+            loc: None,
+        });
+    }
     catch_unwind(AssertUnwindSafe(|| {
         StyleSheet::parse(source, ParserOptions::default())
     }))
