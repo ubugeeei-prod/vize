@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const count = 1;
+</script>
+
+<template>
+  <p>{{ formatCount(count) }} {{ formatCuont(count) }}</p>
+</template>

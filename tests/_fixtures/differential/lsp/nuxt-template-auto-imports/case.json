@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "id": "lsp/regression/nuxt-template-auto-imports",
+  "provenance": {
+    "fixCommit": "b7dfe22573ae4b35a08e292efb4d68ec335222eb",
+    "inputRevision": "f6b8834a07cee2edbc802ef52a6c5be408b2dcaa",
+    "witnessPath": "crates/vize_maestro/src/server/workspace_files/nuxt_template_names_tests.rs",
+    "witnessTest": "generated_names_are_defined_in_the_editor_and_a_typo_is_still_reported",
+    "inputOrigin": "The generated declaration shape and page of the vize lint Nuxt auto-import CLI test",
+    "contractOrigin": "vize lint reads the same generated names, so the editor reports only the typo"
+  },
+  "files": [
+    {
+      "source": "package.json.txt",
+      "runtimePath": "package.json",
+      "sha256": "5bbbec757633dcbc268e91dd63a59bd3c09b9626ea5cedd3b6656379ed0cb643"
+    },
+    {
+      "source": "nuxt.config.ts.txt",
+      "runtimePath": "nuxt.config.ts",
+      "sha256": "8146761a41c6f2159a550dc6726d6dd5073431046ccc5957000a865222186f9f"
+    },
+    {
+      "source": "nuxt-package.json.txt",
+      "runtimePath": "node_modules/nuxt/package.json",
+      "sha256": "4d3a8eb16927f11a5796ba8f7d7798918f3b5b5f134f0a7214a0d5448e85b704"
+    },
+    {
+      "source": "imports.d.ts.txt",
+      "runtimePath": ".nuxt/types/imports.d.ts",
+      "sha256": "61391117cf3b111982d49e761b5dcc15cf9565b9789167924806dcb66fd033ed"
+    },
+    {
+      "source": "index.vue.txt",
+      "runtimePath": "app/pages/index.vue",
+      "sha256": "27b077223fd9d040a02e2db55e34f63be602709a775b7b2fcd00259b32fa5331"
+    }
+  ],
+  "entry": "app/pages/index.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "0d16e42bb5662e238ee75128ad6d05de26a236db61b25f5dd4ac0d7df2166261"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "scope": "Whole hovers over a Nuxt auto-import and a typo in one template: only the typo carries the vue/no-undefined-refs finding."
+}
