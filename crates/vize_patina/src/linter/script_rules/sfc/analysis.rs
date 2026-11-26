@@ -4,18 +4,12 @@
 //! script-only SFC has no template pass, so the facts a script rule demands
 //! are drawn here once, from the same shared script parses.
 
+use crate::linter::config::descriptor_may_have_typed_macros;
 use crate::linter::sfc_scripts::ScriptSemantics;
 use crate::linter::{Linter, MacroTypeResolution, ReadDemand, analyze_descriptor_for_lint};
 use crate::rules::script::TemplateSideReads;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_croquis::Croquis;
-
-fn descriptor_may_have_typed_macros(descriptor: &SfcDescriptor<'_>) -> bool {
-    descriptor.script_setup.as_ref().is_some_and(|block| {
-        let source = block.content.as_ref();
-        source.contains('<') && (source.contains("defineProps") || source.contains("defineEmits"))
-    })
-}
 
 /// Musea `<variant>` markup reads script names in templates of its own.
 fn has_art_variants(descriptor: &SfcDescriptor<'_>) -> bool {

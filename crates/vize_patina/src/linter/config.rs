@@ -256,6 +256,20 @@ impl Linter {
             .then(|| super::engine::MacroTypeResolution::new(self.type_sources.as_ref(), filename))
     }
 
+    /// [`Self::macro_type_resolution`] for an SFC whose script setup may declare
+    /// typed macros. Resolving reads the project's tsconfig and the script's
+    /// imports from disk, and only typed macros contribute to the result; a
+    /// rule that needs the world anyway still builds it on demand.
+    #[inline]
+    pub(crate) fn sfc_macro_type_resolution<'a>(
+        &'a self,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        filename: &'a str,
+    ) -> Option<super::engine::MacroTypeResolution<'a>> {
+        self.macro_type_resolution(filename)
+            .filter(|_| descriptor_may_have_typed_macros(descriptor))
+    }
+
     /// Get the current locale.
     #[inline]
     pub fn locale(&self) -> Locale {
@@ -394,4 +408,18 @@ impl Default for Linter {
 
 pub(super) fn is_type_rule(rule_name: &str) -> bool {
     rule_name.starts_with("type/")
+}
+
+/// Whether the script setup may declare a typed `defineProps`, `defineEmits`,
+/// `defineSlots` or `defineModel`, the macros whose types resolve across files.
+pub(crate) fn descriptor_may_have_typed_macros(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+) -> bool {
+    descriptor.script_setup.as_ref().is_some_and(|block| {
+        let source = block.content.as_ref();
+        source.contains('<')
+            && ["defineProps", "defineEmits", "defineSlots", "defineModel"]
+                .iter()
+                .any(|name| source.contains(name))
+    })
 }
