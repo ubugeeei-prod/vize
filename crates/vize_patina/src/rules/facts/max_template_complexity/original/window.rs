@@ -19,8 +19,8 @@ pub(super) fn insert<T: Copy>(slots: &mut [Option<T>], row: T, before: impl Fn(T
     #[cfg_attr(creusot, invariant(forall<i: Int> 0 <= i && i < at@ ==> exists<rank: T>
         slots@[i] == Some(rank) && before.postcondition((row, rank), false)))]
     #[cfg_attr(creusot, variant(slots@.len() - at@))]
-    while at < slots.len() {
-        match slots[at] {
+    while let Some(&slot) = slots.get(at) {
+        match slot {
             Some(old) if !before(row, old) => at += 1,
             _ => break,
         }
@@ -37,12 +37,18 @@ pub(super) fn insert<T: Copy>(slots: &mut [Option<T>], row: T, before: impl Fn(T
         if i < found@ || at@ <= i { old[i] } else if i == found@ { Some(row) } else { old[i - 1] }))]
     #[cfg_attr(creusot, variant(slots@.len() - at@))]
     while at < slots.len() {
-        core::mem::swap(&mut slots[at], &mut displaced);
+        if let Some(slot) = slots.get_mut(at) {
+            core::mem::swap(slot, &mut displaced);
+        }
         at += 1;
         if displaced.is_none() {
+            #[cfg(creusot)]
+            proof_assert!(forall<i: Int> at@ - 1 <= i && i < old.len() ==> old[i] == None);
             break;
         }
     }
+    #[cfg(creusot)]
+    proof_assert!(shifted(row, *old, slots@, found@));
 }
 
 /// Every free slot follows every occupied one.
