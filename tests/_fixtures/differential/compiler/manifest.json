@@ -4752,6 +4752,59 @@
       }
     },
     {
+      "id": "compiler/sfc/static-text-backslashes",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "static-text-backslashes",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "9d0ad11700b8007a3bb438413bdf006a5c282859a31ff298b58106f886a2f390",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "static-text-backslashes/module.expected.txt",
+        "sha256": "f1d4e2379676c999c86c3b7086f0f71ee48d65f864401fc3639b5c43f8d56a38",
+        "source": "crates/vize_atelier_ssr/tests/static_backslashes.rs:text_backslashes_stay_literal"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); parser and codegen remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/table-authored-rows",
       "state": "active",
       "targets": [

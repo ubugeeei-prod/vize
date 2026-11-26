@@ -52,6 +52,7 @@ pub use compiler_error::ErrorCode;
 mod namespace;
 pub use namespace::Namespace;
 pub mod config;
+pub mod css_nesting;
 pub mod dialect;
 pub use dialect::{FileDialect, Lang, ProfileKind, TemplateSyntaxMode};
 pub mod directive;

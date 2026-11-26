@@ -4,6 +4,7 @@
 //! following the Vue.js core output format.
 
 pub(crate) mod artifacts;
+pub(crate) mod component_name;
 #[cfg(test)]
 mod define_expose_tests;
 pub(crate) mod erasure;

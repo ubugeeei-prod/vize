@@ -112,6 +112,17 @@ pub fn escape_js_string(s: &str) -> String {
     result
 }
 
+/// The contents of the double-quoted JavaScript string literal that spells
+/// `name` exactly. Unlike [`escape_js_string`], `name` is final text (a tag
+/// name, an already decoded attribute value): no entity in it is decoded.
+pub(super) fn js_string_contents(name: &str) -> vize_l0::String {
+    let mut literal = vize_l0::String::with_capacity(name.len() + 2);
+    vize_l0::js_string::push_js_string_literal(&mut literal, name);
+    // Drop the opening and the closing quote.
+    let end = literal.len().saturating_sub(1);
+    vize_l0::String::from(literal.get(1..end).unwrap_or(name))
+}
+
 /// Check if a string is a valid JavaScript identifier (doesn't need quoting)
 pub fn is_valid_js_identifier(s: &str) -> bool {
     if s.is_empty() {
