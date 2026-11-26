@@ -160,7 +160,9 @@ export function identitySourceMap(file: string, source: string): SourceMapV3 {
   };
 }
 
-const BASE64_VALUES = new Map([...BASE64_DIGITS].map((digit, value) => [digit, value]));
+const BASE64_VALUES = new Map(
+  Array.from({ length: BASE64_DIGITS.length }, (_, value) => [BASE64_DIGITS[value], value]),
+);
 
 /** A decoded segment: generated column, then source index, line and column when mapped. */
 type Segment = number[];
