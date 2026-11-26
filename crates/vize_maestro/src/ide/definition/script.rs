@@ -60,6 +60,16 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
     // Options API and class members below.
     let receiver = crate::ide::script_identifier::member_receiver(&ctx.content, ctx.offset);
     if let Some(script) = script_block
+        && ctx
+            .offset
+            .checked_sub(script.loc.start)
+            .is_some_and(|offset| {
+                super::script_literals::offset_is_in_literal_text(script.content.as_ref(), offset)
+            })
+    {
+        return None;
+    }
+    if let Some(script) = script_block
         && receiver.is_none()
     {
         let content = script.content.as_ref();

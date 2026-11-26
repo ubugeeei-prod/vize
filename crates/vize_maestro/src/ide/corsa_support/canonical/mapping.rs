@@ -17,6 +17,76 @@ pub(crate) fn canonical_source_offset_to_position(
     Some(LineBreaks::Lsp.offset_to_position(&doc.virtual_result.code, generated_offset))
 }
 
+/// [`canonical_source_offset_to_position`] for symbol operations (rename,
+/// references). A static attribute value (`ref="box"`, `id="note"`) names no
+/// script symbol; a coarse mapping that merely covers it would land on
+/// whatever its generated range holds, and rename would edit that symbol.
+pub(crate) fn canonical_symbol_position(
+    doc: &CanonicalVirtualDocument,
+    source: &str,
+    source_offset: usize,
+) -> Option<(u32, u32)> {
+    if in_static_attribute_value(source, source_offset) {
+        return None;
+    }
+    canonical_source_offset_to_position(doc, source_offset)
+}
+
+/// Whether `offset` is inside the quoted value of a plain (non-directive)
+/// attribute of the start tag that contains it.
+pub(crate) fn in_static_attribute_value(source: &str, offset: usize) -> bool {
+    let Some(tag_start) = source.get(..offset).and_then(|before| before.rfind('<')) else {
+        return false;
+    };
+    let Some(tag) = source.get(tag_start..) else {
+        return false;
+    };
+    let bytes = tag.as_bytes();
+    let byte = |index: usize| bytes.get(index).copied();
+    let space = |value: u8| matches!(value, b' ' | b'\t' | b'\n' | b'\r');
+    let target = offset - tag_start;
+    // Skip the tag name, then walk `name[=value]` pairs.
+    let mut index = 1;
+    while byte(index).is_some_and(|value| !space(value) && value != b'>' && value != b'/') {
+        index += 1;
+    }
+    loop {
+        while byte(index).is_some_and(|value| space(value) || value == b'/') {
+            index += 1;
+        }
+        if byte(index).is_none_or(|value| value == b'>') || target <= index {
+            return false;
+        }
+        let name_start = index;
+        while byte(index).is_some_and(|value| !space(value) && !matches!(value, b'=' | b'>' | b'/'))
+        {
+            index += 1;
+        }
+        let name = tag.get(name_start..index).unwrap_or_default();
+        if byte(index) != Some(b'=') {
+            continue;
+        }
+        index += 1;
+        let Some(quote) = byte(index).filter(|quote| matches!(quote, b'"' | b'\'')) else {
+            continue;
+        };
+        let value_start = index + 1;
+        let Some(length) = tag
+            .get(value_start..)
+            .and_then(|rest| rest.find(char::from(quote)))
+        else {
+            return false;
+        };
+        let value_end = value_start + length;
+        if (value_start..=value_end).contains(&target) {
+            return !name.is_empty()
+                && !name.starts_with([':', '@', '#', '.'])
+                && !name.starts_with("v-");
+        }
+        index = value_end + 1;
+    }
+}
+
 pub(super) fn source_offset_to_virtual_generated_offset(
     virtual_result: &VirtualTsResult,
     source_offset: usize,
@@ -320,6 +390,30 @@ mod tests {
                 &(source.len()..source.len() + 1)
             )
             .is_empty()
+        );
+    }
+}
+
+#[cfg(test)]
+mod static_attribute_tests {
+    use super::in_static_attribute_value;
+
+    #[test]
+    fn only_plain_attribute_values_name_no_symbol() {
+        let source =
+            r#"<textarea v-else ref="box" :title="msg" @focus="go" id='note'>{{ msg }}</textarea>"#;
+        let at = |needle: &str| source.find(needle).unwrap() + 1;
+        assert_eq!(
+            [
+                at("box"),
+                at("note"),
+                at("msg\""),
+                at("go\""),
+                at("msg }}"),
+                at("textarea v")
+            ]
+            .map(|offset| in_static_attribute_value(source, offset)),
+            [true, true, false, false, false, false]
         );
     }
 }

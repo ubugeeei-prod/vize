@@ -18,6 +18,7 @@ mod prepare;
 mod prepare_materialize;
 mod revise;
 mod routes;
+mod template_ref_ownership;
 
 // Project snapshots are shared by independent semantic requests in the
 // process-wide bounded cache; a scoped borrow cannot represent that lifetime.

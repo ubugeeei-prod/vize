@@ -117,6 +117,12 @@ pub(super) fn build_with_import_facts(
     );
     project.scope_editor_namespace(environment.editor_session.root()?, namespace_identity);
     project.set_session_script_registration(true);
+    project.set_ambient_vue_template_ref(
+        super::template_ref_ownership::editor_declares_vue_template_ref(
+            environment.virtual_ts_options,
+            overlays,
+        ),
+    );
     #[cfg(feature = "ambient-project-declarations")]
     let virtual_ts_options = editor_declaration_options(&mut project, &revision, environment)?;
     project.set_editor_document_options(

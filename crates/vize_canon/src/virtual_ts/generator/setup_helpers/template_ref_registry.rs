@@ -11,7 +11,6 @@
 //! and a literal name the template never registers is an error. Only a dynamic
 //! `:ref` binding stays outside it.
 
-use oxc_ast::ast::Expression;
 use vize_carton::{FxHashSet, String, append, is_native_tag};
 use vize_croquis::Croquis;
 use vize_relief::{ElementNode, ElementType, Namespace, PropNode, RootNode, TemplateChildNode};
@@ -25,6 +24,7 @@ use crate::virtual_ts::{
 };
 
 use super::super::template_record::TemplateRecord;
+use component_targets::{dynamic_component_reference, static_component_is_kind};
 use super::push_ts_string_literal;
 
 /// One registry entry: the authored ref name and the element tag it names.
@@ -288,7 +288,17 @@ fn collect_element(
             let name = value.content;
             if !name.is_empty() {
                 let dynamic_reference = dynamic_component_reference(element, summary);
-                let kind = if let Some(reference_type) = dynamic_reference {
+                let static_is = dynamic_reference.is_none().then(|| {
+                    static_component_is_kind(
+                        element,
+                        summary,
+                        options,
+                        syntactic_type_only_imported_names,
+                    )
+                });
+                let kind = if let Some(kind) = static_is.flatten() {
+                    kind
+                } else if let Some(reference_type) = dynamic_reference {
                     RegisteredRefKind::Component {
                         reference_type,
                         start: element.loc.span.start,
@@ -354,102 +364,6 @@ fn collect_element(
     }
 }
 
-fn dynamic_component_reference(element: &ElementNode<'_>, summary: &Croquis) -> Option<String> {
-    if element.tag != "component" {
-        return None;
-    }
-    let expression = element.props.iter().find_map(|prop| {
-        let PropNode::Directive(directive) = prop else {
-            return None;
-        };
-        if directive.name != "bind"
-            || !matches!(
-                directive.arg.as_ref(),
-                Some(vize_relief::ExpressionNode::Simple(arg))
-                    if arg.is_static && arg.content == "is"
-            )
-        {
-            return None;
-        }
-        directive.exp.as_ref()
-    })?;
-    if let vize_relief::ExpressionNode::Simple(expression) = expression {
-        let reference = expression.content.trim();
-        let mut segments = reference.split('.');
-        if let Some(first) = segments.next()
-            && is_ascii_identifier(first)
-        {
-            let rest = segments.collect::<Vec<_>>();
-            if rest.iter().all(|segment| is_ascii_identifier(segment)) {
-                if rest.is_empty() {
-                    return Some(vize_carton::cstr!("typeof {first}"));
-                }
-                let mut reference_type =
-                    vize_carton::cstr!("import('vue').UnwrapRef<typeof {first}>");
-                for segment in rest {
-                    append!(reference_type, "[\"{segment}\"]");
-                }
-                return Some(reference_type);
-            }
-        }
-
-        // The inference-only alias for a complex root target lives inside the
-        // template closure, while this registry is declared in setup scope.
-        // Project supported target unions directly from the retained AST so
-        // the registry never names that inner alias.
-        let alias = vize_croquis::drawer::dynamic_component_alias(element.loc.span.start);
-        let owns_alias = vize_croquis::facts::component_usage_slice(summary)
-            .iter()
-            .any(|usage| {
-                usage.start == element.loc.span.start && usage.name.as_str() == alias.as_str()
-            });
-        if owns_alias {
-            let retained = expression.js_ast?.as_expression()?;
-            return dynamic_component_target_type(retained.ast);
-        }
-    }
-    None
-}
-
-fn dynamic_component_target_type(expression: &Expression<'_>) -> Option<String> {
-    match expression {
-        Expression::Identifier(identifier) => {
-            Some(vize_carton::cstr!("typeof {}", identifier.name))
-        }
-        Expression::StringLiteral(literal) => {
-            let mut reference = crate::virtual_ts::TextBuf::default();
-            push_ts_string_literal(&mut reference, literal.value.as_str());
-            Some(reference.into_compact())
-        }
-        Expression::ConditionalExpression(conditional) => {
-            let consequent = dynamic_component_target_type(&conditional.consequent)?;
-            let alternate = dynamic_component_target_type(&conditional.alternate)?;
-            Some(vize_carton::cstr!("{consequent} | {alternate}"))
-        }
-        Expression::ParenthesizedExpression(parenthesized) => {
-            dynamic_component_target_type(&parenthesized.expression)
-        }
-        Expression::TSAsExpression(assertion) => {
-            dynamic_component_target_type(&assertion.expression)
-        }
-        Expression::TSSatisfiesExpression(satisfies) => {
-            dynamic_component_target_type(&satisfies.expression)
-        }
-        Expression::TSNonNullExpression(non_null) => {
-            dynamic_component_target_type(&non_null.expression)
-        }
-        _ => None,
-    }
-}
-
-fn is_ascii_identifier(segment: &str) -> bool {
-    let mut chars = segment.chars();
-    chars
-        .next()
-        .is_some_and(|char| char == '_' || char == '$' || char.is_ascii_alphabetic())
-        && chars.all(|char| char == '_' || char == '$' || char.is_ascii_alphanumeric())
-}
-
 /// The ref of a tag no binding owns, resolved through `GlobalComponents`
 /// exactly as its props are: `<my-child>` and `<MyChild>` hold the same
 /// instance, and an unregistered tag holds its custom element. Vue resolves
@@ -489,5 +403,8 @@ fn component_ref_kind_for_element_tag(
     resolved_component_binding_reference(summary, options, syntactic_type_only_imported_names, tag)
 }
 
+mod component_targets;
+#[cfg(test)]
+mod component_target_tests;
 #[cfg(test)]
 mod tests;
