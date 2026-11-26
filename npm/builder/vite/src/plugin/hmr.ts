@@ -3,9 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import type { VizePluginState } from "./state.ts";
-import { getCompileOptionsForRequest } from "./state.ts";
 import { evictCompiledModule, ownersOfDependency, ownersOfFile } from "./compiled-module-cache.ts";
-import { compileFile } from "../compiler.ts";
 import {
   detectHmrUpdateType,
   hasCustomBlockChanges,
@@ -26,6 +24,7 @@ import {
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import type { HostResolve } from "../../../shared/sfc-src.ts";
 import { prepareSfcSrcRequests } from "./src-requests.ts";
+import { compileHotUpdatedSfc } from "./hot-update-compiles.ts";
 import { typeProjectDependencyRoots } from "./type-project-watches.ts";
 
 export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
@@ -199,13 +198,15 @@ async function handleVueFileHotUpdate(
     return [];
   }
   const source = await readSource();
-  const prevCompiled = state.cache.get(file);
+  let prevCompiled = state.cache.get(file);
 
   if (options.resolve) await prepareSfcSrcRequests(state, options.resolve, file, source);
-  compileFile(file, state.cache, getCompileOptionsForRequest(state, false, file), source);
+  // The other SFCs this wave of hot updates changed compile in the same batch.
+  const { compiled: newCompiled, repeated } = await compileHotUpdatedSfc(state, file, source);
+  // A file reported twice in one wave: the first report carries the update.
+  if (repeated) prevCompiled = newCompiled;
   state.ssrCache.delete(file);
 
-  const newCompiled = state.cache.get(file)!;
   try {
     const stat = fs.statSync(file);
     state.precompileMetadata.set(file, {
