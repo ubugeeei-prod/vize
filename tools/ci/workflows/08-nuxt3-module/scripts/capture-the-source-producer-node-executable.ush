@@ -1,0 +1,5 @@
+# Record the path and digest of the Node that runs the source producer, for the Nuxt 5 checks.
+use $bin::{vp}
+use std::path::from_source
+
+vp env exec node (from_source "capture-the-source-producer-node-executable.cjs")

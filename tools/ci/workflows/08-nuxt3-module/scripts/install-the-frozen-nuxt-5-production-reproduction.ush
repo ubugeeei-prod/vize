@@ -1,0 +1,12 @@
+# Install the frozen Nuxt 5 production reproduction, recording its Node and npm's complete log.
+use $bin::{node, npm, tee}
+use std::fs::mkdir_p
+use std::io::to_file
+use std::path::from_source
+
+let evidence = $"$env::RUNNER_TEMP/nuxt5-runtime-proof"
+let describe_runtime = from_source "install-the-frozen-nuxt-5-production-reproduction.cjs"
+
+mkdir_p $evidence
+node $describe_runtime | to_file $evidence/runtime.json
+npm ci --legacy-peer-deps --no-audit --no-fund |& tee $evidence/install.log

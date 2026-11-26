@@ -1,0 +1,6 @@
+# Lint the original Nuxt project with the source linter and its Nuxt lint configuration.
+use $bin::{vp}
+
+vp env exec node tools/support/compat/nuxt/lint-config-build.ts \
+  $env::RUNNER_TEMP/nuxt-lint-config-proof \
+  $env::RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json

@@ -1,0 +1,7 @@
+# Test that the Nuxt module owns its SSR environment and that the Nuxt 5 inputs stay source-bound.
+use $bin::{node}
+
+node --test \
+  npm/framework/nuxt/src/ssr-runtime.test.ts \
+  tests/tooling/nuxt5-runtime.test.ts \
+  tests/tooling/nuxt-source-binding.test.mjs

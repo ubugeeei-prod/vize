@@ -1,0 +1,7 @@
+# Test that the Nuxt module owns its Nitro plugins and that the development inputs stay frozen.
+use $bin::{node}
+
+node --test \
+  npm/framework/nuxt/src/server-plugins.test.ts \
+  npm/framework/nuxt/src/builder.test.ts \
+  tests/tooling/nuxt5-dev-runtime.test.ts

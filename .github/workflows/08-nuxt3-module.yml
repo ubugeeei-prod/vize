@@ -125,7 +125,7 @@ jobs:
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
       - name: Download Chromium dependencies while building the current CLI
         if: ${{ github.event_name != 'pull_request' }}
-        run: . "${{ env.VIZE_CI_FILES }}/download-chromium-dependencies-while-building-the-current-cli.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/download-chromium-dependencies-while-building-the-current-cli.sh"
       - name: Verify candidate build and SSR routes
         run: vp env exec node tools/support/compat/nuxt/nuxt3-module-build.ts "$RUNNER_TEMP/nuxt3-module-proof"
       # Source-bound Nuxt 3 SSR, hydration and navigation remain on every
@@ -140,26 +140,26 @@ jobs:
         run: vp env exec node tools/support/compat/nuxt/prefetch-manifest-build.mjs "$RUNNER_TEMP/nuxt-prefetch-proof"
       - name: Verify original Nuxt lint configuration with the source linter
         if: ${{ github.event_name != 'pull_request' }}
-        run: . "${{ env.VIZE_CI_FILES }}/verify-original-nuxt-lint-configuration-with-the-source.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-original-nuxt-lint-configuration-with-the-source.sh"
       - name: Verify original Nuxt scoped compiler defaults and whole rendered outputs
         if: ${{ github.event_name != 'pull_request' }}
-        run: . "${{ env.VIZE_CI_FILES }}/verify-original-nuxt-scoped-compiler-defaults-and-whole.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-original-nuxt-scoped-compiler-defaults-and-whole.sh"
       - name: Install the unchanged reported Vite 8.2.2 dependency cohort
         if: ${{ github.event_name != 'pull_request' }}
         working-directory: tools/support/compat/nuxt/fixtures/vite-relative-glob
         run: npm ci --no-audit --no-fund
       - name: Verify original relative glob keys and outside-root Vite and Nuxt runtime
         if: ${{ github.event_name != 'pull_request' }}
-        run: . "${{ env.VIZE_CI_FILES }}/verify-original-relative-glob-keys-and-outside-root-vite.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-original-relative-glob-keys-and-outside-root-vite.sh"
       - name: Capture the current CLI for the JavaScript workspace consumers
         if: ${{ github.event_name != 'pull_request' }}
         run: vp env exec node tests/differential/build-receipt.ts
       - name: Verify real JavaScript Nuxt and Vite workspace products
         if: ${{ github.event_name != 'pull_request' }}
-        run: . "${{ env.VIZE_CI_FILES }}/verify-real-javascript-nuxt-and-vite-workspace-products.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-real-javascript-nuxt-and-vite-workspace-products.sh"
       - name: Capture the source producer Node executable
         id: nuxt-source-runtime
-        run: . "${{ env.VIZE_CI_FILES }}/capture-the-source-producer-node-executable.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/capture-the-source-producer-node-executable.sh"
       - name: Use the reported Node version for the additional Nuxt 5 consumer
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
@@ -173,28 +173,28 @@ jobs:
       - name: Verify client-only generate through the Vite Environment API
         run: node tools/support/compat/nuxt/nuxt-environment-api-generate.ts "$RUNNER_TEMP/nuxt-environment-api-proof"
       - name: Verify SSR environment ownership and original Nuxt 5 inputs
-        run: . "${{ env.VIZE_CI_FILES }}/verify-ssr-environment-ownership-and-original-nuxt-5.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-ssr-environment-ownership-and-original-nuxt-5.sh"
       # The peer declaration and Nitro dev compatibility remain separate #11795 gates.
       - name: Install the frozen Nuxt 5 production reproduction
         working-directory: tools/support/compat/nuxt/fixtures/nuxt5-runtime-build
         shell: bash
-        run: . "${{ env.VIZE_CI_FILES }}/install-the-frozen-nuxt-5-production-reproduction.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-the-frozen-nuxt-5-production-reproduction.sh"
       - name: Verify source-bound Nuxt 5 browser and isolated server output
         env:
           VIZE_NUXT_SOURCE_NODE: ${{ steps.nuxt-source-runtime.outputs.path }}
           VIZE_NUXT_SOURCE_NODE_SHA256: ${{ steps.nuxt-source-runtime.outputs.sha256 }}
-        run: . "${{ env.VIZE_CI_FILES }}/verify-source-bound-nuxt-5-browser-and-isolated-server-output.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-source-bound-nuxt-5-browser-and-isolated-server-output.sh"
       - name: Verify Nitro plugin ownership and frozen development inputs
-        run: . "${{ env.VIZE_CI_FILES }}/verify-nitro-plugin-ownership-and-frozen-development.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-nitro-plugin-ownership-and-frozen-development.sh"
       - name: Install the frozen Nuxt 5 development reproduction
         working-directory: tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime
         shell: bash
-        run: . "${{ env.VIZE_CI_FILES }}/install-the-frozen-nuxt-5-development-reproduction.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-the-frozen-nuxt-5-development-reproduction.sh"
       - name: Verify source-bound Nuxt 5 development stylesheets and hydration
         env:
           VIZE_NUXT_SOURCE_NODE: ${{ steps.nuxt-source-runtime.outputs.path }}
           VIZE_NUXT_SOURCE_NODE_SHA256: ${{ steps.nuxt-source-runtime.outputs.sha256 }}
-        run: . "${{ env.VIZE_CI_FILES }}/verify-source-bound-nuxt-5-development-stylesheets-and-hydration.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-source-bound-nuxt-5-development-stylesheets-and-hydration.sh"
       - name: Upload Nuxt 3 build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

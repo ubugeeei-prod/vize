@@ -1,0 +1,6 @@
+# Check the original relative glob keys and the outside-root Vite and Nuxt runtime from source.
+use $bin::{vp}
+
+vp env exec node tools/support/compat/nuxt/relative-glob-build.ts \
+  $env::RUNNER_TEMP/vite-relative-glob-proof \
+  $env::RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json

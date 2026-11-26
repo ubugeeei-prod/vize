@@ -1,0 +1,45 @@
+# Download Chromium's system packages while the CLI builds, then install Chromium from them.
+use $bin::{cargo, sudo, vp, "vize-ci-apt-retry" as apt_retry}
+use std::io::to_file
+use std::path::from_source
+
+fn download_chromium_dependencies() {
+  cd "tests" {
+    apt_retry vp exec playwright install-deps chromium
+  }
+}
+
+# A private archive directory keeps the downloaded packages for the install, and its
+# hook reports them after every package-index update.
+let archive_dir = sudo mktemp -d /var/cache/apt/vize-nuxt-archives-XXXXXX
+defer sudo rm -rf -- $archive_dir
+sudo chmod 0755 $archive_dir
+sudo install -m 0755 (from_source "report-apt-archive-inventory.sh") $archive_dir/report-inventory
+let cache_config = sudo mktemp /etc/apt/apt.conf.d/99-vize-nuxt-archives-XXXXXX
+defer sudo rm -f -- $cache_config
+# Removed before the install below; `-f` makes the cleanup a no-op then.
+let download_config = sudo mktemp /etc/apt/apt.conf.d/98-vize-nuxt-download-only-XXXXXX
+defer sudo rm -f -- $download_config
+let cache_settings = $"""
+  Dir::Cache::archives "$archive_dir";
+  APT::Update::Post-Invoke { "'$archive_dir/report-inventory'"; };
+"""
+$"$cache_settings\n" | sudo tee $cache_config | to_file "/dev/null"
+"APT::Get::Download-Only \"true\";\n" | sudo tee $download_config | to_file "/dev/null"
+
+let cli = spawn cargo build --profile ci -p vize
+defer cli.kill()
+let download_status = status_of download_chromium_dependencies
+let cli_status = status_of cli.await
+sudo rm -- $download_config
+echo $"Nuxt3 setup statuses: download=$download_status CLI=$cli_status"
+if download_status != 0 {
+  std::process::exit $download_status
+}
+if cli_status != 0 {
+  std::process::exit $cli_status
+}
+sudo $archive_dir/report-inventory before-install
+cd "tests" {
+  apt_retry vp exec playwright install --with-deps chromium
+}

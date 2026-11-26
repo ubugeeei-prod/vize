@@ -1,0 +1,8 @@
+# Install the frozen Nuxt 5 development reproduction, keeping npm's complete log as evidence.
+use $bin::{npm, tee}
+use std::fs::mkdir_p
+
+let evidence = $"$env::RUNNER_TEMP/nuxt5-dev-runtime-proof"
+
+mkdir_p $evidence
+npm ci --legacy-peer-deps --no-audit --no-fund |& tee $evidence/install.log

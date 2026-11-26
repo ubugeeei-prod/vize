@@ -114,7 +114,7 @@ test("merge, main and manual runs retain every extended campaign and source rece
         )
       ) {
         assert.ok(
-          step.run.includes('"$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"'),
+          step.run.includes(" $env::RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json\n"),
         );
       }
     }

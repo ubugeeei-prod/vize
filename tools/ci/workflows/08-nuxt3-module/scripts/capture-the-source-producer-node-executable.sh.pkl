@@ -1,7 +1,0 @@
-amends "../../../lib/ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #"vp env exec node "$VIZE_CI_FILES/capture-the-source-producer-node-executable.cjs""#
-}

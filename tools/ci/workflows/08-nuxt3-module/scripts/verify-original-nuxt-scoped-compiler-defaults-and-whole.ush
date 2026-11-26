@@ -1,0 +1,6 @@
+# Build the original Nuxt project with scoped compiler defaults and compare whole rendered outputs.
+use $bin::{vp}
+
+vp env exec node tools/support/compat/nuxt/compiler-defaults-build.ts \
+  $env::RUNNER_TEMP/nuxt-compiler-defaults-proof \
+  $env::RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json

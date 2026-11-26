@@ -160,7 +160,15 @@ void test("the additional Node 26 consumer follows the unchanged source pack and
     ],
     [
       "Verify real JavaScript Nuxt and Vite workspace products",
-      'vp env exec node tools/support/compat/nuxt/javascript-workspace-build.ts "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"',
+      [
+        "# Build the real JavaScript Nuxt and Vite workspace products with the source compiler.",
+        "use $bin::{vp}",
+        "",
+        "vp env exec node tools/support/compat/nuxt/javascript-workspace-build.ts \\",
+        "  $env::RUNNER_TEMP/javascript-workspace-proof \\",
+        "  $env::RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json",
+        "",
+      ].join("\n"),
     ],
   ]) {
     const original = step(name);
@@ -170,7 +178,19 @@ void test("the additional Node 26 consumer follows the unchanged source pack and
   const consumer = step("Verify source-bound Nuxt 5 browser and isolated server output");
   assert.equal(
     consumer.run,
-    '"$VIZE_NUXT_SOURCE_NODE" tools/support/compat/nuxt/nuxt5-runtime-build.ts "$RUNNER_TEMP/nuxt5-runtime-proof/acceptance" "$(command -v node)"',
+    [
+      "# Check the Nuxt 5 browser and isolated server output, controlled by the source producer's Node.",
+      "use $bin::{command}",
+      "",
+      'let controller = "tools/support/compat/nuxt/nuxt5-runtime-build.ts"',
+      'let acceptance = $"$env::RUNNER_TEMP/nuxt5-runtime-proof/acceptance"',
+      "# The consumer runs on the Node first on PATH; the controller receives its path.",
+      "let consumer_node = command -v node",
+      "",
+      "# The source producer's Node runs the controller; the capture step recorded its path.",
+      "std::process::exec $env::VIZE_NUXT_SOURCE_NODE [controller, acceptance, consumer_node]",
+      "",
+    ].join("\n"),
   );
   assert.deepEqual(consumer.env, {
     VIZE_NUXT_SOURCE_NODE: "${{ steps.nuxt-source-runtime.outputs.path }}",
@@ -203,7 +223,8 @@ void test("Nuxt 5 failures remain failures while the original and additional raw
   const install = step("Install the frozen Nuxt 5 production reproduction");
   assert.equal(install.shell, "bash");
   assert.match(install.run ?? "", /npm ci --legacy-peer-deps --no-audit --no-fund/);
-  assert.match(install.run ?? "", /tee "\$RUNNER_TEMP\/nuxt5-runtime-proof\/install\.log"/);
+  assert.match(install.run ?? "", /^let evidence = \$"\$env::RUNNER_TEMP\/nuxt5-runtime-proof"$/mu);
+  assert.match(install.run ?? "", /\|& tee \$evidence\/install\.log$/mu);
 });
 
 void test("the actual frozen install shell preserves npm failure through raw log capture", () => {
@@ -216,8 +237,9 @@ void test("the actual frozen install shell preserves npm failure through raw log
     assert.equal(install.shell, "bash");
     assert.ok(install.run);
     const script = automationShellPath(install.run, "08-nuxt3-module");
+    // The ush pipeline fails with npm's status whether or not the step's shell sets pipefail.
     for (const [variant, args, expected] of [
-      ["default-no-pipefail", ["-e", script], 0],
+      ["default-no-pipefail", ["-e", script], 17],
       ["explicit-bash", ["--noprofile", "--norc", "-e", "-o", "pipefail", script], 17],
     ] as const) {
       const temporary = path.join(directory, variant);

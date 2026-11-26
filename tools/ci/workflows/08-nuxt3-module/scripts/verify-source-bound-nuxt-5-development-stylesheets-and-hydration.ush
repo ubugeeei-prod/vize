@@ -1,0 +1,10 @@
+# Check the Nuxt 5 development stylesheets and hydration, controlled by the source producer's Node.
+use $bin::{command}
+
+let controller = "tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts"
+let acceptance = $"$env::RUNNER_TEMP/nuxt5-dev-runtime-proof/acceptance"
+# The consumer runs on the Node first on PATH; the controller receives its path.
+let consumer_node = command -v node
+
+# The source producer's Node runs the controller; the capture step recorded its path.
+std::process::exec $env::VIZE_NUXT_SOURCE_NODE [controller, acceptance, consumer_node]
