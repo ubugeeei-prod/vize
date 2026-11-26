@@ -2,6 +2,7 @@
 //! compile for several targets at once: each target resolves the same types
 //! and reports the same errors as a compile of that target alone.
 
+use super::super::super::batch_epoch::tests::lock_epoch_state;
 use super::super::work::{self, Work};
 use super::differential::{Rng, edges, name, write_module};
 use super::sharing::write_reproduction;
@@ -12,8 +13,10 @@ use crate::types::SfcParseOptions;
 
 /// The imported-type work of compiling each component of the reporter's
 /// reproduction for a client and a server target: one call per target, then
-/// one call for both. Returns `(apart, together)`.
+/// one call for both. Returns `(apart, together)`. No batch may open while
+/// it counts: a batch changes which walk resolves the imported types.
 fn reproduction_work(components: usize, modules: usize) -> (Work, Work) {
+    let _lock = lock_epoch_state();
     let dir = tempfile::tempdir().unwrap();
     let reproduction = write_reproduction(dir.path(), components, modules);
     let sources: Vec<_> = reproduction
