@@ -1,0 +1,39 @@
+\#8908 audit pins every current Pug and Jade surface to executable evidence
+actual historical selectors run every full qualification and fail closed for PR comparisons
+authentic SSR source dependencies require an affected PR capture
+command failure keeps complete streams/status before any verdict
+compatibility ledger joins every fixture inventory exactly once
+complete actual published source envelopes qualify only the finite reviewed closure
+corpus project counts come from the executable compatibility inventory
+dependency prepare preserves a pnpm fixture's own workspace manifest
+every plugin's time is attributed in the lint output
+fixture tool matrix does not allocate compiler output for a missing fixture
+fixture tool matrix records formatter mutations
+formatter caller custody separates historical provider qualification from finite config migration
+invalid ledger mutations fail closed
+merge_group typechecker cohort requires tsgo and keeps the full filter
+MQ mapper host wiring bootstrap-failure preserves the bootstrap failure boundary
+MQ mapper host wiring missing-executable preserves the bootstrap failure boundary
+MQ mapper host wiring success preserves the bootstrap failure boundary
+native runtime verification accepts configured installed identities without installing again
+native type checking publishes generated virtual TypeScript and UTF-8 mappings
+native virtual TypeScript observers fail closed on forged identities and results
+new scope and whole historical witnesses are finite and complete
+only the typechecker cohort requires tsgo on pull_request
+original native Vapor source qualifies a fresh affected-PR capture without prose admissions
+pinned project dialect presence stays distinct from per-file coverage
+PR and merge queue preserve package tests, native declaration, type and complete UI checks
+publish_npm_package waits instead of retrying a hidden staged npm publish
+pull_request typechecker cohort requires tsgo and keeps the full filter
+report keeps present, exercised, and runtime evidence separate
+root config generation resolves and reproduces checked-in artifacts
+selected sibling lanes keep pinned hydration, oracle environments and command failures
+selection covers pinned inputs, drivers and real producers in both contexts
+split Rust workflows preserve whole original producer and corpus recipes
+tests/tooling/frontend-runner-pool.test.ts
+the canonical call path and every local action it uses select the corpus
+the committed v1 support manifest is generated from the audited inventories
+the dev shell and Rust CI jobs route rustc through the wrapper
+the existing workflow path needs its original classifier qualification
+the measured proxy arm reads the same document to the same reports
+the new pin retains historical results without promoting current or native credit
