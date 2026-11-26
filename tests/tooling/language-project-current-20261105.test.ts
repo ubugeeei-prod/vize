@@ -15,9 +15,19 @@ import {
 } from "../../tools/support/compat/github/language-project-current-20261105.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
+// These registered producers changed after admission, so the registration
+// authenticates their admitted bytes, frozen under the byte-custody fixtures.
+const frozenProducers = new Set([
+  "tests/typescript-plugin/package-options.test.cjs",
+  "tests/typescript-plugin/project-configuration.test.cjs",
+]);
 const read = (_side: "base" | "head", source: string): Buffer | null => {
   try {
-    return readFileSync(path.join(root, source));
+    return readFileSync(
+      frozenProducers.has(source)
+        ? path.join(root, "tests/_fixtures/byte-custody", source)
+        : path.join(root, source),
+    );
   } catch {
     return null;
   }
