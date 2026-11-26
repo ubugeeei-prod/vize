@@ -4,11 +4,11 @@ name: Check
 run-name: ${{ github.event_name == 'workflow_dispatch' && format('Check full @ {0}', github.sha) || format('Check {0} @ {1}', github.event_name, github.sha) }}
 on:
   push:
-    branches: [ main, davinci ]
+    branches: [main, davinci]
   pull_request: {}
   merge_group:
-    types: [ checks_requested ]
-    branches: [ main ]
+    types: [checks_requested]
+    branches: [main]
   schedule:
     # Daily 03:11 UTC, staggered from native smoke and e2e.
     - cron: "11 3 * * *"
@@ -129,7 +129,10 @@ jobs:
         if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/check-level-inventories
       - uses: ./.github/actions/setup-js-check-runtime
-        with: { full: "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}" }
+        with:
+          {
+            full: "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+          }
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Install ush
@@ -251,7 +254,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ "22", "24" ]
+        node-version: ["22", "24"]
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
@@ -341,7 +344,7 @@ jobs:
     timeout-minutes: 5
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     # Whole callee success retains all four original full-product dependencies.
-    needs: [ full-qualification, check-js, instruction-counts ]
+    needs: [full-qualification, check-js, instruction-counts]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/report-full-js-qualification

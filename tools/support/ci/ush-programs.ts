@@ -100,7 +100,9 @@ export function syncUshPrograms(root: string, check: boolean): UshSync {
   );
   if (result.error) throw result.error;
   if (result.status !== 0) {
-    const fix = check ? "\nRegenerate them with `node tools/commands/generate/repository-config.ts`." : "";
+    const fix = check
+      ? "\nRegenerate them with `node tools/commands/generate/repository-config.ts`."
+      : "";
     throw new Error(`${result.stderr.trim() || "ush compile failed"}${fix}`);
   }
   const updated = programs.filter((source) => readBuild(root, source) !== before.get(source));
