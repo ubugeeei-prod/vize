@@ -1,6 +1,6 @@
 //! Quote layout when a single-line directive value overflows its attribute line.
 
-use super::{AttributeLayout, ParsedAttribute, write_indent};
+use super::{AttributeLayout, ParsedAttribute, write_indent, write_line_indent};
 use crate::template::directives::should_format_expression;
 use crate::template::literal_lines::Representation;
 use crate::template::literal_spans::ValueLines;
@@ -61,7 +61,7 @@ pub(super) fn write_overflowing_value(
     for line in value.split('\n') {
         let line = line.trim_end_matches('\r');
         if !literal.line_is_raw() {
-            write_indent(output, indent, depth + layout.base_depth + 1);
+            write_line_indent(output, line, indent, depth + layout.base_depth + 1);
         }
         output.extend_from_slice(line.as_bytes());
         output.extend_from_slice(newline);

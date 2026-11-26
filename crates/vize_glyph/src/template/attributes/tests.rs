@@ -55,6 +55,27 @@ fn write_rendered_attribute_indents_multiline_value_lines() {
 }
 
 #[test]
+fn write_rendered_attribute_writes_blank_value_lines_empty() {
+    assert_eq!(
+        write("@click=\"() => {\n  a(1);\n\n  a(2);\n}\"", 2, true),
+        "@click=\"() => {\n      a(1);\n\n      a(2);\n    }\""
+    );
+    assert_eq!(
+        write("@click=\"() => {\r\n  a(1);\r\n\r\n  a(2);\r\n}\"", 1, true),
+        "@click=\"() => {\n    a(1);\n\n    a(2);\n  }\""
+    );
+}
+
+#[test]
+fn write_rendered_attribute_keeps_blank_lines_inside_template_literals() {
+    // A whitespace-only line inside a literal is runtime value, not layout.
+    assert_eq!(
+        write(":x=\"[`\n  \n`, a]\"", 2, true),
+        ":x=\"[`\n  \n`, a]\""
+    );
+}
+
+#[test]
 fn write_rendered_attribute_leaves_literal_multiline_values_verbatim() {
     assert_eq!(
         write("class=\"\n  active\n\"", 2, false),
