@@ -2,7 +2,7 @@
 use $bin::{node}
 use std::path::from_source
 
-let routes = node (from_source "verify-rendered-navigation-and-japanese-reading-paths.ts")
+let ja_reading_routes = node (from_source "verify-rendered-navigation-and-japanese-reading-paths.ts")
 
-node docs/scripts/verify-navigation-render.ts --routes $routes
+node docs/scripts/verify-navigation-render.ts --routes $ja_reading_routes
 node docs/scripts/verify-ja-editorial-render.ts
