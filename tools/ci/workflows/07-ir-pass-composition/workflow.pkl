@@ -32,7 +32,7 @@ jobs {
       new Dynamic {
         name = "Check the prefix theorem with Lean"
         `working-directory` = "${{ runner.temp }}"
-        run = ci.workflowScript("check-the-prefix-theorem-with-lean.sh")
+        run = ci.workflowProgram("check-the-prefix-theorem-with-lean")
       }
       new Dynamic {
         name = "Check the editor's Rust projection on arbitrary UTF-8 ranges"
