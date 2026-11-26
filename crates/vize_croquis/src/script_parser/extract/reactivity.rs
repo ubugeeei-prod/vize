@@ -87,6 +87,21 @@ pub fn is_template_ref_call(result: &ScriptParseResult, call: &CallExpression<'_
     callee_vue_api(result, callee.name.as_str()) == Some("useTemplateRef")
 }
 
+/// Record `name` as a template ref handle when it is initialized by Vue's
+/// `useTemplateRef(key)`.
+pub fn record_template_ref_handle(
+    result: &mut ScriptParseResult,
+    name: &str,
+    init: Option<&Expression<'_>>,
+) {
+    if init
+        .and_then(super::common::extract_call_expression)
+        .is_some_and(|call| is_template_ref_call(result, call))
+    {
+        result.template_ref_handles.insert(CompactString::new(name));
+    }
+}
+
 /// Detect Vue API calls that violate setup context (CSRP/Memory Leak risks)
 /// Returns true if a violation was detected and recorded
 pub fn detect_setup_context_violation(
