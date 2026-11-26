@@ -138,7 +138,7 @@ test("missing or forged current source, dependency, runtime or four-role produce
         "invalid-manifest-or-input",
         path,
       );
-  const workflow = ".github/workflows/native-beta-diagnostic-dto.yml";
+  const workflow = ".github/workflows/05-native-diagnostic-dto.yml";
   const original = fs.readFileSync(workflow, "utf8");
   for (const mutated of [
     original.replace("role: [before, after]", "role: [after]"),

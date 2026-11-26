@@ -43,17 +43,17 @@
     ],
     "closure": "7ebdd00a168e67bbe0aa955e9429d00e3f071febedc1cf04389d0d41d1429172"
   },
-  "native-beta-diagnostic-dto": {
+  "05-native-diagnostic-dto": {
     "before": "5ffa8d324be8757ee3293ec178ca097b1f20e1f50845f83cd370f50f185a8310",
-    "workflow": "413409cf8edcc121634455ff356905894a07c3ee76dde5f1f856c8c42871b7e8",
+    "workflow": "51cf8d804d934e198ffe90d587ea4ced77fab3e97fbf5d3ad0e7c50a219d7dbb",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
-      ".github/scripts/workflows/native-beta-diagnostic-dto/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh",
-      ".github/scripts/workflows/native-beta-diagnostic-dto/install-exact-official-sdk-into-an-isolated-consumer.sh",
-      ".github/scripts/workflows/native-beta-diagnostic-dto/keep-strict-known-dto-unknown-fields-source-ownership-and-both-envelope.sh"
+      "tools/ci/workflows/05-native-diagnostic-dto/scripts/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh",
+      "tools/ci/workflows/05-native-diagnostic-dto/scripts/install-exact-official-sdk-into-an-isolated-consumer.sh",
+      "tools/ci/workflows/05-native-diagnostic-dto/scripts/keep-strict-known-dto-unknown-fields-source-ownership-and-both-envelope.sh"
     ],
-    "closure": "131742160cf23a0b3e8776b94b0332cec7777ef4c634c3b8bde6fbacddc54f77"
+    "closure": "67308b3edcc4e067d5e706b66d23be0a00f64205a1e59d7a62c33928b55cc87b"
   },
   "release-contracts": {
     "before": "09b8a95b6712a565f5ce782707bf0409189aabf30127b968efcdfce76eac47c3",

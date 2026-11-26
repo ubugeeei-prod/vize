@@ -1,9 +1,0 @@
-amends "../../../../../../../ci/lib/ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  module.command("cargo", List("test", "--locked", "--profile", "ci", "-p", "vize_canon", "--lib", "lsp_client::initial_diagnostics::"))
-  module.command("cargo", List("test", "--locked", "--profile", "ci", "-p", "vize_canon", "--lib", "lsp_client::editor_lsp::snapshot_source::"))
-  module.command("cargo", List("clippy", "--locked", "--profile", "ci", "-p", "vize_canon", "--lib", "--", "-D", "warnings"))
-}

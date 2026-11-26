@@ -124,15 +124,15 @@ function confirm(owned) {
     assertBytes(regular(owned.root, file), body, "same complete current source: " + file);
 }
 
-const setupWorkflows = new Set([".github/workflows/typechecker-native-phases.yml"]);
+const setupWorkflows = new Set([".github/workflows/04-typechecker-native-phases.yml"]);
 /** Recorded by its historical bytes only; the current workflow may change freely. */
-const unpinnedWorkflows = new Set([".github/workflows/davinci-canon-scaling.yml"]);
+const unpinnedWorkflows = new Set([".github/workflows/03-canon-scaling.yml"]);
 /** Historical source stays literal; current CI may use the approved setup changes. */
 export function assertStarListingWorkflowSetup(file, before, after) {
   assert(setupWorkflows.has(file), "only the reviewed current workflow contract");
   const documents = [before, after].map((body) => parse(body.toString()));
   for (const document of documents) {
-    if (file === ".github/workflows/typechecker-native-phases.yml") {
+    if (file === ".github/workflows/04-typechecker-native-phases.yml") {
       const paths = document.on.pull_request.paths;
       const helper = "tools/benchmarks/scripts/type-snapshot-parser-recovery.ts";
       const index = paths.indexOf(helper);

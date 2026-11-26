@@ -30,7 +30,7 @@ const closure = [
 const prefix = "tools/support/compat/github";
 const workflow = parse(
   readAutomationPrograms(
-    new URL("../../.github/workflows/typechecker-native-phases.yml", import.meta.url),
+    new URL("../../.github/workflows/04-typechecker-native-phases.yml", import.meta.url),
     "utf8",
   ),
 );
@@ -113,7 +113,7 @@ function fixture(t) {
         "-e",
         "-o",
         "pipefail",
-        automationShellPath(script, "typechecker-native-phases"),
+        automationShellPath(script, "04-typechecker-native-phases"),
       ],
       {
         cwd: checkout,

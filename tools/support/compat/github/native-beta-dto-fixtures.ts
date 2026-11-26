@@ -67,7 +67,7 @@ const inputs = [
   "native-beta-diagnostic-dto-10731/actual-beta-wire.json",
   "native-beta-diagnostic-dto-10731/source-pairs.json",
 ];
-const workflow = ".github/workflows/native-beta-diagnostic-dto.yml";
+const workflow = ".github/workflows/05-native-diagnostic-dto.yml";
 const producerFiles = [
   workflow,
   "tests/tooling/support/native-beta-dto/prepare-role.mjs",
@@ -139,7 +139,7 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
         require(transitioned.split(file).length === 2, "one exact producer workflow path required");
         transitioned = transitioned.replace(file, file.replace(/\.mjs$/u, ".ts"));
       }
-      require(workflowPredecessor("native-beta-diagnostic-dto", current, (file) =>
+      require(workflowPredecessor("05-native-diagnostic-dto", current, (file) =>
         read("head", file),
       ).equals(Buffer.from(transitioned)), "workflow changed beyond four typed producer paths");
     } else if (index === 1) {
@@ -521,7 +521,7 @@ export function newNativeBetaDtoProtocolCases(
           ), `missing actual observer authority: ${marker}`);
     const currentJob = read("head", workflow);
     require(currentJob, "missing actual four-role producer workflow");
-    const job = workflowPredecessor("native-beta-diagnostic-dto", currentJob, (file) =>
+    const job = workflowPredecessor("05-native-diagnostic-dto", currentJob, (file) =>
       read("head", file),
     ).toString("utf8");
     for (const marker of [

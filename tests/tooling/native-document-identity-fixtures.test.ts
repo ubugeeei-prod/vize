@@ -110,7 +110,7 @@ test("four historical inputs, all five current consumers and actual A/B producer
       validate(
         corrupt(
           "head",
-          ".github/scripts/workflows/native-beta-diagnostic-dto/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh",
+          "tools/ci/workflows/05-native-diagnostic-dto/scripts/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh",
         ),
       ),
     /native-beta-diagnostic-dto: executable source changed/,

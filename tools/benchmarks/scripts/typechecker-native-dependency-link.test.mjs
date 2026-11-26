@@ -24,7 +24,7 @@ import {
   captureSourceCustody,
 } from "./typechecker-native-source-custody.mjs";
 
-const WORKFLOW = ".github/workflows/typechecker-native-phases.yml";
+const WORKFLOW = ".github/workflows/04-typechecker-native-phases.yml";
 const PATINA_REPORT_FIXTURE =
   "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755";
 const REQUIRED_PACKAGE_JSONS = [

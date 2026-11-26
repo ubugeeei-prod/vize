@@ -76,7 +76,7 @@ void test("typed producers retain historical bytes and only the exact registered
   assert.deepEqual(
     custody.map((entry) => entry.historicalPath),
     [
-      ".github/workflows/native-beta-diagnostic-dto.yml",
+      ".github/workflows/05-native-diagnostic-dto.yml",
       "tests/tooling/support/native-beta-dto/prepare-role.mjs",
       "tests/tooling/support/native-beta-dto/provider.mjs",
       "tests/tooling/support/native-beta-dto/audit-wire.mjs",

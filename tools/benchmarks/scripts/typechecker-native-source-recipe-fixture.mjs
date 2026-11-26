@@ -19,7 +19,7 @@ const raw = gunzipSync(archive);
 assert.equal(hash(raw), "2b98c5e519c8584a3bc625210c03ce6ea7611ab973f871012eb2510222e52976");
 export const frozen = JSON.parse(raw);
 export const currentBytes = readFileSync(
-  new URL("../../../.github/workflows/typechecker-native-phases.yml", import.meta.url),
+  new URL("../../../.github/workflows/04-typechecker-native-phases.yml", import.meta.url),
   "utf8",
 );
 export const currentOriginalRun = readFileSync(

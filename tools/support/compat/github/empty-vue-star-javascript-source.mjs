@@ -70,7 +70,7 @@ const context = shared.data.parts.map(([file, digest], index) => {
 assert.deepEqual(
   context.map(({ path }) => path),
   [
-    ".github/workflows/typechecker-native-phases.yml",
+    ".github/workflows/04-typechecker-native-phases.yml",
     "crates/vize_canon/src/batch/virtual_project/build.rs",
     "crates/vize_canon/src/batch/virtual_project/module_projection.rs",
     "crates/vize_canon/src/batch/virtual_project/project/artifacts.rs",

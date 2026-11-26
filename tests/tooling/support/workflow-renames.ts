@@ -1,5 +1,8 @@
 /** Workflows renamed into the NN-<subject> layout, as new stem -> the stem frozen records name. */
 export const renamedWorkflowStems: ReadonlyMap<string, string> = new Map([
+  ["03-canon-scaling", "davinci-canon-scaling"],
+  ["04-typechecker-native-phases", "typechecker-native-phases"],
+  ["05-native-diagnostic-dto", "native-beta-diagnostic-dto"],
   ["08-babel", "babel-plugin-hosts"],
   ["03-source-comparison", "benchmark"],
   ["11-docs-build", "build-docs"],

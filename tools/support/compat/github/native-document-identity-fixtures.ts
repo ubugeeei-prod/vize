@@ -28,10 +28,10 @@ function pinned(read: ReadFile, side: "base" | "head", path: unknown, expected: 
   assert.ok(typeof expected === "string");
   const actual = read(side, path);
   const bytes =
-    path === ".github/workflows/native-beta-diagnostic-dto.yml" &&
+    path === ".github/workflows/05-native-diagnostic-dto.yml" &&
     actual &&
     hash(actual) !== expected
-      ? workflowPredecessor("native-beta-diagnostic-dto", actual, (file) => read(side, file))
+      ? workflowPredecessor("05-native-diagnostic-dto", actual, (file) => read(side, file))
       : actual;
   assert.ok(bytes, `missing ${side} identity source: ${path}`);
   assert.equal(hash(bytes), expected, `changed ${side} identity source: ${path}`);

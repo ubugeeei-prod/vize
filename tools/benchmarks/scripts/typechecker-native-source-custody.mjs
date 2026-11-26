@@ -16,7 +16,7 @@ import {
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const WORKFLOW = ".github/workflows/typechecker-native-phases.yml";
+const WORKFLOW = ".github/workflows/04-typechecker-native-phases.yml";
 const ORIGINAL_INFRASTRUCTURE = [
   WORKFLOW,
   "crates/vize_canon/examples/native_phase_projection.rs",
