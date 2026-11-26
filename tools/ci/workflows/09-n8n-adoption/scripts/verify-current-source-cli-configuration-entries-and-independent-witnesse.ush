@@ -1,0 +1,8 @@
+# Run the n8n CLI configuration contracts, then accept the configuration and semantic routing evidence of this run.
+use $bin::{vp}
+
+let evidence = $"target/n8n-cli-config/$env::GITHUB_RUN_ID-$env::GITHUB_RUN_ATTEMPT"
+
+vp node --test tests/tooling/n8n-cli-config-contract.test.mjs tests/tooling/n8n-cli-config-failure-custody.test.mjs
+vp node tests/tooling/support/n8n-cli-config-acceptance.mjs $evidence
+vp node tests/tooling/support/n8n-cli-config-semantic-acceptance.mjs $"$evidence/semantic-routing"

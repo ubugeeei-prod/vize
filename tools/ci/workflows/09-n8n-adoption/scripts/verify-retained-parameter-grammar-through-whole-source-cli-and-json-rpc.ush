@@ -1,0 +1,6 @@
+# Check slot parameter bindings in the linter and its oracle, then accept this run's CLI and JSON-RPC evidence for them.
+use $bin::{cargo, vp}
+
+cargo test --locked --profile ci -p vize_patina --test integration -- valid_v_slot_regression:: valid_v_slot_parameter_bindings::
+vp node --test tests/tooling/patina-slot-parameter-bindings-oracle.test.ts
+vp node tests/tooling/support/n8n-slot-parameters-acceptance.ts $"target/n8n-cli-config/$env::GITHUB_RUN_ID-$env::GITHUB_RUN_ATTEMPT/slot-parameters"

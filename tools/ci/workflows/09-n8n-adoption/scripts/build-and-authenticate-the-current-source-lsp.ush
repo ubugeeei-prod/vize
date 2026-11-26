@@ -1,0 +1,5 @@
+# Build the CLI and language server from this source and record the receipt that authenticates the build.
+use $bin::{cargo, vp}
+
+cargo build --profile ci -p vize
+vp node tests/differential/build-receipt.ts

@@ -70,7 +70,7 @@ jobs {
       ci.command("Install pinned source and typechecker dependencies", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Build and authenticate the current-source LSP"
-        run = ci.workflowScript("build-and-authenticate-the-current-source-lsp.sh")
+        run = ci.workflowProgram("build-and-authenticate-the-current-source-lsp")
       }
       new Dynamic {
         name = "Preserve ordinary default-export navigation"
@@ -88,7 +88,7 @@ jobs {
       ci.command("Hydrate unchanged licensed n8n CLI inputs", "git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n")
       new Dynamic {
         name = "Verify current-source CLI configuration, entries and independent witnesses"
-        run = ci.workflowScript("verify-current-source-cli-configuration-entries-and-independent-witnesse.sh")
+        run = ci.workflowProgram("verify-current-source-cli-configuration-entries-and-independent-witnesse")
       }
       new Dynamic {
         name = "Verify both slot modifier options through whole source CLI and JSON-RPC packets"
@@ -96,7 +96,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify retained parameter grammar through whole source CLI and JSON-RPC packets"
-        run = ci.workflowScript("verify-retained-parameter-grammar-through-whole-source-cli-and-json-rpc.sh")
+        run = ci.workflowProgram("verify-retained-parameter-grammar-through-whole-source-cli-and-json-rpc")
       }
       new Dynamic {
         name = "Compare whole-corpus lint findings with eslint-plugin-vue"
