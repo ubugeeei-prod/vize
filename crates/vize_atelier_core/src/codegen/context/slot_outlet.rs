@@ -1,8 +1,9 @@
 //! Final arguments for a generated slot outlet.
 
+use crate::codegen::RenderMapMode;
 use super::CodegenContext;
 
-impl CodegenContext {
+impl<M: RenderMapMode> CodegenContext<M> {
     #[inline(always)]
     pub(in crate::codegen) fn finish_slot_outlet(
         &mut self,

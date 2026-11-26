@@ -1,5 +1,6 @@
 //! Main props generation logic.
 
+use crate::codegen::RenderMapMode;
 use crate::{ExpressionNode, PropNode, RuntimeHelper};
 use vize_relief::options::BindingType;
 
@@ -18,7 +19,7 @@ use super::{
 use vize_l0::{FxHashSet, String};
 
 /// Generate props object
-pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
+pub fn generate_props<M: RenderMapMode>(ctx: &mut CodegenContext<M>, props: &[PropNode<'_>]) {
     // Clone scope_id to avoid borrow checker issues.
     // skip_scope_id suppresses duplicate scope attrs for synthetic prop objects.
     let scope_id = if ctx.skip_scope_id {
@@ -68,7 +69,7 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
             ctx.skip_scope_id = true;
 
             let flush_object =
-                |ctx: &mut CodegenContext, start: usize, end: usize, first: &mut bool| {
+                |ctx: &mut CodegenContext<M>, start: usize, end: usize, first: &mut bool| {
                     // Does this range hold any renderable non-spread prop?
                     let segment = props.get(start..end).unwrap_or_default();
                     let has_renderable = segment.iter().any(|p| match p {
@@ -223,8 +224,8 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
     }
 }
 
-fn try_generate_static_attrs(
-    ctx: &mut CodegenContext,
+fn try_generate_static_attrs<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     props: &[PropNode<'_>],
     scope_id: Option<&str>,
 ) -> bool {
@@ -333,8 +334,8 @@ fn try_generate_static_attrs(
 }
 
 /// Generate props as a regular object { key: value, ... }
-pub(super) fn generate_props_object(
-    ctx: &mut CodegenContext,
+pub(super) fn generate_props_object<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     props: &[PropNode<'_>],
     skip_object_spreads: bool,
     scan: &PropsScan<'_>,
@@ -345,8 +346,8 @@ pub(super) fn generate_props_object(
 /// Generate the props object with optional class/style normalization skipping.
 /// `inside_merge_props`: when true, skip normalizeClass/normalizeStyle wrappers
 /// because mergeProps handles normalization internally.
-fn generate_props_object_inner(
-    ctx: &mut CodegenContext,
+fn generate_props_object_inner<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     props: &[PropNode<'_>],
     skip_object_spreads: bool,
     inside_merge_props: bool,

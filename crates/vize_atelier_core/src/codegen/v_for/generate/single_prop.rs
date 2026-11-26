@@ -1,11 +1,12 @@
 //! One v-for item attribute or directive, preserving its existing emission order.
 
+use crate::codegen::RenderMapMode;
 use crate::PropNode;
 use crate::codegen::{context::CodegenContext, helpers::escape_js_string};
 
 /// Generate a single prop (attribute or directive)
-pub(in crate::codegen::v_for) fn generate_single_prop(
-    ctx: &mut CodegenContext,
+pub(in crate::codegen::v_for) fn generate_single_prop<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     prop: &PropNode<'_>,
     static_merge: crate::codegen::props::StaticMerge<'_>,
 ) {

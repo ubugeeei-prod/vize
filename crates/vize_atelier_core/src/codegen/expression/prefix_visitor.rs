@@ -2,6 +2,7 @@
 //! under the source budget). Callback binding ownership is shared by the
 //! retained and reparsed expression paths.
 
+use crate::codegen::RenderMapMode;
 use crate::options::BindingType;
 use crate::steps::expression::is_template_global;
 use oxc_ast_visit::Visit;
@@ -18,15 +19,15 @@ use vize_relief::ExpressionScope;
 use super::super::context::CodegenContext;
 
 // Visitor to collect identifiers and rewrite them with appropriate prefixes / .value
-pub(super) struct IdentifierVisitor<'a, 'b> {
+pub(super) struct IdentifierVisitor<'a, 'b, M: RenderMapMode> {
     pub(super) rewrites: &'a mut Vec<(usize, usize, String)>,
     pub(super) local_scopes: Vec<FxHashSet<String>>,
     pub(super) assignment_targets: &'a mut FxHashSet<usize>,
-    pub(super) ctx: &'b CodegenContext,
+    pub(super) ctx: &'b CodegenContext<M>,
     pub(super) offset: u32,
 }
 
-impl<'a, 'b> Visit<'_> for IdentifierVisitor<'a, 'b> {
+impl<'a, 'b, M: RenderMapMode> Visit<'_> for IdentifierVisitor<'a, 'b, M> {
     fn visit_identifier_reference(&mut self, ident: &oxc_ast::ast::IdentifierReference<'_>) {
         let name = ident.name.as_str();
 

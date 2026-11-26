@@ -2,6 +2,7 @@
 //!
 //! Contains single-prop generation, event key deduplication, and spread detection.
 
+use crate::codegen::RenderMapMode;
 use crate::{ExpressionNode, PropNode};
 
 use super::super::{
@@ -42,8 +43,8 @@ pub(super) fn should_skip_prop_for_if(
 }
 
 /// Generate a single prop for v-if branch element.
-pub(super) fn generate_single_prop_for_if(
-    ctx: &mut CodegenContext,
+pub(super) fn generate_single_prop_for_if<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     prop: &PropNode<'_>,
     static_merge: StaticMerge<'_>,
 ) {

@@ -12,6 +12,7 @@ pub(crate) mod prefix_context;
 mod prefix_visitor;
 pub(crate) mod scope_prefix;
 
+use crate::codegen::RenderMapMode;
 use crate::{
     CompoundExpressionChild, CompoundExpressionNode, ExpressionNode, SimpleExpressionNode,
 };
@@ -26,7 +27,7 @@ use vize_l0::String;
 use vize_l0::ToCompactString;
 
 /// Generate expression node (simple or compound).
-pub fn generate_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>) {
+pub fn generate_expression<M: RenderMapMode>(ctx: &mut CodegenContext<M>, expr: &ExpressionNode<'_>) {
     match expr {
         ExpressionNode::Simple(exp) => {
             generate_simple_expression(ctx, exp);
@@ -38,8 +39,8 @@ pub fn generate_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>) 
 }
 
 /// Generate a compound expression used directly in child position.
-pub fn generate_compound_expression(
-    ctx: &mut CodegenContext,
+pub fn generate_compound_expression<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     compound: &CompoundExpressionNode<'_>,
 ) {
     let grouped = compound.is_jsx_child_value && compound.jsx_child_needs_grouping;
@@ -69,7 +70,7 @@ pub fn generate_compound_expression(
 
 /// Generate simple expression with static string escaping, TypeScript stripping,
 /// comment conversion, and slot parameter handling.
-pub fn generate_simple_expression(ctx: &mut CodegenContext, exp: &SimpleExpressionNode<'_>) {
+pub fn generate_simple_expression<M: RenderMapMode>(ctx: &mut CodegenContext<M>, exp: &SimpleExpressionNode<'_>) {
     if exp.is_static {
         ctx.push("\"");
         ctx.push(&escape_js_string(exp.content));

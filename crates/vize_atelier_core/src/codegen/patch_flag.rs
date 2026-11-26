@@ -5,6 +5,7 @@ mod dynamic_props;
 mod literal_const;
 mod static_literal;
 
+use crate::codegen::RenderMapMode;
 use self::authored_const::is_constant_interpolation;
 use self::dynamic_props::dedupe_dynamic_props;
 use self::literal_const::is_setup_literal_const_access;
@@ -49,24 +50,24 @@ fn is_static_bound_expression(dir: &DirectiveNode<'_>) -> bool {
 
 /// Calculate patch flag and dynamic props for an element.
 /// `skip_is_prop`: when true, skip `:is` binding (used for `<component :is="...">`)
-pub fn calculate_element_patch_info(
+pub fn calculate_element_patch_info<M: RenderMapMode>(
     el: &ElementNode<'_>,
-    ctx: &CodegenContext,
+    ctx: &CodegenContext<M>,
 ) -> (Option<i32>, Option<Vec<String>>) {
     calculate_element_patch_info_inner(el, ctx, false)
 }
 
 /// Same as `calculate_element_patch_info` but allows skipping the `is` prop.
-pub fn calculate_element_patch_info_skip_is(
+pub fn calculate_element_patch_info_skip_is<M: RenderMapMode>(
     el: &ElementNode<'_>,
-    ctx: &CodegenContext,
+    ctx: &CodegenContext<M>,
 ) -> (Option<i32>, Option<Vec<String>>) {
     calculate_element_patch_info_inner(el, ctx, true)
 }
 
-fn calculate_element_patch_info_inner(
+fn calculate_element_patch_info_inner<M: RenderMapMode>(
     el: &ElementNode<'_>,
-    ctx: &CodegenContext,
+    ctx: &CodegenContext<M>,
     skip_is: bool,
 ) -> (Option<i32>, Option<Vec<String>>) {
     let bindings = ctx.options.binding_metadata.as_ref();

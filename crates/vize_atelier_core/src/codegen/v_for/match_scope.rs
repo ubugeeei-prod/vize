@@ -6,6 +6,7 @@
 //! attribute fallthrough, `Transition` / `KeepAlive` still receive one child,
 //! and client, server and hydrated output agree node for node.
 
+use crate::codegen::RenderMapMode;
 use crate::{ElementType, ForNode, RuntimeHelper, TemplateChildNode};
 use vize_l0::String;
 
@@ -24,10 +25,10 @@ pub(crate) fn scope_children<'n, 'a>(for_node: &'n ForNode<'a>) -> &'n [Template
 }
 
 /// Emit `(() => { const <aliases> = <source>; return <body> })()`.
-pub(crate) fn generate_match_scope(
-    ctx: &mut CodegenContext,
+pub(crate) fn generate_match_scope<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     for_node: &ForNode<'_>,
-    body: &dyn Fn(&mut CodegenContext, &[TemplateChildNode<'_>]),
+    body: &dyn Fn(&mut CodegenContext<M>, &[TemplateChildNode<'_>]),
 ) {
     let mut bindings: Vec<String> = Vec::new();
     ctx.push("(() => { const ");
@@ -49,7 +50,7 @@ pub(crate) fn generate_match_scope(
 }
 
 /// A scope body outside a `v-if` branch: one block root, or a stable fragment.
-pub(crate) fn generate_scope_body(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
+pub(crate) fn generate_scope_body<M: RenderMapMode>(ctx: &mut CodegenContext<M>, children: &[TemplateChildNode<'_>]) {
     let rendered: Vec<&TemplateChildNode<'_>> = children
         .iter()
         .filter(|child| !is_directive_comment(child))

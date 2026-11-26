@@ -9,6 +9,7 @@ mod scan;
 mod static_merge;
 mod v_model;
 
+use crate::codegen::RenderMapMode;
 use crate::{PropNode, RuntimeHelper};
 
 use super::{context::CodegenContext, expression::generate_expression};
@@ -46,7 +47,7 @@ pub(crate) fn has_von_object(props: &[PropNode<'_>]) -> bool {
 }
 
 /// Generate the v-bind object expression
-pub(crate) fn generate_vbind_object_exp(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
+pub(crate) fn generate_vbind_object_exp<M: RenderMapMode>(ctx: &mut CodegenContext<M>, props: &[PropNode<'_>]) {
     for p in props {
         if let PropNode::Directive(dir) = p
             && dir.name == "bind"
@@ -60,8 +61,8 @@ pub(crate) fn generate_vbind_object_exp(ctx: &mut CodegenContext, props: &[PropN
 }
 
 /// Generate the v-on object expression wrapped with toHandlers
-pub(crate) fn generate_von_object_exp(
-    ctx: &mut CodegenContext,
+pub(crate) fn generate_von_object_exp<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     props: &[PropNode<'_>],
     is_plain_element: bool,
 ) {

@@ -3,6 +3,7 @@
 //! Drives the top-level `generate()` entry point and computes the deduplicated,
 //! import-ranked helper list used to build the module preamble.
 
+use crate::codegen::RenderMapMode;
 use crate::{
     RootNode, RuntimeHelper, TemplateChildNode,
     options::{CodegenExperimentalOptions, CodegenOptions},
@@ -22,7 +23,7 @@ use super::root::{
     clippy::too_many_arguments,
     reason = "codegen inputs remain explicit across the internal SFC environment boundary"
 )]
-pub(super) fn generate_with_sections_and_options(
+pub(super) fn generate_with_sections_and_options<M: RenderMapMode>(
     root: &RootNode<'_>,
     options: CodegenOptions,
     vnode_factory: Option<&str>,
@@ -34,7 +35,7 @@ pub(super) fn generate_with_sections_and_options(
     untracked_children: bool,
     jsx_class: bool,
 ) -> CodegenResultWithSections {
-    let mut ctx = CodegenContext::new_with_vnode_factory_merge_props_and_experimentals(
+    let mut ctx = CodegenContext::<M>::new_with_vnode_factory_merge_props_and_experimentals(
         options,
         vnode_factory,
         merge_props,

@@ -3,6 +3,7 @@
 //! Internal utilities for context-aware identifier prefixing,
 //! line comment conversion, and slot parameter stripping.
 
+use crate::codegen::RenderMapMode;
 use super::super::context::CodegenContext;
 use vize_l0::String;
 
@@ -71,7 +72,7 @@ fn replace_prefixed_alias_access(code: String, object: &str, local: &str, key: &
     result
 }
 
-pub(super) fn rewrite_props_aliases(code: String, ctx: &CodegenContext) -> String {
+pub(super) fn rewrite_props_aliases<M: RenderMapMode>(code: String, ctx: &CodegenContext<M>) -> String {
     let Some(bindings) = &ctx.options.binding_metadata else {
         return code;
     };

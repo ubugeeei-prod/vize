@@ -9,6 +9,7 @@ mod generate;
 mod once;
 mod props;
 
+use crate::codegen::RenderMapMode;
 use crate::{IfBranchNode, IfNode, PropNode, RuntimeHelper};
 
 use super::{context::CodegenContext, expression::generate_expression, helpers::escape_js_string};
@@ -17,7 +18,7 @@ use branch::generate_if_branch;
 use vize_l0::ToCompactString;
 
 /// Generate if node.
-pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
+pub fn generate_if<M: RenderMapMode>(ctx: &mut CodegenContext<M>, if_node: &IfNode<'_>) {
     if once::chain_is_once(if_node) {
         super::element::generate_v_once_cached(ctx, |ctx| generate_if_chain(ctx, if_node));
     } else {
@@ -25,7 +26,7 @@ pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     }
 }
 
-fn generate_if_chain(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
+fn generate_if_chain<M: RenderMapMode>(ctx: &mut CodegenContext<M>, if_node: &IfNode<'_>) {
     ctx.use_helper(RuntimeHelper::OpenBlock);
 
     // Vue always imports createCommentVNode for v-if nodes
@@ -92,8 +93,8 @@ fn generate_if_chain(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
 }
 
 /// Generate key for if branch.
-pub fn generate_if_branch_key(
-    ctx: &mut CodegenContext,
+pub fn generate_if_branch_key<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {

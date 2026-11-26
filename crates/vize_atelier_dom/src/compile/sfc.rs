@@ -203,18 +203,22 @@ pub(super) fn compile_template_inner_for_sfc<'a>(
     codegen_options: CodegenOptions,
     codegen_experimental_options: CodegenExperimentalOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
-    // The SFC pipeline, which prepares a mapped template, not the plain one.
+    let mut pipeline_options =
+        DomCompilePipelineOptions::require_sections_compat_with_experimental_options(
+            custom_elements,
+            codegen_options,
+            codegen_experimental_options,
+        );
+    // The SFC pipeline: a requested map is the one composed into the
+    // component's, as the selected SFC compile composes it.
+    pipeline_options.sfc_assembly = true;
     let (root, errors, result) = super::inner::compile_template_inner_with_sections_captured(
         allocator,
         source,
         options,
         template_syntax,
         hoisted_scope_id,
-        DomCompilePipelineOptions::require_sections_compat_with_experimental_options(
-            custom_elements,
-            codegen_options,
-            codegen_experimental_options,
-        ),
+        pipeline_options,
         &mut NoCapture,
     );
     (root, errors, result.into_result())

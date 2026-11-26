@@ -3,6 +3,7 @@
 //! Generates elements that are not block roots, using `createElementVNode()`
 //! and `createVNode()` instead of their block counterparts.
 
+use crate::codegen::RenderMapMode;
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
     steps::v_memo::{get_memo_exp, has_v_memo},
@@ -36,7 +37,7 @@ use super::{
 use vize_l0::ToCompactString;
 
 /// Generate element code (non-block)
-pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
     if crosses_namespace_boundary(ctx, el) {
         super::block::generate_element_block(ctx, el);
         return;
@@ -156,7 +157,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
 /// The non-block native element vnode, wrapped in its runtime directives.
 /// `v-once` caches exactly this call.
-pub(super) fn generate_native_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+pub(super) fn generate_native_vnode<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
     // Check for custom directives.
     // Inline children need the same withDirectives wrapping as block roots.
     let has_custom_dirs = has_custom_directives(el);
@@ -276,7 +277,7 @@ pub(super) fn generate_native_vnode(ctx: &mut CodegenContext, el: &ElementNode<'
 
 /// The non-block component vnode, wrapped in its runtime directives. `v-once`
 /// caches exactly this call.
-pub(super) fn generate_component_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+pub(super) fn generate_component_vnode<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
     let has_custom_dirs = has_custom_directives(el);
     if has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);
@@ -340,7 +341,7 @@ pub(super) fn generate_component_vnode(ctx: &mut CodegenContext, el: &ElementNod
     } else if let Some(builtin) = is_builtin_component(el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if ctx.push_component_binding_tag(el.tag) {
+    } else if ctx.push_component_binding(el) {
     } else {
         ctx.push(&to_valid_asset_identifier("component", el.tag));
     }

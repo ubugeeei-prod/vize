@@ -1,5 +1,6 @@
 //! Children of a multi-child template loop.
 
+use crate::codegen::RenderMapMode;
 use crate::TemplateChildNode;
 
 use super::super::{
@@ -8,8 +9,8 @@ use super::super::{
 
 /// Keep the direct array path for element-only fragments. Text runs need the
 /// shared child generator so interpolations become VNodes rather than strings.
-pub(super) fn generate_template_for_children(
-    ctx: &mut CodegenContext,
+pub(super) fn generate_template_for_children<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     children: &[TemplateChildNode<'_>],
 ) {
     if children.iter().any(|child| {

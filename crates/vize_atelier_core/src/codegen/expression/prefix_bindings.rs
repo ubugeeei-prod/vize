@@ -1,10 +1,11 @@
 //! Scope storage and assignment binding facts for codegen prefixing.
 
+use crate::codegen::RenderMapMode;
 use super::prefix_visitor::IdentifierVisitor;
 use vize_l0::{FxHashSet, String};
 use vize_relief::ExpressionScope;
 
-impl<'ast> ExpressionScope<'ast> for IdentifierVisitor<'_, '_> {
+impl<'ast, M: RenderMapMode> ExpressionScope<'ast> for IdentifierVisitor<'_, '_, M> {
     fn push_scope(&mut self) {
         self.local_scopes.push(FxHashSet::default());
     }
@@ -20,7 +21,7 @@ impl<'ast> ExpressionScope<'ast> for IdentifierVisitor<'_, '_> {
     }
 }
 
-impl IdentifierVisitor<'_, '_> {
+impl<M: RenderMapMode> IdentifierVisitor<'_, '_, M> {
     pub(super) fn is_local(&self, name: &str) -> bool {
         self.local_scopes
             .iter()
@@ -29,7 +30,7 @@ impl IdentifierVisitor<'_, '_> {
     }
 }
 
-impl<'a, 'b> IdentifierVisitor<'a, 'b> {
+impl<'a, 'b, M: RenderMapMode> IdentifierVisitor<'a, 'b, M> {
     pub(super) fn collect_assignment_targets(
         &mut self,
         target: &oxc_ast::ast::AssignmentTarget<'_>,

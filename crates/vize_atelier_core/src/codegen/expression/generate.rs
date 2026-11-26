@@ -3,6 +3,7 @@
 //! Handles generating event handler expressions with proper arrow function
 //! wrapping, TypeScript stripping, and identifier prefixing.
 
+use crate::codegen::RenderMapMode;
 use crate::{CompoundExpressionChild, ExpressionNode, SimpleExpressionNode};
 
 use super::{
@@ -47,8 +48,8 @@ pub(crate) fn is_member_handler(simple: &SimpleExpressionNode<'_>) -> bool {
 ///
 /// Wraps inline expressions in arrow functions, strips TypeScript, and prefixes identifiers.
 /// When `for_caching` is true, simple identifiers are wrapped with safety check.
-pub fn generate_event_handler(
-    ctx: &mut CodegenContext,
+pub fn generate_event_handler<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     exp: &ExpressionNode<'_>,
     for_caching: bool,
 ) {

@@ -3,6 +3,7 @@
 //! Generates the function signature, preamble (import/destructuring statements),
 //! asset resolution (components and directives), and root text filtering.
 
+use crate::codegen::RenderMapMode;
 use crate::{RootNode, RuntimeHelper, TemplateChildNode};
 
 use super::context::CodegenContext;
@@ -54,8 +55,8 @@ fn component_resolution_name<'a>(
 }
 
 /// Generate preamble from a list of helpers.
-pub(super) fn generate_preamble_from_helpers(
-    ctx: &CodegenContext,
+pub(super) fn generate_preamble_from_helpers<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
     helpers: &[RuntimeHelper],
 ) -> String {
     if helpers.is_empty() {
@@ -103,7 +104,7 @@ pub(super) fn generate_preamble_from_helpers(
 }
 
 /// Generate function signature.
-pub(super) fn generate_function_signature(ctx: &mut CodegenContext) {
+pub(super) fn generate_function_signature<M: RenderMapMode>(ctx: &mut CodegenContext<M>) {
     if ctx.options.ssr {
         ctx.push("function ssrRender(_ctx, _push, _parent, _attrs) {");
     } else {
@@ -128,7 +129,7 @@ pub(super) fn generate_function_signature(ctx: &mut CodegenContext) {
 }
 
 /// Generate asset resolution (components, directives).
-pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
+pub(super) fn generate_assets<M: RenderMapMode>(ctx: &mut CodegenContext<M>, root: &RootNode<'_>) {
     let mut has_resolved_assets = false;
 
     // Resolve components (only those not in binding metadata)

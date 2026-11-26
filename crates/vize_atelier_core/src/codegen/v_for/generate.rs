@@ -6,6 +6,7 @@
 mod single_prop;
 pub(super) use single_prop::generate_single_prop;
 
+use crate::codegen::RenderMapMode;
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
     steps::v_memo::{get_memo_exp, has_v_memo},
@@ -38,7 +39,7 @@ use super::template_children::generate_template_for_children;
 use vize_l0::ToCompactString;
 
 /// Generate item for v-for (as block, not regular vnode)
-pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>, is_stable: bool) {
+pub fn generate_for_item<M: RenderMapMode>(ctx: &mut CodegenContext<M>, node: &TemplateChildNode<'_>, is_stable: bool) {
     match node {
         TemplateChildNode::Element(el) => {
             let (key_exp, el) = (get_element_key(el), unwrap_template_sole_component(el));
@@ -219,7 +220,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     } else if let Some(builtin) = is_builtin_component(el.tag) {
                         ctx.use_helper(builtin);
                         ctx.push(ctx.helper(builtin));
-                    } else if ctx.push_component_binding_tag(el.tag) {
+                    } else if ctx.push_component_binding(el) {
                     } else {
                         ctx.push(&to_valid_asset_identifier("component", el.tag));
                     }
@@ -405,8 +406,8 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
 }
 
 /// Generate props for v-for item, including key and all other props
-pub(crate) fn generate_for_item_props(
-    ctx: &mut CodegenContext,
+pub(crate) fn generate_for_item_props<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     el: &ElementNode<'_>,
     key_exp: Option<&ExpressionNode<'_>>,
     skip_is_prop: bool,
@@ -425,8 +426,8 @@ pub(crate) fn generate_for_item_props(
     emitted
 }
 
-fn for_item_props(
-    ctx: &mut CodegenContext,
+fn for_item_props<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     el: &ElementNode<'_>,
     key_exp: Option<&ExpressionNode<'_>>,
     skip_is_prop: bool,
@@ -640,8 +641,8 @@ fn for_item_props(
 }
 
 /// Generate props using _mergeProps when v-bind/v-on object spreads are present.
-fn generate_for_item_props_merged(
-    ctx: &mut CodegenContext,
+fn generate_for_item_props_merged<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     el: &ElementNode<'_>,
     key_exp: Option<&ExpressionNode<'_>>,
     scope_id: &Option<vize_l0::String>,
@@ -710,8 +711,8 @@ fn generate_for_item_props_merged(
     ctx.push(")");
 }
 
-fn flush_for_item_props_segment(
-    ctx: &mut CodegenContext,
+fn flush_for_item_props_segment<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     props: &[PropNode<'_>],
     key_exp: Option<&ExpressionNode<'_>>,
     scope_id: &Option<vize_l0::String>,

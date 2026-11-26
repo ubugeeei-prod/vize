@@ -10,6 +10,7 @@ pub(crate) mod match_scope;
 mod slot_outlet;
 mod template_children;
 
+use crate::codegen::RenderMapMode;
 use crate::steps::v_memo::{get_memo_exp, has_v_memo};
 use crate::{ForNode, RuntimeHelper, TemplateChildNode};
 
@@ -24,22 +25,22 @@ use vize_l0::String;
 use vize_l0::ToCompactString;
 
 /// Generate for node
-pub fn generate_for(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
+pub fn generate_for<M: RenderMapMode>(ctx: &mut CodegenContext<M>, for_node: &ForNode<'_>) {
     generate_for_inner(ctx, for_node, None)
 }
 
-pub(crate) fn generate_for_with_fragment_key(
-    ctx: &mut CodegenContext,
+pub(crate) fn generate_for_with_fragment_key<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     for_node: &ForNode<'_>,
-    generate_key: &dyn Fn(&mut CodegenContext),
+    generate_key: &dyn Fn(&mut CodegenContext<M>),
 ) {
     generate_for_inner(ctx, for_node, Some(generate_key))
 }
 
-fn generate_for_inner(
-    ctx: &mut CodegenContext,
+fn generate_for_inner<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     for_node: &ForNode<'_>,
-    generate_fragment_key: Option<&dyn Fn(&mut CodegenContext)>,
+    generate_fragment_key: Option<&dyn Fn(&mut CodegenContext<M>)>,
 ) {
     if for_node.parse_result.match_scope {
         match_scope::generate_match_scope(ctx, for_node, &match_scope::generate_scope_body);

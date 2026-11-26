@@ -2,8 +2,8 @@
 //!
 //! The `v-for` step builds its alias nodes without a location: nothing but a
 //! source map reads one, and the step runs for every compile. A compile that
-//! asked for a map locates them on the transformed tree before it generates
-//! code (see [`super::prepare_mapped_template`]). The generator then anchors an alias like any
+//! asked for a map calls [`locate_for_aliases`] on the transformed tree
+//! before it generates code. The generator then anchors an alias like any
 //! located expression, and a compile without a map never runs any of this.
 
 use super::document::authored_offset;
@@ -12,7 +12,9 @@ use crate::{ExpressionNode, RootNode, SourceLocation, TemplateChildNode};
 /// Give every `v-for` alias that is still the slice of `source` the parser
 /// cut its location. An alias a transform rewrote (an erased annotation, a
 /// prefixed default) is an arena copy and keeps none.
-pub(super) fn locate_for_aliases(root: &mut RootNode<'_>, source: &str) {
+#[cold]
+#[inline(never)]
+pub fn locate_for_aliases(root: &mut RootNode<'_>, source: &str) {
     locate_in(&mut root.children, source);
 }
 

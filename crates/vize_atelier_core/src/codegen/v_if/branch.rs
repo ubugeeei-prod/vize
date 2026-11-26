@@ -3,6 +3,7 @@
 //! Generates code for individual v-if/v-else-if/v-else branches including
 //! component, element, template fragment, and regular fragment rendering.
 
+use crate::codegen::RenderMapMode;
 use crate::{
     ElementNode, ElementType, ExpressionNode, ForNode, IfBranchNode, PropNode, RuntimeHelper,
     TemplateChildNode,
@@ -37,8 +38,8 @@ use super::{
 };
 
 /// Generate a single if branch.
-pub(super) fn generate_if_branch(
-    ctx: &mut CodegenContext,
+pub(super) fn generate_if_branch<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
@@ -47,8 +48,8 @@ pub(super) fn generate_if_branch(
 
 /// A branch's nodes: the branch's own children, or the children of the
 /// patterned-template scope that is the branch (see `generate_if_branch_for`).
-pub(super) fn generate_if_branch_nodes(
-    ctx: &mut CodegenContext,
+pub(super) fn generate_if_branch_nodes<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     children: &[TemplateChildNode<'_>],
     branch: &IfBranchNode<'_>,
     branch_index: usize,
@@ -107,8 +108,8 @@ pub(super) fn generate_if_branch_nodes(
     }
 }
 
-fn generate_if_branch_for(
-    ctx: &mut CodegenContext,
+fn generate_if_branch_for<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     for_node: &ForNode<'_>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
@@ -123,8 +124,8 @@ fn generate_if_branch_for(
 }
 
 /// Generate slot outlet for if branch.
-fn generate_if_branch_slot(
-    ctx: &mut CodegenContext,
+fn generate_if_branch_slot<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     el: &ElementNode<'_>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
@@ -135,7 +136,7 @@ fn generate_if_branch_slot(
     ctx.push("(_ctx.$slots, ");
     generate_slot_outlet_name(ctx, el);
     ctx.push(", ");
-    let generate_key = |ctx: &mut CodegenContext| generate_if_branch_key(ctx, branch, branch_index);
+    let generate_key = |ctx: &mut CodegenContext<M>| generate_if_branch_key(ctx, branch, branch_index);
     generate_slot_outlet_props_with_key(ctx, el, &generate_key);
 
     let has_fallback = !el.children.is_empty();
@@ -157,8 +158,8 @@ fn generate_if_branch_slot(
 }
 
 /// Generate component for if branch.
-fn generate_if_branch_component(
-    ctx: &mut CodegenContext,
+fn generate_if_branch_component<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     el: &ElementNode<'_>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
@@ -226,7 +227,7 @@ fn generate_if_branch_component(
     } else if let Some(builtin) = is_builtin_component(el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if ctx.push_component_binding_tag(el.tag) {
+    } else if ctx.push_component_binding(el) {
     } else {
         ctx.push(&to_valid_asset_identifier("component", el.tag));
     }
@@ -313,8 +314,8 @@ fn generate_if_branch_component(
 }
 
 /// Generate element for if branch.
-fn generate_if_branch_element(
-    ctx: &mut CodegenContext,
+fn generate_if_branch_element<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     el: &ElementNode<'_>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
@@ -408,8 +409,8 @@ fn generate_if_branch_element(
 }
 
 /// Generate a keyed fragment for an if branch with several children.
-fn generate_if_branch_template_fragment(
-    ctx: &mut CodegenContext,
+fn generate_if_branch_template_fragment<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     children: &[TemplateChildNode<'_>],
     branch: &IfBranchNode<'_>,
     branch_index: usize,
@@ -432,7 +433,7 @@ fn generate_if_branch_template_fragment(
 }
 
 /// Generate children for if branch element.
-fn generate_if_branch_children(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
+fn generate_if_branch_children<M: RenderMapMode>(ctx: &mut CodegenContext<M>, children: &[TemplateChildNode<'_>]) {
     if children.is_empty() {
         return;
     }

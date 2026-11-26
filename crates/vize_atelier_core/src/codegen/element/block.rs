@@ -3,6 +3,7 @@
 //! Generates elements that open a new block scope using `openBlock()` and
 //! `createElementBlock()` / `createBlock()` for efficient patching.
 
+use crate::codegen::RenderMapMode;
 use crate::steps::v_memo::{get_memo_exp, has_v_memo};
 use crate::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper};
 
@@ -35,7 +36,7 @@ use super::{
 use vize_l0::ToCompactString;
 
 /// Generate element as a block
-pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
     // Check for v-once directive - handle it specially
     if super::helpers::has_v_once(el) {
         generate_v_once_element(ctx, el);
@@ -288,7 +289,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 // Check for built-in components (Teleport, KeepAlive, Suspense)
                 ctx.use_helper(builtin);
                 ctx.push(ctx.helper(builtin));
-            } else if ctx.push_component_binding_tag(el.tag) {
+            } else if ctx.push_component_binding(el) {
             } else {
                 ctx.push(&to_valid_asset_identifier("component", el.tag));
             }

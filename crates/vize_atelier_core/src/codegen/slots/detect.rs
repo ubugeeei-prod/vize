@@ -3,6 +3,7 @@
 mod forwarded;
 pub use forwarded::has_forwarded_slot_outlet;
 
+use crate::codegen::RenderMapMode;
 use crate::codegen::context::CodegenContext;
 use crate::codegen::expression::scope_prefix::strip_scope_prefixes_for_slot_params;
 use crate::steps::v_slot::{collect_slots, has_v_slot};
@@ -112,7 +113,7 @@ pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
 /// KeepAlive always needs `DYNAMIC_SLOTS`. Other components need it when the
 /// slot object itself can change (`v-for` parent, dynamic names, forwarded
 /// outlets).
-pub fn needs_dynamic_slots_patch(ctx: &CodegenContext, el: &ElementNode<'_>) -> bool {
+pub fn needs_dynamic_slots_patch<M: RenderMapMode>(ctx: &CodegenContext<M>, el: &ElementNode<'_>) -> bool {
     (ctx.untracked_children && has_slot_children(el))
         || el.tag == "KeepAlive"
         || el.tag == "keep-alive"
@@ -128,7 +129,7 @@ pub fn needs_dynamic_slots_patch(ctx: &CodegenContext, el: &ElementNode<'_>) -> 
 /// ordinary props compare equal. Vue marks the slots object dynamic whenever a
 /// slot expression references an active `v-slot`/`v-for` binding; this keeps the
 /// child from retaining the previous render's closure (#10169).
-pub(super) fn slots_reference_current_scope(ctx: &CodegenContext, el: &ElementNode<'_>) -> bool {
+pub(super) fn slots_reference_current_scope<M: RenderMapMode>(ctx: &CodegenContext<M>, el: &ElementNode<'_>) -> bool {
     if !ctx.has_slot_params() || !has_slot_children(el) {
         return false;
     }
@@ -148,13 +149,13 @@ pub(super) fn slots_reference_current_scope(ctx: &CodegenContext, el: &ElementNo
         .any(|child| ensure_sufficient_stack(|| detector.child(child)))
 }
 
-struct ScopeReferenceDetector<'ctx> {
-    ctx: &'ctx CodegenContext,
+struct ScopeReferenceDetector<'ctx, M: RenderMapMode> {
+    ctx: &'ctx CodegenContext<M>,
     allocator: oxc_allocator::Allocator,
 }
 
-impl<'ctx> ScopeReferenceDetector<'ctx> {
-    fn new(ctx: &'ctx CodegenContext) -> Self {
+impl<'ctx, M: RenderMapMode> ScopeReferenceDetector<'ctx, M> {
+    fn new(ctx: &'ctx CodegenContext<M>) -> Self {
         Self {
             ctx,
             allocator: oxc_allocator::Allocator::default(),
@@ -299,14 +300,14 @@ fn contains_identifier(content: &str, name: &str) -> bool {
     })
 }
 
-struct ScopeReferenceVisitor<'ctx> {
-    ctx: &'ctx CodegenContext,
+struct ScopeReferenceVisitor<'ctx, M: RenderMapMode> {
+    ctx: &'ctx CodegenContext<M>,
     local_scopes: Vec<FxHashSet<String>>,
     found: bool,
 }
 
-impl<'ctx> ScopeReferenceVisitor<'ctx> {
-    fn new(ctx: &'ctx CodegenContext) -> Self {
+impl<'ctx, M: RenderMapMode> ScopeReferenceVisitor<'ctx, M> {
+    fn new(ctx: &'ctx CodegenContext<M>) -> Self {
         Self {
             ctx,
             local_scopes: vec![FxHashSet::default()],
@@ -322,7 +323,7 @@ impl<'ctx> ScopeReferenceVisitor<'ctx> {
     }
 }
 
-impl<'a> ExpressionScope<'a> for ScopeReferenceVisitor<'_> {
+impl<'a, M: RenderMapMode> ExpressionScope<'a> for ScopeReferenceVisitor<'_, M> {
     fn push_scope(&mut self) {
         self.local_scopes.push(FxHashSet::default());
     }
@@ -338,7 +339,7 @@ impl<'a> ExpressionScope<'a> for ScopeReferenceVisitor<'_> {
     }
 }
 
-impl<'a> Visit<'a> for ScopeReferenceVisitor<'_> {
+impl<'a, M: RenderMapMode> Visit<'a> for ScopeReferenceVisitor<'_, M> {
     fn visit_identifier_reference(&mut self, identifier: &oxc_ast::ast::IdentifierReference<'a>) {
         let name = identifier.name.as_str();
         if !self.is_local(name) && self.ctx.is_slot_param(name) {

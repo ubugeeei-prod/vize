@@ -6,6 +6,7 @@
 mod collect_helpers;
 mod static_vnode;
 
+use crate::codegen::RenderMapMode;
 use crate::{
     DynamicProps, ExpressionNode, JsChildNode, PropsExpression, RootNode, RuntimeHelper,
     TemplateChildNode, TemplateTextChildNode, VNodeCall, VNodeChildren, VNodeTag,
@@ -20,7 +21,7 @@ use vize_l0::ToCompactString;
 use vize_l0::ensure_sufficient_stack;
 
 /// Generate hoisted variable declarations.
-pub(super) fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> String {
+pub(super) fn generate_hoists<M: RenderMapMode>(ctx: &CodegenContext<M>, root: &RootNode<'_>) -> String {
     let mut hoists_code = String::default();
 
     for (i, hoist) in root.hoists.iter().enumerate() {
@@ -44,12 +45,12 @@ pub(super) fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> Stri
 ///
 /// Guarded: serializing a hoisted VNode descends one frame per level of the
 /// subtree it was hoisted from (`vize_l0::recursion`).
-fn generate_js_child_node_to_bytes(ctx: &CodegenContext, node: &JsChildNode<'_>, out: &mut String) {
+fn generate_js_child_node_to_bytes<M: RenderMapMode>(ctx: &CodegenContext<M>, node: &JsChildNode<'_>, out: &mut String) {
     ensure_sufficient_stack(|| generate_js_child_node_to_bytes_guarded(ctx, node, out));
 }
 
-fn generate_js_child_node_to_bytes_guarded(
-    ctx: &CodegenContext,
+fn generate_js_child_node_to_bytes_guarded<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
     node: &JsChildNode<'_>,
     out: &mut String,
 ) {
@@ -99,7 +100,7 @@ fn generate_js_child_node_to_bytes_guarded(
 }
 
 /// Generate `VNodeCall` to bytes.
-fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out: &mut String) {
+fn generate_vnode_call_to_bytes<M: RenderMapMode>(ctx: &CodegenContext<M>, vnode: &VNodeCall<'_>, out: &mut String) {
     // Block nodes use openBlock + createBlock/createElementBlock
     if vnode.is_block {
         out.push('(');
@@ -180,8 +181,8 @@ fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out
 }
 
 /// Generate `PropsExpression` to bytes.
-fn generate_props_expression_to_bytes(
-    ctx: &CodegenContext,
+fn generate_props_expression_to_bytes<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
     props: &PropsExpression<'_>,
     out: &mut String,
 ) {
@@ -245,8 +246,8 @@ fn generate_props_expression_to_bytes(
 }
 
 /// Generate `VNodeChildren` to bytes.
-fn generate_vnode_children_to_bytes(
-    ctx: &CodegenContext,
+fn generate_vnode_children_to_bytes<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
     children: &VNodeChildren<'_>,
     out: &mut String,
 ) {

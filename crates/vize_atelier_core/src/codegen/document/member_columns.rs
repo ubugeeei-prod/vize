@@ -1,45 +1,23 @@
 //! Static member positions for render maps composed into Vue files.
-//!
-//! Only the SFC assembly composes a render map into a component's, and only
-//! when it asked for a map, so the request is held for the compile it wraps
-//! rather than passed down every backend's signature: a compile without a
-//! map never reads it, and a standalone compiler keeps its complete map.
-
-use std::cell::Cell;
 
 use super::{EmitDocument, SourceMapBuilder};
 use oxc_syntax::identifier::is_identifier_name;
-use vize_l0::Span;
-
-std::thread_local! {
-    static COMPOSING_SFC_MAP: Cell<bool> = const { Cell::new(false) };
-}
-
-/// Run `compile`, a template compile whose render map the SFC assembly
-/// composes into the component's: every render map it serializes on this
-/// thread also carries the static member columns.
-pub fn composing_sfc_render_map<R>(compile: impl FnOnce() -> R) -> R {
-    struct Restore(bool);
-    impl Drop for Restore {
-        fn drop(&mut self) {
-            COMPOSING_SFC_MAP.set(self.0);
-        }
-    }
-    let _restore = Restore(COMPOSING_SFC_MAP.replace(true));
-    compile()
-}
-
-/// Whether the render map being serialized is composed into a Vue file.
-pub(super) fn composing_sfc_map() -> bool {
-    COMPOSING_SFC_MAP.get()
-}
+use vize_l0::{Span, String};
 
 impl EmitDocument {
+    /// Serialize the render map the SFC assembly composes into a Vue file:
+    /// [`Self::source_map`] plus the static properties of expressions whose
+    /// complete rewrite we can verify.
+    pub fn composed_source_map(&self, filename: &str, source: &str) -> String {
+        let mut builder = SourceMapBuilder::new();
+        self.write_segments(&mut builder);
+        self.write_member_columns(&mut builder, source);
+        builder.finish(self.as_str(), filename, source)
+    }
+
     /// Add the static properties of expressions whose complete rewrite we
     /// can verify, for a render map composed into a Vue file.
-    #[cold]
-    #[inline(never)]
-    pub(super) fn write_member_columns(&self, builder: &mut SourceMapBuilder, source: &str) {
+    fn write_member_columns(&self, builder: &mut SourceMapBuilder, source: &str) {
         let links = self.links();
         for (index, link) in links.iter().enumerate() {
             if link.name.is_some() {
@@ -157,14 +135,14 @@ mod tests {
             doc.push_linked(text, span);
             doc.push_char(quote);
             assert_eq!(
-                super::composing_sfc_render_map(|| doc.source_map("a.vue", text)),
+                doc.composed_source_map("a.vue", text),
                 doc.source_map("a.vue", text)
             );
         }
         let mut read = EmitDocument::default();
         read.push_expression(text, span, text);
         assert_ne!(
-            super::composing_sfc_render_map(|| read.source_map("a.vue", text)),
+            read.composed_source_map("a.vue", text),
             read.source_map("a.vue", text)
         );
     }
@@ -175,7 +153,7 @@ mod tests {
         let mut read = EmitDocument::default();
         read.push_expression("_ctx.photo.description", Span::new(0, 17), authored);
         assert_ne!(
-            super::composing_sfc_render_map(|| read.source_map("a.vue", authored)),
+            read.composed_source_map("a.vue", authored),
             read.source_map("a.vue", authored)
         );
     }

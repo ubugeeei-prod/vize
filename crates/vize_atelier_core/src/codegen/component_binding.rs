@@ -1,5 +1,6 @@
+use crate::codegen::RenderMapMode;
 use crate::options::BindingType;
-use crate::{CodegenContext, RuntimeHelper};
+use crate::{CodegenContext, ElementNode, RuntimeHelper};
 use vize_l0::{String, ToCompactString, camelize, capitalize};
 
 struct ComponentBinding {
@@ -8,7 +9,7 @@ struct ComponentBinding {
     suffix: Option<String>,
 }
 
-impl CodegenContext {
+impl<M: RenderMapMode> CodegenContext<M> {
     /// Check if a component is in binding metadata (from script setup).
     pub fn is_component_in_bindings(&self, component: &str) -> bool {
         self.resolve_component_binding_name(component).is_some()
@@ -34,9 +35,6 @@ impl CodegenContext {
         let Some(binding) = self.resolve_component_binding(component) else {
             return false;
         };
-        if self.out.is_recording() {
-            self.anchor_component_tag(component);
-        }
 
         let needs_unref = self.options.inline
             && matches!(
@@ -68,16 +66,28 @@ impl CodegenContext {
         true
     }
 
-    /// Anchor the setup binding about to be read for `tag` at the tag's
-    /// authored name. A resolved asset is anchored where it is
-    /// resolved, but a binding is read in place. Only a compile that records
-    /// a map reaches this, after the tag resolved to a binding.
-    #[cold]
-    #[inline(never)]
-    fn anchor_component_tag(&mut self, tag: &str) {
-        if let Some(at) = super::mapped_template::template_offset(tag) {
-            self.out.anchor(at);
+    /// Push `el`'s tag as the setup binding it resolves to; `false` when it
+    /// is not one. The plain generator pushes it as
+    /// [`Self::push_component_binding_tag`] does. A composed map anchors the
+    /// read at the authored tag name: a resolved asset is anchored where it
+    /// is resolved, but a binding is read in place.
+    #[inline(always)]
+    pub(in crate::codegen) fn push_component_binding(&mut self, el: &ElementNode<'_>) -> bool {
+        if M::COMPOSED {
+            self.push_composed_component_binding(el)
+        } else {
+            self.push_component_binding_tag(el.tag)
         }
+    }
+
+    fn push_composed_component_binding(&mut self, el: &ElementNode<'_>) -> bool {
+        if self.resolve_component_binding(el.tag).is_none() {
+            return false;
+        }
+        if self.out.is_recording() {
+            self.out.anchor(el.loc.span.start + 1);
+        }
+        self.push_component_binding_tag(el.tag)
     }
 
     fn resolve_component_binding(&self, component: &str) -> Option<ComponentBinding> {

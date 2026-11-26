@@ -7,6 +7,7 @@
 //! application are shared, so the two paths differ only in where the AST
 //! comes from.
 
+use crate::codegen::RenderMapMode;
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -22,11 +23,11 @@ use super::prefix_visitor::{IdentifierVisitor, apply_rewrites};
 /// Walk one parsed expression and apply the collected rewrites to `content`.
 /// `offset` is the span shift of the parse text relative to `content` (1 for
 /// the legacy `(content)` wrapper, 0 for the retained AST).
-fn prefix_via_expr(
+fn prefix_via_expr<M: RenderMapMode>(
     expr: &oxc_ast::ast::Expression<'_>,
     offset: u32,
     content: &str,
-    ctx: &CodegenContext,
+    ctx: &CodegenContext<M>,
     implicit_event: bool,
 ) -> String {
     let mut rewrites: Vec<(usize, usize, String)> = Vec::new();
@@ -47,9 +48,9 @@ fn prefix_via_expr(
     rewrite_props_aliases(apply_rewrites(content, rewrites), ctx)
 }
 
-pub(super) fn prefix_identifiers_in_scope(
+pub(super) fn prefix_identifiers_in_scope<M: RenderMapMode>(
     content: &str,
-    ctx: &CodegenContext,
+    ctx: &CodegenContext<M>,
     implicit_event: bool,
 ) -> String {
     if let Some(prefixed) = prefix_parsed_js(content, ctx, implicit_event) {
@@ -69,7 +70,7 @@ pub(super) fn prefix_identifiers_in_scope(
 
 /// Wrapped JS expression parse, then a program parse. `None` when neither
 /// accepts `content` (the caller may retry on TypeScript-stripped text).
-fn prefix_parsed_js(content: &str, ctx: &CodegenContext, implicit_event: bool) -> Option<String> {
+fn prefix_parsed_js<M: RenderMapMode>(content: &str, ctx: &CodegenContext<M>, implicit_event: bool) -> Option<String> {
     let allocator = crate::expr_parse_probe::parse_arena();
     let source_type = SourceType::default().with_module(true);
 
@@ -118,16 +119,16 @@ fn prefix_parsed_js(content: &str, ctx: &CodegenContext, implicit_event: bool) -
 /// Node-aware [`prefix_identifiers_with_context`] (P1-7): reads the retained
 /// AST when it still describes the node's bytes and the dialect gate holds;
 /// the legacy wrapped re-parse otherwise.
-pub(crate) fn prefix_identifiers_with_context_node(
+pub(crate) fn prefix_identifiers_with_context_node<M: RenderMapMode>(
     node: &SimpleExpressionNode<'_>,
-    ctx: &CodegenContext,
+    ctx: &CodegenContext<M>,
 ) -> String {
     prefix_node_in_scope(node, ctx, false)
 }
 
-pub(super) fn prefix_node_in_scope(
+pub(super) fn prefix_node_in_scope<M: RenderMapMode>(
     node: &SimpleExpressionNode<'_>,
-    ctx: &CodegenContext,
+    ctx: &CodegenContext<M>,
     implicit_event: bool,
 ) -> String {
     if let Some(js) = crate::retained::retained_whole_expression(node)

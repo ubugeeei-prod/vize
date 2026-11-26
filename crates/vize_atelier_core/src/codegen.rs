@@ -12,9 +12,10 @@ mod emit;
 mod entry;
 mod expression;
 mod for_alias_spans;
-mod mapped_template;
-pub use mapped_template::prepare_mapped_template;
+pub use for_alias_spans::locate_for_aliases;
 mod generate;
+mod map_mode;
+pub use map_mode::{ComposedRenderMap, PlainRenderMap, RenderMapMode};
 mod helpers;
 mod node;
 mod patch_flag;
@@ -55,6 +56,7 @@ pub use entry::{
     generate, generate_with_experimental_options, generate_with_merge_props,
     generate_with_sections, generate_with_sections_and_experimental_options,
     generate_with_sections_and_experimental_options_and_slot_scope,
+    generate_composed_with_sections_slot_scope_and_environment,
     generate_with_sections_and_experimental_options_slot_scope_and_environment,
     generate_with_vnode_factory, generate_with_vnode_factory_and_child_values,
     generate_with_vnode_factory_and_merge_props,

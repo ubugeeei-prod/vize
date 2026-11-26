@@ -1,5 +1,6 @@
 //! Object-spread generation for Babel JSX compatibility.
 
+use crate::codegen::RenderMapMode;
 use crate::PropNode;
 
 use super::super::context::CodegenContext;
@@ -8,8 +9,8 @@ use super::generate_vbind_object_exp;
 use super::scan::PropsScan;
 
 /// Emit the `mergeProps: false` path, preserving JavaScript spread semantics.
-pub(super) fn try_generate_without_merge_props(
-    ctx: &mut CodegenContext,
+pub(super) fn try_generate_without_merge_props<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
     props: &[PropNode<'_>],
     scope_id: Option<&str>,
     scan: &PropsScan<'_>,

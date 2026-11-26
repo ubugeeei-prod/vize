@@ -1,5 +1,6 @@
 //! Node generation functions.
 
+use crate::codegen::RenderMapMode;
 use crate::TemplateChildNode;
 
 use super::children::{generate_comment, generate_interpolation, generate_text};
@@ -17,7 +18,7 @@ use vize_l0::{ToCompactString, ensure_sufficient_stack};
 /// the descent onto a fresh stack before the thread stack runs out, because a
 /// stack overflow aborts the process instead of producing a diagnostic
 /// (`vize_l0::recursion`).
-pub fn generate_node(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
+pub fn generate_node<M: RenderMapMode>(ctx: &mut CodegenContext<M>, node: &TemplateChildNode<'_>) {
     crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
     ensure_sufficient_stack(|| match node {
         TemplateChildNode::Element(el) => generate_element(ctx, el),

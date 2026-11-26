@@ -3,7 +3,7 @@ use vize_atelier_core::{
     codegen::{
         CodegenResult, CodegenResultWithSections,
         generate_with_sections_and_experimental_options_slot_scope_and_environment,
-        prepare_mapped_template,
+        generate_composed_with_sections_slot_scope_and_environment, locate_for_aliases,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{
@@ -205,7 +205,7 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     let mut errors = errors.to_vec();
     errors.extend(transform_errors);
     if codegen_opts.source_map {
-        prepare_mapped_template(&mut root, source);
+        locate_for_aliases(&mut root, source);
     }
 
     let l2_emit = l2_emit_after_transform.and_then(|(options, hoisted_scope_id)| {
@@ -245,9 +245,15 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
                     l2_refusal.unwrap_or(DomLegacyReason::EmitRefused).id(),
                 ))
             });
+            let generate = if sfc_assembly && codegen_opts.source_map {
+                // The SFC assembly composes this map into the component's.
+                generate_composed_with_sections_slot_scope_and_environment
+            } else {
+                generate_with_sections_and_experimental_options_slot_scope_and_environment
+            };
             profile!(
                 "atelier.dom.template.codegen_compat",
-                generate_with_sections_and_experimental_options_slot_scope_and_environment(
+                generate(
                     &root,
                     codegen_opts,
                     codegen_experimental_options,
@@ -302,10 +308,10 @@ fn additive_map<'a>(
             inputs.hoisted_scope_id,
         )
     );
-    prepare_mapped_template(root, source);
+    locate_for_aliases(root, source);
     let compat = profile!(
         "atelier.dom.template.codegen_sourcemap_compat",
-        generate_with_sections_and_experimental_options_slot_scope_and_environment(
+        generate_composed_with_sections_slot_scope_and_environment(
             root,
             inputs.codegen_opts,
             inputs.codegen_experimental_options,

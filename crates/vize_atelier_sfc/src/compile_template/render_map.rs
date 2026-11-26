@@ -8,50 +8,11 @@
 //! the `.vue` file. Nothing here re-derives a position; it only relocates the
 //! links the backend recorded.
 
-use vize_atelier_core::codegen::document::composing_sfc_render_map;
-use vize_atelier_core::options::CustomElementMatcher;
-use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
-use vize_l0::Allocator;
-use vize_l0::dump::capture::StageCapture;
 use vize_l1_to_l2::lower::pug::PugSourceMap;
 use vize_l4::module::OutputModule;
 
-use super::{TemplateBlockCompileContext, TemplateBlockCompileResult};
 use crate::module_map::{Runs, source_map_points};
-use crate::types::{SfcError, SfcTemplateBlock, TemplateCompileOptions};
-
-/// Compile a template and observe the backend that supplies its render code.
-/// A requested map is composed into the component's, so the backend
-/// serializes it for that: see [`composing_sfc_render_map`].
-#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
-pub(crate) fn compile_template_block_with_capture(
-    allocator: &Allocator,
-    template: &SfcTemplateBlock,
-    options: &TemplateCompileOptions,
-    custom_elements: &CustomElementMatcher,
-    ctx: TemplateBlockCompileContext<'_>,
-    template_syntax: TemplateSyntaxMode,
-    codegen_options: &CodegenOptions,
-    capture: Option<&mut StageCapture>,
-) -> Result<TemplateBlockCompileResult, SfcError> {
-    let compile = move || {
-        super::compile_backend_template(
-            allocator,
-            template,
-            options,
-            custom_elements,
-            ctx,
-            template_syntax,
-            codegen_options,
-            capture,
-        )
-    };
-    if codegen_options.source_map {
-        composing_sfc_render_map(compile)
-    } else {
-        compile()
-    }
-}
+use crate::types::SfcTemplateBlock;
 
 /// The links of `raw`, a backend map over `module.functions`, as points from
 /// the flattened module into the authored SFC.

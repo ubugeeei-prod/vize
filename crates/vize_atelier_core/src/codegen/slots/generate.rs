@@ -1,5 +1,6 @@
 //! Slots object generation for component children.
 
+use crate::codegen::RenderMapMode;
 use crate::steps::v_slot::{collect_slots, get_slot_name, has_v_slot, is_dynamic_slot};
 use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode};
 
@@ -45,7 +46,7 @@ use super::params::slot_parameters;
 /// instead carries `1024 /* DYNAMIC_SLOTS */` (see
 /// [`has_dynamic_slots_flag`](super::detect::has_dynamic_slots_flag)) to force
 /// that update.
-pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
     // Note: WithCtx helper is registered at each _withCtx() output site,
     // not here, to avoid importing it when slots don't actually use it.
 
