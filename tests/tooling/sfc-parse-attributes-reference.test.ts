@@ -156,10 +156,7 @@ await test("only the original empty compile packet advances by the authenticated
 await test("empty compile references reject altered or incomplete complete product source laws", () => {
   const sources = emptyCompileSourcesForReference(
     Object.fromEntries(
-      Object.keys(emptyCompileSourceBlobs).map((file) => [
-        file,
-        readReviewedSource(file),
-      ]),
+      Object.keys(emptyCompileSourceBlobs).map((file) => [file, readReviewedSource(file)]),
     ),
     emptyCompileSourceBlobs,
   );
@@ -180,12 +177,7 @@ await test("empty compile references reject altered or incomplete complete produ
 
 test("the project-context successor rejects unknown, incomplete and mixed source bundles", () => {
   const read = (blobs: Readonly<Record<string, string>>) =>
-    Object.fromEntries(
-      Object.keys(blobs).map((file) => [
-        file,
-        readReviewedSource(file),
-      ]),
-    );
+    Object.fromEntries(Object.keys(blobs).map((file) => [file, readReviewedSource(file)]));
   const sources = read(emptyCompileSourceBlobs);
   const supporting = read(emptyProjectContextSupportingBlobs);
   const original = emptyCompileSourcesForReference(sources, emptyCompileSourceBlobs, supporting);

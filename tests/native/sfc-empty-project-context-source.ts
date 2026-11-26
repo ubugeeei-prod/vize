@@ -280,10 +280,7 @@ export function emptyCompileSourcesForReference(
   const supporting =
     supportingSources ??
     Object.fromEntries(
-      Object.keys(plan.supportingSources).map((file) => [
-        file,
-        readReviewedSource(file),
-      ]),
+      Object.keys(plan.supportingSources).map((file) => [file, readReviewedSource(file)]),
     );
   assert.deepEqual(Object.keys(supporting).sort(), Object.keys(plan.supportingSources).sort());
   for (const [file, expected] of Object.entries(plan.supportingSources))

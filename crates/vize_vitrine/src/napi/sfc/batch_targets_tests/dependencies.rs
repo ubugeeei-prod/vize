@@ -1,7 +1,7 @@
 //! Which dependency lists a later target leaves out.
 
-use super::super::batch_targets::leave_out_shared_dependencies;
 use super::super::BatchFileResultNapi;
+use super::super::batch_targets::leave_out_shared_dependencies;
 
 fn result_with(dependencies: Option<&[&str]>) -> BatchFileResultNapi {
     BatchFileResultNapi {
