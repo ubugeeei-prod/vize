@@ -13,6 +13,11 @@ class ValidVSlotOptions {
   allowModifiers: Boolean = false
 }
 
+/// Names a build step defines for every template, such as auto-imports.
+class NoUndefinedRefsOptions {
+  globals: Listing<String> = new Listing {}
+}
+
 class BlockLangBlock {
   lang: (String | Listing<String>)? = null
   allowNoLang: Boolean? = null

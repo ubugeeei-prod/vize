@@ -244,16 +244,19 @@ impl RuleRegistry {
     }
 
     pub(crate) fn replace(&mut self, rule: Box<dyn Rule>) {
-        self.ecosystem_template_prefix = None;
         self.named_markup_ranks = OnceLock::new();
         self.named_legacy_template_plan = OnceLock::new();
         let rule_name = rule.meta().name;
-        if let Some(slot) = self
-            .rule_names
-            .iter()
-            .position(|name| *name == rule_name)
-            .and_then(|index| self.rules.get_mut(index))
+        if let Some(index) = self.rule_names.iter().position(|name| *name == rule_name)
+            && let Some(slot) = self.rules.get_mut(index)
         {
+            // A rule ahead of the ecosystem suffix leaves that suffix unmodified.
+            if self
+                .ecosystem_template_prefix
+                .is_some_and(|prefix| index >= prefix)
+            {
+                self.ecosystem_template_prefix = None;
+            }
             *slot = rule;
             return;
         }
