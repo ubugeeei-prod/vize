@@ -242,9 +242,9 @@ impl Linter {
     /// Relative filenames name files under the working directory at this call.
     #[inline]
     pub fn with_run_scoped_type_sources(mut self) -> Self {
-        self.type_sources = Some(TypeSources::Owned(
+        self.type_sources = Some(TypeSources::Owned(Box::new(
             super::run_type_sources::RunTypeSources::for_current_dir(),
-        ));
+        )));
         self
     }
 
@@ -442,7 +442,7 @@ pub(crate) fn descriptor_may_have_typed_macros(
 
 /// A linter's disk view for imported macro types: its own, or one its run shares.
 pub(crate) enum TypeSources {
-    Owned(super::run_type_sources::RunTypeSources),
+    Owned(Box<super::run_type_sources::RunTypeSources>),
     Shared(&'static super::run_type_sources::RunTypeSources),
 }
 
