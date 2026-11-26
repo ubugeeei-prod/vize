@@ -24,8 +24,8 @@ use crate::virtual_ts::{
 };
 
 use super::super::template_record::TemplateRecord;
-use component_targets::{dynamic_component_reference, static_component_is_kind};
 use super::push_ts_string_literal;
+use component_targets::{dynamic_component_reference, static_component_is_kind};
 
 /// One registry entry: the authored ref name and the element tag it names.
 struct RegisteredRef {
@@ -403,8 +403,8 @@ fn component_ref_kind_for_element_tag(
     resolved_component_binding_reference(summary, options, syntactic_type_only_imported_names, tag)
 }
 
-mod component_targets;
 #[cfg(test)]
 mod component_target_tests;
+mod component_targets;
 #[cfg(test)]
 mod tests;

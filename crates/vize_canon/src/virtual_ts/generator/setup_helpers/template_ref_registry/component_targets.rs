@@ -6,9 +6,14 @@ use vize_croquis::Croquis;
 use vize_relief::{ElementNode, Namespace, PropNode};
 
 use super::{RegisteredRefKind, push_ts_string_literal};
-use crate::virtual_ts::{component_reference::resolved_component_binding_reference, types::VirtualTsOptions};
+use crate::virtual_ts::{
+    component_reference::resolved_component_binding_reference, types::VirtualTsOptions,
+};
 
-pub(super) fn dynamic_component_reference(element: &ElementNode<'_>, summary: &Croquis) -> Option<String> {
+pub(super) fn dynamic_component_reference(
+    element: &ElementNode<'_>,
+    summary: &Croquis,
+) -> Option<String> {
     if element.tag != "component" {
         return None;
     }
@@ -166,4 +171,3 @@ fn is_ascii_identifier(segment: &str) -> bool {
         .is_some_and(|char| char == '_' || char == '$' || char.is_ascii_alphabetic())
         && chars.all(|char| char == '_' || char == '$' || char.is_ascii_alphanumeric())
 }
-
