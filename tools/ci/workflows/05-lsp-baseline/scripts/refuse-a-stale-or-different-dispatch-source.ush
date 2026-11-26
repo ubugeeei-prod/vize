@@ -1,0 +1,24 @@
+# Refuse to measure unless the dispatch named a full commit SHA that is both the checkout and the run's commit.
+use $bin::{git}
+
+# A full commit SHA: forty characters, each a lowercase hexadecimal digit.
+fn is_commit_sha(value: String) -> Bool {
+  match value {
+    glob "*[!0-9a-f]*" => false
+    glob "????????????????????????????????????????" => true
+    _ => false
+  }
+}
+
+let expected = $env::VIZE_BASELINE_EXPECTED_SOURCE
+
+if !(is_commit_sha $expected) {
+  fail 1 $"The dispatch source $expected is not a full commit SHA"
+}
+let checkout = git rev-parse HEAD
+if $checkout != $expected {
+  fail 1 $"The checkout is $checkout, not the dispatch source $expected"
+}
+if $env::GITHUB_SHA != $expected {
+  fail 1 $"The run's commit is $env::GITHUB_SHA, not the dispatch source $expected"
+}

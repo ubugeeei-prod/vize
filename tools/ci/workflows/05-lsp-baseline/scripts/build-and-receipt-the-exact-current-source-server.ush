@@ -1,0 +1,5 @@
+# Build the server from this checkout and write the receipt that binds the baseline to that binary.
+use $bin::{cargo, node}
+
+cargo build --profile ci -p vize
+node tests/differential/build-receipt.ts

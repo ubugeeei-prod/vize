@@ -50,8 +50,7 @@ jobs:
           ref: ${{ inputs.source_sha }}
           persist-credentials: false
       - name: Refuse a stale or different dispatch source
-        shell: bash
-        run: . "${{ env.VIZE_CI_FILES }}/refuse-a-stale-or-different-dispatch-source.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/refuse-a-stale-or-different-dispatch-source.sh"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
@@ -62,7 +61,7 @@ jobs:
       - name: Hydrate only the pinned Misskey fixture
         run: git submodule update --init --depth 1 tests/_fixtures/_git/misskey
       - name: Install repository Rust toolchain
-        run: . "${{ env.VIZE_CI_FILES }}/install-repository-rust-toolchain.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-repository-rust-toolchain.sh"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -71,7 +70,7 @@ jobs:
           key: lsp-current-baseline
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Build and receipt the exact current source server
-        run: . "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-exact-current-source-server.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/build-and-receipt-the-exact-current-source-server.sh"
       - name: Qualify pure observation and refusal laws
         run: node --test tests/tooling/lsp-current-baseline*.test.ts tests/tooling/lsp-session-capture.test.ts
       - name: Measure three serial fresh sessions with all original checks
