@@ -108,7 +108,13 @@ fn reference_paths(path: &Path, text: &str) -> Vec<PathBuf> {
     let directory = path.parent().unwrap_or(path);
     text.lines()
         .map(str::trim)
-        .take_while(|line| line.is_empty() || line.starts_with("//"))
+        // Comments of either kind may precede the directives.
+        .take_while(|line| {
+            line.is_empty()
+                || line.starts_with("//")
+                || line.starts_with("/*")
+                || line.starts_with('*')
+        })
         .filter_map(|line| {
             let directive = line.strip_prefix("///")?.trim_start();
             let rest = directive.strip_prefix("<reference")?;
@@ -139,7 +145,7 @@ mod tests {
 
     #[test]
     fn header_reference_paths_resolve_beside_the_declaration() {
-        let text = "/// <reference types=\"vue\" />\n/// <reference path=\"types/imports.d.ts\" />\n/// <reference path='./plugins.d.ts' />\n\nexport {}\n/// <reference path=\"late.d.ts\" />\n";
+        let text = "/* generated */\n/**\n * banner\n */\n/// <reference types=\"vue\" />\n/// <reference path=\"types/imports.d.ts\" />\n/// <reference path='./plugins.d.ts' />\n\nexport {}\n/// <reference path=\"late.d.ts\" />\n";
         assert_eq!(
             reference_paths(Path::new("/app/.nuxt/nuxt.d.ts"), text),
             vec![

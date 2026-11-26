@@ -288,14 +288,9 @@ fn collect_element(
             let name = value.content;
             if !name.is_empty() {
                 let dynamic_reference = dynamic_component_reference(element, summary);
-                let static_is = dynamic_reference.is_none().then(|| {
-                    static_component_is_kind(
-                        element,
-                        summary,
-                        options,
-                        syntactic_type_only_imported_names,
-                    )
-                });
+                let static_is = dynamic_reference
+                    .is_none()
+                    .then(|| static_component_is_kind(element));
                 let kind = if let Some(kind) = static_is.flatten() {
                     kind
                 } else if let Some(reference_type) = dynamic_reference {

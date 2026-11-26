@@ -44,9 +44,23 @@ const inner = useTemplateRef("inner");
         registry_body(script, r#"<component is="div" ref="inner" />"#).as_str(),
         r#" "inner": $DomElement<"div">; "#
     );
-    // `vue:` forces a component even for a native spelling.
+    // `<component>` passes the string to `resolveDynamicComponent` verbatim,
+    // so a `vue:` spelling is not the native element.
     assert_ne!(
         registry_body(script, r#"<component is="vue:div" ref="inner" />"#).as_str(),
         r#" "inner": $DomElement<"div">; "#
+    );
+    // A static string resolves registered components only, never a
+    // `<script setup>` import of the same name.
+    let imported = r#"import { useTemplateRef } from "vue";
+import Child from "./Child.vue";
+const inner = useTemplateRef("inner");
+"#;
+    assert_eq!(
+        registry_body(imported, r#"<component is="Child" ref="inner" />"#)
+            .as_str()
+            .matches("typeof Child")
+            .count(),
+        0
     );
 }

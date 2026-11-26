@@ -130,6 +130,9 @@ fn exported_functions_keep_vues_signature_for_their_callers_templates() {
     for script in [
         "export function useBox() { return useTemplateRef('box') }",
         "export const useBox = () => useTemplateRef('box')",
+        "function useBox() { return useTemplateRef('box') }\nexport { useBox }",
+        "const useBox = () => useTemplateRef('box')\nexport { useBox as useArea }",
+        "function useBox() { return useTemplateRef('box') }\nexport default useBox",
     ] {
         assert!(
             !usage_with_global(script, true).needs_registry(),

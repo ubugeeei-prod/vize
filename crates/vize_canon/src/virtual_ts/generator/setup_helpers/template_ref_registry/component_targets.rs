@@ -1,14 +1,11 @@
 //! Ref targets of `<component>`: a dynamic `:is` target, or a static `is`.
 
 use oxc_ast::ast::Expression;
-use vize_carton::{FxHashSet, String, append, is_native_tag};
+use vize_carton::{String, append, is_native_tag};
 use vize_croquis::Croquis;
 use vize_relief::{ElementNode, Namespace, PropNode};
 
 use super::{RegisteredRefKind, push_ts_string_literal};
-use crate::virtual_ts::{
-    component_reference::resolved_component_binding_reference, types::VirtualTsOptions,
-};
 
 pub(super) fn dynamic_component_reference(
     element: &ElementNode<'_>,
@@ -85,14 +82,11 @@ fn unwrapped_in_template(summary: &Croquis, name: &str) -> bool {
     )
 }
 
-/// The ref of `<component is="div">`: a static `is` names its target directly,
-/// a native element or a component resolved like the tag it spells.
-pub(super) fn static_component_is_kind(
-    element: &ElementNode<'_>,
-    summary: &Croquis,
-    options: &VirtualTsOptions,
-    syntactic_type_only_imported_names: &FxHashSet<vize_carton::CompactString>,
-) -> Option<RegisteredRefKind> {
+/// The ref of `<component is="div">`: a static `is` names its target directly.
+/// A native tag renders that element. Any other string reaches
+/// `resolveDynamicComponent` verbatim (`vue:` included), which resolves only
+/// registered components, never a `<script setup>` import of the same name.
+pub(super) fn static_component_is_kind(element: &ElementNode<'_>) -> Option<RegisteredRefKind> {
     if element.tag != "component" {
         return None;
     }
@@ -102,35 +96,19 @@ pub(super) fn static_component_is_kind(
         }
         _ => None,
     })?;
-    // `vue:` forces component resolution of a native-looking name.
-    let (target, forced_component) = target
-        .strip_prefix("vue:")
-        .map_or((target, false), |name| (name, true));
     if target.is_empty() {
         return None;
     }
-    if !forced_component && is_native_tag(target) {
+    if is_native_tag(target) {
         return Some(RegisteredRefKind::Element {
             tag: String::from(target),
             is_svg: matches!(element.ns, Namespace::Svg),
         });
     }
-    Some(
-        resolved_component_binding_reference(
-            summary,
-            options,
-            syntactic_type_only_imported_names,
-            target,
-        )
-        .map(|reference| RegisteredRefKind::Component {
-            reference_type: vize_carton::cstr!("typeof {reference}"),
-            start: element.loc.span.start,
-        })
-        .unwrap_or_else(|| RegisteredRefKind::GlobalOrElement {
-            tag: String::from(target),
-            is_svg: matches!(element.ns, Namespace::Svg),
-        }),
-    )
+    Some(RegisteredRefKind::GlobalOrElement {
+        tag: String::from(target),
+        is_svg: matches!(element.ns, Namespace::Svg),
+    })
 }
 
 fn dynamic_component_target_type(expression: &Expression<'_>) -> Option<String> {

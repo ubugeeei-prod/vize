@@ -338,6 +338,22 @@ fn imports_alias_owns_use_template_ref_only_when_it_reexports_vues() {
             "{module}"
         );
     }
+    // A wildcard mapping reaches the same manifest.
+    let root = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(root.path().join(".nuxt")).unwrap();
+    std::fs::write(
+        root.path().join(".nuxt/imports.d.ts"),
+        "export { useTemplateRef } from 'vue';\n",
+    )
+    .unwrap();
+    std::fs::write(
+        root.path().join("tsconfig.json"),
+        r##"{ "compilerOptions": { "paths": { "#*": ["./.nuxt/*"] } } }"##,
+    )
+    .unwrap();
+    let mut project = VirtualProject::new(root.path()).unwrap();
+    project.set_tsconfig_path(Some(root.path().join("tsconfig.json")));
+    assert!(project.imports_alias_reexports_vue_template_ref());
     // Without the alias nothing is adopted.
     let root = tempfile::tempdir().unwrap();
     std::fs::write(root.path().join("tsconfig.json"), "{}").unwrap();

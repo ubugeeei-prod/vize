@@ -34,8 +34,38 @@ pub(crate) fn canonical_symbol_position(
 
 /// Whether `offset` is inside the quoted value of a plain (non-directive)
 /// attribute of the start tag that contains it.
+/// The start of the start tag that contains `offset`, read forward from the
+/// template so a `<` inside a quoted attribute value (an expression such as
+/// `` :title="`<b>${x}</b>`" ``) never opens a tag.
+fn containing_tag_start(source: &str, offset: usize) -> Option<usize> {
+    let before = source.get(..offset)?;
+    let from = before.rfind("<template").unwrap_or(0);
+    let bytes = before.as_bytes();
+    let (mut open, mut quote) = (None, None::<u8>);
+    let mut index = from;
+    while let Some(&byte) = bytes.get(index) {
+        match (open, quote) {
+            (Some(_), Some(active)) if byte == active => quote = None,
+            (Some(_), Some(_)) => {}
+            (Some(_), None) if matches!(byte, b'"' | b'\'') => quote = Some(byte),
+            (Some(_), None) if byte == b'>' => open = None,
+            (None, _)
+                if byte == b'<'
+                    && bytes
+                        .get(index + 1)
+                        .is_some_and(|next| next.is_ascii_alphabetic()) =>
+            {
+                open = Some(index);
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    open
+}
+
 pub(crate) fn in_static_attribute_value(source: &str, offset: usize) -> bool {
-    let Some(tag_start) = source.get(..offset).and_then(|before| before.rfind('<')) else {
+    let Some(tag_start) = containing_tag_start(source, offset) else {
         return false;
     };
     let Some(tag) = source.get(tag_start..) else {
@@ -418,6 +448,13 @@ mod static_attribute_tests {
             ]
             .map(|offset| in_static_attribute_value(source, offset)),
             [true, true, false, false, false, false]
+        );
+        let expression = r#"<template><b :title="`<span id='${box}'>`" id="note" /></template>"#;
+        let at_expression = |needle: &str| expression.find(needle).unwrap() + 1;
+        assert_eq!(
+            [at_expression("box"), at_expression("note")]
+                .map(|offset| in_static_attribute_value(expression, offset)),
+            [false, true]
         );
         let slot = r#"<slot name="heading" title="Hello" />"#;
         let at = |needle: &str| slot.find(needle).unwrap() + 1;

@@ -73,6 +73,7 @@ impl TemplateRefUsage {
             scoping,
             imports,
             namespaces,
+            exported: exported_local_symbols(program, scoping),
             calls: Vec::new(),
             exported_function_depth: 0,
             export_depth: 0,
@@ -198,6 +199,42 @@ fn vue_imports(program: &Program<'_>, imports_alias: bool) -> (Vec<SymbolId>, Ve
     (named, namespaces)
 }
 
+/// Top-level declarations published by `export { name }` or
+/// `export default name`, whose bodies other modules can call.
+fn exported_local_symbols(program: &Program<'_>, scoping: &Scoping) -> Vec<SymbolId> {
+    let referenced = |reference: &oxc_ast::ast::IdentifierReference<'_>| {
+        reference
+            .reference_id
+            .get()
+            .and_then(|reference| scoping.get_reference(reference).symbol_id())
+    };
+    let mut exported = Vec::new();
+    for statement in &program.body {
+        match statement {
+            Statement::ExportNamedDeclaration(export) if export.source.is_none() => {
+                for specifier in &export.specifiers {
+                    if let oxc_ast::ast::ModuleExportName::IdentifierReference(local) =
+                        &specifier.local
+                        && let Some(symbol) = referenced(local)
+                    {
+                        exported.push(symbol);
+                    }
+                }
+            }
+            Statement::ExportDefaultDeclaration(export) => {
+                if let oxc_ast::ast::ExportDefaultDeclarationKind::Identifier(local) =
+                    &export.declaration
+                    && let Some(symbol) = referenced(local)
+                {
+                    exported.push(symbol);
+                }
+            }
+            _ => {}
+        }
+    }
+    exported
+}
+
 fn vue_import_specifiers<'p, 'a>(
     program: &'p Program<'a>,
     imports_alias: bool,
@@ -259,6 +296,8 @@ struct Collector<'s> {
     imports: Vec<SymbolId>,
     /// `import * as Vue from 'vue'`: `Vue.useTemplateRef` is Vue's.
     namespaces: Vec<SymbolId>,
+    /// Local declarations an export list or `export default` publishes.
+    exported: Vec<SymbolId>,
     calls: Vec<InferredCall>,
     /// Functions inside an exported declaration: other modules call them.
     exported_function_depth: usize,
@@ -269,6 +308,10 @@ struct Collector<'s> {
 }
 
 impl Collector<'_> {
+    fn publishes(&self, symbol: Option<SymbolId>) -> bool {
+        symbol.is_some_and(|symbol| self.exported.contains(&symbol))
+    }
+
     fn enter_function(&mut self) {
         if self.export_depth > 0 {
             self.exported_function_depth += 1;
@@ -342,9 +385,22 @@ impl<'a> Visit<'a> for Collector<'_> {
     }
 
     fn visit_function(&mut self, function: &oxc_ast::ast::Function<'a>, flags: ScopeFlags) {
+        let published = self.publishes(function.id.as_ref().and_then(|id| id.symbol_id.get()));
+        self.export_depth += usize::from(published);
         self.enter_function();
         walk::walk_function(self, function, flags);
         self.leave_function();
+        self.export_depth -= usize::from(published);
+    }
+
+    fn visit_variable_declarator(&mut self, declarator: &oxc_ast::ast::VariableDeclarator<'a>) {
+        let published = self.publishes(match &declarator.id {
+            oxc_ast::ast::BindingPattern::BindingIdentifier(id) => id.symbol_id.get(),
+            _ => None,
+        });
+        self.export_depth += usize::from(published);
+        walk::walk_variable_declarator(self, declarator);
+        self.export_depth -= usize::from(published);
     }
 
     fn visit_arrow_function_expression(

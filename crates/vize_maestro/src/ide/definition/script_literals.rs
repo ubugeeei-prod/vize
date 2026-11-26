@@ -19,7 +19,11 @@ pub(super) fn offset_is_in_literal_text(script: &str, offset: usize) -> bool {
         return false;
     };
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+    let mut parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+    // `<script lang="tsx">` holds JSX the TypeScript grammar rejects.
+    if parsed.panicked {
+        parsed = Parser::new(&allocator, script, SourceType::tsx()).parse();
+    }
     if parsed.panicked {
         return false;
     }
