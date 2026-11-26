@@ -77,6 +77,12 @@ The last push is `5aa9c27c95`, which re-pins the custody closures of the four wo
 - **Generator check:** run `node tools/commands/generate/repository-config.ts --check` with the pinned ush on PATH. The release binary from `gh release download v0.19.0 -R ubugeeei-prod/ush` works; verify it with `shasum -a 256 -c`.
 - **Regenerating a changed workflow YAML:** run `vp fmt` on it, because the generator re-renders the whole file in its own layout.
 
+**Collision with J1b #13726** (from vize-18):
+- #13726 renames native-beta-diagnostic-dto to `05-native-diagnostic-dto` and moves the closure readers to the new name, with a fallback to the old recorded name.
+- If #13726 merges before #13729, the native-beta-diagnostic-dto re-pin in #13729 conflicts or goes stale. Rebase #13729 onto main, then re-pin that closure under `05-native-diagnostic-dto`: run `refresh-history` for that owner in `tools/support/ci/workflow-program-history.json`, and update the custody rows.
+- typescript-plugin and typescript-provider-vsix aren't renamed yet (J1c is deferred), so their re-pins stand.
+- Afterwards, check that every closure in `workflow-program-history.json` matches the files on the branch. The merge queue rebases, so check again after #13726 lands.
+
 ### Conversion branches: pushed, no PRs yet
 
 They are based on the OLD foundation head `cdab43e8a4`. Open their PRs only after #13729 merges, because stacked PRs become UNMERGEABLE in the merge queue. Then rebase each onto main, run the generator `--check` and the related `tests/tooling` tests, open the PR and turn on auto-merge.
