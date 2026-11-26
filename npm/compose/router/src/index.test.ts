@@ -51,7 +51,7 @@ void test("resolves typed locations and omits optional params", () => {
 
 void test("serializes and hydrates a matched route state", () => {
   const router = createRouterMatcher(routes);
-  const match = router.match("https://example.test/users/42?from=server");
+  const match = router.match(new URL("https://example.test/users/42?from=server"));
   assert.ok(match);
 
   const serialized = serializeRouteMatch(match, { user: 42 });
@@ -122,4 +122,90 @@ void test("invalid route tables fail closed with actionable diagnostics", () => 
       ] as const),
     /VIZE_ROUTER_DUPLICATE_NAME/,
   );
+});
+
+void test("a string location on another origin does not match", () => {
+  const router = createRouterMatcher(routes);
+  for (const input of [
+    "//other.example/users/42",
+    "\\\\other.example/users/42",
+    "/\t/other.example/users/42",
+    "/\\other.example/users/42",
+    "https://other.example/users/42",
+    "javascript:/users/42",
+  ]) {
+    assert.equal(router.match(input), undefined, input);
+  }
+  assert.equal(router.match(new URL("https://app.example/users/42"))?.pathname, "/users/42");
+});
+
+void test("a pathname that starts with two slashes does not match", () => {
+  const router = createRouterMatcher(
+    defineRoutes([
+      { name: "any", path: "/*rest", component: "./fixtures/routes/home.vue" },
+    ] as const),
+  );
+  assert.deepEqual(router.match("/a/b")?.params, { rest: "a/b" });
+  for (const input of [
+    "/..//other.example/a",
+    "/%2e%2e//other.example/a",
+    new URL("https://app.example//other.example/a"),
+  ]) {
+    assert.equal(router.match(input), undefined, String(input));
+  }
+});
+
+void test("a location that cannot be parsed or decoded does not match", () => {
+  const router = createRouterMatcher(routes);
+  for (const input of ["/users/%E0%A4%A", "//[", "http://["]) {
+    assert.equal(router.match(input), undefined, input);
+  }
+  assert.equal(router.match(new URL("https://app.example/users/%E0%A4%A")), undefined);
+});
+
+void test("a resolved path never starts with two slashes", () => {
+  const router = createRouterMatcher(
+    defineRoutes([
+      { name: "any", path: "/*rest", component: "./fixtures/routes/home.vue" },
+      { name: "docs", path: "/docs/*rest", component: "./fixtures/routes/home.vue" },
+      { name: "pair", path: "/:first/:second?", component: "./fixtures/routes/user.vue" },
+    ] as const),
+  );
+
+  assert.equal(router.resolve("any", { rest: "/other.example/a" }), "/other.example/a");
+  assert.equal(router.resolve("any", { rest: "///other.example//a" }), "/other.example//a");
+  assert.equal(router.resolve("docs", { rest: "guide/router" }), "/docs/guide/router");
+  assert.throws(
+    () => router.resolve("any", { rest: "//" }),
+    new Error("[VIZE_ROUTER_MISSING_PARAM] Missing route param rest"),
+  );
+  assert.throws(
+    () => router.resolve("pair", { first: "", second: "other.example" }),
+    new Error("[VIZE_ROUTER_MISSING_PARAM] Missing route param first"),
+  );
+  assert.equal(router.resolve("pair", { first: "a", second: "" }), "/a");
+});
+
+void test("a dot segment is not accepted as a param value", () => {
+  const router = createRouterMatcher(routes);
+  const invalid = (name: string) =>
+    new Error(
+      `[VIZE_ROUTER_INVALID_PARAM] Route param ${name} cannot contain a "." or ".." segment`,
+    );
+  for (const id of [".", ".."]) {
+    assert.throws(() => router.resolve("user", { id }), invalid("id"), id);
+  }
+  assert.throws(() => router.resolve("user", { id: "42", tab: ".." }), invalid("tab"));
+  assert.equal(router.resolve("user", { id: "..." }), "/users/...");
+  assert.equal(router.resolve("user", { id: ".hidden" }), "/users/.hidden");
+
+  const docs = createRouterMatcher(
+    defineRoutes([
+      { name: "docs", path: "/docs/*rest", component: "./fixtures/routes/home.vue" },
+    ] as const),
+  );
+  for (const rest of ["..", "../users/42", "guide/./router", "guide/.."]) {
+    assert.throws(() => docs.resolve("docs", { rest }), invalid("rest"), rest);
+  }
+  assert.equal(docs.resolve("docs", { rest: "guide/.../router" }), "/docs/guide/.../router");
 });
