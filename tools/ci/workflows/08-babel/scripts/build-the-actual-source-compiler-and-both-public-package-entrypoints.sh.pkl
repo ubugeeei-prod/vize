@@ -1,1 +1,0 @@
-amends "../../../lib/parts/shell/pack-babel-plugin.pkl"

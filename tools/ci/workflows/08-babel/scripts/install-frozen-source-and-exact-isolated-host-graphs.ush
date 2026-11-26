@@ -1,0 +1,13 @@
+# Install the frozen workspace, the isolated Babel host and runtime graphs, and their browser.
+use $bin::{node, npm}
+
+let fixtures = "npm/builder/babel/test"
+
+node tools/support/github/vp-install.ts --filter ./npm/builder/babel... --filter ./npm/native...
+for host in ["babel7", "babel8"] {
+  npm ci --prefix $fixtures/hosts/fixtures/$host --ignore-scripts --no-audit --no-fund
+}
+for runtime in ["vdom", "vapor-rc9", "vapor-rc11"] {
+  npm ci --prefix $fixtures/runtime/fixtures/$runtime --ignore-scripts --no-audit --no-fund
+}
+node $fixtures/runtime/fixtures/vdom/node_modules/playwright/cli.js install --with-deps chromium

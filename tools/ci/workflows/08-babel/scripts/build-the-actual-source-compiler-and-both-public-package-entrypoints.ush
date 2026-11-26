@@ -1,0 +1,37 @@
+# Build the source compiler and Babel plugin at the source commit; pack the plugin with provenance.
+use $bin::{cp, git, node, npm, vp}
+use std::fs::{mkdir_p, read_dir}
+use std::io::to_file
+
+fn is_tarball(path: String) -> Bool {
+  match path {
+    glob "*.tgz" => true
+    _ => false
+  }
+}
+
+let evidence = $"$env::RUNNER_TEMP/babel-plugin"
+let packed = $"$evidence/packed"
+
+if (git rev-parse HEAD) != $env::SOURCE_SHA {
+  fail 1 $"The checkout is not the source commit $env::SOURCE_SHA"
+}
+mkdir_p $packed
+git rev-parse HEAD "HEAD^{tree}" | to_file $evidence/source.txt
+git log -50 "--format=%H %T %P %s" | to_file $evidence/ordered-history.txt
+node --version | to_file $evidence/node-version.txt
+vp run --workspace-root build:native:test
+export GITHUB_SHA = $env::SOURCE_SHA {
+  node npm/native/scripts/native-build-receipt.mjs
+}
+vp run --no-cache --filter ./npm/builder/babel build
+cd "npm/builder/babel" {
+  npm pack --ignore-scripts --pack-destination $packed --json | to_file $evidence/pack.json
+}
+let tarballs = [file for file in read_dir $packed if is_tarball $file]
+if tarballs.is_empty() {
+  fail 1 $"npm pack wrote no tarball to $packed"
+}
+# A computed argument list goes through std::process::exec.
+std::process::exec sha256sum $tarballs | to_file $evidence/packed.sha256
+cp npm/native/.artifacts/native/build-token-receipt.json $evidence/

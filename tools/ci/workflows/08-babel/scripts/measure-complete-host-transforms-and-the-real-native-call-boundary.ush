@@ -1,0 +1,9 @@
+# Profile complete host transforms and the native-call boundary of the packed plugin.
+use $bin::{find, node}
+
+let packed = $"$env::RUNNER_TEMP/babel-plugin/packed"
+let packed_plugin = find $packed -maxdepth 1 -name *.tgz -print -quit
+
+export VIZE_BABEL_PACKED_PLUGIN = $packed_plugin {
+  node npm/native/scripts/test-preparation.mjs node npm/builder/babel/test/profile-host.ts
+}

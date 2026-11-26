@@ -1,0 +1,10 @@
+# Check the Babel 7 and 8 ESM and CommonJS host consumers against the packed plugin.
+use $bin::{find, node}
+
+let packed = $"$env::RUNNER_TEMP/babel-plugin/packed"
+let packed_plugin = find $packed -maxdepth 1 -name *.tgz -print -quit
+
+export VIZE_BABEL_PACKED_PLUGIN = $packed_plugin {
+  node npm/native/scripts/test-preparation.mjs node --test \
+    npm/builder/babel/test/packed-hosts.test.ts
+}

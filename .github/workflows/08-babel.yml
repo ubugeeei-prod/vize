@@ -60,33 +60,33 @@ jobs:
         with: { key: babel-plugin-hosts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - uses: ./.github/actions/setup-rust-script
       - name: Install frozen source and exact isolated host graphs
-        run: . "${{ env.VIZE_CI_FILES }}/install-frozen-source-and-exact-isolated-host-graphs.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-frozen-source-and-exact-isolated-host-graphs.sh"
       - name: Build the actual source compiler and both public package entrypoints
-        run: . "${{ env.VIZE_CI_FILES }}/build-the-actual-source-compiler-and-both-public-package-entrypoints.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/build-the-actual-source-compiler-and-both-public-package-entrypoints.sh"
       - name: Check actual packed Babel 7 and 8 ESM and CommonJS consumers
         env:
           VIZE_BABEL_NATIVE_ROOT: ${{ github.workspace }}/npm/native
           VIZE_BABEL_HOST_OUTPUT: ${{ runner.temp }}/babel-plugin/hosts
-        run: . "${{ env.VIZE_CI_FILES }}/check-actual-packed-babel-7-and-8-esm-and-commonjs-consumers.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/check-actual-packed-babel-7-and-8-esm-and-commonjs-consumers.sh"
       - name: Measure complete host transforms and the real native-call boundary
         if: always()
         env:
           VIZE_BABEL_NATIVE_ROOT: ${{ github.workspace }}/npm/native
           VIZE_BABEL_PROFILE_OUTPUT: ${{ runner.temp }}/babel-plugin/profile.json
-        run: . "${{ env.VIZE_CI_FILES }}/measure-complete-host-transforms-and-the-real-native-call-boundary.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/measure-complete-host-transforms-and-the-real-native-call-boundary.sh"
       - name: Qualify eight supported client SSR and hydration rows
         if: always()
         env:
           VIZE_BABEL_NATIVE_ROOT: ${{ github.workspace }}/npm/native
           VIZE_BABEL_RUNTIME_OUTPUT: ${{ runner.temp }}/babel-plugin/runtime
           VIZE_BABEL_RUNTIME_ROLE: supported
-        run: . "${{ env.VIZE_CI_FILES }}/qualify-eight-supported-client-ssr-and-hydration-rows.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/qualify-eight-supported-client-ssr-and-hydration-rows.sh"
       - name: Qualify additive actual native CSSOM and HTML style guards
         if: always()
         env:
           VIZE_BABEL_NATIVE_ROOT: ${{ github.workspace }}/npm/native
           VIZE_BABEL_STYLE_GUARD_OUTPUT: ${{ runner.temp }}/babel-plugin/style-guards
-        run: . "${{ env.VIZE_CI_FILES }}/qualify-additive-actual-native-cssom-and-html-style-guards.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/qualify-additive-actual-native-cssom-and-html-style-guards.sh"
       - name: Check package source and declarations
         if: always()
         run: vp run --filter './npm/builder/babel' check
