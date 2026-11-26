@@ -152,7 +152,7 @@ impl CacheSlot {
         let node_modules = config
             .ancestors()
             .skip(1)
-            .filter(|directory| !crate::path::is_shared_scratch_directory(directory))
+            .filter(|directory| !super::shared_scratch::is_shared_scratch_directory(directory))
             .map(|directory| directory.join("node_modules"))
             .find(|directory| directory.is_dir())?;
         let mut runtime = rustc_hash::FxHasher::default();

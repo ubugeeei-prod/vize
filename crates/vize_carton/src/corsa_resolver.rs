@@ -28,6 +28,7 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 mod packages;
+use crate::config::is_shared_scratch_directory;
 use packages::{
     find_node_modules_native, find_node_modules_tsrs, find_node_modules_wrapper, resolve_bin_shim,
     resolve_owned_launcher,
@@ -304,7 +305,7 @@ fn discover_in_walk_checked(
                 continue;
             }
             visited.push(dir);
-            if crate::path::is_shared_scratch_directory(dir) {
+            if is_shared_scratch_directory(dir) {
                 continue;
             }
             match probe_directory(dir) {
@@ -336,7 +337,7 @@ fn discover_batch_in_walk_checked(
                 continue;
             }
             visited.push(dir);
-            if crate::path::is_shared_scratch_directory(dir) {
+            if is_shared_scratch_directory(dir) {
                 continue;
             }
             if let Some(path) = find_node_modules_tsrs(dir)? {

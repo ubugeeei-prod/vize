@@ -61,7 +61,7 @@ pub(super) fn search_directories_observed(
     loop {
         // A config another user left in a shared scratch directory is not
         // this project's; the search ends there.
-        if automatic && crate::path::is_shared_scratch_directory(&current) {
+        if automatic && super::shared_scratch::is_shared_scratch_directory(&current) {
             break;
         }
         directories.push(current.clone());
