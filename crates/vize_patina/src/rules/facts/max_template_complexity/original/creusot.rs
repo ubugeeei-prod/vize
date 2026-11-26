@@ -130,6 +130,36 @@ pub fn ranked_landing<T>(
     }
 }
 
+/// A row lands among the kept rows: every row before it ranks after it, the
+/// kept row it lands on ranks after it, and it lands past the kept rows only
+/// when the ranking has no more rows.
+#[logic]
+#[requires(holds(old, first(rows, old.len())))]
+#[requires(ranked_landing(rank, row, old, at))]
+#[ensures(at <= first(rows, old.len()).len())]
+#[ensures(forall<i: Int> 0 <= i && i < at ==> !rank.get((row, rows[i])))]
+#[ensures(at < first(rows, old.len()).len() ==> rank.get((row, rows[at])))]
+#[ensures(at == first(rows, old.len()).len() && at < old.len() ==> at == rows.len())]
+pub fn a_row_lands_among_the_kept_rows<T>(
+    rank: Mapping<(T, T), bool>,
+    row: T,
+    rows: Seq<T>,
+    old: Seq<Option<T>>,
+    at: Int,
+) {
+    pearlite! {
+        {
+            let kept = first(rows, old.len()).len();
+            proof_assert!(kept == if rows.len() <= old.len() { rows.len() } else { old.len() });
+            proof_assert!(forall<i: Int> 0 <= i && i < kept ==> old[i] == Some(rows[i]));
+            proof_assert!(forall<i: Int> kept <= i && i < old.len() ==> old[i] == None);
+            proof_assert!(kept < at ==> old[kept] != None);
+            proof_assert!(at <= kept);
+            proof_assert!(forall<i: Int> 0 <= i && i < at ==> old[i] == Some(rows[i]) && !rank.get((row, rows[i])))
+        }
+    }
+}
+
 /// The window step of `insert_prefix`: landing and shifting a row into the
 /// first rows of a ranking leaves the first rows of the ranking with the row
 /// inserted.
@@ -148,24 +178,15 @@ pub fn a_landed_row_extends_the_ranking_prefix<T>(
 ) {
     pearlite! {
         {
-            let kept = first(rows, old.len()).len();
-            proof_assert!(kept == if rows.len() <= old.len() { rows.len() } else { old.len() });
-            proof_assert!(forall<i: Int> 0 <= i && i < kept ==> old[i] == Some(rows[i]));
-            proof_assert!(forall<i: Int> kept <= i && i < old.len() ==> old[i] == None);
-            proof_assert!(kept < at ==> old[kept] != None);
-            proof_assert!(at <= kept);
-            proof_assert!(forall<i: Int> 0 <= i && i < at ==> old[i] == Some(rows[i]) && !rank.get((row, rows[i])));
+            let _ = a_row_lands_among_the_kept_rows(rank, row, rows, old, at);
             let _ = insertion_splits_at_the_first_row_it_ranks_before(rank, row, rows, at);
-            proof_assert!(at < kept ==> rank.get((row, rows[at])));
-            proof_assert!(at == kept && at < old.len() ==> at == rows.len());
             let ins = insert_full(rank, row, rows);
-            proof_assert!(ins.len() == rows.len() + 1);
             let size = first(ins, old.len()).len();
             proof_assert!(size == if rows.len() + 1 <= old.len() { rows.len() + 1 } else { old.len() });
             proof_assert!(forall<i: Int> 0 <= i && i < at ==> new[i] == Some(ins[i]));
             proof_assert!(at < size ==> new[at] == Some(ins[at]));
             proof_assert!(forall<i: Int> at < i && i < size ==> new[i] == Some(ins[i]));
-            proof_assert!(forall<i: Int> size <= i && i < new.len() ==> new[i] == None);
+            proof_assert!(forall<i: Int> size <= i && i < new.len() ==> new[i] == None)
         }
     }
 }
