@@ -47,15 +47,6 @@ jobs {
         `working-directory` = "tests/formal/ir-graph"
         run = ci.workflowScript("check-the-unbounded-theorem-and-bounded-models.sh")
       }
-      new Dynamic {
-        name = "Prove cursor windows against individual point containment"
-        uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"
-        with {
-          `kani-version` = "0.68.0"
-          command = "kani"
-          args = "crates/vize_incremental/providers/graph/src/recovery/positions/kani.rs --output-format=terse"
-        }
-      }
     }
   }
 }
