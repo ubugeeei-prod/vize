@@ -33,6 +33,8 @@ impl Linter {
             l2,
             env,
         } = input;
+        // Declared before the context so the facade's L2 header outlives it.
+        let mut header = None;
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
         ctx.enable_callback_order();
         ctx.set_rule_config(
@@ -78,6 +80,7 @@ impl Linter {
             sfc::facade::Dispatch {
                 root,
                 l2,
+                header: &mut header,
                 analysis,
                 rules: env.facade_rules,
                 rule_count,
