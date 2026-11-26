@@ -14,6 +14,7 @@ renders a labelled `<nav>` landmark and marks the current destination with
 | BN3 | controlled / disabled / unknown | click             | controlled values win; disabled buttons are native-disabled, disabled links drop `href` with `aria-disabled`; unknown values never emit     | `controlled values win, and disabled or unknown items do not activate`   |
 | BN4 | no provider                     | setup             | items throw `VIZE_UI_CONTEXT_MISSING: BottomNavigation`                                                                                     | `items require a BottomNavigation provider`                              |
 | BN5 | SSR / hydration                 | isolated requests | byte-identical markup and hydration without diagnostics                                                                                     | `renders byte-identical tab bar markup and hydrates without mismatches`  |
+| BN6 | item `href`                     | render            | script-capable hrefs and hrefs with control characters are dropped; surrounding whitespace is trimmed                                       | `hrefs a browser would read as a script URL are never rendered`          |
 
 Pair with `SafeArea` (`edges: ["bottom"]`) to clear home indicators. The subpath
 ships no CSS.
