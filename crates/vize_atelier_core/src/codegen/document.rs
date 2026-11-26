@@ -238,12 +238,33 @@ impl EmitDocument {
     /// are ASCII and tried in order at each byte; a link boundary at an
     /// escaped byte lands before its replacement.
     pub fn push_escaped(&mut self, other: &EmitDocument, escapes: &[(&str, &str)]) {
-        let base = self.text.len();
         let bytes = other.text.as_bytes();
+        // Only a byte that starts some pattern can begin a replacement. Most
+        // text holds none, and is then copied in one step.
+        let mut starts = [false; 256];
+        for (from, _) in escapes {
+            if let Some(slot) = from
+                .as_bytes()
+                .first()
+                .and_then(|&byte| starts.get_mut(usize::from(byte)))
+            {
+                *slot = true;
+            }
+        }
+        let starts_pattern = |byte: &u8| starts.get(usize::from(*byte)).copied().unwrap_or(false);
+        let Some(first) = bytes.iter().position(starts_pattern) else {
+            self.push_spanned(other);
+            return;
+        };
+        let base = self.text.len();
         // (input offset of an escape, total growth once it is applied)
         let mut growth: Vec<(usize, usize)> = Vec::new();
-        let (mut start, mut index) = (0, 0);
+        let (mut start, mut index) = (0, first);
         while index < bytes.len() {
+            if !bytes.get(index).is_some_and(starts_pattern) {
+                index += 1;
+                continue;
+            }
             let rest = bytes.split_at(index).1;
             let Some((from, to)) = escapes.iter().find(|(from, _)| {
                 let pattern = from.as_bytes();
