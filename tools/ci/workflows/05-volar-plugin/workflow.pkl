@@ -54,18 +54,18 @@ jobs {
       new Dynamic {
         name = "Install exact official Volar and TypeScript service providers"
         `working-directory` = "${{ runner.temp }}"
-        run = ci.workflowScript("install-exact-official-volar-and-typescript-service-providers.sh")
+        run = ci.workflowProgram("install-exact-official-volar-and-typescript-service-providers")
       }
       new Dynamic {
         name = "Build the actual reviewed native source"
-        run = ci.workflowScript("build-the-actual-reviewed-native-source.sh")
+        run = ci.workflowProgram("build-the-actual-reviewed-native-source")
       }
       ci.command("Retain immutable source and actual loaded native identity", "node npm/volar/test/source-receipt.js")
       ci.command("Check portable native projection boundaries", "node --test npm/native/test/language-projection.test.cjs")
       ci.command("Exercise actual Volar context and TypeScript language service", "node --test npm/volar/test/service.test.js")
       new Dynamic {
         name = "Check public package declarations"
-        run = ci.workflowScript("check-public-package-declarations.sh")
+        run = ci.workflowProgram("check-public-package-declarations")
       }
       ci.command("Exercise fresh packed consumers without source loader overrides", "node npm/volar/test/packed-consumer.js")
       new Dynamic {

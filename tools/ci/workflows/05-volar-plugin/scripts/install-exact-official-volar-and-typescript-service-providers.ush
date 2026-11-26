@@ -1,0 +1,20 @@
+# Install the exact official Volar and TypeScript releases outside the workspace, and link the plugin to them.
+mod "../../../lib/github.ush" as github
+use $bin::{npm}
+use std::fs::{mkdir_p, symlink}
+
+let dependencies = $"$env::RUNNER_TEMP/volar-plugin-deps"
+
+github::export_env VIZE_VOLAR_EVIDENCE_DIR $"$env::RUNNER_TEMP/volar-plugin-evidence"
+github::export_env VIZE_VOLAR_DEPENDENCY_LOCK $"$dependencies/package-lock.json"
+npm install --prefix $dependencies \
+  --ignore-scripts \
+  --no-audit \
+  --no-fund \
+  @volar/language-core@2.4.30 \
+  @volar/typescript@2.4.30 \
+  typescript@6.0.3 \
+  vue@3.5.42
+mkdir_p $"$dependencies/node_modules/@vizejs"
+symlink $"$env::GITHUB_WORKSPACE/npm/native" $"$dependencies/node_modules/@vizejs/native"
+symlink $"$dependencies/node_modules" $"$env::GITHUB_WORKSPACE/npm/volar/node_modules"

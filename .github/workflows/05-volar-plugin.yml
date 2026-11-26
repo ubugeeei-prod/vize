@@ -51,9 +51,9 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install exact official Volar and TypeScript service providers
         working-directory: ${{ runner.temp }}
-        run: . "${{ env.VIZE_CI_FILES }}/install-exact-official-volar-and-typescript-service-providers.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-exact-official-volar-and-typescript-service-providers.sh"
       - name: Build the actual reviewed native source
-        run: . "${{ env.VIZE_CI_FILES }}/build-the-actual-reviewed-native-source.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/build-the-actual-reviewed-native-source.sh"
       - name: Retain immutable source and actual loaded native identity
         run: node npm/volar/test/source-receipt.js
       - name: Check portable native projection boundaries
@@ -61,7 +61,7 @@ jobs:
       - name: Exercise actual Volar context and TypeScript language service
         run: node --test npm/volar/test/service.test.js
       - name: Check public package declarations
-        run: . "${{ env.VIZE_CI_FILES }}/check-public-package-declarations.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/check-public-package-declarations.sh"
       - name: Exercise fresh packed consumers without source loader overrides
         run: node npm/volar/test/packed-consumer.js
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

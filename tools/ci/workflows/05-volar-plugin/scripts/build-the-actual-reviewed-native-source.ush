@@ -1,0 +1,17 @@
+# Build the native addon from the reviewed commit, stamped with a fresh token the service tests require to load.
+mod "../../../lib/github.ush" as github
+use $bin::{cargo, cp, git, openssl}
+
+let addon = "npm/native/vize-vitrine.linux-x64-gnu.node"
+
+let checkout = git rev-parse HEAD
+if $checkout != $env::VIZE_SOURCE_SHA {
+  fail 1 $"The checkout is $checkout, not the reviewed source $env::VIZE_SOURCE_SHA"
+}
+let token = openssl rand -hex 16
+export VIZE_NATIVE_BUILD_TOKEN = $token {
+  cargo build --profile ci -p vize_vitrine --features napi
+}
+cp target/ci/libvize_vitrine.so $addon
+github::export_env VIZE_VOLAR_EXPECTED_NATIVE_TOKEN $token
+github::export_env NAPI_RS_NATIVE_LIBRARY_PATH $"$env::GITHUB_WORKSPACE/$addon"

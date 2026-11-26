@@ -1,0 +1,10 @@
+# Type-check the published declarations alone, with the exact TypeScript the service providers use.
+use $bin::{node}
+
+node $"$env::RUNNER_TEMP/volar-plugin-deps/node_modules/typescript/bin/tsc" \
+  --ignoreConfig \
+  --strict \
+  --noEmit \
+  --module NodeNext \
+  --moduleResolution NodeNext \
+  --target ESNext npm/volar/src/index.d.ts
