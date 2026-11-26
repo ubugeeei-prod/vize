@@ -22,17 +22,17 @@ use super::super::{
 };
 use super::{reference, synthetic_epoch};
 
-const SCRIPT: &str =
+pub(super) const SCRIPT: &str =
     "\nimport type { ItemProps } from \"../types\";\n\nconst props = defineProps<ItemProps>();\n";
 
-struct Reproduction {
-    components: Vec<(PathBuf, Vec<TypeDependency>)>,
+pub(super) struct Reproduction {
+    pub(super) components: Vec<(PathBuf, Vec<TypeDependency>)>,
     /// The dependency names every component reports, sorted.
     files: Vec<String>,
     interfaces: FxHashMap<String, String>,
 }
 
-fn write_reproduction(root: &Path, components: usize, modules: usize) -> Reproduction {
+pub(super) fn write_reproduction(root: &Path, components: usize, modules: usize) -> Reproduction {
     let src = root.join("src");
     std::fs::create_dir_all(src.join("components")).unwrap();
     std::fs::create_dir_all(src.join("models")).unwrap();

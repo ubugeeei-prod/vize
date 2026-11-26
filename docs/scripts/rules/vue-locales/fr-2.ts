@@ -187,6 +187,8 @@ export const frenchVue2 = {
 } satisfies Record<string, readonly [purpose: string, bad: string, good: string]>;
 
 export const frenchVueNotes = {
+  "`globals` lists names a build step defines for every template, such as `unplugin-auto-import` imports. In a Nuxt project, `vize lint` reads the auto-imports from the generated `.nuxt/types/imports.d.ts` and adds them, so they need no entry; until `nuxi prepare` has generated that file, the rule is skipped with a notice. Names are exact. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.":
+    "`globals` liste les noms qu’une étape de build définit pour tous les templates, comme les imports d’`unplugin-auto-import`. Dans un projet Nuxt, `vize lint` lit les imports automatiques dans le fichier généré `.nuxt/types/imports.d.ts` et les ajoute : ils n’ont donc pas besoin d’être listés ; tant que `nuxi prepare` n’a pas généré ce fichier, la règle est ignorée avec un avis. Les noms sont exacts. Les options n’activent pas la règle. Les couches suivantes remplacent la liste ; une liste vide efface les noms hérités.",
   "A type assertion does not change the value it wraps, so `(rows as string[]).push(x)` and `rows!.push(x)` in a template are reported as mutations of the prop `rows`; eslint-plugin-vue stops at the assertion.":
     "Une assertion de type ne change pas la valeur qu’elle encadre : dans un template, `(rows as string[]).push(x)` et `rows!.push(x)` sont donc signalés comme des mutations de la prop `rows`, alors qu’eslint-plugin-vue s’arrête à l’assertion.",
   "Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.":
