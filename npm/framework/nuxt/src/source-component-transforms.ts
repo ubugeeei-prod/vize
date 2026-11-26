@@ -3,15 +3,13 @@ type NuxtComponentTransformOptions = {
 };
 
 /**
- * Nuxt 5 defaults to resolving template components through Vue compiler node
- * transforms. Vize owns that compiler boundary, so select Nuxt's equivalent
- * source transform before the native compiler runs.
+ * Nuxt can resolve template components, lazy hydration included, through Vue
+ * compiler node transforms. Nuxt 4.7 does so by default on every compatibility
+ * version. Vize owns that compiler boundary and runs no Vue node transforms, so
+ * select Nuxt's equivalent source transforms before the native compiler runs.
+ * Older Nuxt releases ignore the key.
  */
-export function selectNuxtSourceComponentTransforms(
-  options: NuxtComponentTransformOptions,
-  nuxtMajor: number,
-): void {
-  if (nuxtMajor < 5) return;
+export function selectNuxtSourceComponentTransforms(options: NuxtComponentTransformOptions): void {
   options.experimental ||= {};
   options.experimental.compilerComponentResolution = false;
 }
