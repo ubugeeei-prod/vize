@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/content-mapper",
-  "version": "0.474.0",
+  "version": "0.802.0",
   "description": "Vize content mapper: type-check .vue files with tsc, tsgo and tsrs",
   "keywords": [
     "content-mapper",
