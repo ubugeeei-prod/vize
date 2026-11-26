@@ -91,11 +91,12 @@ use $bin::{node, tee, vp}
 use std::fs::mkdir_p
 
 let evidence = "docs-render-evidence/resource-readiness"
-let log = evidence + "/tests.tap"
+let log = $"$evidence/tests.tap"
 
-vp "node" "docs/scripts/ensure-browser.ts"
-mkdir_p evidence
-node "--test" "tests/tooling/docs-preview-readiness-browser.test.ts" |& tee log
+vp node docs/scripts/ensure-browser.ts
+mkdir_p $evidence
+node --test --test-reporter=tap tests/tooling/docs-preview-readiness-browser.test.ts |& tee $log
+node tools/support/github/docs-preview-readiness.ts $log $evidence
 ```
 
 - Open with one comment line saying what the program does and why.
@@ -104,6 +105,8 @@ node "--test" "tests/tooling/docs-preview-readiness-browser.test.ts" |& tee log
   `"apt-get" as apt_get`.
 - Write real ush: pipelines, `cd dir { … }`, `export NAME = value { … }`, std
   modules. Never embed shell text with `shell` or `$ …`.
+- Write arguments as on a command line: a bare word is a string, `$name` reads a
+  binding, `$env::NAME` reads the environment, and `$"…"` interpolates.
 - Reach files next to the program with `std::path::from_source`, not with
   `$VIZE_CI_FILES`.
 - Put helpers that several programs share in a `lib/` module, such as
@@ -111,6 +114,8 @@ node "--test" "tests/tooling/docs-preview-readiness-browser.test.ts" |& tee log
   Modules are inlined into each build and have no build of their own.
 - Run a workflow program with `ci.workflowProgram("<name>")` and a composite
   action's with `ci.actionProgram("<name>")`. WSL steps use `ci.wslProgram("<name>")`.
+- CI gets the compiler from `.github/actions/setup-ush`. When the flake pin moves,
+  update the version and the copied `sha256sums.txt` in its `install-ush.ush`.
 
 ## Typecheck comparison evidence
 
