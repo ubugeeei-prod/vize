@@ -277,7 +277,7 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
   }
   await setupLintInspector(options.lint, nuxt, compilerOptions, lintGeneration, nuxt.options.dev);
   const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
-  if (usesVizeCompiler) selectNuxtSourceComponentTransforms(nuxt.options, detectedNuxtMajor);
+  if (usesVizeCompiler) selectNuxtSourceComponentTransforms(nuxt.options);
   if (compilerOptions !== false && compilerOptions.compatibility?.hostCompiler !== true) {
     await setupNuxtViteCompiler(compilerOptions, nuxt, options.compiler);
   }
