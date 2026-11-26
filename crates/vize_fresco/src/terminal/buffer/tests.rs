@@ -96,7 +96,7 @@ fn control_characters_are_never_stored_beside_wide_or_accented_text() {
             let mut buffer = Buffer::new(12, 1);
             let clip = Rect::new(0, 0, clip_width, 1);
             buffer.set_string_clipped(0, 0, text, Style::new(), clip);
-            let stored: std::string::String = (0..12)
+            let stored: compact_str::CompactString = (0..12)
                 .filter_map(|x| buffer.get(x, 0))
                 .filter(|cell| !cell.is_continuation)
                 .map(|cell| cell.symbol.as_str())
