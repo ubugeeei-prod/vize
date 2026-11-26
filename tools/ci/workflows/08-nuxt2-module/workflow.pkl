@@ -104,7 +104,7 @@ jobs {
       new Dynamic {
         name = "Verify version-specific plans and original modern oracle"
         env { VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/08-nuxt2-module/scripts" }
-        run = ci.workflowScript("verify-version-specific-plans-and-original-modern-oracle.sh")
+        run = ci.workflowProgram("verify-version-specific-plans-and-original-modern-oracle")
       }
       new Dynamic {
         name = "Install the Nuxt 2 reproduction"

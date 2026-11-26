@@ -95,7 +95,7 @@ jobs:
       - name: Verify version-specific plans and original modern oracle
         env:
           VIZE_CI_FILES: ${{ github.workspace }}/tools/ci/workflows/08-nuxt2-module/scripts
-        run: . "${{ env.VIZE_CI_FILES }}/verify-version-specific-plans-and-original-modern-oracle.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-version-specific-plans-and-original-modern-oracle.sh"
       - name: Install the Nuxt 2 reproduction
         working-directory: tools/support/compat/nuxt/fixtures/nuxt2-module-build
         run: npm ci --legacy-peer-deps --no-audit --no-fund
