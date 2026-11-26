@@ -1,0 +1,5 @@
+# Compare the installed runtime identity and the complete formatted output of the Node 24 and Node 22 consumers.
+use $bin::{node}
+use std::path::from_source
+
+node (from_source "compare-installed-runtime-identity-and-complete-output-across-consumers.cjs")

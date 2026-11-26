@@ -59,7 +59,7 @@ jobs {
       }
       new Dynamic {
         name = "Build exact source binding and package exports"
-        run = ci.workflowScript("build-exact-source-binding-and-package-exports.sh")
+        run = ci.workflowProgram("build-exact-source-binding-and-package-exports")
       }
       new Dynamic {
         name = "Check real host options, complete goldens, AST/render semantics and format counts"
@@ -67,7 +67,7 @@ jobs {
       }
       new Dynamic {
         name = "Install the tarball in a fresh consumer and exercise actual CLI and configuration"
-        run = ci.workflowScript("install-the-tarball-in-a-fresh-consumer-and-exercise.sh")
+        run = ci.workflowProgram("install-the-tarball-in-a-fresh-consumer-and-exercise")
       }
       new Dynamic {
         name = "Install the declared minimum Node consumer runtime"
@@ -79,12 +79,12 @@ jobs {
       }
       new Dynamic {
         name = "Qualify the same tarball and native image on Node 22.0.0"
-        run = ci.workflowScript("qualify-the-same-tarball-and-native-image-on-node-22-0-0.sh")
+        run = ci.workflowProgram("qualify-the-same-tarball-and-native-image-on-node-22-0-0")
       }
       new Dynamic {
         name = "Compare installed runtime identity and complete output across consumers"
         shell = "bash"
-        run = ci.workflowScript("compare-installed-runtime-identity-and-complete-output-across-consumers.sh")
+        run = ci.workflowProgram("compare-installed-runtime-identity-and-complete-output-across-consumers")
       }
       new Dynamic {
         uses = ci.uploadArtifact

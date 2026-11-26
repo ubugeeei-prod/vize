@@ -1,0 +1,18 @@
+# Build the native test binding at SOURCE_SHA on the pinned Node 24.14.0, then check and pack the Prettier plugin.
+use $bin::{git, node, vp}
+use std::path::from_source
+
+let source_sha = $env::SOURCE_SHA
+let checkout = git rev-parse HEAD
+if checkout != source_sha {
+  fail 1 $"The checkout is at $checkout, not at SOURCE_SHA $source_sha"
+}
+let node_version = node (from_source "build-exact-source-binding-and-package-exports.cjs")
+if node_version != "24.14.0" {
+  fail 1 $"The binding is built on Node 24.14.0, not on $node_version"
+}
+vp run --workspace-root build:native:test
+cd "npm/formatter/prettier" {
+  vp check src test vite.config.ts
+  vp pack
+}

@@ -1,0 +1,7 @@
+# Install the packed plugin in a fresh consumer on Node 24.14.0 and exercise its CLI and configuration.
+use $bin::{node}
+
+node npm/native/scripts/test-preparation.mjs node npm/formatter/prettier/test/consumer.mjs \
+  --mode source-native \
+  --expected-node 24.14.0 \
+  --output $"$env::RUNNER_TEMP/prettier-source-consumer"

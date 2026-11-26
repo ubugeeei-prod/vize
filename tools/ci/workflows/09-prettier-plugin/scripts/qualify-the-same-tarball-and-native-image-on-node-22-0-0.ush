@@ -1,0 +1,10 @@
+# Install the same tarball and native image in a consumer on Node 22.0.0 and exercise it as on Node 24.
+use $bin::{node}
+
+let temp = $env::RUNNER_TEMP
+
+node npm/native/scripts/test-preparation.mjs node npm/formatter/prettier/test/consumer.mjs \
+  --mode source-native \
+  --expected-node 22.0.0 \
+  --tarball-directory $"$temp/prettier-source-consumer" \
+  --output $"$temp/prettier-node22-consumer"
