@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/lint",
-  "version": "0.474.0",
+  "version": "0.801.0",
   "description": "Vize linter for Vue, HTML, JSX, TSX and TSRX",
   "keywords": [
     "lint",
