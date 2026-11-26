@@ -3,6 +3,11 @@
 //! Detect elements that should have visible (palpable) content but are empty.
 //! Based on markuplint's `no-empty-palpable-content` rule.
 //!
+//! Directives known to set the content count as content: `v-html`, `v-text`
+//! and vue-i18n's `v-t`. Other custom directives do not, because many only
+//! focus or style the element; list the ones that fill content in the
+//! `contentDirectives` option.
+//!
 //! ## Examples
 //!
 //! ### Invalid
@@ -20,6 +25,7 @@
 //!   <p>text</p>
 //!   <li>item</li>
 //!   <td>cell</td>
+//!   <p v-t="'title'"></p>
 //! </template>
 //! ```
 
@@ -90,13 +96,15 @@ impl Rule for NoEmptyPalpableContent {
             return;
         }
 
-        // Skip if element has aria-label, v-html, v-text, or slot
+        // Skip if element has aria-label, a directive known to set its
+        // content, or slot. vue-i18n's `v-t` writes the translated message to
+        // `textContent` as `v-text` does.
         let has_content_source = element.props.iter().any(|prop| match prop {
             PropNode::Attribute(attr) => {
                 attr.name == "aria-label" || attr.name == "aria-labelledby"
             }
             PropNode::Directive(dir) => {
-                dir.name == "html" || dir.name == "text" || dir.name == "slot"
+                dir.name == "html" || dir.name == "text" || dir.name == "t" || dir.name == "slot"
             }
         });
 
@@ -174,6 +182,54 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<p v-text="content"></p>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_with_vue_i18n_v_t() {
+        let linter = create_linter();
+        for source in [
+            r#"<p v-t="'title'"></p>"#,
+            r#"<li v-t="{ path: 'menu.home', locale: 'ja' }"></li>"#,
+            r#"<td v-t.preserve="'cell'"></td>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 0, "{source} must be valid");
+        }
+    }
+
+    // A custom directive may only focus or style the element, so it does not
+    // count as content unless the project configures it.
+    #[test]
+    fn test_invalid_with_unconfigured_custom_directive() {
+        let linter = create_linter();
+        for source in [
+            r#"<p v-focus></p>"#,
+            r#"<p v-tooltip="'hint'"></p>"#,
+            r#"<p v-tt="'title'"></p>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 1, "{source} must stay reported");
+        }
+    }
+
+    #[test]
+    fn pinned_vue_i18n_v_t_sfc() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            include_str!(
+                "../../../../../tests/_fixtures/differential/linter/palpable-content-vue-i18n-v-t/Title.vue.txt"
+            ),
+            "Title.vue",
+        );
+        let messages: Vec<&str> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect();
+        assert_eq!(
+            messages,
+            ["<p> element is empty but expects visible content"]
+        );
     }
 
     #[test]

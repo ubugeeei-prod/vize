@@ -583,6 +583,42 @@
       }
     },
     {
+      "id": "linter/component-definition-nuxt-mode-suffixes",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "component-definition-nuxt-mode-suffixes",
+        "files": [
+          {
+            "path": "Component.vue.txt",
+            "role": "authored-reproduction",
+            "sha256": "492dc859afabf4aefdef529dc18b2095aeb6f4b916177429b3f72b6cd7d4344a"
+          },
+          {
+            "path": "filenames.txt",
+            "role": "authored-filenames",
+            "sha256": "794f956bb8a917dcfcf08e349f48a265d9db2bf473d4a08072f721f27a42d9b0"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/component-document-isolation-10444",
       "state": "active",
       "targets": [
@@ -20779,17 +20815,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "aa3f8d1e6e0b76993c574b1a467acd1573a02da592f56c65eba37f7b25ab038e"
+            "sha256": "1d1e9bc6f74e32090105f166730576c166035cc1afe51f7a9159ff3534fe4f79"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "76759bbf80b8e21bac6268d4911f135b7d5bdc00bccea3ab8be937583d3e7e02"
+            "sha256": "78a67566c048dd63f025878478164ac407aeea28e414636f6344340d58995593"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "6615382aef38a138db0ebf7d831600b2a91a0346647b5c4425db5bc880f761cb"
+            "sha256": "70a52a8c92843ddebc7a6ad6d232d9644a7382d358307e5bea1fa8ab21b16578"
           }
         ]
       },
@@ -23437,6 +23473,38 @@
       }
     },
     {
+      "id": "linter/palpable-content-vue-i18n-v-t",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "palpable-content-vue-i18n-v-t",
+        "files": [
+          {
+            "path": "Title.vue.txt",
+            "role": "authored-reproduction",
+            "sha256": "1ab9bd53b18151b60a9a973e78983c5261e510b38a6c0b6fb210fb184a356d89"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-a11y-12754",
       "state": "active",
       "targets": [
@@ -25614,6 +25682,38 @@
             "dialects": [
               "vue3-sfc",
               "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/require-component-static-is",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "require-component-static-is",
+        "files": [
+          {
+            "path": "StaticIs.vue.txt",
+            "role": "authored-reproduction",
+            "sha256": "d7b0266fb848ff4bb925b4ff65c753d5ab89dd7aef10b57ae5283ae804cf6184"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"

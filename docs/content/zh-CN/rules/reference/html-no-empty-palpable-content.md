@@ -59,4 +59,4 @@ export default defineConfig({}).withVue({
 - [HTML 规则](../html.md)
 - [规则选项](/rules/options.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L38)
