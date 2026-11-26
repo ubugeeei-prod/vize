@@ -22765,6 +22765,48 @@
       }
     },
     {
+      "id": "linter/no-undefined-refs-project-globals",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-undefined-refs-project-globals",
+        "files": [
+          {
+            "path": "AutoImports.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "7118b5bb593bb4572dac90a809534a411d71ea41ce8895740fa11c9e875c8039"
+          },
+          {
+            "path": "OptionsPage.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "d04d875355dc39005153bdc7b5099d573fe12fa3de085659b03c4b08f44e0f10"
+          },
+          {
+            "path": "options.json",
+            "role": "rule-options",
+            "sha256": "f6425d530e1f95c452a93586013188c9c3f157aa7a776429bd4c47d69e375916"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unnecessary-type-assertion-12992",
       "state": "active",
       "targets": [

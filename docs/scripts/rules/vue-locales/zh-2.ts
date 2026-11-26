@@ -187,6 +187,8 @@ export const chineseVue2: Record<string, readonly [purpose: string, bad: string,
 };
 
 export const chineseVueNotes = {
+  "`globals` lists names a build step defines for every template, such as `unplugin-auto-import` imports. In a Nuxt project, `vize lint` reads the auto-imports from the generated `.nuxt/types/imports.d.ts` and adds them, so they need no entry; until `nuxi prepare` has generated that file, the rule is skipped with a notice. Names are exact. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.":
+    "`globals` 列出由构建步骤为每个模板定义的名称，例如 `unplugin-auto-import` 的自动导入。在 Nuxt 项目中，`vize lint` 会从已生成的 `.nuxt/types/imports.d.ts` 读取自动导入并加入这些名称，因此无需填写；在 `nuxi prepare` 生成该文件之前，会输出提示并跳过此规则。名称按完全一致匹配。设置选项不会启用规则。后面的配置层会替换列表；空列表会清除继承的名称。",
   "A type assertion does not change the value it wraps, so `(rows as string[]).push(x)` and `rows!.push(x)` in a template are reported as mutations of the prop `rows`; eslint-plugin-vue stops at the assertion.":
     "类型断言不会改变它包裹的值，因此模板中的 `(rows as string[]).push(x)` 和 `rows!.push(x)` 也会作为对 prop `rows` 的修改报告；eslint-plugin-vue 会在断言处停止追踪。",
   "Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.":

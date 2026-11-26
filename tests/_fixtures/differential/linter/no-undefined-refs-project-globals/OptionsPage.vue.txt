@@ -1,0 +1,21 @@
+<script lang="ts">
+export default defineComponent({
+  setup() {
+    const route = useRoute();
+    const color = useColor();
+    return { route, color };
+  },
+  computed: {
+    upper(): string {
+      return shout(this.color);
+    },
+  },
+});
+</script>
+
+<template>
+  <div>
+    <p id="about">{{ route.path }} {{ upper }} {{ formatCount(7) }}</p>
+    <BaseButton label="x" />
+  </div>
+</template>
