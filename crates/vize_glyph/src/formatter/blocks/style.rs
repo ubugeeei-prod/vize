@@ -5,7 +5,7 @@ use crate::{
     formatter::{FormatResult, GlyphFormatter, style_block},
 };
 use std::borrow::Cow;
-use vize_l0::String;
+use vize_l0::string_builder::TextBuf;
 use vize_l1::container::vue::StyleView;
 
 impl GlyphFormatter<'_> {
@@ -42,11 +42,9 @@ impl GlyphFormatter<'_> {
             },
         };
         let write = |options: &FormatOptions| {
-            let mut output = Vec::with_capacity((whole.end - whole.start) as usize);
+            let mut output = TextBuf::with_capacity((whole.end - whole.start) as usize);
             style_block::write_style_block(&mut output, &block, options, source)?;
-            let code = String::from_utf8(output).map_err(|_| {
-                FormatError::StyleFormatError("invalid style output encoding".into())
-            })?;
+            let code = output.into_compact();
             let changed =
                 source.get(whole.start as usize..whole.end as usize) != Some(code.as_str());
             Ok(FormatResult { code, changed })

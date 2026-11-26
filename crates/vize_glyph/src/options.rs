@@ -446,6 +446,22 @@ impl FormatOptions {
         }
     }
 
+    /// Get the indent as a static string, the same text as [`Self::indent_bytes`].
+    #[inline]
+    pub fn indent_str(&self) -> &'static str {
+        if self.use_tabs {
+            "\t"
+        } else {
+            match self.tab_width {
+                2 => "  ",
+                width @ 0..=24 => "                        "
+                    .get(..usize::from(width))
+                    .unwrap_or("  "),
+                _ => "  ", // Retain the legacy fallback outside shared valid widths.
+            }
+        }
+    }
+
     /// Get the newline string based on options
     #[inline]
     pub fn newline_string(&self) -> &'static str {

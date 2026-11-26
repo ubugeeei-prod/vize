@@ -21,6 +21,7 @@ mod gap;
 use super::TemplateFormatter;
 use crate::template::helpers::is_whitespace;
 use gap::{is_single_line_break_gap, whitespace_gap_line_breaks};
+use vize_l0::string_builder::TextBuf;
 
 /// Pragmas whose suppression covers the line *after* the comment.
 const NEXT_LINE_PRAGMAS: [&[u8]; 4] = [
@@ -210,7 +211,7 @@ impl<'s> LineJoiner<'s> {
 impl TemplateFormatter<'_> {
     /// Start a chunk of output, either on a fresh indented line or continuing
     /// the current one. See [`LineJoiner::open`] for how `join` is decided.
-    pub(super) fn open_chunk(&self, output: &mut Vec<u8>, depth: usize, join: ChunkJoin) {
+    pub(super) fn open_chunk(&self, output: &mut TextBuf, depth: usize, join: ChunkJoin) {
         let spaced = match join {
             ChunkJoin::NewLine => {
                 self.write_indent(output, depth);
@@ -218,7 +219,7 @@ impl TemplateFormatter<'_> {
             }
             ChunkJoin::BlankLine => {
                 if !output.is_empty() {
-                    output.extend_from_slice(self.newline);
+                    output.push_str(self.newline);
                 }
                 self.write_indent(output, depth);
                 return;
@@ -227,14 +228,10 @@ impl TemplateFormatter<'_> {
         };
         // The previous chunk already closed its line; take that newline back so
         // both chunks stay on the line their suppression comment covers.
-        while output
-            .last()
-            .is_some_and(|&byte| byte == b'\n' || byte == b'\r')
-        {
-            output.pop();
-        }
+        let kept = output.trim_end_matches(['\n', '\r']).len();
+        output.truncate(kept);
         if spaced {
-            output.push(b' ');
+            output.push(' ');
         }
     }
 }
@@ -243,7 +240,7 @@ impl TemplateFormatter<'_> {
 /// in the source. The offset lets the joiner tell whether the run shares an
 /// unsplittable line with the chunk that follows it.
 pub(super) struct TextRun {
-    bytes: Vec<u8>,
+    text: TextBuf,
     start: usize,
     end: usize,
 }
@@ -251,14 +248,14 @@ pub(super) struct TextRun {
 impl TextRun {
     pub(super) fn new() -> Self {
         Self {
-            bytes: Vec::with_capacity(256),
+            text: TextBuf::with_capacity(256),
             start: 0,
             end: 0,
         }
     }
 
     pub(super) fn is_empty(&self) -> bool {
-        self.bytes.is_empty()
+        self.text.is_empty()
     }
 
     /// Source offset the buffered text begins at.
@@ -272,34 +269,34 @@ impl TextRun {
     }
 
     pub(super) fn as_str(&self) -> &str {
-        std::str::from_utf8(&self.bytes).unwrap_or("")
+        self.text.as_str()
     }
 
     pub(super) fn clear(&mut self) {
-        self.bytes.clear();
+        self.text.truncate(0);
     }
 
     /// Append `source[start..end]`, separating it from already buffered text
     /// with a single space (an interpolation or a stray `<` split the runs).
     #[inline(always)]
-    pub(super) fn push_source(&mut self, source: &[u8], start: usize, end: usize) {
-        if self.bytes.is_empty() {
+    pub(super) fn push_source(&mut self, source: &str, start: usize, end: usize) {
+        if self.text.is_empty() {
             self.start = start;
         } else {
-            self.bytes.push(b' ');
+            self.text.push(' ');
         }
-        self.bytes
-            .extend_from_slice(source.get(start..end).unwrap_or_default());
+        self.text
+            .push_str(source.get(start..end).unwrap_or_default());
         self.end = end;
     }
 
-    /// Append a single byte the tag scanner rejected as markup.
-    pub(super) fn push_byte(&mut self, at: usize, byte: u8) {
-        if self.bytes.is_empty() {
+    /// Append a single character the tag scanner rejected as markup.
+    pub(super) fn push_char(&mut self, at: usize, character: char) {
+        if self.text.is_empty() {
             self.start = at;
         }
-        self.bytes.push(byte);
-        self.end = at + 1;
+        self.text.push(character);
+        self.end = at + character.len_utf8();
     }
 }
 
