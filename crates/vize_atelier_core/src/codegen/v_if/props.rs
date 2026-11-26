@@ -1,6 +1,5 @@
 //! Source-ordered props generation for v-if branches.
 
-use crate::codegen::RenderMapMode;
 use crate::{ElementNode, ElementType, ExpressionNode, IfBranchNode, PropNode, RuntimeHelper};
 use vize_l0::{FxHashSet, String};
 
@@ -21,8 +20,8 @@ use super::{
     generate_if_branch_key,
 };
 
-pub(super) fn generate_if_branch_props<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+pub(super) fn generate_if_branch_props(
+    ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
@@ -37,8 +36,8 @@ pub(super) fn generate_if_branch_props<M: RenderMapMode>(
     ctx.props_is_plain_element = plain;
 }
 
-fn branch_props<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+fn branch_props(
+    ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
@@ -133,8 +132,8 @@ fn branch_props<M: RenderMapMode>(
 }
 
 #[expect(clippy::too_many_arguments, reason = "independent codegen inputs")]
-fn flush_segment<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+fn flush_segment(
+    ctx: &mut CodegenContext,
     props: &[PropNode<'_>],
     branch: &IfBranchNode<'_>,
     branch_index: usize,
@@ -159,7 +158,7 @@ fn flush_segment<M: RenderMapMode>(
     );
 }
 
-fn push_separator<M: RenderMapMode>(ctx: &mut CodegenContext<M>, first_arg: &mut bool) {
+fn push_separator(ctx: &mut CodegenContext, first_arg: &mut bool) {
     if !*first_arg {
         ctx.push(", ");
     }
@@ -167,8 +166,8 @@ fn push_separator<M: RenderMapMode>(ctx: &mut CodegenContext<M>, first_arg: &mut
 }
 
 #[expect(clippy::too_many_arguments, reason = "independent codegen inputs")]
-fn generate_segment_object<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+fn generate_segment_object(
+    ctx: &mut CodegenContext,
     props: &[PropNode<'_>],
     branch: &IfBranchNode<'_>,
     branch_index: usize,

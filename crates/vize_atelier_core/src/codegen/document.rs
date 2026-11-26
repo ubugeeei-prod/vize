@@ -290,7 +290,6 @@ impl EmitDocument {
     }
 
     /// Record every segment-bearing link into `builder`, in emission order.
-    #[inline(always)]
     pub fn write_segments(&self, builder: &mut SourceMapBuilder) {
         for link in self.links.iter().filter(|link| link.segment) {
             let (generated, source) = (link.generated.start as usize, link.authored.start);

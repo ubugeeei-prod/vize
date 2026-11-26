@@ -1,6 +1,5 @@
 //! Serialization for fully-static nested VNodes.
 
-use crate::codegen::RenderMapMode;
 use vize_l0::{String, ensure_sufficient_stack};
 
 use crate::{ElementNode, PropNode, RuntimeHelper, TemplateChildNode};
@@ -10,8 +9,8 @@ use super::super::{context::CodegenContext, helpers::escape_js_string};
 /// Serialize a fully-static element as a nested `createElementVNode(...)` for a
 /// hoisted subtree. Children recurse the same way; text children collapse to a
 /// string literal, matching @vue/compiler-core's hoisted static output.
-pub(super) fn generate_static_element_to_bytes<M: RenderMapMode>(
-    ctx: &CodegenContext<M>,
+pub(super) fn generate_static_element_to_bytes(
+    ctx: &CodegenContext,
     el: &ElementNode<'_>,
     out: &mut String,
 ) {
@@ -36,11 +35,7 @@ pub(super) fn generate_static_element_to_bytes<M: RenderMapMode>(
     out.push(')');
 }
 
-fn generate_static_children_to_bytes<M: RenderMapMode>(
-    ctx: &CodegenContext<M>,
-    el: &ElementNode<'_>,
-    out: &mut String,
-) {
+fn generate_static_children_to_bytes(ctx: &CodegenContext, el: &ElementNode<'_>, out: &mut String) {
     if let [TemplateChildNode::Text(text)] = el.children.as_slice() {
         out.push('"');
         out.push_str(escape_js_string(text.content).as_str());
@@ -64,8 +59,8 @@ fn generate_static_children_to_bytes<M: RenderMapMode>(
     }
 }
 
-fn generate_static_child_array_to_bytes<M: RenderMapMode>(
-    ctx: &CodegenContext<M>,
+fn generate_static_child_array_to_bytes(
+    ctx: &CodegenContext,
     children: &[TemplateChildNode<'_>],
     out: &mut String,
 ) {

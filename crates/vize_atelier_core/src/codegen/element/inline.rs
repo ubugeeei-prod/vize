@@ -4,6 +4,7 @@
 //! and `createVNode()` instead of their block counterparts.
 
 use crate::codegen::RenderMapMode;
+use crate::codegen::component_binding::push_component_binding;
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
     steps::v_memo::{get_memo_exp, has_v_memo},
@@ -37,16 +38,16 @@ use super::{
 use vize_l0::ToCompactString;
 
 /// Generate element code (non-block)
-pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     if crosses_namespace_boundary(ctx, el) {
-        super::block::generate_element_block(ctx, el);
+        super::block::generate_element_block::<M>(ctx, el);
         return;
     }
 
     if matches!(el.tag_type, ElementType::Element | ElementType::Component)
         && has_dynamic_key_binding(el)
     {
-        super::block::generate_element_block(ctx, el);
+        super::block::generate_element_block::<M>(ctx, el);
         return;
     }
 
@@ -57,13 +58,13 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &Elem
                 "Teleport" | "teleport" | "Suspense" | "suspense" | "KeepAlive" | "keep-alive"
             ))
     {
-        super::block::generate_element_block(ctx, el);
+        super::block::generate_element_block::<M>(ctx, el);
         return;
     }
 
     // Check for v-once directive - handle it specially with cache
     if super::helpers::has_v_once(el) {
-        super::v_once::generate_v_once_element(ctx, el);
+        super::v_once::generate_v_once_element::<M>(ctx, el);
         return;
     }
 
@@ -86,8 +87,8 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &Elem
     };
 
     match el.tag_type {
-        ElementType::Element => generate_native_vnode(ctx, el),
-        ElementType::Component => generate_component_vnode(ctx, el),
+        ElementType::Element => generate_native_vnode::<M>(ctx, el),
+        ElementType::Component => generate_component_vnode::<M>(ctx, el),
         ElementType::Slot => {
             let helper = ctx.helper(RuntimeHelper::RenderSlot);
             ctx.use_helper(RuntimeHelper::RenderSlot);
@@ -111,7 +112,7 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &Elem
                 ctx.push(", () => [");
                 ctx.skip_scope_id = prev_skip_scope_id;
                 ctx.indent();
-                generate_slot_outlet_fallback(ctx, &el.children);
+                generate_slot_outlet_fallback::<M>(ctx, &el.children);
                 ctx.deindent();
                 ctx.newline();
                 ctx.finish_slot_outlet("])", true, true);
@@ -133,14 +134,14 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &Elem
                 .filter(|c| !is_directive_comment(c))
                 .collect();
             if let [single] = filtered.as_slice() {
-                generate_node(ctx, single);
+                generate_node::<M>(ctx, single);
             } else {
                 ctx.push("[");
                 for (i, child) in filtered.iter().enumerate() {
                     if i > 0 {
                         ctx.push(", ");
                     }
-                    generate_node(ctx, child);
+                    generate_node::<M>(ctx, child);
                 }
                 ctx.push("]");
             }
@@ -157,10 +158,7 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &Elem
 
 /// The non-block native element vnode, wrapped in its runtime directives.
 /// `v-once` caches exactly this call.
-pub(super) fn generate_native_vnode<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    el: &ElementNode<'_>,
-) {
+pub(super) fn generate_native_vnode<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Check for custom directives.
     // Inline children need the same withDirectives wrapping as block roots.
     let has_custom_dirs = has_custom_directives(el);
@@ -226,9 +224,9 @@ pub(super) fn generate_native_vnode<M: RenderMapMode>(
         ctx.push(", ");
         ctx.with_parent_namespace(child_namespace(el), |ctx| {
             if once {
-                generate_children_force_array(ctx, &el.children);
+                generate_children_force_array::<M>(ctx, &el.children);
             } else {
-                generate_children(ctx, &el.children);
+                generate_children::<M>(ctx, &el.children);
             }
         });
     } else if has_patch_info {
@@ -280,10 +278,7 @@ pub(super) fn generate_native_vnode<M: RenderMapMode>(
 
 /// The non-block component vnode, wrapped in its runtime directives. `v-once`
 /// caches exactly this call.
-pub(super) fn generate_component_vnode<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    el: &ElementNode<'_>,
-) {
+pub(super) fn generate_component_vnode<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let has_custom_dirs = has_custom_directives(el);
     if has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);
@@ -347,7 +342,7 @@ pub(super) fn generate_component_vnode<M: RenderMapMode>(
     } else if let Some(builtin) = is_builtin_component(el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if ctx.push_component_binding(el) {
+    } else if push_component_binding::<M>(ctx, el) {
     } else {
         ctx.push(&to_valid_asset_identifier("component", el.tag));
     }
@@ -402,7 +397,7 @@ pub(super) fn generate_component_vnode<M: RenderMapMode>(
     // Generate children/slots - use slot generation for component children
     if has_slot_children(el) {
         ctx.push(", ");
-        generate_slots(ctx, el);
+        generate_slots::<M>(ctx, el);
     } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
         ctx.push(", [");
         ctx.indent();
@@ -416,7 +411,7 @@ pub(super) fn generate_component_vnode<M: RenderMapMode>(
                 ctx.push(",");
             }
             ctx.newline();
-            generate_node(ctx, child);
+            generate_node::<M>(ctx, child);
         }
         ctx.deindent();
         ctx.newline();

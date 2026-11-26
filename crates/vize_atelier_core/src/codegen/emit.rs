@@ -11,6 +11,7 @@ use crate::{
 use vize_l0::profile;
 
 use super::children::{generate_child_refs_force_array, is_directive_comment};
+use super::component_binding::render_source_map;
 use super::context::{CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections};
 use super::element::generate_root_node;
 use super::generate::{collect_hoist_helpers, generate_hoists};
@@ -35,7 +36,7 @@ pub(super) fn generate_with_sections_and_options<M: RenderMapMode>(
     untracked_children: bool,
     jsx_class: bool,
 ) -> CodegenResultWithSections {
-    let mut ctx = CodegenContext::<M>::new_with_vnode_factory_merge_props_and_experimentals(
+    let mut ctx = CodegenContext::new_with_vnode_factory_merge_props_and_experimentals(
         options,
         vnode_factory,
         merge_props,
@@ -100,7 +101,7 @@ pub(super) fn generate_with_sections_and_options<M: RenderMapMode>(
         // Single root child - wrap in block
         profile!(
             "atelier.codegen.root_node",
-            generate_root_node(&mut ctx, single)
+            generate_root_node::<M>(&mut ctx, single)
         );
     } else {
         // Multiple root children - wrap in fragment block
@@ -118,7 +119,7 @@ pub(super) fn generate_with_sections_and_options<M: RenderMapMode>(
         ctx.push(", null, ");
         profile!(
             "atelier.codegen.fragment_children",
-            generate_child_refs_force_array(&mut ctx, &root_children)
+            generate_child_refs_force_array::<M>(&mut ctx, &root_children)
         );
         // Vue tags a root fragment as DEV_ROOT_FRAGMENT when it wraps a single
         // real node plus comment siblings, so dev tooling treats it as a root.
@@ -199,7 +200,7 @@ pub(super) fn generate_with_sections_and_options<M: RenderMapMode>(
     // Serialize the document's links (recorded only when the `source_map`
     // flag is on) against the final code before it is moved out. The render
     // `code` itself is unchanged whether or not a map is produced.
-    let map = ctx.source_map(ctx.options.filename.as_str(), root.source);
+    let map = render_source_map::<M>(&ctx, ctx.options.filename.as_str(), root.source);
 
     CodegenResultWithSections {
         result: CodegenResult {

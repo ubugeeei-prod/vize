@@ -133,8 +133,6 @@ impl SourceMapBuilder {
     /// document and generated column reset per line). Segments that carry a
     /// source symbol add a 5th field: the name-index delta (relative to the
     /// previous named segment across the whole document).
-    // Inlined into each map serializer, as when the plain map was its only one.
-    #[inline(always)]
     pub fn finish(mut self, generated_code: &str, filename: &str, source_content: &str) -> String {
         // Resolve byte offsets to (line, col). Sort by generated offset first so
         // the generated-side scan cursor advances monotonically; the source side

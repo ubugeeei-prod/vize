@@ -25,25 +25,25 @@ use vize_l0::String;
 use vize_l0::ToCompactString;
 
 /// Generate for node
-pub fn generate_for<M: RenderMapMode>(ctx: &mut CodegenContext<M>, for_node: &ForNode<'_>) {
-    generate_for_inner(ctx, for_node, None)
+pub fn generate_for<M: RenderMapMode>(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
+    generate_for_inner::<M>(ctx, for_node, None)
 }
 
 pub(crate) fn generate_for_with_fragment_key<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     for_node: &ForNode<'_>,
-    generate_key: &dyn Fn(&mut CodegenContext<M>),
+    generate_key: &dyn Fn(&mut CodegenContext),
 ) {
-    generate_for_inner(ctx, for_node, Some(generate_key))
+    generate_for_inner::<M>(ctx, for_node, Some(generate_key))
 }
 
 fn generate_for_inner<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     for_node: &ForNode<'_>,
-    generate_fragment_key: Option<&dyn Fn(&mut CodegenContext<M>)>,
+    generate_fragment_key: Option<&dyn Fn(&mut CodegenContext)>,
 ) {
     if for_node.parse_result.match_scope {
-        match_scope::generate_match_scope(ctx, for_node, &match_scope::generate_scope_body);
+        match_scope::generate_match_scope(ctx, for_node, &match_scope::generate_scope_body::<M>);
         return;
     }
     ctx.use_helper(RuntimeHelper::OpenBlock);
@@ -178,7 +178,7 @@ fn generate_for_inner<M: RenderMapMode>(
 
         // Skip v-memo in generate_for_item since we handle it here
         ctx.skip_v_memo = true;
-        generate_for_item(ctx, memo_child, is_stable);
+        generate_for_item::<M>(ctx, memo_child, is_stable);
         ctx.skip_v_memo = false;
 
         ctx.in_v_for = prev_in_v_for;
@@ -222,9 +222,9 @@ fn generate_for_inner<M: RenderMapMode>(
 
         // Generate child as block (not regular node)
         if let [only] = for_node.children.as_slice() {
-            generate_for_item(ctx, only, is_stable);
+            generate_for_item::<M>(ctx, only, is_stable);
         } else {
-            generate_children(ctx, &for_node.children);
+            generate_children::<M>(ctx, &for_node.children);
         }
 
         // Restore in_v_for flag

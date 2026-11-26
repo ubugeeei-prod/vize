@@ -1,6 +1,7 @@
-use crate::codegen::RenderMapMode;
 use crate::options::BindingType;
 use crate::{CodegenContext, ElementNode, RuntimeHelper};
+
+use super::RenderMapMode;
 use vize_l0::{String, ToCompactString, camelize, capitalize};
 
 struct ComponentBinding {
@@ -9,7 +10,7 @@ struct ComponentBinding {
     suffix: Option<String>,
 }
 
-impl<M: RenderMapMode> CodegenContext<M> {
+impl CodegenContext {
     /// Check if a component is in binding metadata (from script setup).
     pub fn is_component_in_bindings(&self, component: &str) -> bool {
         self.resolve_component_binding_name(component).is_some()
@@ -64,30 +65,6 @@ impl<M: RenderMapMode> CodegenContext<M> {
             self.push(suffix.as_str());
         }
         true
-    }
-
-    /// Push `el`'s tag as the setup binding it resolves to; `false` when it
-    /// is not one. The plain generator pushes it as
-    /// [`Self::push_component_binding_tag`] does. A composed map anchors the
-    /// read at the authored tag name: a resolved asset is anchored where it
-    /// is resolved, but a binding is read in place.
-    #[inline(always)]
-    pub(in crate::codegen) fn push_component_binding(&mut self, el: &ElementNode<'_>) -> bool {
-        if M::COMPOSED {
-            self.push_composed_component_binding(el)
-        } else {
-            self.push_component_binding_tag(el.tag)
-        }
-    }
-
-    fn push_composed_component_binding(&mut self, el: &ElementNode<'_>) -> bool {
-        if self.resolve_component_binding(el.tag).is_none() {
-            return false;
-        }
-        if self.out.is_recording() {
-            self.out.anchor(el.loc.span.start + 1);
-        }
-        self.push_component_binding_tag(el.tag)
     }
 
     fn resolve_component_binding(&self, component: &str) -> Option<ComponentBinding> {
@@ -146,5 +123,49 @@ impl<M: RenderMapMode> CodegenContext<M> {
             binding_type,
             suffix: None,
         })
+    }
+}
+
+/// Push `el`'s tag as the setup binding it resolves to; `false` when it is
+/// not one. The plain generator pushes it as
+/// [`CodegenContext::push_component_binding_tag`] does. A composed map
+/// anchors the read at the authored tag name: a resolved asset is anchored
+/// where it is resolved, but a binding is read in place.
+#[inline(always)]
+pub(super) fn push_component_binding<M: RenderMapMode>(
+    ctx: &mut CodegenContext,
+    el: &ElementNode<'_>,
+) -> bool {
+    if M::COMPOSED {
+        push_composed_component_binding(ctx, el)
+    } else {
+        ctx.push_component_binding_tag(el.tag)
+    }
+}
+
+fn push_composed_component_binding(ctx: &mut CodegenContext, el: &ElementNode<'_>) -> bool {
+    if ctx.resolve_component_binding(el.tag).is_none() {
+        return false;
+    }
+    if ctx.out.is_recording() {
+        ctx.out.anchor(el.loc.span.start + 1);
+    }
+    ctx.push_component_binding_tag(el.tag)
+}
+
+/// The document's map, when it records: the composed one for a composed
+/// map, the plain one otherwise.
+#[inline(always)]
+pub(super) fn render_source_map<M: RenderMapMode>(
+    ctx: &CodegenContext,
+    filename: &str,
+    source: &str,
+) -> Option<String> {
+    if M::COMPOSED {
+        ctx.out
+            .is_recording()
+            .then(|| ctx.out.composed_source_map(filename, source))
+    } else {
+        ctx.source_map(filename, source)
     }
 }

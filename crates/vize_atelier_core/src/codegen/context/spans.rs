@@ -7,7 +7,6 @@
 //! exactly the bytes a plain `push` would write, so the emitted JavaScript is
 //! identical with maps on or off (TS-11).
 
-use crate::codegen::RenderMapMode;
 use vize_l0::Span;
 
 use super::CodegenContext;
@@ -30,7 +29,7 @@ fn first_tag_offset(children: &[TemplateChildNode<'_>], tag: &str) -> Option<u32
     })
 }
 
-impl<M: RenderMapMode> CodegenContext<M> {
+impl CodegenContext {
     /// Push `code` anchored at the authored byte `source_offset`.
     ///
     /// Used for tokens that are copies of authored bytes (tag names, static

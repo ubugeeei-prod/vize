@@ -7,6 +7,9 @@
 //! The generator is instantiated once per mode, so the plain instantiation
 //! is exactly the generator without those links and a compile without a map
 //! runs none of their work.
+//!
+//! Only the generators that reach those links are generic over the mode;
+//! every other one is the plain generator.
 
 /// A render map a generator records.
 pub trait RenderMapMode: 'static {
@@ -27,3 +30,4 @@ pub enum ComposedRenderMap {}
 impl RenderMapMode for ComposedRenderMap {
     const COMPOSED: bool = true;
 }
+

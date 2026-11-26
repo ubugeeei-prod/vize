@@ -1,7 +1,6 @@
 //! Generated scope-prefix cleanup for template locals.
 
 use super::super::context::CodegenContext;
-use crate::codegen::RenderMapMode;
 use vize_l0::String;
 
 const SLOT_PARAM_SCOPE_PREFIXES: [&str; 6] = [
@@ -19,10 +18,7 @@ pub(crate) fn contains_slot_param_scope_prefix(content: &str) -> bool {
         .any(|prefix| content.contains(prefix))
 }
 
-pub(crate) fn strip_scope_prefixes_for_slot_params<M: RenderMapMode>(
-    ctx: &CodegenContext<M>,
-    content: &str,
-) -> String {
+pub(crate) fn strip_scope_prefixes_for_slot_params(ctx: &CodegenContext, content: &str) -> String {
     let mut result = String::with_capacity(content.len());
     let bytes = content.as_bytes();
     let mut i = 0;

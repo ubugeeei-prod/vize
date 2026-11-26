@@ -28,28 +28,28 @@ pub(super) fn chain_is_once(if_node: &IfNode<'_>) -> bool {
 /// A branch's content. `<template v-if>` around one `v-once` element caches
 /// that element.
 pub(super) fn generate_if_branch_content<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
     let once = matches!(children, [TemplateChildNode::Element(el)] if wrapped_once(el));
-    generate(ctx, children, branch, branch_index, once);
+    generate::<M>(ctx, children, branch, branch_index, once);
 }
 
 /// A patterned-template scope that is the branch: its content carries the
 /// branch key. `v-once` on a `<template v-when>` arm lands on the scope and
 /// caches the scope with its bindings; on an element arm it caches the element.
 pub(super) fn generate_scope_branch<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     for_node: &ForNode<'_>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
-    let scope = |ctx: &mut CodegenContext<M>| {
+    let scope = |ctx: &mut CodegenContext| {
         generate_match_scope(ctx, for_node, &|ctx, children| {
             let once = matches!(children, [TemplateChildNode::Element(el)] if has_v_once(el));
-            generate(ctx, children, branch, branch_index, once);
+            generate::<M>(ctx, children, branch, branch_index, once);
         });
     };
     let scope_once = matches!(
@@ -64,7 +64,7 @@ pub(super) fn generate_scope_branch<M: RenderMapMode>(
 }
 
 fn generate<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
     branch: &IfBranchNode<'_>,
     branch_index: usize,
@@ -72,10 +72,10 @@ fn generate<M: RenderMapMode>(
 ) {
     if once {
         generate_v_once_cached(ctx, |ctx| {
-            generate_if_branch_nodes(ctx, children, branch, branch_index)
+            generate_if_branch_nodes::<M>(ctx, children, branch, branch_index)
         });
     } else {
-        generate_if_branch_nodes(ctx, children, branch, branch_index);
+        generate_if_branch_nodes::<M>(ctx, children, branch, branch_index);
     }
 }
 

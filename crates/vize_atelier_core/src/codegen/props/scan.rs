@@ -1,6 +1,5 @@
 //! Single-pass prop metadata collection for code generation.
 
-use crate::codegen::RenderMapMode;
 use crate::{DirectiveNode, ExpressionNode, PropNode};
 
 use super::super::context::CodegenContext;
@@ -91,8 +90,8 @@ impl<'props> PropsScan<'props> {
     /// several helper calls. Centralizing those facts keeps codegen O(props) and
     /// preserves source-order details, like static class/style placement relative
     /// to dynamic bindings, without additional walks.
-    pub(super) fn new<'ast, M: RenderMapMode>(
-        ctx: &CodegenContext<M>,
+    pub(super) fn new<'ast>(
+        ctx: &CodegenContext,
         props: &'props [PropNode<'ast>],
         skip_is: bool,
     ) -> Self {
@@ -239,11 +238,7 @@ impl<'props> PropsScan<'props> {
         };
     }
 
-    fn observe_directive<M: RenderMapMode>(
-        &mut self,
-        ctx: &CodegenContext<M>,
-        dir: &DirectiveNode<'_>,
-    ) {
+    fn observe_directive(&mut self, ctx: &CodegenContext, dir: &DirectiveNode<'_>) {
         match dir.name {
             "bind" => {
                 if dir.arg.is_none() {
@@ -300,7 +295,7 @@ fn is_is_prop(prop: &PropNode<'_>) -> bool {
     }
 }
 
-fn has_inline_handler<M: RenderMapMode>(ctx: &CodegenContext<M>, dir: &DirectiveNode<'_>) -> bool {
+fn has_inline_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {
     let expression = dir
         .exp
         .as_ref()

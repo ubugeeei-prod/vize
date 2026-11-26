@@ -15,19 +15,13 @@ use super::props::generate_props;
 use vize_l0::ToCompactString;
 
 /// Generate children array
-pub fn generate_children<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    children: &[TemplateChildNode<'_>],
-) {
-    generate_children_inner(ctx, children, false);
+pub fn generate_children<M: RenderMapMode>(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
+    generate_children_inner::<M>(ctx, children, false);
 }
 
 /// Generate children, forcing array form with createTextVNode (for withDirectives elements)
-pub fn generate_children_force_array<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    children: &[TemplateChildNode<'_>],
-) {
-    generate_children_inner(ctx, children, true);
+pub fn generate_children_force_array<M: RenderMapMode>(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
+    generate_children_inner::<M>(ctx, children, true);
 }
 
 /// Generate an already-filtered child list in array form.
@@ -37,10 +31,10 @@ pub fn generate_children_force_array<M: RenderMapMode>(
 /// child slice. Keep that policy in the root while sharing the same text-run
 /// normalization used by every other child array.
 pub(crate) fn generate_child_refs_force_array<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     children: &[&TemplateChildNode<'_>],
 ) {
-    generate_effective_children_inner(ctx, children, true, false);
+    generate_effective_children_inner::<M>(ctx, children, true, false);
 }
 
 /// Check if a child node is a directive comment that should be stripped.
@@ -50,7 +44,7 @@ pub(crate) fn is_directive_comment(child: &TemplateChildNode<'_>) -> bool {
 }
 
 fn generate_children_inner<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
     force_array: bool,
 ) {
@@ -60,11 +54,11 @@ fn generate_children_inner<M: RenderMapMode>(
         .filter(|c| !is_directive_comment(c))
         .collect();
 
-    generate_effective_children_inner(ctx, &effective, force_array, true);
+    generate_effective_children_inner::<M>(ctx, &effective, force_array, true);
 }
 
 fn generate_effective_children_inner<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     effective: &[&TemplateChildNode<'_>],
     force_array: bool,
     merge_static_text_runs: bool,
@@ -133,7 +127,7 @@ fn generate_effective_children_inner<M: RenderMapMode>(
             .iter()
             .all(|child| is_static_cacheable_element(child))
     {
-        generate_cached_static_children_array(ctx, effective);
+        generate_cached_static_children_array::<M>(ctx, effective);
         return;
     }
 
@@ -180,7 +174,7 @@ fn generate_effective_children_inner<M: RenderMapMode>(
                         ctx.push(",");
                         ctx.newline();
                     }
-                    generate_node(ctx, child);
+                    generate_node::<M>(ctx, child);
                 }
                 continue;
             }
@@ -245,15 +239,15 @@ fn generate_effective_children_inner<M: RenderMapMode>(
             first_output = false;
             if !force_array && can_cache_static && is_static_cacheable_element(node) {
                 if let TemplateChildNode::Element(el) = node {
-                    generate_cached_static_element(ctx, el);
+                    generate_cached_static_element::<M>(ctx, el);
                 }
             } else if ctx.in_cached_static && is_static_cacheable_element(node) {
                 // Plain descendant inside an already-cached static subtree.
                 if let TemplateChildNode::Element(el) = node {
-                    generate_cached_static_vnode(ctx, el, false);
+                    generate_cached_static_vnode::<M>(ctx, el, false);
                 }
             } else {
-                generate_node(ctx, node);
+                generate_node::<M>(ctx, node);
             }
             i += 1;
         }
@@ -269,7 +263,7 @@ fn is_static_cacheable_element(child: &TemplateChildNode<'_>) -> bool {
 }
 
 fn generate_cached_static_children_array<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     children: &[&TemplateChildNode<'_>],
 ) {
     let cache_index = ctx.next_cache_index();
@@ -286,7 +280,7 @@ fn generate_cached_static_children_array<M: RenderMapMode>(
         }
         ctx.newline();
         if let TemplateChildNode::Element(el) = child {
-            generate_cached_static_vnode(ctx, el, true);
+            generate_cached_static_vnode::<M>(ctx, el, true);
         }
     }
 
@@ -295,17 +289,14 @@ fn generate_cached_static_children_array<M: RenderMapMode>(
     ctx.push("]))]");
 }
 
-fn generate_cached_static_element<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    el: &ElementNode<'_>,
-) {
+fn generate_cached_static_element<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let cache_index = ctx.next_cache_index();
     ctx.push("_cache[");
     ctx.push(&cache_index.to_compact_string());
     ctx.push("] || (_cache[");
     ctx.push(&cache_index.to_compact_string());
     ctx.push("] = ");
-    generate_cached_static_vnode(ctx, el, true);
+    generate_cached_static_vnode::<M>(ctx, el, true);
     ctx.push(")");
 }
 
@@ -316,11 +307,7 @@ fn generate_cached_static_element<M: RenderMapMode>(
 /// already-cached subtree (plain vnode, no flag), matching how
 /// @vue/compiler-core serializes a cached static subtree: a single cache entry
 /// whose children are plain recursive `createElementVNode` calls.
-fn generate_cached_static_vnode<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    el: &ElementNode<'_>,
-    cached: bool,
-) {
+fn generate_cached_static_vnode<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>, cached: bool) {
     ctx.use_helper(RuntimeHelper::CreateElementVNode);
     ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
     ctx.push("(\"");
@@ -343,7 +330,7 @@ fn generate_cached_static_vnode<M: RenderMapMode>(
         let prev_in_cached = ctx.in_cached_static;
         ctx.in_cached_static = true;
         ctx.with_parent_namespace(child_namespace(el), |ctx| {
-            generate_children(ctx, &el.children);
+            generate_children::<M>(ctx, &el.children);
         });
         ctx.in_cached_static = prev_in_cached;
     } else {
@@ -358,7 +345,7 @@ fn generate_cached_static_vnode<M: RenderMapMode>(
 }
 
 /// Generate text node
-pub fn generate_text<M: RenderMapMode>(ctx: &mut CodegenContext<M>, text: &TextNode) {
+pub fn generate_text(ctx: &mut CodegenContext, text: &TextNode) {
     let helper = ctx.helper(RuntimeHelper::CreateText);
     ctx.use_helper(RuntimeHelper::CreateText);
     ctx.push(helper);
@@ -377,7 +364,7 @@ pub fn generate_text<M: RenderMapMode>(ctx: &mut CodegenContext<M>, text: &TextN
 /// Generate comment node
 ///
 /// Directive comments (`@vize:` prefix) are stripped from output.
-pub fn generate_comment<M: RenderMapMode>(ctx: &mut CodegenContext<M>, comment: &CommentNode) {
+pub fn generate_comment(ctx: &mut CodegenContext, comment: &CommentNode) {
     // Strip @vize: directive comments from build output
     if comment.directive.is_some() {
         return;
@@ -399,10 +386,7 @@ pub fn generate_comment<M: RenderMapMode>(ctx: &mut CodegenContext<M>, comment: 
 /// only producible behind the `legacy` feature) renders unescaped, so the bare
 /// expression is emitted without the wrapper. Shared by every child-codegen
 /// path so the raw flag is honored consistently.
-pub fn push_interpolation_value<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    interp: &InterpolationNode<'_>,
-) {
+pub fn push_interpolation_value(ctx: &mut CodegenContext, interp: &InterpolationNode<'_>) {
     #[cfg(feature = "legacy")]
     if interp.raw {
         generate_expression(ctx, &interp.content);
@@ -417,9 +401,6 @@ pub fn push_interpolation_value<M: RenderMapMode>(
 }
 
 /// Generate interpolation
-pub fn generate_interpolation<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    interp: &InterpolationNode<'_>,
-) {
+pub fn generate_interpolation(ctx: &mut CodegenContext, interp: &InterpolationNode<'_>) {
     push_interpolation_value(ctx, interp);
 }

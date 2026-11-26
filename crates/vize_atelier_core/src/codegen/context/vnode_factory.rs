@@ -1,4 +1,3 @@
-use crate::codegen::RenderMapMode;
 use vize_l0::{FxHashMap, String, ToCompactString};
 
 use crate::codegen::document::EmitDocument;
@@ -28,9 +27,7 @@ impl CodegenContext {
             false,
         )
     }
-}
 
-impl<M: RenderMapMode> CodegenContext<M> {
     pub(in crate::codegen) fn new_with_vnode_factory_merge_props_and_experimentals(
         options: CodegenOptions,
         vnode_factory: Option<&str>,
@@ -74,7 +71,6 @@ impl<M: RenderMapMode> CodegenContext<M> {
             in_v_once: false,
             v_if_branch_counter: 0,
             source: String::default(),
-            render_map: core::marker::PhantomData,
         }
     }
 

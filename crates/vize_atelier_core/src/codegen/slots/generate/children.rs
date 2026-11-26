@@ -1,14 +1,14 @@
 //! Slot child and expression spelling.
 
+use crate::codegen::RenderMapMode;
 use super::super::super::context::CodegenContext;
 use super::super::super::node::generate_node;
 use super::slot_params::strip_ctx_prefix_for_slot_params;
-use crate::codegen::RenderMapMode;
 use crate::{ExpressionNode, RuntimeHelper, TemplateChildNode};
 
 /// Generate adjacent text runs without crossing a slot or node boundary.
 pub(in crate::codegen::slots) fn generate_slot_children<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
 ) {
     // Preserve the preexisting wholly-textual legacy raw branch. Raw values
@@ -20,11 +20,11 @@ pub(in crate::codegen::slots) fn generate_slot_children<M: RenderMapMode>(
         generate_slot_text_run(ctx, children);
         return;
     }
-    generate_slot_children_where(ctx, children, |_| true);
+    generate_slot_children_where::<M>(ctx, children, |_| true);
 }
 
 pub(in crate::codegen::slots) fn generate_slot_children_where<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
     selected: impl Fn(&TemplateChildNode<'_>) -> bool,
 ) {
@@ -57,7 +57,7 @@ pub(in crate::codegen::slots) fn generate_slot_children_where<M: RenderMapMode>(
             }
             generate_slot_text_run(ctx, children.get(start..index).unwrap_or_default());
         } else {
-            generate_slot_child_node(ctx, child);
+            generate_slot_child_node::<M>(ctx, child);
             index += 1;
         }
     }
@@ -75,10 +75,7 @@ fn is_text(child: &TemplateChildNode<'_>) -> bool {
     )
 }
 
-fn generate_slot_text_run<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    children: &[TemplateChildNode<'_>],
-) {
+fn generate_slot_text_run(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
     ctx.use_helper(RuntimeHelper::CreateText);
     ctx.push(ctx.helper(RuntimeHelper::CreateText));
     ctx.push("(");
@@ -116,10 +113,7 @@ fn generate_slot_text_run<M: RenderMapMode>(
 }
 
 /// Generate a single child node for slot content
-fn generate_slot_child_node<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    child: &TemplateChildNode<'_>,
-) {
+fn generate_slot_child_node<M: RenderMapMode>(ctx: &mut CodegenContext, child: &TemplateChildNode<'_>) {
     match child {
         TemplateChildNode::Text(text) => {
             ctx.use_helper(RuntimeHelper::CreateText);
@@ -151,16 +145,13 @@ fn generate_slot_child_node<M: RenderMapMode>(
             ctx.push(", 1 /* TEXT */)");
         }
         _ => {
-            generate_node(ctx, child);
+            generate_node::<M>(ctx, child);
         }
     }
 }
 
 /// Generate expression for slot content, stripping _ctx. prefix for slot parameters
-fn generate_slot_expression<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    expr: &ExpressionNode<'_>,
-) {
+fn generate_slot_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>) {
     match expr {
         ExpressionNode::Simple(exp) => {
             if exp.is_static {

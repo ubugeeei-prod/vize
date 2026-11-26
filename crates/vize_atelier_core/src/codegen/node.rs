@@ -1,7 +1,7 @@
 //! Node generation functions.
 
-use crate::TemplateChildNode;
 use crate::codegen::RenderMapMode;
+use crate::TemplateChildNode;
 
 use super::children::{generate_comment, generate_interpolation, generate_text};
 use super::context::CodegenContext;
@@ -18,18 +18,18 @@ use vize_l0::{ToCompactString, ensure_sufficient_stack};
 /// the descent onto a fresh stack before the thread stack runs out, because a
 /// stack overflow aborts the process instead of producing a diagnostic
 /// (`vize_l0::recursion`).
-pub fn generate_node<M: RenderMapMode>(ctx: &mut CodegenContext<M>, node: &TemplateChildNode<'_>) {
+pub fn generate_node<M: RenderMapMode>(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
     crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
     ensure_sufficient_stack(|| match node {
-        TemplateChildNode::Element(el) => generate_element(ctx, el),
+        TemplateChildNode::Element(el) => generate_element::<M>(ctx, el),
         TemplateChildNode::Text(text) => generate_text(ctx, text),
         TemplateChildNode::Comment(comment) => generate_comment(ctx, comment),
         TemplateChildNode::Interpolation(interp) => generate_interpolation(ctx, interp),
         TemplateChildNode::CompoundExpression(compound) => {
             generate_compound_expression(ctx, compound)
         }
-        TemplateChildNode::If(if_node) => generate_if(ctx, if_node),
-        TemplateChildNode::For(for_node) => generate_for(ctx, for_node),
+        TemplateChildNode::If(if_node) => generate_if::<M>(ctx, if_node),
+        TemplateChildNode::For(for_node) => generate_for::<M>(ctx, for_node),
         TemplateChildNode::Hoisted(index) => {
             // Output reference to hoisted variable
             ctx.push("_hoisted_");

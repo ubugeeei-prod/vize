@@ -25,10 +25,10 @@ pub(crate) fn scope_children<'n, 'a>(for_node: &'n ForNode<'a>) -> &'n [Template
 }
 
 /// Emit `(() => { const <aliases> = <source>; return <body> })()`.
-pub(crate) fn generate_match_scope<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+pub(crate) fn generate_match_scope(
+    ctx: &mut CodegenContext,
     for_node: &ForNode<'_>,
-    body: &dyn Fn(&mut CodegenContext<M>, &[TemplateChildNode<'_>]),
+    body: &dyn Fn(&mut CodegenContext, &[TemplateChildNode<'_>]),
 ) {
     let mut bindings: Vec<String> = Vec::new();
     ctx.push("(() => { const ");
@@ -50,17 +50,14 @@ pub(crate) fn generate_match_scope<M: RenderMapMode>(
 }
 
 /// A scope body outside a `v-if` branch: one block root, or a stable fragment.
-pub(crate) fn generate_scope_body<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    children: &[TemplateChildNode<'_>],
-) {
+pub(crate) fn generate_scope_body<M: RenderMapMode>(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
     let rendered: Vec<&TemplateChildNode<'_>> = children
         .iter()
         .filter(|child| !is_directive_comment(child))
         .collect();
     match rendered.as_slice() {
         [] => ctx.push("null"),
-        [child] => generate_root_node(ctx, child),
+        [child] => generate_root_node::<M>(ctx, child),
         children => {
             ctx.use_helper(RuntimeHelper::OpenBlock);
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
@@ -80,7 +77,7 @@ pub(crate) fn generate_scope_body<M: RenderMapMode>(
                     ctx.push(",");
                 }
                 ctx.newline();
-                generate_node(ctx, child);
+                generate_node::<M>(ctx, child);
             }
             ctx.deindent();
             ctx.newline();

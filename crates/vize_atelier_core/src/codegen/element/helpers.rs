@@ -165,10 +165,7 @@ pub(crate) fn has_dynamic_key_binding(el: &ElementNode<'_>) -> bool {
 /// SVG/MathML namespace boundary. A namespace change in a direct child also
 /// promotes the parent. An authored conditional `<template>` owns its branch
 /// block, so its descendants do not promote the wrapper around the template.
-pub(crate) fn crosses_namespace_boundary<M: RenderMapMode>(
-    ctx: &CodegenContext<M>,
-    el: &ElementNode<'_>,
-) -> bool {
+pub(crate) fn crosses_namespace_boundary(ctx: &CodegenContext, el: &ElementNode<'_>) -> bool {
     el.tag_type == ElementType::Element
         && (el.ns != ctx.parent_ns || children_cross_namespace_boundary(el.ns, &el.children))
 }
@@ -217,26 +214,23 @@ fn child_crosses_namespace_boundary(ns: Namespace, child: &TemplateChildNode<'_>
 }
 
 /// Generate root node (wrapped in block)
-pub fn generate_root_node<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    node: &TemplateChildNode<'_>,
-) {
+pub fn generate_root_node<M: RenderMapMode>(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
     // The three specialized arms are the codegen descent's head node, entered
     // without passing through `generate_node`, so the P2-12a walk probe counts
     // the visit here; the fallthrough arm is counted by `generate_node` itself.
     match node {
         TemplateChildNode::Element(el) => {
             crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
-            super::block::generate_element_block(ctx, el)
+            super::block::generate_element_block::<M>(ctx, el)
         }
         TemplateChildNode::If(if_node) => {
             crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
-            generate_if(ctx, if_node)
+            generate_if::<M>(ctx, if_node)
         }
         TemplateChildNode::For(for_node) => {
             crate::walk_probe::record_visit(crate::walk_probe::WalkStage::Codegen);
-            generate_for(ctx, for_node)
+            generate_for::<M>(ctx, for_node)
         }
-        _ => generate_node(ctx, node),
+        _ => generate_node::<M>(ctx, node),
     }
 }

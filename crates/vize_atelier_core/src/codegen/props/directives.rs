@@ -1,6 +1,5 @@
 //! Directive-to-prop generation (v-bind, v-on, v-model, v-html, v-text).
 
-use crate::codegen::RenderMapMode;
 use crate::{DirectiveNode, ExpressionNode, RuntimeHelper};
 
 use super::super::{
@@ -16,10 +15,7 @@ use vize_l0::{String, ToCompactString};
 /// Check if an expression is a static literal (no runtime identifiers).
 /// Returns true for: object literals, array literals, string literals, numbers
 /// that don't reference any runtime variables (no `_ctx.` after processing).
-fn is_static_expression<M: RenderMapMode>(
-    exp: &ExpressionNode<'_>,
-    ctx: &CodegenContext<M>,
-) -> bool {
+fn is_static_expression(exp: &ExpressionNode<'_>, ctx: &CodegenContext) -> bool {
     match exp {
         ExpressionNode::Simple(simple) => {
             is_constant_simple_expression(simple, ctx.options.binding_metadata.as_ref())
@@ -42,8 +38,8 @@ pub fn is_supported_directive(dir: &DirectiveNode<'_>) -> bool {
 }
 
 /// Generate directive as prop with optional static class/style merging
-pub fn generate_directive_prop_with_static<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+pub fn generate_directive_prop_with_static(
+    ctx: &mut CodegenContext,
     dir: &DirectiveNode<'_>,
     static_merge: StaticMerge<'_>,
 ) {
@@ -58,8 +54,8 @@ pub fn generate_directive_prop_with_static<M: RenderMapMode>(
 /// Generate a directive prop for a `<slot>` outlet.
 ///
 /// Vue camelizes static slot prop keys before passing them to renderSlot.
-pub fn generate_slot_outlet_directive_prop_with_static<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+pub fn generate_slot_outlet_directive_prop_with_static(
+    ctx: &mut CodegenContext,
     dir: &DirectiveNode<'_>,
     static_merge: StaticMerge<'_>,
 ) {
@@ -77,8 +73,8 @@ enum StaticBindKeyCasing {
     Camelize,
 }
 
-fn generate_directive_prop_with_static_key_casing<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+fn generate_directive_prop_with_static_key_casing(
+    ctx: &mut CodegenContext,
     dir: &DirectiveNode<'_>,
     static_merge: StaticMerge<'_>,
     static_key_casing: StaticBindKeyCasing,
@@ -123,8 +119,8 @@ fn generate_directive_prop_with_static_key_casing<M: RenderMapMode>(
 }
 
 /// Generate v-bind directive as a prop
-fn generate_vbind_prop<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+fn generate_vbind_prop(
+    ctx: &mut CodegenContext,
     dir: &DirectiveNode<'_>,
     static_merge: StaticMerge<'_>,
     static_key_casing: StaticBindKeyCasing,
@@ -264,7 +260,7 @@ fn generate_vbind_prop<M: RenderMapMode>(
             // Merge static style if present (needed even inside mergeProps).
             // The array order follows source order, like class merging above.
             if let Some(static_val) = static_style {
-                let emit_static_style = |ctx: &mut CodegenContext<M>| {
+                let emit_static_style = |ctx: &mut CodegenContext| {
                     ctx.push("{");
                     for (index, (key, value)) in vize_relief::parse_inline_style(static_val)
                         .iter()
@@ -307,7 +303,7 @@ fn generate_vbind_prop<M: RenderMapMode>(
 }
 
 /// Generate v-on directive as a prop
-fn generate_von_prop<M: RenderMapMode>(ctx: &mut CodegenContext<M>, dir: &DirectiveNode<'_>) {
+fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
     if dir.arg.is_none() && !ctx.merge_props {
         ctx.use_helper(RuntimeHelper::ToHandlers);
         ctx.push("...");

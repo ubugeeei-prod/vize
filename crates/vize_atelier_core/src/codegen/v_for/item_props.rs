@@ -1,6 +1,5 @@
 //! Property helpers shared by the v-for item generation paths.
 
-use crate::codegen::RenderMapMode;
 use crate::{ElementNode, ElementType, PropNode, TemplateChildNode};
 
 use super::{generate::generate_single_prop, helpers::should_skip_prop};
@@ -19,8 +18,8 @@ pub(super) enum EventPropAction {
     Skip,
 }
 
-pub(super) fn event_prop_sets<M: RenderMapMode>(
-    ctx: &CodegenContext<M>,
+pub(super) fn event_prop_sets(
+    ctx: &CodegenContext,
     props: &[PropNode<'_>],
 ) -> (FxHashSet<String>, FxHashSet<String>) {
     let duplicate_events = if ctx.merge_props {
@@ -31,8 +30,8 @@ pub(super) fn event_prop_sets<M: RenderMapMode>(
     (duplicate_events, FxHashSet::default())
 }
 
-pub(super) fn event_prop_action<M: RenderMapMode>(
-    ctx: &CodegenContext<M>,
+pub(super) fn event_prop_action(
+    ctx: &CodegenContext,
     prop: &PropNode<'_>,
     duplicate_events: &FxHashSet<String>,
     emitted_events: &mut FxHashSet<String>,
@@ -53,8 +52,8 @@ pub(super) fn event_prop_action<M: RenderMapMode>(
     }
 }
 
-pub(super) fn generate_event_prop_action<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+pub(super) fn generate_event_prop_action(
+    ctx: &mut CodegenContext,
     action: EventPropAction,
     prop: &PropNode<'_>,
     props: &[PropNode<'_>],
@@ -102,10 +101,7 @@ pub(super) fn unwrap_template_single_element<'a>(
     (child_el.tag_type == ElementType::Element).then_some(child_el)
 }
 
-pub(super) fn push_null_props_if_missing<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    emitted_props: bool,
-) {
+pub(super) fn push_null_props_if_missing(ctx: &mut CodegenContext, emitted_props: bool) {
     if !emitted_props {
         ctx.push(", null");
     }

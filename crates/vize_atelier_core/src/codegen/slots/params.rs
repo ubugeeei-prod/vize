@@ -1,6 +1,5 @@
 //! Slot parameter helpers (scoped slot props parsing and prefixing).
 
-use crate::codegen::RenderMapMode;
 use crate::codegen::context::CodegenContext;
 use crate::options::BindingType;
 use crate::steps::expression::is_template_global as is_global_allowed;
@@ -23,9 +22,9 @@ pub(super) fn get_slot_props(dir: &DirectiveNode<'_>, source: &str) -> Option<St
 /// The original slot carrier is the sole declaration/default-RHS authority.
 /// A refused or stale carrier emits the original text without synthesizing
 /// bindings or reparsing a parameter wrapper.
-pub(super) fn slot_parameters<M: RenderMapMode>(
+pub(super) fn slot_parameters(
     dir: &DirectiveNode<'_>,
-    ctx: &CodegenContext<M>,
+    ctx: &CodegenContext,
 ) -> Option<(String, Vec<String>)> {
     let raw = get_slot_props(dir, &ctx.source)?;
     if ctx.options.is_ts
@@ -50,10 +49,7 @@ pub(super) fn slot_parameters<M: RenderMapMode>(
 
 /// Type-erased params carry no retained AST: their own parse decides the
 /// bindings and the defaults.
-fn erased_parameters<M: RenderMapMode>(
-    js: String,
-    ctx: &CodegenContext<M>,
-) -> (String, Vec<String>) {
+fn erased_parameters(js: String, ctx: &CodegenContext) -> (String, Vec<String>) {
     let allocator = crate::expr_parse_probe::parse_arena();
     let Ok(parameters) = oxc_parser::Parser::new(
         &allocator,
@@ -72,10 +68,7 @@ pub(super) fn prefix_slot_defaults(source: &str) -> String {
 }
 
 #[cfg(test)]
-fn prefix_slot_defaults_with_context<M: RenderMapMode>(
-    source: &str,
-    ctx: &CodegenContext<M>,
-) -> String {
+fn prefix_slot_defaults_with_context(source: &str, ctx: &CodegenContext) -> String {
     let allocator = oxc_allocator::Allocator::default();
     let parameters = oxc_parser::Parser::new(
         &allocator,
@@ -87,10 +80,10 @@ fn prefix_slot_defaults_with_context<M: RenderMapMode>(
     prefix_retained_defaults(source, &parameters, ctx).0
 }
 
-fn prefix_retained_defaults<M: RenderMapMode>(
+fn prefix_retained_defaults(
     source: &str,
     parameters: &FormalParameters<'_>,
-    ctx: &CodegenContext<M>,
+    ctx: &CodegenContext,
 ) -> (String, Vec<String>) {
     let mut slot_params = FxHashSet::default();
     for parameter in &parameters.items {
@@ -129,15 +122,15 @@ fn prefix_retained_defaults<M: RenderMapMode>(
     (result, names)
 }
 
-struct SlotDefaultPrefixVisitor<'ctx, M: RenderMapMode> {
-    ctx: &'ctx CodegenContext<M>,
+struct SlotDefaultPrefixVisitor<'ctx> {
+    ctx: &'ctx CodegenContext,
     local_scopes: std::vec::Vec<FxHashSet<String>>,
     offset: u32,
     insertions: std::vec::Vec<(usize, String)>,
 }
 
-impl<'ctx, M: RenderMapMode> SlotDefaultPrefixVisitor<'ctx, M> {
-    fn new(slot_params: FxHashSet<String>, offset: u32, ctx: &'ctx CodegenContext<M>) -> Self {
+impl<'ctx> SlotDefaultPrefixVisitor<'ctx> {
+    fn new(slot_params: FxHashSet<String>, offset: u32, ctx: &'ctx CodegenContext) -> Self {
         Self {
             ctx,
             local_scopes: vec![slot_params],
@@ -195,7 +188,7 @@ impl<'ctx, M: RenderMapMode> SlotDefaultPrefixVisitor<'ctx, M> {
     }
 }
 
-impl<'a, M: RenderMapMode> Visit<'a> for SlotDefaultPrefixVisitor<'_, M> {
+impl<'a> Visit<'a> for SlotDefaultPrefixVisitor<'_> {
     fn visit_identifier_reference(&mut self, ident: &oxc_ast::ast::IdentifierReference<'a>) {
         let name = ident.name.as_str();
         if self.should_prefix(name) {
@@ -253,9 +246,9 @@ impl<'a, M: RenderMapMode> Visit<'a> for SlotDefaultPrefixVisitor<'_, M> {
     }
 }
 
-fn collect_default_rewrites<M: RenderMapMode>(
+fn collect_default_rewrites(
     pattern: &BindingPattern<'_>,
-    visitor: &mut SlotDefaultPrefixVisitor<'_, M>,
+    visitor: &mut SlotDefaultPrefixVisitor<'_>,
 ) {
     match pattern {
         BindingPattern::BindingIdentifier(_) => {}

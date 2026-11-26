@@ -1,4 +1,3 @@
-use crate::codegen::RenderMapMode;
 use crate::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 use super::super::context::CodegenContext;
@@ -18,8 +17,8 @@ pub(super) fn component_root_slot<'a, 'b>(
     })
 }
 
-pub(super) fn generate_slot_entry_name<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+pub(super) fn generate_slot_entry_name(
+    ctx: &mut CodegenContext,
     dir: &DirectiveNode<'_>,
     slot_name: &str,
 ) {
@@ -34,8 +33,8 @@ pub(super) fn generate_slot_entry_name<M: RenderMapMode>(
     }
 }
 
-pub(super) fn emit_slot_property_name<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+pub(super) fn emit_slot_property_name(
+    ctx: &mut CodegenContext,
     slot_dir: &DirectiveNode<'_>,
     slot_name: &str,
     is_dynamic: bool,

@@ -4,7 +4,6 @@ mod slot_outlet;
 mod spans;
 mod vnode_factory;
 
-use crate::codegen::{PlainRenderMap, RenderMapMode};
 use crate::options::CodegenOptions;
 use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
@@ -14,7 +13,7 @@ use vize_l0::FxHashMap;
 use vize_l0::String;
 
 /// Code generation context using a UTF-8 string buffer for performance.
-pub struct CodegenContext<M: RenderMapMode = PlainRenderMap> {
+pub struct CodegenContext {
     /// The structured emission document: the generated code plus, when the
     /// `source_map` flag is on, the links from its bytes to the template. The
     /// code is byte-identical either way (TS-11).
@@ -104,8 +103,6 @@ pub struct CodegenContext<M: RenderMapMode = PlainRenderMap> {
     /// The template source node spans index into (the transformed root's
     /// `source`), used to recover covered text from a `SourceLocation`.
     pub(super) source: String,
-    /// The render map this generator records (see [`RenderMapMode`]).
-    pub(super) render_map: core::marker::PhantomData<M>,
 }
 
 /// Byte offsets of the structural sections of a generated render module,
@@ -160,7 +157,7 @@ impl CodegenResultWithSections {
     }
 }
 
-impl<M: RenderMapMode> CodegenContext<M> {
+impl CodegenContext {
     /// Anchor the next written byte at the authored byte `source_offset`,
     /// for generated structure that opens an authored unit (the render
     /// function at the template start). No-op unless the document records.
@@ -171,13 +168,9 @@ impl<M: RenderMapMode> CodegenContext<M> {
 
     /// Serialize the document's links as a v3 map, when it records.
     pub(super) fn source_map(&self, filename: &str, source: &str) -> Option<String> {
-        self.out.is_recording().then(|| {
-            if M::COMPOSED {
-                self.out.composed_source_map(filename, source)
-            } else {
-                self.out.source_map(filename, source)
-            }
-        })
+        self.out
+            .is_recording()
+            .then(|| self.out.source_map(filename, source))
     }
 
     /// Byte length of the code generated so far.
@@ -370,7 +363,7 @@ impl<M: RenderMapMode> CodegenContext<M> {
     }
 }
 
-impl<M: RenderMapMode> std::fmt::Write for CodegenContext<M> {
+impl std::fmt::Write for CodegenContext {
     #[inline]
     fn write_str(&mut self, s: &str) -> std::fmt::Result {
         self.out.push_str(s);

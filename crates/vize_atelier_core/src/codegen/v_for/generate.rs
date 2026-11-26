@@ -7,6 +7,7 @@ mod single_prop;
 pub(super) use single_prop::generate_single_prop;
 
 use crate::codegen::RenderMapMode;
+use crate::codegen::component_binding::push_component_binding;
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
     steps::v_memo::{get_memo_exp, has_v_memo},
@@ -39,11 +40,7 @@ use super::template_children::generate_template_for_children;
 use vize_l0::ToCompactString;
 
 /// Generate item for v-for (as block, not regular vnode)
-pub fn generate_for_item<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    node: &TemplateChildNode<'_>,
-    is_stable: bool,
-) {
+pub fn generate_for_item<M: RenderMapMode>(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>, is_stable: bool) {
     match node {
         TemplateChildNode::Element(el) => {
             let (key_exp, el) = (get_element_key(el), unwrap_template_sole_component(el));
@@ -92,7 +89,7 @@ pub fn generate_for_item<M: RenderMapMode>(
             }
 
             if el.tag_type == ElementType::Slot {
-                generate_for_slot_outlet(ctx, el);
+                generate_for_slot_outlet::<M>(ctx, el);
             } else if is_stable && !is_component {
                 if gen_is_template {
                     ctx.use_helper(RuntimeHelper::OpenBlock);
@@ -126,10 +123,10 @@ pub fn generate_for_item<M: RenderMapMode>(
                     push_null_props_if_missing(ctx, emitted_props);
                     ctx.push(", ");
                     if gen_is_template {
-                        generate_template_for_children(ctx, &children_el.children);
+                        generate_template_for_children::<M>(ctx, &children_el.children);
                     } else {
                         ctx.with_parent_namespace(child_namespace(children_el), |ctx| {
-                            generate_children(ctx, &children_el.children);
+                            generate_children::<M>(ctx, &children_el.children);
                         });
                     }
                 }
@@ -224,7 +221,7 @@ pub fn generate_for_item<M: RenderMapMode>(
                     } else if let Some(builtin) = is_builtin_component(el.tag) {
                         ctx.use_helper(builtin);
                         ctx.push(ctx.helper(builtin));
-                    } else if ctx.push_component_binding(el) {
+                    } else if push_component_binding::<M>(ctx, el) {
                     } else {
                         ctx.push(&to_valid_asset_identifier("component", el.tag));
                     }
@@ -269,25 +266,25 @@ pub fn generate_for_item<M: RenderMapMode>(
                         // Component children must be compiled as slot functions,
                         // not raw children. Otherwise Vue warns:
                         // "Non-function value encountered for default slot"
-                        generate_slots(ctx, children_el);
+                        generate_slots::<M>(ctx, children_el);
                     } else if gen_is_template {
-                        generate_template_for_children(ctx, &children_el.children);
+                        generate_template_for_children::<M>(ctx, &children_el.children);
                     } else if ctx.skip_v_memo {
                         // v-for + v-memo: force array form for children
                         if children_el.tag_type == ElementType::Element {
                             ctx.with_parent_namespace(child_namespace(children_el), |ctx| {
-                                generate_children_force_array(ctx, &children_el.children);
+                                generate_children_force_array::<M>(ctx, &children_el.children);
                             });
                         } else {
-                            generate_children_force_array(ctx, &children_el.children);
+                            generate_children_force_array::<M>(ctx, &children_el.children);
                         }
                     } else {
                         if children_el.tag_type == ElementType::Element {
                             ctx.with_parent_namespace(child_namespace(children_el), |ctx| {
-                                generate_children(ctx, &children_el.children);
+                                generate_children::<M>(ctx, &children_el.children);
                             });
                         } else {
-                            generate_children(ctx, &children_el.children);
+                            generate_children::<M>(ctx, &children_el.children);
                         }
                     }
                 }
@@ -405,13 +402,13 @@ pub fn generate_for_item<M: RenderMapMode>(
 
             ctx.skip_scope_id = prev_skip_scope_id;
         }
-        _ => generate_node(ctx, node),
+        _ => generate_node::<M>(ctx, node),
     }
 }
 
 /// Generate props for v-for item, including key and all other props
-pub(crate) fn generate_for_item_props<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+pub(crate) fn generate_for_item_props(
+    ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     key_exp: Option<&ExpressionNode<'_>>,
     skip_is_prop: bool,
@@ -430,8 +427,8 @@ pub(crate) fn generate_for_item_props<M: RenderMapMode>(
     emitted
 }
 
-fn for_item_props<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+fn for_item_props(
+    ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     key_exp: Option<&ExpressionNode<'_>>,
     skip_is_prop: bool,
@@ -645,8 +642,8 @@ fn for_item_props<M: RenderMapMode>(
 }
 
 /// Generate props using _mergeProps when v-bind/v-on object spreads are present.
-fn generate_for_item_props_merged<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+fn generate_for_item_props_merged(
+    ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     key_exp: Option<&ExpressionNode<'_>>,
     scope_id: &Option<vize_l0::String>,
@@ -715,8 +712,8 @@ fn generate_for_item_props_merged<M: RenderMapMode>(
     ctx.push(")");
 }
 
-fn flush_for_item_props_segment<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+fn flush_for_item_props_segment(
+    ctx: &mut CodegenContext,
     props: &[PropNode<'_>],
     key_exp: Option<&ExpressionNode<'_>>,
     scope_id: &Option<vize_l0::String>,

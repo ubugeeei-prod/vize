@@ -1,6 +1,5 @@
 //! Slot outlet (`<slot />`) name and props generation.
 
-use crate::codegen::RenderMapMode;
 use crate::{DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper};
 use vize_l0::String;
 
@@ -106,10 +105,7 @@ pub(crate) fn get_slot_outlet_name<'a>(el: &'a ElementNode<'a>) -> SlotOutletNam
     SlotOutletName::Static(String::new("default"))
 }
 
-pub(crate) fn generate_slot_outlet_name<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    el: &ElementNode<'_>,
-) {
+pub(crate) fn generate_slot_outlet_name(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     match get_slot_outlet_name(el) {
         SlotOutletName::Static(name) => {
             ctx.push("\"");
@@ -124,10 +120,7 @@ pub(crate) fn has_slot_outlet_props(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(slot_outlet_prop_generates_output)
 }
 
-pub(crate) fn generate_slot_outlet_props_entries<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    el: &ElementNode<'_>,
-) {
+pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let static_merge = crate::codegen::props::StaticMerge::from_props(&el.props);
 
     let has_dynamic_class = el.props.iter().any(|prop| match prop {
@@ -205,25 +198,22 @@ pub(crate) fn generate_slot_outlet_props_entries<M: RenderMapMode>(
     }
 }
 
-pub(crate) fn generate_slot_outlet_props<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    el: &ElementNode<'_>,
-) {
+pub(crate) fn generate_slot_outlet_props(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     generate_slot_outlet_props_inner(ctx, el, None);
 }
 
-pub(crate) fn generate_slot_outlet_props_with_key<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+pub(crate) fn generate_slot_outlet_props_with_key(
+    ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
-    generate_key: &dyn Fn(&mut CodegenContext<M>),
+    generate_key: &dyn Fn(&mut CodegenContext),
 ) {
     generate_slot_outlet_props_inner(ctx, el, Some(generate_key));
 }
 
-fn generate_slot_outlet_props_inner<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+fn generate_slot_outlet_props_inner(
+    ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
-    generate_key: Option<&dyn Fn(&mut CodegenContext<M>)>,
+    generate_key: Option<&dyn Fn(&mut CodegenContext)>,
 ) {
     let has_vbind_object = has_slot_outlet_vbind_object(el);
     let has_von_object = has_slot_outlet_von_object(el);
@@ -278,10 +268,10 @@ fn generate_slot_outlet_props_inner<M: RenderMapMode>(
     generate_slot_outlet_props_object(ctx, el, generate_key, has_entries);
 }
 
-fn generate_slot_outlet_props_object<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+fn generate_slot_outlet_props_object(
+    ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
-    generate_key: Option<&dyn Fn(&mut CodegenContext<M>)>,
+    generate_key: Option<&dyn Fn(&mut CodegenContext)>,
     has_entries: bool,
 ) {
     ctx.push("{");

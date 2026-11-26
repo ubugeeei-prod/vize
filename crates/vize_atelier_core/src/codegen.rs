@@ -53,10 +53,10 @@ pub use helpers::is_constant_simple_expression;
 // Shared with the dialect-gated Vue 2 filter transform, which builds the same
 // `_filter_<name>` asset id the codegen preamble declares.
 pub use entry::{
-    generate, generate_composed_with_sections_slot_scope_and_environment,
-    generate_with_experimental_options, generate_with_merge_props, generate_with_sections,
-    generate_with_sections_and_experimental_options,
+    generate, generate_with_experimental_options, generate_with_merge_props,
+    generate_with_sections, generate_with_sections_and_experimental_options,
     generate_with_sections_and_experimental_options_and_slot_scope,
+    generate_composed_with_sections_slot_scope_and_environment,
     generate_with_sections_and_experimental_options_slot_scope_and_environment,
     generate_with_vnode_factory, generate_with_vnode_factory_and_child_values,
     generate_with_vnode_factory_and_merge_props,

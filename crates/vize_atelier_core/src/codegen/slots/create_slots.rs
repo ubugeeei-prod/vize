@@ -19,14 +19,11 @@ use super::name::generate_slot_entry_name;
 use super::params::slot_parameters;
 
 /// Generate slots using createSlots for conditional/looped slot templates
-pub(super) fn generate_create_slots<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    el: &ElementNode<'_>,
-) {
+pub(super) fn generate_create_slots<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.use_helper(RuntimeHelper::CreateSlots);
     ctx.push(ctx.helper(RuntimeHelper::CreateSlots));
     ctx.push("(");
-    generate_create_slots_base(ctx, el);
+    generate_create_slots_base::<M>(ctx, el);
     ctx.push(", [");
     ctx.indent();
 
@@ -40,7 +37,7 @@ pub(super) fn generate_create_slots<M: RenderMapMode>(
                 }
                 first = false;
                 ctx.newline();
-                generate_conditional_slot(ctx, if_node);
+                generate_conditional_slot::<M>(ctx, if_node);
             }
             TemplateChildNode::For(for_node) if child_is_slot_template(child) => {
                 // v-for on slot template: generate looped slot entries
@@ -49,7 +46,7 @@ pub(super) fn generate_create_slots<M: RenderMapMode>(
                 }
                 first = false;
                 ctx.newline();
-                generate_looped_slot(ctx, for_node);
+                generate_looped_slot::<M>(ctx, for_node);
             }
             TemplateChildNode::Element(template_el)
                 if template_el.tag == "template" && has_v_slot(template_el) =>
@@ -61,7 +58,7 @@ pub(super) fn generate_create_slots<M: RenderMapMode>(
                 first = false;
                 ctx.newline();
                 // Generate as static slot entry
-                generate_static_slot_entry(ctx, template_el);
+                generate_static_slot_entry::<M>(ctx, template_el);
             }
             _ => {}
         }
@@ -72,7 +69,7 @@ pub(super) fn generate_create_slots<M: RenderMapMode>(
     ctx.push("])");
 }
 
-fn generate_create_slots_base<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+fn generate_create_slots_base<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let default_children: Vec<_> = el
         .children
         .iter()
@@ -106,7 +103,7 @@ fn generate_create_slots_base<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el:
         ctx.push(ctx.helper(RuntimeHelper::WithCtx));
         ctx.push("(() => [");
         ctx.indent();
-        generate_slot_children_where(ctx, &el.children, |child| {
+        generate_slot_children_where::<M>(ctx, &el.children, |child| {
             !child_is_slot_template(child) && !matches!(child, TemplateChildNode::Comment(_))
         });
         ctx.deindent();
@@ -130,7 +127,7 @@ fn generate_create_slots_base<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el:
 }
 
 /// Generate a conditional slot entry (v-if on slot template)
-fn generate_conditional_slot<M: RenderMapMode>(ctx: &mut CodegenContext<M>, if_node: &IfNode<'_>) {
+fn generate_conditional_slot<M: RenderMapMode>(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     // For each branch: condition ? { name, fn, key } : undefined
     for (i, branch) in if_node.branches.iter().enumerate() {
         if i > 0 {
@@ -160,7 +157,7 @@ fn generate_conditional_slot<M: RenderMapMode>(ctx: &mut CodegenContext<M>, if_n
         });
 
         if let Some(template_el) = slot_template {
-            generate_slot_object_entry(ctx, template_el, Some(i));
+            generate_slot_object_entry::<M>(ctx, template_el, Some(i));
         } else {
             ctx.push("undefined");
         }
@@ -180,7 +177,7 @@ fn generate_conditional_slot<M: RenderMapMode>(ctx: &mut CodegenContext<M>, if_n
 }
 
 /// Generate a looped slot entry (v-for on slot template)
-fn generate_looped_slot<M: RenderMapMode>(ctx: &mut CodegenContext<M>, for_node: &ForNode<'_>) {
+fn generate_looped_slot<M: RenderMapMode>(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
     ctx.use_helper(RuntimeHelper::RenderList);
     ctx.push(ctx.helper(RuntimeHelper::RenderList));
     ctx.push("(");
@@ -224,7 +221,7 @@ fn generate_looped_slot<M: RenderMapMode>(ctx: &mut CodegenContext<M>, for_node:
     });
 
     if let Some(template_el) = slot_template {
-        generate_slot_object_entry(ctx, template_el, None);
+        generate_slot_object_entry::<M>(ctx, template_el, None);
     }
 
     ctx.remove_slot_params(&callback_params);
@@ -236,7 +233,7 @@ fn generate_looped_slot<M: RenderMapMode>(ctx: &mut CodegenContext<M>, for_node:
 
 /// Generate a slot object entry: { name: "slotName", fn: _withCtx(() => [...]), key: "N" }
 fn generate_slot_object_entry<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+    ctx: &mut CodegenContext,
     template_el: &ElementNode<'_>,
     key_index: Option<usize>,
 ) {
@@ -283,7 +280,7 @@ fn generate_slot_object_entry<M: RenderMapMode>(
 
         ctx.push(" => [");
         ctx.indent();
-        generate_slot_children(ctx, &template_el.children);
+        generate_slot_children::<M>(ctx, &template_el.children);
         ctx.deindent();
         ctx.newline();
         ctx.push("])");
@@ -306,9 +303,6 @@ fn generate_slot_object_entry<M: RenderMapMode>(
 }
 
 /// Generate a static slot entry for createSlots context
-fn generate_static_slot_entry<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    template_el: &ElementNode<'_>,
-) {
-    generate_slot_object_entry(ctx, template_el, None);
+fn generate_static_slot_entry<M: RenderMapMode>(ctx: &mut CodegenContext, template_el: &ElementNode<'_>) {
+    generate_slot_object_entry::<M>(ctx, template_el, None);
 }

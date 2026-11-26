@@ -46,7 +46,7 @@ use super::params::slot_parameters;
 /// instead carries `1024 /* DYNAMIC_SLOTS */` (see
 /// [`has_dynamic_slots_flag`](super::detect::has_dynamic_slots_flag)) to force
 /// that update.
-pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Note: WithCtx helper is registered at each _withCtx() output site,
     // not here, to avoid importing it when slots don't actually use it.
 
@@ -76,7 +76,7 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &Elemen
 
     // If there are conditional (v-if) or looped (v-for) slots, use createSlots
     if has_conditional_slots && root_slot.is_none() {
-        generate_create_slots(ctx, el);
+        generate_create_slots::<M>(ctx, el);
         return;
     }
 
@@ -108,7 +108,7 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &Elemen
 
         ctx.push(" => [");
         ctx.indent();
-        generate_slot_children(ctx, &el.children);
+        generate_slot_children::<M>(ctx, &el.children);
         ctx.deindent();
         ctx.newline();
         ctx.push("])");
@@ -192,7 +192,7 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &Elemen
 
                     ctx.push(" => [");
                     ctx.indent();
-                    generate_slot_children(ctx, &template_el.children);
+                    generate_slot_children::<M>(ctx, &template_el.children);
                     ctx.deindent();
                     ctx.newline();
                     ctx.push("])");
@@ -221,7 +221,7 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &Elemen
             ctx.push(ctx.helper(RuntimeHelper::WithCtx));
             ctx.push("(() => [");
             ctx.indent();
-            generate_slot_children_where(ctx, &el.children, |child| {
+            generate_slot_children_where::<M>(ctx, &el.children, |child| {
                 super::detect::child_is_implicit_default(child, has_slot_template)
             });
             ctx.deindent();

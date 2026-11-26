@@ -10,19 +10,13 @@ use super::super::context::CodegenContext;
 use vize_l0::ToCompactString;
 
 /// Generate v-once element with cache wrapper
-pub fn generate_v_once_element<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    el: &ElementNode<'_>,
-) {
-    generate_v_once_cached(ctx, |ctx| generate_v_once_vnode(ctx, el));
+pub fn generate_v_once_element<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    generate_v_once_cached(ctx, |ctx| generate_v_once_vnode::<M>(ctx, el));
 }
 
 /// Wrap `body` in the `v-once` cache expression: it renders on the first pass
 /// only, with block tracking paused so the cached tree is never patched.
-pub fn generate_v_once_cached<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
-    body: impl FnOnce(&mut CodegenContext<M>),
-) {
+pub fn generate_v_once_cached(ctx: &mut CodegenContext, body: impl FnOnce(&mut CodegenContext)) {
     let cache_index = ctx.next_cache_index();
 
     ctx.use_helper(RuntimeHelper::SetBlockTracking);
@@ -66,12 +60,12 @@ pub fn generate_v_once_cached<M: RenderMapMode>(
 
 /// The vnode a `v-once` element caches: the same vnode as without `v-once`,
 /// minus handler caching.
-fn generate_v_once_vnode<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+fn generate_v_once_vnode<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let in_v_once = core::mem::replace(&mut ctx.in_v_once, true);
     if el.tag_type == ElementType::Component {
-        super::inline::generate_component_vnode(ctx, el);
+        super::inline::generate_component_vnode::<M>(ctx, el);
     } else {
-        super::inline::generate_native_vnode(ctx, el);
+        super::inline::generate_native_vnode::<M>(ctx, el);
     }
     ctx.in_v_once = in_v_once;
 }

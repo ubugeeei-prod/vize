@@ -18,15 +18,15 @@ use branch::generate_if_branch;
 use vize_l0::ToCompactString;
 
 /// Generate if node.
-pub fn generate_if<M: RenderMapMode>(ctx: &mut CodegenContext<M>, if_node: &IfNode<'_>) {
+pub fn generate_if<M: RenderMapMode>(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     if once::chain_is_once(if_node) {
-        super::element::generate_v_once_cached(ctx, |ctx| generate_if_chain(ctx, if_node));
+        super::element::generate_v_once_cached(ctx, |ctx| generate_if_chain::<M>(ctx, if_node));
     } else {
-        generate_if_chain(ctx, if_node);
+        generate_if_chain::<M>(ctx, if_node);
     }
 }
 
-fn generate_if_chain<M: RenderMapMode>(ctx: &mut CodegenContext<M>, if_node: &IfNode<'_>) {
+fn generate_if_chain<M: RenderMapMode>(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
     ctx.use_helper(RuntimeHelper::OpenBlock);
 
     // Vue always imports createCommentVNode for v-if nodes
@@ -69,7 +69,7 @@ fn generate_if_chain<M: RenderMapMode>(ctx: &mut CodegenContext<M>, if_node: &If
         // inside the branch doesn't continue the outer numbering.
         let saved_counter = ctx.v_if_branch_counter;
         ctx.v_if_branch_counter = 0;
-        generate_if_branch(ctx, branch, branch_key);
+        generate_if_branch::<M>(ctx, branch, branch_key);
         ctx.v_if_branch_counter = saved_counter;
 
         if branch.condition.is_some() && i > 0 {
@@ -93,8 +93,8 @@ fn generate_if_chain<M: RenderMapMode>(ctx: &mut CodegenContext<M>, if_node: &If
 }
 
 /// Generate key for if branch.
-pub fn generate_if_branch_key<M: RenderMapMode>(
-    ctx: &mut CodegenContext<M>,
+pub fn generate_if_branch_key(
+    ctx: &mut CodegenContext,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {

@@ -11,7 +11,6 @@ use self::literal_const::is_setup_literal_const_access;
 use self::static_literal::{is_static_literal, is_static_object_or_array_literal_node};
 use super::context::CodegenContext;
 use super::helpers::camelize;
-use crate::codegen::RenderMapMode;
 use crate::options::{BindingMetadata, BindingType};
 use crate::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 use vize_l0::{String, ToCompactString, is_builtin_directive};
@@ -50,24 +49,24 @@ fn is_static_bound_expression(dir: &DirectiveNode<'_>) -> bool {
 
 /// Calculate patch flag and dynamic props for an element.
 /// `skip_is_prop`: when true, skip `:is` binding (used for `<component :is="...">`)
-pub fn calculate_element_patch_info<M: RenderMapMode>(
+pub fn calculate_element_patch_info(
     el: &ElementNode<'_>,
-    ctx: &CodegenContext<M>,
+    ctx: &CodegenContext,
 ) -> (Option<i32>, Option<Vec<String>>) {
     calculate_element_patch_info_inner(el, ctx, false)
 }
 
 /// Same as `calculate_element_patch_info` but allows skipping the `is` prop.
-pub fn calculate_element_patch_info_skip_is<M: RenderMapMode>(
+pub fn calculate_element_patch_info_skip_is(
     el: &ElementNode<'_>,
-    ctx: &CodegenContext<M>,
+    ctx: &CodegenContext,
 ) -> (Option<i32>, Option<Vec<String>>) {
     calculate_element_patch_info_inner(el, ctx, true)
 }
 
-fn calculate_element_patch_info_inner<M: RenderMapMode>(
+fn calculate_element_patch_info_inner(
     el: &ElementNode<'_>,
-    ctx: &CodegenContext<M>,
+    ctx: &CodegenContext,
     skip_is: bool,
 ) -> (Option<i32>, Option<Vec<String>>) {
     let bindings = ctx.options.binding_metadata.as_ref();
