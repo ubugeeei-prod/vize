@@ -1,8 +1,6 @@
 //! [`MarkupAttribute`]: a written attribute.
 
-use super::jsx_names::{
-    jsx_attribute_name, jsx_attribute_ref, jsx_static_value, jsx_value_is_dynamic,
-};
+use super::jsx_names::{jsx_attribute_name, jsx_static_value, jsx_value_is_dynamic};
 use super::l2::L2Markup;
 use super::l2::surface::{attr_span, attr_value, token_range};
 use super::{l2_range, loc_to_range, span_to_range};
@@ -17,7 +15,7 @@ use vize_relief::AttributeNode;
 enum MarkupAttributeInner<'a> {
     Relief(&'a AttributeNode<'a>),
     Jsx {
-        node: *const JSXAttribute<'a>,
+        node: &'a JSXAttribute<'a>,
         offset: u32,
     },
     L2 {
@@ -50,7 +48,7 @@ impl<'a> MarkupAttribute<'a> {
         Self::from_inner(MarkupAttributeInner::Relief(node))
     }
 
-    pub(super) const fn from_jsx(node: *const JSXAttribute<'a>, offset: u32) -> Self {
+    pub(super) const fn from_jsx(node: &'a JSXAttribute<'a>, offset: u32) -> Self {
         Self::from_inner(MarkupAttributeInner::Jsx { node, offset })
     }
 
@@ -81,11 +79,7 @@ impl<'a> MarkupAttribute<'a> {
     pub fn name(&self) -> &str {
         match self.inner {
             MarkupAttributeInner::Relief(node) => node.name,
-            MarkupAttributeInner::Jsx { node, .. } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                jsx_attribute_name(&unsafe { jsx_attribute_ref(node) }.name)
-            }
+            MarkupAttributeInner::Jsx { node, .. } => jsx_attribute_name(&node.name),
             MarkupAttributeInner::L2 { attribute, .. } => attribute.name,
             MarkupAttributeInner::Surface { name, .. } => name,
         }
@@ -100,11 +94,7 @@ impl<'a> MarkupAttribute<'a> {
     pub fn value(&self) -> Option<&'a str> {
         match self.inner {
             MarkupAttributeInner::Relief(node) => node.value.as_ref().map(|value| value.content),
-            // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-            // into the program this facade borrows for `'a`.
-            MarkupAttributeInner::Jsx { node, .. } => {
-                jsx_static_value(unsafe { jsx_attribute_ref(node) })
-            }
+            MarkupAttributeInner::Jsx { node, .. } => jsx_static_value(node),
             MarkupAttributeInner::L2 { attribute, doc } => {
                 attribute.value.map(|value| doc.decode_attribute(value))
             }
@@ -117,11 +107,7 @@ impl<'a> MarkupAttribute<'a> {
     /// Whether the attribute value is dynamic.
     pub fn is_dynamic(&self) -> bool {
         match self.inner {
-            MarkupAttributeInner::Jsx { node, .. } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                jsx_value_is_dynamic(unsafe { jsx_attribute_ref(node) }.value.as_ref())
-            }
+            MarkupAttributeInner::Jsx { node, .. } => jsx_value_is_dynamic(node.value.as_ref()),
             MarkupAttributeInner::Relief(_)
             | MarkupAttributeInner::L2 { .. }
             | MarkupAttributeInner::Surface { .. } => false,
@@ -132,11 +118,7 @@ impl<'a> MarkupAttribute<'a> {
     pub fn range(&self) -> ByteRange {
         match self.inner {
             MarkupAttributeInner::Relief(node) => loc_to_range(&node.loc),
-            MarkupAttributeInner::Jsx { node, offset } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                span_to_range(unsafe { jsx_attribute_ref(node) }.span, offset)
-            }
+            MarkupAttributeInner::Jsx { node, offset } => span_to_range(node.span, offset),
             MarkupAttributeInner::L2 { attribute, .. } => l2_range(attribute.span),
             MarkupAttributeInner::Surface { attr, doc, .. } => {
                 l2_range(attr_span(doc.source, attr))
@@ -148,11 +130,7 @@ impl<'a> MarkupAttribute<'a> {
     pub fn name_range(&self) -> ByteRange {
         match self.inner {
             MarkupAttributeInner::Relief(node) => loc_to_range(&node.name_loc),
-            MarkupAttributeInner::Jsx { node, offset } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                span_to_range(unsafe { jsx_attribute_ref(node) }.name.span(), offset)
-            }
+            MarkupAttributeInner::Jsx { node, offset } => span_to_range(node.name.span(), offset),
             MarkupAttributeInner::L2 { attribute, .. } => ByteRange::new(
                 attribute.span.start,
                 attribute.span.start + attribute.name.len() as u32,

@@ -1,7 +1,6 @@
 //! [`MarkupDocumentVisitor`]: drives a [`MarkupRule`] from any backend.
 
 use super::element::{MarkupElement, MarkupElementInner};
-use super::jsx_names::{jsx_element_ref, jsx_fragment_ref};
 use super::l2::walk::{L2Step, scope_region};
 use super::l2::{L2ElementOp, L2Markup, children};
 use super::loc_to_range;
@@ -11,8 +10,7 @@ use super::scope::{MarkupConditional, MarkupList};
 use super::{
     MarkupContext, MarkupDocument, MarkupDocumentInner, MarkupRule, MarkupTraversal, jsx_roots,
 };
-use oxc_ast::ast::{JSXChild, JSXElement, JSXFragment, Program};
-use oxc_ast_visit::{Visit, walk::walk_program};
+use oxc_ast::ast::{JSXChild, Program};
 use vize_l0::profile;
 use vize_l2::op::Op;
 use vize_relief::{ElementNode, TemplateChildNode};
@@ -251,18 +249,12 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             MarkupElementInner::Relief(node) => self.visit_relief_children(&node.children),
             MarkupElementInner::JsxElement { node, offset } => {
                 self.ctx.push_jsx_attribute_value();
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                jsx_roots::visit_attribute_roots(self, unsafe { jsx_element_ref(node) }, offset);
+                jsx_roots::visit_attribute_roots(self, node, offset);
                 self.ctx.pop_jsx_attribute_value();
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                self.visit_jsx_children(&unsafe { jsx_element_ref(node) }.children, offset)
+                self.visit_jsx_children(&node.children, offset)
             }
             MarkupElementInner::JsxFragment { node, offset } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                self.visit_jsx_children(&unsafe { jsx_fragment_ref(node) }.children, offset)
+                self.visit_jsx_children(&node.children, offset)
             }
             MarkupElementInner::L2 { op, doc, .. } => self.visit_l2_region(doc, op.children()),
             MarkupElementInner::L2Carrier { doc, region, .. } => {
@@ -286,30 +278,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
         // Stream each outermost JSX element/fragment into `visit_element` in
         // source order, with no root container allocated. Nested JSX roots are
         // handled by our own element/attribute/expression recursion.
-        struct RootDriver<'visitor, 'rule, 'ctx, 'mc, 'a, R: ?Sized> {
-            visitor: &'visitor mut MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R>,
-            offset: u32,
-        }
-
-        impl<'a, R: MarkupRule + ?Sized> Visit<'a> for RootDriver<'_, '_, '_, '_, 'a, R> {
-            fn visit_jsx_element(&mut self, it: &JSXElement<'a>) {
-                self.visitor
-                    .visit_element(MarkupElement::from_jsx_element(it as *const _, self.offset));
-            }
-
-            fn visit_jsx_fragment(&mut self, it: &JSXFragment<'a>) {
-                self.visitor.visit_element(MarkupElement::from_jsx_fragment(
-                    it as *const _,
-                    self.offset,
-                ));
-            }
-        }
-
-        let mut driver = RootDriver {
-            visitor: self,
-            offset,
-        };
-        walk_program(&mut driver, program);
+        jsx_roots::walk_program_roots(program, offset, &mut |element| {
+            self.visit_element(element);
+        });
     }
 
     fn visit_jsx_children(&mut self, children: &'a [JSXChild<'a>], offset: u32) {

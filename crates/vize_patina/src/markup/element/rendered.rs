@@ -1,7 +1,6 @@
 //! Children as rendered: a JSX conditional or list yields what it renders.
 
 use super::{MarkupElement, MarkupElementInner};
-use crate::markup::jsx_names::{jsx_element_ref, jsx_fragment_ref};
 use crate::markup::jsx_roots::walk_expression_container_roots;
 use crate::markup::l2::L2Markup;
 use crate::markup::l2::children::walk_nodes;
@@ -20,14 +19,10 @@ impl<'a> MarkupElement<'a> {
                 l2(doc, op.children(), visitor);
             }
             MarkupElementInner::JsxElement { node, offset } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                jsx(&unsafe { jsx_element_ref(node) }.children, offset, visitor);
+                jsx(&node.children, offset, visitor);
             }
             MarkupElementInner::JsxFragment { node, offset } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                jsx(&unsafe { jsx_fragment_ref(node) }.children, offset, visitor);
+                jsx(&node.children, offset, visitor);
             }
             MarkupElementInner::Authored { .. }
             | MarkupElementInner::L2 { .. }
