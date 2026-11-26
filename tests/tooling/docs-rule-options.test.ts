@@ -209,6 +209,7 @@ test("strict boolean rows render within the complete option and type-aware table
     "a11y/heading-has-content",
     "a11y/label-has-for",
     "vue/require-component-registration",
+    "vue/no-undefined-refs",
     "vue/sfc-element-order",
     "vue/html-self-closing",
     "vue/html-button-has-type",

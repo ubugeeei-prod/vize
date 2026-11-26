@@ -180,6 +180,7 @@ export function getRuleOptions(
     case "a11y/label-has-for":
     case "vue/enforce-style-attribute":
     case "vue/require-component-registration":
+    case "vue/no-undefined-refs":
     case "vue/valid-v-on":
     case "vue/valid-v-slot":
     case "musea/prefer-design-tokens":
