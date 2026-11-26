@@ -92,6 +92,7 @@ export default defineConfig({}).withVue({
 | `a11y/heading-has-content` | `{ components?: string[]; accessibleChildren?: string[]; accessibleDirectives?: string[] }` | `a11y/anchor-has-content` と同じオプションを `<h1>` から `<h6>` に適用します。 |
 | `a11y/label-has-for` | `{ controlComponents?: string[] }` | 既定は空のリストです。指定したコンポーネントをラベルのコントロールとして扱います。 |
 | `vue/require-component-registration` | `{ globals?: string[]; ignorePatterns?: string[] }` | アプリケーションのプラグインやプレビューのセットアップで登録するコンポーネント名を指定します。PascalCase と kebab-case の表記を許可します。`ignorePatterns` には eslint-plugin-vue の `vue/no-undef-components` と同じく正規表現を指定します。ルールは別に有効にしてください。 |
+| `vue/no-undefined-refs` | `{ globals?: string[] }` | 既定は空の一覧です。`unplugin-auto-import` の自動インポートなど、ビルド時にすべてのテンプレートで使えるようになる名前を完全一致で指定します。Nuxt プロジェクトでは、Nuxt が生成した自動インポートの名前を `vize lint` が加えるため、指定は不要です。オプションだけではルールは有効になりません。範囲別の設定は継承した一覧を置き換え、`[]` で解除します。[設定例](./reference/vue-no-undefined-refs.md)を参照してください。 |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | 既定は `[["script", "template"], "style"]` です。入れ子の配列は、その位置に配列内のどのブロックが現れてもよいことを表します。 |
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`。`Style` は `"always"`、`"never"`、`"any"` のいずれか | 既定は eslint-plugin-vue と同じ `html.void: "never"`、`html.normal: "always"`、`html.component: "always"`、`svg: "always"`、`math: "always"` です。 |
 | `vue/html-button-has-type` | `{ button?: boolean; submit?: boolean; reset?: boolean }` | 3 つとも既定値は `true` です。`false` にした静的な button type は、値自体が有効でも禁止として報告します。 |
