@@ -30,7 +30,7 @@ impl Rng {
 /// Few names, so several modules declare the same one and order decides.
 const NAMES: [&str; 5] = ["A", "B", "C", "D", "E"];
 
-fn name(rng: &mut Rng) -> &'static str {
+pub(super) fn name(rng: &mut Rng) -> &'static str {
     NAMES[rng.below(NAMES.len())]
 }
 
@@ -52,7 +52,7 @@ fn specifier(rng: &mut Rng, modules: usize) -> std::string::String {
 }
 
 /// Imports and re-exports in every form the summary distinguishes.
-fn edges(rng: &mut Rng, modules: usize, source: &mut std::string::String) {
+pub(super) fn edges(rng: &mut Rng, modules: usize, source: &mut std::string::String) {
     for _ in 0..rng.below(4) {
         let target = specifier(rng, modules);
         let (first, second) = (name(rng), name(rng));
@@ -68,7 +68,7 @@ fn edges(rng: &mut Rng, modules: usize, source: &mut std::string::String) {
     }
 }
 
-fn write_module(rng: &mut Rng, dir: &Path, index: usize, modules: usize) {
+pub(super) fn write_module(rng: &mut Rng, dir: &Path, index: usize, modules: usize) {
     let path = dir.join(module_file(index));
     if rng.below(16) == 0 {
         // Resolves, but is not text.

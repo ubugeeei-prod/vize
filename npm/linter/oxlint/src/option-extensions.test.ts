@@ -3,6 +3,7 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { it } from "vite-plus/test";
+import { withHostGlobals } from "./binding.ts";
 import { getRuleOptions } from "./rule-options.ts";
 import { parseRuleSelection } from "./rule-selection.ts";
 import { restrictedHtmlElementsSchema, restrictedVOnSchema } from "./restricted-entry-options.ts";
@@ -111,4 +112,35 @@ it("carries restricted listener entries with modifiers, element and message", ()
     assert.equal(getRuleOptions(rule, options), undefined, JSON.stringify(options));
     assert(!validate(options), JSON.stringify(options));
   }
+});
+
+it("carries undefined-refs globals and joins the names the host defines", () => {
+  const rule = "vue/no-undefined-refs";
+  const option = { globals: ["fromOption"] };
+  const projected = getRuleOptions(rule, [option]);
+  assert.deepEqual(projected, { ruleOptions: { [rule]: { globals: ["fromOption"] } } });
+  assert.notEqual(projected?.ruleOptions?.[rule], option);
+  assert.equal(getRuleOptions(rule, []), undefined);
+  assert.equal(getRuleOptions(rule, ["fromOption"]), undefined);
+
+  const host = {
+    formatCount: "readonly",
+    counter: "writable",
+    legacy: "off",
+    fromOption: "readonly",
+  };
+  assert.deepEqual(withHostGlobals(rule, projected, host), {
+    ruleOptions: { [rule]: { globals: ["fromOption", "formatCount", "counter"] } },
+  });
+  assert.deepEqual(projected, { ruleOptions: { [rule]: { globals: ["fromOption"] } } });
+  assert.deepEqual(withHostGlobals(rule, undefined, host), {
+    ruleOptions: { [rule]: { globals: ["formatCount", "counter", "fromOption"] } },
+  });
+
+  // A host that defines nothing, and every other rule, pass through untouched.
+  assert.equal(withHostGlobals(rule, projected, {}), projected);
+  assert.equal(withHostGlobals(rule, projected, { legacy: "off" }), projected);
+  assert.equal(withHostGlobals(rule, undefined, undefined), undefined);
+  const other = getRuleOptions("vue/valid-v-on", [{ modifiers: ["custom"] }]);
+  assert.equal(withHostGlobals("vue/valid-v-on", other, host), other);
 });

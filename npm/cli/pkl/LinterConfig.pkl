@@ -320,6 +320,7 @@ class LintRuleOptions {
   `vue/quote-props`: "as-needed"? = null
   `vue/sort-keys`: SortKeysOptions? = null
   `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
+  `vue/no-undefined-refs`: LintRuleOptionTypes.NoUndefinedRefsOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
   `vue/html-quotes`: (HtmlQuoteStyle | HtmlQuotesOptions)? = null
