@@ -17,6 +17,7 @@ mod trace;
 
 use std::borrow::Cow;
 
+use vize_carton::string_builder::TextBuf;
 use vize_carton::{String, ToCompactString, profile};
 
 use crate::script::ScriptCompileContext;
@@ -145,7 +146,7 @@ pub(crate) fn compile_script_setup_inline_with_context(
     let setup_code: String = setup_lines.join("\n").into();
 
     // Assembled in the heap buffer that becomes the returned code.
-    let mut output: Vec<u8> = Vec::with_capacity(4096);
+    let mut output = TextBuf::with_capacity(4096);
 
     // Store normal script content to add AFTER TypeScript transformation
     // This preserves type definitions that would otherwise be stripped

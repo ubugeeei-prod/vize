@@ -5,6 +5,7 @@
 //! render function.
 
 use crate::compile_script::macros::runtime_erased_macro_names;
+use vize_carton::string_builder::TextBuf;
 use vize_carton::{FxHashSet, String, ToCompactString};
 
 use crate::script::{
@@ -56,7 +57,7 @@ pub fn compile_script_setup(
     let mut erasure = Erasure::for_javascript(!is_ts, &mut ctx);
     crate::script::transform_define_expose_destructured_props(&mut ctx)?;
     // Assembled in the heap buffer that becomes the returned code.
-    let mut output: Vec<u8> = Vec::with_capacity(4096);
+    let mut output = TextBuf::with_capacity(4096);
 
     // Check if we have props destructure
     let has_props_destructure = ctx.macros.props_destructure.is_some();
@@ -122,22 +123,22 @@ pub fn compile_script_setup(
     let imports_at = output.len();
     super::module_scope::emit_module_scope(&mut output, &module_scope, erasure.as_mut());
 
-    output.push(b'\n');
+    output.push('\n');
 
     // Add comment for props destructure
     if has_props_destructure {
-        output.extend_from_slice(b"// Reactive Props Destructure (Vue 3.5+)\n\n");
+        output.push_str("// Reactive Props Destructure (Vue 3.5+)\n\n");
     }
 
     // Start __sfc__ definition
     if is_vapor {
-        output.extend_from_slice(b"const __sfc__ = /*@__PURE__*/_defineVaporComponent({\n");
+        output.push_str("const __sfc__ = /*@__PURE__*/_defineVaporComponent({\n");
     } else {
-        output.extend_from_slice(b"const __sfc__ = /*@__PURE__*/_defineComponent({\n");
+        output.push_str("const __sfc__ = /*@__PURE__*/_defineComponent({\n");
     }
-    output.extend_from_slice(b"  __name: '");
-    output.extend_from_slice(component_name.as_bytes());
-    output.extend_from_slice(b"',\n");
+    output.push_str("  __name: '");
+    output.push_str(component_name);
+    output.push_str("',\n");
 
     // Props definition - handle both regular defineProps and destructure
     emit_props_definition(
@@ -153,13 +154,13 @@ pub fn compile_script_setup(
 
     // Add model props if defineModel was used (and no defineProps)
     if !model_names.is_empty() && ctx.macros.define_props.is_none() && !has_props_destructure {
-        output.extend_from_slice(b"  props: {\n");
+        output.push_str("  props: {\n");
         for model_name in &model_names {
-            output.extend_from_slice(b"    \"");
-            output.extend_from_slice(model_name.as_bytes());
-            output.extend_from_slice(b"\": {},\n");
+            output.push_str("    \"");
+            output.push_str(model_name);
+            output.push_str("\": {},\n");
         }
-        output.extend_from_slice(b"  },\n");
+        output.push_str("  },\n");
     }
 
     // Emits definition - combine defineEmits and defineModel
@@ -171,18 +172,18 @@ pub fn compile_script_setup(
 
     // Setup function
     if has_top_level_await {
-        output.extend_from_slice(b"  async setup(__props, { expose: __expose, emit: __emit }) {\n");
+        output.push_str("  async setup(__props, { expose: __expose, emit: __emit }) {\n");
     } else {
-        output.extend_from_slice(b"  setup(__props, { expose: __expose, emit: __emit }) {\n");
+        output.push_str("  setup(__props, { expose: __expose, emit: __emit }) {\n");
     }
 
     // Always call __expose() - Vue runtime requires this for proper component initialization
     // If defineExpose has args, use those; otherwise call with no args
     emit_expose(&mut output, &ctx);
     if let Some(declaration) = rest_proxy {
-        output.extend_from_slice(b"  ");
-        output.extend_from_slice(declaration.as_bytes());
-        output.push(b'\n');
+        output.push_str("  ");
+        output.push_str(&declaration);
+        output.push('\n');
     }
 
     // Collect emit binding name for inclusion in __returned__
@@ -194,9 +195,9 @@ pub fn compile_script_setup(
 
     // defineEmits binding: const emit = __emit
     if let Some(ref binding_name) = emit_binding_name {
-        output.extend_from_slice(b"  const ");
-        output.extend_from_slice(binding_name.as_bytes());
-        output.extend_from_slice(b" = __emit\n");
+        output.push_str("  const ");
+        output.push_str(binding_name);
+        output.push_str(" = __emit\n");
     }
 
     // Collect props binding for exclusion from __returned__ (props themselves shouldn't be in returned)
@@ -207,9 +208,9 @@ pub fn compile_script_setup(
         && let Some(ref props_macro) = ctx.macros.define_props
         && let Some(ref binding_name) = props_macro.binding_name
     {
-        output.extend_from_slice(b"  const ");
-        output.extend_from_slice(binding_name.as_bytes());
-        output.extend_from_slice(b" = __props\n");
+        output.push_str("  const ");
+        output.push_str(binding_name);
+        output.push_str(" = __props\n");
         props_binding_names.insert(String::from(binding_name.as_str()));
     }
 
@@ -217,9 +218,9 @@ pub fn compile_script_setup(
     if let Some(ref slots_macro) = ctx.macros.define_slots
         && let Some(ref binding_name) = slots_macro.binding_name
     {
-        output.extend_from_slice(b"  const ");
-        output.extend_from_slice(binding_name.as_bytes());
-        output.extend_from_slice(b" = _useSlots()\n");
+        output.push_str("  const ");
+        output.push_str(binding_name);
+        output.push_str(" = _useSlots()\n");
     }
 
     // defineModel bindings: const model = _useModel(__props, 'modelValue')
@@ -236,10 +237,10 @@ pub fn compile_script_setup(
     // Indent the setup code
     for line in transformed_setup.lines() {
         if !line.trim().is_empty() {
-            output.extend_from_slice(b"  ");
-            output.extend_from_slice(line.as_bytes());
+            output.push_str("  ");
+            output.push_str(line);
         }
-        output.push(b'\n');
+        output.push('\n');
     }
 
     let runtime_used_identifiers = runtime_identifier_references(&transformed_setup);
@@ -256,43 +257,33 @@ pub fn compile_script_setup(
         &model_binding_names,
     );
 
-    output.extend_from_slice(b"  const __returned__ = { ");
+    output.push_str("  const __returned__ = { ");
     for (index, name) in returned_bindings.iter().enumerate() {
         if index > 0 {
-            output.extend_from_slice(b", ");
+            output.push_str(", ");
         }
         if is_reserved_word(name) {
-            output.push(b'"');
-            output.extend_from_slice(name.as_bytes());
-            output.extend_from_slice(b"\": ");
+            output.push('"');
+            output.push_str(name);
+            output.push_str("\": ");
         }
         push_returned_binding(&mut output, name, &ctx);
     }
-    output.extend_from_slice(b" }\n");
-    output.extend_from_slice(b"  Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
-    output.extend_from_slice(b"  return __returned__\n");
+    output.push_str(" }\n");
+    output.push_str("  Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+    output.push_str("  return __returned__\n");
 
-    output.extend_from_slice(b"  }\n\n");
+    output.push_str("  }\n\n");
     // Close the component definition
     if is_vapor {
-        output.extend_from_slice(b"});\n"); // Close _defineVaporComponent(
+        output.push_str("});\n"); // Close _defineVaporComponent(
     } else {
-        output.extend_from_slice(b"});\n"); // Close _defineComponent(
+        output.push_str("});\n"); // Close _defineComponent(
     }
 
     let imports = dedupe_imports(&imports, false);
     insert_imports(&mut output, imports_at, &imports, erasure);
-    // SAFETY: this byte buffer is a fast append target for valid UTF-8 script
-    // fragments: original source ranges, OXC codegen output, and ASCII component
-    // wrapper text. There is no API in this module that appends arbitrary binary
-    // data, so the generated script remains valid UTF-8 by construction.
-    // Avoiding a second full-buffer validation matters for large script-setup
-    // blocks in function mode.
-    #[expect(clippy::disallowed_types, reason = "unchecked UTF-8")]
-    let output_str: std::string::String =
-        unsafe { std::string::String::from_utf8_unchecked(output) };
-
-    let mut final_code: String = output_str.into();
+    let mut final_code = output.into_compact();
     if let Some(transform) = lazy_hydration_transform {
         let mut code = transform.preamble;
         code.push_str(&final_code);
@@ -309,7 +300,7 @@ pub fn compile_script_setup(
 ///
 /// Handles regular defineProps, destructured props with defaults, and type-based props.
 fn emit_props_definition(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     ctx: &ScriptCompileContext,
     has_props_destructure: bool,
     needs_prop_type: bool,
@@ -358,29 +349,29 @@ fn emit_props_definition(
                 "[]".to_compact_string()
             };
 
-            output.extend_from_slice(b"  props: /*@__PURE__*/_mergeDefaults(");
-            output.extend_from_slice(original_props.as_bytes());
-            output.extend_from_slice(b", {\n");
+            output.push_str("  props: /*@__PURE__*/_mergeDefaults(");
+            output.push_str(&original_props);
+            output.push_str(", {\n");
 
             for (key, binding) in &destructure.bindings {
                 if let Some(ref default_val) = binding.default {
-                    output.extend_from_slice(b"  ");
-                    output.extend_from_slice(key.as_bytes());
-                    output.extend_from_slice(b": ");
+                    output.push_str("  ");
+                    output.push_str(key);
+                    output.push_str(": ");
                     let default_val = normalize_default(default_val, binding.default_needs_factory);
-                    output.extend_from_slice(default_val.as_bytes());
-                    output.push(b'\n');
+                    output.push_str(&default_val);
+                    output.push('\n');
                 }
             }
-            output.extend_from_slice(b"}),\n");
+            output.push_str("}),\n");
         } else {
             // No defaults - just use the original props array
             if let Some(ref props_macro) = ctx.macros.define_props
                 && !props_macro.args.is_empty()
             {
-                output.extend_from_slice(b"  props: ");
-                output.extend_from_slice(props_macro.args.as_bytes());
-                output.extend_from_slice(b",\n");
+                output.push_str("  props: ");
+                output.push_str(&props_macro.args);
+                output.push_str(",\n");
             } else if let Some(ref props_macro) = ctx.macros.define_props
                 && props_macro.type_args.is_some()
             {
@@ -390,21 +381,20 @@ fn emit_props_definition(
                     .map(|type_args| prop_types_from_context(ctx, type_args))
                     .unwrap_or_default();
                 if prop_types.is_empty() {
-                    output.extend_from_slice(b"  props: ");
-                    output
-                        .extend_from_slice(destructured_props_runtime_decl(destructure).as_bytes());
-                    output.extend_from_slice(b",\n");
+                    output.push_str("  props: ");
+                    output.push_str(&destructured_props_runtime_decl(destructure));
+                    output.push_str(",\n");
                 } else {
-                    output.extend_from_slice(b"  props: {\n");
+                    output.push_str("  props: {\n");
                     let mut names: Vec<_> = prop_types.iter().map(|(n, _)| n.as_str()).collect();
                     names.sort();
                     for name in names {
-                        output.extend_from_slice(b"    ");
+                        output.push_str("    ");
                         let key = runtime_prop_key(name);
-                        output.extend_from_slice(key.as_bytes());
-                        output.extend_from_slice(b": {},\n");
+                        output.push_str(&key);
+                        output.push_str(": {},\n");
                     }
-                    output.extend_from_slice(b"  },\n");
+                    output.push_str("  },\n");
                 }
             }
         }
@@ -413,7 +403,7 @@ fn emit_props_definition(
             // For type-based props, extract full prop definitions
             let prop_types = prop_types_from_context(ctx, type_args);
             if !prop_types.is_empty() {
-                output.extend_from_slice(b"  props: {\n");
+                output.push_str("  props: {\n");
                 // Sort props for deterministic output
                 let mut sorted_props: Vec<_> = prop_types.iter().collect();
                 sorted_props.sort_by(|a, b| a.0.cmp(&b.0));
@@ -421,37 +411,37 @@ fn emit_props_definition(
                     let resolved_js_type = resolve_prop_type(prop_type, ctx);
                     let runtime_js_type =
                         add_null_to_runtime_type(&resolved_js_type, prop_type.nullable);
-                    output.extend_from_slice(b"    ");
+                    output.push_str("    ");
                     let key = runtime_prop_key(name);
-                    output.extend_from_slice(key.as_bytes());
-                    output.extend_from_slice(b": { type: ");
-                    output.extend_from_slice(runtime_js_type.as_bytes());
+                    output.push_str(&key);
+                    output.push_str(": { type: ");
+                    output.push_str(&runtime_js_type);
                     if needs_prop_type && let Some(ref ts_type) = prop_type.ts_type {
                         if resolved_js_type == "null" {
-                            output.extend_from_slice(b" as unknown as PropType<");
+                            output.push_str(" as unknown as PropType<");
                         } else {
-                            output.extend_from_slice(b" as PropType<");
+                            output.push_str(" as PropType<");
                         }
                         // Normalize multi-line types to single line
                         let normalized: String =
                             String::from(ts_type.split_whitespace().collect::<Vec<_>>().join(" "));
-                        output.extend_from_slice(normalized.as_bytes());
-                        output.push(b'>');
+                        output.push_str(&normalized);
+                        output.push('>');
                     }
                     if prop_type.optional {
-                        output.extend_from_slice(b", required: false");
+                        output.push_str(", required: false");
                     }
                     if prop_type.skip_check {
-                        output.extend_from_slice(b", skipCheck: true");
+                        output.push_str(", skipCheck: true");
                     }
-                    output.extend_from_slice(b" },\n");
+                    output.push_str(" },\n");
                 }
-                output.extend_from_slice(b"  },\n");
+                output.push_str("  },\n");
             }
         } else if !props_macro.args.is_empty() {
-            output.extend_from_slice(b"  props: ");
-            output.extend_from_slice(props_macro.args.as_bytes());
-            output.extend_from_slice(b",\n");
+            output.push_str("  props: ");
+            output.push_str(&props_macro.args);
+            output.push_str(",\n");
         }
     }
 }
@@ -481,7 +471,7 @@ fn collect_model_names(ctx: &ScriptCompileContext) -> Vec<String> {
 /// Emit emits definition to the output buffer.
 ///
 /// Combines defineEmits and defineModel emit events.
-fn emit_emits_definition(output: &mut Vec<u8>, ctx: &ScriptCompileContext, model_names: &[String]) {
+fn emit_emits_definition(output: &mut TextBuf, ctx: &ScriptCompileContext, model_names: &[String]) {
     let mut all_emits: Vec<String> = Vec::new();
 
     // Add emits from defineEmits
@@ -506,22 +496,22 @@ fn emit_emits_definition(output: &mut Vec<u8>, ctx: &ScriptCompileContext, model
 
     // Output emits
     if !all_emits.is_empty() {
-        output.extend_from_slice(b"  emits: [");
+        output.push_str("  emits: [");
         for (i, name) in all_emits.iter().enumerate() {
             if i > 0 {
-                output.extend_from_slice(b", ");
+                output.push_str(", ");
             }
-            output.push(b'"');
-            output.extend_from_slice(name.as_bytes());
-            output.push(b'"');
+            output.push('"');
+            output.push_str(name);
+            output.push('"');
         }
-        output.extend_from_slice(b"],\n");
+        output.push_str("],\n");
     } else if let Some(ref emits_macro) = ctx.macros.define_emits
         && !emits_macro.args.is_empty()
     {
-        output.extend_from_slice(b"  emits: ");
-        output.extend_from_slice(emits_macro.args.as_bytes());
-        output.extend_from_slice(b",\n");
+        output.push_str("  emits: ");
+        output.push_str(&emits_macro.args);
+        output.push_str(",\n");
     }
 }
 

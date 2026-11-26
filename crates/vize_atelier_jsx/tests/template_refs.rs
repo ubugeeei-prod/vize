@@ -57,3 +57,30 @@ fn vapor_refs_create_their_own_setter() {
         "{code}"
     );
 }
+
+/// Outside a loop a bare `ref_for` is still the authored array flag, so the
+/// Vapor setter receives it.
+#[test]
+fn bare_ref_for_outside_a_loop_sets_the_vapor_flag() {
+    let code = component_code(
+        "const els = ref([]);\nconst App = () => <div><li ref={els} ref_for /></div>;",
+        JsxOutputMode::Vapor,
+    );
+    let calls: Vec<&str> = code
+        .lines()
+        .map(str::trim)
+        .filter(|line| {
+            line.split_once('(')
+                .is_some_and(|(head, _)| head == "_setRef")
+        })
+        .collect();
+    assert_eq!(calls.len(), 1, "{code}");
+    assert_eq!(
+        calls
+            .first()
+            .and_then(|call| call.rsplit_once(", "))
+            .map(|(_, flag)| flag),
+        Some("true)"),
+        "{code}"
+    );
+}
