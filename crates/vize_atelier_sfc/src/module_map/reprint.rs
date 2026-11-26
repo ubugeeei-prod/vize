@@ -6,6 +6,7 @@
 //! re-printed module keeps token-level provenance.
 
 use oxc_sourcemap::SourceMap;
+use vize_l0::line_index::{LineBreaks, utf16_offset};
 
 use super::runs::Runs;
 
@@ -15,6 +16,8 @@ use super::runs::Runs;
 pub(super) struct Lines<'a> {
     text: &'a str,
     starts: Vec<usize>,
+    // Consecutive map tokens usually advance on the same line.
+    last: (u32, u32, usize),
 }
 
 impl<'a> Lines<'a> {
@@ -22,50 +25,50 @@ impl<'a> Lines<'a> {
     pub(super) fn newline_only(text: &'a str) -> Self {
         let mut starts = vec![0];
         starts.extend(text.match_indices('\n').map(|(index, _)| index + 1));
-        Self { text, starts }
+        Self {
+            text,
+            starts,
+            last: (0, 0, 0),
+        }
     }
 
     fn new(text: &'a str) -> Self {
-        let mut starts = vec![0];
-        let mut chars = text.char_indices().peekable();
-        while let Some((index, ch)) = chars.next() {
-            match ch {
-                '\r' if chars.peek().is_some_and(|&(_, next)| next == '\n') => {}
-                '\n' | '\r' | '\u{2028}' | '\u{2029}' => starts.push(index + ch.len_utf8()),
-                _ => {}
-            }
+        let starts = LineBreaks::TypeScript.line_starts(text).collect();
+        Self {
+            text,
+            starts,
+            last: (0, 0, 0),
         }
-        Self { text, starts }
     }
 
     /// Byte offset of a 0-based line and UTF-16 column, if it names a character
     /// on that line.
-    pub(super) fn offset(&self, line: u32, column: u32) -> Option<usize> {
+    pub(super) fn offset(&mut self, line: u32, column: u32) -> Option<usize> {
         let start = *self.starts.get(line as usize)?;
         let end = self
             .starts
             .get(line as usize + 1)
             .copied()
             .unwrap_or(self.text.len());
-        let mut units = 0u32;
-        for (index, ch) in self.text.get(start..end)?.char_indices() {
-            if units == column {
-                return Some(start + index);
-            }
-            if units > column {
-                return None;
-            }
-            units += ch.len_utf16() as u32;
+        let (from, units) = if self.last.0 == line && self.last.1 <= column {
+            (self.last.2, self.last.1)
+        } else {
+            (start, 0)
+        };
+        let byte = from + utf16_offset(self.text.get(from..end)?, column - units)?;
+        if byte == end && end != self.text.len() {
+            return None;
         }
-        (units == column && end == self.text.len()).then_some(end)
+        self.last = (line, column, byte);
+        Some(byte)
     }
 }
 
 /// The provenance of `printed` in `parsed` recorded by an oxc codegen map:
 /// one point per printed token.
 pub(crate) fn reprint_points(map: &SourceMap<'_>, printed: &str, parsed: &str) -> Runs {
-    let printed_lines = Lines::new(printed);
-    let parsed_lines = Lines::new(parsed);
+    let mut printed_lines = Lines::new(printed);
+    let mut parsed_lines = Lines::new(parsed);
     let mut points: Vec<(usize, usize)> = map
         .get_tokens()
         .filter_map(|token| {
@@ -98,7 +101,7 @@ pub(crate) fn remap_reprinted(
     let filename = first_str("sources")?;
     let json = serde_json::to_string(map).ok()?;
     let parsed = SourceMap::from_json_string(&json).ok()?;
-    let (pre_lines, source_lines) = (Lines::newline_only(pre), Lines::newline_only(source));
+    let (mut pre_lines, mut source_lines) = (Lines::newline_only(pre), Lines::newline_only(source));
     let origins: vize_carton::FxHashMap<usize, usize> = parsed
         .get_tokens()
         .filter_map(|token| {
@@ -123,7 +126,7 @@ mod tests {
     #[test]
     fn lines_follow_oxc_line_breaks_and_utf16_columns() {
         let text = "a\r\nbé\u{1F600}x\ry\u{2028}z";
-        let lines = Lines::new(text);
+        let mut lines = Lines::new(text);
         assert_eq!(lines.offset(0, 0), Some(0));
         assert_eq!(lines.offset(1, 0), Some(3));
         assert_eq!(lines.offset(1, 2), Some(text.find('\u{1F600}').unwrap()));

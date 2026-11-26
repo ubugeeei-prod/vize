@@ -34,6 +34,9 @@ impl CodegenContext {
         let Some(binding) = self.resolve_component_binding(component) else {
             return false;
         };
+        if self.out.is_recording() {
+            self.anchor_component_tag(component);
+        }
 
         let needs_unref = self.options.inline
             && matches!(
@@ -63,6 +66,18 @@ impl CodegenContext {
             self.push(suffix.as_str());
         }
         true
+    }
+
+    /// Anchor the setup binding about to be read for `tag` at the tag's
+    /// authored name. A resolved asset is anchored where it is
+    /// resolved, but a binding is read in place. Only a compile that records
+    /// a map reaches this, after the tag resolved to a binding.
+    #[cold]
+    #[inline(never)]
+    fn anchor_component_tag(&mut self, tag: &str) {
+        if let Some(at) = super::mapped_template::template_offset(tag) {
+            self.out.anchor(at);
+        }
     }
 
     fn resolve_component_binding(&self, component: &str) -> Option<ComponentBinding> {

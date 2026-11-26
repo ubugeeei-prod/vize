@@ -24,6 +24,28 @@ impl SsrCodegenContext<'_> {
         self.out.push_mapped(text, source);
     }
 
+    /// Write `text` directly, anchored at the authored byte `source` while a
+    /// map is recorded: one flag test and the plain write without one.
+    #[inline]
+    pub(crate) fn push_anchored(&mut self, text: &str, source: u32) {
+        if self.spans_enabled() {
+            self.anchor_at(source);
+        }
+        self.push(text);
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn anchor_at(&mut self, source: u32) {
+        self.out.anchor(source);
+    }
+
+    /// Write `code` directly from the node text `authored`: unchanged from a
+    /// slice of the template, it is anchored where that slice was authored.
+    pub(crate) fn push_authored_text(&mut self, code: &str, authored: &str) {
+        self.out.push_authored(code, authored, self.source);
+    }
+
     /// Write `text` directly, anchored at `source` when there is one.
     pub(crate) fn push_optionally_mapped(&mut self, text: &str, source: Option<u32>) {
         match source {
@@ -46,6 +68,18 @@ impl SsrCodegenContext<'_> {
     /// Write an emitted expression authored at `span` directly.
     pub(crate) fn push_expression_text(&mut self, code: &str, span: Span) {
         self.out.push_expression(code, span, self.source);
+    }
+
+    /// [`Self::push_expression_text`], then `follow` with the document and
+    /// the offset the expression ends at, inside the same recording check.
+    pub(crate) fn push_expression_text_then(
+        &mut self,
+        code: &str,
+        span: Span,
+        follow: impl FnOnce(&mut EmitDocument, u32),
+    ) {
+        self.out
+            .push_expression_then(code, span, self.source, follow);
     }
 
     /// An emitted expression authored at `span`, anchored when maps are on.

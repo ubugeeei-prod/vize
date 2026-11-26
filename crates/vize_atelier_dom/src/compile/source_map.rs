@@ -82,6 +82,21 @@ fn select_with_compat(
     }
 }
 
+/// The module of an additive mapped compile: `native`, carrying the
+/// compatibility map only when that generator emits the same module. A
+/// disagreement leaves the module unmapped instead of replacing it.
+pub(super) fn with_verified_map(
+    mut native: CodegenResultWithSections,
+    compat: CodegenResultWithSections,
+) -> CodegenResultWithSections {
+    if same_generated_output(&native, &compat) {
+        native.result.map = compat.result.map;
+    } else {
+        selection::record_unmapped();
+    }
+    native
+}
+
 fn same_generated_output(a: &CodegenResultWithSections, b: &CodegenResultWithSections) -> bool {
     a.result.preamble == b.result.preamble
         && a.result.code == b.result.code
@@ -90,7 +105,7 @@ fn same_generated_output(a: &CodegenResultWithSections, b: &CodegenResultWithSec
 
 #[cfg(test)]
 mod tests {
-    use super::select_with_compat;
+    use super::{select_with_compat, with_verified_map};
     use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections};
     use vize_l0::{
         String,
@@ -118,5 +133,28 @@ mod tests {
             CaptureOutcome::Legacy(String::from("source-map-mismatch"))
         );
         assert!(capture.pages.is_empty());
+    }
+
+    #[test]
+    fn an_additive_map_is_attached_only_to_the_module_it_describes() {
+        let result = |code: &str, map: Option<&str>| CodegenResultWithSections {
+            result: CodegenResult {
+                code: String::from(code),
+                preamble: String::default(),
+                map: map.map(String::from),
+            },
+            sections: None,
+        };
+        let agreed = with_verified_map(result("native", None), result("native", Some("{}")));
+        assert_eq!(
+            (agreed.result.code.as_str(), agreed.result.map.as_deref()),
+            ("native", Some("{}"))
+        );
+        // A disagreement keeps the module and leaves it unmapped.
+        let disagreed = with_verified_map(result("native", None), result("compat", Some("{}")));
+        assert_eq!(
+            (disagreed.result.code.as_str(), disagreed.result.map),
+            ("native", None)
+        );
     }
 }

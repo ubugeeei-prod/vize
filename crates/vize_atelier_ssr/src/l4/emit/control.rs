@@ -2,6 +2,7 @@
 //! control flow, with the legacy lane's fragment-marker rules.
 
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l2::expr::ExprRef;
 use vize_l2::op as l2;
 use vize_l4::targets::dom::artifact::TransformContent;
@@ -123,7 +124,6 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         }
         self.ctx.push_indent();
         self.ctx.push_mapped("_ssrRenderList(", for_op.span.start);
-        self.push_expression(&source, expression_span(&binding.source));
         let mark = self.enter_for_bindings(for_op, [Some(value), key, index], fact);
         let aliases = match self.for_alias_texts([Some(value), key, index]) {
             Ok(aliases) => aliases,
@@ -133,8 +133,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 return Err(error);
             }
         };
+        // The source is written once its aliases are spelled: with a map
+        // requested, its recording check is where they are anchored.
+        self.push_for_source(&source, binding, [Some(value), key, index], &aliases);
         self.ctx.push(", (");
-        // The walker anchors the loop source but not the aliases it binds.
+        // No check here: `push_for_source` anchored what the walker anchors.
         for (index, alias) in aliases.iter().flatten().enumerate() {
             if index > 0 {
                 self.ctx.push(", ");
@@ -174,6 +177,27 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         )
     }
 
+    /// Write a `v-for` source, as [`Self::push_expression`] does. With a map
+    /// requested, the check that anchors the source also anchors each alias
+    /// written after it at the alias the loop authored, like the walker: an
+    /// alias spelled as authored maps to its own bytes, a rewritten one to
+    /// nothing.
+    fn push_for_source(
+        &mut self,
+        code: &str,
+        binding: &l2::ForBinding<'_>,
+        authored: [Option<&str>; 3],
+        aliases: &[Option<vize_l0::String>; 3],
+    ) {
+        let Some(span) = expression_span(&binding.source) else {
+            self.ctx.push(code);
+            return;
+        };
+        self.ctx.push_expression_text_then(code, span, |out, end| {
+            anchor_for_aliases(out, end, binding, authored, aliases);
+        });
+    }
+
     /// Write an emitted expression, anchored at its authored `span`.
     pub(super) fn push_expression(&mut self, code: &str, span: Option<vize_l0::Span>) {
         match span {
@@ -195,4 +219,34 @@ pub(super) fn alias<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
         return Err(LegacyReason::Structure.into());
     }
     Ok(source)
+}
+
+/// Anchor each alias written after a loop source that ends at `end`, at the
+/// alias the loop authored: an alias spelled as authored maps to its own
+/// bytes, a rewritten one to nothing. Called only while a map is recorded.
+#[cold]
+#[inline(never)]
+fn anchor_for_aliases(
+    out: &mut EmitDocument,
+    end: u32,
+    binding: &l2::ForBinding<'_>,
+    authored: [Option<&str>; 3],
+    aliases: &[Option<vize_l0::String>; 3],
+) {
+    let spans = [
+        Some(binding.value.span()),
+        binding.key.as_ref().map(|alias| alias.span()),
+        binding.index.as_ref().map(|alias| alias.span()),
+    ];
+    // `, (` follows the source and `, ` separates the aliases.
+    let mut at = end + 3;
+    for ((alias, authored), span) in aliases.iter().zip(authored).zip(spans) {
+        let Some(alias) = alias else {
+            continue;
+        };
+        if let Some(span) = span.filter(|_| authored == Some(alias.as_str())) {
+            out.anchor_ahead(at, span.start);
+        }
+        at += alias.len() as u32 + 2;
+    }
 }

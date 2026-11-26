@@ -203,6 +203,7 @@ pub(super) fn emit_preamble(
 
     if !template.render_fn.is_empty() {
         output.push(b'\n');
+        tracer.render_fn(output.len());
         output.extend_from_slice(template.render_fn.as_bytes());
         if let Some(alias) = vapor_render_alias {
             output.extend_from_slice(b"const ");

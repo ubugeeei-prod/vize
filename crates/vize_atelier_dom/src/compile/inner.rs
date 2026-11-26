@@ -53,7 +53,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         codegen_experimental_options,
         l2_emit_selection,
         no_slotted,
-        strict_slot_params,
+        sfc_assembly: strict_slot_params,
         development,
     } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);

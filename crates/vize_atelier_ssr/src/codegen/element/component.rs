@@ -59,7 +59,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.push_indent();
         self.push("_push(_ssrRenderComponent(");
         if let Some(binding_expr) = setup_binding.as_deref() {
-            self.push(binding_expr);
+            self.push_anchored(binding_expr, el.loc.span.start + 1);
         } else {
             let callee = self.component_callee(tag, Some(el.loc.span.start + 1));
             self.push_spanned(&callee);

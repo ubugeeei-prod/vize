@@ -413,9 +413,9 @@ await test("single and batch code, maps and all shared metadata remain equal", s
         Object.fromEntries(keys.map((key) => [key, row.batch.results[index][key]])),
       );
       if (row.options.sourceMap) {
-        if (index === 0) {
-          // Existing template-only static output has no authored map link. The
-          // before-source comparison independently pins this absent-map DTO.
+        if (index === 0 && row.target === "vapor") {
+          // Only a Vapor template records no authored link: the DOM and server
+          // renders map back to the template, script or not.
           assert.equal(result.map, undefined);
         } else assert.deepEqual(JSON.parse(result.map).sourcesContent, [sourceFiles[index]]);
       }

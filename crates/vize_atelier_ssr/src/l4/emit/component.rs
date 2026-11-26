@@ -3,7 +3,6 @@
 //! `<Transition>` / `<KeepAlive>` wrappers.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
@@ -210,16 +209,25 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let props = self.with_fallthrough_attrs(props, inherit);
         self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
-        // The resolved name maps to the authored tag, as the AST walker's does.
-        let callee = match binding {
-            Some(binding) => EmitDocument::from(binding),
-            None => self
-                .ctx
-                .component_callee(name, Some(component.span.start + 1)),
-        };
-        self.ctx.push_indent();
-        self.ctx.push("_push(_ssrRenderComponent(");
-        self.ctx.push_spanned(&callee);
+        // The callee maps to the authored tag, as the AST walker's does. Each
+        // arm makes the one recording check a spanned push of the callee
+        // makes: a setup binding is anchored as it is written, and a resolved
+        // name carries its own anchor.
+        match binding {
+            Some(binding) => {
+                self.ctx.push_indent();
+                self.ctx.push("_push(_ssrRenderComponent(");
+                self.ctx.push_mapped(&binding, component.span.start + 1);
+            }
+            None => {
+                let callee = self
+                    .ctx
+                    .component_callee(name, Some(component.span.start + 1));
+                self.ctx.push_indent();
+                self.ctx.push("_push(_ssrRenderComponent(");
+                self.ctx.push_spanned(&callee);
+            }
+        }
         self.ctx.push(", ");
         self.ctx.push(&props);
         self.ctx.push(", ");

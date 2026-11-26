@@ -18,6 +18,11 @@ use vize_l0::{Span, String};
 use super::rewrite_spans::rewritten_identifier_spans;
 use super::source_map::SourceMapBuilder;
 
+mod authored;
+mod member_columns;
+pub use authored::authored_offset;
+pub use member_columns::composing_sfc_render_map;
+
 /// One generated↔authored link.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpanLink {
@@ -296,10 +301,18 @@ impl EmitDocument {
         }
     }
 
-    /// Serialize the links as a Source Map v3 document for `source`.
+    /// Serialize the links as a Source Map v3 document for `source`. Inside
+    /// [`composing_sfc_render_map`] the map also carries the static member
+    /// columns a Vue file's composed map needs. A serialized map ends the
+    /// compile a template was prepared for (see
+    /// [`super::prepare_mapped_template`]).
     pub fn source_map(&self, filename: &str, source: &str) -> String {
+        super::mapped_template::forget_mapped_template();
         let mut builder = SourceMapBuilder::new();
         self.write_segments(&mut builder);
+        if member_columns::composing_sfc_map() {
+            self.write_member_columns(&mut builder, source);
+        }
         builder.finish(&self.text, filename, source)
     }
 }

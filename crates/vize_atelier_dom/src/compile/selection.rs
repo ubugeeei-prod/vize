@@ -111,6 +111,17 @@ pub(super) fn record(outcome: Result<(), DomLegacyReason>) {
     });
 }
 
+/// Count an additive mapped compile whose L2 module the compatibility
+/// generator disagreed with, so it kept its module and went without a map.
+/// This is beside the selection counter, which still records `accepted`.
+pub(super) fn record_unmapped() {
+    with_active_profiler(|profiler| {
+        if profiler.is_enabled() {
+            profiler.record_counter_enabled("l2.dom.source_map.unmapped", 1);
+        }
+    });
+}
+
 /// Keep L2's typed refusal for the differential census. Production builds
 /// compile this to the identity.
 #[inline]

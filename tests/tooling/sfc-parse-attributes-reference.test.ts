@@ -21,6 +21,8 @@ import type { ExposurePacket } from "./support/script-setup-default-expose.ts";
 import {
   moduleShapeFactsReference,
   type ParseModule,
+  templateMapReference,
+  withoutTemplateSegments,
 } from "./support/typescript-erasure-reference.ts";
 
 const captured = JSON.parse(
@@ -114,6 +116,94 @@ test("only the exact formatted compile packets advance to raw emitter references
       changedAfter,
       rawEmitterCompileReference(reference.before, reference.source),
     );
+  }
+});
+
+// The mappings of four attribute fixtures before the render mapped back
+// to the template, and after. `null` is a packet without a map.
+const templateMapRows: [source: string, before: string | null, after: string][] = [
+  ['<template lang="html"><p>🐱</p></template>', null, ";;AAAsB;UAAC,4BAAE"],
+  [
+    "<script vapor>export default {}</script><template><div/></template>",
+    ";;;;;;AAAc,kBAAe,CAAC",
+    ";;AAAkD;UAAC;;;AAArC,kBAAe,CAAC",
+  ],
+  [
+    '<script setup vapor lang="ts">const n: number = 1;</script><template>{{n}}</template>',
+    ";;;;;;;AAA8B,MAAM,IAAY",
+    ";;;AAAqE;2BAAE;;;AAAzC,MAAM,IAAY",
+  ],
+  [
+    '<!-- <script vapor>ignored</script> --><script setup>const text = "vapor";</script><template>{{text}}</template>',
+    ";;;;;;;AAAqD,MAAM,KAAK,EAAE,CAAC,KAAK,CAAC",
+    ";;;AAA6F;2BAAE;;;AAA1C,MAAM,KAAK,EAAE,CAAC,KAAK,CAAC",
+  ],
+];
+
+test("template provenance preserves repeated anchors and validates the authored block and line", () => {
+  const source =
+    "<script>const text = '<template>decoy</template>'</script>\n<template>\n{{n}}\n</template>";
+  const packet = (text: string, mappings: string) => ({
+    code: "",
+    map: JSON.stringify({ sources: ["Case.vue"], sourcesContent: [text], mappings }),
+  });
+  const before = packet(source, "AAAA,AAAA");
+  const after = packet(source, "AAAA,AAAA,CAEA");
+  assert.deepEqual(templateMapReference(before, after, source), after);
+  assert.deepEqual(withoutTemplateSegments(after, source), before);
+  assert.throws(() => templateMapReference(before, packet(source, "AAAA,CAEA"), source));
+  const noMap = { code: "" };
+  // Column 32 is in the script string. Line 0 of the second fixture has eight columns.
+  assert.throws(() => templateMapReference(noMap, packet(source, "AAAgC"), source));
+  const shortLine = "<!-- -->\n<template>{{n}}</template>";
+  const beyondLine = packet(shortLine, "AAAqB");
+  assert.throws(() => templateMapReference(noMap, beyondLine, shortLine));
+  assert.deepEqual(withoutTemplateSegments(beyondLine, shortLine), beyondLine);
+});
+
+test("a compile packet's map gains only the segments authored in its template", () => {
+  for (const [source, before, after] of templateMapRows) {
+    const packet = (mappings: string | null, file = "Case.vue"): ExposurePacket => ({
+      code: "export default {}",
+      macroArtifacts: [],
+      ...(mappings === null
+        ? {}
+        : {
+            map: JSON.stringify({
+              file,
+              mappings,
+              names: [],
+              sources: [file],
+              sourcesContent: [source],
+              version: 3,
+            }),
+          }),
+      templateHash: "retained",
+    });
+    const preserved = packet(before);
+    const retained = structuredClone(preserved);
+    // Byte for byte: a gained map sits where the candidate packet lists it.
+    assert.equal(
+      JSON.stringify(templateMapReference(preserved, packet(after), source)),
+      JSON.stringify(packet(after)),
+    );
+    assert.deepEqual(preserved, retained);
+    // The view the earlier references read is the packet as it was.
+    assert.equal(
+      JSON.stringify(withoutTemplateSegments(packet(after), source)),
+      JSON.stringify(preserved),
+    );
+    assert.equal(templateMapReference(preserved, preserved, source), preserved);
+    assert.equal(templateMapReference(preserved, undefined, source), preserved);
+    // A segment authored outside the template is not gained: the first byte
+    // of the file, or the script's own segments on a packet that had no map.
+    assert.throws(() => templateMapReference(packet(null), packet(";;AAAA"), source));
+    if (before !== null) {
+      assert.throws(() => templateMapReference(packet(null), packet(after), source));
+      // Every preserved segment and every other map field is kept.
+      assert.throws(() => templateMapReference(preserved, packet(";;AAAA"), source));
+      assert.throws(() => templateMapReference(preserved, packet(after, "Other.vue"), source));
+    }
   }
 });
 
