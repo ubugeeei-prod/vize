@@ -87,3 +87,9 @@ fn a_template_ref_after_await_in_script_setup_is_allowed() {
     let source = "<script setup>\nimport { useTemplateRef } from 'vue'\nawait load()\nconst el = useTemplateRef('el')\n</script>\n";
     assert!(findings(source).is_empty());
 }
+
+#[test]
+fn a_setup_local_shadowing_the_vue_import_is_not_vue() {
+    let source = "<script>\nimport { defineComponent, onMounted, useTemplateRef as makeRef } from 'vue'\nexport default defineComponent({\n  async setup() {\n    const makeRef = (value) => value\n    await load()\n    const el = makeRef('el')\n    if (ok) { function onMounted() {} }\n    onMounted(go)\n    return { el }\n  },\n})\n</script>\n";
+    assert!(findings(source).is_empty());
+}

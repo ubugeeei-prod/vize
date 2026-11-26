@@ -30,6 +30,8 @@ use vize_l0::{CompactString, FxHashMap, FxHashSet};
 
 use super::SfcScriptContext;
 
+mod shadowed;
+
 /// Modules whose Composition API exports the rules track: eslint-plugin-vue's
 /// and `@vue/runtime-core`.
 fn is_vue_module(source: &str) -> bool {
@@ -183,10 +185,6 @@ impl Imports {
             _ => None,
         }
     }
-
-    fn resolves(&self, callee: &Expression<'_>) -> bool {
-        self.resolve(callee).is_some()
-    }
 }
 
 /// The ways `setup(props, context)` can reach `expose`.
@@ -288,6 +286,7 @@ impl Components<'_> {
 
     fn scan_setup(&mut self, params: &FormalParameters<'_>, body: &FunctionBody<'_>) {
         let mut scan = Scan::new(self.target, self.imports, expose_bindings(params));
+        scan.shadowed = shadowed::declared_names(params, body);
         for statement in &body.statements {
             scan.visit_statement(statement);
         }
@@ -316,6 +315,8 @@ struct Scan<'i> {
     target: Target,
     imports: &'i Imports,
     expose: ExposeBindings,
+    /// Names the setup function declares, which hide a same-named import.
+    shadowed: FxHashSet<CompactString>,
     after_await: bool,
     /// Calls whose return value is kept (a watch stop handle that may be used).
     kept: FxHashSet<u32>,
@@ -328,6 +329,7 @@ impl<'i> Scan<'i> {
             target,
             imports,
             expose,
+            shadowed: FxHashSet::default(),
             after_await: false,
             kept: FxHashSet::default(),
             findings: Vec::new(),
@@ -350,13 +352,13 @@ impl<'i> Scan<'i> {
 
     fn check(&mut self, call: &CallExpression<'_>) {
         let name = match self.target {
-            Target::Lifecycle => match self.imports.resolve(&call.callee) {
+            Target::Lifecycle => match self.resolve(&call.callee) {
                 Some(TEMPLATE_REF) => Some(CompactString::new(TEMPLATE_REF)),
                 // A hook given an explicit target instance is allowed.
                 Some(_) if call.arguments.len() < 2 => Some(CompactString::new("lifecycle")),
                 _ => None,
             },
-            Target::Watch => (self.imports.resolves(&call.callee)
+            Target::Watch => (self.resolve(&call.callee).is_some()
                 && !self.kept.contains(&call.span.start))
             .then(|| CompactString::new("watch")),
             Target::Expose => self.expose_name(&call.callee),
