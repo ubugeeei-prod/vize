@@ -1,0 +1,24 @@
+<script setup lang="ts">
+import * as Vue from 'vue'
+import { onMounted, useTemplateRef, useTemplateRef as utr } from 'vue'
+
+const KEY = 'viaConst'
+const a = utr<HTMLInputElement>('viaAlias')
+const b = Vue.useTemplateRef<HTMLInputElement>('viaNamespace')
+const c = useTemplateRef<HTMLInputElement>(`viaTemplateLiteral`)
+const d = useTemplateRef<HTMLInputElement>(KEY)
+const e = useTemplateRef<HTMLInputElement>('viaAsConst' as const)
+onMounted(() => {
+  console.log(a.value, b.value, c.value, d.value, e.value)
+})
+</script>
+
+<template>
+  <div>
+    <input ref="viaAlias">
+    <input ref="viaNamespace">
+    <input ref="viaTemplateLiteral">
+    <input ref="viaConst">
+    <input ref="viaAsConst">
+  </div>
+</template>

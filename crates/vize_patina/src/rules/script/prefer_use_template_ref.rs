@@ -14,8 +14,8 @@
 //! attribute. This rule therefore pairs the two, exactly like upstream
 //! [`vue/prefer-use-template-ref`](https://eslint.vuejs.org/rules/prefer-use-template-ref.html):
 //! a declaration is reported only when the template binds a static template ref
-//! with the same name (template names come from
-//! [`template_refs::collect_template_ref_names`]).
+//! with the same name (template names come from the parsed template, see
+//! [`template_refs`]).
 //!
 //! The initializer argument is deliberately *not* part of the test. A template
 //! ref is written `ref(null)`, `ref()`, `ref<HTMLInputElement | null>(null)` or
@@ -27,6 +27,13 @@
 //! Without a template (a standalone script, an inline HTML `<script>`, a bare
 //! `.ts` module) there are no template refs to pair against, so nothing is
 //! reported.
+//!
+//! The callee is Vue's `ref` / `shallowRef` under any local name or through a
+//! Vue namespace, and the call may sit inside parentheses or a TypeScript
+//! wrapper (`as Ref<T>`, `!`). A ref whose `.value` the script assigns is
+//! skipped: `useTemplateRef` returns a readonly ref, so the suggestion would
+//! break the write. The suggested replacement keeps the declaration keyword
+//! and the authored element type without `| null`.
 //!
 //! ## Examples
 //!
@@ -61,6 +68,8 @@ use oxc_ast::ast::{
     Statement, VariableDeclaration,
 };
 use oxc_ast_visit::{Visit, walk::walk_object_expression};
+
+use declarations::{RefCallees, ValueWrites};
 use oxc_semantic::SemanticBuilder;
 use oxc_span::Span;
 use vize_l0::{CompactString, cstr};
@@ -69,6 +78,7 @@ use super::vue_object::VueObjects;
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
+mod declarations;
 mod native;
 mod template_refs;
 #[cfg(test)]
@@ -97,6 +107,13 @@ impl ScriptRule for PreferUseTemplateRef {
         true
     }
 
+    /// Template ref names create findings, so they come from the parsed
+    /// template, never from comment or text bytes.
+    #[inline]
+    fn uses_template_ast(&self) -> bool {
+        true
+    }
+
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
@@ -117,17 +134,27 @@ impl ScriptRule for PreferUseTemplateRef {
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        let Some(template) = sfc.template_source else {
-            return;
+        let template_ref_names = match (sfc.template_surface, sfc.template_source) {
+            (Some(surface), _) => template_refs::surface_ref_names(surface),
+            (None, Some(template)) => template_refs::source_ref_names(template),
+            (None, None) => return,
         };
-        let template_ref_names = template_refs::collect_template_ref_names(template);
         if template_ref_names.is_empty() {
             return;
         }
 
-        let mut declarations = Vec::new();
+        let mut callees = RefCallees::default();
+        callees.add_imports(program);
+        if let Some(sibling) = sfc.sibling_program {
+            callees.add_imports(sibling);
+        }
+        let mut collector = DeclarationCollector {
+            callees: &callees,
+            source,
+            declarations: Vec::new(),
+        };
         if sfc.is_script_setup {
-            collect_ref_declarations(&program.body, &mut declarations);
+            collector.collect(&program.body);
         } else {
             let built = SemanticBuilder::new().with_build_nodes(true).build(program);
             let objects = VueObjects::collect(
@@ -137,14 +164,23 @@ impl ScriptRule for PreferUseTemplateRef {
                 sfc.is_sfc && !sfc.is_script_setup,
             );
             let mut setup = SetupRefCollector {
-                declarations: &mut declarations,
+                collector: &mut collector,
                 objects: &objects,
             };
             setup.visit_program(program);
         }
 
+        let mut declarations = collector.declarations;
+        declarations.retain(|declaration| template_ref_names.contains(&declaration.name));
+        if declarations.is_empty() {
+            return;
+        }
+        // `useTemplateRef` returns a readonly ref: a ref the script writes
+        // keeps its `ref()`.
+        let mut writes = ValueWrites::default();
+        writes.visit_program(program);
         for declaration in declarations {
-            if template_ref_names.contains(&declaration.name) {
+            if !writes.names.contains(&declaration.name) {
                 report(&declaration, offset, result);
             }
         }
@@ -159,6 +195,10 @@ struct RefDeclaration {
     /// `"ref"` or `"shallowRef"`, echoed in the diagnostic message.
     callee: &'static str,
     span: Span,
+    /// The declaration keyword, kept by the suggested replacement.
+    keyword: &'static str,
+    /// The authored element type, without `| null`.
+    type_argument: Option<CompactString>,
 }
 
 /// Collect `ref` / `shallowRef` declarations from a statement list.
@@ -172,39 +212,47 @@ struct RefDeclaration {
 /// a multi-declarator statement is considered: `const a = 1, root = ref(null)`
 /// is the same template ref as its single-declarator spelling. This is a
 /// deliberate superset in the "patina reports more" direction.
-fn collect_ref_declarations(statements: &[Statement<'_>], declarations: &mut Vec<RefDeclaration>) {
-    for statement in statements {
-        let Statement::VariableDeclaration(declaration) = statement else {
-            continue;
-        };
-        collect_from_variable_declaration(declaration, declarations);
-    }
+struct DeclarationCollector<'c, 's> {
+    callees: &'c RefCallees,
+    source: &'s str,
+    declarations: Vec<RefDeclaration>,
 }
 
-fn collect_from_variable_declaration(
-    declaration: &VariableDeclaration<'_>,
-    declarations: &mut Vec<RefDeclaration>,
-) {
-    for declarator in &declaration.declarations {
-        let BindingPattern::BindingIdentifier(id) = &declarator.id else {
-            continue;
-        };
-        let Some(Expression::CallExpression(call)) = declarator.init.as_ref() else {
-            continue;
-        };
-        let Expression::Identifier(identifier) = &call.callee else {
-            continue;
-        };
-        let callee = match identifier.name.as_str() {
-            "ref" => "ref",
-            "shallowRef" => "shallowRef",
-            _ => continue,
-        };
-        declarations.push(RefDeclaration {
-            name: CompactString::new(id.name.as_str()),
-            callee,
-            span: call.span,
-        });
+impl DeclarationCollector<'_, '_> {
+    fn collect(&mut self, statements: &[Statement<'_>]) {
+        for statement in statements {
+            if let Statement::VariableDeclaration(declaration) = statement {
+                self.collect_from_variable_declaration(declaration);
+            }
+        }
+    }
+
+    /// `const name = ref(...)`, also through parentheses and TypeScript
+    /// wrappers, and with `ref` imported under another name or read from a
+    /// Vue namespace.
+    fn collect_from_variable_declaration(&mut self, declaration: &VariableDeclaration<'_>) {
+        for declarator in &declaration.declarations {
+            let BindingPattern::BindingIdentifier(id) = &declarator.id else {
+                continue;
+            };
+            let Some(call) = declarator
+                .init
+                .as_ref()
+                .and_then(declarations::initializer_call)
+            else {
+                continue;
+            };
+            let Some(callee) = self.callees.factory(&call.callee) else {
+                continue;
+            };
+            self.declarations.push(RefDeclaration {
+                name: CompactString::new(id.name.as_str()),
+                callee,
+                span: call.span,
+                keyword: declaration.kind.as_str(),
+                type_argument: declarations::template_ref_type_argument(call, self.source),
+            });
+        }
     }
 }
 
@@ -219,12 +267,12 @@ fn collect_from_variable_declaration(
 ///
 /// An expression-bodied arrow (`setup: () => ({ ... })`) declares nothing, and
 /// upstream skips it as well.
-struct SetupRefCollector<'out> {
-    declarations: &'out mut Vec<RefDeclaration>,
+struct SetupRefCollector<'out, 'c, 's> {
+    collector: &'out mut DeclarationCollector<'c, 's>,
     objects: &'out VueObjects,
 }
 
-impl<'a> Visit<'a> for SetupRefCollector<'_> {
+impl<'a> Visit<'a> for SetupRefCollector<'_, '_, '_> {
     fn visit_object_expression(&mut self, it: &ObjectExpression<'a>) {
         if self.objects.contains(it) {
             for property in &it.properties {
@@ -235,11 +283,11 @@ impl<'a> Visit<'a> for SetupRefCollector<'_> {
                     match &property.value {
                         Expression::FunctionExpression(function) => {
                             if let Some(body) = &function.body {
-                                collect_ref_declarations(&body.statements, self.declarations);
+                                self.collector.collect(&body.statements);
                             }
                         }
                         Expression::ArrowFunctionExpression(arrow) if !arrow.expression => {
-                            collect_ref_declarations(&arrow.body.statements, self.declarations);
+                            self.collector.collect(&arrow.body.statements);
                         }
                         _ => {}
                     }
@@ -263,6 +311,7 @@ fn report(declaration: &RefDeclaration, offset: usize, result: &mut ScriptLintRe
     let end = offset as u32 + declaration.span.end;
     let name = declaration.name.as_str();
     let callee = declaration.callee;
+    let keyword = declaration.keyword;
     result.add_diagnostic(
         LintDiagnostic::warn(
             META.name,
@@ -273,8 +322,9 @@ fn report(declaration: &RefDeclaration, offset: usize, result: &mut ScriptLintRe
             end,
         )
         .with_label("declared as a template ref", start, end)
-        .with_help(cstr!(
-            "Replace with: `const {name} = useTemplateRef('{name}')`"
-        )),
+        .with_help(match &declaration.type_argument {
+            Some(ty) => cstr!("Replace with: `{keyword} {name} = useTemplateRef<{ty}>('{name}')`"),
+            None => cstr!("Replace with: `{keyword} {name} = useTemplateRef('{name}')`"),
+        }),
     );
 }

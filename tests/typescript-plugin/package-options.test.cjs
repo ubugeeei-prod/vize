@@ -6,6 +6,17 @@ const { test } = require("node:test");
 const ts = require("../node_modules/typescript");
 const { installVueVirtualModules } = require("../../npm/typescript-plugin/virtual-modules.cjs");
 
+// nativePath is honoured only when the project resolves this checkout's plugin.
+function linkPlugin(project) {
+  const scope = path.join(project, "node_modules/@vizejs");
+  fs.mkdirSync(scope, { recursive: true });
+  fs.symlinkSync(
+    fs.realpathSync(path.join(__dirname, "../../npm/typescript-plugin")),
+    path.join(scope, "typescript-vue-plugin"),
+    process.platform === "win32" ? "junction" : "dir",
+  );
+}
+
 void test("configured hosts refresh package-selected options once without replacing roots or descriptors", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-package-options-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
@@ -31,6 +42,7 @@ void test("configured hosts refresh package-selected options once without replac
   });
   const preferred = path.join(root, "node_modules/vize-config-priority/preferred.json");
   const nativeRoot = path.join(root, "native");
+  linkPlugin(root);
   write("native/package.json", { name: "@vizejs/native", main: "index.cjs" });
   write("native/index.cjs", "module.exports = {};\n");
   fs.copyFileSync(

@@ -8,7 +8,7 @@ mod authored;
 pub use authored::{AuthoredScriptRules, ScriptLintRefusal};
 mod component_options;
 mod component_options_name_casing;
-mod composition_api;
+pub(crate) mod composition_api;
 mod consistent_type_imports;
 mod custom_event_name_casing;
 mod define_emits_declaration;
