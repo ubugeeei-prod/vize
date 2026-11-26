@@ -1,6 +1,7 @@
 use crate::compile_script::erasure::{Erasure, emit_runtime_helper};
 use crate::script::ScriptCompileContext;
 use crate::types::{CssModuleMapping, css_modules_object_literal};
+use vize_carton::string_builder::TextBuf;
 
 use super::super::super::TemplateParts;
 
@@ -10,7 +11,7 @@ pub(super) struct ComponentState {
 
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_component_definition(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     ctx: &ScriptCompileContext,
     component_name: &str,
     is_ts: bool,
@@ -19,15 +20,15 @@ pub(super) fn emit_component_definition(
     needs_prop_type: bool,
     needs_vapor_setup_context: bool,
     has_default_export: bool,
-    props_emits_buf: &[u8],
-    model_props_emits_buf: &[u8],
+    props_emits_buf: &str,
+    model_props_emits_buf: &str,
     template: &TemplateParts<'_>,
     vapor_render_alias: Option<&str>,
     css_modules: &[CssModuleMapping],
     erasure: Option<&mut Erasure>,
 ) -> ComponentState {
     // Start export default
-    output.push(b'\n');
+    output.push('\n');
     let has_options = ctx.macros.define_options.is_some();
 
     // Setup function - include destructured args based on macros used
@@ -54,77 +55,77 @@ pub(super) fn emit_component_definition(
         let options_args = define_options.args.trim();
         if is_vapor {
             // Vapor wraps the merged options with Object.assign inside the helper.
-            output.extend_from_slice(b"export default /*@__PURE__*/");
+            output.push_str("export default /*@__PURE__*/");
             emit_runtime_helper(output, erasure, "_defineVaporComponent");
-            output.extend_from_slice(b"(Object.assign(");
-            output.extend_from_slice(options_args.as_bytes());
-            output.extend_from_slice(b", {\n");
+            output.push_str("(Object.assign(");
+            output.push_str(options_args);
+            output.push_str(", {\n");
         } else if is_ts {
             // TypeScript: spread the options into the _defineComponent call,
             // matching @vue/compiler-sfc (`_defineComponent({ ...{ … }, __name, … })`).
-            output.extend_from_slice(b"export default /*@__PURE__*/");
+            output.push_str("export default /*@__PURE__*/");
             emit_runtime_helper(output, erasure, "_defineComponent");
-            output.extend_from_slice(b"({\n  ...");
-            output.extend_from_slice(options_args.as_bytes());
-            output.extend_from_slice(b",\n");
+            output.push_str("({\n  ...");
+            output.push_str(options_args);
+            output.push_str(",\n");
         } else {
             // JavaScript: Object.assign the options onto the setup component.
-            output.extend_from_slice(b"export default /*@__PURE__*/Object.assign(");
-            output.extend_from_slice(options_args.as_bytes());
-            output.extend_from_slice(b", {\n");
+            output.push_str("export default /*@__PURE__*/Object.assign(");
+            output.push_str(options_args);
+            output.push_str(", {\n");
         }
     } else if has_default_export {
         // Normal script has export default that was rewritten to __default__
         // Use Object.assign to merge with setup component
         if is_vapor {
-            output.extend_from_slice(b"export default /*@__PURE__*/");
+            output.push_str("export default /*@__PURE__*/");
             emit_runtime_helper(output, erasure, "_defineVaporComponent");
-            output.extend_from_slice(b"(Object.assign(__default__, {\n");
+            output.push_str("(Object.assign(__default__, {\n");
         } else {
-            output.extend_from_slice(b"export default /*@__PURE__*/Object.assign(__default__, {\n");
+            output.push_str("export default /*@__PURE__*/Object.assign(__default__, {\n");
         }
     } else if is_vapor {
-        output.extend_from_slice(b"export default /*@__PURE__*/");
+        output.push_str("export default /*@__PURE__*/");
         emit_runtime_helper(output, erasure, "_defineVaporComponent");
-        output.extend_from_slice(b"({\n");
+        output.push_str("({\n");
     } else if is_ts {
         // TypeScript: use _defineComponent with __PURE__ annotation
-        output.extend_from_slice(b"export default /*@__PURE__*/");
+        output.push_str("export default /*@__PURE__*/");
         emit_runtime_helper(output, erasure, "_defineComponent");
-        output.extend_from_slice(b"({\n");
+        output.push_str("({\n");
     } else {
-        output.extend_from_slice(b"export default {\n");
+        output.push_str("export default {\n");
     }
-    output.extend_from_slice(b"  __name: '");
-    output.extend_from_slice(component_name.as_bytes());
-    output.extend_from_slice(b"',\n");
+    output.push_str("  __name: '");
+    output.push_str(component_name);
+    output.push_str("',\n");
     if !css_modules.is_empty() {
-        output.extend_from_slice(b"  __cssModules: ");
-        output.extend_from_slice(css_modules_object_literal(css_modules, "  ").as_bytes());
-        output.extend_from_slice(b",\n");
+        output.push_str("  __cssModules: ");
+        output.push_str(&css_modules_object_literal(css_modules, "  "));
+        output.push_str(",\n");
     }
 
     // Output props and emits definitions
-    output.extend_from_slice(props_emits_buf);
-    output.extend_from_slice(model_props_emits_buf);
+    output.push_str(props_emits_buf);
+    output.push_str(model_props_emits_buf);
     if !template.render_fn.is_empty() {
-        output.extend_from_slice(b"  ");
+        output.push_str("  ");
         let render_field = if template.render_fn_name == "_sfc_render" {
             "render"
         } else {
             template.render_fn_name
         };
-        output.extend_from_slice(render_field.as_bytes());
-        output.extend_from_slice(b": ");
+        output.push_str(render_field);
+        output.push_str(": ");
         if let Some(alias) = vapor_render_alias {
-            output.extend_from_slice(alias.as_bytes());
+            output.push_str(alias);
         } else {
-            output.extend_from_slice(template.render_fn_name.as_bytes());
+            output.push_str(template.render_fn_name);
         }
-        output.extend_from_slice(b",\n");
+        output.push_str(",\n");
     }
     if template.hydrates_as_vapor {
-        output.extend_from_slice(b"  __vapor: true,\n");
+        output.push_str("  __vapor: true,\n");
     }
 
     // Build setup function signature based on what macros are used
@@ -164,31 +165,31 @@ pub(super) fn emit_component_definition(
         "  setup("
     };
     if setup_args.is_empty() {
-        output.extend_from_slice(async_prefix.as_bytes());
-        output.extend_from_slice(props_param.as_bytes());
-        output.extend_from_slice(b") {\n");
+        output.push_str(async_prefix);
+        output.push_str(props_param);
+        output.push_str(") {\n");
     } else {
-        output.extend_from_slice(async_prefix.as_bytes());
-        output.extend_from_slice(props_param.as_bytes());
-        output.extend_from_slice(b", { ");
-        output.extend_from_slice(setup_args.join(", ").as_bytes());
-        output.extend_from_slice(b" }) {\n");
+        output.push_str(async_prefix);
+        output.push_str(props_param);
+        output.push_str(", { ");
+        output.push_str(&setup_args.join(", "));
+        output.push_str(" }) {\n");
     }
 
     // Register before any authored code or await can suspend setup.
     if close_by_default {
-        output.extend_from_slice(b"  __expose();\n");
+        output.push_str("  __expose();\n");
     }
 
     // Always add a blank line after setup signature
-    output.push(b'\n');
+    output.push('\n');
 
     // Add __temp/__restore declarations for async setup
     if is_async {
         if is_ts {
-            output.extend_from_slice(b"let __temp: any, __restore: any\n\n");
+            output.push_str("let __temp: any, __restore: any\n\n");
         } else {
-            output.extend_from_slice(b"let __temp, __restore\n\n");
+            output.push_str("let __temp, __restore\n\n");
         }
     }
 

@@ -17,6 +17,7 @@ use oxc_parser::{ParseOptions, Parser};
 use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::{GetSpan, SourceType};
 use oxc_transformer::{JsxOptions, TransformOptions, Transformer, TypeScriptOptions};
+use vize_carton::string_builder::TextBuf;
 use vize_carton::{FxHashSet, String, ToCompactString, profile};
 
 use super::typescript::print_javascript;
@@ -349,11 +350,11 @@ pub(crate) fn elide_generated_imports(
 
 /// Emit a compiler-owned runtime reference and record it at its write site.
 pub(crate) fn emit_runtime_helper(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     erasure: Option<&mut Erasure>,
     alias: &str,
 ) {
-    output.extend_from_slice(alias.as_bytes());
+    output.push_str(alias);
     if let Some(erasure) = erasure {
         erasure.note(alias);
     }
