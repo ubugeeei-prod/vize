@@ -34,8 +34,8 @@ enum Content<'r, 'a> {
     SelectModel(&'r l2::ModelOp<'a>),
 }
 
-impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
-    pub(super) fn element(
+impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+    pub(super) fn element<M: RenderMapMode>(
         &mut self,
         open: SsrStringSegment<'r, 'a>,
         element: &'r l2::ElementOp<'a>,
@@ -66,7 +66,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             self.pos += 1;
             let _attached =
                 self.take_attached(element.attributes.len() + element.bindings.len())?;
-            self.children(Flags {
+            self.children::<M>(Flags {
                 as_fragment: false,
                 disable_nested_fragments,
                 disable_comments: false,
@@ -114,7 +114,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             self.ctx.push_string_part_dynamic(&owned);
             self.skip_children()?;
         } else {
-            self.content(content)?;
+            self.content::<M>(content)?;
         }
         self.close(
             Kind::CloseElement,
@@ -128,7 +128,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         Ok(())
     }
 
-    fn content(&mut self, content: Content<'r, 'a>) -> Result<()> {
+    fn content<M: RenderMapMode>(&mut self, content: Content<'r, 'a>) -> Result<()> {
         let flags = Flags {
             as_fragment: false,
             disable_nested_fragments: false,
@@ -137,7 +137,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             css_vars: false,
         };
         match content {
-            Content::Children => self.children(flags),
+            Content::Children => self.children::<M>(flags),
             Content::Html(html) => {
                 let value = html.value.as_ref().ok_or(LegacyReason::Binding)?;
                 let exp = self.expr(value, TransformContent::Decoded)?;
@@ -162,7 +162,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             Content::SelectModel(model) => {
                 let exp = self.expr(&model.contract.read, TransformContent::Decoded)?;
                 self.select_models.push(exp);
-                let result = self.children(flags);
+                let result = self.children::<M>(flags);
                 self.select_models.pop();
                 result
             }

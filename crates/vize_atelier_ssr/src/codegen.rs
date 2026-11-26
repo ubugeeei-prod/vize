@@ -78,7 +78,7 @@ impl SsrSfcContext {
 }
 
 /// SSR codegen context
-pub struct SsrCodegenContext<'a, M: RenderMapMode = PlainRenderMap> {
+pub struct SsrCodegenContext<'a> {
     pub(crate) allocator: &'a Allocator,
     pub(crate) options: &'a SsrCompilerOptions,
     /// Current component name for opt-in experimental self references.
@@ -121,8 +121,6 @@ pub struct SsrCodegenContext<'a, M: RenderMapMode = PlainRenderMap> {
     pub(crate) temps: u32,
     /// Where the render body starts, so temp declarations land there.
     body_start: usize,
-    /// The render map this walker records (see [`RenderMapMode`]).
-    render_map: core::marker::PhantomData<M>,
 }
 
 impl<'a> SsrCodegenContext<'a> {
@@ -136,24 +134,6 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     pub fn new_with_experimental_options(
-        allocator: &'a Allocator,
-        options: &'a SsrCompilerOptions,
-        source: &'a str,
-        experimental_options: SsrCompilerExperimentalOptions,
-    ) -> Self {
-        Self::with_render_map(allocator, options, source, experimental_options)
-    }
-
-    /// Generate SSR code from the AST
-    pub fn generate(self, root: &RootNode<'a>) -> SsrCodegenResult {
-        self.generate_in_mode(root)
-    }
-}
-
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
-    /// [`SsrCodegenContext::new_with_experimental_options`] for the render
-    /// map mode `M`.
-    pub(crate) fn with_render_map(
         allocator: &'a Allocator,
         options: &'a SsrCompilerOptions,
         source: &'a str,
@@ -187,7 +167,6 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
             source_map_filename,
             temps: 0,
             body_start: 0,
-            render_map: core::marker::PhantomData,
         }
     }
 
@@ -216,8 +195,16 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
         self
     }
 
-    /// Generate SSR code from the AST, recording the map of mode `M`.
-    pub(crate) fn generate_in_mode(mut self, root: &RootNode<'a>) -> SsrCodegenResult {
+    /// Generate SSR code from the AST
+    pub fn generate(self, root: &RootNode<'a>) -> SsrCodegenResult {
+        self.generate_in_mode::<PlainRenderMap>(root)
+    }
+
+    /// [`Self::generate`], recording the map of mode `M`.
+    pub(crate) fn generate_in_mode<M: RenderMapMode>(
+        mut self,
+        root: &RootNode<'a>,
+    ) -> SsrCodegenResult {
         vize_atelier_core::walk_probe::record_walk(
             vize_atelier_core::walk_probe::WalkStage::SsrCodegen,
         );
@@ -231,8 +218,8 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
         let is_fragment = css_vars::root_is_fragment(&root.children);
 
         self.begin_render(root.loc.span.start);
-        self.process_root_children(&root.children, is_fragment, false, false);
-        self.finish_render()
+        self.process_root_children::<M>(&root.children, is_fragment, false, false);
+        self.finish_render::<M>()
     }
 
     /// Open `ssrRender`: the signature and the CSS-variable prelude. Shared
@@ -262,7 +249,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     }
 
     /// Close `ssrRender` and assemble the module parts.
-    pub(crate) fn finish_render(mut self) -> SsrCodegenResult {
+    pub(crate) fn finish_render<M: RenderMapMode>(mut self) -> SsrCodegenResult {
         self.flush_push();
         self.indent_level -= 1;
         self.push("}\n");

@@ -63,7 +63,7 @@ pub(super) struct PlanFacts<'s, 'a> {
 
 /// Write the render body for `plan` into `ctx`.
 pub(super) fn emit_plan<'r, 'a, M: RenderMapMode>(
-    ctx: &mut SsrCodegenContext<'_, M>,
+    ctx: &mut SsrCodegenContext<'_>,
     plan: &SsrStringPlan<'r, 'a>,
     facts: &PlanFacts<'_, 'a>,
     exprs: &mut TransformExpressions<'_>,
@@ -80,7 +80,7 @@ pub(super) fn emit_plan<'r, 'a, M: RenderMapMode>(
     };
     let root = emitter.scan_region(0)?;
     let fragment = root.legacy_children > 1 && root.non_text;
-    emitter.children(Flags {
+    emitter.children::<M>(Flags {
         as_fragment: fragment,
         disable_nested_fragments: false,
         disable_comments: false,
@@ -95,10 +95,10 @@ pub(super) fn emit_plan<'r, 'a, M: RenderMapMode>(
     Ok(())
 }
 
-struct Emitter<'p, 'r, 'a, 'c, 'x, 'e, M: RenderMapMode> {
+struct Emitter<'p, 'r, 'a, 'c, 'x, 'e> {
     segments: &'p [SsrStringSegment<'r, 'a>],
     pos: usize,
-    ctx: &'c mut SsrCodegenContext<'x, M>,
+    ctx: &'c mut SsrCodegenContext<'x>,
     facts: &'p PlanFacts<'p, 'a>,
     exprs: &'p mut TransformExpressions<'e>,
     /// The legacy walker's codegen scope: `v-for` / slot destructure params
@@ -130,16 +130,20 @@ const PLAIN: Flags = Flags {
     css_vars: false,
 };
 
-impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
+impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `process_children_with_fallthrough_attrs` over the plan: emit the
     /// child list at the cursor up to (not including) its closing segment.
-    fn children(&mut self, flags: Flags) -> Result<()> {
-        self.children_keeping_comments(flags, true)
+    fn children<M: RenderMapMode>(&mut self, flags: Flags) -> Result<()> {
+        self.children_keeping_comments::<M>(flags, true)
     }
 
     /// `children`, dropping the list's direct comments when `comments` is
     /// false (a `<Transition>`'s, see `transition`).
-    fn children_keeping_comments(&mut self, flags: Flags, comments: bool) -> Result<()> {
+    fn children_keeping_comments<M: RenderMapMode>(
+        &mut self,
+        flags: Flags,
+        comments: bool,
+    ) -> Result<()> {
         let shape = self.scan_region(self.pos)?;
         let fallthrough = match shape.candidates.as_slice() {
             [only] if flags.inherit_attrs && !flags.as_fragment => Some(*only),
@@ -157,7 +161,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
                 continue;
             }
             let inherit = fallthrough == Some(self.pos);
-            self.child(segment, flags, inherit)?;
+            self.child::<M>(segment, flags, inherit)?;
         }
         if flags.as_fragment {
             self.ctx.push_string_part_static("<!--]-->");
@@ -166,7 +170,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     }
 
     /// `process_child` for the child at the cursor.
-    fn child(
+    fn child<M: RenderMapMode>(
         &mut self,
         segment: SsrStringSegment<'r, 'a>,
         flags: Flags,
@@ -176,16 +180,16 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         match (segment.kind, segment.source) {
             (Kind::OpenElement, Source::Element(element)) => {
                 vize_l0::ensure_sufficient_stack(|| {
-                    self.element(segment, element, disable, inherit, flags.css_vars)
+                    self.element::<M>(segment, element, disable, inherit, flags.css_vars)
                 })
             }
             (Kind::Component, Source::Component(component)) => {
                 vize_l0::ensure_sufficient_stack(|| {
-                    self.component(segment, component, inherit, flags.css_vars)
+                    self.component::<M>(segment, component, inherit, flags.css_vars)
                 })
             }
             (Kind::SlotOutlet, Source::Slot(slot)) => {
-                vize_l0::ensure_sufficient_stack(|| self.slot_outlet(segment, slot))
+                vize_l0::ensure_sufficient_stack(|| self.slot_outlet::<M>(segment, slot))
             }
             (Kind::Text, Source::Text(op)) => {
                 self.pos += 1;
@@ -198,7 +202,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
                 text::emit_interpolation(self, &segment, interpolation)
             }
             (Kind::If, Source::If(if_op)) => vize_l0::ensure_sufficient_stack(|| {
-                self.if_chain(
+                self.if_chain::<M>(
                     if_op,
                     disable,
                     flags.disable_comments,
@@ -207,7 +211,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
                 )
             }),
             (Kind::For, Source::For(for_op)) => {
-                vize_l0::ensure_sufficient_stack(|| self.for_loop(for_op, disable))
+                vize_l0::ensure_sufficient_stack(|| self.for_loop::<M>(for_op, disable))
             }
             (Kind::Comment, Source::Comment(comment)) => {
                 self.pos += 1;

@@ -4,10 +4,9 @@
 
 use super::SsrCodegenContext;
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, cstr};
 
-impl<M: RenderMapMode> SsrCodegenContext<'_, M> {
+impl SsrCodegenContext<'_> {
     /// A fresh `_tempN` binding, declared at the top of `ssrRender`.
     pub(crate) fn alloc_temp(&mut self) -> String {
         let temp = cstr!("_temp{}", self.temps);

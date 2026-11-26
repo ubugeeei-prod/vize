@@ -16,16 +16,16 @@ pub(crate) use destructure::{collect_for_scoped_params, extract_destructure_para
 pub(crate) use escape::{escape_html, escape_html_attr};
 use vize_l0::{String, ToCompactString};
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
+impl<'a> SsrCodegenContext<'a> {
     /// Process a list of children nodes
-    pub(crate) fn process_children(
+    pub(crate) fn process_children<M: RenderMapMode>(
         &mut self,
         children: &[TemplateChildNode<'a>],
         as_fragment: bool,
         disable_nested_fragments: bool,
         disable_comment: bool,
     ) {
-        self.process_children_with_fallthrough_attrs(
+        self.process_children_with_fallthrough_attrs::<M>(
             children,
             as_fragment,
             disable_nested_fragments,
@@ -35,7 +35,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     }
 
     /// Process a single child node
-    pub(crate) fn process_child(
+    pub(crate) fn process_child<M: RenderMapMode>(
         &mut self,
         child: &TemplateChildNode<'a>,
         disable_nested_fragments: bool,
@@ -45,7 +45,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     ) {
         match child {
             TemplateChildNode::Element(el) => {
-                self.process_element_with_fallthrough_attrs(
+                self.process_element_with_fallthrough_attrs::<M>(
                     el,
                     disable_nested_fragments,
                     inherit_attrs,
@@ -64,7 +64,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
                 self.process_interpolation(interp);
             }
             TemplateChildNode::If(if_node) => {
-                self.process_if(
+                self.process_if::<M>(
                     if_node,
                     disable_nested_fragments,
                     disable_comment,
@@ -73,10 +73,10 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
                 );
             }
             TemplateChildNode::For(for_node) if for_node.parse_result.match_scope => {
-                self.process_match_scope(for_node, disable_comment, inherit_attrs);
+                self.process_match_scope::<M>(for_node, disable_comment, inherit_attrs);
             }
             TemplateChildNode::For(for_node) => {
-                self.process_for(for_node, disable_nested_fragments);
+                self.process_for::<M>(for_node, disable_nested_fragments);
             }
             TemplateChildNode::IfBranch(_) => {
                 // Handled by process_if
@@ -127,7 +127,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     }
 
     /// Process an if node
-    pub(crate) fn process_if(
+    pub(crate) fn process_if<M: RenderMapMode>(
         &mut self,
         if_node: &IfNode<'a>,
         disable_nested_fragments: bool,
@@ -165,7 +165,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
             let needs_fragment =
                 !disable_nested_fragments && branch_fragment::needs_fragment(&branch.children);
 
-            self.process_children_with_fallthrough_attrs_and_css_vars(
+            self.process_children_with_fallthrough_attrs_and_css_vars::<M>(
                 &branch.children,
                 needs_fragment,
                 disable_nested_fragments,
@@ -198,7 +198,11 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     }
 
     /// Process a for node
-    pub(crate) fn process_for(&mut self, for_node: &ForNode<'a>, disable_nested_fragments: bool) {
+    pub(crate) fn process_for<M: RenderMapMode>(
+        &mut self,
+        for_node: &ForNode<'a>,
+        disable_nested_fragments: bool,
+    ) {
         // Flush current push before for statement
         self.flush_push();
 
@@ -217,17 +221,17 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
 
         // Value alias
         if let Some(value) = &for_node.value_alias {
-            self.push_for_alias(value);
+            self.push_for_alias::<M>(value);
         }
         // Key alias
         if let Some(key) = &for_node.key_alias {
             self.push(", ");
-            self.push_for_alias(key);
+            self.push_for_alias::<M>(key);
         }
         // Index alias
         if let Some(index) = &for_node.object_index_alias {
             self.push(", ");
-            self.push_for_alias(index);
+            self.push_for_alias::<M>(index);
         }
 
         self.push(") => {\n");
@@ -240,7 +244,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
         let needs_fragment = !disable_nested_fragments && loop_needs_fragment(&for_node.children);
         // Like Vue's processChildrenAsStatement, the callback starts a fresh
         // fragment context, including when this loop is inside TransitionGroup.
-        self.process_children(&for_node.children, needs_fragment, false, false);
+        self.process_children::<M>(&for_node.children, needs_fragment, false, false);
         self.flush_push();
 
         self.pop_scoped_params();
@@ -260,7 +264,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// no location, so a composed map anchors an alias written unchanged at
     /// the slice of the template it was parsed from.
     #[inline(always)]
-    fn push_for_alias(&mut self, alias: &vize_atelier_core::ExpressionNode) {
+    fn push_for_alias<M: RenderMapMode>(&mut self, alias: &vize_atelier_core::ExpressionNode) {
         if M::COMPOSED {
             self.push_composed_for_alias(alias);
         } else {

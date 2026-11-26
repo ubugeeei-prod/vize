@@ -1,7 +1,7 @@
 //! Node generation functions.
 
-use crate::codegen::RenderMapMode;
 use crate::TemplateChildNode;
+use crate::codegen::RenderMapMode;
 
 use super::children::{generate_comment, generate_interpolation, generate_text};
 use super::context::CodegenContext;

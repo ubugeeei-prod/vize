@@ -15,8 +15,8 @@ use vize_atelier_core::codegen::RenderMapMode;
 
 use vize_atelier_core::ForNode;
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
-    pub(super) fn process_component_slot_property<'node>(
+impl<'a> SsrCodegenContext<'a> {
+    pub(super) fn process_component_slot_property<'node, M: RenderMapMode>(
         &mut self,
         name: &str,
         anchor: Option<SlotAnchor>,
@@ -38,7 +38,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
             self.push("\"");
         }
         self.push(": ");
-        self.emit_slot_fn(
+        self.emit_slot_fn::<M>(
             anchor.map(|anchor| anchor.unit),
             props_pattern,
             params,
@@ -50,7 +50,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// Emit a `_withCtx((params, _push, _parent, _scopeId) => { if (_push) {...}
     /// else { return [...] } })` slot function, shared by static slot properties
     /// and `createSlots` entries.
-    pub(super) fn emit_slot_fn<'node>(
+    pub(super) fn emit_slot_fn<'node, M: RenderMapMode>(
         &mut self,
         unit: Option<u32>,
         props_pattern: Option<&str>,
@@ -73,7 +73,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
         if !params.is_empty() {
             self.push_scoped_params(params.clone());
         }
-        self.process_component_slot_children(&children);
+        self.process_component_slot_children::<M>(&children);
         self.flush_push();
         if !params.is_empty() {
             self.pop_scoped_params();

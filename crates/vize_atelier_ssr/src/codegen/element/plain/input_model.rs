@@ -4,9 +4,8 @@ use super::{
     ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     ToCompactString, cstr, quoted_js_string,
 };
-use vize_atelier_core::codegen::RenderMapMode;
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
+impl<'a> SsrCodegenContext<'a> {
     /// Get an attribute value from an element
     pub(crate) fn get_element_attr_value(&self, el: &ElementNode, name: &str) -> Option<String> {
         use vize_atelier_core::PropNode;

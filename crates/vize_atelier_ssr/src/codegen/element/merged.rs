@@ -19,7 +19,6 @@ use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     TemplateChildNode, ToCompactString, VNodePropEntry, cstr,
 };
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{camelize, is_builtin_directive};
 
@@ -57,7 +56,7 @@ fn has_directive(el: &ElementNode, name: &str) -> bool {
         .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == name))
 }
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
+impl<'a> SsrCodegenContext<'a> {
     fn collect_v_model_element_attr(
         &mut self,
         el: &ElementNode,

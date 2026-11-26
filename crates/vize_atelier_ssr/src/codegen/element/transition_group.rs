@@ -9,8 +9,8 @@ enum GroupTag<'n, 'a> {
     Dynamic(&'n ExpressionNode<'a>),
 }
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
-    pub(super) fn process_transition_group(
+impl<'a> SsrCodegenContext<'a> {
+    pub(super) fn process_transition_group<M: RenderMapMode>(
         &mut self,
         el: &ElementNode<'a>,
         inherit_attrs: bool,
@@ -62,7 +62,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
         // Vue's TransitionGroup flattens nested list/conditional ranges and
         // filters comment children, including the empty false-v-if placeholder.
         // Vapor hydration walks the nested ranges, so they keep their fragments.
-        self.process_children_with_fallthrough_attrs(
+        self.process_children_with_fallthrough_attrs::<M>(
             &el.children,
             tag.is_none(),
             !self.options.vapor,

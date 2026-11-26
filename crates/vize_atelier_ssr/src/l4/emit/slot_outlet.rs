@@ -65,8 +65,8 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
     Ok(())
 }
 
-impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
-    pub(super) fn slot_outlet(
+impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+    pub(super) fn slot_outlet<M: RenderMapMode>(
         &mut self,
         open: SsrStringSegment<'r, 'a>,
         slot: &'r l2::SlotOp<'a>,
@@ -93,7 +93,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             self.ctx.push("() => {\n");
             self.ctx.indent_level += 1;
             let saved = core::mem::take(&mut self.ctx.current_template_parts);
-            let fallback = self.children(Flags {
+            let fallback = self.children::<M>(Flags {
                 as_fragment: false,
                 disable_nested_fragments: false,
                 disable_comments: false,

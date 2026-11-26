@@ -10,9 +10,9 @@ use super::{
 };
 use vize_atelier_core::codegen::RenderMapMode;
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
+impl<'a> SsrCodegenContext<'a> {
     /// Process a slot outlet (<slot>)
-    pub(super) fn process_slot_outlet(&mut self, el: &ElementNode<'a>) {
+    pub(super) fn process_slot_outlet<M: RenderMapMode>(&mut self, el: &ElementNode<'a>) {
         self.flush_push();
         self.use_ssr_helper(RuntimeHelper::SsrRenderSlot);
 
@@ -37,7 +37,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
             self.indent_level += 1;
 
             let old_parts = std::mem::take(&mut self.current_template_parts);
-            self.process_children(&el.children, false, false, false);
+            self.process_children::<M>(&el.children, false, false, false);
             self.flush_push();
             self.current_template_parts = old_parts;
 

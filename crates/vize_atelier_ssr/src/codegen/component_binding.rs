@@ -1,5 +1,4 @@
 use super::SsrCodegenContext;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{BindingType, RuntimeHelper};
 use vize_l0::{String, ToCompactString, camelize, capitalize};
 
@@ -9,7 +8,7 @@ struct ComponentBinding {
     suffix: Option<String>,
 }
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
+impl<'a> SsrCodegenContext<'a> {
     pub(crate) fn resolve_component_binding_expr(&mut self, component: &str) -> Option<String> {
         let binding = self.resolve_component_binding(component)?;
         let needs_unref = !self.jsx_closure

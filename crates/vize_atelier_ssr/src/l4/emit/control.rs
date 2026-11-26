@@ -13,10 +13,10 @@ use super::{Emitter, Flags, Result};
 use crate::l4::LegacyReason;
 use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
 
-impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
+impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `process_if`: one `if` / `else if` / `else` block per branch, and an
     /// empty-comment `else` when the chain has no unconditional branch.
-    pub(super) fn if_chain(
+    pub(super) fn if_chain<M: RenderMapMode>(
         &mut self,
         if_op: &'r l2::IfOp<'a>,
         disable_nested_fragments: bool,
@@ -64,7 +64,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             self.ctx.indent_level += 1;
             let shape = self.scan_region(self.pos)?;
             self.branch_key = self.branch_key_span(fact, index)?;
-            let emitted = self.children(Flags {
+            let emitted = self.children::<M>(Flags {
                 as_fragment: !disable_nested_fragments
                     && shape.needs_branch_fragment(self.segment(self.pos)?.kind),
                 disable_nested_fragments,
@@ -104,7 +104,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
 
     /// `process_for`: `_ssrRenderList(source, (aliases) => { ... })` between
     /// fragment markers, with the body inside the aliases' scope.
-    pub(super) fn for_loop(
+    pub(super) fn for_loop<M: RenderMapMode>(
         &mut self,
         for_op: &'r l2::ForOp<'a>,
         disable_nested_fragments: bool,
@@ -155,7 +155,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         self.ctx.indent_level += 1;
 
         let body = self.scan_region(self.pos).and_then(|shape| {
-            self.children(Flags {
+            self.children::<M>(Flags {
                 as_fragment: !disable_nested_fragments
                     && shape.needs_loop_fragment(self.segment(self.pos)?.kind),
                 // A loop callback starts a new range context. The incoming
@@ -208,7 +208,7 @@ pub(super) fn alias<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
 }
 
 /// Anchor each alias about to be written, from the document's cursor, at
-/// the alias the loop authored, like the walker does for a composed map: an
+/// the alias the loop authored, as the walker does for a composed map: an
 /// alias spelled as authored maps to its own bytes, a rewritten one to
 /// nothing.
 #[cold]

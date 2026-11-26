@@ -30,4 +30,3 @@ pub enum ComposedRenderMap {}
 impl RenderMapMode for ComposedRenderMap {
     const COMPOSED: bool = true;
 }
-

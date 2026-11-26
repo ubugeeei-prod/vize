@@ -9,9 +9,14 @@ use vize_atelier_core::codegen::RenderMapMode;
 
 mod input_model;
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
+impl<'a> SsrCodegenContext<'a> {
     /// Process a plain HTML element
-    pub(super) fn process_plain_element(&mut self, el: &ElementNode<'a>, attrs: bool, css: bool) {
+    pub(super) fn process_plain_element<M: RenderMapMode>(
+        &mut self,
+        el: &ElementNode<'a>,
+        attrs: bool,
+        css: bool,
+    ) {
         let tag = &el.tag;
 
         // Start tag
@@ -91,10 +96,10 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
             //       ? " selected" : ""}`. (#962)
             let exp = self.expression_to_string(exp);
             self.select_v_model_stack.push(exp);
-            self.process_children(&el.children, false, false, false);
+            self.process_children::<M>(&el.children, false, false, false);
             self.select_v_model_stack.pop();
         } else {
-            self.process_children(&el.children, false, false, false);
+            self.process_children::<M>(&el.children, false, false, false);
         }
 
         // End tag

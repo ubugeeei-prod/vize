@@ -7,10 +7,9 @@ use super::{
     DirectiveNode, ExpressionNode, RuntimeHelper, SsrCodegenContext, String, ToCompactString, cstr,
 };
 use vize_atelier_core::BindingType;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{camelize, capitalize};
 
-impl<M: RenderMapMode> SsrCodegenContext<'_, M> {
+impl SsrCodegenContext<'_> {
     /// `_ssrGetDirectiveProps(_ctx, dir[, value[, arg[, modifiers]]])` with
     /// `buildDirectiveArgs`' `void 0` padding.
     pub(super) fn directive_props(&mut self, dir: &DirectiveNode) -> String {

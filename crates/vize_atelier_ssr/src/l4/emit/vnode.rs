@@ -3,7 +3,6 @@
 //! trees built from the same plan ranges as the push form.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op as l2;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_ssr_static_text};
@@ -31,7 +30,7 @@ struct Children {
     dynamic_text: bool,
 }
 
-impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
+impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `vnode_children_expression` over plan ranges.
     pub(super) fn vnode_list(&mut self, ranges: &Ranges) -> Result<String> {
         let mut children = Children::default();

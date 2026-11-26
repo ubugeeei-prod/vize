@@ -1,9 +1,9 @@
 //! Slot child and expression spelling.
 
-use crate::codegen::RenderMapMode;
 use super::super::super::context::CodegenContext;
 use super::super::super::node::generate_node;
 use super::slot_params::strip_ctx_prefix_for_slot_params;
+use crate::codegen::RenderMapMode;
 use crate::{ExpressionNode, RuntimeHelper, TemplateChildNode};
 
 /// Generate adjacent text runs without crossing a slot or node boundary.
@@ -113,7 +113,10 @@ fn generate_slot_text_run(ctx: &mut CodegenContext, children: &[TemplateChildNod
 }
 
 /// Generate a single child node for slot content
-fn generate_slot_child_node<M: RenderMapMode>(ctx: &mut CodegenContext, child: &TemplateChildNode<'_>) {
+fn generate_slot_child_node<M: RenderMapMode>(
+    ctx: &mut CodegenContext,
+    child: &TemplateChildNode<'_>,
+) {
     match child {
         TemplateChildNode::Text(text) => {
             ctx.use_helper(RuntimeHelper::CreateText);

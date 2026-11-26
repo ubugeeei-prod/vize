@@ -267,7 +267,9 @@ fn conditional_vnode_metadata_matches_both_lanes_in_each_host_build() {
                 }
                 let compile = |lane| {
                     let allocator = Allocator::new();
-                    let (_, errors, result) = compile_ssr_on_lane_with_context(
+                    let (_, errors, result) = compile_ssr_on_lane_with_context::<
+                        vize_atelier_core::codegen::PlainRenderMap,
+                    >(
                         &allocator,
                         source,
                         options.clone(),

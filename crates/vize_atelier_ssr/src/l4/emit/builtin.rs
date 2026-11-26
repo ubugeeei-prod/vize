@@ -11,8 +11,8 @@ use crate::l4::string_plan::{SsrStringPayloadKind, SsrStringSegmentKind as Kind}
 use super::spans::expression_span;
 use super::{Emitter, Flags, Result, plan_source};
 
-impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
-    pub(super) fn suspense(&mut self, flags: Flags) -> Result<()> {
+impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
+    pub(super) fn suspense<M: RenderMapMode>(&mut self, flags: Flags) -> Result<()> {
         let children = self.direct_children(self.pos)?;
         let separate = children.iter().any(|&start| {
             self.template_slot(start).is_some_and(|(_, slot)| {
@@ -20,7 +20,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             })
         });
         if !separate {
-            return self.suspense_default(flags);
+            return self.suspense_default::<M>(flags);
         }
         let end = self.region_end(self.pos)?;
         let mut implicit = std::vec::Vec::new();
@@ -42,7 +42,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             dynamic |= matches!(slot.name, Some(DynamicName::Dynamic(_)));
             let inner = start + 1 + element.attributes.len() + element.bindings.len();
             let ranges = self.direct_children(inner)?;
-            self.suspense_body(&ranges, flags)?;
+            self.suspense_body::<M>(&ranges, flags)?;
         }
         if implicit.iter().all(|&start| {
             self.segments.get(start).is_some_and(|segment| {
@@ -56,7 +56,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         if !implicit.is_empty() {
             self.ctx.push_indent();
             self.ctx.push("default");
-            self.suspense_body(&implicit, flags)?;
+            self.suspense_body::<M>(&implicit, flags)?;
         }
         self.ctx.push_indent();
         self.ctx.push(if dynamic { "_: 2\n" } else { "_: 1\n" });
@@ -95,7 +95,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         Ok(())
     }
 
-    fn suspense_body(&mut self, children: &[usize], flags: Flags) -> Result<()> {
+    fn suspense_body<M: RenderMapMode>(&mut self, children: &[usize], flags: Flags) -> Result<()> {
         self.ctx.push(": () => {\n");
         self.ctx.indent_level += 1;
         let saved = core::mem::take(&mut self.ctx.current_template_parts);
@@ -107,7 +107,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         let result = children.iter().try_for_each(|&start| {
             let end = self.child_end(start)?;
             self.pos = start;
-            self.child(self.segment(start)?, flags, false)?;
+            self.child::<M>(self.segment(start)?, flags, false)?;
             if self.pos != end {
                 return Err(crate::l4::AdmissionFailure::Invalid(
                     "Suspense child emission left its original plan range",
@@ -128,7 +128,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     }
 
     /// `_ssrRenderSuspense(_push, { default: () => { ... }, _: 1 })`.
-    fn suspense_default(&mut self, flags: Flags) -> Result<()> {
+    fn suspense_default<M: RenderMapMode>(&mut self, flags: Flags) -> Result<()> {
         self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
         self.ctx.push_indent();
@@ -137,7 +137,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         self.ctx.push_indent();
         self.ctx.push("default: () => {\n");
         self.ctx.indent_level += 1;
-        self.children(Flags {
+        self.children::<M>(Flags {
             as_fragment: flags.as_fragment || self.ctx.options.vapor,
             ..flags
         })?;

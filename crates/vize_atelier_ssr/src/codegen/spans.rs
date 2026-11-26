@@ -8,13 +8,12 @@
 //! requested nothing is recorded and every part stays link-free, so the
 //! emitted bytes are identical either way (TS-11).
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{DirectiveNode, codegen::document::EmitDocument};
 use vize_l0::Span;
 
 use super::{SsrCodegenContext, TemplatePart};
 
-impl<M: RenderMapMode> SsrCodegenContext<'_, M> {
+impl SsrCodegenContext<'_> {
     /// Whether this compile records a source map.
     pub(crate) fn spans_enabled(&self) -> bool {
         self.out.is_recording()

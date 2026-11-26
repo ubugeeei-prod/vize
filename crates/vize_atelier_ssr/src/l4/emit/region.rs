@@ -6,7 +6,6 @@ use crate::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringSegment, SsrStringSegmentKind as Kind,
 };
 use crate::l4::{AdmissionFailure, LegacyReason};
-use vize_atelier_core::codegen::RenderMapMode;
 
 /// Segments that open a nested region (their close pairs by depth).
 pub(super) const fn is_open(kind: Kind) -> bool {
@@ -60,7 +59,7 @@ impl RegionShape {
     }
 }
 
-impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
+impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// Describe the child list starting at `from`, up to its closing segment.
     pub(super) fn scan_region(&self, from: usize) -> Result<RegionShape> {
         let mut shape = RegionShape {

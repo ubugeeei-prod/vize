@@ -17,7 +17,10 @@ use super::super::{
     slots::{generate_slot_outlet_name, generate_slot_outlet_props, has_slot_outlet_props},
 };
 
-pub(super) fn generate_for_slot_outlet<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+pub(super) fn generate_for_slot_outlet<M: RenderMapMode>(
+    ctx: &mut CodegenContext,
+    el: &ElementNode<'_>,
+) {
     ctx.use_helper(RuntimeHelper::RenderSlot);
     ctx.push(ctx.helper(RuntimeHelper::RenderSlot));
     ctx.push("(_ctx.$slots, ");

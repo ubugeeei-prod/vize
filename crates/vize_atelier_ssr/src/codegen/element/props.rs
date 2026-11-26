@@ -3,7 +3,6 @@
 use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, String, ToCompactString, VNodePropEntry,
 };
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{FxHashMap, FxHashSet, SmallVec, is_on};
 
 /// Build an object literal from normalized prop entries.
@@ -19,7 +18,7 @@ pub(crate) fn component_props_object(entries: &[VNodePropEntry]) -> String {
     out
 }
 
-impl<M: RenderMapMode> crate::codegen::SsrCodegenContext<'_, M> {
+impl crate::codegen::SsrCodegenContext<'_> {
     /// The `v-slot` props pattern after the shared expression lane prefixes
     /// free names in defaults and erases TypeScript syntax when requested.
     pub(in crate::codegen) fn slot_props_pattern(&self, dir: &DirectiveNode<'_>) -> Option<String> {

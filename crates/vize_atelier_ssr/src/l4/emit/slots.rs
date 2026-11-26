@@ -109,7 +109,7 @@ pub(super) fn slot_pattern(
         .map(|params| exprs.params(quote_padded(file, params.source(), params.span()))))
 }
 
-impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
+impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// Read the typed value once in the current component/slot/loop scope.
     pub(super) fn forwarded_slots(
         &self,
@@ -251,15 +251,18 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     }
 
     /// The push-form slots object, written in place.
-    pub(super) fn emit_slots_object(&mut self, slots: &ComponentSlots) -> Result<()> {
+    pub(super) fn emit_slots_object<M: RenderMapMode>(
+        &mut self,
+        slots: &ComponentSlots,
+    ) -> Result<()> {
         if !slots.dynamic.is_empty() {
-            return self.emit_create_slots(slots);
+            return self.emit_create_slots::<M>(slots);
         }
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
         self.ctx.push("{\n");
         self.ctx.indent_level += 1;
         if let Some(own) = &slots.own {
-            self.slot_property(own)?;
+            self.slot_property::<M>(own)?;
         } else {
             if !slots.default.is_empty() {
                 let default = SlotSpec {
@@ -268,10 +271,10 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
                     ranges: slots.default.clone(),
                     anchor: (None, None),
                 };
-                self.slot_property(&default)?;
+                self.slot_property::<M>(&default)?;
             }
             for named in &slots.named {
-                self.slot_property(named)?;
+                self.slot_property::<M>(named)?;
             }
         }
         self.ctx.push_indent();
@@ -295,7 +298,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         Ok(())
     }
 
-    pub(super) fn slot_property(&mut self, spec: &SlotSpec) -> Result<()> {
+    pub(super) fn slot_property<M: RenderMapMode>(&mut self, spec: &SlotSpec) -> Result<()> {
         self.ctx.push_indent();
         // The name maps to its authored `v-slot` argument, as the walker's does.
         if is_valid_js_identifier(&spec.name) {
@@ -310,13 +313,13 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             self.ctx.push("\"");
         }
         self.ctx.push(": ");
-        self.slot_fn(spec)?;
+        self.slot_fn::<M>(spec)?;
         self.ctx.push(",\n");
         Ok(())
     }
 
     /// Emit a push-form `_withCtx` slot function with VNode fallback.
-    pub(super) fn slot_fn(&mut self, spec: &SlotSpec) -> Result<()> {
+    pub(super) fn slot_fn<M: RenderMapMode>(&mut self, spec: &SlotSpec) -> Result<()> {
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
         self.ctx.push_optionally_mapped("_withCtx((", spec.anchor.1);
         self.ctx.push(spec.pattern.as_deref().unwrap_or("_"));
@@ -338,7 +341,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         if scoped {
             self.scoped_params.push(params.clone());
         }
-        let pushed = self.slot_children(&spec.ranges);
+        let pushed = self.slot_children::<M>(&spec.ranges);
         self.ctx.flush_push();
         if scoped {
             self.scoped_params.pop();
@@ -376,11 +379,11 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     }
 
     /// The push form of slot children, each child in its own range.
-    fn slot_children(&mut self, ranges: &Ranges) -> Result<()> {
+    fn slot_children<M: RenderMapMode>(&mut self, ranges: &Ranges) -> Result<()> {
         for &(start, end) in ranges {
             self.pos = start;
             let segment = self.segment(start)?;
-            self.child(segment, PLAIN, false)?;
+            self.child::<M>(segment, PLAIN, false)?;
             if self.pos != end {
                 return Err(AdmissionFailure::Invalid(
                     "slot child emission left its plan range",

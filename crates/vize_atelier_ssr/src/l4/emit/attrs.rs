@@ -2,7 +2,6 @@
 //! of non-root elements.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};
@@ -187,7 +186,7 @@ fn show_value<'r, 'a>(attached: &Attached<'r, 'a>) -> Option<&'r ExprRef<'a>> {
     })
 }
 
-impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
+impl Emitter<'_, '_, '_, '_, '_, '_> {
     /// A rewritten `v-bind` value anchored at its authored expression: the
     /// directive's quoted value, or the expanded shorthand's expression.
     pub(super) fn bound_expression(&self, code: &str, bind: &Bind<'_, '_>) -> EmitDocument {
@@ -208,8 +207,8 @@ impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
 }
 
 /// Non-root element attributes, in authored order.
-pub(super) fn emit_inline<M: RenderMapMode>(
-    em: &mut Emitter<'_, '_, '_, '_, '_, '_, M>,
+pub(super) fn emit_inline(
+    em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
     attached: &Attached<'_, '_>,
     tag: &str,
 ) -> Result<()> {

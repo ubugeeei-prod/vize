@@ -8,7 +8,6 @@
 //! `<textarea>`) may own the element's content through a `_temp` binding.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
@@ -64,7 +63,7 @@ fn has_static_type(attached: &Attached<'_, '_>) -> bool {
     })
 }
 
-impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
+impl Emitter<'_, '_, '_, '_, '_, '_> {
     /// `_ssrRenderAttrs(props[, "tag"])` plus temp-owned content. The cursor
     /// sits on the element's first child.
     pub(super) fn merged_attrs(
@@ -318,8 +317,8 @@ fn assigned(temp: &str, merged: &EmitDocument) -> EmitDocument {
 
 /// A static attribute's props-object entry with its key and value anchored
 /// at the authored tokens, as the AST walker builds it.
-fn static_entry<M: RenderMapMode>(
-    em: &Emitter<'_, '_, '_, '_, '_, '_, M>,
+fn static_entry(
+    em: &Emitter<'_, '_, '_, '_, '_, '_>,
     attr: &l2::Attribute<'_>,
     name: &str,
     value: &str,

@@ -3,6 +3,7 @@
 //! emitter as the template path, with the transform's `prefix_identifiers`
 //! off because JSX render functions close over their setup scope.
 
+use vize_atelier_core::codegen::{PlainRenderMap, RenderMapMode};
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Span};
 use vize_l2::op::Region;
@@ -27,7 +28,7 @@ pub fn compile_l2_to_ssr<'a>(
     root: &Region<'a>,
     options: &SsrCompilerOptions,
 ) -> Option<SsrCodegenResult> {
-    emit_l2(
+    emit_l2::<PlainRenderMap>(
         allocator,
         source,
         root,
@@ -83,7 +84,7 @@ pub fn compile_l2_to_ssr_with_host_context<'a>(
     {
         return None;
     }
-    emit_l2(
+    emit_l2::<PlainRenderMap>(
         allocator,
         source,
         root,
@@ -94,7 +95,7 @@ pub fn compile_l2_to_ssr_with_host_context<'a>(
     )
 }
 
-fn emit_l2<'a>(
+fn emit_l2<'a, M: RenderMapMode>(
     allocator: &'a Allocator,
     source: &'a str,
     root: &Region<'a>,
@@ -105,7 +106,7 @@ fn emit_l2<'a>(
 ) -> Option<SsrCodegenResult> {
     let selection = vize_l0::profile!(
         "atelier.ssr.caller_l2.select_and_emit",
-        select_l2_lane_with_experimental_options(
+        select_l2_lane_with_experimental_options::<M>(
             allocator,
             source,
             root,
@@ -129,7 +130,7 @@ pub(super) fn select_l2_lane<'a>(
     root: &Region<'a>,
     options: &SsrCompilerOptions,
 ) -> SsrL4Selection {
-    select_l2_lane_with_experimental_options(
+    select_l2_lane_with_experimental_options::<vize_atelier_core::codegen::PlainRenderMap>(
         allocator,
         source,
         root,
@@ -140,7 +141,7 @@ pub(super) fn select_l2_lane<'a>(
     )
 }
 
-fn select_l2_lane_with_experimental_options<'a>(
+fn select_l2_lane_with_experimental_options<'a, M: RenderMapMode>(
     allocator: &'a Allocator,
     source: &'a str,
     root: &Region<'a>,
@@ -168,7 +169,7 @@ fn select_l2_lane_with_experimental_options<'a>(
         },
         diagnostics: 0,
     };
-    select_from_l2_plain::<vize_atelier_core::codegen::PlainRenderMap>(
+    select_from_l2_plain::<M>(
         allocator,
         &artifact,
         options,

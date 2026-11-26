@@ -37,7 +37,7 @@ pub(super) struct Entry {
     pub(super) spec: SlotSpec,
 }
 
-impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
+impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `is_dynamic_slot_source` for the content child at `start`.
     pub(super) fn dynamic_slot_source(&self, start: usize) -> Result<Option<Dynamic>> {
         let segment = self.segment(start)?;
@@ -179,13 +179,16 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     }
 
     /// `_createSlots({ default, named, _: 2 }, [entries])`, written in place.
-    pub(super) fn emit_create_slots(&mut self, slots: &ComponentSlots) -> Result<()> {
+    pub(super) fn emit_create_slots<M: RenderMapMode>(
+        &mut self,
+        slots: &ComponentSlots,
+    ) -> Result<()> {
         self.ctx.use_core_helper(RuntimeHelper::CreateSlots);
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
         self.ctx.push("_createSlots({\n");
         self.ctx.indent_level += 1;
         if !slots.default.is_empty() {
-            self.slot_property(&SlotSpec {
+            self.slot_property::<M>(&SlotSpec {
                 name: "default".to_compact_string(),
                 pattern: None,
                 ranges: slots.default.clone(),
@@ -193,7 +196,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             })?;
         }
         for named in &slots.named {
-            self.slot_property(named)?;
+            self.slot_property::<M>(named)?;
         }
         self.ctx.push_indent();
         self.ctx.push("_: 2 /* DYNAMIC */\n");
@@ -207,11 +210,11 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             }
             self.ctx.push_indent();
             match *dynamic {
-                Dynamic::Conditional(at) => self.conditional_entry(at)?,
-                Dynamic::Looped(at) => self.looped_entry(at)?,
+                Dynamic::Conditional(at) => self.conditional_entry::<M>(at)?,
+                Dynamic::Looped(at) => self.looped_entry::<M>(at)?,
                 Dynamic::Named(at) => {
                     let entry = self.entry(at)?;
-                    self.entry_object(&entry, None)?;
+                    self.entry_object::<M>(&entry, None)?;
                 }
             }
         }
@@ -225,7 +228,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     }
 
     /// `(cond) ? { ..., key: "N" } : ... : undefined`.
-    fn conditional_entry(&mut self, at: usize) -> Result<()> {
+    fn conditional_entry<M: RenderMapMode>(&mut self, at: usize) -> Result<()> {
         let (if_op, starts) = self.conditional(at)?;
         for (index, (branch, start)) in if_op.branches.iter().zip(starts).enumerate() {
             if index > 0 {
@@ -240,7 +243,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
             match self.slot_template_in(start)? {
                 Some(template) => {
                     let entry = self.entry(template)?;
-                    self.entry_object(&entry, Some(index))?;
+                    self.entry_object::<M>(&entry, Some(index))?;
                 }
                 None => self.ctx.push("undefined"),
             }
@@ -256,7 +259,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     }
 
     /// `_renderList(source, (aliases) => { return { ... } })`.
-    fn looped_entry(&mut self, at: usize) -> Result<()> {
+    fn looped_entry<M: RenderMapMode>(&mut self, at: usize) -> Result<()> {
         let template = self
             .slot_template_in(at + 1)?
             .ok_or(AdmissionFailure::Invalid(
@@ -278,7 +281,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         self.ctx.push("return ");
         let written = self
             .entry(template)
-            .and_then(|entry| self.entry_object(&entry, None));
+            .and_then(|entry| self.entry_object::<M>(&entry, None));
         self.leave_loop(mark);
         written?;
         self.ctx.push("\n");
@@ -289,7 +292,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
     }
 
     /// `{ name, fn[, key] }` across indented lines.
-    fn entry_object(&mut self, entry: &Entry, key: Option<usize>) -> Result<()> {
+    fn entry_object<M: RenderMapMode>(&mut self, entry: &Entry, key: Option<usize>) -> Result<()> {
         self.ctx.push("{\n");
         self.ctx.indent_level += 1;
         self.ctx.push_indent();
@@ -298,7 +301,7 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         self.ctx.push(",\n");
         self.ctx.push_indent();
         self.ctx.push("fn: ");
-        self.slot_fn(&entry.spec)?;
+        self.slot_fn::<M>(&entry.spec)?;
         if let Some(key) = key {
             self.ctx.push(",\n");
             self.ctx.push_indent();

@@ -6,13 +6,13 @@ use super::{
     SsrCompilerOptions, SsrL4Request, SsrL4Selection, SsrLane, SsrSfcContext, String,
     TemplateSyntaxMode, cstr, l4, profile, transform_with_frozen_elements,
 };
-use vize_atelier_core::codegen::{PlainRenderMap, RenderMapMode};
+use vize_atelier_core::codegen::RenderMapMode;
 
 #[expect(
     clippy::too_many_arguments,
     reason = "SFC options plus an opt-in capture sink"
 )]
-pub(super) fn compile_ssr_inner_captured<'a, C: CaptureSink>(
+pub(super) fn compile_ssr_inner_captured<'a, C: CaptureSink, M: RenderMapMode>(
     allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
@@ -22,7 +22,7 @@ pub(super) fn compile_ssr_inner_captured<'a, C: CaptureSink>(
     context: SsrSfcContext,
     capture: &mut C,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner_captured_with_runtime::<C, PlainRenderMap>(
+    compile_ssr_inner_captured_with_runtime::<_, M>(
         allocator,
         source,
         options,
@@ -54,7 +54,7 @@ pub(super) fn compile_ssr_inner_captured_with_runtime<'a, C: CaptureSink, M: Ren
     let lane = crate::differential::production_lane();
     #[cfg(not(feature = "legacy-differential"))]
     let lane = SsrLane::Selected;
-    compile_ssr_on_lane_captured::<C, M>(
+    compile_ssr_on_lane_captured::<_, M>(
         allocator,
         source,
         options,
@@ -133,7 +133,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink, M: RenderMapMode>(
     }
 
     let selection = match lane {
-        SsrLane::Selected => l4::select_ssr_lane_captured::<C, M>(
+        SsrLane::Selected => l4::select_ssr_lane_captured::<_, M>(
             allocator,
             source,
             &SsrL4Request {
@@ -214,7 +214,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink, M: RenderMapMode>(
                 SsrL4Selection::Legacy(_) => {}
                 SsrL4Selection::Emitted(_) => {}
             }
-            let mut codegen_ctx = SsrCodegenContext::<M>::with_render_map(
+            let mut codegen_ctx = SsrCodegenContext::new_with_experimental_options(
                 allocator,
                 &codegen_options,
                 source,
@@ -222,7 +222,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink, M: RenderMapMode>(
             );
             codegen_ctx.apply_sfc_context(context);
             codegen_ctx.set_runtime_module_name(runtime_module_name);
-            let result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate_in_mode(&root));
+            let result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
             capture.finish(|| {
                 let reason = legacy_reason
                     .map(|reason| cstr!("{reason:?}"))

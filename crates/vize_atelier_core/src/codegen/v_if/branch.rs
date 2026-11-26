@@ -67,11 +67,21 @@ pub(super) fn generate_if_branch_nodes<M: RenderMapMode>(
                             TemplateChildNode::Element(inner) => {
                                 // Check if inner element is a component
                                 if inner.tag_type == ElementType::Component {
-                                    generate_if_branch_component::<M>(ctx, inner, branch, branch_index);
+                                    generate_if_branch_component::<M>(
+                                        ctx,
+                                        inner,
+                                        branch,
+                                        branch_index,
+                                    );
                                 } else if inner.tag_type == ElementType::Slot {
                                     generate_if_branch_slot::<M>(ctx, inner, branch, branch_index);
                                 } else {
-                                    generate_if_branch_element::<M>(ctx, inner, branch, branch_index);
+                                    generate_if_branch_element::<M>(
+                                        ctx,
+                                        inner,
+                                        branch,
+                                        branch_index,
+                                    );
                                 }
                                 return;
                             }
@@ -83,7 +93,12 @@ pub(super) fn generate_if_branch_nodes<M: RenderMapMode>(
                         }
                     }
                     // Template with multiple children -> fragment
-                    generate_if_branch_template_fragment::<M>(ctx, &el.children, branch, branch_index);
+                    generate_if_branch_template_fragment::<M>(
+                        ctx,
+                        &el.children,
+                        branch,
+                        branch_index,
+                    );
                 } else if el.tag_type == ElementType::Component {
                     // Component
                     generate_if_branch_component::<M>(ctx, el, branch, branch_index);
@@ -434,7 +449,10 @@ fn generate_if_branch_template_fragment<M: RenderMapMode>(
 }
 
 /// Generate children for if branch element.
-fn generate_if_branch_children<M: RenderMapMode>(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
+fn generate_if_branch_children<M: RenderMapMode>(
+    ctx: &mut CodegenContext,
+    children: &[TemplateChildNode<'_>],
+) {
     if children.is_empty() {
         return;
     }

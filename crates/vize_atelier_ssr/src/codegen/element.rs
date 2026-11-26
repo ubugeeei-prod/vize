@@ -81,9 +81,9 @@ pub(super) struct ComponentTemplateSlot<'node, 'a> {
     children: &'node [TemplateChildNode<'a>],
 }
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
+impl<'a> SsrCodegenContext<'a> {
     /// Process an element node
-    pub(crate) fn process_element_with_fallthrough_attrs(
+    pub(crate) fn process_element_with_fallthrough_attrs<M: RenderMapMode>(
         &mut self,
         el: &ElementNode<'a>,
         disable_nested_fragments: bool,
@@ -92,14 +92,18 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     ) {
         match el.tag_type {
             ElementType::Element => {
-                self.process_plain_element(el, inherit_attrs, css_vars.enabled && !inherit_attrs);
+                self.process_plain_element::<M>(
+                    el,
+                    inherit_attrs,
+                    css_vars.enabled && !inherit_attrs,
+                );
             }
             ElementType::Component => {
                 if matches!(el.tag, "TransitionGroup" | "transition-group") {
-                    self.process_transition_group(el, inherit_attrs, css_vars.enabled);
+                    self.process_transition_group::<M>(el, inherit_attrs, css_vars.enabled);
                     return;
                 }
-                self.process_component(
+                self.process_component::<M>(
                     el,
                     disable_nested_fragments,
                     inherit_attrs,
@@ -107,13 +111,13 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
                 );
             }
             ElementType::Slot => {
-                self.process_slot_outlet(el);
+                self.process_slot_outlet::<M>(el);
             }
             ElementType::Template => {
                 // Process template children directly. A template renders no
                 // node of its own, so a single child is still the root that
                 // inherits the component's fallthrough attrs.
-                self.process_children_with_fallthrough_attrs_and_css_vars(
+                self.process_children_with_fallthrough_attrs_and_css_vars::<M>(
                     &el.children,
                     false,
                     disable_nested_fragments,
@@ -129,11 +133,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     }
 }
 
-fn append_for_aliases<M: RenderMapMode>(
-    ctx: &mut SsrCodegenContext<'_, M>,
-    out: &mut String,
-    for_node: &ForNode,
-) {
+fn append_for_aliases(ctx: &mut SsrCodegenContext<'_>, out: &mut String, for_node: &ForNode) {
     let mut has_alias = false;
     for alias in [
         for_node.value_alias.as_ref(),

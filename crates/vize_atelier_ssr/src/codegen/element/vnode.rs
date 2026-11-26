@@ -8,7 +8,6 @@ use super::{
     ComponentSlotChildren, ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
     SsrCodegenContext, String, TemplateChildNode, ToCompactString, VNodePropEntry,
 };
-use vize_atelier_core::codegen::RenderMapMode;
 
 #[derive(Default)]
 struct VNodeChildren {
@@ -22,7 +21,7 @@ enum TextPart {
     Dynamic,
 }
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
+impl<'a> SsrCodegenContext<'a> {
     pub(super) fn vnode_children_expression(
         &mut self,
         children: &[TemplateChildNode<'a>],

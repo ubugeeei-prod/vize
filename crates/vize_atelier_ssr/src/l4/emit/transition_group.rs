@@ -32,8 +32,8 @@ pub(super) fn admit_directives(
     Ok(())
 }
 
-impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
-    pub(super) fn transition_group(
+impl Emitter<'_, '_, '_, '_, '_, '_> {
+    pub(super) fn transition_group<M: RenderMapMode>(
         &mut self,
         attached: &Attached<'_, '_>,
         name: &str,
@@ -85,7 +85,7 @@ impl<M: RenderMapMode> Emitter<'_, '_, '_, '_, '_, '_, M> {
             }
             self.ctx.push_string_part_static(">");
         }
-        self.children(Flags {
+        self.children::<M>(Flags {
             as_fragment: tag.is_none(),
             disable_nested_fragments: !self.ctx.options.vapor,
             disable_comments: true,

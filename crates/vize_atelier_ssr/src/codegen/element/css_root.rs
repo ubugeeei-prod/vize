@@ -20,13 +20,17 @@ fn template_slot<'n, 'a>(
     })
 }
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
+impl<'a> SsrCodegenContext<'a> {
     /// Process Vue's built-in <Suspense> component.
     ///
     /// The SSR renderer has a dedicated helper for Suspense. Rendering it through
     /// `ssrRenderComponent(resolveComponent("Suspense"))` makes Vue attempt a
     /// runtime component lookup and leaves Nuxt root components empty.
-    pub(super) fn process_suspense(&mut self, el: &ElementNode<'a>, css_vars: bool) {
+    pub(super) fn process_suspense<M: RenderMapMode>(
+        &mut self,
+        el: &ElementNode<'a>,
+        css_vars: bool,
+    ) {
         self.flush_push();
         self.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
 
@@ -40,7 +44,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
                 Some(_) => true,
             })
         }) {
-            self.process_suspense_template_slots(el, css_vars);
+            self.process_suspense_template_slots::<M>(el, css_vars);
             self.indent_level -= 1;
             self.push_indent();
             self.push("})\n");
@@ -52,7 +56,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
 
         let old_parts = std::mem::take(&mut self.current_template_parts);
         // Vapor hydration claims each Suspense slot as one fragment.
-        self.process_children_with_fallthrough_attrs_and_css_vars(
+        self.process_children_with_fallthrough_attrs_and_css_vars::<M>(
             &el.children,
             self.options.vapor,
             false,
@@ -76,7 +80,11 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
         self.push("})\n");
     }
 
-    fn process_suspense_template_slots(&mut self, el: &ElementNode<'a>, css_vars: bool) {
+    fn process_suspense_template_slots<M: RenderMapMode>(
+        &mut self,
+        el: &ElementNode<'a>,
+        css_vars: bool,
+    ) {
         let mut implicit = std::vec::Vec::new();
         let mut dynamic = false;
         for child in &el.children {
@@ -114,7 +122,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
             self.push(": () => {\n");
             self.indent_level += 1;
             let old_parts = std::mem::take(&mut self.current_template_parts);
-            self.process_children_with_fallthrough_attrs_and_css_vars(
+            self.process_children_with_fallthrough_attrs_and_css_vars::<M>(
                 &template.children,
                 self.options.vapor,
                 false,
@@ -138,7 +146,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
             self.indent_level += 1;
             let old_parts = std::mem::take(&mut self.current_template_parts);
             for child in implicit {
-                self.process_child(
+                self.process_child::<M>(
                     child,
                     false,
                     false,

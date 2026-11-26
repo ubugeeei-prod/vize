@@ -1,7 +1,7 @@
 //! Children of a multi-child template loop.
 
-use crate::codegen::RenderMapMode;
 use crate::TemplateChildNode;
+use crate::codegen::RenderMapMode;
 
 use super::super::{
     children::generate_children_force_array, context::CodegenContext, node::generate_node,

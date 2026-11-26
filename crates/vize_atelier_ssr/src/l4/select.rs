@@ -98,7 +98,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink, M: RenderMapMode>(
         Ok(exprs) => exprs,
         Err(reason) => return SsrL4Selection::Legacy(reason),
     };
-    let mut ctx = SsrCodegenContext::<M>::with_render_map(
+    let mut ctx = SsrCodegenContext::new_with_experimental_options(
         allocator,
         options,
         artifact.source,
@@ -107,8 +107,8 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink, M: RenderMapMode>(
     ctx.apply_sfc_context(context);
     ctx.set_runtime_module_name(runtime_module_name);
     ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));
-    match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
-        Ok(()) => SsrL4Selection::Emitted(ctx.finish_render()),
+    match emit::emit_plan::<M>(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
+        Ok(()) => SsrL4Selection::Emitted(ctx.finish_render::<M>()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => SsrL4Selection::Rejected(std::vec![cstr!(
             "Davinci L4 string-plan emitter rejected SSR artifact: {message}"
@@ -172,7 +172,7 @@ pub(super) fn select_from_l2_plain<'a, 'e, M: RenderMapMode>(
         Ok(exprs) => exprs,
         Err(reason) => return SsrL4Selection::Legacy(reason),
     };
-    let mut ctx = SsrCodegenContext::<M>::with_render_map(
+    let mut ctx = SsrCodegenContext::new_with_experimental_options(
         allocator,
         options,
         artifact.source,
@@ -181,8 +181,8 @@ pub(super) fn select_from_l2_plain<'a, 'e, M: RenderMapMode>(
     ctx.apply_sfc_context(context);
     ctx.set_runtime_module_name(runtime_module_name);
     ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));
-    match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
-        Ok(()) => SsrL4Selection::Emitted(ctx.finish_render()),
+    match emit::emit_plan::<M>(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
+        Ok(()) => SsrL4Selection::Emitted(ctx.finish_render::<M>()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => SsrL4Selection::Rejected(std::vec![cstr!(
             "Davinci L4 string-plan emitter rejected SSR artifact: {message}"

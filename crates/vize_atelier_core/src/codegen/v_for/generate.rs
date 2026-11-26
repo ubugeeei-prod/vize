@@ -40,7 +40,11 @@ use super::template_children::generate_template_for_children;
 use vize_l0::ToCompactString;
 
 /// Generate item for v-for (as block, not regular vnode)
-pub fn generate_for_item<M: RenderMapMode>(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>, is_stable: bool) {
+pub fn generate_for_item<M: RenderMapMode>(
+    ctx: &mut CodegenContext,
+    node: &TemplateChildNode<'_>,
+    is_stable: bool,
+) {
     match node {
         TemplateChildNode::Element(el) => {
             let (key_exp, el) = (get_element_key(el), unwrap_template_sole_component(el));

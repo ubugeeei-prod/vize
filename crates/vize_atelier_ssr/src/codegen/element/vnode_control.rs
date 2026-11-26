@@ -8,9 +8,8 @@ use super::{
     TemplateChildNode, ToCompactString, append_for_aliases,
 };
 use vize_atelier_core::ForNode;
-use vize_atelier_core::codegen::RenderMapMode;
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
+impl<'a> SsrCodegenContext<'a> {
     pub(super) fn vnode_if_expression(
         &mut self,
         if_node: &vize_atelier_core::IfNode<'a>,
@@ -176,8 +175,8 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     }
 }
 
-fn single_for_child_key_expression<M: RenderMapMode>(
-    ctx: &mut SsrCodegenContext<'_, M>,
+fn single_for_child_key_expression(
+    ctx: &mut SsrCodegenContext<'_>,
     for_node: &ForNode,
 ) -> Option<String> {
     let [TemplateChildNode::Element(el)] = for_node.children.as_slice() else {
@@ -189,10 +188,7 @@ fn single_for_child_key_expression<M: RenderMapMode>(
         .find_map(|prop| key_prop_expression(ctx, prop))
 }
 
-fn key_prop_expression<M: RenderMapMode>(
-    ctx: &mut SsrCodegenContext<'_, M>,
-    prop: &PropNode,
-) -> Option<String> {
+fn key_prop_expression(ctx: &mut SsrCodegenContext<'_>, prop: &PropNode) -> Option<String> {
     match prop {
         PropNode::Attribute(attr) if attr.name == "key" => Some(
             attr.value

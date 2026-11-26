@@ -11,8 +11,8 @@ use vize_atelier_core::{ForNode, TemplateChildNode};
 use super::{collect_for_scoped_params, rendered_child_count};
 use crate::codegen::SsrCodegenContext;
 
-impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
-    pub(crate) fn process_match_scope(
+impl<'a> SsrCodegenContext<'a> {
+    pub(crate) fn process_match_scope<M: RenderMapMode>(
         &mut self,
         for_node: &ForNode<'a>,
         disable_comment: bool,
@@ -32,7 +32,7 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
         self.push_scoped_params(collect_for_scoped_params(for_node, self.source));
         let children: &[TemplateChildNode<'a>] = &for_node.children;
         let needs_fragment = rendered_child_count(children) > 1;
-        self.process_children_with_fallthrough_attrs(
+        self.process_children_with_fallthrough_attrs::<M>(
             children,
             needs_fragment,
             false,

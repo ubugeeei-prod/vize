@@ -2,7 +2,6 @@
 //! blocks.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::id::NodeId;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::analysis::fragment_facts::FragmentKey;
@@ -30,7 +29,7 @@ fn alias_source<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
     }
 }
 
-impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
+impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// Conditional branches retain the host's false-branch comment metadata.
     pub(super) fn vnode_if(&mut self, if_op: &'r l2::IfOp<'a>) -> Result<String> {
         let fact = self.segment(self.pos)?.fact;

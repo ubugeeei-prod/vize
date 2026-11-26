@@ -300,7 +300,7 @@ pub(crate) fn select_ssr_lane_captured<C: CaptureSink, M: RenderMapMode>(
     let selection = if bridge_supported(request) {
         profile!(
             "atelier.ssr.template.s4_bridge",
-            lower_and_emit::<C, M>(allocator, source, request, capture)
+            lower_and_emit::<_, M>(allocator, source, request, capture)
         )
     } else {
         SsrL4Selection::Legacy(LegacyReason::Options)
@@ -373,7 +373,7 @@ fn lower_and_emit<C: CaptureSink, M: RenderMapMode>(
         .binding_metadata
         .as_ref()
         .map(crate::bindings::binding_table);
-    select::select_from_l2::<C, M>(
+    select::select_from_l2::<_, M>(
         allocator,
         &artifact,
         request.options,

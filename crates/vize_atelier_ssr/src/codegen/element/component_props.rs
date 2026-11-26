@@ -8,7 +8,6 @@ use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     ToCompactString, VNodePropEntry, cstr,
 };
-use vize_atelier_core::codegen::RenderMapMode;
 
 enum ComponentPropSegment {
     Entries(std::vec::Vec<VNodePropEntry>),
@@ -38,7 +37,7 @@ fn is_dynamic_prop_boundary(dir: &DirectiveNode) -> bool {
     }
 }
 
-impl<M: RenderMapMode> SsrCodegenContext<'_, M> {
+impl SsrCodegenContext<'_> {
     pub(super) fn with_fallthrough_attrs(&mut self, props: String, inherit_attrs: bool) -> String {
         if !inherit_attrs {
             return props;

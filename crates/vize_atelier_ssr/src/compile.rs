@@ -36,7 +36,7 @@ pub fn compile_ssr_with_custom_elements_and_template_syntax<'a>(
     template_syntax: TemplateSyntaxMode,
     custom_elements: CustomElementMatcher,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(
+    compile_ssr_inner::<PlainRenderMap>(
         allocator,
         source,
         options,
@@ -58,7 +58,7 @@ pub fn compile_ssr_with_custom_elements_template_syntax_and_experimental_options
     custom_elements: CustomElementMatcher,
     experimental_options: SsrCompilerExperimentalOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(
+    compile_ssr_inner::<PlainRenderMap>(
         allocator,
         source,
         options,
@@ -79,7 +79,7 @@ pub fn compile_ssr_with_template_syntax_and_experimental_options<'a>(
     template_syntax: TemplateSyntaxMode,
     experimental_options: SsrCompilerExperimentalOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(
+    compile_ssr_inner::<PlainRenderMap>(
         allocator,
         source,
         options,
@@ -102,7 +102,7 @@ pub fn compile_ssr_with_sfc_slotted_context<'a>(
     experimental_options: SsrCompilerExperimentalOptions,
     slotted: bool,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner(
+    compile_ssr_inner::<PlainRenderMap>(
         allocator,
         source,
         options,
@@ -124,7 +124,7 @@ pub fn compile_ssr_with_sfc_context<'a>(
     experimental_options: SsrCompilerExperimentalOptions,
     context: SsrSfcContext,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner_with_context(
+    compile_ssr_inner_with_context::<PlainRenderMap>(
         allocator,
         source,
         options,
@@ -151,7 +151,7 @@ pub fn compile_ssr_with_sfc_slotted_context_and_capture<'a, C: CaptureSink>(
     slotted: bool,
     capture: &mut C,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner_captured(
+    compile_ssr_inner_captured::<_, PlainRenderMap>(
         allocator,
         source,
         options,
@@ -179,7 +179,7 @@ pub fn compile_ssr_with_sfc_context_and_capture<'a, C: CaptureSink>(
     context: SsrSfcContext,
     capture: &mut C,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner_captured(
+    compile_ssr_inner_captured::<_, PlainRenderMap>(
         allocator,
         source,
         options,
@@ -244,7 +244,7 @@ pub fn compile_ssr_with_sfc_context_codegen_options_and_capture<'a, C: CaptureSi
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     if experimental_options.source_map {
         // The SFC assembly composes this map into the component's.
-        return inner::compile_ssr_inner_captured_with_runtime::<C, ComposedRenderMap>(
+        return inner::compile_ssr_inner_captured_with_runtime::<_, ComposedRenderMap>(
             allocator,
             source,
             options,
@@ -256,7 +256,7 @@ pub fn compile_ssr_with_sfc_context_codegen_options_and_capture<'a, C: CaptureSi
             capture,
         );
     }
-    inner::compile_ssr_inner_captured_with_runtime::<C, PlainRenderMap>(
+    inner::compile_ssr_inner_captured_with_runtime::<_, PlainRenderMap>(
         allocator,
         source,
         options,
@@ -278,7 +278,7 @@ use inner::compile_ssr_inner_captured;
 use sfc_template::emit_on_direct_lane;
 pub use sfc_template::{compile_ssr_sfc_template, sfc_direct_lane_enabled};
 
-fn compile_ssr_inner<'a>(
+fn compile_ssr_inner<'a, M: RenderMapMode>(
     allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
@@ -287,7 +287,7 @@ fn compile_ssr_inner<'a>(
     experimental_options: SsrCompilerExperimentalOptions,
     slotted: bool,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner_with_context(
+    compile_ssr_inner_with_context::<M>(
         allocator,
         source,
         options,
@@ -298,7 +298,7 @@ fn compile_ssr_inner<'a>(
     )
 }
 
-fn compile_ssr_inner_with_context<'a>(
+fn compile_ssr_inner_with_context<'a, M: RenderMapMode>(
     allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
@@ -311,7 +311,7 @@ fn compile_ssr_inner_with_context<'a>(
     let lane = crate::differential::production_lane();
     #[cfg(not(feature = "legacy-differential"))]
     let lane = SsrLane::Selected;
-    compile_ssr_on_lane_with_context(
+    compile_ssr_on_lane_with_context::<M>(
         allocator,
         source,
         options,
@@ -347,7 +347,7 @@ pub(crate) fn compile_ssr_on_lane<'a>(
     slotted: bool,
     lane: SsrLane,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_on_lane_with_context(
+    compile_ssr_on_lane_with_context::<vize_atelier_core::codegen::PlainRenderMap>(
         allocator,
         source,
         options,
@@ -363,7 +363,7 @@ pub(crate) fn compile_ssr_on_lane<'a>(
     clippy::too_many_arguments,
     reason = "private SFC metadata and selected lane"
 )]
-pub(crate) fn compile_ssr_on_lane_with_context<'a>(
+pub(crate) fn compile_ssr_on_lane_with_context<'a, M: RenderMapMode>(
     allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
@@ -373,7 +373,7 @@ pub(crate) fn compile_ssr_on_lane_with_context<'a>(
     context: SsrSfcContext,
     lane: SsrLane,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_on_lane_with_runtime::<PlainRenderMap>(
+    compile_ssr_on_lane_with_runtime::<M>(
         allocator,
         source,
         options,
@@ -390,7 +390,7 @@ pub(crate) fn compile_ssr_on_lane_with_context<'a>(
     clippy::too_many_arguments,
     reason = "private SFC metadata, selected lane and generated runtime"
 )]
-pub(crate) fn compile_ssr_on_lane_with_runtime<'a, M: RenderMapMode>(
+fn compile_ssr_on_lane_with_runtime<'a, M: RenderMapMode>(
     allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
@@ -476,7 +476,7 @@ pub(crate) fn compile_ssr_on_lane_with_runtime<'a, M: RenderMapMode>(
                     CompilerError::with_message(ErrorCode::ExtendPoint, diagnostic, None)
                 }));
             }
-            let mut codegen_ctx = SsrCodegenContext::<M>::with_render_map(
+            let mut codegen_ctx = SsrCodegenContext::new_with_experimental_options(
                 allocator,
                 &codegen_options,
                 source,
@@ -484,7 +484,7 @@ pub(crate) fn compile_ssr_on_lane_with_runtime<'a, M: RenderMapMode>(
             );
             codegen_ctx.apply_sfc_context(context);
             codegen_ctx.set_runtime_module_name(runtime_module_name);
-            profile!("atelier.ssr.template.codegen", codegen_ctx.generate_in_mode(&root))
+            profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root))
         }
     };
 
