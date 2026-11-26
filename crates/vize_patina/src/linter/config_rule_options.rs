@@ -28,6 +28,9 @@ impl Linter {
                 options.component_registration_ignore_patterns(),
             );
         }
+        if let Some(globals) = options.undefined_ref_globals() {
+            self = self.with_undefined_ref_globals(globals.to_vec());
+        }
         if let Some(names) = options.palpable_content_directives() {
             self = self.with_palpable_content_directives(names.to_vec());
         }

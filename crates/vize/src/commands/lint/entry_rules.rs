@@ -12,10 +12,14 @@ use vize_patina::{
     HelpLevel, Linter, Locale, NUXT_BUILTIN_COMPONENTS, Severity, VUE_ROUTER_COMPONENTS,
 };
 
+mod nuxt_globals;
+
 use super::{LintArgs, ResolvedLintPreset};
+use crate::commands::project_nuxt::auto_imports::NuxtRoots;
 #[cfg(test)]
 use crate::lint_plan::matcher::GlobSequence;
 use crate::lint_plan::matcher::{LintPlanScope, absolute_path};
+use nuxt_globals::NuxtTemplateGlobals;
 
 const PINIA_PREFER_STORE_TO_REFS: &str = "ecosystem/pinia-prefer-store-to-refs";
 const MUSEA_PREFER_DESIGN_TOKENS: &str = "musea/prefer-design-tokens";
@@ -28,6 +32,9 @@ pub(super) struct ResolvedLinterRuleGroups {
     pinia_available: Vec<bool>,
     vue_router_available: Vec<bool>,
     nuxt_available: Vec<bool>,
+    /// Index into `nuxt_root_dirs` of the Nuxt project that owns each group.
+    nuxt_roots: Vec<Option<usize>>,
+    nuxt_root_dirs: Vec<PathBuf>,
 }
 
 pub(super) struct LintProjectContext {
@@ -51,11 +58,13 @@ impl ResolvedLinterRuleGroups {
             .iter()
             .zip(&self.vue_router_available)
             .zip(&self.nuxt_available);
+        let mut nuxt_globals = NuxtTemplateGlobals::new(&self.nuxt_root_dirs);
         self.configs
             .iter()
             .zip(availability)
             .zip(&self.rule_options)
-            .map(|(group, rule_options)| {
+            .zip(&self.nuxt_roots)
+            .map(|((group, rule_options), nuxt_root)| {
                 let (config, ((pinia_available, vue_router_available), nuxt_available)) = group;
                 let type_aware =
                     args.type_aware || args.strict_reactivity || config.type_aware_lint_enabled();
@@ -87,6 +96,7 @@ impl ResolvedLinterRuleGroups {
                 {
                     additional_rules.push(SCRIPT_NO_RESTRICTED_MEMBERS.into());
                 }
+                let nuxt_fallback = nuxt_root.map(|root| (root, disabled_rules.clone()));
                 let linter = match preset {
                     ResolvedLintPreset::Builtin(preset) => Linter::with_preset(preset),
                     ResolvedLintPreset::All => Linter::with_all(),
@@ -126,6 +136,14 @@ impl ResolvedLinterRuleGroups {
                     linter = linter.with_component_registration_options(
                         globals,
                         rule_options.component_registration_ignore_patterns(),
+                    );
+                }
+                if let Some((root, disabled)) = nuxt_fallback {
+                    linter = nuxt_globals.apply(
+                        linter,
+                        root,
+                        rule_options.undefined_ref_globals(),
+                        disabled,
                     );
                 }
                 #[cfg(not(target_arch = "wasm32"))]
@@ -189,22 +207,30 @@ impl LinterRuleResolver {
 
     /// Resolve each distinct matching-entry signature exactly once for the batch.
     pub(super) fn resolve_files(&self, files: &[PathBuf], cwd: &Path) -> ResolvedLinterRuleGroups {
-        let mut signatures = FxHashMap::<(Vec<usize>, bool, bool, bool), usize>::default();
+        let mut signatures =
+            FxHashMap::<(Vec<usize>, bool, bool, bool, Option<usize>), usize>::default();
         let mut pinia_cache = FxHashMap::default();
         let mut vue_router_cache = FxHashMap::default();
         let mut nuxt_cache = FxHashMap::default();
+        let mut nuxt_root_cache = NuxtRoots::default();
         let mut configs = Vec::new();
         let mut rule_options = Vec::new();
         let mut pinia_available = Vec::new();
         let mut vue_router_available = Vec::new();
         let mut nuxt_available = Vec::new();
+        let mut nuxt_roots = Vec::new();
         let mut file_config_indices = Vec::with_capacity(files.len());
         for file in files {
+            let nuxt = package_is_resolvable_from(file, cwd, "nuxt", &mut nuxt_cache);
             let signature = (
                 self.matching_entries(file, cwd),
                 package_is_resolvable_from(file, cwd, "pinia", &mut pinia_cache),
                 package_is_resolvable_from(file, cwd, "vue-router", &mut vue_router_cache),
-                package_is_resolvable_from(file, cwd, "nuxt", &mut nuxt_cache),
+                nuxt,
+                // Only an installed Nuxt can own the file, so every other
+                // project skips the config probe.
+                nuxt.then(|| absolute_path(file, cwd))
+                    .and_then(|file| nuxt_root_cache.nearest(file.parent()?)),
             );
             let index = match signatures.get(&signature) {
                 Some(index) => *index,
@@ -216,6 +242,7 @@ impl LinterRuleResolver {
                     pinia_available.push(signature.1);
                     vue_router_available.push(signature.2);
                     nuxt_available.push(signature.3);
+                    nuxt_roots.push(signature.4);
                     signatures.insert(signature, index);
                     index
                 }
@@ -229,6 +256,8 @@ impl LinterRuleResolver {
             pinia_available,
             vue_router_available,
             nuxt_available,
+            nuxt_roots,
+            nuxt_root_dirs: nuxt_root_cache.into_dirs(),
         }
     }
 

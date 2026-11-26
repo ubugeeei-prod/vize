@@ -19,6 +19,7 @@ use crate::types::{
 
 use super::helpers::trim_trailing_newlines;
 use super::output_module::{append_component_render_export, finalize_output_mode};
+use super::prelude::{Outputs, Prelude, Target};
 use super::styles::CompiledStyles;
 
 /// Everything the template-only path reads from the shared prelude.
@@ -42,7 +43,42 @@ pub(super) struct TemplateOnlyInput<'a, 'c> {
     pub(super) capture: Option<&'c mut StageCapture>,
 }
 
-pub(super) fn compile_template_only(
+pub(super) fn compile(
+    prelude: &Prelude<'_>,
+    target: &Target<'_>,
+    template: &SfcTemplateBlock<'_>,
+    outputs: Outputs,
+    capture: Option<&mut StageCapture>,
+) -> Result<SfcCompileResult, SfcError> {
+    let styles = prelude.styles;
+    compile_template_only(
+        TemplateOnlyInput {
+            template,
+            source: prelude.descriptor.source.as_ref(),
+            filename: prelude.filename,
+            pug_source_map: prelude.pug_source_map,
+            options: target.options,
+            custom_elements: prelude.custom_elements,
+            template_syntax: prelude.template_syntax,
+            codegen_options: prelude.codegen_options,
+            compiled_styles: &styles.compiled,
+            component_name: prelude.component_name,
+            scope_id: &styles.scope_id,
+            has_scoped: styles.has_scoped,
+            slotted: styles.slotted,
+            is_vapor: target.is_vapor,
+            template_is_ts: prelude.template_is_ts,
+            experimental_self_component: prelude.experimental_self_component,
+            capture,
+        },
+        outputs.css,
+        Vec::new(),
+        outputs.warnings,
+        outputs.macro_artifacts,
+    )
+}
+
+fn compile_template_only(
     mut input: TemplateOnlyInput<'_, '_>,
     css: Option<String>,
     errors: Vec<SfcError>,
