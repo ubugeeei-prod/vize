@@ -1,0 +1,31 @@
+<script setup lang="ts">
+const run = () => {
+  a(1);
+
+  a(2);
+};
+const a = (n: number) => n;
+</script>
+
+<template>
+  <button
+    @click="() => {
+      a(1);
+    
+      a(2);
+    }"
+  />
+  <div>
+    <p>one</p>
+
+    <p>two</p>
+  </div>
+</template>
+
+<style scoped>
+.a {
+  color: red;
+
+  margin: 0;
+}
+</style>

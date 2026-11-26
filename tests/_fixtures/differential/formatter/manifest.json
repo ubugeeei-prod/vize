@@ -396,6 +396,133 @@
       ]
     },
     {
+      "id": "formatter/sfc/attribute-value-blank-lines",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-attribute-value-blank-lines",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "6eed03f0c9f271b2e7ec729dc368d98008cf97abe514c4e969d23f5c05d1991a",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [
+          13714
+        ],
+        "commits": [
+          {
+            "sha": "7800003e2df4bb412809a5118c0d7763d92f1225",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/attributes/render.rs",
+              "crates/vize_glyph/src/template/attributes/render/value_layout.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 13714,
+            "path": "crates/vize_glyph/tests/attribute_value_blank_lines.rs",
+            "symbol": "sfc_handler_blank_line_is_written_empty"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/attribute_value_blank_lines.rs",
+          "symbol": "sfc_handler_blank_line_is_written_empty",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "FormatResult.changed",
+            "3-pass-idempotence"
+          ],
+          "limitations": [
+            "The fixture covers the reported v-on handler with default options; v-bind objects, values moved onto their own lines, tabs, CRLF, check mode and template-literal bytes stay in the Rust witness file."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts-script-setup",
+              "event-directives",
+              "directive-expression-layout",
+              "css-scoped"
+            ],
+            "selector": "a blank line inside a multi-line v-on handler value next to blank lines in script, template children and style"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "captured",
+          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+          "artifacts": [
+            {
+              "path": "sfc-attribute-value-blank-lines/reference.expected.txt",
+              "sha256": "e419a9a231f14f1003b55daaa7f9b9861625f2b6a6ad0c72352e692c59e54e19",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 13714,
+                "path": "crates/vize_glyph/tests/attribute_value_blank_lines.rs",
+                "symbol": "sfc_handler_blank_line_is_written_empty",
+                "assertion": "A blank line inside a multi-line handler value is written empty and the output is byte-stable."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [],
+          "referenceState": "issue-authored Probe.vue as written by vize 0.798.0; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/authored-directive-order",
       "state": "active",
       "targets": [

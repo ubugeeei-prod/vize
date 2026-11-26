@@ -96,10 +96,19 @@ pub(super) fn write_rendered_attribute(
         // literal — made a different wrap decision and produced a different
         // file. (#3379)
         if indent_continuation && !literal.line_is_raw() {
-            write_indent(output, indent, continuation_depth);
+            write_line_indent(output, line, indent, continuation_depth);
         }
         output.extend_from_slice(line.as_bytes());
         literal.advance_line(line);
+    }
+}
+
+/// Indent a formatter-owned continuation line of an attribute value. A blank
+/// line holds nothing to indent: it is written empty, as the SFC block writers
+/// write every other blank line, so it never carries trailing whitespace.
+fn write_line_indent(output: &mut Vec<u8>, line: &str, indent: &[u8], depth: usize) {
+    if !line.is_empty() {
+        write_indent(output, indent, depth);
     }
 }
 
