@@ -31,6 +31,8 @@ export const sha256 = (value: string | Uint8Array) =>
   createHash("sha256").update(value).digest("hex");
 export const compareText = (left: unknown, right: unknown) =>
   String(left) < String(right) ? -1 : String(left) > String(right) ? 1 : 0;
+// Deliveries merged before the NN-subject rename ran Check as check.yml.
+const deliveryCheckWorkflows = new Set([".github/workflows/01-check.yml", ".github/workflows/check.yml"]);
 export function same(actual: unknown, expected: unknown, message: string) {
   assert.deepEqual(actual, expected, message);
 }
@@ -102,7 +104,7 @@ export function integrationIdentity(value: unknown) {
     .map(object)
     .filter((run) => run.head_sha === sha && run.event === "push" && run.head_branch === "main")
     .map((run) => {
-      same(run.path, ".github/workflows/01-check.yml", "delivery Check workflow mismatch");
+      assert.ok(deliveryCheckWorkflows.has(String(run.path)), "delivery Check workflow mismatch");
       return {
         id: number(run.id),
         workflow_id: number(run.workflow_id),
