@@ -9,12 +9,15 @@ fn download_chromium_dependencies() {
   }
 }
 
+let inventory_hook = from_source "compiled/report-apt-archive-inventory.sh"
+
 # A private archive directory keeps the downloaded packages for the install, and its
 # hook reports them after every package-index update.
 let archive_dir = sudo mktemp -d /var/cache/apt/vize-nuxt-archives-XXXXXX
 defer sudo rm -rf -- $archive_dir
-sudo chmod 0755 $archive_dir
-sudo install -m 0755 (from_source "report-apt-archive-inventory.sh") $archive_dir/report-inventory
+# The modes are quoted because ush reads a bare 0755 as the number 755.
+sudo chmod "0755" $archive_dir
+sudo install -m "0755" $inventory_hook $archive_dir/report-inventory
 let cache_config = sudo mktemp /etc/apt/apt.conf.d/99-vize-nuxt-archives-XXXXXX
 defer sudo rm -f -- $cache_config
 # Removed before the install below; `-f` makes the cleanup a no-op then.

@@ -1,0 +1,18 @@
+# Report the package archives beside this apt hook, after an index update or before the install.
+use $bin::{find, sort, xargs}
+use std::path::{dirname, script}
+use std::process::arg
+
+# apt runs the hook without an argument after every package-index update.
+let moment = match (arg 0) {
+  "" | "after-update" => "after package-index update"
+  "before-install" => "before the original Chromium installation"
+  other => fail 2 $"Unknown inventory moment: $other"
+}
+
+echo $"Nuxt3 archive inventory $moment"
+# apt runs a copy of this build from the archive directory, so the archives sit beside it.
+find (dirname (script)) -maxdepth 1 -type f -name *.deb -print0 |
+  sort -z |
+  # Quoted because ush reads a bare -0 as the number 0.
+  xargs "-0" -r sha256sum

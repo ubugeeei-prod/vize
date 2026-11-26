@@ -344,70 +344,74 @@ ush_fn_download_chromium_dependencies() {
   cd "$__ush_cwd_0" || { __ush_status=$?; __ush_report "$__ush_status" 'cannot return to the directory the cd block started in'; return "$__ush_status"; }
 }
 
-__ush_at 14 'let archive_dir = sudo mktemp -d /var/cache/apt/vize-nuxt-archives-XXXXXX'
-__ush_value_1="$(__ush_return_path='' __ush_capture_return='1' command sudo 'mktemp' '-d' '/var/cache/apt/vize-nuxt-archives-XXXXXX')" || exit "$?"
-__ush_binding_14_archive_dir="${__ush_value_1}"
+__ush_at 12 'let inventory_hook = from_source "compiled/report-apt-archive-inventory.sh"'
+__ush_value_1="$(__ush_return_path='' __ush_capture_return='1' ush_fn_std__path__from_source 'compiled/report-apt-archive-inventory.sh')" || exit "$?"
+__ush_binding_12_inventory_hook="${__ush_value_1}"
 # shellcheck disable=SC2034
-archive_dir="${__ush_binding_14_archive_dir}"
-__ush_at 15 'defer sudo rm -rf -- $archive_dir'
-__ush_defer_2() {
-  __ush_at 15 'defer sudo rm -rf -- $archive_dir'
-  command sudo 'rm' '-rf' '--' "${__ush_binding_14_archive_dir}" || { __ush_status=$?; __ush_report "$__ush_status"; return "$__ush_status"; }
+inventory_hook="${__ush_binding_12_inventory_hook}"
+__ush_at 16 'let archive_dir = sudo mktemp -d /var/cache/apt/vize-nuxt-archives-XXXXXX'
+__ush_value_2="$(__ush_return_path='' __ush_capture_return='1' command sudo 'mktemp' '-d' '/var/cache/apt/vize-nuxt-archives-XXXXXX')" || exit "$?"
+__ush_binding_16_archive_dir="${__ush_value_2}"
+# shellcheck disable=SC2034
+archive_dir="${__ush_binding_16_archive_dir}"
+__ush_at 17 'defer sudo rm -rf -- $archive_dir'
+__ush_defer_3() {
+  __ush_at 17 'defer sudo rm -rf -- $archive_dir'
+  command sudo 'rm' '-rf' '--' "${__ush_binding_16_archive_dir}" || { __ush_status=$?; __ush_report "$__ush_status"; return "$__ush_status"; }
 }
-__ush_defers="__ush_defer_2 ${__ush_defers:-}"
-__ush_at 16 'sudo chmod 0755 $archive_dir'
-command sudo 'chmod' 755 "${__ush_binding_14_archive_dir}"
-__ush_at 17 'sudo install -m 0755 (from_source "report-apt-archive-inventory.sh") $archive_dir/report-inventory'
-__ush_value_3="$(__ush_return_path='' __ush_capture_return='1' ush_fn_std__path__from_source 'report-apt-archive-inventory.sh')" || exit "$?"
-__ush_value_4="${__ush_binding_14_archive_dir}"
-command sudo 'install' '-m' 755 "${__ush_value_3}" "${__ush_value_4}"'/report-inventory'
-__ush_at 18 'let cache_config = sudo mktemp /etc/apt/apt.conf.d/99-vize-nuxt-archives-XXXXXX'
+__ush_defers="__ush_defer_3 ${__ush_defers:-}"
+__ush_at 19 'sudo chmod "0755" $archive_dir'
+command sudo 'chmod' '0755' "${__ush_binding_16_archive_dir}"
+__ush_at 20 'sudo install -m "0755" $inventory_hook $archive_dir/report-inventory'
+__ush_value_4="${__ush_binding_16_archive_dir}"
+command sudo 'install' '-m' '0755' "${__ush_binding_12_inventory_hook}" "${__ush_value_4}"'/report-inventory'
+__ush_at 21 'let cache_config = sudo mktemp /etc/apt/apt.conf.d/99-vize-nuxt-archives-XXXXXX'
 __ush_value_5="$(__ush_return_path='' __ush_capture_return='1' command sudo 'mktemp' '/etc/apt/apt.conf.d/99-vize-nuxt-archives-XXXXXX')" || exit "$?"
-__ush_binding_18_cache_config="${__ush_value_5}"
+__ush_binding_21_cache_config="${__ush_value_5}"
 # shellcheck disable=SC2034
-cache_config="${__ush_binding_18_cache_config}"
-__ush_at 19 'defer sudo rm -f -- $cache_config'
+cache_config="${__ush_binding_21_cache_config}"
+__ush_at 22 'defer sudo rm -f -- $cache_config'
 __ush_defer_6() {
-  __ush_at 19 'defer sudo rm -f -- $cache_config'
-  command sudo 'rm' '-f' '--' "${__ush_binding_18_cache_config}" || { __ush_status=$?; __ush_report "$__ush_status"; return "$__ush_status"; }
+  __ush_at 22 'defer sudo rm -f -- $cache_config'
+  command sudo 'rm' '-f' '--' "${__ush_binding_21_cache_config}" || { __ush_status=$?; __ush_report "$__ush_status"; return "$__ush_status"; }
 }
 __ush_defers="__ush_defer_6 ${__ush_defers:-}"
-__ush_at 21 'let download_config = sudo mktemp /etc/apt/apt.conf.d/98-vize-nuxt-download-only-XXXXXX'
+__ush_at 24 'let download_config = sudo mktemp /etc/apt/apt.conf.d/98-vize-nuxt-download-only-XXXXXX'
 __ush_value_7="$(__ush_return_path='' __ush_capture_return='1' command sudo 'mktemp' '/etc/apt/apt.conf.d/98-vize-nuxt-download-only-XXXXXX')" || exit "$?"
-__ush_binding_21_download_config="${__ush_value_7}"
+__ush_binding_24_download_config="${__ush_value_7}"
 # shellcheck disable=SC2034
-download_config="${__ush_binding_21_download_config}"
-__ush_at 22 'defer sudo rm -f -- $download_config'
+download_config="${__ush_binding_24_download_config}"
+__ush_at 25 'defer sudo rm -f -- $download_config'
 __ush_defer_8() {
-  __ush_at 22 'defer sudo rm -f -- $download_config'
-  command sudo 'rm' '-f' '--' "${__ush_binding_21_download_config}" || { __ush_status=$?; __ush_report "$__ush_status"; return "$__ush_status"; }
+  __ush_at 25 'defer sudo rm -f -- $download_config'
+  command sudo 'rm' '-f' '--' "${__ush_binding_24_download_config}" || { __ush_status=$?; __ush_report "$__ush_status"; return "$__ush_status"; }
 }
 __ush_defers="__ush_defer_8 ${__ush_defers:-}"
-__ush_at 23 'let cache_settings = $"""'
-__ush_binding_23_cache_settings='Dir::Cache::archives "'"${__ush_binding_14_archive_dir}"'";'"${__ush_lf}"'APT::Update::Post-Invoke { "'"'"''"${__ush_binding_14_archive_dir}"'/report-inventory'"'"'"; };'
+__ush_at 26 'let cache_settings = $"""'
+__ush_binding_26_cache_settings='Dir::Cache::archives "'"${__ush_binding_16_archive_dir}"'";'"${__ush_lf}"'APT::Update::Post-Invoke { "'"'"''"${__ush_binding_16_archive_dir}"'/report-inventory'"'"'"; };'
 # shellcheck disable=SC2034
-cache_settings="${__ush_binding_23_cache_settings}"
-__ush_at 27 '$"$cache_settings\n" | sudo tee $cache_config | to_file "/dev/null"'
+cache_settings="${__ush_binding_26_cache_settings}"
+__ush_at 30 '$"$cache_settings\n" | sudo tee $cache_config | to_file "/dev/null"'
 { __ush_pipe=$(
   exec 7>&1 >&8 8>&-
   set +e
-  { (printf '%s' "${__ush_binding_23_cache_settings}""${__ush_lf}") 7>&-; printf ' 1:%s' "$?" >&7; } |
-  { (command sudo 'tee' "${__ush_binding_18_cache_config}") 7>&- >'/dev/null'; printf ' 2:%s' "$?" >&7; }
+  { (printf '%s' "${__ush_binding_26_cache_settings}""${__ush_lf}") 7>&-; printf ' 1:%s' "$?" >&7; } |
+  { (command sudo 'tee' "${__ush_binding_21_cache_config}") 7>&- >'/dev/null'; printf ' 2:%s' "$?" >&7; }
 ); } 8>&1
 __ush_pipe_check "$__ush_pipe" 'pipeline stage 1 failed: $"$cache_settings\n"' 'pipeline stage 2 failed: sudo tee $cache_config | to_file "/dev/null"' || exit "$?"
-__ush_at 28 '"APT::Get::Download-Only \"true\";\n" | sudo tee $download_config | to_file "/dev/null"'
+__ush_at 31 '"APT::Get::Download-Only \"true\";\n" | sudo tee $download_config | to_file "/dev/null"'
 { __ush_pipe=$(
   exec 7>&1 >&8 8>&-
   set +e
   { (printf '%s' 'APT::Get::Download-Only "true";'"${__ush_lf}"'') 7>&-; printf ' 1:%s' "$?" >&7; } |
-  { (command sudo 'tee' "${__ush_binding_21_download_config}") 7>&- >'/dev/null'; printf ' 2:%s' "$?" >&7; }
+  { (command sudo 'tee' "${__ush_binding_24_download_config}") 7>&- >'/dev/null'; printf ' 2:%s' "$?" >&7; }
 ); } 8>&1
 __ush_pipe_check "$__ush_pipe" 'pipeline stage 1 failed: "APT::Get::Download-Only \"true\";\n"' 'pipeline stage 2 failed: sudo tee $download_config | to_file "/dev/null"' || exit "$?"
-__ush_at 30 'let cli = spawn cargo build --profile ci -p vize'
+__ush_at 33 'let cli = spawn cargo build --profile ci -p vize'
 __ush_task_init
-__ush_at 30 'let cli = spawn cargo build --profile ci -p vize'
+__ush_at 33 'let cli = spawn cargo build --profile ci -p vize'
 ush_fn___ush_task_block_9() {
-  __ush_at 30 'let cli = spawn cargo build --profile ci -p vize'
+  __ush_at 33 'let cli = spawn cargo build --profile ci -p vize'
   command cargo 'build' '--profile' 'ci' '-p' 'vize' || { __ush_status=$?; __ush_report "$__ush_status"; return "$__ush_status"; }
 }
 __ush_task_slot
@@ -418,49 +422,49 @@ __ush_task_10__result=$__ush_slot/result
 __ush_task_10__pid=$!
 __ush_task_10__awaited=0
 __ush_jobs="${__ush_jobs} $!"
-__ush_binding_30_cli__pid="${__ush_task_10__pid}"
-__ush_binding_30_cli__result="${__ush_task_10__result}"
-__ush_binding_30_cli__awaited="${__ush_task_10__awaited}"
-__ush_at 31 'defer cli.kill()'
+__ush_binding_33_cli__pid="${__ush_task_10__pid}"
+__ush_binding_33_cli__result="${__ush_task_10__result}"
+__ush_binding_33_cli__awaited="${__ush_task_10__awaited}"
+__ush_at 34 'defer cli.kill()'
 __ush_defer_11() {
-  __ush_at 31 'defer cli.kill()'
-  __ush_task_kill "${__ush_binding_30_cli__pid}" TERM "${__ush_binding_30_cli__result}.status" || { __ush_status=$?; __ush_report "$__ush_status"; return "$__ush_status"; }
+  __ush_at 34 'defer cli.kill()'
+  __ush_task_kill "${__ush_binding_33_cli__pid}" TERM "${__ush_binding_33_cli__result}.status" || { __ush_status=$?; __ush_report "$__ush_status"; return "$__ush_status"; }
 }
 __ush_defers="__ush_defer_11 ${__ush_defers:-}"
-__ush_at 32 'let download_status = status_of download_chromium_dependencies'
+__ush_at 35 'let download_status = status_of download_chromium_dependencies'
 if ( __ush_capture_return='0' __ush_return_path=''; ush_fn_download_chromium_dependencies ); then __ush_status_12=0; else __ush_status_12=$?; fi
-__ush_binding_32_download_status="${__ush_status_12}"
+__ush_binding_35_download_status="${__ush_status_12}"
 # shellcheck disable=SC2034
-download_status="${__ush_binding_32_download_status}"
-__ush_at 33 'let cli_status = status_of cli.await'
-if { [ "${__ush_binding_30_cli__awaited}" = '1' ] || { __ush_wait_job "${__ush_binding_30_cli__pid}" "${__ush_binding_30_cli__result}.status" && __ush_binding_30_cli__awaited='1'; }; }; then __ush_status_13=0; else __ush_status_13=$?; fi
-__ush_binding_33_cli_status="${__ush_status_13}"
+download_status="${__ush_binding_35_download_status}"
+__ush_at 36 'let cli_status = status_of cli.await'
+if { [ "${__ush_binding_33_cli__awaited}" = '1' ] || { __ush_wait_job "${__ush_binding_33_cli__pid}" "${__ush_binding_33_cli__result}.status" && __ush_binding_33_cli__awaited='1'; }; }; then __ush_status_13=0; else __ush_status_13=$?; fi
+__ush_binding_36_cli_status="${__ush_status_13}"
 # shellcheck disable=SC2034
-cli_status="${__ush_binding_33_cli_status}"
-__ush_at 34 'sudo rm -- $download_config'
-command sudo 'rm' '--' "${__ush_binding_21_download_config}"
-__ush_at 35 'echo $"Nuxt3 setup statuses: download=$download_status CLI=$cli_status"'
-printf '%s\n' 'Nuxt3 setup statuses: download='"${__ush_binding_32_download_status}"' CLI='"${__ush_binding_33_cli_status}"
-__ush_at 36 'if download_status != 0 {'
+cli_status="${__ush_binding_36_cli_status}"
+__ush_at 37 'sudo rm -- $download_config'
+command sudo 'rm' '--' "${__ush_binding_24_download_config}"
+__ush_at 38 'echo $"Nuxt3 setup statuses: download=$download_status CLI=$cli_status"'
+printf '%s\n' 'Nuxt3 setup statuses: download='"${__ush_binding_35_download_status}"' CLI='"${__ush_binding_36_cli_status}"
+__ush_at 39 'if download_status != 0 {'
 if {
-[ "$(if [ "${__ush_binding_32_download_status}" -ne 0 ]; then printf '%s' true; else printf '%s' false; fi)" = 'true' ]
+[ "$(if [ "${__ush_binding_35_download_status}" -ne 0 ]; then printf '%s' true; else printf '%s' false; fi)" = 'true' ]
 }; then
-  __ush_at 37 'std::process::exit $download_status'
-  ush_fn_std__process__exit "${__ush_binding_32_download_status}"
+  __ush_at 40 'std::process::exit $download_status'
+  ush_fn_std__process__exit "${__ush_binding_35_download_status}"
 fi
-__ush_at 39 'if cli_status != 0 {'
+__ush_at 42 'if cli_status != 0 {'
 if {
-[ "$(if [ "${__ush_binding_33_cli_status}" -ne 0 ]; then printf '%s' true; else printf '%s' false; fi)" = 'true' ]
+[ "$(if [ "${__ush_binding_36_cli_status}" -ne 0 ]; then printf '%s' true; else printf '%s' false; fi)" = 'true' ]
 }; then
-  __ush_at 40 'std::process::exit $cli_status'
-  ush_fn_std__process__exit "${__ush_binding_33_cli_status}"
+  __ush_at 43 'std::process::exit $cli_status'
+  ush_fn_std__process__exit "${__ush_binding_36_cli_status}"
 fi
-__ush_at 42 'sudo $archive_dir/report-inventory before-install'
-__ush_value_14="${__ush_binding_14_archive_dir}"
+__ush_at 45 'sudo $archive_dir/report-inventory before-install'
+__ush_value_14="${__ush_binding_16_archive_dir}"
 command sudo "${__ush_value_14}"'/report-inventory' 'before-install'
-__ush_at 43 'cd "tests" {'
+__ush_at 46 'cd "tests" {'
 __ush_cwd_15=$PWD
 ush_fn_std__process__chdir 'tests' || { __ush_status=$?; __ush_report "$__ush_status"; exit "$__ush_status"; }
-  __ush_at 44 'apt_retry vp exec playwright install --with-deps chromium'
+  __ush_at 47 'apt_retry vp exec playwright install --with-deps chromium'
   command vize-ci-apt-retry 'vp' 'exec' 'playwright' 'install' '--with-deps' 'chromium'
 cd "$__ush_cwd_15" || { __ush_status=$?; __ush_report "$__ush_status" 'cannot return to the directory the cd block started in'; exit "$__ush_status"; }
