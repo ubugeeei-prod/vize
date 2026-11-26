@@ -42,7 +42,7 @@ pub(super) fn owned(
         analyze_descriptor_for_lint(
             scripts.parses(),
             None,
-            macro_types.then(|| MacroTypeResolution::new(linter.type_sources.as_ref(), filename)),
+            macro_types.then(|| MacroTypeResolution::new(linter.run_type_sources(), filename)),
             ReadDemand {
                 unused: false,
                 template_reads,

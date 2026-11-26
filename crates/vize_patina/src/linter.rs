@@ -30,7 +30,7 @@ pub(crate) mod script_rules;
 mod severity;
 pub(crate) mod sfc_scripts;
 
-pub use config::{LintResult, Linter};
+pub use config::{LintResult, Linter, SharedTypeSources};
 #[cfg(not(target_arch = "wasm32"))]
 pub use engine::PreparedLint;
 pub(crate) use engine::{MacroTypeResolution, ReadDemand, analyze_descriptor_for_lint};

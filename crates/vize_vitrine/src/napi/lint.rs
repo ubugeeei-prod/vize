@@ -177,6 +177,15 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
         Some(options) => linter.with_config_rule_options(options),
         None => linter,
     };
+    let linter = if opts.run_scoped_type_sources.unwrap_or(false) {
+        static RUN_TYPE_SOURCES: std::sync::OnceLock<vize_patina::SharedTypeSources> =
+            std::sync::OnceLock::new();
+        linter.with_shared_type_sources(
+            RUN_TYPE_SOURCES.get_or_init(vize_patina::SharedTypeSources::for_current_dir),
+        )
+    } else {
+        linter
+    };
     let result = lint_source(&linter, &source, &filename);
     let lsp_diagnostics = LspEmitter::to_lsp_diagnostics_with_source(&result, &source);
 

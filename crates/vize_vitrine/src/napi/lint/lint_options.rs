@@ -92,6 +92,10 @@ pub struct PatinaLintOptionsNapi {
     pub attribute_hyphenation_ignore_tags: Option<Vec<String>>,
     /// CLI-compatible `linter.ruleOptions` encoded as JSON.
     pub rule_options_json: Option<String>,
+    /// Read the files imported macro types reach once per process instead of
+    /// once per call, for hosts whose sources do not change while they run,
+    /// such as one Oxlint CLI run.
+    pub run_scoped_type_sources: Option<bool>,
 }
 
 /// No-mutating-props options for NAPI
