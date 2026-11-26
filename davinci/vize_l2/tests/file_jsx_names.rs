@@ -9,7 +9,7 @@ mod support {
 use oxc_span::SourceType;
 use support::file_jsx::{LawResult, Required, lower};
 use vize_l0::{Allocator, Span};
-use vize_l2::file::{FileIssueKind, Namespace, ReferenceTarget};
+use vize_l2::file::{L2IrIssueKind, Namespace, ReferenceTarget};
 use vize_l2::resolution::Usage;
 
 #[test]
@@ -184,7 +184,7 @@ fn actual_unresolved_member_roots_and_remaining_refusals_retain_typed_file_issue
             .iter()
             .map(|issue| issue.kind)
             .collect::<Vec<_>>(),
-        [FileIssueKind::UnresolvedReference]
+        [L2IrIssueKind::UnresolvedReference]
     );
     for refused in [
         "<this.Button/>",
@@ -218,7 +218,7 @@ fn actual_unresolved_member_roots_and_remaining_refusals_retain_typed_file_issue
                 .iter()
                 .map(|issue| issue.kind)
                 .collect::<Vec<_>>(),
-            [FileIssueKind::UnsupportedSyntax]
+            [L2IrIssueKind::UnsupportedSyntax]
         );
         assert_eq!(file.bindings().count(), 3);
     }

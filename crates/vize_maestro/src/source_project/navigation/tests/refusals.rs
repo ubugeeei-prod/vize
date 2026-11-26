@@ -3,7 +3,7 @@ use super::{
     block_on, location, uri,
 };
 use vize_l0::Span;
-use vize_l2::file::FileIssueKind::{UnresolvedReference, UnsupportedSyntax};
+use vize_l2::file::L2IrIssueKind::{UnresolvedReference, UnsupportedSyntax};
 
 #[test]
 fn actual_document_language_controls_the_profile_despite_uri_or_source() {

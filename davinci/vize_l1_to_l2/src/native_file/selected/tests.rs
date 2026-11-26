@@ -10,7 +10,7 @@ use vize_l1::{
     markup::SurfaceParseOptions,
 };
 use vize_l2::{
-    file::RejectedFileHandler,
+    file::RejectedL2IrHandler,
     op::{BindingOp, OnOp, Op, Region},
 };
 
@@ -234,7 +234,7 @@ fn original_refused_handler_syntax_and_late_header_inputs_remain_owned() {
         let file = original.file().unwrap();
         assert!(core::ptr::eq(file.artifact().source(), source.as_str()));
         if syntax_refusal {
-            let [RejectedFileHandler::Syntax(rejected)] = file.rejected_handlers() else {
+            let [RejectedL2IrHandler::Syntax(rejected)] = file.rejected_handlers() else {
                 panic!("whole retained handler syntax");
             };
             assert_eq!(rejected.operand().raw_value(), body);

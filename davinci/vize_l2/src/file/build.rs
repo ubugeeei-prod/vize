@@ -1,8 +1,8 @@
 //! Crate-private construction capability fed only by real language events.
 
 use super::{
-    Declaration, DeclarationKind, Export, FileIssue, FileIssueKind, Import, InitializerKind, L2Ir,
-    Namespace, Reference, ReferenceTarget, RejectedFile, Scope, ScopeId, ScriptProfile, ScriptUnit,
+    Declaration, DeclarationKind, Export, Import, InitializerKind, L2Ir, L2IrIssue, L2IrIssueKind,
+    Namespace, Reference, ReferenceTarget, RejectedL2Ir, Scope, ScopeId, ScriptProfile, ScriptUnit,
     ScriptUnitId, TemplateIssue, records::ProgramOrigin,
 };
 use crate::artifact::{Builder, L2TemplateError};
@@ -17,23 +17,23 @@ pub(crate) struct L2Script<'a> {
     pub references: Vec<Reference>,
     pub exports: Vec<Export>,
     pub imports: Vec<Import>,
-    pub issues: Vec<FileIssue>,
+    pub issues: Vec<L2IrIssue>,
     pub expressions: ExpressionTable<'a>,
     pub handlers: SideTable<super::handler::HandlerRecord<'a>>,
-    pub rejected_handlers: Vec<super::RejectedFileHandler<'a>>,
+    pub rejected_handlers: Vec<super::RejectedL2IrHandler<'a>>,
     pub pending_handlers: Vec<super::handler::PendingHandler<'a>>,
     pub for_heads: SideTable<super::for_head::ForRecord<'a>>,
     pub pending_for_heads: Vec<super::for_head::PendingFor<'a>>,
-    pub rejected_for_heads: Vec<super::RejectedFileFor<'a>>,
+    pub rejected_for_heads: Vec<super::RejectedL2IrFor<'a>>,
     pub template_declarations: Vec<super::for_head::TemplateDeclarationRow>,
     pub template_issues: Vec<TemplateIssue>,
     pub template_walk: super::template::TemplateWalk,
     pub setup_annotations: Option<Box<crate::lang::js::file::setup::SetupAnnotationStorage>>,
-    pub native_attribute_values: Vec<super::NativeFileAttributeValue<'a>>,
-    pub native_interpolations: Vec<super::NativeFileInterpolation<'a>>,
-    pub native_interpolation_failures: Vec<super::NativeFileInterpolationFailure<'a>>,
+    pub native_attribute_values: Vec<super::NativeL2IrAttributeValue<'a>>,
+    pub native_interpolations: Vec<super::NativeL2IrInterpolation<'a>>,
+    pub native_interpolation_failures: Vec<super::NativeL2IrInterpolationFailure<'a>>,
     pub native_interpolation_nodes: SideTable<usize>,
-    pub native_text_values: Vec<super::NativeFileTextValue<'a>>,
+    pub native_text_values: Vec<super::NativeL2IrTextValue<'a>>,
     pub conditional_storage: Option<Box<super::conditional::ConditionalStorage<'a>>>,
     pub model_storage: Option<Box<super::model::ModelStorage<'a>>>,
     names: Vec<Names>,
@@ -54,13 +54,13 @@ struct Names {
 mod template;
 
 /// The neutral owner builder exposes only actual checked tree factories.
-pub struct FileBuilder<'a> {
+pub struct L2IrBuilder<'a> {
     pub(crate) source: &'a str,
     pub(crate) canonical: Builder<'a>,
     pub(crate) facts: L2Script<'a>,
 }
 
-impl<'a> FileBuilder<'a> {
+impl<'a> L2IrBuilder<'a> {
     pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, L2TemplateError> {
         let canonical = Builder::new(allocator, source)?;
         Ok(Self {
@@ -79,10 +79,10 @@ impl<'a> FileBuilder<'a> {
     }
 
     /// Transfer factory-checked fields; no second tree/count/validation walk.
-    pub fn finish(self) -> Result<L2Ir<'a>, RejectedFile<'a>> {
+    pub fn finish(self) -> Result<L2Ir<'a>, RejectedL2Ir<'a>> {
         match self.canonical.finish() {
             Ok(artifact) => Ok(L2Ir::from_producer(artifact, self.facts)),
-            Err(artifact) => Err(RejectedFile {
+            Err(artifact) => Err(RejectedL2Ir {
                 artifact,
                 facts: Box::new(self.facts),
             }),
@@ -139,8 +139,8 @@ impl<'a> L2Script<'a> {
         }
     }
 
-    pub(crate) fn issue(&mut self, unit: ScriptUnitId, span: Span, kind: FileIssueKind) {
-        self.issues.push(FileIssue { unit, span, kind });
+    pub(crate) fn issue(&mut self, unit: ScriptUnitId, span: Span, kind: L2IrIssueKind) {
+        self.issues.push(L2IrIssue { unit, span, kind });
     }
 
     pub(crate) fn unit(
@@ -153,7 +153,7 @@ impl<'a> L2Script<'a> {
     ) -> Option<(ScriptUnitId, ScopeId)> {
         let unit = ScriptUnitId(index);
         if self.units.iter().any(|existing| existing.id == unit) {
-            self.issue(unit, span, FileIssueKind::DuplicateUnit);
+            self.issue(unit, span, L2IrIssueKind::DuplicateUnit);
             return None;
         }
         let scope = if nested {
@@ -174,11 +174,11 @@ impl<'a> L2Script<'a> {
         span: Span,
     ) -> Option<ScopeId> {
         if self.scopes.get(parent.index() as usize).is_none() {
-            self.issue(unit, span, FileIssueKind::InvalidSpan);
+            self.issue(unit, span, L2IrIssueKind::InvalidSpan);
             return None;
         }
         let Ok(index) = u32::try_from(self.scopes.len()) else {
-            self.issue(unit, span, FileIssueKind::BindingLimit);
+            self.issue(unit, span, L2IrIssueKind::BindingLimit);
             return None;
         };
         let id = ScopeId(index);
@@ -193,7 +193,7 @@ impl<'a> L2Script<'a> {
 
     pub(crate) fn declare(&mut self, site: DeclarationSite<'_>) -> Option<BindingId> {
         let Some(names) = self.names.get_mut(site.scope.index() as usize) else {
-            self.issue(site.unit, site.span, FileIssueKind::InvalidSpan);
+            self.issue(site.unit, site.span, L2IrIssueKind::InvalidSpan);
             return None;
         };
         let map = match site.namespace {
@@ -201,15 +201,15 @@ impl<'a> L2Script<'a> {
             Namespace::Type => &mut names.type_names,
         };
         if map.contains_key(site.name) {
-            self.issue(site.unit, site.span, FileIssueKind::DuplicateDeclaration);
+            self.issue(site.unit, site.span, L2IrIssueKind::DuplicateDeclaration);
             return None;
         }
         let Ok(index) = u32::try_from(self.declarations.len()) else {
-            self.issue(site.unit, site.span, FileIssueKind::BindingLimit);
+            self.issue(site.unit, site.span, L2IrIssueKind::BindingLimit);
             return None;
         };
         if !template::script_binding_available(index, self.template_declarations.len()) {
-            self.issue(site.unit, site.span, FileIssueKind::BindingLimit);
+            self.issue(site.unit, site.span, L2IrIssueKind::BindingLimit);
             return None;
         }
         let id = BindingId::new(index);
@@ -258,10 +258,10 @@ impl<'a> L2Script<'a> {
             ) {
                 reference.target = ReferenceTarget::Resolved(binding);
             } else {
-                self.issues.push(FileIssue {
+                self.issues.push(L2IrIssue {
                     unit: reference.unit,
                     span: reference.span,
-                    kind: FileIssueKind::UnresolvedReference,
+                    kind: L2IrIssueKind::UnresolvedReference,
                 });
             }
         }

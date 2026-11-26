@@ -2,11 +2,11 @@
 
 use super::{Context, Walk};
 use crate::file::{DeclarationKind, InitializerKind, Namespace};
-use crate::lang::js::file::observer::FileObserver;
+use crate::lang::js::file::observer::L2IrObserver;
 use oxc_ast::ast::{BindingPattern, FormalParameterKind, Function, FunctionType};
 use oxc_span::GetSpan;
 
-impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
+impl<'a, O: L2IrObserver<'a>> Walk<'_, '_, 'a, O> {
     pub(super) fn function(&mut self, function: &Function<'a>, exported: bool) {
         let Some(id) = &function.id else {
             self.unsupported(function.span);

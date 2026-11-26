@@ -3,7 +3,7 @@
 use super::RootRegion;
 use crate::artifact::ComponentFactory;
 use crate::file::template::TemplateWalk;
-use crate::file::{FileBuilder, FileIssueKind, ScopeId, ScriptUnitId, TemplateIssue};
+use crate::file::{L2IrBuilder, L2IrIssueKind, ScopeId, ScriptUnitId, TemplateIssue};
 use crate::lang::js::file::native::{
     NativeRouteState, NativeTemplateIssue, NativeTemplateIssueKind,
 };
@@ -36,7 +36,7 @@ pub struct NativeTemplateWalk<'s, 'a> {
 impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
     pub(crate) fn new(
         selected: &'s SelectedTemplateComponent<'a>,
-        builder: &'s mut FileBuilder<'a>,
+        builder: &'s mut L2IrBuilder<'a>,
         state: &'s mut NativeRouteState,
         setup: Option<ScriptUnitId>,
     ) -> Result<Self, NativeTemplateIssue> {
@@ -256,7 +256,7 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         self.root.facts.template_issues.push(TemplateIssue {
             node: None,
             span,
-            kind: FileIssueKind::UnsupportedSyntax,
+            kind: L2IrIssueKind::UnsupportedSyntax,
         });
         Err(issue)
     }

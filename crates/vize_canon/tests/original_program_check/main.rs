@@ -13,7 +13,7 @@ use vize_l1::embed::{
 };
 use vize_l2::{
     file::L2Ir,
-    lang::js::{FileProducer, ProgramInput, ProgramScope},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope},
 };
 use vize_l4::targets::ts::ProjectionError;
 
@@ -40,7 +40,7 @@ fn file_options<'a>(arena: &'a Allocator, source: &'a str, options: ProgramOptio
         EmbedSource::authored(source, block.span()).unwrap(),
         options,
     );
-    let mut producer = FileProducer::new(arena, source).unwrap();
+    let mut producer = L2IrProducer::new(arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(syntax.admitted_program().unwrap(), block, 17).unwrap(),

@@ -16,8 +16,8 @@ mod setup;
 mod template;
 #[cfg(test)]
 mod tests;
-pub use file::{SsrFileAnalysis, build_ssr_file_decisions};
-pub use model::SsrFileModel;
+pub use file::{SsrL2IrAnalysis, build_ssr_file_decisions};
+pub use model::SsrL2IrModel;
 pub use scoped::{TemplateScopedSsrAnalysis, build_scoped_template_ssr_decisions};
 use setup::SsrSetupAccess;
 pub use setup::{

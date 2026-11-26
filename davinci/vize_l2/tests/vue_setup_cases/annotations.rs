@@ -91,7 +91,7 @@ fn nonkeyword_nested_exported_definite_and_nonprimitive_annotations_keep_file_is
         require!(
             file.issues()
                 .iter()
-                .any(|issue| issue.kind == FileIssueKind::UnsupportedSyntax),
+                .any(|issue| issue.kind == L2IrIssueKind::UnsupportedSyntax),
             "actual unsupported File issue: {body}"
         );
         require!(checked(&original, &file)?.is_err(), "no capability: {body}");
@@ -217,7 +217,7 @@ fn actual_annotation_event_interruption_cannot_complete_the_file_or_expose_recei
     )?;
     let script = original.script()?;
     for point in [Point::Unit, Point::Statement, Point::Declared] {
-        let mut producer = FileProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
+        let mut producer = L2IrProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
         let interruption = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             producer
                 .program_observed(

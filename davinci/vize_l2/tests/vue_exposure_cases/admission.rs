@@ -106,7 +106,7 @@ fn ordinary_role_and_absent_actual_unit_cannot_supply_setup_receipts() {
         ExposureIssueKind::Role
     );
     let setup = Observed::new(&arena, "<script setup>let message = 1;</script>").unwrap();
-    let empty_file = FileProducer::new(&arena, setup.l1ir.source())
+    let empty_file = L2IrProducer::new(&arena, setup.l1ir.source())
         .unwrap()
         .finish()
         .unwrap();

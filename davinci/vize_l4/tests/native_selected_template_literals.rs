@@ -8,7 +8,7 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{SelectedTemplateComponent, SurfaceChild, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeInterpolationInput, NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{NativeInterpolationInput, NativeTemplateL2Ir, NativeTemplateOwner};
 use vize_l3::decision::template::build_template_dom_decisions;
 use vize_l4::{
     module::assemble_template,
@@ -41,7 +41,7 @@ fn field<'f>(fixture: &'f serde_json::Value, name: &str) -> Result<&'f str, &'st
 fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<NativeTemplateL2Ir<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,

@@ -178,7 +178,7 @@ fn original_empty_program_receipt_does_not_authenticate_a_foreign_empty_source()
     let mut rejected = owner(&arena, source)?;
     equal(
         kind(rejected.setup_program(foreign.admitted_program().ok_or("foreign admission")?))?,
-        Kind::Program(vize_l2::file::FileIssueKind::InvalidSource),
+        Kind::Program(vize_l2::file::L2IrIssueKind::InvalidSource),
     )?;
     check(rejected.finish().view().is_err())?;
     let mut positive = owner(&arena, source)?;
@@ -228,7 +228,7 @@ fn ordinary_setup_roles_are_intrinsic_and_duplicate_profile_semantics_are_refuse
     let mut swapped = owner(&arena, source)?;
     equal(
         kind(swapped.setup_program(ordinary.admitted_program().ok_or("ordinary")?))?,
-        Kind::Program(vize_l2::file::FileIssueKind::InvalidSource),
+        Kind::Program(vize_l2::file::L2IrIssueKind::InvalidSource),
     )?;
     let mut duplicate = owner(&arena, source)?;
     duplicate
@@ -255,7 +255,7 @@ fn unresolved_program_and_original_element_entity_roots_stay_unadmitted() -> Res
         .map_err(|_| "walk")?;
     equal(
         kind(original.begin())?,
-        Kind::Program(vize_l2::file::FileIssueKind::UnsupportedSyntax),
+        Kind::Program(vize_l2::file::L2IrIssueKind::UnsupportedSyntax),
     )?;
     check(original.finish().view().is_err())?;
     for source in ["<template><svg/></template>", "<template>&amp;</template>"] {

@@ -6,7 +6,7 @@
 
 use vize_l0::{Span, id::NodeId};
 use vize_l3::decision::ssr::{
-    SelectedSetupSsrAnalysis, SsrAnalysis, SsrFileAnalysis, SsrPart, SsrUnsupported,
+    SelectedSetupSsrAnalysis, SsrAnalysis, SsrL2IrAnalysis, SsrPart, SsrUnsupported,
     TemplateScopedSsrAnalysis, TemplateSsrAnalysis,
 };
 use vize_l3::decision::{DecisionAnalysis, policy::TargetPolicy};
@@ -53,7 +53,7 @@ pub fn emit<L: LinkSink>(analysis: &DecisionAnalysis<'_, '_>) -> Result<Writer<L
 
 /// Consume only a complete SSR file view and retain its diagnostic owner.
 /// Original native SFC custody and runtime expression exposure remain separate.
-pub fn emit_file<L: LinkSink>(analysis: &SsrFileAnalysis<'_, '_>) -> Result<Writer<L>, SsrError> {
+pub fn emit_file<L: LinkSink>(analysis: &SsrL2IrAnalysis<'_, '_>) -> Result<Writer<L>, SsrError> {
     encode(analysis.artifact().source(), analysis.ssr(), None, None)
 }
 
@@ -63,9 +63,9 @@ pub fn emit_file<L: LinkSink>(analysis: &SsrFileAnalysis<'_, '_>) -> Result<Writ
 ///
 /// Diagnostic File completion cannot be promoted at this entry:
 /// ```compile_fail
-/// use vize_l3::decision::ssr::SsrFileAnalysis;
+/// use vize_l3::decision::ssr::SsrL2IrAnalysis;
 /// use vize_l4::{targets::ssr::emit_template, write::NoLinks};
-/// fn promote(analysis: &SsrFileAnalysis<'_, '_>) {
+/// fn promote(analysis: &SsrL2IrAnalysis<'_, '_>) {
 ///     let _ = emit_template::<NoLinks>(analysis);
 /// }
 /// ```

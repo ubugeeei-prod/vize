@@ -3,8 +3,8 @@
 use super::super::conditional::ObservedConditional;
 use super::{NativeVisibility, header};
 use crate::artifact::RegionBuilder;
-use crate::file::region::FileRegion;
-use crate::file::{NativeFileConditionalState, TemplateBody, TemplateChildRegion};
+use crate::file::region::L2IrRegion;
+use crate::file::{NativeL2IrConditionalState, TemplateBody, TemplateChildRegion};
 use crate::lang::js::NativeTemplateIssueKind as Kind;
 use crate::op::Namespace;
 use core::ops::DerefMut;
@@ -17,7 +17,7 @@ pub(super) fn construct<'a: 'b, 'b, R>(
     span: Span,
     header: header::Header<'a>,
     observed: ObservedConditional,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -71,8 +71,8 @@ where
         .get_mut(observed.index)
         .ok_or(Kind::InvalidEvent)?;
     record.state = match result {
-        Ok(node) => NativeFileConditionalState::Admitted(node),
-        Err(kind) => NativeFileConditionalState::Refused(kind),
+        Ok(node) => NativeL2IrConditionalState::Admitted(node),
+        Err(kind) => NativeL2IrConditionalState::Refused(kind),
     };
     result
 }

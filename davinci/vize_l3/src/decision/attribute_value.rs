@@ -4,7 +4,7 @@ use super::DecisionBuildError;
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::L2Template,
-    file::{FileAttributeValue, L2Ir, NativeFileAttributeValueState},
+    file::{L2Ir, L2IrAttributeValue, NativeL2IrAttributeValueState},
     op::ElementOp,
 };
 
@@ -42,7 +42,7 @@ impl<'owner, 'arena> OriginalAttributeAnalysis<'owner, 'arena> {
         index: usize,
         element: &'owner ElementOp<'arena>,
         slot: usize,
-    ) -> Option<FileAttributeValue<'owner, 'arena>> {
+    ) -> Option<L2IrAttributeValue<'owner, 'arena>> {
         if index >= self.consumed {
             return None;
         }
@@ -96,7 +96,7 @@ impl<'owner, 'arena> OriginalAttributeCursor<'owner, 'arena> {
                 .l2ir
                 .native_attribute_value_for(self.next, element, slot)?;
             let record = self.l2ir.native_attribute_values().get(self.next)?;
-            if record.state() != (NativeFileAttributeValueState::Attached { node, slot }) {
+            if record.state() != (NativeL2IrAttributeValueState::Attached { node, slot }) {
                 return None;
             }
             let value = joined.observation()?;

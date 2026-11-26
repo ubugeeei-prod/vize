@@ -3,10 +3,10 @@
 use super::NativeVisibility;
 use crate::artifact::RegionBuilder;
 use crate::file::build::ScopedResolution;
-use crate::file::region::{FileRegion, Lookup, TemplatePolicy};
+use crate::file::region::{L2IrRegion, Lookup, TemplatePolicy};
 use crate::file::{
-    DeclarationKind, FileIssueKind, Namespace, NativeFileModel, NativeFileModelKind,
-    NativeFileModelState,
+    DeclarationKind, L2IrIssueKind, Namespace, NativeL2IrModel, NativeL2IrModelKind,
+    NativeL2IrModelState,
 };
 use crate::lang::js::{NativeModelInput, NativeTemplateIssueKind as Kind};
 use crate::resolution::{ResolutionErrorKind, Usage, resolve_model_facts};
@@ -21,7 +21,7 @@ pub(super) struct ObservedModel {
 #[cfg(test)]
 pub(super) mod tests;
 
-impl<'a: 'b, 'b, R> FileRegion<'_, 'b, 'a, R, NativeVisibility>
+impl<'a: 'b, 'b, R> L2IrRegion<'_, 'b, 'a, R, NativeVisibility>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
 {
@@ -51,9 +51,9 @@ where
             }
         };
         let index = self.facts.native_models().len();
-        self.facts.native_models_mut().push(NativeFileModel {
+        self.facts.native_models_mut().push(NativeL2IrModel {
             input: NativeModelInput::from_operand(operand),
-            state: NativeFileModelState::Pending,
+            state: NativeL2IrModelState::Pending,
             scope: self.scope,
             binding: None,
             original: None,
@@ -72,7 +72,7 @@ where
             .admitted_for(selected, head.attribute().reborrow())
             .is_err()
         {
-            record.state = NativeFileModelState::Refused(Kind::UnsupportedChild);
+            record.state = NativeL2IrModelState::Refused(Kind::UnsupportedChild);
             return Err(Kind::UnsupportedChild);
         }
         Ok(ObservedModel { index })
@@ -83,7 +83,7 @@ where
     pub(super) fn attach_model(
         &mut self,
         index: usize,
-        kind: NativeFileModelKind,
+        kind: NativeL2IrModelKind,
     ) -> Result<NodeId, Kind> {
         let record = self
             .facts
@@ -104,10 +104,10 @@ where
             Kind::Artifact(self.reject(
                 expression.authored_span(error.span).unwrap_or(span),
                 match error.kind {
-                    ResolutionErrorKind::MissingBinding => FileIssueKind::UnresolvedReference,
-                    ResolutionErrorKind::InvalidSpan => FileIssueKind::InvalidSpan,
-                    ResolutionErrorKind::TraversalLimit => FileIssueKind::BindingLimit,
-                    ResolutionErrorKind::UnsupportedSyntax => FileIssueKind::UnsupportedSyntax,
+                    ResolutionErrorKind::MissingBinding => L2IrIssueKind::UnresolvedReference,
+                    ResolutionErrorKind::InvalidSpan => L2IrIssueKind::InvalidSpan,
+                    ResolutionErrorKind::TraversalLimit => L2IrIssueKind::BindingLimit,
+                    ResolutionErrorKind::UnsupportedSyntax => L2IrIssueKind::UnsupportedSyntax,
                 },
             ))
         })?;

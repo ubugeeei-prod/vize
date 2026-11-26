@@ -1,6 +1,6 @@
 //! Private live-borrow bridge; normal end is not native construction authority.
 
-use super::VueFileRegion;
+use super::VueL2IrRegion;
 use super::native::VueNative;
 use crate::native::ConstructionFactory;
 use crate::vue_file::{NativeTemplateProfile, NativeTemplateVisibility};
@@ -13,7 +13,7 @@ pub(crate) struct NativeVueWalk<'g, 'f, 'a> {
     profile: NativeTemplateProfile,
 }
 
-impl<'f, 'a> VueFileRegion<'f, 'a> {
+impl<'f, 'a> VueL2IrRegion<'f, 'a> {
     pub(crate) fn begin_native_walk(
         &mut self,
         span: Span,

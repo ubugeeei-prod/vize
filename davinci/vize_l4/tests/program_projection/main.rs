@@ -6,8 +6,8 @@ mod support;
 use vize_l0::{Allocator, SourceRoot, Span, String, cstr};
 use vize_l1::embed::syntax::{ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
-use vize_l2::file::{FileBuilder, FileIssueKind, Namespace};
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::file::{L2IrBuilder, L2IrIssueKind, Namespace};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use vize_l4::targets::ts::{
     MappingError, ProjectionError, SourceKind, project_program, project_program_no_links,
 };
@@ -127,7 +127,7 @@ fn diagnostic_mapping_never_clamps_utf16_or_generated_boundaries() {
 #[test]
 fn neutral_empty_files_and_partial_or_multiple_real_units_cannot_be_projected() {
     let arena = Allocator::default();
-    let empty = FileBuilder::new(&arena, "").unwrap().finish().unwrap();
+    let empty = L2IrBuilder::new(&arena, "").unwrap().finish().unwrap();
     assert!(empty.is_complete());
     assert!(matches!(
         project_program(&empty),
@@ -142,7 +142,7 @@ fn neutral_empty_files_and_partial_or_multiple_real_units_cannot_be_projected() 
         .unwrap();
     let a = support::syntax(&arena, first, Lang::Js).unwrap();
     let b = support::syntax(&arena, second, Lang::Js).unwrap();
-    let mut partial = FileProducer::new(&arena, source).unwrap();
+    let mut partial = L2IrProducer::new(&arena, source).unwrap();
     partial
         .program(
             ProgramInput::checked(a.admitted_program().unwrap(), first, 0).unwrap(),
@@ -155,7 +155,7 @@ fn neutral_empty_files_and_partial_or_multiple_real_units_cannot_be_projected() 
         project_program(&partial),
         Err(ProjectionError::PartialSource)
     ));
-    let mut multi = FileProducer::new(&arena, source).unwrap();
+    let mut multi = L2IrProducer::new(&arena, source).unwrap();
     multi
         .program(
             ProgramInput::checked(a.admitted_program().unwrap(), first, 0).unwrap(),
@@ -215,7 +215,7 @@ fn incomplete_profiles_and_supported_parser_recovery_are_never_promoted() {
             EmbedSource::authored(source, support::whole(source).unwrap()).unwrap(),
             options,
         );
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program(
                 ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),
@@ -245,7 +245,7 @@ fn equal_copy_source_is_rejected_before_file_unit_mint() {
     let syntax = support::syntax(&arena, block, Lang::Js).unwrap();
     let foreign = SourceRoot::new(&copy).unwrap().whole_block();
     assert!(
-        matches!(ProgramInput::checked(syntax.admitted_program().unwrap(), foreign, 0), Err(issue) if issue.kind == FileIssueKind::InvalidSource)
+        matches!(ProgramInput::checked(syntax.admitted_program().unwrap(), foreign, 0), Err(issue) if issue.kind == L2IrIssueKind::InvalidSource)
     );
     let file = support::file(&arena, &source, Lang::Js).unwrap();
     let projection = project_program(&file).unwrap();
@@ -272,7 +272,7 @@ fn authentic_nested_units_and_mixed_template_nodes_remain_outside_program_projec
     let block = SourceRoot::new(source).unwrap().whole_block();
     let syntax = support::syntax(&arena, block, Lang::Js).unwrap();
     let input = || ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap();
-    let mut nested = FileProducer::new(&arena, source).unwrap();
+    let mut nested = L2IrProducer::new(&arena, source).unwrap();
     nested.program(input(), ProgramScope::Nested).unwrap();
     let nested = nested.finish().unwrap();
     assert!(nested.is_complete());
@@ -280,7 +280,7 @@ fn authentic_nested_units_and_mixed_template_nodes_remain_outside_program_projec
         project_program(&nested),
         Err(ProjectionError::NestedScope)
     ));
-    let mut mixed = FileProducer::new(&arena, source).unwrap();
+    let mut mixed = L2IrProducer::new(&arena, source).unwrap();
     mixed.program(input(), ProgramScope::Module).unwrap();
     mixed
         .template_region(TemplateScope::Root, NoBindings)

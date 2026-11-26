@@ -3,8 +3,8 @@
 use super::NativeVisibility;
 use crate::artifact::RegionBuilder;
 use crate::file::build::ScopedResolution;
-use crate::file::region::{FileRegion, TemplatePolicy};
-use crate::file::{NativeFileConditional, NativeFileConditionalState};
+use crate::file::region::{L2IrRegion, TemplatePolicy};
+use crate::file::{NativeL2IrConditional, NativeL2IrConditionalState};
 use crate::lang::js::{NativeConditionalInput, NativeTemplateIssueKind as Kind};
 use crate::resolution::Usage;
 use core::ops::DerefMut;
@@ -18,7 +18,7 @@ pub(super) struct ObservedConditional {
 #[cfg(test)]
 pub(super) mod tests;
 
-impl<'a: 'b, 'b, R> FileRegion<'_, 'b, 'a, R, NativeVisibility>
+impl<'a: 'b, 'b, R> L2IrRegion<'_, 'b, 'a, R, NativeVisibility>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
 {
@@ -47,9 +47,9 @@ where
         let index = self.facts.native_conditionals().len();
         self.facts
             .native_conditionals_mut()
-            .push(NativeFileConditional {
+            .push(NativeL2IrConditional {
                 input: NativeConditionalInput::from_operand(operand),
-                state: NativeFileConditionalState::Pending,
+                state: NativeL2IrConditionalState::Pending,
                 scope: self.scope,
                 binding: None,
                 original: None,
@@ -67,7 +67,7 @@ where
             .admitted_for(selected, head.attribute().reborrow())
             .is_err()
         {
-            record.state = NativeFileConditionalState::Refused(Kind::UnsupportedChild);
+            record.state = NativeL2IrConditionalState::Refused(Kind::UnsupportedChild);
             return Err(Kind::UnsupportedChild);
         }
         Ok(ObservedConditional { index })

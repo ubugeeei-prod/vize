@@ -3,11 +3,11 @@
 use super::Walk;
 use crate::file::build::DeclarationSite;
 use crate::file::{DeclarationKind, Import, InitializerKind, Namespace};
-use crate::lang::js::file::observer::{DeclaredEvent, FileObserver};
+use crate::lang::js::file::observer::{DeclaredEvent, L2IrObserver};
 use oxc_ast::ast::{ImportDeclaration, ImportDeclarationSpecifier, ImportOrExportKind};
 use vize_l0::String;
 
-impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
+impl<'a, O: L2IrObserver<'a>> Walk<'_, '_, 'a, O> {
     pub(super) fn import(&mut self, import: &ImportDeclaration<'a>) {
         let Some(span) = self.span(import.span) else {
             return;

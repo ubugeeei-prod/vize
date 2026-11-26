@@ -1,7 +1,7 @@
 use super::*;
 use vize_l1::embed::syntax::{ForHeadPart, ForRefusal};
 use vize_l2::{
-    file::{FileIssueKind, RejectedFileFor, RejectedFileHandler},
+    file::{L2IrIssueKind, RejectedL2IrFor, RejectedL2IrHandler},
     resolution::{ForResolutionErrorKind, ResolutionErrorKind},
 };
 
@@ -33,7 +33,7 @@ fn syntax_source_and_pattern_refusals_keep_the_complete_original_for_owners()
             let Kind::For { span, kind } = issue.kind else {
                 return Err("For syntax refusal");
             };
-            equal(kind, FileIssueKind::UnsupportedSyntax)?;
+            equal(kind, L2IrIssueKind::UnsupportedSyntax)?;
             equal(span.slice(&source), value)?;
             equal(issue.span, span)?;
             equal(walk.complete().err(), Some(issue))?;
@@ -43,7 +43,7 @@ fn syntax_source_and_pattern_refusals_keep_the_complete_original_for_owners()
         let file = output.file().ok_or("whole partial File")?;
         equal(file.artifact().node_count(), 0)?;
         equal(file.template_declarations().count(), 0)?;
-        let [RejectedFileFor::Syntax(rejected)] = file.rejected_for_heads() else {
+        let [RejectedL2IrFor::Syntax(rejected)] = file.rejected_for_heads() else {
             return Err("complete typed syntax rejection");
         };
         let operand = rejected.operand();
@@ -119,9 +119,9 @@ fn unbound_collection_and_alias_policy_fail_before_any_for_node_or_scope_is_mint
             equal(
                 kind,
                 if part == ForHeadPart::Collection {
-                    FileIssueKind::UnresolvedReference
+                    L2IrIssueKind::UnresolvedReference
                 } else {
-                    FileIssueKind::UnsupportedSyntax
+                    L2IrIssueKind::UnsupportedSyntax
                 },
             )?;
             // The original part's coordinate map, not the complete head or an
@@ -138,7 +138,7 @@ fn unbound_collection_and_alias_policy_fail_before_any_for_node_or_scope_is_mint
         equal(file.scopes().len(), 2)?;
         equal(file.bindings().count(), 1)?;
         equal(file.template_declarations().count(), 0)?;
-        let [RejectedFileFor::Resolution { input, error }] = file.rejected_for_heads() else {
+        let [RejectedL2IrFor::Resolution { input, error }] = file.rejected_for_heads() else {
             return Err("whole semantic input");
         };
         equal(error.kind, expected)?;
@@ -270,7 +270,7 @@ fn a_next_root_sibling_cannot_observe_an_alias_from_the_previous_original_for()
             return Err("next-root handler refusal");
         };
         equal(span.slice(source), "item")?;
-        equal(kind, FileIssueKind::UnresolvedReference)?;
+        equal(kind, L2IrIssueKind::UnresolvedReference)?;
         equal(walk.complete().err(), Some(issue))?;
     }
     let output = original.finish();
@@ -290,7 +290,7 @@ fn a_next_root_sibling_cannot_observe_an_alias_from_the_previous_original_for()
         )
         .is_none(),
     )?;
-    let [RejectedFileHandler::Resolution { input, .. }] = file.rejected_handlers() else {
+    let [RejectedL2IrHandler::Resolution { input, .. }] = file.rejected_handlers() else {
         return Err("retained next-root original handler");
     };
     equal(input.operand().raw_value(), "item")?;

@@ -1,11 +1,11 @@
 //! Inspect original annotation nodes inside the existing variable event.
 
-use super::{FileObserver, Walk};
+use super::{L2IrObserver, Walk};
 use crate::lang::js::file::setup::{SetupPrimitiveType, record_annotation};
 use oxc_ast::ast::{PropertyKey, TSArrayType, TSSignature, TSType, VariableDeclarator};
 use oxc_span::GetSpan;
 
-impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
+impl<'a, O: L2IrObserver<'a>> Walk<'_, '_, 'a, O> {
     pub(super) fn type_annotation(
         &mut self,
         declaration: &VariableDeclarator<'a>,

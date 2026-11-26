@@ -1,7 +1,7 @@
 //! Join the original module's surface regions with its lowered render edits.
 
 use super::{
-    BooleanBindings, JsxComponent, JsxFile, JsxRefusal, JsxRoot, ModuleOptions, ModuleVisitor,
+    BooleanBindings, JsxComponent, JsxL2Ir, JsxRefusal, JsxRoot, ModuleOptions, ModuleVisitor,
     PrologueIssue, RootContext, lower_component, walk_module,
 };
 use alloc::vec::Vec;
@@ -60,7 +60,7 @@ fn lower_regions<'a>(
     let booleans = BooleanBindings::collect(program, scoping);
     let mut lower = Definitions {
         arena: allocator,
-        file: JsxFile {
+        file: JsxL2Ir {
             source: input.source(),
             scoping,
             booleans: &booleans,
@@ -85,7 +85,7 @@ fn lower_regions<'a>(
 // Write completed definitions directly into their final buffer.
 struct Definitions<'a, 's> {
     arena: &'a Allocator,
-    file: JsxFile<'a, 's>,
+    file: JsxL2Ir<'a, 's>,
     options: ModuleOptions,
     components: Result<Vec<ComponentDef<'a>>, JsxRefusal>,
     issues: Vec<PrologueIssue<'a>>,

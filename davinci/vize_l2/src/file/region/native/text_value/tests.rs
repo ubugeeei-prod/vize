@@ -1,6 +1,6 @@
 use super::interruption::{Fault, observations, reset_observations, set_fault};
-use crate::file::{NativeFileTextValueState as State, NativeTextValuePolicyError as Policy};
-use crate::lang::js::{NativeTemplateFile, NativeTemplateIssueKind as Kind, NativeTemplateOwner};
+use crate::file::{NativeL2IrTextValueState as State, NativeTextValuePolicyError as Policy};
+use crate::lang::js::{NativeTemplateIssueKind as Kind, NativeTemplateL2Ir, NativeTemplateOwner};
 use crate::op::{Op, TextOp};
 use vize_l0::{
     Allocator, Span,
@@ -53,7 +53,7 @@ fn owner<'a>(
 fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<NativeTemplateL2Ir<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;

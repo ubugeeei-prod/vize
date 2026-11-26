@@ -21,7 +21,7 @@ use vize_l0::{Allocator, Span};
 use vize_l2::component::{ComponentDef, Exec};
 
 use super::{
-    BooleanBindings, JsxComponent, JsxDialect, JsxFile, JsxRefusal, JsxRoot, lower_component, span,
+    BooleanBindings, JsxComponent, JsxDialect, JsxL2Ir, JsxRefusal, JsxRoot, lower_component, span,
 };
 
 /// The prefix every execution-model prologue starts with.
@@ -166,7 +166,7 @@ pub fn lower_module<'a>(
     let booleans = BooleanBindings::collect(program, scoping);
     let mut lowering = Lowering {
         allocator,
-        file: JsxFile {
+        file: JsxL2Ir {
             source,
             scoping,
             booleans: &booleans,
@@ -183,7 +183,7 @@ pub fn lower_module<'a>(
 
 struct Lowering<'a, 's> {
     allocator: &'a Allocator,
-    file: JsxFile<'a, 's>,
+    file: JsxL2Ir<'a, 's>,
     options: ModuleOptions,
     module: JsxModule<'a>,
 }

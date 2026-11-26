@@ -1,12 +1,12 @@
 //! Stack guard surrounds the actual factory, including pre-mint callbacks.
 
-use super::{FileRegion, TemplatePolicy};
+use super::{L2IrRegion, TemplatePolicy};
 use crate::{artifact::RegionBuilder, file::template::TemplateWalk};
 use core::ops::DerefMut;
 use vize_l0::Span;
 
 struct WalkGuard<'g, 'f, 'b, 'a, R, P> {
-    region: &'g mut FileRegion<'f, 'b, 'a, R, P>,
+    region: &'g mut L2IrRegion<'f, 'b, 'a, R, P>,
     previous: TemplateWalk,
     armed: bool,
 }
@@ -19,7 +19,7 @@ impl<R, P> Drop for WalkGuard<'_, '_, '_, '_, R, P> {
     }
 }
 
-impl<'a: 'b, 'b, R, P> FileRegion<'_, 'b, 'a, R, P>
+impl<'a: 'b, 'b, R, P> L2IrRegion<'_, 'b, 'a, R, P>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
     P: TemplatePolicy,

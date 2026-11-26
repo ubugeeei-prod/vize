@@ -11,7 +11,7 @@ use vize_l1::embed::{
 };
 use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::framework::vue::{OptionsAnalysis, OptionsAnalysisIncomplete, OptionsObserver};
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 pub type Observed = (
     String,
@@ -42,7 +42,7 @@ pub fn observe(source: &str) -> Option<Observed> {
         ProgramOptions::module(script.lang()),
     );
     let admitted = syntax.admitted_program()?;
-    let mut producer = FileProducer::new(&arena, descriptor.source()).ok()?;
+    let mut producer = L2IrProducer::new(&arena, descriptor.source()).ok()?;
     let mut observer = OptionsObserver::new();
     producer
         .program_observed(

@@ -3,7 +3,7 @@ use oxc_ast::ast::Expression;
 use vize_l0::Allocator;
 use vize_l1::embed::Lang;
 use vize_l1_to_l2::native_file::{NativeTemplateOutcome, lower_sfc_native};
-use vize_l2::file::FileIssueKind;
+use vize_l2::file::L2IrIssueKind;
 
 #[test]
 fn native_ts_custody_keeps_unsupported_type_assertion_and_real_file_refusal() {
@@ -47,6 +47,6 @@ fn native_ts_custody_keeps_unsupported_type_assertion_and_real_file_refusal() {
         partial
             .template_issues()
             .iter()
-            .any(|issue| { issue.kind == FileIssueKind::UnsupportedSyntax })
+            .any(|issue| { issue.kind == L2IrIssueKind::UnsupportedSyntax })
     );
 }

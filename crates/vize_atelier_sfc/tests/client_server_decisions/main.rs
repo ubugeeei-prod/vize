@@ -18,7 +18,7 @@ use vize_l1::{
     },
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{NativeTemplateL2Ir, NativeTemplateOwner};
 use vize_l3::decision::{
     build_client_server_decisions,
     ssr::{TemplateSsrAnalysis, build_template_ssr_decisions},
@@ -39,7 +39,7 @@ fn options() -> DescriptorOptions {
     }
 }
 
-fn original<'a>(arena: &'a Allocator, source: &'a str) -> Option<NativeTemplateFile<'a>> {
+fn original<'a>(arena: &'a Allocator, source: &'a str) -> Option<NativeTemplateL2Ir<'a>> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -101,7 +101,7 @@ struct Counts {
     links: usize,
 }
 
-fn compare(owner: &NativeTemplateFile<'_>, counts: &mut Counts) {
+fn compare(owner: &NativeTemplateL2Ir<'_>, counts: &mut Counts) {
     let actual = build_client_server_decisions(owner);
     let view = match owner.view() {
         Ok(view) => view,

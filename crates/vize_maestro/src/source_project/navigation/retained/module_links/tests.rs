@@ -21,7 +21,7 @@ use vize_l1::embed::{
     EmbedSource, Lang,
     syntax::{ProgramOptions, parse_program_once},
 };
-use vize_l2::lang::js::{FileProducer, ModuleSourceErrorKind, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ModuleSourceErrorKind, ProgramInput, ProgramScope};
 
 fn uri() -> Url {
     Url::parse("file:///module-operands.ts").unwrap()
@@ -52,7 +52,7 @@ fn with_original(
         EmbedSource::authored(snapshot.source(), block.span()).unwrap(),
         ProgramOptions::module(Lang::Js),
     );
-    let mut producer = FileProducer::new(&arena, snapshot.source()).unwrap();
+    let mut producer = L2IrProducer::new(&arena, snapshot.source()).unwrap();
     producer
         .program(
             ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),

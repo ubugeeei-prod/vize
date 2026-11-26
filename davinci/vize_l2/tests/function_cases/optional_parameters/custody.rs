@@ -5,7 +5,7 @@ use oxc_ast::ast::{Statement, TSType};
 use oxc_parser::ParseOptions;
 use oxc_span::GetSpan;
 use vize_l0::String;
-use vize_l2::file::FileIssueKind;
+use vize_l2::file::L2IrIssueKind;
 use vize_l2::lang::js::ProgramInput;
 
 #[test]
@@ -91,7 +91,7 @@ fn optional_parameter_cannot_substitute_source_options_or_nonmodule_profiles() {
         Parser::new(&arena, &source, SourceType::ts().with_module(true)).parse_observed();
     assert!(
         matches!(ProgramInput::checked(original.admitted().unwrap(), SourceRoot::new(&copy).unwrap().whole_block(), 7),
-        Err(issue) if issue.kind == FileIssueKind::InvalidSource)
+        Err(issue) if issue.kind == L2IrIssueKind::InvalidSource)
     );
     let changed = Parser::new(&arena, &source, SourceType::ts().with_module(true))
         .with_options(ParseOptions {
@@ -101,7 +101,7 @@ fn optional_parameter_cannot_substitute_source_options_or_nonmodule_profiles() {
         .parse_observed();
     assert!(
         matches!(ProgramInput::checked(changed.admitted().unwrap(), block, 7),
-        Err(issue) if issue.kind == FileIssueKind::InvalidProfile)
+        Err(issue) if issue.kind == L2IrIssueKind::InvalidProfile)
     );
     for profile in [
         SourceType::ts().with_script(true),
@@ -114,7 +114,7 @@ fn optional_parameter_cannot_substitute_source_options_or_nonmodule_profiles() {
         assert_eq!(file.bindings().count(), 0);
         let issues = file.issues();
         assert_eq!(issues.len(), 1);
-        assert_eq!(issues[0].kind, FileIssueKind::InvalidProfile);
+        assert_eq!(issues[0].kind, L2IrIssueKind::InvalidProfile);
         assert_eq!(issues[0].span, block.span());
     }
     let observed = Parser::new(&arena, &source, SourceType::mjs()).parse_observed();
@@ -127,5 +127,5 @@ fn optional_parameter_cannot_substitute_source_options_or_nonmodule_profiles() {
     assert!(!file.is_complete());
     assert_eq!(file.bindings().count(), 0);
     assert_eq!(file.issues().len(), 1);
-    assert_eq!(file.issues()[0].kind, FileIssueKind::InvalidProfile);
+    assert_eq!(file.issues()[0].kind, L2IrIssueKind::InvalidProfile);
 }

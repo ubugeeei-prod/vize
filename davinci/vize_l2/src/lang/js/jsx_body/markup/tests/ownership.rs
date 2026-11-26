@@ -3,7 +3,7 @@
     reason = "native ownership laws use exact assertions"
 )]
 use super::{
-    Allocator, JsxFileProducer, Law, Namespace, Parser, SourceRoot, SourceType, Span, Tree, span,
+    Allocator, JsxL2IrProducer, Law, Namespace, Parser, SourceRoot, SourceType, Span, Tree, span,
     tree,
 };
 use crate::op::Op;
@@ -20,7 +20,7 @@ fn embedded_original_block_keeps_absolute_coordinates_and_identity_after_moves()
         .map_err(|_| "root")?
         .block(script, begin as u32)
         .map_err(|_| "frame")?;
-    let mut producer = JsxFileProducer::new(
+    let mut producer = JsxL2IrProducer::new(
         &arena,
         Parser::new(&arena, script, SourceType::jsx()).parse_observed(),
         block,
@@ -114,8 +114,8 @@ fn producer_for_move<'a>(
     source: &'a str,
     block: vize_l0::SourceBlock<'a>,
     script: &'a str,
-) -> Result<super::super::JsxMarkupFile<'a>, &'static str> {
-    let mut producer = JsxFileProducer::new(
+) -> Result<super::super::JsxMarkupL2Ir<'a>, &'static str> {
+    let mut producer = JsxL2IrProducer::new(
         arena,
         Parser::new(arena, script, SourceType::jsx()).parse_observed(),
         block,

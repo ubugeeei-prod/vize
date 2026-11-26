@@ -5,7 +5,7 @@ use std::{alloc::System, hint::black_box, time::Instant};
 #[global_allocator]
 static ALLOC: CountingAllocator<System> = CountingAllocator::system();
 
-pub(super) fn measure(name: &str, owner: &NativeTemplateFile<'_>) {
+pub(super) fn measure(name: &str, owner: &NativeTemplateL2Ir<'_>) {
     alloc::mark_installed();
     for emit in [false, true] {
         let run = |shared| {

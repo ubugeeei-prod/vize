@@ -290,7 +290,7 @@ fn missing_and_foreign_source_programs_cannot_bypass_selected_receipts() -> Resu
     let mut original = owner(&arena, source)?;
     equal(
         kind(original.setup_program(foreign.admitted_program().ok_or("foreign admission")?))?,
-        Kind::Program(vize_l2::file::FileIssueKind::InvalidSource),
+        Kind::Program(vize_l2::file::L2IrIssueKind::InvalidSource),
     )?;
     let result = original.finish();
     check(result.view().is_err())?;

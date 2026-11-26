@@ -9,7 +9,7 @@ use oxc_ast::ast::{Declaration, Statement, TSEnumDeclaration};
 use vize_l0::{Allocator, SourceRoot, Span, ToCompactString, profile};
 use vize_l1::embed::{EmbedSource, syntax::parse_program_once};
 use vize_l2::framework::vue::OrdinaryObserver;
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 use crate::compile::setup_facts::{binding_type, program_options};
 use crate::types::BindingMetadata;
@@ -36,7 +36,7 @@ fn observe(content: &str, lang: Option<&str>) -> Option<BindingMetadata> {
     let block = SourceRoot::new(content).ok()?.whole_block();
     let input = ProgramInput::checked(syntax.admitted_program()?, block, 0).ok()?;
     let mut observer = OrdinaryObserver::new();
-    FileProducer::new(&arena, content)
+    L2IrProducer::new(&arena, content)
         .ok()?
         .program_observed(input, ProgramScope::Module, &mut observer)
         .ok()?;

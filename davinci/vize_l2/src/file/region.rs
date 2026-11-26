@@ -1,7 +1,7 @@
 //! Private factory recorder: resolve, mint, and associate in one owned method.
 
 use super::build::{L2Script, ScopedResolution};
-use super::{Declaration, FileIssueKind, Namespace as BindingNamespace, ScopeId, TemplateIssue};
+use super::{Declaration, L2IrIssueKind, Namespace as BindingNamespace, ScopeId, TemplateIssue};
 use crate::artifact::{ComponentBody, ComponentFactory, L2TemplateError, RegionBuilder};
 use crate::expr::{ExprRef, JsExpr};
 use crate::op::{Attribute, Namespace};
@@ -51,9 +51,9 @@ impl<T> DerefMut for Owned<T> {
     }
 }
 
-pub(crate) type RootRegion<'f, 'a, P> = FileRegion<'f, 'f, 'a, Owned<RegionBuilder<'f, 'a>>, P>;
+pub(crate) type RootRegion<'f, 'a, P> = L2IrRegion<'f, 'f, 'a, Owned<RegionBuilder<'f, 'a>>, P>;
 
-pub(crate) struct FileRegion<'f, 'b, 'a, R, P> {
+pub(crate) struct L2IrRegion<'f, 'b, 'a, R, P> {
     region: R,
     facts: &'f mut L2Script<'a>,
     scope: ScopeId,
@@ -101,7 +101,7 @@ impl<P: TemplatePolicy> BindingLookup for Lookup<'_, '_, P> {
     }
 }
 
-impl<'a: 'b, 'b, R, P> FileRegion<'_, 'b, 'a, R, P>
+impl<'a: 'b, 'b, R, P> L2IrRegion<'_, 'b, 'a, R, P>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
     P: TemplatePolicy,
@@ -112,7 +112,7 @@ where
         span: Span,
     ) -> Result<ResolutionTable<'a>, L2TemplateError> {
         if !expression.matches_authored_source(self.source) {
-            return Err(self.reject(span, FileIssueKind::InvalidSource));
+            return Err(self.reject(span, L2IrIssueKind::InvalidSource));
         }
         #[cfg(feature = "lexical-arrow-initializers")]
         let resolve_expression = |expression: &JsExpr<'a>, lookup: &Lookup<'_, 'a, P>| {
@@ -134,16 +134,16 @@ where
             self.reject(
                 expression.authored_span(error.span).unwrap_or(span),
                 match error.kind {
-                    ResolutionErrorKind::MissingBinding => FileIssueKind::UnresolvedReference,
-                    ResolutionErrorKind::InvalidSpan => FileIssueKind::InvalidSpan,
-                    ResolutionErrorKind::TraversalLimit => FileIssueKind::BindingLimit,
-                    ResolutionErrorKind::UnsupportedSyntax => FileIssueKind::UnsupportedSyntax,
+                    ResolutionErrorKind::MissingBinding => L2IrIssueKind::UnresolvedReference,
+                    ResolutionErrorKind::InvalidSpan => L2IrIssueKind::InvalidSpan,
+                    ResolutionErrorKind::TraversalLimit => L2IrIssueKind::BindingLimit,
+                    ResolutionErrorKind::UnsupportedSyntax => L2IrIssueKind::UnsupportedSyntax,
                 },
             )
         })
     }
 
-    fn reject(&mut self, span: Span, kind: FileIssueKind) -> L2TemplateError {
+    fn reject(&mut self, span: Span, kind: L2IrIssueKind) -> L2TemplateError {
         self.facts.template_issues.push(TemplateIssue {
             node: None,
             span,
@@ -153,7 +153,7 @@ where
     }
 }
 
-impl<'a: 'b, 'b, R, P> ComponentFactory<'a> for FileRegion<'_, 'b, 'a, R, P>
+impl<'a: 'b, 'b, R, P> ComponentFactory<'a> for L2IrRegion<'_, 'b, 'a, R, P>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
     P: TemplatePolicy,
@@ -229,7 +229,7 @@ where
                 ..
             } = file;
             region.element(tag, namespace, attributes, span, |child, node| {
-                let mut file_child = FileRegion {
+                let mut file_child = L2IrRegion {
                     region: child,
                     facts,
                     scope: *scope,
@@ -261,9 +261,9 @@ where
                 facts.template_issues.push(TemplateIssue {
                     node: Some(node),
                     span,
-                    kind: FileIssueKind::UnsupportedComponent,
+                    kind: L2IrIssueKind::UnsupportedComponent,
                 });
-                let mut file_child = FileRegion {
+                let mut file_child = L2IrRegion {
                     region: child,
                     facts,
                     scope: *scope,

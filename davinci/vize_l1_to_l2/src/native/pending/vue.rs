@@ -5,7 +5,7 @@ use crate::native::block::construct_component;
 use crate::native::{
     ConstructionFactory, NativeComponent, NativeEmbed, NativeHole, NativeProduced,
 };
-use crate::vue_file::{NativeTemplateProfile, VueFileRegion};
+use crate::vue_file::{NativeTemplateProfile, VueL2IrRegion};
 use alloc::boxed::Box;
 use vize_l0::{SourceBlock, diag::Diagnostic};
 use vize_l1::embed::syntax::EmbedSyntax;
@@ -102,7 +102,7 @@ impl<'a> PendingNativeComponent<'a> {
     /// The intrinsic language comes exclusively from this real File region.
     pub(crate) fn construct_vue_file_in(
         &mut self,
-        region: &mut VueFileRegion<'_, 'a>,
+        region: &mut VueL2IrRegion<'_, 'a>,
     ) -> Result<(), NativeVueConstructionError> {
         if self.state != NativeWalkState::Ready {
             return Err(NativeVueConstructionError::AlreadyStarted);
@@ -200,7 +200,7 @@ impl<'a> NativeComponent<'a> {
     /// Caught inner unwinds require the assembler's parked borrowed-row route.
     pub fn construct_vue_file_in(
         self,
-        region: &mut VueFileRegion<'_, 'a>,
+        region: &mut VueL2IrRegion<'_, 'a>,
     ) -> Result<NativeVueProduced<'a>, Box<RejectedNativeVueComponent<'a>>> {
         let mut pending = PendingNativeComponent::from_component(self);
         if let Err(error) = pending.construct_vue_file_in(region) {

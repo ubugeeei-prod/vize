@@ -10,7 +10,7 @@ use oxc_parser::{Parser, ProgramObservation};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock, SourceRoot};
 use vize_l2::file::L2Ir;
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 fn parse<'a>(arena: &'a Allocator, source: &'a str) -> ProgramObservation<'a> {
     Parser::new(arena, source, SourceType::mjs()).parse_observed()
@@ -33,7 +33,7 @@ fn finish_block<'a>(
     parsed: &ProgramObservation<'a>,
     block: SourceBlock<'a>,
 ) -> Result<L2Ir<'a>, &'static str> {
-    let mut producer = FileProducer::new(arena, block.root_source()).map_err(|_| "file source")?;
+    let mut producer = L2IrProducer::new(arena, block.root_source()).map_err(|_| "file source")?;
     producer
         .program(
             ProgramInput::checked(

@@ -44,7 +44,7 @@ pub struct SyntaxEvent<'a> {
 }
 
 /// Diagnostic observation grants no native file admission or insertion capability.
-pub trait FileObserver<'a> {
+pub trait L2IrObserver<'a> {
     type Checkpoint;
     fn unit(&mut self, unit: &ScriptUnit);
     fn statement(&mut self, event: StatementEvent<'_, 'a>);
@@ -61,7 +61,7 @@ pub trait FileObserver<'a> {
 }
 
 pub(crate) struct NoObserver;
-impl<'a> FileObserver<'a> for NoObserver {
+impl<'a> L2IrObserver<'a> for NoObserver {
     type Checkpoint = ();
     fn unit(&mut self, _: &ScriptUnit) {}
     fn statement(&mut self, _: StatementEvent<'_, 'a>) {}

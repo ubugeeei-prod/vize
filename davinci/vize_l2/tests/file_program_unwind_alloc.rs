@@ -12,7 +12,7 @@ use vize_l2::artifact::ComponentFactory;
 use vize_l2::expr::JsExpr;
 use vize_l2::file::{Declaration, ScriptUnit, TemplatePolicy, TemplateScope};
 use vize_l2::lang::js::{
-    CallEvent, DeclaredEvent, FileObserver, FileProducer, ProgramInput, ProgramScope,
+    CallEvent, DeclaredEvent, L2IrObserver, L2IrProducer, ProgramInput, ProgramScope,
     StatementEvent,
 };
 use vize_l2::resolution::ResolutionErrorKind;
@@ -54,7 +54,7 @@ struct Observer {
     payload: Option<Box<dyn Any + Send>>,
     seen: bool,
 }
-impl<'a> FileObserver<'a> for Observer {
+impl<'a> L2IrObserver<'a> for Observer {
     type Checkpoint = ();
     fn unit(&mut self, _: &ScriptUnit) {
         self.seen = true;
@@ -86,7 +86,7 @@ fn mode(guarded: bool) -> Result<usize, &'static str> {
         5,
     )
     .map_err(|_| "original block")?;
-    let mut producer = FileProducer::new(&arena, source).map_err(|_| "file owner")?;
+    let mut producer = L2IrProducer::new(&arena, source).map_err(|_| "file owner")?;
     let payload: Box<dyn Any + Send> = Box::new("preowned interruption");
     ALLOCATIONS.store(0, Ordering::Relaxed);
     if guarded {
@@ -162,7 +162,7 @@ fn template_mode(guarded: bool) -> Result<usize, &'static str> {
     let parsed = Parser::new(&arena, block.source(), SourceType::mjs()).parse_observed();
     let input = ProgramInput::checked(parsed.admitted().ok_or("parser admission")?, block, 5)
         .map_err(|_| "original program")?;
-    let mut producer = FileProducer::new(&arena, source).map_err(|_| "file owner")?;
+    let mut producer = L2IrProducer::new(&arena, source).map_err(|_| "file owner")?;
     producer
         .program(input, ProgramScope::Nested)
         .map_err(|_| "completed script")?;

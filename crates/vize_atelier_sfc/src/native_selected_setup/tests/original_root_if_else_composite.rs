@@ -3,7 +3,7 @@
 use super::*;
 use vize_l2::{
     expr::ExprRef,
-    file::{NativeFileConditionalState, NativeFileInterpolationState},
+    file::{NativeL2IrConditionalState, NativeL2IrInterpolationState},
     op::Op,
     resolution::Usage,
 };
@@ -119,7 +119,7 @@ fn fourteen_whole_original_root_if_else_composite_components_and_raw_maps_are_ca
                 let [record] = file.native_conditionals() else {
                     return Err(cstr!("{id}: exactly one conditional owner"));
                 };
-                let NativeFileConditionalState::Admitted(node) = record.state() else {
+                let NativeL2IrConditionalState::Admitted(node) = record.state() else {
                     return Err(cstr!("{id}: normally completed whole pair"));
                 };
                 require!(
@@ -291,11 +291,11 @@ fn fourteen_whole_original_root_if_else_composite_components_and_raw_maps_are_ca
                                     return Err(cstr!("{id}: original text AST"));
                                 };
                                 let text_record = file.native_interpolations().iter().find(|record| {
-                                matches!(record.state(), NativeFileInterpolationState::Admitted(node)
+                                matches!(record.state(), NativeL2IrInterpolationState::Admitted(node)
                                     if file.native_interpolation(node).is_some_and(|retained| core::ptr::eq(retained, *record))
                                         && record.input().operand().syntax().expression().is_some_and(|ast| core::ptr::eq(ast, actual.ast)))
                             }).ok_or("same actual text record")?;
-                                let NativeFileInterpolationState::Admitted(text_node) =
+                                let NativeL2IrInterpolationState::Admitted(text_node) =
                                     text_record.state()
                                 else {
                                     return Err(cstr!("{id}: admitted text node"));

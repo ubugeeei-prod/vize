@@ -6,7 +6,7 @@ use super::{
     block_on, cached, location, uri,
 };
 use vize_l0::Span;
-use vize_l2::file::FileIssueKind;
+use vize_l2::file::L2IrIssueKind;
 
 const SOURCE: &str = "import View from 'dep';\nimport UI from 'ui';\nconst value=1;\nconst props={};\nconst tree=<View prop={value} {...props}><UI.Button>{value}</UI.Button><div value='value'/></View>;\nvalue;";
 
@@ -167,12 +167,12 @@ fn original_jsx_syntax_and_unresolved_or_unsupported_tsx_keep_sticky_refusals() 
         (
             "const tree=<Missing/>;",
             Span::new(12, 19),
-            FileIssueKind::UnresolvedReference,
+            L2IrIssueKind::UnresolvedReference,
         ),
         (
             "const value:number|string=1;const tree=<div>{value}</div>;",
             Span::new(6, 27),
-            FileIssueKind::UnsupportedSyntax,
+            L2IrIssueKind::UnsupportedSyntax,
         ),
     ] {
         documents.open(uri(), source.into(), 1, "typescriptreact".into());

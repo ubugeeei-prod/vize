@@ -5,7 +5,7 @@ use vize_l1::embed::Lang;
 use vize_l1_to_l2::native::NativeComponent;
 use vize_l2::{
     file::{Declaration, TemplatePolicy, TemplateScope},
-    lang::js::FileProducer,
+    lang::js::L2IrProducer,
 };
 use vize_l3::decision::{build_dom_file_decisions, dom::DomUnsupported};
 use vize_l4::{
@@ -26,7 +26,7 @@ impl TemplatePolicy for DiagnosticValues {
 fn file<'a>(arena: &'a Allocator, source: &'a str) -> vize_l2::file::L2Ir<'a> {
     let block = SourceRoot::new(source).unwrap().block(source, 0).unwrap();
     let native = NativeComponent::parse_in(arena, block).unwrap();
-    let mut producer = FileProducer::new(arena, source).unwrap();
+    let mut producer = L2IrProducer::new(arena, source).unwrap();
     {
         let mut region = producer
             .template_region(TemplateScope::Root, DiagnosticValues)

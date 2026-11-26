@@ -1,9 +1,9 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
-use vize_l2::file::{DeclarationKind, FileIssueKind, ScopeId, ScriptUnit};
+use vize_l2::file::{DeclarationKind, L2IrIssueKind, ScopeId, ScriptUnit};
 use vize_l2::lang::js::{
-    CallEvent, DeclaredEvent, FileObserver, FileProducer, ProgramInput, ProgramScope,
+    CallEvent, DeclaredEvent, L2IrObserver, L2IrProducer, ProgramInput, ProgramScope,
     StatementEvent,
 };
 use vize_l2::resolution::ResolutionErrorKind;
@@ -29,7 +29,7 @@ impl Observer {
         }
     }
 }
-impl<'a> FileObserver<'a> for Observer {
+impl<'a> L2IrObserver<'a> for Observer {
     type Checkpoint = ();
     fn unit(&mut self, unit: &ScriptUnit) {
         self.observe(Point::Unit, unit.scope);
@@ -92,7 +92,7 @@ fn caught_observer_unwind_keeps_original_program_and_refuses_every_interrupted_u
             Point::Parameter,
             Point::Call,
         ] {
-            let mut producer = FileProducer::new(&arena, source).unwrap();
+            let mut producer = L2IrProducer::new(&arena, source).unwrap();
             let mut observer = Observer {
                 point,
                 failure: || std::panic::resume_unwind(Box::new("actual observer interruption")),
@@ -113,7 +113,7 @@ fn caught_observer_unwind_keeps_original_program_and_refuses_every_interrupted_u
             assert_eq!(file.units()[0].id.index(), 5);
             assert!(file.issues().is_empty());
             let issue = file.units()[0].interruption().unwrap();
-            assert_eq!(issue.kind, FileIssueKind::InterruptedProgram);
+            assert_eq!(issue.kind, L2IrIssueKind::InterruptedProgram);
             assert_eq!(issue.unit, file.units()[0].id);
             assert_eq!(issue.span, block.span());
             assert_eq!(file.interrupted_programs().count(), 1);
@@ -132,7 +132,7 @@ fn caught_observer_unwind_keeps_original_program_and_refuses_every_interrupted_u
                     .all(|binding| binding.declaration().unwrap().name != "after")
             );
         }
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program(
                 ProgramInput::checked(parsed.admitted().unwrap(), block, 5).unwrap(),

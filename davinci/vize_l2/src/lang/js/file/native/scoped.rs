@@ -1,6 +1,6 @@
 //! Physical original style/template/File custody, without generated scope policy.
 
-use super::{NativeTemplateFile, NativeTemplateIssue, NativeTemplateView};
+use super::{NativeTemplateIssue, NativeTemplateL2Ir, NativeTemplateView};
 use crate::file::L2Ir;
 use vize_l0::Span;
 use vize_l1::{
@@ -48,16 +48,16 @@ pub struct NativeScopedTemplateIssue {
 /// The separately supplied original owners must remain alive:
 /// ```compile_fail
 /// use vize_l1::{container::vue::L1Ir, css::StyleSyntax};
-/// use vize_l2::lang::js::NativeTemplateFile;
-/// fn discard_style<'a>(owner: &NativeTemplateFile<'a>, l1ir: &L1Ir<'a>, syntax: StyleSyntax<'a>) {
+/// use vize_l2::lang::js::NativeTemplateL2Ir;
+/// fn discard_style<'a>(owner: &NativeTemplateL2Ir<'a>, l1ir: &L1Ir<'a>, syntax: StyleSyntax<'a>) {
 ///     let view = owner.scoped_view(l1ir, &syntax).unwrap();
 ///     drop(syntax); let _ = view.l2ir();
 /// }
 /// ```
 /// ```compile_fail
 /// use vize_l1::{container::vue::L1Ir, css::StyleSyntax};
-/// use vize_l2::lang::js::NativeTemplateFile;
-/// fn discard_descriptor<'a>(owner: &NativeTemplateFile<'a>, l1ir: L1Ir<'a>, syntax: &StyleSyntax<'a>) {
+/// use vize_l2::lang::js::NativeTemplateL2Ir;
+/// fn discard_descriptor<'a>(owner: &NativeTemplateL2Ir<'a>, l1ir: L1Ir<'a>, syntax: &StyleSyntax<'a>) {
 ///     let view = owner.scoped_view(&l1ir, syntax).unwrap();
 ///     drop(l1ir); let _ = view.l2ir();
 /// }
@@ -70,7 +70,7 @@ pub struct NativeScopedTemplateView<'owner, 'arena> {
 }
 impl<'owner, 'arena> NativeScopedTemplateView<'owner, 'arena> {
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner NativeTemplateL2Ir<'arena> {
         self.template.owner()
     }
     #[must_use]
@@ -91,7 +91,7 @@ impl<'owner, 'arena> NativeScopedTemplateView<'owner, 'arena> {
     }
 }
 
-impl<'arena> NativeTemplateFile<'arena> {
+impl<'arena> NativeTemplateL2Ir<'arena> {
     /// Derive this exact completed File internally, then join authentic source
     /// capabilities. Generated CSS, compiler scope IDs and neutral Files are
     /// never accepted here. All profile and physical membership checks apply

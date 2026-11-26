@@ -5,7 +5,7 @@ use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, buil
 use vize_l2::{
     artifact::L2Template,
     file::L2Ir,
-    lang::js::{NativeSelectedSetup, NativeTemplateFile, NativeTemplateView},
+    lang::js::{NativeSelectedSetup, NativeTemplateL2Ir, NativeTemplateView},
 };
 
 /// The real selected setup and its own completed template stay borrowed.
@@ -39,7 +39,7 @@ impl<'view, 'owner, 'arena> SelectedSetupVaporAnalysis<'view, 'owner, 'arena> {
         self.setup
     }
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner NativeTemplateL2Ir<'arena> {
         self.template.owner()
     }
     #[must_use]

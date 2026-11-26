@@ -1,10 +1,10 @@
 use super::support::{construct, script, whole_span};
 use vize_l0::{Allocator, Vec};
 use vize_l1::embed::Lang;
-use vize_l1_to_l2::vue_file::{VueFileIssueKind, VueFileProducer};
+use vize_l1_to_l2::vue_file::{VueL2IrIssueKind, VueL2IrProducer};
 use vize_l2::artifact::{ComponentBody, ComponentFactory};
-use vize_l2::file::FileIssueKind;
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::file::L2IrIssueKind;
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use vize_l2::op::Namespace;
 
 #[test]
@@ -12,7 +12,7 @@ fn ordinary_only_local_is_not_template_context_and_failure_retains_original_owne
     let arena = Allocator::default();
     let source = "<script>const local = 1;</script><template>{{local}}</template>";
     let (syntax, block) = script(&arena, source, "const local = 1;", Lang::Js).unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     producer
         .ordinary(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
         .unwrap();
@@ -25,7 +25,7 @@ fn ordinary_only_local_is_not_template_context_and_failure_retains_original_owne
     assert!(!file.is_complete());
     assert_eq!(
         file.template_issues().first().unwrap().kind,
-        FileIssueKind::UnresolvedReference
+        L2IrIssueKind::UnresolvedReference
     );
     assert_eq!(file.bindings().count(), 1);
     assert!(core::ptr::eq(
@@ -41,14 +41,14 @@ fn genuine_call_refusal_rolls_back_whole_reference_batch_while_neutral_calls_sta
     let source =
         "import {fn} from 'dep'; const accepted = 1; const value = accepted + fn(() => missing);";
     let (syntax, block) = script(&arena, source, source, Lang::Js).unwrap();
-    let mut vue = VueFileProducer::new(&arena, source).unwrap();
+    let mut vue = VueL2IrProducer::new(&arena, source).unwrap();
     vue.setup(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
         .unwrap();
     assert!(vue.template_region().is_err());
     let rejected = vue.finish().unwrap_err();
     assert!(rejected.issues().iter().any(|issue| matches!(
         issue.kind,
-        VueFileIssueKind::UnsupportedCall { optional: false }
+        VueL2IrIssueKind::UnsupportedCall { optional: false }
     ) && issue.unit.is_some()
         && issue.scope.is_some()
         && source.get(issue.span.start as usize..issue.span.end as usize)
@@ -57,7 +57,7 @@ fn genuine_call_refusal_rolls_back_whole_reference_batch_while_neutral_calls_sta
     assert_eq!(rejected.file().unwrap().bindings().count(), 3);
     let positive = "import {fn} from 'dep'; const value = fn(1);";
     let (syntax, block) = script(&arena, positive, positive, Lang::Js).unwrap();
-    let mut neutral = FileProducer::new(&arena, positive).unwrap();
+    let mut neutral = L2IrProducer::new(&arena, positive).unwrap();
     neutral
         .program(
             ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),
@@ -77,7 +77,7 @@ fn genuine_call_refusal_rolls_back_whole_reference_batch_while_neutral_calls_sta
         Lang::Js,
     )
     .unwrap();
-    let mut vue = VueFileProducer::new(&arena, source).unwrap();
+    let mut vue = VueL2IrProducer::new(&arena, source).unwrap();
     vue.setup(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
         .unwrap();
     let native = construct(&arena, source, "{{fn(value)}}", &mut vue).unwrap();
@@ -114,21 +114,21 @@ fn actual_setup_exports_options_and_macros_remain_typed_unfinished() {
         (
             "export const value = 1;",
             true,
-            VueFileIssueKind::SetupExport,
+            VueL2IrIssueKind::SetupExport,
         ),
         (
             "export default {name: 'options'};",
             false,
-            VueFileIssueKind::UnsupportedOptions,
+            VueL2IrIssueKind::UnsupportedOptions,
         ),
         (
             "const props = defineProps({});",
             true,
-            VueFileIssueKind::UnsupportedCall { optional: false },
+            VueL2IrIssueKind::UnsupportedCall { optional: false },
         ),
     ] {
         let (syntax, block) = script(&arena, source, source, Lang::Js).unwrap();
-        let mut producer = VueFileProducer::new(&arena, source).unwrap();
+        let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
         let input = ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap();
         if setup {
             producer.setup(input).unwrap();
@@ -148,14 +148,14 @@ fn actual_setup_exports_options_and_macros_remain_typed_unfinished() {
 fn component_node_is_retained_but_tag_exposure_cannot_be_claimed_complete() {
     let arena = Allocator::default();
     let source = "<MyComponent><span>kept</span></MyComponent>";
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     let native = construct(&arena, source, source, &mut producer).unwrap();
     assert!(native.is_supported());
     let rejected = producer.finish().unwrap_err();
     let file = rejected.file().unwrap();
     assert_eq!(file.artifact().node_count(), 3);
     let issue = file.template_issues().first().unwrap();
-    assert_eq!(issue.kind, FileIssueKind::UnsupportedComponent);
+    assert_eq!(issue.kind, L2IrIssueKind::UnsupportedComponent);
     assert!(issue.node.is_some());
 }
 
@@ -170,7 +170,7 @@ fn actual_callback_unwind_retains_canonical_owner_and_private_file_declarations(
     let arena = Allocator::default();
     let source = "const value = 1;";
     let (syntax, block) = script(&arena, source, source, Lang::Js).unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     producer
         .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
         .unwrap();

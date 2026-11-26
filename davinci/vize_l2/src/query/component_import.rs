@@ -1,6 +1,6 @@
 //! Resolve authored static component owners against their original setup import.
 use super::{BindingRef, Model};
-use crate::file::{DeclarationKind, FileIssueKind, Namespace, ScopeId, TemplateIssue};
+use crate::file::{DeclarationKind, L2IrIssueKind, Namespace, ScopeId, TemplateIssue};
 use crate::{
     op::{BindingOp, ComponentOp, Op},
     walk::{NodeEvent, NodeRef},
@@ -108,7 +108,7 @@ impl<'f, 'a> Model<'f, 'a> {
             || file
                 .template_issues()
                 .iter()
-                .any(|i| i.kind != FileIssueKind::UnsupportedComponent)
+                .any(|i| i.kind != L2IrIssueKind::UnsupportedComponent)
         {
             return Err(ComponentImportIssue::IncompleteFile);
         }
@@ -175,7 +175,7 @@ impl<'f, 'a> Model<'f, 'a> {
                         != Some(&TemplateIssue {
                             node: Some(id),
                             span,
-                            kind: FileIssueKind::UnsupportedComponent,
+                            kind: L2IrIssueKind::UnsupportedComponent,
                         })
                         || !template.contains_block_span(span)
                     {

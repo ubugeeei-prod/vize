@@ -39,7 +39,7 @@ fn compare(source: &str, count: &mut Counts, path: &std::path::Path) {
     #[cfg(feature = "script-queries")]
     view.with_script_programs(&arena, |programs| {
         let produce = || {
-            VueFileProducer::from_script_programs(&arena, programs, ALL)
+            VueL2IrProducer::from_script_programs(&arena, programs, ALL)
                 .map(|producer| producer.finish().unwrap())
         };
         compare_file(
@@ -69,7 +69,7 @@ fn compare_file<'a>(
     parsed: &Parsed<'a>,
     ordinary_syntax: Option<&EmbedSyntax<'a>>,
     setup_syntax: Option<&EmbedSyntax<'a>>,
-    produce: impl FnOnce() -> Result<VueFile<'a>, VueProgramError>,
+    produce: impl FnOnce() -> Result<VueL2Ir<'a>, VueProgramError>,
     count: &mut Counts,
     path: &std::path::Path,
 ) {
@@ -88,7 +88,7 @@ fn compare_file<'a>(
     }
     let candidate = produce().unwrap();
     let model = candidate.model();
-    let mut control = FileProducer::new(arena, source).unwrap();
+    let mut control = L2IrProducer::new(arena, source).unwrap();
     let ordinary = view
         .ordinary()
         .zip(ordinary_syntax)
@@ -97,7 +97,7 @@ fn compare_file<'a>(
             let (_, scope) = control
                 .program_observed(input(script, syntax), ProgramScope::Module, &mut bindings)
                 .unwrap();
-            let mut second_file = FileProducer::new(arena, source).unwrap();
+            let mut second_file = L2IrProducer::new(arena, source).unwrap();
             let mut options = OptionsObserver::new();
             second_file
                 .program_observed(input(script, syntax), ProgramScope::Module, &mut options)

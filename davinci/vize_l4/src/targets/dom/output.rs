@@ -51,10 +51,10 @@ use crate::{
 /// ```
 /// The actual lower owner must remain alive:
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeTemplateFile;
+/// use vize_l2::lang::js::NativeTemplateL2Ir;
 /// use vize_l3::decision::template::build_template_dom_decisions;
 /// use vize_l4::targets::dom::emit_template_output;
-/// fn discard(owner: NativeTemplateFile<'_>) {
+/// fn discard(owner: NativeTemplateL2Ir<'_>) {
 ///     let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
 ///     let output = emit_template_output(analysis).unwrap();
 ///     drop(owner);

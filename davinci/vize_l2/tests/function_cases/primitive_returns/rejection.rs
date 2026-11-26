@@ -1,6 +1,6 @@
 use super::*;
 use vize_l0::Span;
-use vize_l2::file::{FileIssue, FileIssueKind};
+use vize_l2::file::{L2IrIssue, L2IrIssueKind};
 
 #[test]
 fn every_non_keyword_return_retains_the_original_whole_function_partial_issue() {
@@ -37,10 +37,10 @@ fn every_non_keyword_return_retains_the_original_whole_function_partial_issue() 
         assert!(!file.is_complete());
         assert_eq!(
             file.issues(),
-            &[FileIssue {
+            &[L2IrIssue {
                 unit: file.units()[0].id,
                 span: Span::new(0, source.len() as u32),
-                kind: FileIssueKind::UnsupportedSyntax,
+                kind: L2IrIssueKind::UnsupportedSyntax,
             }]
         );
         assert_eq!(file.bindings().count(), 1);
@@ -99,13 +99,13 @@ fn primitive_return_does_not_hide_real_unresolved_body_or_late_sibling_issues() 
     assert!(!file.is_complete());
     assert_eq!(
         file.issues(),
-        &[FileIssue {
+        &[L2IrIssue {
             unit: file.units()[0].id,
             span: Span::new(
                 source.find("missing").unwrap() as u32,
                 source.find("missing").unwrap() as u32 + 7
             ),
-            kind: FileIssueKind::UnresolvedReference,
+            kind: L2IrIssueKind::UnresolvedReference,
         }]
     );
     assert_eq!(file.bindings().count(), 2);
@@ -116,10 +116,10 @@ fn primitive_return_does_not_hide_real_unresolved_body_or_late_sibling_issues() 
     assert!(!file.is_complete());
     assert_eq!(
         file.issues(),
-        &[FileIssue {
+        &[L2IrIssue {
             unit: file.units()[0].id,
             span: Span::new(source.find("class").unwrap() as u32, source.len() as u32),
-            kind: FileIssueKind::UnsupportedSyntax,
+            kind: L2IrIssueKind::UnsupportedSyntax,
         }]
     );
     assert_eq!(file.references().len(), 1);
@@ -147,10 +147,10 @@ fn original_keyword_return_never_bypasses_the_existing_function_envelope_guards(
         assert!(!file.is_complete());
         assert_eq!(
             file.issues(),
-            &[FileIssue {
+            &[L2IrIssue {
                 unit: file.units()[0].id,
                 span: Span::new(0, source.len() as u32),
-                kind: FileIssueKind::UnsupportedSyntax,
+                kind: L2IrIssueKind::UnsupportedSyntax,
             }]
         );
         assert_eq!(file.bindings().count(), 1);

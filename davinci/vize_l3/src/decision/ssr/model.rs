@@ -3,7 +3,7 @@
 use super::{SelectedSetupSsrAnalysis, SsrSetupAccess, SsrSetupExpression, SsrUnsupported};
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{BindingRef, FileResolution, NativeFileModel, NativeFileModelState},
+    file::{BindingRef, L2IrResolution, NativeL2IrModel, NativeL2IrModelState},
     lang::js::NativeSelectedSetup,
     op::{BindingOp, ElementOp, ModelOp},
     resolution::Occurrence,
@@ -11,10 +11,10 @@ use vize_l2::{
 
 /// The original mutable source is retained, but SSR receives no update writer.
 /// Construction is private and the same current File must outlive this view.
-pub struct SsrFileModel<'owner, 'arena> {
-    original: &'owner NativeFileModel<'arena>,
+pub struct SsrL2IrModel<'owner, 'arena> {
+    original: &'owner NativeL2IrModel<'arena>,
     model: &'owner ModelOp<'arena>,
-    resolution: FileResolution<'owner, 'arena>,
+    resolution: L2IrResolution<'owner, 'arena>,
     binding: BindingRef<'owner, 'arena>,
     occurrence: &'owner Occurrence<'arena>,
     authored: Span,
@@ -57,14 +57,14 @@ impl<'owner, 'arena> SelectedSetupSsrAnalysis<'_, 'owner, 'arena> {
         &self,
         element_node: NodeId,
         element: &'owner ElementOp<'arena>,
-    ) -> Result<Option<SsrFileModel<'owner, 'arena>>, SsrUnsupported> {
+    ) -> Result<Option<SsrL2IrModel<'owner, 'arena>>, SsrUnsupported> {
         let file = self.l2ir();
         let original = match file.native_models() {
             [] => return Ok(None),
             [original] => original,
             _ => return Err(SsrUnsupported::FileBinding),
         };
-        let NativeFileModelState::Admitted(node) = original.state() else {
+        let NativeL2IrModelState::Admitted(node) = original.state() else {
             return Err(SsrUnsupported::FileBinding);
         };
         let facts = self.ssr().ok_or(SsrUnsupported::FileExpression)?;
@@ -111,7 +111,7 @@ impl<'owner, 'arena> SelectedSetupSsrAnalysis<'_, 'owner, 'arena> {
         let authored = expression
             .authored_span(occurrence.span)
             .ok_or(SsrUnsupported::FileExpression)?;
-        Ok(Some(SsrFileModel {
+        Ok(Some(SsrL2IrModel {
             original,
             model,
             resolution,
@@ -122,19 +122,19 @@ impl<'owner, 'arena> SelectedSetupSsrAnalysis<'_, 'owner, 'arena> {
     }
 }
 
-impl core::fmt::Debug for SsrFileModel<'_, '_> {
+impl core::fmt::Debug for SsrL2IrModel<'_, '_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("SsrFileModel")
+            .debug_struct("SsrL2IrModel")
             .field("node", &self.resolution.node())
             .field("scope", &self.resolution.scope())
             .finish_non_exhaustive()
     }
 }
 
-impl<'owner, 'arena> SsrFileModel<'owner, 'arena> {
+impl<'owner, 'arena> SsrL2IrModel<'owner, 'arena> {
     #[must_use]
-    pub const fn original(&self) -> &'owner NativeFileModel<'arena> {
+    pub const fn original(&self) -> &'owner NativeL2IrModel<'arena> {
         self.original
     }
     #[must_use]
@@ -142,7 +142,7 @@ impl<'owner, 'arena> SsrFileModel<'owner, 'arena> {
         self.model
     }
     #[must_use]
-    pub const fn resolution(&self) -> FileResolution<'owner, 'arena> {
+    pub const fn resolution(&self) -> L2IrResolution<'owner, 'arena> {
         self.resolution
     }
     #[must_use]

@@ -64,13 +64,13 @@ pub(crate) fn lower_root<'a>(
     oxc_root: vize_l1_to_l2::framework::vue::jsx::JsxRoot<'_, '_>,
     root: &RootNode<'a>,
 ) -> Result<JsxL2Root<'a>, L2Refusal> {
-    use vize_l1_to_l2::framework::vue::jsx::{JsxDialect, JsxFile, lower_component};
+    use vize_l1_to_l2::framework::vue::jsx::{JsxDialect, JsxL2Ir, lower_component};
     let allocator = lowerer.bump();
     let source = lowerer.mapper().source();
     if lowerer.admits_level_l2()
         && let Ok(def) = lower_component(
             allocator,
-            &JsxFile {
+            &JsxL2Ir {
                 source,
                 scoping: lowerer.scoping(),
                 booleans: lowerer.boolean_bindings(),

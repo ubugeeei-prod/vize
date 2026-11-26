@@ -152,7 +152,7 @@ fn late_unsupported_namespace_keeps_the_complete_original_producer_refusal() {
         [(
             0,
             Span::new(25, 31),
-            vize_l2::file::FileIssueKind::UnsupportedSyntax
+            vize_l2::file::L2IrIssueKind::UnsupportedSyntax
         )]
     );
 }

@@ -6,7 +6,7 @@ use super::super::{
     for_head::ObservedFor, handler::ObservedHandler, model::ObservedModel,
 };
 use crate::artifact::RegionBuilder;
-use crate::file::region::FileRegion;
+use crate::file::region::L2IrRegion;
 use crate::lang::js::file::native::NativeTemplateIssueKind as Kind;
 use crate::op::Attribute;
 use core::ops::DerefMut;
@@ -29,7 +29,7 @@ pub(in crate::file::region::native) struct Header<'a> {
 pub(super) fn construct<'a: 'b, 'b, R>(
     original: &ElementView<'_, 'a>,
     selected: &SelectedTemplateComponent<'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<Header<'a>, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -40,7 +40,7 @@ where
 pub(in crate::file::region::native) fn construct_for_pair<'a: 'b, 'b, R>(
     original: &ElementView<'_, 'a>,
     selected: &SelectedTemplateComponent<'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<Header<'a>, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -51,7 +51,7 @@ where
 fn construct_with_policy<'a: 'b, 'b, R>(
     original: &ElementView<'_, 'a>,
     selected: &SelectedTemplateComponent<'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
     paired: bool,
 ) -> Result<Header<'a>, Kind>
 where
@@ -181,7 +181,7 @@ pub(in crate::file::region::native) struct ReadyHeader<'a> {
 impl<'a> Header<'a> {
     pub(in crate::file::region::native) fn resolve_handlers<'b, R>(
         self,
-        region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+        region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
     ) -> Result<ReadyHeader<'a>, Kind>
     where
         'a: 'b,

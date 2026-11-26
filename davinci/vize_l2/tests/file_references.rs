@@ -1,8 +1,8 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::file::{FileIssueKind, Namespace, ReferenceTarget};
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::file::{L2IrIssueKind, Namespace, ReferenceTarget};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use vize_l2::resolution::Usage;
 
 #[test]
@@ -11,7 +11,7 @@ fn forward_uses_and_export_leaves_resolve_at_the_actual_unit_scope_closure() {
     let source = "const first = later; const later = 1; export {first as out};";
     let parsed = Parser::new(&arena, source, SourceType::mjs()).parse_observed();
     assert!(parsed.diagnostics().is_empty());
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(
@@ -52,7 +52,7 @@ fn unresolved_runtime_names_keep_their_authored_site_without_context_or_global_f
         .unwrap();
     let parsed = Parser::new(&arena, block.source(), SourceType::mjs()).parse_observed();
     assert!(parsed.diagnostics().is_empty());
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(parsed.admitted().unwrap(), block, 5).unwrap(),
@@ -72,7 +72,7 @@ fn unresolved_runtime_names_keep_their_authored_site_without_context_or_global_f
     assert!(
         file.issues()
             .iter()
-            .all(|issue| issue.kind == FileIssueKind::UnresolvedReference)
+            .all(|issue| issue.kind == L2IrIssueKind::UnresolvedReference)
     );
     assert_eq!(file.issues()[0].span, file.references()[0].span);
     assert_eq!(file.issues()[0].unit.index(), 5);
@@ -84,7 +84,7 @@ fn unsupported_expression_rolls_back_every_preceding_use_in_that_subtree() {
     let source = "const known = 1; const value = known + (() => missing);";
     let parsed = Parser::new(&arena, source, SourceType::mjs()).parse_observed();
     assert!(parsed.diagnostics().is_empty());
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(
@@ -101,7 +101,7 @@ fn unsupported_expression_rolls_back_every_preceding_use_in_that_subtree() {
     assert!(file.references().is_empty());
     assert_eq!(file.bindings().count(), 2);
     assert_eq!(file.issues().len(), 1);
-    assert_eq!(file.issues()[0].kind, FileIssueKind::UnsupportedSyntax);
+    assert_eq!(file.issues()[0].kind, L2IrIssueKind::UnsupportedSyntax);
 }
 
 #[test]
@@ -110,7 +110,7 @@ fn real_use_events_preserve_write_shorthand_and_constructor_roles() {
     let source = "import Maker from 'dep'; let value = 1; value += 2; const obj = {value}; const result = new Maker(value);";
     let parsed = Parser::new(&arena, source, SourceType::mjs()).parse_observed();
     assert!(parsed.diagnostics().is_empty());
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(
@@ -142,7 +142,7 @@ fn type_export_local_resolves_in_its_namespace_while_reexports_create_no_local_u
     let source_type = SourceType::ts().with_module(true);
     let parsed = Parser::new(&arena, source, source_type).parse_observed();
     assert!(parsed.diagnostics().is_empty());
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(

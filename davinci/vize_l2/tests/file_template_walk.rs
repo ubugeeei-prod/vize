@@ -3,8 +3,8 @@ use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l2::artifact::{ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
-use vize_l2::file::{Declaration, FileIssueKind, TemplatePolicy, TemplateScope};
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::file::{Declaration, L2IrIssueKind, TemplatePolicy, TemplateScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 #[derive(Clone, Copy)]
 struct Values;
@@ -13,14 +13,14 @@ impl TemplatePolicy for Values {
         true
     }
 }
-fn producer<'a>(arena: &'a Allocator, source: &'a str) -> Result<FileProducer<'a>, &'static str> {
+fn producer<'a>(arena: &'a Allocator, source: &'a str) -> Result<L2IrProducer<'a>, &'static str> {
     let end = source.find('\n').ok_or("script end")?;
     let block = SourceRoot::new(source)
         .map_err(|_| "source root")?
         .block(source.get(..end).ok_or("script slice")?, 0)
         .map_err(|_| "script block")?;
     let syntax = Parser::new(arena, block.source(), SourceType::mjs()).parse_observed();
-    let mut producer = FileProducer::new(arena, source).map_err(|_| "file owner")?;
+    let mut producer = L2IrProducer::new(arena, source).map_err(|_| "file owner")?;
     producer
         .program(
             ProgramInput::checked(syntax.admitted().ok_or("actual admission")?, block, 7)
@@ -56,7 +56,7 @@ fn actual_whole_driver_guard_interruption_before_any_factory_refuses_complete() 
     assert!(file.interrupted_programs().next().is_none());
     let issue = file.template_interruption().unwrap();
     assert_eq!(issue.span, span);
-    assert_eq!(issue.kind, FileIssueKind::InterruptedTemplate);
+    assert_eq!(issue.kind, L2IrIssueKind::InterruptedTemplate);
     assert!(core::ptr::eq(file.artifact().source(), source));
 }
 fn driver<'a, R: ComponentFactory<'a>>(
@@ -129,7 +129,7 @@ fn normal_whole_driver_close_cannot_clear_caught_inner_interruption() {
         );
         let issue = walk.complete().unwrap_err();
         assert_eq!(issue.span, span);
-        assert_eq!(issue.kind, FileIssueKind::InterruptedTemplate);
+        assert_eq!(issue.kind, L2IrIssueKind::InterruptedTemplate);
     }
     let file = producer.finish().unwrap();
     assert!(!file.is_complete());
@@ -141,7 +141,7 @@ fn normal_whole_driver_close_cannot_clear_caught_inner_interruption() {
 fn invalid_utf8_walk_extent_is_a_retained_refusal_before_guard_or_mint() {
     let arena = Allocator::default();
     let source = "é";
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     assert!(
         producer
             .template_region(TemplateScope::Root, Values)
@@ -153,7 +153,7 @@ fn invalid_utf8_walk_extent_is_a_retained_refusal_before_guard_or_mint() {
     assert!(!file.is_complete());
     assert!(file.template_interruption().is_none());
     assert_eq!(file.template_issues()[0].span, Span::new(1, 2));
-    assert_eq!(file.template_issues()[0].kind, FileIssueKind::InvalidSpan);
+    assert_eq!(file.template_issues()[0].kind, L2IrIssueKind::InvalidSpan);
     assert_eq!(file.artifact().node_count(), 0);
 }
 
@@ -212,7 +212,7 @@ fn nested_whole_driver_cannot_supply_a_forgotten_pending_guard() {
     assert_eq!(file.template_issues()[0].span, inner);
     assert_eq!(
         file.template_issues()[0].kind,
-        FileIssueKind::ActiveTemplateWalk
+        L2IrIssueKind::ActiveTemplateWalk
     );
     assert!(core::ptr::eq(file.artifact().source(), source));
 }

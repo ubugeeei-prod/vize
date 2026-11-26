@@ -2,7 +2,7 @@ use super::{finish, parse};
 use oxc_parser::{ParseOptions, Parser};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, String};
-use vize_l2::file::{FileIssueKind, ReferenceTarget};
+use vize_l2::file::{L2IrIssueKind, ReferenceTarget};
 use vize_l2::lang::js::ProgramInput;
 
 #[test]
@@ -15,7 +15,7 @@ fn compatible_var_parameter_redeclarations_stay_explicitly_incomplete() {
     assert!(
         file.issues()
             .iter()
-            .any(|issue| issue.kind == FileIssueKind::DuplicateDeclaration)
+            .any(|issue| issue.kind == L2IrIssueKind::DuplicateDeclaration)
     );
 }
 
@@ -50,7 +50,7 @@ fn incomplete_function_fields_and_statement_families_cannot_finish_complete() {
         assert!(
             file.issues()
                 .iter()
-                .any(|issue| issue.kind == FileIssueKind::UnsupportedSyntax),
+                .any(|issue| issue.kind == L2IrIssueKind::UnsupportedSyntax),
             "{source}: {:?}",
             file.issues()
         );
@@ -76,7 +76,7 @@ fn unresolved_implicit_and_outer_uses_keep_actual_partial_owner_facts() {
         assert!(
             file.issues()
                 .iter()
-                .any(|issue| issue.kind == FileIssueKind::UnresolvedReference)
+                .any(|issue| issue.kind == L2IrIssueKind::UnresolvedReference)
         );
         assert_eq!(parsed.admitted().unwrap().program().body.len(), 1);
     }
@@ -90,7 +90,7 @@ fn original_source_and_default_module_authority_cannot_be_substituted_for_functi
     let parsed = parse(&arena, &source);
     assert!(matches!(
         ProgramInput::checked(parsed.admitted().unwrap(), SourceRoot::new(&foreign).unwrap().whole_block(), 0),
-        Err(error) if error.kind == FileIssueKind::InvalidSource
+        Err(error) if error.kind == L2IrIssueKind::InvalidSource
     ));
     let block = SourceRoot::new(&source).unwrap().whole_block();
     let nondefault = Parser::new(&arena, &source, SourceType::mjs())
@@ -100,7 +100,7 @@ fn original_source_and_default_module_authority_cannot_be_substituted_for_functi
         })
         .parse_observed();
     assert!(
-        matches!(ProgramInput::checked(nondefault.admitted().unwrap(), block, 0), Err(error) if error.kind == FileIssueKind::InvalidProfile)
+        matches!(ProgramInput::checked(nondefault.admitted().unwrap(), block, 0), Err(error) if error.kind == L2IrIssueKind::InvalidProfile)
     );
     for (profile, text) in [
         (SourceType::cjs(), source.as_str()),
@@ -117,7 +117,7 @@ fn original_source_and_default_module_authority_cannot_be_substituted_for_functi
         assert!(
             file.issues()
                 .iter()
-                .any(|issue| issue.kind == FileIssueKind::InvalidProfile)
+                .any(|issue| issue.kind == L2IrIssueKind::InvalidProfile)
         );
     }
     let outside = Parser::new(&arena, "return;", SourceType::mjs()).parse_observed();

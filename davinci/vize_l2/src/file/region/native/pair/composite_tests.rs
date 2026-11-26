@@ -12,10 +12,10 @@ use super::Kind;
 use super::tests::{completed, owner};
 use crate::expr::ExprRef;
 use crate::file::{
-    L2Ir, Namespace as BindingNamespace, NativeFileConditionalState,
-    NativeFileInterpolationState as State,
+    L2Ir, Namespace as BindingNamespace, NativeL2IrConditionalState,
+    NativeL2IrInterpolationState as State,
 };
-use crate::lang::js::NativeTemplateFile;
+use crate::lang::js::NativeTemplateL2Ir;
 use crate::op::Op;
 use crate::resolution::Usage;
 use crate::walk::NodeRef;
@@ -38,7 +38,7 @@ fn node<'a>(l2ir: &L2Ir<'a>, target: &Op<'a>) -> NodeId {
     found.unwrap()
 }
 
-fn assert_original(output: &NativeTemplateFile<'_>, shapes: [&str; 2]) {
+fn assert_original(output: &NativeTemplateL2Ir<'_>, shapes: [&str; 2]) {
     let setup = output.setup().unwrap();
     let file = output.file().unwrap();
     let source = file.artifact().source();
@@ -48,7 +48,7 @@ fn assert_original(output: &NativeTemplateFile<'_>, shapes: [&str; 2]) {
     let [conditional] = file.native_conditionals() else {
         panic!("original pair")
     };
-    let NativeFileConditionalState::Admitted(if_node) = conditional.state() else {
+    let NativeL2IrConditionalState::Admitted(if_node) = conditional.state() else {
         panic!("normally closed pair")
     };
     let [Op::If(original)] = file.artifact().root().ops.as_slice() else {

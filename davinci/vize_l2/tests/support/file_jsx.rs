@@ -1,8 +1,8 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::file::{FileIssueKind, L2Ir};
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::file::{L2Ir, L2IrIssueKind};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 pub type LawResult<T = ()> = Result<T, &'static str>;
 pub trait Required<T> {
@@ -35,12 +35,12 @@ pub fn lower<'a>(
     let syntax = Parser::new(arena, raw, profile).parse_observed();
     let input = ProgramInput::checked(syntax.admitted().required()?, block, 2).map_err(
         |error| match error.kind {
-            FileIssueKind::InvalidProfile => "Program profile rejected",
-            FileIssueKind::InvalidSource => "Program source rejected",
+            L2IrIssueKind::InvalidProfile => "Program profile rejected",
+            L2IrIssueKind::InvalidSource => "Program source rejected",
             _ => "Program input rejected",
         },
     )?;
-    let mut producer = FileProducer::new(arena, file).map_err(|_| "File producer rejected")?;
+    let mut producer = L2IrProducer::new(arena, file).map_err(|_| "File producer rejected")?;
     producer
         .program(input, ProgramScope::Module)
         .map_err(|_| "Program walk rejected")?;

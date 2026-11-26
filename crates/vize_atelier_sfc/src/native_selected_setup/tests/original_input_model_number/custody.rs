@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use vize_l1_to_l2::native_file::NativeSelectedSetupSfcObservation;
 use vize_l2::{
     expr::ExprRef,
-    file::{DeclarationKind, InitializerKind, Namespace, NativeFileModelState},
+    file::{DeclarationKind, InitializerKind, Namespace, NativeL2IrModelState},
     op::{BindingOp, Op},
     resolution::Usage,
 };
@@ -32,7 +32,7 @@ pub(super) fn capture(
     let [record] = file.native_models() else {
         return Err("one actual Model".into());
     };
-    let NativeFileModelState::Admitted(node) = record.state() else {
+    let NativeL2IrModelState::Admitted(node) = record.state() else {
         return Err("normally closed Model".into());
     };
     let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {

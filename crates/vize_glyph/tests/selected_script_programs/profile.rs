@@ -30,7 +30,7 @@ fn syntax_units(program: &EmbedSyntax<'_>) -> usize {
     black_box(program).program().unwrap().body.len()
 }
 
-fn semantic_units(producer: VueFileProducer<'_>) -> usize {
+fn semantic_units(producer: VueL2IrProducer<'_>) -> usize {
     let file = producer.finish().unwrap();
     black_box(file.l2ir().units().len() + file.l2ir().bindings().count())
 }
@@ -55,7 +55,7 @@ fn run(view: AdmittedDescriptor<'_, '_>, read: Read, shared: bool) -> usize {
         view.with_script_programs(&arena, |programs| {
             if needs_file {
                 let summary = semantic_units(
-                    VueFileProducer::from_script_programs(&arena, programs, ALL).unwrap(),
+                    VueL2IrProducer::from_script_programs(&arena, programs, ALL).unwrap(),
                 );
                 if second_setup {
                     summary + programs.get(ScriptRole::Setup).map_or(0, syntax_units)
@@ -73,7 +73,7 @@ fn run(view: AdmittedDescriptor<'_, '_>, read: Read, shared: bool) -> usize {
         let setup = view.setup().map(|selected| direct(&arena, selected));
         if needs_file {
             let summary = semantic_units(
-                VueFileProducer::scripts(
+                VueL2IrProducer::scripts(
                     &arena,
                     view,
                     ordinary.as_ref().and_then(EmbedSyntax::admitted_program),

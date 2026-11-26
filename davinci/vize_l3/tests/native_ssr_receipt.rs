@@ -6,7 +6,7 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{NativeTemplateL2Ir, NativeTemplateOwner};
 use vize_l3::decision::ssr::{
     SsrPart, SsrTemplateBuildError, SsrUnsupported, build_template_ssr_decisions,
 };
@@ -15,7 +15,7 @@ use vize_l3::decision::ssr::{
     clippy::unwrap_used,
     reason = "invalid original fixture must fail admission"
 )]
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateL2Ir<'a> {
     let component = {
         let descriptor = Vue.observe_descriptor(
             arena,

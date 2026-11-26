@@ -17,7 +17,7 @@ mod template;
 #[cfg(test)]
 mod tests;
 pub use expression::{VaporExpression, VaporValueKind};
-pub use file::{VaporFileAnalysis, build_vapor_file_decisions};
+pub use file::{VaporL2IrAnalysis, build_vapor_file_decisions};
 pub use model::VaporModel;
 pub use setup::{SelectedSetupVaporAnalysis, build_selected_setup_vapor_decisions};
 pub use template::{TemplateVaporAnalysis, build_template_vapor_decisions};

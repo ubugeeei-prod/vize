@@ -2,7 +2,7 @@ use super::support::{block, script};
 use vize_l0::{Allocator, Vec};
 use vize_l1::embed::Lang;
 use vize_l1_to_l2::native::NativeComponent;
-use vize_l1_to_l2::vue_file::{VueFileIssueKind, VueFileProducer};
+use vize_l1_to_l2::vue_file::{VueL2IrIssueKind, VueL2IrProducer};
 use vize_l2::artifact::{ComponentBody, ComponentFactory};
 use vize_l2::lang::js::ProgramInput;
 use vize_l2::op::Namespace;
@@ -27,7 +27,7 @@ fn original_js_and_ts_empty_default_complete_with_directives_comments_and_zero_b
             format!("🌸<script>{content}</script><template><p>kept<!--tail--></p></template>");
         let (syntax, script_block) = script(&arena, &source, content, lang).unwrap();
         let original = syntax.program().unwrap();
-        let mut producer = VueFileProducer::new(&arena, &source).unwrap();
+        let mut producer = VueL2IrProducer::new(&arena, &source).unwrap();
         let unit = producer
             .ordinary(
                 ProgramInput::checked(syntax.admitted_program().unwrap(), script_block, 0).unwrap(),
@@ -128,7 +128,7 @@ fn similar_options_families_keep_the_original_staged_issue_and_never_start_templ
         let source = format!("<script>{content}</script><template>kept</template>");
         let (syntax, script_block) = script(&arena, &source, content, lang).unwrap();
         assert_eq!(syntax.diagnostics().count(), 0, "{content}");
-        let mut producer = VueFileProducer::new(&arena, &source).unwrap();
+        let mut producer = VueL2IrProducer::new(&arena, &source).unwrap();
         let unit = producer
             .ordinary(
                 ProgramInput::checked(syntax.admitted_program().unwrap(), script_block, 0).unwrap(),
@@ -136,14 +136,14 @@ fn similar_options_families_keep_the_original_staged_issue_and_never_start_templ
             .unwrap();
         assert_eq!(
             producer.template_region().err().unwrap().kind,
-            VueFileIssueKind::PreviousIssues,
+            VueL2IrIssueKind::PreviousIssues,
             "{content}"
         );
         let rejected = producer.finish().unwrap_err();
         let staged = rejected
             .issues()
             .iter()
-            .filter(|issue| issue.kind == VueFileIssueKind::UnsupportedOptions)
+            .filter(|issue| issue.kind == VueL2IrIssueKind::UnsupportedOptions)
             .collect::<std::vec::Vec<_>>();
         assert_eq!(staged.len(), defaults, "{content}");
         for issue in staged {
@@ -169,7 +169,7 @@ fn mixed_setup_never_resolves_the_ordinary_empty_default_options_issue() {
     let (ordinary, ordinary_block) =
         script(&arena, source, "export default {};", Lang::Js).unwrap();
     let (setup, setup_block) = script(&arena, source, "const value=1;", Lang::Js).unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     let unit = producer
         .ordinary(
             ProgramInput::checked(ordinary.admitted_program().unwrap(), ordinary_block, 0).unwrap(),
@@ -180,13 +180,13 @@ fn mixed_setup_never_resolves_the_ordinary_empty_default_options_issue() {
         .unwrap();
     assert_eq!(
         producer.template_region().err().unwrap().kind,
-        VueFileIssueKind::PreviousIssues
+        VueL2IrIssueKind::PreviousIssues
     );
     let rejected = producer.finish().unwrap_err();
     let issue = rejected
         .issues()
         .iter()
-        .find(|issue| issue.kind == VueFileIssueKind::UnsupportedOptions)
+        .find(|issue| issue.kind == VueL2IrIssueKind::UnsupportedOptions)
         .unwrap();
     assert_eq!(issue.unit, Some(unit));
     assert!(rejected.setup().is_some());
@@ -212,7 +212,7 @@ fn template_interruption_keeps_the_staged_options_issue_and_all_original_owners(
         "<script>/*original*/ export default {};</script><template><div>kept</div></template>";
     let (syntax, script_block) =
         script(&arena, source, "/*original*/ export default {};", Lang::Js).unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     let unit = producer
         .ordinary(
             ProgramInput::checked(syntax.admitted_program().unwrap(), script_block, 0).unwrap(),
@@ -236,7 +236,7 @@ fn template_interruption_keeps_the_staged_options_issue_and_all_original_owners(
     let issue = rejected
         .issues()
         .iter()
-        .find(|issue| issue.kind == VueFileIssueKind::UnsupportedOptions)
+        .find(|issue| issue.kind == VueL2IrIssueKind::UnsupportedOptions)
         .unwrap();
     assert_eq!(issue.unit, Some(unit));
     assert_eq!(

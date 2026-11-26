@@ -2,18 +2,18 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
 use vize_l2::file::ReferenceTarget;
-use vize_l2::lang::js::{JsxFile, JsxFileProducer};
+use vize_l2::lang::js::{JsxL2Ir, JsxL2IrProducer};
 use vize_l3::jsx::{JsxDecisionKind as Decision, JsxIssueKind as Issue, build_jsx_decisions};
 
 fn lower<'a>(
     arena: &'a Allocator,
     source: &'a str,
     profile: SourceType,
-) -> Result<JsxFile<'a>, &'static str> {
+) -> Result<JsxL2Ir<'a>, &'static str> {
     let block = SourceRoot::new(source).map_err(|_| "source")?.whole_block();
     let observation = Parser::new(arena, source, profile).parse_observed();
     let mut producer =
-        JsxFileProducer::new(arena, observation, block, 0).map_err(|_| "producer")?;
+        JsxL2IrProducer::new(arena, observation, block, 0).map_err(|_| "producer")?;
     producer.walk().map_err(|_| "walk")?;
     producer.finish().map_err(|_| "finish")
 }

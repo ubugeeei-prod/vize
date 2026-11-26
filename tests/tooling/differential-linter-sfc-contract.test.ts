@@ -28,7 +28,7 @@ const historyNativeReasons: Record<string, unknown> = JSON.parse(
 // Independent authored whole vector; never derive its geometry from a native
 // parser or expectedNativeReason and never grant execution credit here.
 const positive =
-  "FileIssues { issues: [FileIssue { unit: ScriptUnitId(0), span: Span { start: 64, end: 98 }, kind: UnsupportedSyntax }], interruptions: [] }";
+  "FileIssues { issues: [L2IrIssue { unit: ScriptUnitId(0), span: Span { start: 64, end: 98 }, kind: UnsupportedSyntax }], interruptions: [] }";
 function missing(rule: string) {
   return {
     api: "--native-current-api",

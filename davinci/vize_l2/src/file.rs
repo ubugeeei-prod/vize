@@ -10,7 +10,7 @@ use vize_l0::id::NodeId;
 
 pub(crate) mod build;
 pub(crate) mod region;
-pub use build::FileBuilder;
+pub use build::L2IrBuilder;
 pub use region::{
     TemplateBody, TemplateChildRegion, TemplatePolicy, TemplateRegion, TemplateScope,
     TemplateWalkRegion,
@@ -19,24 +19,24 @@ mod attribute_value;
 mod conditional;
 mod model;
 pub use attribute_value::{
-    FileAttributeValue, NativeFileAttributeValue, NativeFileAttributeValueState,
+    L2IrAttributeValue, NativeL2IrAttributeValue, NativeL2IrAttributeValueState,
 };
 pub use conditional::{
-    NativeConditionalElseInput, NativeFileConditional, NativeFileConditionalState,
+    NativeConditionalElseInput, NativeL2IrConditional, NativeL2IrConditionalState,
 };
-pub use model::{NativeFileModel, NativeFileModelKind, NativeFileModelState};
+pub use model::{NativeL2IrModel, NativeL2IrModelKind, NativeL2IrModelState};
 mod for_head;
 mod handler;
 mod interpolation;
 mod text_value;
 pub use text_value::{
-    FileTextValue, NativeFileTextValue, NativeFileTextValueState, NativeTextValuePolicyError,
+    L2IrTextValue, NativeL2IrTextValue, NativeL2IrTextValueState, NativeTextValuePolicyError,
 };
 mod module_source;
-pub use for_head::{FileForHead, FileTemplateDeclaration, RejectedFileFor, TemplateDeclaration};
-pub use handler::{FileHandler, RejectedFileHandler};
+pub use for_head::{L2IrForHead, L2IrTemplateDeclaration, RejectedL2IrFor, TemplateDeclaration};
+pub use handler::{L2IrHandler, RejectedL2IrHandler};
 pub use interpolation::{
-    NativeFileInterpolation, NativeFileInterpolationFailure, NativeFileInterpolationState,
+    NativeL2IrInterpolation, NativeL2IrInterpolationFailure, NativeL2IrInterpolationState,
 };
 pub(crate) use module_source::{DYNAMIC_IMPORT, EMPTY_SOURCE_EXPORT, SourceSite};
 mod records;
@@ -44,7 +44,7 @@ mod template;
 pub(crate) use records::ProgramOrigin;
 pub mod vue;
 pub use records::{
-    Declaration, DeclarationKind, Export, FileIssue, FileIssueKind, Import, InitializerKind,
+    Declaration, DeclarationKind, Export, Import, InitializerKind, L2IrIssue, L2IrIssueKind,
     Namespace, Reference, ReferenceTarget, Scope, ScopeId, ScriptProfile, ScriptUnit, ScriptUnitId,
     TemplateIssue,
 };
@@ -150,11 +150,11 @@ impl<'a> L2Ir<'a> {
     }
 
     #[must_use]
-    pub fn issues(&self) -> &[FileIssue] {
+    pub fn issues(&self) -> &[L2IrIssue] {
         &self.facts.issues
     }
 
-    pub fn interrupted_programs(&self) -> impl Iterator<Item = FileIssue> + '_ {
+    pub fn interrupted_programs(&self) -> impl Iterator<Item = L2IrIssue> + '_ {
         self.facts.units.iter().filter_map(ScriptUnit::interruption)
     }
 
@@ -179,9 +179,9 @@ impl<'a> L2Ir<'a> {
     }
 
     #[must_use]
-    pub fn expression(&self, node: NodeId) -> Option<FileResolution<'_, 'a>> {
+    pub fn expression(&self, node: NodeId) -> Option<L2IrResolution<'_, 'a>> {
         self.facts.expressions.get(node)?;
-        Some(FileResolution { l2ir: self, node })
+        Some(L2IrResolution { l2ir: self, node })
     }
 
     pub(crate) fn from_producer(artifact: L2Template<'a>, facts: build::L2Script<'a>) -> Self {
@@ -231,18 +231,18 @@ impl<'f, 'a> BindingRef<'f, 'a> {
 ///
 /// ```compile_fail
 /// use vize_l0::id::NodeId;
-/// use vize_l2::file::{L2Ir, FileResolution};
+/// use vize_l2::file::{L2Ir, L2IrResolution};
 /// fn forge(l2ir: &L2Ir<'_>) {
-///     let _ = FileResolution { l2ir, node: NodeId::FIRST };
+///     let _ = L2IrResolution { l2ir, node: NodeId::FIRST };
 /// }
 /// ```
 #[derive(Clone, Copy)]
-pub struct FileResolution<'f, 'a> {
+pub struct L2IrResolution<'f, 'a> {
     l2ir: &'f L2Ir<'a>,
     node: NodeId,
 }
 
-impl<'f, 'a> FileResolution<'f, 'a> {
+impl<'f, 'a> L2IrResolution<'f, 'a> {
     #[must_use]
     pub fn l2ir(self) -> &'f L2Ir<'a> {
         self.l2ir
@@ -276,15 +276,15 @@ impl<'f, 'a> FileResolution<'f, 'a> {
 }
 
 /// A rejected canonical construction retains its private semantic facts.
-pub struct RejectedFile<'a> {
+pub struct RejectedL2Ir<'a> {
     pub(crate) artifact: crate::artifact::RejectedL2Template<'a>,
     pub(crate) facts: Box<build::L2Script<'a>>,
 }
 
-impl core::fmt::Debug for RejectedFile<'_> {
+impl core::fmt::Debug for RejectedL2Ir<'_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("RejectedFile")
+            .debug_struct("RejectedL2Ir")
             .field("artifact", &self.artifact)
             .field("issues", &self.facts.issues)
             .field("template_issues", &self.facts.template_issues)
@@ -292,7 +292,7 @@ impl core::fmt::Debug for RejectedFile<'_> {
     }
 }
 
-impl<'a> RejectedFile<'a> {
+impl<'a> RejectedL2Ir<'a> {
     #[must_use]
     pub fn template_interruption(&self) -> Option<TemplateIssue> {
         self.facts.template_walk.interruption()
@@ -318,10 +318,10 @@ impl<'a> RejectedFile<'a> {
         &self.facts.declarations
     }
     #[must_use]
-    pub fn issues(&self) -> &[FileIssue] {
+    pub fn issues(&self) -> &[L2IrIssue] {
         &self.facts.issues
     }
-    pub fn interrupted_programs(&self) -> impl Iterator<Item = FileIssue> + '_ {
+    pub fn interrupted_programs(&self) -> impl Iterator<Item = L2IrIssue> + '_ {
         self.facts.units.iter().filter_map(ScriptUnit::interruption)
     }
     #[must_use]

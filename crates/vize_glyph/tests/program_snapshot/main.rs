@@ -21,7 +21,7 @@ use vize_l1::{
 };
 use vize_l2::{
     file::L2Ir,
-    lang::js::{FileProducer, ProgramInput, ProgramScope},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope},
 };
 
 mod profile;
@@ -31,7 +31,7 @@ fn lexical<'a>(
     block: SourceBlock<'a>,
     syntax: &EmbedSyntax<'a>,
 ) -> Option<L2Ir<'a>> {
-    let mut file = FileProducer::new(arena, block.root_source()).unwrap();
+    let mut file = L2IrProducer::new(arena, block.root_source()).unwrap();
     file.program(
         ProgramInput::checked(syntax.admitted_program()?, block, 0)
             .expect("an admitted script must bind to its exact authored block"),

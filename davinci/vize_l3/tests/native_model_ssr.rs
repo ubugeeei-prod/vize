@@ -5,7 +5,7 @@ use vize_l0::{
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
-    file::{DeclarationKind, FileResolution, NativeFileModelState},
+    file::{DeclarationKind, L2IrResolution, NativeL2IrModelState},
     resolution::Usage,
 };
 use vize_l3::decision::ssr::{
@@ -58,7 +58,7 @@ fn seven_original_models_retain_write_identity_without_becoming_generic_reads() 
         let [original] = file.native_models() else {
             return Err("one actual Model".into());
         };
-        let NativeFileModelState::Admitted(node) = original.state() else {
+        let NativeL2IrModelState::Admitted(node) = original.state() else {
             return Err("normally closed Model".into());
         };
         let expression = analysis
@@ -198,7 +198,7 @@ fn ordinary_read_receipts_and_model_absence_keep_their_existing_policy() -> Resu
 #[test]
 fn internal_access_tag_has_a_bounded_explicit_layout_cost() {
     type LegacyCarrier = (
-        FileResolution<'static, 'static>,
+        L2IrResolution<'static, 'static>,
         Option<SsrSetupRead<'static, 'static>>,
     );
     let before = core::mem::size_of::<LegacyCarrier>();

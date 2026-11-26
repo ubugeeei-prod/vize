@@ -4,7 +4,7 @@ use vize_l0::{Allocator, Span, Vec, id::NodeId};
 use vize_l2::{
     artifact::{Builder, ComponentFactory},
     file::{TemplatePolicy, TemplateScope},
-    lang::js::FileProducer,
+    lang::js::L2IrProducer,
     op::Namespace,
 };
 
@@ -151,7 +151,7 @@ fn file_entry_refuses_interrupted_template_and_keeps_sole_owner() {
         }
     }
     let arena = Allocator::default();
-    let mut producer = FileProducer::new(&arena, "hello").unwrap();
+    let mut producer = L2IrProducer::new(&arena, "hello").unwrap();
     {
         let mut template = producer
             .template_region(TemplateScope::Root, Visible)

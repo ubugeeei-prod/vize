@@ -2,8 +2,8 @@
 
 use super::NativeVisibility;
 use crate::artifact::{ComponentFactory, RegionBuilder};
-use crate::file::region::{FileRegion, TemplatePolicy};
-use crate::file::{NativeFileInterpolation, NativeFileInterpolationState};
+use crate::file::region::{L2IrRegion, TemplatePolicy};
+use crate::file::{NativeL2IrInterpolation, NativeL2IrInterpolationState};
 use crate::lang::js::{NativeInterpolationInput, NativeTemplateIssueKind as Kind};
 use crate::resolution::Usage;
 use core::ops::DerefMut;
@@ -20,7 +20,7 @@ pub(super) fn construct<'a: 'b, 'b, R>(
     selected: &SelectedTemplateComponent<'a>,
     child: ChildView<'_, 'a>,
     input: NativeInterpolationInput<'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
     check: Result<(), Kind>,
 ) -> Result<NodeId, Kind>
 where
@@ -31,9 +31,9 @@ where
     region
         .facts
         .native_interpolations
-        .push(NativeFileInterpolation {
+        .push(NativeL2IrInterpolation {
             input,
-            state: NativeFileInterpolationState::Pending,
+            state: NativeL2IrInterpolationState::Pending,
         });
     #[cfg(test)]
     interruption::after_park();
@@ -63,8 +63,8 @@ where
         .get_mut(index)
         .ok_or(Kind::InvalidEvent)?;
     record.state = match result {
-        Ok(node) => NativeFileInterpolationState::Admitted(node),
-        Err(kind) => NativeFileInterpolationState::Refused(kind),
+        Ok(node) => NativeL2IrInterpolationState::Admitted(node),
+        Err(kind) => NativeL2IrInterpolationState::Refused(kind),
     };
     result
 }
@@ -74,7 +74,7 @@ where
 pub(super) fn checked_primitive<'a: 'b, 'b, R>(
     selected: &SelectedTemplateComponent<'a>,
     child: ChildView<'_, 'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -111,7 +111,7 @@ where
             .declarations
             .get(occurrence.binding.index() as usize)
             .ok_or(Kind::UnsupportedChild)?;
-        if record.state() != NativeFileInterpolationState::Admitted(node)
+        if record.state() != NativeL2IrInterpolationState::Admitted(node)
             || region.facts.native_interpolation_nodes.get(node) != Some(&index)
             || scoped.scope != region.scope
             || !core::ptr::eq(source.authored_root(), region.source)
@@ -149,7 +149,7 @@ where
             .native_interpolations
             .get_mut(index)
             .ok_or(Kind::InvalidEvent)?
-            .state = NativeFileInterpolationState::Refused(kind);
+            .state = NativeL2IrInterpolationState::Refused(kind);
     }
     result
 }

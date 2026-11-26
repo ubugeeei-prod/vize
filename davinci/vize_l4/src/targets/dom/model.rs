@@ -1,9 +1,9 @@
 //! Runtime text-model realization from a distinct authenticated read/write row.
 
 use vize_l0::id::NodeId;
-use vize_l2::file::NativeFileModelKind;
+use vize_l2::file::NativeL2IrModelKind;
 use vize_l2::op::{BindingOp, ElementOp, ModelOp};
-use vize_l3::decision::dom::{DomChild, DomFileModel, PropertyRole};
+use vize_l3::decision::dom::{DomChild, DomL2IrModel, PropertyRole};
 
 use super::write::spell;
 use super::{DomError, DomErrorKind, Emitter, ExpressionWriter, LinkSink};
@@ -20,8 +20,8 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         let fail = || self.error(node, DomErrorKind::FileOwnerMismatch);
         let row = self.facts.file_model(node).ok_or_else(fail)?;
         match row.original().kind() {
-            Some(NativeFileModelKind::Text) => Ok(false),
-            Some(NativeFileModelKind::Checkbox) => {
+            Some(NativeL2IrModelKind::Text) => Ok(false),
+            Some(NativeL2IrModelKind::Checkbox) => {
                 let [attribute] = element.attributes.as_slice() else {
                     return Err(fail());
                 };
@@ -100,8 +100,8 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
             .file_model(node)
             .ok_or_else(|| self.error(node, DomErrorKind::MissingBinding))?;
         let helper_name = match row.original().kind() {
-            Some(NativeFileModelKind::Text) => "vModelText",
-            Some(NativeFileModelKind::Checkbox) => "vModelCheckbox",
+            Some(NativeL2IrModelKind::Text) => "vModelText",
+            Some(NativeL2IrModelKind::Checkbox) => "vModelCheckbox",
             None => return Err(self.error(node, DomErrorKind::FileOwnerMismatch)),
         };
         let model_text = self
@@ -140,7 +140,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
     }
 }
 
-fn access<L: LinkSink>(writer: &mut Writer<L>, row: &DomFileModel<'_, '_>) {
+fn access<L: LinkSink>(writer: &mut Writer<L>, row: &DomL2IrModel<'_, '_>) {
     // The sealed row already joins the actual direct mutable setup declaration,
     // sole ReadWrite occurrence and complete original Model to this File.
     let occurrence = row.occurrence();

@@ -1,7 +1,7 @@
 use super::support::{construct, script};
 use vize_l0::Allocator;
 use vize_l1::embed::Lang;
-use vize_l1_to_l2::vue_file::{VueFileIssueKind, VueFileProducer, VueScriptRole};
+use vize_l1_to_l2::vue_file::{VueL2IrIssueKind, VueL2IrProducer, VueScriptRole};
 use vize_l2::file::{DeclarationKind, Namespace};
 use vize_l2::lang::js::ProgramInput;
 
@@ -11,7 +11,7 @@ fn setup_function_exposure_uses_only_actual_unit_scope_declarations() {
     let content = "const title = 1; function show(title) { const local = title; return local; }";
     let source = "é<script setup>const title = 1; function show(title) { const local = title; return local; }</script><template><p>{{show(title)}}</p></template>";
     let (syntax, block) = script(&arena, source, content, Lang::Js).unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     producer
         .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
         .unwrap();
@@ -66,7 +66,7 @@ fn ordinary_only_functions_have_no_template_exposure_and_combined_roles_expose_t
     let source = "<script>export function outer(value) { const local = value; return local; }</script><script setup>function show(value) { return value + 1; }</script><template>{{outer(show)}}</template>";
     let (ordinary_syntax, ordinary_block) = script(&arena, source, ordinary, Lang::Js).unwrap();
     let (setup_syntax, setup_block) = script(&arena, source, setup, Lang::Js).unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     producer
         .ordinary(
             ProgramInput::checked(
@@ -84,7 +84,7 @@ fn ordinary_only_functions_have_no_template_exposure_and_combined_roles_expose_t
             .bindings()
             .all(|binding| ordinary_file.exposure(binding).is_none())
     );
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     producer
         .ordinary(
             ProgramInput::checked(
@@ -139,7 +139,7 @@ fn child_locals_cannot_resolve_a_template_use_and_original_observations_survive(
     let content = "/* original */ function show(value) { const local = value; return local; }";
     let source = "<script setup>/* original */ function show(value) { const local = value; return local; }</script><template>{{local}}</template>";
     let (syntax, block) = script(&arena, source, content, Lang::Js).unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     producer
         .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
         .unwrap();
@@ -164,14 +164,14 @@ fn same_name_define_props_and_recursive_script_calls_remain_typed_unfinished() {
         "function f(value) { return f(value); }",
     ] {
         let (syntax, block) = script(&arena, source, source, Lang::Js).unwrap();
-        let mut producer = VueFileProducer::new(&arena, source).unwrap();
+        let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
         producer
             .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
             .unwrap();
         let rejected = producer.finish().unwrap_err();
         assert!(rejected.issues().iter().any(|issue| matches!(
             issue.kind,
-            VueFileIssueKind::UnsupportedCall { optional: false }
+            VueL2IrIssueKind::UnsupportedCall { optional: false }
         )));
         assert!(!rejected.file().unwrap().is_complete());
         assert_eq!(syntax.diagnostics().count(), 0);

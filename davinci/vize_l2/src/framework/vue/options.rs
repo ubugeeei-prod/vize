@@ -16,7 +16,7 @@ mod class;
 mod read;
 
 use crate::file::{ScopeId, ScriptUnit};
-use crate::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
+use crate::lang::js::{CallEvent, DeclaredEvent, L2IrObserver, StatementEvent};
 use crate::resolution::ResolutionErrorKind;
 use alloc::vec::Vec;
 use read::{Entry, Export, Group, Object, Reads, Target, Value};
@@ -114,7 +114,7 @@ pub enum OptionsAnalysisIncomplete {
 }
 
 /// Collects the Options API facts of one normal `<script>` Program from its
-/// top-level statement events. Pass it to `FileProducer::program_observed`,
+/// top-level statement events. Pass it to `L2IrProducer::program_observed`,
 /// then [`Self::finish`].
 #[derive(Debug, Default)]
 pub struct OptionsObserver<'a> {
@@ -348,7 +348,7 @@ fn push(component: &mut ComponentOptions, kind: OptionMemberKind, entry: Entry, 
     }
 }
 
-impl<'a> FileObserver<'a> for OptionsObserver<'a> {
+impl<'a> L2IrObserver<'a> for OptionsObserver<'a> {
     type Checkpoint = OptionsCheckpoint;
 
     fn unit(&mut self, unit: &ScriptUnit) {

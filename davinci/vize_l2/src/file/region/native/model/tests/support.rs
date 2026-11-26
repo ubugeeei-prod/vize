@@ -1,6 +1,6 @@
 //! Real Descriptor, original Program and native cursor construction only.
 
-use crate::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use crate::lang::js::{NativeTemplateL2Ir, NativeTemplateOwner};
 use vize_l0::{
     Allocator,
     config::{VueDialect, VueVersion},
@@ -30,7 +30,7 @@ pub(super) fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplate
     owner
 }
 
-pub(super) fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+pub(super) fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateL2Ir<'a> {
     let mut owner = owner(arena, source);
     {
         let mut walk = owner.begin_setup().unwrap();

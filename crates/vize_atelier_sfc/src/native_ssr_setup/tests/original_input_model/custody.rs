@@ -3,7 +3,7 @@
 use super::*;
 use vize_l2::{
     expr::ExprRef,
-    file::{DeclarationKind, InitializerKind, Namespace, NativeFileModelState},
+    file::{DeclarationKind, InitializerKind, Namespace, NativeL2IrModelState},
     op::{BindingOp, Op},
     resolution::Usage,
 };
@@ -33,7 +33,7 @@ pub(super) fn capture(
     let [record] = file.native_models() else {
         return Err(cstr!("{id}: one original Model"));
     };
-    let NativeFileModelState::Admitted(node) = record.state() else {
+    let NativeL2IrModelState::Admitted(node) = record.state() else {
         return Err(cstr!("{id}: closed Model"));
     };
     let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {

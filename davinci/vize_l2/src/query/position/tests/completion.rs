@@ -1,13 +1,13 @@
 extern crate std;
 
 use super::{
-    Allocator, FileBuilder, FileIssueKind, FileProducer, ProgramScope, SourceRoot, SourceType,
+    Allocator, L2IrBuilder, L2IrIssueKind, L2IrProducer, ProgramScope, SourceRoot, SourceType,
     Span, TemplateScope, Values, append, file, offset, refused,
 };
 use crate::artifact::ComponentFactory;
 use crate::expr::JsExpr;
 use crate::file::ScriptUnit;
-use crate::lang::js::{CallEvent, DeclaredEvent, FileObserver, ProgramInput, StatementEvent};
+use crate::lang::js::{CallEvent, DeclaredEvent, L2IrObserver, ProgramInput, StatementEvent};
 use crate::query::Model;
 use crate::resolution::ResolutionErrorKind;
 use alloc::boxed::Box;
@@ -32,7 +32,7 @@ fn successful_structural_finish_does_not_admit_unresolved_or_unsupported_semanti
 fn script_profile_refusal_keeps_queries_unavailable_after_structural_finish() {
     let arena = Allocator::default();
     let owner = file(&arena, "const value = 1; value;", SourceType::cjs());
-    assert_eq!(owner.issues()[0].kind, FileIssueKind::InvalidProfile);
+    assert_eq!(owner.issues()[0].kind, L2IrIssueKind::InvalidProfile);
     refused(&owner);
 }
 
@@ -42,7 +42,7 @@ fn interrupted_template_driver_prevents_script_position_publication() {
     let source = "const value = 1;\nvalue";
     let end = offset(source, "\n");
     let root = SourceRoot::new(source).unwrap();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     append(
         &arena,
         &mut producer,
@@ -63,7 +63,7 @@ fn interrupted_template_driver_prevents_script_position_publication() {
     assert!(owner.issues().is_empty());
     assert_eq!(
         owner.template_interruption().unwrap().kind,
-        FileIssueKind::InterruptedTemplate
+        L2IrIssueKind::InterruptedTemplate
     );
     refused(&owner);
 }
@@ -72,7 +72,7 @@ fn interrupted_template_driver_prevents_script_position_publication() {
 fn canonical_text_and_empty_original_units_do_not_create_name_or_scope_sites() {
     let arena = Allocator::default();
     let source = "text";
-    let mut builder = FileBuilder::new(&arena, source).unwrap();
+    let mut builder = L2IrBuilder::new(&arena, source).unwrap();
     builder.text(source, Span::new(0, 4)).unwrap();
     let owner = builder.finish().unwrap();
     assert!(owner.is_complete());
@@ -91,7 +91,7 @@ fn completed_template_occurrences_do_not_become_script_position_sites() {
     let source = "const value = 1;\nvalue";
     let end = offset(source, "\n");
     let root = SourceRoot::new(source).unwrap();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     append(
         &arena,
         &mut producer,
@@ -139,7 +139,7 @@ fn completed_template_occurrences_do_not_become_script_position_sites() {
 }
 
 struct Interrupt;
-impl<'a> FileObserver<'a> for Interrupt {
+impl<'a> L2IrObserver<'a> for Interrupt {
     type Checkpoint = ();
     fn unit(&mut self, _: &ScriptUnit) {}
     fn statement(&mut self, _: StatementEvent<'_, 'a>) {}
@@ -160,7 +160,7 @@ fn interrupted_original_program_keeps_retained_declarations_unavailable_to_queri
     let root = SourceRoot::new(source).unwrap();
     let syntax = Parser::new(&arena, source, SourceType::mjs()).parse_observed();
     let input = ProgramInput::checked(syntax.admitted().unwrap(), root.whole_block(), 0).unwrap();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     assert!(
         std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             producer.program_observed(input, ProgramScope::Module, &mut Interrupt)
@@ -172,7 +172,7 @@ fn interrupted_original_program_keeps_retained_declarations_unavailable_to_queri
     assert_eq!(owner.bindings().count(), 1);
     assert_eq!(
         owner.interrupted_programs().next().unwrap().kind,
-        FileIssueKind::InterruptedProgram
+        L2IrIssueKind::InterruptedProgram
     );
     refused(&owner);
 }

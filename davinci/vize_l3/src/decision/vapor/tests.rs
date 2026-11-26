@@ -12,7 +12,7 @@ use vize_l1_to_l2::native_file::lower_sfc_native;
 use vize_l2::{
     artifact::ComponentFactory,
     file::{Declaration, TemplatePolicy, TemplateScope},
-    lang::js::FileProducer,
+    lang::js::L2IrProducer,
     op::Op,
 };
 
@@ -127,7 +127,7 @@ fn interrupted_file_fails_before_the_shared_walk() {
         }
     }
     let arena = Allocator::default();
-    let mut producer = FileProducer::new(&arena, "hello").unwrap();
+    let mut producer = L2IrProducer::new(&arena, "hello").unwrap();
     {
         let mut region = producer
             .template_region(TemplateScope::Root, Hidden)

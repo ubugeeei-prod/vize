@@ -11,7 +11,7 @@ use vize_l0::{SourceRoot, Span, String, cstr, line_index::LineBreaks};
 use vize_l2::query::Model;
 use vize_l2::{
     file::{DeclarationKind, Namespace},
-    lang::js::JsxFileProducer,
+    lang::js::JsxL2IrProducer,
 };
 use vize_l4::targets::ts::{ProgramProjection, SourceKind};
 
@@ -120,7 +120,7 @@ fn configured_original_required_named_export_ts_tsx_preserve_whole_raw_reports_a
         let observed =
             Parser::new(&arena, tsx_source, SourceType::tsx().with_module(true)).parse_observed();
         let body = observed.admitted().unwrap().program().body.as_ptr();
-        let mut producer = JsxFileProducer::new(&arena, observed, block, 17)
+        let mut producer = JsxL2IrProducer::new(&arena, observed, block, 17)
             .unwrap_or_else(|rejected| panic!("original TSX: {:?}", rejected.error()));
         producer.walk().unwrap();
         let owner = Box::new(

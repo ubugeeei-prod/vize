@@ -7,9 +7,9 @@ use vize_l0::{
 };
 use vize_l1::container::{Vue, vue::DescriptorOptions};
 use vize_l1::markup::SurfaceParseOptions;
-use vize_l2::file::FileIssueKind;
+use vize_l2::file::L2IrIssueKind;
 use vize_l2::lang::js::{
-    FileProducer, ModuleSourceErrorKind, ProgramInput, ProgramScope, SetupIssueKind, VueSetup,
+    L2IrProducer, ModuleSourceErrorKind, ProgramInput, ProgramScope, SetupIssueKind, VueSetup,
 };
 
 #[test]
@@ -42,7 +42,7 @@ fn actual_js_ts_jsx_and_stock_parse_options_cannot_be_substituted() {
             .parse_observed();
         assert!(changed.diagnostics().is_empty());
         assert!(
-            matches!(ProgramInput::checked(changed.admitted().unwrap(), block, 0), Err(error) if error.kind == FileIssueKind::InvalidProfile)
+            matches!(ProgramInput::checked(changed.admitted().unwrap(), block, 0), Err(error) if error.kind == L2IrIssueKind::InvalidProfile)
         );
     }
     for profile in [SourceType::unambiguous(), SourceType::ts()] {
@@ -57,7 +57,7 @@ fn actual_js_ts_jsx_and_stock_parse_options_cannot_be_substituted() {
         );
         assert!(inferred.admitted().unwrap().source_type().is_unambiguous());
         assert!(
-            matches!(ProgramInput::checked(inferred.admitted().unwrap(), block, 0), Err(error) if error.kind == FileIssueKind::InvalidProfile)
+            matches!(ProgramInput::checked(inferred.admitted().unwrap(), block, 0), Err(error) if error.kind == L2IrIssueKind::InvalidProfile)
         );
     }
 }
@@ -71,7 +71,7 @@ fn source_attributes_remain_incomplete_and_recovered_programs_cannot_admit() {
         let arena = Allocator::default();
         let block = SourceRoot::new(source).unwrap().whole_block();
         let original = observe(&arena, block, SourceType::mjs());
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program(
                 ProgramInput::checked(original.admitted().unwrap(), block, 0).unwrap(),
@@ -83,7 +83,7 @@ fn source_attributes_remain_incomplete_and_recovered_programs_cannot_admit() {
         assert!(
             file.issues()
                 .iter()
-                .any(|issue| issue.kind == FileIssueKind::UnsupportedSyntax)
+                .any(|issue| issue.kind == L2IrIssueKind::UnsupportedSyntax)
         );
         assert!(
             matches!(file.original_module_sources(ProgramInput::checked(original.admitted().unwrap(), block, 0).unwrap()), Err(error) if error.kind == ModuleSourceErrorKind::IncompleteFile)
@@ -111,7 +111,7 @@ fn static_module_receipts_do_not_lift_the_existing_original_vue_setup_import_ref
     let admitted = descriptor.admitted().unwrap();
     let script = admitted.setup().unwrap();
     let original = observe(&arena, script.block(), SourceType::mjs());
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(

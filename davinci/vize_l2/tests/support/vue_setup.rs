@@ -16,7 +16,7 @@ use vize_l1::embed::{
 };
 use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::framework::vue::{SetupAnalysis, SetupAnalysisIncomplete, SetupObserver};
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 /// Repository trees holding `.vue` files, relative to the workspace root.
 const CORPUS: &[&str] = &[
@@ -92,7 +92,7 @@ pub fn observe(
         ProgramOptions::module(script.lang()),
     );
     let admitted = syntax.admitted_program()?;
-    let mut producer = FileProducer::new(&arena, descriptor.source()).ok()?;
+    let mut producer = L2IrProducer::new(&arena, descriptor.source()).ok()?;
     let mut observer = SetupObserver::new();
     producer
         .program_observed(

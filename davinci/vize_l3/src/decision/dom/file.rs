@@ -4,28 +4,28 @@ use super::{DomAnalysis, LiteralExpressions, vue::policy::NoReads};
 use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, TargetPolicy, build};
 use vize_l2::{
     artifact::L2Template,
-    file::{FileResolution, L2Ir, ScopeId},
+    file::{L2Ir, L2IrResolution, ScopeId},
 };
 
 /// The exact producer resolution admitted by the existing canonical node walk.
 /// Construction is private; a caller cannot associate a table with a node.
-pub struct DomFileExpression<'owner, 'arena> {
-    pub(in crate::decision::dom) resolution: FileResolution<'owner, 'arena>,
+pub struct DomL2IrExpression<'owner, 'arena> {
+    pub(in crate::decision::dom) resolution: L2IrResolution<'owner, 'arena>,
 }
 
-impl core::fmt::Debug for DomFileExpression<'_, '_> {
+impl core::fmt::Debug for DomL2IrExpression<'_, '_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("DomFileExpression")
+            .debug_struct("DomL2IrExpression")
             .field("node", &self.resolution.node())
             .field("scope", &self.resolution.scope())
             .finish_non_exhaustive()
     }
 }
 
-impl<'owner, 'arena> DomFileExpression<'owner, 'arena> {
+impl<'owner, 'arena> DomL2IrExpression<'owner, 'arena> {
     #[must_use]
-    pub const fn resolution(&self) -> FileResolution<'owner, 'arena> {
+    pub const fn resolution(&self) -> L2IrResolution<'owner, 'arena> {
         self.resolution
     }
 
@@ -42,8 +42,8 @@ impl<'owner, 'arena> DomFileExpression<'owner, 'arena> {
 /// runtime exposure. A target must consume an actual same-file access policy.
 ///
 /// ```compile_fail
-/// use vize_l3::decision::{DecisionAnalysis, FileAnalysis};
-/// fn discard_file<'f, 'a>(result: FileAnalysis<'f, 'a>) -> DecisionAnalysis<'f, 'a> {
+/// use vize_l3::decision::{DecisionAnalysis, DomL2IrAnalysis};
+/// fn discard_file<'f, 'a>(result: DomL2IrAnalysis<'f, 'a>) -> DecisionAnalysis<'f, 'a> {
 ///     result.analysis
 /// }
 /// ```
@@ -59,16 +59,16 @@ impl<'owner, 'arena> DomFileExpression<'owner, 'arena> {
 /// ```
 /// A bare artifact consumer cannot silently infer framework access:
 /// ```compile_fail
-/// use vize_l3::decision::{DecisionAnalysis, FileAnalysis};
+/// use vize_l3::decision::{DecisionAnalysis, DomL2IrAnalysis};
 /// fn bare(_: &DecisionAnalysis<'_, '_>) {}
-/// fn emit(result: &FileAnalysis<'_, '_>) { bare(result); }
+/// fn emit(result: &DomL2IrAnalysis<'_, '_>) { bare(result); }
 /// ```
-pub struct FileAnalysis<'owner, 'arena> {
+pub struct DomL2IrAnalysis<'owner, 'arena> {
     l2ir: &'owner L2Ir<'arena>,
     analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
-impl<'owner, 'arena> FileAnalysis<'owner, 'arena> {
+impl<'owner, 'arena> DomL2IrAnalysis<'owner, 'arena> {
     #[must_use]
     pub const fn l2ir(&self) -> &'owner L2Ir<'arena> {
         self.l2ir
@@ -110,7 +110,7 @@ impl<'owner, 'arena> FileAnalysis<'owner, 'arena> {
 /// still held until their actual file factories record complete owned facts.
 pub fn build_dom_file_decisions<'owner, 'arena>(
     l2ir: &'owner L2Ir<'arena>,
-) -> Result<FileAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<DomL2IrAnalysis<'owner, 'arena>, DecisionBuildError> {
     if !l2ir.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
     }
@@ -121,7 +121,7 @@ pub fn build_dom_file_decisions<'owner, 'arena>(
         Some(l2ir),
         &NoReads,
     )?;
-    Ok(FileAnalysis { l2ir, analysis })
+    Ok(DomL2IrAnalysis { l2ir, analysis })
 }
 
 // Numeric query keys are meaningful only in this file. The entry above derives
@@ -129,7 +129,7 @@ pub fn build_dom_file_decisions<'owner, 'arena>(
 // are never accepted as independent owner authentication.
 #[must_use]
 pub(super) fn matches_expression(
-    resolution: FileResolution<'_, '_>,
+    resolution: L2IrResolution<'_, '_>,
     expression: &vize_l2::expr::JsExpr<'_>,
 ) -> bool {
     resolution.table().is_some_and(|table| {
@@ -148,18 +148,18 @@ pub(super) fn matches_expression(
 // Called only after the real selected template entry derives its own File.
 pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
     l2ir: &'owner L2Ir<'arena>,
-) -> Result<FileAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<DomL2IrAnalysis<'owner, 'arena>, DecisionBuildError> {
     let analysis = crate::decision::build::build_with_original(
         l2ir,
         TargetPolicy::Dom,
         &crate::decision::dom::LiteralExpressions,
         &crate::decision::dom::vue::policy::NoReads,
     )?;
-    Ok(FileAnalysis { l2ir, analysis })
+    Ok(DomL2IrAnalysis { l2ir, analysis })
 }
 
 #[cfg(feature = "client-server-decisions")]
-impl<'owner, 'arena> FileAnalysis<'owner, 'arena> {
+impl<'owner, 'arena> DomL2IrAnalysis<'owner, 'arena> {
     pub(in crate::decision) fn from_pair(
         target: crate::decision::build::paired::CompletedTarget<'owner, 'arena>,
     ) -> (vize_l2::lang::js::NativeTemplateView<'owner, 'arena>, Self) {

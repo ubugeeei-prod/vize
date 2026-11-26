@@ -1,7 +1,7 @@
 //! Existing normally attached rows are the only query authority.
 
 use super::{
-    FileForHead, FileHandler, HandlerLocalRef, L2Ir, Origin, TemplateQueryError as Error,
+    HandlerLocalRef, L2Ir, L2IrForHead, L2IrHandler, Origin, TemplateQueryError as Error,
     TemplateSiteRef, TemplateSiteScope, TemplateSymbolRef,
 };
 use crate::op::{HandlerId, OriginalForId};
@@ -33,7 +33,7 @@ pub(super) fn visit<'f, 'a>(
 }
 
 fn handlers<'f, 'a>(
-    handler: FileHandler<'f, 'a>,
+    handler: L2IrHandler<'f, 'a>,
     visit: &mut impl FnMut(TemplateSiteRef<'f, 'a>),
 ) -> Result<(), Error> {
     let resolution = handler.resolution().ok_or(Error::OriginalMembership)?;
@@ -88,7 +88,7 @@ fn handlers<'f, 'a>(
 }
 
 fn local<'f, 'a>(
-    handler: FileHandler<'f, 'a>,
+    handler: L2IrHandler<'f, 'a>,
     id: HandlerLocalId,
 ) -> Result<HandlerLocalRef<'f, 'a>, Error> {
     let binding = handler
@@ -100,7 +100,7 @@ fn local<'f, 'a>(
     Ok(HandlerLocalRef { handler, binding })
 }
 
-fn check_scope(handler: FileHandler<'_, '_>, id: HandlerScopeId) -> Result<(), Error> {
+fn check_scope(handler: L2IrHandler<'_, '_>, id: HandlerScopeId) -> Result<(), Error> {
     handler
         .resolution()
         .and_then(|resolution| resolution.scopes().get(id.index() as usize))
@@ -109,7 +109,7 @@ fn check_scope(handler: FileHandler<'_, '_>, id: HandlerScopeId) -> Result<(), E
 }
 
 fn for_head<'f, 'a>(
-    head: FileForHead<'f, 'a>,
+    head: L2IrForHead<'f, 'a>,
     visit: &mut impl FnMut(TemplateSiteRef<'f, 'a>),
 ) -> Result<(), Error> {
     let resolution = head.resolution().ok_or(Error::OriginalMembership)?;

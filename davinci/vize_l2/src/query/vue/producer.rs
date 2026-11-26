@@ -1,11 +1,11 @@
 //! Observe the original scripts in lexical order. Descriptor roles, language,
 //! source, static-hoist policy and scope all come from the same SFC.
 
-use super::{Observed, OrdinaryFamilies, VueAnalysis, VueFile};
+use super::{Observed, OrdinaryFamilies, VueAnalysis, VueL2Ir};
 use crate::artifact::L2TemplateError;
-use crate::file::{FileIssueKind, RejectedFile, TemplatePolicy, TemplateRegion, TemplateScope};
+use crate::file::{L2IrIssueKind, RejectedL2Ir, TemplatePolicy, TemplateRegion, TemplateScope};
 use crate::framework::vue::{OptionsObserver, OrdinaryObserver, SetupObserver};
-use crate::lang::js::{FileProducer, ProgramInput, ProgramInputError, ProgramScope};
+use crate::lang::js::{L2IrProducer, ProgramInput, ProgramInputError, ProgramScope};
 use alloc::boxed::Box;
 use oxc_parser::AdmittedProgram;
 use vize_l0::Allocator;
@@ -37,12 +37,12 @@ pub enum VueProgramError {
 
 /// A File whose present scripts have all been walked in their original roles.
 /// The template producer may then attach its typed region before sealing it.
-pub struct VueFileProducer<'a> {
-    producer: FileProducer<'a>,
+pub struct VueL2IrProducer<'a> {
+    producer: L2IrProducer<'a>,
     facts: VueAnalysis,
 }
 
-impl<'a> VueFileProducer<'a> {
+impl<'a> VueL2IrProducer<'a> {
     /// Accept exactly the Programs certified by this descriptor, including any
     /// script for which the caller requests only the usual lexical facts.
     pub fn scripts(
@@ -55,7 +55,7 @@ impl<'a> VueFileProducer<'a> {
         let ordinary = input(descriptor.ordinary(), ordinary, ScriptRole::Ordinary)?;
         let setup = input(descriptor.setup(), setup, ScriptRole::Setup)?;
         let mut this = Self {
-            producer: FileProducer::new(allocator, descriptor.source())
+            producer: L2IrProducer::new(allocator, descriptor.source())
                 .map_err(VueProgramError::Artifact)?,
             facts: VueAnalysis::default(),
         };
@@ -132,12 +132,12 @@ impl<'a> VueFileProducer<'a> {
         &mut self,
         selection: TemplateScope,
         policy: P,
-    ) -> Result<TemplateRegion<'_, 'a, P>, FileIssueKind> {
+    ) -> Result<TemplateRegion<'_, 'a, P>, L2IrIssueKind> {
         self.producer.template_region(selection, policy)
     }
 
-    pub fn finish(self) -> Result<VueFile<'a>, RejectedFile<'a>> {
-        Ok(VueFile {
+    pub fn finish(self) -> Result<VueL2Ir<'a>, RejectedL2Ir<'a>> {
+        Ok(VueL2Ir {
             l2ir: self.producer.finish()?,
             facts: self.facts,
         })
@@ -154,7 +154,7 @@ fn input<'p, 'a>(
             if program.source_type() != ProgramOptions::module(script.lang()).source_type() {
                 return Err(VueProgramError::Program(ProgramInputError {
                     span: script.block().span(),
-                    kind: FileIssueKind::InvalidProfile,
+                    kind: L2IrIssueKind::InvalidProfile,
                 }));
             }
             ProgramInput::checked(program, script.block(), script.container_index())

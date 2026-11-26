@@ -11,7 +11,7 @@ use vize_l1::embed::{
 use vize_l2::query::Model;
 use vize_l2::{
     file::{DeclarationKind, Namespace},
-    lang::js::{FileProducer, JsxFileProducer, ProgramInput, ProgramScope},
+    lang::js::{JsxL2IrProducer, L2IrProducer, ProgramInput, ProgramScope},
 };
 use vize_l4::targets::ts::{
     MappingError, ProgramProjection, ProjectionError, SourceKind, project_jsx_program,
@@ -90,7 +90,7 @@ fn original_primitive_return_ts_tsx_projection_preserves_full_primary_vectors_an
             ProgramOptions::module(Lang::Ts),
         );
         let body = syntax.program().unwrap().body.as_ptr();
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program(
                 ProgramInput::checked(syntax.admitted_program().unwrap(), block, 17).unwrap(),
@@ -120,7 +120,7 @@ fn original_primitive_return_ts_tsx_projection_preserves_full_primary_vectors_an
         let observed =
             Parser::new(&arena, source, SourceType::tsx().with_module(true)).parse_observed();
         let body = observed.admitted().unwrap().program().body.as_ptr();
-        let mut producer = JsxFileProducer::new(&arena, observed, block, 17)
+        let mut producer = JsxL2IrProducer::new(&arena, observed, block, 17)
             .unwrap_or_else(|rejected| panic!("original TSX: {:?}", rejected.error()));
         producer.walk().unwrap();
         let owner = Box::new(

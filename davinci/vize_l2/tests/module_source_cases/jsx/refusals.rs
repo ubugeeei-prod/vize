@@ -3,8 +3,8 @@ use crate::module_source_cases::{lower, observe};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
 use vize_l1::embed::Lang;
-use vize_l2::file::FileIssueKind;
-use vize_l2::lang::js::{FileProducer, ModuleSourceErrorKind, ProgramInput, ProgramScope};
+use vize_l2::file::L2IrIssueKind;
+use vize_l2::lang::js::{L2IrProducer, ModuleSourceErrorKind, ProgramInput, ProgramScope};
 
 #[test]
 fn jsx_profile_views_reject_wrong_profile_original_reparse_and_equal_foreign_buffer() {
@@ -46,7 +46,7 @@ fn unsupported_jsx_and_tsx_subtrees_refuse_before_any_static_source_prefix() {
         let block = SourceRoot::new(source).unwrap().whole_block();
         let original = syntax(&arena, block, lang).unwrap();
         assert_eq!(original.diagnostics().count(), 0);
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program(
                 ProgramInput::checked(original.admitted_program().unwrap(), block, 0).unwrap(),
@@ -58,7 +58,7 @@ fn unsupported_jsx_and_tsx_subtrees_refuse_before_any_static_source_prefix() {
         assert!(
             file.issues()
                 .iter()
-                .any(|issue| issue.kind == FileIssueKind::UnsupportedSyntax)
+                .any(|issue| issue.kind == L2IrIssueKind::UnsupportedSyntax)
         );
         assert!(
             matches!(file.original_module_sources(ProgramInput::checked(original.admitted_program().unwrap(), block, 0).unwrap()), Err(error) if error.kind == ModuleSourceErrorKind::IncompleteFile)
@@ -81,7 +81,7 @@ fn genuine_jsx_dynamic_import_and_empty_reexport_still_refuse_whole_module_view(
         let arena = Allocator::default();
         let block = SourceRoot::new(source).unwrap().whole_block();
         let original = syntax(&arena, block, Lang::Js).unwrap();
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program(
                 ProgramInput::checked(original.admitted_program().unwrap(), block, 0).unwrap(),
@@ -111,7 +111,7 @@ fn jsx_empty_body_and_lone_surrogate_keep_original_typed_refusals() {
         let arena = Allocator::default();
         let block = SourceRoot::new(source).unwrap().whole_block();
         let original = syntax(&arena, block, Lang::Js).unwrap();
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program(
                 ProgramInput::checked(original.admitted_program().unwrap(), block, 0).unwrap(),

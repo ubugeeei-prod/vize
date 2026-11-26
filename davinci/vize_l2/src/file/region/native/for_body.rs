@@ -3,7 +3,7 @@
 use super::{NativeVisibility, body, for_head::ObservedFor};
 use crate::artifact::RegionBuilder;
 use crate::file::for_head::ForRecord;
-use crate::file::region::FileRegion;
+use crate::file::region::L2IrRegion;
 use crate::lang::js::file::native::NativeTemplateIssueKind as Kind;
 use crate::op::OriginalForId;
 use crate::resolution::ForAliasRole;
@@ -17,7 +17,7 @@ pub(super) fn construct<'a: 'b, 'b, R>(
     span: Span,
     header: body::header::Header<'a>,
     observed: ObservedFor,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -73,7 +73,7 @@ where
         {
             // Reborrow only the actual current factory. The parent scope is never
             // overwritten, including when a real header/body callback unwinds.
-            let mut child = FileRegion {
+            let mut child = L2IrRegion {
                 region: &mut *file.region,
                 facts: &mut *file.facts,
                 scope,

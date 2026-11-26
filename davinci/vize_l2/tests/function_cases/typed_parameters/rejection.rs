@@ -1,6 +1,6 @@
 use super::{Allocator, DeclarationKind, Namespace, Parser, SourceType, finish};
 use vize_l0::cstr;
-use vize_l2::file::{FileIssueKind, ReferenceTarget};
+use vize_l2::file::{L2IrIssueKind, ReferenceTarget};
 
 #[test]
 fn unsupported_original_parameter_types_keep_the_complete_original_issue_vector() {
@@ -42,10 +42,10 @@ fn unsupported_original_parameter_types_keep_the_complete_original_issue_vector(
             sites,
             [
                 (
-                    FileIssueKind::UnsupportedSyntax,
+                    L2IrIssueKind::UnsupportedSyntax,
                     cstr!("value: {annotation}").as_str()
                 ),
-                (FileIssueKind::UnresolvedReference, "value")
+                (L2IrIssueKind::UnresolvedReference, "value")
             ],
             "{annotation}"
         );

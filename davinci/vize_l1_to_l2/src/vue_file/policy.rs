@@ -1,9 +1,9 @@
 //! Pinned Vue role visibility, independent of runtime spelling and purity.
-use super::{VueDeclaration, VueFileIssue, VueFileIssueKind, VueScriptReceipt, VueScriptRole};
+use super::{VueDeclaration, VueL2IrIssue, VueL2IrIssueKind, VueScriptReceipt, VueScriptRole};
 use alloc::vec::Vec;
 use oxc_ast::ast::Statement;
 use vize_l2::file::{Declaration, Namespace, ScopeId, ScriptUnit, ScriptUnitId, TemplatePolicy};
-use vize_l2::lang::js::{CallEvent, DeclaredEvent, FileObserver, InvocationEvent, StatementEvent};
+use vize_l2::lang::js::{CallEvent, DeclaredEvent, InvocationEvent, L2IrObserver, StatementEvent};
 use vize_l2::resolution::ResolutionErrorKind;
 
 #[derive(Clone, Copy)]
@@ -39,9 +39,9 @@ pub(super) struct PolicyObserver<'f> {
     pub source_type: oxc_span::SourceType,
     pub receipt: Option<VueScriptReceipt>,
     pub declarations: &'f mut Vec<VueDeclaration>,
-    pub issues: &'f mut Vec<VueFileIssue>,
+    pub issues: &'f mut Vec<VueL2IrIssue>,
 }
-impl<'a> FileObserver<'a> for PolicyObserver<'_> {
+impl<'a> L2IrObserver<'a> for PolicyObserver<'_> {
     type Checkpoint = ();
     fn unit(&mut self, unit: &ScriptUnit) {
         self.receipt = Some(VueScriptReceipt {
@@ -59,13 +59,13 @@ impl<'a> FileObserver<'a> for PolicyObserver<'_> {
             | Statement::ExportDefaultDeclaration(_)
                 if self.role == VueScriptRole::Setup =>
             {
-                Some(VueFileIssueKind::SetupExport)
+                Some(VueL2IrIssueKind::SetupExport)
             }
-            Statement::ExportDefaultDeclaration(_) => Some(VueFileIssueKind::UnsupportedOptions),
+            Statement::ExportDefaultDeclaration(_) => Some(VueL2IrIssueKind::UnsupportedOptions),
             _ => None,
         };
         if let Some(kind) = kind {
-            self.issues.push(VueFileIssue {
+            self.issues.push(VueL2IrIssue {
                 unit: Some(event.unit),
                 scope: Some(event.scope),
                 span: event.span,
@@ -89,22 +89,22 @@ impl<'a> FileObserver<'a> for PolicyObserver<'_> {
     fn checkpoint(&self) {}
     fn call(&mut self, event: CallEvent<'_, 'a>) -> Result<(), ResolutionErrorKind> {
         // Refusal evidence is retained; no accepted call rows are registered.
-        self.issues.push(VueFileIssue {
+        self.issues.push(VueL2IrIssue {
             unit: Some(event.unit),
             scope: Some(event.scope),
             span: event.span,
-            kind: VueFileIssueKind::UnsupportedCall {
+            kind: VueL2IrIssueKind::UnsupportedCall {
                 optional: event.call.optional,
             },
         });
         Err(ResolutionErrorKind::UnsupportedSyntax)
     }
     fn invocation(&mut self, event: InvocationEvent<'_, 'a>) -> Result<(), ResolutionErrorKind> {
-        self.issues.push(VueFileIssue {
+        self.issues.push(VueL2IrIssue {
             unit: Some(event.unit),
             scope: Some(event.scope),
             span: event.span,
-            kind: VueFileIssueKind::UnsupportedInvocation,
+            kind: VueL2IrIssueKind::UnsupportedInvocation,
         });
         Err(ResolutionErrorKind::UnsupportedSyntax)
     }

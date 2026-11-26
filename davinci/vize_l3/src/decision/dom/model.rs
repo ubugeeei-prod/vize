@@ -4,7 +4,7 @@ use super::{DomAnalysis, PropertyRole, ValueKind, file::matches_expression};
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
     expr::ExprRef,
-    file::{BindingRef, FileResolution, NativeFileModel, NativeFileModelState},
+    file::{BindingRef, L2IrResolution, NativeL2IrModel, NativeL2IrModelState},
     op::{BindingOp, ElementOp, ModelOp},
     resolution::{Occurrence, Usage},
 };
@@ -12,10 +12,10 @@ use vize_l2::{
 /// The actual completed File, Model and mutable setup target stay borrowed.
 /// Its checked role comes from the sole canonical Model binding visit. The
 /// borrowed view is derived on demand, without a second stored fact table.
-pub struct DomFileModel<'owner, 'arena> {
-    original: &'owner NativeFileModel<'arena>,
+pub struct DomL2IrModel<'owner, 'arena> {
+    original: &'owner NativeL2IrModel<'arena>,
     model: &'owner ModelOp<'arena>,
-    resolution: FileResolution<'owner, 'arena>,
+    resolution: L2IrResolution<'owner, 'arena>,
     binding: BindingRef<'owner, 'arena>,
     occurrence: &'owner Occurrence<'arena>,
     authored: Span,
@@ -24,7 +24,7 @@ pub struct DomFileModel<'owner, 'arena> {
 pub(super) fn get<'owner, 'arena>(
     facts: &DomAnalysis<'owner, 'arena>,
     node: NodeId,
-) -> Option<DomFileModel<'owner, 'arena>> {
+) -> Option<DomL2IrModel<'owner, 'arena>> {
     let fact = facts.binding(node)?;
     if fact.role != PropertyRole::Model || fact.value != ValueKind::FileDependent {
         return None;
@@ -40,7 +40,7 @@ pub(super) fn get<'owner, 'arena>(
     };
     if resolution.node() != node
         || resolution.scope() != Some(original.scope())
-        || original.state() != NativeFileModelState::Admitted(node)
+        || original.state() != NativeL2IrModelState::Admitted(node)
         || !original.accepts(model)
         || original.input().attribute_span() != Some(model.span)
         || !core::ptr::eq(read, write)
@@ -60,7 +60,7 @@ pub(super) fn get<'owner, 'arena>(
         return None;
     }
     let authored = read.authored_span(occurrence.span)?;
-    Some(DomFileModel {
+    Some(DomL2IrModel {
         original,
         model,
         resolution,
@@ -70,19 +70,19 @@ pub(super) fn get<'owner, 'arena>(
     })
 }
 
-impl core::fmt::Debug for DomFileModel<'_, '_> {
+impl core::fmt::Debug for DomL2IrModel<'_, '_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("DomFileModel")
+            .debug_struct("DomL2IrModel")
             .field("node", &self.resolution.node())
             .field("scope", &self.resolution.scope())
             .finish_non_exhaustive()
     }
 }
 
-impl<'owner, 'arena> DomFileModel<'owner, 'arena> {
+impl<'owner, 'arena> DomL2IrModel<'owner, 'arena> {
     #[must_use]
-    pub const fn original(&self) -> &'owner NativeFileModel<'arena> {
+    pub const fn original(&self) -> &'owner NativeL2IrModel<'arena> {
         self.original
     }
     #[must_use]
@@ -90,7 +90,7 @@ impl<'owner, 'arena> DomFileModel<'owner, 'arena> {
         self.model
     }
     #[must_use]
-    pub const fn resolution(&self) -> FileResolution<'owner, 'arena> {
+    pub const fn resolution(&self) -> L2IrResolution<'owner, 'arena> {
         self.resolution
     }
     #[must_use]

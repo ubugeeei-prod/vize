@@ -2,7 +2,7 @@
 
 use super::{Allocator, Law, facts, formatting::dom, producer};
 use crate::{
-    lang::js::{JsxFileError, JsxMarkupIssueKind},
+    lang::js::{JsxL2IrError, JsxMarkupIssueKind},
     op::Op,
     walk::NodeRef,
 };
@@ -53,7 +53,7 @@ fn transparent_fragments_match_full_semantics_ranges_and_every_mounted_boundary(
                         case.get("id"),
                         owner.error()
                     );
-                    assert_eq!(owner.error(), JsxFileError::IncompleteFile);
+                    assert_eq!(owner.error(), JsxL2IrError::IncompleteFile);
                     owner.file().ok_or("retained baseline File")?
                 }
             };
@@ -81,7 +81,7 @@ fn transparent_fragments_match_full_semantics_ranges_and_every_mounted_boundary(
                             JsxMarkupIssueKind::ValueNormalization => "value-normalization",
                             JsxMarkupIssueKind::SpecialAttribute => "special-attribute",
                             JsxMarkupIssueKind::RootExpression => "root-expression",
-                            JsxMarkupIssueKind::File(JsxFileError::IncompleteFile) => {
+                            JsxMarkupIssueKind::File(JsxL2IrError::IncompleteFile) => {
                                 "file-incomplete"
                             }
                             _ => "unexpected-refusal",
@@ -98,7 +98,7 @@ fn transparent_fragments_match_full_semantics_ranges_and_every_mounted_boundary(
                     let retained = rejected
                         .rejected_owner()
                         .ok_or("whole incomplete original owner")?;
-                    assert_eq!(retained.error(), JsxFileError::IncompleteFile);
+                    assert_eq!(retained.error(), JsxL2IrError::IncompleteFile);
                     assert!(retained.observation().admitted().is_some());
                     retained.file().ok_or("retained incomplete File")?
                 } else {
@@ -195,7 +195,7 @@ fn malformed_fragment_never_mints_a_completed_or_partial_owner() -> Law {
             )
             .parse_observed();
             assert!(original.admitted().is_none());
-            let rejected = super::JsxFileProducer::new(
+            let rejected = super::JsxL2IrProducer::new(
                 &arena,
                 original,
                 SourceRoot::new(source).map_err(|_| "source")?.whole_block(),
@@ -203,7 +203,7 @@ fn malformed_fragment_never_mints_a_completed_or_partial_owner() -> Law {
             )
             .err()
             .ok_or("malformed fragment admitted")?;
-            assert_eq!(rejected.error(), JsxFileError::SyntaxAdmission);
+            assert_eq!(rejected.error(), JsxL2IrError::SyntaxAdmission);
             assert!(rejected.file().is_none());
             assert!(rejected.observation().admitted().is_none());
         }

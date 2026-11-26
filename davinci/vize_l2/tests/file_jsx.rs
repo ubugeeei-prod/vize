@@ -9,7 +9,7 @@ mod support {
 use oxc_span::SourceType;
 use support::file_jsx::{LawResult, Required, lower};
 use vize_l0::{Allocator, Span};
-use vize_l2::file::{FileIssueKind, InitializerKind, Namespace, ReferenceTarget};
+use vize_l2::file::{InitializerKind, L2IrIssueKind, Namespace, ReferenceTarget};
 use vize_l2::resolution::Usage;
 
 #[test]
@@ -195,7 +195,7 @@ fn unresolved_component_is_a_real_authored_use_without_intrinsic_or_context_gues
             .iter()
             .map(|issue| (issue.kind, issue.span))
             .collect::<Vec<_>>(),
-        [(FileIssueKind::UnresolvedReference, row.span)]
+        [(L2IrIssueKind::UnresolvedReference, row.span)]
     );
     Ok(())
 }
@@ -238,7 +238,7 @@ fn unsupported_tag_namespace_generic_and_ts_subtrees_rollback_only_the_real_expr
                 .iter()
                 .map(|issue| issue.kind)
                 .collect::<Vec<_>>(),
-            [FileIssueKind::UnsupportedSyntax]
+            [L2IrIssueKind::UnsupportedSyntax]
         );
         assert_eq!(file.bindings().count(), 3);
     }

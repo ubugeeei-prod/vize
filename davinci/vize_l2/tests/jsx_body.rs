@@ -11,8 +11,8 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use support::file_jsx as fixture;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::file::{FileIssueKind, Namespace, ReferenceTarget};
-use vize_l2::lang::js::{JsxFile, JsxFileError, JsxFileProducer};
+use vize_l2::file::{L2IrIssueKind, Namespace, ReferenceTarget};
+use vize_l2::lang::js::{JsxL2Ir, JsxL2IrError, JsxL2IrProducer};
 use vize_l2::resolution::{SyntaxKind, Usage};
 
 fn lower<'a>(
@@ -20,7 +20,7 @@ fn lower<'a>(
     file: &'a str,
     content: Span,
     profile: SourceType,
-) -> LawResult<JsxFile<'a>> {
+) -> LawResult<JsxL2Ir<'a>> {
     let raw = file
         .get(content.start as usize..content.end as usize)
         .required()?;
@@ -29,7 +29,7 @@ fn lower<'a>(
         .block(raw, content.start)
         .required()?;
     let original = Parser::new(arena, raw, profile).parse_observed();
-    let mut producer = JsxFileProducer::new(arena, original, block, 2).required()?;
+    let mut producer = JsxL2IrProducer::new(arena, original, block, 2).required()?;
     producer.walk().required()?;
     producer.finish().required()
 }
@@ -50,9 +50,9 @@ fn completed_owner_survives_moves_with_original_ast_comments_values_and_real_sco
             .required()?;
         let original = Parser::new(&arena, raw, profile).parse_observed();
         let body_ptr = original.admitted().required()?.program().body.as_ptr();
-        let mut producer = JsxFileProducer::new(&arena, original, block, 2).required()?;
+        let mut producer = JsxL2IrProducer::new(&arena, original, block, 2).required()?;
         producer.walk().required()?;
-        assert_eq!(producer.walk(), Err(JsxFileError::AlreadyWalked));
+        assert_eq!(producer.walk(), Err(JsxL2IrError::AlreadyWalked));
         let completed = producer.finish().required()?;
         let mut owners = Vec::new();
         owners.push(completed);
@@ -244,16 +244,16 @@ fn structural_file_finish_with_unresolved_semantics_does_not_mint_a_completed_bo
             .map(|issue| issue.kind)
             .collect::<Vec<_>>(),
         [
-            FileIssueKind::UnresolvedReference,
-            FileIssueKind::UnresolvedReference
+            L2IrIssueKind::UnresolvedReference,
+            L2IrIssueKind::UnresolvedReference
         ]
     );
     let block = SourceRoot::new(source).required()?.whole_block();
     let original = Parser::new(&arena, source, SourceType::jsx()).parse_observed();
-    let mut producer = JsxFileProducer::new(&arena, original, block, 0).required()?;
+    let mut producer = JsxL2IrProducer::new(&arena, original, block, 0).required()?;
     producer.walk().required()?;
     let rejected = producer.finish().err().required()?;
-    assert_eq!(rejected.error(), JsxFileError::IncompleteFile);
+    assert_eq!(rejected.error(), JsxL2IrError::IncompleteFile);
     let file = rejected.file().required()?;
     assert!(!file.is_complete());
     assert_eq!(
@@ -278,10 +278,10 @@ fn unsupported_late_subtree_rolls_back_body_rows_but_keeps_prior_original_expres
     let source = "import C from 'dep'; const good = <C/>; const bad = <C>{run()}<ns:tag/></C>;";
     let original = Parser::new(&arena, source, SourceType::jsx()).parse_observed();
     let block = SourceRoot::new(source).required()?.whole_block();
-    let mut producer = JsxFileProducer::new(&arena, original, block, 0).required()?;
+    let mut producer = JsxL2IrProducer::new(&arena, original, block, 0).required()?;
     producer.walk().required()?;
     let rejected = producer.finish().err().required()?;
-    assert_eq!(rejected.error(), JsxFileError::IncompleteFile);
+    assert_eq!(rejected.error(), JsxL2IrError::IncompleteFile);
     assert_eq!(rejected.recorded_nodes(), 4);
     let file = rejected.file().required()?;
     assert_eq!(
@@ -296,7 +296,7 @@ fn unsupported_late_subtree_rolls_back_body_rows_but_keeps_prior_original_expres
             .iter()
             .map(|issue| issue.kind)
             .collect::<Vec<_>>(),
-        [FileIssueKind::UnsupportedSyntax]
+        [L2IrIssueKind::UnsupportedSyntax]
     );
     Ok(())
 }
@@ -305,11 +305,11 @@ fn unsupported_late_subtree_rolls_back_body_rows_but_keeps_prior_original_expres
 fn pending_and_bodyless_actual_programs_cannot_seal_a_jsx_view() -> LawResult {
     let arena = Allocator::default();
     for (source, walk, expected) in [
-        ("const view = <div/>;", false, JsxFileError::NotWalked),
-        ("const value = 1;", true, JsxFileError::IncompleteBody),
+        ("const view = <div/>;", false, JsxL2IrError::NotWalked),
+        ("const value = 1;", true, JsxL2IrError::IncompleteBody),
     ] {
         let block = SourceRoot::new(source).required()?.whole_block();
-        let mut producer = JsxFileProducer::new(
+        let mut producer = JsxL2IrProducer::new(
             &arena,
             Parser::new(&arena, source, SourceType::jsx()).parse_observed(),
             block,

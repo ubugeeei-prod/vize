@@ -9,13 +9,13 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_canon::{CorsaBridge, CorsaBridgeConfig, OriginalProgramError};
 use vize_l0::{Allocator, SourceRoot, Span, cstr, line_index::LineBreaks};
-use vize_l2::lang::js::{JsxFile, JsxFileProducer};
+use vize_l2::lang::js::{JsxL2Ir, JsxL2IrProducer};
 use vize_l4::targets::ts::{ProjectionError, SourceKind};
 
-fn owner<'a>(arena: &'a Allocator, source: &'a str, profile: SourceType) -> JsxFile<'a> {
+fn owner<'a>(arena: &'a Allocator, source: &'a str, profile: SourceType) -> JsxL2Ir<'a> {
     let block = SourceRoot::new(source).unwrap().whole_block();
     let original = Parser::new(arena, source, profile).parse_observed();
-    let mut producer = JsxFileProducer::new(arena, original, block, 17)
+    let mut producer = JsxL2IrProducer::new(arena, original, block, 17)
         .unwrap_or_else(|rejected| panic!("original admission: {:?}", rejected.error()));
     producer.walk().unwrap();
     producer
