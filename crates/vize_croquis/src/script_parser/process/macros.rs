@@ -45,6 +45,14 @@ pub(in crate::script_parser) fn process_variable_declarator(
             let name = id.name.as_str();
             let at = id.span.start;
             let mut keeps_reactivity_alias = false;
+            if declarator
+                .init
+                .as_ref()
+                .and_then(extract_call_expression)
+                .is_some_and(|call| is_template_ref_call(result, call))
+            {
+                result.template_ref_handles.insert(CompactString::new(name));
+            }
             let call_extracted = if let Some(call) =
                 declarator.init.as_ref().and_then(extract_call_expression)
             {
@@ -79,9 +87,6 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     detect_reactivity_call(call, &result.reactivity_aliases)
                 {
                     detect_setup_context_violation(result, call);
-                    if is_template_ref_call(call, &result.reactivity_aliases) {
-                        result.template_ref_handles.insert(CompactString::new(name));
-                    }
 
                     result
                         .reactivity

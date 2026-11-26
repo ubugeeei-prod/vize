@@ -47,3 +47,22 @@ fn a_template_ref_handle_read_by_an_expression_stays_used() {
         &[],
     );
 }
+
+#[test]
+fn template_ref_handles_resolve_by_binding_origin() {
+    assert_unused(
+        "import { useTemplateRef as utr } from 'vue'; const el = utr('el');",
+        "<div ref=\"el\"></div>",
+        &["el"],
+    );
+    assert_unused(
+        "import { ref } from 'vue'; const useTemplateRef = ref; const el = useTemplateRef(null);",
+        "<div ref=\"el\"></div>",
+        &[],
+    );
+    assert_unused(
+        "import { useTemplateRef } from './helpers'; const el = useTemplateRef('el');",
+        "<div ref=\"el\"></div>",
+        &[],
+    );
+}

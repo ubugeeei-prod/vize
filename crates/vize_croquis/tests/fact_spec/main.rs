@@ -417,3 +417,48 @@ fn assert_census(
         "{what} census moved: re-pin deliberately (see the P4-3a record)"
     );
 }
+
+/// A `useTemplateRef` handle is classified by the origin of the callee's
+/// binding in both the production relation and the spec, so a local alias
+/// spelled `useTemplateRef` and a non-Vue import stay ordinary refs. A renamed
+/// Vue import is outside the spec's scope (`vue-import-alias`); the drawer
+/// unit tests pin it.
+#[test]
+fn template_ref_handles_resolve_by_binding_origin_in_both_relations() {
+    let cases: [(&str, &str, u64); 3] = [
+        (
+            "local-alias.vue",
+            "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nconst useTemplateRef = ref;\nconst el = useTemplateRef(null);\n</script>\n<template><div ref=\"el\"></div></template>\n",
+            0,
+        ),
+        (
+            "helper-import.vue",
+            "<script setup lang=\"ts\">\nimport { useTemplateRef } from \"./helpers\";\nconst el = useTemplateRef(\"el\");\n</script>\n<template><div ref=\"el\"></div></template>\n",
+            0,
+        ),
+        (
+            "vue-direct.vue",
+            "<script setup lang=\"ts\">\nimport { useTemplateRef } from \"vue\";\nconst el = useTemplateRef(\"el\");\n</script>\n<template><div ref=\"el\"></div></template>\n",
+            1,
+        ),
+    ];
+    for (name, source, unused) in cases {
+        let mut planes = Planes::default();
+        run_source(name, source, &mut planes);
+        if cfg!(debug_assertions) {
+            // Some cases pin absence, so check agreement row by row rather
+            // than the suite verdict, which refuses an all-empty run.
+            assert!(
+                planes.unused.divergences.is_empty(),
+                "{name}: {:?}",
+                planes.unused.divergences
+            );
+            assert_eq!(
+                (planes.unused.compared, planes.unused.facts),
+                (1, unused),
+                "{name}: skipped {:?}",
+                planes.unused.skipped
+            );
+        }
+    }
+}

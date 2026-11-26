@@ -51,3 +51,27 @@ export default defineComponent({
         )]
     );
 }
+
+#[test]
+fn module_level_apis_resolve_by_binding_origin() {
+    let source = r#"
+import { useTemplateRef } from "./helpers"
+import { ref as makeRef } from "vue"
+const el = useTemplateRef("el")
+const count = makeRef(0)
+"#;
+    let result = parse_script(source);
+    let violations: Vec<_> = result
+        .setup_context
+        .violations()
+        .iter()
+        .map(|violation| (violation.kind, violation.api_name.as_str()))
+        .collect();
+    assert_eq!(
+        violations,
+        [(
+            crate::setup_context::SetupContextViolationKind::ModuleLevelState,
+            "makeRef"
+        )]
+    );
+}

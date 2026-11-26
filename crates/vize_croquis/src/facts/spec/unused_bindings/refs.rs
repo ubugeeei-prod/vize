@@ -1,15 +1,19 @@
 //! Independent static template-ref reads over a freshly parsed template.
 
 use oxc_ast::AstKind;
-use oxc_ast::ast::Expression;
+use oxc_ast::ast::{Expression, IdentifierReference};
+use oxc_semantic::Semantic;
 use std::collections::BTreeSet;
 use vize_carton::{Allocator, CompactString};
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
 
 /// Whether a setup declaration is `name = useTemplateRef(...)`, through
-/// parentheses and TypeScript wrappers. Only the direct spelling counts, as
-/// it is the only one the script analysis resolves to Vue's API.
-pub(super) fn is_template_ref_handle(declaration: AstKind<'_>) -> bool {
+/// parentheses and TypeScript wrappers, with the callee resolved through the
+/// script's own bindings: an import of `useTemplateRef` from a Vue module
+/// under any local name, or the unbound auto-imported global. A local
+/// declaration spelled `useTemplateRef` (`const useTemplateRef = ref`) or an
+/// import from another module is not Vue's API.
+pub(super) fn is_template_ref_handle(semantic: &Semantic<'_>, declaration: AstKind<'_>) -> bool {
     let AstKind::VariableDeclarator(declarator) = declaration else {
         return false;
     };
@@ -24,13 +28,34 @@ pub(super) fn is_template_ref_handle(declaration: AstKind<'_>) -> bool {
             Expression::TSSatisfiesExpression(inner) => Some(&inner.expression),
             Expression::TSNonNullExpression(inner) => Some(&inner.expression),
             Expression::CallExpression(call) => {
-                return matches!(&call.callee, Expression::Identifier(callee)
-                    if callee.name == "useTemplateRef");
+                let Expression::Identifier(callee) = &call.callee else {
+                    return false;
+                };
+                return names_vue_template_ref(semantic, callee);
             }
             _ => None,
         };
     }
     false
+}
+
+fn names_vue_template_ref(semantic: &Semantic<'_>, callee: &IdentifierReference<'_>) -> bool {
+    let scoping = semantic.scoping();
+    let Some(symbol) = callee
+        .reference_id
+        .get()
+        .and_then(|reference| scoping.get_reference(reference).symbol_id())
+    else {
+        return callee.name == "useTemplateRef";
+    };
+    let declaration = semantic.symbol_declaration(symbol);
+    matches!(declaration.kind(), AstKind::ImportSpecifier(specifier)
+        if specifier.imported.name().as_str() == "useTemplateRef")
+        && matches!(semantic.nodes().parent_kind(declaration.id()),
+        AstKind::ImportDeclaration(import) if matches!(
+            import.source.value.as_str(),
+            "vue" | "#imports" | "@vue/runtime-core" | "@vue/runtime-dom"
+        ))
 }
 
 pub(super) fn evaluate(source: &str) -> BTreeSet<CompactString> {

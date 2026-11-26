@@ -47,21 +47,44 @@ pub fn detect_reactivity_call(
     }
 }
 
-/// Whether `call` is Vue's `useTemplateRef(key)`, spelled directly or through
-/// a recorded alias. Its result is wired to a template ref by the key string,
-/// never by the name of the binding that holds it.
-pub fn is_template_ref_call(
-    call: &CallExpression<'_>,
-    reactivity_aliases: &FxHashMap<CompactString, CompactString>,
-) -> bool {
+/// Modules whose exports are Vue's runtime API.
+fn is_vue_api_source(source: &str) -> bool {
+    matches!(
+        source,
+        "vue" | "#imports" | "@vue/runtime-core" | "@vue/runtime-dom"
+    )
+}
+
+/// The Vue API a module-scope callee names, by the origin of its binding: an
+/// import from a Vue module names the export it imports, under any local
+/// name; a local alias of an API (`const r = ref`) names that API; an unbound
+/// name is the auto-imported API of that spelling (Nuxt, unplugin-auto-import).
+/// An import from any other module, or any other local declaration, names
+/// no Vue API.
+pub(crate) fn callee_vue_api<'r>(
+    result: &'r ScriptParseResult,
+    callee: &'r str,
+) -> Option<&'r str> {
+    let definitions = result.types.definitions();
+    if let Some(source) = definitions.imported_types.get(callee) {
+        return is_vue_api_source(source)
+            .then(|| definitions.imported_type_export(callee))
+            .flatten();
+    }
+    if let Some(api) = result.reactivity_aliases.get(callee) {
+        return Some(api.as_str());
+    }
+    (!result.bindings.contains(callee)).then_some(callee)
+}
+
+/// Whether `call` is Vue's `useTemplateRef(key)`. Its result is wired to a
+/// template ref by the key string, never by the name of the binding that
+/// holds it.
+pub fn is_template_ref_call(result: &ScriptParseResult, call: &CallExpression<'_>) -> bool {
     let Expression::Identifier(callee) = &call.callee else {
         return false;
     };
-    let name = callee.name.as_str();
-    reactivity_aliases
-        .get(name)
-        .map_or(name, CompactString::as_str)
-        == "useTemplateRef"
+    callee_vue_api(result, callee.name.as_str()) == Some("useTemplateRef")
 }
 
 /// Detect Vue API calls that violate setup context (CSRP/Memory Leak risks)
@@ -82,7 +105,10 @@ pub fn detect_setup_context_violation(
         _ => return false,
     };
 
-    if let Some(kind) = SetupContextViolationKind::from_api_name(callee_name) {
+    // `import { useTemplateRef } from './helpers'` is not Vue's API.
+    if let Some(kind) =
+        callee_vue_api(result, callee_name).and_then(SetupContextViolationKind::from_api_name)
+    {
         result.setup_context.record_violation(
             kind,
             CompactString::new(callee_name),

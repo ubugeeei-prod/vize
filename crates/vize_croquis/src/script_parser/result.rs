@@ -385,9 +385,7 @@ impl ScriptParseResult {
         summary.value_binding_origins = origins;
         summary.bindings = self.bindings;
         summary.unused_bindings = self.unused_bindings;
-        summary
-            .template_ref_handles
-            .extend(self.template_ref_handles);
+        summary.template_ref_handles = self.template_ref_handles;
         summary.macros = self.macros;
         let incoming = self.nuxt_static_render_script == Some(true);
         summary.nuxt_static_render_script =

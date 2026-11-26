@@ -187,7 +187,7 @@ pub fn evaluate(
             .iter()
             .any(|directive| normalized(&cstr!("v-{directive}")) == normalized(&decl.name));
         let ref_attribute_read = ref_attributes.contains(&decl.name)
-            && !refs::is_template_ref_handle(semantic.symbol_declaration(symbol).kind());
+            && !refs::is_template_ref_handle(&semantic, semantic.symbol_declaration(symbol).kind());
         if !script_read
             && !(flags.contains(SymbolFlags::Import) && module_reads.contains(&decl.name))
             && !reads.contains(&decl.name)
