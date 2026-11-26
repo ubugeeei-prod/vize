@@ -3278,6 +3278,152 @@
       ]
     },
     {
+      "id": "formatter/sfc/nesting-past-formatter-limits",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-nesting-past-formatter-limits",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "3a98497748e9904227d0a7c8ad2c50a4130a14ebf62a0bfddf94b37263287344",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "62eb601bf81800462e717cb05f449b4104dfe402db4c12f97477f3745a69f51a",
+            "role": "project-vue-version"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [],
+        "commits": [
+          {
+            "sha": "4c29e3e1ca0cadf1ec9a064a8dec6cbaf0c95c86",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/script/expression.rs",
+              "crates/vize_glyph/src/style/chunk.rs",
+              "crates/vize_glyph/src/style/authored.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "repository-authored",
+            "path": "crates/vize_glyph/src/formatter/nesting_tests.rs",
+            "symbol": "style_nested_past_the_limit_stays_as_authored"
+          },
+          {
+            "kind": "repository-authored",
+            "path": "crates/vize_glyph/src/template/nesting_tests.rs",
+            "symbol": "expression_nested_past_the_guard_limit_stays_as_authored"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/src/formatter/nesting_tests.rs",
+          "symbol": "style_nested_past_the_limit_stays_as_authored",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "FormatResult.changed",
+            "idempotence"
+          ],
+          "limitations": [
+            "The Rust witness covers one style block; the fixture adds a block one level shallower as its control."
+          ]
+        },
+        {
+          "path": "crates/vize_glyph/src/template/nesting_tests.rs",
+          "symbol": "expression_nested_past_the_guard_limit_stays_as_authored",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes"
+          ],
+          "limitations": [
+            "JSON nesting and element nesting past their limits stay in the Rust witnesses; the CLI adapter formats one App.vue."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts-script-setup",
+              "directive-expression-layout",
+              "css-scoped"
+            ],
+            "selector": "an interpolation and a bound attribute nested one level past the expression guard, and a style rule nested one bracket past the CSS limit, each beside a control one level shallower"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI with a pinned Vue 3 config compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-nesting-past-formatter-limits/reference.expected.txt",
+              "sha256": "2309657a888313dc0d90ac0a435eaa092d57a54d381d1ea0b88605f41526b25d",
+              "role": "current-cli-output-reference",
+              "provenance": {
+                "path": "crates/vize_glyph/src/formatter/nesting_tests.rs",
+                "symbol": "style_nested_past_the_limit_stays_as_authored",
+                "assertion": "Written by `vize fmt --config vize.config.json --write App.vue` built from the fix; the deeper expressions and style rule keep their authored bytes, the controls and the script are formatted, and passes two and three change nothing."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; the Rust witness covers this field"
+          ],
+          "referenceState": "local dev-profile CLI output at the fix; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/object-wrap-13666",
       "state": "active",
       "targets": [
