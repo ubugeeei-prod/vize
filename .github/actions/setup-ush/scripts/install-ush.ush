@@ -1,0 +1,33 @@
+# Install the ush release that flake.nix pins, verified against the checksums published with it.
+mod "../../../../tools/ci/lib/github.ush" as github
+use $bin::{curl, sha256sum, tar}
+
+# The flake.nix pin. The repository-config check rejects a compiler of any other version.
+let version = "0.18.0"
+
+# The release's sha256sums.txt, copied whole when the pin moves.
+let checksums = """
+  61ab065e5caf985dcfad93a7afd8a0db83dacd9545885842f9c7a5d9e10126d8  ush-aarch64-apple-darwin.tar.gz
+  6d472805bfe05a9a9e8242a31bca35cdcc348416b1f94fbf235226be4abe9c81  ush-aarch64-unknown-linux-gnu.tar.gz
+  b4941e150ca61b2c6b14e0a4127c8faee8e2b2af7435bce609ac2b48c60221b9  ush-x86_64-apple-darwin.tar.gz
+  f51b36be4c3a0f1d16ab147b9a11a377658c9c10fd40ac693c80ef039b2777aa  ush-x86_64-unknown-linux-gnu.tar.gz
+"""
+
+if $env::RUNNER_OS != "Linux" {
+  fail 1 $"setup-ush installs ush on Linux runners, not on $env::RUNNER_OS"
+}
+let target = match $env::RUNNER_ARCH {
+  "X64" => "x86_64-unknown-linux-gnu"
+  "ARM64" => "aarch64-unknown-linux-gnu"
+  arch => fail 1 $"setup-ush has no ush build for $arch runners"
+}
+let name = $"ush-$target"
+let url = $"https://github.com/ubugeeei-prod/ush/releases/download/v$version/$name.tar.gz"
+
+cd $env::RUNNER_TEMP {
+  curl --fail --silent --show-error --location --retry 5 --retry-all-errors --output $"$name.tar.gz" $url
+  # Lines for the archives not downloaded are skipped; the check fails if none is verified.
+  $"$checksums\n" | sha256sum --check --strict --ignore-missing
+  tar -xzf $"$name.tar.gz"
+}
+github::add_path $"$env::RUNNER_TEMP/$name"
