@@ -208,11 +208,15 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   const issue = findStep(publisherSteps, "File canonical divergence issue");
   assert.deepEqual(issue.env, { GH_TOKEN: "${{ github.token }}" });
   assert.equal(issue.shell, "bash");
+  assert.match(issue.run ?? "", /let promotion = \$"real-project-\$observer-promotion"/);
   assert.match(
     issue.run ?? "",
-    /if \[\[ -s "real-project-\$OBSERVER-promotion\/promotion\.json" \]\]/,
+    /if test -s \$"\$promotion\/promotion\.json" \{\n {2}evidence = evidence \+ \[promotion\]\n\}/,
   );
-  assert.match(issue.run ?? "", /canonical-corpus-divergence-issue\.mjs "\$\{args\[@\]\}"/);
+  assert.match(
+    issue.run ?? "",
+    /exec node \(\["tools\/support\/compat\/github\/canonical-corpus-divergence-issue\.mjs", "publish", observer\] \+ evidence\)/,
+  );
   for (const checkout of [
     findStep(job.steps ?? [], "Checkout matrix commit"),
     findStep(corpus.steps ?? [], "Checkout matrix commit"),

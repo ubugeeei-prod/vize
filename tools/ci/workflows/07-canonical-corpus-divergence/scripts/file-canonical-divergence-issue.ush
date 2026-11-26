@@ -1,0 +1,13 @@
+# File the observer's canonical divergence issue from its evidence, with its fixture promotion when one was downloaded.
+use $bin::{test}
+use std::process::exec
+
+let observer = $env::OBSERVER
+let promotion = $"real-project-$observer-promotion"
+
+let mut evidence = [$"real-project-$observer-corpus", $"real-project-$observer-reduction"]
+# The promotion download may fail without failing the job; an empty record is no promotion.
+if test -s $"$promotion/promotion.json" {
+  evidence = evidence + [promotion]
+}
+exec node (["tools/support/compat/github/canonical-corpus-divergence-issue.mjs", "publish", observer] + evidence)
