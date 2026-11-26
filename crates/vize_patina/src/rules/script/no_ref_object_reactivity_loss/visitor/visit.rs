@@ -14,9 +14,9 @@ use oxc_syntax::scope::ScopeFlags;
 use vize_l0::FxHashMap;
 
 impl Visitor<'_, '_> {
-    /// Hoisted function and class names shadow an auto-imported Vue API of
-    /// the same name throughout their scope, so a local `function ref()` is
-    /// never read as Vue's factory.
+    /// Hoisted function and class names shadow an imported Vue API of the
+    /// same name throughout their scope, so a nested `function ref()` is never
+    /// read as Vue's factory.
     fn prime_declarations(&mut self, statements: &[Statement<'_>]) {
         for statement in statements {
             let id = match statement {

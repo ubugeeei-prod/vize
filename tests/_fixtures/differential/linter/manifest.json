@@ -27520,16 +27520,6 @@
         "root": "use-template-ref-lint-gaps",
         "files": [
           {
-            "path": "AutoImportedRefOperand.vue.txt",
-            "role": "auto-imported-ref-operand",
-            "sha256": "124f9e7252e8c475e4a96ab119a6a09f4a969f72049427da53bfe2236229de6d"
-          },
-          {
-            "path": "AutoImportedTemplateRefOperand.vue.txt",
-            "role": "auto-imported-template-ref-operand",
-            "sha256": "c591ef07229603111bee758a25061b75dc74747fa3a415fc4431eb09aaed74d9"
-          },
-          {
             "path": "JsxModuleScriptRules.tsx.txt",
             "role": "jsx-module-ast-script-rules",
             "sha256": "f644ca3acd0795d4df9e94fb96f160bc8a956cf910c1dc0f625acab3a37d6914"
