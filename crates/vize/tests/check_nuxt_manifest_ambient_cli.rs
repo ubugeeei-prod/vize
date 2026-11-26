@@ -175,3 +175,64 @@ fn selected_nuxt_import_manifests_declare_their_globals_with_or_without_nuxt_det
     );
     let _ = std::fs::remove_dir_all(&project);
 }
+
+const REFERENCED_FIXTURE: &str =
+    "tests/_fixtures/differential/typechecker/nuxt-referenced-import-manifest-template-ref";
+
+/// Nuxt 4's default layout: the root tsconfig only references
+/// `.nuxt/tsconfig.app.json`, which includes `nuxt.d.ts`, and the import
+/// manifest is reached solely through that file's `/// <reference path>`.
+fn create_referenced_manifest_project(name: &str) -> std::path::PathBuf {
+    let fixture = workspace_root().join(REFERENCED_FIXTURE);
+    let project = unique_case_dir(name);
+    let _ = std::fs::remove_dir_all(&project);
+    link_workspace_vue(&project).unwrap();
+    for (input, target) in [
+        ("tsconfig.json.txt", "tsconfig.json"),
+        ("tsconfig.app.json.txt", ".nuxt/tsconfig.app.json"),
+        ("nuxt.d.ts.txt", ".nuxt/nuxt.d.ts"),
+        ("imports.d.ts.txt", ".nuxt/types/imports.d.ts"),
+        ("app/pages/index.vue.txt", "app/pages/index.vue"),
+    ] {
+        let target = project.join(target);
+        std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+        std::fs::copy(fixture.join(input), target).unwrap();
+    }
+    std::fs::write(project.join("nuxt.config.ts"), "export default {}\n").unwrap();
+    project
+}
+
+#[test]
+fn a_manifest_reached_only_through_nuxt_references_owns_use_template_ref() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let project = create_referenced_manifest_project("nuxt-referenced-manifest-template-ref");
+    assert_eq!(diagnostics(&project, &corsa_path), Vec::<String>::new());
+
+    // The ref is the registered `<main>`, not `unknown`: an unknown member of
+    // the element and a key the template never registers are both reported.
+    let page = project.join("app/pages/index.vue");
+    let source = std::fs::read_to_string(&page).unwrap();
+    let edited = source
+        .replace("el.value?.tagName", "el.value?.__vizeMissingMember")
+        .replace(
+            "const el = useTemplateRef(\"el\")",
+            "const el = useTemplateRef(\"el\")\nconst missing = useTemplateRef(\"missing\")",
+        );
+    assert_ne!(edited, source);
+    std::fs::write(&page, edited).unwrap();
+    let reported = diagnostics(&project, &corsa_path);
+    assert_eq!(
+        reported
+            .iter()
+            .map(|line| line.split(" (").next().unwrap().to_owned())
+            .collect::<Vec<_>>(),
+        vec![
+            "app/pages/index.vue error:3:32 [TS2339] Property 'missing' does not exist on type '$TemplateRefs'.".to_owned(),
+            "app/pages/index.vue error:6:25 [TS2339] Property '__vizeMissingMember' does not exist on type 'HTMLElement'.".to_owned(),
+        ],
+        "{reported:?}"
+    );
+    let _ = std::fs::remove_dir_all(&project);
+}

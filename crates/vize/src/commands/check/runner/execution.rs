@@ -191,6 +191,14 @@ pub(super) fn prepare_program(
         legacy_vue2,
         dialect,
     );
+    // Nuxt detection supplies the generated auto-imports as its own stubs, so
+    // a manifest reached only through `nuxt.d.ts` references (Nuxt's default
+    // layout) is never a program file. A stub keeps the manifest's spelling,
+    // which is what decides the ownership of the global `useTemplateRef`.
+    let supplied_vue_template_ref = virtual_ts_options
+        .auto_import_stubs
+        .iter()
+        .any(|stub| vize_canon::batch::declares_vue_template_ref_global(stub));
     collect_project_global_component_stubs(
         &mut virtual_ts_options,
         input.files,
@@ -261,13 +269,14 @@ pub(super) fn prepare_program(
     checker.set_package_routes(input.package_routes);
     checker.set_foreign_declarations(input.foreign_declarations);
     checker.set_ambient_vue_template_ref(
-        crate::commands::check::tsconfig_inputs::declares_vue_template_ref_global(
-            &program_files
-                .iter()
-                .chain(&selected_manifests)
-                .cloned()
-                .collect::<Vec<_>>(),
-        ),
+        supplied_vue_template_ref
+            || crate::commands::check::tsconfig_inputs::declares_vue_template_ref_global(
+                &program_files
+                    .iter()
+                    .chain(&selected_manifests)
+                    .cloned()
+                    .collect::<Vec<_>>(),
+            ),
     );
     checker.set_imports_alias_vue_template_ref(input.tsconfig_path.as_deref().is_some_and(
         crate::commands::check::tsconfig_inputs::imports_alias_reexports_vue_template_ref,
