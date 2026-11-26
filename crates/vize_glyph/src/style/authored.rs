@@ -1,6 +1,6 @@
 use crate::options::FormatOptions;
 use vize_l0::String;
-use vize_l0::css_nesting::MAX_CSS_NESTING_DEPTH;
+use vize_l1::css::nesting::MAX_CSS_NESTING_DEPTH;
 
 /// Format rule layout and declaration punctuation without passing authored
 /// values through the CSS printer. Media queries and selectors stay intact.

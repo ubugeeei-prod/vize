@@ -7,7 +7,7 @@ pub(super) fn format_chunk(trimmed: &str, options: &FormatOptions) -> Result<Str
     // exponential work; report the same kind of error without it. The check
     // comes before color protection, which already hands authored values to
     // the engine.
-    if vize_l0::css_nesting::css_nesting_exceeds_max_depth(trimmed) {
+    if vize_l1::css::nesting::css_nesting_exceeds_max_depth(trimmed) {
         return Err(nesting_depth_error());
     }
     let colors = super::color::protect(trimmed);
@@ -91,7 +91,7 @@ fn format_chunk_once(
 #[cold]
 #[inline(never)]
 fn nesting_depth_error() -> FormatError {
-    FormatError::StyleFormatError(vize_l0::css_nesting::NESTING_DEPTH_ERROR.into())
+    FormatError::StyleFormatError(vize_l1::css::nesting::NESTING_DEPTH_ERROR.into())
 }
 
 pub(super) fn contains_comment(source: &str) -> bool {
@@ -102,7 +102,7 @@ pub(super) fn contains_comment(source: &str) -> bool {
 mod tests {
     use super::format_chunk;
     use crate::{FormatError, FormatOptions};
-    use vize_l0::css_nesting::{MAX_CSS_NESTING_DEPTH, NESTING_DEPTH_ERROR};
+    use vize_l1::css::nesting::{MAX_CSS_NESTING_DEPTH, NESTING_DEPTH_ERROR};
 
     /// One declaration whose value nests `depth` brackets, the rule's own
     /// block included.
