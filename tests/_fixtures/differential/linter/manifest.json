@@ -1615,6 +1615,47 @@
       }
     },
     {
+      "id": "linter/css-nesting-past-engine-limit",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "css-nesting-past-engine-limit",
+        "files": [
+          {
+            "path": "ProductCard.vue.txt",
+            "role": "nested-style-reproduction-and-controls",
+            "sha256": "9576b79c6d5dfa1dc2b9f653b5425310834213a4f1f9e379fcaae1d3236761ba"
+          },
+          {
+            "path": "invocation.json",
+            "role": "pinned-cli-invocation",
+            "sha256": "8ec6c26910feb1bb968cfa20dc2c61616118c664223df494e39ee6e237cac590"
+          },
+          {
+            "path": "lint-packet.expected.json",
+            "role": "complete-public-cli-packet",
+            "sha256": "a2f67bff9e25f4b88b4dbda5063fb54075c3d89d21798cbd2cad0b4008b59fae"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/css-style-lane-11550",
       "state": "active",
       "targets": [
