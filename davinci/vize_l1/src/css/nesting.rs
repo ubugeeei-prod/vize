@@ -169,6 +169,7 @@ fn skip_url(bytes: &[u8], mut i: usize) -> usize {
 #[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
     use super::{MAX_CSS_NESTING_DEPTH, css_nesting_exceeds_max_depth};
+    use alloc::format;
 
     #[test]
     fn accepts_the_documented_boundary_and_rejects_one_past_it() {
