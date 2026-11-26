@@ -3,11 +3,12 @@
 
 use super::{
     BatchCompileOptionsNapi, BatchCompileResultWithFilesNapi, BatchCompileTargetNapi,
-    BatchFileInputNapi, BatchFileResultNapi, compile_sfc_batch_for_targets,
-    compile_sfc_batch_with_results,
+    BatchFileInputNapi, compile_sfc_batch_for_targets, compile_sfc_batch_with_results,
 };
 use std::path::{Path, PathBuf};
 
+mod cases;
+mod dependencies;
 mod fields;
 mod window;
 use fields::{custom_blocks, macro_artifacts, module_shape, styles, type_project};
@@ -98,27 +99,17 @@ fn inputs(files: &[(String, String)]) -> Vec<BatchFileInputNapi> {
         .collect()
 }
 
-/// Compile `files` for both targets of every build, at once and apart, check
-/// the results are the same, and return the first build's errors per file as
-/// `[client, ssr]`.
+/// Compile `files` for both targets of every build, at once and apart, in
+/// both target orders, check the results are the same, and return the first
+/// build's errors per file as `[client, ssr]`. The order where the server
+/// target comes first catches a target that leaves the shared analysis
+/// changed for the next one.
 fn assert_targets_compile_apart(files: &[(String, String)]) -> Vec<[Vec<String>; 2]> {
     let mut first_build_errors = Vec::new();
     for (build_index, build) in BUILDS.into_iter().enumerate() {
-        let together = compile_sfc_batch_for_targets(
-            inputs(files),
-            Some(options(build, None)),
-            Vec::from(targets(build)),
-        )
-        .expect("multi-target batch");
-        assert_eq!(together.targets.len(), 2);
-        let together = with_shared_dependencies(together);
-        for (index, (target, together)) in targets(build).iter().zip(&together.targets).enumerate()
-        {
-            let apart =
-                compile_sfc_batch_with_results(inputs(files), Some(options(build, Some(target))))
-                    .expect("separate batch");
-            assert_same(build, index, together, &apart);
-        }
+        let [client_after, ssr_first] = targets(build);
+        assert_order_compiles_apart(files, build, vec![ssr_first, client_after]);
+        let together = assert_order_compiles_apart(files, build, Vec::from(targets(build)));
         if let (0, [client, ssr]) = (build_index, together.targets.as_slice()) {
             first_build_errors = client
                 .results
@@ -129,6 +120,30 @@ fn assert_targets_compile_apart(files: &[(String, String)]) -> Vec<[Vec<String>;
         }
     }
     first_build_errors
+}
+
+/// Compile `files` for `order` at once, and for each of its targets apart,
+/// check the results are the same and return the call's result.
+fn assert_order_compiles_apart(
+    files: &[(String, String)],
+    build: Build,
+    order: Vec<BatchCompileTargetNapi>,
+) -> super::BatchCompileTargetsResultNapi {
+    let apart: Vec<_> = order
+        .iter()
+        .map(|target| {
+            compile_sfc_batch_with_results(inputs(files), Some(options(build, Some(target))))
+                .expect("separate batch")
+        })
+        .collect();
+    let together = compile_sfc_batch_for_targets(inputs(files), Some(options(build, None)), order)
+        .expect("multi-target batch");
+    assert_eq!(together.targets.len(), apart.len());
+    let together = with_shared_dependencies(together);
+    for (index, (together, apart)) in together.targets.iter().zip(&apart).enumerate() {
+        assert_same(build, index, together, apart);
+    }
+    together
 }
 
 /// The result with every dependency list a later target left out restored
@@ -438,56 +453,4 @@ fn an_omitted_target_field_keeps_the_call_option() {
 fn a_call_without_targets_is_refused() {
     let refused = compile_sfc_batch_for_targets(vec![], None, vec![]);
     assert!(refused.is_err());
-}
-
-fn result_with(dependencies: Option<&[&str]>) -> BatchFileResultNapi {
-    BatchFileResultNapi {
-        type_project: None,
-        path: "/virtual/Shared.vue".into(),
-        code: String::new(),
-        map: None,
-        css: None,
-        scope_id: String::new(),
-        has_scoped: false,
-        errors: vec![],
-        warnings: vec![],
-        template_hash: None,
-        style_hash: None,
-        script_hash: None,
-        styles: vec![],
-        custom_blocks: vec![],
-        macro_artifacts: vec![],
-        module_shape: None,
-        dependencies: dependencies.map(|list| list.iter().map(|path| (*path).into()).collect()),
-    }
-}
-
-#[test]
-fn only_an_equal_dependency_list_is_left_out() {
-    use super::batch_targets::leave_out_shared_dependencies;
-    let list: &[&str] = &["/project/types.ts"];
-    let mut equal = [
-        (result_with(Some(list)), true),
-        (result_with(Some(list)), true),
-    ];
-    assert!(leave_out_shared_dependencies(&mut equal));
-    let [(first, _), (later, _)] = &equal;
-    assert_eq!(
-        first.dependencies.as_deref(),
-        Some(&["/project/types.ts".into()][..])
-    );
-    assert_eq!(later.dependencies, None);
-
-    // A later target that failed has no list: it shares nothing.
-    let mut failed = [(result_with(Some(list)), true), (result_with(None), false)];
-    assert!(!leave_out_shared_dependencies(&mut failed));
-    let mut different = [
-        (result_with(Some(list)), true),
-        (result_with(Some(&["/project/other.ts"])), true),
-    ];
-    assert!(!leave_out_shared_dependencies(&mut different));
-    let [_, (later, _)] = &different;
-    assert_eq!(later.dependencies.as_ref().map(Vec::len), Some(1));
-    let mut none = [(result_with(None), true), (result_with(None), true)];
-    assert!(!leave_out_shared_dependencies(&mut none));
 }
