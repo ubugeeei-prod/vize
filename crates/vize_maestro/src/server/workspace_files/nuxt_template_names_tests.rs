@@ -1,5 +1,11 @@
 //! Editor lint diagnostics see the names Nuxt auto-imports, as `vize lint` does.
 
+#![expect(
+    clippy::unwrap_used,
+    clippy::indexing_slicing,
+    reason = "whole LSP session fixture"
+)]
+
 use futures::{FutureExt, StreamExt, channel::mpsc};
 use serde_json::{Value, json};
 use std::{future::Future, path::Path, time::Duration};
@@ -29,8 +35,10 @@ fn write(root: &Path, relative: &str, source: &str) {
     std::fs::write(path, source).unwrap();
 }
 
-fn fixture(source: &str) -> String {
-    std::fs::read_to_string(Path::new(FIXTURE).join(source)).unwrap()
+fn fixture(source: &str) -> vize_carton::String {
+    std::fs::read_to_string(Path::new(FIXTURE).join(source))
+        .unwrap()
+        .into()
 }
 
 /// A Nuxt project built from the fixture inputs, optionally without the
