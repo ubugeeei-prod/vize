@@ -76,6 +76,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         self.merged_attrs_for::<false>(attached, tag, inherit, css_vars)
     }
 
+    #[inline(always)]
     pub(super) fn group_attrs(
         &mut self,
         attached: &Attached<'_, '_>,

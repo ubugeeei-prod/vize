@@ -92,6 +92,7 @@ impl<'s, 'a> FrozenSlotFacts<'s, 'a> {
     /// Called for the actual ElementOp borrowed by the validated string plan.
     /// Opening custody comes from Parser, while ElementOp.span includes its
     /// closing tag. Compare the shared start and bounds without scanning again.
+    #[inline(always)]
     pub(super) fn permits(&self, element: &ElementOp<'_>) -> bool {
         if element.tag != "slot"
             || !element.bindings.is_empty()

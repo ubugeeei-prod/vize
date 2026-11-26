@@ -191,6 +191,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// `_push(_ssrRenderComponent(callee, props, slots, _parent))`.
+    #[inline(always)]
     fn render_component<M: RenderMapMode>(
         &mut self,
         name: &str,

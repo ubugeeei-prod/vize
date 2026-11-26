@@ -171,6 +171,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// Consume a child list the legacy walker never renders (the element's
     /// directive owns its content), keeping the plan balanced.
+    #[inline(never)]
     fn skip_children(&mut self) -> Result<()> {
         self.pos = self.region_end(self.pos)?;
         Ok(())

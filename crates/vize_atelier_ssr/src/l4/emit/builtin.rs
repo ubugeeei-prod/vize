@@ -67,6 +67,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         Ok(())
     }
 
+    #[inline(always)]
     fn suspense_name(&mut self, slot: &l2::SlotContentOp<'_>) -> Result<()> {
         match &slot.name {
             None => self.ctx.push("default"),
