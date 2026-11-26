@@ -152,9 +152,16 @@ function assertCompilerOptions(entry: WasmEntry): void {
   assert.throws(() => entry.compile("<div /><span></span>", { templateSyntax: "strict" }));
   const parsedQuirks = entry.parseTemplate("<div />", { vueParserQuirks: true });
   assert.equal(parsedQuirks.children[0].isSelfClosing, true);
+  // An explicit templateSyntax overrides the legacy quirks flag. Standard mode recovers from a
+  // self-closing non-void element as compile does; only strict mode rejects it.
+  const parsedStandard = entry.parseTemplate("<div />", {
+    templateSyntax: "standard",
+    vueParserQuirks: true,
+  });
+  assert.equal(parsedStandard.children.length, 1);
   assert.throws(() =>
     entry.parseTemplate("<div />", {
-      templateSyntax: "standard",
+      templateSyntax: "strict",
       vueParserQuirks: true,
     }),
   );

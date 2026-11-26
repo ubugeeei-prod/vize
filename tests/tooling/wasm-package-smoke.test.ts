@@ -70,8 +70,8 @@ export function compile(_template, options = {}) {
 }
 export function compileVapor() {}
 export function parseTemplate(_template, options = {}) {
-  if (options.templateSyntax === "standard" && options.vueParserQuirks === true) {
-    throw new Error("standard template syntax");
+  if (options.templateSyntax === "strict") {
+    throw new Error("strict template syntax");
   }
   return { children: [{ isSelfClosing: options.vueParserQuirks === true }] };
 }
