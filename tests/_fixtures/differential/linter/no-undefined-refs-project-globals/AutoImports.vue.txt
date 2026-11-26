@@ -1,0 +1,17 @@
+<script setup lang="ts">
+const { count, inc } = useCounter();
+const list = ref([1, 2]);
+</script>
+
+<template>
+  <main>
+    <p id="count">{{ formatCount(count) }} {{ shout("in-template") }} {{ sharedSum(1, 1) }}</p>
+    <ul>
+      <li v-for="n in sharedSum(1, 2)" :key="n" :data-x="formatCount(n)">{{ n }}</li>
+    </ul>
+    <p v-if="isDefined(count)" id="vif" @click="navigateTo('/about')">{{ useColor().value }}</p>
+    <BaseButton v-for="i in list" :key="i" :label="formatCount(i)" @press="list.push(sharedSum(i, 10))" />
+    <component :is="resolveComponent('BaseButton')" label="dyn" @press="inc" />
+    <p id="typo">{{ formatCuont(count) }}</p>
+  </main>
+</template>
