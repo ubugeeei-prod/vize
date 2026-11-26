@@ -176,7 +176,7 @@ jobs {
           VIZE_TASK_CACHE_INSTALLER = "${{ matrix.installer }}"
           VIZE_TASK_CACHE_RUNTIME = "${{ matrix.runtime }}"
         }
-        run = ci.workflowScript("check-installed-task-cache.sh")
+        run = ci.workflowProgram("check-installed-task-cache")
       }
       new Dynamic {
         uses = ci.uploadArtifact

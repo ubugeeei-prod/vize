@@ -1,0 +1,4 @@
+# Check the installed Vite+ task cache and its invalidation on the runtime that the matrix selects.
+
+# The runtime is Node or Bun, so the program is named at run time.
+std::process::exec $env::VIZE_TASK_CACHE_RUNTIME ["npm/builder/vite/scripts/check-task-cache.ts"]

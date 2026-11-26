@@ -138,7 +138,7 @@ jobs:
           VIZE_TASK_CACHE_PROVIDER: ${{ matrix.provider }}
           VIZE_TASK_CACHE_INSTALLER: ${{ matrix.installer }}
           VIZE_TASK_CACHE_RUNTIME: ${{ matrix.runtime }}
-        run: . "${{ env.VIZE_CI_FILES }}/check-installed-task-cache.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/check-installed-task-cache.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
