@@ -25,7 +25,7 @@ Observation {
                 start: 64,
                 end: 98,
                 help: Some(
-                    "Replace with: `const text = useTemplateRef('text')`",
+                    "Replace with: `const text = useTemplateRef<HTMLInputElement>('text')`",
                 ),
                 labels: [
                     Label {
@@ -52,7 +52,7 @@ Observation {
                     start: 64,
                     end: 98,
                     help: Some(
-                        "Replace with: `const text = useTemplateRef('text')`",
+                        "Replace with: `const text = useTemplateRef<HTMLInputElement>('text')`",
                     ),
                     labels: [
                         Label {

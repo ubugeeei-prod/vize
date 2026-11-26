@@ -106,7 +106,7 @@
       "inputSha256": "bbf44eaafba39cd0a85a3b4632f0dd487b83af473e263f049c3933f56ba9f72e",
       "configurationSha256": "c001716b23b6a02b2fcf8e58c0032cb36b478e1d5cc1348069eb83678e0443d4",
       "snapshot": "crates/vize_patina/tests/snapshots/lint_history__ref-call-control.snap",
-      "snapshotSha256": "812da01796e6a91b28459f73451ca66d4f6327acb82a5e7e4a22dbd78bb429d8"
+      "snapshotSha256": "b2cdad3016b35594ce55184e09f1ce5d0d46a76b80f9cd22b1088e51f92ddf00"
     },
     {
       "id": "v-for-no-separator",

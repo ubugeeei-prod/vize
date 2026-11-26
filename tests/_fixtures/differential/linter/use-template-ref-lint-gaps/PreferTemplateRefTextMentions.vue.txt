@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const query = ref('')
+const input = ref('')
+const name = ref('')
+</script>
+
+<template>
+  <div>
+    <!-- <input ref="query"> -->
+    <input v-model="query" type="search" aria-label="Search">
+    <input v-model="input" aria-label="Demo">
+    <code>&lt;input ref="input"&gt;</code>
+    <input v-model="name" aria-label="Name" placeholder="e.g. ref='name'">
+  </div>
+</template>
