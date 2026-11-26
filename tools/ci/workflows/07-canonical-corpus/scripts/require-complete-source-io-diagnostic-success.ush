@@ -1,0 +1,2 @@
+# Fail the observer when the complete source IO diagnostic failed: its retained evidence waives nothing.
+fail 1 "Complete source IO diagnostic failed; retained raw evidence grants no gate waiver."

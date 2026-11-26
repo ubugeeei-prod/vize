@@ -67,7 +67,7 @@ jobs:
           key: ${{ steps.corpus-plan.outputs.cache-key }}
           restore-keys: ${{ steps.corpus-plan.outputs.cache-restore-key }}
       - name: Select and hydrate full fixture corpus
-        run: . "${{ env.VIZE_CI_FILES }}/select-and-hydrate-full-fixture-corpus.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/select-and-hydrate-full-fixture-corpus.sh"
       - name: Capture canonical corpus identity
         id: corpus_snapshot
         run: node tools/support/compat/github/canonical-corpus-observer.mjs snapshot
@@ -95,7 +95,7 @@ jobs:
         run: node tools/support/compat/github/canonical-corpus-shards.ts run reach reach.log
       - name: Require complete source IO diagnostic success
         if: ${{ always() && matrix.observer == 'ssr-pug' && steps.corpus_io.outcome != 'success' }}
-        run: . "${{ env.VIZE_CI_FILES }}/require-complete-source-io-diagnostic-success.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/require-complete-source-io-diagnostic-success.sh"
       - name: Record required observer evidence
         if: ${{ always() }}
         env:

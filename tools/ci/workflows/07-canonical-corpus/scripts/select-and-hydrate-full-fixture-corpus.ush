@@ -1,0 +1,5 @@
+# Hydrate the full fixture corpus, keeping the hydration log as evidence, then restore the observer's objects.
+use $bin::{node, tee}
+
+node tools/support/compat/fixtures/davinci-dom-corpus-workflow.ts hydrate |& tee real-project-davinci-dom-corpus/initial-hydration.log
+node tools/support/compat/github/canonical-corpus-observer.mjs rehydrate

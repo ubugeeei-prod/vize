@@ -102,7 +102,7 @@ jobs {
       }
       new Dynamic {
         name = "Select and hydrate full fixture corpus"
-        run = ci.workflowScript("select-and-hydrate-full-fixture-corpus.sh")
+        run = ci.workflowProgram("select-and-hydrate-full-fixture-corpus")
       }
       new Dynamic {
         name = "Capture canonical corpus identity"
@@ -142,7 +142,7 @@ jobs {
       new Dynamic {
         name = "Require complete source IO diagnostic success"
         `if` = "${{ always() && matrix.observer == 'ssr-pug' && steps.corpus_io.outcome != 'success' }}"
-        run = ci.workflowScript("require-complete-source-io-diagnostic-success.sh")
+        run = ci.workflowProgram("require-complete-source-io-diagnostic-success")
       }
       new Dynamic {
         name = "Record required observer evidence"
