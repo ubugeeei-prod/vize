@@ -368,7 +368,7 @@ mod tests {
 
     #[test]
     fn the_index_loop_decides_every_short_gap_like_the_slice_patterns() {
-        const BYTES: [u8; 5] = [b' ', b'\t', b'\n', b'\r', b'a'];
+        const BYTES: [u8; 5] = *b" \t\n\ra";
         for len in 0..=7_u32 {
             for mut code in 0..5_usize.pow(len) {
                 let gap: Vec<u8> = (0..len)
