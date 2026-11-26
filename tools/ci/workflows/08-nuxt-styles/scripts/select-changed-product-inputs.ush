@@ -1,0 +1,25 @@
+# Plan which product integrations run, fetching the base commit that the plan compares with.
+use $bin::{git, node}
+use std::env::get
+
+# Whether the base names a commit: 40 lowercase hexadecimal digits, other than the
+# all-zero ID that GitHub sends for a push that created its branch.
+fn is_base_commit(sha: String) -> Bool {
+  match sha {
+    glob "*[!0-9a-f]*" => false
+    "0000000000000000000000000000000000000000" => false
+    glob "????????????????????????????????????????" => true
+    _ => false
+  }
+}
+
+# Scheduled and manually dispatched runs have no base, so the variable may be empty.
+let base_sha = get BASE_SHA
+
+if is_base_commit $base_sha {
+  git fetch --no-tags --depth=1 origin $base_sha
+}
+node tools/support/compat/github/plan-product-integrations.ts \
+  $env::GITHUB_EVENT_NAME \
+  $base_sha \
+  $env::GITHUB_SHA

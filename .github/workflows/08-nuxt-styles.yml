@@ -38,7 +38,7 @@ jobs:
         id: plan
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
-        run: . "${{ env.VIZE_CI_FILES }}/select-changed-product-inputs.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/select-changed-product-inputs.sh"
 
   nuxt-style-build:
     name: Nuxt 4 ${{ matrix.case }}
@@ -113,7 +113,7 @@ jobs:
         env:
           FIXTURE: ${{ matrix.fixture }}
           PROOF: ${{ matrix.proof }}
-        run: . "${{ env.VIZE_CI_FILES }}/retain-the-exact-compared-javascript-adapters.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/retain-the-exact-compared-javascript-adapters.sh"
       - name: Upload build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

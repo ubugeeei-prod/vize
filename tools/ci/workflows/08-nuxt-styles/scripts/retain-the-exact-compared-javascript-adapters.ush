@@ -1,0 +1,20 @@
+# Keep the published and candidate JavaScript adapters a proof compared, next to its evidence.
+use $bin::{cp}
+use std::fs::{is_dir, mkdir_p}
+
+let adapters = $"$env::RUNNER_TEMP/$env::PROOF/compared-adapters"
+
+mkdir_p $adapters/candidate
+mkdir_p $adapters/published
+for adapter in ["vite-plugin", "nuxt"] {
+  let published = $"$env::FIXTURE/node_modules/@vizejs/$adapter/dist"
+  if is_dir $published {
+    cp -R $published $adapters/published/$adapter
+  }
+}
+if is_dir "npm/builder/vite/dist" {
+  cp -R npm/builder/vite/dist $adapters/candidate/vite-plugin
+}
+if is_dir "npm/framework/nuxt/dist" {
+  cp -R npm/framework/nuxt/dist $adapters/candidate/nuxt
+}
