@@ -32,7 +32,7 @@ The user is moving to another machine. Every piece of work is pushed. Nothing he
 - **TODO:**
   1. Read both runs. No no-map row may move up.
      - The A/A twin control currently fails on `formatter_script_large` on main itself: `cf3ae603ed` against its own twin moved that row. Read the instruction rows separately.
-  2. Rerun the full tests. Reinstall first with `pnpm install --frozen-lockfile --ignore-scripts`.
+  2. Rerun the full tests. The last run on the rebased branch was 2273 passed and 74 failed. The failures checked were missing `node_modules` (`happy-dom`, `vite`), but not all were checked. Reinstall first with `pnpm install --frozen-lockfile --ignore-scripts`, then confirm 0 failures.
   3. One byte-custody failure is in `crates/vize_croquis/src/sfc/css_transform.rs`, which this branch doesn't touch. Check whether main fails it too.
   4. Open the PR (not a draft) with `PR-BODY-13547.md` from this branch, and fill in its evidence section.
      - `Closes #13547`, supersedes #13620.
