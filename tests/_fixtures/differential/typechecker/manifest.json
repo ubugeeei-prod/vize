@@ -70384,6 +70384,35 @@
       }
     },
     {
+      "id": "typechecker/template-ref-inference-scope/namespace-local-function-and-component-targets",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "template-ref-inference-scope/Scoped.vue.txt",
+          "sha256": "d03da06879af6d40b232ca0e922420985e48f6c3876ffb37cb6583ac2755eee8",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "template_ref_keys::tests::{vue_namespace_members_infer_template_refs, owned_untyped_calls_infer_template_refs_inside_local_functions_too, exported_functions_keep_vues_signature_for_their_callers_templates}; template_ref_registry::component_target_tests: `Vue.useTemplateRef`, calls inside local functions, ref-valued `:is` targets and static `is` all read the template registry. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/tsx-script-syntax-projection/typescript-only-syntax",
       "state": "active",
       "targets": [

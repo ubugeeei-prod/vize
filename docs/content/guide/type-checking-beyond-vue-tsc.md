@@ -168,6 +168,99 @@ Passing it to the default slot (`#default`) reports nothing. Found in n8n's
 `InputPanel.vue`. Pinned by
 [`unknown-slot-name`](https://github.com/ubugeeei-prod/vize/tree/main/tests/_fixtures/type-checking-beyond-vue-tsc/unknown-slot-name).
 
+### A template ref read inside a local function
+
+Vize types `useTemplateRef("key")` from the template wherever the component's own script calls
+it, including a local composable or a lifecycle hook, so a key the template never registers is
+an error. vue-tsc reads the template's refs only at the top level of `<script setup>`:
+
+```vue
+<!-- src/ConfirmDialog.vue -->
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+function useModal() {
+  const dialog = useTemplateRef("dialgo");
+  return () => dialog.value?.showModal();
+}
+
+const open = useModal();
+</script>
+
+<template>
+  <button @click="open">Delete</button>
+  <dialog ref="dialog">Delete this item?</dialog>
+</template>
+```
+```diagnostic
+src/ConfirmDialog.vue
+  error:5:33 [TS2339] Property 'dialgo' does not exist on type '$TemplateRefs'.
+  error:6:30 [TS2339] Property 'showModal' does not exist on type '{}'.
+```
+vue-tsc misses the misspelled key and reports only the `{}` that the untyped ref produces:
+
+```diagnostic
+src/ConfirmDialog.vue(6,30): error TS2339: Property 'showModal' does not exist on type '{}'.
+```
+The template registers `dialog`, not `dialgo`, so the dialog never opens. With the key fixed,
+Vize reports nothing and types `dialog.value` as `HTMLDialogElement | null`, while vue-tsc
+still reports the same `showModal` error on the corrected code:
+
+```vue
+<!-- src/ConfirmDialog.vue (fixed) -->
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+function useModal() {
+  const dialog = useTemplateRef("dialog");
+  return () => dialog.value?.showModal();
+}
+
+const open = useModal();
+</script>
+
+<template>
+  <button @click="open">Delete</button>
+  <dialog ref="dialog">Delete this item?</dialog>
+</template>
+```
+A call inside an `export`ed function keeps Vue's own signature, because another module can call
+it from a component with a different template. `Vue.useTemplateRef("key")` through a namespace
+import is read the same way. Pinned by
+[`template-ref-key-in-local-function`](https://github.com/ubugeeei-prod/vize/tree/main/tests/_fixtures/type-checking-beyond-vue-tsc/template-ref-key-in-local-function).
+
+### The ref of `<component is="…">` is the element it renders
+
+A static `is` names what `<component>` renders, so its template ref is that element. A dynamic
+`:is` bound to a ref (`const tag = ref<"div" | "span">("div")`) is read unwrapped, as the
+template reads it:
+
+```vue
+<!-- src/SearchBox.vue -->
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+const field = useTemplateRef("field");
+
+function selectAll() {
+  field.value?.selct();
+}
+</script>
+
+<template>
+  <component is="input" ref="field" @focus="selectAll" />
+</template>
+```
+```diagnostic
+src/SearchBox.vue
+  error:7:16 [TS2551] Property 'selct' does not exist on type 'HTMLInputElement'. Did you mean 'select'?
+```
+vue-tsc types the ref as `Record<string, any>` and reports nothing.
+
+`HTMLInputElement` has `select()`, not `selct()`, so the call throws when the field is focused.
+Pinned by
+[`static-component-is-template-ref`](https://github.com/ubugeeei-prod/vize/tree/main/tests/_fixtures/type-checking-beyond-vue-tsc/static-component-is-template-ref).
+
 ## Editor
 
 The [language server](./language-server.md) uses the same checker. These answers come from
