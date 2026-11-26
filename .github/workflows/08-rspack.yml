@@ -48,7 +48,7 @@ jobs:
         run: node --test npm/builder/rspack/src/shared/output.test.ts npm/builder/rspack/src/shared/hotReload.test.ts
       - name: Install the isolated Rspack 2 runtime from the HMR docs
         working-directory: npm/builder/rspack
-        run: . "${{ env.VIZE_CI_FILES }}/install-the-isolated-rspack-2-runtime-from-the-hmr-docs.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-the-isolated-rspack-2-runtime-from-the-hmr-docs.sh"
       - name: Run browser HMR
         # A live browser session needs the selected runtime environment and fresh execution.
         run: vp run --no-cache --filter @vizejs/rspack-plugin test:hmr
@@ -98,6 +98,6 @@ jobs:
       - name: Install the locked adapter and native dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter '@vizejs/rspack-plugin...' --filter '@vizejs/builder-shared...' --filter '@vizejs/native...'
       - name: Prepare the exact source native image
-        run: . "${{ env.VIZE_CI_FILES }}/src-ranges-prepare-the-exact-source-native-image.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/src-ranges-prepare-the-exact-source-native-image.sh"
       - name: Retain original src boundaries, complete modules and source maps
-        run: . "${{ env.VIZE_CI_FILES }}/src-ranges-retain-original-src-boundaries-complete-modules-and-source-maps.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/src-ranges-retain-original-src-boundaries-complete-modules-and-source-maps.sh"

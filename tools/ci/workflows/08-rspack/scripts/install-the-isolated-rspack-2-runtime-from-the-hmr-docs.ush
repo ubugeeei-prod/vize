@@ -1,0 +1,14 @@
+# Install the Rspack 2 runtime that the HMR docs name, apart from the workspace, for later steps.
+mod "../../../lib/github.ush" as github
+use $bin::{node, npm, "vize-ci-apt-retry" as apt_retry}
+
+let runtime = $"$env::RUNNER_TEMP/vize-rspack-hmr-runtime"
+
+npm install --prefix $runtime --legacy-peer-deps \
+  @rspack/core@2.2.2 \
+  @rspack/dev-server@2.2.1 \
+  vue@3.5.42 \
+  playwright@1.62.1 \
+  css-loader@7.1.2
+apt_retry node $runtime/node_modules/playwright/cli.js install --with-deps chromium
+github::export_env VIZE_HMR_RUNTIME $runtime

@@ -1,0 +1,7 @@
+# Build the native test image from the source commit that the range checks qualify.
+use $bin::{git, vp}
+
+if (git rev-parse HEAD) != $env::SOURCE_SHA {
+  fail 1 $"The checkout is not the source commit $env::SOURCE_SHA"
+}
+vp run --workspace-root build:native:test
