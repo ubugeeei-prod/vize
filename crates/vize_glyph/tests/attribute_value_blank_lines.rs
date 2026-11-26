@@ -58,17 +58,11 @@ fn check_mode_accepts_the_empty_blank_line() {
 
 #[test]
 fn every_embedded_expression_attribute_writes_blank_lines_empty() {
-    let input = "<template>\n  <div\n    v-bind=\"{\n      a: 1,\n\n      b: 2,\n    }\"\n    :class=\"{\n      a: x,\n\n      b: y,\n    }\"\n    v-on=\"{\n      click: () => {\n        a(1);\n\n        a(2);\n      },\n    }\"\n    @input=\"\n      a(1);\n\n      a(2);\n    \"\n  />\n</template>\n";
-    let first = format_sfc(input, &FormatOptions::default())
-        .expect("format")
-        .code;
-    assert!(
-        first.contains("\n\n"),
-        "the blank lines are kept: {first:?}"
-    );
-    assert_no_trailing_whitespace(&first);
-    assert_fixed_point(&first, &first, &FormatOptions::default());
-    assert!(!format_sfc(&first, &check_options()).unwrap().changed);
+    // Already formatted: every blank line is kept, and kept empty.
+    let formatted = "<template>\n  <div\n    v-bind=\"{\n      a: 1,\n\n      b: 2,\n    }\"\n    :class=\"{\n      a: x,\n\n      b: y,\n    }\"\n    v-on=\"{\n      click: () => {\n        a(1);\n\n        a(2);\n      },\n    }\"\n    @input=\"\n      a(1);\n\n      a(2);\n    \"\n  />\n</template>\n";
+    assert_no_trailing_whitespace(formatted);
+    assert_fixed_point(formatted, formatted, &FormatOptions::default());
+    assert!(!format_sfc(formatted, &check_options()).unwrap().changed);
 }
 
 #[test]
@@ -112,10 +106,6 @@ fn blank_lines_stay_empty_with_tabs_and_crlf() {
 fn blank_lines_inside_a_template_literal_value_keep_their_bytes() {
     // A template literal's bytes are runtime value: a whitespace-only line
     // inside it is not layout and must survive untouched.
-    let input = "<template>\n  <button\n    @click=\"() => {\n      a(`x\n  \ny`);\n\n      a(2);\n    }\"\n  />\n</template>\n";
-    let first = format_sfc(input, &FormatOptions::default())
-        .expect("format")
-        .code;
-    assert!(first.contains("a(`x\n  \ny`);"), "{first:?}");
-    assert_fixed_point(&first, &first, &FormatOptions::default());
+    let formatted = "<template>\n  <button\n    @click=\"() => {\n      a(`x\n  \ny`);\n\n      a(2);\n    }\"\n  />\n</template>\n";
+    assert_fixed_point(formatted, formatted, &FormatOptions::default());
 }
