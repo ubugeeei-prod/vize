@@ -1,4 +1,4 @@
-import "../../Actions.pkl" as ci
+import "../../../../ci/lib/Actions.pkl" as ci
 
 name = "Title Policy"
 
@@ -35,7 +35,7 @@ jobs {
         with {
           ref = "${{ github.event.repository.default_branch }}"
           `sparse-checkout` = """
-          tools/commands/ci/github/issue-pr-title-policy.ts
+          tools/ci/commands/github/issue-pr-title-policy.ts
 
           """
           `sparse-checkout-cone-mode` = false
@@ -54,7 +54,7 @@ jobs {
           GH_TOKEN = "${{ secrets.GITHUB_TOKEN }}"
           GITHUB_TOKEN = "${{ secrets.GITHUB_TOKEN }}"
         }
-        run = "node tools/commands/ci/github/issue-pr-title-policy.ts"
+        run = "node tools/ci/commands/github/issue-pr-title-policy.ts"
       }
     }
   }

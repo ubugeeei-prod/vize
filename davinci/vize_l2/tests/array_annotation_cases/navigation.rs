@@ -59,7 +59,7 @@ fn original_array_nodes_keep_authored_declarations_and_value_navigation() {
             .binding_at_offset(reference.span.start)
             .unwrap()
             .unwrap();
-        assert!(core::ptr::eq(bound.file(), &file));
+        assert!(core::ptr::eq(bound.l2ir(), &file));
         assert_eq!(bound.declaration().unwrap().name.as_str(), name);
         assert_eq!(
             source.get(reference.span.start as usize..reference.span.end as usize),

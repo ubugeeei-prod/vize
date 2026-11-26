@@ -66,7 +66,7 @@ impl<'f, 'a> JsxNode<'f, 'a> {
     pub fn source(self) -> Option<&'a str> {
         let span = self.record()?.span;
         self.owner
-            .file
+            .l2ir
             .artifact()
             .source()
             .get(span.start as usize..span.end as usize)
@@ -74,7 +74,7 @@ impl<'f, 'a> JsxNode<'f, 'a> {
     #[must_use]
     pub fn references(self) -> Option<&'f [Reference]> {
         self.owner
-            .file
+            .l2ir
             .references()
             .get(self.record()?.references.clone())
     }

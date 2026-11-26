@@ -41,20 +41,20 @@ fn lexical<'a>(
     Some(file.finish().unwrap())
 }
 
-fn rows(file: &L2Ir<'_>) -> String {
-    let units: Vec<_> = file
+fn rows(l2ir: &L2Ir<'_>) -> String {
+    let units: Vec<_> = l2ir
         .units()
         .iter()
         .map(|u| (u.id, u.span, u.profile, u.scope, u.interruption()))
         .collect();
     vize_l0::cstr!(
         "{units:?}{:?}{:?}{:?}{:?}{:?}{:?}",
-        file.scopes(),
-        file.bindings().map(|b| b.declaration()).collect::<Vec<_>>(),
-        file.references(),
-        file.imports(),
-        file.exports(),
-        file.issues()
+        l2ir.scopes(),
+        l2ir.bindings().map(|b| b.declaration()).collect::<Vec<_>>(),
+        l2ir.references(),
+        l2ir.imports(),
+        l2ir.exports(),
+        l2ir.issues()
     )
 }
 

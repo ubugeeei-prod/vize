@@ -31,9 +31,9 @@ fn genuine_sfc_file_retains_original_order_nodes_and_target_isolation() {
     let observed = lower_sfc_native(&arena, source, options());
     assert_eq!(observed.issues(), []);
     let native = observed.admitted().unwrap();
-    let file = native.file().file();
+    let file = native.file().l2ir();
     let analysis = build_vapor_file_decisions(file).unwrap();
-    assert!(core::ptr::eq(analysis.file(), file));
+    assert!(core::ptr::eq(analysis.l2ir(), file));
     assert!(core::ptr::eq(analysis.artifact(), file.artifact()));
     assert!(core::ptr::eq(analysis.artifact().source(), source));
     assert_eq!(
@@ -75,8 +75,8 @@ fn root_ranges_reject_equal_foreign_owners_and_text_prevents_fallthrough() {
     let second = lower_sfc_native(&arena, source, options());
     let first_native = first.admitted().unwrap();
     let second_native = second.admitted().unwrap();
-    let first_analysis = build_vapor_file_decisions(first_native.file().file()).unwrap();
-    let second_analysis = build_vapor_file_decisions(second_native.file().file()).unwrap();
+    let first_analysis = build_vapor_file_decisions(first_native.file().l2ir()).unwrap();
+    let second_analysis = build_vapor_file_decisions(second_native.file().l2ir()).unwrap();
     let facts = first_analysis.vapor().unwrap();
     assert_eq!(facts.inherit_attrs(), None);
     assert_eq!(facts.roots().len(), 3);
@@ -105,7 +105,7 @@ fn actual_whitespace_headers_tags_and_dynamic_ops_refuse_before_output() {
         let observed = lower_sfc_native(&arena, &source, options());
         assert_eq!(observed.issues(), [], "{template}");
         let native = observed.admitted().unwrap();
-        let analysis = build_vapor_file_decisions(native.file().file()).unwrap();
+        let analysis = build_vapor_file_decisions(native.file().l2ir()).unwrap();
         let rejected = analysis.vapor().unwrap().unsupported();
         assert_eq!(rejected.len(), 1, "{template}");
         assert_eq!(rejected[0].reason, reason);
@@ -168,7 +168,7 @@ fn original_selected_completion_is_the_sole_target_capability() {
     let output = owner.finish();
     let analysis = build_template_vapor_decisions(output.view().unwrap()).unwrap();
     assert!(core::ptr::eq(analysis.owner(), &output));
-    assert!(core::ptr::eq(analysis.file(), output.file().unwrap()));
+    assert!(core::ptr::eq(analysis.l2ir(), output.file().unwrap()));
     assert!(core::ptr::eq(analysis.artifact().source(), source));
     assert_eq!(analysis.tables().nodes.len(), 5);
     assert_eq!(analysis.vapor().unwrap().unsupported(), []);
@@ -182,9 +182,9 @@ fn original_static_class_header_succeeds_without_widening_other_refusals() {
     let observed = lower_sfc_native(&arena, source, options());
     assert_eq!(observed.issues(), []);
     let native = observed.admitted().unwrap();
-    let file = native.file().file();
+    let file = native.file().l2ir();
     let analysis = build_vapor_file_decisions(file).unwrap();
-    assert!(core::ptr::eq(analysis.file(), file));
+    assert!(core::ptr::eq(analysis.l2ir(), file));
     assert!(core::ptr::eq(analysis.artifact().source(), source));
     let facts = analysis.vapor().unwrap();
     assert_eq!(facts.unsupported(), []);

@@ -105,12 +105,9 @@ export async function handleHotUpdateHook(
     const affectedModules: Set<import("vite").ModuleNode> = new Set();
 
     for (const vueFile of dependencyOwners) {
-      const collectedModules = await collectModulesByFile(
-        server,
-        getVueModuleFileCandidates(vueFile),
-      );
+      const collectedModules = collectModulesByFile(server, getVueModuleFileCandidates(vueFile));
       const modules = options.requireAcceptingClientModule
-        ? preferAcceptingClientModules(collectedModules, true)
+        ? preferAcceptingClientModules(collectedModules, true, true)
         : collectedModules;
       if (options.requireAcceptingClientModule && modules.size === 0) {
         if (!options.ensureAcceptingClientModule || !clientDependencyOwners.has(vueFile)) continue;
@@ -185,11 +182,22 @@ async function handleVueFileHotUpdate(
   const { server } = ctx;
   const initialModules = options.requireAcceptingClientModule
     ? preferAcceptingClientModules(
-        await collectModulesByFile(server, getVueModuleFileCandidates(file)),
+        collectModulesByFile(server, getVueModuleFileCandidates(file)),
+        true,
         true,
       )
     : undefined;
-  if (initialModules?.size === 0) return [];
+  if (initialModules?.size === 0) {
+    // An unloaded client graph needs no eager compile. Still invalidate the
+    // old products so the next client or SSR request cannot reuse this edit's
+    // previous output, even when a host changes the module's public spelling.
+    evictCompiledModule(state.cache, file);
+    evictCompiledModule(state.ssrCache, file);
+    state.collectedCss.delete(file);
+    state.precompileMetadata.delete(file);
+    state.pendingHmrUpdateTypes.delete(file);
+    return [];
+  }
   const source = await readSource();
   const prevCompiled = state.cache.get(file);
 
@@ -218,10 +226,11 @@ async function handleVueFileHotUpdate(
   state.logger.log(`Re-compiled: ${path.relative(state.root, file)} (${updateType})`);
 
   const collectedModules =
-    initialModules ?? (await collectModulesByFile(server, getVueModuleFileCandidates(file)));
+    initialModules ?? collectModulesByFile(server, getVueModuleFileCandidates(file));
   const modules = preferAcceptingClientModules(
     collectedModules,
     options.requireAcceptingClientModule,
+    true,
   );
   const customElement = isPluginVueCustomElement(state.mergedOptions, file);
 
@@ -239,7 +248,7 @@ async function handleVueFileHotUpdate(
   // plain CSS. Invalidate those modules so Vite reruns the configured CSS
   // transformer before sending the style update to the browser.
   if (newCompiled.styles?.length && updateType === "style-only") {
-    const affectedModules = await collectStyleModules(server, file, newCompiled);
+    const affectedModules = collectStyleModules(server, file, newCompiled);
     if (affectedModules.size > 0) return [...affectedModules];
     if (modules.size > 0) return [...modules];
     return [];
@@ -275,12 +284,12 @@ async function handleVueFileHotUpdate(
     // (#7742). Custom-block modules are the same kind of edge: the user plugin
     // only re-runs when that module is invalidated.
     if (newCompiled.styles?.length && hasStyleChanges(prevCompiled, newCompiled)) {
-      const styleModules = await collectStyleModules(server, file, newCompiled);
+      const styleModules = collectStyleModules(server, file, newCompiled);
       invalidateModules(server, styleModules);
       for (const module of styleModules) affected.add(module);
     }
     if (hasCustomBlockChanges(prevCompiled, newCompiled)) {
-      const blockModules = await collectCustomBlockModules(server, file, newCompiled);
+      const blockModules = collectCustomBlockModules(server, file, newCompiled);
       invalidateModules(server, blockModules);
       for (const module of blockModules) affected.add(module);
     }
@@ -290,11 +299,11 @@ async function handleVueFileHotUpdate(
   state.pendingHmrUpdateTypes.delete(file);
 }
 
-async function collectStyleModules(
+function collectStyleModules(
   server: import("vite").ViteDevServer,
   file: string,
   compiled: NonNullable<ReturnType<VizePluginState["cache"]["get"]>>,
-): Promise<Set<import("vite").ModuleNode>> {
+): Set<import("vite").ModuleNode> {
   const styleModules: Set<import("vite").ModuleNode> = new Set();
   for (const block of compiled.styles ?? []) {
     const params = new URLSearchParams();
@@ -307,7 +316,7 @@ async function collectStyleModules(
       params.set("module", typeof block.module === "string" ? block.module : "");
     }
     const styleId = `${file}?${params.toString()}`;
-    for (const mod of await collectModulesByFile(server, getStyleModuleFileCandidates(styleId))) {
+    for (const mod of collectModulesByFile(server, getStyleModuleFileCandidates(styleId))) {
       styleModules.add(mod);
     }
   }

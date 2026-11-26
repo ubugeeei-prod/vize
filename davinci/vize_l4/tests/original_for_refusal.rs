@@ -62,7 +62,7 @@ fn authentic_whole_head_still_returns_typed_dom_operation_refusal_before_output(
     assert!(core::ptr::eq(
         row.resolution(),
         analysis
-            .file()
+            .l2ir()
             .for_head_for(original)
             .unwrap()
             .resolution()

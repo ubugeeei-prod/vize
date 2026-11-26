@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_reserve_exact_T": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_reserve_exact_T'0": { "prover": "alt-ergo", "time": 0.014 }
+    }
+  }
+}

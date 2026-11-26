@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { resolveSemverChangeMarker } from "../../tools/commands/ci/github/semver-change-marker.ts";
+import { resolveSemverChangeMarker } from "../../tools/ci/commands/github/semver-change-marker.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 test("release SemVer checks classify the exact candidate without push metadata", () => {
@@ -17,8 +17,8 @@ test("release SemVer checks classify the exact candidate without push metadata",
   );
   assert.match(job, /- name:\s*Use candidate version for SemVer classification/);
   assert.doesNotMatch(job, /- name:\s*Resolve SemVer change marker/);
-  assert.match(job, /node tools\/commands\/ci\/github\/check-semver\.ts/);
-  const script = readRepoFile("tools", "commands", "ci", "github", "check-semver.ts");
+  assert.match(job, /node tools\/ci\/commands\/github\/check-semver\.ts/);
+  const script = readRepoFile("tools", "ci", "commands", "github", "check-semver.ts");
   assert.match(script, /path\.join\(runnerTemp, "semver-change-marker\.txt"\)/);
   assert.doesNotMatch(job, /git log -1 --format=%B/);
 });

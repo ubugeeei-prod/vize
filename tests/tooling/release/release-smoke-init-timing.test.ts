@@ -163,7 +163,7 @@ const smokeWorkflows = [
     steps: ["Smoke install release package tarballs"],
   },
   {
-    file: "native-smoke.yml",
+    file: "06-native-smoke.yml",
     job: "fresh-install-smoke",
     steps: [
       "Fresh install and runtime smoke published tarballs",
@@ -195,7 +195,7 @@ function assertSmokeTimingEnvironments(source: string, jobName: string, stepName
 
 test("release smokes retain the timing artifact for every host", () => {
   const release = readAutomationPrograms(".github", "workflows", "release.yml");
-  const native = readAutomationPrograms(".github", "workflows", "native-smoke.yml");
+  const native = readAutomationPrograms(".github", "workflows", "06-native-smoke.yml");
   for (const { file, job, steps } of smokeWorkflows) {
     assertSmokeTimingEnvironments(readAutomationPrograms(".github", "workflows", file), job, steps);
   }

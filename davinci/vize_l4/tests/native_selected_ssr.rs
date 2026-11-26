@@ -59,7 +59,7 @@ fn original_receipts_emit_nine_complete_pinned_modules_and_whole_source_maps() {
         let original = file.artifact().provenance().to_vec();
         let receipt = build_template_ssr_decisions(owner.view().unwrap()).unwrap();
         assert!(core::ptr::eq(receipt.owner(), &owner));
-        assert!(core::ptr::eq(receipt.file(), file));
+        assert!(core::ptr::eq(receipt.l2ir(), file));
         assert!(core::ptr::eq(receipt.artifact().source(), source));
         assert_eq!(
             receipt.tables().nodes.len(),

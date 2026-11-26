@@ -36,7 +36,7 @@ Glyph's existing compatibility preset is the base. The following Prettier
 options override it directly:
 
 `printWidth`, `tabWidth`, `useTabs`, `semi`, `singleQuote`, `jsxSingleQuote`,
-`quoteProps`, `trailingComma`, `arrowParens`, `bracketSpacing`,
+`quoteProps`, `objectWrap`, `trailingComma`, `arrowParens`, `bracketSpacing`,
 `bracketSameLine`, and `singleAttributePerLine`.
 
 `endOfLine` supports `lf`, `crlf`, `cr` and `auto`. Prettier normalizes input
@@ -53,6 +53,11 @@ Use `quoteProps: "preserve"` with Vize's
 props/emits-specific convention to lint and prevents format-on-save from
 removing required quotes without changing unrelated object literals.
 
+`objectWrap: "preserve"` (default) keeps an object multiline when a newline
+follows its opening `{`. Other objects collapse when they fit the print width.
+`objectWrap: "collapse"` puts objects on one line when they fit the print width;
+comments and width constraints can still require multiple lines.
+
 The shared script formatter supports `printWidth` from 1 to 320 and
 `tabWidth` from 0 to 24. Other values produce an error. Whole-file formatting
 is supported; partial `rangeStart`/`rangeEnd` formatting produces an error.
@@ -60,7 +65,7 @@ is supported; partial `rangeStart`/`rangeEnd` formatting produces an error.
 These options accept only their listed defaults because the native API has no
 equivalent override: `htmlWhitespaceSensitivity: "css"`,
 `vueIndentScriptAndStyle: false`, `embeddedLanguageFormatting: "auto"`,
-`proseWrap: "preserve"`, `objectWrap: "preserve"`,
+`proseWrap: "preserve"`,
 `experimentalTernaries: false`, and `experimentalOperatorPosition: "end"`.
 An unsupported value produces an error instead of being silently ignored.
 

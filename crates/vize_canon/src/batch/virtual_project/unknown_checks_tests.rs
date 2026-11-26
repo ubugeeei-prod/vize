@@ -296,7 +296,7 @@ mod originals {
     }
 
     #[test]
-    fn strict_only_configuration_keeps_the_original_native_root_fallthrough_open() {
+    fn strict_only_configuration_closes_the_native_root_fallthrough_tail() {
         let mut config: Value = serde_json::from_str(CONFIG).unwrap();
         config["vueCompilerOptions"] = json!({"strictTemplates":true});
         let content = source(Some(config), PARENT);
@@ -305,7 +305,7 @@ mod originals {
                 .lines()
                 .find(|line| line.starts_with("  type $AllowedFallthroughAttrs")),
             Some(
-                "  type $AllowedFallthroughAttrs<C> = import(\"vize:virtual-ts\").$HasFallthroughProps<C> extends true ? Record<string, unknown> : {};"
+                "  type $AllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof import(\"vize:virtual-ts\").$FallthroughProps<C> as string extends K ? never : K]: unknown }, keyof $PublicComponentAttrs | keyof import(\"vize:virtual-ts\").ComponentGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
             ),
         );
     }
@@ -323,7 +323,7 @@ mod originals {
     }
 
     #[test]
-    fn complete_upstream_unknown_prop_plant_retains_legacy_strict_and_explicit_false_precedence() {
+    fn complete_upstream_unknown_prop_plant_follows_strict_and_explicit_false_precedence() {
         const APP: &str = include_str!(
             "../../../../../tests/_fixtures/differential/typechecker/strict-template-fallback/App.vue.txt"
         );
@@ -335,8 +335,9 @@ mod originals {
         );
         let mut strict: Value = serde_json::from_str(CONFIG).unwrap();
         let inherited = source_with_child(Some(strict.clone()), APP, CHILD);
+        // `strictTemplates` checks unknown props exactly as the explicit option does.
         strict["vueCompilerOptions"]["checkUnknownProps"] = json!(true);
-        assert_ne!(
+        assert_eq!(
             inherited,
             source_with_child(Some(strict.clone()), APP, CHILD)
         );

@@ -100,7 +100,7 @@ fn unsupported_control_flow_selects_exact_legacy_reasons() {
 fn control_flow_payload_mutations_drive_generation() {
     let allocator = Allocator::new();
     let mut s3 = lowered_source(&allocator, LOOP);
-    for operand in &mut s3.program.operands {
+    for operand in &mut s3.l3ir.operands {
         match (operand.role, operand.value.text) {
             (OperandRole::ForSource, "items") => operand.value.text = "rows",
             (OperandRole::Value, "item.id") => operand.value.text = "item.uid",
@@ -122,7 +122,7 @@ fn control_flow_payload_mutations_drive_generation() {
     );
 
     let mut s3 = lowered_source(&allocator, BRANCHES);
-    for operand in &mut s3.program.operands {
+    for operand in &mut s3.l3ir.operands {
         if operand.role == OperandRole::Condition && operand.value.text == "b" {
             operand.value.text = "changed";
         }
@@ -141,7 +141,7 @@ fn corrupt_control_flow_graphs_are_rejected_instead_of_falling_back() {
     let allocator = Allocator::new();
     for mutation in 0..5 {
         let mut s3 = lowered_source(&allocator, if mutation < 3 { BRANCHES } else { LOOP });
-        let operands = &mut s3.program.operands;
+        let operands = &mut s3.l3ir.operands;
         let find = |role: OperandRole, text: &str, operands: &[vize_l3::operand::Operand<'_>]| {
             operands
                 .iter()
@@ -173,17 +173,17 @@ fn corrupt_control_flow_graphs_are_rejected_instead_of_falling_back() {
             // A loop body element loses its inherited dynamic partition.
             _ => {
                 let body = s3
-                    .program
+                    .l3ir
                     .ops
                     .iter()
                     .position(|op| op.kind == vize_l3::op::OpKind::InsertNode && op.span.start == 4)
                     .unwrap();
-                s3.program.ops[body].effect = None;
+                s3.l3ir.ops[body].effect = None;
                 s3.partition.ops[body].kind = vize_l2_to_l3::PartitionKind::Static;
             }
         }
         assert!(
-            vize_l3::verify::verify(&s3.program).is_empty(),
+            vize_l3::verify::verify(&s3.l3ir).is_empty(),
             "mutation {mutation} must pass the generic verifier"
         );
         let status = admit(s3, &Retained::new(&allocator));

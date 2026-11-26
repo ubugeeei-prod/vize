@@ -12,7 +12,7 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
         offset: u32,
         mut visit: impl FnMut(NativeReferenceRef<'o, 'a>),
     ) -> Result<Option<BindingRef<'o, 'a>>, NativePositionQueryError> {
-        let script = Model::new(self.file().file())
+        let script = Model::new(self.file().l2ir())
             .binding_at_offset(offset)
             .map_err(NativePositionQueryError::File)?;
         let Some(binding) = script else {

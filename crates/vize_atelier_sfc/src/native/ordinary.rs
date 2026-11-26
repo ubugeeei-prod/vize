@@ -16,7 +16,7 @@ pub(super) fn emit<L: LinkSink>(
 ) -> Result<(), NativeSfcCompileError> {
     let observation = admitted.observation();
     let descriptor = observation
-        .descriptor()
+        .l1ir()
         .admitted()
         .map_err(|_| NativeSfcCompileError::Descriptor)?;
     let script = descriptor
@@ -35,12 +35,12 @@ pub(super) fn emit<L: LinkSink>(
         .and_then(|script| script.syntax())
         .and_then(|syntax| syntax.admitted_program())
         .ok_or(NativeSfcCompileError::Orchestration)?;
-    let ordinary = VueOrdinaryEmpty::checked(admitted.file().file(), script, original)
+    let ordinary = VueOrdinaryEmpty::checked(admitted.file().l2ir(), script, original)
         .map_err(NativeSfcCompileError::ScriptOrdinary)?;
     let prepared =
         emit_ordinary_empty::<L>(&ordinary).map_err(NativeSfcCompileError::OrdinaryEmission)?;
     let analysis =
-        build_dom_file_decisions(ordinary.file()).map_err(NativeSfcCompileError::Analysis)?;
+        build_dom_file_decisions(ordinary.l2ir()).map_err(NativeSfcCompileError::Analysis)?;
     let render = emit_file::<L>(&analysis).map_err(NativeSfcCompileError::Dom)?;
     parts.script = Some(ScriptPart::Body(prepared));
     parts.render = Some(render);

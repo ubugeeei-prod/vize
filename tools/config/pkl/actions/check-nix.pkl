@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Check Nix flake"
 description = "Qualify the locked flake and refresh a bounded store cache with current build dependencies"

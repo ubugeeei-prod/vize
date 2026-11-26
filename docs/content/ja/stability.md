@@ -47,7 +47,7 @@ npm に公開する前に、リリース用 tarball をインストールし、`
 
 ### Linux の glibc 要件 {#linux-glibc-floor}
 
-Linux GNU 向けの成果物（`@vizejs/native-linux-{x64,arm64}-gnu` のバインディングと、エディタ拡張がダウンロードする `vize-{x86_64,aarch64}-unknown-linux-gnu` の CLI アーカイブ）は、**glibc 2.17 以降**で動作します。リリースビルドは `cargo zigbuild` でこの下限に合わせてリンクし、ビルドした ELF ファイルがより新しい glibc のシンボルバージョンを要求するとリリースが失敗します（`tools/commands/ci/github/verify-glibc-symbols.ts`）。タグを打つ前に、リリース候補を次のコンテナで実行します。
+Linux GNU 向けの成果物（`@vizejs/native-linux-{x64,arm64}-gnu` のバインディングと、エディタ拡張がダウンロードする `vize-{x86_64,aarch64}-unknown-linux-gnu` の CLI アーカイブ）は、**glibc 2.17 以降**で動作します。リリースビルドは `cargo zigbuild` でこの下限に合わせてリンクし、ビルドした ELF ファイルがより新しい glibc のシンボルバージョンを要求するとリリースが失敗します（`tools/ci/commands/github/verify-glibc-symbols.ts`）。タグを打つ前に、リリース候補を次のコンテナで実行します。
 
 | コンテナ          | glibc | 実行内容                                                                             |
 | ----------------- | ----- | ------------------------------------------------------------------------------------ |

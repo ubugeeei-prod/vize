@@ -1,4 +1,4 @@
-import "../Actions.pkl" as ci
+import "../../../ci/lib/Actions.pkl" as ci
 
 name = "Collect job test cases"
 description = "Merge a persistent job capture and upload its structured case packet."

@@ -1,4 +1,5 @@
 import { readAutomationPrograms } from "./support/automation-source.ts";
+import { restoreWorkflowNames } from "./support/ci-library-paths.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -18,7 +19,9 @@ const prefix =
 
 test("passive native LSP capture retains the complete original Matrix workflow", () => {
   const original = parse(originalBytes);
-  const current = parse(readAutomationPrograms(".github/workflows/real-project-matrix.yml"));
+  const current = parse(
+    restoreWorkflowNames(readAutomationPrograms(".github/workflows/real-project-matrix.yml")),
+  );
   // Core tools and the divergence report qualify Vize on the checker the LSP
   // step pins, never on a fixture's own declared native preview.
   const pinnedChecker =
@@ -132,7 +135,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   assert.ok(publisher && oldPublisher);
   assert.deepEqual(publisher, {
     ...oldPublisher,
-    run: "node tools/commands/ci/github/publish-real-project-shard-summary.ts",
+    run: "node tools/ci/commands/github/publish-real-project-shard-summary.ts",
   });
   publisher.run = oldPublisher.run;
   const linterReadiness = steps.findIndex(

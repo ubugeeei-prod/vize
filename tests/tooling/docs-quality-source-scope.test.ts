@@ -62,7 +62,7 @@ void test("the actual reader remains Node-only and Docs checks do not build the 
     "tests/tooling/docs-more-guides.test.ts",
   ])
     assert.ok(localImportInputs(consumer).files.includes(reader), consumer);
-  const rendering = readAutomationPrograms(join(root, ".github/workflows/build-docs.yml"));
+  const rendering = readAutomationPrograms(join(root, ".github/workflows/11-docs-build.yml"));
   assert.match(rendering, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.doesNotMatch(rendering, /verify-more-guides-render/);
   const japaneseReading = rendering
@@ -72,7 +72,7 @@ void test("the actual reader remains Node-only and Docs checks do not build the 
   assert.doesNotMatch(japaneseReading, /\n {8}if: /);
   assert.ok(
     workflowProgram(
-      "build-docs",
+      "11-docs-build",
       japaneseReading,
       "verify-rendered-navigation-and-japanese-reading-paths.ts",
     ).includes('defaultNavigationRenderRoutes.filter((route) => route.startsWith("/ja/"))'),

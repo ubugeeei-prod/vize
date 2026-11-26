@@ -219,7 +219,7 @@ pub fn compile_sfc(
                 styles,
                 custom_blocks,
                 macro_artifacts: macro_artifacts_to_napi(result.macro_artifacts),
-                dependencies: dependencies_to_napi(&result.dependencies),
+                dependencies: dependencies_to_napi(result.dependencies),
                 module_shape,
                 type_project,
             })

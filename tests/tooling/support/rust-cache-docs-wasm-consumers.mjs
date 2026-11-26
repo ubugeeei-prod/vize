@@ -30,8 +30,8 @@ const shippedMeasureActions = new Map([
 ]);
 const appAction = "./.github/actions/app-e2e-row";
 const appFile = ".github/actions/app-e2e-row/action.yml";
-const docsFile = ".github/workflows/build-docs.yml";
-const e2eFile = ".github/workflows/e2e.yml";
+const docsFile = ".github/workflows/11-docs-build.yml";
+const e2eFile = ".github/workflows/10-app-e2e.yml";
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 const token = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const dynamicPrefixes = new Set([
@@ -46,10 +46,11 @@ const dynamicPrefixes = new Set([
 ]);
 
 // Complete command/metadata producers reviewed at edc003416dafd322aa6cd100dde488fb112a2abb.
-// The WASM command was re-reviewed as its TypeScript port and imports (#8840).
+// The WASM command was re-reviewed as its TypeScript port and imports.
 // A changed producer requires review, rather than accepting a new dynamic role.
-// Generated producers have two approved whole-file hashes where only the Pkl
-// notice changed. Both bind the complete program, including its remaining comments.
+// Producer authentication retains every original approved whole-file digest.
+// J1 appends only re-reviewed generated-notice and workflow-path updates;
+// the complete program, including all comments, remains sealed.
 const producerHashes = {
   "examples/vite-musea/scripts/package-tasks.cjs": [
     "238c4edc5a633bece09a0f0cad5858e574cb2b2874a3eb2594b785e17e1c26ef",
@@ -60,37 +61,47 @@ const producerHashes = {
     "631bc9b08a4a78c996b40ca2245079bcc61d5df435285d6a0d3fd5f517b118d1",
   ],
   ".github/actions/stage-workflow-scripts/stage.ts":
-    "1d68c22d65e438704ae91f4a840dabc5619fda69d8a971207a32c6a967384733",
-  ".github/scripts/workflows/e2e/plan-full-rows.sh": [
+    "25af079b7060133e9261d1c99d60dd8aade5298e85fe68cf604ceacc4f0654de",
+  "tools/ci/workflows/10-app-e2e/scripts/plan-full-rows.sh": [
     "48db48b3259ddf195d7b41563c396ef9c6058ee1ccd7123dcc8488e60d645a66",
     "fb74e8bacfa630535f68514899ac0fd7ee714c03c22c4b7e1369b3702be741c6",
+    "d97dd5b74540264b9eec7c3674b378a0c0144d3520c6e7ab604abb29f6e737f6",
+    "415afde008a3d7ad6f5867b87e7c2d1db01f3b03df7144caf03c91e35a6852d9",
   ],
-  ".github/scripts/workflows/e2e/plan-readiness-rows.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/plan-readiness-rows.sh": [
     "1bdf100557be3c0d25eb0217a122750aedf04887daee0e34db294807665a834d",
     "0cd915f52568251954116c9b5e0a20071218df9be50f41e4a9fdb3f583ebb104",
+    "dec2510c81d47bc70efd1c1d6591a98bfbf667cf453d07be146ed7b222b3eada",
+    "bc254fc2fd481e35e89d949f6f554ea5739a22bb80c775147979263e0eef3cd1",
   ],
-  ".github/scripts/workflows/e2e/validate-target-sha.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/validate-target-sha.sh": [
     "0a8e0b4584b88fd1712b97387a3b554c1fa8d642c932bb590758159a144420fa",
     "a1c84e218ce74cd77e8e687687cfb3850e8cb9068315aa5a2788275ff1795fbe",
+    "a3001d2f40bd202a802d53e2cda49b0edf96f5729f55ab6361c3fa3b469450cd",
   ],
-  ".github/scripts/workflows/e2e/verify-producer-sha.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/verify-producer-sha.sh": [
     "79b2cd2e878ca1d71373872ded348d38d7bcdd3ddc622d0fec32523cf6c56ef2",
     "cdd052be7763e1a399336f2a55af189a92ec9702bb92cc7898c061ccbb32afff",
+    "665e560c2ba249dfba54dabc311ced52a00f64ebf6d6e383a25ff05125eb3124",
   ],
-  ".github/scripts/workflows/e2e/verify-readiness-merge-sha.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/verify-readiness-merge-sha.sh": [
     "e1845eaf90a99bf275e2be08fcffbf7cd5a1d052678dc427d43de4d839cf4f37",
     "37bed01d35ddc40baa321dd7c8844878c44a31bc4b01187564f0b51d19c0baa4",
+    "f98eefeeef4d8f6f97545124db089aba61f445896e7244cfe475ceba032acb16",
   ],
-  ".github/scripts/workflows/e2e/write-full-plan-evidence.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/write-full-plan-evidence.sh": [
     "007613ed91016c66a320038841944ab5225390d7461438093af557646c11d991",
     "3e9f329999396fcf93f9d66163abd21c7dacdc10067cb42aee15cd403050ac26",
+    "b0e7bc04e2d4740371c263d6661efb38fb1a00e75f5fd86f52cc5206aa5ed49e",
+    "0303f6e9676b5188b6ae29a7c1032536368bf0567b04ad40da84b61b0ecdb186",
   ],
-  ".github/scripts/workflows/e2e/write-readiness-plan-evidence.sh": [
+  "tools/ci/workflows/10-app-e2e/scripts/write-readiness-plan-evidence.sh": [
     "e7110ceaa0266e4a479b2de79660834f82ace685e217be9a8967d14a56b206d6",
     "b2c01a84ad82128243d5302201ee01d62921bc4012f0cf7915c2b0e0c8bea8af",
+    "84bad58cff17649cef276be7bfac7583b47733ffc8704bf99ee04eebd6f067ad",
+    "e6a2ae6264bec09454583e87a6d0af41167d44c1b73f8f9361d19977860dcf93",
   ],
-
-  "tools/commands/ci/github/app-e2e-plan.ts":
+  "tools/ci/commands/github/app-e2e-plan.ts":
     "ca7682cc8f0834fa48a325954fbcc10765241ee1f9e29a0ebef9b60048cbc7d2",
   "tools/support/compat/github/app-e2e-plan.ts":
     "67799c81a7a38031b96e5a0f1cd1ea5bd2ae77a30eaf750a389f33f26e290ad7",
@@ -167,7 +178,7 @@ function ordinaryRole(key) {
 }
 
 function reviewedCssRole(file, job, document, step) {
-  if (file !== ".github/workflows/css-engine-vendor-candidate.yml" || step.uses !== cacheAction)
+  if (file !== ".github/workflows/06-css-engine-forks.yml" || step.uses !== cacheAction)
     return false;
   const key = ["engine", "bundler-before"].includes(job)
     ? "engines-${{ matrix.profile }}"
@@ -234,9 +245,10 @@ function verifyRecipes(root, docs, e2e) {
     anchor,
     anchor + "  - '.github/actions/setup-moonbit/**'\n",
   );
+  // Re-reviewed for the CI moves: only the tools/ci paths and the 10-app-e2e file name changed.
   for (const [job, expected] of [
-    ["app-readiness-plan", "1479bb7068aacef5c40c05601b3ef4d223bcdf7d3d79b9ca5084e0021c60299a"],
-    ["app-e2e-plan", "782b8e00e62cd7dcd80ecfe4aec75fea411a0edfc25fcea0ef3d7feea0bc5733"],
+    ["app-readiness-plan", "a57074f33fd9843d50ecfec54cf60bf9a4639ab9a840aa073cad6d3e325cf0f5"],
+    ["app-e2e-plan", "40363b39c9652dc32c1f5f6208cfeee24943ffd929be4363f925062a2af8527e"],
   ])
     assert.equal(
       hash(JSON.stringify(job === "app-readiness-plan" ? readiness : e2e.jobs[job])),
@@ -311,7 +323,7 @@ export function verifyDocsWasmConsumers(root) {
         assert(
           step.uses === headCacheAction ||
             (step.uses === headScriptAction &&
-              file === ".github/workflows/level-memory-bench.yml" &&
+              file === ".github/workflows/03-level-memory.yml" &&
               job === "memory" &&
               source.has(".github/actions/setup-rust-script/action.yml")) ||
             (qualificationWorkflows.has(file) &&
@@ -385,7 +397,7 @@ export function verifyDocsWasmConsumers(root) {
       if (isCache && key === "docs-napi") {
         if (
           (file === docsFile && job === "build-docs") ||
-          (file === ".github/workflows/ci-walltime-benchmark.yml" && job === "docs")
+          (file === ".github/workflows/03-ci-walltime.yml" && job === "docs")
         )
           assert.deepEqual(step.with, {
             key: "docs-napi",
@@ -399,7 +411,7 @@ export function verifyDocsWasmConsumers(root) {
   assert.equal(delegatedCache, 1, "one reviewed app cache delegation");
   for (const [file, job] of [
     [docsFile, "build-docs"],
-    [".github/workflows/ci-walltime-benchmark.yml", "docs"],
+    [".github/workflows/03-ci-walltime.yml", "docs"],
   ])
     assert(
       napi.some((entry) => entry.file === file && entry.job === job),

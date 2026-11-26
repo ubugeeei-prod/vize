@@ -55,7 +55,7 @@ fn computed_event_name_is_owned_by_the_checked_graph() {
     let allocator = Allocator::new();
     let mut s3 = lowered_source(&allocator, r#"<button @[original]="save">go</button>"#);
     let name = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| operand.role == vize_l3::operand::OperandRole::Name)

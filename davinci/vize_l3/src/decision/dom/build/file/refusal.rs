@@ -6,12 +6,12 @@ use vize_l0::id::NodeId;
 use vize_l2::{expr::JsExpr, file::L2Ir};
 
 pub(super) fn refusal<'a>(
-    file: &L2Ir<'a>,
+    l2ir: &L2Ir<'a>,
     node: NodeId,
     expression: &JsExpr<'a>,
     setup: bool,
 ) -> Option<DomRejection> {
-    if let Some(record) = file.native_conditional(node) {
+    if let Some(record) = l2ir.native_conditional(node) {
         let rejected = |reason| DomRejection {
             node,
             span: record.input().operand().value_span(),
@@ -21,7 +21,7 @@ pub(super) fn refusal<'a>(
             || !record.input().matches_expression(expression)
             || !core::ptr::eq(
                 record.input().operand().syntax().source().authored_root(),
-                file.artifact().source(),
+                l2ir.artifact().source(),
             )
         {
             return Some(rejected(DomUnsupported::FileExpression));
@@ -38,7 +38,7 @@ pub(super) fn refusal<'a>(
     }
     // Only the normal private receiver's actual node/input association grants
     // selected origin. Other File routes retain their existing policy.
-    let Some(record) = file.native_interpolation(node) else {
+    let Some(record) = l2ir.native_interpolation(node) else {
         return setup.then_some(DomRejection {
             node,
             span: expression.span,
@@ -58,7 +58,7 @@ pub(super) fn refusal<'a>(
     let source = syntax.source();
     if !core::ptr::eq(original.expression(), expression.ast)
         || !core::ptr::eq(source.text(), expression.source)
-        || !core::ptr::eq(source.authored_root(), file.artifact().source())
+        || !core::ptr::eq(source.authored_root(), l2ir.artifact().source())
         || source.span() != expression.span
         || expression.coordinates.is_none()
     {

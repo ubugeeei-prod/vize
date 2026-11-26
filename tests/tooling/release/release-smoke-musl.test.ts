@@ -23,7 +23,7 @@ interface MuslJob {
 }
 
 function muslJob(): MuslJob {
-  const workflow = parse(readAutomationPrograms(".github", "workflows", "native-smoke.yml")) as {
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "06-native-smoke.yml")) as {
     jobs: Record<string, MuslJob>;
   };
   return workflow.jobs["fresh-install-musl-smoke"];
@@ -82,7 +82,7 @@ test("the musl fresh install smoke cross-builds x64 and arm64 in Alpine", () => 
   );
   assert.match(alpine, /sh -eux \/vize-ci-smoke\.sh/u);
   const inside = readRepoFile(
-    ".github/scripts/workflows/native-smoke/smoke-in-alpine-container.sh",
+    "tools/ci/workflows/06-native-smoke/scripts/smoke-in-alpine-container.sh",
   );
   assert.match(
     inside,

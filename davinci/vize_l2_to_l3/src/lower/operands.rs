@@ -58,7 +58,7 @@ impl<'a> Cx<'a> {
         target: Option<OpId>,
         value: OperandValue<'a>,
     ) {
-        self.program.operands.push(Operand {
+        self.l3ir.operands.push(Operand {
             op,
             role,
             target,
@@ -77,7 +77,7 @@ impl<'a> Cx<'a> {
     ) {
         for attribute in attributes {
             let value = self.literal(attribute.value, attribute.span);
-            self.program.operands.push(Operand {
+            self.l3ir.operands.push(Operand {
                 op,
                 role,
                 target,
@@ -150,7 +150,7 @@ impl<'a> Cx<'a> {
         span: Span,
     ) {
         let value = self.expression(condition, span);
-        self.program.operands.push(Operand {
+        self.l3ir.operands.push(Operand {
             op,
             role: Role::Condition,
             target: None,

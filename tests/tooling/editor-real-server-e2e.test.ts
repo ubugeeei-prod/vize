@@ -108,7 +108,7 @@ test("CI runs all real-server editor scenarios from one built server binary", ()
     "every real-server scenario and host health check must consume the one built binary",
   );
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "editor-conformance.yml"),
+    readAutomationPrograms(".github", "workflows", "05-editor-conformance.yml"),
   ) as any;
   const fullHosts = workflow.jobs.conformance.steps.filter(
     (step: any) => step.run === "xvfb-run -a node test/run-extension-host-real.mjs",
@@ -191,7 +191,7 @@ test("CI runs both headless editor specs", () => {
     { ...nvim, environment: { VIZE_TEST_ART_VUE_NATIVE_PARSER: "1" } },
   ]);
   const conformance = parse(
-    readAutomationPrograms(".github", "workflows", "editor-conformance.yml"),
+    readAutomationPrograms(".github", "workflows", "05-editor-conformance.yml"),
   ) as {
     jobs: {
       conformance: { steps: Array<{ if?: string; run?: string; env?: Record<string, string> }> };

@@ -80,7 +80,7 @@ fn capture_pack(pack: Value, count: usize, capture_env: &str, schema: &str) -> R
         let admitted = observation.admitted().ok_or("actual native SFC")?;
         let script = observation.scripts().first().ok_or("script owner")?;
         let original = script.syntax().ok_or("syntax owner")?;
-        let file = admitted.file().file();
+        let file = admitted.file().l2ir();
         require!(file.is_complete(), "{id}: completed original File");
         require!(
             core::ptr::eq(file.artifact().source(), source),
@@ -124,7 +124,7 @@ fn capture_pack(pack: Value, count: usize, capture_env: &str, schema: &str) -> R
             "{id}: exactly one original body link"
         );
         let selected = observation
-            .descriptor()
+            .l1ir()
             .admitted()
             .map_err(|_| "descriptor")?
             .setup()
@@ -151,7 +151,7 @@ fn capture_pack(pack: Value, count: usize, capture_env: &str, schema: &str) -> R
                 Some(declaration.name.as_str()) == name.as_str(),
                 "{id}: declaration order"
             );
-            require!(core::ptr::eq(binding.file(), file), "{id}: binding owner");
+            require!(core::ptr::eq(binding.l2ir(), file), "{id}: binding owner");
             require!(
                 declaration.is_direct_program() && declaration.scope == setup.exposure().scope(),
                 "{id}: root setup scope"
@@ -213,7 +213,7 @@ fn successful_compilation_moves_every_original_native_owner_with_the_complete_ou
     );
     require!(syntax.comments().count() == 1, "original comment retained");
     require!(
-        core::ptr::eq(owner.descriptor().source(), source),
+        core::ptr::eq(owner.l1ir().source(), source),
         "same descriptor source"
     );
     require!(

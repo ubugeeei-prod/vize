@@ -53,7 +53,7 @@ fn ordinary_empty_product_keeps_other_options_mixed_setup_and_strict_refusals() 
         assert!(
             result
                 .observation()
-                .descriptor()
+                .l1ir()
                 .admitted()
                 .unwrap()
                 .setup()
@@ -90,19 +90,19 @@ fn ordinary_ts_source_and_css_owners_survive_nonzero_container_index_together() 
     assert!(output.css_source_map().is_some());
     assert!(output.source_map().is_some());
     let owner = result.observation();
-    let descriptor = owner.descriptor().admitted().unwrap();
+    let descriptor = owner.l1ir().admitted().unwrap();
     assert!(descriptor.setup().is_none());
     let script = descriptor.ordinary().unwrap();
     assert_eq!(script.container_index(), 1);
     assert_eq!(descriptor.styles().count(), 2);
-    let file = owner.admitted().unwrap().file().file();
+    let file = owner.admitted().unwrap().file().l2ir();
     let syntax = owner.scripts().first().unwrap().syntax().unwrap();
     let ordinary =
         VueOrdinaryEmpty::checked(file, script, syntax.admitted_program().unwrap()).unwrap();
     assert_eq!(ordinary.unit().index(), 1);
     assert!(ordinary.program().source_type().is_typescript());
     assert_eq!(syntax.comments().count(), 1);
-    assert!(core::ptr::eq(ordinary.file(), file));
+    assert!(core::ptr::eq(ordinary.l2ir(), file));
     assert!(core::ptr::eq(ordinary.source().root_source(), source));
     let plain_source =
         "<script lang='ts'>/*script*/ export default {};</script><template><p>kept</p></template>";

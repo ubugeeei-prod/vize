@@ -20,16 +20,16 @@ pub(crate) const SELF_CLOSING_RECOVERY: &str = "Invalid self-closing syntax on n
 pub(super) fn self_closing_recoveries(
     allocator: &vize_carton::Allocator,
     source: &str,
-    program: &L3Ir<'_>,
+    l3ir: &L3Ir<'_>,
 ) -> Result<std::vec::Vec<(u32, u32)>, LegacyReason> {
     // `v-pre` freezes some self-closed tags without a report.
     if source.contains("v-pre") {
-        return (!legacy_diagnosed(allocator, source, program))
+        return (!legacy_diagnosed(allocator, source, l3ir))
             .then(std::vec::Vec::new)
             .ok_or(LegacyReason::SurfaceSemantics);
     }
     let mut recoveries = std::vec::Vec::new();
-    let refused = scan(allocator, source, program, |op, markup| {
+    let refused = scan(allocator, source, l3ir, |op, markup| {
         if op.kind == OpKind::InsertNode && markup.ends_with("/>") {
             // A `<template>` with a structural directive is a fragment, not
             // an HTML element, and the legacy parser accepts it self-closed.
@@ -46,7 +46,7 @@ pub(super) fn self_closing_recoveries(
     }
     // An element attribute the native lane never admits (`ref`, `key`, an
     // `on…` name) fails fast, before the native lane indexes the source.
-    if unsupported_attribute(program) {
+    if unsupported_attribute(l3ir) {
         return Err(LegacyReason::Binding);
     }
     Ok(recoveries)
@@ -54,10 +54,10 @@ pub(super) fn self_closing_recoveries(
 
 /// Whether an element carries a static attribute that native admission
 /// rejects as a binding (`ref="r"` on a `<div>`).
-fn unsupported_attribute(program: &L3Ir<'_>) -> bool {
-    program.operands.iter().any(|operand| {
+fn unsupported_attribute(l3ir: &L3Ir<'_>) -> bool {
+    l3ir.operands.iter().any(|operand| {
         operand.role == OperandRole::Attribute
-            && (program.ops.get(operand.op.index() as usize))
+            && (l3ir.ops.get(operand.op.index() as usize))
                 .is_some_and(|op| op.kind == OpKind::InsertNode)
             && operand
                 .name
@@ -112,9 +112,9 @@ fn structural(name: &str) -> bool {
 pub(super) fn legacy_diagnosed(
     allocator: &vize_carton::Allocator,
     source: &str,
-    program: &L3Ir<'_>,
+    l3ir: &L3Ir<'_>,
 ) -> bool {
-    scan(allocator, source, program, |_, _| false)
+    scan(allocator, source, l3ir, |_, _| false)
 }
 
 /// Whether any op is markup the legacy parser diagnoses; `reproduced` takes
@@ -122,19 +122,19 @@ pub(super) fn legacy_diagnosed(
 fn scan(
     allocator: &vize_carton::Allocator,
     source: &str,
-    program: &L3Ir<'_>,
+    l3ir: &L3Ir<'_>,
     mut reproduced: impl FnMut(&vize_l3::op::Op, &str) -> bool,
 ) -> bool {
-    let mut bindings = vize_carton::Vec::with_capacity_in(program.ops.len(), &allocator);
-    bindings.resize(program.ops.len(), false);
-    for operand in &program.operands {
+    let mut bindings = vize_carton::Vec::with_capacity_in(l3ir.ops.len(), &allocator);
+    bindings.resize(l3ir.ops.len(), false);
+    for operand in &l3ir.operands {
         if operand.role == OperandRole::BindingKind
             && let Some(slot) = bindings.get_mut(operand.op.index() as usize)
         {
             *slot = true;
         }
     }
-    program.ops.iter().zip(bindings.iter()).any(|(op, &bound)| {
+    l3ir.ops.iter().zip(bindings.iter()).any(|(op, &bound)| {
         let Some(markup) = source.get(op.span.start as usize..op.span.end as usize) else {
             return true;
         };

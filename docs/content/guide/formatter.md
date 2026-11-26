@@ -162,6 +162,7 @@ Every option below can be set under `vue.formatter`. An option you leave out tak
 | `arrowParens`                  | `"always"`       | Parentheses around a sole arrow function parameter: `"always"` or `"avoid"`.                                                       |
 | `endOfLine`                    | `"lf"`           | Line endings: `"lf"`, `"crlf"`, `"cr"` or `"auto"`. See [Line endings](./formatter-line-endings.md).                               |
 | `quoteProps`                   | `"as-needed"`    | When object keys are quoted: `"as-needed"`, `"consistent"` or `"preserve"`. See [Property quotes](./formatter-property-quotes.md). |
+| `objectWrap`                   | `"preserve"`     | Keep objects multiline when a newline follows `{`, or use `"collapse"` for objects that fit the print width.                       |
 | `singleAttributePerLine`       | `false`          | Puts each attribute on its own line.                                                                                               |
 | `maxAttributesPerLine`         | none             | Wraps attributes once a tag has more than this many.                                                                               |
 | `vueIndentScriptAndStyle`      | `false`          | Indents the contents of `<script>` and `<style>`.                                                                                  |
@@ -240,6 +241,13 @@ components unchanged.
 Script quote policies are also shared across config, direct CLI overrides and
 Node: `--jsx-single-quote[=false]` maps to `jsxSingleQuote`, while
 `--quote-props <as-needed|consistent|preserve>` maps to `quoteProps`.
+
+`objectWrap: "collapse"` collapses object literals that fit the print width,
+even when the source has a newline after `{`. The default, `"preserve"`, keeps
+that authored multiline shape. Comments and the print width can still require
+multiple lines. Config (including Oxfmt's `fmt` settings), Node's `formatSfc`,
+and `--object-wrap <preserve|collapse>` use the same policy. The CLI flag
+overrides configuration; explicit Node options override a selected preset.
 
 The trailing comma policy is shared in the same way:
 `--trailing-comma <all|es5|none>` maps to the typed Node and config option

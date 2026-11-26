@@ -82,7 +82,7 @@ fn toolchain_session_rejects_a_foreign_language_and_checks_the_revision_after_sc
     ));
     let (query, cancel) = snapshots.begin_query(&docs, &uri).unwrap();
     let prepared = block_on(query.run_scoped_component(&docs, options, |_, session| {
-        session.observation().descriptor().source().to_owned()
+        session.observation().l1ir().source().to_owned()
     }))
     .unwrap();
     cancel.abort();
@@ -99,7 +99,7 @@ fn products(
     options: NativeSfcCompileOptions<'_>,
 ) -> Value {
     let uri = snapshot.uri();
-    let owner = session.observation().descriptor();
+    let owner = session.observation().l1ir();
     check_source(owner, snapshot);
     let types = snapshot
         .prepare_literal_products(docs, owner, ROLE)

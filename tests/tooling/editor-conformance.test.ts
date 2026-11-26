@@ -17,7 +17,7 @@ import { applyTextEdits, workspaceEditsFor } from "../editor-conformance/support
 import { readAutomationPrograms } from "./support/automation-source.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
-const conformanceWorkflow = readAutomationPrograms(".github/workflows/editor-conformance.yml");
+const conformanceWorkflow = readAutomationPrograms(".github/workflows/05-editor-conformance.yml");
 const smokeAction = readAutomationPrograms(".github/actions/vscode-host-smoke/action.yml");
 import { projectConfigDefaults } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
 

@@ -83,7 +83,7 @@ function workflowUsesStep(job: WorkflowJob, uses: string): WorkflowStep {
 }
 
 test("fresco platform suites run nightly or by explicit dispatch", () => {
-  const workflow = parse(readAutomationPrograms(".github", "workflows", "fresco.yml")) as {
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "10-fresco.yml")) as {
     on: Record<string, unknown>;
   };
   assert.equal(Object.hasOwn(workflow.on, "push"), false);
@@ -93,9 +93,7 @@ test("fresco platform suites run nightly or by explicit dispatch", () => {
 });
 
 test("repeated Fresco measurements stay outside ordinary PR and queue checks", () => {
-  const fresco = parse(
-    readAutomationPrograms(".github", "workflows", "fresco-dimension-bench.yml"),
-  );
+  const fresco = parse(readAutomationPrograms(".github", "workflows", "03-fresco-layout.yml"));
   assert.deepEqual(Object.keys(fresco.on).sort(), ["schedule", "workflow_dispatch"]);
   assert.deepEqual(fresco.on.schedule, [{ cron: "37 6 * * *" }]);
   assert.deepEqual(fresco.jobs.dimensions.strategy.matrix.replica, [1, 2, 3]);
@@ -145,7 +143,7 @@ test("affected Fresco conformance keeps NAPI compilation, strict lints and consu
 });
 
 test("fresco JS lane checks, builds, and tests the package on all three platforms", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "fresco.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "10-fresco.yml");
   const parsed = parse(workflow) as { jobs?: Record<string, WorkflowJob> };
   const job = workflowJob(parsed, "fresco-js");
   const setup = workflowUsesStep(job, "voidzero-dev/setup-vp@");
@@ -165,7 +163,7 @@ test("fresco JS lane checks, builds, and tests the package on all three platform
 });
 
 test("fresco Rust lane tests vize_fresco with per-platform toolchain and caches", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "fresco.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "10-fresco.yml");
   const parsed = parse(workflow) as { jobs?: Record<string, WorkflowJob> };
   const job = workflowJob(parsed, "fresco-rust");
 

@@ -18,12 +18,12 @@ pub(super) fn edge(from: OpId, to: OpId, kind: EdgeKind) -> Edge {
 /// sorted multisets consumes each obligation once, so repeating an edge
 /// cannot conceal a missing dependency even when the counts agree.
 pub(super) fn check<'a>(
-    program: &L3Ir<'_>,
+    l3ir: &L3Ir<'_>,
     mut expected: Vec<'a, Edge>,
     alloc: &'a Allocator,
 ) -> Result<()> {
     let mut actual = Vec::from_iter_in(
-        (program.edges.iter()).map(|state| edge(state.from, state.to, state.kind)),
+        (l3ir.edges.iter()).map(|state| edge(state.from, state.to, state.kind)),
         &alloc,
     );
     expected.sort_unstable();

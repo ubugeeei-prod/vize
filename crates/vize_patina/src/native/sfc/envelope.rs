@@ -7,13 +7,13 @@ use vize_l1::{
     embed::Lang,
 };
 
-pub(super) fn check(descriptor: &L1Ir<'_>) -> Result<(), Refusal> {
-    let admitted = descriptor.admitted().map_err(|error| Refusal::Descriptor {
+pub(super) fn check(l1ir: &L1Ir<'_>) -> Result<(), Refusal> {
+    let admitted = l1ir.admitted().map_err(|error| Refusal::Descriptor {
         issues: error.issues().to_vec(),
         errors: error.errors().to_vec(),
     })?;
     let root = admitted.root();
-    let blocks = &descriptor.container().blocks;
+    let blocks = &l1ir.container().blocks;
     if blocks.len() != 2 || admitted.ordinary().is_some() || admitted.styles().len() != 0 {
         return Err(Refusal::UnsupportedEnvelope {
             span: root.whole_block().span(),
@@ -47,13 +47,13 @@ pub(super) fn check(descriptor: &L1Ir<'_>) -> Result<(), Refusal> {
 /// A separate original envelope; the setup host's two-block contract above is
 /// unchanged. No script, style, custom block, src or template attribute is
 /// supplied by this first template-only capability.
-pub(super) fn check_template_only(descriptor: &L1Ir<'_>) -> Result<(), Refusal> {
-    let admitted = descriptor.admitted().map_err(|error| Refusal::Descriptor {
+pub(super) fn check_template_only(l1ir: &L1Ir<'_>) -> Result<(), Refusal> {
+    let admitted = l1ir.admitted().map_err(|error| Refusal::Descriptor {
         issues: error.issues().to_vec(),
         errors: error.errors().to_vec(),
     })?;
     let root = admitted.root();
-    let blocks = &descriptor.container().blocks;
+    let blocks = &l1ir.container().blocks;
     let template = admitted.template().ok_or(Refusal::UnsupportedEnvelope {
         span: root.whole_block().span(),
     })?;

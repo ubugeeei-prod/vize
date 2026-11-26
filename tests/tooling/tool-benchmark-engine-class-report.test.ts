@@ -132,7 +132,7 @@ test("the type-check summary ranks engine classes beside the published ratio", (
     "| Prettier | <code>3.4.0</code> | n/a |",
     "| Node.js | <code>v24.0.0</code> | n/a |",
     "",
-    "Backend: native TypeScript engine ready at <code>/repo/node&#95;modules/.bin/tsgo</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).",
+    "Backend: native TypeScript engine ready at <code>/repo/node&#95;modules/.bin/tsgo</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/03-check-gate.yml).",
     "",
     "</details>",
     "",

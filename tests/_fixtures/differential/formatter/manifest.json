@@ -3024,6 +3024,136 @@
       ]
     },
     {
+      "id": "formatter/sfc/object-wrap-13666",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-object-wrap-13666",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "f70e861caedeef4e152242b29f2e91bc52111adfebaed5f9f74ae7bc1c6561af",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "bab13fedc0b0777902d7272dbe35c309cddc712450e3071e20a7e9b458656520",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          13666
+        ],
+        "commits": [
+          {
+            "sha": "3bfc85d3c959f9d7479f6c63c1ca8d4ba25dded2",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/options.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 13666,
+            "path": "crates/vize_glyph/tests/object_wrap.rs",
+            "symbol": "object_wrap_matches_the_recorded_oxfmt_outputs_and_fixed_points"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/object_wrap.rs",
+          "symbol": "object_wrap_matches_the_recorded_oxfmt_outputs_and_fixed_points",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "FormatResult.changed"
+          ],
+          "limitations": [
+            "Current source-built Rust, native and CLI execution remains required on Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "typescript",
+              "script-setup"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CLI with pinned objectWrap=collapse config and exact Oxfmt 0.80.0 reference bytes.",
+          "native": "No verified native formatter adapter; direct native regression is separate and does not grant adapter acceptance."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-object-wrap-13666/reference.expected.txt",
+              "sha256": "382febb1ddeb13d7cfca24daee507db5a5ac57123e23796c4ac8eda51b62a7e5",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 13666,
+                "path": "tests/_fixtures/differential/formatter/sfc-object-wrap-13666/cases.json",
+                "assertion": "Recorded from Oxfmt 0.80.0 format(App.vue, source, { objectWrap: collapse, printWidth: 100 }); complete output and three-pass fixed point."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust and native tests cover this field"
+          ],
+          "referenceState": "oxfmt-0.80.0-recorded-full-output; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/plain-style-nested-comments",
       "state": "active",
       "targets": [

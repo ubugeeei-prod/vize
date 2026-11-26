@@ -1,0 +1,10 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_is_well_formed": { "prover": "alt-ergo", "time": 0.071 },
+      "vc_len_u8": { "prover": "alt-ergo", "time": 0.004 },
+      "vc_scalar_len": { "prover": "alt-ergo", "time": 0.005 }
+    }
+  }
+}

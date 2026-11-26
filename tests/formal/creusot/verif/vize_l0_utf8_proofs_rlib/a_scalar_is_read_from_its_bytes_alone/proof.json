@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_scalar_is_read_from_its_bytes_alone": {
+        "prover": "z3",
+        "time": 0.159
+      }
+    }
+  }
+}

@@ -30,7 +30,7 @@ pub const OPTIMIZE: Pipeline = Pipeline::new(L3_STAGE, OPTIMIZE_PASSES);
 /// Returns the pass manager's failure. The catalogue below is closed over the
 /// const pipeline, so a failure here is a compiler bug, not an input property.
 pub fn optimize<O: PassObserver>(
-    program: &mut L3Ir<'_>,
+    l3ir: &mut L3Ir<'_>,
     tier: OptTier,
     observer: &mut O,
 ) -> Result<Extraction, PassFailure> {
@@ -38,9 +38,9 @@ pub fn optimize<O: PassObserver>(
     run_pipeline_remarked(&OPTIMIZE, observer, |event, remarks| {
         let name = event.desc().name;
         if name == ANNOTATE.name {
-            annotate(program);
+            annotate(l3ir);
         } else if name == EXTRACT.name {
-            let result = extract(program, tier);
+            let result = extract(l3ir, tier);
             result.remark(remarks);
             extraction = Some(result);
         } else {

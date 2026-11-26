@@ -26,7 +26,7 @@ use vize_l1::{
 /// cloneable::<NativeSfcTemplateOwner<'static>>();
 /// ```
 pub struct NativeSfcTemplateOwner<'a> {
-    descriptor: L1Ir<'a>,
+    l1ir: L1Ir<'a>,
     template: SelectedTemplateComponent<'a>,
 }
 
@@ -60,7 +60,7 @@ impl<'a> NativeSfcTemplateOwner<'a> {
         }
         crate::native::admission::selected_component(&template).map_err(Refusal::Template)?;
         Ok(Self {
-            descriptor,
+            l1ir: descriptor,
             template,
         })
     }
@@ -68,13 +68,20 @@ impl<'a> NativeSfcTemplateOwner<'a> {
     /// Returns the complete original SFC source.
     #[must_use]
     pub fn source(&self) -> &'a str {
-        self.descriptor.source()
+        self.l1ir.source()
     }
 
     /// Returns the original descriptor observation.
     #[must_use]
+    pub fn l1ir(&self) -> &L1Ir<'a> {
+        &self.l1ir
+    }
+
+    /// Deprecated spelling of [`Self::l1ir`], borrowing the same original descriptor.
+    #[deprecated(note = "use `l1ir` instead")]
+    #[must_use]
     pub fn descriptor(&self) -> &L1Ir<'a> {
-        &self.descriptor
+        self.l1ir()
     }
 
     /// Returns the original selected template component.

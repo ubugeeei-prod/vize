@@ -114,7 +114,7 @@ fn whole_selected_condensed_root_modules_maps_and_links_match_pinned_packets()
             .map_err(|_| "genuine selected L3")?;
         assert!(core::ptr::eq(analysis.owner(), &output));
         assert!(core::ptr::eq(
-            analysis.file(),
+            analysis.l2ir(),
             output.file().ok_or("sole File")?
         ));
         assert!(core::ptr::eq(analysis.artifact().source(), source));

@@ -46,8 +46,8 @@ fn full_owner_moves_keep_original_descriptor_component_ordered_ast_maps_comments
         (
             (owner.source().as_ptr(), owner.source().len()),
             owner.options(),
-            owner.descriptor().container().blocks.as_ptr().cast::<()>(),
-            owner.descriptor().root().unwrap().source().as_ptr(),
+            owner.l1ir().container().blocks.as_ptr().cast::<()>(),
+            owner.l1ir().root().unwrap().source().as_ptr(),
             (
                 selected.template_index(),
                 selected.grammar(),
@@ -106,8 +106,8 @@ fn full_owner_moves_keep_original_descriptor_component_ordered_ast_maps_comments
     };
     let before = snapshot(&owner);
     assert_eq!(owner.operands().len(), 3);
-    assert!(owner.descriptor().issues().is_empty());
-    assert!(owner.descriptor().container().errors.is_empty());
+    assert!(owner.l1ir().issues().is_empty());
+    assert!(owner.l1ir().container().errors.is_empty());
     assert!(owner.interpolation_failure().is_none());
     let Expression::CallExpression(call) = owner.operands()[1].syntax().expression().unwrap()
     else {
@@ -232,10 +232,10 @@ fn moved_refused_owner_keeps_explicit_options_original_descriptor_source_errors_
     options.print.width = 17;
     options.print.indent_width = 3;
     let owner = observe_native_sfc_in(&arena, source, options);
-    let blocks = owner.descriptor().container().blocks.as_ptr();
-    let issues = owner.descriptor().issues().to_vec();
+    let blocks = owner.l1ir().container().blocks.as_ptr();
+    let issues = owner.l1ir().issues().to_vec();
     let errors = owner
-        .descriptor()
+        .l1ir()
         .container()
         .errors
         .iter()
@@ -252,11 +252,11 @@ fn moved_refused_owner_keeps_explicit_options_original_descriptor_source_errors_
     let moved = parked.pop().unwrap();
     assert_eq!(moved.options(), options);
     assert!(core::ptr::eq(moved.source(), source));
-    assert_eq!(moved.descriptor().container().blocks.as_ptr(), blocks);
-    assert_eq!(moved.descriptor().issues(), issues.as_slice());
+    assert_eq!(moved.l1ir().container().blocks.as_ptr(), blocks);
+    assert_eq!(moved.l1ir().issues(), issues.as_slice());
     assert_eq!(
         moved
-            .descriptor()
+            .l1ir()
             .container()
             .errors
             .iter()

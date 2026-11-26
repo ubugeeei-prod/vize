@@ -33,7 +33,7 @@ fn historical_unused_typed_parameter_keeps_neutral_custody_and_changed_source_re
     assert_eq!(original.exports()[0].local, Some(function.id()));
     assert!(original.references().is_empty());
     let projection = project_program(&original).unwrap();
-    assert!(core::ptr::eq(projection.file(), &original));
+    assert!(core::ptr::eq(projection.l2ir(), &original));
     assert_eq!(
         projection.document().as_str(),
         vize_l0::cstr!("{source}\n;\nexport {{}};\n")

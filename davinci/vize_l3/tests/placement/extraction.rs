@@ -56,8 +56,8 @@ fn with(decision: Decision, delta: (i64, i64, i64), budget_left: u32) -> Decisio
 fn o1_commits_the_group_and_hoist_and_measures_the_cache_as_a_size_regression() {
     let arena = Allocator::default();
     let mut build = fixture(&arena, (LIT, "hi"));
-    annotate(&mut build.program);
-    let extraction = extract(&mut build.program, OptTier::O1);
+    annotate(&mut build.l3ir);
+    let extraction = extract(&mut build.l3ir, OptTier::O1);
 
     let cache = decision(
         1,
@@ -87,7 +87,7 @@ fn o1_commits_the_group_and_hoist_and_measures_the_cache_as_a_size_regression() 
         }
     );
     let chosen: Vec<(OpId, Placement)> = build
-        .program
+        .l3ir
         .placements
         .iter()
         .map(|record| (record.op, record.chosen))
@@ -100,15 +100,15 @@ fn o1_commits_the_group_and_hoist_and_measures_the_cache_as_a_size_regression() 
             (OpId::new(5), Placement::Hoist),
         ]
     );
-    assert_eq!(verify(&build.program), []);
+    assert_eq!(verify(&build.l3ir), []);
 }
 
 #[test]
 fn o0_spends_no_budget_and_keeps_the_canonical_plan() {
     let arena = Allocator::default();
     let mut build = fixture(&arena, (LIT, "hi"));
-    annotate(&mut build.program);
-    let extraction = extract(&mut build.program, OptTier::O0);
+    annotate(&mut build.l3ir);
+    let extraction = extract(&mut build.l3ir, OptTier::O0);
 
     assert_eq!(
         extraction.decisions,
@@ -128,9 +128,9 @@ fn o0_spends_no_budget_and_keeps_the_canonical_plan() {
 fn extraction_restarts_from_the_canonical_plan_and_is_deterministic() {
     let arena = Allocator::default();
     let mut build = fixture(&arena, (LIT, "hi"));
-    annotate(&mut build.program);
-    let first = extract(&mut build.program, OptTier::O3);
-    let second = extract(&mut build.program, OptTier::O3);
+    annotate(&mut build.l3ir);
+    let first = extract(&mut build.l3ir, OptTier::O3);
+    let second = extract(&mut build.l3ir, OptTier::O3);
     assert_eq!(second, first);
     assert_eq!(first.before, CANONICAL);
     assert_eq!(first.budget_left, 125);
@@ -143,8 +143,8 @@ fn the_budget_decrements_per_measured_trial_and_breaks_later_groups() {
     for id in 0..11u32 {
         build.text(id, 0, (id * 10, id * 10 + 10), (JS, "count"), false);
     }
-    annotate(&mut build.program);
-    let extraction = extract(&mut build.program, OptTier::O1);
+    annotate(&mut build.l3ir);
+    let extraction = extract(&mut build.l3ir, OptTier::O1);
 
     let reasons: Vec<(OpId, Reason, u32)> = extraction
         .decisions
@@ -157,7 +157,7 @@ fn the_budget_decrements_per_measured_trial_and_breaks_later_groups() {
     expected.push((OpId::new(9), Reason::BudgetExhausted, 0));
     expected.push((OpId::new(10), Reason::NotContiguous, 0));
     assert_eq!(reasons, expected);
-    assert_eq!(verify(&build.program), []);
+    assert_eq!(verify(&build.l3ir), []);
 }
 
 #[test]
@@ -168,8 +168,8 @@ fn a_lone_static_node_costs_more_to_hoist_than_it_saves() {
     build.region(1, 0, 0, (10, 30));
     build.condition(0, 1, "ok");
     build.element(1, "br", 1, (10, 30), true);
-    annotate(&mut build.program);
-    let extraction = extract(&mut build.program, OptTier::O3);
+    annotate(&mut build.l3ir);
+    let extraction = extract(&mut build.l3ir, OptTier::O3);
 
     let hoist = decision(
         1,
@@ -187,7 +187,7 @@ fn an_enclosing_hoist_subsumes_an_inner_candidate_without_spending_budget() {
     build.element(8, "b", 3, (60, 70), true);
     build.record(5, &[Placement::Inline, Placement::Hoist], None);
     build.record(8, &[Placement::Inline, Placement::Hoist], None);
-    let extraction = extract(&mut build.program, OptTier::O1);
+    let extraction = extract(&mut build.l3ir, OptTier::O1);
 
     let outer = decision(5, (45, 75), Placement::Hoist, Reason::Committed);
     let inner = decision(8, (60, 70), Placement::Hoist, Reason::Subsumed);
@@ -195,7 +195,7 @@ fn an_enclosing_hoist_subsumes_an_inner_candidate_without_spending_budget() {
         extraction.decisions,
         [with(outer, (-34, 0, -2), 7), with(inner, (0, 0, 0), 7)]
     );
-    assert_eq!(verify(&build.program), []);
+    assert_eq!(verify(&build.l3ir), []);
 }
 
 const REMARKS: &str = "\
@@ -214,18 +214,18 @@ fn the_pipeline_attributes_one_structured_remark_per_decision() {
     let mut build = fixture(&arena, (LIT, "hi"));
     let mut collector = RemarkCollector::new();
     let extraction =
-        optimize(&mut build.program, OptTier::O1, &mut collector).expect("closed pipeline");
+        optimize(&mut build.l3ir, OptTier::O1, &mut collector).expect("closed pipeline");
     let page = RemarkLog::new(collector.finish()).print_to_string(DumpMode::Full);
     assert_eq!(page.as_str(), REMARKS);
 
     let mut detached = fixture(&arena, (LIT, "hi"));
     assert_eq!(
-        optimize(&mut detached.program, OptTier::O1, &mut NoObserver),
+        optimize(&mut detached.l3ir, OptTier::O1, &mut NoObserver),
         Ok(extraction)
     );
     let mut counted = fixture(&arena, (LIT, "hi"));
     let mut counter = RemarkCounter::new();
-    optimize(&mut counted.program, OptTier::O1, &mut counter).expect("closed pipeline");
+    optimize(&mut counted.l3ir, OptTier::O1, &mut counter).expect("closed pipeline");
     assert_eq!(
         counter,
         RemarkCounter {
@@ -273,16 +273,16 @@ fn grouped_real_optimizer_preserves_every_placement_decision_and_remark() {
         let mut baseline = fixture(&arena, (LIT, "hi"));
         let mut grouped = fixture(&arena, (LIT, "hi"));
         let mut expected_remarks = RemarkCollector::default();
-        let expected = optimize(&mut baseline.program, tier, &mut expected_remarks).unwrap();
+        let expected = optimize(&mut baseline.l3ir, tier, &mut expected_remarks).unwrap();
         let mut observed_remarks = RemarkCollector::default();
         let mut actual = None;
         run_grouped_pipeline(&OPTIMIZE, &mut observed_remarks, |event, remarks| {
             let desc = event.desc();
             if desc == ANNOTATE {
-                annotate(&mut grouped.program);
+                annotate(&mut grouped.l3ir);
             } else {
                 assert_eq!(desc, EXTRACT);
-                let extraction = extract(&mut grouped.program, tier);
+                let extraction = extract(&mut grouped.l3ir, tier);
                 extraction.remark(remarks);
                 actual = Some(extraction);
             }
@@ -291,10 +291,10 @@ fn grouped_real_optimizer_preserves_every_placement_decision_and_remark() {
         .unwrap();
         assert_eq!(actual.unwrap(), expected);
         assert_eq!(
-            grouped.program.placements.as_slice(),
-            baseline.program.placements.as_slice()
+            grouped.l3ir.placements.as_slice(),
+            baseline.l3ir.placements.as_slice()
         );
         assert_eq!(observed_remarks.finish(), expected_remarks.finish());
-        assert_eq!(verify(&grouped.program), []);
+        assert_eq!(verify(&grouped.l3ir), []);
     }
 }

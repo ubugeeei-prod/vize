@@ -52,13 +52,13 @@ pub(in crate::source_project::navigation) fn run(
             NavigationRefusal::SfcProducer(observation.issues().to_vec()),
         );
     };
-    let file = native.file().file();
+    let file = native.file().l2ir();
     let lines = vize_l0::line_index::LineBreaks::Lsp
         .line_starts(snapshot.source())
         .collect::<Vec<_>>();
     let query = RetainedNavigation {
         snapshot: &snapshot,
-        file,
+        l2ir: file,
         lines: &lines,
         native: Some(native),
         intrinsic_tags: &[],
@@ -93,7 +93,7 @@ pub(in crate::source_project::navigation) fn run(
                 statements: 0,
                 sfc: Some(super::super::worker::SfcInspection {
                     observation: core::ptr::from_ref(&observation) as usize,
-                    descriptor: core::ptr::from_ref(observation.descriptor()) as usize,
+                    descriptor: core::ptr::from_ref(observation.l1ir()) as usize,
                     programs,
                     expressions,
                     productions: control

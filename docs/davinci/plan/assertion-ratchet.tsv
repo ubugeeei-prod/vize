@@ -131,7 +131,7 @@ crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs	6
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/art_variant.rs	1
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/attribute_only_required_props.rs	1
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/attribute_only_required_props_edges.rs	9
-crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/fallthrough_unknown_attrs.rs	3
+crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/fallthrough_unknown_attrs.rs	2
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_prop_regressions/global_html_fallthrough_attrs.rs	3
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/empty_required_props.rs	1
 crates/vize_canon/src/batch/type_checker/tests/recent_issues/exact_optional_props.rs	2
@@ -243,7 +243,7 @@ crates/vize_canon/src/virtual_ts/strict_template_global_enum_tests.rs	2
 crates/vize_canon/src/virtual_ts/strict_template_global_fallback_tests.rs	3
 crates/vize_canon/src/virtual_ts/strict_template_globals_tests.rs	26
 crates/vize_canon/src/virtual_ts/strict_template_scope_tests.rs	3
-crates/vize_canon/src/virtual_ts/tests.rs	88
+crates/vize_canon/src/virtual_ts/tests.rs	87
 crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	12
 crates/vize_canon/src/virtual_ts/tests/component_navigation.rs	7
 crates/vize_canon/src/virtual_ts/tests/define_props_scope.rs	21

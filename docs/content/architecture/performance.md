@@ -53,7 +53,7 @@ Files: **15,000** (61,516,500 bytes).
 | Prettier                 | <code>3.8.3</code>                                                                            | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
 | Node.js                  | <code>v24.14.0</code>                                                                         | n/a                                                                           |
 
-Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).
+Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/03-check-gate.yml).
 
 </details>
 
@@ -114,7 +114,7 @@ Rust's struct layout and enum discriminants are compact. The AST representation 
 Unlike JavaScript-based compilers that run in V8, Vize compiles directly to native code. There's no
 JIT warmup, no garbage collector, and no event loop contention. The CLI ships as a self-contained
 native executable per platform — fully static on the musl Linux targets, which CI verifies
-(`tools/commands/ci/github/verify-musl-cli-binary.ts`), and dynamically linked against the system C library on
+(`tools/ci/commands/github/verify-musl-cli-binary.ts`), and dynamically linked against the system C library on
 the glibc, macOS, and Windows targets. The Vite plugin loads the same compiler as a native Node
 addon (`@vizejs/native`) rather than as a separate process.
 

@@ -54,7 +54,7 @@ impl JsxEmitError {
 pub fn emit_js_module<L: LinkSink>(analysis: &JsxAnalysis<'_>) -> Result<Emitted<L>, JsxEmitError> {
     admission::check(analysis)?;
     let helper = helpers::selected(analysis)?;
-    let source = analysis.owner().file().artifact().source();
+    let source = analysis.owner().l2ir().artifact().source();
     let mut writer = Writer::with_capacity(source.len());
     let mut cursor = 0;
     for root in analysis

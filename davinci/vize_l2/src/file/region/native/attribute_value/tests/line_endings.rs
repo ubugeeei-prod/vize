@@ -26,7 +26,7 @@ fn inherited_raw_cr_and_crlf_values_retain_borrowed_original_bytes_and_slots() -
         check(value.source().decode_map().is_none())?;
         check(core::ptr::eq(value.source().text(), value.raw_value()))?;
         check(core::ptr::eq(value.source().authored_root(), source))?;
-        check(core::ptr::eq(joined.file(), file))?;
+        check(core::ptr::eq(joined.l2ir(), file))?;
         check(core::ptr::eq(joined.element(), actual))?;
         same(actual.attributes[0].value, Some(expected))?;
         same(value.value_span().slice(source), expected)?;

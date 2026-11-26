@@ -12,7 +12,7 @@ import {
   githubHeadingAnchor,
   readWorkflowEntries,
   renderWorkflowCatalog,
-} from "../../tools/commands/ci/workflow-catalog.ts";
+} from "../../tools/ci/commands/workflow-catalog.ts";
 import {
   legacyWorkflowNames,
   workflowNameViolations,
@@ -45,7 +45,7 @@ const approvedRunnerLabels = new Set([
 const hostedZeroComputeJobs: Readonly<Record<string, readonly string[]>> = {
   "check.yml": ["iteration-plan", "test-report"],
   "01-rust-feature-tests.yml": ["rust-feature-plan"],
-  "level-html-content-model.yml": ["changes"],
+  "06-browser-oracles.yml": ["changes"],
   "pr-rust-checks.yml": ["rust-source-report"],
   "pr-rust-products.yml": ["rust-product-report"],
   "pr-source-checks.yml": ["pr-source-plan", "affected-tooling-report", "source-report"],
@@ -73,7 +73,7 @@ function workflowRunnerLabels(
   assert.ok(isRecord(workflow) && isRecord(workflow.jobs), "workflow must define jobs");
   return Object.entries(workflow.jobs).flatMap(([id, value]) => {
     assert.ok(isRecord(value), "workflow job must be a mapping");
-    if (file === "style-module-products.yml" && id === "nearest-line-starts") {
+    if (file === "07-style-module-products.yml" && id === "nearest-line-starts") {
       // Kani's ARM64 binary requires glibc 2.39. The x86 byte search uses CPUID.
       assert.equal(value["runs-on"], "blacksmith-32vcpu-ubuntu-2404-arm", id);
       return [];
@@ -156,7 +156,7 @@ jobs:
 });
 
 test("the line-start proof requires its Linux ARM64 runner", () => {
-  const file = "style-module-products.yml";
+  const file = "07-style-module-products.yml";
   const runner = "blacksmith-32vcpu-ubuntu-2404-arm";
   const job = (id: string, label: string) => `jobs:\n  ${id}:\n    runs-on: ${label}\n`;
   assert.deepEqual(workflowRunnerLabels(job("nearest-line-starts", runner), [], file), []);
@@ -219,14 +219,18 @@ test("every action and workflow step invokes a named program", () => {
 test("every named automation program is available in the same checkout as its caller", () => {
   function check(directory: string, source: string) {
     for (const name of automationProgramReferences(source)) {
-      assert.match(name, /^(?:\.\.\/shared\/)?[\w.-]+$/u, name);
+      assert.match(name, /^(?:(?:\.\.\/){3,4}(?:tools\/ci\/)?lib\/scripts\/)?[\w.-]+$/u, name);
       const program = path.join(directory, name);
       assert.ok(fs.statSync(program, { throwIfNoEntry: false })?.isFile(), program);
     }
   }
   const workflows = path.join(root, ".github/workflows");
   for (const file of fs.readdirSync(workflows).filter((file) => file.endsWith(".yml"))) {
-    const directory = path.join(root, ".github/scripts/workflows", path.basename(file, ".yml"));
+    const stem = path.basename(file, ".yml");
+    const moved = path.join(root, "tools/ci/workflows", stem, "scripts");
+    const directory = fs.existsSync(moved)
+      ? moved
+      : path.join(root, ".github/scripts/workflows", stem);
     check(directory, fs.readFileSync(path.join(workflows, file), "utf8"));
     if (fs.existsSync(directory))
       for (const program of fs.readdirSync(directory))

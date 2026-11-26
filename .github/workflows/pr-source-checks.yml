@@ -9,7 +9,7 @@ jobs:
   nuxt-module-qualification:
     name: Nuxt and Vite release products
     if: ${{ github.event_name == 'merge_group' }}
-    uses: ./.github/workflows/nuxt-vite-release-products.yml
+    uses: ./.github/workflows/08-nuxt-vite-products.yml
   pr-source-plan:
     name: Plan PR source checks
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -40,7 +40,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |-
             /.github/actions/stage-workflow-scripts/
-            /.github/scripts/workflows/shared/
+            /tools/ci/lib/scripts/
             /.github/scripts/workflows/pr-source-checks/
       - name: Stage scripts outside the source checkout
         uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
@@ -191,7 +191,7 @@ jobs:
     permissions: { contents: read, actions: read, checks: read }
     needs: pr-source-plan
     if: ${{ !cancelled() && needs.pr-source-plan.result == 'success' && needs.pr-source-plan.outputs.canonical-corpus == 'true' }}
-    uses: ./.github/workflows/davinci-canonical-corpus.yml
+    uses: ./.github/workflows/07-canonical-corpus.yml
   pr-rust-source:
     name: PR Rust Clippy, tests, and fixtures
     permissions: { contents: read, actions: read }

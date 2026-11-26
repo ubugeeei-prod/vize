@@ -90,7 +90,7 @@ fn checked_builtin_prop_name_payload_owns_the_key() {
         r#"<Teleport to="body" :[disabled]="value"><span>content</span></Teleport>"#,
     );
     let name = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| {

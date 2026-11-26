@@ -67,7 +67,7 @@ fn moved_original_js_owners_keep_real_operands_rows_and_authored_geometry() {
             core::ptr::from_ref(row.literal()),
             original_addresses[count]
         );
-        assert!(core::ptr::eq(row.file(), &file));
+        assert!(core::ptr::eq(row.l2ir(), &file));
         assert_eq!(row.raw(), raw);
         assert_eq!(row.authored_content(), authored);
         assert_eq!(row.decoded_request(), decoded);

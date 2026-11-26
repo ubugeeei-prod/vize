@@ -159,7 +159,7 @@ fn compare(view: AdmittedDescriptor<'_, '_>, arena: &Allocator, counts: &mut Cou
         match (baseline, candidate) {
             (Ok(old), Ok(new)) => {
                 let (a, b) = (old.finish().unwrap(), new.finish().unwrap());
-                assert_eq!(a.file().issues(), b.file().issues(), "{label}");
+                assert_eq!(a.l2ir().issues(), b.l2ir().issues(), "{label}");
                 assert_eq!(a.model().contract(), b.model().contract(), "{label}");
                 assert_eq!(a.model().options(), b.model().options(), "{label}");
                 assert_eq!(a.model().macro_calls(), b.model().macro_calls(), "{label}");

@@ -141,7 +141,7 @@ test("runs of one build that disagree always fail the cell", () => {
 });
 
 test("the workflow measures every filesystem from one build per platform", () => {
-  const workflow = readWorkflowShell("typecheck-cold-pair");
+  const workflow = readWorkflowShell("03-typecheck-compare");
   for (const label of ["linux-ext4", "wsl2-ext4", "wsl2-windows-mount", "windows-ntfs"]) {
     assert.match(workflow, new RegExp(label));
   }

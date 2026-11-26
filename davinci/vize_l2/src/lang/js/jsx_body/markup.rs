@@ -53,8 +53,8 @@ impl<'a> JsxMarkupFile<'a> {
     }
 
     #[must_use]
-    pub fn file(&self) -> &L2Ir<'a> {
-        self.owner.file()
+    pub fn l2ir(&self) -> &L2Ir<'a> {
+        self.owner.l2ir()
     }
 
     /// Original fragment delimiters in authored preorder, with the same owner,

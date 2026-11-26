@@ -1,3 +1,4 @@
+import { restoreCiLibraryPaths } from "./support/ci-library-paths.ts";
 import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -288,7 +289,7 @@ void test("full-only extraction preserves all seventeen complete original job ob
   delete original["v1-supported-matrix"];
   assert.deepEqual(original["nuxt-module-qualification"], {
     name: "Nuxt and Vite release products",
-    uses: "./.github/workflows/nuxt-vite-release-products.yml",
+    uses: "./.github/workflows/08-nuxt-vite-products.yml",
   });
   delete original["nuxt-module-qualification"];
   // #6853/#6854 add a record-only census over the runners' bundle entries.
@@ -439,7 +440,9 @@ void test("full-only extraction preserves all seventeen complete original job ob
     }
   }
   assert.equal(
-    createHash("sha256").update(JSON.stringify(original)).digest("hex"),
+    createHash("sha256")
+      .update(restoreCiLibraryPaths(JSON.stringify(original)))
+      .digest("hex"),
     "f9791086ebe654f600908fdef213a710d68778e8f93d19935ce115af0e32cbd9",
   );
 });

@@ -125,14 +125,20 @@ pub(super) fn span(span: Span) -> (usize, usize) {
 
 /// Relief stores only the start tag on `ElementNode::loc`. The selector tree
 /// uses the authored element, through its closing tag when one is written.
+/// A `<div />` ends at its start tag as vue-eslint-parser reads it, although
+/// HTML parsing leaves a non-void element open.
 fn element_extent(source: &str, element: &ElementNode<'_>) -> (usize, usize, usize, usize) {
+    use super::super::super::authored_closing;
     let (start, open_end) = span(element.loc.span);
-    if element.is_self_closing {
+    if element.is_self_closing
+        || authored_closing::self_closing_start_tag(
+            source,
+            element.loc.span.start..element.loc.span.end,
+        )
+    {
         return (start, open_end, open_end, open_end);
     }
-    let Some(closing) =
-        super::super::super::authored_closing::find(source, element.loc.span.end, element.tag)
-    else {
+    let Some(closing) = authored_closing::find(source, element.loc.span.end, element.tag) else {
         return (start, open_end, open_end, open_end);
     };
     (

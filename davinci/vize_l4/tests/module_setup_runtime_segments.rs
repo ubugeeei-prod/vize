@@ -140,9 +140,6 @@ fn wider_programs_never_mint_the_segment_provider_input() {
         let arena = Allocator::default();
         let owner = lower_selected_setup_sfc_native(&arena, source, options());
         assert!(owner.admitted().is_none(), "{source}");
-        assert!(core::ptr::eq(
-            owner.original().descriptor().source(),
-            source
-        ));
+        assert!(core::ptr::eq(owner.original().l1ir().source(), source));
     }
 }

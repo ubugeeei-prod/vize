@@ -48,9 +48,9 @@ fn embedded_original_block_keeps_absolute_coordinates_and_identity_after_moves()
         moved.push(producer_for_move(&arena, source, block, script)?);
     }
     let native = moved.first().ok_or("moved owner")?;
-    assert_eq!(tree(&native.file().artifact().root().ops)?, expected);
+    assert_eq!(tree(&native.l2ir().artifact().root().ops)?, expected);
     let Op::Element(element) = native
-        .file()
+        .l2ir()
         .artifact()
         .root()
         .ops
@@ -79,7 +79,7 @@ fn embedded_original_block_keeps_absolute_coordinates_and_identity_after_moves()
 
     assert_eq!(
         native
-            .file()
+            .l2ir()
             .units()
             .iter()
             .map(|unit| (unit.id.index(), unit.span))
@@ -97,7 +97,7 @@ fn embedded_original_block_keeps_absolute_coordinates_and_identity_after_moves()
             .as_ptr(),
         body
     );
-    assert!(core::ptr::eq(native.file().artifact().source(), source));
+    assert!(core::ptr::eq(native.l2ir().artifact().source(), source));
     let original = native.owner().node(0).ok_or("first record")?;
     let foreign = moved
         .last()
@@ -124,6 +124,6 @@ fn producer_for_move<'a>(
     .map_err(|_| "move producer")?;
     producer.walk().map_err(|_| "move walk")?;
     let native = producer.finish_markup().map_err(|_| "move native")?;
-    assert!(core::ptr::eq(native.file().artifact().source(), source));
+    assert!(core::ptr::eq(native.l2ir().artifact().source(), source));
     Ok(native)
 }

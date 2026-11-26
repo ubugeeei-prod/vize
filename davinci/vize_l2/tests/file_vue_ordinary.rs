@@ -24,7 +24,7 @@ use vize_l2::{
 mod vue_ordinary_cases;
 
 struct Observed<'a> {
-    descriptor: L1Ir<'a>,
+    l1ir: L1Ir<'a>,
     syntax: EmbedSyntax<'a>,
 }
 impl<'a> Observed<'a> {
@@ -48,10 +48,13 @@ impl<'a> Observed<'a> {
             EmbedSource::authored(source, script.block().span()).map_err(|_| "source")?,
             ProgramOptions::module(script.lang()),
         );
-        Ok(Self { descriptor, syntax })
+        Ok(Self {
+            l1ir: descriptor,
+            syntax,
+        })
     }
     fn script(&self) -> Result<ScriptView<'_, 'a>, &'static str> {
-        let admitted = self.descriptor.admitted().map_err(|_| "descriptor")?;
+        let admitted = self.l1ir.admitted().map_err(|_| "descriptor")?;
         admitted
             .ordinary()
             .or_else(|| admitted.setup())
@@ -59,8 +62,7 @@ impl<'a> Observed<'a> {
     }
     fn producer(&self, arena: &'a Allocator) -> Result<FileProducer<'a>, &'static str> {
         let script = self.script()?;
-        let mut producer =
-            FileProducer::new(arena, self.descriptor.source()).map_err(|_| "file")?;
+        let mut producer = FileProducer::new(arena, self.l1ir.source()).map_err(|_| "file")?;
         producer
             .program(
                 ProgramInput::checked(
@@ -83,10 +85,10 @@ impl<'a> Observed<'a> {
     }
     fn checked<'f>(
         &self,
-        file: &'f L2Ir<'a>,
+        l2ir: &'f L2Ir<'a>,
     ) -> Result<Result<VueOrdinaryEmpty<'f, '_, '_, 'a>, OrdinaryIssue>, &'static str> {
         Ok(VueOrdinaryEmpty::checked(
-            file,
+            l2ir,
             self.script()?,
             self.syntax.admitted_program().ok_or("Program")?,
         ))

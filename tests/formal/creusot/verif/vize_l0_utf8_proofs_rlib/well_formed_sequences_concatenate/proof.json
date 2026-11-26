@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_well_formed_sequences_concatenate": {
+        "prover": "z3",
+        "time": 0.02
+      }
+    }
+  }
+}

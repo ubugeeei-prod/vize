@@ -66,22 +66,22 @@ pub enum ProjectionError {
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_l4::{targets::ts::ProgramProjection, write::EmitDocument};
-/// fn forge(file: &L2Ir<'_>, document: EmitDocument) {
-///     let _ = ProgramProjection { file, document };
+/// fn forge(l2ir: &L2Ir<'_>, document: EmitDocument) {
+///     let _ = ProgramProjection { l2ir, document };
 /// }
 /// ```
 /// The actual File cannot be dropped while the projection is live:
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_l4::targets::ts::project_program;
-/// fn discard(file: L2Ir<'_>) {
-///     let projection = project_program(&file).unwrap();
-///     drop(file);
+/// fn discard(l2ir: L2Ir<'_>) {
+///     let projection = project_program(&l2ir).unwrap();
+///     drop(l2ir);
 ///     let _ = projection.document();
 /// }
 /// ```
 pub struct ProgramProjection<'file, 'arena> {
-    file: &'file L2Ir<'arena>,
+    l2ir: &'file L2Ir<'arena>,
     unit: &'file ScriptUnit,
     kind: SourceKind,
     document: EmitDocument,
@@ -89,8 +89,8 @@ pub struct ProgramProjection<'file, 'arena> {
 
 impl<'file, 'arena> ProgramProjection<'file, 'arena> {
     #[must_use]
-    pub fn file(&self) -> &'file L2Ir<'arena> {
-        self.file
+    pub fn l2ir(&self) -> &'file L2Ir<'arena> {
+        self.l2ir
     }
 
     #[must_use]
@@ -111,16 +111,16 @@ impl<'file, 'arena> ProgramProjection<'file, 'arena> {
 
 /// Produce a recording checker document; all authored Program bytes stay exact.
 pub fn project_program<'file, 'arena>(
-    file: &'file L2Ir<'arena>,
+    l2ir: &'file L2Ir<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
-    project::<Recorded, false>(file)
+    project::<Recorded, false>(l2ir)
 }
 
 /// Identical output without links. Diagnostic mapping explicitly refuses it.
 pub fn project_program_no_links<'file, 'arena>(
-    file: &'file L2Ir<'arena>,
+    l2ir: &'file L2Ir<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
-    project::<NoLinks, false>(file)
+    project::<NoLinks, false>(l2ir)
 }
 
 /// Preserve the whole original JSX/TSX Module through its genuine owning body.
@@ -130,7 +130,7 @@ pub fn project_program_no_links<'file, 'arena>(
 /// ```compile_fail
 /// use vize_l2::file::L2Ir;
 /// use vize_l4::targets::ts::project_jsx_program;
-/// fn forge(file: &L2Ir<'_>) { let _ = project_jsx_program(file); }
+/// fn forge(l2ir: &L2Ir<'_>) { let _ = project_jsx_program(l2ir); }
 /// ```
 /// The original owning body cannot be dropped while its projection is live:
 /// ```compile_fail
@@ -145,28 +145,28 @@ pub fn project_program_no_links<'file, 'arena>(
 pub fn project_jsx_program<'file, 'arena>(
     owner: &'file JsxFile<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
-    project::<Recorded, true>(owner.file())
+    project::<Recorded, true>(owner.l2ir())
 }
 
 /// Identical JSX/TSX output without links; diagnostic mapping refuses it.
 pub fn project_jsx_program_no_links<'file, 'arena>(
     owner: &'file JsxFile<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
-    project::<NoLinks, true>(owner.file())
+    project::<NoLinks, true>(owner.l2ir())
 }
 
 // Only the two concrete built-in sinks can mint this result. A caller-defined
 // LinkSink cannot substitute arbitrary output through into_document().
 fn project<'file, 'arena, L: LinkSink, const JSX: bool>(
-    file: &'file L2Ir<'arena>,
+    l2ir: &'file L2Ir<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
-    if !file.is_complete() {
+    if !l2ir.is_complete() {
         return Err(ProjectionError::IncompleteFile);
     }
-    let [unit] = file.units() else {
+    let [unit] = l2ir.units() else {
         return Err(ProjectionError::ProgramCount);
     };
-    let source = file.artifact().source();
+    let source = l2ir.artifact().source();
     let length = u32::try_from(source.len()).map_err(|_| ProjectionError::SourceTooLarge)?;
     let capacity = source
         .len()
@@ -179,14 +179,14 @@ fn project<'file, 'arena, L: LinkSink, const JSX: bool>(
     if !unit.profile.module || unit.profile.jsx != JSX {
         return Err(ProjectionError::UnsupportedProfile);
     }
-    if !file
+    if !l2ir
         .scopes()
         .get(unit.scope.index() as usize)
         .is_some_and(|scope| scope.id == unit.scope && scope.parent.is_none())
     {
         return Err(ProjectionError::NestedScope);
     }
-    if file.artifact().node_count() != 0 || !file.artifact().root().ops.is_empty() {
+    if l2ir.artifact().node_count() != 0 || !l2ir.artifact().root().ops.is_empty() {
         return Err(ProjectionError::TemplateOperations);
     }
     let kind = match (unit.profile.typescript, JSX) {
@@ -199,7 +199,7 @@ fn project<'file, 'arena, L: LinkSink, const JSX: bool>(
     writer.push_linked(source, unit.span);
     writer.push(MODULE_SUFFIX);
     Ok(ProgramProjection {
-        file,
+        l2ir,
         unit,
         kind,
         document: writer.finish().into_document(),

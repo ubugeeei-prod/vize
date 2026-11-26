@@ -1,0 +1,193 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Vite+ configuration consumers"
+
+on {
+  workflow_dispatch = null
+  pull_request {
+    paths = new Listing {
+      "crates/vize_carton/src/config/**"
+      "davinci/vize_l0/src/config/**"
+      "crates/vize/src/commands/fmt/**"
+      "crates/vize/src/commands/fmt.rs"
+      "npm/cli/pkl/**"
+      "npm/cli/schemas/vize.config.schema.json"
+      "tests/tooling/viteplus-formatter-*.test.*"
+      "tests/tooling/support/lsp/launch.ts"
+      "tests/differential/build-receipt.ts"
+      ".github/workflows/full-source-cli.yml"
+      ".github/scripts/workflows/full-source-cli/**"
+      ".github/actions/restore-source-cli/**"
+      ".github/workflows/08-vite-plus.yml"
+      "tools/ci/workflows/08-vite-plus/scripts/**"
+      "crates/vize/src/commands/lint/**"
+      "crates/vize/src/commands/lint.rs"
+      "tests/tooling/viteplus-lint-*.test.*"
+      "npm/builder/vite/src/**"
+      "npm/cli/src/config/**"
+      "crates/vize_carton/src/config/loader/**"
+      "npm/builder/vite/scripts/check-task-cache.ts"
+      "npm/builder/vite/scripts/task-cache-read-config.cjs"
+      "npm/builder/vite/scripts/task-cache-compare.cjs"
+      "npm/builder/vite/scripts/task-cache-fixture.ts"
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "viteplus-config-consumers-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  cli {
+    uses = "./.github/workflows/full-source-cli.yml"
+  }
+  consumers {
+    needs = "cli"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    env {
+      VIZE_SOURCE_CLI_RECEIPT_SHA256 = "${{ needs.cli.outputs.receipt-sha256 }}"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+      VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      ci.rust("stable")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        uses = "./.github/actions/restore-source-cli"
+        with { producer = "${{ toJSON(needs.cli.outputs) }}" }
+      }
+      new Dynamic {
+        name = "Verify source CLI configuration transport and file custody"
+        run = "node --test tests/tooling/viteplus-formatter-settings.test.ts tests/tooling/viteplus-formatter-cli.test.mjs"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "viteplus-config-consumers-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/differential/viteplus-formatter-settings"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+  `lint-consumers` {
+    needs = "cli"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    env {
+      VIZE_SOURCE_CLI_RECEIPT_SHA256 = "${{ needs.cli.outputs.receipt-sha256 }}"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+      VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      ci.rust("stable")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        uses = "./.github/actions/restore-source-cli"
+        with { producer = "${{ toJSON(needs.cli.outputs) }}" }
+      }
+      new Dynamic {
+        name = "Verify source CLI lint configuration transport and diagnostic custody"
+        run = "node --test tests/tooling/viteplus-lint-settings.test.ts tests/tooling/viteplus-lint-cli.test.mjs"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "viteplus-lint-consumers-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/differential/viteplus-lint-settings"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+
+  `task-cache` {
+    strategy {
+      `fail-fast` = false
+      matrix {
+        include = new Listing {
+          new Dynamic {
+            provider = "0.2.3"
+            runtime = "node"
+            installer = "npm"
+          }
+          new Dynamic {
+            provider = "1.4.0"
+            runtime = "node"
+            installer = "npm"
+          }
+          new Dynamic {
+            provider = "1.5.0"
+            runtime = "node"
+            installer = "npm"
+          }
+          new Dynamic {
+            provider = "1.5.0"
+            runtime = "bun"
+            installer = "bun"
+          }
+        }
+      }
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 12
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/08-vite-plus/scripts"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupBun
+        `if` = "${{ matrix.runtime == 'bun' }}"
+        with { `bun-version` = "1.3.14" }
+      }
+      new Dynamic {
+        name = "Check real installed tasks and cache invalidation"
+        env {
+          VIZE_TASK_CACHE_PROVIDER = "${{ matrix.provider }}"
+          VIZE_TASK_CACHE_INSTALLER = "${{ matrix.installer }}"
+          VIZE_TASK_CACHE_RUNTIME = "${{ matrix.runtime }}"
+        }
+        run = ci.workflowScript("check-installed-task-cache.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "viteplus-task-cache-${{ matrix.provider }}-${{ matrix.runtime }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/differential/viteplus-task-cache/*.json"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

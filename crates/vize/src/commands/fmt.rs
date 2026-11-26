@@ -29,6 +29,7 @@ mod lint_policy;
 mod options;
 use format_source::format_file_source;
 mod patterns;
+pub mod source_api;
 pub(crate) use files::collect_files;
 use ignores::load_fmt_ignore_set;
 pub use options::FmtPreset;
@@ -123,18 +124,7 @@ pub fn run(args: FmtArgs) {
     };
     let config_time = start.elapsed();
     let (options, vue_version, sort_imports) = build_format_options(&args, &snapshot);
-    let config_dir = snapshot
-        .project_root
-        .clone()
-        .or_else(|| {
-            snapshot
-                .loaded
-                .source_path
-                .as_deref()
-                .and_then(std::path::Path::parent)
-                .map(std::path::Path::to_path_buf)
-        })
-        .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+    let config_dir = source_api::config_dir(&snapshot);
     let whitespace_plan = config::matcher::CompilerWhitespacePlan::new(
         snapshot.compiler_whitespace,
         &snapshot.compiler_entries,

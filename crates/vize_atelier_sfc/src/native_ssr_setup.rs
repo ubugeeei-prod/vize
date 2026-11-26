@@ -119,12 +119,9 @@ fn emit<L: LinkSink>(
     let document = assemble(parts)
         .map_err(NativeSetupSsrSfcCompileError::Assembly)?
         .into_document();
-    let map = options.source_map.then(|| {
-        document.source_map(
-            options.filename,
-            observation.original().descriptor().source(),
-        )
-    });
+    let map = options
+        .source_map
+        .then(|| document.source_map(options.filename, observation.original().l1ir().source()));
     Ok(NativeSsrSfcOutput::new(document, map))
 }
 

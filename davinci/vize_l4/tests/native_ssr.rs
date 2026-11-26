@@ -54,7 +54,7 @@ fn native_complete_modules_match_pinned_ssr_function_bytes_and_original_maps() {
         let file = native_file(&arena, source);
         let original = file.artifact().provenance().to_vec();
         let analysis = build_ssr_file_decisions(&file).unwrap();
-        assert!(core::ptr::eq(analysis.file(), &file));
+        assert!(core::ptr::eq(analysis.l2ir(), &file));
         assert_eq!(
             analysis.tables().nodes.len(),
             file.artifact().node_count() as usize

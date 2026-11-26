@@ -35,7 +35,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             return false;
         };
         let authored = row.resolution().collection_authored_span();
-        let source = row.collection().file().artifact().source();
+        let source = row.collection().l2ir().artifact().source();
         // The policy holds the actual selected setup and checks same-File/unit/
         // direct-declaration membership. PrimitiveLiteral is not a numeric type.
         if self.reads.classify(occurrence, row.collection()) != Some(kind)

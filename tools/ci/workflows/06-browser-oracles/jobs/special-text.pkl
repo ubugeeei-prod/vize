@@ -1,0 +1,43 @@
+import "../../../lib/Actions.pkl" as ci
+
+`if` = "${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.special-text == 'true') }}"
+needs = "changes"
+name = "Chromium, legacy and native packets"
+`runs-on` = ci.linux
+`timeout-minutes` = 20
+steps = new Listing {
+  ...ci.stageWorkflow("06-browser-oracles")
+  ci.checkoutAt("${{ env.HEAD_SHA }}")
+  ci.rust("1.100.0")
+  ci.wild()
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "l1-document-special-text"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    uses = ci.setupVp121
+    with {
+      version = "latest"
+      `node-version-file` = "package.json"
+      `run-install` = false
+      cache = true
+      `cache-save` = false
+    }
+  }
+  new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+  new Dynamic {
+    uses = "./.github/actions/install-playwright-browsers"
+    with { workspace = "./tests" }
+  }
+  new Dynamic {
+    name = "Compare the original packet with native and legacy Rust"
+    run = ci.workflowScript("special-text-compare-the-original-packet-with-native-and-legacy-rust.sh")
+  }
+  new Dynamic {
+    name = "Compare the original packet with Chromium"
+    run = ci.workflowScript("special-text-compare-the-original-packet-with-chromium.sh")
+  }
+}

@@ -45,7 +45,7 @@ use super::super::types::{VizeMapping, VizeSubSpan};
 use vize_carton::{CompactString, FxHashMap, append, is_native_tag};
 use vize_croquis::TemplateExpression;
 use vize_relief::{
-    DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
+    DirectiveNode, ElementNode, ExpressionNode, Namespace, PropNode, RootNode, TemplateChildNode,
 };
 
 pub(crate) type NativePropBindings = FxHashMap<(u32, u32), NativePropBinding>;
@@ -61,7 +61,58 @@ enum NativePropTarget {
         tag: CompactString,
         name: CompactString,
     },
+    /// A `.prop` binding (or the `.foo` shorthand) assigns a DOM property of
+    /// the mounted element, not an attribute.
+    DomProperty {
+        tag: CompactString,
+        namespace: Namespace,
+        name: CompactString,
+    },
     Spread,
+}
+
+/// Whether a `v-bind` sets a DOM property: the `.prop` modifier, which the
+/// parser also synthesizes for the `.foo` shorthand.
+pub(crate) fn binds_dom_property(directive: &DirectiveNode<'_>) -> bool {
+    directive
+        .modifiers
+        .iter()
+        .any(|modifier| modifier.content == "prop")
+}
+
+/// The DOM property key a static `.prop` binding assigns. Vue camelizes the
+/// name only for `.camel`; `.prop` alone keeps the authored key.
+pub(crate) fn dom_property_key(directive: &DirectiveNode<'_>, name: &str) -> CompactString {
+    if directive
+        .modifiers
+        .iter()
+        .any(|modifier| modifier.content == "camel")
+    {
+        vize_carton::camelize(name).as_str().into()
+    } else {
+        name.into()
+    }
+}
+
+/// Opens a lookup of a native element's DOM interface in the tag-name map of
+/// its namespace, binding it to `__E`: `(Map extends { "tag": infer __E } ? `.
+/// The caller writes the found branch, then `: fallback)` for a tag the map
+/// does not list (a deprecated or unknown tag).
+pub(crate) fn push_dom_element_lookup(
+    output: &mut impl crate::virtual_ts::TsText,
+    tag: &str,
+    namespace: Namespace,
+) {
+    let map = match namespace {
+        Namespace::Svg => crate::virtual_ts::generated_names::lib("SVGElementTagNameMap"),
+        Namespace::MathMl => crate::virtual_ts::generated_names::lib("MathMLElementTagNameMap"),
+        _ => crate::virtual_ts::generated_names::lib("HTMLElementTagNameMap"),
+    };
+    output.push('(');
+    output.push_str(map.as_str());
+    output.push_str(" extends { ");
+    push_ts_string_literal(output, tag);
+    output.push_str(": infer __E } ? ");
 }
 
 pub(crate) fn collect_native_prop_bindings(
@@ -201,13 +252,22 @@ fn native_prop_binding(
     if !argument.is_static {
         return None;
     }
+    let target = if binds_dom_property(directive) {
+        NativePropTarget::DomProperty {
+            tag: element.tag.into(),
+            namespace: element.ns,
+            name: dom_property_key(directive, argument.content),
+        }
+    } else {
+        NativePropTarget::Property {
+            tag: element.tag.into(),
+            name: argument.content.into(),
+        }
+    };
     Some((
         (expression_location.span.start, expression_location.span.end),
         NativePropBinding {
-            target: NativePropTarget::Property {
-                tag: element.tag.into(),
-                name: argument.content.into(),
-            },
+            target,
             name_start: argument.loc.span.start,
             name_end: argument.loc.span.end,
         },
@@ -245,6 +305,21 @@ pub(super) fn generate_native_prop_statement(
             ts.push_str(">, ");
             push_ts_string_literal(ts, name.as_str());
             ts.push_str("> = ");
+        }
+        NativePropTarget::DomProperty {
+            tag,
+            namespace,
+            name,
+        } => {
+            // The value is checked against the element's DOM property type.
+            // A property the interface does not declare stays `unknown`; the
+            // unknown-name check reports its key instead.
+            ts.push_str(": ");
+            push_dom_element_lookup(ts, tag.as_str(), *namespace);
+            push_ts_string_literal(ts, name.as_str());
+            ts.push_str(" extends keyof __E ? __E[");
+            push_ts_string_literal(ts, name.as_str());
+            ts.push_str("] : unknown : unknown) = ");
         }
         NativePropTarget::Spread => ts.push_str(": object | null | undefined = "),
     }

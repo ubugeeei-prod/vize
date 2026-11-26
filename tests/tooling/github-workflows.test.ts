@@ -18,16 +18,16 @@ test("repo text helpers normalize line endings before workflow matching", () => 
 
 test("GitHub workflows opt JavaScript actions into Node 24", () => {
   for (const workflowName of [
-    "build-docs.yml",
+    "11-docs-build.yml",
     "check.yml",
     "deploy-docs.yml",
-    "miri.yml",
-    "native-smoke.yml",
+    "11-miri.yml",
+    "06-native-smoke.yml",
     "pkg-pr-new.yml",
     "release.yml",
     "title-policy.yml",
-    "tool-benchmark.yml",
-    "zizmor.yml",
+    "03-tool-comparison.yml",
+    "11-zizmor.yml",
   ]) {
     const workflow = readRepoFile(".github", "workflows", workflowName);
     assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*true/);
@@ -37,15 +37,15 @@ test("GitHub workflows opt JavaScript actions into Node 24", () => {
 test("GitHub workflows use the current cache action", () => {
   for (const relativePath of [
     ".github/actions/setup-rust-sticky-cache/action.yml",
-    ".github/workflows/benchmark.yml",
-    ".github/workflows/build-docs.yml",
+    ".github/workflows/03-source-comparison.yml",
+    ".github/workflows/11-docs-build.yml",
     ".github/workflows/check.yml",
     ".github/workflows/deploy-docs.yml",
-    ".github/workflows/e2e.yml",
-    ".github/workflows/miri.yml",
-    ".github/workflows/native-smoke.yml",
+    ".github/workflows/10-app-e2e.yml",
+    ".github/workflows/11-miri.yml",
+    ".github/workflows/06-native-smoke.yml",
     ".github/workflows/release.yml",
-    ".github/workflows/tool-benchmark.yml",
+    ".github/workflows/03-tool-comparison.yml",
   ]) {
     const file = readRepoFile(...relativePath.split("/"));
     assert.doesNotMatch(file, /uses:\s*actions\/cache@v4/, `${relativePath} still uses cache v4`);
@@ -108,7 +108,7 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
   assert.deepEqual(violations, []);
 
   const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
-  const nativeWorkflow = readRepoFile(".github", "workflows", "native-smoke.yml");
+  const nativeWorkflow = readRepoFile(".github", "workflows", "06-native-smoke.yml");
   const releasePlatforms = readRepoFile("tools", "support", "github", "release-platforms.ts");
 
   // check.yml runs every job on the same Linux runner — we accept either the
@@ -204,10 +204,10 @@ test("title policy workflow mutates only issue and PR metadata", () => {
   assert.match(workflow, /pull-requests:\s*write/);
   assert.match(job, /timeout-minutes:\s*5/);
   assert.match(job, /ref:\s*\$\{\{\s*github\.event\.repository\.default_branch\s*\}\}/);
-  assert.deepEqual(sparseCheckoutEntries, ["tools/commands/ci/github/issue-pr-title-policy.ts"]);
+  assert.deepEqual(sparseCheckoutEntries, ["tools/ci/commands/github/issue-pr-title-policy.ts"]);
   assert.match(job, /uses:\s*actions\/setup-node@[0-9a-f]{40}/);
   assert.match(job, /node-version:\s*"24\.14\.0"/);
-  assert.match(job, /node tools\/commands\/ci\/github\/issue-pr-title-policy\.ts/);
+  assert.match(job, /node tools\/ci\/commands\/github\/issue-pr-title-policy\.ts/);
   assert.doesNotMatch(job, /setup-rust-script|rust-script|rust-toolchain/);
   assert.doesNotMatch(job, /\.github\/actions\/setup-moonbit/);
   assert.doesNotMatch(job, /tools\/moon\/cmd\/github\/issue_pr_title_policy/);
@@ -223,7 +223,7 @@ test("title policy workflow mutates only issue and PR metadata", () => {
 });
 
 test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", () => {
-  const workflow = readRepoFile(".github", "workflows", "e2e.yml");
+  const workflow = readRepoFile(".github", "workflows", "10-app-e2e.yml");
   const job = workflowJobBody(workflow, "testbox");
   const appPlanJob = workflowJobBody(workflow, "app-e2e-plan");
   const appJob = workflowJobBody(workflow, "app-e2e");
@@ -274,14 +274,14 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
   });
   assert.equal(recoveryAction.inputs["wild-version"].default, "0.9.0");
   for (const relativePath of [
-    ".github/workflows/benchmark.yml",
-    ".github/workflows/build-docs.yml",
+    ".github/workflows/03-source-comparison.yml",
+    ".github/workflows/11-docs-build.yml",
     ".github/workflows/check.yml",
-    ".github/workflows/criterion-bench.yml",
+    ".github/workflows/03-criterion.yml",
     // App E2E runs every row through the shared composite action.
     ".github/actions/app-e2e-row/action.yml",
-    ".github/workflows/native-smoke.yml",
-    ".github/workflows/tool-benchmark.yml",
+    ".github/workflows/06-native-smoke.yml",
+    ".github/workflows/03-tool-comparison.yml",
     // Release CLIs link with zig (GNU, at the glibc floor) or rust-lld (musl), never Wild.
     ".github/actions/build-release-native/action.yml",
     ".github/workflows/full-source-cli.yml",
@@ -316,13 +316,13 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
   assert.match(action, /secondary-target-path/);
 
   for (const workflowName of [
-    "build-docs.yml",
+    "11-docs-build.yml",
     "check.yml",
-    "criterion-bench.yml",
-    "fuzz.yml",
-    "miri.yml",
+    "03-criterion.yml",
+    "11-fuzz.yml",
+    "11-miri.yml",
     "release.yml",
-    "tool-benchmark.yml",
+    "03-tool-comparison.yml",
   ]) {
     const workflow = readRepoFile(".github", "workflows", workflowName);
     assert.match(
@@ -336,7 +336,7 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
       `${workflowName} should avoid network Rust cache on Linux-only Blacksmith jobs`,
     );
   }
-  const e2e = parse(readRepoFile(".github", "workflows", "e2e.yml")) as {
+  const e2e = parse(readRepoFile(".github", "workflows", "10-app-e2e.yml")) as {
     jobs: Record<string, { steps?: Array<{ uses?: string }> }>;
   };
   assert.ok(
@@ -350,14 +350,14 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
     /uses:\s*\.\/\.github\/actions\/setup-rust-sticky-cache/,
   );
 
-  const benchmarkWorkflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  const benchmarkWorkflow = readRepoFile(".github", "workflows", "03-source-comparison.yml");
   assert.match(benchmarkWorkflow, /uses:\s*\.\/head\/\.github\/actions\/setup-rust-sticky-cache/);
   assert.match(benchmarkWorkflow, /target-path:\s*head\/target/);
   assert.match(benchmarkWorkflow, /secondary-target-path:\s*base\/target/);
   assert.doesNotMatch(benchmarkWorkflow, /Swatinem\/rust-cache/);
 
   for (const relativePath of [
-    ".github/workflows/native-smoke.yml",
+    ".github/workflows/06-native-smoke.yml",
     ".github/actions/build-release-cli/action.yml",
     ".github/actions/build-release-native/action.yml",
   ]) {

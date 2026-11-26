@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const scriptPath = path.join(root, "tools", "commands", "ci", "npm-audit-retry.ts");
+const scriptPath = path.join(root, "tools", "ci", "commands", "npm-audit-retry.ts");
 const temporaryDirectories: string[] = [];
 
 after(() => {
@@ -29,8 +29,8 @@ test("npm audit command retries transient transport failures", () => {
 
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(readArgs(fixture.argsFile), [
-    ["node", "tools/commands/ci/npm-audit.ts"],
-    ["node", "tools/commands/ci/npm-audit.ts"],
+    ["node", "tools/ci/commands/npm-audit.ts"],
+    ["node", "tools/ci/commands/npm-audit.ts"],
   ]);
   assert.match(result.stderr, /attempt 1 failed; retrying/);
 });

@@ -139,7 +139,7 @@ pub(super) fn run(
         let module_sources = module_links::admit(&syntax, block, &file);
         let query = RetainedNavigation {
             snapshot: &snapshot,
-            file: &file,
+            l2ir: &file,
             lines: &lines,
             native: None,
             intrinsic_tags: &intrinsic_tags.0,
@@ -241,7 +241,7 @@ fn serve(
                     let result = query.offset(position).and_then(|offset| {
                         let binding = query.binding(offset)?;
                         Ok(super::worker::Inspection {
-                            file: core::ptr::from_ref(query.file) as usize,
+                            file: core::ptr::from_ref(query.l2ir) as usize,
                             program: query.original.program,
                             statements: query.original.statements,
                             declaration: binding
@@ -275,7 +275,7 @@ struct Original {
 
 struct RetainedNavigation<'file, 'arena> {
     snapshot: &'file SourceSnapshot,
-    file: &'file L2Ir<'arena>,
+    l2ir: &'file L2Ir<'arena>,
     lines: &'file [usize],
     native: Option<vize_l1_to_l2::native_file::NativeSfc<'file, 'arena>>,
     intrinsic_tags: &'file [(&'arena str, Span)],
@@ -302,7 +302,7 @@ impl<'file, 'arena> RetainedNavigation<'file, 'arena> {
                 .binding_at_offset(offset)
                 .map_err(NavigationRefusal::NativeQuery);
         }
-        Model::new(self.file)
+        Model::new(self.l2ir)
             .binding_at_offset(offset)
             .map_err(NavigationRefusal::Query)
     }
@@ -330,7 +330,7 @@ impl<'file, 'arena> RetainedNavigation<'file, 'arena> {
                 .for_each_reference_to(binding, |reference| spans.push(reference.span()))
                 .map_err(NavigationRefusal::NativeQuery)?;
         } else {
-            Model::new(self.file)
+            Model::new(self.l2ir)
                 .for_each_reference_to(binding, |reference| spans.push(reference.reference().span));
         }
         if include_declaration {

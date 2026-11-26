@@ -78,10 +78,10 @@ fn original_text_comment_order_and_owning_file_survive_move() -> Result<(), &'st
     let analysis =
         build_template_dom_decisions(output.view().map_err(|_| "view")?).map_err(|_| "analysis")?;
     check(core::ptr::eq(analysis.owner(), &output))?;
-    check(core::ptr::eq(analysis.file(), output.file().ok_or("file")?))?;
+    check(core::ptr::eq(analysis.l2ir(), output.file().ok_or("file")?))?;
     check(core::ptr::eq(
         analysis.artifact(),
-        analysis.file().artifact(),
+        analysis.l2ir().artifact(),
     ))?;
     check(analysis.artifact().source() == source)?;
     check(analysis.policy() == TargetPolicy::Dom)?;

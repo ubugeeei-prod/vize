@@ -61,14 +61,14 @@ fn completed<'a>(
     }
     Ok(original.finish())
 }
-fn element<'f, 'a>(file: &'f L2Ir<'a>, index: usize) -> Result<&'f ElementOp<'a>, &'static str> {
-    match file.artifact().root().ops.get(index) {
+fn element<'f, 'a>(l2ir: &'f L2Ir<'a>, index: usize) -> Result<&'f ElementOp<'a>, &'static str> {
+    match l2ir.artifact().root().ops.get(index) {
         Some(Op::Element(element)) => Ok(element),
         _ => Err("actual Element"),
     }
 }
-fn node(file: &L2Ir<'_>, index: usize) -> Result<NodeId, &'static str> {
-    match file
+fn node(l2ir: &L2Ir<'_>, index: usize) -> Result<NodeId, &'static str> {
+    match l2ir
         .native_attribute_values()
         .get(index)
         .ok_or("original row")?
@@ -118,7 +118,7 @@ fn original_title_family_keeps_same_file_full_preparation_in_each_sole_target_wa
             vapor.original_attributes(),
         ] {
             let facts = facts.ok_or("native whole-row receipt")?;
-            check(core::ptr::eq(facts.file(), file) && facts.len() == 1)?;
+            check(core::ptr::eq(facts.l2ir(), file) && facts.len() == 1)?;
             let value = facts
                 .value(0, actual, 0)
                 .ok_or("actual slot")?
@@ -149,7 +149,7 @@ fn bare_none_empty_unknown_and_nested_unicode_slots_consume_only_their_actual_ro
     let analysis = template::build_template_dom_decisions(original.view().map_err(|_| "view")?)
         .map_err(|_| "cursor")?;
     let facts = analysis.original_attributes().ok_or("normal finish")?;
-    check(facts.len() == 4 && core::ptr::eq(facts.file(), file))?;
+    check(facts.len() == 4 && core::ptr::eq(facts.l2ir(), file))?;
     let parent = element(file, 0)?;
     let [Op::Element(child)] = parent.children.ops.as_slice() else {
         return Err("nested actual Element");

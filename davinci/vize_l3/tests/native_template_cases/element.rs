@@ -21,7 +21,7 @@ fn selected_nested_html_retains_exact_ops_spans_decisions_and_dependency_order()
         build_template_dom_decisions(output.view().map_err(|_| "view")?).map_err(|_| "analysis")?;
     let file = output.file().ok_or("original File")?;
     check(core::ptr::eq(analysis.owner(), &output))?;
-    check(core::ptr::eq(analysis.file(), file))?;
+    check(core::ptr::eq(analysis.l2ir(), file))?;
     check(core::ptr::eq(analysis.artifact(), file.artifact()))?;
     check(core::ptr::eq(analysis.artifact().source(), SOURCE))?;
     check(file.is_complete())?;

@@ -40,6 +40,9 @@ const compileTsrxExport = "module.exports.compileTsrx = nativeBinding.compileTsr
 // Builds compile a batch for their client and SSR environments in one call.
 const compileForTargetsExport =
   "module.exports.compileSfcBatchForTargets = nativeBinding.compileSfcBatchForTargets;\n";
+const formatFileExports =
+  "module.exports.formatFile = nativeBinding.formatFile;\n" +
+  "module.exports.formatFileSync = nativeBinding.formatFileSync;\n";
 const sha256 = (body: Buffer | string) => createHash("sha256").update(body).digest("hex");
 
 // native-binding.js gained load-failure diagnostics (the glibc floor, dlopen
@@ -178,6 +181,19 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
     2,
     "plugin plan registration retains its canonical initialization position",
   );
+  // Earlier approved facades omit this addition; both must reduce to the
+  // same complete historical program below.
+  if (text.includes(formatFileExports)) {
+    assert.equal(
+      text.split(
+        "module.exports.flattenDesignTokenCategories = nativeBinding.flattenDesignTokenCategories;\n" +
+          formatFileExports +
+          "module.exports.formatSfc = nativeBinding.formatSfc;\n",
+      ).length,
+      2,
+      "source formatting exports retain their canonical initialization position",
+    );
+  }
   const before =
     "module.exports.typeCheckWithVirtualTsVisitors = nativeBinding.typeCheckWithVirtualTsVisitors;\n";
   const after =
@@ -197,6 +213,7 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
       .replace(compileTsrxExport, "")
       .replace(registerPluginPlanExport, "")
       .replace(compileForTargetsExport, "")
+      .replace(formatFileExports, "")
       .replace(addedExports, ""),
   );
   assert.equal(original.length, reference.bytes, "complete original native loader length");

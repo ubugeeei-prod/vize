@@ -1,0 +1,7 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"sed -i -f "$VIZE_CI_FILES/drop-wild-rustflags.sed" "$HOME/.cargo/config.toml" || true"#
+}

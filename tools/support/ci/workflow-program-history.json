@@ -1,51 +1,51 @@
 {
-  "content-mapper-conformance": {
+  "04-content-mapper-conformance": {
     "before": "af3a0c9c81dd1a48f790ea66feced0945e59278eeb8f063a67b83cab62ef4cc1",
-    "workflow": "0ad2a9bab9cedcd7b1b07c61ff8d62a769df4f0092ffa192871740242e2175a7",
+    "workflow": "52ee8adc41fe9d086578bc259d8283a70fb67d3d80f489b33e2ed9eb248cad34",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
-      ".github/scripts/workflows/content-mapper-conformance/build-exact-upstream-tsgo.sh",
-      ".github/scripts/workflows/content-mapper-conformance/build-packed-content-mapper-runtime.sh",
-      ".github/scripts/workflows/content-mapper-conformance/nuxt-membership-require-every-executed-native-stock-and-graph-control.sh",
-      ".github/scripts/workflows/content-mapper-conformance/nuxt-membership-verify-membership-controls.ts",
-      ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.sh",
-      ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.ts",
-      ".github/scripts/workflows/content-mapper-conformance/run-authored-syntax-and-setup-binding-conformance.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-content-mapper-lsp-and-virtual-overlay-editor-checks.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-importer-scoped-package-resolution-matrix.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-standard-project-and-declaration-conformance.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-standard-tsgo-through-fresh-installed-package-tarballs.sh",
-      ".github/scripts/workflows/content-mapper-conformance/run-ts-40-current-projection-baselines.sh",
-      ".github/scripts/workflows/content-mapper-conformance/stress-every-editor-case-against-its-exact-native-provider.sh",
-      ".github/scripts/workflows/content-mapper-conformance/stress-every-editor-case-against-its-exact-native-provider.ts",
-      ".github/scripts/workflows/content-mapper-conformance/verify-targeted-source.sh",
-      ".github/scripts/workflows/content-mapper-conformance/verify-upstream-content-mapper-protocol-regressions.sh",
-      ".github/scripts/workflows/shared/files.ts"
+      "tools/ci/lib/scripts/files.ts",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/build-exact-upstream-tsgo.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/build-packed-content-mapper-runtime.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/nuxt-membership-require-every-executed-native-stock-and-graph-control.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/nuxt-membership-verify-membership-controls.ts",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/retain-exact-native-host-identity-before-conformance.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/retain-exact-native-host-identity-before-conformance.ts",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-authored-syntax-and-setup-binding-conformance.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-content-mapper-lsp-and-virtual-overlay-editor-checks.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-importer-scoped-package-resolution-matrix.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-standard-project-and-declaration-conformance.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-standard-tsgo-through-fresh-installed-package-tarballs.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/run-ts-40-current-projection-baselines.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/stress-every-editor-case-against-its-exact-native-provider.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/stress-every-editor-case-against-its-exact-native-provider.ts",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/verify-targeted-source.sh",
+      "tools/ci/workflows/04-content-mapper-conformance/scripts/verify-upstream-content-mapper-protocol-regressions.sh"
     ],
-    "closure": "c6ff746f584346737c9738cb3e68df2f420d1a2c19b3e58ff62b07364ff475e0"
+    "closure": "f84b88f556abc844032558c39537e36934deee49c8233a0f048ff5978ada75c4"
   },
-  "native-smoke": {
+  "06-native-smoke": {
     "before": "dfcea2b5fd581d6e18d08cbefdbdbda26a46dd63df02dc672a7ae13cfcc7f9c0",
-    "workflow": "59d742b4fb2dfccc097dd441e73a31b99e31e4ccb6e8b518f6daa0629b9cccfd",
+    "workflow": "9b164e99171d77e81ba2ead0adf2b5687a44c2ec470d87b5e31dea7bdd10c350",
     "programs": [
-      ".github/scripts/workflows/native-smoke/build-npm-runtime-packages.sh",
-      ".github/scripts/workflows/native-smoke/fresh-install-and-runtime-smoke-in-alpine.sh",
-      ".github/scripts/workflows/native-smoke/fresh-install-and-runtime-smoke-published-tarballs.sh",
-      ".github/scripts/workflows/native-smoke/fresh-packed-nuxt-init-check-and-lsp-smoke.sh",
-      ".github/scripts/workflows/native-smoke/install-package-dependencies.sh",
-      ".github/scripts/workflows/native-smoke/prepare-the-musl-native-platform-package.sh",
-      ".github/scripts/workflows/native-smoke/read-the-package-version.cjs",
-      ".github/scripts/workflows/native-smoke/read-the-package-version.sh",
-      ".github/scripts/workflows/native-smoke/smoke-cli.sh",
-      ".github/scripts/workflows/native-smoke/smoke-in-alpine-container.sh",
-      ".github/scripts/workflows/native-smoke/smoke-vizejs-native.cjs"
+      "tools/ci/workflows/06-native-smoke/scripts/build-npm-runtime-packages.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/fresh-install-and-runtime-smoke-in-alpine.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/fresh-install-and-runtime-smoke-published-tarballs.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/fresh-packed-nuxt-init-check-and-lsp-smoke.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/install-package-dependencies.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/prepare-the-musl-native-platform-package.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/read-the-package-version.cjs",
+      "tools/ci/workflows/06-native-smoke/scripts/read-the-package-version.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/smoke-cli.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/smoke-in-alpine-container.sh",
+      "tools/ci/workflows/06-native-smoke/scripts/smoke-vizejs-native.cjs"
     ],
-    "closure": "d54d23f7bcfa04bbe3da74ee5107a14dbef0c77bf6f227aae6006e0e46279d6a"
+    "closure": "7ebdd00a168e67bbe0aa955e9429d00e3f071febedc1cf04389d0d41d1429172"
   },
   "native-beta-diagnostic-dto": {
     "before": "5ffa8d324be8757ee3293ec178ca097b1f20e1f50845f83cd370f50f185a8310",
-    "workflow": "cc91a27e03aab752c3eb2ba788d265234b7f07d7874dcd611abb8ad377eeae8d",
+    "workflow": "413409cf8edcc121634455ff356905894a07c3ee76dde5f1f856c8c42871b7e8",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
@@ -53,16 +53,16 @@
       ".github/scripts/workflows/native-beta-diagnostic-dto/install-exact-official-sdk-into-an-isolated-consumer.sh",
       ".github/scripts/workflows/native-beta-diagnostic-dto/keep-strict-known-dto-unknown-fields-source-ownership-and-both-envelope.sh"
     ],
-    "closure": "e052895acdf8d6d4cad805ff43c69d40e8793cd36bd80b81fb13738266e9d621"
+    "closure": "131742160cf23a0b3e8776b94b0332cec7777ef4c634c3b8bde6fbacddc54f77"
   },
   "release-contracts": {
     "before": "09b8a95b6712a565f5ce782707bf0409189aabf30127b968efcdfce76eac47c3",
     "workflow": "dd4cfd52c62a1d5caf48fba5f1c199c671a4ff00c804e0bfef8a077255f7601b",
     "programs": [
       ".github/scripts/workflows/release-contracts/test-release-pipeline.sh",
-      ".github/scripts/workflows/shared/files.ts"
+      "tools/ci/lib/scripts/files.ts"
     ],
-    "closure": "f178af2429deae6021cfce00adee6e2325448065df39e1b6a19efb2c4786f955"
+    "closure": "a5d08ad4461757dfbec76b90d91546a39790cf9216c118dbc1088b32e1490c13"
   },
   "language-project-fixtures": {
     "before": "b65d5501a7657919f10949f6b721967460dfa76d1bc24c95d53cc2eaf153374a",
@@ -72,7 +72,7 @@
   },
   "typescript-plugin": {
     "before": "8e175b8a01082bc72fc3e6bfb73af101c338618f7ddc8685745fc556c0fe5b78",
-    "workflow": "8d854362247857dad95c31d86c7e37e9eb8fd7a44e1729dadb0eac0f3f2aea5b",
+    "workflow": "c770e894f87cc4ee5496ebbd404d720a52245c8c366a05ecedc80c3d8a892bec",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
@@ -80,15 +80,14 @@
       ".github/scripts/workflows/typescript-plugin/package-the-same-canonical-plugin-in-a-production-vsix.sh",
       ".github/scripts/workflows/typescript-plugin/retain-the-attempted-source-even-if-setup-fails.sh"
     ],
-    "closure": "9e9948278c85761d82162d2884d876578cbc30e3009d7388ea90f99d6a571c74"
+    "closure": "da46740acb52ca5a4d9b8a386423c16a069452dbdbed598be40467e95a60e8f1"
   },
   "typescript-provider-vsix": {
     "before": "d22338f949d4e20c373c8a7feab76b19d07c2a297858b2336a41e3401ec9e46e",
-    "workflow": "a92175e43e68a4e0034f44e5982d8304594cecbea0497a093507482dad08fe95",
+    "workflow": "474a4b8070052cbd3e819b504fb064b311fb933ea8f3efafcdfc544f8af4d6ee",
     "programs": [
       ".github/actions/stage-workflow-scripts/action.yml",
       ".github/actions/stage-workflow-scripts/stage.ts",
-      ".github/scripts/workflows/shared/files.ts",
       ".github/scripts/workflows/typescript-provider-vsix/collect-only-this-image.sh",
       ".github/scripts/workflows/typescript-provider-vsix/collect-only-this-image.ts",
       ".github/scripts/workflows/typescript-provider-vsix/ensure-the-linux-virtual-display.sh",
@@ -97,8 +96,9 @@
       ".github/scripts/workflows/typescript-provider-vsix/preserve-and-qualify-the-universal-metadata-only-artifact.sh",
       ".github/scripts/workflows/typescript-provider-vsix/read-exact-source-toolchain-and-version.sh",
       ".github/scripts/workflows/typescript-provider-vsix/read-exact-source-toolchain-and-version.ts",
-      ".github/scripts/workflows/typescript-provider-vsix/run-the-actual-installed-platform-extension.sh"
+      ".github/scripts/workflows/typescript-provider-vsix/run-the-actual-installed-platform-extension.sh",
+      "tools/ci/lib/scripts/files.ts"
     ],
-    "closure": "142b40f6f1c08d3c26c4daf3bdb8ff5e53a21f1aef72eee3bf81f6a1e913b3ce"
+    "closure": "b9dbe94593be5629ea57d9ad1ec6e0b29981c7ecb79555a267faa6e87927de18"
   }
 }

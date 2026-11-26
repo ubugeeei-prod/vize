@@ -84,7 +84,7 @@ fn checked_cache_payload_owns_the_filter() {
         r#"<KeepAlive include="First"><First /></KeepAlive>"#,
     );
     let include = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| {

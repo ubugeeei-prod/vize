@@ -36,5 +36,5 @@ export function workspaceTaskSteps(config: TaskConfig): readonly PackageCommand[
 export function nameWorkspaceTask(name: string, config: TaskConfig): void {
   if (typeof config !== "object" || config === null || !plans.has(config)) return;
   if ("command" in config && config.command === "")
-    config.command = "node tools/commands/ci/workspace-task.ts " + name;
+    config.command = "node tools/ci/commands/workspace-task.ts " + name;
 }

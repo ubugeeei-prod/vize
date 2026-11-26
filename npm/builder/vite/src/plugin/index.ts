@@ -20,6 +20,7 @@ import { precompileInputOwners } from "./precompile-owner.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { withResolveFilter } from "./resolve-filter.ts";
 import { LOAD_ID_FILTER, TRANSFORM_ID_FILTER, loadHook, transformHook } from "./load.ts";
+import { buildWatchScope, resetBuildWatches } from "./dependency-watches.ts";
 import { getSfcModuleRequest, requestResolvedSfc, transformSfcModule } from "./sfc-module.ts";
 import { resetDemandCompiles, setCompileInputOwners } from "./demand-compile.ts";
 import { noteEnvironmentClosed, noteEnvironmentStarted } from "./sibling-compiles.ts";
@@ -125,6 +126,7 @@ export function vize(
         return transformSfcModule(state, code, sfc, {
           ssr: resolveHookSsr(this, transformOptions),
           addWatchFile: this.addWatchFile.bind(this),
+          buildWatchScope: buildWatchScope(this),
           resolve: (request, importer) => this.resolve(request, importer, { skipSelf: true }),
           environment: this.environment,
         });
@@ -319,6 +321,7 @@ export function vize(
       startedEnvironments.add(environment);
       noteEnvironmentStarted(this.environment);
       resetTypeProjectWatches(state.cache);
+      resetBuildWatches(this.environment);
       state.viteResolveCache?.clear();
       const inputOwners = precompileInputOwners(this, precompileConfig);
       setCompileInputOwners(state, inputOwners);

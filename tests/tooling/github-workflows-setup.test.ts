@@ -105,7 +105,7 @@ test("docs build isolates musea example cargo checks in a dedicated sticky disk"
     "musea example check script must use the dedicated docs example target",
   );
 
-  const workflow = readAutomationPrograms(".github", "workflows", "build-docs.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "11-docs-build.yml");
   const job = workflowJobBody(workflow, "build-playground");
   assert.match(job, /secondary-key: docs-example/);
   assert.match(job, /secondary-target-path: \.docs-example-target/);
@@ -127,7 +127,7 @@ test("WASM build jobs set up Node before invoking the TypeScript builders", () =
       command: "run: node tools/support/github/build-vitrine-wasm.ts playground/src/wasm",
     },
     {
-      workflowName: "build-docs.yml",
+      workflowName: "11-docs-build.yml",
       jobName: "build-playground",
       setup: "- name: Setup Vite+ and Node.js",
       command: "run: node tools/support/github/build-vitrine-wasm.ts npm/wasm playground/src/wasm",
@@ -171,7 +171,7 @@ test("setup-rust-script pins Windows MSVC linkers before cargo install", () => {
 });
 
 test("native smoke workflow covers host platforms before release tags", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "native-smoke.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "06-native-smoke.yml");
   const job = workflowJobBody(workflow, "host-native-smoke");
 
   assert.match(workflow, /workflow_dispatch:/);
@@ -195,17 +195,17 @@ test("native smoke workflow covers host platforms before release tags", () => {
   assert.match(job, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.match(
     job,
-    /node tools\/commands\/ci\/github\/verify-glibc-symbols\.ts --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/,
+    /node tools\/ci\/commands\/github\/verify-glibc-symbols\.ts --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/,
   );
   assert.match(
-    workflowProgram("native-smoke", job, "smoke-vizejs-native.cjs"),
+    workflowProgram("06-native-smoke", job, "smoke-vizejs-native.cjs"),
     /requireFromWorkspace\("\.\/npm\/native"\)/u,
   );
   assert.match(job, /smoke-release-install\.ts --prepare-manifests npm\/native/);
 });
 
 test("native smoke workflow fresh-installs runtime tarballs across supported targets", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "native-smoke.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "06-native-smoke.yml");
   const parsed = parse(workflow) as { jobs?: Record<string, WorkflowJob> };
   const parsedJob = parsed.jobs?.["fresh-install-smoke"];
   const job = workflowJobBody(workflow, "fresh-install-smoke");

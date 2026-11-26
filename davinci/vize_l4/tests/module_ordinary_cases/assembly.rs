@@ -85,7 +85,7 @@ fn genuine_script_only_module_copies_leading_object_and_tail_once_without_setup(
         emitted.text.get(links[1].generated.end as usize..),
         Some("export default _sfc_main\n"),
     )?;
-    check(core::ptr::eq(view.file(), &file))?;
+    check(core::ptr::eq(view.l2ir(), &file))?;
     check(core::ptr::eq(view.source().root_source(), source))?;
     check(!plain.into_document().is_recording())?;
     Ok(())

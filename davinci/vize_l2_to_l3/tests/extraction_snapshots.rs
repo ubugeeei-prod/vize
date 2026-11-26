@@ -32,24 +32,24 @@ fn decisions(source: &str, tier: OptTier) -> String {
     let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let mut lowered = lower(&allocator, &s2.artifact.root);
-    let graph = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);
+    let graph = L3Page::of(&lowered.l3ir).print_to_string(DumpMode::Full);
 
     let detached = {
         let mut copy = lower(&allocator, &s2.artifact.root);
-        optimize(&mut copy.program, tier, &mut NoObserver).expect("closed pipeline")
+        optimize(&mut copy.l3ir, tier, &mut NoObserver).expect("closed pipeline")
     };
     let mut collector = RemarkCollector::new();
-    let extraction = optimize(&mut lowered.program, tier, &mut collector).expect("closed pipeline");
+    let extraction = optimize(&mut lowered.l3ir, tier, &mut collector).expect("closed pipeline");
 
     assert_eq!(extraction, detached);
 
-    assert_eq!(verify(&lowered.program), []);
-    assert_eq!(lowered.partition.stale(&lowered.program), None);
+    assert_eq!(verify(&lowered.l3ir), []);
+    assert_eq!(lowered.partition.stale(&lowered.l3ir), None);
     assert_eq!(
-        L3Page::of(&lowered.program).print_to_string(DumpMode::Full),
+        L3Page::of(&lowered.l3ir).print_to_string(DumpMode::Full),
         graph
     );
-    let mut output = PlacementPage::of(&lowered.program).print_to_string(DumpMode::Full);
+    let mut output = PlacementPage::of(&lowered.l3ir).print_to_string(DumpMode::Full);
     output.push_str(
         ExtractionPage::of(&extraction)
             .print_to_string(DumpMode::Full)

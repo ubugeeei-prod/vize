@@ -51,6 +51,9 @@ class FormatterConfig {
   /// Quote properties mode (default: "as-needed").
   quoteProps: ("as-needed"|"consistent"|"preserve")? = null
 
+  /// Keep objects multiline when a newline follows the opening brace, or collapse them (default: "preserve").
+  objectWrap: ("preserve"|"collapse")? = null
+
   /// Force one attribute per line (default: false).
   singleAttributePerLine: Boolean? = null
 

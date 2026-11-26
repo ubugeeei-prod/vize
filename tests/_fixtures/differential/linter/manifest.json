@@ -22538,6 +22538,53 @@
       }
     },
     {
+      "id": "linter/no-empty-pattern-slot-scope-dispatch-13703",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-empty-pattern-slot-scope-dispatch-13703",
+        "files": [
+          {
+            "path": "Dispatch.vue.txt",
+            "role": "full-registry-and-filtered-mixed-facade-dispatch-control",
+            "sha256": "296ff73554b218aa5ae1c7441cf8f597b51f6713e4bbf62d83420ab5fd69db45"
+          },
+          {
+            "path": "original-drag-table.vue.txt",
+            "role": "pinned-real-project-original",
+            "sha256": "5a18279a18b3e9be581e5a5ca99ba054f1b6934a6bc9b7880a0293902fbbc559"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "395dc85cee0a8cd18cb2a095001bfefe17109f0acb92b9c117b42065670c255b"
+          },
+          {
+            "path": "source-provenance.json",
+            "role": "pinned-real-project-source-provenance",
+            "sha256": "6a10475f71a43f55ce0a332e735a41621892fe5fd88fe3971dfbdfa1c855a897"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-implied-eval-callable-13000",
       "state": "active",
       "targets": [
@@ -25302,6 +25349,42 @@
       }
     },
     {
+      "id": "linter/relative-has-selectors",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "relative-has-selectors",
+        "files": [
+          {
+            "path": "Foo.vue.txt",
+            "role": "third-party-relative-has-reproduction",
+            "sha256": "827d4d1edbee26c1cc5cc68a2a08e201df646acfd7631496ca4ebc362d09bdb0"
+          },
+          {
+            "path": "selectors.json",
+            "role": "third-party-relative-has-reproduction",
+            "sha256": "6cd337595f6a4bbda55f7813d7ae53c050352549bb39de6498ecb66dbc83d252"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/repeated-macro-groups-10610",
       "state": "active",
       "targets": [
@@ -27986,6 +28069,109 @@
             "selector": "linter manifest pinned authored sources"
           }
         ]
+      }
+    }
+  ],
+  "rustApiCases": [
+    {
+      "id": "linter/rust-api/native-ir-accessors-13674",
+      "state": "active",
+      "adapter": "patina-native-ir-accessor-compatibility-v1",
+      "targets": [
+        "rust-api"
+      ],
+      "inputs": {
+        "root": "native-ir-accessor-compatibility-13674",
+        "files": [
+          {
+            "path": "tests/_fixtures/differential/linter/native-ir-accessor-compatibility-13674/cases.json",
+            "role": "getter-contract",
+            "sha256": "eddc4d895ebe62af5e27cc516c24a9218929ca7f54e60da90e0db5046fbd1802"
+          },
+          {
+            "path": "crates/vize_patina/tests/native_ir_accessor_compat.rs",
+            "role": "required-rust-consumer",
+            "sha256": "6bb113c95205e96ca08da77925c27cee3251bbb832ef5b2b34cdca20bc4947b5"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "crates/vize_patina/Cargo.toml",
+          "before": "cc18cbfda5a62c25c26becc256e84cc0cf38a513458bd5ec25494b77e72eeb0a",
+          "after": "cc18cbfda5a62c25c26becc256e84cc0cf38a513458bd5ec25494b77e72eeb0a",
+          "beforeBlob": "82f140b193f83cfef4b52266a1c7353df9c67b60",
+          "afterBlob": "82f140b193f83cfef4b52266a1c7353df9c67b60"
+        },
+        {
+          "path": "crates/vize_patina/src/native/canonical.rs",
+          "before": "2265d2e4d8b5256c79f0af255722547e6d041625c9d9579e0e835be7278ed78d",
+          "after": "b83dcf8515bc6ce496b36bf27fcef7ff05b747b855495f226d092bcea3d63aca",
+          "beforeBlob": "3eea9726453a5722846327831deac71131814771",
+          "afterBlob": "67edc985d55e071fd9cd3e18dbabd52b68d25487"
+        },
+        {
+          "path": "crates/vize_patina/src/native/sfc/owner.rs",
+          "before": "d4a6114c7910e3e6dc5835201dc072df458a7e2a57e8fe12d3360c5e11fb4348",
+          "after": "26e6de88fc0fc3775cdc52f983ddcef71dfbfd9810616397d27d1afaf29ff2ba",
+          "beforeBlob": "b3d42282d9d409ad3c4fb59e1d63fa8fedf74f95",
+          "afterBlob": "a0106ca31e39772844cdbc04ca8058691cc2e086"
+        },
+        {
+          "path": "crates/vize_patina/src/native/sfc/template/owner.rs",
+          "before": "7cdc02f191d5efb61439a2f80d66adb7e1f0739ba2583b0db90c9dc4dd4a67d9",
+          "after": "0b9e221b9590f6227b69dc87805999a1bdf414934c30e8ac0a2ce1330a1c1293",
+          "beforeBlob": "1b4f192479342a1ac66e7d83925f8af73f364112",
+          "afterBlob": "b0c07093d2b234fc6d2499daf830041adf80afc1"
+        },
+        {
+          "path": "crates/vize_patina/src/native/sfc/tests/ownership.rs",
+          "before": "a01a66817e3c8af1ff676ae80e25882b92fd1a89de7287b14ef3698c46136984",
+          "after": "f38174d54e2dbe2566c689ad7c35034497dc2d1c89fe445d0781e34f4e125a5e",
+          "beforeBlob": "bb14a9c8ccaddb522563d1c746d60386fc4ab9dc",
+          "afterBlob": "e7688ed8ada6f4eff747f5715184121fed038f67"
+        },
+        {
+          "path": "crates/vize_patina/tests/main.rs",
+          "before": "eb08136b9d56102e8af28fbd8718f8751288c24d55c929cb01dfcb10659a713a",
+          "after": "5eaddd7f8cf594e47df49b289410d2158d4a9316b2536cc64ccb9d289fae4331",
+          "beforeBlob": "7550539dca2779eb5e1805b8420ca68db1e2ae51",
+          "afterBlob": "9d7872d68e22b69835d4e713066df9608be5da86"
+        },
+        {
+          "path": "crates/vize_patina/tests/native_sfc_template_lint/configuration.rs",
+          "before": "dc27be82ce4649b5f38eed23ec656c2a1d02f8cfeeb5b410edf44324be5da18e",
+          "after": "9bfb72fd6a6652a0b0e5ff5f92b89f2c9ee714212ded6beeb611ccdca938e80e",
+          "beforeBlob": "b9b8e1f87504944e832a7987c8fbac3134517491",
+          "afterBlob": "0f421a5c89b35391ca5a4743804b38502b0e02c0"
+        }
+      ],
+      "tests": [
+        {
+          "target": "integration",
+          "selector": "native_ir_accessor_compat::old_owner_getters_remain_public_with_the_original_borrow_signatures",
+          "source": "crates/vize_patina/tests/native_ir_accessor_compat.rs"
+        },
+        {
+          "target": "integration",
+          "selector": "native_ir_accessor_compat::old_canonical_getter_retains_the_owner_borrow_after_the_lint_wrapper_is_dropped",
+          "source": "crates/vize_patina/tests/native_ir_accessor_compat.rs"
+        },
+        {
+          "target": "lib",
+          "selector": "native::sfc::tests::ownership::normally_owned_program_and_file_origin_survive_owner_move_before_a_short_reborrow",
+          "source": "crates/vize_patina/src/native/sfc/tests/ownership.rs"
+        },
+        {
+          "target": "integration",
+          "selector": "native_sfc_template_lint::configuration::literal_text_requires_every_actual_callback_in_either_registry_order",
+          "source": "crates/vize_patina/tests/native_sfc_template_lint/configuration.rs"
+        }
+      ],
+      "evidence": {
+        "predecessor": "source-authenticated-only",
+        "current": "registered-required-rust-consumer",
+        "languageParity": "not-claimed"
       }
     }
   ]

@@ -101,9 +101,16 @@ export function validateOriginalBytes(original, files, nodes) {
   }
 }
 
-export function captureFiniteObservation(root, nodes, children, original, directory) {
-  const files = collectFinitePhysical(root, nodes, children, original.boundary);
-  const committed = finiteCommittedInventory(nodes, children, original.boundary).files;
+export function captureFiniteObservation(
+  root,
+  nodes,
+  children,
+  original,
+  directory,
+  qualifiedBoundary = original.boundary,
+) {
+  const files = collectFinitePhysical(root, nodes, children, qualifiedBoundary);
+  const committed = finiteCommittedInventory(nodes, children, qualifiedBoundary).files;
   const originalVector = Buffer.from(original.files.map(([path]) => `${path}\0`).join(""));
   writeFileSync(join(directory, "original-kernel-vector.nul"), originalVector);
   writeFileSync(

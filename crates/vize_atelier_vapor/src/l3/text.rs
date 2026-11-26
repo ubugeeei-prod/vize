@@ -26,7 +26,7 @@ pub(super) fn capture<'a>(
             }),
     );
     if facts.is_empty() {
-        return if s3.program.operands.iter().any(|operand| {
+        return if s3.l3ir.operands.iter().any(|operand| {
             operand.role == OperandRole::Text
                 && operand.value.kind == ValueKind::Opaque
                 && operand.value.qualifier == "compound"
@@ -39,7 +39,7 @@ pub(super) fn capture<'a>(
         };
     }
     let mut operands = vize_carton::Vec::new_in(&allocator);
-    for operand in &s3.program.operands {
+    for operand in &s3.l3ir.operands {
         let value = operand.value;
         if operand.role != OperandRole::Text
             || value.kind != ValueKind::Opaque
@@ -95,7 +95,7 @@ pub(super) fn capture<'a>(
             });
         }
     }
-    s3.program.operands = operands;
+    s3.l3ir.operands = operands;
     Ok(())
 }
 
@@ -138,8 +138,8 @@ mod tests {
             capture(&allocator, &s2, &mut s3, &mut Retained::new(&allocator)).unwrap();
             s3
         };
-        assert!(vize_l3::verify::verify(&s3.program).is_empty());
-        for operand in &mut s3.program.operands {
+        assert!(vize_l3::verify::verify(&s3.l3ir).is_empty());
+        for operand in &mut s3.l3ir.operands {
             if operand.role == OperandRole::Text && operand.value.kind == ValueKind::Js {
                 operand.value.text = "changed";
             }

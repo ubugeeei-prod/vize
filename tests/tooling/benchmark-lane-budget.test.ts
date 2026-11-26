@@ -75,7 +75,7 @@ test("only the two sub-40ms unpinned lanes carry a widened budget", () => {
 });
 
 test("the workflow still supplies the 5% default the pinned lanes are sized for", () => {
-  const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  const workflow = readRepoFile(".github", "workflows", "03-source-comparison.yml");
   assert.equal(
     workflow.includes("\n  VIZE_BENCH_REGRESSION_THRESHOLD_PERCENT: 5\n"),
     true,

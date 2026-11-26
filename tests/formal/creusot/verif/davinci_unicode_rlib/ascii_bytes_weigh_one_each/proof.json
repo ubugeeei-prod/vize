@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_ascii_bytes_weigh_one_each": {
+        "prover": "alt-ergo",
+        "time": 0.011
+      }
+    }
+  }
+}

@@ -22,10 +22,10 @@ the section they operate, and the release captain owns the final go/no-go decisi
 
 - [ ] All alpha qualification checks are green on the exact source commit selected for release: ([PT-1 evidence](./davinci-v1-evidence.md#pre-tag-gate))
   - [Check](../../.github/workflows/check.yml)
-  - [Benchmark](../../.github/workflows/benchmark.yml)
-  - [App E2E](../../.github/workflows/e2e.yml) for `dev`, `preview`, and `build`
-  - [Docs Build](../../.github/workflows/build-docs.yml) evidence on the exact target commit
-- [ ] [Fuzz](../../.github/workflows/fuzz.yml) status, seeded corpus health, and uploaded
+  - [Benchmark](../../.github/workflows/03-source-comparison.yml)
+  - [App E2E](../../.github/workflows/10-app-e2e.yml) for `dev`, `preview`, and `build`
+  - [Docs Build](../../.github/workflows/11-docs-build.yml) evidence on the exact target commit
+- [ ] [Fuzz](../../.github/workflows/11-fuzz.yml) status, seeded corpus health, and uploaded
       reproducers are reviewed when parser/compiler surfaces changed. ([PT-2 evidence](./davinci-v1-evidence.md#pre-tag-gate))
 - [ ] No release-blocking draft PR, open P0/P1 fix request, or failing required workflow remains. ([PT-3 evidence](./davinci-v1-evidence.md#pre-tag-gate))
 - [ ] Version is agreed and matches the intended channel, for example `1.0.0-alpha.N`. ([PT-4 evidence](./davinci-v1-evidence.md#pre-tag-gate))

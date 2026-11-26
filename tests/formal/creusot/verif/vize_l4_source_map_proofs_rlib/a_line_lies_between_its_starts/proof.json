@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_line_lies_between_its_starts": {
+        "prover": "alt-ergo",
+        "time": 0.02
+      }
+    }
+  }
+}

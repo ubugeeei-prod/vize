@@ -8,13 +8,13 @@ import { isOpinionatedSourceInput } from "../../github/opinionated-source-inputs
 export function planCheckInputs(paths: readonly string[], full = false) {
   // A change to the selector or task definitions must exercise its consumers.
   const shared = paths.some((path) =>
-    /^(?:\.github\/workflows\/check\.yml|\.github\/scripts\/workflows\/(?:check|shared)\/|\.github\/actions\/stage-workflow-scripts\/|tools\/config\/pkl\/(?:parts\/check\/|workflows\/checks\/check\.pkl)|tools\/support\/compat\/github\/plan-check-inputs\.ts|tools\/support\/github\/opinionated-source-inputs\.ts|tools\/config\/vite-plus\/|vite\.config\.ts)/.test(
+    /^(?:\.github\/workflows\/check\.yml|\.github\/scripts\/workflows\/(?:check|shared)\/|\.github\/actions\/stage-workflow-scripts\/|tools\/ci\/lib\/scripts\/|tools\/config\/pkl\/(?:parts\/check\/|workflows\/checks\/check\.pkl)|tools\/support\/compat\/github\/plan-check-inputs\.ts|tools\/support\/github\/opinionated-source-inputs\.ts|tools\/config\/vite-plus\/|vite\.config\.ts)/.test(
       path,
     ),
   );
   const matches = (pattern: RegExp) => full || shared || paths.some((path) => pattern.test(path));
   const dependencies = matches(
-    /(^|\/)(?:Cargo\.(?:toml|lock)|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml)$|^patches\/|^tools\/support\/security\/|^tools\/commands\/ci\/npm-audit|^\.cargo\/audit\.toml$/,
+    /(^|\/)(?:Cargo\.(?:toml|lock)|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml)$|^patches\/|^tools\/support\/security\/|^tools\/ci\/commands\/npm-audit|^\.cargo\/audit\.toml$/,
   );
   return {
     full,
@@ -23,7 +23,7 @@ export function planCheckInputs(paths: readonly string[], full = false) {
     engines:
       dependencies ||
       matches(
-        /^tools\/(?:config|commands|support)\/.*\.(?:[cm]?js|[cm]?ts)$|^tests\/tooling\/(?:node-engine-matrix|package-manifests|bundler-plugin-manifests|dependency-security-compat)\.test\./,
+        /^tools\/(?:ci|config|commands|support)\/.*\.(?:[cm]?js|[cm]?ts)$|^tests\/tooling\/(?:node-engine-matrix|package-manifests|bundler-plugin-manifests|dependency-security-compat)\.test\./,
       ) ||
       // A declaration change that skips the helper ABI generator must fail PR CI.
       matches(
@@ -35,7 +35,7 @@ export function planCheckInputs(paths: readonly string[], full = false) {
       paths.some((path) => path.startsWith("upstream/forks/")) ||
       // Retain the existing conservative npm Vue routing as well as authored inputs.
       matches(
-        /^(?:crates|davinci|playground|examples\/vite-musea)\/|^npm\/.*\.vue$|^npm\/(?:cli|native|builder\/(?:vite|vite-musea|unplugin))\/|^\.cargo\/|^rust-toolchain(?:\.toml)?$|^docs\/davinci\/plan\/(?!.*\.md$)|^docs\/davinci\/plan\/.*fact-alpha-schemas\.md$|^\.github\/actions\/(?:setup-rust-sticky-cache|check-vize-apps)\/|^tools\/commands\/ci\/opinionated-source-lint\./,
+        /^(?:crates|davinci|playground|examples\/vite-musea)\/|^npm\/.*\.vue$|^npm\/(?:cli|native|builder\/(?:vite|vite-musea|unplugin))\/|^\.cargo\/|^rust-toolchain(?:\.toml)?$|^docs\/davinci\/plan\/(?!.*\.md$)|^docs\/davinci\/plan\/.*fact-alpha-schemas\.md$|^\.github\/actions\/(?:setup-rust-sticky-cache|check-vize-apps)\/|^tools\/ci\/commands\/opinionated-source-lint\./,
       ),
   };
 }

@@ -81,6 +81,12 @@ formatterConfigDef: JsonSchema = new JsonSchema {
       description = "Object property quoting mode"
       default = "as-needed"
     }
+    ["objectWrap"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "preserve"; "collapse" }
+      description = "Keep objects multiline when a newline follows the opening brace, or collapse objects that fit"
+      default = "preserve"
+    }
     ["singleAttributePerLine"] = new JsonSchema {
       type = "boolean"
       description = "Force one attribute per line"

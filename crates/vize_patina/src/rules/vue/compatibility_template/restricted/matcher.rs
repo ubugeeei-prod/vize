@@ -4,10 +4,13 @@ use oxc_syntax::number::ToJsString;
 use regex::Regex;
 use serde_json::Value;
 use std::borrow::Cow;
-use vize_l0::config::esquery::{Combinator, Operator, Selector, Simple, Value as Expected};
+use vize_l0::config::esquery::{
+    Combinator, HasArgument, Operator, Selector, Simple, Value as Expected,
+};
 use vize_l0::{FxHashMap, String};
 
-/// Every node of the tree with its parent, field and position among siblings.
+/// Every node of the tree in pre-order with its parent, field and position
+/// among siblings.
 pub(super) struct Tree<'v> {
     pub(super) nodes: Vec<Node<'v>>,
 }
@@ -19,6 +22,8 @@ pub(super) struct Node<'v> {
     /// Index in the parent's array field and that array's length.
     position: Option<(usize, usize)>,
     previous: Option<usize>,
+    /// One past the last node of this node's subtree.
+    end: usize,
 }
 
 impl<'v> Tree<'v> {
@@ -43,6 +48,7 @@ impl<'v> Tree<'v> {
             field,
             position,
             previous,
+            end: index + 1,
         });
         let Value::Object(map) = value else {
             return index;
@@ -73,12 +79,16 @@ impl<'v> Tree<'v> {
                 _ => {}
             }
         }
+        let end = self.nodes.len();
+        if let Some(node) = self.nodes.get_mut(index) {
+            node.end = end;
+        }
         index
     }
 
     pub(super) fn matches(&self, selector: &Selector, regexes: &Regexes, node: usize) -> bool {
         match selector {
-            Selector::Compound(parts) => parts.iter().all(|part| self.simple(part, regexes, node)),
+            Selector::Compound(parts) => self.compound(parts, regexes, node),
             Selector::Relation(left, combinator, right) => {
                 if !self.matches(right, regexes, node) {
                     return false;
@@ -154,13 +164,12 @@ impl<'v> Tree<'v> {
             Simple::Not(selectors) => !selectors
                 .iter()
                 .any(|selector| self.matches(selector, regexes, node)),
-            Simple::Has(selectors) => (node + 1..self.nodes.len())
-                .take_while(|index| self.is_descendant(*index, node))
-                .any(|index| {
-                    selectors
-                        .iter()
-                        .any(|selector| self.matches(selector, regexes, index))
-                }),
+            Simple::Has(arguments) => arguments.iter().any(|argument| match argument {
+                HasArgument::Descendant(selector) => {
+                    (node + 1..this.end).any(|index| self.matches(selector, regexes, index))
+                }
+                HasArgument::Relative(steps) => self.relative(steps, regexes, node),
+            }),
             Simple::NthChild(index) => this.position.is_some_and(|(at, _)| at + 1 == *index),
             Simple::NthLastChild(index) => this
                 .position
@@ -175,15 +184,122 @@ impl<'v> Tree<'v> {
         }
     }
 
-    fn is_descendant(&self, node: usize, ancestor: usize) -> bool {
-        let mut current = self.nodes.get(node).and_then(|node| node.parent);
-        while let Some(index) = current {
-            if index == ancestor {
-                return true;
+    fn compound(&self, parts: &[Simple], regexes: &Regexes, node: usize) -> bool {
+        parts.iter().all(|part| self.simple(part, regexes, node))
+    }
+
+    /// Whether a relative `:has()` argument reaches a match from `scope`.
+    ///
+    /// Walks forward from the subject one compound at a time, so `>` and `+`
+    /// steps visit only children and next siblings of the previous step's
+    /// matches; only descendant and `~` steps widen the search.
+    fn relative(
+        &self,
+        steps: &[(Combinator, Vec<Simple>)],
+        regexes: &Regexes,
+        scope: usize,
+    ) -> bool {
+        let mut reached = vec![scope];
+        let mut next = Vec::new();
+        for (step, (combinator, parts)) in steps.iter().enumerate() {
+            let last = step + 1 == steps.len();
+            next.clear();
+            let mut covered = 0;
+            for &from in &reached {
+                let walk = match combinator {
+                    Combinator::Child => Walk::Children(self.first_child(from)),
+                    Combinator::Adjacent => Walk::One(self.next_sibling(from)),
+                    Combinator::Sibling => Walk::Siblings(self.next_sibling(from)),
+                    Combinator::Descendant => {
+                        // An earlier reached node's subtree already holds this one's.
+                        let start = (from + 1).max(covered);
+                        let end = self.nodes.get(from).map_or(start, |node| node.end);
+                        covered = covered.max(end);
+                        Walk::Range(start..end.max(start))
+                    }
+                };
+                let candidates = Candidates {
+                    tree: self,
+                    reached: &reached,
+                    walk,
+                };
+                for candidate in candidates {
+                    if self.compound(parts, regexes, candidate) {
+                        if last {
+                            return true;
+                        }
+                        next.push(candidate);
+                    }
+                }
             }
-            current = self.nodes.get(index).and_then(|node| node.parent);
+            if next.is_empty() {
+                return false;
+            }
+            next.sort_unstable();
+            next.dedup();
+            core::mem::swap(&mut reached, &mut next);
         }
         false
+    }
+
+    fn first_child(&self, node: usize) -> Option<usize> {
+        let first = node + 1;
+        (first < self.nodes.get(node)?.end).then_some(first)
+    }
+
+    /// The next node of the same parent, in any field.
+    fn next_child(&self, child: usize) -> Option<usize> {
+        let this = self.nodes.get(child)?;
+        let next = self.nodes.get(this.end)?;
+        (next.parent == this.parent).then_some(this.end)
+    }
+
+    /// The next node of the same array field.
+    fn next_sibling(&self, node: usize) -> Option<usize> {
+        let end = self.nodes.get(node)?.end;
+        (self.nodes.get(end)?.previous == Some(node)).then_some(end)
+    }
+}
+
+/// Nodes one relative step reaches from a node.
+struct Candidates<'t, 'v> {
+    tree: &'t Tree<'v>,
+    /// The nodes the step starts from, sorted.
+    reached: &'t [usize],
+    walk: Walk,
+}
+
+enum Walk {
+    One(Option<usize>),
+    Children(Option<usize>),
+    /// Following siblings, through the next node the step also starts from,
+    /// whose own walk covers the rest.
+    Siblings(Option<usize>),
+    Range(core::ops::Range<usize>),
+}
+
+impl Iterator for Candidates<'_, '_> {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<usize> {
+        match &mut self.walk {
+            Walk::One(node) => node.take(),
+            Walk::Children(child) => {
+                let current = (*child)?;
+                *child = self.tree.next_child(current);
+                Some(current)
+            }
+            Walk::Siblings(sibling) => {
+                let current = (*sibling)?;
+                *sibling = if self.reached.binary_search(&current).is_ok() {
+                    None
+                } else {
+                    self.tree.next_sibling(current)
+                };
+                Some(current)
+            }
+            Walk::Range(range) => range.next(),
+        }
     }
 }
 

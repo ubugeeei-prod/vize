@@ -108,8 +108,8 @@ fn compare(source: &str, file: &str, counts: &mut Counts) {
         assert_eq!(admitted_before, admitted_after, "{file}");
         assert_eq!(old.file().is_some(), new.file().is_some(), "{file}");
         if let (Some(lhs), Some(rhs)) = (old.file(), new.file()) {
-            let left = lhs.file().artifact();
-            let right = rhs.file().artifact();
+            let left = lhs.l2ir().artifact();
+            let right = rhs.l2ir().artifact();
             assert_eq!(
                 Page::of(&left.root().ops),
                 Page::of(&right.root().ops),

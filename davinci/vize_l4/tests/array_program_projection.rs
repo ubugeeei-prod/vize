@@ -37,11 +37,11 @@ mod cases {
                 "items"
             })
             .unwrap() as u32;
-        let binding = Model::new(projection.file())
+        let binding = Model::new(projection.l2ir())
             .binding_at_offset(at)
             .unwrap()
             .unwrap();
-        assert!(core::ptr::eq(binding.file(), projection.file()));
+        assert!(core::ptr::eq(binding.l2ir(), projection.l2ir()));
         for diagnostic in case["diagnostics"].as_array().unwrap() {
             let authored = projection
                 .map_utf16(
@@ -98,7 +98,7 @@ mod cases {
             let file = producer.finish().unwrap();
             let projection = project_program(&file).unwrap();
             assert_eq!(projection.source_kind(), SourceKind::TypeScript);
-            assert!(core::ptr::eq(projection.file(), &file));
+            assert!(core::ptr::eq(projection.l2ir(), &file));
             packets.push(packet(case, &projection));
             assert_eq!(syntax.program().unwrap().body.as_ptr(), body);
             assert_eq!(syntax.comments().count(), 1);
@@ -120,7 +120,7 @@ mod cases {
             );
             let projection = project_jsx_program(&owner).unwrap();
             assert_eq!(projection.source_kind(), SourceKind::Tsx);
-            assert!(core::ptr::eq(projection.file(), owner.file()));
+            assert!(core::ptr::eq(projection.l2ir(), owner.l2ir()));
             packets.push(packet(&case, &projection));
             assert_eq!(
                 owner

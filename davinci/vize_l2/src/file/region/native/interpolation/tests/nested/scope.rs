@@ -3,15 +3,15 @@ use crate::file::{L2Ir, ScopeId};
 use crate::op::Op;
 use crate::resolution::BindingId;
 
-fn reference(file: &L2Ir<'_>, index: usize) -> Result<(ScopeId, BindingId), &'static str> {
-    let record = file
+fn reference(l2ir: &L2Ir<'_>, index: usize) -> Result<(ScopeId, BindingId), &'static str> {
+    let record = l2ir
         .native_interpolations()
         .get(index)
         .ok_or("original row")?;
     let State::Admitted(node) = record.state() else {
         return Err("admitted original expression node");
     };
-    let resolution = file.expression(node).ok_or("same File expression")?;
+    let resolution = l2ir.expression(node).ok_or("same File expression")?;
     let [occurrence] = resolution
         .table()
         .ok_or("sole resolver table")?
@@ -37,7 +37,7 @@ fn nested_setup_and_for_shadowing_use_actual_scope_and_original_declaration_rows
     let output = core::hint::black_box(original.finish());
     let setup = output.setup().map_err(|_| "same owning setup receipt")?;
     same(setup.unit(), unit)?;
-    let file = setup.file();
+    let file = setup.l2ir();
     same(file.native_interpolations().len(), 5)?;
     let [Op::Element(div)] = file.artifact().root().ops.as_slice() else {
         return Err("original div");

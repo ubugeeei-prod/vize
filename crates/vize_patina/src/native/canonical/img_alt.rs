@@ -46,7 +46,7 @@ impl NativeCanonicalLint<'_, '_> {
         // Attached bindings immediately follow their owner in canonical page
         // order. Finish the previous header on the next op, so every binding
         // is inspected through the existing single traversal, never rescanned.
-        super::visit_markup_nodes(self.file, &mut |_, node| {
+        super::visit_markup_nodes(self.l2ir, &mut |_, node| {
             if refusal.is_some() {
                 return;
             }

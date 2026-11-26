@@ -20,13 +20,13 @@ pub(super) fn assert_current(arena: &Allocator, source: &str) -> Result<(), &'st
         build_template_dom_decisions(owner.view().map_err(|_| "complete original view")?)
             .map_err(|_| "complete original L3")?;
     check(core::ptr::eq(analysis.owner(), &owner))?;
-    let file = analysis.file();
+    let file = analysis.l2ir();
     check(file.is_complete())?;
     check(core::ptr::eq(file.artifact().source(), source))?;
     let facts = analysis
         .original_attributes()
         .ok_or("whole original values")?;
-    check(core::ptr::eq(facts.file(), file))?;
+    check(core::ptr::eq(facts.l2ir(), file))?;
     equal(facts.len(), 2)?;
     let [Op::Text(prefix), Op::Element(element), Op::Text(tail)] =
         file.artifact().root().ops.as_slice()
@@ -43,7 +43,7 @@ pub(super) fn assert_current(arena: &Allocator, source: &str) -> Result<(), &'st
             .value(index, element, index)
             .ok_or("actual original L3 join")?;
         let value = joined.observation().ok_or("whole original observation")?;
-        check(core::ptr::eq(joined.file(), file))?;
+        check(core::ptr::eq(joined.l2ir(), file))?;
         check(core::ptr::eq(
             value,
             file.native_attribute_values()[index]

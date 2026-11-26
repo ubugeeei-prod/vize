@@ -34,7 +34,7 @@ fn strict_module_early_errors_refuse_with_the_complete_original_observation() ->
             );
             let observation = compilation.observation();
             require!(
-                core::ptr::eq(observation.descriptor().source(), source.as_str()),
+                core::ptr::eq(observation.l1ir().source(), source.as_str()),
                 "original owner"
             );
             require!(

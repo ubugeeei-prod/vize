@@ -1,0 +1,57 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Benchmark - CI wall time"
+`run-name` = "CI walltime comparison @ ${{ github.sha }}"
+on {
+  pull_request {
+    types = List("opened", "reopened", "labeled")
+  }
+  workflow_dispatch {
+    inputs {
+      component {
+        description = "Compare serial and concurrent execution on the same source"
+        type = "choice"
+        options = new Listing {
+          "all"
+          "js"
+          "docs"
+          "rust"
+          "native"
+          "release-builds"
+          "nix"
+          "artifact-payload"
+        }
+        ["default"] = "all"
+      }
+      artifact_id {
+        description = "Existing same-repository artifact for the manual transport trial"
+        type = "string"
+        ["default"] = "11709550349"
+      }
+      artifact_source_sha {
+        description = "Exact source SHA of the original artifact, checked against API custody"
+        type = "string"
+        ["default"] = "a49936db24d9540e0630b42474654190d575294b"
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "ci-walltime-${{ github.sha }}-${{ inputs.component || 'all' }}"
+  `cancel-in-progress` = false
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+}
+jobs {
+  `release-builds` = import("jobs/release-builds.pkl")
+  nix = import("jobs/nix.pkl")
+  js = import("jobs/js.pkl")
+  docs = import("jobs/docs.pkl")
+  rust = import("jobs/rust.pkl")
+  native = import("jobs/native.pkl")
+  `artifact-payload` = import("jobs/artifact-payload.pkl")
+  `artifact-payload-restore` = import("jobs/artifact-payload-restore.pkl")
+}

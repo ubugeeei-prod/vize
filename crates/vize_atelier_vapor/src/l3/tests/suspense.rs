@@ -84,7 +84,7 @@ fn checked_suspense_payload_owns_its_timeout() {
         r#"<Suspense timeout="0"><AsyncChild /></Suspense>"#,
     );
     let timeout = s3
-        .program
+        .l3ir
         .operands
         .iter_mut()
         .find(|operand| {

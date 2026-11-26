@@ -14,7 +14,7 @@ fn key_heads_keep_static_empty_and_value_only_whole_for_shape_refusals() {
         let arena = Allocator::default();
         let observation = lower_selected_setup_sfc_native(&arena, source, options());
         let view = observation.admitted().unwrap();
-        let file = view.setup().file();
+        let file = view.setup().l2ir();
         let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
             panic!("one whole original For");
         };

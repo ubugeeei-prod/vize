@@ -183,7 +183,7 @@ is a maintainer infra decision, tracked alongside #1501's benchmark-CI lane.
 The JSX/TSX cost surface is benchmarked along **four** dimensions so a timing
 regression points at the stage that caused it, not just "JSX got slower". All
 four are A/B-compared (base vs head) in the `criterion-ab` GitHub Actions lane
-(`.github/workflows/criterion-bench.yml`, via `tools/benchmarks/scripts/criterion-ab.ts`), which
+(`.github/workflows/03-criterion.yml`, via `tools/benchmarks/scripts/criterion-ab.ts`), which
 runs both the `vize_atelier_jsx` `jsx_compile` and the `vize_patina`
 `markup_ir_bench` targets:
 

@@ -9,28 +9,28 @@ use crate::container::ContainerErrorCode;
 /// Original style selections in authored order, with their descriptor and source.
 #[derive(Debug, Clone, Copy)]
 pub struct CheckedStyleBlocks<'o, 'a> {
-    owner: &'o L1Ir<'a>,
+    l1ir: &'o L1Ir<'a>,
 }
 
 impl<'o, 'a> From<AdmittedDescriptor<'o, 'a>> for CheckedStyleBlocks<'o, 'a> {
     fn from(descriptor: AdmittedDescriptor<'o, 'a>) -> Self {
         Self {
-            owner: descriptor.owner,
+            l1ir: descriptor.l1ir,
         }
     }
 }
 
 impl<'o, 'a> CheckedStyleBlocks<'o, 'a> {
     pub fn source(self) -> &'a str {
-        self.owner.source()
+        self.l1ir.source()
     }
     pub fn styles(self) -> impl ExactSizeIterator<Item = StyleView<'o, 'a>> {
-        self.owner
+        self.l1ir
             .styles
             .iter()
             .copied()
             .map(move |selected| StyleView {
-                owner: self.owner,
+                l1ir: self.l1ir,
                 selected,
             })
     }
@@ -67,7 +67,7 @@ impl<'a> L1Ir<'a> {
                 .all(|error| error.code == ContainerErrorCode::DuplicateBlock)
             && self.issues.iter().all(independent)
         {
-            Ok(CheckedStyleBlocks { owner: self })
+            Ok(CheckedStyleBlocks { l1ir: self })
         } else {
             Err(DescriptorRefusal {
                 issues: &self.issues,

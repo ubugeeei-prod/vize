@@ -27,7 +27,7 @@ const ALL: VueDemand = VueDemand {
 };
 
 struct Parsed<'a> {
-    descriptor: L1Ir<'a>,
+    l1ir: L1Ir<'a>,
     ordinary: Option<EmbedSyntax<'a>>,
     setup: Option<EmbedSyntax<'a>>,
 }
@@ -54,7 +54,7 @@ impl<'a> Parsed<'a> {
         let ordinary = view.ordinary().map(syntax);
         let setup = view.setup().map(syntax);
         Some(Self {
-            descriptor,
+            l1ir: descriptor,
             ordinary,
             setup,
         })
@@ -67,7 +67,7 @@ impl<'a> Parsed<'a> {
     ) -> Result<VueFile<'a>, VueProgramError> {
         VueFileProducer::scripts(
             arena,
-            self.descriptor.admitted().unwrap(),
+            self.l1ir.admitted().unwrap(),
             self.ordinary
                 .as_ref()
                 .and_then(EmbedSyntax::admitted_program),
@@ -84,24 +84,24 @@ fn same_text_and_numeric_ids_cannot_attach_another_files_facts_or_binding() {
     let parsed = Parsed::new(&arena, "<script setup>const x = 1</script>").unwrap();
     let a = parsed.produce(&arena, ALL).unwrap();
     let b = parsed.produce(&arena, ALL).unwrap();
-    let foreign = b.file().bindings().next().unwrap();
-    let local = a.file().bindings().next().unwrap();
+    let foreign = b.l2ir().bindings().next().unwrap();
+    let local = a.l2ir().bindings().next().unwrap();
     assert_eq!(local.id(), foreign.id());
     assert!(matches!(
-        Model::new(a.file()).with_vue(&b),
+        Model::new(a.l2ir()).with_vue(&b),
         Err(VueQueryError::ForeignFile)
     ));
     assert_eq!(
         a.model().binding_kind(foreign),
         Err(VueQueryError::ForeignFile)
     );
-    let attached = Model::new(a.file()).with_vue(&a).unwrap();
+    let attached = Model::new(a.l2ir()).with_vue(&a).unwrap();
     assert_eq!(attached.binding_kind(local), a.model().binding_kind(local));
     assert!(core::ptr::eq(
         attached.contract().unwrap(),
         a.model().contract().unwrap()
     ));
-    let raw = Model::new(a.file()).vue();
+    let raw = Model::new(a.l2ir()).vue();
     assert_eq!(
         raw.binding_kind(local),
         Err(VueQueryError::NotObserved(VueFamily::BindingKind))
@@ -124,7 +124,7 @@ function nested() { const count = 2; return count }
         .unwrap()
         .produce(&arena, ALL)
         .unwrap();
-    assert!(file.file().is_complete(), "{:?}", file.file().issues());
+    assert!(file.l2ir().is_complete(), "{:?}", file.l2ir().issues());
     let model = file.model();
     let binding = |needle: &str| {
         model
@@ -181,7 +181,7 @@ fn a_component_without_options_differs_from_an_unobserved_options_family() {
                 },
             )
             .unwrap();
-        let binding = owner.file().bindings().next().unwrap();
+        let binding = owner.l2ir().bindings().next().unwrap();
         let model = owner.model();
         if matches!(demand, Some(OrdinaryDemand::Options | OrdinaryDemand::Both)) {
             assert_eq!(model.options(), Ok(None));
@@ -219,12 +219,12 @@ fn incomplete_files_refuse_even_locally_observed_declarations_and_contracts() {
             .unwrap()
             .produce(&arena, ALL)
             .unwrap();
-        assert!(!file.file().is_complete());
+        assert!(!file.l2ir().is_complete());
         let model = file.model();
         assert_eq!(model.contract(), Err(VueQueryError::IncompleteFile));
         assert_eq!(model.options(), Err(VueQueryError::IncompleteFile));
         assert_eq!(
-            model.binding_kind(file.file().bindings().next().unwrap()),
+            model.binding_kind(file.l2ir().bindings().next().unwrap()),
             Err(VueQueryError::IncompleteFile)
         );
     }
@@ -234,7 +234,7 @@ fn incomplete_files_refuse_even_locally_observed_declarations_and_contracts() {
 fn scripts_require_the_exact_descriptor_role_original_source_and_language() {
     let arena = Allocator::default();
     let parsed = Parsed::new(&arena, "<script setup lang='ts'>const x = 1</script>").unwrap();
-    let view = parsed.descriptor.admitted().unwrap();
+    let view = parsed.l1ir.admitted().unwrap();
     let setup = || parsed.setup.as_ref().unwrap().admitted_program().unwrap();
     assert!(matches!(
         VueFileProducer::scripts(&arena, view, None, None, ALL),
@@ -266,9 +266,9 @@ fn a_type_import_has_no_value_binding_kind() {
     )
     .unwrap();
     let owner = parsed.produce(&arena, ALL).unwrap();
-    assert!(owner.file().is_complete(), "{:?}", owner.file().issues());
+    assert!(owner.l2ir().is_complete(), "{:?}", owner.l2ir().issues());
     let binding = owner
-        .file()
+        .l2ir()
         .bindings()
         .find(|b| b.declaration().is_some_and(|d| d.name == "T"))
         .unwrap();
@@ -282,7 +282,7 @@ fn a_refused_destructure_does_not_publish_partial_contracts() {
     let owner = parsed.produce(&arena, ALL).unwrap();
     assert!(
         owner
-            .file()
+            .l2ir()
             .issues()
             .iter()
             .any(|issue| issue.kind == crate::file::FileIssueKind::UnsupportedSyntax)

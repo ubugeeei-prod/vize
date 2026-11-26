@@ -15,7 +15,7 @@ pub(super) type Admission<'f, 'p, 'a> = Result<RetainedSources<'f, 'p, 'a>, Modu
 /// The empty-operand case must retain the same original File join too.
 /// Fields are private; only the normally owned factory below pairs this view.
 pub(super) struct RetainedSources<'f, 'p, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     view: OriginalModuleSources<'f, 'p, 'a>,
 }
 
@@ -83,7 +83,7 @@ impl ModuleOperands {
 pub(super) fn admit<'f, 'p, 'a>(
     syntax: &'p EmbedSyntax<'a>,
     block: SourceBlock<'a>,
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
 ) -> Admission<'f, 'p, 'a> {
     let admitted = syntax
         .admitted_program()
@@ -94,10 +94,10 @@ pub(super) fn admit<'f, 'p, 'a>(
         return Err(ModuleOperandRefusal::Navigation(NavigationRefusal::Syntax));
     }
     let input = ProgramInput::checked(admitted, block, 0).map_err(ModuleOperandRefusal::Input)?;
-    let view = file
+    let view = l2ir
         .original_module_sources(input)
         .map_err(ModuleOperandRefusal::Sources)?;
-    Ok(RetainedSources { file, view })
+    Ok(RetainedSources { l2ir, view })
 }
 
 pub(super) fn answer(
@@ -130,8 +130,8 @@ fn collect(
     retained: &RetainedSources<'_, '_, '_>,
     cancelled: impl Fn() -> bool,
 ) -> Result<ModuleOperands, ModuleOperandRefusal> {
-    if !core::ptr::eq(retained.file, query.file)
-        || !core::ptr::eq(retained.file.artifact().source(), query.snapshot.source())
+    if !core::ptr::eq(retained.l2ir, query.l2ir)
+        || !core::ptr::eq(retained.l2ir.artifact().source(), query.snapshot.source())
     {
         return Err(ModuleOperandRefusal::Navigation(
             NavigationRefusal::Projection,
@@ -153,8 +153,8 @@ fn collect(
                 )));
                 return;
             }
-            if !core::ptr::eq(original.file(), query.file)
-                || !core::ptr::eq(original.file().artifact().source(), query.snapshot.source())
+            if !core::ptr::eq(original.l2ir(), query.l2ir)
+                || !core::ptr::eq(original.l2ir().artifact().source(), query.snapshot.source())
             {
                 refusal = Some(ModuleOperandRefusal::Navigation(
                     NavigationRefusal::Projection,

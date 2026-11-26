@@ -55,7 +55,7 @@ Arquivos: **15,000** (61,516,500 bytes).
 | Prettier                 | <code>3.8.3</code>                                                                            | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
 | Node.js                  | <code>v24.14.0</code>                                                                         | n/a                                                                           |
 
-Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).
+Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/03-check-gate.yml).
 
 </details>
 
@@ -102,7 +102,7 @@ O layout de structs e os discriminantes de enum do Rust são compactos. A repres
 
 ### Sem overhead de tempo de execução
 
-Diferente dos compiladores baseados em JavaScript que rodam na V8, o Vize compila diretamente para código nativo. Não há aquecimento JIT, nem coletor de lixo, nem contenção de loop de eventos. A CLI é distribuída como um executável nativo autocontido por plataforma — totalmente estático nos alvos Linux musl, o que a CI verifica (`tools/commands/ci/github/verify-musl-cli-binary.ts`), e ligado dinamicamente à biblioteca C do sistema nos alvos glibc, macOS e Windows. O plugin do Vite carrega o mesmo compilador como um addon nativo do Node (`@vizejs/native`), e não como um processo separado.
+Diferente dos compiladores baseados em JavaScript que rodam na V8, o Vize compila diretamente para código nativo. Não há aquecimento JIT, nem coletor de lixo, nem contenção de loop de eventos. A CLI é distribuída como um executável nativo autocontido por plataforma — totalmente estático nos alvos Linux musl, o que a CI verifica (`tools/ci/commands/github/verify-musl-cli-binary.ts`), e ligado dinamicamente à biblioteca C do sistema nos alvos glibc, macOS e Windows. O plugin do Vite carrega o mesmo compilador como um addon nativo do Node (`@vizejs/native`), e não como um processo separado.
 
 ## Escolhas de Arquitetura para Desempenho
 

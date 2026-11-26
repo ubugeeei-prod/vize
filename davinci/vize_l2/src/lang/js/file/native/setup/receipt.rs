@@ -70,7 +70,7 @@ pub struct NativeSelectedSetup<'owner, 'arena> {
     selected: ScriptSelection<'owner, 'arena>,
     program: AdmittedProgram<'owner, 'arena>,
     unit: &'owner ScriptUnit,
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
 }
 impl<'owner, 'arena> NativeSelectedSetup<'owner, 'arena> {
     #[must_use]
@@ -102,8 +102,8 @@ impl<'owner, 'arena> NativeSelectedSetup<'owner, 'arena> {
         self.unit.scope
     }
     #[must_use]
-    pub fn file(&self) -> &'owner L2Ir<'arena> {
-        self.file
+    pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.l2ir
     }
 }
 
@@ -137,6 +137,6 @@ pub(super) fn checked<'owner, 'arena>(
         selected: joined.selected,
         program: joined.program,
         unit: joined.unit,
-        file,
+        l2ir: file,
     })
 }

@@ -55,7 +55,7 @@ fn actual_roles_nested_scope_and_extra_units_cannot_supply_the_root_family()
         )
         .map_err(|_| "input")
     };
-    let mut nested = FileProducer::new(&arena, original.descriptor.source()).map_err(|_| "file")?;
+    let mut nested = FileProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
     nested
         .program(input()?, ProgramScope::Nested)
         .map_err(|_| "walk")?;

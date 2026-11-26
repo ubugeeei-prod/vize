@@ -29,7 +29,9 @@ impl Rule for NoEmptyPattern {
     }
 
     fn template_hooks(&self) -> crate::rule::RuleHooks {
-        crate::rule::RuleHooks::DIRECTIVE.union(crate::rule::RuleHooks::INTERPOLATION)
+        crate::rule::RuleHooks::ELEMENT
+            .union(crate::rule::RuleHooks::DIRECTIVE)
+            .union(crate::rule::RuleHooks::INTERPOLATION)
     }
 
     fn check_interpolation<'a>(
@@ -53,8 +55,15 @@ impl Rule for NoEmptyPattern {
             let PropNode::Attribute(attribute) = prop else {
                 continue;
             };
-            if !matches!(attribute.name, "slot-scope" | "scope") {
+            let is_slot_scope = attribute.name == "slot-scope"
+                || (attribute.name == "scope" && element.tag == "template");
+            if !is_slot_scope {
                 continue;
+            }
+            if ctx.template_surface().is_some_and(|surface| {
+                crate::markup::element_is_frozen(surface, element.loc.span.start)
+            }) {
+                return;
             }
             let start = attribute.loc.span.start as usize;
             let Some(text) = ctx.source.get(start..attribute.loc.span.end as usize) else {

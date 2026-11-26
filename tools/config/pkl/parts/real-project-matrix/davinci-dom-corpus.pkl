@@ -3,5 +3,5 @@ permissions {
   actions = "read"
   checks = "read"
 }
-uses = "./.github/workflows/davinci-canonical-corpus.yml"
+uses = "./.github/workflows/07-canonical-corpus.yml"
 with { davinci_dom_corpus_mode = "${{ inputs.davinci_dom_corpus_mode || 'enforce' }}" }

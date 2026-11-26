@@ -9,7 +9,7 @@ scoped-style inference, default DOM compiler options, and source-level Vapor
 overrides. The SSR shape retains its SSR fallback for explicit Vapor sources.
 
 ```sh
-gh workflow run criterion-bench.yml --ref <head-branch> \
+gh workflow run 03-criterion.yml --ref <head-branch> \
   -f base_sha=<40-character-ancestor-sha> \
   -f head_sha=<40-character-head-sha> \
   -f production_only=true

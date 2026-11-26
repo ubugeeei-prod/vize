@@ -16,7 +16,7 @@ pub(super) fn prelude<L: LinkSink>(
     writer: &mut Writer<L>,
     analysis: &SelectedSetupSsrAnalysis<'_, '_, '_>,
 ) {
-    let [original] = analysis.file().native_models() else {
+    let [original] = analysis.l2ir().native_models() else {
         return;
     };
     if matches!(original.state(), NativeFileModelState::Admitted(_))
@@ -61,7 +61,7 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     match row.original().kind() {
         Some(NativeFileModelKind::Checkbox) => {
             let value = analysis
-                .file()
+                .l2ir()
                 .native_attribute_value_for(0, element, 0)
                 .ok_or_else(|| fail(SsrErrorKind::MissingAnalysis))?;
             let observation = value

@@ -50,7 +50,7 @@ A production-ready claim for any supported surface requires current evidence for
 - `cargo semver-checks check-release --package <each publishable crate>`
 - `pr-benchmark-budget` status for parser, compiler, lint, type-check, formatter, bundler, and
   CLI hot-path changes
-- `.github/workflows/fuzz.yml` (`fuzz` workflow) status, seeded corpus health, and retained crash
+- `.github/workflows/11-fuzz.yml` (`fuzz` workflow) status, seeded corpus health, and retained crash
   reproducers for parser, template, CSS, expression, and compiler-recovery surfaces
 - release-artifact signatures and SBOMs land on the GitHub Release (see
   [supply-chain.md](./supply-chain.md))

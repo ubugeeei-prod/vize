@@ -33,7 +33,7 @@ const before = parse(original.toString()) as {
   on: { schedule: unknown };
 };
 const currentWorkflow = archivedWorkflow(
-  path.join(root, ".github/workflows/native-smoke.yml"),
+  path.join(root, ".github/workflows/06-native-smoke.yml"),
   "utf8",
 );
 const sealedWorkflow = fs.readFileSync(

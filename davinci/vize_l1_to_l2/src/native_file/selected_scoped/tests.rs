@@ -26,8 +26,8 @@ fn options() -> DescriptorOptions {
         template: SurfaceParseOptions::default(),
     }
 }
-fn syntax<'a>(original: &L1Ir<'a>) -> StyleSyntax<'a> {
-    StyleSyntax::observe(original.admitted().unwrap().styles().next().unwrap())
+fn syntax<'a>(l1ir: &L1Ir<'a>) -> StyleSyntax<'a> {
+    StyleSyntax::observe(l1ir.admitted().unwrap().styles().next().unwrap())
 }
 
 #[test]
@@ -61,10 +61,10 @@ fn whole_original_style_parser_and_completed_file_survive_movement() {
             view.owner(),
             moved.original().template().unwrap()
         ));
-        assert!(core::ptr::eq(view.file(), view.owner().file().unwrap()));
-        assert!(view.file().is_complete());
-        assert!(view.file().units().is_empty());
-        assert!(core::ptr::eq(view.file().artifact().source(), source));
+        assert!(core::ptr::eq(view.l2ir(), view.owner().file().unwrap()));
+        assert!(view.l2ir().is_complete());
+        assert!(view.l2ir().units().is_empty());
+        assert!(core::ptr::eq(view.l2ir().artifact().source(), source));
         assert!(core::ptr::eq(
             view.style_syntax(),
             moved.style_syntax().unwrap()
@@ -120,7 +120,7 @@ fn public_join_checks_physical_buffer_and_block_not_descriptor_allocation_identi
     let joined = template
         .scoped_view(&independently_observed, &same_buffer_syntax)
         .unwrap();
-    assert!(core::ptr::eq(joined.file(), template.file().unwrap()));
+    assert!(core::ptr::eq(joined.l2ir(), template.file().unwrap()));
     let foreign = Vue.observe_descriptor(&arena, &other, options());
     let foreign_syntax = syntax(&foreign);
     assert_eq!(
@@ -133,7 +133,7 @@ fn public_join_checks_physical_buffer_and_block_not_descriptor_allocation_identi
     );
     assert_eq!(
         template
-            .scoped_view(owner.original().descriptor(), &foreign_syntax)
+            .scoped_view(owner.original().l1ir(), &foreign_syntax)
             .err()
             .unwrap()
             .kind,
@@ -147,7 +147,7 @@ fn public_join_checks_physical_buffer_and_block_not_descriptor_allocation_identi
     let wrong_syntax = syntax(&wrong);
     assert_eq!(
         template
-            .scoped_view(owner.original().descriptor(), &wrong_syntax)
+            .scoped_view(owner.original().l1ir(), &wrong_syntax)
             .err()
             .unwrap()
             .kind,
@@ -171,7 +171,7 @@ fn public_join_checks_physical_buffer_and_block_not_descriptor_allocation_identi
     );
     assert_eq!(
         template
-            .scoped_view(owner.original().descriptor(), &wrong_block)
+            .scoped_view(owner.original().l1ir(), &wrong_block)
             .err()
             .unwrap()
             .kind,
@@ -206,7 +206,7 @@ fn unsupported_css_retains_real_tokens_or_parser_error_without_partial_template(
             syntax.source().root_source(),
             source.as_str()
         ));
-        assert_eq!(owner.original().descriptor().container().blocks.len(), 2);
+        assert_eq!(owner.original().l1ir().container().blocks.len(), 2);
         assert!(
             syntax.rule().is_some() || syntax.parser_error().is_some() || syntax.issue().is_some()
         );
@@ -235,7 +235,7 @@ fn unsupported_envelope_profiles_keep_descriptor_without_fabricating_css() {
         assert!(owner.original().template().is_none());
         assert!(!owner.original().issues().is_empty());
         assert!(core::ptr::eq(
-            owner.original().descriptor().source(),
+            owner.original().l1ir().source(),
             source.as_str()
         ));
     }
@@ -276,9 +276,9 @@ fn nondefault_public_profile_and_uncompleted_file_cannot_grant_scoped_authority(
         let refused = lower_selected_scoped_sfc_native(&arena, source, changed);
         assert!(refused.admitted().is_none());
         assert!(refused.style_syntax().is_none());
-        assert_eq!(refused.original().descriptor().options(), changed);
+        assert_eq!(refused.original().l1ir().options(), changed);
     }
-    let original = owner.original().descriptor();
+    let original = owner.original().l1ir();
     let selected = SelectedTemplateComponent::parse_in(&arena, original.admitted().unwrap())
         .unwrap()
         .unwrap();
@@ -324,10 +324,7 @@ fn former_scoped_class_refusal_keeps_original_style_and_completed_class_custody(
     assert!(owner.admitted().is_some());
     assert!(owner.style_syntax().is_some());
     assert!(owner.original().template().unwrap().view().is_ok());
-    assert!(core::ptr::eq(
-        owner.original().descriptor().source(),
-        source
-    ));
+    assert!(core::ptr::eq(owner.original().l1ir().source(), source));
     let file = owner.original().template().unwrap().file().unwrap();
     let [record] = file.native_attribute_values() else {
         panic!("one retained original class");

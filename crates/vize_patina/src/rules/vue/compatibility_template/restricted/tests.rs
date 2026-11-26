@@ -231,3 +231,157 @@ fn modifier_names_keep_raw_case_and_key_ranges_exclude_value_spacing() {
         ["@click.STOP", ":[name].Camel"]
     );
 }
+
+#[test]
+fn self_closing_html_elements_end_at_their_start_tag() {
+    let template = "<div><div a /> text</div>";
+    assert_eq!(
+        found("VElement[name='div']", template),
+        ["<div><div a /> text</div>", "<div a />"]
+    );
+    assert_eq!(found("VElement[name='div'] > VText", template), [" text"]);
+}
+
+#[test]
+fn a_slash_in_an_unquoted_attribute_value_does_not_close_the_element() {
+    for value in ["/", "foo/", "/foo/"] {
+        let template = vize_l0::cstr!("<div a={value}> text</div>");
+        assert_eq!(found("VElement[name='div']", &template), [template.clone()]);
+        assert_eq!(found("VElement[name='div'] > VText", &template), [" text"]);
+        let nested = vize_l0::cstr!("<div>{template}</div>");
+        assert_eq!(
+            found("VElement[name='div']", &nested),
+            [nested.clone(), template]
+        );
+        assert_eq!(found("VElement[name='div'] > VText", &nested), [" text"]);
+    }
+}
+
+fn found(selector: &str, template: &str) -> Vec<String> {
+    reported(&[(selector, None)], template)
+        .into_iter()
+        .map(|(text, _)| text)
+        .collect()
+}
+
+#[test]
+fn relative_has_matches_an_element_by_its_own_attributes() {
+    let template = "<div flex-wrap><div flex-1 /></div>\n<div><div flex-wrap /></div>\n";
+    assert_eq!(
+        found(
+            "VElement:has(> VStartTag > VAttribute[key.name='flex-wrap']) > VElement[rawName='div']",
+            template,
+        ),
+        ["<div flex-1 />"]
+    );
+    // Without a leading combinator, `:has()` still looks through every descendant.
+    assert_eq!(
+        found(
+            "VElement[name='div']:has(VStartTag > VAttribute[key.name='flex-wrap']) > VElement",
+            template,
+        ),
+        ["<div flex-1 />", "<div flex-wrap />"]
+    );
+    assert_eq!(
+        found(
+            "VElement[name='div']:not(:has(> VStartTag > VAttribute[key.name='flex-wrap']))",
+            template,
+        ),
+        ["<div flex-1 />", "<div><div flex-wrap /></div>"]
+    );
+    assert_eq!(
+        found("VElement[name='div']:has(> VStartTag)", template),
+        [
+            "<div flex-wrap><div flex-1 /></div>",
+            "<div flex-1 />",
+            "<div><div flex-wrap /></div>",
+            "<div flex-wrap />"
+        ]
+    );
+    assert_eq!(
+        found("VElement[name='div']:has(> VElement)", template),
+        [
+            "<div flex-wrap><div flex-1 /></div>",
+            "<div><div flex-wrap /></div>"
+        ]
+    );
+    // The start tag is a field of its element, not one of its children.
+    assert_eq!(
+        found("VStartTag ~ VElement", template),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        found("VStartTag + VElement", template),
+        Vec::<String>::new()
+    );
+}
+
+#[test]
+fn relative_has_chains_walk_down_from_the_subject() {
+    let template = "<ul><li><a /></li></ul><ul><li><b><a /></b></li></ul><ol><a /></ol>";
+    let lists = |selector: &str| {
+        found(selector, template)
+            .into_iter()
+            .map(|text| String::from(text.get(..4).unwrap_or_default()))
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        lists("VElement:has(> VElement[name='li'] > VElement[name='a'])"),
+        ["<ul>"]
+    );
+    assert_eq!(
+        lists("VElement:has(> VElement[name='li'] VElement[name='a'])"),
+        ["<ul>", "<ul>"]
+    );
+    assert_eq!(
+        lists("VElement[name=/^[uo]l$/]:has(> VElement[name='a'])"),
+        ["<ol>"]
+    );
+    assert_eq!(
+        lists("VElement[name=/^[uo]l$/]:has(> VElement > VElement > VElement[name='a'])"),
+        ["<ul>"]
+    );
+    assert_eq!(
+        lists("VElement[name='ol']:has(> VElement[name='li'], VElement[name='a'])"),
+        ["<ol>"]
+    );
+    assert_eq!(
+        lists("VElement:has(> VElement[name='a'] > VElement)"),
+        Vec::<String>::new()
+    );
+}
+
+#[test]
+fn relative_has_sibling_steps_follow_the_subject() {
+    let template = "<h1 /><p /><hr /><p />";
+    assert_eq!(
+        found("VElement:has(+ VElement[name='p'])", template),
+        ["<h1 />", "<hr />"]
+    );
+    assert_eq!(
+        found("VElement[name='h1']:has(+ VElement[name='hr'])", template),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        found("VElement:has(~ VElement[name='hr'])", template),
+        ["<h1 />", "<p />"]
+    );
+    assert_eq!(
+        found(
+            "VElement:has(~ VElement[name='hr'] + VElement[name='p'])",
+            template
+        ),
+        ["<h1 />", "<p />"]
+    );
+    assert_eq!(
+        found(
+            "VElement:has(~ VElement[name='p'] ~ VElement[name='p'])",
+            template
+        ),
+        ["<h1 />"]
+    );
+    assert_eq!(
+        found("VElement[name='template']:has(+ VElement)", template),
+        Vec::<String>::new()
+    );
+}

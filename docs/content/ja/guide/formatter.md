@@ -164,6 +164,7 @@ export default defineConfig({}).withVue({
 | `arrowParens`                  | `"always"`       | 引数が 1 つのアロー関数を括弧で囲むかどうかです。`"always"` または `"avoid"` です。                                                                 |
 | `endOfLine`                    | `"lf"`           | 改行コードです。`"lf"`、`"crlf"`、`"cr"`、`"auto"` のいずれかです。[改行コード](./formatter-line-endings.md)を参照してください。                    |
 | `quoteProps`                   | `"as-needed"`    | オブジェクトのキーを引用符で囲む条件です。[プロパティの引用符](./formatter-property-quotes.md)を参照してください。                                  |
+| `objectWrap`                   | `"preserve"`     | `{` の直後に改行があれば複数行を保ちます。`"collapse"` は幅に収まるオブジェクトリテラルを 1 行にまとめます。                                        |
 | `singleAttributePerLine`       | `false`          | 属性を 1 行に 1 つずつ書きます。                                                                                                                    |
 | `maxAttributesPerLine`         | なし             | タグの属性がこの数を超えると折り返します。                                                                                                          |
 | `vueIndentScriptAndStyle`      | `false`          | `<script>` と `<style>` の中身をインデントします。                                                                                                  |
@@ -239,6 +240,14 @@ CSS の引用符の正規化は、CLI でも `--normalize-css-quotes[=false]` �
 スクリプトの引用符ポリシーも設定、CLI の直接上書き、Node で共有されます。
 `--jsx-single-quote[=false]` は `jsxSingleQuote`、
 `--quote-props <as-needed|consistent|preserve>` は `quoteProps` に対応します。
+
+`objectWrap: "collapse"` は、元の `{` の直後に改行があっても、`printWidth` に
+収まるオブジェクトリテラルを 1 行にまとめます。既定の `"preserve"` は `{` の
+直後に改行がある場合に複数行を保ち、それ以外は幅に収まれば 1 行にまとめます。
+コメントや幅制限により、`"collapse"` でも複数行になる
+場合があります。設定（Oxfmt の `fmt` 設定を含む）、Node の `formatSfc`、
+CLI の `--object-wrap <preserve|collapse>` で同じポリシーを使います。
+CLI フラグは設定より、Node の明示値は選択したプリセットより優先されます。
 
 末尾のカンマのポリシーも同じように共有されます。
 `--trailing-comma <all|es5|none>` は、型付きの Node・設定オプション

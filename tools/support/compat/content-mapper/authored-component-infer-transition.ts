@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeDefaultExportProjection } from "./default-export-projection-transition.ts";
 import { beforeWithDefaultsUndefined } from "./with-defaults-undefined-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
@@ -75,7 +76,7 @@ const typedUseSlots = readSourceRecord(
 
 /** Remove only the authenticated #13578 follow-up that keeps typed `useSlots()` exact. */
 export function beforeTypedUseSlots(file: string, current: string): string {
-  return restoreProducer(typedUseSlots, file, current);
+  return restoreProducer(typedUseSlots, file, beforeDefaultExportProjection(file, current));
 }
 
 /** Remove only the authenticated #13578 producer changes before historical custody. */

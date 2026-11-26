@@ -51,10 +51,10 @@ use super::{NativeSfcLintRefusal as Refusal, envelope};
 /// }
 /// ```
 pub struct NativeSfcLintOwner<'a> {
-    descriptor: L1Ir<'a>,
+    l1ir: L1Ir<'a>,
     template: SelectedTemplateComponent<'a>,
     syntax: EmbedSyntax<'a>,
-    file: L2Ir<'a>,
+    l2ir: L2Ir<'a>,
 }
 
 impl<'a> NativeSfcLintOwner<'a> {
@@ -107,10 +107,10 @@ impl<'a> NativeSfcLintOwner<'a> {
             .ok_or(Refusal::SourceMismatch)?;
         super::super::admission::selected_component(&template).map_err(Refusal::Template)?;
         let owner = Self {
-            descriptor,
+            l1ir: descriptor,
             template,
             syntax,
-            file,
+            l2ir: file,
         };
         owner.setup()?;
         Ok(owner)
@@ -119,12 +119,19 @@ impl<'a> NativeSfcLintOwner<'a> {
     /// Returns the complete original SFC source.
     #[must_use]
     pub fn source(&self) -> &'a str {
-        self.descriptor.source()
+        self.l1ir.source()
     }
     /// Returns the original descriptor observation.
     #[must_use]
+    pub fn l1ir(&self) -> &L1Ir<'a> {
+        &self.l1ir
+    }
+
+    /// Deprecated spelling of [`Self::l1ir`], borrowing the same original descriptor.
+    #[deprecated(note = "use `l1ir` instead")]
+    #[must_use]
     pub fn descriptor(&self) -> &L1Ir<'a> {
-        &self.descriptor
+        self.l1ir()
     }
     /// Returns the original selected template component.
     #[must_use]
@@ -138,16 +145,20 @@ impl<'a> NativeSfcLintOwner<'a> {
     }
     /// Script-only File; this is never native template/DOM/ref authority.
     #[must_use]
+    pub fn l2ir(&self) -> &L2Ir<'a> {
+        &self.l2ir
+    }
+
+    /// Deprecated spelling of [`Self::l2ir`], borrowing the same retained IR.
+    #[deprecated(note = "use `l2ir` instead")]
+    #[must_use]
     pub fn file(&self) -> &L2Ir<'a> {
-        &self.file
+        self.l2ir()
     }
 
     /// Reborrow only this owner's original selections and actual Program/File.
     pub fn setup(&self) -> Result<NativeSfcSetup<'_, 'a>, Refusal> {
-        let descriptor = self
-            .descriptor
-            .admitted()
-            .map_err(|_| Refusal::SourceMismatch)?;
+        let descriptor = self.l1ir.admitted().map_err(|_| Refusal::SourceMismatch)?;
         let script = descriptor.setup().ok_or(Refusal::SourceMismatch)?;
         let selected = self.template.setup().ok_or(Refusal::SourceMismatch)?;
         let template = descriptor.template().ok_or(Refusal::SourceMismatch)?;
@@ -175,7 +186,7 @@ impl<'a> NativeSfcLintOwner<'a> {
                 span: script.block().span(),
                 hole: self.syntax.hole(),
             })?;
-        let setup = VueSetup::checked(&self.file, script, program).map_err(Refusal::Setup)?;
+        let setup = VueSetup::checked(&self.l2ir, script, program).map_err(Refusal::Setup)?;
         Ok(NativeSfcSetup { owner: self, setup })
     }
 }

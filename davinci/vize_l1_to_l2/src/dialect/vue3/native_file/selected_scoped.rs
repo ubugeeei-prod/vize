@@ -49,7 +49,7 @@ impl<'a> NativeSelectedScopedSfcObservation<'a> {
         }
         let template = self.original.template()?;
         let scoped = template
-            .scoped_view(self.original.descriptor(), self.style_syntax()?)
+            .scoped_view(self.original.l1ir(), self.style_syntax()?)
             .ok()?;
         Some(NativeSelectedScopedSfc {
             observation: self,
@@ -109,21 +109,21 @@ pub fn lower_selected_scoped_sfc_native<'a>(
 }
 
 pub(super) fn observe<'a>(
-    original: &L1Ir<'a>,
+    l1ir: &L1Ir<'a>,
 ) -> Result<(StyleSyntax<'a>, Option<NativeSelectedSfcIssue>), NativeSelectedSfcIssue> {
-    let options = original.options();
+    let options = l1ir.options();
     let reject = |index, span, kind| NativeSelectedSfcIssue {
         container_index: index,
         span,
         kind: NativeSelectedSfcIssueKind::ScopedStyle(kind),
     };
-    let whole = Span::new(0, original.source().len() as u32);
-    if !crate::registry::selected_scoped_sfc(original.dialect())
+    let whole = Span::new(0, l1ir.source().len() as u32);
+    if !crate::registry::selected_scoped_sfc(l1ir.dialect())
         || options.template != SurfaceParseOptions::default()
     {
         return Err(reject(None, whole, Kind::Profile));
     }
-    let descriptor = original
+    let descriptor = l1ir
         .admitted()
         .map_err(|_| reject(None, whole, Kind::Descriptor))?;
     if descriptor.styles().len() != 1 {

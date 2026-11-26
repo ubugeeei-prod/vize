@@ -41,7 +41,7 @@ fn original_models_retain_their_write_owner_and_neutral_analysis_cannot_promote_
         let observation = lower_selected_setup_sfc_native(&arena, source, descriptor());
         let selected = observation.admitted().ok_or("actual selected completion")?;
         let setup = selected.setup();
-        let file = setup.file();
+        let file = setup.l2ir();
         let before = file.artifact().provenance().to_vec();
         let analysis =
             build_selected_setup_vapor_decisions(setup).map_err(|error| format!("{error:?}"))?;
@@ -90,7 +90,7 @@ fn original_models_retain_their_write_owner_and_neutral_analysis_cannot_promote_
         assert_eq!(declaration.unit, setup.unit());
         assert!(model.resolution().accepts(binding));
         assert!(setup.binding(binding).is_ok());
-        assert!(core::ptr::eq(model.resolution().file(), file));
+        assert!(core::ptr::eq(model.resolution().l2ir(), file));
         assert!(
             analysis
                 .tables()
@@ -153,11 +153,11 @@ fn foreign_equal_roots_do_not_replace_original_model_ownership() -> Result<(), S
     else {
         return Err("second canonical parts".into());
     };
-    let [first_original] = first.file().native_models() else {
+    let [first_original] = first.l2ir().native_models() else {
         return Err("first original".into());
     };
     assert!(!first_original.accepts_element(*node, element));
-    assert!(!core::ptr::eq(model.resolution().file(), first.file()));
+    assert!(!core::ptr::eq(model.resolution().l2ir(), first.l2ir()));
     assert!(
         first_setup
             .binding(model.binding().ok_or("second binding")?)

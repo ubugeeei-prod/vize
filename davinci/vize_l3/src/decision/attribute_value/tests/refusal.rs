@@ -201,7 +201,7 @@ fn original_class_retains_complete_rows_for_all_admitted_targets() -> Test {
         ssr.original_attributes().ok_or("SSR whole row")?,
         vapor.original_attributes().ok_or("Vapor whole row")?,
     ] {
-        check(core::ptr::eq(facts.file(), file))?;
+        check(core::ptr::eq(facts.l2ir(), file))?;
         let joined = facts
             .value(0, element(file, 0)?, 0)
             .ok_or("original class")?;

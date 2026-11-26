@@ -39,7 +39,7 @@ fn original_selected_legacy_and_regexp_refusals_return_no_partial_writer()
         let output = core::hint::black_box(original.finish());
         let analysis = build_template_dom_decisions(output.view().map_err(|_| "native view")?)
             .map_err(|_| "existing sole L3 visit")?;
-        let file = analysis.file();
+        let file = analysis.l2ir();
         check(file.is_complete())?;
         check(core::ptr::eq(file.artifact().source(), source))?;
         let operand = file

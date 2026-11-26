@@ -104,13 +104,13 @@ function assertLiveInventory(workflow: string, release: string): void {
 
 test("actual native-smoke and release files bind the registered successor", () => {
   assertLiveInventory(
-    archivedWorkflow(".github/workflows/native-smoke.yml"),
+    archivedWorkflow(".github/workflows/06-native-smoke.yml"),
     readAutomationPrograms(new URL("../../.github/workflows/release.yml", import.meta.url)),
   );
 });
 
 test("smoke rollback or Babel publication rollback cannot reuse historical admission", () => {
-  const workflow = archivedWorkflow(".github/workflows/native-smoke.yml");
+  const workflow = archivedWorkflow(".github/workflows/06-native-smoke.yml");
   const release = readAutomationPrograms(
     new URL("../../.github/workflows/release.yml", import.meta.url),
   );
@@ -131,7 +131,7 @@ test("smoke rollback or Babel publication rollback cannot reuse historical admis
 });
 
 test("timing observation cannot alter commands, selectors, retention, or unrelated fields", () => {
-  const workflow = archivedWorkflow(".github/workflows/native-smoke.yml");
+  const workflow = archivedWorkflow(".github/workflows/06-native-smoke.yml");
   for (const [from, to] of [
     ["VIZE_SMOKE_TIMING_FILE:", "OTHER_TIMING_FILE:"],
     ["packed-smoke-timing.jsonl", "other.jsonl"],

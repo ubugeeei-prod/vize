@@ -39,7 +39,7 @@ type Workflow = {
 };
 
 const loadWorkflow = (): Workflow =>
-  parse(readAutomationPrograms(".github", "workflows", "e2e.yml")) as Workflow;
+  parse(readAutomationPrograms(".github", "workflows", "10-app-e2e.yml")) as Workflow;
 const namedStep = (job: Job | undefined, name: string): Step => {
   const found = job?.steps?.find((step) => step.name === name);
   assert.ok(found, `missing step ${name}`);
@@ -78,12 +78,12 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
   const filters = String(changes.with?.filters);
   for (const path of [
     ".github/actions/app-e2e-row/**",
-    ".github/workflows/e2e.yml",
+    ".github/workflows/10-app-e2e.yml",
     "tests/package.json",
     "tests/_fixtures/_git/{elk,misskey,npmx.dev,nuxt-ui,reka-ui,vuefes-2025}",
     "tests/app/dev/{misskey,nuxt-ui}.spec.ts",
     "tests/app/dev/{misskey-hmr,nuxt-ui-dev-server,nuxt-ui-hmr,source-restore}.ts",
-    "tools/commands/ci/github/app-e2e-*.ts",
+    "tools/ci/commands/github/app-e2e-*.ts",
     "tools/support/**",
   ]) {
     assert.match(filters, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
@@ -131,7 +131,7 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
   assert.match(aggregate.if ?? "", /always\(\)/);
   assert.match(
     namedStep(aggregate, "Aggregate app readiness").run ?? "",
-    /node tools\/commands\/ci\/github\/app-e2e-aggregate\.ts readiness all/,
+    /node tools\/ci\/commands\/github\/app-e2e-aggregate\.ts readiness all/,
   );
   assert.equal(
     Object.values(jobs).filter((job) => job.name === "app-readiness").length,
@@ -177,7 +177,7 @@ test("full App E2E uses a planner, isolated matrix producers, and stable release
   assert.match(aggregate.if ?? "", /always\(\)/);
   assert.match(
     namedStep(aggregate, "Aggregate full App E2E").run ?? "",
-    /node tools\/commands\/ci\/github\/app-e2e-aggregate\.ts full/,
+    /node tools\/ci\/commands\/github\/app-e2e-aggregate\.ts full/,
   );
   assert.equal(Object.values(jobs).filter((job) => job.name === "app-e2e").length, 1);
 });
@@ -201,7 +201,7 @@ test("every producer and aggregator checks out the exact event target", () => {
 });
 
 test("App E2E producers take their runner from the plan; support jobs stay Blacksmith", () => {
-  const source = readAutomationPrograms(".github", "workflows", "e2e.yml");
+  const source = readAutomationPrograms(".github", "workflows", "10-app-e2e.yml");
   // Which label each row gets is the planner's call and is asserted in
   // app-e2e-plan.test.ts; the workflow only has to defer to it.
   for (const job of ["app-readiness-producer", "app-e2e-producer"]) {
@@ -244,7 +244,7 @@ test("shared row action validates the plan and never parallelizes fixture proces
     { steps: action.runs?.steps },
     "Validate and hydrate planned fixtures",
   );
-  assert.match(hydration.run ?? "", /node tools\/commands\/ci\/github\/app-e2e-plan\.ts --profile/);
+  assert.match(hydration.run ?? "", /node tools\/ci\/commands\/github\/app-e2e-plan\.ts --profile/);
   assert.match(hydration.run ?? "", /mapfile -t fixture_paths/);
   assert.match(
     hydration.run ?? "",

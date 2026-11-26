@@ -95,7 +95,7 @@ fn object_payload_mutations_drive_generation() {
     let allocator = Allocator::new();
     let source = r#"<div title="t" v-bind="o"><MyComp v-bind="p" /></div>"#;
     let mut s3 = lowered_source(&allocator, source);
-    for operand in &mut s3.program.operands {
+    for operand in &mut s3.l3ir.operands {
         match (operand.role, operand.value.text) {
             (OperandRole::Value, "o") => operand.value.text = "q",
             (OperandRole::Value, "p") => operand.value.text = "r",

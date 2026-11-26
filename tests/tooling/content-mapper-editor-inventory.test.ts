@@ -8,14 +8,14 @@ import { readRepoFile } from "./support/github-workflows.ts";
 
 test("editor inventory helpers preserve the complete workflow refusal controls", () => {
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "content-mapper-conformance.yml"),
+    readAutomationPrograms(".github", "workflows", "04-content-mapper-conformance.yml"),
   ) as { jobs: Record<string, { steps: { name?: string; run?: string }[] }> };
   const stress = workflow.jobs["exact-tsgo-project"].steps.filter(
     (step) => step.name === "Stress every editor case against its exact native provider",
   );
   assert.equal(stress.length, 1);
   const script = workflowProgram(
-    "content-mapper-conformance",
+    "04-content-mapper-conformance",
     stress[0].run ?? "",
     "stress-every-editor-case-against-its-exact-native-provider.ts",
   );

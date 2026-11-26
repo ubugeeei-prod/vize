@@ -28,7 +28,7 @@ weakest status among its laws.
 | The reactivity lattice and its classifier are sound and least              | proved (Creusot, all 12 lattice rows)                                                                                        |
 | The HTML content-model checker has no false positive and no false negative | proved (Creusot, all 8 rows, chains of every length)                                                                         |
 | The L3 schedule contract and the C-23 checker are exact                    | proved (Creusot, 20 rows, programs of every size)                                                                            |
-| Spans, ranges, UTF-16 columns and VLQ are correct                          | `kani` over whole `u32` domains or small inputs. Creusot ports, line-index proofs and the `to_generated` fix are in progress |
+| Spans, ranges, UTF-16 columns and VLQ are correct                          | Spans, ranges, mappings: proved (Creusot, every `u32`/`i32`). UTF-16 columns, VLQ, `to_generated`: `kani`, ports in progress |
 | Incremental updates equal recomputation                                    | `kani` with fixed tree shapes (L3 reference machine)                                                                         |
 | Every product `unsafe` block is sound                                      | 142 sites inventoried. 11 are model-checked. The rest are covered by fuzzing, Miri or tests, or are FFI                      |
 | Lossless L1 render equals source                                           | owed                                                                                                                         |

@@ -18,7 +18,11 @@ import {
 import { getLoadableVueSfcPath, shouldLoadCompiledVueSfcPath } from "./load-sfc.ts";
 import { normalizeStyleVirtualId } from "./style-request.ts";
 import { registerSfcModule, normalizeVueServerRendererImport } from "./ssr-modules.ts";
-import { createDependencyWatch } from "./dependency-watches.ts";
+import {
+  type BuildWatchScope,
+  createDependencyWatch,
+  UNWATCHED_DEPENDENCY,
+} from "./dependency-watches.ts";
 import {
   adoptSiblingCompile,
   compileRequestedSfc,
@@ -164,6 +168,8 @@ export type SfcModuleResult = { code: string; map: SourceMapV3 | null; moduleSid
 export interface SfcModuleTransformOptions {
   ssr?: boolean;
   addWatchFile?: (id: string) => void;
+  /** How the build's watcher reads `addWatchFile`; ignored by the dev server. */
+  buildWatchScope?: BuildWatchScope;
   resolve?: HostResolve;
   /** The environment of the request, whose build may have sibling environments. */
   environment?: BuildEnvironment;
@@ -200,7 +206,16 @@ export async function transformSfcModule(
         : {}),
     });
   };
-  const watchDependency = createDependencyWatch(state.server, options.addWatchFile);
+  const watchDependency = createDependencyWatch(
+    state.server,
+    options.addWatchFile,
+    options.buildWatchScope,
+  );
+  // The load hook supplies this source itself, so Vite never reaches the
+  // filesystem fallback that watches outside files. Register before compiling
+  // so an edit can also repair a component whose first compilation fails.
+  if (sfc.nullPrefixed && options.addWatchFile) options.addWatchFile(realPath);
+  else if (state.server) watchDependency?.(realPath);
   adoptSiblingCompile(state, realPath, isSsr);
   const cached = cache.get(realPath);
   const reused = cached?.source === code ? cached : undefined;
@@ -222,11 +237,9 @@ export async function transformSfcModule(
     throw new Error(TYPE_PROJECT_CHANGED_MESSAGE);
   }
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
-  // The real SFC is executable; compiler inputs only need filesystem watches.
-  if (sfc.nullPrefixed) options.addWatchFile?.(realPath);
-  const dependencies = compiled.dependencies ?? [];
-  for (const dependency of new Set(dependencies)) {
-    watchDependency?.(dependency);
+  // Compiler inputs only need filesystem watches, not runtime import edges.
+  if (watchDependency && watchDependency !== UNWATCHED_DEPENDENCY) {
+    for (const dependency of new Set(compiled.dependencies ?? [])) watchDependency(dependency);
   }
 
   const hasDelegated = hasDelegatedStyles(compiled);

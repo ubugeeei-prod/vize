@@ -74,11 +74,11 @@ test("language engineering practices document upstream-derived compiler workflow
     "tests/snapshots/check",
     "tests/snapshots/lint",
     "tools/benchmarks/scripts/test-inventory.ts",
-    ".github/workflows/benchmark.yml",
+    ".github/workflows/03-source-comparison.yml",
     ".github/workflows/check.yml",
-    ".github/workflows/fuzz.yml",
+    ".github/workflows/11-fuzz.yml",
     "tests/fuzz/Cargo.toml",
-    "tools/commands/ci/fuzz/seed-corpus.ts",
+    "tools/ci/commands/fuzz/seed-corpus.ts",
     "tools/benchmarks/scripts/enforce-pr-budget.ts",
     "security-audit",
     "vp exec pnpm audit --prod --audit-level moderate",
@@ -155,7 +155,7 @@ test("docs navigation exposes the language engineering practices page", () => {
   assert.match(productionReadiness, /language-engineering change-class evidence/);
   assert.match(productionReadiness, /security-audit` workflow status/);
   assert.match(productionReadiness, /pr-benchmark-budget` status/);
-  assert.match(productionReadiness, /\.github\/workflows\/fuzz\.yml/);
+  assert.match(productionReadiness, /\.github\/workflows\/11-fuzz\.yml/);
 });
 
 function readRepoFile(...segments: string[]): string {

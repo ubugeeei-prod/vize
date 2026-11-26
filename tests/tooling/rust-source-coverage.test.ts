@@ -10,8 +10,8 @@ const scratchRoot = path.join(repoRoot, "target", "vize-tests", "tooling-tests")
 const sourceCoverageScriptPath = path.join(
   repoRoot,
   "tools",
-  "commands",
   "ci",
+  "commands",
   "source-coverage.ts",
 );
 

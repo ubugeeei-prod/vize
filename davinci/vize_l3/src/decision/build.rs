@@ -61,21 +61,21 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
 }
 
 pub(in crate::decision) fn build_with_original<'owner, 'arena>(
-    file: &'owner L2Ir<'arena>,
+    l2ir: &'owner L2Ir<'arena>,
     policy: TargetPolicy,
     expressions: &impl DomExpressionFacts,
     reads: &impl FileReads<'owner, 'arena>,
 ) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     build_with_context(
-        file.artifact(),
+        l2ir.artifact(),
         policy,
         expressions,
-        Some(file),
+        Some(l2ir),
         reads,
         BuildContext {
             ssr_setup: None,
             vapor_setup: None,
-            original_file: Some(file),
+            original_file: Some(l2ir),
         },
     )
 }
@@ -83,7 +83,7 @@ pub(in crate::decision) fn build_with_original<'owner, 'arena>(
 pub(in crate::decision) fn build_with_ssr_setup<'owner, 'arena>(
     setup: &NativeSelectedSetup<'owner, 'arena>,
 ) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
-    let file = setup.file();
+    let file = setup.l2ir();
     if !file.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
     }
@@ -104,7 +104,7 @@ pub(in crate::decision) fn build_with_ssr_setup<'owner, 'arena>(
 pub(in crate::decision) fn build_with_vapor_setup<'owner, 'arena>(
     setup: &NativeSelectedSetup<'owner, 'arena>,
 ) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
-    let file = setup.file();
+    let file = setup.l2ir();
     build_with_context(
         file.artifact(),
         TargetPolicy::Vapor,

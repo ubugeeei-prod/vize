@@ -4,19 +4,19 @@ use super::*;
 use crate::query::{TemplateSiteRef, TemplateSiteScope};
 use core::ptr;
 
-pub(in crate::query) fn assert_equivalent(file: &L2Ir<'_>) {
-    let scan = Model::new(file);
+pub(in crate::query) fn assert_equivalent(l2ir: &L2Ir<'_>) {
+    let scan = Model::new(l2ir);
     let mut index = scan.index_positions();
     compare(scan, index.model());
     // Exercise indexed lookup even on the small fixtures used for edge cases.
-    if file.is_complete() && !index.rows.indexed_script {
-        index.rows.index_script(file);
+    if l2ir.is_complete() && !index.rows.indexed_script {
+        index.rows.index_script(l2ir);
         compare(scan, index.model());
     }
 }
 
 fn compare(scan: Model<'_, '_>, indexed: IndexedModel<'_, '_>) {
-    let file = scan.file();
+    let file = scan.l2ir();
     for byte in (0..=file.artifact().source().len() as u32).chain([u32::MAX]) {
         assert_eq!(
             scan.reference_at_offset(byte)
@@ -28,10 +28,10 @@ fn compare(scan: Model<'_, '_>, indexed: IndexedModel<'_, '_>) {
         );
         assert_eq!(
             scan.binding_at_offset(byte)
-                .map(|r| r.map(|x| (ptr::from_ref(x.file()), x.id()))),
+                .map(|r| r.map(|x| (ptr::from_ref(x.l2ir()), x.id()))),
             indexed
                 .binding_at_offset(byte)
-                .map(|r| r.map(|x| (ptr::from_ref(x.file()), x.id()))),
+                .map(|r| r.map(|x| (ptr::from_ref(x.l2ir()), x.id()))),
             "binding {byte}"
         );
         assert_eq!(
@@ -55,7 +55,7 @@ fn compare(scan: Model<'_, '_>, indexed: IndexedModel<'_, '_>) {
 }
 
 fn same_site(expected: TemplateSiteRef<'_, '_>, actual: TemplateSiteRef<'_, '_>) {
-    assert!(ptr::eq(actual.file(), expected.file()));
+    assert!(ptr::eq(actual.l2ir(), expected.l2ir()));
     assert_eq!(actual.span(), expected.span());
     assert_eq!(actual.usage(), expected.usage());
     assert!(actual.symbol().same_symbol(expected.symbol()));

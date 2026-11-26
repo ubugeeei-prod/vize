@@ -67,6 +67,7 @@ impl NativeSfcTemplateRule for Probe {
         owner: &NativeSfcTemplateOwner<'a>,
     ) -> Result<(), NativeTemplateLintRefusal> {
         assert!(core::ptr::eq(context.owner(), owner));
+        crate::native_ir_accessor_compat::assert_template_alias(owner);
         assert!(core::ptr::eq(context.source(), owner.source()));
         assert!(core::ptr::eq(
             context.source(),

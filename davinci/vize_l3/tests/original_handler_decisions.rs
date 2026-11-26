@@ -58,7 +58,7 @@ fn sole_binding_walk_retains_same_file_on_body_source_and_complete_resolver() {
     let analysis = build_dom_file_decisions(file).unwrap();
     let dom = analysis.dom().unwrap();
     let row = dom.file_handler(lower.id().node()).unwrap();
-    assert!(core::ptr::eq(row.handler().file(), file));
+    assert!(core::ptr::eq(row.handler().l2ir(), file));
     assert!(core::ptr::eq(row.on(), &**on));
     assert!(row.accepts_on(on));
     assert_eq!(row.handler().scope(), lower.scope());

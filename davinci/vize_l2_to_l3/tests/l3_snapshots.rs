@@ -25,9 +25,9 @@ fn snapshot(source: &str) -> String {
     let (tree, errors) = vize_l1::markup::parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let lowered = lower(&allocator, &s2.artifact.root);
-    assert_eq!(verify(&lowered.program), []);
+    assert_eq!(verify(&lowered.l3ir), []);
 
-    let mut output = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);
+    let mut output = L3Page::of(&lowered.l3ir).print_to_string(DumpMode::Full);
     output.push_str(
         PartitionPage::of(&lowered.partition)
             .print_to_string(DumpMode::Full)

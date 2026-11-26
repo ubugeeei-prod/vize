@@ -374,6 +374,7 @@ class FormatterConfig {
   arrowParens: ("always" | "avoid")? = null
   endOfLine: ("lf" | "crlf" | "cr" | "auto")? = null
   quoteProps: ("as-needed" | "consistent" | "preserve")? = null
+  objectWrap: ("preserve" | "collapse")? = null
   singleAttributePerLine: Boolean? = null
   vueIndentScriptAndStyle: Boolean? = null
   sortAttributes: Boolean? = null

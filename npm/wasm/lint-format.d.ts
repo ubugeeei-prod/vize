@@ -75,6 +75,8 @@ export interface FormatOptions {
   arrowParens?: "always" | "avoid";
   endOfLine?: "lf" | "crlf" | "cr" | "auto";
   quoteProps?: "as-needed" | "consistent" | "preserve";
+  /** Keep objects multiline when a newline follows '{' (default), or collapse objects that fit. */
+  objectWrap?: "preserve" | "collapse";
   singleAttributePerLine?: boolean;
   vueIndentScriptAndStyle?: boolean;
   sortAttributes?: boolean;

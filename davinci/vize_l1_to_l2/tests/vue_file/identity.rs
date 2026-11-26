@@ -19,8 +19,8 @@ fn equal_numeric_bindings_in_another_file_cannot_gain_vue_exposure() {
     };
     let first = make();
     let second = make();
-    let actual = first.file().bindings().next().unwrap();
-    let foreign = second.file().bindings().next().unwrap();
+    let actual = first.l2ir().bindings().next().unwrap();
+    let foreign = second.l2ir().bindings().next().unwrap();
     assert_eq!(actual.id(), foreign.id());
     assert!(first.exposure(actual).is_some());
     assert!(first.exposure(foreign).is_none());
@@ -36,7 +36,7 @@ fn template_expression_literal_and_entity_coordinates_remain_original() {
     let vue = producer.finish().unwrap();
     assert_eq!(native.embeds.len(), 2);
     for embed in native.embeds {
-        let resolution = vue.file().expression(embed.node.unwrap()).unwrap();
+        let resolution = vue.l2ir().expression(embed.node.unwrap()).unwrap();
         let table = resolution.table().unwrap();
         assert!(table.occurrences().is_empty());
         assert!(core::ptr::eq(
@@ -106,5 +106,5 @@ fn native_equal_copy_source_refuses_before_mint_and_retains_whole_component() {
         rejected.component.block().root_source(),
         source
     ));
-    assert_eq!(producer.finish().unwrap().file().artifact().node_count(), 0);
+    assert_eq!(producer.finish().unwrap().l2ir().artifact().node_count(), 0);
 }

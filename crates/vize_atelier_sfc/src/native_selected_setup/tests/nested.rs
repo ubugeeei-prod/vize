@@ -15,7 +15,7 @@ fn exact_original_nested_case_retains_element_operand_file_scope_and_setup_read(
     let output = compiled.result().expect("whole original nested output");
     let envelope = compiled.observation().admitted().expect("whole envelope");
     let setup = envelope.setup();
-    let file = setup.file();
+    let file = setup.l2ir();
     assert!(file.is_complete());
     assert!(file.native_interpolation_failures().is_empty());
     assert_eq!(file.native_interpolations().len(), 1);
@@ -95,7 +95,7 @@ fn exact_original_nested_case_retains_element_operand_file_scope_and_setup_read(
         .expression(node)
         .expect("actual original scoped row");
     let resolution = row.resolution();
-    assert!(core::ptr::eq(resolution.file(), file));
+    assert!(core::ptr::eq(resolution.l2ir(), file));
     assert_eq!(resolution.scope(), Some(setup.scope()));
     let table = resolution
         .table()

@@ -25,7 +25,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             return;
         };
         let dependency = match resolution
-            .file()
+            .l2ir()
             .native_model(node)
             .and_then(|original| original.kind())
         {

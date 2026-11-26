@@ -233,9 +233,7 @@ await test("every process must be present, clean and from the same binary", () =
 
 await test("the observer workflow builds in the background and runs each sharded observer", () => {
   type Step = { name?: string; run?: string; uses?: string; with?: Record<string, unknown> };
-  const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "davinci-canonical-corpus.yml"),
-  );
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "07-canonical-corpus.yml"));
   const steps = workflow.jobs["canonical-observers"].steps as Step[];
   const names = steps.map((step) => step.name);
   const step = (name: string) => steps.find((candidate) => candidate.name === name) as Step;
@@ -279,15 +277,15 @@ await test("the observer workflow builds in the background and runs each sharded
 await test("only trusted main seeds the fixture objects that PR and queue observers restore", () => {
   type Step = { name?: string; run?: string; uses?: string; if?: string; with?: unknown };
   const workflow = parse(
-    readAutomationPrograms(".github", "workflows", "canonical-corpus-objects.yml"),
+    readAutomationPrograms(".github", "workflows", "07-canonical-corpus-objects.yml"),
   );
   assert.deepEqual(workflow.on.push, {
     branches: ["main"],
     paths: [
       ".gitmodules",
       "tests/_fixtures/_git/**",
-      ".github/workflows/canonical-corpus-objects.yml",
-      ".github/scripts/workflows/canonical-corpus-objects/**",
+      ".github/workflows/07-canonical-corpus-objects.yml",
+      "tools/ci/workflows/07-canonical-corpus-objects/scripts/**",
     ],
   });
   assert.equal(workflow.on.pull_request, undefined);

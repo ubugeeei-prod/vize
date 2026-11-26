@@ -9,6 +9,7 @@ use crate::virtual_ts::generic_parameters::GenericParameters;
 pub(crate) struct PropsTypeEmission {
     deferred_to_setup: bool,
     prefer_identifier_props: bool,
+    unextracted_options_props: bool,
 }
 
 impl PropsTypeEmission {
@@ -16,6 +17,7 @@ impl PropsTypeEmission {
         Self {
             deferred_to_setup: false,
             prefer_identifier_props,
+            unextracted_options_props: false,
         }
     }
 
@@ -23,7 +25,20 @@ impl PropsTypeEmission {
         Self {
             deferred_to_setup: true,
             prefer_identifier_props,
+            unextracted_options_props: false,
         }
+    }
+
+    /// The component's default export declares Options API `props` that were
+    /// not projected (Options API projection is off): its props are unknown,
+    /// not empty.
+    pub(crate) const fn with_unextracted_options_props(mut self, unextracted: bool) -> Self {
+        self.unextracted_options_props = unextracted;
+        self
+    }
+
+    pub(crate) const fn has_unextracted_options_props(self) -> bool {
+        self.unextracted_options_props
     }
 
     pub(crate) const fn is_deferred_to_setup(self) -> bool {

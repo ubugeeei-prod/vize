@@ -45,8 +45,8 @@ fn rust_lowered_values_match_stateful_reference_input() {
         assert!(errors.is_empty(), "{errors:?}");
         let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
         let lowered = lower(&allocator, &s2.artifact.root);
-        assert_eq!(verify(&lowered.program), []);
-        let actual = ValuesPage::of(&lowered.program).print_to_string(DumpMode::Full);
+        assert_eq!(verify(&lowered.l3ir), []);
+        let actual = ValuesPage::of(&lowered.l3ir).print_to_string(DumpMode::Full);
         assert_eq!(
             actual.trim_end_matches('\n'),
             expected.trim_end_matches('\n')
@@ -108,23 +108,23 @@ fn assert_rust_lowered_fixture(
     assert!(errors.is_empty(), "{errors:?}");
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let lowered = lower(&allocator, &s2.artifact.root);
-    assert_eq!(verify(&lowered.program), []);
+    assert_eq!(verify(&lowered.l3ir), []);
 
-    let actual = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);
+    let actual = L3Page::of(&lowered.l3ir).print_to_string(DumpMode::Full);
     assert_eq!(
         actual.trim_end_matches('\n'),
         expected_folio.trim_end_matches('\n')
     );
     assert_eq!(
-        reference_trace_text(&lowered.program).trim_end_matches('\n'),
+        reference_trace_text(&lowered.l3ir).trim_end_matches('\n'),
         expected_trace.trim_end_matches('\n')
     );
     assert_eq!(
-        backend_trace_text(TraceBackend::Vdom, &lowered.program).trim_end_matches('\n'),
+        backend_trace_text(TraceBackend::Vdom, &lowered.l3ir).trim_end_matches('\n'),
         expected_vdom.trim_end_matches('\n')
     );
     assert_eq!(
-        backend_trace_text(TraceBackend::Vapor, &lowered.program).trim_end_matches('\n'),
+        backend_trace_text(TraceBackend::Vapor, &lowered.l3ir).trim_end_matches('\n'),
         expected_vapor.trim_end_matches('\n')
     );
 }

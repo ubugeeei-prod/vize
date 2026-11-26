@@ -35,13 +35,13 @@ pub enum RejectedFileHandler<'a> {
 /// ```compile_fail
 /// use vize_l2::file::{L2Ir, FileHandler};
 /// use vize_l2::op::HandlerId;
-/// fn forge<'f,'a>(file: &'f L2Ir<'a>, id: HandlerId) {
-///     let _ = FileHandler { file, id };
+/// fn forge<'f,'a>(l2ir: &'f L2Ir<'a>, id: HandlerId) {
+///     let _ = FileHandler { l2ir, id };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct FileHandler<'f, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     id: HandlerId,
 }
 
@@ -50,7 +50,7 @@ impl<'a> L2Ir<'a> {
     #[must_use]
     pub fn handler(&self, id: HandlerId) -> Option<FileHandler<'_, 'a>> {
         self.facts.handlers.get(id.node())?;
-        Some(FileHandler { file: self, id })
+        Some(FileHandler { l2ir: self, id })
     }
     /// Join the exact checked attached On allocation with this actual File.
     /// Equal IDs, spans, fields or an On copied from another File do not join.
@@ -79,15 +79,15 @@ impl<'a> L2Ir<'a> {
 impl<'f, 'a> FileHandler<'f, 'a> {
     #[must_use]
     pub fn accepts_on(self, on: &OnOp<'a>) -> bool {
-        self.file
+        self.l2ir
             .facts
             .handlers
             .get(self.id.node())
             .is_some_and(|record| core::ptr::eq(record.original.as_ptr(), on))
     }
     #[must_use]
-    pub const fn file(self) -> &'f L2Ir<'a> {
-        self.file
+    pub const fn l2ir(self) -> &'f L2Ir<'a> {
+        self.l2ir
     }
     #[must_use]
     pub const fn id(self) -> HandlerId {
@@ -95,18 +95,18 @@ impl<'f, 'a> FileHandler<'f, 'a> {
     }
     #[must_use]
     pub fn resolution(self) -> Option<&'f HandlerResolution<'a>> {
-        Some(&self.file.facts.handlers.get(self.id.node())?.resolution)
+        Some(&self.l2ir.facts.handlers.get(self.id.node())?.resolution)
     }
     #[must_use]
     pub fn scope(self) -> Option<ScopeId> {
-        Some(self.file.facts.handlers.get(self.id.node())?.scope)
+        Some(self.l2ir.facts.handlers.get(self.id.node())?.scope)
     }
     #[must_use]
     pub fn accepts(self, binding: BindingRef<'_, '_>) -> bool {
-        core::ptr::eq(self.file, binding.file())
+        core::ptr::eq(self.l2ir, binding.l2ir())
     }
     #[must_use]
     pub fn same_owner(self, other: FileHandler<'_, '_>) -> bool {
-        core::ptr::eq(self.file, other.file)
+        core::ptr::eq(self.l2ir, other.l2ir)
     }
 }

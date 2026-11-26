@@ -70,7 +70,7 @@ fn with_original(
         let query = RetainedNavigation {
             intrinsic_tags: &[],
             snapshot: &snapshot,
-            file: &file,
+            l2ir: &file,
             lines: &lines,
             native: None,
             original: super::super::Original {

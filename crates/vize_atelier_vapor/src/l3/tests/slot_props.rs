@@ -129,7 +129,7 @@ fn checked_slot_prop_payload_owns_computed_keys_and_selector() {
         &allocator,
         r#"<slot :name="selected" title="fixed" :[name]="value" />"#,
     );
-    for operand in &mut s3.program.operands {
+    for operand in &mut s3.l3ir.operands {
         match (operand.role, operand.value.text) {
             (vize_l3::operand::OperandRole::Name, "selected") => operand.value.text = "otherSlot",
             (vize_l3::operand::OperandRole::Name, "name") => operand.value.text = "otherName",

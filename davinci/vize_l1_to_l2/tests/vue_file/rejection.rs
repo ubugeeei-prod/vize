@@ -84,7 +84,7 @@ fn genuine_call_refusal_rolls_back_whole_reference_batch_while_neutral_calls_sta
     assert!(native.is_supported());
     let vue = vue.finish().unwrap();
     let embed = native.embeds.first().unwrap();
-    let resolution = vue.file().expression(embed.node.unwrap()).unwrap();
+    let resolution = vue.l2ir().expression(embed.node.unwrap()).unwrap();
     assert_eq!(resolution.scope(), Some(vue.setup().unwrap().scope()));
     let table = resolution.table().unwrap();
     assert!(core::ptr::eq(

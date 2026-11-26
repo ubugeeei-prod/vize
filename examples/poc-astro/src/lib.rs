@@ -49,7 +49,7 @@ pub fn compile(source: &str) -> Result<String, Error> {
     }
     let region = dialect::Lowering::new(&allocator, source).region(tree.children.iter())?;
     let lowered = poc_support::lower(&allocator, &region)?;
-    let render = target::render(View::new(&lowered.program))?;
+    let render = target::render(View::new(&lowered.l3ir))?;
 
     let mut out = Writer::<NoLinks>::with_capacity(source.len() * 2);
     out.push(RUNTIME);

@@ -34,7 +34,7 @@ function workflowStepBody(job: string, stepName: string): string {
 }
 
 test("benchmark workflow comments from trusted code after a read-only benchmark run", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "benchmark.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "03-source-comparison.yml");
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
   const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
   const commentJob = workflowJobBody(workflow, "pr-benchmark-comment");
@@ -106,7 +106,7 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
 });
 
 test("benchmark dispatch validates exact SHA evidence and runs the existing budget", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "benchmark.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "03-source-comparison.yml");
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
   const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
   const commentJob = workflowJobBody(workflow, "pr-benchmark-comment");
@@ -166,7 +166,7 @@ test("benchmark dispatch validates exact SHA evidence and runs the existing budg
 });
 
 test("benchmark schedule gates long-term drift against a fixed commit", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "benchmark.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "03-source-comparison.yml");
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
   const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
   const validateStep = workflowStepBody(benchmarkJob, "Validate benchmark SHAs");
@@ -239,7 +239,7 @@ test("benchmark schedule gates long-term drift against a fixed commit", () => {
 });
 
 test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard", () => {
-  const workflow = readAutomationPrograms(".github", "workflows", "criterion-bench.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "03-criterion.yml");
   const abJob = workflowJobBody(workflow, "criterion-ab");
   const guardJob = workflowJobBody(workflow, "dialect-guard");
 

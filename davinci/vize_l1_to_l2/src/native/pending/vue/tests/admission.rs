@@ -57,7 +57,7 @@ fn actual_setup_profile_drives_ts_without_a_caller_template_language() {
     );
     assert_eq!(native.produced().component.block(), block);
     let vue = producer.finish().unwrap();
-    assert!(vue.file().is_complete());
+    assert!(vue.l2ir().is_complete());
     assert_eq!(vue.setup().unwrap().source_type(), syntax.source_type());
 }
 

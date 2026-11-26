@@ -68,8 +68,8 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         };
         let scope = head.scope()?;
         let identifier = expression.ast.get_identifier_reference()?;
-        if !core::ptr::eq(resolution.file(), file)
-            || !core::ptr::eq(binding.file(), file)
+        if !core::ptr::eq(resolution.l2ir(), file)
+            || !core::ptr::eq(binding.l2ir(), file)
             || !row.accepts_original(original)
             || resolution.scope() != Some(scope)
             || expected.fact().role() != role
@@ -144,7 +144,7 @@ mod tests {
         let view = observation.admitted().unwrap();
         let foreign_view = other.admitted().unwrap();
         let setup = view.setup();
-        let file = setup.file();
+        let file = setup.l2ir();
         let [root @ Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
             panic!("For");
         };
@@ -179,7 +179,7 @@ mod tests {
         let expression = table.expression();
         let occurrence = &table.occurrences()[0];
         let binding = resolution.binding(occurrence.binding).unwrap();
-        let foreign = foreign_view.setup().file();
+        let foreign = foreign_view.setup().l2ir();
         let foreign_resolution = foreign.expression(node).unwrap();
         let foreign_binding = foreign_resolution.binding(occurrence.binding).unwrap();
         assert_eq!(binding.id(), foreign_binding.id());
@@ -252,7 +252,7 @@ mod tests {
         );
         let view = observation.admitted().unwrap();
         let setup = view.setup();
-        let file = setup.file();
+        let file = setup.l2ir();
         let [root @ Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
             panic!("For");
         };

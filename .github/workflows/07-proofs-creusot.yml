@@ -1,0 +1,129 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/07-proofs-creusot/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Davinci Creusot
+
+# Deductive proofs of the Davinci laws (docs/davinci/decisions/2026-11-17-creusot.md).
+# Creusot compiles the tests/formal/creusot workspace, whose library roots sit
+# next to the shipped kernels, and why3find replays the committed proofs. Any goal without a valid
+# proof fails the job. The toolchain comes from its own flake, so the product
+# flake and the stable Rust build never see Creusot's nightly compiler.
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/07-proofs-creusot.yml"
+      - "tools/nix/creusot/**"
+      - "tests/formal/creusot/**"
+      - crates/vize_atelier_core/src/codegen/helpers/creusot.rs
+      - crates/vize_atelier_core/src/codegen/helpers/escape_gate.rs
+      - crates/vize_croquis/src/scope/chain/creusot.rs
+      - crates/vize_croquis/src/scope/chain/rows.rs
+      - crates/vize_maestro/src/source_project/style_format/creusot.rs
+      - crates/vize_maestro/src/source_project/style_format/header.rs
+      - crates/vize_patina/src/html_content_model/creusot.rs
+      - crates/vize_patina/src/html_content_model/tri.rs
+      - crates/vize_patina/src/html_content_model/walk.rs
+      - davinci/vize_l0/src/source_io/creusot.rs
+      - davinci/vize_l0/src/source_io/utf8.rs
+      - davinci/vize_l0/src/line_index/code_units.rs
+      - davinci/vize_l0/src/line_index/creusot.rs
+      - davinci/vize_l0/src/line_index/line_table.rs
+      - davinci/vize_l0/src/creusot.rs
+      - davinci/vize_l0/src/source_range.rs
+      - davinci/vize_l0/src/span.rs
+      - davinci/vize_l2/src/query/script/assignments/creusot.rs
+      - davinci/vize_l2/src/query/script/assignments/prefix/frame.rs
+      - davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs
+      - davinci/vize_l2/src/query/script/assignments/relation.rs
+      - davinci/vize_l3/src/lattice/axis.rs
+      - "davinci/vize_l3/src/lattice/class.rs"
+      - "davinci/vize_l3/src/lattice/creusot.rs"
+      - davinci/vize_l3/src/lattice/effect.rs
+      - "davinci/vize_l3/src/query/check/creusot.rs"
+      - "davinci/vize_l3/src/query/check/rule.rs"
+      - davinci/vize_l4/src/write/creusot.rs
+      - davinci/vize_l4/src/write/line_endings.rs
+      - davinci/vize_l4/src/write/source_positions.rs
+      - tests/davinci_test_support/src/l3_reference/checker.rs
+      - tests/davinci_test_support/src/l3_reference/creusot.rs
+      - tests/davinci_test_support/src/l3_reference/program.rs
+      - tests/davinci_test_support/src/l3_reference/schedule.rs
+      - tests/davinci_test_support/src/l3_reference/trace.rs
+      - tests/formal/creusot/unicode/creusot.rs
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/07-proofs-creusot.yml"
+      - "tools/nix/creusot/**"
+      - "tests/formal/creusot/**"
+      - crates/vize_atelier_core/src/codegen/helpers/creusot.rs
+      - crates/vize_atelier_core/src/codegen/helpers/escape_gate.rs
+      - crates/vize_croquis/src/scope/chain/creusot.rs
+      - crates/vize_croquis/src/scope/chain/rows.rs
+      - crates/vize_maestro/src/source_project/style_format/creusot.rs
+      - crates/vize_maestro/src/source_project/style_format/header.rs
+      - crates/vize_patina/src/html_content_model/creusot.rs
+      - crates/vize_patina/src/html_content_model/tri.rs
+      - crates/vize_patina/src/html_content_model/walk.rs
+      - davinci/vize_l0/src/source_io/creusot.rs
+      - davinci/vize_l0/src/source_io/utf8.rs
+      - davinci/vize_l0/src/line_index/code_units.rs
+      - davinci/vize_l0/src/line_index/creusot.rs
+      - davinci/vize_l0/src/line_index/line_table.rs
+      - davinci/vize_l0/src/creusot.rs
+      - davinci/vize_l0/src/source_range.rs
+      - davinci/vize_l0/src/span.rs
+      - davinci/vize_l2/src/query/script/assignments/creusot.rs
+      - davinci/vize_l2/src/query/script/assignments/prefix/frame.rs
+      - davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs
+      - davinci/vize_l2/src/query/script/assignments/relation.rs
+      - davinci/vize_l3/src/lattice/axis.rs
+      - "davinci/vize_l3/src/lattice/class.rs"
+      - "davinci/vize_l3/src/lattice/creusot.rs"
+      - davinci/vize_l3/src/lattice/effect.rs
+      - "davinci/vize_l3/src/query/check/creusot.rs"
+      - "davinci/vize_l3/src/query/check/rule.rs"
+      - davinci/vize_l4/src/write/creusot.rs
+      - davinci/vize_l4/src/write/line_endings.rs
+      - davinci/vize_l4/src/write/source_positions.rs
+      - tests/davinci_test_support/src/l3_reference/checker.rs
+      - tests/davinci_test_support/src/l3_reference/creusot.rs
+      - tests/davinci_test_support/src/l3_reference/program.rs
+      - tests/davinci_test_support/src/l3_reference/schedule.rs
+      - tests/davinci_test_support/src/l3_reference/trace.rs
+      - tests/formal/creusot/unicode/creusot.rs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  prove:
+    name: Creusot proofs
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31
+        with:
+          extra_nix_config: |
+            keep-derivations = true
+            keep-outputs = true
+      - name: Cache the Creusot toolchain
+        uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7
+        with:
+          primary-key: creusot-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/nix/creusot/flake.nix', 'tools/nix/creusot/flake.lock') }}
+          restore-prefixes-first-match: creusot-${{ runner.os }}-${{ runner.arch }}-
+          gc-max-store-size-linux: 8G
+      - name: Build the pinned toolchain
+        run: nix build 'path:./tools/nix/creusot' --out-link "$RUNNER_TEMP/creusot" --print-build-logs
+      - name: Replay the proofs
+        # --replay checks the committed proof certificates and never searches
+        # for new ones; why3find exits non-zero on any unproved goal.
+        working-directory: tests/formal/creusot
+        run: nix develop 'path:../../../tools/nix/creusot' --command cargo creusot --replay -- --locked

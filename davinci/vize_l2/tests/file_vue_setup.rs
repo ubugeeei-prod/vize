@@ -22,7 +22,7 @@ use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 mod vue_setup_cases;
 
 struct Observed<'a> {
-    descriptor: L1Ir<'a>,
+    l1ir: L1Ir<'a>,
     syntax: EmbedSyntax<'a>,
 }
 
@@ -47,14 +47,14 @@ impl<'a> Observed<'a> {
             EmbedSource::authored(source, script.block().span()).map_err(|_| "actual block")?,
             ProgramOptions::module(script.lang()),
         );
-        Ok(Self { descriptor, syntax })
+        Ok(Self {
+            l1ir: descriptor,
+            syntax,
+        })
     }
 
     fn script(&self) -> Result<ScriptView<'_, 'a>, &'static str> {
-        let view = self
-            .descriptor
-            .admitted()
-            .map_err(|_| "actual descriptor")?;
+        let view = self.l1ir.admitted().map_err(|_| "actual descriptor")?;
         view.setup()
             .or_else(|| view.ordinary())
             .ok_or("actual script")
@@ -63,7 +63,7 @@ impl<'a> Observed<'a> {
     fn file(&self, arena: &'a Allocator) -> Result<L2Ir<'a>, &'static str> {
         let script = self.script()?;
         let mut producer =
-            FileProducer::new(arena, self.descriptor.source()).map_err(|_| "actual file")?;
+            FileProducer::new(arena, self.l1ir.source()).map_err(|_| "actual file")?;
         producer
             .program(
                 ProgramInput::checked(
@@ -84,10 +84,10 @@ impl<'a> Observed<'a> {
 
     fn view<'f>(
         &self,
-        file: &'f L2Ir<'a>,
+        l2ir: &'f L2Ir<'a>,
     ) -> Result<Result<VueExposure<'f, '_, '_, 'a>, ExposureIssue>, &'static str> {
         Ok(VueExposure::checked(
-            file,
+            l2ir,
             self.script()?,
             self.syntax.admitted_program().ok_or("actual Program")?,
         ))

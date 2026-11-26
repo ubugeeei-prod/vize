@@ -1,6 +1,6 @@
 use super::{
     Allocator, PositionQueryError, TemplateQueryError, TemplateSiteScope, TemplateSymbolRef, at,
-    file, native, site, uses,
+    l2ir_of, native, site, uses,
 };
 use crate::query::Model;
 
@@ -9,7 +9,7 @@ fn original_handler_locals_keep_shadowing_and_actual_declaration_site_scopes() {
     let arena = Allocator::default();
     let source = "<script setup>const value=2;</script><template><button @click='let value=$event; {let value=3; value;} value;' @blur='value'/></template>";
     let output = native(&arena, source);
-    let file = file(&output);
+    let file = l2ir_of(&output);
     let declaration = site(file, source, "value=$event");
     let nested = site(file, source, "value=3");
     let outer_use = site(file, source, "value;' @blur");
@@ -42,7 +42,7 @@ fn original_handler_locals_keep_shadowing_and_actual_declaration_site_scopes() {
     };
     assert!(event.declarations().next().is_none());
     assert_eq!(event.binding().name, "$event");
-    assert!(core::ptr::eq(declaration.file(), file));
+    assert!(core::ptr::eq(declaration.l2ir(), file));
 }
 
 #[test]
@@ -51,7 +51,7 @@ fn original_handler_entity_spelling_half_open_utf8_and_utf16_are_preserved() {
     let source =
         "<template><button @click='/*kept\r\n😀*/ let café=$event; return caf&#233;'/></template>";
     let output = native(&arena, source);
-    let file = file(&output);
+    let file = l2ir_of(&output);
     let declaration = site(file, source, "café=");
     let reference = site(file, source, "caf&#233;");
     assert!(declaration.symbol().same_symbol(reference.symbol()));
@@ -113,7 +113,7 @@ fn original_var_site_scope_remains_distinct_from_its_hoisted_binding() {
     let arena = Allocator::default();
     let source = "<template><button @click='{var value=$event;} return value'/></template>";
     let output = native(&arena, source);
-    let file = file(&output);
+    let file = l2ir_of(&output);
     let declaration = site(file, source, "value=$event");
     let reference = site(file, source, "value'/>");
     let TemplateSymbolRef::HandlerLocal(local) = declaration.symbol() else {

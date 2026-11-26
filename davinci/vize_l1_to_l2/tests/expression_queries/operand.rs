@@ -64,9 +64,9 @@ pub(super) fn compare(root: &RootNode<'_>, start: u32, model: Model<'_, '_>, pat
     let mut occurrences = Vec::new();
     model
         .for_each_resolved_template_operand(|op| {
-            let file = op.scope().file();
+            let file = op.scope().l2ir();
             let resolution = file.expression(op.node()).unwrap();
-            assert!(std::ptr::eq(file, model.file()));
+            assert!(std::ptr::eq(file, model.l2ir()));
             assert_eq!(resolution.scope(), Some(op.scope().scope().id));
             let expression = resolution.table().unwrap().expression();
             assert_eq!((expression.span, expression.source), (op.span(), op.text()));
@@ -133,7 +133,7 @@ fn selected_conditions_and_mutable_models_use_the_original_operation_and_binding
     ] {
         let arena = Allocator::default();
         let observation = observe(&arena, source);
-        let descriptor = observation.descriptor().admitted().unwrap();
+        let descriptor = observation.l1ir().admitted().unwrap();
         let selected = SelectedTemplateComponent::parse_in(&arena, descriptor)
             .unwrap()
             .unwrap();
@@ -173,7 +173,7 @@ fn from_source(source: &str, joined: bool) -> (Vec<Row>, Vec<Span>) {
     let arena = Allocator::default();
     let original_file = observe(&arena, source);
     let native = original_file.admitted().unwrap();
-    let model = Model::new(native.file().file());
+    let model = Model::new(native.file().l2ir());
     let mut uses = Vec::new();
     let rows = if joined {
         let mut rows = Vec::new();
@@ -191,7 +191,7 @@ fn from_source(source: &str, joined: bool) -> (Vec<Row>, Vec<Span>) {
         rows
     } else {
         let block = original_file
-            .descriptor()
+            .l1ir()
             .admitted()
             .unwrap()
             .template()
@@ -215,9 +215,9 @@ fn paired_operand_products() {
         let source = super::input::repeated(repeats);
         let retained = observe(&arena, &source);
         let native = retained.admitted().unwrap();
-        let model = Model::new(native.file().file());
+        let model = Model::new(native.file().l2ir());
         let block = retained
-            .descriptor()
+            .l1ir()
             .admitted()
             .unwrap()
             .template()

@@ -121,7 +121,7 @@ fn malformed_computed_dom_sources_preserve_parser_diagnostics() {
 fn checked_computed_dom_payload_owns_keys_and_values() {
     let allocator = Allocator::new();
     let mut s3 = super::lowered_source(&allocator, r#"<div title="fixed" :[name]="value"></div>"#);
-    for operand in &mut s3.program.operands {
+    for operand in &mut s3.l3ir.operands {
         match (operand.role, operand.value.text) {
             (vize_l3::operand::OperandRole::Name, "name") => operand.value.text = "otherName",
             (vize_l3::operand::OperandRole::Value, "value") => operand.value.text = "otherValue",

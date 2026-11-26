@@ -17,8 +17,8 @@ fn complete(original: &mut NativeTemplateOwner<'_>) -> Test {
     walk.complete().map_err(|_| "complete root")
 }
 
-fn joined(file: &L2Ir<'_>, index: usize, actual: &InterpolationOp<'_>) -> Test {
-    let record = file
+fn joined(l2ir: &L2Ir<'_>, index: usize, actual: &InterpolationOp<'_>) -> Test {
+    let record = l2ir
         .native_interpolations()
         .get(index)
         .ok_or("whole original input")?;
@@ -27,7 +27,7 @@ fn joined(file: &L2Ir<'_>, index: usize, actual: &InterpolationOp<'_>) -> Test {
     };
     check(core::ptr::eq(
         record,
-        file.native_interpolation(node).ok_or("actual node join")?,
+        l2ir.native_interpolation(node).ok_or("actual node join")?,
     ))?;
     same(actual.span, record.input().operand().full_span())?;
     let ExprRef::Js(expression) = actual.expression else {
@@ -42,7 +42,7 @@ fn joined(file: &L2Ir<'_>, index: usize, actual: &InterpolationOp<'_>) -> Test {
             .expression()
             .ok_or("original stock root")?,
     ))?;
-    let table = file
+    let table = l2ir
         .expression(node)
         .ok_or("sole File resolver")?
         .table()
@@ -51,7 +51,7 @@ fn joined(file: &L2Ir<'_>, index: usize, actual: &InterpolationOp<'_>) -> Test {
     check(core::ptr::eq(table.expression().source, expression.source))?;
     check(core::ptr::eq(
         record.input().operand().syntax().source().authored_root(),
-        file.artifact().source(),
+        l2ir.artifact().source(),
     ))
 }
 

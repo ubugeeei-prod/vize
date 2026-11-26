@@ -12,11 +12,15 @@ fn every_byte_and_checkpoint_agrees_with_the_original_position_convention() {
                 "🌿x".repeat(80)
             );
             let index = SourceMapIndex::new(&input);
-            let stock = super::super::line_start_table(&input);
+            let stock = crate::write::source_positions::line_start_table(input.as_bytes());
             for byte in 0..input.len() + 5 {
                 assert_eq!(
                     index.position(byte as u32),
-                    super::super::resolve_in_table(&input, &stock, byte),
+                    crate::write::source_positions::resolve_in_table(
+                        input.as_bytes(),
+                        &stock,
+                        byte
+                    ),
                     "{ending:?} {pad} {byte}"
                 );
             }

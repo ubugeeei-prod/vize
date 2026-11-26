@@ -12,7 +12,7 @@ fn compare_declarations(owner: &NativeSfcObservation<'_>) {
     use oxc_ast::ast::{ImportDeclarationSpecifier as Specifier, Statement};
     use oxc_span::SourceType;
     let descriptor =
-        vize_atelier_sfc::parse_sfc(owner.descriptor().source(), Default::default()).unwrap();
+        vize_atelier_sfc::parse_sfc(owner.l1ir().source(), Default::default()).unwrap();
     let script = descriptor.script_setup.unwrap();
     let arena = Allocator::new();
     let ty = if script.lang.as_deref() == Some("ts") {
@@ -156,7 +156,7 @@ fn detached_equal_text_program_and_foreign_template_are_refused() {
     let one = observe(&a, source);
     let two = observe(&b, source);
     let file = one.rejected_file().unwrap().file().unwrap();
-    let descriptor = one.descriptor().admitted().unwrap();
+    let descriptor = one.l1ir().admitted().unwrap();
     let script = descriptor.setup().unwrap();
     let program = two.scripts()[0]
         .syntax()
@@ -174,7 +174,7 @@ fn detached_equal_text_program_and_foreign_template_are_refused() {
     );
     let copied = source.to_owned();
     let three = observe(&b, &copied);
-    let template = three.descriptor().admitted().unwrap().template().unwrap();
+    let template = three.l1ir().admitted().unwrap().template().unwrap();
     let own = one.scripts()[0]
         .syntax()
         .unwrap()

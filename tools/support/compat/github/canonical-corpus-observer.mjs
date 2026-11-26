@@ -3,6 +3,7 @@ import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { recoverFixtureCheckout, validateHydration } from "./canonical-corpus-hydration.mjs";
+import { needsNativeWalk } from "./canonical-corpus-logical-walk.ts";
 import { validateNativeWalk } from "./canonical-corpus-native-walk.ts";
 import { verifyCommittedInventory } from "./canonical-corpus-inventory.mjs";
 import {
@@ -20,6 +21,10 @@ import {
   sha256,
   validateFiles,
 } from "./canonical-corpus-identity.mjs";
+import {
+  captureRecordRecapture,
+  validateRecordRecapture,
+} from "./canonical-corpus-recapture-archive.ts";
 import { hasProcessSegments, validateShardedObserver } from "./canonical-corpus-shard-evidence.ts";
 
 export const observerLogs = { dom: "dom-corpus.log", "ssr-pug": "ssr-pug.log", reach: "reach.log" };
@@ -161,7 +166,7 @@ const shardEvidence = (directory, files) => ({
 const vectorDigests = (directory, names) =>
   Object.fromEntries(names.map((name) => [name, sha256(readFileSync(join(directory, name)))]));
 
-export function validateObserverArtifact(observer, directory) {
+export function validateObserverArtifact(observer, directory, cwd = process.cwd()) {
   const receipt = readJson(join(directory, "observer.json"));
   assert.equal(receipt.schema, "vize.canonical-corpus-observer", "Foreign observer receipt");
   assert.equal(receipt.version, 1, "Unknown observer receipt version");
@@ -169,6 +174,11 @@ export function validateObserverArtifact(observer, directory) {
   assert.equal(receipt.outcome, "success", "Canonical observer did not succeed");
   const identity = readJson(join(directory, "identity.json"));
   sameCorpus(receipt.identity, identity);
+  const nativeRecapture = needsNativeWalk(identity.gitlinks) || identity.nativeWalk !== undefined;
+  if (nativeRecapture) {
+    assert(identity.nativeWalk, "Missing native snapshot identity");
+    assert(receipt.recapture, "Missing native snapshot-to-record relation");
+  }
   assert.equal(
     validateHydration(directory, identity),
     receipt.hydrationSha256,
@@ -188,7 +198,10 @@ export function validateObserverArtifact(observer, directory) {
     identity.filesSha256,
     "Canonical file manifest was replaced",
   );
-  validateNativeWalk(directory, identity, proof, files);
+  validateNativeWalk(directory, identity, proof, files, cwd);
+  if (nativeRecapture)
+    validateRecordRecapture(directory, identity, files, proof, receipt.recapture, cwd);
+  else assert.equal(receipt.recapture, undefined, "Unexpected native recapture relation");
   const bytes = readFileSync(join(directory, observerLogs[observer]));
   assert.equal(sha256(bytes), receipt.logSha256, "Observer log was replaced");
   const inspected = inspectObserverLog(observer, bytes, identity, shardEvidence(directory, files));
@@ -239,7 +252,14 @@ export function recordObserver(observer, outcome, cwd, env = process.env) {
   assert.equal(outcome, "success", "Required canonical observer did not succeed");
   const directory = join(cwd, artifactRoot);
   const identity = readJson(join(directory, "identity.json"));
-  sameCorpus(identity, captureCorpus(cwd, env).identity);
+  const files = readJson(join(directory, "files.json"));
+  const proof = readJson(join(directory, "committed-corpus.json"));
+  const nativeRecapture = needsNativeWalk(identity.gitlinks) || identity.nativeWalk !== undefined;
+  if (nativeRecapture) assert(identity.nativeWalk, "Missing native snapshot identity");
+  const recapture = nativeRecapture
+    ? captureRecordRecapture(cwd, env, directory, identity, files, proof)
+    : undefined;
+  if (!recapture) sameCorpus(identity, captureCorpus(cwd, env).identity);
   const bytes = readFileSync(join(directory, observerLogs[observer]));
   const inspected = inspectObserverLog(
     observer,
@@ -253,6 +273,7 @@ export function recordObserver(observer, outcome, cwd, env = process.env) {
     observer,
     outcome,
     identity,
+    ...(recapture ? { recapture } : {}),
     hydrationSha256: validateHydration(directory, identity),
     logSha256: sha256(bytes),
     selectedSha256: sha256(readFileSync(join(directory, "selected-gitlinks.txt"))),
@@ -262,7 +283,7 @@ export function recordObserver(observer, outcome, cwd, env = process.env) {
       ? { vectorSha256: vectorDigests(directory, inspected.vectors) }
       : {}),
   });
-  return validateObserverArtifact(observer, directory);
+  return validateObserverArtifact(observer, directory, cwd);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

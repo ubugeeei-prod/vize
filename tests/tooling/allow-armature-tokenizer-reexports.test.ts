@@ -8,10 +8,10 @@ import { fileURLToPath } from "node:url";
 import {
   expectedEntries,
   verdict,
-} from "../../tools/commands/ci/github/allow-armature-tokenizer-reexports.ts";
+} from "../../tools/ci/commands/github/allow-armature-tokenizer-reexports.ts";
 
 const tool = fileURLToPath(
-  new URL("../../tools/commands/ci/github/allow-armature-tokenizer-reexports.ts", import.meta.url),
+  new URL("../../tools/ci/commands/github/allow-armature-tokenizer-reexports.ts", import.meta.url),
 );
 const summary =
   "     Summary semver requires new major version: 6 major and 0 minor checks failed\n";

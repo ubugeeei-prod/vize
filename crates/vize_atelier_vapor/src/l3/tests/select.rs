@@ -91,7 +91,7 @@ fn checked_select_payload_owns_the_model_assignment() {
         &allocator,
         r#"<select v-model="original"><option value="a">A</option></select>"#,
     );
-    for operand in &mut s3.program.operands {
+    for operand in &mut s3.l3ir.operands {
         if matches!(
             operand.role,
             vize_l3::operand::OperandRole::ModelRead | vize_l3::operand::OperandRole::ModelWrite

@@ -40,10 +40,10 @@ mod typescript;
 
 fn checked<'o, 'f, 'a>(
     original: &'o Observed<'a>,
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
 ) -> Result<Result<VueSetup<'f, 'o, 'o, 'a>, SetupIssue>, &'static str> {
     Ok(VueSetup::checked(
-        file,
+        l2ir,
         original.script()?,
         original
             .syntax
@@ -59,7 +59,7 @@ fn setup_eligibility_retains_original_source_and_all_actual_root_bindings() -> R
     let original = Observed::new(&arena, source)?;
     let file = original.file(&arena)?;
     let setup = checked(&original, &file)?.map_err(|_| "genuine setup")?;
-    require!(core::ptr::eq(setup.exposure().file(), &file));
+    require!(core::ptr::eq(setup.exposure().l2ir(), &file));
     require!(core::ptr::eq(setup.source().root_source(), source));
     require!(core::ptr::eq(
         setup.source().source(),
@@ -71,7 +71,7 @@ fn setup_eligibility_retains_original_source_and_all_actual_root_bindings() -> R
         .bindings()
         .zip(["count", "yes", "nil", "large", "text"])
     {
-        require!(core::ptr::eq(binding.file(), &file));
+        require!(core::ptr::eq(binding.l2ir(), &file));
         let declaration = binding.declaration().ok_or("actual binding")?;
         equal!(declaration.name.as_str(), name);
         equal!(declaration.scope, setup.exposure().scope());
@@ -202,8 +202,7 @@ fn caller_selected_module_scope_does_not_replace_the_authentic_setup_root() -> R
     let arena = Allocator::default();
     let original = Observed::new(&arena, "<script setup>let value=1;</script>")?;
     let script = original.script()?;
-    let mut producer =
-        FileProducer::new(&arena, original.descriptor.source()).map_err(|_| "file")?;
+    let mut producer = FileProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
     producer
         .program(
             ProgramInput::checked(
@@ -269,7 +268,7 @@ fn every_actual_setup_callback_interruption_refuses_sealing_with_original_owners
         let script = original.script()?;
         for point in [Point::Unit, Point::Statement, Point::Declared] {
             let mut producer =
-                FileProducer::new(&arena, original.descriptor.source()).map_err(|_| "file")?;
+                FileProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
             let mut observer = Interrupt(point);
             let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 producer

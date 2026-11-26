@@ -1,0 +1,103 @@
+# DO NOT EDIT. Generated from tools/ci/workflows/03-typecheck-profile/workflow.pkl.
+# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+name: Type-check profile
+run-name: "Type-check profile ${{ inputs.head_sha || github.sha }}${{ inputs.base_sha && format(' vs {0}', inputs.base_sha) || '' }}"
+# Whole-process-tree perf profiles of tsc + Vize mapper, tsrs + Vize mapper
+# and `vize check` on the corpus-pair corpora: per process, DSO (tsgo, tsrs,
+# node, Vize native, libc, kernel), phase and function, with folded stacks,
+# flame graphs, tsgo's own pprof profile and perf stat counters, base vs head.
+# Vize is built in the ci-opt profile with frame pointers and its symbols.
+# A push to bench/typecheck-profile/** profiles the pushed commit; trailers in
+# the last paragraph of its message stand in for the inputs: Profile-Base (a
+# full SHA), Profile-Corpora, Profile-Lanes and Profile-Frequency. The
+# "Validate inputs" step prints what it read.
+on:
+  push:
+    branches: ["bench/typecheck-profile/**"]
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: Full 40-hex commit to profile
+        type: string
+        required: true
+      base_sha:
+        description: Optional full 40-hex baseline commit for the function-level diff
+        type: string
+        default: ""
+      corpora:
+        description: Optional comma-separated corpus ids from the corpus pair (default all)
+        type: string
+        default: ""
+      lanes:
+        description: Comma-separated lanes (tsc, tsrs, tsrs-dwarf, check)
+        type: string
+        default: "tsc,tsrs,check"
+      frequency:
+        description: perf record sampling frequency (Hz)
+        type: string
+        default: "999"
+permissions: { contents: read }
+concurrency:
+  group: typecheck-profile-${{ github.ref }}-${{ inputs.base_sha }}-${{ inputs.head_sha }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+jobs:
+  profile:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 150
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/tools/ci/workflows/03-typecheck-profile/scripts"
+      BASE_SHA: ${{ inputs.base_sha }}
+      HEAD_SHA: ${{ inputs.head_sha || github.sha }}
+      CORPORA: ${{ inputs.corpora }}
+      LANES: ${{ inputs.lanes || 'tsc,tsrs,check' }}
+      FREQUENCY: ${{ inputs.frequency || '999' }}
+      # FlameGraph's flamegraph.pl and difffolded.pl at a fixed commit.
+      FLAMEGRAPH_SHA: 41fee1f99f9276008b7cd112fca19dc3ea84ac32
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - name: Read the pushed commit's profile trailers
+        if: github.event_name == 'push'
+        run: . "${{ env.VIZE_CI_FILES }}/read-the-pushed-commit-s-profile-trailers.sh"
+      - name: Validate inputs
+        run: . "${{ env.VIZE_CI_FILES }}/validate-inputs.sh"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.100.0" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Check out the profiled commits beside the driver
+        run: . "${{ env.VIZE_CI_FILES }}/check-out-the-profiled-commits-beside-the-driver.sh"
+      - name: Install perf, glibc symbols and FlameGraph
+        run: . "${{ env.VIZE_CI_FILES }}/install-perf-glibc-symbols-and-flamegraph.sh"
+      - name: Install the locked hosts and corpus packages and hydrate the corpora
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-locked-hosts-and-corpus-packages-and-hydrate-the-corpora.sh"
+      - name: Test the profile folder and parsers
+        run: node --test tests/tooling/typecheck-profile.test.ts
+      # ci-opt (thin LTO) with frame pointers and an unstripped symbol table, so
+      # perf unwinds and names Vize's Rust frames inside node.
+      - name: Build the native binding with frame pointers and the vize package
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-native-binding-with-frame-pointers-and-the-vize-package.sh"
+      - name: Profile the lanes
+        run: . "${{ env.VIZE_CI_FILES }}/profile-the-lanes.sh"
+      - name: Write job summary
+        if: always()
+        run: . "${{ env.VIZE_CI_FILES }}/write-job-summary.sh"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: typecheck-profile-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/profile-out/
+            ${{ runner.temp }}/build-*.log
+          if-no-files-found: warn
+          retention-days: 30

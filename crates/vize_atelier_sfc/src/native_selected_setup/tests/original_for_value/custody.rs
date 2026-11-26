@@ -19,8 +19,8 @@ fn shadowed_original_parameter_is_the_body_read_and_foreign_equal_ids_never_join
     assert!(a.result().is_ok() && b.result().is_ok());
     let av = a.observation().admitted().unwrap();
     let bv = b.observation().admitted().unwrap();
-    let af = av.setup().file();
-    let bf = bv.setup().file();
+    let af = av.setup().l2ir();
+    let bf = bv.setup().l2ir();
     let [Op::OriginalFor(ao)] = af.artifact().root().ops.as_slice() else {
         panic!("original");
     };
@@ -77,7 +77,7 @@ fn movement_and_caught_consumer_unwind_leave_normal_program_params_and_body_ast_
     );
     let (program, parameter, body) = {
         let view = compiled.observation().admitted().unwrap();
-        let file = view.setup().file();
+        let file = view.setup().l2ir();
         let [Op::OriginalFor(op)] = file.artifact().root().ops.as_slice() else {
             panic!("original");
         };
@@ -99,7 +99,7 @@ fn movement_and_caught_consumer_unwind_leave_normal_program_params_and_body_ast_
     };
     let moved = Box::new(compiled);
     let view = moved.observation().admitted().unwrap();
-    let file = view.setup().file();
+    let file = view.setup().l2ir();
     let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         let analysis = build_selected_setup_dom_decisions(view.setup()).unwrap();
         assert!(analysis.dom().unwrap().unsupported().is_empty());

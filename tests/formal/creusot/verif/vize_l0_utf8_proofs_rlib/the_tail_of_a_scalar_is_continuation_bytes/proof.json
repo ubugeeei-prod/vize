@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_the_tail_of_a_scalar_is_continuation_bytes": {
+        "prover": "alt-ergo",
+        "time": 0.029
+      }
+    }
+  }
+}

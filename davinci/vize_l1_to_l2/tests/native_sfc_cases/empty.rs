@@ -12,7 +12,7 @@ fn empty_ordinary_and_setup_are_retained_typed_refusals_without_units() {
         "<script setup>\u{a0}\u{feff}</script><template></template>",
     ] {
         let observed = lower_sfc_native(&arena, source, options());
-        assert!(observed.descriptor().admitted().is_ok());
+        assert!(observed.l1ir().admitted().is_ok());
         assert!(observed.admitted().is_none());
         let script = observed.scripts().first().unwrap();
         let syntax = script.syntax().unwrap();
@@ -25,7 +25,7 @@ fn empty_ordinary_and_setup_are_retained_typed_refusals_without_units() {
                 .iter()
                 .any(|issue| issue.kind == NativeSfcIssueKind::EmptyScriptSelection)
         );
-        assert!(observed.file().unwrap().file().units().is_empty());
+        assert!(observed.file().unwrap().l2ir().units().is_empty());
     }
 }
 
@@ -40,8 +40,8 @@ fn empty_setup_cannot_turn_ordinary_locals_into_combined_vue_exposure() {
     let file = observed.file().unwrap();
     assert!(file.setup().is_none());
     assert!(file.ordinary().is_some());
-    assert_eq!(file.file().units().len(), 1);
-    for binding in file.file().bindings() {
+    assert_eq!(file.l2ir().units().len(), 1);
+    for binding in file.l2ir().bindings() {
         assert!(file.exposure(binding).is_none());
     }
     assert!(observed.template().unwrap().produced().is_some());

@@ -18,7 +18,7 @@ fn whole_owner_moves_keep_all_three_vectors_actual_ast_roots_and_reject_foreign_
         (
             owner.source().as_ptr(),
             owner.options(),
-            owner.descriptor().container().blocks.as_ptr().cast::<()>(),
+            owner.l1ir().container().blocks.as_ptr().cast::<()>(),
             owner.binding_operands().as_ptr().cast::<()>(),
             owner.attribute_operands().as_ptr().cast::<()>(),
             owner.operands().as_ptr().cast::<()>(),

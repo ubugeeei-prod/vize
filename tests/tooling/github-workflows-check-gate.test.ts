@@ -228,7 +228,7 @@ test("input selection gates work inside required jobs and keeps the planner depe
   assert.equal(planner.steps?.at(-1)?.run, "node tools/support/compat/github/plan-check-inputs.ts");
   assert.ok(planner.steps?.some((step) => step.uses?.startsWith("actions/setup-node@")));
   for (const [jobName, output, command] of [
-    ["security-audit", "dependencies", "node tools/commands/ci/npm-audit-retry.ts"],
+    ["security-audit", "dependencies", "node tools/ci/commands/npm-audit-retry.ts"],
     ["node-engine-compat", "engines", "node --test tests/tooling/node-engine-matrix.test.ts"],
     ["check-vize-apps", "apps", "./.github/actions/check-vize-apps"],
   ]) {
@@ -371,25 +371,25 @@ test("full JS qualification retains independent native builds and strictly gates
   }
 });
 test("slow suites use schedules or explicit dispatch without starting on PRs", () => {
-  const pushOrDispatch = ["davinci-incremental.yml"];
+  const pushOrDispatch = ["07-incremental.yml"];
   const scheduledOrDispatch = [
-    "benchmark.yml",
-    "check-bench.yml",
-    "content-mapper-conformance.yml",
-    "davinci-reference.yml",
-    "davinci-resource-budgets.yml",
-    "e2e.yml",
-    "editor-conformance.yml",
-    "fresco.yml",
-    "fuzz.yml",
-    "miri.yml",
-    "tool-benchmark.yml",
-    "vue-benchmarks-replay.yml",
+    "03-source-comparison.yml",
+    "03-check-gate.yml",
+    "04-content-mapper-conformance.yml",
+    "07-reference-backends.yml",
+    "03-lsp-resources.yml",
+    "10-app-e2e.yml",
+    "05-editor-conformance.yml",
+    "10-fresco.yml",
+    "11-fuzz.yml",
+    "11-miri.yml",
+    "03-tool-comparison.yml",
+    "03-vue-benchmarks.yml",
   ];
   for (const name of [
     ...pushOrDispatch,
     ...scheduledOrDispatch,
-    "criterion-bench.yml",
+    "03-criterion.yml",
     "pkg-pr-new.yml",
   ]) {
     const events =
@@ -405,7 +405,7 @@ test("slow suites use schedules or explicit dispatch without starting on PRs", (
   }
   // The browser-oracle host takes pull requests only for its path-selected
   // oracles; the full parser oracle stays on pushes and dispatch.
-  const oracles = parse(readRepoFile(".github", "workflows", "level-html-content-model.yml")) as {
+  const oracles = parse(readRepoFile(".github", "workflows", "06-browser-oracles.yml")) as {
     on: Record<string, unknown>;
     jobs: Record<string, { if?: string; needs?: string }>;
   };

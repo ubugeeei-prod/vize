@@ -1,5 +1,5 @@
 use super::{
-    Allocator, PositionQueryError, TemplateQueryError, at, attempt, file, native, site, uses,
+    Allocator, PositionQueryError, TemplateQueryError, at, attempt, l2ir_of, native, site, uses,
 };
 use crate::query::Model;
 
@@ -11,8 +11,8 @@ fn equal_bytes_and_equal_local_ids_never_transfer_file_or_handler_symbols() {
     let copied = core::str::from_utf8(&copied_bytes).unwrap();
     let left_output = native(&arena, source);
     let right_output = native(&arena, copied);
-    let left = file(&left_output);
-    let right = file(&right_output);
+    let left = l2ir_of(&left_output);
+    let right = l2ir_of(&right_output);
     for needle in ["item in items", "$event;item"] {
         let local = site(left, source, needle);
         let foreign = site(right, copied, needle);
@@ -73,7 +73,7 @@ fn moved_original_owner_repeated_queries_do_not_change_original_arena_or_sites()
     let arena = Allocator::default();
     let source = "<script setup>const items=2;</script><template><div v-for='item in items' @click='item'/></template>";
     let output = core::hint::black_box(native(&arena, source));
-    let file = file(&output);
+    let file = l2ir_of(&output);
     let before = arena.allocated_bytes();
     let alias = site(file, source, "item in items");
     let expected = site(file, source, "item'/>").span();
@@ -84,7 +84,7 @@ fn moved_original_owner_repeated_queries_do_not_change_original_arena_or_sites()
         Model::new(&file)
             .for_each_template_reference_to(current.symbol(), |site| {
                 assert_eq!(site.span(), expected);
-                assert!(core::ptr::eq(site.file(), file));
+                assert!(core::ptr::eq(site.l2ir(), file));
                 visits += 1;
             })
             .unwrap();
@@ -117,7 +117,7 @@ fn query_order_and_visitor_unwind_do_not_mutate_original_attachment_or_identity(
     let arena = Allocator::default();
     let source = "<template><button @click='let value=$event; value' @blur='let value=$event; value'/></template>";
     let output = native(&arena, source);
-    let file = file(&output);
+    let file = l2ir_of(&output);
     let left = site(file, source, "value=$event; value' @blur");
     let right = site(file, source, "value=$event; value'/>");
     let expected_left = uses(file, left.symbol());

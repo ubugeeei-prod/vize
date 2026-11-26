@@ -12,7 +12,7 @@ fn whole_component_reuses_only_the_selected_original_styles_in_document_order() 
     };
     let session = NativeScssSession::new(&arena, source, options);
     let foreign = NativeScssSession::new(&arena, &copied, options);
-    let descriptor = session.observation().descriptor().admitted().unwrap();
+    let descriptor = session.observation().l1ir().admitted().unwrap();
     let mut styles = descriptor.styles();
     let first = ScssProducts::from_style(styles.next().unwrap()).unwrap();
     let ordinary = ScssProducts::read(styles.next().unwrap().block());
@@ -20,7 +20,7 @@ fn whole_component_reuses_only_the_selected_original_styles_in_document_order() 
     let other = ScssProducts::from_style(
         foreign
             .observation()
-            .descriptor()
+            .l1ir()
             .admitted()
             .unwrap()
             .styles()
@@ -51,7 +51,7 @@ fn whole_component_reuses_only_the_selected_original_styles_in_document_order() 
     let broken = NativeScssSession::new(&arena, invalid, options);
     let style = broken
         .observation()
-        .descriptor()
+        .l1ir()
         .admitted()
         .unwrap()
         .styles()
@@ -100,7 +100,7 @@ pub(super) fn measure_session(
         let session = create(&arena, source, options);
         let prepared: Vec<_> = session
             .observation()
-            .descriptor()
+            .l1ir()
             .admitted()
             .unwrap()
             .styles()
@@ -115,7 +115,7 @@ pub(super) fn measure_session(
         let run = |shared| {
             let arena = Allocator::default();
             let session = create(&arena, black_box(source), options);
-            let descriptor = session.observation().descriptor().admitted().unwrap();
+            let descriptor = session.observation().l1ir().admitted().unwrap();
             let products: Vec<_> = descriptor
                 .styles()
                 .map(|style| ScssProducts::from_style(style).unwrap())

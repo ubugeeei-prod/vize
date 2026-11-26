@@ -105,8 +105,8 @@ impl<'view, 'owner, 'arena> SelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
         self.setup
     }
     #[must_use]
-    pub fn file(&self) -> &'owner L2Ir<'arena> {
-        self.setup.file()
+    pub fn l2ir(&self) -> &'owner L2Ir<'arena> {
+        self.setup.l2ir()
     }
     #[must_use]
     pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
@@ -120,7 +120,7 @@ impl<'view, 'owner, 'arena> SelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
     }
     #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
-        self.file().artifact()
+        self.l2ir().artifact()
     }
     #[must_use]
     pub fn tables(&self) -> &DecisionTables {
@@ -146,13 +146,13 @@ pub fn build_selected_setup_ssr_decisions<'view, 'owner, 'arena>(
     })?;
     if template.owner().selected().has_styles() {
         return Err(SsrTemplateBuildError::StyledSource {
-            span: vize_l0::Span::new(0, setup.file().artifact().source().len() as u32),
+            span: vize_l0::Span::new(0, setup.l2ir().artifact().source().len() as u32),
         });
     }
     let file = template.file().ok_or(SsrTemplateBuildError::Decision(
         crate::decision::DecisionBuildError::IncompleteFile,
     ))?;
-    if !core::ptr::eq(file, setup.file()) {
+    if !core::ptr::eq(file, setup.l2ir()) {
         return Err(SsrTemplateBuildError::Decision(
             crate::decision::DecisionBuildError::IncompleteFile,
         ));

@@ -146,9 +146,9 @@ fn configured_original_required_named_export_ts_tsx_preserve_whole_raw_reports_a
             }
             .unwrap();
             assert_diagnosing_options(&checked);
-            let file = if tsx { owner.file() } else { &original };
+            let file = if tsx { owner.l2ir() } else { &original };
             let projection = checked.projection();
-            assert!(core::ptr::eq(projection.file(), file));
+            assert!(core::ptr::eq(projection.l2ir(), file));
             assert!(core::ptr::eq(file.artifact().source(), source));
             assert_eq!(
                 projection.source_kind(),
@@ -182,14 +182,14 @@ fn configured_original_required_named_export_ts_tsx_preserve_whole_raw_reports_a
                 assert_eq!(export.unit, projection.unit().id);
                 assert_eq!(export.span, declaration.span);
                 assert!(export.source.is_none());
-                assert!(core::ptr::eq(local.file(), file));
+                assert!(core::ptr::eq(local.l2ir(), file));
             }
             let name = case["binding"].as_str().unwrap();
             let binding = Model::new(&file)
                 .binding_at_offset(source.rfind(name).unwrap() as u32)
                 .unwrap()
                 .unwrap();
-            assert!(core::ptr::eq(binding.file(), file));
+            assert!(core::ptr::eq(binding.l2ir(), file));
             assert_eq!(
                 binding.declaration().unwrap().kind,
                 DeclarationKind::Parameter

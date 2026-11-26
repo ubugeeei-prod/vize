@@ -1,0 +1,131 @@
+{
+  "schema": "vize.defaultExportProjectionSource.v1",
+  "pullRequest": 13693,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "predecessor": {
+    "revision": "6bf40dbded97b320d607a446d036d77829cf761d",
+    "gitBlob": "ef50d92d7dd5d920d4b72d6924ee7dca0a6f5119"
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator.rs",
+      "before": {
+        "bytes": 37936,
+        "sha256": "0a348064a6fd157a9c4020f670c341da7a6d5a2122dcaf5736189d4621b9ba85"
+      },
+      "after": {
+        "bytes": 33551,
+        "sha256": "88f517936f7aa7ea6a60f5b8bdb89fbee0f37b24ff81d1c90bc17bbd2e5a3017"
+      },
+      "hunks": [
+        {
+          "before": "#[cfg(feature = \"native\")]\npub(crate) mod generic_recovery;\npub(super) mod generics;\nmod global_components;\nmod glued_import;\nmod imports;\nmod legacy_vue2;\nmod macro_anchors;\nmod module_projection;\nmod module_statements;\nmod options_api;\nmod options_api_bridge;\n",
+          "after": "#[cfg(feature = \"native\")]\npub(crate) mod generic_recovery;\npub(super) mod generics;\nmod global_components;\nmod glued_import;\nmod imports;\nmod irregular_default;\nmod legacy_vue2;\nmod macro_anchors;\nmod module_projection;\nmod module_statements;\nmod options_api;\nmod options_api_bridge;\n"
+        },
+        {
+          "before": "mod setup_imports;\nmod setup_lines;\nmod setup_props;\npub(super) mod setup_scope;\nmod setup_type_exports;\nmod spans;\nmod template_record;\nmod template_ref_keys;\nmod template_refs;\nmod type_only_imports;\nmod unresolved_components;\nuse self::anchors::SetupBindingAnchors;\n",
+          "after": "mod setup_imports;\nmod setup_lines;\nmod setup_props;\npub(super) mod setup_scope;\nmod setup_type_exports;\nmod spans;\nmod standard_default;\nmod template_record;\nmod template_ref_keys;\nmod template_refs;\nmod type_only_imports;\nmod unresolved_components;\nuse self::anchors::SetupBindingAnchors;\n"
+        },
+        {
+          "before": "use self::options_api_support::find_options_api_props;\nuse self::script_blocks::ScriptBlockScopes;\nuse self::setup_helpers::{SetupHelperComponentContext, SetupHelperPlan, emit_setup_helpers};\nuse self::setup_imports::SetupImportPlan;\nuse self::setup_props::{emit_template_context, generate_setup_props, prop_source};\nuse self::setup_type_exports::SetupTypeExportsPlan;\nuse self::spans::{DEFINE_COMPONENT_REF, template_usage};\nuse self::type_only_imports::syntactic_type_only_imported_names;\nuse super::{\n    macro_type_mappings::MacroTypeMappings,\n    scope::{ScopeGenerationOptions, ScopeMappings, generate_scope_closures},\n    template_binding_access::TemplateBindingAccess,\n    types::{\n",
+          "after": "use self::options_api_support::find_options_api_props;\nuse self::script_blocks::ScriptBlockScopes;\nuse self::setup_helpers::{SetupHelperComponentContext, SetupHelperPlan, emit_setup_helpers};\nuse self::setup_imports::SetupImportPlan;\nuse self::setup_props::{emit_template_context, generate_setup_props, prop_source};\nuse self::setup_type_exports::SetupTypeExportsPlan;\nuse self::spans::template_usage;\nuse self::type_only_imports::syntactic_type_only_imported_names;\nuse super::{\n    macro_type_mappings::MacroTypeMappings,\n    scope::{ScopeGenerationOptions, ScopeMappings, generate_scope_closures},\n    template_binding_access::TemplateBindingAccess,\n    types::{\n"
+        },
+        {
+          "before": "                .unwrap_or_default()\n        )\n    } else {\n        Default::default()\n    };\n    let default_export_object = options_script.default_export.object;\n    let default_export_class = options_script.default_export.class;\n    if default_export_object.is_some() {\n        ts.push_lib_text(legacy_vue2::define_component_helper(legacy_vue2, dialect));\n    }\n    let module_plan = script_content\n        .map(|script| script_module::collect(script, recover_lone_setup, generation_options))\n        .unwrap_or_default();\n",
+          "after": "                .unwrap_or_default()\n        )\n    } else {\n        Default::default()\n    };\n    let default_export_object = options_script.default_export.object;\n    let irregular_default = (!has_script_setup)\n        .then(|| {\n            script_content.and_then(|script| {\n                irregular_default::IrregularDefault::new(script, &options_script)\n            })\n        })\n        .flatten();\n    if default_export_object.is_some() {\n        ts.push_lib_text(legacy_vue2::define_component_helper(legacy_vue2, dialect));\n    }\n    let module_plan = script_content\n        .map(|script| script_module::collect(script, recover_lone_setup, generation_options))\n        .unwrap_or_default();\n"
+        },
+        {
+          "before": "            let mut boundaries =\n                setup_lines::ScriptBoundaries::new(generation_options.script_syntax_boundaries);\n            let named_value_export_starts =\n                self::script_module::collect_named_value_export_starts(script);\n            let mut props_const_assertions = PropsConstAssertions::new(script, options_api);\n            let mut ref_keys = module_plan.key_checks(&setup_helpers, has_ref_registry);\n            let mut pending_wrap_close: Option<usize> = None;\n            // Deferred class-component alias: `(class_end, name)`.\n            let mut pending_class_alias: Option<(usize, &str)> = None;\n            let mut emitted_default_alias = false;\n            for (src_byte_offset, raw_line) in ambient.script_lines(script) {\n                boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);\n                ambient.emit_setup_captures(\n                    src_byte_offset,\n                    script,\n",
+          "after": "            let mut boundaries =\n                setup_lines::ScriptBoundaries::new(generation_options.script_syntax_boundaries);\n            let named_value_export_starts =\n                self::script_module::collect_named_value_export_starts(script);\n            let mut props_const_assertions = PropsConstAssertions::new(script, options_api);\n            let mut ref_keys = module_plan.key_checks(&setup_helpers, has_ref_registry);\n            let mut pending_default = standard_default::PendingDefault::default();\n            let mut emitted_default_alias = false;\n            for (src_byte_offset, raw_line) in ambient.script_lines(script) {\n                boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);\n                ambient.emit_setup_captures(\n                    src_byte_offset,\n                    script,\n"
+        },
+        {
+          "before": "                );\n                let mut output_line = std::borrow::Cow::Borrowed(line);\n                setup_type_exports.strip_projected_modifiers(&mut output_line, line_start as u32);\n\n                // Close the `defineComponent(` wrap right after the wrapped\n                // options object's closing brace.\n                if let Some(close_offset) = pending_wrap_close\n                    && close_offset > line_start\n                    && close_offset <= line_end\n                    && let Some((head, tail)) = line.split_at_checked(close_offset - line_start)\n                {\n                    output_line = std::borrow::Cow::Owned(cstr!(\"{head}){tail}\").into());\n                    pending_wrap_close = None;\n                }\n\n                props_const_assertions.splice_output_line(&mut output_line, line_start);\n                // Strip `export` from non-import lines inside setup scope\n                let trimmed_line = output_line.trim_start();\n                if let Some(default_expr) = trimmed_line\n                    .strip_prefix(\"export default\")\n                    .filter(|rest| options_api_support::follows_default_keyword(rest))\n                    .filter(|_| !module_plan.inside_literal(line_start))\n                {\n                    emitted_default_alias = true;\n                    declared_default_alias = true;\n                    let leading_ws = output_line.strip_suffix(trimmed_line).unwrap_or_default();\n                    // A class default export (the class-component shape) stays\n                    // a real class declaration so `@Component()` decorators\n                    // remain valid (a bare `const __default__ = class {}`\n                    // rewrite moves them onto a class expression — TS1206). The\n                    // `const __default__ = <Name>` alias is deferred until the\n                    // class body closes.\n                    let class_default =\n                        if has_script_setup || matches!(output_line, std::borrow::Cow::Owned(_)) {\n                            None\n                        } else {\n                            default_export_class.filter(\n                                |&(export_start, class_start, class_end, _, _)| {\n                                    export_start >= line_start\n                                        && class_start >= line_start\n                                        && class_start < line_end\n                                        && class_end > line_start\n                                        && class_start - line_start <= line.len()\n                                        && line.is_char_boundary(class_start - line_start)\n                                },\n                            )\n                        };\n                    // Wrap a plain object-literal default export (Options\n                    // API) with `defineComponent` so `this` in\n                    // computed/methods gets Vue's instance typing. Applies\n                    // only to the plain <script> block; any other shape keeps\n                    // the bare `const __default__ =` rewrite.\n                    let wrap_object = if class_default.is_some()\n                        || has_script_setup\n                        || matches!(output_line, std::borrow::Cow::Owned(_))\n                    {\n                        None\n                    } else {\n                        default_export_object.filter(|&(export_start, object_start, _)| {\n                            export_start >= line_start\n                                && object_start >= line_start\n                                && object_start < line_end\n                                && object_start - line_start <= line.len()\n                                && line\n                                    .get(object_start - line_start..)\n                                    .is_some_and(|rest| rest.starts_with('{'))\n                        })\n                    };\n                    if let Some((class_end, name, class_text)) =\n                        class_default.and_then(|(_, cs, ce, ns, ne)| {\n                            Some((ce, script.get(ns..ne)?, line.get(cs - line_start..)?))\n                        })\n                    {\n                        // Drop the `export default ` keyword, keep the class\n                        // (and any same-line trailing decorator) verbatim.\n                        output_line =\n                            std::borrow::Cow::Owned(cstr!(\"{leading_ws}{class_text}\").into());\n                        pending_class_alias = Some((class_end, name));\n                    } else if let Some((object_column, object_end)) =\n                        wrap_object.and_then(|(_, object_start, object_end)| {\n                            let object_column = object_start - line_start;\n                            (line.len() - default_expr.len() <= object_column)\n                                .then_some((object_column, object_end))\n                        })\n                    {\n                        let keyword_end = line.len() - default_expr.len();\n                        let separator = line.get(keyword_end..object_column).unwrap_or_default();\n                        let single_line = (object_end <= line_end)\n                            .then(|| object_end - line_start)\n                            .and_then(|close_column| {\n                                Some((\n                                    line.get(object_column..close_column)?,\n                                    line.get(close_column..)?,\n                                ))\n                            });\n                        if let Some((object, after)) = single_line {\n                            // Single-line `export default { ... }`.\n                            output_line = std::borrow::Cow::Owned(\n                                cstr!(\n                                    \"{leading_ws}const __default__ ={separator}{DEFINE_COMPONENT_REF}({object}){after}\",\n                                )\n                                .into(),\n                            );\n                        } else {\n                            pending_wrap_close = Some(object_end);\n                            output_line = std::borrow::Cow::Owned(\n                                cstr!(\n                                    \"{leading_ws}const __default__ ={separator}{DEFINE_COMPONENT_REF}({}\",\n                                    line.get(object_column..).unwrap_or_default(),\n                                )\n                                .into(),\n                            );\n                        }\n                    } else {\n                        output_line = std::borrow::Cow::Owned(\n                            cstr!(\"{leading_ws}const __default__ ={}\", default_expr).into(),\n                        );\n                    }\n                }\n                ref_keys.emit_line(\n                    &mut ts,\n                    &mut mappings,\n                    output_line,\n                    (line_start, line),\n                    source_offset,\n                );\n                // Once the class body has closed, append the deferred\n                // `const __default__ = <Name>` alias for the class component.\n                if let Some((class_end, name)) = pending_class_alias\n                    && class_end <= line_end\n                {\n                    append!(ts, \"  const __default__ = {name};\\n\");\n                    pending_class_alias = None;\n                }\n            }\n            boundaries.emit_through(script.len(), &mut ts, &mut mappings, source_offset);\n            setup_lines::finish_script(\n                &mut ts,\n                pending_class_alias.map(|(_, name)| name),\n                pending_wrap_close.is_some(),\n                emitted_default_alias,\n                script_gen_start,\n                script.len(),\n            );\n            // Vue 2 only; see the bridge module doc for why Vue 3 skips it.\n            if legacy_vue2 {\n",
+          "after": "                );\n                let mut output_line = std::borrow::Cow::Borrowed(line);\n                setup_type_exports.strip_projected_modifiers(&mut output_line, line_start as u32);\n\n                // Close the `defineComponent(` wrap right after the wrapped\n                // options object's closing brace.\n                if let Some(close_offset) = pending_default.wrap_close\n                    && close_offset > line_start\n                    && close_offset <= line_end\n                    && let Some((head, tail)) = line.split_at_checked(close_offset - line_start)\n                {\n                    output_line = std::borrow::Cow::Owned(cstr!(\"{head}){tail}\").into());\n                    pending_default.wrap_close = None;\n                }\n\n                let irregular_projection = irregular_default.as_ref().and_then(|rewrite| {\n                    let offsets = props_const_assertions.take_line_offsets(line_start, line_end);\n                    rewrite.project_line(&output_line, line_start, offsets)\n                });\n                if let Some(projected) = irregular_projection {\n                    if projected.declares_alias {\n                        emitted_default_alias = true;\n                        declared_default_alias = true;\n                    }\n                    projected.emit(&mut ts, &mut mappings, &ref_keys, line_start, source_offset);\n                } else {\n                    props_const_assertions.splice_output_line(&mut output_line, line_start);\n                    if standard_default::rewrite_line(\n                        &mut output_line,\n                        line,\n                        (line_start, line_end),\n                        script,\n                        standard_default::Context {\n                            facts: &options_script,\n                            has_script_setup,\n                            inside_literal: module_plan.inside_literal(line_start),\n                        },\n                        &mut pending_default,\n                    ) {\n                        emitted_default_alias = true;\n                        declared_default_alias = true;\n                    }\n                    ref_keys.emit_line(\n                        &mut ts, &mut mappings, output_line,\n                        (line_start, line), source_offset,\n                    );\n                }\n                if let Some(name) = irregular_default.as_ref()\n                    .and_then(|rewrite| rewrite.class_alias(line_start, line_end)) {\n                    append!(ts, \"  const __default__ = {name};\\n\");\n                }\n                // Once the class body has closed, append the deferred\n                // `const __default__ = <Name>` alias for the class component.\n                if let Some((class_end, name)) = pending_default.class_alias\n                    && class_end <= line_end\n                {\n                    append!(ts, \"  const __default__ = {name};\\n\");\n                    pending_default.class_alias = None;\n                }\n            }\n            boundaries.emit_through(script.len(), &mut ts, &mut mappings, source_offset);\n            setup_lines::finish_script(\n                &mut ts,\n                pending_default.class_alias.map(|(_, name)| name),\n                pending_default.wrap_close.is_some(),\n                emitted_default_alias,\n                script_gen_start,\n                script.len(),\n            );\n            // Vue 2 only; see the bridge module doc for why Vue 3 skips it.\n            if legacy_vue2 {\n"
+        }
+      ]
+    }
+  ],
+  "supportingSources": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/irregular_default.rs",
+      "role": "AST default export keyword edits and exact copied source mappings",
+      "bytes": 5680,
+      "sha256": "6ca2a44e9599603ebd3f92bf2c8c1f1af57a162a0dafa212a763f7f1dd85af8b",
+      "callee": "fn project_line"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/module_projection.rs",
+      "role": "Authored module statement rewrite and generated-to-source mappings",
+      "bytes": 11255,
+      "sha256": "2ac116547e2fde5121750df47368ae974410b625b28eac679b808feef687a031",
+      "callee": "fn emit"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/options_api.rs",
+      "role": "Options object selection and option property classification",
+      "bytes": 11567,
+      "sha256": "8d90a428f4371048587075afe559ae4b3fe1eac35c1598c2557859c1068c8217",
+      "callee": "fn component_options_from_program"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/options_api/default_export.rs",
+      "role": "Shared AST default export target classification",
+      "bytes": 9368,
+      "sha256": "1c6265320e0a5651af58036191d0655a1421feccac650f5a606d3e87760d84e2",
+      "callee": "fn analyze_options_api_script"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/options_api_props_identifiers.rs",
+      "role": "Options props const assertion offsets consumed by line projection",
+      "bytes": 5348,
+      "sha256": "7b1cce37e49868fbd84fb970c2034ad4eaddf46be02e34c17d3758993a0f5c30",
+      "callee": "fn take_line_offsets"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/options_api_support.rs",
+      "role": "Contiguous default keyword boundary and Options identifier support",
+      "bytes": 10315,
+      "sha256": "002b0baa078cd5e8f67c82fb777e29c74f6e090a207da18f3f4fc08d4bddc245",
+      "callee": "fn follows_default_keyword"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/spans.rs",
+      "role": "Module default export expression rewriting and copied value offsets",
+      "bytes": 14363,
+      "sha256": "7134c27bebcaf3e59b736bbd086afbe10366867e70423c1b7c761146127bfa0b",
+      "callee": "fn rewrite_export_default_for_module_scope"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/standard_default.rs",
+      "role": "Extracted contiguous per-line default export projection",
+      "bytes": 5230,
+      "sha256": "ecd494141f1d2d06630438a115960964b5aad1be0adb4669da9ed4aba712bc24",
+      "callee": "fn rewrite_line"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/template_ref_keys.rs",
+      "role": "Template reference and inferred-call specialization state",
+      "bytes": 11616,
+      "sha256": "73eb2108b0b97d935f70864141d4e45906517fa045a97469d432fdd010cf4868",
+      "callee": "fn emit_for_line"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/template_ref_keys/lines.rs",
+      "role": "Line specialization composition and source mappings",
+      "bytes": 6901,
+      "sha256": "75e55a2d65e21635a0b01a4a39ebc237ac0cd444fbd785af90a112df2993cbb9",
+      "callee": "fn specialize_line"
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/template_ref_keys/lines/tsx.rs",
+      "role": "Inferred call and TSX arrow edits composed with projected lines",
+      "bytes": 4678,
+      "sha256": "448d2af2d89534fb05173bbf6f894b729c0b7e000935fda5c266020ed22e5ade",
+      "callee": "fn specialize_tsx_line"
+    }
+  ]
+}

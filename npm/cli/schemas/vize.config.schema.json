@@ -2924,6 +2924,12 @@
           "type": "string",
           "enum": ["as-needed", "consistent", "preserve"]
         },
+        "objectWrap": {
+          "description": "Keep objects multiline when a newline follows the opening brace, or collapse objects that fit",
+          "default": "preserve",
+          "type": "string",
+          "enum": ["preserve", "collapse"]
+        },
         "singleAttributePerLine": {
           "description": "Force one attribute per line",
           "default": false,

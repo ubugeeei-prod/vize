@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_line_starts_are_boundaries": { "prover": "z3", "time": 0.01 }
+    }
+  }
+}

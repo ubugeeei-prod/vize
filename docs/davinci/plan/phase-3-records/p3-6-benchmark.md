@@ -17,7 +17,7 @@ pull-request CI.
 From a pushed branch at the exact head commit:
 
 ```sh
-gh workflow run criterion-bench.yml --ref <head-branch> \
+gh workflow run 03-criterion.yml --ref <head-branch> \
   -f base_sha=<40-character-base-sha> \
   -f head_sha=<40-character-head-sha> \
   -f vapor_only=true

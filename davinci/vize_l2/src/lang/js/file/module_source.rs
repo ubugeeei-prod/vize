@@ -40,9 +40,9 @@ pub enum ModuleSourceKind {
 ///
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, lang::js::{OriginalModuleSources, ProgramInput}};
-/// fn forge<'f, 'p, 'a>(file: &'f L2Ir<'a>, input: ProgramInput<'p, 'a>) {
-///     let unit = &file.units()[0];
-///     let _ = OriginalModuleSources { file, input, unit };
+/// fn forge<'f, 'p, 'a>(l2ir: &'f L2Ir<'a>, input: ProgramInput<'p, 'a>) {
+///     let unit = &l2ir.units()[0];
+///     let _ = OriginalModuleSources { l2ir, input, unit };
 /// }
 /// ```
 /// ```compile_fail
@@ -51,19 +51,19 @@ pub enum ModuleSourceKind {
 /// ```
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, lang::js::ProgramInput};
-/// fn discard<'p, 'a>(file: L2Ir<'a>, input: ProgramInput<'p, 'a>) {
-///     let view = file.original_module_sources(input).unwrap();
+/// fn discard<'p, 'a>(l2ir: L2Ir<'a>, input: ProgramInput<'p, 'a>) {
+///     let view = l2ir.original_module_sources(input).unwrap();
 ///     let mut original = None;
 ///     view.for_each(|row| original = Some(row)).unwrap();
-///     drop(file);
-///     let _ = original.unwrap().file();
+///     drop(l2ir);
+///     let _ = original.unwrap().l2ir();
 /// }
 /// ```
 /// ```compile_fail
 /// use oxc_ast::ast::Program;
 /// use vize_l2::file::L2Ir;
-/// fn substitute(file: &L2Ir<'_>, program: &Program<'_>) {
-///     let _ = file.original_module_sources(program);
+/// fn substitute(l2ir: &L2Ir<'_>, program: &Program<'_>) {
+///     let _ = l2ir.original_module_sources(program);
 /// }
 /// ```
 /// ```compile_fail
@@ -83,7 +83,7 @@ pub enum ModuleSourceKind {
 /// view.for_each(|literal| { let _ = literal.literal(); }).unwrap();
 /// ```
 pub struct OriginalModuleSources<'f, 'p, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     input: ProgramInput<'p, 'a>,
     unit: &'f ScriptUnit,
 }
@@ -143,7 +143,7 @@ impl<'a> L2Ir<'a> {
             return Err(reject(ModuleSourceErrorKind::EmptySourceExport));
         }
         Ok(OriginalModuleSources {
-            file: self,
+            l2ir: self,
             input,
             unit,
         })
@@ -161,8 +161,8 @@ enum Row<'f> {
 ///
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, lang::js::OriginalModuleSource};
-/// fn substitute<'f, 'p, 'a>(file: &'f L2Ir<'a>, original: OriginalModuleSource<'f, 'p, 'a>) {
-///     let _ = OriginalModuleSource { file, ..original };
+/// fn substitute<'f, 'p, 'a>(l2ir: &'f L2Ir<'a>, original: OriginalModuleSource<'f, 'p, 'a>) {
+///     let _ = OriginalModuleSource { l2ir, ..original };
 /// }
 /// ```
 /// ```compile_fail
@@ -173,7 +173,7 @@ enum Row<'f> {
 /// }
 /// ```
 pub struct OriginalModuleSource<'f, 'p, 'a> {
-    file: &'f L2Ir<'a>,
+    l2ir: &'f L2Ir<'a>,
     row: Row<'f>,
     literal: &'p StringLiteral<'a>,
     raw: &'a str,
@@ -187,8 +187,8 @@ pub struct OriginalModuleSource<'f, 'p, 'a> {
 }
 
 impl<'f, 'p, 'a> OriginalModuleSource<'f, 'p, 'a> {
-    pub fn file(&self) -> &'f L2Ir<'a> {
-        self.file
+    pub fn l2ir(&self) -> &'f L2Ir<'a> {
+        self.l2ir
     }
     pub fn literal(&self) -> &'p StringLiteral<'a> {
         self.literal

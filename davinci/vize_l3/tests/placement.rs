@@ -31,17 +31,17 @@ fn record(op: u32, alternative: Placement, leader: Option<u32>) -> PlacementReco
 fn annotate_records_exactly_the_documented_alternatives() {
     let arena = Allocator::default();
     let mut build = fixture(&arena, (LIT, "hi"));
-    annotate(&mut build.program);
+    annotate(&mut build.l3ir);
 
     assert_eq!(
-        build.program.placements.as_slice(),
+        build.l3ir.placements.as_slice(),
         [
             record(1, Cache, None),
             record(3, Group, Some(2)),
             record(5, Hoist, None),
         ]
     );
-    assert_eq!(verify(&build.program), []);
+    assert_eq!(verify(&build.l3ir), []);
 }
 
 #[test]
@@ -49,12 +49,12 @@ fn annotate_replaces_previous_choices_with_inline() {
     let arena = Allocator::default();
     let mut build = fixture(&arena, (LIT, "hi"));
     build.record(0, &[Placement::Inline, Hoist], None);
-    annotate(&mut build.program);
+    annotate(&mut build.l3ir);
     build.choose(5, Hoist);
-    annotate(&mut build.program);
+    annotate(&mut build.l3ir);
 
     assert_eq!(
-        build.program.placements.as_slice(),
+        build.l3ir.placements.as_slice(),
         [
             record(1, Cache, None),
             record(3, Group, Some(2)),
@@ -68,20 +68,20 @@ fn annotate_leaves_the_canonical_graph_untouched() {
     let arena = Allocator::default();
     let mut build = fixture(&arena, (LIT, "hi"));
     let before = (
-        build.program.ops.to_vec(),
-        build.program.regions.to_vec(),
-        build.program.edges.to_vec(),
-        build.program.effects.to_vec(),
-        build.program.operands.len(),
+        build.l3ir.ops.to_vec(),
+        build.l3ir.regions.to_vec(),
+        build.l3ir.edges.to_vec(),
+        build.l3ir.effects.to_vec(),
+        build.l3ir.operands.len(),
     );
-    annotate(&mut build.program);
+    annotate(&mut build.l3ir);
 
     let after = (
-        build.program.ops.to_vec(),
-        build.program.regions.to_vec(),
-        build.program.edges.to_vec(),
-        build.program.effects.to_vec(),
-        build.program.operands.len(),
+        build.l3ir.ops.to_vec(),
+        build.l3ir.regions.to_vec(),
+        build.l3ir.edges.to_vec(),
+        build.l3ir.effects.to_vec(),
+        build.l3ir.operands.len(),
     );
     assert_eq!(after, before);
 }
@@ -90,22 +90,22 @@ fn annotate_leaves_the_canonical_graph_untouched() {
 fn every_committed_alternative_is_accepted() {
     let arena = Allocator::default();
     let mut build = fixture(&arena, (LIT, "hi"));
-    annotate(&mut build.program);
+    annotate(&mut build.l3ir);
     build.choose(1, Cache);
     build.choose(3, Group);
     build.choose(5, Hoist);
 
-    assert_eq!(verify(&build.program), []);
+    assert_eq!(verify(&build.l3ir), []);
 }
 
 #[test]
 fn a_dynamic_child_blocks_the_hoist_and_nothing_else() {
     let arena = Allocator::default();
     let mut build = fixture(&arena, (JS, "label"));
-    annotate(&mut build.program);
+    annotate(&mut build.l3ir);
 
     assert_eq!(
-        build.program.placements.as_slice(),
+        build.l3ir.placements.as_slice(),
         [record(1, Cache, None), record(3, Group, Some(2))]
     );
 }
@@ -117,15 +117,15 @@ fn a_run_of_identical_reads_joins_its_first_op() {
     build.text(0, 0, (0, 10), (JS, "count"), false);
     build.text(1, 0, (10, 20), (JS, "count"), false);
     build.text(2, 0, (20, 30), (JS, "count"), false);
-    annotate(&mut build.program);
+    annotate(&mut build.l3ir);
 
     assert_eq!(
-        build.program.placements.as_slice(),
+        build.l3ir.placements.as_slice(),
         [record(1, Group, Some(0)), record(2, Group, Some(0))]
     );
     build.choose(1, Group);
     build.choose(2, Group);
-    assert_eq!(verify(&build.program), []);
+    assert_eq!(verify(&build.l3ir), []);
 }
 
 #[test]
@@ -138,10 +138,10 @@ fn only_direct_references_group() {
     build.text(3, 0, (30, 40), (JS, "a.b"), false);
     build.text(4, 0, (40, 50), (JS, "a.b()"), false);
     build.text(5, 0, (50, 60), (JS, "a.b()"), false);
-    annotate(&mut build.program);
+    annotate(&mut build.l3ir);
 
     assert_eq!(
-        build.program.placements.as_slice(),
+        build.l3ir.placements.as_slice(),
         [record(3, Group, Some(2))]
     );
 }
@@ -151,13 +151,13 @@ fn instance_attributes_never_hoist() {
     let arena = Allocator::default();
     let mut build = fixture(&arena, (LIT, "hi"));
     build.attribute(5, "ref", "panel");
-    annotate(&mut build.program);
+    annotate(&mut build.l3ir);
 
     assert_eq!(
-        build.program.placements.as_slice(),
+        build.l3ir.placements.as_slice(),
         [record(1, Cache, None), record(3, Group, Some(2))]
     );
-    assert_eq!(verify(&build.program), []);
+    assert_eq!(verify(&build.l3ir), []);
 }
 
 #[test]
@@ -181,8 +181,8 @@ fn handlers_under_a_for_scope_never_cache() {
         (10, 20),
         ("on", "click", JS, "save"),
     );
-    annotate(&mut build.program);
+    annotate(&mut build.l3ir);
 
-    assert_eq!(build.program.placements.as_slice(), []);
-    assert_eq!(verify(&build.program), []);
+    assert_eq!(build.l3ir.placements.as_slice(), []);
+    assert_eq!(verify(&build.l3ir), []);
 }

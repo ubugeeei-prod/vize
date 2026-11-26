@@ -23,7 +23,7 @@ fn debug_rows<T: Debug>(rows: &[T]) -> Vec<String> {
 }
 
 pub fn observation(original: &NativeSelectedSfcObservation<'_>, source: &str) -> Value {
-    let descriptor = original.descriptor();
+    let descriptor = original.l1ir();
     let selected = original.template().map(|template| {
         let selected = template.selected();
         let component = selected.component();
@@ -66,16 +66,16 @@ pub fn observation(original: &NativeSelectedSfcObservation<'_>, source: &str) ->
     })
 }
 
-fn file_observation(file: &L2Ir<'_>, source: &str) -> Value {
-    let artifact = file.artifact();
+fn file_observation(l2ir: &L2Ir<'_>, source: &str) -> Value {
+    let artifact = l2ir.artifact();
     let provenance: Vec<_> = artifact.provenance().iter().map(|record|json!({
         "rule":record.rule.as_str(),"node":record.node.map(|node|node.index()),
         "before":record.before.as_str(),"after":record.after.as_str(),"span":span(record.span)
     })).collect();
-    let bindings: Vec<_> = file.bindings().map(|binding|json!({
+    let bindings: Vec<_> = l2ir.bindings().map(|binding|json!({
         "id":binding.id().index(),"declarationDebug":binding.declaration().map(|row|cstr!("{row:#?}"))
     })).collect();
-    let attributes: Vec<_> = file
+    let attributes: Vec<_> = l2ir
         .native_attribute_values()
         .iter()
         .enumerate()
@@ -87,10 +87,10 @@ fn file_observation(file: &L2Ir<'_>, source: &str) -> Value {
             })
         })
         .collect();
-    let interpolations: Vec<_> = file.native_interpolations().iter().map(|row|json!({
+    let interpolations: Vec<_> = l2ir.native_interpolations().iter().map(|row|json!({
         "state":cstr!("{:?}",row.state()),"inputDebug":cstr!("NativeInterpolationInput {{ full_span: {:?}, content_span: {:?}, raw_content: {:?}, syntax: {:#?} }}",row.input().operand().full_span(),row.input().operand().content_span(),row.input().operand().raw_content(),row.input().operand().syntax())
     })).collect();
-    let interpolation_failures: Vec<_> = file
+    let interpolation_failures: Vec<_> = l2ir
         .native_interpolation_failures()
         .iter()
         .map(|row| {
@@ -101,23 +101,23 @@ fn file_observation(file: &L2Ir<'_>, source: &str) -> Value {
         .collect();
     json!({
         "source":artifact.source(),"sameSource":core::ptr::eq(artifact.source(),source),
-        "complete":file.is_complete(),"artifactDebug":cstr!("{artifact:#?}"),
+        "complete":l2ir.is_complete(),"artifactDebug":cstr!("{artifact:#?}"),
         "nodeCount":artifact.node_count(),"rootDebug":cstr!("{:#?}",artifact.root()),
         "artifactScopesDebug":cstr!("{:#?}",artifact.scopes()),"provenance":provenance,
-        "units":debug_rows(file.units()),"scopes":debug_rows(file.scopes()),"bindings":bindings,
-        "references":debug_rows(file.references()),"exports":debug_rows(file.exports()),
-        "imports":debug_rows(file.imports()),"issues":debug_rows(file.issues()),
-        "templateIssues":debug_rows(file.template_issues()),
-        "diagnosticCounts":{"issues":file.issues().len(),"templateIssues":file.template_issues().len(),
-            "templateInterruption":usize::from(file.template_interruption().is_some()),
-            "interruptedPrograms":file.interrupted_programs().count(),
-            "interpolationFailures":file.native_interpolation_failures().len()},
-        "templateInterruption":file.template_interruption().map(|issue|cstr!("{issue:#?}")),
-        "interruptedPrograms":file.interrupted_programs().map(|issue|cstr!("{issue:#?}")).collect::<Vec<_>>(),
-        "rejectedHandlers":debug_rows(file.rejected_handlers()),
-        "unattachedHandlers":file.unattached_handlers().map(|input|cstr!("{input:#?}")).collect::<Vec<_>>(),
-        "unattachedForHeads":file.unattached_for_heads().map(|input|cstr!("{input:#?}")).collect::<Vec<_>>(),
-        "rejectedForHeads":debug_rows(file.rejected_for_heads()),"interpolations":interpolations,
+        "units":debug_rows(l2ir.units()),"scopes":debug_rows(l2ir.scopes()),"bindings":bindings,
+        "references":debug_rows(l2ir.references()),"exports":debug_rows(l2ir.exports()),
+        "imports":debug_rows(l2ir.imports()),"issues":debug_rows(l2ir.issues()),
+        "templateIssues":debug_rows(l2ir.template_issues()),
+        "diagnosticCounts":{"issues":l2ir.issues().len(),"templateIssues":l2ir.template_issues().len(),
+            "templateInterruption":usize::from(l2ir.template_interruption().is_some()),
+            "interruptedPrograms":l2ir.interrupted_programs().count(),
+            "interpolationFailures":l2ir.native_interpolation_failures().len()},
+        "templateInterruption":l2ir.template_interruption().map(|issue|cstr!("{issue:#?}")),
+        "interruptedPrograms":l2ir.interrupted_programs().map(|issue|cstr!("{issue:#?}")).collect::<Vec<_>>(),
+        "rejectedHandlers":debug_rows(l2ir.rejected_handlers()),
+        "unattachedHandlers":l2ir.unattached_handlers().map(|input|cstr!("{input:#?}")).collect::<Vec<_>>(),
+        "unattachedForHeads":l2ir.unattached_for_heads().map(|input|cstr!("{input:#?}")).collect::<Vec<_>>(),
+        "rejectedForHeads":debug_rows(l2ir.rejected_for_heads()),"interpolations":interpolations,
         "interpolationFailures":interpolation_failures,"attributeValues":attributes
     })
 }
@@ -157,7 +157,7 @@ pub fn l3(original: &NativeSelectedSfcObservation<'_>, target: Target) -> Value 
             Ok(analysis) => l3_receipt(
                 analysis.original_attributes(),
                 owner.is_some_and(|owner| core::ptr::eq(owner, analysis.owner())),
-                file.is_some_and(|file| core::ptr::eq(file, analysis.file())),
+                file.is_some_and(|file| core::ptr::eq(file, analysis.l2ir())),
                 cstr!("{:#?}", analysis.tables()),
             ),
             Err(error) => l3_failure("analysis-refusal", Some(cstr!("{error:?}"))),
@@ -166,7 +166,7 @@ pub fn l3(original: &NativeSelectedSfcObservation<'_>, target: Target) -> Value 
             Ok(analysis) => l3_receipt(
                 analysis.original_attributes(),
                 owner.is_some_and(|owner| core::ptr::eq(owner, analysis.owner())),
-                file.is_some_and(|file| core::ptr::eq(file, analysis.file())),
+                file.is_some_and(|file| core::ptr::eq(file, analysis.l2ir())),
                 cstr!("{:#?}", analysis.tables()),
             ),
             Err(error) => l3_failure("analysis-refusal", Some(cstr!("{error:?}"))),
@@ -175,7 +175,7 @@ pub fn l3(original: &NativeSelectedSfcObservation<'_>, target: Target) -> Value 
             Ok(analysis) => l3_receipt(
                 analysis.original_attributes(),
                 owner.is_some_and(|owner| core::ptr::eq(owner, analysis.owner())),
-                file.is_some_and(|file| core::ptr::eq(file, analysis.file())),
+                file.is_some_and(|file| core::ptr::eq(file, analysis.l2ir())),
                 cstr!("{:#?}", analysis.tables()),
             ),
             Err(error) => l3_failure("analysis-refusal", Some(cstr!("{error:?}"))),
@@ -203,7 +203,7 @@ fn l3_receipt(
 fn joined_values<'owner, 'arena>(
     facts: &OriginalAttributeFacts<'owner, 'arena>,
 ) -> (Vec<Value>, Option<String>) {
-    let file = facts.file();
+    let file = facts.l2ir();
     let mut values = Vec::new();
     for (index, record) in file.native_attribute_values().iter().enumerate() {
         let (node, slot) = match record.state() {
@@ -230,7 +230,7 @@ fn joined_values<'owner, 'arena>(
             if let Some(row) = values.get_mut(index) {
                 *row = json!({"index":index,"node":node.index(),"slot":slot,
                     "attribute":{"name":attribute.name,"value":attribute.value,"span":span(attribute.span)},
-                    "sameFile":core::ptr::eq(joined.file(),file),
+                    "sameFile":core::ptr::eq(joined.l2ir(),file),
                     "sameObservation":record.observation().is_some_and(|original|core::ptr::eq(original,value)),
                     "sameDecodedValue":attribute.value.is_some_and(|decoded|core::ptr::eq(decoded,value.source().text())),
                     "observation":value_observation(value,file.artifact().source())});

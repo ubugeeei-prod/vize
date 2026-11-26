@@ -154,7 +154,7 @@ const profiles: readonly Profile[] = [
     evidence: [
       "npm/builder/vite/src/plugin/vue-version.ts",
       "tests/tooling/vue-config-fixture.test.ts",
-      ".github/workflows/native-smoke.yml",
+      ".github/workflows/06-native-smoke.yml",
     ],
   },
   {
@@ -168,8 +168,8 @@ const profiles: readonly Profile[] = [
     topologies: projectTopologies,
     requiredQualificationSets: ["native-node-bun", "fresh-package-managers"],
     evidence: [
-      ".github/workflows/native-smoke.yml",
-      ".github/workflows/vite-plus-type-compat.yml",
+      ".github/workflows/06-native-smoke.yml",
+      ".github/workflows/08-vite-plus-types.yml",
       "tests/tooling/release/release-smoke-init-fresh.test.ts",
     ],
   },
@@ -185,7 +185,7 @@ const profiles: readonly Profile[] = [
     requiredQualificationSets: ["native-node-bun", "fresh-package-managers"],
     condition: "Current public tier is experimental; the exact Vue 3.6 baseline is unresolved.",
     evidence: [
-      ".github/workflows/native-smoke.yml",
+      ".github/workflows/06-native-smoke.yml",
       "npm/builder/vite/src/markdown-runtime.test.ts",
       "tests/tooling/native-vapor-reference.test.mjs",
     ],
@@ -236,8 +236,8 @@ const profiles: readonly Profile[] = [
     requiredQualificationSets: ["native-node-bun", "fresh-package-managers"],
     condition: "Vize delegates SFC compilation to the installed Vue 2.7 host compiler.",
     evidence: [
-      ".github/workflows/nuxt2-module-build.yml",
-      ".github/workflows/nuxt2-bridge-module-build.yml",
+      ".github/workflows/08-nuxt2-module.yml",
+      ".github/workflows/08-nuxt2-bridge.yml",
       "npm/framework/nuxt/src/compiler-option-bridge.ts",
     ],
   },
@@ -252,8 +252,8 @@ const profiles: readonly Profile[] = [
     topologies: projectTopologies,
     requiredQualificationSets: ["native-node-bun", "fresh-package-managers"],
     evidence: [
-      ".github/workflows/nuxt3-module-build.yml",
-      ".github/workflows/native-smoke.yml",
+      ".github/workflows/08-nuxt3-module.yml",
+      ".github/workflows/06-native-smoke.yml",
       "tests/tooling/release/release-smoke-init-nuxt.test.ts",
     ],
   },
@@ -271,7 +271,7 @@ const profiles: readonly Profile[] = [
     evidence: [
       "npm/framework/nuxt/src/vapor-vue.ts",
       "npm/framework/nuxt/src/vapor-vue.test.ts",
-      ".github/workflows/nuxt3-module-build.yml",
+      ".github/workflows/08-nuxt3-module.yml",
     ],
   },
   ...(["2.7", "3.x"] as const).flatMap((vue) => [
@@ -288,7 +288,7 @@ const profiles: readonly Profile[] = [
       condition:
         "Rule applicability is partitioned; this is not an all-rules by all-languages claim.",
       evidence: [
-        ".github/workflows/lint-reference-coverage-contracts.yml",
+        ".github/workflows/09-lint-reference-coverage.yml",
         ".github/workflows/real-project-matrix.yml",
         "tests/tooling/differential-linter-api.test.ts",
       ],
@@ -305,8 +305,8 @@ const profiles: readonly Profile[] = [
       requiredQualificationSets: ["native-node-bun", "fresh-package-managers", "wsl2-node"],
       condition: "Content Mapper consumes .vue files; plain JS and TS are TypeScript host inputs.",
       evidence: [
-        ".github/workflows/content-mapper-conformance.yml",
-        ".github/workflows/typecheck-wsl2.yml",
+        ".github/workflows/04-content-mapper-conformance.yml",
+        ".github/workflows/04-typecheck-wsl2.yml",
         "tests/tooling/content-mapper-workflow.test.ts",
       ],
     },
@@ -321,7 +321,7 @@ const profiles: readonly Profile[] = [
       topologies: projectTopologies,
       requiredQualificationSets: ["native-node-bun", "fresh-package-managers", "wsl2-node"],
       evidence: [
-        ".github/workflows/typecheck-wsl2.yml",
+        ".github/workflows/04-typecheck-wsl2.yml",
         "docs/content/guide/type-checking.md",
         "tests/tooling/typecheck-baseline-outside-jsx.test.ts",
       ],
@@ -355,8 +355,8 @@ const profiles: readonly Profile[] = [
       requiredQualificationSets: ["native-node-bun", "wsl2-node"],
       condition: "Core server recognition is broader than the shared shipped-editor surface.",
       evidence: [
-        ".github/workflows/lsp-current-baseline.yml",
-        ".github/workflows/typecheck-wsl2.yml",
+        ".github/workflows/05-lsp-baseline.yml",
+        ".github/workflows/04-typecheck-wsl2.yml",
         "tests/tooling/lsp-authored-script-diagnostics.test.ts",
       ],
     },
@@ -373,7 +373,7 @@ const profiles: readonly Profile[] = [
       condition:
         "The common editor surface is .vue/.art.vue and editor scenarios have different depth.",
       evidence: [
-        ".github/workflows/editor-conformance.yml",
+        ".github/workflows/05-editor-conformance.yml",
         ".github/workflows/release-zed-host.yml",
         "tests/tooling/editor-conformance.test.ts",
       ],
@@ -625,7 +625,7 @@ export function buildV1SupportMatrix(root = process.cwd()) {
       classification: "historical-manual-context",
       source: "800330221e8da576c20b35a01e684388e0af70dc",
       run: 42639912076,
-      workflow: "native-smoke.yml",
+      workflow: "06-native-smoke.yml",
       conclusion: "success",
       coverage: "6 non-musl Node 22/24 hosts and 2 musl Node 24 hosts",
       url: "https://github.com/ubugeeei-prod/vize/actions/runs/42639912076",
@@ -635,7 +635,7 @@ export function buildV1SupportMatrix(root = process.cwd()) {
       classification: "historical-manual-context",
       source: "8f52ede15970721062325adbba6d0dc4d1e722cc",
       run: 43712760021,
-      workflow: "editor-conformance.yml",
+      workflow: "05-editor-conformance.yml",
       conclusion: "success",
       coverage: "4 TS-45 clients plus Vim and Emacs configuration-only lanes",
       url: "https://github.com/ubugeeei-prod/vize/actions/runs/43712760021",
@@ -645,7 +645,7 @@ export function buildV1SupportMatrix(root = process.cwd()) {
       classification: "historical-manual-context",
       source: "a0d1447243e6180fa4fb7c7230d69f7b1c0f0449",
       run: 42370439979,
-      workflow: "typecheck-wsl2.yml",
+      workflow: "04-typecheck-wsl2.yml",
       conclusion: "success",
       coverage: "published vize 0.711.0 benchmark on WSL2 ext4 and Windows mount",
       url: "https://github.com/ubugeeei-prod/vize/actions/runs/42370439979",
@@ -866,10 +866,10 @@ export function buildV1SupportMatrix(root = process.cwd()) {
       runtime: ["runtime version", "runner OS", "architecture", "libc", "filesystem"],
       binary: ["native build token", "server sha256", "package version", "target triple"],
       producers: [
-        ".github/workflows/native-smoke.yml",
+        ".github/workflows/06-native-smoke.yml",
         ".github/workflows/real-project-matrix.yml",
-        ".github/workflows/editor-conformance.yml",
-        ".github/workflows/typecheck-wsl2.yml",
+        ".github/workflows/05-editor-conformance.yml",
+        ".github/workflows/04-typecheck-wsl2.yml",
       ],
     },
     caseReceiptIdentityContracts: {

@@ -78,7 +78,7 @@ fn original_root_literals_keep_whole_inputs_file_resolution_and_dense_actual_nod
                 .ok_or("retained stock AST")?,
         ))?;
         let resolution = file.expression(node).ok_or("attached File resolution")?;
-        check(core::ptr::eq(resolution.file(), file))?;
+        check(core::ptr::eq(resolution.l2ir(), file))?;
         same(resolution.node(), node)?;
         let table = resolution.table().ok_or("sole resolver table")?;
         // The sole resolver normally copies this small metadata wrapper.

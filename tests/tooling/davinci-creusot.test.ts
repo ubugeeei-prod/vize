@@ -11,7 +11,7 @@ import { parse as parseYaml } from "yaml";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const crateDir = path.join(repoRoot, "tests", "formal", "creusot");
-const workflowFile = path.join(repoRoot, ".github", "workflows", "davinci-creusot.yml");
+const workflowFile = path.join(repoRoot, ".github", "workflows", "07-proofs-creusot.yml");
 const inventoryFile = path.join(
   repoRoot,
   "docs",
@@ -60,6 +60,12 @@ function includedKernels(): string[] {
       assert.ok(fs.existsSync(target), `${root} declares missing ${match[1]}`);
       kernels.add(path.relative(repoRoot, target).split(path.sep).join("/"));
     }
+    // A kernel the product itself `include!`s is included verbatim the same way.
+    for (const match of fs.readFileSync(root, "utf8").matchAll(/^include!\("(\w+\.rs)"\);$/gmu)) {
+      const target = path.join(path.dirname(root), match[1]!);
+      assert.ok(fs.existsSync(target), `${root} includes missing ${match[1]}`);
+      kernels.add(path.relative(repoRoot, target).split(path.sep).join("/"));
+    }
   }
   return [...kernels].sort();
 }
@@ -69,7 +75,7 @@ test("the Creusot workflow replays every proof whenever a proved kernel changes"
   const kernels = includedKernels();
   assert.ok(kernels.length > 0);
   const own = [
-    ".github/workflows/davinci-creusot.yml",
+    ".github/workflows/07-proofs-creusot.yml",
     "tools/nix/creusot/**",
     "tests/formal/creusot/**",
   ];

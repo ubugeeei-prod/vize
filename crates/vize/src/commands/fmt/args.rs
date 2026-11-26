@@ -1,6 +1,6 @@
 //! Direct formatter command arguments and typed option values.
 
-use super::options::FmtAttributeSortOrder;
+use super::options::{FmtAttributeSortOrder, FmtObjectWrap};
 use super::patterns::FORMAT_PATTERN_HELP;
 use super::{FmtArrowParens, FmtEndOfLine, FmtPreset, FmtQuoteProps, FmtTrailingComma};
 use clap::Args;
@@ -44,6 +44,10 @@ pub struct FmtArgs {
     /// Change when object properties are quoted
     #[arg(long, value_enum)]
     pub quote_props: Option<FmtQuoteProps>,
+
+    /// Keep objects multiline when a newline follows '{', or collapse objects that fit
+    #[arg(long, value_enum)]
+    pub(in crate::commands) object_wrap: Option<FmtObjectWrap>,
 
     /// Change where trailing commas are printed
     #[arg(long, value_enum)]

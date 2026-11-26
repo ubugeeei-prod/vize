@@ -252,6 +252,7 @@ pub(crate) struct VForPropsContext<'a, 'template> {
     pub(crate) preserve_event_navigation: bool,
     pub(crate) omit_navigation_references: bool,
     pub(crate) check_unknown_events: bool,
+    pub(crate) fallthrough_listener_events: bool,
     pub(crate) strict_v_model: bool,
     pub(crate) typed_fallthrough_values: bool,
     pub(crate) hoist_shared_preamble: bool,
@@ -324,6 +325,9 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     /// destructuring report the same diagnostic.
     pub(super) type_only_slot_references: bool,
     pub(super) check_unknown_events: bool,
+    /// The listeners a component passes to its root are known events of the
+    /// component (`VirtualTsCheckOptions::infers_fallthrough_attributes`).
+    pub(super) fallthrough_listener_events: bool,
     pub(super) strict_v_model: bool,
     pub(super) component_binding_check: ComponentBindingCheck<'a>,
     pub(super) legacy_vue2: bool,

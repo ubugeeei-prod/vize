@@ -10,7 +10,8 @@ mod compiler_keys;
 mod formatter;
 pub use formatter::{
     LoadedFormatterSnapshot, load_config_with_formatter_options_and_source,
-    try_load_formatter_snapshot, try_load_formatter_snapshot_from_serialized,
+    try_discover_formatter_snapshot, try_load_formatter_snapshot,
+    try_load_formatter_snapshot_from_serialized,
 };
 mod discovery;
 mod failure_identity;

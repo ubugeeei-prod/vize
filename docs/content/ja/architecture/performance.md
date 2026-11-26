@@ -55,7 +55,7 @@ README と全言語のページは、同じコミット済み成果物から生�
 | Prettier                 | <code>3.8.3</code>                                                                            | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
 | Node.js                  | <code>v24.14.0</code>                                                                         | n/a                                                                           |
 
-バックエンド: ネイティブ TypeScript エンジンのパスは <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code> です。型検査の計測では、意図的に追加した診断が検出されることを tools/benchmarks/scripts/check-gate.mjs（.github/workflows/check-bench.yml）で検証します。
+バックエンド: ネイティブ TypeScript エンジンのパスは <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code> です。型検査の計測では、意図的に追加した診断が検出されることを tools/benchmarks/scripts/check-gate.mjs（.github/workflows/03-check-gate.yml）で検証します。
 
 </details>
 
@@ -104,7 +104,7 @@ Rust の構造体レイアウトと列挙型判別子はコンパクトです。
 
 ### 実行時のオーバーヘッドなし
 
-V8 で実行される JavaScript 製コンパイラとは異なり、Vize はネイティブコードに直接コンパイルします。JIT ウォームアップ、ガベージコレクタ、イベントループの競合はありません。CLI はプラットフォームごとに自己完結型のネイティブ実行可能ファイルとして配布されます。musl Linux ターゲットでは完全に静的リンクされており、CI がそれを検証しています (`tools/commands/ci/github/verify-musl-cli-binary.ts`)。glibc、macOS、Windows の各ターゲットでは、システムの C ライブラリに動的リンクされます。Vite プラグインは、同じコンパイラを別プロセスではなくネイティブの Node アドオン (`@vizejs/native`) として読み込みます。
+V8 で実行される JavaScript 製コンパイラとは異なり、Vize はネイティブコードに直接コンパイルします。JIT ウォームアップ、ガベージコレクタ、イベントループの競合はありません。CLI はプラットフォームごとに自己完結型のネイティブ実行可能ファイルとして配布されます。musl Linux ターゲットでは完全に静的リンクされており、CI がそれを検証しています (`tools/ci/commands/github/verify-musl-cli-binary.ts`)。glibc、macOS、Windows の各ターゲットでは、システムの C ライブラリに動的リンクされます。Vite プラグインは、同じコンパイラを別プロセスではなくネイティブの Node アドオン (`@vizejs/native`) として読み込みます。
 
 <span id="パフォーマンスのためのアーキテクチャの選択"></span>
 

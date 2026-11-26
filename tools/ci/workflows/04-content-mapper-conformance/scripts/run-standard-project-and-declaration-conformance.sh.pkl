@@ -1,0 +1,15 @@
+amends "../../../lib/ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE=standard-go-d6-vue35 VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR="$GITHUB_WORKSPACE/target/vize-tests/content-mapper-directive-owners/reported-dynamic-targets" cargo test -p vize --test integration -- content_mapper_tsgo_cli:: --nocapture
+  cargo test -p vize --test integration -- content_mapper_tsgo_directives:: --nocapture
+  cargo test -p vize --test integration -- content_mapper_tsgo_build:: --nocapture
+  cargo test -p vize --test integration -- content_mapper_tsgo_incremental:: --nocapture
+  cargo test -p vize --test integration -- content_mapper_tsgo_package_references:: --nocapture
+  cargo test -p vize --test integration -- content_mapper_tsgo_watch:: --nocapture
+  cargo test -p vize --test integration -- content_mapper_importer_scoped_packages:: --nocapture
+  """#
+}

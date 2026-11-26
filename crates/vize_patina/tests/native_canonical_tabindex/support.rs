@@ -77,7 +77,7 @@ pub fn profile(lint: &NativeCanonicalLint<'_, '_>, lane: &str, expected: usize) 
     assert!(profiler.counter_snapshot().is_empty());
     eprintln!(
         "{}",
-        json!({"lane":lane,"profile":"dev","nodes":lint.file().artifact().node_count(),"findings":expected,"calls":metric.count,"average_ns":metric.average().as_nanos(),"histogram_p95_ns":metric.percentile(0.95).as_nanos(),"min_ns":metric.min_duration.as_nanos(),"max_ns":metric.max_duration.as_nanos(),"scope":"query only, producer preparation and result destruction excluded"})
+        json!({"lane":lane,"profile":"dev","nodes":lint.l2ir().artifact().node_count(),"findings":expected,"calls":metric.count,"average_ns":metric.average().as_nanos(),"histogram_p95_ns":metric.percentile(0.95).as_nanos(),"min_ns":metric.min_duration.as_nanos(),"max_ns":metric.max_duration.as_nanos(),"scope":"query only, producer preparation and result destruction excluded"})
     );
 }
 
@@ -131,7 +131,7 @@ pub fn parity(dialect: Dialect, body: &str, newline: &str, locale: Locale) -> Ve
                 .admitted()
                 .unwrap_or_else(|| panic!("{:?}", owner.issues()));
             let actual = NativeCanonicalLint::from_vue(admitted);
-            assert!(core::ptr::eq(actual.file(), owner.file().unwrap().file()));
+            assert!(core::ptr::eq(actual.l2ir(), owner.file().unwrap().l2ir()));
             let findings = query(&actual, &messages);
             let reference = linter.lint_sfc(&source, "native.vue");
             drop(owner);
@@ -141,7 +141,7 @@ pub fn parity(dialect: Dialect, body: &str, newline: &str, locale: Locale) -> Ve
             let source = vize_l0::cstr!("const prefix = '作者😀';{newline}const view = {body};");
             let owner = jsx(&a, &source, matches!(dialect, Dialect::Tsx));
             let actual = NativeCanonicalLint::from_jsx(&owner).unwrap();
-            assert!(core::ptr::eq(actual.file(), owner.file()));
+            assert!(core::ptr::eq(actual.l2ir(), owner.l2ir()));
             let findings = query(&actual, &messages);
             let lang = if matches!(dialect, Dialect::Tsx) {
                 vize_atelier_jsx::JsxLang::Tsx

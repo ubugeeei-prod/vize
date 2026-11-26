@@ -81,7 +81,7 @@ fn original_recorded_and_unrecorded_fragments_keep_exact_leading_object_and_tail
                 ),
             )?;
             check(core::ptr::eq(view.program().program(), program))?;
-            check(core::ptr::eq(view.file(), &file))?;
+            check(core::ptr::eq(view.l2ir(), &file))?;
             check(core::ptr::eq(view.source().root_source(), source.as_str()))?;
             equal(observed.syntax.comments().count(), comments)?;
             equal(observed.syntax.diagnostics().count(), 0)?;

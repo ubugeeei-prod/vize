@@ -46,7 +46,7 @@ export type RealProjectMatrixWorkflow = {
 };
 
 export const shardSummaryCommandPath =
-  "tools/commands/ci/github/publish-real-project-shard-summary.ts";
+  "tools/ci/commands/github/publish-real-project-shard-summary.ts";
 
 export function readRealProjectMatrixWorkflow(): RealProjectMatrixWorkflow {
   return parse(
@@ -56,13 +56,13 @@ export function readRealProjectMatrixWorkflow(): RealProjectMatrixWorkflow {
 
 export function readCanonicalCorpusWorkflow(): RealProjectMatrixWorkflow {
   return parse(
-    readAutomationPrograms(".github", "workflows", "davinci-canonical-corpus.yml"),
+    readAutomationPrograms(".github", "workflows", "07-canonical-corpus.yml"),
   ) as RealProjectMatrixWorkflow;
 }
 
 export function readDivergenceWorkflow(): RealProjectMatrixWorkflow {
   return parse(
-    readAutomationPrograms(".github", "workflows", "canonical-corpus-divergence.yml"),
+    readAutomationPrograms(".github", "workflows", "07-canonical-corpus-divergence.yml"),
   ) as RealProjectMatrixWorkflow;
 }
 

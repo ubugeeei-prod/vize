@@ -292,6 +292,8 @@ export function planToolingTests(
     const script =
       /^(?:tools\/config\/pkl\/scripts\/)?\.github\/scripts\/workflows\/([\w-]+)\//u.exec(path);
     if (script && script[1] !== "shared") return [".github/workflows/" + script[1] + ".yml"];
+    const moved = /^tools\/ci\/workflows\/([\w-]+)\//u.exec(path);
+    if (moved) return [".github/workflows/" + moved[1] + ".yml"];
     const definition =
       /^tools\/config\/pkl\/(?:workflows\/[^/]+\/([\w-]+)\.pkl|parts\/([\w-]+)\/)/u.exec(path);
     return definition ? [".github/workflows/" + (definition[1] ?? definition[2]) + ".yml"] : [];
@@ -307,7 +309,7 @@ export function planToolingTests(
   const global = code.some(
     (path) =>
       matchesAny(path, globalInputs) ||
-      /^(?:\.github\/(?:scripts\/workflows\/shared|actions\/stage-workflow-scripts)\/|tools\/config\/pkl\/(?:Actions|ShellScript)\.pkl$)/u.test(
+      /^(?:\.github\/(?:scripts\/workflows\/shared|actions\/stage-workflow-scripts)\/|tools\/config\/pkl\/(?:Actions|ShellScript)\.pkl$|tools\/ci\/lib\/(?:scripts\/|(?:Actions|ShellScript)\.pkl$))/u.test(
         path,
       ),
   );

@@ -9,14 +9,16 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 test("tool command surface prefers stable Node and bounds the Rust migration", () => {
-  const rustCommands = collectFiles(path.join(root, "tools", "commands")).filter(
+  const commandFiles = [
+    ...collectFiles(path.join(root, "tools", "commands")),
+    ...collectFiles(path.join(root, "tools", "ci", "commands")),
+  ];
+  const rustCommands = commandFiles.filter(
     (file) =>
       file.endsWith(".rs") &&
       fs.readFileSync(file, "utf8").startsWith("#!/usr/bin/env rust-script\n"),
   );
-  const nodeCommands = collectFiles(path.join(root, "tools", "commands")).filter((file) =>
-    /\.(?:[cm]?js|ts)$/u.test(file),
-  );
+  const nodeCommands = commandFiles.filter((file) => /\.(?:[cm]?js|ts)$/u.test(file));
   assert.ok(nodeCommands.length >= 18, "expected a stable Node command surface");
   assert.ok(rustCommands.length <= 12, "the Rust Script migration budget cannot grow");
 
@@ -99,7 +101,7 @@ test("ordinary tool modules must be reachable and resolve without ambiguity", ()
     const closure = spawnSync(
       process.execPath,
       [
-        path.join(root, "tools/commands/ci/verify-tool-layout.ts"),
+        path.join(root, "tools/ci/commands/verify-tool-layout.ts"),
         "--module-closure",
         "tools/commands/main.rs",
       ],
@@ -142,7 +144,7 @@ test("ordinary tool modules must be reachable and resolve without ambiguity", ()
 });
 
 function verify(cwd: string) {
-  return spawnSync(process.execPath, [path.join(root, "tools/commands/ci/verify-tool-layout.ts")], {
+  return spawnSync(process.execPath, [path.join(root, "tools/ci/commands/verify-tool-layout.ts")], {
     cwd,
     encoding: "utf8",
   });

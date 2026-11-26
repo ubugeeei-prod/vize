@@ -1,7 +1,0 @@
-amends "../../../../../ShellScript.pkl"
-
-interpreter = "bash"
-
-commands {
-  #""$VIZE_TASK_CACHE_RUNTIME" npm/builder/vite/scripts/check-task-cache.ts"#
-}

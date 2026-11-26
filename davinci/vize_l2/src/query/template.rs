@@ -65,10 +65,10 @@ pub enum TemplateSymbolRef<'f, 'a> {
 
 impl<'f, 'a> TemplateSymbolRef<'f, 'a> {
     #[must_use]
-    pub fn file(self) -> &'f L2Ir<'a> {
+    pub fn l2ir(self) -> &'f L2Ir<'a> {
         match self {
-            Self::File(binding) => binding.file(),
-            Self::HandlerLocal(local) => local.handler.file(),
+            Self::File(binding) => binding.l2ir(),
+            Self::HandlerLocal(local) => local.handler.l2ir(),
         }
     }
     #[must_use]
@@ -102,9 +102,9 @@ enum Origin<'f, 'a> {
 ///
 /// ```compile_fail
 /// use vize_l2::{file::L2Ir, query::Model};
-/// fn discard(file: L2Ir<'_>, offset: u32) {
-///     let site = Model::new(&file).template_symbol_at_offset(offset).unwrap().unwrap();
-///     drop(file);
+/// fn discard(l2ir: L2Ir<'_>, offset: u32) {
+///     let site = Model::new(&l2ir).template_symbol_at_offset(offset).unwrap().unwrap();
+///     drop(l2ir);
 ///     let _ = site.symbol();
 /// }
 /// ```
@@ -119,8 +119,8 @@ pub struct TemplateSiteRef<'f, 'a> {
 
 impl<'f, 'a> TemplateSiteRef<'f, 'a> {
     #[must_use]
-    pub fn file(self) -> &'f L2Ir<'a> {
-        self.symbol.file()
+    pub fn l2ir(self) -> &'f L2Ir<'a> {
+        self.symbol.l2ir()
     }
     #[must_use]
     pub const fn symbol(self) -> TemplateSymbolRef<'f, 'a> {
@@ -164,10 +164,10 @@ impl<'f, 'a> Model<'f, 'a> {
         self,
         offset: u32,
     ) -> Result<Option<TemplateSiteRef<'f, 'a>>, TemplateQueryError> {
-        check_template_offset(self.file, offset)?;
+        check_template_offset(self.l2ir, offset)?;
         let mut found = None;
         let mut ambiguous = false;
-        sites::visit(self.file, |site| {
+        sites::visit(self.l2ir, |site| {
             if site.span.start <= offset && offset < site.span.end {
                 ambiguous |= found.is_some();
                 found = Some(site);
@@ -189,11 +189,11 @@ impl<'f, 'a> Model<'f, 'a> {
         symbol: TemplateSymbolRef<'_, '_>,
         mut visit: impl FnMut(TemplateSiteRef<'f, 'a>),
     ) -> Result<(), TemplateQueryError> {
-        if !core::ptr::eq(self.file, symbol.file()) {
+        if !core::ptr::eq(self.l2ir, symbol.l2ir()) {
             return Err(TemplateQueryError::ForeignSymbol);
         }
-        check_template_offset(self.file, 0)?;
-        sites::visit(self.file, |site| {
+        check_template_offset(self.l2ir, 0)?;
+        sites::visit(self.l2ir, |site| {
             if site.usage.is_some() && site.symbol.same_symbol(symbol) {
                 visit(site);
             }
@@ -202,14 +202,14 @@ impl<'f, 'a> Model<'f, 'a> {
 }
 
 pub(super) fn check_template_offset(
-    file: &L2Ir<'_>,
+    l2ir: &L2Ir<'_>,
     offset: u32,
 ) -> Result<(), TemplateQueryError> {
-    let error = if !file.is_complete() {
+    let error = if !l2ir.is_complete() {
         Some(PositionQueryError::IncompleteFile)
-    } else if offset as usize > file.artifact().source().len() {
+    } else if offset as usize > l2ir.artifact().source().len() {
         Some(PositionQueryError::OutOfBounds)
-    } else if !file.artifact().source().is_char_boundary(offset as usize) {
+    } else if !l2ir.artifact().source().is_char_boundary(offset as usize) {
         Some(PositionQueryError::NotCharBoundary)
     } else {
         None

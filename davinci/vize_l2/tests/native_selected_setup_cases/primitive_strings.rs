@@ -45,7 +45,7 @@ fn original_decoded_primitive_strings_keep_selected_setup_and_exact_value_class(
                 let unit = original.parse_setup_program().map_err(|_| "actual setup")?;
                 let original = complete(original)?;
                 let setup = original.setup().map_err(|_| "selected primitive setup")?;
-                check(core::ptr::eq(setup.file(), original.file().ok_or("File")?))?;
+                check(core::ptr::eq(setup.l2ir(), original.file().ok_or("File")?))?;
                 let mut bindings = setup.bindings();
                 let binding = bindings.next().ok_or("actual declaration")?;
                 check(bindings.next().is_none())?;

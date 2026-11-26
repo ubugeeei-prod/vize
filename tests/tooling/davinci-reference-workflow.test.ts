@@ -24,7 +24,7 @@ type Workflow = {
   jobs: Record<string, { steps: Step[]; if?: unknown; "continue-on-error"?: unknown }>;
 };
 
-const workflowPath = [".github", "workflows", "davinci-reference.yml"] as const;
+const workflowPath = [".github", "workflows", "07-reference-backends.yml"] as const;
 const job = "reference-backends";
 
 function assertReferenceWorkflow(workflow: Workflow): void {
@@ -161,7 +161,7 @@ function assertLemma(source: string, name: string): void {
 
 test("P3-15 laws are Kani harnesses or Creusot proofs that CI verifies", () => {
   // The lattice laws are Creusot lemmas over the shipped evaluator
-  // (2026-11-17-creusot-inventory.md), replayed by davinci-creusot.yml.
+  // (2026-11-17-creusot-inventory.md), replayed by 07-proofs-creusot.yml.
   const lattice = readRepoFile("davinci", "vize_l3", "src", "lattice", "creusot.rs");
   for (const name of [
     "join_has_its_units_and_is_monotone",
@@ -216,7 +216,7 @@ test("P3-15 laws are Kani harnesses or Creusot proofs that CI verifies", () => {
       `${invariant} must equal its declarative statement`,
     );
   }
-  const kani = readRepoFile(".github", "workflows", "davinci-kani.yml");
+  const kani = readRepoFile(".github", "workflows", "07-proofs.yml");
   assert.doesNotMatch(kani, /src\/lattice\//u);
   assert.match(kani, /args: tests\/davinci_test_support\/src\/l3_reference\/kani\.rs /u);
   const creusot = readRepoFile("tests", "formal", "creusot", "reference", "Cargo.toml");

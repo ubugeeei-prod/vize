@@ -2,7 +2,7 @@
 # DO NOT EDIT. Generated from tools/config/pkl/scripts/.github/actions/app-e2e-row/scripts/validate-and-hydrate-planned-fixtures.sh.pkl.
 # Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
 set -euo pipefail
-planner=(node tools/commands/ci/github/app-e2e-plan.ts --profile "$PLAN_PROFILE" --suite "$PLAN_SUITE" --shard "$PLAN_SHARD")
+planner=(node tools/ci/commands/github/app-e2e-plan.ts --profile "$PLAN_PROFILE" --suite "$PLAN_SUITE" --shard "$PLAN_SHARD")
 test "$("${planner[@]}" --field task)" = "$PLANNED_TASK"
 test "$("${planner[@]}" --field timeout)" = "$PLANNED_TIMEOUT"
 test "$("${planner[@]}" --field needs-playwright)" = "$PLANNED_BROWSER"

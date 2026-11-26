@@ -1,0 +1,74 @@
+import "../../lib/Actions.pkl" as ci
+
+name = "Vitest project configuration consumers"
+on {
+  workflow_dispatch = null
+  pull_request {
+    paths = new Listing {
+      "crates/vize_carton/src/config/loader/vite-runtime.*"
+      "npm/cli/src/config*"
+      "npm/cli/src/config/**"
+      "npm/builder/vite/src/config.ts"
+      "npm/builder/vite/src/plugin/shared-config.ts"
+      "npm/builder/vite/src/plugin/host-config-source.ts"
+      "tests/consumers/vitest-project-extends.ts"
+      "tests/tooling/vitest-project-extends.test.ts"
+      "tests/_fixtures/_projects/vitest-project-extends/**"
+      ".github/workflows/08-vitest.yml"
+      "tools/ci/workflows/08-vitest/scripts/**"
+      "tools/ci/workflows/08-vitest/jobs/**"
+      "npm/builder/vite/**"
+      "npm/native/**"
+      "crates/vize_atelier_sfc/src/vite_plugin/**"
+      "crates/vize_atelier_sfc/src/vite_plugin.rs"
+      "tools/support/compat/vitest-module-cache.ts"
+      "tools/support/compat/vitest/fixtures/fs-module-cache/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "vitest-project-extends-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  consumers {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/08-vitest/scripts"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      new Dynamic {
+        run = "vp install --filter './npm/builder/vite...' --filter './npm/cli...' --frozen-lockfile --prefer-offline"
+      }
+      new Dynamic {
+        name = "Build both source configuration adapters"
+        run = ci.workflowScript("build-both-source-configuration-adapters.sh")
+      }
+      new Dynamic {
+        name = "Install the exact released reproduction"
+        `working-directory` = "tests/_fixtures/_projects/vitest-project-extends"
+        run = "npm ci --prefer-offline --no-audit --no-fund"
+      }
+      new Dynamic {
+        name = "Compare published failure and source adapter behavior in real Vitest projects"
+        run = #"node tests/consumers/vitest-project-extends.ts "$RUNNER_TEMP/vitest-project-extends""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "vitest-project-extends-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/vitest-project-extends"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+
+  `module-cache` = import("jobs/module-cache.pkl")
+}

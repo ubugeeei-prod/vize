@@ -115,7 +115,7 @@ fn real_configured_original_programs_preserve_complete_diagnostics_and_source() 
         block_on(bridge.spawn()).unwrap();
         let result = block_on(bridge.check_original_program(&original, &source_path)).unwrap();
         assert_diagnosing_options(&result);
-        assert!(std::ptr::eq(result.projection().file(), &original));
+        assert!(std::ptr::eq(result.projection().l2ir(), &original));
         assert_eq!(result.source_path(), source_path.canonicalize().unwrap());
         assert_eq!(
             result.source_uri(),

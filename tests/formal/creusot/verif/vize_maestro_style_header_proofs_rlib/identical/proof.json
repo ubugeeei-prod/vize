@@ -1,0 +1,41 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_elim_Some": { "prover": "z3", "time": 0.003 },
+      "vc_get_BlockAttr": { "prover": "alt-ergo", "time": 0.006 },
+      "vc_identical": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.003 },
+              { "prover": "z3", "time": 0.005 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.007 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  {
+                    "tactic": "compute_in_goal",
+                    "children": [{ "prover": "alt-ergo", "time": 0.012 }]
+                  }
+                ]
+              },
+              { "prover": "z3", "time": 0.007 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.004 }
+            ]
+          }
+        ]
+      },
+      "vc_ne_Option_ref_str": { "prover": "z3", "time": 0.003 },
+      "vc_ne_ref_str": { "prover": "z3", "time": 0.003 }
+    }
+  }
+}

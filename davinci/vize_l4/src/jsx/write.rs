@@ -27,7 +27,7 @@ pub(super) fn original<L: LinkSink>(
     let mut start = 0;
     let mut cursor = 0;
     while cursor < text.len() {
-        let width = line_break_len(text, cursor);
+        let width = line_break_len(text.as_bytes(), cursor);
         cursor += width.max(1);
         if width > 0 {
             writer.push_linked(
@@ -184,7 +184,7 @@ fn container<L: LinkSink>(
 ) -> Result<(), JsxEmitError> {
     let span = node.span().ok_or_else(|| invalid(node))?;
     let child = node.children().next().ok_or_else(|| invalid(node))?;
-    let source = analysis.owner().file().artifact().source();
+    let source = analysis.owner().l2ir().artifact().source();
     let inner = Span::new(span.start + 1, span.end - 1);
     let child_span = child.span().ok_or_else(|| invalid(child))?;
     if kind(analysis, child)? == Kind::Empty {

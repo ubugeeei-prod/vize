@@ -37,7 +37,7 @@ function fixture({
             mergeQueue: {
               entries: {
                 pageInfo: { hasNextPage: incomplete },
-                nodes: heads.map((oid) => ({ headCommit: { oid } })),
+                nodes: heads.map((oid) => ({ state: "AWAITING_CHECKS", headCommit: { oid } })),
               },
             },
           },
@@ -51,12 +51,13 @@ function fixture({
   return { api, calls };
 }
 
-void test("coalesces overlapping cleanup runs", () => {
+void test("coalesces actionable cleanup runs separately from skipped PR events", () => {
   const workflow = parse(
     readRepoFile(".github", "workflows", "cleanup-obsolete-merge-groups.yml"),
   ) as { concurrency: { group: string; "cancel-in-progress": boolean } };
   assert.deepEqual(workflow.concurrency, {
-    group: "cleanup-obsolete-merge-groups",
+    group:
+      "cleanup-obsolete-merge-groups-${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.event == 'merge_group' }}",
     "cancel-in-progress": true,
   });
 });
@@ -78,7 +79,7 @@ void test("uses one complete queue snapshot for every candidate in a batch", asy
             mergeQueue: {
               entries: {
                 pageInfo: { hasNextPage: false },
-                nodes: [{ headCommit: { oid: retained.head_sha } }],
+                nodes: [{ state: "AWAITING_CHECKS", headCommit: { oid: retained.head_sha } }],
               },
             },
           },
@@ -119,6 +120,38 @@ void test("retains a live queue candidate even after its temporary ref disappear
     calls.some((call) => call.endsWith("/cancel")),
     false,
   );
+});
+
+void test("unbuilt queued entries do not prevent cleanup of obsolete candidates", async () => {
+  const { api, calls } = fixture();
+  const built = Array.from({ length: 6 }, (_, index) => ({
+    state: "AWAITING_CHECKS",
+    headCommit: { oid: String(index + 1).repeat(40) },
+  }));
+  const results = await cleanObsoleteMergeGroups(async (endpoint) => {
+    if (endpoint !== "graphql") return api(endpoint);
+    return {
+      data: {
+        repository: {
+          mergeQueue: {
+            entries: {
+              pageInfo: { hasNextPage: false },
+              nodes: [
+                ...built,
+                { state: "QUEUED", headCommit: null },
+                { state: "QUEUED", headCommit: null },
+              ],
+            },
+          },
+        },
+      },
+    };
+  }, "owner/repo");
+  assert.deepEqual(
+    results.map(({ run: current, reason }) => [current.id, reason]),
+    [[1, "cancel-requested: absent queue head and obsolete ref"]],
+  );
+  assert.equal(calls.at(-1), "repos/owner/repo/actions/runs/1/cancel");
 });
 
 void test("retains a current ref and never cancels PRs, releases, completed runs, or other queues", async () => {
@@ -163,7 +196,10 @@ void test("fails closed on incomplete or unavailable queue evidence", async () =
         data: {
           repository: {
             mergeQueue: {
-              entries: { pageInfo: { hasNextPage: false }, nodes: [{ headCommit: null }] },
+              entries: {
+                pageInfo: { hasNextPage: false },
+                nodes: [{ state: "AWAITING_CHECKS", headCommit: null }],
+              },
             },
           },
         },
