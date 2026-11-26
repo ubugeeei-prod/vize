@@ -104,11 +104,12 @@ mod tests {
     use super::{kept_block_body, write_indented_block};
 
     fn indent(content: &str) -> vize_l0::String {
-        indent_with(content, "\n")
+        indent_with(content, b"\n")
     }
 
-    fn indent_with(content: &str, newline: &str) -> vize_l0::String {
+    fn indent_with(content: &str, newline: &[u8]) -> vize_l0::String {
         let mut output = vize_l0::string_builder::TextBuf::new();
+        let newline = core::str::from_utf8(newline).unwrap();
         write_indented_block(&mut output, content, "  ", newline);
         output.into_compact()
     }
@@ -162,11 +163,11 @@ mod tests {
         // The '\r' left behind by splitting on '\n' must not survive, or a
         // CRLF newline would double it into "\r\r\n".
         assert_eq!(
-            indent_with("const a = 1\r\nconst b = 2\r\n", "\r\n"),
+            indent_with("const a = 1\r\nconst b = 2\r\n", b"\r\n"),
             "  const a = 1\r\n  const b = 2\r\n"
         );
         assert_eq!(
-            indent_with("const a = 1\r\nconst b = 2\r\n", "\n"),
+            indent_with("const a = 1\r\nconst b = 2\r\n", b"\n"),
             "  const a = 1\n  const b = 2\n"
         );
     }

@@ -232,26 +232,52 @@ fn write_line(output: &mut TextBuf, line: &str, indent: &str, newline: &str, raw
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        compute_raw_line_mask, needs_raw_line_mask, write_indented_template, write_line,
-        write_rebased_opaque_template,
-    };
+    use super::compute_raw_line_mask;
+    use super::needs_raw_line_mask;
     use vize_l0::string_builder::TextBuf;
 
-    fn full_lexer_output(source: &str) -> TextBuf {
-        let lines: Vec<_> = source.split('\n').collect();
-        let byte_lines: Vec<_> = lines.iter().map(|line| line.as_bytes()).collect();
-        let mask = compute_raw_line_mask(&byte_lines);
-        let mut output = TextBuf::new();
+    // The writers take `&mut TextBuf` and `&str`; these keep the retained
+    // byte-level test bodies unchanged.
+    fn text(bytes: &[u8]) -> &str {
+        core::str::from_utf8(bytes).unwrap()
+    }
+
+    fn write_line(output: &mut Vec<u8>, line: &[u8], indent: &[u8], newline: &[u8], raw: bool) {
+        let mut text_buf = TextBuf::new();
+        super::write_line(&mut text_buf, text(line), text(indent), text(newline), raw);
+        output.extend_from_slice(text_buf.as_bytes());
+    }
+
+    fn write_indented_template(output: &mut Vec<u8>, source: &str, indent: &[u8], newline: &[u8]) {
+        let mut text_buf = TextBuf::new();
+        super::write_indented_template(&mut text_buf, source, text(indent), text(newline));
+        output.extend_from_slice(text_buf.as_bytes());
+    }
+
+    fn write_rebased_opaque_template(
+        output: &mut Vec<u8>,
+        source: &str,
+        indent: &[u8],
+        newline: &[u8],
+    ) {
+        let mut text_buf = TextBuf::new();
+        super::write_rebased_opaque_template(&mut text_buf, source, text(indent), text(newline));
+        output.extend_from_slice(text_buf.as_bytes());
+    }
+
+    fn full_lexer_output(source: &str) -> Vec<u8> {
+        let lines: Vec<_> = source.as_bytes().split(|byte| *byte == b'\n').collect();
+        let mask = compute_raw_line_mask(&lines);
+        let mut output = Vec::new();
         for (line, raw) in lines.into_iter().zip(mask) {
-            write_line(&mut output, line, "  ", "\n", raw);
+            write_line(&mut output, line, b"  ", b"\n", raw);
         }
         output
     }
 
-    fn selected_output(source: &str) -> TextBuf {
-        let mut output = TextBuf::new();
-        write_indented_template(&mut output, source, "  ", "\n");
+    fn selected_output(source: &str) -> Vec<u8> {
+        let mut output = Vec::new();
+        write_indented_template(&mut output, source, b"  ", b"\n");
         output
     }
 
@@ -300,23 +326,23 @@ mod tests {
 
     #[test]
     fn opaque_templates_rebase_only_the_shared_prefix() {
-        let mut output = TextBuf::new();
+        let mut output = Vec::new();
         write_rebased_opaque_template(
             &mut output,
             "\n\tmain\r\n\t  //- keep\r\n\t  :plain\r\n\t    a  b  \r\n\r\n",
-            "  ",
-            "\r\n",
+            b"  ",
+            b"\r\n",
         );
         assert_eq!(
             output,
-            "  main\r\n    //- keep\r\n    :plain\r\n      a  b  \r\n"
+            b"  main\r\n    //- keep\r\n    :plain\r\n      a  b  \r\n"
         );
     }
 
     #[test]
     fn empty_opaque_templates_emit_no_phantom_body_line() {
-        let mut output = TextBuf::new();
-        write_rebased_opaque_template(&mut output, "\n \t\r\n", "  ", "\n");
+        let mut output = Vec::new();
+        write_rebased_opaque_template(&mut output, "\n \t\r\n", b"  ", b"\n");
         assert!(output.is_empty());
     }
 }
