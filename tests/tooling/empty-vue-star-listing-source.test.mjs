@@ -11,6 +11,7 @@ import {
   qualifyStarListingSDK,
   qualifyStarListingMain,
   starListingLexicalReader,
+  starListingLivePath,
   starListingProgramPaths,
 } from "../../tools/support/compat/github/empty-vue-star-listing-source.mjs";
 
@@ -179,7 +180,7 @@ await test("foreign raw bodies, changed entrypoints, hybrid source, modes and re
       ".github/workflows/typechecker-native-phases.yml",
     ]) {
       assert.deepEqual(readLexical(file), git(root, ["show", manifest.base + ":" + file]));
-      const target = path.join(owner, file),
+      const target = path.join(owner, starListingLivePath(file)),
         original = fs.readFileSync(target);
       fs.writeFileSync(target, Buffer.concat([original, Buffer.from("foreign copied source\n")]));
       assert.throws(() => readLexical(file));
