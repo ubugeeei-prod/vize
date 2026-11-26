@@ -33,13 +33,10 @@ impl Linter {
         allocator: &'a Allocator,
         source: &'a str,
         filename: &'a str,
-        markup: &L2Markup<'_>,
+        markup: &'a L2Markup<'a>,
         analysis: Option<&'a Croquis>,
         rules: MarkupRules<'_>,
     ) -> LintResult {
-        // SAFETY: the caller's `markup` borrow outlives this call, and the
-        // document built from it is dropped when the walk below returns.
-        let markup = unsafe { crate::markup::reborrow_markup(markup) };
         let document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);
         self.lint_markup_document(allocator, source, filename, document, analysis, rules)
     }
