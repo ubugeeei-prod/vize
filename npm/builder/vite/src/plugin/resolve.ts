@@ -655,7 +655,7 @@ function nativeCssAliasRules(
     : state.cssAliasRules.map(toNativeCssAliasRule);
 }
 
-function isPotentialVizeResolveId(id: string): boolean {
+export function isPotentialVizeResolveId(id: string): boolean {
   // Keep regular dependencies off the heavier classifier/alias/Node-resolution path.
   return (
     id.startsWith("\0") ||

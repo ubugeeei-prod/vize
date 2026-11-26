@@ -264,6 +264,32 @@ fn verify_parcel_update(
 
 pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checked<Option<Value>> {
     if let Some(previous_lock) =
+        crate::package_task_history::before_vite_resolver_importer("pnpm-lock.yaml", lock)
+    {
+        let predecessor = authorize(previous, &previous_lock, package)?
+            .ok_or("the Vite resolver importer requires a qualified predecessor")?;
+        if !bound(
+            &predecessor["finalQualificationLock"],
+            "pnpm-lock.yaml",
+            &previous_lock,
+        ) {
+            return Err("exact Vite resolver importer qualification predecessor");
+        }
+        return Ok(Some(json!({
+            "version": 1,
+            "kind": "exact-provider-qualification-vite-resolver-importer-successor",
+            "nativeAcceptanceCredit": false,
+            "previousQualificationLock": predecessor["finalQualificationLock"],
+            "finalQualificationLock": { "path": "pnpm-lock.yaml", "bytes": lock.len(), "sha256": support::hash(lock) },
+            "finalQualificationPackage": predecessor["finalQualificationPackage"],
+            "workspaceManifest": predecessor["workspaceManifest"],
+            "importer": "npm/builder/vite",
+            "dependency": "@rolldown/pluginutils",
+            "specifier": "1.0.1",
+            "resolvedVersion": "1.0.1",
+        })));
+    }
+    if let Some(previous_lock) =
         crate::package_task_history::before_translation_worker("pnpm-lock.yaml", lock)
     {
         let previous_update = authorize(previous, &previous_lock, package)?

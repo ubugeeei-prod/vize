@@ -4,6 +4,7 @@ mod eslint_vue_scorecard_successor;
 mod node_forge_security_successor;
 mod picomatch_security_successor;
 mod runtime_security_successor;
+mod vite_resolver_importer_successor;
 
 fn current_binding(path: &str, body: &[u8]) -> Value {
     json!({

@@ -72,7 +72,9 @@ async function outsideRootHotUpdate(firstRequest: "virtual" | "plain", initially
     const origin = `http://127.0.0.1:${address.port}`;
     const url = `/@fs/${component.replaceAll("\\", "/")}${firstRequest === "virtual" ? "?vue&vize" : ""}`;
     const request = async (url: string, status = 200) => {
-      const response = await fetch(`${origin}${url}`);
+      // These servers are short-lived. Keep their connections out of the
+      // process-wide fetch pool when the next request or server starts.
+      const response = await fetch(`${origin}${url}`, { headers: { connection: "close" } });
       assert.equal(response.status, status);
       return response.text();
     };

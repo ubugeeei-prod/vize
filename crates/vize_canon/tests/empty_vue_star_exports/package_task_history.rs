@@ -3,6 +3,9 @@ use crate::support;
 use serde::Deserialize;
 use std::{collections::BTreeMap, fs, io, sync::OnceLock};
 
+mod vite_resolver_importer;
+pub(crate) use vite_resolver_importer::before_vite_resolver_importer;
+
 #[derive(Deserialize)]
 struct PackageRevision {
     current_sha256: String,
@@ -32,6 +35,9 @@ fn revisions() -> &'static BTreeMap<String, Vec<PackageRevision>> {
 }
 
 pub(crate) fn restore(path: &str, current: String) -> String {
+    let current = before_vite_resolver_importer(path, current.as_bytes())
+        .map(|body| String::from_utf8(body).expect("UTF-8 resolver importer predecessor"))
+        .unwrap_or(current);
     revisions()[path]
         .iter()
         .fold(current, |body, revision| reverse(path, body, revision))
@@ -39,6 +45,8 @@ pub(crate) fn restore(path: &str, current: String) -> String {
 
 /// Only the current, byte-exact dependency graph has the translation-worker predecessor.
 pub(crate) fn before_translation_worker(path: &str, body: &[u8]) -> Option<Vec<u8>> {
+    let predecessor = before_vite_resolver_importer(path, body);
+    let body = predecessor.as_deref().unwrap_or(body);
     let revision = revisions().get(path)?.first()?;
     if support::hash(body) != revision.current_sha256 {
         return None;

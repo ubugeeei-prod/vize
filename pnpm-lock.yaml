@@ -898,6 +898,9 @@ importers:
 
   npm/builder/vite:
     dependencies:
+      '@rolldown/pluginutils':
+        specifier: 1.0.1
+        version: 1.0.1
       '@vizejs/native':
         specifier: workspace:*
         version: link:../../native

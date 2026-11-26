@@ -18,6 +18,7 @@ import { processFilesystemEpoch } from "./filesystem-epoch.ts";
 import { compileAll, PrecompileDiagnosticsError } from "./precompile-run.ts";
 import { precompileInputOwners } from "./precompile-owner.ts";
 import { resolveIdHook } from "./resolve.ts";
+import { withResolveFilter } from "./resolve-filter.ts";
 import { LOAD_ID_FILTER, TRANSFORM_ID_FILTER, loadHook, transformHook } from "./load.ts";
 import { buildWatchScope, resetBuildWatches } from "./dependency-watches.ts";
 import { getSfcModuleRequest, requestResolvedSfc, transformSfcModule } from "./sfc-module.ts";
@@ -346,9 +347,7 @@ export function vize(
       state.logger.log("Cache keys:", [...state.cache.keys()].slice(0, 3));
     },
 
-    // No filter: an import from an SFC is resolved against the SFC's real path
-    // whatever its specifier is, and a hook filter cannot see the importer.
-    resolveId(id, importer, options) {
+    resolveId: withResolveFilter(function (id, importer, options) {
       const ssr = resolveHookSsr(this, options);
       const hookOptions: { ssr: boolean; scan?: boolean } = { ...options, ssr };
       const resolving = resolveIdHook(this, state, id, importer, hookOptions);
@@ -358,7 +357,7 @@ export function vize(
         requestResolvedSfc(state, resolved, ssr);
         return resolved;
       });
-    },
+    }),
 
     load: {
       filter: { id: LOAD_ID_FILTER },
