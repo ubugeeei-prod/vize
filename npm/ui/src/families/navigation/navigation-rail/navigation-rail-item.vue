@@ -2,7 +2,6 @@
 import { computed } from "vue";
 
 import { navigationRailContext } from "./navigation-rail-context.ts";
-import { normalizeNavigationMenuHref } from "../navigation-menu/navigation-menu-id.ts";
 
 const {
   value,
@@ -49,8 +48,19 @@ defineSlots<{
 const context = navigationRailContext.use();
 const active = computed(() => context.active.value === value);
 // Script-capable URLs never render; only safe hrefs are bound (spread keeps the attribute absent).
+const unsafeHref = /^(?:javascript|vbscript|data):/i;
+// Browsers drop control characters inside a scheme, so an href holding one never renders.
+function safeHref(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (trimmed.length === 0 || unsafeHref.test(trimmed)) return undefined;
+  for (let index = 0; index < trimmed.length; index++) {
+    const code = trimmed.charCodeAt(index);
+    if (code < 32 || code === 127) return undefined;
+  }
+  return trimmed;
+}
 const linkAttributes = computed(() => {
-  const safe = href === undefined || disabled ? undefined : normalizeNavigationMenuHref(href);
+  const safe = href === undefined || disabled ? undefined : safeHref(href);
   return safe === undefined ? {} : { href: safe };
 });
 
