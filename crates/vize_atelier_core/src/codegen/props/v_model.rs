@@ -19,7 +19,10 @@ use super::super::{
 /// `process_expression` over it, so a template argument arrives spelled
 /// `_ctx.prop`, while an opt-in Babel JSX argument (#3391) stays the raw closure
 /// identifier `@vue/babel-plugin-jsx` emits.
-pub(super) fn generate_vmodel_prop<M: RenderMapMode>(ctx: &mut CodegenContext<M>, dir: &DirectiveNode<'_>) {
+pub(super) fn generate_vmodel_prop<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    dir: &DirectiveNode<'_>,
+) {
     let Some(arg) = &dir.arg else {
         return;
     };

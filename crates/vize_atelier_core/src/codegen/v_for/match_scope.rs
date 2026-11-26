@@ -50,7 +50,10 @@ pub(crate) fn generate_match_scope<M: RenderMapMode>(
 }
 
 /// A scope body outside a `v-if` branch: one block root, or a stable fragment.
-pub(crate) fn generate_scope_body<M: RenderMapMode>(ctx: &mut CodegenContext<M>, children: &[TemplateChildNode<'_>]) {
+pub(crate) fn generate_scope_body<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    children: &[TemplateChildNode<'_>],
+) {
     let rendered: Vec<&TemplateChildNode<'_>> = children
         .iter()
         .filter(|child| !is_directive_comment(child))

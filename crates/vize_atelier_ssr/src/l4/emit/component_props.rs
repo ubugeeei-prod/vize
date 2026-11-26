@@ -1,8 +1,8 @@
 //! Component prop bags: source-ordered segments that never cross a spread or
 //! dynamic-key boundary (the legacy `build_component_props` shape).
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};

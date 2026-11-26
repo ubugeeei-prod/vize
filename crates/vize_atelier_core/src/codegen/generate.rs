@@ -21,7 +21,10 @@ use vize_l0::ToCompactString;
 use vize_l0::ensure_sufficient_stack;
 
 /// Generate hoisted variable declarations.
-pub(super) fn generate_hoists<M: RenderMapMode>(ctx: &CodegenContext<M>, root: &RootNode<'_>) -> String {
+pub(super) fn generate_hoists<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
+    root: &RootNode<'_>,
+) -> String {
     let mut hoists_code = String::default();
 
     for (i, hoist) in root.hoists.iter().enumerate() {
@@ -45,7 +48,11 @@ pub(super) fn generate_hoists<M: RenderMapMode>(ctx: &CodegenContext<M>, root: &
 ///
 /// Guarded: serializing a hoisted VNode descends one frame per level of the
 /// subtree it was hoisted from (`vize_l0::recursion`).
-fn generate_js_child_node_to_bytes<M: RenderMapMode>(ctx: &CodegenContext<M>, node: &JsChildNode<'_>, out: &mut String) {
+fn generate_js_child_node_to_bytes<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
+    node: &JsChildNode<'_>,
+    out: &mut String,
+) {
     ensure_sufficient_stack(|| generate_js_child_node_to_bytes_guarded(ctx, node, out));
 }
 
@@ -100,7 +107,11 @@ fn generate_js_child_node_to_bytes_guarded<M: RenderMapMode>(
 }
 
 /// Generate `VNodeCall` to bytes.
-fn generate_vnode_call_to_bytes<M: RenderMapMode>(ctx: &CodegenContext<M>, vnode: &VNodeCall<'_>, out: &mut String) {
+fn generate_vnode_call_to_bytes<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
+    vnode: &VNodeCall<'_>,
+    out: &mut String,
+) {
     // Block nodes use openBlock + createBlock/createElementBlock
     if vnode.is_block {
         out.push('(');

@@ -2,9 +2,9 @@
 //! and the `_temp` bindings merged-props elements allocate
 //! (`@vue/compiler-ssr` declares them once at the top of the render body).
 
-use vize_atelier_core::codegen::RenderMapMode;
 use super::SsrCodegenContext;
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, cstr};
 
 impl<M: RenderMapMode> SsrCodegenContext<'_, M> {

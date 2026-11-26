@@ -70,7 +70,11 @@ pub(super) fn prefix_identifiers_in_scope<M: RenderMapMode>(
 
 /// Wrapped JS expression parse, then a program parse. `None` when neither
 /// accepts `content` (the caller may retry on TypeScript-stripped text).
-fn prefix_parsed_js<M: RenderMapMode>(content: &str, ctx: &CodegenContext<M>, implicit_event: bool) -> Option<String> {
+fn prefix_parsed_js<M: RenderMapMode>(
+    content: &str,
+    ctx: &CodegenContext<M>,
+    implicit_event: bool,
+) -> Option<String> {
     let allocator = crate::expr_parse_probe::parse_arena();
     let source_type = SourceType::default().with_module(true);
 

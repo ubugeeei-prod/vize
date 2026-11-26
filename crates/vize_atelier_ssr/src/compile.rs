@@ -484,7 +484,7 @@ pub(crate) fn compile_ssr_on_lane_with_runtime<'a, M: RenderMapMode>(
             );
             codegen_ctx.apply_sfc_context(context);
             codegen_ctx.set_runtime_module_name(runtime_module_name);
-            profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root))
+            profile!("atelier.ssr.template.codegen", codegen_ctx.generate_in_mode(&root))
         }
     };
 

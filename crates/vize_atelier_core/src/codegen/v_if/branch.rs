@@ -136,7 +136,8 @@ fn generate_if_branch_slot<M: RenderMapMode>(
     ctx.push("(_ctx.$slots, ");
     generate_slot_outlet_name(ctx, el);
     ctx.push(", ");
-    let generate_key = |ctx: &mut CodegenContext<M>| generate_if_branch_key(ctx, branch, branch_index);
+    let generate_key =
+        |ctx: &mut CodegenContext<M>| generate_if_branch_key(ctx, branch, branch_index);
     generate_slot_outlet_props_with_key(ctx, el, &generate_key);
 
     let has_fallback = !el.children.is_empty();
@@ -433,7 +434,10 @@ fn generate_if_branch_template_fragment<M: RenderMapMode>(
 }
 
 /// Generate children for if branch element.
-fn generate_if_branch_children<M: RenderMapMode>(ctx: &mut CodegenContext<M>, children: &[TemplateChildNode<'_>]) {
+fn generate_if_branch_children<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    children: &[TemplateChildNode<'_>],
+) {
     if children.is_empty() {
         return;
     }

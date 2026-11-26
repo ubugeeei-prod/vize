@@ -1,7 +1,7 @@
 //! Object-spread generation for Babel JSX compatibility.
 
-use crate::codegen::RenderMapMode;
 use crate::PropNode;
+use crate::codegen::RenderMapMode;
 
 use super::super::context::CodegenContext;
 use super::generate::generate_props_object;

@@ -1,6 +1,5 @@
 //! VNode fallback expression generation used by slot fallback paths.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use super::props::{
     component_prop_entry, component_props_object, is_dynamic_component_tag, normalize_prop_entries,
     quoted_js_string, transform_bound_prop_key, wrap_call,
@@ -9,6 +8,7 @@ use super::{
     ComponentSlotChildren, ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
     SsrCodegenContext, String, TemplateChildNode, ToCompactString, VNodePropEntry,
 };
+use vize_atelier_core::codegen::RenderMapMode;
 
 #[derive(Default)]
 struct VNodeChildren {

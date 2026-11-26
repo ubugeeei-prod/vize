@@ -1,12 +1,12 @@
 //! SSR compile lane and its optional native stage observation.
 
-use vize_atelier_core::codegen::{PlainRenderMap, RenderMapMode};
 use super::{
     Allocator, CaptureOutcome, CaptureSink, CompilerError, CustomElementMatcher, ErrorCode, Level,
     Parser, RootNode, SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions,
     SsrCompilerOptions, SsrL4Request, SsrL4Selection, SsrLane, SsrSfcContext, String,
     TemplateSyntaxMode, cstr, l4, profile, transform_with_frozen_elements,
 };
+use vize_atelier_core::codegen::{PlainRenderMap, RenderMapMode};
 
 #[expect(
     clippy::too_many_arguments,
@@ -222,7 +222,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink, M: RenderMapMode>(
             );
             codegen_ctx.apply_sfc_context(context);
             codegen_ctx.set_runtime_module_name(runtime_module_name);
-            let result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
+            let result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate_in_mode(&root));
             capture.finish(|| {
                 let reason = legacy_reason
                     .map(|reason| cstr!("{reason:?}"))

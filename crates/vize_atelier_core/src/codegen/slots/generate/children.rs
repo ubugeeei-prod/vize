@@ -1,9 +1,9 @@
 //! Slot child and expression spelling.
 
-use crate::codegen::RenderMapMode;
 use super::super::super::context::CodegenContext;
 use super::super::super::node::generate_node;
 use super::slot_params::strip_ctx_prefix_for_slot_params;
+use crate::codegen::RenderMapMode;
 use crate::{ExpressionNode, RuntimeHelper, TemplateChildNode};
 
 /// Generate adjacent text runs without crossing a slot or node boundary.
@@ -75,7 +75,10 @@ fn is_text(child: &TemplateChildNode<'_>) -> bool {
     )
 }
 
-fn generate_slot_text_run<M: RenderMapMode>(ctx: &mut CodegenContext<M>, children: &[TemplateChildNode<'_>]) {
+fn generate_slot_text_run<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    children: &[TemplateChildNode<'_>],
+) {
     ctx.use_helper(RuntimeHelper::CreateText);
     ctx.push(ctx.helper(RuntimeHelper::CreateText));
     ctx.push("(");
@@ -113,7 +116,10 @@ fn generate_slot_text_run<M: RenderMapMode>(ctx: &mut CodegenContext<M>, childre
 }
 
 /// Generate a single child node for slot content
-fn generate_slot_child_node<M: RenderMapMode>(ctx: &mut CodegenContext<M>, child: &TemplateChildNode<'_>) {
+fn generate_slot_child_node<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    child: &TemplateChildNode<'_>,
+) {
     match child {
         TemplateChildNode::Text(text) => {
             ctx.use_helper(RuntimeHelper::CreateText);
@@ -151,7 +157,10 @@ fn generate_slot_child_node<M: RenderMapMode>(ctx: &mut CodegenContext<M>, child
 }
 
 /// Generate expression for slot content, stripping _ctx. prefix for slot parameters
-fn generate_slot_expression<M: RenderMapMode>(ctx: &mut CodegenContext<M>, expr: &ExpressionNode<'_>) {
+fn generate_slot_expression<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    expr: &ExpressionNode<'_>,
+) {
     match expr {
         ExpressionNode::Simple(exp) => {
             if exp.is_static {

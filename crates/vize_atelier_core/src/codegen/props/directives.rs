@@ -16,7 +16,10 @@ use vize_l0::{String, ToCompactString};
 /// Check if an expression is a static literal (no runtime identifiers).
 /// Returns true for: object literals, array literals, string literals, numbers
 /// that don't reference any runtime variables (no `_ctx.` after processing).
-fn is_static_expression<M: RenderMapMode>(exp: &ExpressionNode<'_>, ctx: &CodegenContext<M>) -> bool {
+fn is_static_expression<M: RenderMapMode>(
+    exp: &ExpressionNode<'_>,
+    ctx: &CodegenContext<M>,
+) -> bool {
     match exp {
         ExpressionNode::Simple(simple) => {
             is_constant_simple_expression(simple, ctx.options.binding_metadata.as_ref())

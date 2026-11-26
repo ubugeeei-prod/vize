@@ -19,7 +19,10 @@ use crate::steps::is_simple_identifier;
 /// same way template-literal keys already do — the previous heuristic
 /// either prepended `_ctx.` to the whole string or emitted the raw text,
 /// which crashes at runtime under SFC `prefix_identifiers`.
-pub(super) fn emit_dynamic_directive_arg<M: RenderMapMode>(ctx: &mut CodegenContext<M>, exp: &SimpleExpressionNode<'_>) {
+pub(super) fn emit_dynamic_directive_arg<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    exp: &SimpleExpressionNode<'_>,
+) {
     let content = exp.content;
     if let Some(local) = content
         .strip_prefix("_ctx.")

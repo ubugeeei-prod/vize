@@ -233,6 +233,17 @@ function setupOwnerPredecessor(file: string, bytes: Uint8Array): Uint8Array {
   return predecessor;
 }
 
+/** The setup-owner rename, reversed on the source that carries the template-map edit. */
+function templateMapSetupOwnerPredecessor(file: string, bytes: Uint8Array): Uint8Array {
+  if (file !== templateMap.path || blob(bytes) !== "475cc100165d7775b93ce33436be8d2af8d69df4") return bytes;
+  const text = Buffer.from(bytes).toString("utf8");
+  const edit = "setup_facts::SetupCompileAnalysis::new";
+  assert.equal(text.split(edit).length, 2, "unique reviewed setup-owner rename");
+  const predecessor = Buffer.from(text.replace(edit, "setup_facts::SetupAnalysis::new"));
+  assert.equal(blob(predecessor), templateMap.currentBlob);
+  return predecessor;
+}
+
 /** The reviewed template-map edit reversed to the bytes it was made on. */
 function withoutTemplateMap(file: string, bytes: Uint8Array): Uint8Array {
   if (file !== templateMap.path || blob(bytes) !== templateMap.currentBlob) return bytes;
@@ -248,7 +259,7 @@ function withoutTemplateMap(file: string, bytes: Uint8Array): Uint8Array {
 
 /** Later reviewed edits to an integrated source, removed before its law is checked. */
 function reviewedSourceSuccessor(file: string, current: Uint8Array): Uint8Array {
-  let bytes = withoutTemplateMap(file, current);
+  let bytes = withoutTemplateMap(file, templateMapSetupOwnerPredecessor(file, current));
   bytes = dependencyOwnershipPredecessor(file, setupOwnerPredecessor(file, bytes));
   // The levels name the component render binding by concept (`_sfc_render` is
   // unchanged): `RenderFunctionName::SfcRender` became `ComponentRender`.

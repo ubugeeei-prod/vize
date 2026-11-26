@@ -15,12 +15,18 @@ use super::props::generate_props;
 use vize_l0::ToCompactString;
 
 /// Generate children array
-pub fn generate_children<M: RenderMapMode>(ctx: &mut CodegenContext<M>, children: &[TemplateChildNode<'_>]) {
+pub fn generate_children<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    children: &[TemplateChildNode<'_>],
+) {
     generate_children_inner(ctx, children, false);
 }
 
 /// Generate children, forcing array form with createTextVNode (for withDirectives elements)
-pub fn generate_children_force_array<M: RenderMapMode>(ctx: &mut CodegenContext<M>, children: &[TemplateChildNode<'_>]) {
+pub fn generate_children_force_array<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    children: &[TemplateChildNode<'_>],
+) {
     generate_children_inner(ctx, children, true);
 }
 
@@ -289,7 +295,10 @@ fn generate_cached_static_children_array<M: RenderMapMode>(
     ctx.push("]))]");
 }
 
-fn generate_cached_static_element<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+fn generate_cached_static_element<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    el: &ElementNode<'_>,
+) {
     let cache_index = ctx.next_cache_index();
     ctx.push("_cache[");
     ctx.push(&cache_index.to_compact_string());
@@ -307,7 +316,11 @@ fn generate_cached_static_element<M: RenderMapMode>(ctx: &mut CodegenContext<M>,
 /// already-cached subtree (plain vnode, no flag), matching how
 /// @vue/compiler-core serializes a cached static subtree: a single cache entry
 /// whose children are plain recursive `createElementVNode` calls.
-fn generate_cached_static_vnode<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>, cached: bool) {
+fn generate_cached_static_vnode<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    el: &ElementNode<'_>,
+    cached: bool,
+) {
     ctx.use_helper(RuntimeHelper::CreateElementVNode);
     ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
     ctx.push("(\"");
@@ -386,7 +399,10 @@ pub fn generate_comment<M: RenderMapMode>(ctx: &mut CodegenContext<M>, comment: 
 /// only producible behind the `legacy` feature) renders unescaped, so the bare
 /// expression is emitted without the wrapper. Shared by every child-codegen
 /// path so the raw flag is honored consistently.
-pub fn push_interpolation_value<M: RenderMapMode>(ctx: &mut CodegenContext<M>, interp: &InterpolationNode<'_>) {
+pub fn push_interpolation_value<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    interp: &InterpolationNode<'_>,
+) {
     #[cfg(feature = "legacy")]
     if interp.raw {
         generate_expression(ctx, &interp.content);
@@ -401,6 +417,9 @@ pub fn push_interpolation_value<M: RenderMapMode>(ctx: &mut CodegenContext<M>, i
 }
 
 /// Generate interpolation
-pub fn generate_interpolation<M: RenderMapMode>(ctx: &mut CodegenContext<M>, interp: &InterpolationNode<'_>) {
+pub fn generate_interpolation<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    interp: &InterpolationNode<'_>,
+) {
     push_interpolation_value(ctx, interp);
 }

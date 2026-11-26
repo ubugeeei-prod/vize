@@ -98,7 +98,10 @@ fn generate_vmodel_entry<M: RenderMapMode>(
     }
 }
 
-fn generate_vshow_entry<M: RenderMapMode>(ctx: &mut CodegenContext<M>, dir: &crate::DirectiveNode<'_>) -> bool {
+fn generate_vshow_entry<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    dir: &crate::DirectiveNode<'_>,
+) -> bool {
     let Some(exp) = &dir.exp else {
         return false;
     };
@@ -112,7 +115,10 @@ fn generate_vshow_entry<M: RenderMapMode>(ctx: &mut CodegenContext<M>, dir: &cra
     true
 }
 
-fn generate_custom_directive_entry<M: RenderMapMode>(ctx: &mut CodegenContext<M>, dir: &crate::DirectiveNode<'_>) {
+fn generate_custom_directive_entry<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    dir: &crate::DirectiveNode<'_>,
+) {
     let expression = dir
         .exp
         .as_ref()
@@ -168,7 +174,10 @@ fn generate_custom_directive_entry<M: RenderMapMode>(ctx: &mut CodegenContext<M>
 }
 
 /// Generate v-model directive closing
-pub fn generate_vmodel_closing<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+pub fn generate_vmodel_closing<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    el: &ElementNode<'_>,
+) {
     let Some(dir) = get_vmodel_directive(el) else {
         return;
     };
@@ -211,7 +220,10 @@ pub fn generate_vshow_closing<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el:
 }
 
 /// Generate custom directives closing
-pub fn generate_custom_directives_closing<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+pub fn generate_custom_directives_closing<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    el: &ElementNode<'_>,
+) {
     let custom_dirs = get_custom_directives(el);
     if custom_dirs.is_empty() {
         return;

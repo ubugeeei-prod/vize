@@ -36,7 +36,11 @@ pub(super) fn generate_static_element_to_bytes<M: RenderMapMode>(
     out.push(')');
 }
 
-fn generate_static_children_to_bytes<M: RenderMapMode>(ctx: &CodegenContext<M>, el: &ElementNode<'_>, out: &mut String) {
+fn generate_static_children_to_bytes<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
+    el: &ElementNode<'_>,
+    out: &mut String,
+) {
     if let [TemplateChildNode::Text(text)] = el.children.as_slice() {
         out.push('"');
         out.push_str(escape_js_string(text.content).as_str());

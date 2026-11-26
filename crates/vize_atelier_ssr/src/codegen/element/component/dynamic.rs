@@ -1,7 +1,7 @@
 //! Dynamic component SSR VNode emission.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use super::{ElementNode, RuntimeHelper, SsrCodegenContext, ToCompactString};
+use vize_atelier_core::codegen::RenderMapMode;
 
 impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     pub(super) fn process_dynamic_component(&mut self, el: &ElementNode<'a>, props: &str) {

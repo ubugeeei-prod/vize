@@ -10,7 +10,6 @@
 //! `_ssrGetDirectiveProps(...)` per custom directive after everything else.
 //! A directive may also own the element's content through a `_temp` binding.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use super::props::{
     component_prop_entry, component_props_object, is_static_named_prop, normalize_prop_entries,
     quoted_js_string,
@@ -20,6 +19,7 @@ use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     TemplateChildNode, ToCompactString, VNodePropEntry, cstr,
 };
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{camelize, is_builtin_directive};
 

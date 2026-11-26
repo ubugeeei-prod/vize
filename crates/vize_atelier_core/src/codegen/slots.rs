@@ -17,10 +17,10 @@ pub(crate) use outlet::{
     has_slot_outlet_props,
 };
 
-use crate::codegen::RenderMapMode;
 use super::children::is_directive_comment;
 use super::context::CodegenContext;
 use crate::TemplateChildNode;
+use crate::codegen::RenderMapMode;
 
 /// Generate slot-outlet fallback children with the same adjacent-text
 /// normalization used by authored component slots.

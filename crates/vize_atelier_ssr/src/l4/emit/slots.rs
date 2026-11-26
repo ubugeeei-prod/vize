@@ -1,7 +1,7 @@
 //! Component slot functions render the push form and VNode fallback.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{FxHashSet, String, ToCompactString};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::TransformExpressions;

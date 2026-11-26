@@ -10,13 +10,19 @@ use super::super::context::CodegenContext;
 use vize_l0::ToCompactString;
 
 /// Generate v-once element with cache wrapper
-pub fn generate_v_once_element<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+pub fn generate_v_once_element<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    el: &ElementNode<'_>,
+) {
     generate_v_once_cached(ctx, |ctx| generate_v_once_vnode(ctx, el));
 }
 
 /// Wrap `body` in the `v-once` cache expression: it renders on the first pass
 /// only, with block tracking paused so the cached tree is never patched.
-pub fn generate_v_once_cached<M: RenderMapMode>(ctx: &mut CodegenContext<M>, body: impl FnOnce(&mut CodegenContext<M>)) {
+pub fn generate_v_once_cached<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    body: impl FnOnce(&mut CodegenContext<M>),
+) {
     let cache_index = ctx.next_cache_index();
 
     ctx.use_helper(RuntimeHelper::SetBlockTracking);

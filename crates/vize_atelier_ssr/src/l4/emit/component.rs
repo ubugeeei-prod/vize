@@ -2,8 +2,8 @@
 //! `ssrRenderTeleport`, `ssrRenderSuspense`, and the transparent
 //! `<Transition>` / `<KeepAlive>` wrappers.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};

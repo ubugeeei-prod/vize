@@ -1,9 +1,9 @@
 //! Shared JavaScript expression and prop-object builders for SSR element codegen.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, String, ToCompactString, VNodePropEntry,
 };
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{FxHashMap, FxHashSet, SmallVec, is_on};
 
 /// Build an object literal from normalized prop entries.

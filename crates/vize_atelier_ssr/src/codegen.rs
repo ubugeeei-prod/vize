@@ -13,8 +13,8 @@ mod module_parts;
 pub(crate) mod scope_prefix;
 mod spans;
 
-use vize_atelier_core::codegen::{PlainRenderMap, RenderMapMode};
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
+use vize_atelier_core::codegen::{PlainRenderMap, RenderMapMode};
 use vize_atelier_core::{RootNode, RuntimeHelper, codegen::document::EmitDocument};
 use vize_l0::{Allocator, FxHashSet, SmallVec, String};
 
@@ -143,6 +143,11 @@ impl<'a> SsrCodegenContext<'a> {
     ) -> Self {
         Self::with_render_map(allocator, options, source, experimental_options)
     }
+
+    /// Generate SSR code from the AST
+    pub fn generate(self, root: &RootNode<'a>) -> SsrCodegenResult {
+        self.generate_in_mode(root)
+    }
 }
 
 impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
@@ -211,8 +216,8 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
         self
     }
 
-    /// Generate SSR code from the AST
-    pub fn generate(mut self, root: &RootNode<'a>) -> SsrCodegenResult {
+    /// Generate SSR code from the AST, recording the map of mode `M`.
+    pub(crate) fn generate_in_mode(mut self, root: &RootNode<'a>) -> SsrCodegenResult {
         vize_atelier_core::walk_probe::record_walk(
             vize_atelier_core::walk_probe::WalkStage::SsrCodegen,
         );

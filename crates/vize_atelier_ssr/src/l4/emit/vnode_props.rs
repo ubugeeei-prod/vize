@@ -1,7 +1,7 @@
 //! VNode fallback props and slot outlets.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};

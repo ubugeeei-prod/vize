@@ -1,6 +1,5 @@
 //! Source-ordered component prop collection for SSR and vnode fallbacks.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use super::props::{
     component_prop_entry, component_props_object, is_static_named_prop, normalize_prop_entries,
     quoted_js_string, transform_bound_prop_key, wrap_call,
@@ -9,6 +8,7 @@ use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     ToCompactString, VNodePropEntry, cstr,
 };
+use vize_atelier_core::codegen::RenderMapMode;
 
 enum ComponentPropSegment {
     Entries(std::vec::Vec<VNodePropEntry>),

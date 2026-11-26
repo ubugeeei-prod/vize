@@ -1,7 +1,7 @@
 //! Final arguments for a generated slot outlet.
 
-use crate::codegen::RenderMapMode;
 use super::CodegenContext;
+use crate::codegen::RenderMapMode;
 
 impl<M: RenderMapMode> CodegenContext<M> {
     #[inline(always)]

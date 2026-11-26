@@ -50,7 +50,10 @@ pub(super) fn slot_parameters<M: RenderMapMode>(
 
 /// Type-erased params carry no retained AST: their own parse decides the
 /// bindings and the defaults.
-fn erased_parameters<M: RenderMapMode>(js: String, ctx: &CodegenContext<M>) -> (String, Vec<String>) {
+fn erased_parameters<M: RenderMapMode>(
+    js: String,
+    ctx: &CodegenContext<M>,
+) -> (String, Vec<String>) {
     let allocator = crate::expr_parse_probe::parse_arena();
     let Ok(parameters) = oxc_parser::Parser::new(
         &allocator,
@@ -69,7 +72,10 @@ pub(super) fn prefix_slot_defaults(source: &str) -> String {
 }
 
 #[cfg(test)]
-fn prefix_slot_defaults_with_context<M: RenderMapMode>(source: &str, ctx: &CodegenContext<M>) -> String {
+fn prefix_slot_defaults_with_context<M: RenderMapMode>(
+    source: &str,
+    ctx: &CodegenContext<M>,
+) -> String {
     let allocator = oxc_allocator::Allocator::default();
     let parameters = oxc_parser::Parser::new(
         &allocator,

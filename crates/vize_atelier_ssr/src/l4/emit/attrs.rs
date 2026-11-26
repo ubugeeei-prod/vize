@@ -1,8 +1,8 @@
 //! Attached-segment admission and the inline `name="value"` attribute shape
 //! of non-root elements.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};

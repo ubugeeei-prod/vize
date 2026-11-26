@@ -157,7 +157,10 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &Elem
 
 /// The non-block native element vnode, wrapped in its runtime directives.
 /// `v-once` caches exactly this call.
-pub(super) fn generate_native_vnode<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+pub(super) fn generate_native_vnode<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    el: &ElementNode<'_>,
+) {
     // Check for custom directives.
     // Inline children need the same withDirectives wrapping as block roots.
     let has_custom_dirs = has_custom_directives(el);
@@ -277,7 +280,10 @@ pub(super) fn generate_native_vnode<M: RenderMapMode>(ctx: &mut CodegenContext<M
 
 /// The non-block component vnode, wrapped in its runtime directives. `v-once`
 /// caches exactly this call.
-pub(super) fn generate_component_vnode<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+pub(super) fn generate_component_vnode<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    el: &ElementNode<'_>,
+) {
     let has_custom_dirs = has_custom_directives(el);
     if has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);

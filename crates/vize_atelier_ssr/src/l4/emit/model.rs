@@ -1,8 +1,8 @@
 //! Native `v-model` realizations: `checked` / `value` attributes on inputs,
 //! the dynamic-type helper, and `selected` on options of a modelled select.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
@@ -28,7 +28,10 @@ pub(super) fn admit(model: &l2::ModelOp<'_>, _tag: &str) -> Result<()> {
 }
 
 /// The walker removes this model before codegen.
-pub(super) fn dropped<M: RenderMapMode>(em: &Emitter<'_, '_, '_, '_, '_, '_, M>, model: &l2::ModelOp<'_>) -> bool {
+pub(super) fn dropped<M: RenderMapMode>(
+    em: &Emitter<'_, '_, '_, '_, '_, '_, M>,
+    model: &l2::ModelOp<'_>,
+) -> bool {
     dropped_read(model) || alias_model(em, model)
 }
 
@@ -36,7 +39,10 @@ fn dropped_read(model: &l2::ModelOp<'_>) -> bool {
     model.argument.is_some()
 }
 
-fn alias_model<M: RenderMapMode>(em: &Emitter<'_, '_, '_, '_, '_, '_, M>, model: &l2::ModelOp<'_>) -> bool {
+fn alias_model<M: RenderMapMode>(
+    em: &Emitter<'_, '_, '_, '_, '_, '_, M>,
+    model: &l2::ModelOp<'_>,
+) -> bool {
     let name = model.contract.read.source().trim();
     !name.is_empty() && em.scoped_params.iter().any(|frame| frame.contains(name))
 }

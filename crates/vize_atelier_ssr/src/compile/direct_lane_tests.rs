@@ -83,17 +83,18 @@ fn direct_lane(source: &str) -> Option<Compiled> {
 
 fn full_path(source: &str) -> Compiled {
     let allocator = Allocator::new();
-    let (_, errors, result) = compile_ssr_on_lane_with_runtime::<vize_atelier_core::codegen::PlainRenderMap>(
-        &allocator,
-        source,
-        SsrCompilerOptions::default(),
-        TemplateSyntaxMode::Standard,
-        CustomElementMatcher::default(),
-        SsrCompilerExperimentalOptions::default(),
-        SsrSfcContext::new(false),
-        SsrLane::Selected,
-        "vue",
-    );
+    let (_, errors, result) =
+        compile_ssr_on_lane_with_runtime::<vize_atelier_core::codegen::PlainRenderMap>(
+            &allocator,
+            source,
+            SsrCompilerOptions::default(),
+            TemplateSyntaxMode::Standard,
+            CustomElementMatcher::default(),
+            SsrCompilerExperimentalOptions::default(),
+            SsrSfcContext::new(false),
+            SsrLane::Selected,
+            "vue",
+        );
     Compiled {
         diagnostics: errors
             .iter()

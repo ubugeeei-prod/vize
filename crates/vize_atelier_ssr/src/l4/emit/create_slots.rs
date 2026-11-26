@@ -6,8 +6,8 @@
 //! lanes register that helper and carry `_: 2 /* DYNAMIC */` on the base
 //! object. The VNode expression form lives in `vnode_create_slots`.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::TransformContent;

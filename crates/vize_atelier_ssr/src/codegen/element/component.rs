@@ -2,13 +2,13 @@
 
 mod dynamic;
 
-use vize_atelier_core::codegen::RenderMapMode;
 use super::props::{is_dynamic_component_tag, is_simple_identifier, quoted_js_string};
 use super::{
     ComponentSlotChildren, ComponentTemplateSlot, DirectiveNode, ElementNode, ElementType,
     ExpressionNode, ForNode, FxHashSet, IfNode, PropNode, RuntimeHelper, SlotAnchor,
     SsrCodegenContext, String, TemplateChildNode, ToCompactString, extract_destructure_params,
 };
+use vize_atelier_core::codegen::RenderMapMode;
 
 impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     /// Emit a component render call, including built-in SSR special cases.

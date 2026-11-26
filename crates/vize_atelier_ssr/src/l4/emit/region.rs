@@ -1,12 +1,12 @@
 //! Region navigation over the flat plan: open/close pairing, direct child
 //! ranges, and the legacy child-list shape of a region.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use super::{Emitter, Result, text};
 use crate::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringSegment, SsrStringSegmentKind as Kind,
 };
 use crate::l4::{AdmissionFailure, LegacyReason};
+use vize_atelier_core::codegen::RenderMapMode;
 
 /// Segments that open a nested region (their close pairs by depth).
 pub(super) const fn is_open(kind: Kind) -> bool {

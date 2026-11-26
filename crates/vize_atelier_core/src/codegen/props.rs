@@ -47,7 +47,10 @@ pub(crate) fn has_von_object(props: &[PropNode<'_>]) -> bool {
 }
 
 /// Generate the v-bind object expression
-pub(crate) fn generate_vbind_object_exp<M: RenderMapMode>(ctx: &mut CodegenContext<M>, props: &[PropNode<'_>]) {
+pub(crate) fn generate_vbind_object_exp<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    props: &[PropNode<'_>],
+) {
     for p in props {
         if let PropNode::Directive(dir) = p
             && dir.name == "bind"

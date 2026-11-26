@@ -106,7 +106,10 @@ pub(crate) fn get_slot_outlet_name<'a>(el: &'a ElementNode<'a>) -> SlotOutletNam
     SlotOutletName::Static(String::new("default"))
 }
 
-pub(crate) fn generate_slot_outlet_name<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+pub(crate) fn generate_slot_outlet_name<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    el: &ElementNode<'_>,
+) {
     match get_slot_outlet_name(el) {
         SlotOutletName::Static(name) => {
             ctx.push("\"");
@@ -121,7 +124,10 @@ pub(crate) fn has_slot_outlet_props(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(slot_outlet_prop_generates_output)
 }
 
-pub(crate) fn generate_slot_outlet_props_entries<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+pub(crate) fn generate_slot_outlet_props_entries<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    el: &ElementNode<'_>,
+) {
     let static_merge = crate::codegen::props::StaticMerge::from_props(&el.props);
 
     let has_dynamic_class = el.props.iter().any(|prop| match prop {
@@ -199,7 +205,10 @@ pub(crate) fn generate_slot_outlet_props_entries<M: RenderMapMode>(ctx: &mut Cod
     }
 }
 
-pub(crate) fn generate_slot_outlet_props<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+pub(crate) fn generate_slot_outlet_props<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    el: &ElementNode<'_>,
+) {
     generate_slot_outlet_props_inner(ctx, el, None);
 }
 

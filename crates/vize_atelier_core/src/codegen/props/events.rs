@@ -169,7 +169,10 @@ pub(crate) fn generate_merged_event_handlers<M: RenderMapMode>(
 }
 
 /// Generate just the handler value part of a v-on directive (without the key name)
-pub(super) fn generate_von_handler_value<M: RenderMapMode>(ctx: &mut CodegenContext<M>, dir: &DirectiveNode<'_>) {
+pub(super) fn generate_von_handler_value<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    dir: &DirectiveNode<'_>,
+) {
     // Classify modifiers (same logic as in generate_directive_prop_with_static)
     let event_name = if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
         exp.content
@@ -267,7 +270,10 @@ pub(super) fn generate_von_handler_value<M: RenderMapMode>(ctx: &mut CodegenCont
     }
 }
 
-pub(super) fn needs_von_handler_cache<M: RenderMapMode>(ctx: &CodegenContext<M>, dir: &DirectiveNode<'_>) -> bool {
+pub(super) fn needs_von_handler_cache<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
+    dir: &DirectiveNode<'_>,
+) -> bool {
     ctx.cache_handlers_in_current_scope()
         && dir.exp.as_ref().is_some_and(|expression| {
             !crate::steps::expression::is_empty_dynamic_expression(expression)
@@ -277,7 +283,10 @@ pub(super) fn needs_von_handler_cache<M: RenderMapMode>(ctx: &CodegenContext<M>,
 }
 
 /// A method reference passed to a component stays uncached (vuejs/core#1541).
-pub(super) fn is_component_method_handler<M: RenderMapMode>(ctx: &CodegenContext<M>, dir: &DirectiveNode<'_>) -> bool {
+pub(super) fn is_component_method_handler<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
+    dir: &DirectiveNode<'_>,
+) -> bool {
     ctx.props_is_component && bypasses_component_cache(dir, ctx.options.binding_metadata.as_ref())
 }
 
@@ -299,7 +308,10 @@ pub(crate) fn bypasses_component_cache(
     !is_options_ref && is_member_handler(simple)
 }
 
-fn generate_options_api_handler_reference<M: RenderMapMode>(ctx: &mut CodegenContext<M>, name: &str) {
+fn generate_options_api_handler_reference<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    name: &str,
+) {
     ctx.push("(...args) => (_ctx.");
     ctx.push(name);
     ctx.push(" && _ctx.");
@@ -307,7 +319,10 @@ fn generate_options_api_handler_reference<M: RenderMapMode>(ctx: &mut CodegenCon
     ctx.push("(...args))");
 }
 
-fn options_api_handler_name<M: RenderMapMode>(ctx: &CodegenContext<M>, dir: &DirectiveNode<'_>) -> Option<String> {
+fn options_api_handler_name<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
+    dir: &DirectiveNode<'_>,
+) -> Option<String> {
     let ExpressionNode::Simple(simple) = dir.exp.as_ref()? else {
         return None;
     };
@@ -325,7 +340,10 @@ fn options_api_handler_name<M: RenderMapMode>(ctx: &CodegenContext<M>, dir: &Dir
         .map(|_| String::new(name))
 }
 
-fn is_setup_const_handler<M: RenderMapMode>(ctx: &CodegenContext<M>, dir: &DirectiveNode<'_>) -> bool {
+fn is_setup_const_handler<M: RenderMapMode>(
+    ctx: &CodegenContext<M>,
+    dir: &DirectiveNode<'_>,
+) -> bool {
     dir.exp.as_ref().is_some_and(|exp| {
         if let ExpressionNode::Simple(simple) = exp
             && !simple.is_static

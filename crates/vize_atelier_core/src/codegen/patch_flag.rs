@@ -5,13 +5,13 @@ mod dynamic_props;
 mod literal_const;
 mod static_literal;
 
-use crate::codegen::RenderMapMode;
 use self::authored_const::is_constant_interpolation;
 use self::dynamic_props::dedupe_dynamic_props;
 use self::literal_const::is_setup_literal_const_access;
 use self::static_literal::{is_static_literal, is_static_object_or_array_literal_node};
 use super::context::CodegenContext;
 use super::helpers::camelize;
+use crate::codegen::RenderMapMode;
 use crate::options::{BindingMetadata, BindingType};
 use crate::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 use vize_l0::{String, ToCompactString, is_builtin_directive};

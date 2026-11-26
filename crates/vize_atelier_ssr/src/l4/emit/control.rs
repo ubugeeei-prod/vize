@@ -137,7 +137,12 @@ impl<'r, 'a, M: RenderMapMode> Emitter<'_, 'r, 'a, '_, '_, '_, M> {
         };
         self.ctx.push(", (");
         if M::COMPOSED && self.ctx.spans_enabled() {
-            anchor_for_aliases(&mut self.ctx.out, binding, [Some(value), key, index], &aliases);
+            anchor_for_aliases(
+                &mut self.ctx.out,
+                binding,
+                [Some(value), key, index],
+                &aliases,
+            );
         }
         // The walker anchors the loop source but not the aliases it binds.
         for (index, alias) in aliases.iter().flatten().enumerate() {

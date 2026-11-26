@@ -1,9 +1,9 @@
 //! Suspense root-child emission, shared with ordinary SSR roots.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use super::super::css_vars::RootCssVars;
 use super::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext};
 use vize_atelier_core::TemplateChildNode;
+use vize_atelier_core::codegen::RenderMapMode;
 
 fn template_slot<'n, 'a>(
     child: &'n TemplateChildNode<'a>,

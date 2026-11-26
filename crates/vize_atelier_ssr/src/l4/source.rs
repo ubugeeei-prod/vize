@@ -1,7 +1,7 @@
 //! The SSR source bridge through the native level artifacts.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use super::frozen_slots::{FrozenSlotFacts, FrozenTemplate};
+use vize_atelier_core::codegen::RenderMapMode;
 
 use super::{
     Allocator, CaptureSink, Dump, DumpMode, LegacyReason, Level, SsrL4Request, SsrL4Selection,

@@ -2,8 +2,8 @@
 //! directives own (`v-html`, `v-text`, `<textarea v-model>`,
 //! `<select v-model>`), and the end tag.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::cstr;
 use vize_l2::op as l2;
 use vize_l4::targets::dom::artifact::TransformContent;

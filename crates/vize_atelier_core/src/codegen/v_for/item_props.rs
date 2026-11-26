@@ -102,7 +102,10 @@ pub(super) fn unwrap_template_single_element<'a>(
     (child_el.tag_type == ElementType::Element).then_some(child_el)
 }
 
-pub(super) fn push_null_props_if_missing<M: RenderMapMode>(ctx: &mut CodegenContext<M>, emitted_props: bool) {
+pub(super) fn push_null_props_if_missing<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    emitted_props: bool,
+) {
     if !emitted_props {
         ctx.push(", null");
     }

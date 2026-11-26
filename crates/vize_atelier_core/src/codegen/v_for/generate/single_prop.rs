@@ -1,7 +1,7 @@
 //! One v-for item attribute or directive, preserving its existing emission order.
 
-use crate::codegen::RenderMapMode;
 use crate::PropNode;
+use crate::codegen::RenderMapMode;
 use crate::codegen::{context::CodegenContext, helpers::escape_js_string};
 
 /// Generate a single prop (attribute or directive)

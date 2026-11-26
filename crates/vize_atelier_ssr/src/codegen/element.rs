@@ -129,7 +129,11 @@ impl<'a, M: RenderMapMode> SsrCodegenContext<'a, M> {
     }
 }
 
-fn append_for_aliases<M: RenderMapMode>(ctx: &mut SsrCodegenContext<'_, M>, out: &mut String, for_node: &ForNode) {
+fn append_for_aliases<M: RenderMapMode>(
+    ctx: &mut SsrCodegenContext<'_, M>,
+    out: &mut String,
+    for_node: &ForNode,
+) {
     let mut has_alias = false;
     for alias in [
         for_node.value_alias.as_ref(),

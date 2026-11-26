@@ -19,7 +19,10 @@ use super::name::generate_slot_entry_name;
 use super::params::slot_parameters;
 
 /// Generate slots using createSlots for conditional/looped slot templates
-pub(super) fn generate_create_slots<M: RenderMapMode>(ctx: &mut CodegenContext<M>, el: &ElementNode<'_>) {
+pub(super) fn generate_create_slots<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    el: &ElementNode<'_>,
+) {
     ctx.use_helper(RuntimeHelper::CreateSlots);
     ctx.push(ctx.helper(RuntimeHelper::CreateSlots));
     ctx.push("(");
@@ -303,6 +306,9 @@ fn generate_slot_object_entry<M: RenderMapMode>(
 }
 
 /// Generate a static slot entry for createSlots context
-fn generate_static_slot_entry<M: RenderMapMode>(ctx: &mut CodegenContext<M>, template_el: &ElementNode<'_>) {
+fn generate_static_slot_entry<M: RenderMapMode>(
+    ctx: &mut CodegenContext<M>,
+    template_el: &ElementNode<'_>,
+) {
     generate_slot_object_entry(ctx, template_el, None);
 }

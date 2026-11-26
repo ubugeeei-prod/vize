@@ -2,8 +2,9 @@ use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::{
         CodegenResult, CodegenResultWithSections,
+        generate_composed_with_sections_slot_scope_and_environment,
         generate_with_sections_and_experimental_options_slot_scope_and_environment,
-        generate_composed_with_sections_slot_scope_and_environment, locate_for_aliases,
+        locate_for_aliases,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{

@@ -1,7 +1,7 @@
 //! Scope storage and assignment binding facts for codegen prefixing.
 
-use crate::codegen::RenderMapMode;
 use super::prefix_visitor::IdentifierVisitor;
+use crate::codegen::RenderMapMode;
 use vize_l0::{FxHashSet, String};
 use vize_relief::ExpressionScope;
 

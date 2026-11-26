@@ -239,7 +239,11 @@ impl<'props> PropsScan<'props> {
         };
     }
 
-    fn observe_directive<M: RenderMapMode>(&mut self, ctx: &CodegenContext<M>, dir: &DirectiveNode<'_>) {
+    fn observe_directive<M: RenderMapMode>(
+        &mut self,
+        ctx: &CodegenContext<M>,
+        dir: &DirectiveNode<'_>,
+    ) {
         match dir.name {
             "bind" => {
                 if dir.arg.is_none() {

@@ -1,7 +1,7 @@
 //! The server's TransitionGroup wrapper and flattened child ranges.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use super::{ElementNode, ExpressionNode, PropNode, SsrCodegenContext};
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::codegen::document::EmitDocument;
 
 enum GroupTag<'n, 'a> {

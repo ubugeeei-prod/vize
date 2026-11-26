@@ -1,8 +1,8 @@
 //! VNode fallback control flow: conditional chains and `_renderList`
 //! blocks.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::RuntimeHelper;
+use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::id::NodeId;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::analysis::fragment_facts::FragmentKey;
