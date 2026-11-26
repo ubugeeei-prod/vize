@@ -65,6 +65,8 @@ export const pathHostCallers: Record<string, readonly [number, number, number, n
   "crates/vize_canon/src/batch/type_checker/tests/recent_issues/css_side_effect_import.rs": [
     0, 1, 0, 0,
   ],
+  "crates/vize_canon/src/batch/type_checker/tests/recent_issues/nuxt_generated_reference_graph.rs":
+    [0, 1, 0, 0],
   "crates/vize_canon/src/corsa_bridge/vue_document/build/tests/native_union.rs": [0, 1, 0, 0],
   "crates/vize_maestro/src/ide/corsa_support/canonical.rs": [0, 4, 0, 0],
   "crates/vize_maestro/src/ide/corsa_support/canonical/open.rs": [0, 3, 0, 0],

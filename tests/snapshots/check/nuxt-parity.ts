@@ -51,6 +51,12 @@ const BROKEN_TYPES = [
   "error:8:7 [TS2322] Type 'Ref<number, number>' is not assignable to type 'Ref<string, string>'.\nType 'number' is not assignable to type 'string'.",
 ];
 
+// vue-tsc 3.3.14 reports the same two rows for `pages/lazy-components.vue`.
+const LAZY_COMPONENTS = [
+  "error:6:16 [TS2304] Cannot find name 'UnwrapRef'.",
+  "error:10:21 [TS2322] Type 'number' is not assignable to type 'string'. (source: <LazyTheGreeting :name=\"5\" />; binding: 'name')",
+];
+
 function diagnosticsFor(result: VizeCheckJson, file: string): string[] {
   return result.files.find((entry) => entry.file === file)?.diagnostics ?? [];
 }
@@ -97,6 +103,15 @@ describe(`${app.name} check (Nuxt auto-import parity)`, () => {
     const result = runVizeCheck(["pages/broken-types.vue"]);
     assert.deepEqual(diagnosticsFor(result, "pages/broken-types.vue"), BROKEN_TYPES);
     assert.equal(result.errorCount, 3, JSON.stringify(result.files, null, 2));
+  });
+
+  // Nuxt 4 types `<LazyTheGreeting>` through `LazyComponent`, an alias local to
+  // `.nuxt/types/components.d.ts`, so its props stay checked (TS2322). A type
+  // the manifest does not re-export, such as `UnwrapRef`, is not in scope.
+  it("checks Nuxt 4 lazy components and invents no auto-imported type", () => {
+    const result = runVizeCheck(["pages/lazy-components.vue"]);
+    assert.deepEqual(diagnosticsFor(result, "pages/lazy-components.vue"), LAZY_COMPONENTS);
+    assert.equal(result.errorCount, 2, JSON.stringify(result.files, null, 2));
   });
 });
 

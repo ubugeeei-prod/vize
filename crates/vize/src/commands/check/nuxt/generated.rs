@@ -6,7 +6,8 @@ use vize_canon::virtual_ts::{TemplateGlobal, VirtualTsOptions};
 use vize_l0::{FxHashSet, String, ToCompactString, cstr};
 
 use super::super::dts::{
-    GlobalTypeReexport, parse_declared_globals, parse_interface_members_with_rewritten_imports,
+    GlobalTypeReexport, parse_declared_globals, parse_global_component_declarations,
+    parse_interface_members_with_rewritten_imports,
 };
 use super::super::tsconfig_inputs::normalize_input_path;
 use super::generated_ast::{
@@ -30,8 +31,15 @@ pub(super) struct GeneratedImports {
     pub(super) types: TypeAutoImports,
 }
 
+/// `program_root` is the directory the program's virtual project mirrors,
+/// which the copied component types name their mirrored modules from.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one pass over independent stub sinks"
+)]
 pub(super) fn collect_generated_stubs(
     cwd: &Path,
+    program_root: &Path,
     generated_dir: &NuxtGeneratedDir,
     generated_files: &[PathBuf],
     declaration_graph: Option<&FxHashSet<PathBuf>>,
@@ -60,7 +68,13 @@ pub(super) fn collect_generated_stubs(
         let reexports =
             collect_declared_global_stubs(cwd, path, stubs, seen_names, external_template_bindings);
         collect_manifest_type_reexports(path, reexports, &mut types);
-        collect_global_component_stubs(cwd, path, stubs, seen_names, external_template_bindings);
+        collect_global_component_stubs(
+            program_root,
+            path,
+            stubs,
+            seen_names,
+            external_template_bindings,
+        );
     }
 
     for path in generated_files
@@ -75,7 +89,7 @@ pub(super) fn collect_generated_stubs(
         collect_manifest_type_reexports(path, reexports, &mut types);
     }
     collect_root_generated_component_stubs(
-        cwd,
+        program_root,
         generated_dir,
         generated_files,
         declaration_graph,
@@ -174,7 +188,7 @@ fn collect_manifest_type_reexports(
 }
 
 fn collect_root_generated_component_stubs(
-    cwd: &Path,
+    program_root: &Path,
     generated_dir: &NuxtGeneratedDir,
     generated_files: &[PathBuf],
     declaration_graph: Option<&FxHashSet<PathBuf>>,
@@ -190,7 +204,7 @@ fn collect_root_generated_component_stubs(
             continue;
         }
         collect_global_component_stubs(
-            cwd,
+            program_root,
             path.as_path(),
             stubs,
             seen_names,
@@ -200,27 +214,47 @@ fn collect_root_generated_component_stubs(
 }
 
 fn collect_global_component_stubs(
-    cwd: &Path,
+    program_root: &Path,
     path: &Path,
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
     external_template_bindings: &mut FxHashSet<String>,
 ) {
-    let Ok(components) =
-        parse_interface_members_with_rewritten_imports(path, "interface GlobalComponents")
-    else {
+    // Nuxt 4 declares its components on `_GlobalComponents`, which the
+    // augmented `GlobalComponents` extends, and types the lazy and server
+    // variants through aliases local to the file; both must reach the stub.
+    let namespace = local_types_namespace(program_root, path);
+    let Ok(components) = parse_global_component_declarations(path, namespace.as_str()) else {
         return;
     };
+    if let Some(local_types) = components.local_types {
+        stubs.push(rewrite_component_imports_for_virtual_project(
+            local_types.as_str(),
+            program_root,
+        ));
+    }
 
-    for (name, type_annotation) in components {
+    for (name, type_annotation) in components.members {
         let Some(name) = normalize_component_binding_name(name.as_str()) else {
             continue;
         };
         let type_annotation =
-            rewrite_component_imports_for_virtual_project(type_annotation.as_str(), cwd);
+            rewrite_component_imports_for_virtual_project(type_annotation.as_str(), program_root);
         external_template_bindings.insert(name.clone());
         push_declared_const(stubs, seen_names, name.as_str(), type_annotation.as_str());
     }
+}
+
+/// The namespace holding the file-local types of one generated declaration.
+/// Built from the file's project-relative path, so two declarations never
+/// share one, and spelled so that no authored code names it.
+fn local_types_namespace(root: &Path, path: &Path) -> String {
+    let relative = path.strip_prefix(root).unwrap_or(path);
+    let mut namespace = String::from("__VizeNuxtLocalTypes_");
+    for ch in relative.to_string_lossy().chars() {
+        namespace.push(if ch.is_ascii_alphanumeric() { ch } else { '_' });
+    }
+    namespace
 }
 
 /// Declare the `$`-prefixed template globals the generated Nuxt types name.

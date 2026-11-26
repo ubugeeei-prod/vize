@@ -71,6 +71,7 @@ mod native_inline_event_handler;
 mod native_prop_anchors;
 mod nested_dynamic_component_loops;
 mod normalization;
+mod nuxt_generated_reference_graph;
 mod nuxt_plugin_injections;
 mod open_slot_index_signature;
 mod optional_boolean_props;

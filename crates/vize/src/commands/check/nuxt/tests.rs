@@ -455,11 +455,11 @@ export {}
         );
     }
     assert!(
-        options
+        !options
             .auto_import_stubs
             .iter()
             .any(|stub| stub == "type Ref<T = any> = import('vue').Ref<T>;"),
-        "auto-imported type aliases should still be injected: {:#?}",
+        "a fallback type alias should not be injected when .nuxt generated types exist: {:#?}",
         options.auto_import_stubs
     );
     assert!(
