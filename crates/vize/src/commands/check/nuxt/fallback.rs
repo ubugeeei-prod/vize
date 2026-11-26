@@ -25,22 +25,29 @@ use super::stubs::{
 use super::type_auto_imports::TypeAutoImports;
 use fallback_values::fallback_value_stubs;
 
+/// The fallback type aliases whose names no other stub has claimed, claiming
+/// them in turn.
+///
+/// Only a project without generated types takes these: with them, the
+/// manifest alone decides which types are global, and one it does not
+/// re-export is not in scope under vue-tsc either, so an alias would hide the
+/// TS2304 it reports. The caller runs this after the source scan, so a type
+/// the project exports itself (its own `Component`) keeps its declaration.
+pub(super) fn claim_fallback_type_alias_stubs(
+    type_auto_imports: &mut TypeAutoImports,
+) -> Vec<String> {
+    fallback_type_alias_stubs()
+        .into_iter()
+        .filter(|stub| declared_type_name(stub).is_none_or(|name| type_auto_imports.claim(name)))
+        .collect()
+}
+
 pub(super) fn collect_fallback_stubs(
     stubs: &mut Vec<String>,
     seen_names: &mut FxHashSet<String>,
-    type_auto_imports: &mut TypeAutoImports,
     has_generated_imports: bool,
 ) {
     let mut fallback_names = FxHashSet::default();
-    // With generated types, the manifest alone decides which types are
-    // global: one it does not re-export is not in scope under vue-tsc either,
-    // so an alias here would hide the TS2304 it reports. Without them, each
-    // alias claims its name, so no later stub declares the same global twice.
-    if !has_generated_imports {
-        stubs.extend(fallback_type_alias_stubs().into_iter().filter(|stub| {
-            declared_type_name(stub).is_none_or(|name| type_auto_imports.claim(name))
-        }));
-    }
     push_stub(
         stubs,
         seen_names,

@@ -35,7 +35,9 @@ mod strict_globals_tests;
 #[cfg(test)]
 mod tests;
 
-use fallback::{collect_fallback_stubs, collect_module_fallback_stubs};
+use fallback::{
+    claim_fallback_type_alias_stubs, collect_fallback_stubs, collect_module_fallback_stubs,
+};
 use generated::{GeneratedImports, collect_generated_stubs, collect_generated_template_globals};
 use generated_dir::resolve_nuxt_generated_dir;
 use plugins::collect_plugin_injection_stubs;
@@ -172,12 +174,8 @@ pub(in crate::commands::check) fn detect(
         eprintln!("{message}");
     }
     collect_plugin_injection_stubs(cwd, &mut collected, &mut seen_names);
-    collect_fallback_stubs(
-        &mut collected,
-        &mut seen_names,
-        &mut type_auto_imports,
-        has_generated_imports,
-    );
+    let fallback_aliases_at = collected.len();
+    collect_fallback_stubs(&mut collected, &mut seen_names, has_generated_imports);
     if !has_generated_imports {
         collect_module_fallback_stubs(cwd, &mut collected, &mut seen_names);
         collect_source_auto_import_stubs(
@@ -186,6 +184,9 @@ pub(in crate::commands::check) fn detect(
             &mut seen_names,
             &mut type_auto_imports,
         );
+        // The aliases keep their place ahead of the other fallbacks.
+        let aliases = claim_fallback_type_alias_stubs(&mut type_auto_imports);
+        collected.splice(fallback_aliases_at..fallback_aliases_at, aliases);
     }
     collected.extend(type_auto_imports.render_stub());
     let explicit_aliases = collect_explicit_virtual_module_aliases(tsconfig_path);

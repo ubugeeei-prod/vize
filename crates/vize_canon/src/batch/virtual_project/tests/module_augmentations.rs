@@ -223,3 +223,67 @@ fn type_reexport_stubs_load_mirrored_script_modules() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+/// The source scan names a declaration file without its extension and a
+/// `.mts` or `.cts` module by its JavaScript spelling. Each still loads its
+/// mirror, the declaration a file importing the type directly gets: a class
+/// with a private member from the original would not be assignable to it.
+#[test]
+fn type_reexport_stubs_load_mirrored_declaration_and_format_modules() {
+    let case_dir = unique_case_dir("type-reexport-format-mirrors");
+    let _ = fs::remove_dir_all(&case_dir);
+    let types = case_dir.join("app/types");
+    fs::create_dir_all(&types).unwrap();
+    let modules = [
+        ("user.d.ts", "export type User = { id: number };\n"),
+        ("model.mts", "export type Model = string;\n"),
+        ("legacy.cts", "export type Legacy = number;\n"),
+        ("shape.d.mts", "export type Shape = boolean;\n"),
+    ]
+    .map(|(name, source)| {
+        let path = types.join(name);
+        fs::write(&path, source).unwrap();
+        path
+    });
+
+    let mut project = VirtualProject::new(&case_dir).unwrap();
+    let root = project.project_root().to_string_lossy().into_owned();
+    let mut options = VirtualTsOptions::default();
+    options.auto_import_stubs.push(
+        format!(
+            "{MODULE_AUGMENTATION_STUB_PREFIX}declare global {{\n  \
+             export type {{ User }} from '{root}/app/types/user'\n  \
+             export type {{ Model }} from '{root}/app/types/model.mjs'\n  \
+             export type {{ Legacy }} from '{root}/app/types/legacy.cjs'\n  \
+             export type {{ Shape }} from '{root}/app/types/shape.mjs'\n  \
+             export type {{ Missing }} from '{root}/app/types/missing.mjs'\n\
+             }}\n"
+        )
+        .into(),
+    );
+    project.set_virtual_ts_options(options);
+    for path in &modules {
+        project.register_path(path).unwrap();
+    }
+    project.materialize().unwrap();
+
+    let augmentations =
+        fs::read_to_string(project.virtual_root().join(MODULE_AUGMENTATION_STUBS_FILE)).unwrap();
+    assert_eq!(
+        augmentations,
+        format!(
+            "// @ts-nocheck\n\
+             // External module augmentations for resolved framework packages.\n\
+             export {{}};\n\
+             declare global {{\n  \
+             export type {{ User }} from './app/types/user'\n  \
+             export type {{ Model }} from './app/types/model.mjs'\n  \
+             export type {{ Legacy }} from './app/types/legacy.cjs'\n  \
+             export type {{ Shape }} from './app/types/shape.mjs'\n  \
+             export type {{ Missing }} from '{root}/app/types/missing.mjs'\n\
+             }}\n\n"
+        )
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
