@@ -1,0 +1,52 @@
+# Check the reachability theorems with Lean, the graph and trail models with Alloy, and the publication and request models with TLC.
+use $bin::{grep, java, jq, tee}
+use std::io::to_file
+use std::path::from_source
+use std::process::exec
+
+# Solves an Alloy model with the pinned Alloy, writing its instances and receipt to a directory.
+fn alloy(jar: String, instances: String, model: String) -> () {
+  java -Djava.awt.headless=true -jar $jar exec -q -c "*" -t none -o $instances $model
+}
+
+# Runs the pinned TLC with one worker on a specification and one configuration.
+fn tlc(jar: String, metadir: String, config: String, spec: String) -> () {
+  java -cp $jar tlc2.TLC -workers 1 -metadir $metadir -config $config $spec
+}
+
+# Runs TLC on a configuration with a planted defect and requires it to report the invariant violated.
+fn require_violation(jar: String, metadir: String, config: String, spec: String, invariant: String, log: String) -> () {
+  # TLC exits 12 when an invariant is violated.
+  let result = status_of tlc $jar $metadir $config $spec |& to_file $log
+  if result != 12 {
+    fail 1 $"TLC exited $result, not 12, with $config"
+  }
+  grep -F $"Invariant $invariant is violated" $log
+}
+
+let temp = $env::RUNNER_TEMP
+let lean = $"$temp/lean-4.33.1-linux/bin/lean"
+let alloy_jar = $"$temp/alloy.jar"
+let tlc_jar = $"$temp/tlc.jar"
+let theorem = $"$temp/theorem"
+let positions = $"$temp/positions"
+
+exec $lean ["-DwarningAsError=true", "Reach.lean"] | tee $theorem
+grep -Fx "'Davinci.exact_answer' does not depend on any axioms" $theorem
+exec $lean ["-DwarningAsError=true", "../position-index/Intervals.lean"] | to_file $positions
+grep -Fx "'Davinci.PositionIndex.point_eq_scan' depends on axioms: [propext, Classical.choice, Quot.sound]" $positions
+grep -Fx "'Davinci.PositionIndex.selected_rows' depends on axioms: [propext, Classical.choice, Quot.sound]" $positions
+grep -Fx "'Davinci.authored_slice' depends on axioms: [propext, Quot.sound]" $theorem
+grep -Fx "'Davinci.recovery_sites_exact' depends on axioms: [propext, Quot.sound]" $theorem
+alloy $alloy_jar $"$temp/instance" Reach.als
+jq -e -f (from_source "check-directed-graph.jq") $"$temp/instance/receipt.json"
+grep -Fx "'Davinci.exact_trails' depends on axioms: [propext, Classical.choice, Quot.sound]" $theorem
+alloy $alloy_jar $"$temp/trail-instances" Trail.als
+jq -e -f (from_source "check-edge-trails.jq") $"$temp/trail-instances/receipt.json"
+
+java -cp $tlc_jar tlc2.TLC -workers 2 -metadir $"$temp/tlc-ok" -config Publication.cfg Publication.tla
+require_violation $tlc_jar $"$temp/tlc-negative" Stale.cfg Publication.tla CurrentAnswer $"$temp/stale"
+tlc $tlc_jar $"$temp/request-model" Request.cfg Request.tla
+for (config, invariant) in [("Version", "CurrentRevision"), ("Cancelled", "LiveRequest"), ("Partial", "NoPartialOutput")] {
+  require_violation $tlc_jar $"$temp/request-$config" $"Request$config.cfg" Request.tla $invariant $"$temp/request-$config.log"
+}

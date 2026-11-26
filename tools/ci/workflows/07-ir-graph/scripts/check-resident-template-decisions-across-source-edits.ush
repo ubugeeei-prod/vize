@@ -1,0 +1,28 @@
+# Prove the resident template projection with Lean and require TLC to reject each defective revision report.
+use $bin::{grep, java, tee}
+use std::io::to_file
+use std::process::exec
+
+# Runs the pinned TLC with one worker on TemplateRevision.tla and one configuration.
+fn tlc(jar: String, metadir: String, config: String) -> () {
+  java -cp $jar tlc2.TLC -workers 1 -metadir $metadir -config $config TemplateRevision.tla
+}
+
+let temp = $env::RUNNER_TEMP
+let lean = $"$temp/lean-4.33.1-linux/bin/lean"
+let jar = $"$temp/tlc.jar"
+let projection = $"$temp/template-projection"
+
+exec $lean ["-DwarningAsError=true", "TemplateProjection.lean"] | tee $projection
+grep -Fx "'Davinci.TemplateProjection.exact' depends on axioms: [propext]" $projection
+grep -Fx "'Davinci.TemplateProjection.endpoints_fit' does not depend on any axioms" $projection
+tlc $jar $"$temp/template-revision" TemplateRevision.cfg
+for defect in ["Content", "Base", "Duplicate"] {
+  let log = $"$temp/template-$defect.log"
+  # TLC exits 12 when an invariant is violated.
+  let result = status_of tlc $jar $"$temp/template-$defect" $"TemplateRevision$defect.cfg" |& to_file $log
+  if result != 12 {
+    fail 1 $"TLC exited $result, not 12, on the $defect defect"
+  }
+  grep -F "Invariant ExactReport is violated" $log
+}
