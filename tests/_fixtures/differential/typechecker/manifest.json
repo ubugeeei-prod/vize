@@ -68357,6 +68357,63 @@
       }
     },
     {
+      "id": "typechecker/regression/nuxt-generated-reference-graph",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nuxt-generated-reference-graph/augments.d.mts.txt",
+          "sha256": "5a898a09aa00445ef9a3f7fcb8d28d1823f8d13a31adcfc00fcbc7e9c111e303",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/box.ts.txt",
+          "sha256": "987b2342ec414f0273f5516aedabcbe6b13150966705b06b7fb687ae5f458830",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/schema-index.d.ts.txt",
+          "sha256": "dc9bd2446067cd2e094f24fe4e245a3f537470e9e52f0d143469b6200e78ef87",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/schema-package.json.txt",
+          "sha256": "78a08b313d57bf194ddc2811c19aa6fd8122403ea0a327a512b57e84de6d4ef5",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/stub.d.ts.txt",
+          "sha256": "770887674ecc3f24c8f9259936b4a5721b128d81b64e828324fed3600a79a505",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nuxt-generated-reference-graph/use.ts.txt",
+          "sha256": "43dd3245dcf69c0cbebb053fea543267f429bd48c15c5a4cfeb831665fb436cf",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::nuxt_generated_reference_graph::nuxt_generated_reference_graph_reaches_the_program; the two stub forms vize check builds from Nuxt's generated reference graph: a triple-slash reference to an installed declaration (Nitro's augments.d.mts, which .nuxt/nuxt.d.ts references) puts its module augmentation in scope for every program file, and the file-local types of the generated components.d.ts (LazyComponent, IslandComponent) carried in a namespace keep a lazy component's own members and the alias's while leaving no global an authored file can name; the plain-TypeScript rows are what tsc 6.0.3 reports for the same declarations. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/options-array-native-root-13113",
       "state": "active",
       "targets": [
