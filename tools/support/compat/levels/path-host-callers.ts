@@ -14,7 +14,7 @@ export const pathHostCallers: Record<string, readonly [number, number, number, n
   "crates/vize/src/commands/check/nuxt/generated.rs": [1, 0, 0, 0],
   "crates/vize/src/commands/check/nuxt/generated_dir.rs": [1, 0, 0, 0],
   "crates/vize/src/commands/check/nuxt/plugins.rs": [1, 0, 0, 0],
-  "crates/vize/src/commands/check/nuxt/source_scan.rs": [2, 0, 0, 0],
+  "crates/vize/src/commands/check/nuxt/source_scan.rs": [1, 0, 0, 0],
   "crates/vize/src/commands/check/nuxt/tsconfig_aliases.rs": [0, 1, 0, 0],
   "crates/vize/src/commands/check/nuxt/virtual_modules.rs": [1, 0, 0, 0],
   "crates/vize/src/commands/check/path_cache.rs": [0, 2, 0, 0],
