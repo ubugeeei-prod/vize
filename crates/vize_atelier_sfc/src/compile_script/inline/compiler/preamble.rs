@@ -1,3 +1,4 @@
+use vize_carton::string_builder::TextBuf;
 use vize_carton::{String, profile};
 
 use crate::compile_script::erasure::Erasure;
@@ -99,7 +100,7 @@ impl AuthoredHead {
 
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_preamble(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     template: &TemplateParts<'_>,
     head: &AuthoredHead,
     ts_declarations: &[String],
@@ -186,7 +187,7 @@ pub(super) fn emit_preamble(
 
     // Template imports (Vue helpers)
     if !template.imports.is_empty() {
-        output.extend_from_slice(template.imports.as_bytes());
+        output.push_str(template.imports);
     }
     // Every import before this offset is the compiler's own.
     let generated_imports_end = output.len();
@@ -198,16 +199,16 @@ pub(super) fn emit_preamble(
     // Must come BEFORE user imports to match Vue's output order
     if !template.hoisted.is_empty() {
         ensure_blank_line(output);
-        output.extend_from_slice(template.hoisted.as_bytes());
+        output.push_str(template.hoisted);
     }
 
     if !template.render_fn.is_empty() {
-        output.push(b'\n');
-        output.extend_from_slice(template.render_fn.as_bytes());
+        output.push('\n');
+        output.push_str(template.render_fn);
         if let Some(alias) = vapor_render_alias {
-            output.extend_from_slice(b"const ");
-            output.extend_from_slice(alias.as_bytes());
-            output.extend_from_slice(b" = render\n");
+            output.push_str("const ");
+            output.push_str(alias);
+            output.push_str(" = render\n");
         }
     }
 
@@ -228,7 +229,7 @@ pub(super) fn emit_preamble(
                 tracer.point(output.len(), *statement);
             }
         }
-        output.extend_from_slice(import.text.as_bytes());
+        output.push_str(&import.text);
     }
     if !head.imports.is_empty() && ts_declarations.is_empty() && head.normal_body.is_none() {
         ensure_blank_line(output);
@@ -236,23 +237,23 @@ pub(super) fn emit_preamble(
 
     // Output TypeScript declarations (interfaces, types) after user imports, before export default
     if !ts_declarations.is_empty() {
-        output.push(b'\n');
+        output.push('\n');
         for (index, decl) in ts_declarations.iter().enumerate() {
             tracer.copy(output.len(), declaration_runs.get(index));
-            output.extend_from_slice(decl.as_bytes());
-            output.push(b'\n');
+            output.push_str(decl);
+            output.push('\n');
         }
-        output.push(b'\n');
+        output.push('\n');
     }
 
     // Normal script content goes AFTER imports/hoisted, BEFORE component definition
     // This matches Vue's @vue/compiler-sfc output order. Its own imports were
     // merged into the import emission above (#993).
     if let Some((body, runs)) = &head.normal_body {
-        output.push(b'\n');
+        output.push('\n');
         tracer.copy(output.len(), runs.as_ref());
-        output.extend_from_slice(body.as_bytes());
-        output.push(b'\n');
+        output.push_str(body);
+        output.push('\n');
     }
     generated_imports_end
 }
@@ -329,10 +330,10 @@ fn normal_script_imports(
     (parse_script_content(script, is_ts, None).0, Vec::new())
 }
 
-fn ensure_blank_line(output: &mut Vec<u8>) {
-    match output.as_slice() {
-        bytes if bytes.ends_with(b"\n\n") => {}
-        bytes if bytes.ends_with(b"\n") => output.push(b'\n'),
-        _ => output.extend_from_slice(b"\n\n"),
+fn ensure_blank_line(output: &mut TextBuf) {
+    match output.as_str() {
+        text if text.ends_with("\n\n") => {}
+        text if text.ends_with('\n') => output.push('\n'),
+        _ => output.push_str("\n\n"),
     }
 }

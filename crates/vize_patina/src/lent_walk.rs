@@ -18,6 +18,9 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk};
 
+#[cfg(test)]
+mod tests;
+
 /// The nodes a walk lends at the root's lifetime `'a`.
 ///
 /// Every hook has a default that keeps oxc's default traversal.

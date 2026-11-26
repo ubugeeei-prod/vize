@@ -3,6 +3,7 @@
 //! Handles removing duplicate import specifiers from the same source module
 //! to avoid "Identifier has already been declared" errors.
 
+use vize_carton::string_builder::TextBuf;
 use vize_carton::{FxHashSet, String, ToCompactString};
 
 use oxc_allocator::Allocator;
@@ -17,33 +18,33 @@ use super::super::import_utils::process_import_for_types;
 /// rest of the module never uses as values are left out, the compiler's own
 /// ones (before `at`) included.
 pub(super) fn insert_imports(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     at: usize,
     imports: &[String],
     erasure: Option<Erasure>,
 ) {
     // The module after its imports is JavaScript now: read its names.
     let erasure = erasure.and_then(|mut erasure| {
-        let body = std::str::from_utf8(output.get(at..)?).ok()?;
+        let body = output.get(at..)?;
         erasure.javascript(body);
         erasure.is_complete().then_some(erasure)
     });
-    let mut text: Vec<u8> = Vec::new();
+    let mut text = TextBuf::new();
     for import in imports {
         let Some(erasure) = erasure.as_ref() else {
-            text.extend_from_slice(import.as_bytes());
+            text.push_str(import);
             continue;
         };
         if let Some(kept) = erasure.elide(import) {
-            text.extend_from_slice(kept.as_bytes());
+            text.push_str(&kept);
         }
     }
-    output.splice(at..at, text);
+    output.insert_str(at, &text);
     if let Some(erasure) = erasure.as_ref()
-        && let Ok(code) = std::str::from_utf8(output)
-        && let Some((elided, _)) = elide_generated_imports(code, at, erasure)
+        && let Some((elided, _)) = elide_generated_imports(output, at, erasure)
     {
-        *output = elided.as_bytes().to_vec();
+        *output = TextBuf::with_capacity(elided.len());
+        output.push_str(&elided);
     }
 }
 

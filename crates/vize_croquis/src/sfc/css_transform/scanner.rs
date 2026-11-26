@@ -1,6 +1,12 @@
 //! Byte scanners for CSS `v-bind()` expressions.
 
+use std::sync::LazyLock;
+
 use memchr::{memchr, memchr2, memchr3, memmem};
+
+/// The `v-bind(` searcher, built once instead of on every scan.
+static V_BIND: LazyLock<memmem::Finder<'static>> =
+    LazyLock::new(|| memmem::Finder::new(b"v-bind("));
 
 /// Find the matching closing parenthesis.
 #[doc(hidden)]
@@ -81,13 +87,14 @@ pub(super) fn find_next_v_bind(css: &str, start: usize) -> Option<usize> {
     let next = |found: Option<usize>, at: usize| found.map_or(NONE, |offset| at + offset);
     let mut pos = start;
     // Absolute position of the next candidate of each kind at or after `pos`.
-    let mut v_bind = next(memmem::find(tail(pos), b"v-bind("), pos);
+    let finder = &*V_BIND;
+    let mut v_bind = next(finder.find(tail(pos)), pos);
     let mut quote = next(memchr3(b'"', b'\'', b'`', tail(pos)), pos);
     let mut slash = next(memchr(b'/', tail(pos)), pos);
 
     loop {
         if v_bind < pos {
-            v_bind = next(memmem::find(tail(pos), b"v-bind("), pos);
+            v_bind = next(finder.find(tail(pos)), pos);
         }
         if v_bind == NONE {
             return None;
