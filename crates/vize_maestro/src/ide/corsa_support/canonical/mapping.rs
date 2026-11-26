@@ -50,6 +50,7 @@ pub(crate) fn in_static_attribute_value(source: &str, offset: usize) -> bool {
     while byte(index).is_some_and(|value| !space(value) && value != b'>' && value != b'/') {
         index += 1;
     }
+    let tag_name = tag.get(1..index).unwrap_or_default();
     loop {
         while byte(index).is_some_and(|value| space(value) || value == b'/') {
             index += 1;
@@ -79,9 +80,12 @@ pub(crate) fn in_static_attribute_value(source: &str, offset: usize) -> bool {
         };
         let value_end = value_start + length;
         if (value_start..=value_end).contains(&target) {
+            // `<slot name="heading">` declares a slot: renaming it is a
+            // symbol rename.
             return !name.is_empty()
                 && !name.starts_with([':', '@', '#', '.'])
-                && !name.starts_with("v-");
+                && !name.starts_with("v-")
+                && !(tag_name == "slot" && name == "name");
         }
         index = value_end + 1;
     }
@@ -414,6 +418,12 @@ mod static_attribute_tests {
             ]
             .map(|offset| in_static_attribute_value(source, offset)),
             [true, true, false, false, false, false]
+        );
+        let slot = r#"<slot name="heading" title="Hello" />"#;
+        let at = |needle: &str| slot.find(needle).unwrap() + 1;
+        assert_eq!(
+            [at("heading"), at("Hello")].map(|offset| in_static_attribute_value(slot, offset)),
+            [false, true]
         );
     }
 }
