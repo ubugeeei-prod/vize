@@ -224,6 +224,21 @@ const links = [{ url: '/docs' }]
     }
 
     #[test]
+    fn ecosystem_source_pruning_survives_a_configured_builtin_prefix_rule() {
+        let prefix = RuleRegistry::with_happy_path().rules().len();
+        let linter = Linter::with_preset(LintPreset::Ecosystem)
+            .with_undefined_ref_globals(vec!["formatCount".into()]);
+        assert_eq!(
+            linter.template_rule_count_for_source("<div />", None),
+            prefix
+        );
+        assert_eq!(
+            linter.template_rule_count_for_source("<RouterLink />", None),
+            linter.registry().rules().len(),
+        );
+    }
+
+    #[test]
     fn ecosystem_source_pruning_preserves_replaced_rule_instances() {
         static REPLACEMENT_META: RuleMeta = RuleMeta {
             name: "ecosystem/router-link-require-to",
