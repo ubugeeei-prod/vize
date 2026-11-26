@@ -1,6 +1,10 @@
 import type { NuxtComponentImport } from "./components.ts";
 
-const COMPONENT_CALL_RE = /_?resolveComponent\s*\(\s*["'`]([^"'`]+)["'`]\s*(?:,\s*[^)]+)?\)/g;
+// A member call such as a template's `_ctx.resolveComponent("Foo")` is the
+// auto-imported runtime function, not a compiler resolution, and Nuxt's own
+// loader skips it too.
+const COMPONENT_CALL_RE =
+  /(?<![\w$.])_?resolveComponent\s*\(\s*["'`]([^"'`]+)["'`]\s*(?:,\s*[^)]+)?\)/g;
 const COMPONENTS_IMPORT_RE = /import\s+(?!type\b)\{([^}]*)\}\s+from\s+(["'])#components\2\s*;?/g;
 const NUXT_ROUTE_ANNOUNCER_RE = /(?:^|[/\\])nuxt-route-announcer\.(?:[cm]?js|ts|vue)$/;
 const IMPORT_SPECIFIER_RE = /^(type\s+)?([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?$/;

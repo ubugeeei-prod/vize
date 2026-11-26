@@ -3,16 +3,21 @@ import { test } from "node:test";
 
 import { selectNuxtSourceComponentTransforms } from "./source-component-transforms.ts";
 
-void test("#11802 Nuxt 5 uses source component transforms with the native compiler", () => {
+void test("the native compiler selects Nuxt's source component transforms", () => {
+  // Nuxt 4.7 resolves `compilerComponentResolution` to true on its own, and a
+  // project may set it explicitly. Neither can run without Vue node transforms.
   for (const experimental of [undefined, {}, { compilerComponentResolution: true }]) {
     const options = { experimental };
-    selectNuxtSourceComponentTransforms(options, 5);
+    selectNuxtSourceComponentTransforms(options);
     assert.equal(options.experimental?.compilerComponentResolution, false);
   }
 });
 
-void test("#11802 earlier Nuxt component resolution remains unchanged", () => {
-  const options = { experimental: { compilerComponentResolution: true } };
-  selectNuxtSourceComponentTransforms(options, 4);
-  assert.equal(options.experimental.compilerComponentResolution, true);
+void test("other experimental Nuxt options are kept", () => {
+  const options = { experimental: { compilerComponentResolution: true, lazyHydration: true } };
+  selectNuxtSourceComponentTransforms(options);
+  assert.deepEqual(options.experimental, {
+    compilerComponentResolution: false,
+    lazyHydration: true,
+  });
 });
