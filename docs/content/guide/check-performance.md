@@ -1,10 +1,32 @@
 # Type-checking performance
 
-Use this guide when `vize check` is slow or uses too much memory. Start with the defaults and a
-profile, then change one setting at a time. For the other options, see
-[type-checking with the CLI](./cli.md#check) and the [Type Checking guide](./type-checking.md).
+Use this guide when the type check is slow or uses too much memory. On TypeScript 7.1 or newer,
+the recommended type check is the [content mapper](./content-mapper.md), run by `tsc` or
+[tsrs](https://github.com/oxc-project/tsrs). `vize check` remains for projects that cannot move to
+TypeScript 7.1. Start with the defaults and a profile, then change one setting at a time. For the
+other options, see [type-checking with the CLI](./cli.md#check) and the
+[Type Checking guide](./type-checking.md).
 
 ## Find where the time goes
+
+### Content mapper
+
+Add `--extendedDiagnostics` to the content mapper command:
+
+```sh
+tsrs --runExternalCode --noEmit -p tsconfig.json --extendedDiagnostics
+```
+
+TypeScript 7.1 accepts the same flag:
+
+```sh
+tsc --runExternalCode --noEmit -p tsconfig.json --extendedDiagnostics
+```
+
+The output lists the files checked, the type, symbol and instantiation counts, memory use, and
+the time spent in each compiler phase.
+
+### `vize check`
 
 ```sh
 vpx vize check --profile
@@ -27,7 +49,17 @@ The profile table and the virtual files are written under `node_modules/.vize`. 
 dominates, the notes at the end name the largest generated files; those are usually the
 components to split or simplify.
 
-## Tune the run
+## Report a slow project
+
+A slow run is worth an [issue](https://github.com/ubugeeei-prod/vize/issues/new), even a rough one.
+Report with the checker you actually use: the content mapper output for a TypeScript 7.1 or tsrs
+project, and `vize check --profile` otherwise. Include:
+
+- the command and its full `--extendedDiagnostics` or `--profile` output;
+- the Vize version, and the TypeScript or tsrs version;
+- the number of `.vue` files, and the OS, CPU core count and memory of the machine.
+
+## Tune `vize check`
 
 | Symptom                              | Try                                                                         |
 | ------------------------------------ | --------------------------------------------------------------------------- |

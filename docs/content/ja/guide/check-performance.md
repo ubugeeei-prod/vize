@@ -8,11 +8,32 @@ title: 型チェックのパフォーマンス
 
 # 型チェックのパフォーマンス
 
-`vize check` が遅い場合や、メモリを使いすぎる場合に使うガイドです。まずはデフォルトのまま
-プロファイルを取り、設定は 1 つずつ変えてください。その他のオプションは
+型チェックが遅い場合や、メモリを使いすぎる場合に使うガイドです。TypeScript 7.1 以降では、`tsc` または
+[tsrs](https://github.com/oxc-project/tsrs) で動かす[Content Mapper](./content-mapper.md)が推奨の
+型チェックです。`vize check` は、TypeScript 7.1 に上げられないプロジェクトのために残しています。まずは
+デフォルトのままプロファイルを取り、設定は 1 つずつ変えてください。その他のオプションは
 [CLI の型チェック](./cli.md#check)と[型チェックのガイド](./type-checking.md)を参照してください。
 
 ## 時間がかかっている場所を調べる
+
+### Content Mapper
+
+Content Mapper のコマンドに `--extendedDiagnostics` を付けます。
+
+```sh
+tsrs --runExternalCode --noEmit -p tsconfig.json --extendedDiagnostics
+```
+
+TypeScript 7.1 でも同じフラグを使えます。
+
+```sh
+tsc --runExternalCode --noEmit -p tsconfig.json --extendedDiagnostics
+```
+
+チェックしたファイル、型・シンボル・インスタンス化の数、メモリ使用量、コンパイラーの段階ごとの時間が
+表示されます。
+
+### `vize check`
 
 ```sh
 vpx vize check --profile
@@ -35,7 +56,17 @@ vpx vize check --profile
 最後の注記に最も大きい生成ファイルが表示されます。多くの場合、そのコンポーネントを分割・単純化すると
 速くなります。
 
-## 実行を調整する
+## 遅いプロジェクトを報告する
+
+遅いと感じたら、雑なものでもよいので [Issue](https://github.com/ubugeeei-prod/vize/issues/new) を立ててください。
+報告には実際に使っているチェッカーの結果を使います。TypeScript 7.1 か tsrs のプロジェクトなら
+Content Mapper の出力、それ以外なら `vize check --profile` の出力です。次の情報を含めてください。
+
+- 実行したコマンドと、`--extendedDiagnostics` または `--profile` の出力全体
+- Vize のバージョンと、TypeScript または tsrs のバージョン
+- `.vue` ファイルの数と、マシンの OS・CPU コア数・メモリ
+
+## `vize check` を調整する
 
 | 症状                                      | 試すこと                                                                             |
 | ----------------------------------------- | ------------------------------------------------------------------------------------ |
