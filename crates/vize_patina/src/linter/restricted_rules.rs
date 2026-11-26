@@ -368,6 +368,17 @@ impl Linter {
         self
     }
 
+    /// Configure names defined for every template without enabling the rule.
+    pub fn with_undefined_ref_globals(mut self, globals: Vec<String>) -> Self {
+        if self.registry.has_rule("vue/no-undefined-refs") {
+            self.registry
+                .replace(Box::new(crate::rules::vue::NoUndefinedRefs::with_globals(
+                    globals,
+                )));
+        }
+        self
+    }
+
     /// Configure `vue/sfc-element-order`.
     #[inline]
     pub fn with_sfc_element_order_options(mut self, options: SfcElementOrderOptions) -> Self {

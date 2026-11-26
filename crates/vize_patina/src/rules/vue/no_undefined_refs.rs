@@ -5,8 +5,9 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_croquis::Croquis;
 use vize_croquis::facts::{Analysis, AnalysisConsumer, Demand, UndefinedRefs};
-use vize_l0::cstr;
+use vize_l0::{FxHashSet, String, cstr};
 use vize_relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
@@ -19,7 +20,20 @@ static META: RuleMeta = RuleMeta {
 
 /// No undefined refs rule.
 #[derive(Default)]
-pub struct NoUndefinedRefs;
+pub struct NoUndefinedRefs {
+    /// Names a build step defines for every template, such as auto-imports.
+    /// Single-file binding facts cannot enumerate them.
+    globals: FxHashSet<String>,
+}
+
+impl NoUndefinedRefs {
+    /// Accept `globals` as defined in every template.
+    pub fn with_globals(globals: impl IntoIterator<Item = String>) -> Self {
+        Self {
+            globals: globals.into_iter().collect(),
+        }
+    }
+}
 
 impl AnalysisConsumer for NoUndefinedRefs {
     const NAME: &'static str = "vue/no-undefined-refs";
@@ -56,6 +70,12 @@ impl Rule for NoUndefinedRefs {
         };
         let undefined_refs: Vec<_> = undefined
             .iter()
+            .filter(|(_, undefined)| {
+                // Plugins install `$`-prefixed properties on the component
+                // proxy through app.config.globalProperties. Single-file
+                // binding facts cannot enumerate these values.
+                !undefined.name.starts_with('$') && !self.globals.contains(undefined.name.as_str())
+            })
             .map(|(_, undefined)| {
                 (
                     undefined.name.clone(),
@@ -64,12 +84,17 @@ impl Rule for NoUndefinedRefs {
                 )
             })
             .collect();
+        if undefined_refs.is_empty() {
+            return;
+        }
 
+        let instance_names = ctx
+            .art_script_analysis
+            .or_else(|| ctx.analysis())
+            .map(options_instance_names)
+            .unwrap_or_default();
         for (name, start, end) in undefined_refs {
-            // Plugins install `$`-prefixed properties on the component proxy
-            // through app.config.globalProperties. Single-file binding facts
-            // cannot enumerate these values (#7214, #7235, #7896).
-            if name.starts_with('$') {
+            if instance_names.contains(&name) {
                 continue;
             }
             ctx.report(
@@ -83,6 +108,28 @@ impl Rule for NoUndefinedRefs {
             );
         }
     }
+}
+
+/// Names an Options API component puts on the instance its template reads:
+/// the literal `props`, `inject`, `computed`, `methods`, `data` and `setup()`
+/// members. Lint draws a normal `<script>` without Options API bindings, so
+/// reads of these names arrive unresolved.
+fn options_instance_names(analysis: &Croquis) -> Vec<String> {
+    analysis
+        .options_descriptor
+        .as_ref()
+        .map(|options| {
+            options
+                .members
+                .iter()
+                .filter_map(|member| {
+                    vize_croquis::croquis::normalize_options_template_binding_name(
+                        member.name.as_str(),
+                    )
+                })
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 #[cfg(test)]
