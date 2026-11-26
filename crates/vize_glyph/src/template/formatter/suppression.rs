@@ -373,7 +373,7 @@ mod tests {
             for mut code in 0..5_usize.pow(len) {
                 let gap: Vec<u8> = (0..len)
                     .map(|_| {
-                        let byte = BYTES[code % 5];
+                        let byte = BYTES.get(code % 5).copied().unwrap_or(b'a');
                         code /= 5;
                         byte
                     })
