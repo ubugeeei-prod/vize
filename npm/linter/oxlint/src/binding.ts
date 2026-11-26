@@ -21,7 +21,7 @@ export function lintPatina(
   enabledRules?: readonly string[],
   ruleOptions?: PatinaRuleOptions,
 ): PatinaLintResult {
-  const resolvedRuleOptions = withVueRouterComponentGlobals(filename, ruleOptions);
+  const resolvedRuleOptions = withVueRouterComponentGlobals(filename, enabledRules, ruleOptions);
   const { ruleOptions: cliRuleOptions, ...directRuleOptions } = resolvedRuleOptions ?? {};
   return loadBinding().lintPatinaSfc(source, {
     filename,
@@ -32,14 +32,18 @@ export function lintPatina(
     typeAware: settings.typeAware,
     corsaPath: settings.corsaPath,
     ruleOptionsJson: cliRuleOptions ? JSON.stringify(cliRuleOptions) : undefined,
+    // One Oxlint CLI run reads each imported type source once; an editor session keeps reading fresh ones.
+    runScopedTypeSources: !process.argv.includes("--lsp"),
     ...directRuleOptions,
   });
 }
 
 function withVueRouterComponentGlobals(
   filename: string,
+  enabledRules: readonly string[] | undefined,
   options: PatinaRuleOptions | undefined,
 ): PatinaRuleOptions | undefined {
+  if (enabledRules && !enabledRules.includes(COMPONENT_REGISTRATION_RULE)) return options;
   if (!isVueRouterResolvableFrom(filename)) return options;
 
   const ruleOptions = options?.ruleOptions ?? {};
@@ -80,13 +84,22 @@ export function withHostGlobals(
   };
 }
 
+// Resolution walks the directories above a file, which every file of a directory shares.
+const vueRouterResolvableByDirectory = new Map<string, boolean>();
+
 function isVueRouterResolvableFrom(filename: string): boolean {
-  try {
-    createRequire(path.resolve(filename)).resolve("vue-router");
-    return true;
-  } catch {
-    return false;
+  const directory = path.dirname(path.resolve(filename));
+  let resolvable = vueRouterResolvableByDirectory.get(directory);
+  if (resolvable === undefined) {
+    try {
+      createRequire(path.join(directory, "index.js")).resolve("vue-router");
+      resolvable = true;
+    } catch {
+      resolvable = false;
+    }
+    vueRouterResolvableByDirectory.set(directory, resolvable);
   }
+  return resolvable;
 }
 
 export function getPatinaRules(): PatinaRuleMeta[] {
