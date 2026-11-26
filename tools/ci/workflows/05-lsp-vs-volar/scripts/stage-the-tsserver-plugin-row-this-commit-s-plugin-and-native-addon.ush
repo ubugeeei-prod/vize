@@ -1,0 +1,27 @@
+# Stage the tsserver plugin row: a package tree of the plugin, its native addon and the project's TypeScript.
+use $bin::{cargo, cp}
+use std::env::get
+use std::fs::{mkdir_p, remove_tree, symlink}
+
+# Lays out `<root>/@vizejs/{native,typescript-vue-plugin}` from a checkout's packages and an addon build.
+fn stage_plugin(root: String, packages: String, addon: String) -> () {
+  let scope = $"$root/@vizejs"
+  mkdir_p $scope
+  cp -R $"$packages/native" $"$scope/native"
+  cp $addon $"$scope/native/vize-vitrine.linux-x64-gnu.node"
+  cp -R $"$packages/typescript-plugin" $"$scope/typescript-vue-plugin"
+  remove_tree $"$scope/native/node_modules"
+  remove_tree $"$scope/typescript-vue-plugin/node_modules"
+  # The project's TypeScript: the same tsserver the Volar row runs.
+  symlink $"$env::RUNNER_TEMP/tools/node_modules/typescript" $"$root/typescript"
+}
+
+# Same profile as the vize rows; published addons use `release`.
+cargo build --profile ci-opt -p vize_vitrine --features napi,legacy
+stage_plugin $"$env::RUNNER_TEMP/tsserver-plugin/node_modules" npm target/ci-opt/libvize_vitrine.so
+if (get COMPARE_REF) != "" {
+  stage_plugin \
+    $"$env::RUNNER_TEMP/tsserver-plugin-compare/node_modules" \
+    $"$env::RUNNER_TEMP/compare/npm" \
+    $"$env::RUNNER_TEMP/vize-vitrine-compare.node"
+}

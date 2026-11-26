@@ -1,0 +1,36 @@
+# Install the Vue language tools, TypeScript, Corsa and tsrs at the versions the repository pins.
+use $bin::{awk, node, npm, tee}
+use std::fs::{mkdir, write_text}
+use std::path::from_source
+
+# One source of truth: the workspace catalog pins vue-tsc (same release
+# train as @vue/language-server), TypeScript and the Corsa runtime.
+fn catalog_pin(package_name: String) -> String {
+  let version = awk -v $"package_name=$package_name" -f (from_source "catalog-version.awk") pnpm-workspace.yaml
+  if version == "" {
+    fail 1 $"The workspace catalog pins no version of $package_name"
+  }
+  version
+}
+
+let vue = catalog_pin vue-tsc
+let typescript = catalog_pin typescript
+let corsa = catalog_pin @typescript/typescript-linux-x64
+# The typecheck-host manifest owns the experimental tsrs pin.
+let tsrs = node (from_source "install-the-repository-s-pinned-vue-language-tools-and-corsa.cjs")
+if tsrs == "" {
+  fail 1 "The typecheck-host manifest pins no version of tsrs"
+}
+let tools = $"$env::RUNNER_TEMP/tools"
+
+mkdir $tools
+cd $tools {
+  write_text package.json "{\"private\":true}\n"
+  npm install --no-audit --no-fund \
+    $"@vue/language-server@$vue" \
+    $"@vue/typescript-plugin@$vue" \
+    $"typescript@$typescript" \
+    $"@typescript/typescript-linux-x64@$corsa" \
+    $"tsrs@$tsrs"
+  node (from_source "install-the-repository-s-pinned-vue-language-tools-and-corsa-2.cjs") | tee versions.txt
+}

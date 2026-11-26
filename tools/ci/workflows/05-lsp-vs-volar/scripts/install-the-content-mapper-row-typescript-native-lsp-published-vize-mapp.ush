@@ -1,0 +1,15 @@
+# Install the content-mapper row: the requested TypeScript native LSP and the published vize mapper.
+use $bin::{node, npm, tee}
+use std::fs::{mkdir, write_text}
+use std::path::from_source
+
+let mapper = $"$env::RUNNER_TEMP/mapper"
+
+mkdir $mapper
+cd $mapper {
+  write_text package.json "{\"private\":true}\n"
+  npm install --no-audit --no-fund \
+    $"@typescript/typescript-linux-x64@$env::TSGO_MAPPER" \
+    $"vize@$env::MAPPER_VIZE"
+  node (from_source "install-the-content-mapper-row-typescript-native-lsp-published-vize-mapp.cjs") | tee versions.txt
+}

@@ -1,0 +1,8 @@
+# Install the Rust toolchain rust-toolchain.toml pins, which builds every vize row.
+use $bin::{cargo, rustup}
+
+# rustup 1.28 installs the pinned toolchain when asked; older releases install it when asked which is active.
+if ! rustup toolchain install {
+  rustup show active-toolchain
+}
+cargo --version

@@ -147,7 +147,7 @@ jobs:
           persist-credentials: false
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       - name: Install repository Rust toolchain
-        run: . "${{ env.VIZE_CI_FILES }}/install-repository-rust-toolchain.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-repository-rust-toolchain.sh"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -162,22 +162,22 @@ jobs:
         run: node --test tests/tooling/lsp-vs-volar-evidence.test.ts tests/tooling/lsp-vs-volar-scale.test.ts
 
       - name: Build this commit
-        run: . "${{ env.VIZE_CI_FILES }}/build-this-commit.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/build-this-commit.sh"
 
       - name: Build the compare ref
         if: ${{ env.COMPARE_REF != '' }}
-        run: . "${{ env.VIZE_CI_FILES }}/build-the-compare-ref.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/build-the-compare-ref.sh"
 
       - name: Install the repository's pinned Vue language tools and Corsa
-        run: . "${{ env.VIZE_CI_FILES }}/install-the-repository-s-pinned-vue-language-tools-and-corsa.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-the-repository-s-pinned-vue-language-tools-and-corsa.sh"
 
       - name: Stage the tsserver plugin row (this commit's plugin and native addon)
         if: ${{ env.TSSERVER_PLUGIN == 'true' }}
-        run: . "${{ env.VIZE_CI_FILES }}/stage-the-tsserver-plugin-row-this-commit-s-plugin-and-native-addon.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/stage-the-tsserver-plugin-row-this-commit-s-plugin-and-native-addon.sh"
 
       - name: Install the content-mapper row (TypeScript native LSP + published vize mapper)
         if: ${{ env.TSGO_MAPPER != '' }}
-        run: . "${{ env.VIZE_CI_FILES }}/install-the-content-mapper-row-typescript-native-lsp-published-vize-mapp.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-the-content-mapper-row-typescript-native-lsp-published-vize-mapp.sh"
 
       - name: Measure
         env:

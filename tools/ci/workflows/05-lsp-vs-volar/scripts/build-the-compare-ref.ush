@@ -1,0 +1,21 @@
+# Build the compare ref's server and native addon as the second vize row, beside this commit's.
+use $bin::{cargo, cp, git}
+
+let compare = $"$env::RUNNER_TEMP/compare"
+# The compare ref builds into this checkout's target directory and reuses its cache.
+let target = $"$env::GITHUB_WORKSPACE/target"
+
+git fetch --no-tags --depth 1 $"https://github.com/$env::GITHUB_REPOSITORY.git" $env::COMPARE_REF
+git worktree add $compare FETCH_HEAD
+cd $compare {
+  export CARGO_TARGET_DIR = $target {
+    cargo build --profile ci-opt -p vize
+  }
+}
+cp target/ci-opt/vize $"$env::RUNNER_TEMP/vize-compare"
+cd $compare {
+  export CARGO_TARGET_DIR = $target {
+    cargo build --profile ci-opt -p vize_vitrine --features napi,legacy
+  }
+}
+cp target/ci-opt/libvize_vitrine.so $"$env::RUNNER_TEMP/vize-vitrine-compare.node"

@@ -436,7 +436,12 @@ test("the workflow keeps evidence after failure and measures the checked-out sou
   assert.doesNotMatch(workflow, /exec "%s" --fast "\$@"/);
   assert.match(workflow, /--tsserver-plugin "head=\$RUNNER_TEMP\/tsserver-plugin"/);
   assert.match(workflow, /--tsserver-plugin "compare=\$RUNNER_TEMP\/tsserver-plugin-compare"/);
-  assert.match(workflow, /\$RUNNER_TEMP\/compare\/npm\/typescript-plugin/);
+  // The compare row stages the compare checkout's packages, plugin included.
+  assert.match(workflow, /\$"\$env::RUNNER_TEMP\/compare\/npm"/);
+  assert.match(
+    workflow,
+    /cp -R \$"\$packages\/typescript-plugin" \$"\$scope\/typescript-vue-plugin"/,
+  );
   assert.match(workflow, /vize-vitrine-compare\.node/);
   const tsserver = readFileSync(
     new URL("../../tools/benchmarks/scripts/lsp-vs-volar-tsserver.ts", import.meta.url),

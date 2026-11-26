@@ -1,0 +1,5 @@
+# Build this commit's server as the head vize row.
+use $bin::{cargo, cp}
+
+cargo build --profile ci-opt -p vize
+cp target/ci-opt/vize $"$env::RUNNER_TEMP/vize-head"

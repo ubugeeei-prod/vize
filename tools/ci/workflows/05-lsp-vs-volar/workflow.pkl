@@ -146,7 +146,7 @@ jobs {
       ci.checkoutAt("${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}")
       new Dynamic {
         name = "Install repository Rust toolchain"
-        run = ci.workflowScript("install-repository-rust-toolchain.sh")
+        run = ci.workflowProgram("install-repository-rust-toolchain")
       }
       ci.wild()
       new Dynamic {
@@ -169,26 +169,26 @@ jobs {
       }
       new Dynamic {
         name = "Build this commit"
-        run = ci.workflowScript("build-this-commit.sh")
+        run = ci.workflowProgram("build-this-commit")
       }
       new Dynamic {
         name = "Build the compare ref"
         `if` = "${{ env.COMPARE_REF != '' }}"
-        run = ci.workflowScript("build-the-compare-ref.sh")
+        run = ci.workflowProgram("build-the-compare-ref")
       }
       new Dynamic {
         name = "Install the repository's pinned Vue language tools and Corsa"
-        run = ci.workflowScript("install-the-repository-s-pinned-vue-language-tools-and-corsa.sh")
+        run = ci.workflowProgram("install-the-repository-s-pinned-vue-language-tools-and-corsa")
       }
       new Dynamic {
         name = "Stage the tsserver plugin row (this commit's plugin and native addon)"
         `if` = "${{ env.TSSERVER_PLUGIN == 'true' }}"
-        run = ci.workflowScript("stage-the-tsserver-plugin-row-this-commit-s-plugin-and-native-addon.sh")
+        run = ci.workflowProgram("stage-the-tsserver-plugin-row-this-commit-s-plugin-and-native-addon")
       }
       new Dynamic {
         name = "Install the content-mapper row (TypeScript native LSP + published vize mapper)"
         `if` = "${{ env.TSGO_MAPPER != '' }}"
-        run = ci.workflowScript("install-the-content-mapper-row-typescript-native-lsp-published-vize-mapp.sh")
+        run = ci.workflowProgram("install-the-content-mapper-row-typescript-native-lsp-published-vize-mapp")
       }
       new Dynamic {
         name = "Measure"
