@@ -26,9 +26,11 @@ pub(super) fn format(
         block.content.as_ref(),
         opening_tag.as_ref(),
     );
-    if block.name == "art" {
-        write_art_content(output, content, options, vue_version)?;
-    } else {
+    let body_start = output.len();
+    if block.name != "art" || write_art_content(output, content, options, vue_version).is_err() {
+        // A body the template formatter declines is kept like any other
+        // custom block's, without the chunks already laid out.
+        output.truncate(body_start);
         output.extend_from_slice(content.trim().as_bytes());
         output.extend_from_slice(options.newline_bytes());
     }

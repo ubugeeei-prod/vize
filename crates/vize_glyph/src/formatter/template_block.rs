@@ -5,7 +5,8 @@
 //! language is opaque: its bytes are preserved and only the common outer
 //! indentation is rebased. Markdown is stricter: Ox Content owns its complete
 //! authored payload, so the formatter does not even rebase indentation or line
-//! endings between the template tags.
+//! endings between the template tags. A native template the HTML formatter
+//! declines, such as one nested past its element limit, is copied the same way.
 
 use super::{
     opening_tag, template_indent, write_attr, write_authored_attrs, write_remaining_attrs,
@@ -36,11 +37,9 @@ pub(super) fn write_template_block(
         block.content.as_ref(),
         opening_tag.as_ref(),
     );
-    let formatted_content = (native_html && !preserve_whitespace)
-        .then(|| {
-            template::format_template_content_with_base_depth(content, options, vue_version, 1)
-        })
-        .transpose()?;
+    let formatted_content = (native_html && !preserve_whitespace).then(|| {
+        template::format_template_content_with_base_depth(content, options, vue_version, 1)
+    });
 
     if let Some(opening_tag) = &opening_tag {
         opening_tag::write_raw(output, opening_tag);
@@ -55,11 +54,13 @@ pub(super) fn write_template_block(
         }
         output.push(b'>');
     }
-    if authored_markdown {
+    if authored_markdown || matches!(formatted_content, Some(Err(_))) {
         // Frontmatter delimiters, code fences and their indentation are all
         // Markdown syntax owned by Ox Content. Until explicit Markdown
         // formatting exists, copying this slice is the only semantics-safe
         // operation, including when the SFC formatter uses another EOL mode.
+        // A declined native template has no layout either, and its
+        // whitespace-significant regions stay exact only as a whole copy.
         output.extend_from_slice(content.as_bytes());
         output.extend_from_slice(b"</template>");
         return Ok(());
@@ -73,16 +74,18 @@ pub(super) fn write_template_block(
         // Layout-looking newlines and indentation can belong to rendered text
         // under compiler.whitespace=preserve. Format tag syntax while leaving
         // all bytes between tags and interpolation delimiters with their owner.
-        let formatted =
-            template::format_template_content_preserving_text(content, options, vue_version)?;
-        output.extend_from_slice(formatted.as_bytes());
+        // A declined body stays as authored between the same tags.
+        match template::format_template_content_preserving_text(content, options, vue_version) {
+            Ok(formatted) => output.extend_from_slice(formatted.as_bytes()),
+            Err(_) => output.extend_from_slice(content.as_bytes()),
+        }
         output.extend_from_slice(b"</template>");
         return Ok(());
     }
     output.extend_from_slice(options.newline_bytes());
 
     let indent = options.indent_bytes();
-    if let Some(formatted_content) = formatted_content {
+    if let Some(Ok(formatted_content)) = formatted_content {
         // Native HTML is always indented by one level from the template
         // tag — except inside whitespace-significant regions (`<pre>`,
         // `<textarea>`, `v-pre`) where the inner content must round-trip

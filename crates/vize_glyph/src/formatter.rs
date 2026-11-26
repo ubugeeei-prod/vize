@@ -5,6 +5,8 @@
 mod block_indent;
 mod blocks;
 mod custom_block;
+#[cfg(test)]
+mod nesting_tests;
 mod opening_tag;
 mod raw_mask;
 mod root_content;
