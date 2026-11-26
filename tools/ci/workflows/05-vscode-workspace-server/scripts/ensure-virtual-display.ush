@@ -1,0 +1,8 @@
+# Install a virtual display for the VS Code host unless the runner already has one.
+use $bin::{command, sudo}
+use std::io::to_file
+
+if ! command -v xvfb-run |& to_file "/dev/null" {
+  sudo apt-get update
+  sudo apt-get install -y xvfb
+}
