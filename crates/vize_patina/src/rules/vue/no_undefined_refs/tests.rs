@@ -48,7 +48,7 @@ fn undefined_at(sfc: &str, name: &str) -> (&'static str, Severity, u32, u32, std
 
 #[test]
 fn test_meta() {
-    let rule = NoUndefinedRefs::default();
+    let rule = NoUndefinedRefs;
     assert_eq!(rule.meta().name, RULE);
     assert_eq!(rule.meta().category, RuleCategory::Recommended);
     assert_eq!(rule.meta().default_severity, Severity::Warning);

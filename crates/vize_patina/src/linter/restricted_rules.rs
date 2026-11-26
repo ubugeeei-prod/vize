@@ -372,9 +372,7 @@ impl Linter {
     pub fn with_undefined_ref_globals(mut self, globals: Vec<String>) -> Self {
         if self.registry.has_rule("vue/no-undefined-refs") {
             self.registry
-                .replace(Box::new(crate::rules::vue::NoUndefinedRefs::with_globals(
-                    globals,
-                )));
+                .replace(crate::rules::vue::NoUndefinedRefs::with_globals(globals));
         }
         self
     }

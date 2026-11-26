@@ -345,7 +345,7 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
         registry.register(Box::new(A11yImgAlt));
     }
     if !registry.has_rule("vue/no-undefined-refs") {
-        registry.register(Box::new(NoUndefinedRefs::default()));
+        registry.register(Box::new(NoUndefinedRefs));
     }
     if !registry.has_rule("vue/no-multiple-template-root") {
         registry.register(Box::new(NoMultipleTemplateRoot));
