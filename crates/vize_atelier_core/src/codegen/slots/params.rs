@@ -1,7 +1,6 @@
 //! Slot parameter helpers (scoped slot props parsing and prefixing).
 
-use crate::codegen::RenderMapMode;
-use crate::codegen::context::CodegenContext;
+use super::super::context::CodegenContext;
 use crate::options::BindingType;
 use crate::steps::expression::is_template_global as is_global_allowed;
 use crate::{DirectiveNode, ExpressionNode};
@@ -13,10 +12,7 @@ use oxc_ast_visit::{
 use vize_l0::{FxHashSet, String, ToCompactString};
 
 /// Get slot props expression as raw source (not transformed)
-pub(super) fn get_slot_props<M: RenderMapMode>(
-    dir: &DirectiveNode<'_>,
-    source: &str,
-) -> Option<String> {
+pub(super) fn get_slot_props(dir: &DirectiveNode<'_>, source: &str) -> Option<String> {
     dir.exp.as_ref().map(|exp| match exp {
         ExpressionNode::Simple(s) => String::new(s.loc.span.slice(source)),
         ExpressionNode::Compound(c) => String::new(c.loc.span.slice(source)),
@@ -26,15 +22,15 @@ pub(super) fn get_slot_props<M: RenderMapMode>(
 /// The original slot carrier is the sole declaration/default-RHS authority.
 /// A refused or stale carrier emits the original text without synthesizing
 /// bindings or reparsing a parameter wrapper.
-pub(super) fn slot_parameters<M: RenderMapMode>(
+pub(super) fn slot_parameters(
     dir: &DirectiveNode<'_>,
     ctx: &CodegenContext,
 ) -> Option<(String, Vec<String>)> {
-    let raw = get_slot_props::<M>(dir, &ctx.source)?;
+    let raw = get_slot_props(dir, &ctx.source)?;
     if ctx.options.is_ts
         && let Some(js) = crate::steps::erase_typescript_params(&raw)
     {
-        return Some(erased_parameters::<M>(js, ctx));
+        return Some(erased_parameters(js, ctx));
     }
     let Some(ExpressionNode::Simple(node)) = &dir.exp else {
         return Some((raw, vec![]));
@@ -53,7 +49,7 @@ pub(super) fn slot_parameters<M: RenderMapMode>(
 
 /// Type-erased params carry no retained AST: their own parse decides the
 /// bindings and the defaults.
-fn erased_parameters<M: RenderMapMode>(js: String, ctx: &CodegenContext) -> (String, Vec<String>) {
+fn erased_parameters(js: String, ctx: &CodegenContext) -> (String, Vec<String>) {
     let allocator = crate::expr_parse_probe::parse_arena();
     let Ok(parameters) = oxc_parser::Parser::new(
         &allocator,

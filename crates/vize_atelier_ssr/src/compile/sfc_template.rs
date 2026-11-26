@@ -1,17 +1,14 @@
 //! The SFC SSR template entry and its direct lane.
 
-use vize_atelier_core::codegen::{ComposedRenderMap, PlainRenderMap, RenderMapMode};
 use vize_atelier_core::{
     CompilerError,
     options::{CustomElementMatcher, TemplateSyntaxMode},
 };
 use vize_l0::Allocator;
 
+use super::super::l4::{self, SsrL4Request, SsrL4Selection};
 use super::{SsrLane, compile_ssr_on_lane_with_runtime};
-use crate::{
-    SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions, SsrSfcContext,
-    l4::{self, SsrL4Request, SsrL4Selection},
-};
+use crate::{SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions, SsrSfcContext};
 
 /// Compile one SFC template block for SSR, returning what the SFC compiler
 /// keeps: the diagnostics and the generated module. No template tree comes
@@ -40,40 +37,26 @@ pub fn compile_ssr_sfc_template(
     codegen_options: &vize_atelier_core::CodegenOptions,
     direct: bool,
 ) -> (Vec<CompilerError>, SsrCodegenResult) {
-    let compile = if experimental_options.source_map {
-        // The SFC assembly composes this map into the component's.
-        sfc_template_with_map::<ComposedRenderMap>
-    } else {
-        sfc_template_with_map::<PlainRenderMap>
-    };
-    compile(
-        allocator,
-        source,
-        options,
-        template_syntax,
-        custom_elements,
-        experimental_options,
-        context,
-        codegen_options,
-        direct,
-    )
-}
-
-#[expect(
-    clippy::too_many_arguments,
-    reason = "SFC metadata, existing codegen options and the lane request"
-)]
-fn sfc_template_with_map<M: RenderMapMode>(
-    allocator: &Allocator,
-    source: &str,
-    options: SsrCompilerOptions,
-    template_syntax: TemplateSyntaxMode,
-    custom_elements: CustomElementMatcher,
-    experimental_options: SsrCompilerExperimentalOptions,
-    context: SsrSfcContext,
-    codegen_options: &vize_atelier_core::CodegenOptions,
-    direct: bool,
-) -> (Vec<CompilerError>, SsrCodegenResult) {
+    // The SFC assembly composes a requested map into the component's.
+    sfc_map_copy! {
+        plain {
+            #[cfg(not(test))]
+            if experimental_options.source_map {
+                return crate::composed::compile::compile_ssr_sfc_template(
+                    allocator,
+                    source,
+                    options,
+                    template_syntax,
+                    custom_elements,
+                    experimental_options,
+                    context,
+                    codegen_options,
+                    direct,
+                );
+            }
+        }
+        composed {}
+    }
     #[cfg(feature = "legacy-differential")]
     let lane = crate::differential::production_lane();
     #[cfg(not(feature = "legacy-differential"))]
@@ -81,7 +64,7 @@ fn sfc_template_with_map<M: RenderMapMode>(
     let runtime_module_name = codegen_options.runtime_module_name.as_str();
     if direct
         && lane == SsrLane::Selected
-        && let Some(result) = emit_on_direct_lane::<M>(
+        && let Some(result) = emit_on_direct_lane(
             allocator,
             source,
             &options,
@@ -94,7 +77,7 @@ fn sfc_template_with_map<M: RenderMapMode>(
     {
         return (Vec::new(), result);
     }
-    let (_, errors, result) = compile_ssr_on_lane_with_runtime::<M>(
+    let (_, errors, result) = compile_ssr_on_lane_with_runtime(
         allocator,
         source,
         options,
@@ -117,7 +100,7 @@ fn sfc_template_with_map<M: RenderMapMode>(
     clippy::too_many_arguments,
     reason = "SFC metadata and the generated runtime"
 )]
-pub(crate) fn emit_on_direct_lane<M: RenderMapMode>(
+pub(crate) fn emit_on_direct_lane(
     allocator: &Allocator,
     source: &str,
     options: &SsrCompilerOptions,
@@ -127,7 +110,7 @@ pub(crate) fn emit_on_direct_lane<M: RenderMapMode>(
     context: SsrSfcContext,
     runtime_module_name: &str,
 ) -> Option<SsrCodegenResult> {
-    let selection = l4::select_ssr_lane_direct::<M>(
+    let selection = l4::select_ssr_lane_direct(
         allocator,
         source,
         &SsrL4Request {
@@ -144,12 +127,12 @@ pub(crate) fn emit_on_direct_lane<M: RenderMapMode>(
         return None;
     };
     #[cfg(feature = "legacy-differential")]
-    crate::differential::record_emitted::<M>();
+    crate::differential::record_emitted();
     #[cfg(debug_assertions)]
     {
         let full_path = || {
             let oracle = Allocator::new();
-            let (_, errors, full) = compile_ssr_on_lane_with_runtime::<M>(
+            let (_, errors, full) = compile_ssr_on_lane_with_runtime(
                 &oracle,
                 source,
                 options.clone(),
@@ -163,10 +146,9 @@ pub(crate) fn emit_on_direct_lane<M: RenderMapMode>(
             (errors, full)
         };
         #[cfg(feature = "legacy-differential")]
-        let (errors, full) =
-            crate::differential::unrecorded::<M, _>(|| l4::as_oracle_run::<M, _>(full_path));
+        let (errors, full) = crate::differential::unrecorded(|| l4::as_oracle_run(full_path));
         #[cfg(not(feature = "legacy-differential"))]
-        let (errors, full) = l4::as_oracle_run::<M, _>(full_path);
+        let (errors, full) = l4::as_oracle_run(full_path);
         debug_assert!(
             errors.is_empty(),
             "the direct SSR lane emitted a template the full path diagnoses: {errors:?}\n{source}"

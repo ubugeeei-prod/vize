@@ -1,6 +1,6 @@
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
+use super::super::compile::{SsrLane, compile_ssr_on_lane};
 use super::{LegacyReason, SsrL4Request, SsrL4Selection, select_ssr_lane};
-use crate::compile::{SsrLane, compile_ssr_on_lane};
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_core::lane::ScriptTables;
@@ -20,7 +20,7 @@ fn select(source: &str, options: &SsrCompilerOptions) -> SsrL4Selection {
         !errors.iter().any(|error| !error.is_recoverable()),
         "{errors:?}"
     );
-    select_ssr_lane::<vize_atelier_core::codegen::PlainRenderMap>(
+    select_ssr_lane(
         &allocator,
         source,
         &SsrL4Request {

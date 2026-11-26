@@ -5,7 +5,6 @@ mod destructure;
 mod escape;
 mod match_scope;
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{
     CommentNode, ElementType, ForNode, IfNode, InterpolationNode, RuntimeHelper, TemplateChildNode,
     TextNode,
@@ -18,14 +17,14 @@ use vize_l0::{String, ToCompactString};
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a list of children nodes
-    pub(crate) fn process_children<M: RenderMapMode>(
+    pub(crate) fn process_children(
         &mut self,
         children: &[TemplateChildNode<'a>],
         as_fragment: bool,
         disable_nested_fragments: bool,
         disable_comment: bool,
     ) {
-        self.process_children_with_fallthrough_attrs::<M>(
+        self.process_children_with_fallthrough_attrs(
             children,
             as_fragment,
             disable_nested_fragments,
@@ -35,7 +34,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Process a single child node
-    pub(crate) fn process_child<M: RenderMapMode>(
+    pub(crate) fn process_child(
         &mut self,
         child: &TemplateChildNode<'a>,
         disable_nested_fragments: bool,
@@ -45,7 +44,7 @@ impl<'a> SsrCodegenContext<'a> {
     ) {
         match child {
             TemplateChildNode::Element(el) => {
-                self.process_element_with_fallthrough_attrs::<M>(
+                self.process_element_with_fallthrough_attrs(
                     el,
                     disable_nested_fragments,
                     inherit_attrs,
@@ -53,18 +52,18 @@ impl<'a> SsrCodegenContext<'a> {
                 );
             }
             TemplateChildNode::Text(text) => {
-                self.process_text::<M>(text);
+                self.process_text(text);
             }
             TemplateChildNode::Comment(comment) => {
                 if !disable_comment && comment.directive.is_none() {
-                    self.process_comment::<M>(comment);
+                    self.process_comment(comment);
                 }
             }
             TemplateChildNode::Interpolation(interp) => {
-                self.process_interpolation::<M>(interp);
+                self.process_interpolation(interp);
             }
             TemplateChildNode::If(if_node) => {
-                self.process_if::<M>(
+                self.process_if(
                     if_node,
                     disable_nested_fragments,
                     disable_comment,
@@ -73,10 +72,10 @@ impl<'a> SsrCodegenContext<'a> {
                 );
             }
             TemplateChildNode::For(for_node) if for_node.parse_result.match_scope => {
-                self.process_match_scope::<M>(for_node, disable_comment, inherit_attrs);
+                self.process_match_scope(for_node, disable_comment, inherit_attrs);
             }
             TemplateChildNode::For(for_node) => {
-                self.process_for::<M>(for_node, disable_nested_fragments);
+                self.process_for(for_node, disable_nested_fragments);
             }
             TemplateChildNode::IfBranch(_) => {
                 // Handled by process_if
@@ -91,19 +90,19 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Process a text node
-    fn process_text<M: RenderMapMode>(&mut self, text: &TextNode) {
+    fn process_text(&mut self, text: &TextNode) {
         self.push_string_part_static_mapped(&escape_html(text.content), text.loc.span.start);
     }
 
     /// Process a comment node
-    fn process_comment<M: RenderMapMode>(&mut self, comment: &CommentNode) {
+    fn process_comment(&mut self, comment: &CommentNode) {
         self.push_string_part_static("<!--");
         self.push_string_part_static(comment.content);
         self.push_string_part_static("-->");
     }
 
     /// Process an interpolation node ({{ expr }})
-    fn process_interpolation<M: RenderMapMode>(&mut self, interp: &InterpolationNode) {
+    fn process_interpolation(&mut self, interp: &InterpolationNode) {
         use vize_atelier_core::ExpressionNode;
 
         let exp = match &interp.content {
@@ -118,16 +117,16 @@ impl<'a> SsrCodegenContext<'a> {
         // and keeps its previous path byte-for-byte.
         #[cfg(feature = "legacy")]
         if interp.raw {
-            self.push_wrapped_expression_part::<M>("", &exp, "", span);
+            self.push_wrapped_expression_part("", &exp, "", span);
             return;
         }
 
         self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
-        self.push_wrapped_expression_part::<M>("_ssrInterpolate(", &exp, ")", span);
+        self.push_wrapped_expression_part("_ssrInterpolate(", &exp, ")", span);
     }
 
     /// Process an if node
-    pub(crate) fn process_if<M: RenderMapMode>(
+    pub(crate) fn process_if(
         &mut self,
         if_node: &IfNode<'a>,
         disable_nested_fragments: bool,
@@ -136,10 +135,10 @@ impl<'a> SsrCodegenContext<'a> {
         css_vars: RootCssVars,
     ) {
         // Flush current push before if statement
-        self.flush_push::<M>();
+        self.flush_push();
 
         for (i, branch) in if_node.branches.iter().enumerate() {
-            self.push_indent::<M>();
+            self.push_indent();
 
             if i == 0 {
                 // First branch: if, anchored at the branch's authored unit
@@ -150,14 +149,14 @@ impl<'a> SsrCodegenContext<'a> {
                 self.push(") {\n");
             } else if branch.condition.is_some() {
                 // else-if
-                self.push_then_mapped::<M>("} ", "else if (", branch.loc.span.start);
+                self.push_then_mapped("} ", "else if (", branch.loc.span.start);
                 if let Some(condition) = &branch.condition {
                     self.push_expression(condition);
                 }
                 self.push(") {\n");
             } else {
                 // else
-                self.push_then_mapped::<M>("} ", "else {\n", branch.loc.span.start);
+                self.push_then_mapped("} ", "else {\n", branch.loc.span.start);
             }
 
             self.indent_level += 1;
@@ -165,7 +164,7 @@ impl<'a> SsrCodegenContext<'a> {
             let needs_fragment =
                 !disable_nested_fragments && branch_fragment::needs_fragment(&branch.children);
 
-            self.process_children_with_fallthrough_attrs_and_css_vars::<M>(
+            self.process_children_with_fallthrough_attrs_and_css_vars(
                 &branch.children,
                 needs_fragment,
                 disable_nested_fragments,
@@ -176,7 +175,7 @@ impl<'a> SsrCodegenContext<'a> {
                     template_wrapper: branch.is_template_if,
                 },
             );
-            self.flush_push::<M>();
+            self.flush_push();
             self.indent_level -= 1;
         }
 
@@ -185,53 +184,58 @@ impl<'a> SsrCodegenContext<'a> {
         if (!disable_comment || self.options.vapor)
             && if_node.branches.iter().all(|b| b.condition.is_some())
         {
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("} else {\n");
             self.indent_level += 1;
             self.push_string_part_static("<!---->");
-            self.flush_push::<M>();
+            self.flush_push();
             self.indent_level -= 1;
         }
 
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("}\n");
     }
 
     /// Process a for node
-    pub(crate) fn process_for<M: RenderMapMode>(
-        &mut self,
-        for_node: &ForNode<'a>,
-        disable_nested_fragments: bool,
-    ) {
+    pub(crate) fn process_for(&mut self, for_node: &ForNode<'a>, disable_nested_fragments: bool) {
         // Flush current push before for statement
-        self.flush_push::<M>();
+        self.flush_push();
 
         self.use_ssr_helper(RuntimeHelper::SsrRenderList);
 
         // Fragment markers for v-for
         if !disable_nested_fragments {
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("_push(`<!--[-->`)\n");
         }
 
-        self.push_indent::<M>();
+        self.push_indent();
         self.push_mapped("_ssrRenderList(", for_node.loc.span.start);
         self.push_expression(&for_node.source);
         self.push(", (");
 
         // Value alias
         if let Some(value) = &for_node.value_alias {
-            self.push_for_alias::<M>(value);
+            sfc_map_copy! {
+                plain { self.push_expression(value); }
+                composed { self.push_for_alias(value); }
+            }
         }
         // Key alias
         if let Some(key) = &for_node.key_alias {
             self.push(", ");
-            self.push_for_alias::<M>(key);
+            sfc_map_copy! {
+                plain { self.push_expression(key); }
+                composed { self.push_for_alias(key); }
+            }
         }
         // Index alias
         if let Some(index) = &for_node.object_index_alias {
             self.push(", ");
-            self.push_for_alias::<M>(index);
+            sfc_map_copy! {
+                plain { self.push_expression(index); }
+                composed { self.push_for_alias(index); }
+            }
         }
 
         self.push(") => {\n");
@@ -241,48 +245,43 @@ impl<'a> SsrCodegenContext<'a> {
 
         // The loop and its items own separate ranges. Only a single element
         // can be an item's root; conditions, lists, and text need a Fragment.
-        let needs_fragment =
-            !disable_nested_fragments && loop_needs_fragment::<M>(&for_node.children);
+        let needs_fragment = !disable_nested_fragments && loop_needs_fragment(&for_node.children);
         // Like Vue's processChildrenAsStatement, the callback starts a fresh
         // fragment context, including when this loop is inside TransitionGroup.
-        self.process_children::<M>(&for_node.children, needs_fragment, false, false);
-        self.flush_push::<M>();
+        self.process_children(&for_node.children, needs_fragment, false, false);
+        self.flush_push();
 
         self.pop_scoped_params();
 
         self.indent_level -= 1;
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("})\n");
 
         // Closing fragment marker
         if !disable_nested_fragments {
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("_push(`<!--]-->`)\n");
         }
     }
 
-    /// Push a `v-for` alias, as [`Self::push_expression`] does. Its node has
-    /// no location, so a composed map anchors an alias written unchanged at
-    /// the slice of the template it was parsed from.
-    #[inline(always)]
-    fn push_for_alias<M: RenderMapMode>(&mut self, alias: &vize_atelier_core::ExpressionNode) {
-        if M::COMPOSED {
-            self.push_composed_for_alias::<M>(alias);
-        } else {
-            self.push_expression(alias);
-        }
-    }
-
-    fn push_composed_for_alias<M: RenderMapMode>(
-        &mut self,
-        alias: &vize_atelier_core::ExpressionNode,
-    ) {
-        match alias {
-            vize_atelier_core::ExpressionNode::Simple(simple) => {
-                let content = self.strip_ctx_for_scoped_params(simple.content);
-                self.push_authored_text::<M>(&content, simple.content);
+    sfc_map_copy! {
+        plain {}
+        composed {
+        /// Push a `v-for` alias for a composed map. Its node has no location, so
+        /// an alias written unchanged maps to the slice of the template it was
+        /// parsed from.
+        #[cold]
+        #[inline(never)]
+        fn push_for_alias(&mut self, alias: &vize_atelier_core::ExpressionNode) {
+            match alias {
+                vize_atelier_core::ExpressionNode::Simple(simple) => {
+                    let content = self.strip_ctx_for_scoped_params(simple.content);
+                    self.out
+                        .push_authored(&content, simple.content, self.source);
+                }
+                vize_atelier_core::ExpressionNode::Compound(_) => self.push_expression(alias),
             }
-            vize_atelier_core::ExpressionNode::Compound(_) => self.push_expression(alias),
+        }
         }
     }
 
@@ -317,13 +316,11 @@ impl<'a> SsrCodegenContext<'a> {
     }
 }
 
-pub(crate) fn single_fallthrough_child_index<M: RenderMapMode>(
-    children: &[TemplateChildNode],
-) -> Option<usize> {
+pub(crate) fn single_fallthrough_child_index(children: &[TemplateChildNode]) -> Option<usize> {
     let mut index = None;
 
     for (current_index, child) in children.iter().enumerate() {
-        if !is_fallthrough_root_candidate::<M>(child) {
+        if !is_fallthrough_root_candidate(child) {
             continue;
         }
 
@@ -336,7 +333,7 @@ pub(crate) fn single_fallthrough_child_index<M: RenderMapMode>(
     index
 }
 
-fn is_fallthrough_root_candidate<M: RenderMapMode>(child: &TemplateChildNode) -> bool {
+fn is_fallthrough_root_candidate(child: &TemplateChildNode) -> bool {
     match child {
         TemplateChildNode::Element(_) | TemplateChildNode::If(_) => true,
         // A patterned-template scope renders its content in place.
@@ -369,6 +366,6 @@ pub(crate) fn loop_children<'node, 'a>(
     }
 }
 
-fn loop_needs_fragment<M: RenderMapMode>(children: &[TemplateChildNode<'_>]) -> bool {
+fn loop_needs_fragment(children: &[TemplateChildNode<'_>]) -> bool {
     !matches!(loop_children(children), [TemplateChildNode::Element(_)])
 }

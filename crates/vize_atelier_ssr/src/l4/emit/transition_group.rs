@@ -1,14 +1,13 @@
 //! The original group tag and attachments on the selected string-plan path.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
+use super::super::super::l4::string_plan::SsrSegmentSource as Source;
 use super::attrs::Attached;
 use super::spans::attribute_value_start;
 use super::{Emitter, Flags, Result};
-use crate::l4::string_plan::SsrSegmentSource as Source;
 
 enum Tag {
     Static(vize_l0::String, u32),
@@ -33,7 +32,7 @@ pub(super) fn admit_directives(
 }
 
 impl Emitter<'_, '_, '_, '_, '_, '_> {
-    pub(super) fn transition_group<M: RenderMapMode>(
+    pub(super) fn transition_group(
         &mut self,
         attached: &Attached<'_, '_>,
         name: &str,
@@ -69,16 +68,14 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         };
         if let Some(tag) = &tag {
             self.ctx.push_string_part_static("<");
-            self.group_tag::<M>(tag);
+            self.group_tag(tag);
             let attrs: std::vec::Vec<_> = attached
                 .iter()
                 .copied()
                 .enumerate()
                 .filter_map(|(at, segment)| (Some(at) != index).then_some(segment))
                 .collect();
-            if let Some(merged) =
-                self.group_attrs::<M>(&attrs, name, inherit, css_vars && !inherit)?
-            {
+            if let Some(merged) = self.group_attrs(&attrs, name, inherit, css_vars && !inherit)? {
                 self.ctx.push_string_part_dynamic_spanned(merged.attrs);
             }
             if let Some(scope) = &self.ctx.options.scope_id {
@@ -87,7 +84,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             }
             self.ctx.push_string_part_static(">");
         }
-        self.children::<M>(Flags {
+        self.children(Flags {
             as_fragment: tag.is_none(),
             disable_nested_fragments: !self.ctx.options.vapor,
             disable_comments: true,
@@ -96,13 +93,13 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         })?;
         if let Some(tag) = &tag {
             self.ctx.push_string_part_static("</");
-            self.group_tag::<M>(tag);
+            self.group_tag(tag);
             self.ctx.push_string_part_static(">");
         }
         Ok(())
     }
 
-    fn group_tag<M: RenderMapMode>(&mut self, tag: &Tag) {
+    fn group_tag(&mut self, tag: &Tag) {
         match tag {
             Tag::Static(value, start) => self.ctx.push_string_part_static_mapped(value, *start),
             Tag::Dynamic(value) => self.ctx.push_string_part_dynamic_spanned(value.clone()),
@@ -118,9 +115,11 @@ mod tests {
         reason = "exact original plan custody in negative controls"
     )]
 
+    use super::super::super::super::l4::AdmissionFailure;
+    use super::super::super::super::l4::string_plan::{
+        SsrSegmentSource as Source, lower_l2_to_string_plan,
+    };
     use super::admit_directives;
-    use crate::l4::AdmissionFailure;
-    use crate::l4::string_plan::{SsrSegmentSource as Source, lower_l2_to_string_plan};
     use vize_l0::Allocator;
     use vize_l2::op as l2;
     use vize_l2_to_l3::PartitionKind;

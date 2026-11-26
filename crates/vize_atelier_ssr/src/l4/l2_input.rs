@@ -3,16 +3,15 @@
 //! emitter as the template path, with the transform's `prefix_identifiers`
 //! off because JSX render functions close over their setup scope.
 
-use vize_atelier_core::codegen::{PlainRenderMap, RenderMapMode};
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Span};
 use vize_l2::op::Region;
 use vize_l4::targets::dom::artifact::TransformExpressions;
 
+use super::super::codegen::SsrCodegenResult;
 use super::emit::PlanFacts;
 use super::select::{L2Artifact, select_from_l2_plain};
 use super::{LegacyReason, SsrL4Selection, record_selection};
-use crate::codegen::SsrCodegenResult;
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 
 /// Emit the `ssrRender` module for a caller-built L2 render root from the L4
@@ -28,7 +27,7 @@ pub fn compile_l2_to_ssr<'a>(
     root: &Region<'a>,
     options: &SsrCompilerOptions,
 ) -> Option<SsrCodegenResult> {
-    emit_l2::<PlainRenderMap>(
+    emit_l2(
         allocator,
         source,
         root,
@@ -84,7 +83,7 @@ pub fn compile_l2_to_ssr_with_host_context<'a>(
     {
         return None;
     }
-    emit_l2::<PlainRenderMap>(
+    emit_l2(
         allocator,
         source,
         root,
@@ -95,7 +94,7 @@ pub fn compile_l2_to_ssr_with_host_context<'a>(
     )
 }
 
-fn emit_l2<'a, M: RenderMapMode>(
+fn emit_l2<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     root: &Region<'a>,
@@ -106,7 +105,7 @@ fn emit_l2<'a, M: RenderMapMode>(
 ) -> Option<SsrCodegenResult> {
     let selection = vize_l0::profile!(
         "atelier.ssr.caller_l2.select_and_emit",
-        select_l2_lane_with_experimental_options::<M>(
+        select_l2_lane_with_experimental_options(
             allocator,
             source,
             root,
@@ -130,7 +129,7 @@ pub(super) fn select_l2_lane<'a>(
     root: &Region<'a>,
     options: &SsrCompilerOptions,
 ) -> SsrL4Selection {
-    select_l2_lane_with_experimental_options::<vize_atelier_core::codegen::PlainRenderMap>(
+    select_l2_lane_with_experimental_options(
         allocator,
         source,
         root,
@@ -141,7 +140,7 @@ pub(super) fn select_l2_lane<'a>(
     )
 }
 
-fn select_l2_lane_with_experimental_options<'a, M: RenderMapMode>(
+fn select_l2_lane_with_experimental_options<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     root: &Region<'a>,
@@ -169,7 +168,7 @@ fn select_l2_lane_with_experimental_options<'a, M: RenderMapMode>(
         },
         diagnostics: 0,
     };
-    select_from_l2_plain::<M>(
+    select_from_l2_plain(
         allocator,
         &artifact,
         options,

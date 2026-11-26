@@ -346,8 +346,8 @@ pub fn expression_links(code: &str, span: Span, source_text: &str) -> Vec<SpanLi
 
 #[cfg(test)]
 mod tests {
+    use super::super::source_map::SourceMapBuilder;
     use super::{EmitDocument, SpanLink, expression_links};
-    use crate::codegen::source_map::SourceMapBuilder;
     use vize_l0::{Span, String};
 
     fn link(generated: (u32, u32), authored: (u32, u32), name: Option<&str>) -> SpanLink {

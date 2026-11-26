@@ -4,12 +4,11 @@
 
 use super::SsrCodegenContext;
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, cstr};
 
 impl SsrCodegenContext<'_> {
     /// A fresh `_tempN` binding, declared at the top of `ssrRender`.
-    pub(crate) fn alloc_temp<M: RenderMapMode>(&mut self) -> String {
+    pub(crate) fn alloc_temp(&mut self) -> String {
         let temp = cstr!("_temp{}", self.temps);
         self.temps += 1;
         temp
@@ -17,12 +16,12 @@ impl SsrCodegenContext<'_> {
 
     /// Record where the render body starts, after the signature and the
     /// CSS-variable prelude.
-    pub(super) fn mark_body_start<M: RenderMapMode>(&mut self) {
+    pub(super) fn mark_body_start(&mut self) {
         self.body_start = self.out.len();
     }
 
     /// Declare every allocated temp at the body start: `let _temp0, _temp1`.
-    pub(super) fn declare_temps<M: RenderMapMode>(&mut self) {
+    pub(super) fn declare_temps(&mut self) {
         if self.temps == 0 {
             return;
         }
@@ -36,7 +35,7 @@ impl SsrCodegenContext<'_> {
     }
 
     /// Build the preamble with imports
-    pub(super) fn build_preamble<M: RenderMapMode>(&self) -> String {
+    pub(super) fn build_preamble(&self) -> String {
         let mut preamble = String::default();
 
         // SSR helpers from @vue/server-renderer
@@ -44,7 +43,7 @@ impl SsrCodegenContext<'_> {
             preamble.push_str("import { ");
             let mut ssr_helpers: Vec<_> = self.ssr_helpers.iter().copied().collect();
             ssr_helpers.sort();
-            push_helper_imports::<M>(&mut preamble, &ssr_helpers);
+            push_helper_imports(&mut preamble, &ssr_helpers);
             preamble.push_str(" } from \"@vue/server-renderer\"\n");
         }
 
@@ -53,7 +52,7 @@ impl SsrCodegenContext<'_> {
             preamble.push_str("import { ");
             let mut core_helpers: Vec<_> = self.core_helpers.iter().copied().collect();
             core_helpers.sort();
-            push_helper_imports::<M>(&mut preamble, &core_helpers);
+            push_helper_imports(&mut preamble, &core_helpers);
             preamble.push_str(" } from ");
             vize_l0::js_string::push_js_string_literal(
                 &mut preamble,
@@ -66,7 +65,7 @@ impl SsrCodegenContext<'_> {
     }
 }
 
-fn push_helper_imports<M: RenderMapMode>(out: &mut String, helpers: &[RuntimeHelper]) {
+fn push_helper_imports(out: &mut String, helpers: &[RuntimeHelper]) {
     for (index, helper) in helpers.iter().enumerate() {
         if index > 0 {
             out.push_str(", ");

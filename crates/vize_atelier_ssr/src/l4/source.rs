@@ -1,7 +1,6 @@
 //! The SSR source bridge through the native level artifacts.
 
 use super::frozen_slots::{FrozenSlotFacts, FrozenTemplate};
-use vize_atelier_core::codegen::RenderMapMode;
 
 use super::{
     Allocator, CaptureSink, Dump, DumpMode, LegacyReason, Level, SsrL4Request, SsrL4Selection,
@@ -17,7 +16,7 @@ use super::{
 /// registration. Non-inline SSR refuses inline up front, so the plan keeps
 /// the metadata binding table and admits the tables only when registration
 /// adds nothing that table lacks, the check the DOM lane makes too.
-fn unprojectable_tables<M: RenderMapMode>(request: &SsrL4Request<'_>) -> bool {
+fn unprojectable_tables(request: &SsrL4Request<'_>) -> bool {
     request
         .options
         .script_tables
@@ -33,7 +32,7 @@ fn unprojectable_tables<M: RenderMapMode>(request: &SsrL4Request<'_>) -> bool {
 
 /// Lower `source` through L1->L2->L3, build the SSR string plan from the
 /// shared partition facts, and emit from it when the surface is admitted.
-pub(crate) fn select_ssr_lane<M: RenderMapMode>(
+pub(crate) fn select_ssr_lane(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -46,7 +45,7 @@ pub(crate) fn select_ssr_lane<M: RenderMapMode>(
     let selection = if bridge_supported(request) {
         profile!(
             "atelier.ssr.template.s4_bridge",
-            lower_and_emit_plain::<M>(allocator, source, request)
+            lower_and_emit_plain(allocator, source, request)
         )
     } else {
         SsrL4Selection::Legacy(LegacyReason::Options)
@@ -55,7 +54,7 @@ pub(crate) fn select_ssr_lane<M: RenderMapMode>(
     selection
 }
 
-fn lower_and_emit_plain<M: RenderMapMode>(
+fn lower_and_emit_plain(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -68,7 +67,7 @@ fn lower_and_emit_plain<M: RenderMapMode>(
             ..SurfaceParseOptions::default()
         },
     );
-    let lowered = lower_request::<M>(allocator, source, &tree, &surface_errors, request);
+    let lowered = lower_request(allocator, source, &tree, &surface_errors, request);
     let s2 = match lowered {
         Ok(lowered) => lowered,
         Err(message) => {
@@ -107,7 +106,7 @@ fn lower_and_emit_plain<M: RenderMapMode>(
         .binding_metadata
         .as_ref()
         .map(crate::bindings::binding_table);
-    select::select_from_l2_plain::<M>(
+    select::select_from_l2_plain(
         allocator,
         &artifact,
         request.options,
@@ -115,7 +114,7 @@ fn lower_and_emit_plain<M: RenderMapMode>(
         request.context,
         request.runtime_module_name,
         || {
-            if unprojectable_tables::<M>(request) {
+            if unprojectable_tables(request) {
                 return Err(LegacyReason::Croquis);
             }
             if !emission_supported(request) {
@@ -154,7 +153,7 @@ fn lower_and_emit_plain<M: RenderMapMode>(
 /// `v-model` passes and malformed slot props, which the legacy transform
 /// reports. A decline is not this compile's lane, so only an emitted
 /// selection is recorded. The shared lane above is left exactly as it was.
-pub(crate) fn select_ssr_lane_direct<M: RenderMapMode>(
+pub(crate) fn select_ssr_lane_direct(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -164,7 +163,7 @@ pub(crate) fn select_ssr_lane_direct<M: RenderMapMode>(
     }
     let selection = profile!(
         "atelier.ssr.template.s4_direct",
-        lower_and_emit_direct::<M>(allocator, source, request)
+        lower_and_emit_direct(allocator, source, request)
     );
     if matches!(selection, SsrL4Selection::Emitted(_)) {
         record_selection(&selection);
@@ -172,7 +171,7 @@ pub(crate) fn select_ssr_lane_direct<M: RenderMapMode>(
     selection
 }
 
-fn lower_and_emit_direct<M: RenderMapMode>(
+fn lower_and_emit_direct(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -218,7 +217,7 @@ fn lower_and_emit_direct<M: RenderMapMode>(
         .binding_metadata
         .as_ref()
         .map(crate::bindings::binding_table);
-    let selection = select::select_from_l2_plain::<M>(
+    let selection = select::select_from_l2_plain(
         allocator,
         &artifact,
         request.options,
@@ -226,7 +225,7 @@ fn lower_and_emit_direct<M: RenderMapMode>(
         request.context,
         request.runtime_module_name,
         || {
-            if unprojectable_tables::<M>(request) {
+            if unprojectable_tables(request) {
                 return Err(LegacyReason::Croquis);
             }
             if !emission_supported(request) {
@@ -250,7 +249,7 @@ fn lower_and_emit_direct<M: RenderMapMode>(
         },
     );
     if matches!(selection, SsrL4Selection::Emitted(_))
-        && !slot_and_model_passes_are_silent::<M>(&mut s2, request.options.is_ts)
+        && !slot_and_model_passes_are_silent(&mut s2, request.options.is_ts)
     {
         return SsrL4Selection::Legacy(LegacyReason::SurfaceSemantics);
     }
@@ -265,10 +264,7 @@ fn lower_and_emit_direct<M: RenderMapMode>(
 /// slot props). The plan emitter does not, so the direct lane, which runs no
 /// legacy transform, asks the passes and the check that own those
 /// diagnostics on the DOM route.
-fn slot_and_model_passes_are_silent<M: RenderMapMode>(
-    s2: &mut vize_l1_to_l2::Lowered<'_>,
-    is_ts: bool,
-) -> bool {
+fn slot_and_model_passes_are_silent(s2: &mut vize_l1_to_l2::Lowered<'_>, is_ts: bool) -> bool {
     if s2.artifact.features.has_slot_carriers() {
         let slot_facts = vize_l1_to_l2::pass::vslot::run(s2);
         let malformed = slot_facts.iter().any(|(_, facts)| {
@@ -289,7 +285,7 @@ fn slot_and_model_passes_are_silent<M: RenderMapMode>(
     s2.diagnostics.is_empty()
 }
 
-pub(crate) fn select_ssr_lane_captured<C: CaptureSink, M: RenderMapMode>(
+pub(crate) fn select_ssr_lane_captured<C: CaptureSink>(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -303,7 +299,7 @@ pub(crate) fn select_ssr_lane_captured<C: CaptureSink, M: RenderMapMode>(
     let selection = if bridge_supported(request) {
         profile!(
             "atelier.ssr.template.s4_bridge",
-            lower_and_emit::<_, M>(allocator, source, request, capture)
+            lower_and_emit(allocator, source, request, capture)
         )
     } else {
         SsrL4Selection::Legacy(LegacyReason::Options)
@@ -312,7 +308,7 @@ pub(crate) fn select_ssr_lane_captured<C: CaptureSink, M: RenderMapMode>(
     selection
 }
 
-fn lower_and_emit<C: CaptureSink, M: RenderMapMode>(
+fn lower_and_emit<C: CaptureSink>(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
@@ -331,7 +327,7 @@ fn lower_and_emit<C: CaptureSink, M: RenderMapMode>(
         vize_l1::markup::htmlish::render::render(&tree, &mut |part| text.push_str(part));
         text
     });
-    let lowered = lower_request::<M>(allocator, source, &tree, &surface_errors, request);
+    let lowered = lower_request(allocator, source, &tree, &surface_errors, request);
     let s2 = match lowered {
         Ok(lowered) => lowered,
         Err(message) => {
@@ -376,7 +372,7 @@ fn lower_and_emit<C: CaptureSink, M: RenderMapMode>(
         .binding_metadata
         .as_ref()
         .map(crate::bindings::binding_table);
-    select::select_from_l2::<_, M>(
+    select::select_from_l2(
         allocator,
         &artifact,
         request.options,
@@ -385,7 +381,7 @@ fn lower_and_emit<C: CaptureSink, M: RenderMapMode>(
         request.runtime_module_name,
         capture,
         || {
-            if unprojectable_tables::<M>(request) {
+            if unprojectable_tables(request) {
                 return Err(LegacyReason::Croquis);
             }
             if !emission_supported(request) {
@@ -415,7 +411,7 @@ fn lower_and_emit<C: CaptureSink, M: RenderMapMode>(
 }
 
 /// Lower one request, honoring the declared directive contracts (#13074).
-fn lower_request<'a, M: RenderMapMode>(
+fn lower_request<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     tree: &vize_l1::markup::SurfaceTree<'a>,

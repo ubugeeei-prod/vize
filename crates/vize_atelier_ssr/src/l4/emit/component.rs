@@ -3,20 +3,19 @@
 //! `<Transition>` / `<KeepAlive>` wrappers.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
-use super::attrs::{Attached, admit_value};
-use super::{Emitter, Flags, Result, plan_source, require_dynamic};
-use crate::codegen::element::props::quoted_js_string;
-use crate::l4::string_plan::{
+use super::super::super::codegen::element::props::quoted_js_string;
+use super::super::super::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
     SsrStringSegmentKind as Kind,
 };
-use crate::l4::{AdmissionFailure, LegacyReason};
+use super::super::super::l4::{AdmissionFailure, LegacyReason};
+use super::attrs::{Attached, admit_value};
+use super::{Emitter, Flags, Result, plan_source, require_dynamic};
 
 /// Authored and JSX-synthesized selectors retain their existing source roles.
 pub(super) fn has_dynamic_tag_source(component: &l2::ComponentOp<'_>, source: &str) -> bool {
@@ -145,7 +144,7 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
 }
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
-    pub(super) fn component<M: RenderMapMode>(
+    pub(super) fn component(
         &mut self,
         open: SsrStringSegment<'r, 'a>,
         component: &'r l2::ComponentOp<'a>,
@@ -166,24 +165,24 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             css_vars: false,
         };
         match name {
-            "Suspense" | "suspense" => self.suspense::<M>(Flags {
+            "Suspense" | "suspense" => self.suspense(Flags {
                 css_vars,
                 ..no_inherit
             })?,
             "TransitionGroup" | "transition-group" => {
                 super::transition_group::admit_directives(attached, open.fact, name)?;
-                self.transition_group::<M>(attached, name, inherit, css_vars)?;
+                self.transition_group(attached, name, inherit, css_vars)?;
             }
-            "Teleport" | "teleport" => self.teleport::<M>(attached, no_inherit)?,
-            "Transition" | "transition" => self.transition::<M>(attached, inherit)?,
-            _ if is_transparent_builtin(name) => self.children::<M>(Flags {
+            "Teleport" | "teleport" => self.teleport(attached, no_inherit)?,
+            "Transition" | "transition" => self.transition(attached, inherit)?,
+            _ if is_transparent_builtin(name) => self.children(Flags {
                 inherit_attrs: inherit,
                 ..no_inherit
             })?,
             "component" | "Component" if has_dynamic_tag_source(component, self.ctx.source) => {
-                self.dynamic_component::<M>(component, attached, inherit, css_vars)?
+                self.dynamic_component(component, attached, inherit, css_vars)?
             }
-            _ => self.render_component::<M>(name, component, attached, inherit, css_vars)?,
+            _ => self.render_component(name, component, attached, inherit, css_vars)?,
         }
         self.close(Kind::CloseComponent, |source| {
             matches!(source, Source::Component(closed) if core::ptr::eq(*closed, component))
@@ -191,7 +190,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// `_push(_ssrRenderComponent(callee, props, slots, _parent))`.
-    fn render_component<M: RenderMapMode>(
+    fn render_component(
         &mut self,
         name: &str,
         component: &'r l2::ComponentOp<'a>,
@@ -209,29 +208,31 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let props = self.component_props_with_css_vars(attached, css_vars && !inherit)?;
         // The runtime captures scope on the VNode, outside forwarded $attrs.
         let props = self.with_fallthrough_attrs(props, inherit);
-        self.ctx.flush_push::<M>();
+        self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
         // The resolved name maps to the authored tag, as the AST walker's does.
         let callee = match binding {
-            // A composed map anchors a setup binding read at the authored tag.
-            Some(binding) if M::COMPOSED => {
-                let mut callee = EmitDocument::default();
-                callee.push_mapped(&binding, component.span.start + 1);
-                callee
-            }
-            Some(binding) => EmitDocument::from(binding),
+            Some(binding) => sfc_map_copy!(
+                plain { EmitDocument::from(binding) }
+                // A composed map anchors a setup binding read at the tag.
+                composed {{
+                    let mut callee = EmitDocument::default();
+                    callee.push_mapped(&binding, component.span.start + 1);
+                    callee
+                }}
+            ),
             None => self
                 .ctx
                 .component_callee(name, Some(component.span.start + 1)),
         };
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("_push(_ssrRenderComponent(");
         self.ctx.push_spanned(&callee);
         self.ctx.push(", ");
         self.ctx.push(&props);
         self.ctx.push(", ");
         match &slots {
-            Some(slots) => self.emit_slots_object::<M>(slots)?,
+            Some(slots) => self.emit_slots_object(slots)?,
             None => {
                 let forwarded = self.forwarded_slots(component)?;
                 self.ctx.push(forwarded.as_deref().unwrap_or("null"));
@@ -249,7 +250,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `<component :is>`: `_ssrRenderVNode(_push, _createVNode(
     /// _resolveDynamicComponent(is), props, vnodeSlots), _parent)`. The
     /// legacy lane registers `ssrRenderComponent` before it branches.
-    fn dynamic_component<M: RenderMapMode>(
+    fn dynamic_component(
         &mut self,
         component: &'r l2::ComponentOp<'a>,
         attached: &Attached<'_, '_>,
@@ -271,11 +272,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         } else {
             self.vnode_slots(component)?
         };
-        self.ctx.flush_push::<M>();
+        self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderVNode);
         self.ctx.use_core_helper(RuntimeHelper::CreateVNode);
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("_ssrRenderVNode(_push, _createVNode(");
         self.ctx.push(&callee);
         self.ctx.push(", ");
@@ -311,22 +312,18 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// `_ssrRenderTeleport(_push, (_push) => { ... }, to, disabled, _parent)`.
-    fn teleport<M: RenderMapMode>(
-        &mut self,
-        attached: &Attached<'_, '_>,
-        flags: Flags,
-    ) -> Result<()> {
+    fn teleport(&mut self, attached: &Attached<'_, '_>, flags: Flags) -> Result<()> {
         let target = self.static_or_bound(attached, "to")?;
         let disabled = self.static_or_bound(attached, "disabled")?;
-        self.ctx.flush_push::<M>();
+        self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderTeleport);
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("_ssrRenderTeleport(_push, (_push) => {\n");
         self.ctx.indent_level += 1;
-        self.children::<M>(flags)?;
-        self.ctx.flush_push::<M>();
+        self.children(flags)?;
+        self.ctx.flush_push();
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("}, ");
         self.ctx.push(target.as_deref().unwrap_or("undefined"));
         self.ctx.push(", ");
@@ -339,11 +336,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// first non-comment child, so the server drops direct comments
     /// (vuejs/core#5351) and nested fragments, and an `appear` transition
     /// hydrates from a `<template>`.
-    fn transition<M: RenderMapMode>(
-        &mut self,
-        attached: &Attached<'_, '_>,
-        inherit: bool,
-    ) -> Result<()> {
+    fn transition(&mut self, attached: &Attached<'_, '_>, inherit: bool) -> Result<()> {
         let appear = attached.iter().any(|segment| match segment.source {
             Source::Attribute(attr) => attr.name == "appear",
             Source::Binding(l2::BindingOp::Bind(bind)) => {
@@ -354,7 +347,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if appear {
             self.ctx.push_string_part_static("<template>");
         }
-        self.children_keeping_comments::<M>(
+        self.children_keeping_comments(
             Flags {
                 as_fragment: false,
                 disable_nested_fragments: true,

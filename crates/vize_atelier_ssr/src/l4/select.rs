@@ -1,7 +1,6 @@
 //! The L2 -> L3 -> string plan -> emission half of the SSR L4 lane, shared by
 //! the template compile path and callers that build L2 themselves (JSX).
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String, cstr};
 use vize_l0::{dump::capture::CaptureSink, level::Level};
@@ -9,10 +8,10 @@ use vize_l2::op::Region;
 use vize_l3::verify::verify;
 use vize_l4::targets::dom::artifact::TransformExpressions;
 
+use super::super::codegen::SsrCodegenContext;
 use super::emit::{self, PlanFacts};
 use super::string_plan::lower_l2_to_string_plan;
 use super::{AdmissionFailure, LegacyReason, SsrL4Selection, record_bridge_counters};
-use crate::codegen::SsrCodegenContext;
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 
 /// One L2 artifact and the side facts the emitter reads beside it.
@@ -33,7 +32,7 @@ pub(super) struct L2Artifact<'s, 'a> {
     clippy::too_many_arguments,
     reason = "L2 analysis, independent SFC runtime metadata and capture"
 )]
-pub(super) fn select_from_l2<'a, 'e, C: CaptureSink, M: RenderMapMode>(
+pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
     allocator: &'a Allocator,
     artifact: &L2Artifact<'_, 'a>,
     options: &SsrCompilerOptions,
@@ -86,7 +85,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink, M: RenderMapMode>(
                 .collect::<std::vec::Vec<String>>(),
         );
     }
-    record_bridge_counters::<M>(
+    record_bridge_counters(
         lowered.plan.segments.len() as u64,
         lowered.plan.partition.static_segments as u64,
         lowered.plan.partition.dynamic_segments as u64,
@@ -105,10 +104,10 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink, M: RenderMapMode>(
         experimental.clone(),
     );
     ctx.apply_sfc_context(context);
-    ctx.set_runtime_module_name::<M>(runtime_module_name);
-    ctx.begin_render::<M>(artifact.root_origin.map_or(0, |span| span.start));
-    match emit::emit_plan::<M>(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
-        Ok(()) => SsrL4Selection::Emitted(ctx.finish_render::<M>()),
+    ctx.set_runtime_module_name(runtime_module_name);
+    ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));
+    match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
+        Ok(()) => SsrL4Selection::Emitted(ctx.finish_render()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => SsrL4Selection::Rejected(std::vec![cstr!(
             "Davinci L4 string-plan emitter rejected SSR artifact: {message}"
@@ -117,7 +116,7 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink, M: RenderMapMode>(
 }
 
 /// Preserve the ordinary no-sink L2 to L4 ABI. Opt-in capture uses the sibling above.
-pub(super) fn select_from_l2_plain<'a, 'e, M: RenderMapMode>(
+pub(super) fn select_from_l2_plain<'a, 'e>(
     allocator: &'a Allocator,
     artifact: &L2Artifact<'_, 'a>,
     options: &SsrCompilerOptions,
@@ -160,7 +159,7 @@ pub(super) fn select_from_l2_plain<'a, 'e, M: RenderMapMode>(
                 .collect::<std::vec::Vec<String>>(),
         );
     }
-    record_bridge_counters::<M>(
+    record_bridge_counters(
         lowered.plan.segments.len() as u64,
         lowered.plan.partition.static_segments as u64,
         lowered.plan.partition.dynamic_segments as u64,
@@ -179,10 +178,10 @@ pub(super) fn select_from_l2_plain<'a, 'e, M: RenderMapMode>(
         experimental.clone(),
     );
     ctx.apply_sfc_context(context);
-    ctx.set_runtime_module_name::<M>(runtime_module_name);
-    ctx.begin_render::<M>(artifact.root_origin.map_or(0, |span| span.start));
-    match emit::emit_plan::<M>(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
-        Ok(()) => SsrL4Selection::Emitted(ctx.finish_render::<M>()),
+    ctx.set_runtime_module_name(runtime_module_name);
+    ctx.begin_render(artifact.root_origin.map_or(0, |span| span.start));
+    match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
+        Ok(()) => SsrL4Selection::Emitted(ctx.finish_render()),
         Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => SsrL4Selection::Rejected(std::vec![cstr!(
             "Davinci L4 string-plan emitter rejected SSR artifact: {message}"

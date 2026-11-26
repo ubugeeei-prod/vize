@@ -35,7 +35,7 @@ const legacyRouteWitnesses: readonly LegacyRouteWitness[] = [
   },
   {
     route: "SSR compatibility emitter",
-    path: "crates/vize_atelier_ssr/src/compile.rs",
+    path: "crates/vize_atelier_ssr/src/compile/mod.rs",
     marker: "codegen_ctx.generate(&root)",
   },
   {

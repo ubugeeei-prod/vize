@@ -1,16 +1,17 @@
 //! Component slot functions render the push form and VNode fallback.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{FxHashSet, String, ToCompactString};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::TransformExpressions;
 
+use super::super::super::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
+use super::super::super::codegen::helpers::extract_destructure_params;
+use super::super::super::l4::string_plan::{
+    SsrSegmentSource as Source, SsrStringSegmentKind as Kind,
+};
+use super::super::super::l4::{AdmissionFailure, LegacyReason};
 use super::{Emitter, PLAIN, Result};
-use crate::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
-use crate::codegen::helpers::extract_destructure_params;
-use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
-use crate::l4::{AdmissionFailure, LegacyReason};
 
 /// Plan ranges `[start, end)` of slot children.
 pub(super) type Ranges = std::vec::Vec<(usize, usize)>;
@@ -251,18 +252,15 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// The push-form slots object, written in place.
-    pub(super) fn emit_slots_object<M: RenderMapMode>(
-        &mut self,
-        slots: &ComponentSlots,
-    ) -> Result<()> {
+    pub(super) fn emit_slots_object(&mut self, slots: &ComponentSlots) -> Result<()> {
         if !slots.dynamic.is_empty() {
-            return self.emit_create_slots::<M>(slots);
+            return self.emit_create_slots(slots);
         }
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
         self.ctx.push("{\n");
         self.ctx.indent_level += 1;
         if let Some(own) = &slots.own {
-            self.slot_property::<M>(own)?;
+            self.slot_property(own)?;
         } else {
             if !slots.default.is_empty() {
                 let default = SlotSpec {
@@ -271,13 +269,13 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     ranges: slots.default.clone(),
                     anchor: (None, None),
                 };
-                self.slot_property::<M>(&default)?;
+                self.slot_property(&default)?;
             }
             for named in &slots.named {
-                self.slot_property::<M>(named)?;
+                self.slot_property(named)?;
             }
         }
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         match &slots.forwarded {
             Some(expression) => {
                 // No synthesized compiled flag: Vue must normalize raw forwarded
@@ -293,41 +291,39 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         }
         self.ctx.push("\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("}");
         Ok(())
     }
 
-    pub(super) fn slot_property<M: RenderMapMode>(&mut self, spec: &SlotSpec) -> Result<()> {
-        self.ctx.push_indent::<M>();
+    pub(super) fn slot_property(&mut self, spec: &SlotSpec) -> Result<()> {
+        self.ctx.push_indent();
         // The name maps to its authored `v-slot` argument, as the walker's does.
         if is_valid_js_identifier(&spec.name) {
-            self.ctx
-                .push_optionally_mapped::<M>(&spec.name, spec.anchor.0);
+            self.ctx.push_optionally_mapped(&spec.name, spec.anchor.0);
         } else {
             let quoted = quoted_js_string(&spec.name);
             self.ctx.push("\"");
-            self.ctx.push_optionally_mapped::<M>(
+            self.ctx.push_optionally_mapped(
                 quoted.get(1..quoted.len() - 1).unwrap_or_default(),
                 spec.anchor.0,
             );
             self.ctx.push("\"");
         }
         self.ctx.push(": ");
-        self.slot_fn::<M>(spec)?;
+        self.slot_fn(spec)?;
         self.ctx.push(",\n");
         Ok(())
     }
 
     /// Emit a push-form `_withCtx` slot function with VNode fallback.
-    pub(super) fn slot_fn<M: RenderMapMode>(&mut self, spec: &SlotSpec) -> Result<()> {
+    pub(super) fn slot_fn(&mut self, spec: &SlotSpec) -> Result<()> {
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
-        self.ctx
-            .push_optionally_mapped::<M>("_withCtx((", spec.anchor.1);
+        self.ctx.push_optionally_mapped("_withCtx((", spec.anchor.1);
         self.ctx.push(spec.pattern.as_deref().unwrap_or("_"));
         self.ctx.push(", _push, _parent, _scopeId) => {\n");
         self.ctx.indent_level += 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("if (_push) {\n");
         self.ctx.indent_level += 1;
 
@@ -343,8 +339,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if scoped {
             self.scoped_params.push(params.clone());
         }
-        let pushed = self.slot_children::<M>(&spec.ranges);
-        self.ctx.flush_push::<M>();
+        let pushed = self.slot_children(&spec.ranges);
+        self.ctx.flush_push();
         if scoped {
             self.scoped_params.pop();
         }
@@ -364,28 +360,28 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let fallback = fallback?;
 
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("} else {\n");
         self.ctx.indent_level += 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("return ");
         self.ctx.push(&fallback);
         self.ctx.push("\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("}\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("})");
         Ok(())
     }
 
     /// The push form of slot children, each child in its own range.
-    fn slot_children<M: RenderMapMode>(&mut self, ranges: &Ranges) -> Result<()> {
+    fn slot_children(&mut self, ranges: &Ranges) -> Result<()> {
         for &(start, end) in ranges {
             self.pos = start;
             let segment = self.segment(start)?;
-            self.child::<M>(segment, PLAIN, false)?;
+            self.child(segment, PLAIN, false)?;
             if self.pos != end {
                 return Err(AdmissionFailure::Invalid(
                     "slot child emission left its plan range",

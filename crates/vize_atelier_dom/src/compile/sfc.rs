@@ -1,4 +1,5 @@
 use super::{
+    compile_template_inner_with_sections,
     pipeline::{self, DomCompilePipelineOptions},
     selection, stage_options,
 };
@@ -156,10 +157,8 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
         )
     };
     pipeline_options.no_slotted = no_slotted;
-    // L2 runs before the shipped transform reports malformed slot parameters,
-    // and the map composed into the component's must describe the module a
-    // plain compile emits, not select another one.
-    pipeline_options.sfc_assembly = true;
+    // L2 runs before the shipped transform reports malformed slot parameters.
+    pipeline_options.strict_slot_params = true;
     pipeline_options.development = development;
 
     // This is the actual compatibility parse entry, not a final emitter
@@ -180,7 +179,14 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
             },
         );
     }
-    let (_, errors, result) = super::inner::compile_template_inner_with_sections_captured(
+    // The map composed into the component's describes the module a plain
+    // compile emits.
+    let compile = if codegen_opts.source_map {
+        super::inner::compile_composed_template_with_sections_captured
+    } else {
+        super::inner::compile_template_inner_with_sections_captured
+    };
+    let (_, errors, result) = compile(
         allocator,
         source,
         options,
@@ -203,16 +209,57 @@ pub(super) fn compile_template_inner_for_sfc<'a>(
     codegen_options: CodegenOptions,
     codegen_experimental_options: CodegenExperimentalOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    if options.source_map {
+        return compile_composed_template_for_sfc(
+            allocator,
+            source,
+            options,
+            template_syntax,
+            hoisted_scope_id,
+            custom_elements,
+            codegen_options,
+            codegen_experimental_options,
+        );
+    }
+    let (root, errors, result) = compile_template_inner_with_sections(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+        DomCompilePipelineOptions::require_sections_compat_with_experimental_options(
+            custom_elements,
+            codegen_options,
+            codegen_experimental_options,
+        ),
+    );
+    (root, errors, result.into_result())
+}
+
+/// [`compile_template_inner_for_sfc`] with a map, composed into the
+/// component's.
+#[cold]
+#[inline(never)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
+fn compile_composed_template_for_sfc<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
     let mut pipeline_options =
         DomCompilePipelineOptions::require_sections_compat_with_experimental_options(
             custom_elements,
             codegen_options,
             codegen_experimental_options,
         );
-    // The SFC pipeline: a requested map is the one composed into the
-    // component's, as the selected SFC compile composes it.
-    pipeline_options.sfc_assembly = true;
-    let (root, errors, result) = super::inner::compile_template_inner_with_sections_captured(
+    // L2 runs before the shipped transform reports malformed slot parameters.
+    pipeline_options.strict_slot_params = true;
+    let (root, errors, result) = super::inner::compile_composed_template_with_sections_captured(
         allocator,
         source,
         options,

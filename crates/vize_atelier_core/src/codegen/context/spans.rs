@@ -7,11 +7,10 @@
 //! exactly the bytes a plain `push` would write, so the emitted JavaScript is
 //! identical with maps on or off (TS-11).
 
-use crate::codegen::RenderMapMode;
 use vize_l0::Span;
 
+use super::super::helpers::escape_js_string;
 use super::CodegenContext;
-use crate::codegen::helpers::escape_js_string;
 use crate::{DirectiveNode, ElementNode, RootNode, RuntimeHelper, TemplateChildNode, TextNode};
 
 /// Authored offset of the tag name of the first element (document order)
@@ -37,27 +36,27 @@ impl CodegenContext {
     /// text, slot names) and for constructs that open an authored structural
     /// unit (a block, a branch, a slot function), anchored at the unit's `<`.
     #[inline]
-    pub(in crate::codegen) fn push_mapped(&mut self, code: &str, source_offset: u32) {
+    pub(in super::super) fn push_mapped(&mut self, code: &str, source_offset: u32) {
         self.out.push_mapped(code, source_offset);
     }
 
     /// Push `code` generated from the authored range `span`.
     #[inline]
-    pub(in crate::codegen) fn push_linked(&mut self, code: &str, span: Span) {
+    pub(in super::super) fn push_linked(&mut self, code: &str, span: Span) {
         self.out.push_linked(code, span);
     }
 
     /// Push `code` generated from the authored range `span`, which spells the
     /// symbol `name` (a prop key, a static attribute name, an event name).
     #[inline]
-    pub(in crate::codegen) fn push_named(&mut self, code: &str, span: Span, name: &str) {
+    pub(in super::super) fn push_named(&mut self, code: &str, span: Span, name: &str) {
         self.out.push_named(code, span, name);
     }
 
     /// Push an element's tag name anchored at the authored tag name, the byte
     /// after the element's opening `<`.
     #[inline]
-    pub(in crate::codegen) fn push_tag<M: RenderMapMode>(&mut self, el: &ElementNode<'_>) {
+    pub(in super::super) fn push_tag(&mut self, el: &ElementNode<'_>) {
         let start = el.loc.span.start + 1;
         self.push_linked(el.tag, Span::new(start, start + el.tag.len() as u32));
     }
@@ -65,18 +64,14 @@ impl CodegenContext {
     /// Push a text node's content as JavaScript string contents, anchored at
     /// the authored text.
     #[inline]
-    pub(in crate::codegen) fn push_text(&mut self, text: &TextNode<'_>) {
+    pub(in super::super) fn push_text(&mut self, text: &TextNode<'_>) {
         self.push_linked(&escape_js_string(text.content), text.loc.span);
     }
 
     /// Push a slot's emitted name anchored at the `v-slot` argument that
     /// authored it; an argument-less `v-slot` authors no name token.
     #[inline]
-    pub(in crate::codegen) fn push_slot_name<M: RenderMapMode>(
-        &mut self,
-        code: &str,
-        dir: &DirectiveNode<'_>,
-    ) {
+    pub(in super::super) fn push_slot_name(&mut self, code: &str, dir: &DirectiveNode<'_>) {
         match &dir.arg {
             Some(arg) => self.push_linked(code, arg.loc().span),
             None => self.push(code),
@@ -86,14 +81,14 @@ impl CodegenContext {
     /// Push the `_withCtx` helper opening a slot function, anchored at the
     /// authored unit that carries the slot (`<template #name>` or the
     /// component with a root `v-slot`).
-    pub(in crate::codegen) fn push_slot_function<M: RenderMapMode>(&mut self, unit_start: u32) {
+    pub(in super::super) fn push_slot_function(&mut self, unit_start: u32) {
         self.use_helper(RuntimeHelper::WithCtx);
         self.push_mapped(self.helper(RuntimeHelper::WithCtx), unit_start);
     }
 
     /// Push a resolved component name anchored at the first element that
     /// authors it by that exact tag (asset resolution is shared by every use).
-    pub(in crate::codegen) fn push_component_name(&mut self, name: &str, root: &RootNode<'_>) {
+    pub(in super::super) fn push_component_name(&mut self, name: &str, root: &RootNode<'_>) {
         match first_tag_offset(&root.children, name).filter(|_| self.out.is_recording()) {
             Some(offset) => self.push_linked(name, Span::new(offset, offset + name.len() as u32)),
             None => self.push(name),
@@ -110,7 +105,7 @@ impl CodegenContext {
     /// An expression without an authored span (a synthesized node carrying the
     /// empty stub location) is emitted unanchored rather than mapped to the
     /// template start.
-    pub(in crate::codegen) fn push_expression(&mut self, code: &str, span: Span) {
+    pub(in super::super) fn push_expression(&mut self, code: &str, span: Span) {
         self.out.push_expression(code, span, &self.source);
     }
 }

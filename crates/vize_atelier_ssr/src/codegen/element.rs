@@ -18,7 +18,6 @@ mod transparent_builtin;
 mod vnode;
 mod vnode_control;
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, ForNode, IfNode, PropNode,
     RuntimeHelper, TemplateChildNode,
@@ -83,7 +82,7 @@ pub(super) struct ComponentTemplateSlot<'node, 'a> {
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process an element node
-    pub(crate) fn process_element_with_fallthrough_attrs<M: RenderMapMode>(
+    pub(crate) fn process_element_with_fallthrough_attrs(
         &mut self,
         el: &ElementNode<'a>,
         disable_nested_fragments: bool,
@@ -92,18 +91,14 @@ impl<'a> SsrCodegenContext<'a> {
     ) {
         match el.tag_type {
             ElementType::Element => {
-                self.process_plain_element::<M>(
-                    el,
-                    inherit_attrs,
-                    css_vars.enabled && !inherit_attrs,
-                );
+                self.process_plain_element(el, inherit_attrs, css_vars.enabled && !inherit_attrs);
             }
             ElementType::Component => {
                 if matches!(el.tag, "TransitionGroup" | "transition-group") {
-                    self.process_transition_group::<M>(el, inherit_attrs, css_vars.enabled);
+                    self.process_transition_group(el, inherit_attrs, css_vars.enabled);
                     return;
                 }
-                self.process_component::<M>(
+                self.process_component(
                     el,
                     disable_nested_fragments,
                     inherit_attrs,
@@ -111,13 +106,13 @@ impl<'a> SsrCodegenContext<'a> {
                 );
             }
             ElementType::Slot => {
-                self.process_slot_outlet::<M>(el);
+                self.process_slot_outlet(el);
             }
             ElementType::Template => {
                 // Process template children directly. A template renders no
                 // node of its own, so a single child is still the root that
                 // inherits the component's fallthrough attrs.
-                self.process_children_with_fallthrough_attrs_and_css_vars::<M>(
+                self.process_children_with_fallthrough_attrs_and_css_vars(
                     &el.children,
                     false,
                     disable_nested_fragments,

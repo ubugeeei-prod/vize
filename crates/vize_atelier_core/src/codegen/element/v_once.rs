@@ -3,15 +3,14 @@
 //! Generates cache-wrapped elements for the `v-once` directive, which
 //! renders elements once and caches them for subsequent renders.
 
-use crate::codegen::RenderMapMode;
 use crate::{ElementNode, ElementType, RuntimeHelper};
 
 use super::super::context::CodegenContext;
 use vize_l0::ToCompactString;
 
 /// Generate v-once element with cache wrapper
-pub fn generate_v_once_element<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
-    generate_v_once_cached(ctx, |ctx| generate_v_once_vnode::<M>(ctx, el));
+pub fn generate_v_once_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    generate_v_once_cached(ctx, |ctx| generate_v_once_vnode(ctx, el));
 }
 
 /// Wrap `body` in the `v-once` cache expression: it renders on the first pass
@@ -60,12 +59,12 @@ pub fn generate_v_once_cached(ctx: &mut CodegenContext, body: impl FnOnce(&mut C
 
 /// The vnode a `v-once` element caches: the same vnode as without `v-once`,
 /// minus handler caching.
-fn generate_v_once_vnode<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+fn generate_v_once_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let in_v_once = core::mem::replace(&mut ctx.in_v_once, true);
     if el.tag_type == ElementType::Component {
-        super::inline::generate_component_vnode::<M>(ctx, el);
+        super::inline::generate_component_vnode(ctx, el);
     } else {
-        super::inline::generate_native_vnode::<M>(ctx, el);
+        super::inline::generate_native_vnode(ctx, el);
     }
     ctx.in_v_once = in_v_once;
 }

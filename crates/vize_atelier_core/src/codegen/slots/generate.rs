@@ -1,6 +1,5 @@
 //! Slots object generation for component children.
 
-use crate::codegen::RenderMapMode;
 use crate::steps::v_slot::{collect_slots, get_slot_name, has_v_slot, is_dynamic_slot};
 use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode};
 
@@ -46,7 +45,7 @@ use super::params::slot_parameters;
 /// instead carries `1024 /* DYNAMIC_SLOTS */` (see
 /// [`has_dynamic_slots_flag`](super::detect::has_dynamic_slots_flag)) to force
 /// that update.
-pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Note: WithCtx helper is registered at each _withCtx() output site,
     // not here, to avoid importing it when slots don't actually use it.
 
@@ -61,7 +60,7 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNo
 
     // Check for v-slot on component root. Bare `v-slot` is the default slot;
     // named / dynamic root spellings preserve their authored key.
-    let root_slot = component_root_slot::<M>(el);
+    let root_slot = component_root_slot(el);
 
     let collected_slots = collect_slots(el, &ctx.source);
     let has_forwarded_slots = has_forwarded_slot_outlet(el);
@@ -76,7 +75,7 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNo
 
     // If there are conditional (v-if) or looped (v-for) slots, use createSlots
     if has_conditional_slots && root_slot.is_none() {
-        generate_create_slots::<M>(ctx, el);
+        generate_create_slots(ctx, el);
         return;
     }
 
@@ -88,12 +87,12 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNo
         ctx.newline();
         let slot_name = get_slot_name(slot_dir, &ctx.source);
         let is_dynamic = is_dynamic_slot(slot_dir);
-        emit_slot_property_name::<M>(ctx, slot_dir, &slot_name, is_dynamic);
+        emit_slot_property_name(ctx, slot_dir, &slot_name, is_dynamic);
         ctx.push(": ");
-        ctx.push_slot_function::<M>(el.loc.span.start);
+        ctx.push_slot_function(el.loc.span.start);
         ctx.push("(");
         // Slot props (scoped slot params) - use raw source with default value prefix
-        let params = if let Some((processed, params)) = slot_parameters::<M>(slot_dir, ctx) {
+        let params = if let Some((processed, params)) = slot_parameters(slot_dir, ctx) {
             ctx.push("(");
             ctx.push(&processed);
             ctx.push(")");
@@ -108,7 +107,7 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNo
 
         ctx.push(" => [");
         ctx.indent();
-        generate_slot_children::<M>(ctx, &el.children);
+        generate_slot_children(ctx, &el.children);
         ctx.deindent();
         ctx.newline();
         ctx.push("])");
@@ -161,10 +160,10 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNo
                         }
                         ctx.push("]");
                     } else if is_valid_js_identifier(&slot_name) {
-                        ctx.push_slot_name::<M>(&slot_name, slot_dir);
+                        ctx.push_slot_name(&slot_name, slot_dir);
                     } else {
                         ctx.push("\"");
-                        ctx.push_slot_name::<M>(&escape_js_string(&slot_name), slot_dir);
+                        ctx.push_slot_name(&escape_js_string(&slot_name), slot_dir);
                         ctx.push("\"");
                     }
 
@@ -173,27 +172,26 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNo
                     }
 
                     ctx.push(": ");
-                    ctx.push_slot_function::<M>(template_el.loc.span.start);
+                    ctx.push_slot_function(template_el.loc.span.start);
                     ctx.push("(");
 
                     // Slot props - use raw source with default value prefix
-                    let params =
-                        if let Some((processed, params)) = slot_parameters::<M>(slot_dir, ctx) {
-                            ctx.push("(");
-                            ctx.push(&processed);
-                            ctx.push(")");
-                            params
-                        } else {
-                            ctx.push("()");
-                            vec![]
-                        };
+                    let params = if let Some((processed, params)) = slot_parameters(slot_dir, ctx) {
+                        ctx.push("(");
+                        ctx.push(&processed);
+                        ctx.push(")");
+                        params
+                    } else {
+                        ctx.push("()");
+                        vec![]
+                    };
 
                     // Track slot params for stripping _ctx. prefix
                     ctx.add_slot_params(&params);
 
                     ctx.push(" => [");
                     ctx.indent();
-                    generate_slot_children::<M>(ctx, &template_el.children);
+                    generate_slot_children(ctx, &template_el.children);
                     ctx.deindent();
                     ctx.newline();
                     ctx.push("])");
@@ -204,14 +202,14 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNo
             }
         }
 
-        let has_slot_template = super::detect::has_authored_slot_template::<M>(el);
+        let has_slot_template = super::detect::has_authored_slot_template(el);
         let default_children: Vec<_> = el
             .children
             .iter()
-            .filter(|child| super::detect::child_is_implicit_default::<M>(child, has_slot_template))
+            .filter(|child| super::detect::child_is_implicit_default(child, has_slot_template))
             .collect();
         let has_default_content = !has_slot_template
-            || super::detect::slot_children_have_meaningful_content::<M>(&default_children);
+            || super::detect::slot_children_have_meaningful_content(&default_children);
         if !default_children.is_empty() && !has_generated_default && has_default_content {
             if !first_slot {
                 ctx.push(",");
@@ -222,8 +220,8 @@ pub fn generate_slots<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNo
             ctx.push(ctx.helper(RuntimeHelper::WithCtx));
             ctx.push("(() => [");
             ctx.indent();
-            generate_slot_children_where::<M>(ctx, &el.children, |child| {
-                super::detect::child_is_implicit_default::<M>(child, has_slot_template)
+            generate_slot_children_where(ctx, &el.children, |child| {
+                super::detect::child_is_implicit_default(child, has_slot_template)
             });
             ctx.deindent();
             ctx.newline();

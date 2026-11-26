@@ -1,11 +1,3 @@
-//! Davinci L4 lane for the SSR compile path.
-//!
-//! P3-8 keeps SSR on a thin L2->L4 route: the compile path reads the shared
-//! L2->L3 partition facts, builds the SSR string plan, and emits the
-//! `ssrRender` module from that plan for the admitted surface. Every other
-//! input selects the legacy AST walker explicitly under a typed reason, and a
-//! stale or inconsistent artifact is rejected rather than guessed around.
-
 mod emit;
 mod frozen_slots;
 mod l2_input;
@@ -18,7 +10,6 @@ pub use l2_input::{
 };
 
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::config::VueVersion;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String, profile, profiler::global_profiler};
@@ -26,7 +17,7 @@ use vize_l0::{dump::capture::CaptureSink, level::Level};
 use vize_l1::markup::SurfaceParseOptions;
 use vize_l4::targets::dom::artifact::TransformExpressions;
 
-use crate::codegen::SsrCodegenResult;
+use super::codegen::SsrCodegenResult;
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 
 /// Everything the SSR L4 lane needs to decide and emit one compile.
@@ -226,11 +217,22 @@ std::thread_local! {
 
 /// Run the direct lane's debug oracle without recording its selection.
 #[cfg(debug_assertions)]
-pub(crate) fn as_oracle_run<M: RenderMapMode, R>(f: impl FnOnce() -> R) -> R {
+pub(crate) fn as_oracle_run<R>(f: impl FnOnce() -> R) -> R {
     let previous = ORACLE_RUN.with(|flag| flag.replace(true));
     let result = f();
     ORACLE_RUN.with(|flag| flag.set(previous));
     result
+}
+
+#[cfg(feature = "legacy-differential")]
+/// `s4` when the plan emitted, `legacy.<reason>` for a selected legacy
+/// route, `rejected` for a broken plan invariant.
+pub(crate) fn lane_label(selection: &SsrL4Selection) -> &'static str {
+    match selection {
+        SsrL4Selection::Emitted(_) => "s4",
+        SsrL4Selection::Legacy(reason) => reason.counter_suffix(),
+        SsrL4Selection::Rejected(_) => "rejected",
+    }
 }
 
 pub(super) fn record_selection(selection: &SsrL4Selection) {
@@ -250,7 +252,7 @@ pub(super) fn record_selection(selection: &SsrL4Selection) {
     profiler.record_counter_enabled(counter, 1);
 }
 
-pub(super) fn record_bridge_counters<M: RenderMapMode>(
+pub(super) fn record_bridge_counters(
     segments: u64,
     static_segments: u64,
     dynamic_segments: u64,

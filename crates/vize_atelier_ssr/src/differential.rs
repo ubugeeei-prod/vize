@@ -54,7 +54,7 @@ pub fn compare_ssr_lanes(
             crate::stage_options::parser_options(options),
         )
         .parse_with_frozen_elements();
-        let selection = select_ssr_lane::<vize_atelier_core::codegen::PlainRenderMap>(
+        let selection = select_ssr_lane(
             &allocator,
             source,
             &SsrL4Request {
@@ -67,7 +67,7 @@ pub fn compare_ssr_lanes(
                 frozen: Some((&root, &frozen)),
             },
         );
-        production::lane_label(&selection)
+        crate::l4::lane_label(&selection)
     };
     let compile = |lane| {
         let allocator = Allocator::new();

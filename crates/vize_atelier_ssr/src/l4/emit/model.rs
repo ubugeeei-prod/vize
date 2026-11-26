@@ -2,16 +2,15 @@
 //! the dynamic-type helper, and `selected` on options of a modelled select.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
+use super::super::super::codegen::element::VNodePropEntry;
+use super::super::super::codegen::element::props::{component_prop_entry, quoted_js_string};
+use super::super::super::l4::string_plan::SsrSegmentSource as Source;
 use super::attrs::{Attached, admit_value, bound_value, static_value};
 use super::{Emitter, Result};
-use crate::codegen::element::VNodePropEntry;
-use crate::codegen::element::props::{component_prop_entry, quoted_js_string};
-use crate::l4::string_plan::SsrSegmentSource as Source;
 
 /// `v-model` reads the plan emitter can own.
 ///
@@ -197,7 +196,7 @@ pub(super) fn collect_root(
 }
 
 /// `selected` on an `<option>` inside a `<select v-model>`.
-pub(super) fn emit_option_selected<M: RenderMapMode>(
+pub(super) fn emit_option_selected(
     em: &mut Emitter<'_, '_, '_, '_, '_, '_>,
     attached: &Attached<'_, '_>,
 ) -> Result<()> {

@@ -8,11 +8,10 @@ use super::{
     ExpressionNode, ForNode, FxHashSet, IfNode, PropNode, RuntimeHelper, SlotAnchor,
     SsrCodegenContext, String, TemplateChildNode, ToCompactString, extract_destructure_params,
 };
-use vize_atelier_core::codegen::RenderMapMode;
 
 impl<'a> SsrCodegenContext<'a> {
     /// Emit a component render call, including built-in SSR special cases.
-    pub(super) fn process_component<M: RenderMapMode>(
+    pub(super) fn process_component(
         &mut self,
         el: &ElementNode<'a>,
         _disable_nested_fragments: bool,
@@ -20,19 +19,19 @@ impl<'a> SsrCodegenContext<'a> {
         css_vars: bool,
     ) {
         if matches!(el.tag, "Suspense" | "suspense") {
-            self.process_suspense::<M>(el, css_vars);
+            self.process_suspense(el, css_vars);
             return;
         }
         if matches!(el.tag, "Teleport" | "teleport") {
-            self.process_teleport::<M>(el);
+            self.process_teleport(el);
             return;
         }
-        if super::transparent_builtin::is_server_transparent_builtin::<M>(el.tag) {
-            self.process_transparent_builtin::<M>(el, inherit_attrs);
+        if super::transparent_builtin::is_server_transparent_builtin(el.tag) {
+            self.process_transparent_builtin(el, inherit_attrs);
             return;
         }
 
-        self.flush_push::<M>();
+        self.flush_push();
         self.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
 
         let tag = &el.tag;
@@ -53,18 +52,17 @@ impl<'a> SsrCodegenContext<'a> {
         let props = self.with_fallthrough_attrs(props, inherit_attrs);
 
         if is_dynamic_component {
-            self.process_dynamic_component::<M>(el, &props);
+            self.process_dynamic_component(el, &props);
             return;
         }
 
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("_push(_ssrRenderComponent(");
         if let Some(binding_expr) = setup_binding.as_deref() {
-            if M::COMPOSED {
-                // A composed map anchors the read at the authored tag.
-                self.push_anchored::<M>(binding_expr, el.loc.span.start + 1);
-            } else {
-                self.push(binding_expr);
+            sfc_map_copy! {
+                plain { self.push(binding_expr); }
+                // A composed map anchors a setup binding read at the tag.
+                composed { self.push_anchored(binding_expr, el.loc.span.start + 1); }
             }
         } else {
             let callee = self.component_callee(tag, Some(el.loc.span.start + 1));
@@ -78,7 +76,7 @@ impl<'a> SsrCodegenContext<'a> {
         if el.children.is_empty() {
             self.push("null");
         } else {
-            self.process_component_slots::<M>(el);
+            self.process_component_slots(el);
         }
 
         self.push(", _parent");
@@ -88,28 +86,28 @@ impl<'a> SsrCodegenContext<'a> {
         self.push("))\n");
     }
 
-    fn process_component_slots<'node, M: RenderMapMode>(&mut self, el: &'node ElementNode<'a>) {
+    fn process_component_slots<'node>(&mut self, el: &'node ElementNode<'a>) {
         let children: &'node [TemplateChildNode<'a>] = &el.children;
 
         // `v-slot` directly on the component (`<Comp v-slot="{ item }">`)
         // makes every child part of that single slot; dropping the directive
         // would compile its params against the instance (`_ctx.item`).
-        if let Some(slot) = self.component_self_slot::<M>(el) {
+        if let Some(slot) = self.component_self_slot(el) {
             self.use_core_helper(RuntimeHelper::WithCtx);
             self.push("{\n");
             self.indent_level += 1;
-            self.process_component_slot_property::<M>(
+            self.process_component_slot_property(
                 &slot.name,
                 Some(slot.anchor),
                 slot.props_pattern.as_deref(),
                 &slot.params,
                 ComponentSlotChildren::Slice(slot.children),
             );
-            self.push_indent::<M>();
+            self.push_indent();
             self.push(self.component_slot_flag(el));
             self.push("\n");
             self.indent_level -= 1;
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("}");
             return;
         }
@@ -120,7 +118,7 @@ impl<'a> SsrCodegenContext<'a> {
             .iter()
             .any(|child| self.is_dynamic_slot_source(child))
         {
-            self.process_dynamic_component_slots::<M>(children);
+            self.process_dynamic_component_slots(children);
             return;
         }
 
@@ -128,7 +126,7 @@ impl<'a> SsrCodegenContext<'a> {
             std::vec::Vec::new();
         let mut named_slots: std::vec::Vec<ComponentTemplateSlot<'node, 'a>> = std::vec::Vec::new();
         for child in children {
-            if let Some(slot) = self.component_template_slot::<M>(child) {
+            if let Some(slot) = self.component_template_slot(child) {
                 named_slots.push(slot);
             } else {
                 default_children.push(child);
@@ -144,7 +142,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.indent_level += 1;
 
         if !default_children.is_empty() {
-            self.process_component_slot_property::<M>(
+            self.process_component_slot_property(
                 "default",
                 None,
                 None,
@@ -153,7 +151,7 @@ impl<'a> SsrCodegenContext<'a> {
             );
         }
         for slot in named_slots {
-            self.process_component_slot_property::<M>(
+            self.process_component_slot_property(
                 &slot.name,
                 Some(slot.anchor),
                 slot.props_pattern.as_deref(),
@@ -162,11 +160,11 @@ impl<'a> SsrCodegenContext<'a> {
             );
         }
 
-        self.push_indent::<M>();
+        self.push_indent();
         self.push(self.component_slot_flag(el));
         self.push("\n");
         self.indent_level -= 1;
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("}");
     }
 
@@ -191,10 +189,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Emit a `createSlots(base, [entries])` call for components that carry
     /// dynamic, conditional, or looped slots.
-    fn process_dynamic_component_slots<'node, M: RenderMapMode>(
-        &mut self,
-        children: &'node [TemplateChildNode<'a>],
-    ) {
+    fn process_dynamic_component_slots<'node>(&mut self, children: &'node [TemplateChildNode<'a>]) {
         self.use_core_helper(RuntimeHelper::CreateSlots);
         self.use_core_helper(RuntimeHelper::WithCtx);
 
@@ -207,7 +202,7 @@ impl<'a> SsrCodegenContext<'a> {
             if self.is_dynamic_slot_source(child) {
                 continue;
             }
-            if let Some(slot) = self.component_template_slot::<M>(child) {
+            if let Some(slot) = self.component_template_slot(child) {
                 static_slots.push(slot);
             } else {
                 default_children.push(child);
@@ -218,7 +213,7 @@ impl<'a> SsrCodegenContext<'a> {
         super::normalize_implicit_slot_children(&mut default_children);
         self.indent_level += 1;
         if !default_children.is_empty() {
-            self.process_component_slot_property::<M>(
+            self.process_component_slot_property(
                 "default",
                 None,
                 None,
@@ -227,7 +222,7 @@ impl<'a> SsrCodegenContext<'a> {
             );
         }
         for slot in static_slots {
-            self.process_component_slot_property::<M>(
+            self.process_component_slot_property(
                 &slot.name,
                 Some(slot.anchor),
                 slot.props_pattern.as_deref(),
@@ -235,10 +230,10 @@ impl<'a> SsrCodegenContext<'a> {
                 ComponentSlotChildren::Slice(slot.children),
             );
         }
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("_: 2 /* DYNAMIC */\n");
         self.indent_level -= 1;
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("}, [\n");
         self.indent_level += 1;
 
@@ -248,8 +243,8 @@ impl<'a> SsrCodegenContext<'a> {
                 TemplateChildNode::For(for_node)
                     if slot_template_in_children(&for_node.children).is_some() =>
                 {
-                    self.push_dynamic_slot_separator::<M>(&mut first);
-                    self.process_looped_slot_entry::<M>(for_node);
+                    self.push_dynamic_slot_separator(&mut first);
+                    self.process_looped_slot_entry(for_node);
                 }
                 TemplateChildNode::If(if_node)
                     if if_node
@@ -257,14 +252,14 @@ impl<'a> SsrCodegenContext<'a> {
                         .iter()
                         .any(|branch| slot_template_in_children(&branch.children).is_some()) =>
                 {
-                    self.push_dynamic_slot_separator::<M>(&mut first);
-                    self.process_conditional_slot_entry::<M>(if_node);
+                    self.push_dynamic_slot_separator(&mut first);
+                    self.process_conditional_slot_entry(if_node);
                 }
                 TemplateChildNode::Element(el)
                     if el.tag_type == ElementType::Template && template_slot_is_dynamic(el) =>
                 {
-                    self.push_dynamic_slot_separator::<M>(&mut first);
-                    self.process_dynamic_slot_entry::<M>(el);
+                    self.push_dynamic_slot_separator(&mut first);
+                    self.process_dynamic_slot_entry(el);
                 }
                 _ => {}
             }
@@ -273,21 +268,21 @@ impl<'a> SsrCodegenContext<'a> {
         self.indent_level -= 1;
         if !first {
             self.push("\n");
-            self.push_indent::<M>();
+            self.push_indent();
         }
         self.push("])");
     }
 
-    fn push_dynamic_slot_separator<M: RenderMapMode>(&mut self, first: &mut bool) {
+    fn push_dynamic_slot_separator(&mut self, first: &mut bool) {
         if !*first {
             self.push(",\n");
         }
         *first = false;
-        self.push_indent::<M>();
+        self.push_indent();
     }
 
     /// `_renderList(source, (alias...) => { return { name, fn } })`
-    fn process_looped_slot_entry<M: RenderMapMode>(&mut self, for_node: &ForNode<'a>) {
+    fn process_looped_slot_entry(&mut self, for_node: &ForNode<'a>) {
         let Some(template_el) = slot_template_in_children(&for_node.children) else {
             return;
         };
@@ -312,19 +307,19 @@ impl<'a> SsrCodegenContext<'a> {
 
         let params = super::super::helpers::collect_for_scoped_params(for_node, self.source);
         self.push_scoped_params(params);
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("return ");
-        self.push_slot_object_entry::<M>(template_el, None);
+        self.push_slot_object_entry(template_el, None);
         self.push("\n");
         self.pop_scoped_params();
 
         self.indent_level -= 1;
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("})");
     }
 
     /// `(cond) ? { name, fn, key } : undefined`
-    fn process_conditional_slot_entry<M: RenderMapMode>(&mut self, if_node: &IfNode<'a>) {
+    fn process_conditional_slot_entry(&mut self, if_node: &IfNode<'a>) {
         for (index, branch) in if_node.branches.iter().enumerate() {
             if index > 0 {
                 self.push(" : ");
@@ -336,7 +331,7 @@ impl<'a> SsrCodegenContext<'a> {
                 self.push(") ? ");
             }
             if let Some(template_el) = slot_template_in_children(&branch.children) {
-                self.push_slot_object_entry::<M>(template_el, Some(index));
+                self.push_slot_object_entry(template_el, Some(index));
             } else {
                 self.push("undefined");
             }
@@ -350,16 +345,12 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    fn process_dynamic_slot_entry<M: RenderMapMode>(&mut self, template_el: &ElementNode<'a>) {
-        self.push_slot_object_entry::<M>(template_el, None);
+    fn process_dynamic_slot_entry(&mut self, template_el: &ElementNode<'a>) {
+        self.push_slot_object_entry(template_el, None);
     }
 
     /// `{ name: <expr>, fn: _withCtx(...), key: "N" }`
-    fn push_slot_object_entry<M: RenderMapMode>(
-        &mut self,
-        template_el: &ElementNode<'a>,
-        key_index: Option<usize>,
-    ) {
+    fn push_slot_object_entry(&mut self, template_el: &ElementNode<'a>, key_index: Option<usize>) {
         let Some(dir) = template_el.props.iter().find_map(|p| match p {
             PropNode::Directive(dir) if dir.name == "slot" => Some(dir),
             _ => None,
@@ -377,13 +368,13 @@ impl<'a> SsrCodegenContext<'a> {
 
         self.push("{\n");
         self.indent_level += 1;
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("name: ");
         self.push(&name);
         self.push(",\n");
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("fn: ");
-        self.emit_slot_fn::<M>(
+        self.emit_slot_fn(
             Some(template_el.loc.span.start),
             props_pattern.as_deref(),
             &params,
@@ -391,14 +382,14 @@ impl<'a> SsrCodegenContext<'a> {
         );
         if let Some(key) = key_index {
             self.push(",\n");
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("key: \"");
             self.push(&key.to_compact_string());
             self.push("\"");
         }
         self.push("\n");
         self.indent_level -= 1;
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("}");
     }
 
@@ -420,17 +411,17 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    pub(super) fn process_component_slot_children<'node, M: RenderMapMode>(
+    pub(super) fn process_component_slot_children<'node>(
         &mut self,
         children: &ComponentSlotChildren<'node, 'a>,
     ) {
         match children {
             ComponentSlotChildren::Slice(children) => {
-                self.process_children::<M>(children, false, false, false);
+                self.process_children(children, false, false, false);
             }
             ComponentSlotChildren::Refs(children) => {
                 for child in vize_atelier_core::walk_probe::ssr_children(children) {
-                    self.process_child::<M>(
+                    self.process_child(
                         child,
                         false,
                         false,
@@ -442,7 +433,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    fn component_template_slot<'node, M: RenderMapMode>(
+    fn component_template_slot<'node>(
         &self,
         child: &'node TemplateChildNode<'a>,
     ) -> Option<ComponentTemplateSlot<'node, 'a>> {
@@ -452,13 +443,13 @@ impl<'a> SsrCodegenContext<'a> {
         if el.tag_type != ElementType::Template {
             return None;
         }
-        self.component_self_slot::<M>(el)
+        self.component_self_slot(el)
     }
 
     /// Build the slot description carried by a `v-slot` directive on `el`
     /// itself — either a `<template v-slot>` child or a component carrying
     /// `v-slot` directly (`<Comp v-slot="{ item }">`).
-    pub(super) fn component_self_slot<'node, M: RenderMapMode>(
+    pub(super) fn component_self_slot<'node>(
         &self,
         el: &'node ElementNode<'a>,
     ) -> Option<ComponentTemplateSlot<'node, 'a>> {
@@ -560,8 +551,8 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Process Vue's built-in <Teleport> component.
-    fn process_teleport<M: RenderMapMode>(&mut self, el: &ElementNode<'a>) {
-        self.flush_push::<M>();
+    fn process_teleport(&mut self, el: &ElementNode<'a>) {
+        self.flush_push();
         self.use_ssr_helper(RuntimeHelper::SsrRenderTeleport);
 
         let target = self
@@ -571,13 +562,13 @@ impl<'a> SsrCodegenContext<'a> {
             .static_or_bound_prop_expression(el, "disabled")
             .unwrap_or_else(|| "false".to_compact_string());
 
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("_ssrRenderTeleport(_push, (_push) => {\n");
         self.indent_level += 1;
-        self.process_children::<M>(&el.children, false, false, false);
-        self.flush_push::<M>();
+        self.process_children(&el.children, false, false, false);
+        self.flush_push();
         self.indent_level -= 1;
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("}, ");
         self.push(&target);
         self.push(", ");

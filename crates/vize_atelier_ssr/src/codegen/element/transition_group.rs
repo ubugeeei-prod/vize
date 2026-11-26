@@ -1,7 +1,6 @@
 //! The server's TransitionGroup wrapper and flattened child ranges.
 
 use super::{ElementNode, ExpressionNode, PropNode, SsrCodegenContext};
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::codegen::document::EmitDocument;
 
 enum GroupTag<'n, 'a> {
@@ -10,7 +9,7 @@ enum GroupTag<'n, 'a> {
 }
 
 impl<'a> SsrCodegenContext<'a> {
-    pub(super) fn process_transition_group<M: RenderMapMode>(
+    pub(super) fn process_transition_group(
         &mut self,
         el: &ElementNode<'a>,
         inherit_attrs: bool,
@@ -43,8 +42,8 @@ impl<'a> SsrCodegenContext<'a> {
         });
         if let Some(tag) = &tag {
             self.push_string_part_static("<");
-            self.push_group_tag::<M>(tag, dynamic.as_ref());
-            if let Some(merged) = self.transition_group_attrs::<M>(
+            self.push_group_tag(tag, dynamic.as_ref());
+            if let Some(merged) = self.transition_group_attrs(
                 el,
                 inherit_attrs,
                 css_vars && !inherit_attrs,
@@ -62,7 +61,7 @@ impl<'a> SsrCodegenContext<'a> {
         // Vue's TransitionGroup flattens nested list/conditional ranges and
         // filters comment children, including the empty false-v-if placeholder.
         // Vapor hydration walks the nested ranges, so they keep their fragments.
-        self.process_children_with_fallthrough_attrs::<M>(
+        self.process_children_with_fallthrough_attrs(
             &el.children,
             tag.is_none(),
             !self.options.vapor,
@@ -72,16 +71,12 @@ impl<'a> SsrCodegenContext<'a> {
 
         if let Some(tag) = &tag {
             self.push_string_part_static("</");
-            self.push_group_tag::<M>(tag, dynamic.as_ref());
+            self.push_group_tag(tag, dynamic.as_ref());
             self.push_string_part_static(">");
         }
     }
 
-    fn push_group_tag<M: RenderMapMode>(
-        &mut self,
-        tag: &GroupTag<'_, 'a>,
-        dynamic: Option<&EmitDocument>,
-    ) {
+    fn push_group_tag(&mut self, tag: &GroupTag<'_, 'a>, dynamic: Option<&EmitDocument>) {
         match tag {
             GroupTag::Static(text) => {
                 self.push_string_part_static_mapped(text.content, text.loc.span.start);

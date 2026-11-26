@@ -4,7 +4,6 @@ use super::{
     ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     ToCompactString, cstr, quoted_js_string,
 };
-use vize_atelier_core::codegen::RenderMapMode;
 
 impl<'a> SsrCodegenContext<'a> {
     /// Get an attribute value from an element
@@ -23,7 +22,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Form model comparisons consume the first authored bound expression
     /// or quoted static value, matching Vue's property lookup.
-    pub(in crate::codegen::element) fn model_attr_value(
+    pub(in super::super::super::super::codegen::element) fn model_attr_value(
         &mut self,
         el: &ElementNode,
         name: &str,
@@ -48,7 +47,7 @@ impl<'a> SsrCodegenContext<'a> {
         None
     }
 
-    pub(in crate::codegen::element) fn checkbox_model_checked(
+    pub(in super::super::super::super::codegen::element) fn checkbox_model_checked(
         &mut self,
         el: &ElementNode,
         exp: &str,
@@ -75,7 +74,7 @@ impl<'a> SsrCodegenContext<'a> {
     /// `el`, if any. Used by SSR v-model lowering to find `:type` on
     /// `<input :type="t" v-model>` so the dynamic-model helper kicks in.
     /// (#962)
-    pub(in crate::codegen::element) fn get_dynamic_bind_exp(
+    pub(in super::super::super::super::codegen::element) fn get_dynamic_bind_exp(
         &mut self,
         el: &ElementNode,
         name: &str,
@@ -98,7 +97,7 @@ impl<'a> SsrCodegenContext<'a> {
         None
     }
 
-    pub(super) fn has_dynamic_bind<M: RenderMapMode>(&self, el: &ElementNode, name: &str) -> bool {
+    pub(super) fn has_dynamic_bind(&self, el: &ElementNode, name: &str) -> bool {
         el.props.iter().any(|prop| {
             let PropNode::Directive(dir) = prop else {
                 return false;

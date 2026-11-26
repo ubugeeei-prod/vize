@@ -7,17 +7,17 @@ use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
+use super::super::super::codegen::element::props::{merge_prop_values, quoted_js_string};
 use super::{Emitter, Result, model, plan_source, require_dynamic};
-use crate::codegen::element::props::{merge_prop_values, quoted_js_string};
 use vize_atelier_core::codegen::document::EmitDocument;
 
-use super::spans::{attribute_value_start, directive_value, expression_span};
-use crate::codegen::helpers::escape_html_attr;
-use crate::l4::string_plan::{
+use super::super::super::codegen::helpers::escape_html_attr;
+use super::super::super::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
     SsrStringSegmentKind as Kind,
 };
-use crate::l4::{AdmissionFailure, LegacyReason};
+use super::super::super::l4::{AdmissionFailure, LegacyReason};
+use super::spans::{attribute_value_start, directive_value, expression_span};
 
 pub(super) type Attached<'r, 'a> = [SsrStringSegment<'r, 'a>];
 

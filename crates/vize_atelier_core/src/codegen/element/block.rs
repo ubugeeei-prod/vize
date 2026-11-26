@@ -3,8 +3,6 @@
 //! Generates elements that open a new block scope using `openBlock()` and
 //! `createElementBlock()` / `createBlock()` for efficient patching.
 
-use crate::codegen::RenderMapMode;
-use crate::codegen::component_binding::push_component_binding;
 use crate::steps::v_memo::{get_memo_exp, has_v_memo};
 use crate::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper};
 
@@ -37,10 +35,10 @@ use super::{
 use vize_l0::ToCompactString;
 
 /// Generate element as a block
-pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Check for v-once directive - handle it specially
     if super::helpers::has_v_once(el) {
-        generate_v_once_element::<M>(ctx, el);
+        generate_v_once_element(ctx, el);
         return;
     }
 
@@ -106,16 +104,16 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
                 ctx.push(", {}, () => [");
             }
             ctx.indent();
-            generate_slot_outlet_fallback::<M>(ctx, &el.children);
+            generate_slot_outlet_fallback(ctx, &el.children);
             ctx.deindent();
             ctx.newline();
-            ctx.finish_slot_outlet::<M>("])", true, true);
+            ctx.finish_slot_outlet("])", true, true);
         } else if has_slot_outlet_props(el) {
             ctx.push(", ");
             generate_slot_outlet_props(ctx, el);
-            ctx.finish_slot_outlet::<M>(")", false, true);
+            ctx.finish_slot_outlet(")", false, true);
         } else {
-            ctx.finish_slot_outlet::<M>(")", false, false);
+            ctx.finish_slot_outlet(")", false, false);
         }
 
         // Close withMemo wrapper if v-memo was present (unlikely but safe)
@@ -137,7 +135,7 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
         // Open block wrapper, anchored at the element opening the block.
         ctx.push_mapped("(", el.loc.span.start);
         if !ctx.untracked_children {
-            ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
+            ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
             ctx.push("(), ");
         }
     }
@@ -145,11 +143,11 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
     match el.tag_type {
         ElementType::Element => {
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
-            ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
+            ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
             ctx.push("(\"");
             // Anchor the generated tag name at the authored tag name (the byte
             // after the open tag's `<`). No-op without `source_map`.
-            ctx.push_tag::<M>(el);
+            ctx.push_tag(el);
             ctx.push("\"");
 
             // Calculate patch flag and dynamic props
@@ -180,12 +178,12 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
                 ctx.push(", ");
                 // Custom directives and v-memo require array children with createTextVNode
                 if has_custom_dirs || memo_cache_index.is_some() {
-                    ctx.with_parent_namespace::<M, _>(child_namespace(el), |ctx| {
-                        generate_children_force_array::<M>(ctx, &el.children);
+                    ctx.with_parent_namespace(child_namespace(el), |ctx| {
+                        generate_children_force_array(ctx, &el.children);
                     });
                 } else {
-                    ctx.with_parent_namespace::<M, _>(child_namespace(el), |ctx| {
-                        generate_children::<M>(ctx, &el.children);
+                    ctx.with_parent_namespace(child_namespace(el), |ctx| {
+                        generate_children(ctx, &el.children);
                     });
                 }
             } else if effective_has_patch_info {
@@ -237,10 +235,10 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
         ElementType::Component => {
             if is_memo_component {
                 ctx.use_helper(RuntimeHelper::CreateVNode);
-                ctx.push_vnode_helper::<M>(RuntimeHelper::CreateVNode);
+                ctx.push_vnode_helper(RuntimeHelper::CreateVNode);
             } else {
                 ctx.use_helper(RuntimeHelper::CreateBlock);
-                ctx.push_vnode_helper::<M>(RuntimeHelper::CreateBlock);
+                ctx.push_vnode_helper(RuntimeHelper::CreateBlock);
             }
             ctx.push("(");
 
@@ -290,7 +288,10 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
                 // Check for built-in components (Teleport, KeepAlive, Suspense)
                 ctx.use_helper(builtin);
                 ctx.push(ctx.helper(builtin));
-            } else if push_component_binding::<M>(ctx, el) {
+            } else if render_map_copy!(
+                plain { ctx.push_component_binding_tag(el.tag) }
+                composed { ctx.push_composed_component_binding(el) }
+            ) {
             } else {
                 ctx.push(&to_valid_asset_identifier("component", el.tag));
             }
@@ -338,7 +339,7 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
                 if is_dynamic {
                     ctx.skip_is_prop = true;
                 }
-                ctx.with_component_props::<M, _>(|ctx| generate_props(ctx, &el.props));
+                ctx.with_component_props(|ctx| generate_props(ctx, &el.props));
                 ctx.skip_is_prop = false;
             } else if !el.children.is_empty() || has_patch_info {
                 ctx.push(", null");
@@ -347,7 +348,7 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
             // Generate children/slots - use slot generation for component children
             if has_slot_children(el) {
                 ctx.push(", ");
-                generate_slots::<M>(ctx, el);
+                generate_slots(ctx, el);
             } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
                 // Teleport passes children as an array, not a slot object.
                 // (whitespace-only children are skipped to match Vue's behavior)
@@ -363,7 +364,7 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
                         ctx.push(",");
                     }
                     ctx.newline();
-                    generate_node::<M>(ctx, child);
+                    generate_node(ctx, child);
                 }
                 ctx.deindent();
                 ctx.newline();
@@ -431,26 +432,26 @@ pub fn generate_element_block<M: RenderMapMode>(ctx: &mut CodegenContext, el: &E
                 }
                 ctx.push(", () => [");
                 ctx.indent();
-                generate_slot_outlet_fallback::<M>(ctx, &el.children);
+                generate_slot_outlet_fallback(ctx, &el.children);
                 ctx.deindent();
                 ctx.newline();
-                ctx.finish_slot_outlet::<M>("])", true, true);
+                ctx.finish_slot_outlet("])", true, true);
             } else if has_slot_props {
                 ctx.push(", ");
                 generate_slot_outlet_props(ctx, el);
-                ctx.finish_slot_outlet::<M>(")", false, true);
+                ctx.finish_slot_outlet(")", false, true);
             } else {
-                ctx.finish_slot_outlet::<M>(")", false, false);
+                ctx.finish_slot_outlet(")", false, false);
             }
         }
         ElementType::Template => {
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
             ctx.use_helper(RuntimeHelper::Fragment);
-            ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
+            ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
             ctx.push("(");
             ctx.push(ctx.helper(RuntimeHelper::Fragment));
             ctx.push(", null, ");
-            generate_children::<M>(ctx, &el.children);
+            generate_children(ctx, &el.children);
             ctx.push("))");
         }
     }

@@ -3,7 +3,6 @@
 use super::super::css_vars::RootCssVars;
 use super::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext};
 use vize_atelier_core::TemplateChildNode;
-use vize_atelier_core::codegen::RenderMapMode;
 
 fn template_slot<'n, 'a>(
     child: &'n TemplateChildNode<'a>,
@@ -26,15 +25,11 @@ impl<'a> SsrCodegenContext<'a> {
     /// The SSR renderer has a dedicated helper for Suspense. Rendering it through
     /// `ssrRenderComponent(resolveComponent("Suspense"))` makes Vue attempt a
     /// runtime component lookup and leaves Nuxt root components empty.
-    pub(super) fn process_suspense<M: RenderMapMode>(
-        &mut self,
-        el: &ElementNode<'a>,
-        css_vars: bool,
-    ) {
-        self.flush_push::<M>();
+    pub(super) fn process_suspense(&mut self, el: &ElementNode<'a>, css_vars: bool) {
+        self.flush_push();
         self.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
 
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("_ssrRenderSuspense(_push, {\n");
         self.indent_level += 1;
         if el.children.iter().any(|child| {
@@ -44,19 +39,19 @@ impl<'a> SsrCodegenContext<'a> {
                 Some(_) => true,
             })
         }) {
-            self.process_suspense_template_slots::<M>(el, css_vars);
+            self.process_suspense_template_slots(el, css_vars);
             self.indent_level -= 1;
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("})\n");
             return;
         }
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("default: () => {\n");
         self.indent_level += 1;
 
         let old_parts = std::mem::take(&mut self.current_template_parts);
         // Vapor hydration claims each Suspense slot as one fragment.
-        self.process_children_with_fallthrough_attrs_and_css_vars::<M>(
+        self.process_children_with_fallthrough_attrs_and_css_vars(
             &el.children,
             self.options.vapor,
             false,
@@ -67,24 +62,20 @@ impl<'a> SsrCodegenContext<'a> {
                 template_wrapper: true,
             },
         );
-        self.flush_push::<M>();
+        self.flush_push();
         self.current_template_parts = old_parts;
 
         self.indent_level -= 1;
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("},\n");
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("_: 1\n");
         self.indent_level -= 1;
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("})\n");
     }
 
-    fn process_suspense_template_slots<M: RenderMapMode>(
-        &mut self,
-        el: &ElementNode<'a>,
-        css_vars: bool,
-    ) {
+    fn process_suspense_template_slots(&mut self, el: &ElementNode<'a>, css_vars: bool) {
         let mut implicit = std::vec::Vec::new();
         let mut dynamic = false;
         for child in &el.children {
@@ -95,7 +86,7 @@ impl<'a> SsrCodegenContext<'a> {
             let TemplateChildNode::Element(template) = child else {
                 continue;
             };
-            self.push_indent::<M>();
+            self.push_indent();
             match &slot.arg {
                 Some(ExpressionNode::Simple(arg)) if arg.is_static => {
                     if super::props::is_simple_identifier(arg.content) {
@@ -106,7 +97,7 @@ impl<'a> SsrCodegenContext<'a> {
                             .strip_prefix('"')
                             .and_then(|key| key.strip_suffix('"'))
                             .unwrap_or_default();
-                        self.push_then_mapped::<M>("\"", inner, arg.loc.span.start);
+                        self.push_then_mapped("\"", inner, arg.loc.span.start);
                         self.push("\"");
                     }
                 }
@@ -122,7 +113,7 @@ impl<'a> SsrCodegenContext<'a> {
             self.push(": () => {\n");
             self.indent_level += 1;
             let old_parts = std::mem::take(&mut self.current_template_parts);
-            self.process_children_with_fallthrough_attrs_and_css_vars::<M>(
+            self.process_children_with_fallthrough_attrs_and_css_vars(
                 &template.children,
                 self.options.vapor,
                 false,
@@ -133,20 +124,20 @@ impl<'a> SsrCodegenContext<'a> {
                     template_wrapper: true,
                 },
             );
-            self.flush_push::<M>();
+            self.flush_push();
             self.current_template_parts = old_parts;
             self.indent_level -= 1;
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("},\n");
         }
         super::normalize_implicit_slot_children(&mut implicit);
         if !implicit.is_empty() {
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("default: () => {\n");
             self.indent_level += 1;
             let old_parts = std::mem::take(&mut self.current_template_parts);
             for child in implicit {
-                self.process_child::<M>(
+                self.process_child(
                     child,
                     false,
                     false,
@@ -157,13 +148,13 @@ impl<'a> SsrCodegenContext<'a> {
                     },
                 );
             }
-            self.flush_push::<M>();
+            self.flush_push();
             self.current_template_parts = old_parts;
             self.indent_level -= 1;
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("},\n");
         }
-        self.push_indent::<M>();
+        self.push_indent();
         self.push(if dynamic { "_: 2\n" } else { "_: 1\n" });
     }
 }

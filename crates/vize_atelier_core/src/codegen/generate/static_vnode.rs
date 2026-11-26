@@ -112,7 +112,7 @@ fn build_static_props(el: &ElementNode<'_>) -> Option<String> {
                 buf.push_str(", ");
             }
             emitted += 1;
-            let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(attr.name);
+            let needs_quote = !super::super::helpers::is_valid_js_identifier(attr.name);
             if needs_quote {
                 buf.push('"');
                 buf.push_str(attr.name);

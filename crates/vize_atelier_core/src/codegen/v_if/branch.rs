@@ -3,8 +3,6 @@
 //! Generates code for individual v-if/v-else-if/v-else branches including
 //! component, element, template fragment, and regular fragment rendering.
 
-use crate::codegen::RenderMapMode;
-use crate::codegen::component_binding::push_component_binding;
 use crate::{
     ElementNode, ElementType, ExpressionNode, ForNode, IfBranchNode, PropNode, RuntimeHelper,
     TemplateChildNode,
@@ -39,17 +37,17 @@ use super::{
 };
 
 /// Generate a single if branch.
-pub(super) fn generate_if_branch<M: RenderMapMode>(
+pub(super) fn generate_if_branch(
     ctx: &mut CodegenContext,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
-    super::once::generate_if_branch_content::<M>(ctx, &branch.children, branch, branch_index);
+    super::once::generate_if_branch_content(ctx, &branch.children, branch, branch_index);
 }
 
 /// A branch's nodes: the branch's own children, or the children of the
 /// patterned-template scope that is the branch (see `generate_if_branch_for`).
-pub(super) fn generate_if_branch_nodes<M: RenderMapMode>(
+pub(super) fn generate_if_branch_nodes(
     ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
     branch: &IfBranchNode<'_>,
@@ -67,80 +65,65 @@ pub(super) fn generate_if_branch_nodes<M: RenderMapMode>(
                             TemplateChildNode::Element(inner) => {
                                 // Check if inner element is a component
                                 if inner.tag_type == ElementType::Component {
-                                    generate_if_branch_component::<M>(
-                                        ctx,
-                                        inner,
-                                        branch,
-                                        branch_index,
-                                    );
+                                    generate_if_branch_component(ctx, inner, branch, branch_index);
                                 } else if inner.tag_type == ElementType::Slot {
-                                    generate_if_branch_slot::<M>(ctx, inner, branch, branch_index);
+                                    generate_if_branch_slot(ctx, inner, branch, branch_index);
                                 } else {
-                                    generate_if_branch_element::<M>(
-                                        ctx,
-                                        inner,
-                                        branch,
-                                        branch_index,
-                                    );
+                                    generate_if_branch_element(ctx, inner, branch, branch_index);
                                 }
                                 return;
                             }
                             TemplateChildNode::For(for_node) => {
-                                generate_if_branch_for::<M>(ctx, for_node, branch, branch_index);
+                                generate_if_branch_for(ctx, for_node, branch, branch_index);
                                 return;
                             }
                             _ => {}
                         }
                     }
                     // Template with multiple children -> fragment
-                    generate_if_branch_template_fragment::<M>(
-                        ctx,
-                        &el.children,
-                        branch,
-                        branch_index,
-                    );
+                    generate_if_branch_template_fragment(ctx, &el.children, branch, branch_index);
                 } else if el.tag_type == ElementType::Component {
                     // Component
-                    generate_if_branch_component::<M>(ctx, el, branch, branch_index);
+                    generate_if_branch_component(ctx, el, branch, branch_index);
                 } else if el.tag_type == ElementType::Slot {
-                    generate_if_branch_slot::<M>(ctx, el, branch, branch_index);
+                    generate_if_branch_slot(ctx, el, branch, branch_index);
                 } else {
                     // Regular element
-                    generate_if_branch_element::<M>(ctx, el, branch, branch_index);
+                    generate_if_branch_element(ctx, el, branch, branch_index);
                 }
             }
             _ => {
                 // Other node types - wrap in fragment
                 if let TemplateChildNode::For(for_node) = only {
-                    generate_if_branch_for::<M>(ctx, for_node, branch, branch_index);
+                    generate_if_branch_for(ctx, for_node, branch, branch_index);
                 } else {
-                    generate_if_branch_template_fragment::<M>(ctx, children, branch, branch_index);
+                    generate_if_branch_template_fragment(ctx, children, branch, branch_index);
                 }
             }
         }
     } else {
         // Multiple children - wrap in fragment
-        generate_if_branch_template_fragment::<M>(ctx, children, branch, branch_index);
+        generate_if_branch_template_fragment(ctx, children, branch, branch_index);
     }
 }
 
-fn generate_if_branch_for<M: RenderMapMode>(
+fn generate_if_branch_for(
     ctx: &mut CodegenContext,
     for_node: &ForNode<'_>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
     if for_node.parse_result.match_scope {
-        super::once::generate_scope_branch::<M>(ctx, for_node, branch, branch_index);
+        super::once::generate_scope_branch(ctx, for_node, branch, branch_index);
         return;
     }
-    super::super::v_for::generate_for_with_fragment_key::<M>(ctx, for_node, &|ctx| {
+    super::super::v_for::generate_for_with_fragment_key(ctx, for_node, &|ctx| {
         super::generate_if_branch_key(ctx, branch, branch_index);
     });
 }
 
 /// Generate slot outlet for if branch.
-fn generate_if_branch_slot<M: RenderMapMode>(
+fn generate_if_branch_slot(
     ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     branch: &IfBranchNode<'_>,
@@ -167,14 +150,14 @@ fn generate_if_branch_slot<M: RenderMapMode>(
             if i > 0 {
                 ctx.push(",");
             }
-            generate_node::<M>(ctx, child);
+            generate_node(ctx, child);
         }
     }
-    ctx.finish_slot_outlet::<M>(if has_fallback { "])" } else { ")" }, has_fallback, true);
+    ctx.finish_slot_outlet(if has_fallback { "])" } else { ")" }, has_fallback, true);
 }
 
 /// Generate component for if branch.
-fn generate_if_branch_component<M: RenderMapMode>(
+fn generate_if_branch_component(
     ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     branch: &IfBranchNode<'_>,
@@ -199,10 +182,10 @@ fn generate_if_branch_component<M: RenderMapMode>(
     ctx.use_helper(RuntimeHelper::CreateBlock);
     ctx.push_mapped("(", el.loc.span.start);
     if !ctx.untracked_children {
-        ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
+        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
         ctx.push("(), ");
     }
-    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateBlock);
+    ctx.push_vnode_helper(RuntimeHelper::CreateBlock);
     ctx.push("(");
     // Generate component name
     // Handle dynamic component (<component :is="..."> / <Component :is="...">)
@@ -243,7 +226,10 @@ fn generate_if_branch_component<M: RenderMapMode>(
     } else if let Some(builtin) = is_builtin_component(el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if push_component_binding::<M>(ctx, el) {
+    } else if render_map_copy!(
+        plain { ctx.push_component_binding_tag(el.tag) }
+        composed { ctx.push_composed_component_binding(el) }
+    ) {
     } else {
         ctx.push(&to_valid_asset_identifier("component", el.tag));
     }
@@ -268,7 +254,7 @@ fn generate_if_branch_component<M: RenderMapMode>(
     let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
 
     ctx.push(", ");
-    ctx.with_component_props::<M, _>(|ctx| {
+    ctx.with_component_props(|ctx| {
         generate_if_branch_props(ctx, el, branch, branch_index, is_dynamic);
     });
 
@@ -277,7 +263,7 @@ fn generate_if_branch_component<M: RenderMapMode>(
     // Generate children/slots for v-if branch component (same pattern as element.rs)
     if has_slot_children(el) {
         ctx.push(", ");
-        generate_slots::<M>(ctx, el);
+        generate_slots(ctx, el);
     } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
         // Teleport passes children as an array, not a slot object.
         ctx.push(", [");
@@ -290,7 +276,7 @@ fn generate_if_branch_component<M: RenderMapMode>(
             if i > 0 {
                 ctx.push(",");
             }
-            generate_node::<M>(ctx, child);
+            generate_node(ctx, child);
         }
         ctx.push("]");
     } else if has_patch_info {
@@ -330,7 +316,7 @@ fn generate_if_branch_component<M: RenderMapMode>(
 }
 
 /// Generate element for if branch.
-fn generate_if_branch_element<M: RenderMapMode>(
+fn generate_if_branch_element(
     ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     branch: &IfBranchNode<'_>,
@@ -362,12 +348,12 @@ fn generate_if_branch_element<M: RenderMapMode>(
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.push_mapped("(", el.loc.span.start);
     if !ctx.untracked_children {
-        ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
+        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
         ctx.push("(), ");
     }
-    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
+    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
     ctx.push("(\"");
-    ctx.push_tag::<M>(el);
+    ctx.push_tag(el);
     ctx.push("\"");
 
     ctx.push(", ");
@@ -381,8 +367,8 @@ fn generate_if_branch_element<M: RenderMapMode>(
             ctx.push_text(text);
             ctx.push("\"");
         } else {
-            ctx.with_parent_namespace::<M, _>(child_namespace(el), |ctx| {
-                generate_if_branch_children::<M>(ctx, &el.children);
+            ctx.with_parent_namespace(child_namespace(el), |ctx| {
+                generate_if_branch_children(ctx, &el.children);
             });
         }
     } else if has_patch_info {
@@ -425,7 +411,7 @@ fn generate_if_branch_element<M: RenderMapMode>(
 }
 
 /// Generate a keyed fragment for an if branch with several children.
-fn generate_if_branch_template_fragment<M: RenderMapMode>(
+fn generate_if_branch_template_fragment(
     ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
     branch: &IfBranchNode<'_>,
@@ -435,24 +421,21 @@ fn generate_if_branch_template_fragment<M: RenderMapMode>(
     ctx.use_helper(RuntimeHelper::Fragment);
     ctx.push_mapped("(", branch.loc.span.start);
     if !ctx.untracked_children {
-        ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
+        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
         ctx.push("(), ");
     }
-    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
+    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
     ctx.push("(");
     ctx.push(ctx.helper(RuntimeHelper::Fragment));
     ctx.push(", { key: ");
     generate_if_branch_key(ctx, branch, branch_index);
     ctx.push(" }, ");
-    generate_children_force_array::<M>(ctx, children);
+    generate_children_force_array(ctx, children);
     ctx.push(", 64 /* STABLE_FRAGMENT */))");
 }
 
 /// Generate children for if branch element.
-fn generate_if_branch_children<M: RenderMapMode>(
-    ctx: &mut CodegenContext,
-    children: &[TemplateChildNode<'_>],
-) {
+fn generate_if_branch_children(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
     if children.is_empty() {
         return;
     }
@@ -486,6 +469,6 @@ fn generate_if_branch_children<M: RenderMapMode>(
     } else {
         // Mixed children in block-optimized branches must emit text as createTextVNode,
         // otherwise Vue skips child normalization and raw strings become invalid VNodes.
-        generate_children_force_array::<M>(ctx, children);
+        generate_children_force_array(ctx, children);
     }
 }

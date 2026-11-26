@@ -2,14 +2,10 @@ use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::{
         CodegenResult, CodegenResultWithSections,
-        generate_composed_with_sections_slot_scope_and_environment,
         generate_with_sections_and_experimental_options_slot_scope_and_environment,
-        locate_for_aliases,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
-    options::{
-        CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
-    },
+    options::TemplateSyntaxMode,
     parser::parse_with_options_custom_elements_and_template_syntax,
     walk_probe::WalkCounts,
 };
@@ -35,10 +31,9 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         codegen_experimental_options,
         l2_emit_selection,
         no_slotted,
-        sfc_assembly,
+        strict_slot_params,
         development,
     } = pipeline_options;
-    let (strict_slot_params, additive_source_map) = (sfc_assembly, sfc_assembly);
     let parser_opts = stage_options::parser_options(&options);
 
     let (mut root, errors) = profile!(
@@ -130,53 +125,9 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         selection::record(Err(DomLegacyReason::EmitRefused));
     } else if let Some(reason) = l2_refusal {
         selection::record(Err(reason));
-    } else if additive_source_map {
-        // Only a mapped compile whose L2 emit is not refused reaches this arm:
-        // the two above take every compile without a map. The map is composed
-        // into a module it must not change, so this makes the plain compile's
-        // L2 attempt and keeps its module and its diagnostics. The shipped
-        // transform and the compatibility generator then run only to supply
-        // the map.
-        if let Some(native) = stage_options::try_emit_l2_captured(
-            allocator,
-            source,
-            template_syntax,
-            &options,
-            &codegen_opts,
-            &l2_custom_elements,
-            hoisted_scope_id.as_deref(),
-            codegen_experimental_options.component_name.as_deref(),
-            None,
-            strict_slot_params,
-            no_slotted,
-            development,
-            capture,
-        ) {
-            selection::record(Ok(()));
-            capture.finish(|| CaptureOutcome::Accepted);
-            let mapped = additive_map(
-                allocator,
-                &mut root,
-                source,
-                options,
-                AdditiveMapInputs {
-                    custom_elements,
-                    template_syntax_quirks,
-                    hoisted_scope_id,
-                    codegen_opts,
-                    codegen_experimental_options,
-                    no_slotted,
-                    development,
-                },
-                native,
-            );
-            return (root, errors.to_vec(), mapped);
-        }
-        selection::record(Err(DomLegacyReason::EmitRefused));
     }
 
-    // An additive mapped compile attempted L2 above, as a plain compile does.
-    let l2_emit_after_transform = (use_l2_emit && codegen_opts.source_map && !additive_source_map)
+    let l2_emit_after_transform = (use_l2_emit && codegen_opts.source_map)
         .then(|| (options.clone(), hoisted_scope_id.clone()));
     let experimental_component_name = codegen_experimental_options.component_name.clone();
     let transform_opts = stage_options::transform_options(&options);
@@ -205,9 +156,6 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     // both through the same `errors` channel.
     let mut errors = errors.to_vec();
     errors.extend(transform_errors);
-    if codegen_opts.source_map {
-        locate_for_aliases(&mut root, source);
-    }
 
     let l2_emit = l2_emit_after_transform.and_then(|(options, hoisted_scope_id)| {
         stage_options::try_emit_l2_captured(
@@ -237,8 +185,7 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         )
         .finish(capture),
         None => {
-            // An additive compile recorded its refusal before the transform.
-            if use_l2_emit && codegen_opts.source_map && !additive_source_map {
+            if use_l2_emit && codegen_opts.source_map {
                 selection::record(Err(DomLegacyReason::EmitRefused));
             }
             capture.finish(|| {
@@ -246,15 +193,9 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
                     l2_refusal.unwrap_or(DomLegacyReason::EmitRefused).id(),
                 ))
             });
-            let generate = if sfc_assembly && codegen_opts.source_map {
-                // The SFC assembly composes this map into the component's.
-                generate_composed_with_sections_slot_scope_and_environment
-            } else {
-                generate_with_sections_and_experimental_options_slot_scope_and_environment
-            };
             profile!(
                 "atelier.dom.template.codegen_compat",
-                generate(
+                generate_with_sections_and_experimental_options_slot_scope_and_environment(
                     &root,
                     codegen_opts,
                     codegen_experimental_options,
@@ -266,59 +207,4 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
     };
 
     (root, errors, codegen_result)
-}
-
-/// What the compatibility generator needs to map an accepted L2 module.
-struct AdditiveMapInputs {
-    custom_elements: CustomElementMatcher,
-    template_syntax_quirks: bool,
-    hoisted_scope_id: Option<String>,
-    codegen_opts: CodegenOptions,
-    codegen_experimental_options: CodegenExperimentalOptions,
-    no_slotted: bool,
-    development: bool,
-}
-
-/// The map of an additive compile whose L2 module `native` was accepted: the
-/// shipped transform and the compatibility generator run only to supply it.
-/// It is out of line, so every capture sink shares one copy and a compile
-/// without a map does not carry it.
-#[cold]
-#[inline(never)]
-fn additive_map<'a>(
-    allocator: &'a Allocator,
-    root: &mut RootNode<'a>,
-    source: &'a str,
-    options: DomCompilerOptions,
-    inputs: AdditiveMapInputs,
-    native: CodegenResultWithSections,
-) -> CodegenResultWithSections {
-    let transform_opts = stage_options::transform_options(&options);
-    let script_tables = options
-        .script_tables
-        .map(|tables| allocator.alloc_owned(tables));
-    profile!(
-        "atelier.dom.template.transform",
-        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
-            allocator,
-            root,
-            transform_opts,
-            script_tables,
-            inputs.custom_elements,
-            inputs.template_syntax_quirks,
-            inputs.hoisted_scope_id,
-        )
-    );
-    locate_for_aliases(root, source);
-    let compat = profile!(
-        "atelier.dom.template.codegen_sourcemap_compat",
-        generate_composed_with_sections_slot_scope_and_environment(
-            root,
-            inputs.codegen_opts,
-            inputs.codegen_experimental_options,
-            inputs.no_slotted,
-            inputs.development,
-        )
-    );
-    source_map::with_verified_map(native, compat)
 }

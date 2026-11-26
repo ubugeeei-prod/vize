@@ -11,7 +11,25 @@
 //! `vize_atelier_core` provides the foundational infrastructure
 //! that all other Vize compilers build upon.
 
+/// The plain copy's `plain` tokens; the composed copy redefines this macro
+/// to keep its `composed` tokens instead.
+macro_rules! render_map_copy {
+    (plain { $($plain:tt)* } composed { $($composed:tt)* }) => {
+        $($plain)*
+    };
+}
+/// VDOM code generation.
+///
+/// This module generates JavaScript render function code from the transformed AST.
 pub mod codegen;
+/// [`codegen`] compiled again for the render map the SFC assembly composes
+/// into the component's: the same module, recording the composed map. The
+/// crate's own tests drive the plain copy, so they leave the copy out.
+#[cfg(not(test))]
+#[doc(hidden)]
+#[path = "codegen/composed.rs"]
+#[allow(dead_code, unused_imports, unreachable_pub)]
+pub mod composed_codegen;
 pub mod runtime_helpers;
 #[macro_use]
 pub mod test_macros;

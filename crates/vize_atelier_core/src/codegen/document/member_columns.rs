@@ -7,7 +7,8 @@ use vize_l0::{Span, String};
 impl EmitDocument {
     /// Serialize the render map the SFC assembly composes into a Vue file:
     /// [`Self::source_map`] plus the static properties of expressions whose
-    /// complete rewrite we can verify.
+    /// complete rewrite we can verify. Only the composed copy calls this.
+    #[doc(hidden)]
     pub fn composed_source_map(&self, filename: &str, source: &str) -> String {
         let mut builder = SourceMapBuilder::new();
         self.write_segments(&mut builder);
@@ -117,8 +118,8 @@ fn member_name(part: &str) -> &str {
 
 #[cfg(test)]
 mod tests {
+    use super::super::super::rewrite_spans::rewritten_identifier_spans;
     use super::{EmitDocument, visit_static_member_spans};
-    use crate::codegen::rewrite_spans::rewritten_identifier_spans;
     use vize_l0::Span;
 
     fn verified(authored: &str, emitted: &str) -> bool {

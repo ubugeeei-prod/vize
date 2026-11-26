@@ -1,8 +1,3 @@
-//! SSR code generation.
-//!
-//! SSR code generation produces JavaScript that uses template literals and `_push()` calls
-//! to build HTML strings on the server side.
-
 mod children;
 mod component_binding;
 mod component_resolution;
@@ -14,20 +9,9 @@ pub(crate) mod scope_prefix;
 mod spans;
 
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
-use vize_atelier_core::codegen::{PlainRenderMap, RenderMapMode};
+pub use crate::shared::{SsrCodegenResult, SsrSfcContext};
 use vize_atelier_core::{RootNode, RuntimeHelper, codegen::document::EmitDocument};
 use vize_l0::{Allocator, FxHashSet, SmallVec, String};
-
-/// SSR codegen result
-#[derive(Debug, Default)]
-pub struct SsrCodegenResult {
-    /// Generated render function code
-    pub code: String,
-    /// Import preamble
-    pub preamble: String,
-    /// Source Map v3 JSON for the generated render code.
-    pub map: Option<String>,
-}
 
 /// A part of a template literal, carrying the authored spans it copies.
 #[derive(Debug)]
@@ -36,45 +20,6 @@ pub(crate) enum TemplatePart {
     Static(EmitDocument),
     /// Dynamic expression
     Dynamic(EmitDocument),
-}
-
-/// Host-owned SFC metadata, separate from user compiler options. Existing
-/// direct-template entry points retain their production helper spelling.
-#[doc(hidden)]
-#[derive(Clone, Copy)]
-pub struct SsrSfcContext {
-    pub(crate) slotted: bool,
-    pub(crate) development: bool,
-    pub(crate) jsx_closure: bool,
-}
-
-impl SsrSfcContext {
-    /// Preserve direct-template production metadata with explicit scope ownership.
-    #[must_use]
-    pub const fn new(slotted: bool) -> Self {
-        Self {
-            slotted,
-            development: false,
-            jsx_closure: false,
-        }
-    }
-
-    /// A JSX component owns lexical bindings directly, rather than the SFC
-    /// `$setup` object. This host role does not alter template defaults.
-    #[must_use]
-    pub const fn with_jsx_closure(mut self) -> Self {
-        self.jsx_closure = true;
-        self
-    }
-
-    /// The adapter's explicit development target; never read the environment
-    /// from an emitter or infer it from comment preservation.
-    /// This target is independent of upstream JavaScript module-load mode.
-    #[must_use]
-    pub const fn with_development(mut self, development: bool) -> Self {
-        self.development = development;
-        self
-    }
 }
 
 /// SSR codegen context
@@ -170,7 +115,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
     }
 
-    pub(crate) fn set_runtime_module_name<M: RenderMapMode>(&mut self, runtime_module_name: &str) {
+    pub(crate) fn set_runtime_module_name(&mut self, runtime_module_name: &str) {
         self.runtime_module_name = String::from(runtime_module_name);
     }
 
@@ -196,15 +141,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Generate SSR code from the AST
-    pub fn generate(self, root: &RootNode<'a>) -> SsrCodegenResult {
-        self.generate_in_mode::<PlainRenderMap>(root)
-    }
-
-    /// [`Self::generate`], recording the map of mode `M`.
-    pub(crate) fn generate_in_mode<M: RenderMapMode>(
-        mut self,
-        root: &RootNode<'a>,
-    ) -> SsrCodegenResult {
+    pub fn generate(mut self, root: &RootNode<'a>) -> SsrCodegenResult {
         vize_atelier_core::walk_probe::record_walk(
             vize_atelier_core::walk_probe::WalkStage::SsrCodegen,
         );
@@ -215,17 +152,17 @@ impl<'a> SsrCodegenContext<'a> {
             self.use_core_helper(RuntimeHelper::Unref);
         }
 
-        let is_fragment = css_vars::root_is_fragment::<M>(&root.children);
+        let is_fragment = css_vars::root_is_fragment(&root.children);
 
-        self.begin_render::<M>(root.loc.span.start);
-        self.process_root_children::<M>(&root.children, is_fragment, false, false);
-        self.finish_render::<M>()
+        self.begin_render(root.loc.span.start);
+        self.process_root_children(&root.children, is_fragment, false, false);
+        self.finish_render()
     }
 
     /// Open `ssrRender`: the signature and the CSS-variable prelude. Shared
     /// by the legacy walker and the L4 string-plan emitter. The signature is
     /// anchored at `template_start`, the template section's authored start.
-    pub(crate) fn begin_render<M: RenderMapMode>(&mut self, template_start: u32) {
+    pub(crate) fn begin_render(&mut self, template_start: u32) {
         self.push_mapped(
             "function ssrRender(_ctx, _push, _parent, _attrs",
             template_start,
@@ -237,34 +174,37 @@ impl<'a> SsrCodegenContext<'a> {
         self.indent_level += 1;
 
         if let Some(css_vars) = &self.options.ssr_css_vars {
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("const _cssVars = { style: ");
             self.push(css_vars);
             self.push(" }\n");
             self.use_core_helper(RuntimeHelper::MergeProps);
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("_attrs = _mergeProps(_attrs, _cssVars)\n");
         }
-        self.mark_body_start::<M>();
+        self.mark_body_start();
     }
 
     /// Close `ssrRender` and assemble the module parts.
-    pub(crate) fn finish_render<M: RenderMapMode>(mut self) -> SsrCodegenResult {
-        self.flush_push::<M>();
+    pub(crate) fn finish_render(mut self) -> SsrCodegenResult {
+        self.flush_push();
         self.indent_level -= 1;
         self.push("}\n");
-        self.declare_temps::<M>();
+        self.declare_temps();
 
-        let preamble = self.build_preamble::<M>();
+        let preamble = self.build_preamble();
 
         let map = self.out.is_recording().then(|| {
-            if M::COMPOSED {
-                self.out
-                    .composed_source_map(self.source_map_filename.as_str(), self.source)
-            } else {
-                self.out
-                    .source_map(self.source_map_filename.as_str(), self.source)
-            }
+            sfc_map_copy!(
+                plain {
+                    self.out
+                        .source_map(self.source_map_filename.as_str(), self.source)
+                }
+                composed {
+                    self.out
+                        .composed_source_map(self.source_map_filename.as_str(), self.source)
+                }
+            )
         });
         let code = self.out.into_string();
 
@@ -301,7 +241,7 @@ impl<'a> SsrCodegenContext<'a> {
     /// only a handful of static/dynamic pieces. Taking the buffer here lets the
     /// context reuse the allocation for subsequent chunks while writing directly
     /// into the final byte buffer.
-    pub(crate) fn flush_push<M: RenderMapMode>(&mut self) {
+    pub(crate) fn flush_push(&mut self) {
         if self.current_template_parts.is_empty() {
             return;
         }
@@ -309,13 +249,13 @@ impl<'a> SsrCodegenContext<'a> {
         // Take ownership of parts to avoid borrow issues
         let parts = std::mem::take(&mut self.current_template_parts);
 
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("_push(`");
 
         for part in &parts {
             match part {
                 TemplatePart::Static(s) => {
-                    self.push_template_static::<M>(s);
+                    self.push_template_static(s);
                 }
                 TemplatePart::Dynamic(expr) => {
                     self.push("${");
@@ -356,7 +296,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Push indentation
-    pub(crate) fn push_indent<M: RenderMapMode>(&mut self) {
+    pub(crate) fn push_indent(&mut self) {
         for _ in 0..self.indent_level {
             self.out.push_str("  ");
         }

@@ -4,7 +4,6 @@ use super::{
     Allocator, CompilerError, CustomElementMatcher, RootNode, SsrCodegenResult,
     SsrCompilerExperimentalOptions, SsrCompilerOptions, TemplateSyntaxMode, compile_ssr_inner,
 };
-use vize_atelier_core::codegen::PlainRenderMap;
 
 /// Compile a Vue template for SSR with default options
 pub fn compile_ssr<'a>(
@@ -20,7 +19,7 @@ pub fn compile_ssr_with_options<'a>(
     source: &'a str,
     options: SsrCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner::<PlainRenderMap>(
+    compile_ssr_inner(
         allocator,
         source,
         options,
@@ -38,7 +37,7 @@ pub fn compile_ssr_with_vue_parser_quirks<'a>(
     source: &'a str,
     options: SsrCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner::<PlainRenderMap>(
+    compile_ssr_inner(
         allocator,
         source,
         options,
@@ -57,7 +56,7 @@ pub fn compile_ssr_with_template_syntax<'a>(
     options: SsrCompilerOptions,
     template_syntax: TemplateSyntaxMode,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner::<PlainRenderMap>(
+    compile_ssr_inner(
         allocator,
         source,
         options,

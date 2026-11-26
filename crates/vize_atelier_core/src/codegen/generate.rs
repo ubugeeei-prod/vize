@@ -6,7 +6,6 @@
 mod collect_helpers;
 mod static_vnode;
 
-use crate::codegen::RenderMapMode;
 use crate::{
     DynamicProps, ExpressionNode, JsChildNode, PropsExpression, RootNode, RuntimeHelper,
     TemplateChildNode, TemplateTextChildNode, VNodeCall, VNodeChildren, VNodeTag,
@@ -21,10 +20,7 @@ use vize_l0::ToCompactString;
 use vize_l0::ensure_sufficient_stack;
 
 /// Generate hoisted variable declarations.
-pub(super) fn generate_hoists<M: RenderMapMode>(
-    ctx: &CodegenContext,
-    root: &RootNode<'_>,
-) -> String {
+pub(super) fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> String {
     let mut hoists_code = String::default();
 
     for (i, hoist) in root.hoists.iter().enumerate() {
@@ -81,7 +77,7 @@ fn generate_js_child_node_to_bytes_guarded(
                 match &prop.key {
                     ExpressionNode::Simple(exp) => {
                         let key = &exp.content;
-                        let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
+                        let needs_quote = !super::helpers::is_valid_js_identifier(key);
                         if needs_quote {
                             out.push('"');
                             out.push_str(key);
@@ -217,7 +213,7 @@ fn generate_props_expression_to_bytes(
                 match &prop.key {
                     ExpressionNode::Simple(exp) => {
                         let key = &exp.content;
-                        let needs_quote = !crate::codegen::helpers::is_valid_js_identifier(key);
+                        let needs_quote = !super::helpers::is_valid_js_identifier(key);
                         if needs_quote {
                             out.push('"');
                             out.push_str(key);

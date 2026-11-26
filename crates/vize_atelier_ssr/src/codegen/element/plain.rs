@@ -5,18 +5,12 @@ use super::{
     ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     ToCompactString, cstr, escape_html_attr,
 };
-use vize_atelier_core::codegen::RenderMapMode;
 
 mod input_model;
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a plain HTML element
-    pub(super) fn process_plain_element<M: RenderMapMode>(
-        &mut self,
-        el: &ElementNode<'a>,
-        attrs: bool,
-        css: bool,
-    ) {
+    pub(super) fn process_plain_element(&mut self, el: &ElementNode<'a>, attrs: bool, css: bool) {
         let tag = &el.tag;
 
         // Start tag
@@ -26,13 +20,13 @@ impl<'a> SsrCodegenContext<'a> {
         // Process attributes: one merged props object (Vue's `needMergeProps`)
         // or the inline attribute parts.
         let mut owned_content = None;
-        if attrs || css || super::merged::needs_merged_props::<M>(el) {
-            if let Some(merged) = self.merged_element_attrs::<M>(el, attrs, css) {
+        if attrs || css || super::merged::needs_merged_props(el) {
+            if let Some(merged) = self.merged_element_attrs(el, attrs, css) {
                 self.push_string_part_dynamic_spanned(merged.attrs);
                 owned_content = merged.content;
             }
         } else {
-            self.process_element_attrs::<M>(el);
+            self.process_element_attrs(el);
         }
 
         // Scope ID
@@ -96,10 +90,10 @@ impl<'a> SsrCodegenContext<'a> {
             //       ? " selected" : ""}`. (#962)
             let exp = self.expression_to_string(exp);
             self.select_v_model_stack.push(exp);
-            self.process_children::<M>(&el.children, false, false, false);
+            self.process_children(&el.children, false, false, false);
             self.select_v_model_stack.pop();
         } else {
-            self.process_children::<M>(&el.children, false, false, false);
+            self.process_children(&el.children, false, false, false);
         }
 
         // End tag
@@ -109,11 +103,11 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Process element attributes
-    fn process_element_attrs<M: RenderMapMode>(&mut self, el: &ElementNode) {
+    fn process_element_attrs(&mut self, el: &ElementNode) {
         use vize_atelier_core::PropNode;
 
-        let has_dynamic_class = self.has_dynamic_bind::<M>(el, "class");
-        let has_dynamic_style = self.has_dynamic_bind::<M>(el, "style");
+        let has_dynamic_class = self.has_dynamic_bind(el, "class");
+        let has_dynamic_style = self.has_dynamic_bind(el, "style");
         let has_v_show = crate::get_v_show_exp(el).is_some();
 
         for prop in &el.props {
@@ -132,7 +126,7 @@ impl<'a> SsrCodegenContext<'a> {
                         continue;
                     }
                     if attr.name == "style" && has_v_show {
-                        self.process_static_style_attr_with_v_show::<M>(el, attr);
+                        self.process_static_style_attr_with_v_show(el, attr);
                         continue;
                     }
                     self.push_string_part_static(" ");
@@ -145,30 +139,30 @@ impl<'a> SsrCodegenContext<'a> {
                     }
                 }
                 PropNode::Directive(dir) => {
-                    self.process_directive_on_element::<M>(el, dir);
+                    self.process_directive_on_element(el, dir);
                 }
             }
         }
     }
 
     /// Process a directive on an element
-    fn process_directive_on_element<M: RenderMapMode>(
+    fn process_directive_on_element(
         &mut self,
         el: &ElementNode,
         dir: &vize_atelier_core::DirectiveNode,
     ) {
         match dir.name {
             "bind" => {
-                self.process_v_bind_on_element::<M>(el, dir);
+                self.process_v_bind_on_element(el, dir);
             }
             "on" => {
                 // Event handlers are ignored in SSR
             }
             "model" => {
-                self.process_v_model_on_element::<M>(el, dir);
+                self.process_v_model_on_element(el, dir);
             }
             "show" => {
-                self.process_v_show_on_element::<M>(el, dir);
+                self.process_v_show_on_element(el, dir);
             }
             "html" => {
                 // v-html is processed when generating children
@@ -183,7 +177,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Process v-bind directive
-    fn process_v_bind_on_element<M: RenderMapMode>(
+    fn process_v_bind_on_element(
         &mut self,
         el: &ElementNode,
         dir: &vize_atelier_core::DirectiveNode,
@@ -230,7 +224,7 @@ impl<'a> SsrCodegenContext<'a> {
                     style_values.push(quoted_js_string(&static_style));
                 }
                 style_values.push(exp);
-                if let Some(v_show_style) = self.v_show_style_expression::<M>(el) {
+                if let Some(v_show_style) = self.v_show_style_expression(el) {
                     style_values.push(v_show_style);
                 }
                 let style_exp = merge_prop_values(style_values);
@@ -246,7 +240,7 @@ impl<'a> SsrCodegenContext<'a> {
             }
             Some(name) => {
                 self.use_ssr_helper(RuntimeHelper::SsrRenderAttr);
-                self.push_bound_attr_part::<M>(name, dir, &exp);
+                self.push_bound_attr_part(name, dir, &exp);
             }
             None => {
                 // v-bind without argument - spread attributes
@@ -257,7 +251,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Process v-model directive
-    fn process_v_model_on_element<M: RenderMapMode>(
+    fn process_v_model_on_element(
         &mut self,
         el: &ElementNode,
         dir: &vize_atelier_core::DirectiveNode,
@@ -327,12 +321,12 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Process v-show directive
-    fn process_v_show_on_element<M: RenderMapMode>(
+    fn process_v_show_on_element(
         &mut self,
         el: &ElementNode,
         dir: &vize_atelier_core::DirectiveNode,
     ) {
-        if self.has_explicit_style_prop::<M>(el) {
+        if self.has_explicit_style_prop(el) {
             return;
         }
 
@@ -347,12 +341,12 @@ impl<'a> SsrCodegenContext<'a> {
         ));
     }
 
-    fn process_static_style_attr_with_v_show<M: RenderMapMode>(
+    fn process_static_style_attr_with_v_show(
         &mut self,
         el: &ElementNode,
         attr: &vize_atelier_core::AttributeNode,
     ) {
-        let Some(v_show_style) = self.v_show_style_expression::<M>(el) else {
+        let Some(v_show_style) = self.v_show_style_expression(el) else {
             return;
         };
 
@@ -369,12 +363,12 @@ impl<'a> SsrCodegenContext<'a> {
         self.push_string_part_static("\"");
     }
 
-    fn v_show_style_expression<M: RenderMapMode>(&mut self, el: &ElementNode) -> Option<String> {
+    fn v_show_style_expression(&mut self, el: &ElementNode) -> Option<String> {
         let exp = crate::get_v_show_exp(el).map(|exp| self.expression_to_string(exp))?;
         Some(cstr!("(({exp}) ? null : {{ display: \"none\" }})"))
     }
 
-    fn has_explicit_style_prop<M: RenderMapMode>(&self, el: &ElementNode) -> bool {
+    fn has_explicit_style_prop(&self, el: &ElementNode) -> bool {
         el.props
             .iter()
             .any(|prop| is_static_named_prop(prop, "style"))

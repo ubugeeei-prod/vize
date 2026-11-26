@@ -1,21 +1,20 @@
 //! `<slot>` outlets: `_ssrRenderSlot(_ctx.$slots, name, props, fallback, ...)`.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
-use super::attrs::{Attached, admit_value};
-use super::{Emitter, Flags, Result, plan_source, require_dynamic};
-use crate::codegen::element::props::{
+use super::super::super::codegen::element::props::{
     component_prop_entry, component_props_object, normalize_prop_entries, quoted_js_string,
 };
-use crate::l4::string_plan::{
+use super::super::super::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
     SsrStringSegmentKind as Kind,
 };
-use crate::l4::{AdmissionFailure, LegacyReason};
+use super::super::super::l4::{AdmissionFailure, LegacyReason};
+use super::attrs::{Attached, admit_value};
+use super::{Emitter, Flags, Result, plan_source, require_dynamic};
 
 /// Outlet attachments the plan emitter owns: static props and `v-bind`.
 /// Every other directive renders nothing on an outlet, matching the legacy
@@ -66,7 +65,7 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
 }
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
-    pub(super) fn slot_outlet<M: RenderMapMode>(
+    pub(super) fn slot_outlet(
         &mut self,
         open: SsrStringSegment<'r, 'a>,
         slot: &'r l2::SlotOp<'a>,
@@ -79,9 +78,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
         let name = self.outlet_name(slot)?;
         let props = self.slot_props(attached)?;
-        self.ctx.flush_push::<M>();
+        self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSlot);
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("_ssrRenderSlot(_ctx.$slots, ");
         self.ctx.push(&name);
         self.ctx.push(", ");
@@ -93,22 +92,22 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.ctx.push("() => {\n");
             self.ctx.indent_level += 1;
             let saved = core::mem::take(&mut self.ctx.current_template_parts);
-            let fallback = self.children::<M>(Flags {
+            let fallback = self.children(Flags {
                 as_fragment: false,
                 disable_nested_fragments: false,
                 disable_comments: false,
                 inherit_attrs: false,
                 css_vars: false,
             });
-            self.ctx.flush_push::<M>();
+            self.ctx.flush_push();
             self.ctx.current_template_parts = saved;
             fallback?;
             self.ctx.indent_level -= 1;
-            self.ctx.push_indent::<M>();
+            self.ctx.push_indent();
             self.ctx.push("}");
         }
         self.ctx.push(", _push, _parent");
-        self.ctx.push_slot_scope_id::<M>();
+        self.ctx.push_slot_scope_id();
         self.ctx.push(")\n");
         self.close(
             Kind::CloseSlot,

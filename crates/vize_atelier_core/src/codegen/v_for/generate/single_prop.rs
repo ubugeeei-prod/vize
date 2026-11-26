@@ -1,13 +1,13 @@
 //! One v-for item attribute or directive, preserving its existing emission order.
 
+use super::super::super::{context::CodegenContext, helpers::escape_js_string};
 use crate::PropNode;
-use crate::codegen::{context::CodegenContext, helpers::escape_js_string};
 
 /// Generate a single prop (attribute or directive)
-pub(in crate::codegen::v_for) fn generate_single_prop(
+pub(in super::super::super::v_for) fn generate_single_prop(
     ctx: &mut CodegenContext,
     prop: &PropNode<'_>,
-    static_merge: crate::codegen::props::StaticMerge<'_>,
+    static_merge: super::super::super::props::StaticMerge<'_>,
 ) {
     match prop {
         PropNode::Attribute(attr) => {
@@ -47,7 +47,7 @@ pub(in crate::codegen::v_for) fn generate_single_prop(
             if needs_ref_for {
                 ctx.push("ref_for: true, ");
             }
-            let needs_quotes = !crate::codegen::helpers::is_valid_js_identifier(attr.name);
+            let needs_quotes = !super::super::super::helpers::is_valid_js_identifier(attr.name);
             if needs_quotes {
                 ctx.push("\"");
             }
@@ -69,7 +69,7 @@ pub(in crate::codegen::v_for) fn generate_single_prop(
             }
         }
         PropNode::Directive(dir) => {
-            crate::codegen::props::generate_directive_prop_with_static(ctx, dir, static_merge);
+            super::super::super::props::generate_directive_prop_with_static(ctx, dir, static_merge);
         }
     }
 }

@@ -3,17 +3,16 @@
 //! `<select v-model>`), and the end tag.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::cstr;
 use vize_l2::op as l2;
 use vize_l4::targets::dom::artifact::TransformContent;
 
-use super::{Emitter, Flags, Result, attrs, merged, model, plan_source};
-use crate::l4::LegacyReason;
-use crate::l4::string_plan::{
+use super::super::super::l4::LegacyReason;
+use super::super::super::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
     SsrStringSegmentKind as Kind,
 };
+use super::{Emitter, Flags, Result, attrs, merged, model, plan_source};
 
 /// Elements whose content model or runtime helpers are outside the plan
 /// emitter: script/style raw text and the outlet / dynamic component tags.
@@ -35,7 +34,7 @@ enum Content<'r, 'a> {
 }
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
-    pub(super) fn element<M: RenderMapMode>(
+    pub(super) fn element(
         &mut self,
         open: SsrStringSegment<'r, 'a>,
         element: &'r l2::ElementOp<'a>,
@@ -66,7 +65,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.pos += 1;
             let _attached =
                 self.take_attached(element.attributes.len() + element.bindings.len())?;
-            self.children::<M>(Flags {
+            self.children(Flags {
                 as_fragment: false,
                 disable_nested_fragments,
                 disable_comments: false,
@@ -84,13 +83,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let content = content(attached, tag);
 
         self.ctx.push_string_part_static("<");
-        self.ctx.push_string_part_static_mapped(
-            tag,
-            open_tag_anchor::<M>(self.ctx.source, element, tag),
-        );
+        self.ctx
+            .push_string_part_static_mapped(tag, open_tag_anchor(self.ctx.source, element, tag));
         let mut owned_content = None;
-        if inherit || css_vars || merged::needs_merged::<M>(attached) {
-            if let Some(merged) = self.merged_attrs::<M>(attached, tag, inherit, css_vars)? {
+        if inherit || css_vars || merged::needs_merged(attached) {
+            if let Some(merged) = self.merged_attrs(attached, tag, inherit, css_vars)? {
                 self.ctx.push_string_part_dynamic_spanned(merged.attrs);
                 owned_content = merged.content;
             }
@@ -103,7 +100,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.ctx.push_string_part_static(scope_id);
         }
         if tag == "option" {
-            model::emit_option_selected::<M>(self, attached)?;
+            model::emit_option_selected(self, attached)?;
         }
         self.ctx.push_string_part_static(">");
 
@@ -114,9 +111,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
         } else if let Some(owned) = owned_content {
             self.ctx.push_string_part_dynamic(&owned);
-            self.skip_children::<M>()?;
+            self.skip_children()?;
         } else {
-            self.content::<M>(content)?;
+            self.content(content)?;
         }
         self.close(
             Kind::CloseElement,
@@ -130,7 +127,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         Ok(())
     }
 
-    fn content<M: RenderMapMode>(&mut self, content: Content<'r, 'a>) -> Result<()> {
+    fn content(&mut self, content: Content<'r, 'a>) -> Result<()> {
         let flags = Flags {
             as_fragment: false,
             disable_nested_fragments: false,
@@ -139,12 +136,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             css_vars: false,
         };
         match content {
-            Content::Children => self.children::<M>(flags),
+            Content::Children => self.children(flags),
             Content::Html(html) => {
                 let value = html.value.as_ref().ok_or(LegacyReason::Binding)?;
                 let exp = self.expr(value, TransformContent::Decoded)?;
                 self.ctx.push_string_part_dynamic(&cstr!("({exp}) ?? ''"));
-                self.skip_children::<M>()
+                self.skip_children()
             }
             Content::Text(text) => {
                 let value = text.value.as_ref().ok_or(LegacyReason::Binding)?;
@@ -152,19 +149,19 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
                 self.ctx
                     .push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
-                self.skip_children::<M>()
+                self.skip_children()
             }
             Content::TextareaModel(model) => {
                 let exp = self.expr(&model.contract.read, TransformContent::Decoded)?;
                 self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
                 self.ctx
                     .push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
-                self.skip_children::<M>()
+                self.skip_children()
             }
             Content::SelectModel(model) => {
                 let exp = self.expr(&model.contract.read, TransformContent::Decoded)?;
                 self.select_models.push(exp);
-                let result = self.children::<M>(flags);
+                let result = self.children(flags);
                 self.select_models.pop();
                 result
             }
@@ -173,7 +170,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// Consume a child list the legacy walker never renders (the element's
     /// directive owns its content), keeping the plan balanced.
-    fn skip_children<M: RenderMapMode>(&mut self) -> Result<()> {
+    fn skip_children(&mut self) -> Result<()> {
         self.pos = self.region_end(self.pos)?;
         Ok(())
     }
@@ -185,7 +182,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 /// has no tag in the source: its span starts at the triggering child's `<`,
 /// and the legacy walker anchors the synthesized name one byte later than
 /// that (zero-width loc at the child tag name, then `start + 1`).
-fn open_tag_anchor<M: RenderMapMode>(source: &str, element: &l2::ElementOp<'_>, tag: &str) -> u32 {
+fn open_tag_anchor(source: &str, element: &l2::ElementOp<'_>, tag: &str) -> u32 {
     let start = element.span.start;
     let authored = source.get(start as usize..).is_some_and(|rest| {
         let Some(name) = rest.strip_prefix('<') else {

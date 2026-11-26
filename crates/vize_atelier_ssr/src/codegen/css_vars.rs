@@ -1,7 +1,6 @@
 //! Emit-time CSS-variable metadata; authored template nodes remain untouched.
 
 use vize_atelier_core::TemplateChildNode;
-use vize_atelier_core::codegen::RenderMapMode;
 
 /// Root eligibility and the only transparent template carriers visited by Vue.
 #[derive(Clone, Copy, Default)]
@@ -10,7 +9,7 @@ pub(crate) struct RootCssVars {
     pub(crate) template_wrapper: bool,
 }
 
-pub(crate) fn root_is_fragment<M: RenderMapMode>(children: &[TemplateChildNode<'_>]) -> bool {
+pub(crate) fn root_is_fragment(children: &[TemplateChildNode<'_>]) -> bool {
     let mut rendered = 0;
     let mut non_text = false;
     for child in children {

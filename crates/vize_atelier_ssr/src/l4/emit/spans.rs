@@ -5,13 +5,12 @@
 //! syntax, and each locator verifies the token it found, so the plan lane
 //! anchors exactly the tokens the AST walker anchors.
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::Span;
 use vize_l2::expr::ExprRef;
 
 /// `span` without surrounding whitespace, as the shipped parser trims an
 /// interpolation's content.
-pub(super) fn trimmed<M: RenderMapMode>(source: &str, span: Span) -> Span {
+pub(super) fn trimmed(source: &str, span: Span) -> Span {
     let Some(raw) = source.get(span.start as usize..span.end as usize) else {
         return span;
     };
@@ -21,10 +20,10 @@ pub(super) fn trimmed<M: RenderMapMode>(source: &str, span: Span) -> Span {
 }
 
 /// The content of a `{{ … }}` span, trimmed.
-pub(super) fn interpolation_content<M: RenderMapMode>(source: &str, span: Span) -> Option<Span> {
+pub(super) fn interpolation_content(source: &str, span: Span) -> Option<Span> {
     let raw = source.get(span.start as usize..span.end as usize)?;
     (raw.starts_with("{{") && raw.ends_with("}}") && raw.len() >= 4)
-        .then(|| trimmed::<M>(source, Span::new(span.start + 2, span.end - 2)))
+        .then(|| trimmed(source, Span::new(span.start + 2, span.end - 2)))
 }
 
 /// The authored span of a retained or opaque expression.
@@ -85,7 +84,7 @@ pub(super) fn directive_value(source: &str, span: Span) -> Option<Span> {
 /// `span` widened over surrounding whitespace to the directive's quotes, as
 /// the AST walker spans a directive value (` x ` in `v-if=" x "`). A span
 /// that is not a whole quoted value is returned as is.
-pub(super) fn quoted_value<M: RenderMapMode>(source: &str, span: Span) -> Span {
+pub(super) fn quoted_value(source: &str, span: Span) -> Span {
     let bytes = source.as_bytes();
     let (mut start, mut end) = (span.start as usize, span.end as usize);
     while start > 0 && bytes.get(start - 1).is_some_and(u8::is_ascii_whitespace) {

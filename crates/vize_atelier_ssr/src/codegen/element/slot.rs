@@ -8,15 +8,14 @@ use super::{
     ComponentSlotChildren, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext,
     String, TemplateChildNode, ToCompactString, VNodePropEntry,
 };
-use vize_atelier_core::codegen::RenderMapMode;
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a slot outlet (<slot>)
-    pub(super) fn process_slot_outlet<M: RenderMapMode>(&mut self, el: &ElementNode<'a>) {
-        self.flush_push::<M>();
+    pub(super) fn process_slot_outlet(&mut self, el: &ElementNode<'a>) {
+        self.flush_push();
         self.use_ssr_helper(RuntimeHelper::SsrRenderSlot);
 
-        self.push_indent::<M>();
+        self.push_indent();
         self.push("_ssrRenderSlot(_ctx.$slots, ");
 
         // Get slot name
@@ -37,25 +36,25 @@ impl<'a> SsrCodegenContext<'a> {
             self.indent_level += 1;
 
             let old_parts = std::mem::take(&mut self.current_template_parts);
-            self.process_children::<M>(&el.children, false, false, false);
-            self.flush_push::<M>();
+            self.process_children(&el.children, false, false, false);
+            self.flush_push();
             self.current_template_parts = old_parts;
 
             self.indent_level -= 1;
-            self.push_indent::<M>();
+            self.push_indent();
             self.push("}");
         }
 
         self.push(", _push, _parent");
 
-        self.push_slot_scope_id::<M>();
+        self.push_slot_scope_id();
 
         self.push(")\n");
     }
 
     /// A :slotted() outlet contributes its own slotted ID; only a slot callback
     /// receives `_scopeId` from the renderer and can forward it regardless.
-    pub(crate) fn push_slot_scope_id<M: RenderMapMode>(&mut self) {
+    pub(crate) fn push_slot_scope_id(&mut self) {
         if self.slotted
             && let Some(scope_id) = self.options.scope_id.as_deref()
         {

@@ -1,18 +1,17 @@
 //! Final arguments for a generated slot outlet.
 
 use super::CodegenContext;
-use crate::codegen::RenderMapMode;
 
 impl CodegenContext {
     #[inline(always)]
-    pub(in crate::codegen) fn finish_slot_outlet<M: RenderMapMode>(
+    pub(in super::super) fn finish_slot_outlet(
         &mut self,
         default_suffix: &'static str,
         has_fallback: bool,
         has_props: bool,
     ) {
         if self.no_slotted {
-            self.finish_no_slotted_outlet::<M>(has_fallback, has_props);
+            self.finish_no_slotted_outlet(has_fallback, has_props);
         } else {
             self.push(default_suffix);
         }
@@ -20,7 +19,7 @@ impl CodegenContext {
 
     #[cold]
     #[inline(never)]
-    fn finish_no_slotted_outlet<M: RenderMapMode>(&mut self, has_fallback: bool, has_props: bool) {
+    fn finish_no_slotted_outlet(&mut self, has_fallback: bool, has_props: bool) {
         if has_fallback {
             self.push("]");
         }

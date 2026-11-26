@@ -7,11 +7,10 @@ use crate::{
 
 use super::context::{CodegenResult, CodegenResultWithSections};
 use super::emit::generate_with_sections_and_options;
-use super::{ComposedRenderMap, PlainRenderMap};
 
 /// Generate code from root AST.
 pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
-    generate_with_sections_and_options::<PlainRenderMap>(
+    generate_with_sections_and_options(
         root,
         options,
         None,
@@ -37,7 +36,7 @@ pub fn generate_with_merge_props(
     options: CodegenOptions,
     merge_props: bool,
 ) -> CodegenResult {
-    generate_with_sections_and_options::<PlainRenderMap>(
+    generate_with_sections_and_options(
         root,
         options,
         None,
@@ -59,7 +58,7 @@ pub fn generate_with_vnode_factory(
     options: CodegenOptions,
     vnode_factory: &str,
 ) -> CodegenResult {
-    generate_with_sections_and_options::<PlainRenderMap>(
+    generate_with_sections_and_options(
         root,
         options,
         Some(vnode_factory),
@@ -87,7 +86,7 @@ pub fn generate_with_vnode_factory_and_merge_props(
     merge_props: bool,
     source_text: Option<&str>,
 ) -> CodegenResult {
-    generate_with_sections_and_options::<PlainRenderMap>(
+    generate_with_sections_and_options(
         root,
         options,
         vnode_factory,
@@ -113,7 +112,7 @@ pub fn generate_with_vnode_factory_and_child_values(
     source_text: Option<&str>,
     untracked_children: bool,
 ) -> CodegenResult {
-    generate_with_sections_and_options::<PlainRenderMap>(
+    generate_with_sections_and_options(
         root,
         options,
         vnode_factory,
@@ -133,7 +132,7 @@ pub fn generate_with_sections(
     root: &RootNode<'_>,
     options: CodegenOptions,
 ) -> CodegenResultWithSections {
-    generate_with_sections_and_options::<PlainRenderMap>(
+    generate_with_sections_and_options(
         root,
         options,
         None,
@@ -154,7 +153,7 @@ pub fn generate_with_experimental_options(
     options: CodegenOptions,
     experimental_options: CodegenExperimentalOptions,
 ) -> CodegenResult {
-    generate_with_sections_and_options::<PlainRenderMap>(
+    generate_with_sections_and_options(
         root,
         options,
         None,
@@ -176,7 +175,7 @@ pub fn generate_with_sections_and_experimental_options(
     options: CodegenOptions,
     experimental_options: CodegenExperimentalOptions,
 ) -> CodegenResultWithSections {
-    generate_with_sections_and_options::<PlainRenderMap>(
+    generate_with_sections_and_options(
         root,
         options,
         None,
@@ -216,32 +215,7 @@ pub fn generate_with_sections_and_experimental_options_slot_scope_and_environmen
     no_slotted: bool,
     development: bool,
 ) -> CodegenResultWithSections {
-    generate_with_sections_and_options::<PlainRenderMap>(
-        root,
-        options,
-        None,
-        true,
-        None,
-        experimental_options,
-        no_slotted,
-        development,
-        false,
-        false,
-    )
-}
-
-/// [`generate_with_sections_and_experimental_options_slot_scope_and_environment`]
-/// for a render map the SFC assembly composes into the component's map
-/// (see [`ComposedRenderMap`]). The module is the same.
-#[doc(hidden)]
-pub fn generate_composed_with_sections_slot_scope_and_environment(
-    root: &RootNode<'_>,
-    options: CodegenOptions,
-    experimental_options: CodegenExperimentalOptions,
-    no_slotted: bool,
-    development: bool,
-) -> CodegenResultWithSections {
-    generate_with_sections_and_options::<ComposedRenderMap>(
+    generate_with_sections_and_options(
         root,
         options,
         None,

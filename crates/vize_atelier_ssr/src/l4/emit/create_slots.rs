@@ -7,18 +7,19 @@
 //! object. The VNode expression form lives in `vnode_create_slots`.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::TransformContent;
 
+use super::super::super::codegen::element::props::quoted_js_string;
+use super::super::super::l4::AdmissionFailure;
+use super::super::super::l4::string_plan::{
+    SsrSegmentSource as Source, SsrStringSegmentKind as Kind,
+};
 use super::control::alias;
 use super::slots::{ComponentSlots, SlotSpec, slot_pattern};
 use super::spans::expression_span;
 use super::{Emitter, Result};
-use crate::codegen::element::props::quoted_js_string;
-use crate::l4::AdmissionFailure;
-use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
 
 /// A `createSlots` entry source, by the plan position of its content child.
 #[derive(Clone, Copy)]
@@ -179,16 +180,13 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// `_createSlots({ default, named, _: 2 }, [entries])`, written in place.
-    pub(super) fn emit_create_slots<M: RenderMapMode>(
-        &mut self,
-        slots: &ComponentSlots,
-    ) -> Result<()> {
+    pub(super) fn emit_create_slots(&mut self, slots: &ComponentSlots) -> Result<()> {
         self.ctx.use_core_helper(RuntimeHelper::CreateSlots);
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
         self.ctx.push("_createSlots({\n");
         self.ctx.indent_level += 1;
         if !slots.default.is_empty() {
-            self.slot_property::<M>(&SlotSpec {
+            self.slot_property(&SlotSpec {
                 name: "default".to_compact_string(),
                 pattern: None,
                 ranges: slots.default.clone(),
@@ -196,39 +194,39 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             })?;
         }
         for named in &slots.named {
-            self.slot_property::<M>(named)?;
+            self.slot_property(named)?;
         }
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("_: 2 /* DYNAMIC */\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("}, [\n");
         self.ctx.indent_level += 1;
         for (index, dynamic) in slots.dynamic.iter().enumerate() {
             if index > 0 {
                 self.ctx.push(",\n");
             }
-            self.ctx.push_indent::<M>();
+            self.ctx.push_indent();
             match *dynamic {
-                Dynamic::Conditional(at) => self.conditional_entry::<M>(at)?,
-                Dynamic::Looped(at) => self.looped_entry::<M>(at)?,
+                Dynamic::Conditional(at) => self.conditional_entry(at)?,
+                Dynamic::Looped(at) => self.looped_entry(at)?,
                 Dynamic::Named(at) => {
                     let entry = self.entry(at)?;
-                    self.entry_object::<M>(&entry, None)?;
+                    self.entry_object(&entry, None)?;
                 }
             }
         }
         self.ctx.indent_level -= 1;
         if !slots.dynamic.is_empty() {
             self.ctx.push("\n");
-            self.ctx.push_indent::<M>();
+            self.ctx.push_indent();
         }
         self.ctx.push("])");
         Ok(())
     }
 
     /// `(cond) ? { ..., key: "N" } : ... : undefined`.
-    fn conditional_entry<M: RenderMapMode>(&mut self, at: usize) -> Result<()> {
+    fn conditional_entry(&mut self, at: usize) -> Result<()> {
         let (if_op, starts) = self.conditional(at)?;
         for (index, (branch, start)) in if_op.branches.iter().zip(starts).enumerate() {
             if index > 0 {
@@ -243,7 +241,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             match self.slot_template_in(start)? {
                 Some(template) => {
                     let entry = self.entry(template)?;
-                    self.entry_object::<M>(&entry, Some(index))?;
+                    self.entry_object(&entry, Some(index))?;
                 }
                 None => self.ctx.push("undefined"),
             }
@@ -259,7 +257,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// `_renderList(source, (aliases) => { return { ... } })`.
-    fn looped_entry<M: RenderMapMode>(&mut self, at: usize) -> Result<()> {
+    fn looped_entry(&mut self, at: usize) -> Result<()> {
         let template = self
             .slot_template_in(at + 1)?
             .ok_or(AdmissionFailure::Invalid(
@@ -277,39 +275,39 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push(&aliases);
         self.ctx.push(") => {\n");
         self.ctx.indent_level += 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("return ");
         let written = self
             .entry(template)
-            .and_then(|entry| self.entry_object::<M>(&entry, None));
+            .and_then(|entry| self.entry_object(&entry, None));
         self.leave_loop(mark);
         written?;
         self.ctx.push("\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("})");
         Ok(())
     }
 
     /// `{ name, fn[, key] }` across indented lines.
-    fn entry_object<M: RenderMapMode>(&mut self, entry: &Entry, key: Option<usize>) -> Result<()> {
+    fn entry_object(&mut self, entry: &Entry, key: Option<usize>) -> Result<()> {
         self.ctx.push("{\n");
         self.ctx.indent_level += 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("name: ");
         self.ctx.push(&entry.name);
         self.ctx.push(",\n");
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("fn: ");
-        self.slot_fn::<M>(&entry.spec)?;
+        self.slot_fn(&entry.spec)?;
         if let Some(key) = key {
             self.ctx.push(",\n");
-            self.ctx.push_indent::<M>();
+            self.ctx.push_indent();
             self.ctx.push(&cstr!("key: \"{key}\""));
         }
         self.ctx.push("\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("}");
         Ok(())
     }

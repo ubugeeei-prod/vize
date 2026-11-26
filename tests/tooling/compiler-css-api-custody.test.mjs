@@ -112,7 +112,7 @@ await test("the actual required fixture gate admits only the exact CSS producer 
   assert.deepEqual(valid.products[0].cases, ["compiler/css/source-map-10693"]);
   for (const extra of [
     "crates/vize_atelier_sfc/src/style.rs",
-    "crates/vize_atelier_ssr/src/compile.rs",
+    "crates/vize_atelier_ssr/src/compile/mod.rs",
   ])
     assert.deepEqual(
       failingProducts(analyzeLegacyFix({ ...request, paths: [...cssMapProducerPaths, extra] })),

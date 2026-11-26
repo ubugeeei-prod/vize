@@ -8,24 +8,23 @@
 //! `<textarea>`) may own the element's content through a `_temp` binding.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
+use super::super::super::codegen::element::VNodePropEntry;
+use super::super::super::codegen::element::props::{
+    component_prop_entry, component_props_object, normalize_prop_entries, quoted_js_string,
+};
+use super::super::super::codegen::element::spanned_props::{
+    bound_entry, component_props_object_spanned, merge_props_call,
+};
+use super::super::super::l4::string_plan::{
+    SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegmentKind as Kind,
+};
 use super::attrs::{Attached, BindName, bind};
 use super::spans::{argument_start, attribute_value_start};
 use super::{Emitter, Result, model, plan_source};
-use crate::codegen::element::VNodePropEntry;
-use crate::codegen::element::props::{
-    component_prop_entry, component_props_object, normalize_prop_entries, quoted_js_string,
-};
-use crate::codegen::element::spanned_props::{
-    bound_entry, component_props_object_spanned, merge_props_call,
-};
-use crate::l4::string_plan::{
-    SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegmentKind as Kind,
-};
 use vize_atelier_core::codegen::document::EmitDocument;
 
 /// The merged attributes of one element and the content a temp owns.
@@ -36,7 +35,7 @@ pub(super) struct Merged {
 
 /// Vue's `needMergeProps`: an object spread or dynamic-key bind, or a custom
 /// directive.
-pub(super) fn needs_merged<M: RenderMapMode>(attached: &Attached<'_, '_>) -> bool {
+pub(super) fn needs_merged(attached: &Attached<'_, '_>) -> bool {
     attached.iter().any(|segment| match segment.source {
         Source::Binding(l2::BindingOp::Bind(bind)) => {
             !matches!(bind.name, Some(DynamicName::Static(_)))
@@ -67,27 +66,27 @@ fn has_static_type(attached: &Attached<'_, '_>) -> bool {
 impl Emitter<'_, '_, '_, '_, '_, '_> {
     /// `_ssrRenderAttrs(props[, "tag"])` plus temp-owned content. The cursor
     /// sits on the element's first child.
-    pub(super) fn merged_attrs<M: RenderMapMode>(
+    pub(super) fn merged_attrs(
         &mut self,
         attached: &Attached<'_, '_>,
         tag: &str,
         inherit: bool,
         css_vars: bool,
     ) -> Result<Option<Merged>> {
-        self.merged_attrs_for::<M, false>(attached, tag, inherit, css_vars)
+        self.merged_attrs_for::<false>(attached, tag, inherit, css_vars)
     }
 
-    pub(super) fn group_attrs<M: RenderMapMode>(
+    pub(super) fn group_attrs(
         &mut self,
         attached: &Attached<'_, '_>,
         tag: &str,
         inherit: bool,
         css_vars: bool,
     ) -> Result<Option<Merged>> {
-        self.merged_attrs_for::<M, true>(attached, tag, inherit, css_vars)
+        self.merged_attrs_for::<true>(attached, tag, inherit, css_vars)
     }
 
-    fn merged_attrs_for<M: RenderMapMode, const GROUP: bool>(
+    fn merged_attrs_for<const GROUP: bool>(
         &mut self,
         attached: &Attached<'_, '_>,
         tag: &str,
@@ -127,7 +126,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 && super::text::compound_parts(self.facts.texts, &segment, interpolation)?
                     .is_some_and(|parts| parts.first().is_some_and(|part| !part.dynamic))
             {
-                return Err(crate::l4::LegacyReason::Structure.into());
+                return Err(super::super::super::l4::LegacyReason::Structure.into());
             }
             let interpolated = matches!(first, Some(segment) if segment.kind == Kind::DynamicText)
                 || has_binding(attached, |binding| {
@@ -141,7 +140,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                     }
                     _ => "\"\"".to_compact_string(),
                 };
-                let temp = self.ctx.alloc_temp::<M>();
+                let temp = self.ctx.alloc_temp();
                 merged = assigned(&temp, &merged);
                 self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
                 content = Some(cstr!(
@@ -149,7 +148,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 ));
             }
         } else if tag != "input" && directives > 0 && children.is_empty() && !content_override {
-            let temp = self.ctx.alloc_temp::<M>();
+            let temp = self.ctx.alloc_temp();
             merged = assigned(&temp, &merged);
             self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
             content = Some(cstr!(

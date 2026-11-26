@@ -18,10 +18,13 @@ pub(crate) fn component_props_object(entries: &[VNodePropEntry]) -> String {
     out
 }
 
-impl crate::codegen::SsrCodegenContext<'_> {
+impl super::super::super::codegen::SsrCodegenContext<'_> {
     /// The `v-slot` props pattern after the shared expression lane prefixes
     /// free names in defaults and erases TypeScript syntax when requested.
-    pub(in crate::codegen) fn slot_props_pattern(&self, dir: &DirectiveNode<'_>) -> Option<String> {
+    pub(in super::super::super::codegen) fn slot_props_pattern(
+        &self,
+        dir: &DirectiveNode<'_>,
+    ) -> Option<String> {
         let source = dir.exp.as_ref()?.loc().span.slice(self.source);
         let table = self
             .options

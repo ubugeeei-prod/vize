@@ -6,8 +6,8 @@ use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::TransformContent;
 
+use super::super::super::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
 use super::{Emitter, Result};
-use crate::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
 
 impl Emitter<'_, '_, '_, '_, '_, '_> {
     /// `_ssrGetDirectiveProps(_ctx, dir[, value[, arg[, modifiers]]])`.
@@ -71,7 +71,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 Ok(value.source().to_compact_string())
             }
             Err(vize_l4::targets::dom::artifact::TransformRefusal::ExpressionKind) => {
-                Err(crate::l4::LegacyReason::ExpressionOrEncoding.into())
+                Err(super::super::super::l4::LegacyReason::ExpressionOrEncoding.into())
             }
         }
     }

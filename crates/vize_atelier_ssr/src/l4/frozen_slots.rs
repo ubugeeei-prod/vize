@@ -129,8 +129,8 @@ impl<'s, 'a> FrozenSlotFacts<'s, 'a> {
 mod tests {
     //! Authored before the source-bound empty literal-slot exception.
 
+    use super::super::super::l4::{LegacyReason, SsrL4Selection, differential_tests, l2_input};
     use super::{FrozenSlotFacts, FrozenTemplate};
-    use crate::l4::{LegacyReason, SsrL4Selection, differential_tests, l2_input};
     use crate::options::SsrCompilerOptions;
     use vize_atelier_core::parser::Parser;
     use vize_l0::{Allocator, Box, Span, Vec};
@@ -242,7 +242,10 @@ mod tests {
                 l2_input::select_l2_lane(&arena, source, &root, &options),
                 SsrL4Selection::Legacy(LegacyReason::Element)
             ));
-            assert!(crate::compile_l2_to_ssr(&arena, source, &root, &options).is_none());
+            assert!(
+                super::super::super::compile::compile_l2_to_ssr(&arena, source, &root, &options)
+                    .is_none()
+            );
         }
         let normal = lower(&arena, "<slot></slot>");
         assert!(matches!(&normal.artifact.root.ops[0], Op::Slot(_)));

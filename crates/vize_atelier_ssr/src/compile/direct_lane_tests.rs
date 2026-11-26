@@ -64,7 +64,7 @@ struct Compiled {
 
 fn direct_lane(source: &str) -> Option<Compiled> {
     let allocator = Allocator::new();
-    emit_on_direct_lane::<vize_atelier_core::codegen::PlainRenderMap>(
+    emit_on_direct_lane(
         &allocator,
         source,
         &SsrCompilerOptions::default(),
@@ -83,18 +83,17 @@ fn direct_lane(source: &str) -> Option<Compiled> {
 
 fn full_path(source: &str) -> Compiled {
     let allocator = Allocator::new();
-    let (_, errors, result) =
-        compile_ssr_on_lane_with_runtime::<vize_atelier_core::codegen::PlainRenderMap>(
-            &allocator,
-            source,
-            SsrCompilerOptions::default(),
-            TemplateSyntaxMode::Standard,
-            CustomElementMatcher::default(),
-            SsrCompilerExperimentalOptions::default(),
-            SsrSfcContext::new(false),
-            SsrLane::Selected,
-            "vue",
-        );
+    let (_, errors, result) = compile_ssr_on_lane_with_runtime(
+        &allocator,
+        source,
+        SsrCompilerOptions::default(),
+        TemplateSyntaxMode::Standard,
+        CustomElementMatcher::default(),
+        SsrCompilerExperimentalOptions::default(),
+        SsrSfcContext::new(false),
+        SsrLane::Selected,
+        "vue",
+    );
     Compiled {
         diagnostics: errors
             .iter()

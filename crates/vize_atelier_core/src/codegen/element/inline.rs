@@ -3,8 +3,6 @@
 //! Generates elements that are not block roots, using `createElementVNode()`
 //! and `createVNode()` instead of their block counterparts.
 
-use crate::codegen::RenderMapMode;
-use crate::codegen::component_binding::push_component_binding;
 use crate::{
     ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
     steps::v_memo::{get_memo_exp, has_v_memo},
@@ -38,16 +36,16 @@ use super::{
 use vize_l0::ToCompactString;
 
 /// Generate element code (non-block)
-pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     if crosses_namespace_boundary(ctx, el) {
-        super::block::generate_element_block::<M>(ctx, el);
+        super::block::generate_element_block(ctx, el);
         return;
     }
 
     if matches!(el.tag_type, ElementType::Element | ElementType::Component)
         && has_dynamic_key_binding(el)
     {
-        super::block::generate_element_block::<M>(ctx, el);
+        super::block::generate_element_block(ctx, el);
         return;
     }
 
@@ -58,13 +56,13 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext, el: &Element
                 "Teleport" | "teleport" | "Suspense" | "suspense" | "KeepAlive" | "keep-alive"
             ))
     {
-        super::block::generate_element_block::<M>(ctx, el);
+        super::block::generate_element_block(ctx, el);
         return;
     }
 
     // Check for v-once directive - handle it specially with cache
     if super::helpers::has_v_once(el) {
-        super::v_once::generate_v_once_element::<M>(ctx, el);
+        super::v_once::generate_v_once_element(ctx, el);
         return;
     }
 
@@ -87,8 +85,8 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext, el: &Element
     };
 
     match el.tag_type {
-        ElementType::Element => generate_native_vnode::<M>(ctx, el),
-        ElementType::Component => generate_component_vnode::<M>(ctx, el),
+        ElementType::Element => generate_native_vnode(ctx, el),
+        ElementType::Component => generate_component_vnode(ctx, el),
         ElementType::Slot => {
             let helper = ctx.helper(RuntimeHelper::RenderSlot);
             ctx.use_helper(RuntimeHelper::RenderSlot);
@@ -112,18 +110,18 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext, el: &Element
                 ctx.push(", () => [");
                 ctx.skip_scope_id = prev_skip_scope_id;
                 ctx.indent();
-                generate_slot_outlet_fallback::<M>(ctx, &el.children);
+                generate_slot_outlet_fallback(ctx, &el.children);
                 ctx.deindent();
                 ctx.newline();
-                ctx.finish_slot_outlet::<M>("])", true, true);
+                ctx.finish_slot_outlet("])", true, true);
             } else if has_slot_props {
                 ctx.push(", ");
                 generate_slot_outlet_props(ctx, el);
                 ctx.skip_scope_id = prev_skip_scope_id;
-                ctx.finish_slot_outlet::<M>(")", false, true);
+                ctx.finish_slot_outlet(")", false, true);
             } else {
                 ctx.skip_scope_id = prev_skip_scope_id;
-                ctx.finish_slot_outlet::<M>(")", false, false);
+                ctx.finish_slot_outlet(")", false, false);
             }
         }
         ElementType::Template => {
@@ -134,14 +132,14 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext, el: &Element
                 .filter(|c| !is_directive_comment(c))
                 .collect();
             if let [single] = filtered.as_slice() {
-                generate_node::<M>(ctx, single);
+                generate_node(ctx, single);
             } else {
                 ctx.push("[");
                 for (i, child) in filtered.iter().enumerate() {
                     if i > 0 {
                         ctx.push(", ");
                     }
-                    generate_node::<M>(ctx, child);
+                    generate_node(ctx, child);
                 }
                 ctx.push("]");
             }
@@ -158,10 +156,7 @@ pub fn generate_element<M: RenderMapMode>(ctx: &mut CodegenContext, el: &Element
 
 /// The non-block native element vnode, wrapped in its runtime directives.
 /// `v-once` caches exactly this call.
-pub(super) fn generate_native_vnode<M: RenderMapMode>(
-    ctx: &mut CodegenContext,
-    el: &ElementNode<'_>,
-) {
+pub(super) fn generate_native_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Check for custom directives.
     // Inline children need the same withDirectives wrapping as block roots.
     let has_custom_dirs = has_custom_directives(el);
@@ -191,11 +186,11 @@ pub(super) fn generate_native_vnode<M: RenderMapMode>(
 
     ctx.push_pure();
     ctx.use_helper(RuntimeHelper::CreateElementVNode);
-    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementVNode);
+    ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
     ctx.push("(\"");
     // Anchor the generated tag name at the authored tag name (the byte
     // after the open tag's `<`). No-op without `source_map`.
-    ctx.push_tag::<M>(el);
+    ctx.push_tag(el);
     ctx.push("\"");
 
     // Calculate patch flag and dynamic props
@@ -225,11 +220,11 @@ pub(super) fn generate_native_vnode<M: RenderMapMode>(
     // Generate children
     if !el.children.is_empty() {
         ctx.push(", ");
-        ctx.with_parent_namespace::<M, _>(child_namespace(el), |ctx| {
+        ctx.with_parent_namespace(child_namespace(el), |ctx| {
             if once {
-                generate_children_force_array::<M>(ctx, &el.children);
+                generate_children_force_array(ctx, &el.children);
             } else {
-                generate_children::<M>(ctx, &el.children);
+                generate_children(ctx, &el.children);
             }
         });
     } else if has_patch_info {
@@ -281,10 +276,7 @@ pub(super) fn generate_native_vnode<M: RenderMapMode>(
 
 /// The non-block component vnode, wrapped in its runtime directives. `v-once`
 /// caches exactly this call.
-pub(super) fn generate_component_vnode<M: RenderMapMode>(
-    ctx: &mut CodegenContext,
-    el: &ElementNode<'_>,
-) {
+pub(super) fn generate_component_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let has_custom_dirs = has_custom_directives(el);
     if has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);
@@ -304,7 +296,7 @@ pub(super) fn generate_component_vnode<M: RenderMapMode>(
 
     ctx.push_pure();
     ctx.use_helper(RuntimeHelper::CreateVNode);
-    ctx.push_vnode_helper::<M>(RuntimeHelper::CreateVNode);
+    ctx.push_vnode_helper(RuntimeHelper::CreateVNode);
     ctx.push("(");
 
     // Check for dynamic component (<component :is="..."> or <Component is="...">)
@@ -348,7 +340,10 @@ pub(super) fn generate_component_vnode<M: RenderMapMode>(
     } else if let Some(builtin) = is_builtin_component(el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if push_component_binding::<M>(ctx, el) {
+    } else if render_map_copy!(
+        plain { ctx.push_component_binding_tag(el.tag) }
+        composed { ctx.push_composed_component_binding(el) }
+    ) {
     } else {
         ctx.push(&to_valid_asset_identifier("component", el.tag));
     }
@@ -394,7 +389,7 @@ pub(super) fn generate_component_vnode<M: RenderMapMode>(
         if is_dynamic {
             ctx.skip_is_prop = true;
         }
-        ctx.with_component_props::<M, _>(|ctx| generate_props(ctx, &el.props));
+        ctx.with_component_props(|ctx| generate_props(ctx, &el.props));
         ctx.skip_is_prop = false;
     } else if !el.children.is_empty() || has_patch_info {
         ctx.push(", null");
@@ -403,7 +398,7 @@ pub(super) fn generate_component_vnode<M: RenderMapMode>(
     // Generate children/slots - use slot generation for component children
     if has_slot_children(el) {
         ctx.push(", ");
-        generate_slots::<M>(ctx, el);
+        generate_slots(ctx, el);
     } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
         ctx.push(", [");
         ctx.indent();
@@ -417,7 +412,7 @@ pub(super) fn generate_component_vnode<M: RenderMapMode>(
                 ctx.push(",");
             }
             ctx.newline();
-            generate_node::<M>(ctx, child);
+            generate_node(ctx, child);
         }
         ctx.deindent();
         ctx.newline();

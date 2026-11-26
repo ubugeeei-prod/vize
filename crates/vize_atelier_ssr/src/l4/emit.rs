@@ -30,7 +30,6 @@ mod vnode_control;
 mod vnode_create_slots;
 mod vnode_props;
 
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l0::side_table::SideTable;
 use vize_l0::{FxHashSet, String};
 use vize_l2::analysis::fragment_facts::{BranchFragments, LoopFragment};
@@ -40,13 +39,13 @@ use vize_l2::expr::ExprRef;
 use vize_l2_to_l3::PartitionKind;
 use vize_l4::targets::dom::artifact::{TransformContent, TransformExpressions};
 
+use super::super::codegen::SsrCodegenContext;
+use super::super::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params;
 use super::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringPlan, SsrStringSegment,
     SsrStringSegmentKind as Kind,
 };
 use super::{AdmissionFailure, LegacyReason};
-use crate::codegen::SsrCodegenContext;
-use crate::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params;
 use region::is_close;
 
 type Result<T> = core::result::Result<T, AdmissionFailure>;
@@ -62,7 +61,7 @@ pub(super) struct PlanFacts<'s, 'a> {
 }
 
 /// Write the render body for `plan` into `ctx`.
-pub(super) fn emit_plan<'r, 'a, M: RenderMapMode>(
+pub(super) fn emit_plan<'r, 'a>(
     ctx: &mut SsrCodegenContext<'_>,
     plan: &SsrStringPlan<'r, 'a>,
     facts: &PlanFacts<'_, 'a>,
@@ -80,7 +79,7 @@ pub(super) fn emit_plan<'r, 'a, M: RenderMapMode>(
     };
     let root = emitter.scan_region(0)?;
     let fragment = root.legacy_children > 1 && root.non_text;
-    emitter.children::<M>(Flags {
+    emitter.children(Flags {
         as_fragment: fragment,
         disable_nested_fragments: false,
         disable_comments: false,
@@ -133,17 +132,13 @@ const PLAIN: Flags = Flags {
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `process_children_with_fallthrough_attrs` over the plan: emit the
     /// child list at the cursor up to (not including) its closing segment.
-    fn children<M: RenderMapMode>(&mut self, flags: Flags) -> Result<()> {
-        self.children_keeping_comments::<M>(flags, true)
+    fn children(&mut self, flags: Flags) -> Result<()> {
+        self.children_keeping_comments(flags, true)
     }
 
     /// `children`, dropping the list's direct comments when `comments` is
     /// false (a `<Transition>`'s, see `transition`).
-    fn children_keeping_comments<M: RenderMapMode>(
-        &mut self,
-        flags: Flags,
-        comments: bool,
-    ) -> Result<()> {
+    fn children_keeping_comments(&mut self, flags: Flags, comments: bool) -> Result<()> {
         let shape = self.scan_region(self.pos)?;
         let fallthrough = match shape.candidates.as_slice() {
             [only] if flags.inherit_attrs && !flags.as_fragment => Some(*only),
@@ -161,7 +156,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 continue;
             }
             let inherit = fallthrough == Some(self.pos);
-            self.child::<M>(segment, flags, inherit)?;
+            self.child(segment, flags, inherit)?;
         }
         if flags.as_fragment {
             self.ctx.push_string_part_static("<!--]-->");
@@ -170,7 +165,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     /// `process_child` for the child at the cursor.
-    fn child<M: RenderMapMode>(
+    fn child(
         &mut self,
         segment: SsrStringSegment<'r, 'a>,
         flags: Flags,
@@ -180,29 +175,29 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         match (segment.kind, segment.source) {
             (Kind::OpenElement, Source::Element(element)) => {
                 vize_l0::ensure_sufficient_stack(|| {
-                    self.element::<M>(segment, element, disable, inherit, flags.css_vars)
+                    self.element(segment, element, disable, inherit, flags.css_vars)
                 })
             }
             (Kind::Component, Source::Component(component)) => {
                 vize_l0::ensure_sufficient_stack(|| {
-                    self.component::<M>(segment, component, inherit, flags.css_vars)
+                    self.component(segment, component, inherit, flags.css_vars)
                 })
             }
             (Kind::SlotOutlet, Source::Slot(slot)) => {
-                vize_l0::ensure_sufficient_stack(|| self.slot_outlet::<M>(segment, slot))
+                vize_l0::ensure_sufficient_stack(|| self.slot_outlet(segment, slot))
             }
             (Kind::Text, Source::Text(op)) => {
                 self.pos += 1;
                 let content = plan_source(&segment, SsrStringPayloadKind::Text)?;
-                text::emit_text::<M>(self.ctx, content, op.span.start)
+                text::emit_text(self.ctx, content, op.span.start)
             }
             (Kind::DynamicText, Source::Interpolation(interpolation)) => {
                 self.pos += 1;
                 require_dynamic(&segment)?;
-                text::emit_interpolation::<M>(self, &segment, interpolation)
+                text::emit_interpolation(self, &segment, interpolation)
             }
             (Kind::If, Source::If(if_op)) => vize_l0::ensure_sufficient_stack(|| {
-                self.if_chain::<M>(
+                self.if_chain(
                     if_op,
                     disable,
                     flags.disable_comments,
@@ -211,7 +206,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 )
             }),
             (Kind::For, Source::For(for_op)) => {
-                vize_l0::ensure_sufficient_stack(|| self.for_loop::<M>(for_op, disable))
+                vize_l0::ensure_sufficient_stack(|| self.for_loop(for_op, disable))
             }
             (Kind::Comment, Source::Comment(comment)) => {
                 self.pos += 1;

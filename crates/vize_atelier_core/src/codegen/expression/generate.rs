@@ -180,9 +180,9 @@ mod reference_tests;
 #[cfg(test)]
 #[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
+    use super::super::super::context::CodegenContext;
+    use super::super::super::expression::{generate_event_handler, generate_simple_expression};
     use super::prefix_identifiers_in_scope;
-    use crate::codegen::context::CodegenContext;
-    use crate::codegen::expression::{generate_event_handler, generate_simple_expression};
     use crate::options::{BindingMetadata, BindingType, CodegenOptions};
     use crate::{ExpressionNode, SimpleExpressionNode, SourceLocation};
     use vize_l0::{Allocator, FxHashMap, String};

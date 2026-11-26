@@ -17,7 +17,9 @@ use super::{pipeline::DomCompilePipelineOptions, source_map, stage_options};
 use crate::options::DomCompilerOptions;
 
 mod capture;
+mod composed;
 pub(super) use capture::compile_template_inner_with_sections_captured;
+pub(super) use composed::compile_composed_template_with_sections_captured;
 
 pub(super) fn compile_template_inner<'a>(
     allocator: &'a Allocator,
@@ -53,7 +55,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         codegen_experimental_options,
         l2_emit_selection,
         no_slotted,
-        sfc_assembly: strict_slot_params,
+        strict_slot_params,
         development,
     } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);

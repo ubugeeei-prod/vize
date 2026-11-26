@@ -1,11 +1,10 @@
-use crate::codegen::RenderMapMode;
 use crate::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 use super::super::context::CodegenContext;
 use super::super::expression::generate_expression;
 use super::super::helpers::{escape_js_string, is_valid_js_identifier};
 
-pub(super) fn component_root_slot<'a, 'b, M: RenderMapMode>(
+pub(super) fn component_root_slot<'a, 'b>(
     el: &'b ElementNode<'a>,
 ) -> Option<&'b DirectiveNode<'a>> {
     el.props.iter().find_map(|p| {
@@ -18,7 +17,7 @@ pub(super) fn component_root_slot<'a, 'b, M: RenderMapMode>(
     })
 }
 
-pub(super) fn generate_slot_entry_name<M: RenderMapMode>(
+pub(super) fn generate_slot_entry_name(
     ctx: &mut CodegenContext,
     dir: &DirectiveNode<'_>,
     slot_name: &str,
@@ -34,7 +33,7 @@ pub(super) fn generate_slot_entry_name<M: RenderMapMode>(
     }
 }
 
-pub(super) fn emit_slot_property_name<M: RenderMapMode>(
+pub(super) fn emit_slot_property_name(
     ctx: &mut CodegenContext,
     slot_dir: &DirectiveNode<'_>,
     slot_name: &str,

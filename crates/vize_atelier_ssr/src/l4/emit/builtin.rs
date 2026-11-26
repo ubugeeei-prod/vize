@@ -1,18 +1,17 @@
 //! Builtin writers over the original SSR string-plan regions.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::TransformContent;
 
-use crate::codegen::element::props::{is_simple_identifier, quoted_js_string};
-use crate::l4::string_plan::{SsrStringPayloadKind, SsrStringSegmentKind as Kind};
+use super::super::super::codegen::element::props::{is_simple_identifier, quoted_js_string};
+use super::super::super::l4::string_plan::{SsrStringPayloadKind, SsrStringSegmentKind as Kind};
 
 use super::spans::expression_span;
 use super::{Emitter, Flags, Result, plan_source};
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
-    pub(super) fn suspense<M: RenderMapMode>(&mut self, flags: Flags) -> Result<()> {
+    pub(super) fn suspense(&mut self, flags: Flags) -> Result<()> {
         let children = self.direct_children(self.pos)?;
         let separate = children.iter().any(|&start| {
             self.template_slot(start).is_some_and(|(_, slot)| {
@@ -20,14 +19,14 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             })
         });
         if !separate {
-            return self.suspense_default::<M>(flags);
+            return self.suspense_default(flags);
         }
         let end = self.region_end(self.pos)?;
         let mut implicit = std::vec::Vec::new();
         let mut dynamic = false;
-        self.ctx.flush_push::<M>();
+        self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("_ssrRenderSuspense(_push, {\n");
         self.ctx.indent_level += 1;
         for start in children {
@@ -37,12 +36,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 }
                 continue;
             };
-            self.ctx.push_indent::<M>();
-            self.suspense_name::<M>(slot)?;
+            self.ctx.push_indent();
+            self.suspense_name(slot)?;
             dynamic |= matches!(slot.name, Some(DynamicName::Dynamic(_)));
             let inner = start + 1 + element.attributes.len() + element.bindings.len();
             let ranges = self.direct_children(inner)?;
-            self.suspense_body::<M>(&ranges, flags)?;
+            self.suspense_body(&ranges, flags)?;
         }
         if implicit.iter().all(|&start| {
             self.segments.get(start).is_some_and(|segment| {
@@ -54,26 +53,26 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             implicit.clear();
         }
         if !implicit.is_empty() {
-            self.ctx.push_indent::<M>();
+            self.ctx.push_indent();
             self.ctx.push("default");
-            self.suspense_body::<M>(&implicit, flags)?;
+            self.suspense_body(&implicit, flags)?;
         }
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push(if dynamic { "_: 2\n" } else { "_: 1\n" });
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("})\n");
         self.pos = end;
         Ok(())
     }
 
-    fn suspense_name<M: RenderMapMode>(&mut self, slot: &l2::SlotContentOp<'_>) -> Result<()> {
+    fn suspense_name(&mut self, slot: &l2::SlotContentOp<'_>) -> Result<()> {
         match &slot.name {
             None => self.ctx.push("default"),
             Some(DynamicName::Static(name)) => {
                 let start = super::slots::slot_name_start(self.ctx.source, slot);
                 if is_simple_identifier(name) {
-                    self.ctx.push_optionally_mapped::<M>(name, start);
+                    self.ctx.push_optionally_mapped(name, start);
                 } else {
                     let key = quoted_js_string(name);
                     let inner = key
@@ -81,7 +80,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                         .and_then(|key| key.strip_suffix('"'))
                         .unwrap_or_default();
                     self.ctx.push("\"");
-                    self.ctx.push_optionally_mapped::<M>(inner, start);
+                    self.ctx.push_optionally_mapped(inner, start);
                     self.ctx.push("\"");
                 }
             }
@@ -95,7 +94,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         Ok(())
     }
 
-    fn suspense_body<M: RenderMapMode>(&mut self, children: &[usize], flags: Flags) -> Result<()> {
+    fn suspense_body(&mut self, children: &[usize], flags: Flags) -> Result<()> {
         self.ctx.push(": () => {\n");
         self.ctx.indent_level += 1;
         let saved = core::mem::take(&mut self.ctx.current_template_parts);
@@ -107,9 +106,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let result = children.iter().try_for_each(|&start| {
             let end = self.child_end(start)?;
             self.pos = start;
-            self.child::<M>(self.segment(start)?, flags, false)?;
+            self.child(self.segment(start)?, flags, false)?;
             if self.pos != end {
-                return Err(crate::l4::AdmissionFailure::Invalid(
+                return Err(super::super::super::l4::AdmissionFailure::Invalid(
                     "Suspense child emission left its original plan range",
                 ));
             }
@@ -118,37 +117,37 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if vapor {
             self.ctx.push_string_part_static("<!--]-->");
         }
-        self.ctx.flush_push::<M>();
+        self.ctx.flush_push();
         self.ctx.current_template_parts = saved;
         self.ctx.indent_level -= 1;
         result?;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("},\n");
         Ok(())
     }
 
     /// `_ssrRenderSuspense(_push, { default: () => { ... }, _: 1 })`.
-    fn suspense_default<M: RenderMapMode>(&mut self, flags: Flags) -> Result<()> {
-        self.ctx.flush_push::<M>();
+    fn suspense_default(&mut self, flags: Flags) -> Result<()> {
+        self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("_ssrRenderSuspense(_push, {\n");
         self.ctx.indent_level += 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("default: () => {\n");
         self.ctx.indent_level += 1;
-        self.children::<M>(Flags {
+        self.children(Flags {
             as_fragment: flags.as_fragment || self.ctx.options.vapor,
             ..flags
         })?;
-        self.ctx.flush_push::<M>();
+        self.ctx.flush_push();
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("},\n");
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("_: 1\n");
         self.ctx.indent_level -= 1;
-        self.ctx.push_indent::<M>();
+        self.ctx.push_indent();
         self.ctx.push("})\n");
         Ok(())
     }

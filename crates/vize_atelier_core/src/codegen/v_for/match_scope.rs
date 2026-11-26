@@ -6,7 +6,6 @@
 //! attribute fallthrough, `Transition` / `KeepAlive` still receive one child,
 //! and client, server and hydrated output agree node for node.
 
-use crate::codegen::RenderMapMode;
 use crate::{ElementType, ForNode, RuntimeHelper, TemplateChildNode};
 use vize_l0::String;
 
@@ -50,27 +49,24 @@ pub(crate) fn generate_match_scope(
 }
 
 /// A scope body outside a `v-if` branch: one block root, or a stable fragment.
-pub(crate) fn generate_scope_body<M: RenderMapMode>(
-    ctx: &mut CodegenContext,
-    children: &[TemplateChildNode<'_>],
-) {
+pub(crate) fn generate_scope_body(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
     let rendered: Vec<&TemplateChildNode<'_>> = children
         .iter()
         .filter(|child| !is_directive_comment(child))
         .collect();
     match rendered.as_slice() {
         [] => ctx.push("null"),
-        [child] => generate_root_node::<M>(ctx, child),
+        [child] => generate_root_node(ctx, child),
         children => {
             ctx.use_helper(RuntimeHelper::OpenBlock);
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
             ctx.use_helper(RuntimeHelper::Fragment);
             ctx.push("(");
             if !ctx.untracked_children {
-                ctx.push_vnode_helper::<M>(RuntimeHelper::OpenBlock);
+                ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
                 ctx.push("(), ");
             }
-            ctx.push_vnode_helper::<M>(RuntimeHelper::CreateElementBlock);
+            ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
             ctx.push("(");
             ctx.push(ctx.helper(RuntimeHelper::Fragment));
             ctx.push(", null, [");
@@ -80,7 +76,7 @@ pub(crate) fn generate_scope_body<M: RenderMapMode>(
                     ctx.push(",");
                 }
                 ctx.newline();
-                generate_node::<M>(ctx, child);
+                generate_node(ctx, child);
             }
             ctx.deindent();
             ctx.newline();

@@ -19,7 +19,6 @@ use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     TemplateChildNode, ToCompactString, VNodePropEntry, cstr,
 };
-use vize_atelier_core::codegen::RenderMapMode;
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{camelize, is_builtin_directive};
 
@@ -31,7 +30,7 @@ pub(super) struct MergedAttrs {
 
 /// Vue's `needMergeProps`: an object spread or dynamic-key bind
 /// (`hasDynamicKeyVBind`), or a custom directive.
-pub(super) fn needs_merged_props<M: RenderMapMode>(el: &ElementNode) -> bool {
+pub(super) fn needs_merged_props(el: &ElementNode) -> bool {
     el.props.iter().any(|prop| match prop {
         PropNode::Directive(dir) if dir.name == "bind" => !matches!(
             &dir.arg,
@@ -42,7 +41,7 @@ pub(super) fn needs_merged_props<M: RenderMapMode>(el: &ElementNode) -> bool {
     })
 }
 
-fn custom_directives<'n, 'a, M: RenderMapMode>(
+fn custom_directives<'n, 'a>(
     el: &'n ElementNode<'a>,
 ) -> impl Iterator<Item = &'n DirectiveNode<'a>> {
     el.props.iter().filter_map(|prop| match prop {
@@ -51,7 +50,7 @@ fn custom_directives<'n, 'a, M: RenderMapMode>(
     })
 }
 
-fn has_directive<M: RenderMapMode>(el: &ElementNode, name: &str) -> bool {
+fn has_directive(el: &ElementNode, name: &str) -> bool {
     el.props
         .iter()
         .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == name))
@@ -103,27 +102,27 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// `_ssrRenderAttrs(props[, "tag"])` for a merged element, plus the
     /// content a directive-props temp owns (`rawChildrenMap` upstream).
-    pub(super) fn merged_element_attrs<M: RenderMapMode>(
+    pub(super) fn merged_element_attrs(
         &mut self,
         el: &ElementNode<'a>,
         inherit_attrs: bool,
         css_vars: bool,
     ) -> Option<MergedAttrs> {
-        self.merged_element_attrs_filtered::<M, false>(el, inherit_attrs, css_vars, None)
+        self.merged_element_attrs_filtered::<false>(el, inherit_attrs, css_vars, None)
     }
 
     /// The authored TransitionGroup `tag` selects its wrapper, not an HTML attr.
-    pub(super) fn transition_group_attrs<M: RenderMapMode>(
+    pub(super) fn transition_group_attrs(
         &mut self,
         el: &ElementNode<'a>,
         inherit_attrs: bool,
         css_vars: bool,
         tag_index: Option<usize>,
     ) -> Option<MergedAttrs> {
-        self.merged_element_attrs_filtered::<M, true>(el, inherit_attrs, css_vars, tag_index)
+        self.merged_element_attrs_filtered::<true>(el, inherit_attrs, css_vars, tag_index)
     }
 
-    fn merged_element_attrs_filtered<M: RenderMapMode, const SKIP_TAG: bool>(
+    fn merged_element_attrs_filtered<const SKIP_TAG: bool>(
         &mut self,
         el: &ElementNode<'a>,
         inherit_attrs: bool,
@@ -131,8 +130,8 @@ impl<'a> SsrCodegenContext<'a> {
         tag_index: Option<usize>,
     ) -> Option<MergedAttrs> {
         let mut args = self.merged_props_args::<SKIP_TAG>(el, inherit_attrs, css_vars, tag_index);
-        let has_directives = custom_directives::<M>(el).next().is_some();
-        for dir in custom_directives::<M>(el) {
+        let has_directives = custom_directives(el).next().is_some();
+        for dir in custom_directives(el) {
             let props = self.directive_props(dir);
             args.push(EmitDocument::from(props));
         }
@@ -140,14 +139,14 @@ impl<'a> SsrCodegenContext<'a> {
             return None;
         }
         let mut merged = self.merge_args(&args);
-        let content_override = has_directive::<M>(el, "html") || has_directive::<M>(el, "text");
+        let content_override = has_directive(el, "html") || has_directive(el, "text");
         let mut content = None;
         if el.tag == "textarea" {
             let existing = el.children.first();
             let interpolated = matches!(existing, Some(TemplateChildNode::Interpolation(_)))
-                || has_directive::<M>(el, "model");
+                || has_directive(el, "model");
             if !content_override && !interpolated {
-                let temp = self.alloc_temp::<M>();
+                let temp = self.alloc_temp();
                 let fallback = match existing {
                     Some(TemplateChildNode::Text(text)) => quoted_js_string(text.content),
                     _ => "\"\"".to_compact_string(),
@@ -160,7 +159,7 @@ impl<'a> SsrCodegenContext<'a> {
             }
         } else if el.tag != "input" && has_directives && el.children.is_empty() && !content_override
         {
-            let temp = self.alloc_temp::<M>();
+            let temp = self.alloc_temp();
             merged = assigned(&temp, &merged);
             self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
             content = Some(cstr!(

@@ -1,7 +1,3 @@
-//! VDOM code generation.
-//!
-//! This module generates JavaScript render function code from the transformed AST.
-
 mod children;
 mod component_binding;
 mod context;
@@ -14,8 +10,6 @@ mod expression;
 mod for_alias_spans;
 pub use for_alias_spans::locate_for_aliases;
 mod generate;
-mod map_mode;
-pub use map_mode::{ComposedRenderMap, PlainRenderMap, RenderMapMode};
 mod helpers;
 mod node;
 mod patch_flag;
@@ -53,9 +47,8 @@ pub use helpers::is_constant_simple_expression;
 // Shared with the dialect-gated Vue 2 filter transform, which builds the same
 // `_filter_<name>` asset id the codegen preamble declares.
 pub use entry::{
-    generate, generate_composed_with_sections_slot_scope_and_environment,
-    generate_with_experimental_options, generate_with_merge_props, generate_with_sections,
-    generate_with_sections_and_experimental_options,
+    generate, generate_with_experimental_options, generate_with_merge_props,
+    generate_with_sections, generate_with_sections_and_experimental_options,
     generate_with_sections_and_experimental_options_and_slot_scope,
     generate_with_sections_and_experimental_options_slot_scope_and_environment,
     generate_with_vnode_factory, generate_with_vnode_factory_and_child_values,

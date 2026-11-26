@@ -8,11 +8,11 @@ use crate::{
     steps::v_model::{get_vmodel_helper, parse_model_modifiers},
 };
 
+use super::super::helpers::to_valid_asset_identifier;
 use super::super::{context::CodegenContext, expression::generate_expression};
 use super::helpers::{
     get_custom_directives, get_vmodel_directive, has_vmodel_directive, has_vshow_directive,
 };
-use crate::codegen::helpers::to_valid_asset_identifier;
 
 fn generate_vmodel_entry(
     ctx: &mut CodegenContext,

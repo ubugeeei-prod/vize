@@ -7,7 +7,6 @@
 //! a patterned-template arm is the second case, which keeps an arm's bindings
 //! frozen while other arms still select normally.
 
-use crate::codegen::RenderMapMode;
 use crate::{ElementNode, ElementType, ForNode, IfBranchNode, IfNode, TemplateChildNode};
 
 use super::super::{
@@ -18,7 +17,7 @@ use super::super::{
 use super::branch::generate_if_branch_nodes;
 
 /// Whether `v-once` sits on the chain's own `v-if` element.
-pub(super) fn chain_is_once<M: RenderMapMode>(if_node: &IfNode<'_>) -> bool {
+pub(super) fn chain_is_once(if_node: &IfNode<'_>) -> bool {
     matches!(
         if_node.branches.first().map(|branch| branch.children.as_slice()),
         Some([TemplateChildNode::Element(el)]) if has_v_once(el)
@@ -27,20 +26,20 @@ pub(super) fn chain_is_once<M: RenderMapMode>(if_node: &IfNode<'_>) -> bool {
 
 /// A branch's content. `<template v-if>` around one `v-once` element caches
 /// that element.
-pub(super) fn generate_if_branch_content<M: RenderMapMode>(
+pub(super) fn generate_if_branch_content(
     ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
-    let once = matches!(children, [TemplateChildNode::Element(el)] if wrapped_once::<M>(el));
-    generate::<M>(ctx, children, branch, branch_index, once);
+    let once = matches!(children, [TemplateChildNode::Element(el)] if wrapped_once(el));
+    generate(ctx, children, branch, branch_index, once);
 }
 
 /// A patterned-template scope that is the branch: its content carries the
 /// branch key. `v-once` on a `<template v-when>` arm lands on the scope and
 /// caches the scope with its bindings; on an element arm it caches the element.
-pub(super) fn generate_scope_branch<M: RenderMapMode>(
+pub(super) fn generate_scope_branch(
     ctx: &mut CodegenContext,
     for_node: &ForNode<'_>,
     branch: &IfBranchNode<'_>,
@@ -49,7 +48,7 @@ pub(super) fn generate_scope_branch<M: RenderMapMode>(
     let scope = |ctx: &mut CodegenContext| {
         generate_match_scope(ctx, for_node, &|ctx, children| {
             let once = matches!(children, [TemplateChildNode::Element(el)] if has_v_once(el));
-            generate::<M>(ctx, children, branch, branch_index, once);
+            generate(ctx, children, branch, branch_index, once);
         });
     };
     let scope_once = matches!(
@@ -63,7 +62,7 @@ pub(super) fn generate_scope_branch<M: RenderMapMode>(
     }
 }
 
-fn generate<M: RenderMapMode>(
+fn generate(
     ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
     branch: &IfBranchNode<'_>,
@@ -72,14 +71,14 @@ fn generate<M: RenderMapMode>(
 ) {
     if once {
         generate_v_once_cached(ctx, |ctx| {
-            generate_if_branch_nodes::<M>(ctx, children, branch, branch_index)
+            generate_if_branch_nodes(ctx, children, branch, branch_index)
         });
     } else {
-        generate_if_branch_nodes::<M>(ctx, children, branch, branch_index);
+        generate_if_branch_nodes(ctx, children, branch, branch_index);
     }
 }
 
-fn wrapped_once<M: RenderMapMode>(el: &ElementNode<'_>) -> bool {
+fn wrapped_once(el: &ElementNode<'_>) -> bool {
     el.tag_type == ElementType::Template
         && matches!(
             el.children.as_slice(),

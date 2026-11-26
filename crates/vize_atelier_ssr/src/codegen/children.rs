@@ -4,19 +4,18 @@ use super::SsrCodegenContext;
 use super::css_vars::RootCssVars;
 use super::helpers::single_fallthrough_child_index;
 use vize_atelier_core::TemplateChildNode;
-use vize_atelier_core::codegen::RenderMapMode;
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process root-level children and inherit `_attrs` into a single renderable
     /// root, matching Vue's fallthrough attrs behavior for SSR.
-    pub(crate) fn process_root_children<M: RenderMapMode>(
+    pub(crate) fn process_root_children(
         &mut self,
         children: &[TemplateChildNode<'a>],
         as_fragment: bool,
         disable_nested_fragments: bool,
         disable_comment: bool,
     ) {
-        self.process_children_with_fallthrough_attrs_and_css_vars::<M>(
+        self.process_children_with_fallthrough_attrs_and_css_vars(
             children,
             as_fragment,
             disable_nested_fragments,
@@ -29,7 +28,7 @@ impl<'a> SsrCodegenContext<'a> {
         );
     }
 
-    pub(crate) fn process_children_with_fallthrough_attrs<M: RenderMapMode>(
+    pub(crate) fn process_children_with_fallthrough_attrs(
         &mut self,
         children: &[TemplateChildNode<'a>],
         as_fragment: bool,
@@ -37,7 +36,7 @@ impl<'a> SsrCodegenContext<'a> {
         disable_comment: bool,
         inherit_attrs: bool,
     ) {
-        self.process_children_with_fallthrough_attrs_and_css_vars::<M>(
+        self.process_children_with_fallthrough_attrs_and_css_vars(
             children,
             as_fragment,
             disable_nested_fragments,
@@ -47,7 +46,7 @@ impl<'a> SsrCodegenContext<'a> {
         );
     }
 
-    pub(crate) fn process_children_with_fallthrough_attrs_and_css_vars<M: RenderMapMode>(
+    pub(crate) fn process_children_with_fallthrough_attrs_and_css_vars(
         &mut self,
         children: &[TemplateChildNode<'a>],
         as_fragment: bool,
@@ -61,13 +60,13 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         let fallthrough_child_index = if inherit_attrs && !as_fragment {
-            single_fallthrough_child_index::<M>(children).unwrap_or(usize::MAX)
+            single_fallthrough_child_index(children).unwrap_or(usize::MAX)
         } else {
             usize::MAX
         };
 
         for (index, child) in vize_atelier_core::walk_probe::ssr_children(children).enumerate() {
-            self.process_child::<M>(
+            self.process_child(
                 child,
                 disable_nested_fragments,
                 disable_comment,
