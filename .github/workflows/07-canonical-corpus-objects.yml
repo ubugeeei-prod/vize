@@ -43,7 +43,7 @@ jobs:
         run: node tools/support/compat/github/canonical-corpus-observer.mjs plan
       - name: Require a trusted cache writer
         if: ${{ steps.corpus-plan.outputs.cache-trusted != 'true' }}
-        run: . "${{ env.VIZE_CI_FILES }}/require-a-trusted-cache-writer.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/require-a-trusted-cache-writer.sh"
       - name: Cache immutable trusted fixture objects
         id: objects
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5

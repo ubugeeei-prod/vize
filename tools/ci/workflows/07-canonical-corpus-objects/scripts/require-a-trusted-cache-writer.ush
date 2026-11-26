@@ -1,0 +1,2 @@
+# Stop the job: only trusted default-branch runs may seed the immutable fixture-object cache.
+fail 1 "Only trusted default-branch runs seed canonical fixture objects."

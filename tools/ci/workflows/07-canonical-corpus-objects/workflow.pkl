@@ -61,7 +61,7 @@ jobs {
       new Dynamic {
         name = "Require a trusted cache writer"
         `if` = "${{ steps.corpus-plan.outputs.cache-trusted != 'true' }}"
-        run = ci.workflowScript("require-a-trusted-cache-writer.sh")
+        run = ci.workflowProgram("require-a-trusted-cache-writer")
       }
       new Dynamic {
         name = "Cache immutable trusted fixture objects"
