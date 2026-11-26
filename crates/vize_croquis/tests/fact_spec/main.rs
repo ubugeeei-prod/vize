@@ -48,8 +48,10 @@ fn the_committed_planes_agree_with_the_specs() {
             .unused
             .verdict("unused-bindings", "battery")
             .unwrap();
-        // Keep the historical 24 facts and separately require the five exact
-        // destructured declarations newly visible through authored spans.
+        // Keep the historical 24 facts, the reactivity battery's
+        // `useTemplateRef("el")` handle (its key, not its name, wires
+        // `ref="el"`), and separately require the five exact destructured
+        // declarations newly visible through authored spans.
         let added = destructure_census::assert_added_pattern_witnesses().unwrap();
         assert_eq!(
             (
@@ -57,7 +59,7 @@ fn the_committed_planes_agree_with_the_specs() {
                 battery.unused.compared,
                 battery.unused.facts
             ),
-            (9, 9, 24 + added)
+            (9, 9, 24 + 1 + added)
         );
     }
     eprintln!("{}", battery.scope_lines("battery"));

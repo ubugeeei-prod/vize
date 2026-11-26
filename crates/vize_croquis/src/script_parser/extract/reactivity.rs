@@ -47,6 +47,23 @@ pub fn detect_reactivity_call(
     }
 }
 
+/// Whether `call` is Vue's `useTemplateRef(key)`, spelled directly or through
+/// a recorded alias. Its result is wired to a template ref by the key string,
+/// never by the name of the binding that holds it.
+pub fn is_template_ref_call(
+    call: &CallExpression<'_>,
+    reactivity_aliases: &FxHashMap<CompactString, CompactString>,
+) -> bool {
+    let Expression::Identifier(callee) = &call.callee else {
+        return false;
+    };
+    let name = callee.name.as_str();
+    reactivity_aliases
+        .get(name)
+        .map_or(name, CompactString::as_str)
+        == "useTemplateRef"
+}
+
 /// Detect Vue API calls that violate setup context (CSRP/Memory Leak risks)
 /// Returns true if a violation was detected and recorded
 pub fn detect_setup_context_violation(

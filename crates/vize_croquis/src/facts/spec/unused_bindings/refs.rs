@@ -1,8 +1,37 @@
 //! Independent static template-ref reads over a freshly parsed template.
 
+use oxc_ast::AstKind;
+use oxc_ast::ast::Expression;
 use std::collections::BTreeSet;
 use vize_carton::{Allocator, CompactString};
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
+
+/// Whether a setup declaration is `name = useTemplateRef(...)`, through
+/// parentheses and TypeScript wrappers. Only the direct spelling counts, as
+/// it is the only one the script analysis resolves to Vue's API.
+pub(super) fn is_template_ref_handle(declaration: AstKind<'_>) -> bool {
+    let AstKind::VariableDeclarator(declarator) = declaration else {
+        return false;
+    };
+    if !declarator.id.is_binding_identifier() {
+        return false;
+    }
+    let mut init = declarator.init.as_ref();
+    while let Some(expression) = init {
+        init = match expression {
+            Expression::ParenthesizedExpression(inner) => Some(&inner.expression),
+            Expression::TSAsExpression(inner) => Some(&inner.expression),
+            Expression::TSSatisfiesExpression(inner) => Some(&inner.expression),
+            Expression::TSNonNullExpression(inner) => Some(&inner.expression),
+            Expression::CallExpression(call) => {
+                return matches!(&call.callee, Expression::Identifier(callee)
+                    if callee.name == "useTemplateRef");
+            }
+            _ => None,
+        };
+    }
+    false
+}
 
 pub(super) fn evaluate(source: &str) -> BTreeSet<CompactString> {
     let allocator = Allocator::default();

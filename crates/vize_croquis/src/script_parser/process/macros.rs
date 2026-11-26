@@ -14,8 +14,8 @@ use super::super::extract::{
     check_reactive_property_extraction, check_ref_value_extraction, detect_reactivity_call,
     detect_setup_context_violation, extract_argument_source, extract_call_expression,
     extract_inject_expected_type_from_init as inject_type, extract_provide_key,
-    get_binding_type_from_kind, process_call_expression, record_getter_context_from_call,
-    record_static_runtime_object_literal,
+    get_binding_type_from_kind, is_template_ref_call, process_call_expression,
+    record_getter_context_from_call, record_static_runtime_object_literal,
 };
 use super::super::walk::{walk_call_arguments, walk_expression_with_closure_name};
 use super::super::{ReactiveValueOrigin, ScriptParseResult};
@@ -79,6 +79,9 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     detect_reactivity_call(call, &result.reactivity_aliases)
                 {
                     detect_setup_context_violation(result, call);
+                    if is_template_ref_call(call, &result.reactivity_aliases) {
+                        result.template_ref_handles.insert(CompactString::new(name));
+                    }
 
                     result
                         .reactivity
