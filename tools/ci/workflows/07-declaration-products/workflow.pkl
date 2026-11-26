@@ -43,7 +43,7 @@ jobs {
       new Dynamic {
         name = "Check immutable binding traces and witness unsafe scopes"
         env { ALLOY_SHA256 = "6037cbeee0e8423c1c468447ed10f5fcf2f2743a2ffc39cb1c81f2905c0fdb9d" }
-        run = ci.workflowScript("check-immutable-binding-traces-and-witness-unsafe-scopes.sh")
+        run = ci.workflowProgram("check-immutable-binding-traces-and-witness-unsafe-scopes")
       }
     }
   }
@@ -87,7 +87,7 @@ jobs {
       new Dynamic {
         name = "Model native acknowledgement and publication across edits"
         `working-directory` = "tests/formal/ambient-diagnostics"
-        run = ci.workflowScript("model-native-diagnostic-publication.sh")
+        run = ci.workflowProgram("model-native-diagnostic-publication")
       }
       new Dynamic {
         name = "Compare cold and repeated diagnostics on both revisions"
@@ -95,7 +95,7 @@ jobs {
           BASE_SHA = "${{ github.event.pull_request.base.sha }}"
           HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
         }
-        run = ci.workflowScript("compare-ambient-diagnostic-revisions.sh")
+        run = ci.workflowProgram("compare-ambient-diagnostic-revisions")
       }
       new Dynamic {
         uses = ci.uploadArtifact

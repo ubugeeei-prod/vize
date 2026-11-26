@@ -1,0 +1,28 @@
+# Model-check native acknowledgement and publication across edits, and require each injected fault to break it.
+use $bin::{awk, curl, grep, java, sha256sum}
+use std::io::to_file
+use std::path::from_source
+
+# Runs the pinned TLC on Publication.tla with one configuration.
+fn tlc(jar: String, metadir: String, config: String) -> () {
+  java -cp $jar tlc2.TLC -workers 1 -metadir $metadir -config $config Publication.tla
+}
+
+let temp = $env::RUNNER_TEMP
+let jar = $"$temp/ambient-tlc.jar"
+
+curl -fsSL --retry 3 -o $jar https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar
+$"936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88  $jar\n" | sha256sum -c -
+tlc $jar $"$temp/ambient-model" Publication.cfg
+
+for fault in ["ack", "native", "doc", "sources", "host", "revision", "publish"] {
+  let config = $"$temp/ambient-$fault.cfg"
+  let log = $"$temp/ambient-$fault.log"
+  awk -v fault=$fault -f (from_source "ambient-publication-fault.awk") Publication.cfg | to_file $config
+  # TLC exits 12 when an invariant is violated.
+  let result = status_of tlc $jar $"$temp/ambient-$fault" $config |& to_file $log
+  if result != 12 {
+    fail 1 $"TLC exited $result, not 12, with the $fault fault injected"
+  }
+  grep -F "Invariant ExactPublication is violated" $log
+}

@@ -53,8 +53,7 @@ jobs:
       - name: Check immutable binding traces and witness unsafe scopes
         env:
           ALLOY_SHA256: "6037cbeee0e8423c1c468447ed10f5fcf2f2743a2ffc39cb1c81f2905c0fdb9d"
-        run: |-
-          . "${{ env.VIZE_CI_FILES }}/check-immutable-binding-traces-and-witness-unsafe-scopes.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/check-immutable-binding-traces-and-witness-unsafe-scopes.sh"
   ambient-component-project:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
@@ -99,12 +98,12 @@ jobs:
           run-install: true
       - name: Model native acknowledgement and publication across edits
         working-directory: tests/formal/ambient-diagnostics
-        run: . "${{ env.VIZE_CI_FILES }}/model-native-diagnostic-publication.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/model-native-diagnostic-publication.sh"
       - name: Compare cold and repeated diagnostics on both revisions
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: . "${{ env.VIZE_CI_FILES }}/compare-ambient-diagnostic-revisions.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/compare-ambient-diagnostic-revisions.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

@@ -1,0 +1,19 @@
+# Solve the pinned Alloy model of immutable bindings and check that its instances witness each unsafe scope.
+use $bin::{curl, java, jq, sha256sum}
+use std::path::from_source
+
+let alloy = "literal-alloy.jar"
+let alloy_url = "https://repo.maven.apache.org/maven2/org/alloytools/org.alloytools.alloy.dist/6.2.0/org.alloytools.alloy.dist-6.2.0.jar"
+let model = $"$env::GITHUB_WORKSPACE/tests/formal/primitive-assignments/PreferConst.als"
+
+cd $env::RUNNER_TEMP {
+  curl -fsSL --retry 3 -o $alloy $alloy_url
+  $"$env::ALLOY_SHA256  $alloy\n" | sha256sum -c -
+  java -Djava.awt.headless=true -jar $alloy exec \
+    -q \
+    -c "*" \
+    -t none \
+    -o literal-instances \
+    $model
+  jq -e -f (from_source "check-immutable-bindings.jq") literal-instances/receipt.json
+}

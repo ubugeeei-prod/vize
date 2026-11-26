@@ -1,0 +1,67 @@
+# Build the ambient-project diagnostics tests at the base and head revisions and compare their cold and repeated costs.
+use $bin::{cargo, cmp, cp, git, grep, jq, ln, node, tee}
+use std::fs::{append_text, is_dir}
+use std::io::to_file
+use std::path::from_source
+use std::process::exec
+use std::regex::is_match
+use std::string::lines
+
+let base_sha = $env::BASE_SHA
+let head_sha = $env::HEAD_SHA
+let workspace = $env::GITHUB_WORKSPACE
+let temp = $env::RUNNER_TEMP
+let work = $"$temp/ambient-read-checkout"
+let suite = "crates/vize_maestro/src/ide/diagnostics/corsa/ambient_project"
+
+if !(is_match $base_sha "^[0-9a-f]{40}$") || !(is_match $head_sha "^[0-9a-f]{40}$") {
+  fail 1 "BASE_SHA and HEAD_SHA must be full lowercase commit SHAs"
+}
+git fetch --no-tags --depth=1 origin $base_sha
+export CARGO_TARGET_DIR = $"$workspace/target"
+
+for (side, revision) in [("base", base_sha), ("head", head_sha)] {
+  # Each revision is checked out in turn into the same directory.
+  if side == "head" {
+    git worktree remove --force $work
+  }
+  git worktree add --quiet --detach $work $revision
+  for dir in ["node_modules", "playground/node_modules"] {
+    if is_dir $"$workspace/$dir" {
+      ln -s $"$workspace/$dir" $"$work/$dir"
+    }
+  }
+  # Instrument only the test module on the parent. Both executables
+  # embed the same manifest path and run with the same pinned SDK.
+  if side == "base" {
+    cp $"$workspace/$suite/tests/cost.rs" $"$work/$suite/tests/cost.rs"
+    if ! grep -Fxq "mod cost;" $"$work/$suite/tests.rs" {
+      append_text $"$work/$suite/tests.rs" "mod cost;\n"
+    }
+  }
+  cmp $"$workspace/$suite/tests/cost.rs" $"$work/$suite/tests/cost.rs"
+  let build_messages = $"$temp/ambient-$side.jsonl"
+  cd $work {
+    cargo test --locked --profile ci-opt -p vize_maestro --lib \
+      --features experimental-ambient-project,micro-profiling \
+      --no-run \
+      --message-format=json |
+      to_file $build_messages
+  }
+  let executables = lines (jq -r -f (from_source "native-maestro-test-executable.jq") $build_messages)
+  if executables.len() != 1 {
+    fail 1 $"The $side build produced ${executables.len()} vize_maestro test executables, not one"
+  }
+  cp (executables[0]) $"$temp/ambient-$side"
+}
+
+let head_tests = $"$temp/ambient-head"
+let phase_test = "ide::diagnostics::corsa::ambient_project::tests::repeated::alternating_hosts_and_raw_reads_keep_the_current_native_answer"
+exec $head_tests ["--list"] | grep -Fx $"$phase_test: test"
+exec $head_tests ["--exact", "--ignored", phase_test]
+# The comparison is the job summary and stays in the log as it is written.
+node tools/benchmarks/scripts/compare-ambient-diagnostics.ts \
+  $"$temp/ambient-base" \
+  $head_tests \
+  $"$temp/ambient-diagnostics.json" |
+  tee -a $env::GITHUB_STEP_SUMMARY
