@@ -59,17 +59,53 @@ verify-rendered-navigation-and-japanese-reading-paths.ush [--complete [PREFIX]]
     exit 0 ;;
 esac
 
-__ush_std_path_make_ref() {
-  __ush_kind=$1
-  __ush_value=$2
+__ush_std_path_join_parts() {
+  __ush_left=$1
+  __ush_right=$2
+  if [ -z "$__ush_left" ]; then
+    printf '%s' "$__ush_right"
+    return 0
+  fi
+  if [ -z "$__ush_right" ]; then
+    printf '%s' "$__ush_left"
+    return 0
+  fi
+  while [ "$__ush_left" != "/" ] && [ "${__ush_left%/}" != "$__ush_left" ]; do
+    __ush_left=${__ush_left%/}
+  done
+  while [ "${__ush_right#/}" != "$__ush_right" ]; do
+    __ush_right=${__ush_right#/}
+  done
+  case "$__ush_left" in
+    /) printf '/%s' "$__ush_right" ;;
+    *) printf '%s/%s' "$__ush_left" "$__ush_right" ;;
+  esac
+}
+
+__ush_std_path_resolve() {
+  __ush_value=$1
   case "$__ush_value" in
-    ''|/*|__ush_pathref__:*) printf '%s' "$__ush_value" ;;
-    *) printf '__ush_pathref__:%s:%s' "$__ush_kind" "$__ush_value" ;;
+    __ush_pathref__:cwd:*)
+      __ush_std_path_join_parts "$(pwd)" "${__ush_value#__ush_pathref__:cwd:}"
+      ;;
+    __ush_pathref__:source:*)
+      __ush_base=${__ush_source_dir:-}
+      if [ -z "$__ush_base" ]; then
+        __ush_base=$(pwd)
+      fi
+      __ush_std_path_join_parts "$__ush_base" "${__ush_value#__ush_pathref__:source:}"
+      ;;
+    *) printf '%s' "$__ush_value" ;;
   esac
 }
 
 ush_fn_std__path__from_source() {
-  __ush_std_path_make_ref source "$1"
+  # The source's directory is fixed for the whole run, so a source-relative path
+  # is resolved at once: the value is a real path wherever it is passed.
+  case "$1" in
+    ''|/*) printf '%s' "$1" ;;
+    *) __ush_std_path_resolve "__ush_pathref__:source:$1" ;;
+  esac
 }
 
 __ush_at 5 'let ja_reading_routes = node (from_source "verify-rendered-navigation-and-japanese-reading-paths.ts")'

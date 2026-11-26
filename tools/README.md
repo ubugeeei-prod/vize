@@ -106,7 +106,8 @@ node tools/support/github/docs-preview-readiness.ts $log $evidence
 - Write real ush: pipelines, `cd dir { … }`, `export NAME = value { … }`, std
   modules. Never embed shell text with `shell` or `$ …`.
 - Write arguments as on a command line: a bare word is a string, `$name` reads a
-  binding, `$env::NAME` reads the environment, and `$"…"` interpolates.
+  binding, `$env::NAME` reads the environment, and `$"…"` interpolates. Break a
+  long call after ` \` with one flag per line.
 - Reach files next to the program with `std::path::from_source`, not with
   `$VIZE_CI_FILES`.
 - Put helpers that several programs share in a `lib/` module, such as

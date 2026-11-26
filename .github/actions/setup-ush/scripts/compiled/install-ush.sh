@@ -171,12 +171,12 @@ ush_fn_github__add_path() {
   return 0
 }
 
-__ush_at 6 'let version = "0.18.0"'
-__ush_binding_6_version='0.18.0'
+__ush_at 6 'let version = "0.19.0"'
+__ush_binding_6_version='0.19.0'
 # shellcheck disable=SC2034
 version="${__ush_binding_6_version}"
 __ush_at 9 'let checksums = """'
-__ush_binding_9_checksums='61ab065e5caf985dcfad93a7afd8a0db83dacd9545885842f9c7a5d9e10126d8  ush-aarch64-apple-darwin.tar.gz'"${__ush_lf}"'6d472805bfe05a9a9e8242a31bca35cdcc348416b1f94fbf235226be4abe9c81  ush-aarch64-unknown-linux-gnu.tar.gz'"${__ush_lf}"'b4941e150ca61b2c6b14e0a4127c8faee8e2b2af7435bce609ac2b48c60221b9  ush-x86_64-apple-darwin.tar.gz'"${__ush_lf}"'f51b36be4c3a0f1d16ab147b9a11a377658c9c10fd40ac693c80ef039b2777aa  ush-x86_64-unknown-linux-gnu.tar.gz'
+__ush_binding_9_checksums='eca9457ad433c32abfef778e22aee1744306674c1603b7590a51c666f76dba52  ush-aarch64-apple-darwin.tar.gz'"${__ush_lf}"'001a554b6e8950ac662b3438b468b826f6c1039879265c1155a242abc3e98a33  ush-aarch64-unknown-linux-gnu.tar.gz'"${__ush_lf}"'d675dc61ad0ffe5767d91113f542085c2c7d7db118230065baaa7db903c87328  ush-x86_64-apple-darwin.tar.gz'"${__ush_lf}"'e91b2f3d96f6e03bd5885317ab9498b2a85dbac8888ed9efcde791adfb2fae80  ush-x86_64-unknown-linux-gnu.tar.gz'
 # shellcheck disable=SC2034
 checksums="${__ush_binding_9_checksums}"
 __ush_at 16 'if $env::RUNNER_OS != "Linux" {'
