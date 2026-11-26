@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_meet_reads_the_first_classes": {
+        "prover": "alt-ergo",
+        "time": 0.008
+      }
+    }
+  }
+}

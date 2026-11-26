@@ -210,6 +210,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_l0_fusion_proofs"
+version = "0.0.0"
+dependencies = [
+ "creusot-std",
+]
+
+[[package]]
 name = "vize_l0_line_index_proofs"
 version = "0.0.0"
 dependencies = [

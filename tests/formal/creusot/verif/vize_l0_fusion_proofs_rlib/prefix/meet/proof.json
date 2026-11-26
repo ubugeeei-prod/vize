@@ -1,0 +1,6 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": { "vc_meet": { "prover": "alt-ergo", "time": 0.005 } }
+  }
+}
