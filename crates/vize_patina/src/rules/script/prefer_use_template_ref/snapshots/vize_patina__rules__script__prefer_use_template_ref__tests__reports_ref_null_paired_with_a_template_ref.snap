@@ -10,7 +10,7 @@ expression: result.diagnostics
         start: 65,
         end: 99,
         help: Some(
-            "Replace with: `const input = useTemplateRef('input')`",
+            "Replace with: `const input = useTemplateRef<HTMLInputElement>('input')`",
         ),
         labels: [
             Label {

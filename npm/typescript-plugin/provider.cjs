@@ -143,29 +143,48 @@ function bundledProvider(root) {
     nativeBuildToken: receipt.nativeBuildToken,
   };
 }
+// Whether this plugin is the copy the project itself installs: the one its
+// own module resolution reaches, hoisted or linked, not one shared by every project.
+function loadedByProject(projectRoot) {
+  try {
+    const ownRoot = fs.realpathSync(__dirname);
+    const resolved = require.resolve("@vizejs/typescript-vue-plugin", { paths: [projectRoot] });
+    return fs.realpathSync(path.dirname(resolved)) === ownRoot;
+  } catch {
+    return false;
+  }
+}
 function loadNative(projectRoot, nativePath) {
   try {
     const extension = ownExtensionRoot();
     if (extension) return bundledProvider(extension);
+    const root = projectRoot || process.cwd();
+    // A project that installs this plugin already chooses the code tsserver loads.
+    // A plugin shared by every project takes no module path from one of them.
+    if (nativePath !== undefined && !loadedByProject(root))
+      throw new Error(
+        "nativePath requires the project to resolve this @vizejs/typescript-vue-plugin",
+      );
     let entry;
     try {
       entry =
         nativePath === undefined
           ? require.resolve("@vizejs/native")
-          : require.resolve(path.resolve(projectRoot || process.cwd(), nativePath));
+          : require.resolve(path.resolve(root, nativePath));
     } catch (cause) {
       // An absent default package is not a projection failure. An explicit path still is.
       if (nativePath === undefined && cause?.code === "MODULE_NOT_FOUND")
         return { error: cause.message, unavailable: true };
       throw cause;
     }
-    const native = require(entry),
-      directory = path.dirname(entry);
-    const metadata = require(path.join(directory, "package.json"));
-    if (metadata.name !== "@vizejs/native")
+    const directory = path.dirname(entry);
+    // Read the manifest as data first: only the native package's entry is ever loaded.
+    const metadata = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"));
+    if (metadata?.name !== "@vizejs/native")
       throw new Error("nativePath must identify @vizejs/native");
     if (nativePath === undefined && metadata.version !== ownVersion)
       throw new Error("The default native provider must match the plugin release");
+    const native = require(entry);
     const helper = require(path.join(directory, "language-projection.js"));
     checkCapabilities(native, helper);
     return {

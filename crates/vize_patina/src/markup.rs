@@ -20,8 +20,7 @@
 //! - **OXC** — a JSX/TSX program read straight from the OXC AST.
 //!
 //! Every wrapper is `Copy` and holds a shared reference into the backing arena
-//! (or, for OXC, a raw pointer into the program kept alive for the lint pass —
-//! see the `jsx_*_ref` SAFETY notes). Names and values are `&str` slices that
+//! or the borrowed OXC program. Names and values are `&str` slices that
 //! borrow the original source; nothing allocates unless a rule explicitly asks
 //! for normalized owned data (e.g. [`MarkupElement::direct_text_content`]).
 //!

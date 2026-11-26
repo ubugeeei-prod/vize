@@ -16,6 +16,9 @@ By default, the server reads `vue` settings from `vite.config.*` and `vueCompile
 from `tsconfig.json`, including nested projects. Named profiles and explicit
 `initialization_options` override project features.
 
+The server evaluates the project's Vite config and uses the project's TypeScript runtime, so
+enable it only for projects you trust.
+
 Saving a JavaScript, TypeScript, or JSON configuration/helper buffer inside the
 running Vize workspace notifies the server to reload affected projects. Invalid
 edits retain the last valid settings until the configuration is fixed. The pinned

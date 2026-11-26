@@ -1,13 +1,14 @@
 //! `defineModel` code generation for function mode.
 
 use vize_carton::String;
+use vize_carton::string_builder::TextBuf;
 
 use crate::compile_script::erasure::Erasure;
 use crate::script::{ScriptCompileContext, define_model_metadata, model_modifiers_binding_name};
 
 /// Emit `defineModel` bindings and return their binding names.
 pub(super) fn emit_model_bindings(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     ctx: &ScriptCompileContext,
     mut erasure: Option<&mut Erasure>,
 ) -> Vec<String> {
@@ -18,26 +19,26 @@ pub(super) fn emit_model_bindings(
             if let Some(erasure) = erasure.as_deref_mut() {
                 erasure.optional_expression(&mut metadata.runtime_options);
             }
-            output.extend_from_slice(b"  const ");
+            output.push_str("  const ");
             if let Some(ref modifiers) =
                 model_modifiers_binding_name(ctx.source.as_str(), model_call)
             {
-                output.push(b'[');
-                output.extend_from_slice(binding_name.as_bytes());
-                output.extend_from_slice(b", ");
-                output.extend_from_slice(modifiers.as_bytes());
-                output.push(b']');
+                output.push('[');
+                output.push_str(binding_name);
+                output.push_str(", ");
+                output.push_str(modifiers);
+                output.push(']');
             } else {
-                output.extend_from_slice(binding_name.as_bytes());
+                output.push_str(binding_name);
             }
-            output.extend_from_slice(b" = _useModel(__props, \"");
-            output.extend_from_slice(metadata.name.as_bytes());
-            output.push(b'"');
+            output.push_str(" = _useModel(__props, \"");
+            output.push_str(&metadata.name);
+            output.push('"');
             if let Some(options) = metadata.runtime_options {
-                output.extend_from_slice(b", ");
-                output.extend_from_slice(options.as_bytes());
+                output.push_str(", ");
+                output.push_str(&options);
             }
-            output.extend_from_slice(b")\n");
+            output.push_str(")\n");
             binding_names.push(String::from(binding_name.as_str()));
         }
     }

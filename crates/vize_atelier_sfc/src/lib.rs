@@ -82,6 +82,9 @@ pub use compile::compile_sfc_for_adapter_with_project_and_stage_capture;
 pub use compile::compile_sfc_with_vue_parser_quirks;
 pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
 pub use compile::{
+    SfcCompileTarget, SfcTargetsCompileResult, compile_sfc_for_adapter_targets_with_project,
+};
+pub use compile::{
     SfcScriptOutputMode, compile_sfc_for_adapter,
     compile_sfc_for_adapter_with_experimental_options, compile_sfc_for_adapter_with_nuxt_page_meta,
     compile_sfc_for_adapter_with_stage_capture,

@@ -62,7 +62,7 @@ preset, Locale En, Help Full. The immutable original input pack is
 | ------------------ | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | ref-string-untyped | empty diagnostics; errors0/warnings0; applications[]; unchanged_requery Some identical result | 126d2b99b87ecc8a6005572590733177df45adfeef0a2becd8a425b363ef6b1f |
 | ref-string-typed   | empty diagnostics; errors0/warnings0; applications[]; unchanged_requery Some identical result | dfa5f1a62c18689ee71a7bac7db56c165ef9bc4736399a7e82118d7a2c00b5f3 |
-| ref-call-control   | one Warning64..98; applications[]; unchanged_requery Some identical result                    | 812da01796e6a91b28459f73451ca66d4f6327acb82a5e7e4a22dbd78bb429d8 |
+| ref-call-control   | one Warning64..98; applications[]; unchanged_requery Some identical result                    | b2cdad3016b35594ce55184e09f1ce5d0d46a76b80f9cd22b1088e51f92ddf00 |
 
 The control's full existing diagnostic is rule `script/prefer-use-template-ref`,
 message `Template ref 'text' is declared with ref(); use useTemplateRef() instead (Vue 3.5+).`,

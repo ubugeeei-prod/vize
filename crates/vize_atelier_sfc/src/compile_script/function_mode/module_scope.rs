@@ -1,5 +1,6 @@
 //! Module-scope declaration emission for function mode.
 
+use vize_carton::string_builder::TextBuf;
 use vize_carton::{String, ToCompactString};
 
 use super::super::erasure::Erasure;
@@ -18,18 +19,18 @@ pub(super) fn extract(content: &str) -> (Vec<String>, Vec<String>, Vec<String>) 
 }
 
 pub(super) fn emit_module_scope(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     declarations: &[String],
     erasure: Option<&mut Erasure>,
 ) {
     if let Some(erasure) = erasure.filter(|_| !declarations.is_empty()) {
         let (code, _) = erasure.statements(&declarations.join("\n"), false);
-        output.extend_from_slice(code.trim_end().as_bytes());
-        output.push(b'\n');
+        output.push_str(code.trim_end());
+        output.push('\n');
         return;
     }
     for declaration in declarations {
-        output.extend_from_slice(declaration.as_bytes());
-        output.push(b'\n');
+        output.push_str(declaration);
+        output.push('\n');
     }
 }

@@ -118,6 +118,7 @@ function createContext(): MiddlewareContext {
 async function invokeMiddleware(
   handler: Connect.NextHandleFunction,
   url: string,
+  headers: IncomingMessage["headers"] = {},
 ): Promise<CapturedResponse> {
   return await new Promise((resolve, reject) => {
     const captured: CapturedResponse = {
@@ -129,7 +130,8 @@ async function invokeMiddleware(
     const req = {
       method: "GET",
       url,
-      headers: {},
+      headers,
+      socket: { remoteAddress: "127.0.0.1" },
     } as IncomingMessage;
     const res = {
       get statusCode() {
@@ -221,6 +223,32 @@ void test("gallery asset middleware rejects encoded traversal", async () => {
   assert.equal(response.statusCode, 400);
   assert.equal(response.nextCalled, false);
   assert.match(response.body, /asset path must not contain parent directory segments/);
+});
+
+void test("the gallery page carries the session token for local requests only", async () => {
+  const { devServer, stack } = createDevServer(process.cwd());
+  registerMiddleware(devServer, createContext());
+  const galleryHandler = stack.find((entry) => entry.route === "/__musea__")?.handler;
+  assert.ok(galleryHandler);
+  const globals = async (headers: IncomingMessage["headers"]) => {
+    const response = await invokeMiddleware(galleryHandler, "/", headers);
+    assert.equal(response.statusCode, 200);
+    assert.equal(response.headers["content-type"], "text/html");
+    return /<script>(window\.__MUSEA_BASE_PATH__=[^<]*)<\/script>/.exec(response.body)?.[1];
+  };
+
+  assert.equal(
+    await globals({ host: "localhost:5173" }),
+    'window.__MUSEA_BASE_PATH__="/__musea__";window.__MUSEA_SESSION_TOKEN__="test-session";',
+  );
+  // The page still renders for other readers; their writes are refused by the API.
+  for (const headers of [
+    { host: "preview.tunnel.example" },
+    { host: "localhost:5173", "x-forwarded-for": "203.0.113.7" },
+    { host: "192.168.1.10:5173" },
+  ]) {
+    assert.equal(await globals(headers), 'window.__MUSEA_BASE_PATH__="/__musea__";');
+  }
 });
 
 void test("art module middleware returns 400 for malformed encoded art paths", async () => {

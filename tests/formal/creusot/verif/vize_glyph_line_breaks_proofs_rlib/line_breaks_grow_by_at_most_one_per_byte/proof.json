@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_line_breaks_grow_by_at_most_one_per_byte": {
+        "prover": "alt-ergo",
+        "time": 0.005
+      }
+    }
+  }
+}

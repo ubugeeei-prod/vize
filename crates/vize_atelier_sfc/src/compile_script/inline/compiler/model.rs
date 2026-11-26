@@ -2,6 +2,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{Statement, TSType, TSTypeName};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use vize_carton::string_builder::TextBuf;
 use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
 use crate::script::{ScriptCompileContext, define_model_metadata, model_modifiers_binding_name};
@@ -133,32 +134,31 @@ pub(super) fn build_model_props_emits(
     needs_merge_defaults: bool,
     with_defaults_values: Option<&WithDefaultsValues>,
     is_prod: bool,
-) -> Vec<u8> {
-    let mut buf: Vec<u8> = Vec::new();
+) -> TextBuf {
+    let mut buf = TextBuf::new();
 
     // ---- props ----
     if !model_infos.is_empty() {
         // model props declaration: `{\n    "name": <opts>,\n    "nameModifiers": {},\n  }`
-        let mut model_decl: Vec<u8> = Vec::new();
-        model_decl.push(b'{');
+        let mut model_decl = TextBuf::new();
+        model_decl.push('{');
         for (model_name, _binding_name, _modifiers_binding_name, options, _, type_arg) in
             model_infos
         {
-            model_decl.extend_from_slice(b"\n    \"");
-            model_decl.extend_from_slice(model_name.as_bytes());
-            model_decl.extend_from_slice(b"\": ");
-            model_decl
-                .extend_from_slice(model_value_prop(ctx, options, type_arg, is_prod).as_bytes());
-            model_decl.extend_from_slice(b",\n    \"");
+            model_decl.push_str("\n    \"");
+            model_decl.push_str(model_name);
+            model_decl.push_str("\": ");
+            model_decl.push_str(&model_value_prop(ctx, options, type_arg, is_prod));
+            model_decl.push_str(",\n    \"");
             if model_name == "modelValue" {
-                model_decl.extend_from_slice(b"modelModifiers");
+                model_decl.push_str("modelModifiers");
             } else {
-                model_decl.extend_from_slice(model_name.as_bytes());
-                model_decl.extend_from_slice(b"Modifiers");
+                model_decl.push_str(model_name);
+                model_decl.push_str("Modifiers");
             }
-            model_decl.extend_from_slice(b"\": {},");
+            model_decl.push_str("\": {},");
         }
-        model_decl.extend_from_slice(b"\n  }");
+        model_decl.push_str("\n  }");
 
         let user_props = build_user_props_decl(
             ctx,
@@ -168,24 +168,26 @@ pub(super) fn build_model_props_emits(
             with_defaults_values,
             is_prod,
         );
-        buf.extend_from_slice(b"  props: ");
+        buf.push_str("  props: ");
         if let Some(user) = user_props {
-            buf.extend_from_slice(b"/*@__PURE__*/_mergeModels(");
-            buf.extend_from_slice(user.as_bytes());
-            buf.extend_from_slice(b", ");
-            buf.extend_from_slice(&model_decl);
-            buf.push(b')');
+            buf.push_str("/*@__PURE__*/_mergeModels(");
+            buf.push_str(&user);
+            buf.push_str(", ");
+            buf.push_str(&model_decl);
+            buf.push(')');
         } else {
-            buf.extend_from_slice(&model_decl);
+            buf.push_str(&model_decl);
         }
-        buf.extend_from_slice(b",\n");
+        buf.push_str(",\n");
     }
 
     // ---- emits ----
     // User-declared emits, kept verbatim from source (array) or extracted from type.
-    let user_emits: Option<Vec<u8>> = ctx.macros.define_emits.as_ref().and_then(|m| {
+    let user_emits: Option<TextBuf> = ctx.macros.define_emits.as_ref().and_then(|m| {
         if !m.args.is_empty() {
-            Some(m.args.trim().as_bytes().to_vec())
+            let mut v = TextBuf::new();
+            v.push_str(m.args.trim());
+            Some(v)
         } else if let Some(ref type_args) = m.type_args {
             let resolved_type_args =
                 resolve_type_args(type_args, &ctx.interfaces, &ctx.type_aliases);
@@ -193,17 +195,17 @@ pub(super) fn build_model_props_emits(
             if names.is_empty() {
                 None
             } else {
-                let mut v = Vec::new();
-                v.push(b'[');
+                let mut v = TextBuf::new();
+                v.push('[');
                 for (i, n) in names.iter().enumerate() {
                     if i > 0 {
-                        v.extend_from_slice(b", ");
+                        v.push_str(", ");
                     }
-                    v.push(b'"');
-                    v.extend_from_slice(n.as_bytes());
-                    v.push(b'"');
+                    v.push('"');
+                    v.push_str(n);
+                    v.push('"');
                 }
-                v.push(b']');
+                v.push(']');
                 Some(v)
             }
         } else {
@@ -212,30 +214,30 @@ pub(super) fn build_model_props_emits(
     });
 
     // Model emits: ["update:name", ...]
-    let model_emits: Vec<u8> = {
-        let mut v = Vec::new();
-        v.push(b'[');
+    let model_emits: TextBuf = {
+        let mut v = TextBuf::new();
+        v.push('[');
         for (i, (name, _, _, _, _, _)) in model_infos.iter().enumerate() {
             if i > 0 {
-                v.extend_from_slice(b", ");
+                v.push_str(", ");
             }
-            v.extend_from_slice(b"\"update:");
-            v.extend_from_slice(name.as_bytes());
-            v.push(b'"');
+            v.push_str("\"update:");
+            v.push_str(name);
+            v.push('"');
         }
-        v.push(b']');
+        v.push(']');
         v
     };
 
-    let emits_decl: Option<Vec<u8>> = if !model_infos.is_empty() {
+    let emits_decl: Option<TextBuf> = if !model_infos.is_empty() {
         Some(match user_emits {
             Some(user) => {
-                let mut v = Vec::new();
-                v.extend_from_slice(b"/*@__PURE__*/_mergeModels(");
-                v.extend_from_slice(&user);
-                v.extend_from_slice(b", ");
-                v.extend_from_slice(&model_emits);
-                v.push(b')');
+                let mut v = TextBuf::new();
+                v.push_str("/*@__PURE__*/_mergeModels(");
+                v.push_str(&user);
+                v.push_str(", ");
+                v.push_str(&model_emits);
+                v.push(')');
                 v
             }
             None => model_emits,
@@ -245,9 +247,9 @@ pub(super) fn build_model_props_emits(
     };
 
     if let Some(decl) = emits_decl {
-        buf.extend_from_slice(b"  emits: ");
-        buf.extend_from_slice(&decl);
-        buf.extend_from_slice(b",\n");
+        buf.push_str("  emits: ");
+        buf.push_str(&decl);
+        buf.push_str(",\n");
     }
 
     buf

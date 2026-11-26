@@ -1,10 +1,14 @@
 mod pug;
 mod root_match;
+mod targets;
 use crate::types::{
     SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
 };
 use root_match::compile_sfc_inner;
 pub use root_match::prepare_root_patterned_template;
+pub use targets::{
+    SfcCompileTarget, SfcTargetsCompileResult, compile_sfc_for_adapter_targets_with_project,
+};
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_l0::dump::capture::{CaptureClock, StageCapture};
 

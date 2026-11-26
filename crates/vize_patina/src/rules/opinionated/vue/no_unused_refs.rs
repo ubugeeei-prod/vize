@@ -12,7 +12,13 @@
 //! Patina correlates each static `ref="x"` with the already-built SFC semantic
 //! analysis and the shared script ASTs. Script-setup bindings and values exposed
 //! from an Options API `setup()` return count as uses, as do
-//! `useTemplateRef('x')` and static `$refs.x` reads. Looking at
+//! `useTemplateRef('x')` and static `$refs.x` reads. `useTemplateRef` is
+//! resolved through aliased and namespace imports (and is the auto-imported
+//! global when unbound), and its key may be any static string: a literal, a
+//! substitution-free template literal, `'x' as const`, or a `const` bound to
+//! one. A binding initialized by `useTemplateRef(key)` reads `key`, not its own
+//! name, so `const inputEl = useTemplateRef('input')` leaves `ref="inputEl"`
+//! unused. Looking at
 //! syntax and bindings instead of raw source text is important: an identifier in
 //! a comment, documentation string, CSS selector, or an unrelated Options API
 //! local must not keep a dead template ref alive.
@@ -23,7 +29,9 @@
 //! - a script or the template uses `$refs` opaquely — any computed access
 //!   (including `$refs['x']`), or `$refs` passed / destructured / iterated as a
 //!   whole object — since any ref could then be reached without a proven static
-//!   member read.
+//!   member read;
+//! - a script calls `useTemplateRef` with a key only known at runtime (a
+//!   composable parameter, a function result).
 //!
 //! Dynamic ref bindings (`:ref` / `v-bind:ref`) are skipped: their target is an
 //! expression, not a named template ref.
@@ -50,14 +58,16 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use oxc_ast::AstKind;
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ComputedMemberExpression, Declaration, Expression,
-    ForInStatement, ImportDeclarationSpecifier, ObjectExpression, ObjectPropertyKind, Program,
-    PropertyKey, ReturnStatement, Statement, StaticMemberExpression, VariableDeclarator,
+    ForInStatement, IdentifierReference, ImportDeclarationSpecifier, ObjectExpression,
+    ObjectPropertyKind, Program, PropertyKey, ReturnStatement, Statement, StaticMemberExpression,
+    VariableDeclarationKind, VariableDeclarator,
 };
 use oxc_ast_visit::{Visit, walk};
-use oxc_semantic::SemanticBuilder;
-use vize_l0::{CompactString, cstr};
+use oxc_semantic::{Semantic, SemanticBuilder};
+use vize_l0::{CompactString, FxHashMap, FxHashSet, String, cstr};
 use vize_relief::{
     BindingType, ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
 };
@@ -102,39 +112,16 @@ impl Rule for NoUnusedRefs {
             return;
         };
         let template_source = template.content.as_ref();
-        let scripts = ctx.sfc_scripts();
-        let used_in_script = scripts.is_some_and(|scripts| {
-            scripts.script().is_some_and(|parsed| {
-                program_uses_template_ref(
-                    &parsed.program,
-                    descriptor
-                        .script
-                        .as_ref()
-                        .map(|block| block.content.as_ref())
-                        .unwrap_or(""),
-                    true,
-                    name,
-                )
-            }) || scripts.script_setup().is_some_and(|parsed| {
-                program_uses_template_ref(
-                    &parsed.program,
-                    descriptor
-                        .script_setup
-                        .as_ref()
-                        .map(|block| block.content.as_ref())
-                        .unwrap_or(""),
-                    false,
-                    name,
-                )
-            })
-        });
         if has_opaque_refs_access(template_source)
             || template_uses_static_ref(template_source, name)
-            || binding_uses_template_ref(ctx, name)
-            || used_in_script
         {
             return;
         }
+        let uses = ScriptRefUses::collect(ctx);
+        let RefUsage::Unused(handle_key) = uses.usage(ctx, name) else {
+            return;
+        };
+        let help = unused_ref_help(name, handle_key);
         let Some((start, end)) = sfc_attribute_value_span(
             ctx.source,
             template.loc.tag_start,
@@ -147,10 +134,7 @@ impl Rule for NoUnusedRefs {
         ctx.warn_with_help(
             cstr!("Template ref '{name}' is never referenced in <script>"),
             &loc,
-            cstr!(
-                "Remove the unused ref=\"{name}\" attribute, or reference it in <script> \
-                 (e.g. a ref named {name}, useTemplateRef('{name}'), or this.$refs.{name})."
-            ),
+            help,
         );
     }
 
@@ -168,66 +152,40 @@ impl Rule for NoUnusedRefs {
             return;
         }
 
-        // Resolve which refs are unused while the descriptor borrow is held, then
-        // drop it so diagnostics can be reported through `&mut ctx`.
-        let unused: Vec<TemplateRef> = {
-            let Some(descriptor) = ctx.sfc_descriptor() else {
-                return;
-            };
-            let script = descriptor
-                .script
-                .as_ref()
-                .map(|block| block.content.as_ref())
-                .unwrap_or("");
-            let script_setup = descriptor
-                .script_setup
-                .as_ref()
-                .map(|block| block.content.as_ref())
-                .unwrap_or("");
-            // A dynamic or whole-object `$refs` use in the template can reach
-            // any name. Static member reads, however, only keep that exact ref
-            // alive; one `$refs.calendar` must not hide an unrelated dead
-            // `ref="inlineCalendar"`.
-            let template_src = descriptor
-                .template
-                .as_ref()
-                .map(|block| block.content.as_ref())
-                .unwrap_or("");
-            if has_opaque_refs_access(template_src) {
-                return;
-            }
-
-            let scripts = ctx.sfc_scripts();
-            refs.into_iter()
-                .filter(|template_ref| {
-                    let name = template_ref.name.as_str();
-                    !template_uses_static_ref(template_src, name)
-                        && !binding_uses_template_ref(ctx, name)
-                        && !scripts.is_some_and(|scripts| {
-                            scripts.script().is_some_and(|parsed| {
-                                program_uses_template_ref(&parsed.program, script, true, name)
-                            }) || scripts.script_setup().is_some_and(|parsed| {
-                                program_uses_template_ref(
-                                    &parsed.program,
-                                    script_setup,
-                                    false,
-                                    name,
-                                )
-                            })
-                        })
-                })
-                .collect()
+        // A dynamic or whole-object `$refs` use in the template can reach
+        // any name. Static member reads, however, only keep that exact ref
+        // alive; one `$refs.calendar` must not hide an unrelated dead
+        // `ref="inlineCalendar"`.
+        let Some(descriptor) = ctx.sfc_descriptor() else {
+            return;
         };
+        let template_src = descriptor
+            .template
+            .as_ref()
+            .map(|block| block.content.as_ref())
+            .unwrap_or("");
+        if has_opaque_refs_access(template_src) {
+            return;
+        }
+        let uses = ScriptRefUses::collect(ctx);
+        let unused: Vec<(TemplateRef, String)> = refs
+            .into_iter()
+            .filter(|template_ref| !template_uses_static_ref(template_src, &template_ref.name))
+            .filter_map(|template_ref| match uses.usage(ctx, &template_ref.name) {
+                RefUsage::Used => None,
+                RefUsage::Unused(handle_key) => {
+                    let help = unused_ref_help(&template_ref.name, handle_key);
+                    Some((template_ref, help))
+                }
+            })
+            .collect();
 
-        for template_ref in &unused {
+        for (template_ref, help) in unused {
             let name = template_ref.name.as_str();
             ctx.warn_with_help(
                 cstr!("Template ref '{name}' is never referenced in <script>"),
                 &template_ref.loc,
-                cstr!(
-                    "Remove the unused ref=\"{name}\" attribute, or reference it in <script> \
-                     (e.g. a ref named {name}, useTemplateRef('{name}'), or this.$refs.{name})."
-                ),
+                help,
             );
         }
     }
@@ -366,6 +324,22 @@ fn static_ref_of(element: &ElementNode<'_>, source: &str) -> Option<TemplateRef>
         }
     }
     None
+}
+
+/// The help for an unused `ref="name"`. When a same-named `<script setup>`
+/// binding is a `useTemplateRef(key)` handle, say that it reads `key`.
+fn unused_ref_help(name: &str, handle_key: Option<&str>) -> String {
+    match handle_key {
+        Some(key) => cstr!(
+            "`{name}` is useTemplateRef('{key}'): it reads ref=\"{key}\", and a binding name \
+             never wires a template ref. Rename the attribute to ref=\"{key}\" or the key \
+             to useTemplateRef('{name}')."
+        ),
+        None => cstr!(
+            "Remove the unused ref=\"{name}\" attribute, or reference it in <script> \
+             (e.g. a ref named {name}, useTemplateRef('{name}'), or this.$refs.{name})."
+        ),
+    }
 }
 
 include!("no_unused_refs/script_usage.rs");

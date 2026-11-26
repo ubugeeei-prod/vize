@@ -140,6 +140,7 @@ export function createSync(
     WorkspaceLspConfigDiscovery: Discovery,
     WORKSPACE_LSP_CONFIG_FILES: [],
     workspace: {
+      isTrusted: true,
       getConfiguration: (name: string) => {
         operations.push(["configuration", name]);
         return (
