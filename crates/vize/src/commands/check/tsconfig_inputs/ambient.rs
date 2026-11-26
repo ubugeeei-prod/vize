@@ -149,9 +149,13 @@ fn collect_ambient_declaration_files_from(
             hidden_reference_roots.push(path.clone());
         }
 
-        for referenced in
-            reference_path_declaration_files(&path, &content, Some(&project_root), &mut realpaths)
-        {
+        for referenced in reference_path_declaration_files(
+            &path,
+            &content,
+            Some(&project_root),
+            false,
+            &mut realpaths,
+        ) {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
             }
@@ -197,7 +201,27 @@ pub(crate) fn collect_declaration_reference_graph(
 /// (a package graph walk already read it) is taken from there, not read again.
 pub(crate) fn collect_declaration_reference_graph_reading(
     configured_files: &[PathBuf],
+    contents: DeclarationContents,
+    read: impl FnMut(&Path, &str),
+) -> FxHashSet<PathBuf> {
+    reference_graph_reading(configured_files, contents, false, read)
+}
+
+/// [`collect_declaration_reference_graph_reading`], following `path`
+/// references into installed packages as well, as `tsc` does. Nuxt's
+/// generated `nuxt.d.ts` reaches Nitro's augmentations only that way.
+pub(crate) fn collect_installed_declaration_reference_graph_reading(
+    configured_files: &[PathBuf],
+    contents: DeclarationContents,
+    read: impl FnMut(&Path, &str),
+) -> FxHashSet<PathBuf> {
+    reference_graph_reading(configured_files, contents, true, read)
+}
+
+fn reference_graph_reading(
+    configured_files: &[PathBuf],
     mut contents: DeclarationContents,
+    installed: bool,
     mut read: impl FnMut(&Path, &str),
 ) -> FxHashSet<PathBuf> {
     // Reuse the program's already collected roots. Do not walk the workspace
@@ -205,7 +229,7 @@ pub(crate) fn collect_declaration_reference_graph_reading(
     let mut files = configured_files.to_vec();
     // Configured roots may live outside the app (Nuxt's custom buildDir).
     // Their explicit references retain membership across that boundary.
-    follow_declaration_references(None, &mut files, &mut contents, &mut read);
+    follow_declaration_references(installed, &mut files, &mut contents, &mut read);
     files
         .into_iter()
         .filter(|path| is_declaration_file(path))
@@ -213,7 +237,7 @@ pub(crate) fn collect_declaration_reference_graph_reading(
 }
 
 fn follow_declaration_references(
-    project_root: Option<&Path>,
+    installed: bool,
     files: &mut Vec<PathBuf>,
     contents: &mut DeclarationContents,
     read: &mut dyn FnMut(&Path, &str),
@@ -234,7 +258,7 @@ fn follow_declaration_references(
         };
         read(&path, &content);
         for referenced in
-            reference_path_declaration_files(&path, &content, project_root, &mut realpaths)
+            reference_path_declaration_files(&path, &content, None, installed, &mut realpaths)
         {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
@@ -292,7 +316,7 @@ pub(super) fn is_declaration_file(path: &Path) -> bool {
 /// and `declare module "~icons/foo"` must still be loaded for explicit checks,
 /// while bare ambient `declare module "vue"` files without top-level imports or
 /// exports shadow the real package.
-fn declares_shadowing_ambient_module(content: &str) -> bool {
+pub(crate) fn declares_shadowing_ambient_module(content: &str) -> bool {
     if has_top_level_import_or_export(content) {
         return false;
     }
@@ -378,6 +402,7 @@ fn reference_path_declaration_files(
     path: &Path,
     content: &str,
     project_root: Option<&Path>,
+    installed: bool,
     realpaths: &mut ReferenceRealpaths,
 ) -> Vec<PathBuf> {
     let Some(base_dir) = path.parent() else {
@@ -388,7 +413,7 @@ fn reference_path_declaration_files(
         .filter_map(|reference| {
             let resolved = realpaths.resolve(&base_dir.join(reference));
             (project_root.is_none_or(|root| resolved.starts_with(root))
-                && !path_has_component(&resolved, NODE_MODULES_DIR)
+                && (installed || !path_has_component(&resolved, NODE_MODULES_DIR))
                 && is_declaration_file(&resolved)
                 && resolved.is_file())
             .then_some(resolved)

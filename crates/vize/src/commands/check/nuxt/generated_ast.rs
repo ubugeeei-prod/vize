@@ -84,6 +84,9 @@ fn virtual_project_specifier(specifier: &str, project_root: &Path) -> String {
     }
 
     let specifier_path = Path::new(specifier);
+    if ships_vue_declaration(specifier_path) {
+        return specifier.to_compact_string();
+    }
     let relative = if specifier_path.is_absolute() {
         specifier_path.strip_prefix(project_root).ok()
     } else {
@@ -97,6 +100,25 @@ fn virtual_project_specifier(specifier: &str, project_root: &Path) -> String {
     }
 
     cstr!("{specifier}.ts")
+}
+
+/// Whether an installed `.vue` file ships its own declaration next to it, as
+/// Nuxt's `nuxt-time.vue` does with `nuxt-time.vue.d.ts`. TypeScript resolves
+/// the import to that declaration, so the stub keeps the installed specifier:
+/// a copy compiled from the file's untyped runtime props would type every prop
+/// far more loosely than the package declares.
+fn ships_vue_declaration(path: &Path) -> bool {
+    if !path.is_absolute() || !super::reference_graph::is_installed(path) {
+        return false;
+    }
+    let mut dts = path.as_os_str().to_os_string();
+    dts.push(".d.ts");
+    let Some(stem) = path.file_stem() else {
+        return false;
+    };
+    let mut arbitrary = stem.to_os_string();
+    arbitrary.push(".d.vue.ts");
+    Path::new(&dts).is_file() || path.with_file_name(arbitrary).is_file()
 }
 
 const TYPE_ANNOTATION_PREFIX: &str = "type $GeneratedType = ";

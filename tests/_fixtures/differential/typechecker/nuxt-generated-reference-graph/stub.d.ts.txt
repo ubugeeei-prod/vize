@@ -1,0 +1,8 @@
+/// <reference path="__PROJECT_ROOT__/node_modules/.pnpm/server-kit/dist/augments.d.mts" />
+declare namespace __VizeNuxtLocalTypes__nuxt_types_components_d_ts {
+type HydrationStrategies = {
+  hydrateNever?: true
+}
+type LazyComponent<T> = { hydrated(strategies?: HydrationStrategies): void } & T
+}
+declare const LazyBox: __VizeNuxtLocalTypes__nuxt_types_components_d_ts.LazyComponent<typeof import("__PROJECT_ROOT__/src/box")['Box']>;
