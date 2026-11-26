@@ -95,7 +95,7 @@ pub fn expression_is_safe_to_parse(content: &str) -> bool {
         && !analysis.excessive_arrow_default_speculation
         && !analysis.oversized_numeric_token
         && !analysis.unterminated_template
-        && !operators::has_excessive_prefix_operator_run(content)
+        && !operators::has_excessive_operator_recursion(content)
 }
 
 /// Returns true if `content` exceeds [`MAX_EXPRESSION_NESTING_DEPTH`].
