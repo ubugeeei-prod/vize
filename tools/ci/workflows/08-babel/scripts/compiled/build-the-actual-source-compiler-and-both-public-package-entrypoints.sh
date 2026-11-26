@@ -59,8 +59,6 @@ build-the-actual-source-compiler-and-both-public-package-entrypoints.ush [--comp
     exit 0 ;;
 esac
 
-exec 3>&1
-
 # Report the leftmost failing pipeline stage. $1 holds one ` INDEX:STATUS`
 # per stage in completion order; each further argument is the diagnostic
 # for that stage. Every stage holds its end of the pipe until it has
@@ -179,19 +177,39 @@ __ush_std_encode_args() {
   done
 }
 
-ush_fn_std__process__exec() {
+ush_fn_std__run_words() {
+  # Run a program whose arguments are tagged words: `s value` is one argument,
+  # `l packed` gives every element of a List an argument of its own.
   __ush_program=$1
-  __ush_args__len=0
-  __ush_arg=''
-  ush_fn_std__unpack __ush_args "$2" || return "$?"
+  shift
+  __ush_argv__len=0
+  while [ "$#" -gt 0 ]; do
+    case $1 in
+      s)
+        eval "__ush_argv__${__ush_argv__len}=\$2"
+        __ush_argv__len=$((__ush_argv__len + 1))
+        ;;
+      l)
+        __ush_words__len=0
+        ush_fn_std__unpack __ush_words "$2" || return "$?"
+        __ush_index=0
+        while [ "$__ush_index" -lt "$__ush_words__len" ]; do
+          eval "__ush_argv__${__ush_argv__len}=\${__ush_words__${__ush_index}}"
+          __ush_argv__len=$((__ush_argv__len + 1))
+          __ush_index=$((__ush_index + 1))
+        done
+        ;;
+    esac
+    shift 2
+  done
   set --
   __ush_index=0
-  while [ "$__ush_index" -lt "$__ush_args__len" ]; do
-    eval "__ush_arg=\${__ush_args__${__ush_index}}"
+  while [ "$__ush_index" -lt "$__ush_argv__len" ]; do
+    eval "__ush_arg=\${__ush_argv__${__ush_index}}"
     set -- "$@" "$__ush_arg"
     __ush_index=$((__ush_index + 1))
   done
-  "$__ush_program" "$@"
+  command "$__ush_program" "$@"
 }
 
 __ush_std_fs_path() {
@@ -215,56 +233,35 @@ ush_fn_std__fs__read_dir() {
   done
 }
 
+ush_fn_std__path__extension() {
+  __ush_base=${1##*/}
+  case $__ush_base in .|..|.*) __ush_base=${__ush_base#?} ;; esac
+  case $__ush_base in *.*) printf '%s' "${__ush_base##*.}" ;; esac
+}
+
 ush_fn_std__process__chdir() {
   __ush_std_fs_path "$1" || return "$?"
   CDPATH='' cd "$__ush_path" || return "$?"
 }
 
-ush_fn_is_tarball() {
-  __ush_fn_is_tarball_arg_0="${1}"
-  # shellcheck disable=SC2034
-  path="${__ush_fn_is_tarball_arg_0}"
-  __ush_at 7 'match path {'
-  case "${__ush_fn_is_tarball_arg_0}" in
-    *'.tgz')
-      __ush_at 8 'glob "*.tgz" => true'
-      if [ -n "${__ush_return_path:-}" ]; then
-        printf '%s' 'true' > "$__ush_return_path"
-      elif [ "${__ush_capture_return:-0}" = '1' ]; then
-        printf '%s' 'true' >&4
-      fi
-      return 0
-      ;;
-    *)
-      __ush_at 9 '_ => false'
-      if [ -n "${__ush_return_path:-}" ]; then
-        printf '%s' 'false' > "$__ush_return_path"
-      elif [ "${__ush_capture_return:-0}" = '1' ]; then
-        printf '%s' 'false' >&4
-      fi
-      return 0
-      ;;
-  esac
-}
-
-__ush_at 13 'let evidence = $"$env::RUNNER_TEMP/babel-plugin"'
+__ush_at 7 'let evidence = $"$env::RUNNER_TEMP/babel-plugin"'
 __ush_env_0=${RUNNER_TEMP-}
 if [ -z "${__ush_env_0}" ]; then __ush_report 1 'environment variable RUNNER_TEMP is not set or is empty'; exit 1; fi
-__ush_binding_13_evidence="${__ush_env_0}"'/babel-plugin'
+__ush_binding_7_evidence="${__ush_env_0}"'/babel-plugin'
 # shellcheck disable=SC2034
-evidence="${__ush_binding_13_evidence}"
-__ush_at 14 'let packed = $"$evidence/packed"'
-__ush_binding_14_packed="${__ush_binding_13_evidence}"'/packed'
+evidence="${__ush_binding_7_evidence}"
+__ush_at 8 'let packed = $"$evidence/packed"'
+__ush_binding_8_packed="${__ush_binding_7_evidence}"'/packed'
 # shellcheck disable=SC2034
-packed="${__ush_binding_14_packed}"
-__ush_at 16 'if (git rev-parse HEAD) != $env::SOURCE_SHA {'
+packed="${__ush_binding_8_packed}"
+__ush_at 10 'if (git rev-parse HEAD) != $env::SOURCE_SHA {'
 if {
 __ush_value_1="$(__ush_return_path='' __ush_capture_return='1' command git 'rev-parse' 'HEAD')" || exit "$?"
 __ush_env_2=${SOURCE_SHA-}
 if [ -z "${__ush_env_2}" ]; then __ush_report 1 'environment variable SOURCE_SHA is not set or is empty'; exit 1; fi
 [ "$(if [ "${__ush_value_1}" != "${__ush_env_2}" ]; then printf '%s' true; else printf '%s' false; fi)" = 'true' ]
 }; then
-  __ush_at 17 'fail 1 $"The checkout is not the source commit $env::SOURCE_SHA"'
+  __ush_at 11 'fail 1 $"The checkout is not the source commit $env::SOURCE_SHA"'
   __ush_env_3=${SOURCE_SHA-}
   if [ -z "${__ush_env_3}" ]; then __ush_report 1 'environment variable SOURCE_SHA is not set or is empty'; exit 1; fi
   __ush_status=1
@@ -272,10 +269,10 @@ if [ -z "${__ush_env_2}" ]; then __ush_report 1 'environment variable SOURCE_SHA
   __ush_report "$__ush_status" 'The checkout is not the source commit '"${__ush_env_3}"
   exit "$__ush_status"
 fi
-__ush_at 19 'mkdir_p $packed'
-( __ush_capture_return='0' __ush_return_path=''; ush_fn_std__fs__mkdir_p "${__ush_binding_14_packed}" )
-__ush_at 20 'git rev-parse HEAD "HEAD^{tree}" | to_file $evidence/source.txt'
-__ush_value_4="${__ush_binding_13_evidence}"
+__ush_at 13 'mkdir_p $packed'
+( __ush_capture_return='0' __ush_return_path=''; ush_fn_std__fs__mkdir_p "${__ush_binding_8_packed}" )
+__ush_at 14 'git rev-parse HEAD "HEAD^{tree}" | to_file $evidence/source.txt'
+__ush_value_4="${__ush_binding_7_evidence}"
 __ush_std_fs_path "${__ush_value_4}"'/source.txt' || { __ush_status=$?; __ush_report "$__ush_status"; exit "$__ush_status"; }
 __ush_path_5=$__ush_path
 { __ush_pipe=$(
@@ -284,8 +281,8 @@ __ush_path_5=$__ush_path
   { (command git 'rev-parse' 'HEAD' 'HEAD^{tree}') 7>&- >"$__ush_path_5"; printf ' 1:%s' "$?" >&7; }
 ); } 8>&1
 __ush_pipe_check "$__ush_pipe" 'pipeline stage 1 failed: git rev-parse HEAD "HEAD^{tree}" | to_file $evidence/sour...' || exit "$?"
-__ush_at 21 'git log -50 "--format=%H %T %P %s" | to_file $evidence/ordered-history.txt'
-__ush_value_6="${__ush_binding_13_evidence}"
+__ush_at 15 'git log -50 "--format=%H %T %P %s" | to_file $evidence/ordered-history.txt'
+__ush_value_6="${__ush_binding_7_evidence}"
 __ush_std_fs_path "${__ush_value_6}"'/ordered-history.txt' || { __ush_status=$?; __ush_report "$__ush_status"; exit "$__ush_status"; }
 __ush_path_7=$__ush_path
 { __ush_pipe=$(
@@ -294,8 +291,8 @@ __ush_path_7=$__ush_path
   { (command git 'log' -50 '--format=%H %T %P %s') 7>&- >"$__ush_path_7"; printf ' 1:%s' "$?" >&7; }
 ); } 8>&1
 __ush_pipe_check "$__ush_pipe" 'pipeline stage 1 failed: git log -50 "--format=%H %T %P %s" | to_file $evidence/or...' || exit "$?"
-__ush_at 22 'node --version | to_file $evidence/node-version.txt'
-__ush_value_8="${__ush_binding_13_evidence}"
+__ush_at 16 'node --version | to_file $evidence/node-version.txt'
+__ush_value_8="${__ush_binding_7_evidence}"
 __ush_std_fs_path "${__ush_value_8}"'/node-version.txt' || { __ush_status=$?; __ush_report "$__ush_status"; exit "$__ush_status"; }
 __ush_path_9=$__ush_path
 { __ush_pipe=$(
@@ -304,78 +301,78 @@ __ush_path_9=$__ush_path
   { (command node '--version') 7>&- >"$__ush_path_9"; printf ' 1:%s' "$?" >&7; }
 ); } 8>&1
 __ush_pipe_check "$__ush_pipe" 'pipeline stage 1 failed: node --version | to_file $evidence/node-version.txt' || exit "$?"
-__ush_at 23 'vp run --workspace-root build:native:test'
+__ush_at 17 'vp run --workspace-root build:native:test'
 command vp 'run' '--workspace-root' 'build:native:test'
-__ush_at 24 'export GITHUB_SHA = $env::SOURCE_SHA {'
+__ush_at 18 'export GITHUB_SHA = $env::SOURCE_SHA {'
 __ush_env_10=${SOURCE_SHA-}
 if [ -z "${__ush_env_10}" ]; then __ush_report 1 'environment variable SOURCE_SHA is not set or is empty'; exit 1; fi
 __ush_had_GITHUB_SHA_11=${GITHUB_SHA+x} __ush_saved_GITHUB_SHA_11=${GITHUB_SHA-}
 export GITHUB_SHA="${__ush_env_10}"
-  __ush_at 25 'node npm/native/scripts/native-build-receipt.mjs'
+  __ush_at 19 'node npm/native/scripts/native-build-receipt.mjs'
   command node 'npm/native/scripts/native-build-receipt.mjs'
 if [ -n "$__ush_had_GITHUB_SHA_11" ]; then export GITHUB_SHA="$__ush_saved_GITHUB_SHA_11"; else unset GITHUB_SHA; fi
-__ush_at 27 'vp run --no-cache --filter ./npm/builder/babel build'
+__ush_at 21 'vp run --no-cache --filter ./npm/builder/babel build'
 command vp 'run' '--no-cache' '--filter' './npm/builder/babel' 'build'
-__ush_at 28 'cd "npm/builder/babel" {'
+__ush_at 22 'cd "npm/builder/babel" {'
 __ush_cwd_12=$PWD
 ush_fn_std__process__chdir 'npm/builder/babel' || { __ush_status=$?; __ush_report "$__ush_status"; exit "$__ush_status"; }
-  __ush_at 29 'npm pack --ignore-scripts --pack-destination $packed --json | to_file $evidence/pack.json'
-  __ush_value_13="${__ush_binding_13_evidence}"
+  __ush_at 23 'npm pack --ignore-scripts --pack-destination $packed --json | to_file $evidence/pack.json'
+  __ush_value_13="${__ush_binding_7_evidence}"
   __ush_std_fs_path "${__ush_value_13}"'/pack.json' || { __ush_status=$?; __ush_report "$__ush_status"; exit "$__ush_status"; }
   __ush_path_14=$__ush_path
   { __ush_pipe=$(
     exec 7>&1 >&8 8>&-
     set +e
-    { (command npm 'pack' '--ignore-scripts' '--pack-destination' "${__ush_binding_14_packed}" '--json') 7>&- >"$__ush_path_14"; printf ' 1:%s' "$?" >&7; }
+    { (command npm 'pack' '--ignore-scripts' '--pack-destination' "${__ush_binding_8_packed}" '--json') 7>&- >"$__ush_path_14"; printf ' 1:%s' "$?" >&7; }
   ); } 8>&1
   __ush_pipe_check "$__ush_pipe" 'pipeline stage 1 failed: npm pack --ignore-scripts --pack-destination $packed --js...' || exit "$?"
 cd "$__ush_cwd_12" || { __ush_status=$?; __ush_report "$__ush_status" 'cannot return to the directory the cd block started in'; exit "$__ush_status"; }
-__ush_at 31 'let tarballs = [file for file in read_dir $packed if is_tarball $file]'
+__ush_at 25 'let tarballs = [file for file in read_dir $packed if (extension $file) == "tgz"]'
 __ush_comprehension_count_15=0
-__ush_packed_17="$(__ush_return_path='' __ush_capture_return=1 ush_fn_std__fs__read_dir "${__ush_binding_14_packed}")" || exit "$?"
+__ush_packed_17="$(__ush_return_path='' __ush_capture_return=1 ush_fn_std__fs__read_dir "${__ush_binding_8_packed}")" || exit "$?"
 __ush_match_16__len=0
 ush_fn_std__unpack __ush_match_16 "${__ush_packed_17}"
 __ush_comprehension_index_18=0
 while [ "${__ush_comprehension_index_18}" -lt "${__ush_match_16__len}" ]; do
 eval "__ush_comprehension_item_19=\"\${__ush_match_16__${__ush_comprehension_index_18}}\""
-__ush_value_20="$(__ush_return_path='' __ush_capture_return='1' ush_fn_is_tarball "${__ush_comprehension_item_19}" 4>&1 >&3)" || exit "$?"
-if [ "${__ush_value_20}" = true ]; then
+__ush_value_20="$(__ush_return_path='' __ush_capture_return='1' ush_fn_std__path__extension "${__ush_comprehension_item_19}")" || exit "$?"
+if [ "$(if [ "${__ush_value_20}" = 'tgz' ]; then printf '%s' true; else printf '%s' false; fi)" = true ]; then
 # shellcheck disable=SC2034
 __ush_comprehension_value_21="${__ush_comprehension_item_19}"
-eval "__ush_binding_31_tarballs__${__ush_comprehension_count_15}=\$__ush_comprehension_value_21"
+eval "__ush_binding_25_tarballs__${__ush_comprehension_count_15}=\$__ush_comprehension_value_21"
 __ush_comprehension_count_15=$((__ush_comprehension_count_15 + 1))
 fi
 __ush_comprehension_index_18=$((__ush_comprehension_index_18 + 1))
 done
-__ush_binding_31_tarballs__len="${__ush_comprehension_count_15}"
-__ush_at 32 'if tarballs.is_empty() {'
+__ush_binding_25_tarballs__len="${__ush_comprehension_count_15}"
+__ush_at 26 'if tarballs.is_empty() {'
 if {
-if [ "${__ush_binding_31_tarballs__len}" -eq 0 ]; then __ush_value_22=true; else __ush_value_22=false; fi
+if [ "${__ush_binding_25_tarballs__len}" -eq 0 ]; then __ush_value_22=true; else __ush_value_22=false; fi
 [ "${__ush_value_22}" = 'true' ]
 }; then
-  __ush_at 33 'fail 1 $"npm pack wrote no tarball to $packed"'
+  __ush_at 27 'fail 1 $"npm pack wrote no tarball to $packed"'
   __ush_status=1
   if [ "$__ush_status" -lt 1 ] || [ "$__ush_status" -gt 255 ]; then __ush_status=1; fi
-  __ush_report "$__ush_status" 'npm pack wrote no tarball to '"${__ush_binding_14_packed}"
+  __ush_report "$__ush_status" 'npm pack wrote no tarball to '"${__ush_binding_8_packed}"
   exit "$__ush_status"
 fi
-__ush_at 36 'std::process::exec sha256sum $tarballs | to_file $evidence/packed.sha256'
-__ush_match_23__len="${__ush_binding_31_tarballs__len}"
+__ush_at 29 'sha256sum $tarballs | to_file $evidence/packed.sha256'
+__ush_match_23__len="${__ush_binding_25_tarballs__len}"
 __ush_copy_index_24=0
-while [ "$__ush_copy_index_24" -lt "${__ush_binding_31_tarballs__len}" ]; do
-  eval "__ush_copy_value_25=\"\${__ush_binding_31_tarballs__$__ush_copy_index_24}\""
+while [ "$__ush_copy_index_24" -lt "${__ush_binding_25_tarballs__len}" ]; do
+  eval "__ush_copy_value_25=\"\${__ush_binding_25_tarballs__$__ush_copy_index_24}\""
   eval "__ush_match_23__${__ush_copy_index_24}=\$__ush_copy_value_25"
   __ush_copy_index_24=$((__ush_copy_index_24 + 1))
 done
-__ush_value_27="${__ush_binding_13_evidence}"
+__ush_value_27="${__ush_binding_7_evidence}"
 __ush_std_fs_path "${__ush_value_27}"'/packed.sha256' || { __ush_status=$?; __ush_report "$__ush_status"; exit "$__ush_status"; }
 __ush_path_28=$__ush_path
 { __ush_pipe=$(
   exec 7>&1 >&8 8>&-
   set +e
-  { (ush_fn_std__process__exec 'sha256sum' "$(ush_fn_std__pack __ush_match_23)") 7>&- >"$__ush_path_28"; printf ' 1:%s' "$?" >&7; }
+  { (ush_fn_std__run_words 'sha256sum' l "$(ush_fn_std__pack __ush_match_23)") 7>&- >"$__ush_path_28"; printf ' 1:%s' "$?" >&7; }
 ); } 8>&1
-__ush_pipe_check "$__ush_pipe" 'pipeline stage 1 failed: std::process::exec sha256sum $tarballs | to_file $evidenc...' || exit "$?"
-__ush_at 37 'cp npm/native/.artifacts/native/build-token-receipt.json $evidence/'
-__ush_value_29="${__ush_binding_13_evidence}"
+__ush_pipe_check "$__ush_pipe" 'pipeline stage 1 failed: sha256sum $tarballs | to_file $evidence/packed.sha256' || exit "$?"
+__ush_at 30 'cp npm/native/.artifacts/native/build-token-receipt.json $evidence/'
+__ush_value_29="${__ush_binding_7_evidence}"
 command cp 'npm/native/.artifacts/native/build-token-receipt.json' "${__ush_value_29}"'/'

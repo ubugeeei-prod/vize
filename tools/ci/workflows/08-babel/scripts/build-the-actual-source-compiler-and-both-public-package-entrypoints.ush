@@ -1,14 +1,8 @@
 # Build the source compiler and Babel plugin at the source commit; pack the plugin with provenance.
-use $bin::{cp, git, node, npm, vp}
+use $bin::{cp, git, node, npm, sha256sum, vp}
 use std::fs::{mkdir_p, read_dir}
 use std::io::to_file
-
-fn is_tarball(path: String) -> Bool {
-  match path {
-    glob "*.tgz" => true
-    _ => false
-  }
-}
+use std::path::extension
 
 let evidence = $"$env::RUNNER_TEMP/babel-plugin"
 let packed = $"$evidence/packed"
@@ -28,10 +22,9 @@ vp run --no-cache --filter ./npm/builder/babel build
 cd "npm/builder/babel" {
   npm pack --ignore-scripts --pack-destination $packed --json | to_file $evidence/pack.json
 }
-let tarballs = [file for file in read_dir $packed if is_tarball $file]
+let tarballs = [file for file in read_dir $packed if (extension $file) == "tgz"]
 if tarballs.is_empty() {
   fail 1 $"npm pack wrote no tarball to $packed"
 }
-# A computed argument list goes through std::process::exec.
-std::process::exec sha256sum $tarballs | to_file $evidence/packed.sha256
+sha256sum $tarballs | to_file $evidence/packed.sha256
 cp npm/native/.artifacts/native/build-token-receipt.json $evidence/
