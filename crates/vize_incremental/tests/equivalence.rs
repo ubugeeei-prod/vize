@@ -75,6 +75,10 @@ fn auto_imported_type_fixture(name: &str) -> bool {
     )
 }
 
+fn nuxt4_lazy_component_fixture(name: &str) -> bool {
+    name == "nuxt-parity/pages/lazy-components.vue"
+}
+
 fn run_plane_where(keep: impl Fn(&str) -> bool) -> EquivalenceReport {
     let root = repo().join("tests/_fixtures/_projects");
     let mut files = Vec::new();
@@ -137,18 +141,29 @@ fn incremental_equals_clean_on_every_committed_project_fixture() {
     println!("{}", report.summary());
     assert_report(
         &report,
-        [75, 450, 2257, 293, 2782, 5948],
-        [[2182, 225, 150], [2711, 2442, 1965], [173, 1706, 1298]],
+        [76, 456, 2287, 297, 2819, 6022],
+        [[2211, 228, 152], [2743, 2474, 1991], [191, 1739, 1319]],
     );
     // Keep the previous plane's complete accounting; the added fixtures must
     // contribute their own measured states without replacing any old work.
     assert_report(
-        &run_plane_where(|name| !auto_imported_type_fixture(name)),
+        &run_plane_where(|name| !nuxt4_lazy_component_fixture(name)),
+        [75, 450, 2257, 293, 2782, 5948],
+        [[2182, 225, 150], [2711, 2442, 1965], [173, 1706, 1298]],
+    );
+    assert_report(
+        &run_plane_where(|name| {
+            !auto_imported_type_fixture(name) && !nuxt4_lazy_component_fixture(name)
+        }),
         [73, 438, 2197, 285, 2708, 5800],
         [[2124, 219, 146], [2647, 2378, 1913], [169, 1662, 1264]],
     );
     assert_report(
-        &run_plane_where(|name| !dev_ssr_style_fixture(name) && !auto_imported_type_fixture(name)),
+        &run_plane_where(|name| {
+            !dev_ssr_style_fixture(name)
+                && !auto_imported_type_fixture(name)
+                && !nuxt4_lazy_component_fixture(name)
+        }),
         [71, 426, 2137, 277, 2634, 5646],
         [[2066, 213, 142], [2577, 2314, 1861], [165, 1617, 1228]],
     );
@@ -157,6 +172,7 @@ fn incremental_equals_clean_on_every_committed_project_fixture() {
             !critical_css_fixture(name)
                 && !dev_ssr_style_fixture(name)
                 && !auto_imported_type_fixture(name)
+                && !nuxt4_lazy_component_fixture(name)
         }),
         [68, 408, 2050, 262, 2526, 5464],
         [[1982, 204, 136], [2508, 2226, 1788], [158, 1546, 1175]],
@@ -176,6 +192,11 @@ fn incremental_equals_clean_on_every_committed_project_fixture() {
         [2, 12, 60, 8, 74, 148],
         [[58, 6, 4], [64, 64, 52], [4, 44, 34]],
     );
+    assert_report(
+        &run_plane_where(nuxt4_lazy_component_fixture),
+        [1, 6, 30, 4, 37, 74],
+        [[29, 3, 2], [32, 32, 26], [18, 33, 21]],
+    );
 }
 
 #[cfg(feature = "seeded-stale-cache")]
@@ -187,17 +208,29 @@ fn the_seeded_stale_cache_is_caught() {
     // leaves the stale block's L0 key (and every artifact behind it) served —
     // by the database and by the snapshot tree, whose block joint compares
     // the same `BlockSource`. Pin the old and newly added fixture planes too.
-    assert_eq!(report.mismatches.len(), 705);
+    assert_eq!(report.mismatches.len(), 714);
     assert_eq!(
-        run_plane_where(|name| !auto_imported_type_fixture(name))
+        run_plane_where(|name| !nuxt4_lazy_component_fixture(name))
             .mismatches
             .len(),
+        705
+    );
+    assert_eq!(
+        run_plane_where(|name| {
+            !auto_imported_type_fixture(name) && !nuxt4_lazy_component_fixture(name)
+        })
+        .mismatches
+        .len(),
         687
     );
     assert_eq!(
-        run_plane_where(|name| !dev_ssr_style_fixture(name) && !auto_imported_type_fixture(name))
-            .mismatches
-            .len(),
+        run_plane_where(|name| {
+            !dev_ssr_style_fixture(name)
+                && !auto_imported_type_fixture(name)
+                && !nuxt4_lazy_component_fixture(name)
+        })
+        .mismatches
+        .len(),
         667
     );
     assert_eq!(
@@ -205,6 +238,7 @@ fn the_seeded_stale_cache_is_caught() {
             !critical_css_fixture(name)
                 && !dev_ssr_style_fixture(name)
                 && !auto_imported_type_fixture(name)
+                && !nuxt4_lazy_component_fixture(name)
         })
         .mismatches
         .len(),
@@ -215,6 +249,12 @@ fn the_seeded_stale_cache_is_caught() {
     assert_eq!(
         run_plane_where(auto_imported_type_fixture).mismatches.len(),
         18
+    );
+    assert_eq!(
+        run_plane_where(nuxt4_lazy_component_fixture)
+            .mismatches
+            .len(),
+        9
     );
     assert_eq!(
         report.mismatches[0],

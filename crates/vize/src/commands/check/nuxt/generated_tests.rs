@@ -278,14 +278,6 @@ declare global {
     assert_eq!(
         type_stubs(&options),
         vec![
-            "type Composer = any;",
-            "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;",
-            "type ShallowRef<T = any> = import('vue').ShallowRef<T>;",
-            "type UnwrapRef<T> = import('vue').UnwrapRef<T>;",
-            "type UnwrapNestedRefs<T> = import('vue').UnwrapNestedRefs<T>;",
-            "type MaybeRef<T = any> = import('vue').MaybeRef<T>;",
-            "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;",
-            "type Component = import('vue').Component;",
             format!(
                 "// @vize-module-augmentation\n\
                  declare global {{\n  \
@@ -306,7 +298,8 @@ declare global {
 
 /// The program reads every generated declaration except the import manifest
 /// itself, so only the manifest's re-exports become a stub. A manifest
-/// without re-exports leaves every fallback alias in place.
+/// without re-exports declares no auto-imported type, and no fallback alias
+/// stands in for one: vue-tsc reports each such name as TS2304.
 #[test]
 fn only_an_import_manifest_supplies_type_reexport_stubs() {
     let project_root = unique_case_dir("type-reexports-manifest-only");
@@ -333,21 +326,7 @@ declare global {
     let mut options = VirtualTsOptions::default();
     let _ = detect_nuxt_auto_imports(&mut options, &project_root);
 
-    assert_eq!(
-        type_stubs(&options),
-        vec![
-            "type Composer = any;",
-            "type Ref<T = any> = import('vue').Ref<T>;",
-            "type ComputedRef<T = any> = import('vue').ComputedRef<T>;",
-            "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;",
-            "type ShallowRef<T = any> = import('vue').ShallowRef<T>;",
-            "type UnwrapRef<T> = import('vue').UnwrapRef<T>;",
-            "type UnwrapNestedRefs<T> = import('vue').UnwrapNestedRefs<T>;",
-            "type MaybeRef<T = any> = import('vue').MaybeRef<T>;",
-            "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;",
-            "type Component = import('vue').Component;",
-        ]
-    );
+    assert_eq!(type_stubs(&options), Vec::<&str>::new());
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

@@ -32,15 +32,15 @@ pub(super) fn collect_fallback_stubs(
     has_generated_imports: bool,
 ) {
     let mut fallback_names = FxHashSet::default();
-    // A type the generated manifest re-exports keeps that one declaration. The
-    // re-export carries the real type parameters (`Ref<T, S>`), which these
-    // aliases only approximate, and a second global of the same name is a
-    // duplicate identifier.
-    stubs.extend(
-        fallback_type_alias_stubs().into_iter().filter(|stub| {
+    // With generated types, the manifest alone decides which types are
+    // global: one it does not re-export is not in scope under vue-tsc either,
+    // so an alias here would hide the TS2304 it reports. Without them, each
+    // alias claims its name, so no later stub declares the same global twice.
+    if !has_generated_imports {
+        stubs.extend(fallback_type_alias_stubs().into_iter().filter(|stub| {
             declared_type_name(stub).is_none_or(|name| type_auto_imports.claim(name))
-        }),
-    );
+        }));
+    }
     push_stub(
         stubs,
         seen_names,
@@ -294,9 +294,8 @@ pub(super) fn fallback_stub_strings() -> Vec<String> {
     stubs
 }
 
-/// Type aliases for auto-imported Vue types, for projects whose generated
-/// manifest does not re-export them: no generated types at all, or a Nuxt
-/// version that predates type auto-imports.
+/// Type aliases for auto-imported Vue types, for projects with no generated
+/// types to name them.
 fn fallback_type_alias_stubs() -> Vec<String> {
     vec![
         "type Composer = any;".into(),

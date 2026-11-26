@@ -2,13 +2,14 @@
 
 use std::{fs, path::Path};
 
-use vize_l0::{String, ToCompactString, profile, profiler::global_profiler};
+use vize_l0::{FxHashSet, String, ToCompactString, profile, profiler::global_profiler};
 
 use super::dts_ast;
 pub(super) use super::dts_ast::{DeclaredGlobals, GlobalTypeReexport};
 use super::dts_import_aliases::{
     ImportTypeAliases, collect_import_type_aliases, rewrite_import_type_aliases,
 };
+use super::dts_local_types;
 use super::dts_rewrite::rewrite_relative_import_types;
 pub(super) use super::dts_rewrite::rewrite_relative_specifier;
 
@@ -55,6 +56,82 @@ pub(super) fn parse_global_component_members_with_rewritten_imports(
             )
         })
         .collect())
+}
+
+/// What a declaration's `GlobalComponents` (through `extends`) declares,
+/// ready to copy out of the file.
+#[derive(Debug, Default)]
+pub(super) struct GlobalComponentDeclarations {
+    /// `(name, type text)`, with each file-local type the text names
+    /// qualified by the namespace the caller chose.
+    pub(super) members: Vec<(String, String)>,
+    /// `declare namespace … { … }` holding those file-local types, when a
+    /// member names any.
+    pub(super) local_types: Option<String>,
+}
+
+/// [`parse_global_component_members_with_rewritten_imports`], keeping the
+/// file-local types the members name (Nuxt's `LazyComponent<T>`) by declaring
+/// them in `namespace`.
+pub(super) fn parse_global_component_declarations(
+    path: &Path,
+    namespace: &str,
+) -> Result<GlobalComponentDeclarations, std::io::Error> {
+    let content = read_dts(path)?;
+    let source_dir = path.parent().unwrap_or_else(|| Path::new("."));
+    Ok(global_component_declarations_content(
+        &content, source_dir, namespace,
+    ))
+}
+
+pub(super) fn global_component_declarations_content(
+    content: &str,
+    source_dir: &Path,
+    namespace: &str,
+) -> GlobalComponentDeclarations {
+    let import_aliases = collect_import_type_aliases(content, source_dir);
+    let members = dts_ast::parse_global_component_members_content(content);
+    let locals = dts_local_types::collect_local_types(content);
+    let names = locals
+        .iter()
+        .map(|local| local.name.as_str())
+        .collect::<FxHashSet<_>>();
+    let mut used = FxHashSet::default();
+    let members = members
+        .into_iter()
+        .map(|(name, type_annotation)| {
+            let qualified = dts_local_types::qualify_local_references(
+                type_annotation.as_str(),
+                &names,
+                namespace,
+                &mut used,
+            );
+            (
+                name,
+                normalize_rewritten_type(qualified.as_str(), source_dir, &import_aliases),
+            )
+        })
+        .collect();
+    let local_types = (!used.is_empty()).then(|| {
+        let mut rendered = vize_l0::cstr!("declare namespace {namespace} {{\n");
+        for local in dts_local_types::reachable_local_types(&locals, used) {
+            // Whitespace stays as written: a line comment inside the type
+            // would swallow the rest of a collapsed line.
+            let declaration =
+                rewrite_import_type_aliases(local.declaration.as_str(), &import_aliases);
+            rendered.push_str(&rewrite_relative_import_types(
+                declaration.as_str(),
+                source_dir,
+            ));
+            rendered.push('\n');
+        }
+        rendered.push('}');
+        rendered
+    });
+    GlobalComponentDeclarations {
+        members,
+        local_types,
+    }
 }
 
 pub(super) fn parse_interface_members_content(

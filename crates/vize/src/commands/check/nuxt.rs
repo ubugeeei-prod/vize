@@ -13,6 +13,7 @@ mod generated_values;
 mod legacy_template_globals;
 mod parsing;
 mod plugins;
+mod reference_graph;
 mod source_scan;
 mod stubs;
 mod tsconfig_aliases;
@@ -28,6 +29,8 @@ mod generated_tests;
 #[cfg(test)]
 mod legacy_template_globals_tests;
 #[cfg(test)]
+mod nuxt4_generated_tests;
+#[cfg(test)]
 mod strict_globals_tests;
 #[cfg(test)]
 mod tests;
@@ -36,6 +39,7 @@ use fallback::{collect_fallback_stubs, collect_module_fallback_stubs};
 use generated::{GeneratedImports, collect_generated_stubs, collect_generated_template_globals};
 use generated_dir::resolve_nuxt_generated_dir;
 use plugins::collect_plugin_injection_stubs;
+use reference_graph::{installed_reference_stubs, is_installed};
 use source_scan::collect_source_auto_import_stubs;
 use stubs::{declared_name, is_template_component_binding};
 use tsconfig_aliases::collect_explicit_virtual_module_aliases;
@@ -59,7 +63,7 @@ pub(in crate::commands::check) fn detect_nuxt_auto_imports(
     options: &mut VirtualTsOptions,
     cwd: &Path,
 ) -> Vec<NuxtPathAlias> {
-    detect(options, cwd, None, None, false, VueVersion::V3)
+    detect(options, cwd, cwd, None, None, false, VueVersion::V3)
 }
 
 #[cfg(test)]
@@ -67,12 +71,16 @@ pub(in crate::commands::check) fn detect_legacy_nuxt_auto_imports(
     options: &mut VirtualTsOptions,
     cwd: &Path,
 ) -> Vec<NuxtPathAlias> {
-    detect(options, cwd, None, None, true, VueVersion::V2_7)
+    detect(options, cwd, cwd, None, None, true, VueVersion::V2_7)
 }
 
+/// `program_root` is the directory the checked program's virtual project
+/// mirrors. It is `cwd` for a standalone app, and the workspace root for an
+/// app inside one, so the copied component types name their mirrors from it.
 pub(in crate::commands::check) fn detect(
     options: &mut VirtualTsOptions,
     cwd: &Path,
+    program_root: &Path,
     tsconfig_path: Option<&Path>,
     configured_files: Option<&[std::path::PathBuf]>,
     legacy_vue2: bool,
@@ -100,6 +108,7 @@ pub(in crate::commands::check) fn detect(
     let mut collected = Vec::new();
     let generated_dir = resolve_nuxt_generated_dir(cwd);
     let generated_files = generated_dir.dts_files();
+    let mut shadowing_declarations = FxHashSet::default();
     let declaration_graph = configured_files.map(|files| {
         vize_l0::profile!("cli.check.nuxt.declaration_graph", {
             let mut roots = files.to_vec();
@@ -121,14 +130,31 @@ pub(in crate::commands::check) fn detect(
                         .cloned(),
                 );
             }
-            super::tsconfig_inputs::collect_declaration_reference_graph(&roots)
+            super::tsconfig_inputs::collect_installed_declaration_reference_graph_reading(
+                &roots,
+                Default::default(),
+                |path, content| {
+                    if is_installed(path)
+                        && super::tsconfig_inputs::declares_shadowing_ambient_module(content)
+                    {
+                        shadowing_declarations.insert(path.to_path_buf());
+                    }
+                },
+            )
         })
     });
+    let installed_references = match (&declaration_graph, configured_files) {
+        (Some(graph), Some(files)) => {
+            installed_reference_stubs(graph, &shadowing_declarations, files)
+        }
+        _ => Vec::new(),
+    };
     let GeneratedImports {
         found_manifest: has_generated_imports,
         types: mut type_auto_imports,
     } = collect_generated_stubs(
         cwd,
+        program_root,
         &generated_dir,
         &generated_files,
         declaration_graph.as_ref(),
@@ -201,6 +227,9 @@ pub(in crate::commands::check) fn detect(
         }
     }
 
+    // Triple-slash directives only count ahead of the first statement of the
+    // stub file, so the references lead every other stub.
+    options.auto_import_stubs.splice(0..0, installed_references);
     options.auto_import_stubs.extend(collected);
     let mut external_template_bindings = external_template_bindings.into_iter().collect::<Vec<_>>();
     external_template_bindings.sort();

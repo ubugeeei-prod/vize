@@ -47,7 +47,8 @@ mod tests;
 pub(crate) use ambient::{
     collect_ambient_declaration_files, collect_content_mapper_ambient_declarations,
     collect_declaration_reference_graph, collect_hidden_ambient_declaration_files,
-    collect_selected_nuxt_import_manifests, collect_tsconfig_type_declaration_files,
+    collect_installed_declaration_reference_graph_reading, collect_selected_nuxt_import_manifests,
+    collect_tsconfig_type_declaration_files, declares_shadowing_ambient_module,
 };
 pub(super) use jsonc::parse_jsonc_value;
 pub(crate) use loader::{TsconfigInputCache, load_tsconfig_declaration_options};

@@ -1,0 +1,10 @@
+import type { RequestEvent } from "server-schema";
+
+export const event: RequestEvent = { path: "/" };
+export const label: string = LazyBox.label;
+LazyBox.hydrated({ hydrateNever: true });
+
+export const wrongEvent: RequestEvent = { path: 1 };
+export const wrongLabel: number = LazyBox.label;
+LazyBox.hydrated({ hydrateNever: false });
+export type Invented = LazyComponent<1>;
