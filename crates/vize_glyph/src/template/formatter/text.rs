@@ -9,13 +9,14 @@ use super::{
     suppression::{ChunkJoin, LineJoiner, TextRun},
 };
 use vize_l0::String;
+use vize_l0::string_builder::TextBuf;
 
 impl TemplateFormatter<'_> {
     /// Flush accumulated text content with interpolation formatting.
     #[inline]
     pub(super) fn flush_text_buffer<const CANONICAL: bool>(
         &self,
-        output: &mut Vec<u8>,
+        output: &mut TextBuf,
         text: &mut TextRun,
         depth: usize,
         joiner: &mut LineJoiner<'_>,
@@ -64,13 +65,13 @@ impl TemplateFormatter<'_> {
             if join.is_continuation() {
                 self.open_chunk(output, depth, join);
                 let indent_len = self.indent.len() * depth;
-                let dedented = rewrapped.as_bytes().get(indent_len..).unwrap_or_default();
-                output.extend_from_slice(dedented);
+                let dedented = rewrapped.get(indent_len..).unwrap_or_default();
+                output.push_str(dedented);
             } else {
                 if matches!(join, ChunkJoin::BlankLine) && !output.is_empty() {
-                    output.extend_from_slice(self.newline);
+                    output.push_str(self.newline);
                 }
-                output.extend_from_slice(rewrapped.as_bytes());
+                output.push_str(&rewrapped);
             }
             text.clear();
             joiner.finish(end);
@@ -101,8 +102,8 @@ impl TemplateFormatter<'_> {
             joiner.finish(end);
             return;
         }
-        output.extend_from_slice(formatted.as_bytes());
-        output.extend_from_slice(self.newline);
+        output.push_str(formatted);
+        output.push_str(self.newline);
         text.clear();
         joiner.finish(end);
     }
@@ -165,29 +166,25 @@ impl TemplateFormatter<'_> {
     }
 
     pub(super) fn write_indent_string(&self, out: &mut String, depth: usize) {
-        let indent = std::str::from_utf8(self.indent).unwrap_or("  ");
         for _ in 0..depth {
-            out.push_str(indent);
+            out.push_str(self.indent);
         }
     }
 
     pub(super) fn newline_str(&self) -> &str {
-        std::str::from_utf8(self.newline).unwrap_or("\n")
+        self.newline
     }
 
     pub(super) fn write_multiline_interpolation(
         &self,
-        output: &mut Vec<u8>,
+        output: &mut TextBuf,
         expr: &str,
         depth: usize,
     ) {
-        output.extend_from_slice(b"{{");
-        output.extend_from_slice(self.newline);
+        output.push_str("{{");
+        output.push_str(self.newline);
         let formatted_expr = format_interpolation_expression(expr, self.options, self.vue_version);
-        output.extend_from_slice(
-            self.render_interpolation_expr_lines(&formatted_expr, depth)
-                .as_bytes(),
-        );
-        self.write_indented_line(output, b"}}", depth);
+        output.push_str(&self.render_interpolation_expr_lines(&formatted_expr, depth));
+        self.write_indented_line(output, "}}", depth);
     }
 }

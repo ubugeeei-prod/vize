@@ -1,9 +1,10 @@
 use super::{block_indent, opening_tag, write_attr, write_authored_attrs, write_remaining_attrs};
 use crate::{error::FormatError, options::FormatOptions, style};
 use vize_l0::ToCompactString;
+use vize_l0::string_builder::TextBuf;
 
 pub(super) fn write_style_block(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     block: &super::SfcBlock<'_>,
     options: &FormatOptions,
     source: &str,
@@ -52,7 +53,7 @@ pub(super) fn write_style_block(
     if let Some(opening_tag) = &opening_tag {
         opening_tag::write_raw(output, opening_tag);
     } else {
-        output.extend_from_slice(b"<style");
+        output.push_str("<style");
         if !write_authored_attrs(output, &block.attrs, source, &block.loc, options) {
             if block.has_attr("scoped") {
                 write_attr(output, "scoped", None);
@@ -62,31 +63,31 @@ pub(super) fn write_style_block(
             }
             write_remaining_attrs(output, &block.attrs, &["scoped", "lang"]);
         }
-        output.push(b'>');
+        output.push('>');
     }
     // An empty block (for example one that only carries `src`) stays empty on
     // one line, as Prettier prints it.
     if content.trim().is_empty() {
-        output.extend_from_slice(b"</style>");
+        output.push_str("</style>");
         return Ok(());
     }
-    output.extend_from_slice(options.newline_bytes());
+    output.push_str(options.newline_string());
 
     if options.vue_indent_script_and_style {
         block_indent::write_indented_block(
             output,
             formatted_content.as_str(),
-            options.indent_bytes(),
-            options.newline_bytes(),
+            options.indent_str(),
+            options.newline_string(),
         );
     } else {
-        output.extend_from_slice(formatted_content.as_bytes());
+        output.push_str(&formatted_content);
         if !formatted_content.ends_with(options.newline_string()) {
-            output.extend_from_slice(options.newline_bytes());
+            output.push_str(options.newline_string());
         }
     }
 
-    output.extend_from_slice(b"</style>");
+    output.push_str("</style>");
     Ok(())
 }
 

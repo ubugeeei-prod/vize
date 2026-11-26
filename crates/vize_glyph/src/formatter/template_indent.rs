@@ -8,6 +8,7 @@ use super::raw_mask::compute_raw_line_mask;
 use super::raw_mask::starts_v_pre_attribute_at;
 use crate::template::WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS;
 use memchr::{memchr, memchr2, memchr3};
+use vize_l0::string_builder::TextBuf;
 
 /// Whether the full raw-region lexer can mark any continuation line.
 ///
@@ -105,48 +106,43 @@ fn starts_raw_tag(tail: &[u8]) -> bool {
 }
 
 pub(super) fn write_indented_template(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     source: &str,
-    indent: &[u8],
-    newline: &[u8],
+    indent: &str,
+    newline: &str,
 ) {
     // LF uses a known one-byte copy; non-LF storage and normalization stay cold.
-    if newline != b"\n" {
+    if newline != "\n" {
         write_indented_non_lf_template(output, source, indent, newline);
         return;
     }
 
     if !needs_raw_line_mask(source.as_bytes()) {
-        for line in source.as_bytes().split(|byte| *byte == b'\n') {
-            write_line(output, line, indent, b"\n", false);
+        for line in source.split('\n') {
+            write_line(output, line, indent, "\n", false);
         }
         return;
     }
 
-    raw_lines::write(output, source, indent, b"\n");
+    raw_lines::write(output, source, indent, "\n");
 }
 
 #[cold]
 #[inline(never)]
-fn write_indented_non_lf_template(
-    output: &mut Vec<u8>,
-    source: &str,
-    indent: &[u8],
-    newline: &[u8],
-) {
+fn write_indented_non_lf_template(output: &mut TextBuf, source: &str, indent: &str, newline: &str) {
     if needs_raw_line_mask(source.as_bytes()) {
         raw_lines::write(output, source, indent, newline);
         return;
     }
-    if newline == b"\r" {
-        for line in source.as_bytes().split(|byte| *byte == b'\r') {
-            let line = line.strip_prefix(b"\n").unwrap_or(line);
+    if newline == "\r" {
+        for line in source.split('\r') {
+            let line = line.strip_prefix('\n').unwrap_or(line);
             write_line(output, line, indent, newline, false);
         }
         return;
     }
-    for line in source.as_bytes().split(|byte| *byte == b'\n') {
-        let line = line.strip_suffix(b"\r").unwrap_or(line);
+    for line in source.split('\n') {
+        let line = line.strip_suffix('\r').unwrap_or(line);
         write_line(output, line, indent, newline, false);
     }
 }
@@ -158,20 +154,15 @@ fn write_indented_non_lf_template(
 /// indent is semantics-preserving for Pug-like languages; all relative
 /// indentation, comments, pipe text, filters, and trailing bytes stay intact.
 pub(super) fn write_rebased_opaque_template(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     source: &str,
-    indent: &[u8],
-    newline: &[u8],
+    indent: &str,
+    newline: &str,
 ) {
     // LF, CRLF and a lone CR each end a line.
     let raw_lines: Vec<_> = source
-        .as_bytes()
-        .split(|byte| *byte == b'\n')
-        .flat_map(|line| {
-            line.strip_suffix(b"\r")
-                .unwrap_or(line)
-                .split(|byte| *byte == b'\r')
-        })
+        .split('\n')
+        .flat_map(|line| line.strip_suffix('\r').unwrap_or(line).split('\r'))
         .collect();
     let Some(first) = raw_lines.iter().position(|line| !is_blank(line)) else {
         return;
@@ -183,22 +174,23 @@ pub(super) fn write_rebased_opaque_template(
     let common = common_whitespace_prefix(lines);
 
     for raw_line in lines {
-        let line = raw_line.strip_suffix(b"\r").unwrap_or(raw_line);
+        let line = raw_line.strip_suffix('\r').unwrap_or(raw_line);
         if is_blank(line) {
-            output.extend_from_slice(newline);
+            output.push_str(newline);
             continue;
         }
-        output.extend_from_slice(indent);
-        output.extend_from_slice(line.get(common..).unwrap_or_default());
-        output.extend_from_slice(newline);
+        output.push_str(indent);
+        output.push_str(line.get(common..).unwrap_or_default());
+        output.push_str(newline);
     }
 }
 
-fn common_whitespace_prefix(lines: &[&[u8]]) -> usize {
+fn common_whitespace_prefix(lines: &[&str]) -> usize {
     let mut non_blank = lines
         .iter()
-        .map(|line| line.strip_suffix(b"\r").unwrap_or(line))
-        .filter(|line| !is_blank(line));
+        .map(|line| line.strip_suffix('\r').unwrap_or(line))
+        .filter(|line| !is_blank(line))
+        .map(|line| line.as_bytes());
     let Some(first) = non_blank.next() else {
         return 0;
     };
@@ -225,24 +217,53 @@ fn leading_whitespace(line: &[u8]) -> usize {
         .count()
 }
 
-fn is_blank(line: &[u8]) -> bool {
-    line.iter().all(|byte| matches!(byte, b' ' | b'\t' | b'\r'))
+fn is_blank(line: &str) -> bool {
+    line.bytes()
+        .all(|byte| matches!(byte, b' ' | b'\t' | b'\r'))
 }
 
-fn write_line(output: &mut Vec<u8>, line: &[u8], indent: &[u8], newline: &[u8], raw: bool) {
-    if !line.is_empty() && line != b"\r" && !raw {
-        output.extend_from_slice(indent);
+fn write_line(output: &mut TextBuf, line: &str, indent: &str, newline: &str, raw: bool) {
+    if !line.is_empty() && line != "\r" && !raw {
+        output.push_str(indent);
     }
-    output.extend_from_slice(line);
-    output.extend_from_slice(newline);
+    output.push_str(line);
+    output.push_str(newline);
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        compute_raw_line_mask, needs_raw_line_mask, write_indented_template, write_line,
-        write_rebased_opaque_template,
-    };
+    use super::compute_raw_line_mask;
+    use super::needs_raw_line_mask;
+    use vize_l0::string_builder::TextBuf;
+
+    // The writers take `&mut TextBuf` and `&str`; these keep the retained
+    // byte-level test bodies unchanged.
+    fn text(bytes: &[u8]) -> &str {
+        core::str::from_utf8(bytes).unwrap()
+    }
+
+    fn write_line(output: &mut Vec<u8>, line: &[u8], indent: &[u8], newline: &[u8], raw: bool) {
+        let mut text_buf = TextBuf::new();
+        super::write_line(&mut text_buf, text(line), text(indent), text(newline), raw);
+        output.extend_from_slice(text_buf.as_bytes());
+    }
+
+    fn write_indented_template(output: &mut Vec<u8>, source: &str, indent: &[u8], newline: &[u8]) {
+        let mut text_buf = TextBuf::new();
+        super::write_indented_template(&mut text_buf, source, text(indent), text(newline));
+        output.extend_from_slice(text_buf.as_bytes());
+    }
+
+    fn write_rebased_opaque_template(
+        output: &mut Vec<u8>,
+        source: &str,
+        indent: &[u8],
+        newline: &[u8],
+    ) {
+        let mut text_buf = TextBuf::new();
+        super::write_rebased_opaque_template(&mut text_buf, source, text(indent), text(newline));
+        output.extend_from_slice(text_buf.as_bytes());
+    }
 
     fn full_lexer_output(source: &str) -> Vec<u8> {
         let lines: Vec<_> = source.as_bytes().split(|byte| *byte == b'\n').collect();
