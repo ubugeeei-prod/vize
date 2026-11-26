@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import { navigationRailContext } from "./navigation-rail-context.ts";
+import { normalizeNavigationMenuHref } from "../navigation-menu/navigation-menu-id.ts";
 
 const {
   value,
@@ -48,10 +49,10 @@ defineSlots<{
 const context = navigationRailContext.use();
 const active = computed(() => context.active.value === value);
 // Script-capable URLs never render; only safe hrefs are bound (spread keeps the attribute absent).
-const unsafeHref = /^\s*(?:javascript|vbscript|data):/i;
-const linkAttributes = computed(() =>
-  href === undefined || disabled || unsafeHref.test(href) ? {} : { href },
-);
+const linkAttributes = computed(() => {
+  const safe = href === undefined || disabled ? undefined : normalizeNavigationMenuHref(href);
+  return safe === undefined ? {} : { href: safe };
+});
 
 function onClick(event: MouseEvent): void {
   if (disabled) {

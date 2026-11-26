@@ -4,6 +4,7 @@ import { test } from "vite-plus/test";
 import { nextTick } from "vue";
 
 import { mountInteraction } from "../../../testing/mount.ts";
+import { countDateTimeFormats, timeZoneSpellings } from "../../../testing/time-zone-cache.ts";
 import DateTimeField from "./datetime-field.vue";
 import type { DateTimeFieldExpose } from "./datetime-field-types.ts";
 import {
@@ -143,4 +144,23 @@ test("plain date-time helpers compare, shift, parse, and resolve zoned instants"
     "2026-09-25T01:30:05",
   );
   assert.equal(fromEpochMillisecondsDateTime(0, "No/Zone"), null);
+});
+
+test("the per-zone formatter cache keeps 64 spellings and then drops the oldest", () => {
+  const spellings = timeZoneSpellings(65);
+  const [first = "", last = ""] = [spellings[0], spellings[64]];
+  const read = (timeZone: string) => {
+    assert.equal(iso(fromEpochMillisecondsDateTime(0, timeZone)), "1969-12-31T18:00:00");
+  };
+
+  assert.deepEqual(
+    [
+      countDateTimeFormats(() => spellings.slice(0, 64).forEach(read)),
+      countDateTimeFormats(() => read(first)),
+      countDateTimeFormats(() => read(last)),
+      countDateTimeFormats(() => read(last)),
+      countDateTimeFormats(() => read(first)),
+    ],
+    [64, 0, 1, 0, 1],
+  );
 });

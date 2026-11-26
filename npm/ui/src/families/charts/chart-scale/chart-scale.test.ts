@@ -18,6 +18,7 @@ import {
   tickStep,
 } from "./chart-scale.ts";
 import { d3ScaleVectors as vectors } from "./scale-d3-vectors.ts";
+import { countDateTimeFormats, timeZoneSpellings } from "../../../testing/time-zone-cache.ts";
 
 /** JSON cannot carry NaN; the vectors store it as `null`. */
 function expected(value: number | null): number {
@@ -296,4 +297,45 @@ test("scales snapshot mutable caller options and returned time domains", () => {
   assert.equal(ordinal(new Date(0)), "first");
   assert.equal(ordinal.domain[0]?.getTime(), 0);
   assert.equal(ordinal.with({}).domain[0]?.getTime(), 0);
+});
+
+test("the per-zone interval cache keeps 64 spellings and then drops the oldest", () => {
+  const spellings = timeZoneSpellings(65);
+  const [first = "", last = ""] = [spellings[0], spellings[64]];
+  const build = (timeZone: string) => {
+    assert.equal(scaleTime({ timeZone }).timeZone, "America/Chicago");
+  };
+  spellings.slice(0, 64).forEach(build);
+
+  // A cached spelling builds nothing; a new one only resolves its canonical zone id.
+  assert.deepEqual(
+    [
+      countDateTimeFormats(() => build(first)),
+      countDateTimeFormats(() => build(last)),
+      countDateTimeFormats(() => build(last)),
+      countDateTimeFormats(() => build(first)),
+    ],
+    [0, 1, 0, 1],
+  );
+});
+
+test("the per-zone clock formatter cache keeps 64 zones and then drops the oldest", () => {
+  const offsets = Array.from({ length: 65 }, (_, index) => {
+    const hours = String(1 + Math.floor(index / 60)).padStart(2, "0");
+    return `+${hours}:${String(index % 60).padStart(2, "0")}`;
+  });
+  const build = (timeZone: string) => {
+    scaleTime({ timeZone });
+  };
+
+  // Each new spelling resolves its canonical zone id; a new zone also builds a clock formatter.
+  assert.deepEqual(
+    [
+      countDateTimeFormats(() => offsets.slice(0, 64).forEach(build)),
+      countDateTimeFormats(() => build("+0100")),
+      countDateTimeFormats(() => build(offsets[64] ?? "")),
+      countDateTimeFormats(() => build("+01")),
+    ],
+    [128, 1, 2, 2],
+  );
 });
