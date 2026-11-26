@@ -1,0 +1,699 @@
+//! SFC compilation implementation.
+//!
+//! SFC assembly delegates template, script and style compilation to their compiler lanes.
+
+mod bindings;
+mod diagnostics;
+mod empty_component;
+mod entry;
+mod helpers;
+mod module_trace;
+mod normal_script;
+pub(crate) mod output_module;
+mod props_rest;
+mod script_context;
+mod setup_exports;
+pub(crate) mod setup_facts;
+#[cfg(test)]
+mod setup_syntax_tests;
+mod stage_capture;
+#[cfg(test)]
+mod stage_capture_tests;
+mod styles;
+mod template_context;
+mod template_only;
+#[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
+mod tests;
+
+use crate::compile_script::props::{is_valid_identifier, validate_macro_scope_for_descriptor};
+use crate::compile_script::{SetupTrace, TemplateParts, compile_script_setup_inline_with_context};
+use crate::compile_template::{
+    compile_template_block_vapor, compile_template_block_with_capture, extract_template_parts,
+    slice_template_parts, template_parts_full,
+};
+use crate::types::{
+    BindingType, SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor,
+    SfcError,
+};
+use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
+
+use self::bindings::{merge_normal_script_bindings, register_setup_enum_bindings};
+use self::diagnostics::create_v_model_reactive_const_warning;
+pub(crate) use self::helpers::is_ts_lang;
+use self::helpers::{
+    demote_v_model_reactive_const_bindings, extract_component_name,
+    extract_descriptor_macro_artifacts, output_is_ts, template_is_ts, trim_trailing_newlines,
+    vapor_requested,
+};
+use self::output_module::{
+    append_component_render_export, append_css_modules_assignment, finalize_output_mode,
+    rewrite_client_render_for_sfc_main,
+};
+use self::styles::compile_styles;
+
+mod public;
+pub use public::*;
+use vize_carton::{String, profile};
+use vize_l0::dump::capture::StageCapture;
+use vize_l1_to_l2::lower::pug::PugSourceMap;
+use vize_l4::module::RenderFunctionName;
+
+#[expect(clippy::too_many_arguments, reason = "optional stage capture")]
+fn compile_sfc_inner(
+    descriptor: &SfcDescriptor,
+    mut options: SfcCompileOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    script_output: SfcScriptOutputMode,
+    experimental_options: SfcCompileExperimentalOptions,
+    nuxt_page_meta: bool,
+    type_project: Option<&crate::script::SfcTypeProject>,
+    pug_source_map: Option<&PugSourceMap>,
+    mut capture: Option<&mut StageCapture>,
+) -> Result<SfcCompileResult, SfcError> {
+    empty_component::validate_component(descriptor)?;
+    let mut errors = Vec::new();
+    let mut warnings = Vec::new();
+    let mut code = String::default();
+    let mut css = None;
+    let macro_artifacts = extract_descriptor_macro_artifacts(descriptor, nuxt_page_meta);
+    let filename = if options.parse.filename.is_empty() {
+        options.script.id.as_deref().unwrap_or("anonymous.vue")
+    } else {
+        options.parse.filename.as_str()
+    };
+    let source_filename = options.script.id.as_deref().unwrap_or(filename);
+    let (has_styles, has_scoped, slotted) = styles::scope_flags(&descriptor.styles);
+    let scope_id = styles::scope_id_for_descriptor(descriptor, &options, has_styles, filename);
+    let auto_ssr_css_vars = options.template.ssr_css_vars.is_none();
+    if auto_ssr_css_vars {
+        crate::css::transform::vars::inject_ssr_values(
+            &mut options.template,
+            &descriptor.css_vars,
+            &scope_id,
+            None,
+        );
+    }
+    let compiled_styles = profile!(
+        "atelier.sfc.styles",
+        compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)
+            .with_css_var_names(&descriptor.css_vars, &scope_id, options.template.is_prod)
+    );
+    if !compiled_styles.css.is_empty() {
+        css = Some(compiled_styles.css.clone());
+    }
+    let vapor_requested = vapor_requested(descriptor, &options);
+
+    // A Vapor component renders on the server through the SSR compiler and is
+    // marked `__vapor` (keeping Vapor's hydration anchors), as Vue's does.
+    options.template.vapor = options.template.ssr && vapor_requested;
+    let is_vapor = !options.template.ssr && vapor_requested;
+    // The production Vapor runtime does not expose script-setup bindings
+    // through the component proxy. Every adapter must inline that template,
+    // including native API callers that retain the development default.
+    let script_output = if is_vapor && options.template.is_prod && descriptor.script_setup.is_some()
+    {
+        SfcScriptOutputMode::InlineTemplate
+    } else {
+        script_output
+    };
+    stage_capture::configure(
+        capture.as_deref_mut(),
+        is_vapor,
+        options.template.ssr,
+        codegen_options.source_map,
+    );
+
+    let is_ts = output_is_ts(&options);
+    let template_is_ts = template_is_ts(descriptor, &options);
+
+    let component_name = extract_component_name(filename);
+    let template_context = template_context::SfcTemplateContext {
+        scope_id: &scope_id,
+        has_scoped,
+        slotted,
+        is_ts: template_is_ts,
+        component_name: &component_name,
+        experimental_self_component: experimental_options.self_component,
+        authored_source: descriptor.source.as_ref(),
+        pug_source_map,
+    };
+
+    // Determine output mode based on script type
+    let has_script_setup = descriptor.script_setup.is_some();
+    let has_script = descriptor.script.is_some();
+    let has_template = descriptor.template.is_some();
+    if !has_template {
+        stage_capture::unavailable(capture.as_deref_mut(), "no-template");
+    }
+
+    // Case 1: Template only - just output render function
+    if !has_script
+        && !has_script_setup
+        && let Some(template) = descriptor.template.as_ref()
+    {
+        return template_only::compile_template_only(
+            template_only::TemplateOnlyInput {
+                template,
+                source: descriptor.source.as_ref(),
+                filename,
+                pug_source_map,
+                options: &options,
+                custom_elements: &custom_elements,
+                template_syntax,
+                codegen_options: &codegen_options,
+                compiled_styles: &compiled_styles,
+                component_name: &component_name,
+                scope_id: &scope_id,
+                has_scoped,
+                slotted,
+                is_vapor,
+                template_is_ts,
+                experimental_self_component: experimental_options.self_component,
+                capture: capture.as_deref_mut(),
+            },
+            css,
+            errors,
+            warnings,
+            macro_artifacts,
+        );
+    }
+
+    // Case 2: Script (non-setup) + Template - rewrite default and compile template
+    if !has_script_setup && let Some(script) = descriptor.script.as_ref() {
+        let (lazy_hydration_transform, script_content, script_runs) = module_trace::prepared_script(
+            script,
+            codegen_options.source_map,
+            nuxt_page_meta,
+            codegen_options.runtime_module_name.as_str(),
+        );
+
+        // Check if source script is TypeScript
+        let source_is_ts = is_ts_lang(script.lang.as_deref());
+
+        // A script-only SFC needs no mutable component binding unless the
+        // compiler must attach generated metadata. Preserve its default export
+        // just as compiler-sfc does, including in SSR output.
+        let requires_generated_component =
+            has_template || is_vapor || !compiled_styles.css_modules.is_empty();
+        let (mut final_script, script_runs, needs_component_binding) = module_trace::script_module(
+            &script_content,
+            script_runs,
+            source_is_ts,
+            is_ts,
+            requires_generated_component,
+        );
+        // The script's position in the module, for its source-map provenance.
+        let mut script_at = 0;
+        if let Some(transform) = lazy_hydration_transform {
+            script_at = transform.preamble.len();
+            let mut script_with_preamble = transform.preamble;
+            script_with_preamble.push_str(&final_script);
+            final_script = script_with_preamble;
+        }
+
+        let options_api_bindings = has_template
+            .then(|| bindings::options_api(&script_content, script.lang.as_deref()))
+            .flatten();
+
+        // Compile template if present
+        if let Some(template) = descriptor.template.as_ref() {
+            let template_allocator = vize_carton::pool::acquire();
+            let template_result = if is_vapor {
+                profile!(
+                    "atelier.sfc.template.vapor",
+                    compile_template_block_vapor(
+                        &template_allocator,
+                        template,
+                        &options.template,
+                        &custom_elements,
+                        template_context.block(false, options_api_bindings.as_ref(), None),
+                        template_syntax,
+                        &codegen_options,
+                        capture.as_deref_mut(),
+                    )
+                )
+            } else {
+                let mut template_opts = options.template.clone();
+                if auto_ssr_css_vars {
+                    crate::css::transform::vars::inject_ssr_values(
+                        &mut template_opts,
+                        &descriptor.css_vars,
+                        &scope_id,
+                        options_api_bindings.as_ref(),
+                    );
+                }
+
+                // Also pass scope IDs to the client template compiler. Vue's runtime
+                // normally propagates __scopeId, but wrapper components such as NuxtLink
+                // can otherwise lose parent scoped attrs before the final DOM root.
+                profile!(
+                    "atelier.sfc.template.compile",
+                    compile_template_block_with_capture(
+                        &template_allocator,
+                        template,
+                        &template_opts,
+                        &custom_elements,
+                        template_context.block(false, options_api_bindings.as_ref(), None),
+                        template_syntax,
+                        &codegen_options,
+                        capture.as_deref_mut(),
+                    )
+                )
+            };
+
+            match template_result {
+                Ok(template_output) => {
+                    warnings.extend(template_output.warnings);
+                    let template_code = template_output.code;
+                    // Build output matching Vue's compiler-sfc:
+                    // 1. Full template output (imports + hoisted + function _sfc_render(...))
+                    // 2. Rewritten script
+                    // 3. _sfc_main.render = _sfc_render / _sfc_main.ssrRender = ssrRender
+                    // 4. export default _sfc_main
+                    if is_vapor || options.template.ssr {
+                        // Vapor / SSR keep the render block first, then the script.
+                        script_at += template_code.len();
+                        code.push_str(&template_code);
+                        code.push_str(&final_script);
+                        code.push('\n');
+                    } else {
+                        // Client render: match @vue/compiler-sfc / plugin-vue ordering —
+                        // the <script> block (and its own imports) comes first, then the
+                        // template render block. This keeps user imports at the top of the
+                        // module instead of after the generated render function.
+                        let template_code = rewrite_client_render_for_sfc_main(&template_code);
+                        code.push_str(&final_script);
+                        code.push('\n');
+                        code.push_str(&template_code);
+                        if !code.ends_with('\n') {
+                            code.push('\n');
+                        }
+                    }
+
+                    // Export the component with render attached
+                    if is_vapor || options.template.vapor {
+                        code.push_str("_sfc_main.__vapor = true\n");
+                    }
+                    let render = if options.template.ssr {
+                        RenderFunctionName::SsrRender
+                    } else if is_vapor {
+                        RenderFunctionName::Render
+                    } else {
+                        RenderFunctionName::ComponentRender
+                    };
+                    append_component_render_export(
+                        &mut code,
+                        "_sfc_main",
+                        render,
+                        &compiled_styles.css_modules,
+                    );
+                }
+                Err(e) => {
+                    errors.push(e);
+                    stage_capture::unavailable(capture.as_deref_mut(), "template-error");
+                    // Fall back to just the script
+                    code = final_script.clone();
+                    code.push('\n');
+                }
+            }
+        } else {
+            // Without generated metadata the original script already exports
+            // its component; only metadata-bearing scripts need `_sfc_main`.
+            code.push_str(&final_script);
+            if is_vapor || options.template.vapor {
+                code.push_str("\n_sfc_main.__vapor = true");
+            }
+            if !compiled_styles.css_modules.is_empty() {
+                code.push('\n');
+                append_css_modules_assignment(&mut code, "_sfc_main", &compiled_styles.css_modules);
+            }
+            if needs_component_binding {
+                code.push_str("\nexport default _sfc_main\n");
+            }
+        }
+
+        let rewrite = finalize_output_mode(&mut code, &mut warnings, &options, &codegen_options);
+        // compiler-sfc returns the authored script body, including its final
+        // newline, when no component rewrite is needed. Generated module
+        // shapes still use the usual trimmed output convention.
+        if needs_component_binding {
+            trim_trailing_newlines(&mut code);
+        }
+
+        return Ok(SfcCompileResult {
+            map: module_trace::module_map(
+                &code,
+                script_runs,
+                script_at,
+                rewrite,
+                descriptor,
+                filename,
+            ),
+            code,
+            css,
+            errors,
+            warnings,
+            bindings: None,
+            macro_artifacts,
+            dependencies: Vec::new(),
+        });
+    }
+
+    // Case 3: Script setup with inline template
+    let Some(script_setup) = descriptor.script_setup.as_ref() else {
+        return Err(empty_component::missing_block());
+    };
+
+    // Extract normal script content if present (for type definitions, imports, etc.)
+    // When both <script> and <script setup> exist, normal script content should be preserved
+    // (except for export default which is handled by script setup)
+    // With a source map requested, each piece also carries its `.vue` provenance.
+    let (normal_script_content, normal_runs) =
+        normal_script::extract_for_setup(descriptor, is_ts, codegen_options.source_map);
+    let (lazy_hydration_transform, script_setup_content, mut setup_runs) =
+        module_trace::prepared_script(
+            script_setup,
+            codegen_options.source_map,
+            nuxt_page_meta,
+            codegen_options.runtime_module_name.as_str(),
+        );
+
+    let setup_arena = vize_l0::Allocator::default();
+    let setup_options = (descriptor, &options.template);
+    let setup = profile!(
+        "atelier.sfc.script_setup.facts",
+        setup_facts::SetupCompileAnalysis::new(&setup_arena, &script_setup_content, setup_options)
+    )?;
+    let setup_program = setup.program();
+    setup_exports::validate(setup_program, &script_setup_content, descriptor)?;
+
+    // ScriptCompileContext: macro span info and TypeScript type resolution.
+    let source_is_ts = is_ts_lang(script_setup.lang.as_deref());
+    let script_context::CollectedContext {
+        context: mut ctx,
+        imports: imported_types,
+        dependencies: type_dependencies,
+    } = script_context::collect(
+        descriptor,
+        &script_setup_content,
+        source_filename,
+        type_project,
+    )?;
+    profile!(
+        "atelier.sfc.script_context.analyze",
+        ctx.analyze_for_target(setup_program, &script_setup_content, is_vapor)
+    );
+    validate_macro_scope_for_descriptor(&ctx, setup_program, descriptor)?;
+    script_context::validate(&ctx, &imported_types, descriptor)?;
+
+    let (mut script_bindings, script_tables) = setup.tables()?;
+    if let Some(program) = setup_program {
+        register_setup_enum_bindings(&mut script_bindings, program);
+    }
+    props_rest::merge_props_bindings(&mut script_bindings, &ctx);
+
+    let mut synthetic_inline_dollar_emit = ctx.macros.define_emits.as_ref().is_some_and(|emits| {
+        bindings::register_setup_emit_binding(
+            &mut script_bindings,
+            emits.binding_name.as_deref(),
+            script_output.separates_template(),
+        )
+    });
+
+    // Register bindings from normal <script> block.
+    // When both <script> and <script setup> exist, top-level imports and
+    // declarations from the normal script are accessible in the template.
+    // This enables proper component resolution (e.g., `import { Form as PForm }`)
+    // and identifier prefix resolution (avoiding incorrect `_ctx.` prefix).
+    if let Some(script) = descriptor.script.as_ref() {
+        let normal_script_bindings = bindings::ordinary(&script.content, script.lang.as_deref());
+        merge_normal_script_bindings(&mut script_bindings, &normal_script_bindings);
+        merge_normal_script_bindings(&mut ctx.bindings, &normal_script_bindings);
+        synthetic_inline_dollar_emit &= !normal_script_bindings.bindings.contains_key("$emit");
+    }
+
+    let setup_css_module_names = compiled_styles
+        .css_modules
+        .iter()
+        .filter(|module| {
+            is_valid_identifier(&module.name) && !ctx.bindings.bindings.contains_key(&module.name)
+        })
+        .map(|module| module.name.clone())
+        .collect::<Vec<_>>();
+    for module_name in &setup_css_module_names {
+        script_bindings
+            .bindings
+            .entry(module_name.clone())
+            .or_insert(BindingType::SetupConst);
+        ctx.bindings
+            .bindings
+            .entry(module_name.clone())
+            .or_insert(BindingType::SetupConst);
+    }
+
+    // When v-model demotion rewrites `const` to `let`, the rewritten content
+    // replaces the original for the inline compile below and the shared
+    // pre-demotion AST is no longer valid for it.
+    let mut demoted_setup_content: Option<String> = None;
+    if let Some(template) = &descriptor.template {
+        let demote_result = profile!(
+            "atelier.sfc.script_setup.demote_v_model_reactive_consts",
+            demote_v_model_reactive_const_bindings(
+                &template.content,
+                script_setup.lang.as_deref(),
+                &script_setup_content,
+                &mut ctx,
+                &mut script_bindings,
+            )
+        );
+
+        if let Some((rewritten, demoted_ids, starts)) = demote_result {
+            setup_runs = module_trace::demoted(setup_runs, script_setup_content.len(), &starts);
+            for binding_name in demoted_ids {
+                warnings.push(create_v_model_reactive_const_warning(
+                    script_setup,
+                    &binding_name,
+                ));
+            }
+            demoted_setup_content = Some(rewritten);
+        }
+    }
+    bindings::copy_setup_state_bindings(
+        &mut ctx.bindings,
+        &script_bindings,
+        synthetic_inline_dollar_emit,
+    );
+    // Compile template with bindings (if present) to get the render function
+    let template_result = if let Some(template) = &descriptor.template {
+        let template_allocator = vize_carton::pool::acquire();
+        if is_vapor {
+            Some(profile!(
+                "atelier.sfc.template.vapor",
+                compile_template_block_vapor(
+                    &template_allocator,
+                    template,
+                    &options.template,
+                    &custom_elements,
+                    template_context.block(
+                        false,
+                        Some(&bindings::for_vapor(&script_bindings, setup_program)),
+                        None,
+                    ),
+                    template_syntax,
+                    &codegen_options,
+                    capture.as_deref_mut(),
+                )
+            ))
+        } else {
+            // Also pass scope IDs to the client template compiler. Vue's runtime
+            // normally propagates __scopeId, but wrapper components such as NuxtLink
+            // can otherwise lose parent scoped attrs before the final DOM root.
+            let mut template_opts = options.template.clone();
+            if auto_ssr_css_vars {
+                crate::css::transform::vars::inject_ssr_values(
+                    &mut template_opts,
+                    &descriptor.css_vars,
+                    &scope_id,
+                    Some(&script_bindings),
+                );
+            }
+            Some(profile!(
+                "atelier.sfc.template.compile",
+                compile_template_block_with_capture(
+                    &template_allocator,
+                    template,
+                    &template_opts,
+                    &custom_elements,
+                    template_context.block(
+                        !script_output.separates_template(),
+                        Some(&script_bindings),
+                        Some(script_tables),
+                    ),
+                    template_syntax,
+                    &codegen_options,
+                    capture.as_deref_mut(),
+                )
+            ))
+        }
+    } else {
+        None
+    };
+
+    if let Some(Ok(template_output)) = &template_result {
+        warnings.extend(template_output.warnings.clone());
+    }
+
+    // Extract template parts for inline mode (imports, hoisted, preamble, render_body)
+    let (
+        template_imports,
+        template_hoisted,
+        template_render_fn,
+        template_render_fn_name,
+        template_preamble,
+        render_body,
+    ) = match &template_result {
+        Some(Ok(template_output)) => {
+            let template_code = &template_output.code;
+            if is_vapor || options.template.ssr || script_output.separates_template() {
+                let (imports, hoisted, render_fn, render_fn_name) = profile!(
+                    "atelier.sfc.template.extract_parts_full",
+                    template_parts_full(template_output)
+                );
+                (
+                    imports,
+                    hoisted,
+                    render_fn,
+                    render_fn_name,
+                    String::default(),
+                    String::default(),
+                )
+            } else {
+                let (imports, hoisted, preamble, body, render_fn_name) = profile!(
+                    "atelier.sfc.template.extract_parts",
+                    match &template_output.sections {
+                        // Emission-recorded offsets: slice the sections out
+                        // directly instead of re-scanning the module.
+                        Some(sections) => slice_template_parts(template_code, sections),
+                        None => extract_template_parts(template_code),
+                    }
+                );
+                (
+                    imports,
+                    hoisted,
+                    String::default(),
+                    render_fn_name,
+                    preamble,
+                    body,
+                )
+            }
+        }
+        Some(Err(e)) => {
+            errors.push(e.clone());
+            stage_capture::unavailable(capture, "template-error");
+            (
+                String::default(),
+                String::default(),
+                String::default(),
+                "",
+                String::default(),
+                String::default(),
+            )
+        }
+        None => (
+            String::default(),
+            String::default(),
+            String::default(),
+            "",
+            String::default(),
+            String::default(),
+        ),
+    };
+
+    // In separate client output the template function shares module scope with
+    // the user's imports and declarations. Keep its name distinct from common
+    // script bindings such as `import { render } from "./lib"`.
+    let (template_render_fn, template_render_fn_name) = if script_output.separates_template()
+        && !is_vapor
+        && !options.template.ssr
+        && !template_render_fn.is_empty()
+    {
+        (
+            rewrite_client_render_for_sfc_main(&template_render_fn),
+            "_sfc_render",
+        )
+    } else {
+        (template_render_fn, template_render_fn_name)
+    };
+
+    // When demotion rewrote the content, the shared AST is stale for the
+    // rewritten text; the inline compiler re-parses in that rare case.
+    let (setup_content_for_inline, setup_program_for_inline) = match demoted_setup_content.as_ref()
+    {
+        Some(content) => (content.as_str(), None),
+        None => (script_setup_content.as_str(), setup_program),
+    };
+
+    // Assemble script setup with either an inline render (`inline_template`) or
+    // a separate render function plus a marked setup-state object (module mode),
+    // sharing the same analyzed script context, macro lowering, and runtime props.
+    let mut setup_trace = setup_runs.map(|runs| SetupTrace::new(runs, normal_runs));
+    let script_result = profile!(
+        "atelier.sfc.script_setup.inline_compile",
+        compile_script_setup_inline_with_context(
+            ctx,
+            setup_content_for_inline,
+            setup_program_for_inline,
+            &component_name,
+            is_ts,
+            source_is_ts,
+            is_vapor,
+            TemplateParts {
+                imports: &template_imports,
+                hoisted: &template_hoisted,
+                render_fn: &template_render_fn,
+                render_fn_name: template_render_fn_name,
+                preamble: &template_preamble,
+                render_body: &render_body,
+                render_is_block: is_vapor,
+                hydrates_as_vapor: options.template.vapor,
+            },
+            normal_script_content.as_deref(),
+            &descriptor.css_vars,
+            &compiled_styles.css_modules,
+            &setup_css_module_names,
+            &scope_id,
+            &scope_id,
+            filename.ends_with(".art.vue"),
+            options.template.is_prod,
+            &crate::compile_script::runtime_imports::RuntimeModule::new(
+                codegen_options.runtime_module_name.as_str()
+            ),
+            setup_trace.as_mut(),
+        )
+    )?;
+
+    // The shared script-setup compiler generates the complete module, including
+    // imports, hoists, component options, setup bindings, and render attachment.
+    if let Some(transform) = lazy_hydration_transform {
+        code.push_str(&transform.preamble);
+    }
+    let (script_at, output) = (code.len(), setup_trace.map(|trace| trace.output));
+    code.push_str(&script_result.code);
+
+    let rewrite = finalize_output_mode(&mut code, &mut warnings, &options, &codegen_options);
+    trim_trailing_newlines(&mut code);
+
+    Ok(SfcCompileResult {
+        map: module_trace::module_map(&code, output, script_at, rewrite, descriptor, filename),
+        code,
+        css,
+        errors,
+        warnings,
+        bindings: script_result.bindings,
+        macro_artifacts,
+        dependencies: type_dependencies,
+    })
+}

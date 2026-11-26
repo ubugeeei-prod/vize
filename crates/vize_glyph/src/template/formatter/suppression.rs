@@ -16,8 +16,11 @@
 
 use std::cmp::Ordering;
 
+mod gap;
+
 use super::TemplateFormatter;
 use crate::template::helpers::is_whitespace;
+use gap::{is_single_line_break_gap, whitespace_gap_line_breaks};
 
 /// Pragmas whose suppression covers the line *after* the comment.
 const NEXT_LINE_PRAGMAS: [&[u8]; 4] = [
@@ -350,38 +353,39 @@ fn contains_any(haystack: &[u8], needles: &[&[u8]]) -> bool {
         .any(|needle| memchr::memmem::find(haystack, needle).is_some())
 }
 
-#[inline(always)]
-fn is_single_line_break_gap(gap: &[u8]) -> bool {
-    let tail = match gap {
-        [b'\n', tail @ ..] | [b'\r', b'\n', tail @ ..] | [b'\r', tail @ ..] => tail,
-        _ => return false,
-    };
-    tail.iter().all(|&byte| matches!(byte, b' ' | b'\t'))
-}
-
-/// Count LF, CRLF or lone-CR boundaries in an all-whitespace source gap.
-#[inline(always)]
-fn whitespace_gap_line_breaks(gap: &[u8]) -> Option<u8> {
-    let mut line_breaks = 0_u8;
-    let mut index = 0;
-    while let Some(&byte) = gap.get(index) {
-        match byte {
-            b'\r' => {
-                line_breaks = line_breaks.saturating_add(1);
-                index += usize::from(gap.get(index + 1) == Some(&b'\n'));
-            }
-            b'\n' => line_breaks = line_breaks.saturating_add(1),
-            byte if !is_whitespace(byte) => return None,
-            _ => {}
-        }
-        index += 1;
-    }
-    Some(line_breaks)
-}
-
 #[cfg(test)]
 mod tests {
     use super::{is_single_line_break_gap, locked_line_ranges, whitespace_gap_line_breaks};
+
+    /// The slice-pattern form the index loop replaced for the proof.
+    fn pattern_single_line_break_gap(gap: &[u8]) -> bool {
+        let tail = match gap {
+            [b'\n', tail @ ..] | [b'\r', b'\n', tail @ ..] | [b'\r', tail @ ..] => tail,
+            _ => return false,
+        };
+        tail.iter().all(|&byte| matches!(byte, b' ' | b'\t'))
+    }
+
+    #[test]
+    fn the_index_loop_decides_every_short_gap_like_the_slice_patterns() {
+        const BYTES: [u8; 5] = *b" \t\n\ra";
+        for len in 0..=7_u32 {
+            for mut code in 0..5_usize.pow(len) {
+                let gap: Vec<u8> = (0..len)
+                    .map(|_| {
+                        let byte = BYTES.get(code % 5).copied().unwrap_or(b'a');
+                        code /= 5;
+                        byte
+                    })
+                    .collect();
+                assert_eq!(
+                    is_single_line_break_gap(&gap),
+                    pattern_single_line_break_gap(&gap),
+                    "{gap:?}"
+                );
+            }
+        }
+    }
 
     #[test]
     fn single_line_break_gaps_accept_only_horizontal_tail_whitespace() {

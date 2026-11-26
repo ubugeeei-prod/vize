@@ -855,6 +855,9 @@ export interface LintRuleOptions {
     globals?: string[];
     ignorePatterns?: string[];
   };
+  "vue/no-undefined-refs"?: {
+    globals?: string[];
+  };
   "vue/sfc-element-order"?: {
     order?: (string | string[])[];
   };

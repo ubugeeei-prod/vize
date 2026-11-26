@@ -3,61 +3,6 @@
     "file": "site/src/components/DemoBox.vue",
     "messages": [
       {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'inIframe' is not defined",
-        "line": 2,
-        "column": 19,
-        "endLine": 2,
-        "endColumn": 27,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'sectionId' is not defined",
-        "line": 3,
-        "column": 15,
-        "endLine": 3,
-        "endColumn": 24,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'sectionId' is not defined",
-        "line": 5,
-        "column": 24,
-        "endLine": 5,
-        "endColumn": 33,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'iframeDemo' is not defined",
-        "line": 7,
-        "column": 23,
-        "endLine": 7,
-        "endColumn": 33,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'iframeDemoKey' is not defined",
-        "line": 7,
-        "column": 34,
-        "endLine": 7,
-        "endColumn": 47,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
         "ruleId": "a11y/iframe-has-title",
         "ruleDocsPath": "docs/content/rules/reference/a11y-iframe-has-title.md",
         "severity": 1,
@@ -91,61 +36,6 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'iframeDemo' is not defined",
-        "line": 9,
-        "column": 25,
-        "endLine": 9,
-        "endColumn": 35,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'iframeDemoKey' is not defined",
-        "line": 9,
-        "column": 36,
-        "endLine": 9,
-        "endColumn": 49,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'iframeHeight' is not defined",
-        "line": 9,
-        "column": 61,
-        "endLine": 9,
-        "endColumn": 73,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'sectionId' is not defined",
-        "line": 18,
-        "column": 23,
-        "endLine": 18,
-        "endColumn": 32,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'title' is not defined",
-        "line": 18,
-        "column": 39,
-        "endLine": 18,
-        "endColumn": 44,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
         "ruleId": "vue/no-v-html",
         "ruleDocsPath": "docs/content/rules/reference/vue-no-v-html.md",
         "severity": 1,
@@ -155,39 +45,6 @@
         "endLine": 20,
         "endColumn": 57,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'docHtml' is not defined",
-        "line": 20,
-        "column": 49,
-        "endLine": 20,
-        "endColumn": 56,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'handleCodeSandbox' is not defined",
-        "line": 25,
-        "column": 21,
-        "endLine": 25,
-        "endColumn": 38,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'type' is not defined",
-        "line": 28,
-        "column": 48,
-        "endLine": 28,
-        "endColumn": 52,
-        "help": "Define in <script setup> or ensure it's imported"
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
@@ -212,61 +69,6 @@
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
       {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'handleChangeType' is not defined",
-        "line": 32,
-        "column": 21,
-        "endLine": 32,
-        "endColumn": 37,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'type' is not defined",
-        "line": 34,
-        "column": 16,
-        "endLine": 34,
-        "endColumn": 20,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'blocked' is not defined",
-        "line": 38,
-        "column": 18,
-        "endLine": 38,
-        "endColumn": 25,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'copied' is not defined",
-        "line": 39,
-        "column": 34,
-        "endLine": 39,
-        "endColumn": 40,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'copyTooltipVisible' is not defined",
-        "line": 40,
-        "column": 18,
-        "endLine": 40,
-        "endColumn": 36,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
         "ruleId": "vue/v-on-event-hyphenation",
         "ruleDocsPath": "docs/content/rules/reference/vue-v-on-event-hyphenation.md",
         "severity": 1,
@@ -278,105 +80,6 @@
         "help": "Rename the listener to kebab-case so it matches the emitted event name."
       },
       {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'onCopyTooltipVisibleChange' is not defined",
-        "line": 41,
-        "column": 24,
-        "endLine": 41,
-        "endColumn": 50,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'copied' is not defined",
-        "line": 44,
-        "column": 18,
-        "endLine": 44,
-        "endColumn": 24,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'copyTooltipVisible' is not defined",
-        "line": 44,
-        "column": 28,
-        "endLine": 44,
-        "endColumn": 46,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'type' is not defined",
-        "line": 46,
-        "column": 31,
-        "endLine": 46,
-        "endColumn": 35,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'sourceCode' is not defined",
-        "line": 46,
-        "column": 47,
-        "endLine": 46,
-        "endColumn": 57,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'jsSourceCode' is not defined",
-        "line": 46,
-        "column": 60,
-        "endLine": 46,
-        "endColumn": 72,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'handleCodeCopied' is not defined",
-        "line": 47,
-        "column": 34,
-        "endLine": 47,
-        "endColumn": 50,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'warning' is not defined",
-        "line": 52,
-        "column": 85,
-        "endLine": 52,
-        "endColumn": 92,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'codeExpand' is not defined",
-        "line": 54,
-        "column": 48,
-        "endLine": 54,
-        "endColumn": 58,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
@@ -397,39 +100,6 @@
         "endLine": 65,
         "endColumn": 15,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'theme' is not defined",
-        "line": 59,
-        "column": 17,
-        "endLine": 59,
-        "endColumn": 22,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'codeExpand' is not defined",
-        "line": 63,
-        "column": 23,
-        "endLine": 63,
-        "endColumn": 33,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'handleCodeExpand' is not defined",
-        "line": 64,
-        "column": 23,
-        "endLine": 64,
-        "endColumn": 39,
-        "help": "Define in <script setup> or ensure it's imported"
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
@@ -454,61 +124,6 @@
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
       {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'theme' is not defined",
-        "line": 69,
-        "column": 17,
-        "endLine": 69,
-        "endColumn": 22,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'codeExpand' is not defined",
-        "line": 73,
-        "column": 23,
-        "endLine": 73,
-        "endColumn": 33,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'handleCodeExpand' is not defined",
-        "line": 74,
-        "column": 23,
-        "endLine": 74,
-        "endColumn": 39,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'highlightClass' is not defined",
-        "line": 80,
-        "column": 22,
-        "endLine": 80,
-        "endColumn": 36,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'type' is not defined",
-        "line": 82,
-        "column": 21,
-        "endLine": 82,
-        "endColumn": 25,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
@@ -529,39 +144,6 @@
         "endLine": 97,
         "endColumn": 15,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'theme' is not defined",
-        "line": 91,
-        "column": 17,
-        "endLine": 91,
-        "endColumn": 22,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'handleCodeExpand' is not defined",
-        "line": 96,
-        "column": 23,
-        "endLine": 96,
-        "endColumn": 39,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'sectionId' is not defined",
-        "line": 96,
-        "column": 48,
-        "endLine": 96,
-        "endColumn": 57,
-        "help": "Define in <script setup> or ensure it's imported"
       },
       {
         "ruleId": "vue/require-scoped-style",
@@ -576,88 +158,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 52
+    "warningCount": 14
   },
   {
     "file": "site/src/theme/template/IconDisplay/CopyableIcon.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'text' is not defined",
-        "line": 3,
-        "column": 23,
-        "endLine": 3,
-        "endColumn": 27,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'onCopied' is not defined",
-        "line": 4,
-        "column": 26,
-        "endLine": 4,
-        "endColumn": 34,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'justCopied' is not defined",
-        "line": 5,
-        "column": 13,
-        "endLine": 5,
-        "endColumn": 23,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'type' is not defined",
-        "line": 5,
-        "column": 28,
-        "endLine": 5,
-        "endColumn": 32,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'name' is not defined",
-        "line": 7,
-        "column": 30,
-        "endLine": 7,
-        "endColumn": 34,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'isNew' is not defined",
-        "line": 9,
-        "column": 22,
-        "endLine": 9,
-        "endColumn": 27,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
-      {
-        "ruleId": "vue/no-undefined-refs",
-        "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
-        "severity": 1,
-        "message": "[vize:vue/no-undefined-refs] Variable 'kebabCasedType' is not defined",
-        "line": 10,
-        "column": 12,
-        "endLine": 10,
-        "endColumn": 26,
-        "help": "Define in <script setup> or ensure it's imported"
-      },
       {
         "ruleId": "script/require-explicit-emits",
         "ruleDocsPath": "docs/content/rules/reference/script-require-explicit-emits.md",
@@ -671,6 +176,6 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 1
   }
 ]
