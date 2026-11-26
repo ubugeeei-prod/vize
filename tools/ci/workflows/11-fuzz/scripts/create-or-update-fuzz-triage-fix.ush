@@ -1,0 +1,65 @@
+# Open a triage issue for the fuzz target's reproducer, or comment on the open issue that already tracks it.
+use $bin::{gh}
+use std::fs::{is_dir, read_dir, read_text, temp_dir, write_text}
+use std::path::{basename, from_source}
+use std::string::is_empty
+
+# Names the kind of a libFuzzer artifact from its file name, or gives "" for any other file.
+fn artifact_kind(name: String) -> String {
+  match name {
+    glob "crash-*" => "crash reproducer"
+    glob "timeout-*" => "timeout reproducer"
+    glob "oom-*" => "OOM reproducer"
+    glob "leak-*" => "leak reproducer"
+    glob "slow-unit-*" => "slow unit"
+    _ => ""
+  }
+}
+
+let target = $env::VIZE_MATRIX_TARGET
+let title = $"fix(fuzz): $target found a reproducer"
+let run_url = $"$env::GITHUB_SERVER_URL/$env::GITHUB_REPOSITORY/actions/runs/$env::GITHUB_RUN_ID"
+let artifact_dir = $"tests/fuzz/artifacts/$target"
+
+# libFuzzer writes slow units on otherwise successful campaigns too.
+# Keep triaging their parser cost, but do not report them as crashes.
+let mut reproducer_kind = "reproducer artifact"
+if is_dir $artifact_dir {
+  let found = [artifact_kind (basename $file) for file in read_dir $artifact_dir]
+  # The most severe kind present names the issue.
+  let by_severity = ["crash reproducer", "timeout reproducer", "OOM reproducer", "leak reproducer", "slow unit"]
+  let present = [kind for kind in by_severity if found.contains(kind)]
+  if !present.is_empty() {
+    reproducer_kind = present.first()
+  }
+}
+
+let body = $"""
+  Fuzz target `$target` produced a $reproducer_kind.
+
+  - Workflow run: $run_url
+  - Artifact: `fuzz-reproducers-$target`
+  - Commit: `$env::GITHUB_SHA`
+
+  Download the artifact from the workflow run and replay it locally with:
+
+  ```sh
+  cd tests/fuzz
+  cargo +nightly fuzz run $target artifacts/$target/<reproducer>
+  ```
+"""
+let scratch = temp_dir
+let body_file = $"$scratch/body.md"
+write_text $body_file $"$body\n"
+
+let existing_fix = gh issue list \
+  --state open \
+  --search $"$title in:title" \
+  --json number \
+  --jq (read_text (from_source "first-pr-number.jq"))
+
+if is_empty $existing_fix {
+  gh issue create --title $title --body-file $body_file
+} else {
+  gh issue comment $existing_fix --body-file $body_file
+}

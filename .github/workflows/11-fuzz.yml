@@ -78,7 +78,7 @@ jobs:
         env:
           REQUESTED_MAX_TOTAL_TIME: ${{ inputs.max-total-time }}
           FUZZ_MODE: ${{ inputs.mode || 'campaign' }}
-        run: . "${{ env.VIZE_CI_FILES }}/resolve-max-total-time.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/resolve-max-total-time.sh"
 
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with:
@@ -136,7 +136,7 @@ jobs:
         # when no individual input allocates excessively. Keep the per-call
         # allocation guard strict while giving the instrumented process room
         # to finish the 30-minute scheduled evidence run.
-        run: . "${{ env.VIZE_CI_FILES }}/run-fuzz-target.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/run-fuzz-target.sh"
 
       - name: Upload reproducers when libFuzzer crashed
         id: upload-reproducers
@@ -153,7 +153,7 @@ jobs:
         env:
           VIZE_MATRIX_TARGET: "${{ matrix.target }}"
           GH_TOKEN: ${{ github.token }}
-        run: . "${{ env.VIZE_CI_FILES }}/create-or-update-fuzz-triage-fix.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/create-or-update-fuzz-triage-fix.sh"
 
       - name: Enforce fuzz result for release evidence
         id: enforce

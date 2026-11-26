@@ -1,0 +1,16 @@
+# Run one fuzz target: replay its corpus once, or fuzz it for the resolved time budget.
+use $bin::{cargo}
+use std::env::get
+
+let budget = match get FUZZ_MODE {
+  # Regression check: replay the seeded and cached corpus once each.
+  "replay" => "-runs=0"
+  _ => $"-max_total_time=$env::FUZZ_MAX_TOTAL_TIME"
+}
+
+cargo +nightly fuzz run --fuzz-dir tests/fuzz $env::FUZZ_TARGET -- \
+  $budget \
+  -max_len=65536 \
+  -timeout=25 \
+  -rss_limit_mb=4096 \
+  -malloc_limit_mb=2048

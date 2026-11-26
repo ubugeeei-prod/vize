@@ -88,7 +88,7 @@ jobs {
           REQUESTED_MAX_TOTAL_TIME = "${{ inputs.max-total-time }}"
           FUZZ_MODE = "${{ inputs.mode || 'campaign' }}"
         }
-        run = ci.workflowScript("resolve-max-total-time.sh")
+        run = ci.workflowProgram("resolve-max-total-time")
       }
       new Dynamic {
         uses = ci.setupRust
@@ -158,7 +158,7 @@ jobs {
         // when no individual input allocates excessively. Keep the per-call
         // allocation guard strict while giving the instrumented process room
         // to finish the 30-minute scheduled evidence run.
-        run = ci.workflowScript("run-fuzz-target.sh")
+        run = ci.workflowProgram("run-fuzz-target")
       }
       new Dynamic {
         name = "Upload reproducers when libFuzzer crashed"
@@ -179,7 +179,7 @@ jobs {
           VIZE_MATRIX_TARGET = "${{ matrix.target }}"
           GH_TOKEN = "${{ github.token }}"
         }
-        run = ci.workflowScript("create-or-update-fuzz-triage-fix.sh")
+        run = ci.workflowProgram("create-or-update-fuzz-triage-fix")
       }
       new Dynamic {
         name = "Enforce fuzz result for release evidence"

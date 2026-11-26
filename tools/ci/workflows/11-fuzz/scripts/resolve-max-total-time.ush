@@ -1,0 +1,32 @@
+# Resolve the campaign's time budget in seconds: none for a replay, 30 minutes nightly, or the dispatched value.
+mod "../../../lib/github.ush" as github
+use std::env::get
+use std::process::exit
+use std::regex::is_match
+use std::string::to_int
+
+if (get FUZZ_MODE) == "replay" {
+  # `-runs=0` executes every corpus input once and exits, so no budget
+  # applies and the verdict depends only on the corpus.
+  github::output seconds "0"
+  exit 0
+}
+
+let event = $env::GITHUB_EVENT_NAME
+let mut seconds = ""
+if event == "schedule" {
+  # Nightly long fuzz: 30 minutes/target — large enough to drive
+  # libFuzzer past coverage plateaus on the seeded corpus.
+  seconds = "1800"
+} else if event == "workflow_dispatch" {
+  seconds = get REQUESTED_MAX_TOTAL_TIME
+} else {
+  echo "::error title=Unsupported fuzz event::campaign requires schedule or workflow_dispatch"
+  exit 1
+}
+# Leading zeros are allowed and read as decimal.
+if !(is_match $seconds "^[0-9]{1,4}$") || (to_int $seconds) < 1 || (to_int $seconds) > 3600 {
+  echo "::error title=Invalid fuzz budget::max-total-time must be an integer from 1 to 3600 seconds"
+  exit 1
+}
+github::output seconds $seconds

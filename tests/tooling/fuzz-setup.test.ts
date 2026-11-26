@@ -89,7 +89,7 @@ test("fuzz CI workflow runs strict nightly and dispatched campaigns", () => {
     REQUESTED_MAX_TOTAL_TIME: "${{ inputs.max-total-time }}",
     FUZZ_MODE: "${{ inputs.mode || 'campaign' }}",
   });
-  assert.match(budgetStep?.run ?? "", /seconds="\$REQUESTED_MAX_TOTAL_TIME"/);
+  assert.match(budgetStep?.run ?? "", /seconds = get REQUESTED_MAX_TOTAL_TIME/);
   assert.match(budgetStep?.run ?? "", /max-total-time must be an integer from 1 to 3600 seconds/);
   assert.doesNotMatch(budgetStep?.run ?? "", /seconds=\$\{\{/);
   const dispatchBudgetScript = budgetStep!.run!;
@@ -121,15 +121,15 @@ test("fuzz CI workflow runs strict nightly and dispatched campaigns", () => {
   assert.equal(fuzzStep?.["continue-on-error"], true);
   assert.match(
     fuzzStep?.run ?? "",
-    /cargo \+nightly fuzz run --fuzz-dir tests\/fuzz "\$FUZZ_TARGET"/,
+    /cargo \+nightly fuzz run --fuzz-dir tests\/fuzz \$env::FUZZ_TARGET -- \\\n  \$budget/,
   );
   assert.match(fuzzStep?.run ?? "", /-rss_limit_mb=4096/);
   assert.match(fuzzStep?.run ?? "", /-malloc_limit_mb=2048/);
   // Mode selection belongs to this step: replay executes each corpus input once
   // and exits, campaigns keep their budget. `release-fuzz-gate.test.ts` runs the
   // script per mode to pin which argument each one actually gets.
-  assert.match(fuzzStep?.run ?? "", /budget="-runs=0"/);
-  assert.match(fuzzStep?.run ?? "", /budget="-max_total_time=\$FUZZ_MAX_TOTAL_TIME"/);
+  assert.match(fuzzStep?.run ?? "", /"replay" => "-runs=0"/);
+  assert.match(fuzzStep?.run ?? "", /_ => \$"-max_total_time=\$env::FUZZ_MAX_TOTAL_TIME"/);
   assert.deepEqual(fuzzStep?.env, {
     FUZZ_MAX_TOTAL_TIME: "${{ steps.budget.outputs.seconds }}",
     FUZZ_TARGET: "${{ matrix.target }}",
