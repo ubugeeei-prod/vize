@@ -1,6 +1,6 @@
 use super::*;
 use vize_l0::Span;
-use vize_l2::file::{FileIssueKind, RejectedFileFor};
+use vize_l2::file::{L2IrIssueKind, RejectedL2IrFor};
 
 #[test]
 fn unicode_alias_and_collection_ranges_keep_both_original_intrinsic_profiles()
@@ -133,7 +133,7 @@ fn ordinary_selected_program_values_remain_invisible_to_the_original_for_collect
         let Kind::For { span, kind } = issue.kind else {
             return Err("For collection refusal");
         };
-        equal(kind, FileIssueKind::UnresolvedReference)?;
+        equal(kind, L2IrIssueKind::UnresolvedReference)?;
         equal(span.slice(source), "items")?;
         equal(issue.span, span)?;
         check(walk.complete().is_err())?;
@@ -145,7 +145,7 @@ fn ordinary_selected_program_values_remain_invisible_to_the_original_for_collect
     equal(file.units().len(), 1)?;
     equal(file.template_declarations().count(), 0)?;
     equal(file.artifact().node_count(), 0)?;
-    let [RejectedFileFor::Resolution { input, .. }] = file.rejected_for_heads() else {
+    let [RejectedL2IrFor::Resolution { input, .. }] = file.rejected_for_heads() else {
         return Err("retained original collection owner");
     };
     equal(input.operand().raw_value(), "item in items")?;

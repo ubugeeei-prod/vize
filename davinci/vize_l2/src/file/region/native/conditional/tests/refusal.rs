@@ -72,7 +72,7 @@ fn unsupported_condition_spelling_and_body_shapes_remain_whole_lower_refusals() 
             assert!(
                 file.native_conditionals()
                     .iter()
-                    .all(|row| !matches!(row.state(), NativeFileConditionalState::Admitted(_)))
+                    .all(|row| !matches!(row.state(), NativeL2IrConditionalState::Admitted(_)))
             );
         }
     }

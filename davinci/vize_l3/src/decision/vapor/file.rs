@@ -10,8 +10,8 @@ use vize_l2::{artifact::L2Template, file::L2Ir};
 ///
 /// A caller cannot substitute an independently supplied analysis:
 /// ```compile_fail
-/// use vize_l3::decision::vapor::VaporFileAnalysis;
-/// fn detach(view: VaporFileAnalysis<'_, '_>) { let _ = view.analysis; }
+/// use vize_l3::decision::vapor::VaporL2IrAnalysis;
+/// fn detach(view: VaporL2IrAnalysis<'_, '_>) { let _ = view.analysis; }
 /// ```
 /// Original ownership remains live through the borrowed output:
 /// ```compile_fail
@@ -23,12 +23,12 @@ use vize_l2::{artifact::L2Template, file::L2Ir};
 ///     let _ = analysis.l2ir();
 /// }
 /// ```
-pub struct VaporFileAnalysis<'owner, 'arena> {
+pub struct VaporL2IrAnalysis<'owner, 'arena> {
     l2ir: &'owner L2Ir<'arena>,
     analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
-impl<'owner, 'arena> VaporFileAnalysis<'owner, 'arena> {
+impl<'owner, 'arena> VaporL2IrAnalysis<'owner, 'arena> {
     #[must_use]
     pub const fn l2ir(&self) -> &'owner L2Ir<'arena> {
         self.l2ir
@@ -58,23 +58,23 @@ impl<'owner, 'arena> VaporFileAnalysis<'owner, 'arena> {
 /// This is completed File admission, not whole SFC custody or product parity.
 pub fn build_vapor_file_decisions<'owner, 'arena>(
     l2ir: &'owner L2Ir<'arena>,
-) -> Result<VaporFileAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<VaporL2IrAnalysis<'owner, 'arena>, DecisionBuildError> {
     if !l2ir.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
     }
     let analysis = build_decisions(l2ir.artifact(), TargetPolicy::Vapor)?;
-    Ok(VaporFileAnalysis { l2ir, analysis })
+    Ok(VaporL2IrAnalysis { l2ir, analysis })
 }
 
 // Called only after the real selected template entry derives its own File.
 pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
     l2ir: &'owner L2Ir<'arena>,
-) -> Result<VaporFileAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<VaporL2IrAnalysis<'owner, 'arena>, DecisionBuildError> {
     let analysis = crate::decision::build::build_with_original(
         l2ir,
         TargetPolicy::Vapor,
         &crate::decision::dom::LiteralExpressions,
         &crate::decision::dom::vue::policy::NoReads,
     )?;
-    Ok(VaporFileAnalysis { l2ir, analysis })
+    Ok(VaporL2IrAnalysis { l2ir, analysis })
 }

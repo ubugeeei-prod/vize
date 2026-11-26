@@ -1,5 +1,5 @@
 use super::interruption::{Fault, set_fault};
-use crate::file::NativeFileInterpolationState as State;
+use crate::file::NativeL2IrInterpolationState as State;
 use crate::lang::js::{
     NativeInterpolationInput, NativeTemplateIssueKind as Kind, NativeTemplateOwner,
 };

@@ -3,14 +3,14 @@ use serde_json::{Value, json};
 use vize_l0::{Span, id::NodeId};
 use vize_l1::markup::AttributeValueOperand;
 use vize_l2::file::L2Ir;
-use vize_l2::{file::NativeFileAttributeValueState, lang::js::NativeTemplateFile, op::Op};
+use vize_l2::{file::NativeL2IrAttributeValueState, lang::js::NativeTemplateL2Ir, op::Op};
 use vize_l3::decision::vapor::build_template_vapor_decisions;
 use vize_l4::{
     targets::vapor::emit_template,
     write::{NoLinks, Recorded},
 };
 
-pub(crate) fn assert_current(owner: &NativeTemplateFile<'_>, source: &str) {
+pub(crate) fn assert_current(owner: &NativeTemplateL2Ir<'_>, source: &str) {
     assert_eq!(source, "<template><span class=\"x\">x</span></template>");
     let view = owner.view().unwrap();
     let file = view.file().unwrap();
@@ -35,7 +35,7 @@ pub(crate) fn assert_current(owner: &NativeTemplateFile<'_>, source: &str) {
     };
     assert_eq!(
         record.state(),
-        NativeFileAttributeValueState::Attached {
+        NativeL2IrAttributeValueState::Attached {
             node: NodeId::FIRST,
             slot: 0
         }

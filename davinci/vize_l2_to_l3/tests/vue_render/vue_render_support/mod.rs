@@ -16,7 +16,7 @@ use vize_l2::{
     artifact::{ComponentBody, ComponentFactory},
     expr::{JsExpr, js::JsCoordinates},
     file::{Declaration, L2Ir, TemplatePolicy, TemplateScope, vue::VueExposure},
-    lang::js::{FileProducer, ProgramInput, ProgramScope},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope},
 };
 
 #[derive(Clone, Copy)]
@@ -61,9 +61,9 @@ impl<'a> Observed<'a> {
         view.setup().or_else(|| view.ordinary())
     }
 
-    fn producer(&self, arena: &'a Allocator) -> Option<FileProducer<'a>> {
+    fn producer(&self, arena: &'a Allocator) -> Option<L2IrProducer<'a>> {
         let script = self.script()?;
-        let mut producer = FileProducer::new(arena, self.l1ir.source()).ok()?;
+        let mut producer = L2IrProducer::new(arena, self.l1ir.source()).ok()?;
         producer
             .program(
                 ProgramInput::checked(

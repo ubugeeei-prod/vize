@@ -1,12 +1,12 @@
 //! Original selected-template authority retained through the sole SSR walk.
 
-use super::{SsrAnalysis, SsrFileAnalysis};
+use super::{SsrAnalysis, SsrL2IrAnalysis};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l0::Span;
 use vize_l2::{
     artifact::L2Template,
     file::L2Ir,
-    lang::js::{NativeTemplateFile, NativeTemplateView},
+    lang::js::{NativeTemplateL2Ir, NativeTemplateView},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -29,16 +29,16 @@ pub enum SsrTemplateBuildError {
 /// ```
 /// Diagnostic SSR analysis cannot construct this receipt:
 /// ```compile_fail
-/// use vize_l3::decision::ssr::{SsrFileAnalysis, TemplateSsrAnalysis};
-/// fn forge<'f, 'a>(analysis: SsrFileAnalysis<'f, 'a>) {
+/// use vize_l3::decision::ssr::{SsrL2IrAnalysis, TemplateSsrAnalysis};
+/// fn forge<'f, 'a>(analysis: SsrL2IrAnalysis<'f, 'a>) {
 ///     let _ = TemplateSsrAnalysis { analysis };
 /// }
 /// ```
 /// The neutral analysis and original completion capability remain private:
 /// ```compile_fail
-/// use vize_l3::decision::ssr::{SsrFileAnalysis, TemplateSsrAnalysis};
+/// use vize_l3::decision::ssr::{SsrL2IrAnalysis, TemplateSsrAnalysis};
 /// fn detach<'f, 'a>(receipt: TemplateSsrAnalysis<'f, 'a>)
-///     -> SsrFileAnalysis<'f, 'a> { receipt.analysis }
+///     -> SsrL2IrAnalysis<'f, 'a> { receipt.analysis }
 /// ```
 /// ```compile_fail
 /// use vize_l3::decision::ssr::TemplateSsrAnalysis;
@@ -46,9 +46,9 @@ pub enum SsrTemplateBuildError {
 /// ```
 /// The original owner cannot be dropped while the result remains live:
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeTemplateFile;
+/// use vize_l2::lang::js::NativeTemplateL2Ir;
 /// use vize_l3::decision::ssr::build_template_ssr_decisions;
-/// fn discard(owner: NativeTemplateFile<'_>) {
+/// fn discard(owner: NativeTemplateL2Ir<'_>) {
 ///     let receipt = build_template_ssr_decisions(owner.view().unwrap()).unwrap();
 ///     drop(owner);
 ///     let _ = receipt.owner();
@@ -56,12 +56,12 @@ pub enum SsrTemplateBuildError {
 /// ```
 pub struct TemplateSsrAnalysis<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,
-    analysis: SsrFileAnalysis<'owner, 'arena>,
+    analysis: SsrL2IrAnalysis<'owner, 'arena>,
 }
 
 impl<'owner, 'arena> TemplateSsrAnalysis<'owner, 'arena> {
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner NativeTemplateL2Ir<'arena> {
         self.view.owner()
     }
     #[must_use]

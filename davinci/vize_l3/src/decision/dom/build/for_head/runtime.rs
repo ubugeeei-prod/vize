@@ -2,7 +2,7 @@
 
 use super::super::{DomBuilder, DomChild, DomChildren, DomExpressionAnalysis, DomFrame};
 use crate::decision::dom::{
-    DomDependency, DomFileForHead, DomUnsupported,
+    DomDependency, DomL2IrForHead, DomUnsupported,
     vue::{VueReadKind, policy::FileReads},
 };
 use oxc_ast::ast::Expression;
@@ -15,7 +15,7 @@ impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
     pub(super) fn prepare_for_runtime(
         &mut self,
         node: NodeId,
-        row: &DomFileForHead<'owner, 'arena>,
+        row: &DomL2IrForHead<'owner, 'arena>,
     ) -> bool {
         if !R::ORIGINAL_FOR {
             return false;

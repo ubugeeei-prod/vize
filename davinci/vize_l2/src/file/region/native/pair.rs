@@ -2,9 +2,9 @@
 
 use super::{NativeVisibility, body};
 use crate::artifact::{ElementAllocation, RegionBuilder};
-use crate::file::region::FileRegion;
+use crate::file::region::L2IrRegion;
 use crate::file::{
-    NativeConditionalElseInput, NativeFileConditionalState, TemplateBody, TemplateChildRegion,
+    NativeConditionalElseInput, NativeL2IrConditionalState, TemplateBody, TemplateChildRegion,
 };
 use crate::lang::js::NativeTemplateIssueKind as Kind;
 use crate::op::{Attribute, Namespace};
@@ -25,7 +25,7 @@ pub(super) fn construct<'o, 'a: 'b, 'b, R>(
     selected: &SelectedTemplateComponent<'a>,
     child: ChildView<'o, 'a>,
     tail: &mut ChildrenView<'o, 'a>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<(NodeId, usize), Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -123,8 +123,8 @@ where
         .get_mut(observed.index)
         .ok_or(Kind::InvalidEvent)?;
     record.state = match result {
-        Ok(node) => NativeFileConditionalState::Admitted(node),
-        Err(kind) => NativeFileConditionalState::Refused(kind),
+        Ok(node) => NativeL2IrConditionalState::Admitted(node),
+        Err(kind) => NativeL2IrConditionalState::Refused(kind),
     };
     result.map(|node| (node, 2))
 }
@@ -133,7 +133,7 @@ fn observe_else<'a: 'b, 'b, R>(
     selected: &SelectedTemplateComponent<'a>,
     original: &ElementView<'_, 'a>,
     index: usize,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<(), Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
@@ -181,7 +181,7 @@ fn branch_body<'a: 'b, 'b, R>(
     selected: &SelectedTemplateComponent<'a>,
     span: Span,
     attributes: Vec<'a, Attribute<'a>>,
-    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    region: &mut L2IrRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<(NodeId, ElementAllocation<'a>), Kind>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,

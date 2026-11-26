@@ -2,7 +2,7 @@
 
 use super::{NativeRouteState, NativeTemplateIssue, NativeTemplateIssueKind, NativeTemplateOwner};
 use crate::file::ScriptUnitId;
-use crate::lang::js::file::{FileProducer, ProgramInput, ProgramScope};
+use crate::lang::js::file::{L2IrProducer, ProgramInput, ProgramScope};
 use oxc_parser::AdmittedProgram;
 use vize_l0::Span;
 use vize_l1::embed::Lang;
@@ -49,7 +49,7 @@ impl<'a> NativeTemplateOwner<'a> {
 /// Private field borrows preserve the original owner while its syntax is borrowed.
 pub(super) struct Parts<'owner, 'arena> {
     pub(super) selected: &'owner SelectedTemplateComponent<'arena>,
-    pub(super) producer: &'owner mut FileProducer<'arena>,
+    pub(super) producer: &'owner mut L2IrProducer<'arena>,
     pub(super) state: &'owner mut NativeRouteState,
     pub(super) ordinary: &'owner mut Option<ScriptUnitId>,
     pub(super) setup: &'owner mut Option<ScriptUnitId>,

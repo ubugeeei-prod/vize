@@ -2,7 +2,7 @@
 
 use super::vue::VueRenderRead;
 use vize_l2::{
-    file::{BindingRef, FileForHead},
+    file::{BindingRef, L2IrForHead},
     op::OriginalForOp,
     resolution::ForResolution,
     scope::ScopeAnalysis,
@@ -14,17 +14,17 @@ use vize_l2::{
 ///
 /// Caller-written combinations cannot mint this receipt:
 /// ```compile_fail
-/// use vize_l2::{file::{BindingRef, FileForHead}, op::OriginalForOp, resolution::ForResolution};
-/// use vize_l3::decision::dom::DomFileForHead;
-/// fn forge<'f, 'a>(head: FileForHead<'f, 'a>, original: &'f OriginalForOp<'a>,
+/// use vize_l2::{file::{BindingRef, L2IrForHead}, op::OriginalForOp, resolution::ForResolution};
+/// use vize_l3::decision::dom::DomL2IrForHead;
+/// fn forge<'f, 'a>(head: L2IrForHead<'f, 'a>, original: &'f OriginalForOp<'a>,
 ///     resolution: &'f ForResolution<'a>, collection: BindingRef<'f, 'a>,
 ///     scope: &'f vize_l2::scope::ScopeAnalysis) {
-///     let _ = DomFileForHead { head, original, resolution, collection, scope, read: None };
+///     let _ = DomL2IrForHead { head, original, resolution, collection, scope, read: None };
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l3::decision::dom::DomFileForHead;
-/// fn duplicate(row: DomFileForHead<'_, '_>) { let _ = row.clone(); }
+/// use vize_l3::decision::dom::DomL2IrForHead;
+/// fn duplicate(row: DomL2IrForHead<'_, '_>) { let _ = row.clone(); }
 /// ```
 /// The actual owner must remain live:
 /// ```compile_fail
@@ -38,8 +38,8 @@ use vize_l2::{
 ///     let _ = row.resolution();
 /// }
 /// ```
-pub struct DomFileForHead<'owner, 'arena> {
-    pub(in crate::decision::dom) head: FileForHead<'owner, 'arena>,
+pub struct DomL2IrForHead<'owner, 'arena> {
+    pub(in crate::decision::dom) head: L2IrForHead<'owner, 'arena>,
     pub(in crate::decision::dom) original: &'owner OriginalForOp<'arena>,
     pub(in crate::decision::dom) resolution: &'owner ForResolution<'arena>,
     pub(in crate::decision::dom) collection: BindingRef<'owner, 'arena>,
@@ -47,19 +47,19 @@ pub struct DomFileForHead<'owner, 'arena> {
     pub(in crate::decision::dom) read: Option<VueRenderRead<'owner, 'arena>>,
 }
 
-impl core::fmt::Debug for DomFileForHead<'_, '_> {
+impl core::fmt::Debug for DomL2IrForHead<'_, '_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("DomFileForHead")
+            .debug_struct("DomL2IrForHead")
             .field("node", &self.head.id().node())
             .field("scope", &self.head.scope())
             .finish_non_exhaustive()
     }
 }
 
-impl<'owner, 'arena> DomFileForHead<'owner, 'arena> {
+impl<'owner, 'arena> DomL2IrForHead<'owner, 'arena> {
     #[must_use]
-    pub const fn head(&self) -> FileForHead<'owner, 'arena> {
+    pub const fn head(&self) -> L2IrForHead<'owner, 'arena> {
         self.head
     }
     #[must_use]

@@ -33,9 +33,9 @@ mod for_head;
 /// refusing references, and a caller cannot supply an accessor policy here.
 ///
 /// ```compile_fail
-/// use vize_l3::decision::FileAnalysis;
+/// use vize_l3::decision::DomL2IrAnalysis;
 /// use vize_l4::{targets::dom::emit_vue, write::NoLinks};
-/// fn substitute(analysis: &FileAnalysis<'_, '_>) {
+/// fn substitute(analysis: &DomL2IrAnalysis<'_, '_>) {
 ///     let _ = emit_vue::<NoLinks>(analysis);
 /// }
 /// ```
@@ -56,9 +56,9 @@ pub fn emit_vue<L: LinkSink>(
 /// Consume only genuine original setup/template read decisions.
 /// No neutral File analysis or caller accessor policy selects this entry.
 /// ```compile_fail
-/// use vize_l3::decision::FileAnalysis;
+/// use vize_l3::decision::DomL2IrAnalysis;
 /// use vize_l4::{targets::dom::emit_selected_setup_template, write::NoLinks};
-/// fn promote(file: &FileAnalysis<'_, '_>) {
+/// fn promote(file: &DomL2IrAnalysis<'_, '_>) {
 ///     let _ = emit_selected_setup_template::<NoLinks>(file);
 /// }
 /// ```

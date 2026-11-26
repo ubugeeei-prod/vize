@@ -1,9 +1,9 @@
 use super::{
-    Allocator, FileIssueKind, FileProducer, Parser, PositionQueryError, ProgramInput, ProgramScope,
+    Allocator, L2IrIssueKind, L2IrProducer, Parser, PositionQueryError, ProgramInput, ProgramScope,
     ScriptUnit, SourceRoot, SourceType, String, lower,
 };
 use oxc_parser::ParseOptions;
-use vize_l2::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
+use vize_l2::lang::js::{CallEvent, DeclaredEvent, L2IrObserver, StatementEvent};
 use vize_l2::query::Model;
 use vize_l2::resolution::ResolutionErrorKind;
 
@@ -21,7 +21,7 @@ fn array_annotations_keep_source_options_and_original_module_authority() {
             SourceRoot::new(&copied).unwrap().whole_block(),
             7,
         ),
-        Err(issue) if issue.kind == FileIssueKind::InvalidSource
+        Err(issue) if issue.kind == L2IrIssueKind::InvalidSource
     ));
     let changed = Parser::new(&arena, &source, SourceType::ts().with_module(true))
         .with_options(ParseOptions {
@@ -31,7 +31,7 @@ fn array_annotations_keep_source_options_and_original_module_authority() {
         .parse_observed();
     assert!(matches!(
         ProgramInput::checked(changed.admitted().unwrap(), block, 7),
-        Err(issue) if issue.kind == FileIssueKind::InvalidProfile
+        Err(issue) if issue.kind == L2IrIssueKind::InvalidProfile
     ));
     for profile in [
         SourceType::ts().with_script(true),
@@ -44,7 +44,7 @@ fn array_annotations_keep_source_options_and_original_module_authority() {
         assert!(
             file.issues()
                 .iter()
-                .any(|issue| issue.kind == FileIssueKind::InvalidProfile)
+                .any(|issue| issue.kind == L2IrIssueKind::InvalidProfile)
         );
     }
     let ambient = "let items:number[];";
@@ -61,13 +61,13 @@ fn array_annotations_keep_source_options_and_original_module_authority() {
     assert!(
         file.issues()
             .iter()
-            .any(|issue| issue.kind == FileIssueKind::InvalidProfile)
+            .any(|issue| issue.kind == L2IrIssueKind::InvalidProfile)
     );
 }
 
 struct Interrupt;
 
-impl<'a> FileObserver<'a> for Interrupt {
+impl<'a> L2IrObserver<'a> for Interrupt {
     type Checkpoint = ();
     fn unit(&mut self, _: &ScriptUnit) {}
     fn statement(&mut self, _: StatementEvent<'_, 'a>) {}
@@ -86,7 +86,7 @@ fn interrupted_original_array_event_never_completes_the_file() {
     let arena = Allocator::default();
     let source = "const items:{id:number}[]=[{id:1}];";
     let observed = Parser::new(&arena, source, SourceType::ts().with_module(true)).parse_observed();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let block = SourceRoot::new(source).unwrap().whole_block();
     let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         producer

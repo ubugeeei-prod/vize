@@ -122,7 +122,7 @@ fn nine_whole_original_key_sources_capture_real_bindings_and_maps() -> Result<()
             let [interpolation] = file.native_interpolations() else {
                 return Err(cstr!("{id}: one actual key interpolation"));
             };
-            let vize_l2::file::NativeFileInterpolationState::Admitted(node) = interpolation.state()
+            let vize_l2::file::NativeL2IrInterpolationState::Admitted(node) = interpolation.state()
             else {
                 return Err(cstr!("{id}: attached original interpolation"));
             };

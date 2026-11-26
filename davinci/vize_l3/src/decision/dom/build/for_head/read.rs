@@ -4,7 +4,7 @@
 //! L3Ir eligibility, resolves names or manufactures an expression context.
 
 use crate::decision::dom::{
-    DomFileForHead,
+    DomL2IrForHead,
     vue::{VueReadKind, VueRenderRead},
 };
 use vize_l2::{
@@ -13,7 +13,7 @@ use vize_l2::{
 };
 
 pub(super) fn classify<'owner, 'arena>(
-    row: &DomFileForHead<'owner, 'arena>,
+    row: &DomL2IrForHead<'owner, 'arena>,
 ) -> Option<VueRenderRead<'owner, 'arena>> {
     let occurrence = row.resolution().collection_occurrence();
     let binding = row.collection();

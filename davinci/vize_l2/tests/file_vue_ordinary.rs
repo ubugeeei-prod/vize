@@ -16,7 +16,7 @@ use vize_l1::{
 use vize_l2::{
     file::L2Ir,
     lang::js::{
-        FileProducer, OrdinaryIssue, OrdinaryIssueKind, ProgramInput, ProgramScope,
+        L2IrProducer, OrdinaryIssue, OrdinaryIssueKind, ProgramInput, ProgramScope,
         VueOrdinaryEmpty,
     },
 };
@@ -60,9 +60,9 @@ impl<'a> Observed<'a> {
             .or_else(|| admitted.setup())
             .ok_or("script")
     }
-    fn producer(&self, arena: &'a Allocator) -> Result<FileProducer<'a>, &'static str> {
+    fn producer(&self, arena: &'a Allocator) -> Result<L2IrProducer<'a>, &'static str> {
         let script = self.script()?;
-        let mut producer = FileProducer::new(arena, self.l1ir.source()).map_err(|_| "file")?;
+        let mut producer = L2IrProducer::new(arena, self.l1ir.source()).map_err(|_| "file")?;
         producer
             .program(
                 ProgramInput::checked(

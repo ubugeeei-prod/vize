@@ -10,7 +10,7 @@ use vize_l2::component::{Exec, RenderScope};
 use vize_l2::op::{BindingOp, DynamicName, Op};
 
 use super::{
-    BABEL, BooleanBindings, JsxComponent, JsxDialect, JsxFile, JsxRefusal, JsxRoot, VIZE,
+    BABEL, BooleanBindings, JsxComponent, JsxDialect, JsxL2Ir, JsxRefusal, JsxRoot, VIZE,
     VUE_JSX_VAPOR, clean_text, lower_component,
 };
 
@@ -45,7 +45,7 @@ pub(super) fn lower(source: &str, exec: Exec) -> Result<vize_l0::String, JsxRefu
     let booleans = BooleanBindings::collect(&parsed.program, Some(&scoping));
     let def = lower_component(
         &allocator,
-        &JsxFile {
+        &JsxL2Ir {
             source: allocator.alloc_str(source),
             scoping: Some(&scoping),
             booleans: &booleans,

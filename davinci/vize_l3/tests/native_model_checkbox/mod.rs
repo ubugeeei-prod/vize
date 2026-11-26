@@ -7,7 +7,7 @@ use vize_l0::{
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
-    file::{DeclarationKind, InitializerKind, NativeFileModelKind, NativeFileModelState},
+    file::{DeclarationKind, InitializerKind, NativeL2IrModelKind, NativeL2IrModelState},
     op::{BindingOp, Op},
     resolution::Usage,
 };
@@ -58,10 +58,10 @@ fn original_checkbox_type_and_real_mutable_binding_reach_all_three_consumers() -
         let [original] = file.native_models() else {
             return Err("one original Model".into());
         };
-        let NativeFileModelState::Admitted(node) = original.state() else {
+        let NativeL2IrModelState::Admitted(node) = original.state() else {
             return Err("closed Model".into());
         };
-        assert_eq!(original.kind(), Some(NativeFileModelKind::Checkbox));
+        assert_eq!(original.kind(), Some(NativeL2IrModelKind::Checkbox));
         let element_node = original.element_node().ok_or("Element")?;
         let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
             return Err("root input".into());

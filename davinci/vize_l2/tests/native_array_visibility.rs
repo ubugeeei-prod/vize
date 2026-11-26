@@ -12,8 +12,8 @@ mod cases {
         },
         markup::{SelectedTemplateComponent, SurfaceParseOptions},
     };
-    use vize_l2::file::FileIssueKind;
-    use vize_l2::file::NativeFileInterpolationState;
+    use vize_l2::file::L2IrIssueKind;
+    use vize_l2::file::NativeL2IrInterpolationState;
     use vize_l2::lang::js::{
         NativeInterpolationInput, NativeSetupIssueKind, NativeTemplateIssueKind,
         NativeTemplateOwner,
@@ -92,10 +92,10 @@ mod cases {
                     file.template_issues()
                 );
             };
-            assert_eq!(expression.kind, FileIssueKind::UnresolvedReference);
+            assert_eq!(expression.kind, L2IrIssueKind::UnresolvedReference);
             assert_eq!(expression.span.slice(&source), "primitive");
             assert!(expression.node.is_none());
-            assert_eq!(selection.kind, FileIssueKind::UnsupportedSyntax);
+            assert_eq!(selection.kind, L2IrIssueKind::UnsupportedSyntax);
             assert_eq!(selection.span, template_span);
             assert!(selection.node.is_none());
             let [interpolation] = file.native_interpolations() else {
@@ -103,7 +103,7 @@ mod cases {
             };
             assert!(matches!(
                 interpolation.state(),
-                NativeFileInterpolationState::Refused(NativeTemplateIssueKind::Artifact(_))
+                NativeL2IrInterpolationState::Refused(NativeTemplateIssueKind::Artifact(_))
             ));
             let operand = interpolation.input().operand();
             assert_eq!(operand.raw_content(), " primitive ");

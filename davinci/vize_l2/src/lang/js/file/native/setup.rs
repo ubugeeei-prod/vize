@@ -1,7 +1,7 @@
 //! Normally owned original setup syntax, attached by the selected owner itself.
 
 use super::{
-    NativeRouteState, NativeTemplateFile, NativeTemplateIssue, NativeTemplateIssueKind as Kind,
+    NativeRouteState, NativeTemplateIssue, NativeTemplateIssueKind as Kind, NativeTemplateL2Ir,
     NativeTemplateOwner,
 };
 use crate::file::ScriptUnitId;
@@ -122,7 +122,7 @@ impl<'a> NativeTemplateOwner<'a> {
     }
 }
 
-impl<'a> NativeTemplateFile<'a> {
+impl<'a> NativeTemplateL2Ir<'a> {
     /// The same normally owned Program, comments and full diagnostics after move.
     #[must_use]
     pub fn retained_setup(&self) -> Option<&EmbedSyntax<'a>> {

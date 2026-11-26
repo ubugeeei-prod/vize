@@ -1,7 +1,7 @@
 //! Direct same-owner joins only; no second AST, header or canonical walk.
 
 use super::{DomBuilder, DomExpressionAnalysis};
-use crate::decision::dom::{DomUnsupported, for_head::DomFileForHead, vue::policy::FileReads};
+use crate::decision::dom::{DomUnsupported, for_head::DomL2IrForHead, vue::policy::FileReads};
 use vize_l0::id::NodeId;
 use vize_l2::{
     file::{BindingRef, L2Ir, ScopeId},
@@ -48,12 +48,12 @@ fn join<'owner, 'arena>(
     l2ir: &'owner L2Ir<'arena>,
     node: NodeId,
     original: &'owner OriginalForOp<'arena>,
-) -> Result<DomFileForHead<'owner, 'arena>, DomUnsupported> {
+) -> Result<DomL2IrForHead<'owner, 'arena>, DomUnsupported> {
     let head = l2ir
         .for_head_for(original)
         .filter(|head| head.id().node() == node)
-        .ok_or(DomUnsupported::FileForHead)?;
-    let resolution = head.resolution().ok_or(DomUnsupported::FileForHead)?;
+        .ok_or(DomUnsupported::L2IrForHead)?;
+    let resolution = head.resolution().ok_or(DomUnsupported::L2IrForHead)?;
     if !core::ptr::eq(
         resolution
             .input()
@@ -63,7 +63,7 @@ fn join<'owner, 'arena>(
             .authored_root(),
         l2ir.artifact().source(),
     ) {
-        return Err(DomUnsupported::FileForHead);
+        return Err(DomUnsupported::L2IrForHead);
     }
     let enclosing = head.enclosing_scope().ok_or(DomUnsupported::FileScope)?;
     let scope = head.scope().ok_or(DomUnsupported::FileScope)?;
@@ -114,7 +114,7 @@ fn join<'owner, 'arena>(
     let collection = l2ir
         .binding(occurrence.binding)
         .ok_or(DomUnsupported::FileBinding)?;
-    Ok(DomFileForHead {
+    Ok(DomL2IrForHead {
         head,
         original,
         resolution,

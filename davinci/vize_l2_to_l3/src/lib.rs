@@ -19,7 +19,7 @@ pub mod registry;
 pub use crate::partition::dump::{Page as PartitionPage, PartitionRecord as DumpPartitionRecord};
 pub use crate::partition::{PartitionAnalysis, PartitionInfo, PartitionKind};
 pub use decision::{
-    DecisionAnalysis, DecisionBuildError, FileAnalysis, build_decisions, build_dom_decisions,
+    DecisionAnalysis, DecisionBuildError, DomL2IrAnalysis, build_decisions, build_dom_decisions,
     build_dom_file_decisions,
 };
 pub use lower::{Lowered, lower};

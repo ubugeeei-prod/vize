@@ -2,7 +2,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
 use vize_l2::file::{Namespace, ReferenceTarget};
-use vize_l2::lang::js::JsxFileProducer;
+use vize_l2::lang::js::JsxL2IrProducer;
 use vize_l3::jsx::{JsxAnalysis, JsxDecisionKind as Kind, build_jsx_decisions};
 use vize_l4::jsx::{JsxEmitErrorKind as Error, emit_js_module};
 use vize_l4::write::{NoLinks, Recorded};
@@ -15,7 +15,7 @@ fn analyze<'a>(
     let block = SourceRoot::new(source).map_err(|_| "source")?.whole_block();
     let original = Parser::new(arena, source, profile).parse_observed();
     let mut producer =
-        JsxFileProducer::new(arena, original, block, 0).map_err(|_| "original producer")?;
+        JsxL2IrProducer::new(arena, original, block, 0).map_err(|_| "original producer")?;
     producer.walk().map_err(|_| "sole walk")?;
     let owner = producer.finish().map_err(|_| "completed File")?;
     build_jsx_decisions(owner).map_err(|_| "L3")

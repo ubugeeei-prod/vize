@@ -4,14 +4,14 @@ use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
 use vize_l1::embed::Lang;
 use vize_l1_to_l2::native::NativeComponent;
-use vize_l1_to_l2::vue_file::{VueFileIssueKind, VueFileProducer};
+use vize_l1_to_l2::vue_file::{VueL2IrIssueKind, VueL2IrProducer};
 use vize_l2::lang::js::ProgramInput;
 
 #[test]
 fn no_script_uses_vue_js_and_retains_the_original_component_and_expression() {
     let arena = Allocator::default();
     let source = "<p>{{ 1 }}</p>";
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     let component =
         NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block()).unwrap();
     let native = component
@@ -49,7 +49,7 @@ fn setup_receipt_selects_actual_js_or_ts_without_a_template_language_argument() 
         let input =
             ProgramInput::checked(syntax.admitted_program().unwrap(), script_block, 7).unwrap();
         assert_eq!(input.source_type(), syntax.source_type());
-        let mut producer = VueFileProducer::new(&arena, source).unwrap();
+        let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
         producer.setup(input).unwrap();
         let component =
             NativeComponent::parse_in(&arena, block(source, "<p>{{ value }}</p>").unwrap())
@@ -86,7 +86,7 @@ fn compatible_combined_profiles_use_real_receipts_despite_reversed_authored_orde
         let (ordinary, ordinary_block) =
             script(&arena, source, "const ordinary = 1;", lang).unwrap();
         let (setup, setup_block) = script(&arena, source, "const local = ordinary;", lang).unwrap();
-        let mut producer = VueFileProducer::new(&arena, source).unwrap();
+        let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
         producer
             .ordinary(
                 ProgramInput::checked(ordinary.admitted_program().unwrap(), ordinary_block, 1)
@@ -124,7 +124,7 @@ fn conflicting_script_only_profiles_refuse_with_the_actual_setup_origin() {
         let (ordinary, ordinary_block) =
             script(&arena, source, "const ordinary = 1;", ordinary_lang).unwrap();
         let (setup, setup_block) = script(&arena, source, "const local = 2;", setup_lang).unwrap();
-        let mut producer = VueFileProducer::new(&arena, source).unwrap();
+        let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
         producer
             .ordinary(
                 ProgramInput::checked(ordinary.admitted_program().unwrap(), ordinary_block, 1)
@@ -140,7 +140,7 @@ fn conflicting_script_only_profiles_refuse_with_the_actual_setup_origin() {
         let receipt = rejected.setup().unwrap();
         assert_eq!(rejected.issues().len(), 1);
         let issue = rejected.issues()[0];
-        assert_eq!(issue.kind, VueFileIssueKind::ConflictingScriptProfiles);
+        assert_eq!(issue.kind, VueL2IrIssueKind::ConflictingScriptProfiles);
         assert_eq!(issue.unit, Some(receipt.unit()));
         assert_eq!(issue.scope, Some(receipt.scope()));
         assert_eq!(issue.span, setup_block.span());
@@ -171,10 +171,10 @@ fn invalid_vue_profiles_refuse_template_and_script_only_finish_without_losing_un
             ProgramInput::checked(admitted, SourceRoot::new(source).unwrap().whole_block(), 9)
                 .unwrap();
         assert_eq!(input.source_type(), profile);
-        let mut producer = VueFileProducer::new(&arena, source).unwrap();
+        let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
         producer.setup(input).unwrap();
         let error = producer.template_region().err().unwrap();
-        assert_eq!(error.kind, VueFileIssueKind::InvalidTemplateProfile);
+        assert_eq!(error.kind, VueL2IrIssueKind::InvalidTemplateProfile);
         assert_eq!(producer.template_region().err(), Some(error));
         let rejected = producer.finish().unwrap_err();
         let receipt = rejected.setup().unwrap();
@@ -192,7 +192,7 @@ fn invalid_vue_profiles_refuse_template_and_script_only_finish_without_losing_un
             original
         ));
         assert_eq!(observation.diagnostics().len(), 0);
-        let mut script_only = VueFileProducer::new(&arena, source).unwrap();
+        let mut script_only = VueL2IrProducer::new(&arena, source).unwrap();
         script_only
             .setup(
                 ProgramInput::checked(
@@ -212,7 +212,7 @@ fn ts_profile_reaches_actual_retained_typed_ast_without_claiming_typed_resolutio
     let arena = Allocator::default();
     let source = "<script setup>const value = 1;</script><p>{{value as number}}</p>";
     let (syntax, script_block) = script(&arena, source, "const value = 1;", Lang::Ts).unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     producer
         .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), script_block, 0).unwrap())
         .unwrap();
@@ -256,7 +256,7 @@ fn ts_profile_reaches_actual_retained_typed_ast_without_claiming_typed_resolutio
     assert_eq!(file.template_issues()[0].span, expression_span);
     assert_eq!(
         file.template_issues()[0].kind,
-        vize_l2::file::FileIssueKind::UnsupportedSyntax
+        vize_l2::file::L2IrIssueKind::UnsupportedSyntax
     );
     assert!(core::ptr::eq(
         native.component.block().root_source(),
@@ -272,7 +272,7 @@ fn intrinsic_entry_retains_foreign_equal_source_component_before_any_factory_min
     let component =
         NativeComponent::parse_in(&arena, SourceRoot::new(&foreign).unwrap().whole_block())
             .unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     let rejected = component
         .construct_vue_file_in(&mut producer.template_region().unwrap())
         .unwrap_err();

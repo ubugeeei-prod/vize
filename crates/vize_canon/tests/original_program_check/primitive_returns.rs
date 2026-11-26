@@ -9,7 +9,7 @@ use oxc_span::SourceType;
 use sha2::{Digest, Sha256};
 use vize_l0::{SourceRoot, Span, String, cstr, line_index::LineBreaks};
 use vize_l2::query::Model;
-use vize_l2::{file::DeclarationKind, lang::js::JsxFileProducer};
+use vize_l2::{file::DeclarationKind, lang::js::JsxL2IrProducer};
 use vize_l4::targets::ts::{ProgramProjection, SourceKind};
 
 fn uri(path: &Path) -> String {
@@ -116,7 +116,7 @@ fn configured_original_primitive_return_ts_tsx_preserve_whole_raw_reports_and_re
         let observed =
             Parser::new(&arena, tsx_source, SourceType::tsx().with_module(true)).parse_observed();
         let body = observed.admitted().unwrap().program().body.as_ptr();
-        let mut producer = JsxFileProducer::new(&arena, observed, block, 17)
+        let mut producer = JsxL2IrProducer::new(&arena, observed, block, 17)
             .unwrap_or_else(|rejected| panic!("original TSX: {:?}", rejected.error()));
         producer.walk().unwrap();
         let owner = Box::new(

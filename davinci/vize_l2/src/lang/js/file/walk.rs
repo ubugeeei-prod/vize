@@ -1,10 +1,10 @@
 //! One statement/declaration traversal; incomplete subtrees are never guessed.
 
 use super::ProgramInput;
-use super::observer::{DeclaredEvent, FileObserver, StatementEvent};
+use super::observer::{DeclaredEvent, L2IrObserver, StatementEvent};
 use crate::file::build::{DeclarationSite, L2Script};
 use crate::file::{
-    DeclarationKind, FileIssueKind, InitializerKind, Namespace, ScopeId, ScriptUnitId,
+    DeclarationKind, InitializerKind, L2IrIssueKind, Namespace, ScopeId, ScriptUnitId,
 };
 use core::num::NonZeroU32;
 use oxc_ast::ast::{
@@ -22,7 +22,7 @@ mod functions;
 mod imports;
 mod references;
 
-pub(super) fn program<'a, O: FileObserver<'a>>(
+pub(super) fn program<'a, O: L2IrObserver<'a>>(
     input: &ProgramInput<'_, 'a>,
     facts: &mut L2Script<'a>,
     unit: ScriptUnitId,
@@ -47,7 +47,7 @@ pub(super) fn program<'a, O: FileObserver<'a>>(
             .and_then(NonZeroU32::new);
         if walk.root_statement.is_none() {
             walk.facts
-                .issue(unit, input.block.span(), FileIssueKind::BindingLimit);
+                .issue(unit, input.block.span(), L2IrIssueKind::BindingLimit);
             break;
         }
         walk.statement(statement);
@@ -71,7 +71,7 @@ enum Context {
     Function,
 }
 
-impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
+impl<'a, O: L2IrObserver<'a>> Walk<'_, '_, 'a, O> {
     fn source_site(
         &mut self,
         literal: &oxc_ast::ast::StringLiteral<'a>,
@@ -95,7 +95,7 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             self.facts.issue(
                 self.unit,
                 self.input.block.span(),
-                FileIssueKind::InvalidSpan,
+                L2IrIssueKind::InvalidSpan,
             );
             return None;
         };
@@ -105,7 +105,7 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
     fn unsupported(&mut self, span: oxc_span::Span) {
         if let Some(span) = self.span(span) {
             self.facts
-                .issue(self.unit, span, FileIssueKind::UnsupportedSyntax);
+                .issue(self.unit, span, L2IrIssueKind::UnsupportedSyntax);
         }
     }
 

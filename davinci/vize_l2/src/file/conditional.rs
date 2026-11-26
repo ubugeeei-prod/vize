@@ -1,6 +1,6 @@
 //! Whole original conditional inputs, attached only at their actual If factory.
 
-use super::{L2Ir, RejectedFile, ScopeId};
+use super::{L2Ir, RejectedL2Ir, ScopeId};
 use crate::lang::js::{NativeConditionalInput, NativeTemplateIssueKind};
 use crate::{
     op::{ElementOp, IfOp},
@@ -11,19 +11,19 @@ use vize_l1::markup::{AttributeElse, AttributeExpressionFailure};
 
 #[derive(Default)]
 pub(crate) struct ConditionalStorage<'a> {
-    rows: alloc::vec::Vec<NativeFileConditional<'a>>,
+    rows: alloc::vec::Vec<NativeL2IrConditional<'a>>,
     failures: alloc::vec::Vec<AttributeExpressionFailure<'a>>,
 }
 
 impl<'a> super::build::L2Script<'a> {
-    pub(crate) fn native_conditionals(&self) -> &[NativeFileConditional<'a>] {
+    pub(crate) fn native_conditionals(&self) -> &[NativeL2IrConditional<'a>] {
         self.conditional_storage
             .as_deref()
             .map_or(&[], |storage| storage.rows.as_slice())
     }
     pub(crate) fn native_conditionals_mut(
         &mut self,
-    ) -> &mut alloc::vec::Vec<NativeFileConditional<'a>> {
+    ) -> &mut alloc::vec::Vec<NativeL2IrConditional<'a>> {
         &mut self
             .conditional_storage
             .get_or_insert_with(|| alloc::boxed::Box::new(ConditionalStorage::default()))
@@ -45,15 +45,15 @@ impl<'a> super::build::L2Script<'a> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeFileConditionalState {
+pub enum NativeL2IrConditionalState {
     Pending,
     Admitted(NodeId),
     Refused(NativeTemplateIssueKind),
 }
 
-pub struct NativeFileConditional<'a> {
+pub struct NativeL2IrConditional<'a> {
     pub(crate) input: NativeConditionalInput<'a>,
-    pub(crate) state: NativeFileConditionalState,
+    pub(crate) state: NativeL2IrConditionalState,
     pub(crate) scope: ScopeId,
     pub(crate) binding: Option<BindingId>,
     pub(crate) original: Option<core::ptr::NonNull<IfOp<'a>>>,
@@ -86,13 +86,13 @@ impl<'a> NativeConditionalElseInput<'a> {
     }
 }
 
-impl<'a> NativeFileConditional<'a> {
+impl<'a> NativeL2IrConditional<'a> {
     #[must_use]
     pub const fn input(&self) -> &NativeConditionalInput<'a> {
         &self.input
     }
     #[must_use]
-    pub const fn state(&self) -> NativeFileConditionalState {
+    pub const fn state(&self) -> NativeL2IrConditionalState {
         self.state
     }
     #[must_use]
@@ -109,7 +109,7 @@ impl<'a> NativeFileConditional<'a> {
     }
     #[must_use]
     pub fn accepts(&self, original: &IfOp<'a>) -> bool {
-        matches!(self.state, NativeFileConditionalState::Admitted(_))
+        matches!(self.state, NativeL2IrConditionalState::Admitted(_))
             && self
                 .original
                 .is_some_and(|pointer| core::ptr::eq(pointer.as_ptr(), original))
@@ -118,7 +118,7 @@ impl<'a> NativeFileConditional<'a> {
 
 impl<'a> L2Ir<'a> {
     #[must_use]
-    pub fn native_conditionals(&self) -> &[NativeFileConditional<'a>] {
+    pub fn native_conditionals(&self) -> &[NativeL2IrConditional<'a>] {
         self.facts.native_conditionals()
     }
     #[must_use]
@@ -126,21 +126,21 @@ impl<'a> L2Ir<'a> {
         self.facts.native_conditional_failures()
     }
     #[must_use]
-    pub fn native_conditional(&self, node: NodeId) -> Option<&NativeFileConditional<'a>> {
+    pub fn native_conditional(&self, node: NodeId) -> Option<&NativeL2IrConditional<'a>> {
         if !self.is_complete() {
             return None;
         }
         let [record] = self.facts.native_conditionals() else {
             return None;
         };
-        matches!(record.state(), NativeFileConditionalState::Admitted(actual) if actual == node)
+        matches!(record.state(), NativeL2IrConditionalState::Admitted(actual) if actual == node)
             .then_some(record)
     }
 }
 
-impl<'a> RejectedFile<'a> {
+impl<'a> RejectedL2Ir<'a> {
     #[must_use]
-    pub fn native_conditionals(&self) -> &[NativeFileConditional<'a>] {
+    pub fn native_conditionals(&self) -> &[NativeL2IrConditional<'a>] {
         self.facts.native_conditionals()
     }
     #[must_use]

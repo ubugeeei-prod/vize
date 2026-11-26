@@ -3,7 +3,7 @@ use vize_l0::{Span, Vec};
 use vize_l2::{
     artifact::ComponentFactory,
     file::{Declaration, TemplatePolicy, TemplateScope},
-    lang::js::FileProducer,
+    lang::js::L2IrProducer,
     op::{Attribute, Namespace},
 };
 
@@ -75,7 +75,7 @@ fn complete_neutral_value_without_any_original_row_cannot_pass_native_consumptio
     }
     let arena = Allocator::default();
     let source = "<div title='&amp;lt;'></div>";
-    let mut producer = FileProducer::new(&arena, source).map_err(|_| "producer")?;
+    let mut producer = L2IrProducer::new(&arena, source).map_err(|_| "producer")?;
     {
         let mut region = producer
             .template_region(TemplateScope::Root, Hidden)

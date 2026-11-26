@@ -4,9 +4,9 @@ use vize_l0::{Allocator, SourceRoot, Span, id::NodeId};
 use vize_l2::artifact::{ComponentBody, ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
 use vize_l2::file::{
-    Declaration, FileIssueKind, TemplateBody, TemplateChildRegion, TemplatePolicy, TemplateScope,
+    Declaration, L2IrIssueKind, TemplateBody, TemplateChildRegion, TemplatePolicy, TemplateScope,
 };
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use vize_l2::op::Namespace;
 
 #[derive(Clone, Copy)]
@@ -99,7 +99,7 @@ fn nested_concrete_children_keep_short_stack_capture_and_real_scope_ast_associat
         .block(source.get(..script.len()).unwrap(), 0)
         .unwrap();
     let original = Parser::new(&arena, block.source(), SourceType::mjs()).parse_observed();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(original.admitted().unwrap(), block, 7).unwrap(),
@@ -208,7 +208,7 @@ impl<'a> TemplateBody<'a, Values> for DiagnosticInside<'_, 'a> {
 fn ordinary_public_body_bound_remains_usable_inside_concrete_child() {
     let arena = Allocator::default();
     let source = "<div><p>x</p></div>";
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let mut recorded = Recorded::default();
     producer
         .template_region(TemplateScope::Root, Values)
@@ -249,7 +249,7 @@ impl<'a> TemplateBody<'a, Values> for Empty<'_> {
 fn concrete_component_keeps_real_node_and_typed_unfinished_component_fact() {
     let arena = Allocator::default();
     let source = "<Card/>";
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let mut called = false;
     let node = producer
         .template_region(TemplateScope::Root, Values)
@@ -268,7 +268,7 @@ fn concrete_component_keeps_real_node_and_typed_unfinished_component_fact() {
     assert_eq!(file.template_issues()[0].node, Some(node));
     assert_eq!(
         file.template_issues()[0].kind,
-        FileIssueKind::UnsupportedComponent
+        L2IrIssueKind::UnsupportedComponent
     );
 }
 
@@ -290,7 +290,7 @@ impl<'a> TemplateBody<'a, Values> for Interrupted<'_> {
 fn caught_concrete_body_unwind_preserves_original_partial_owner_and_refuses_finish() {
     let arena = Allocator::default();
     let source = "<div/>";
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let mut minted = None;
     let payload = Box::new("original template body interruption");
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -322,7 +322,7 @@ fn caught_concrete_body_unwind_preserves_original_partial_owner_and_refuses_fini
 fn invalid_utf8_element_site_does_not_invoke_body_or_consume_a_node() {
     let arena = Allocator::default();
     let source = "é";
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let mut called = false;
     {
         let mut region = producer

@@ -23,7 +23,7 @@ use vize_l1::{
 use vize_l2::{
     dump::{Op as DumpOp, Page},
     file::L2Ir,
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{NativeTemplateL2Ir, NativeTemplateOwner},
     op::{Op, OriginalForOp},
 };
 use vize_l2_to_l3::{PartitionKind, lower};
@@ -47,7 +47,7 @@ ui.for original-ref=0 @47:84
 
 ";
 
-fn original_file(arena: &Allocator) -> Result<NativeTemplateFile<'_>, &'static str> {
+fn original_file(arena: &Allocator) -> Result<NativeTemplateL2Ir<'_>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         SOURCE,

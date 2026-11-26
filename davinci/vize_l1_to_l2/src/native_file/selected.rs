@@ -13,7 +13,7 @@ use vize_l1::{
 use vize_l2::{
     artifact::L2TemplateError,
     lang::js::{
-        NativeScopedTemplateIssueKind, NativeTemplateFile, NativeTemplateIssue,
+        NativeScopedTemplateIssueKind, NativeTemplateIssue, NativeTemplateL2Ir,
         NativeTemplateOwner, NativeTemplateView, RejectedNativeTemplateOwner,
     },
 };
@@ -57,7 +57,7 @@ pub struct NativeSelectedSfcIssue {
 /// ```
 pub struct NativeSelectedSfcObservation<'a> {
     l1ir: L1Ir<'a>,
-    template: Option<NativeTemplateFile<'a>>,
+    template: Option<NativeTemplateL2Ir<'a>>,
     style: Option<StyleSyntax<'a>>,
     rejected_creation: Option<Box<RejectedNativeTemplateOwner<'a>>>,
     interpolation_failure: Option<InterpolationFailure<'a>>,
@@ -82,7 +82,7 @@ impl<'a> NativeSelectedSfcObservation<'a> {
         &self.l1ir
     }
     #[must_use]
-    pub fn template(&self) -> Option<&NativeTemplateFile<'a>> {
+    pub fn template(&self) -> Option<&NativeTemplateL2Ir<'a>> {
         self.template.as_ref()
     }
     pub(super) fn style(&self) -> Option<&StyleSyntax<'a>> {

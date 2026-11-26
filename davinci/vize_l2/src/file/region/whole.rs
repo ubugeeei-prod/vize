@@ -4,7 +4,7 @@ use super::{TemplatePolicy, TemplateRegion};
 use crate::artifact::{ComponentBody, ComponentFactory, L2TemplateError};
 use crate::expr::JsExpr;
 use crate::file::template::TemplateWalk;
-use crate::file::{FileIssueKind, TemplateIssue};
+use crate::file::{L2IrIssueKind, TemplateIssue};
 use crate::op::{Attribute, Namespace};
 use crate::provenance::ProvenanceRecord;
 use core::ops::{Deref, DerefMut};
@@ -33,14 +33,14 @@ impl<'f, 'a, P: TemplatePolicy> TemplateRegion<'f, 'a, P> {
         span: Span,
     ) -> Result<TemplateWalkRegion<'_, 'f, 'a, P>, L2TemplateError> {
         if matches!(self.inner.facts.template_walk, TemplateWalk::Pending(_)) {
-            return Err(self.inner.reject(span, FileIssueKind::ActiveTemplateWalk));
+            return Err(self.inner.reject(span, L2IrIssueKind::ActiveTemplateWalk));
         }
         if self
             .source()
             .get(span.start as usize..span.end as usize)
             .is_none()
         {
-            return Err(self.inner.reject(span, FileIssueKind::InvalidSpan));
+            return Err(self.inner.reject(span, L2IrIssueKind::InvalidSpan));
         }
         let previous = self.inner.facts.template_walk.enter(span);
         Ok(TemplateWalkRegion {

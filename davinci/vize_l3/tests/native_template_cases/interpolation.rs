@@ -1,6 +1,6 @@
 use super::super::{Allocator, NodeId, Op, check, owner};
 use vize_l2::{
-    expr::ExprRef, file::NativeFileInterpolationState, lang::js::NativeInterpolationInput,
+    expr::ExprRef, file::NativeL2IrInterpolationState, lang::js::NativeInterpolationInput,
 };
 use vize_l3::decision::{
     dom::{DomChild, DomDependency, DomRootKind},
@@ -43,7 +43,7 @@ fn original_root_literal_retains_file_input_and_resolution_in_the_existing_sole_
     let input = file
         .native_interpolation(NodeId::FIRST)
         .ok_or("actual File-owned input")?;
-    check(input.state() == NativeFileInterpolationState::Admitted(NodeId::FIRST))?;
+    check(input.state() == NativeL2IrInterpolationState::Admitted(NodeId::FIRST))?;
     check(input.input().operand().full_span() == op.span)?;
     check(input.input().operand().syntax().comments().count() == 1)?;
     check(input.input().operand().syntax().diagnostics().count() == 0)?;

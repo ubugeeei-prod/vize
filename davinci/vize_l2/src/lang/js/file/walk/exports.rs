@@ -2,7 +2,7 @@
 
 use super::{Context, Walk, imports::namespace};
 use crate::file::{Export, Namespace};
-use crate::lang::js::file::observer::FileObserver;
+use crate::lang::js::file::observer::L2IrObserver;
 use crate::resolution::BindingId;
 use oxc_ast::ast::{
     ExportAllDeclaration, ExportDefaultDeclaration, ExportNamedDeclaration, Expression,
@@ -10,7 +10,7 @@ use oxc_ast::ast::{
 use oxc_span::GetSpan;
 use vize_l0::{Span, String};
 
-impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
+impl<'a, O: L2IrObserver<'a>> Walk<'_, '_, 'a, O> {
     pub(super) fn push_export(
         &mut self,
         name: &str,

@@ -1,12 +1,12 @@
 //! Lexical scopes of original, synchronous arrow initializers in module declarations.
-use super::{Context, FileObserver, Walk, annotations};
+use super::{Context, L2IrObserver, Walk, annotations};
 use crate::file::{DeclarationKind, InitializerKind};
 use oxc_ast::ast::{
     ArrowFunctionExpression, BindingPattern, FormalParameterKind, Statement, TSTypeAnnotation,
 };
 use oxc_span::GetSpan;
 
-impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
+impl<'a, O: L2IrObserver<'a>> Walk<'_, '_, 'a, O> {
     pub(super) fn arrow_initializer(&mut self, arrow: &ArrowFunctionExpression<'a>) {
         let profile = self.input.source_type();
         if !profile.is_module()

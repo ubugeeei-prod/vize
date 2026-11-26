@@ -1,5 +1,5 @@
 use super::{NativeSfcIssue, NativeSfcIssueKind, NativeTemplateObservation};
-use crate::vue_file::{RejectedVueFile, VueFile, VueScriptReceipt};
+use crate::vue_file::{RejectedVueL2Ir, VueL2Ir, VueScriptReceipt};
 use alloc::vec::Vec;
 use vize_l0::SourceBlock;
 use vize_l1::container::vue::{L1Ir, ScriptRole, ScriptView};
@@ -46,7 +46,7 @@ impl<'a> NativeScriptObservation<'a> {
         &self,
         selected: ScriptView<'_, 'a>,
         receipt: &VueScriptReceipt,
-        file: &VueFile<'a>,
+        file: &VueL2Ir<'a>,
     ) -> bool {
         let Some(syntax) = &self.syntax else {
             return false;
@@ -93,7 +93,7 @@ pub struct NativeSfcObservation<'a> {
     l1ir: L1Ir<'a>,
     scripts: Vec<NativeScriptObservation<'a>>,
     template: Option<NativeTemplateObservation<'a>>,
-    file: Option<Result<VueFile<'a>, RejectedVueFile<'a>>>,
+    file: Option<Result<VueL2Ir<'a>, RejectedVueL2Ir<'a>>>,
     issues: Vec<NativeSfcIssue>,
     admitted: bool,
     style_syntax: Vec<StyleSyntax<'a>>,
@@ -116,7 +116,7 @@ impl<'a> NativeSfcObservation<'a> {
         l1ir: L1Ir<'a>,
         scripts: Vec<NativeScriptObservation<'a>>,
         template: Option<NativeTemplateObservation<'a>>,
-        file: Option<Result<VueFile<'a>, RejectedVueFile<'a>>>,
+        file: Option<Result<VueL2Ir<'a>, RejectedVueL2Ir<'a>>>,
         mut issues: Vec<NativeSfcIssue>,
     ) -> Self {
         let membership = match (l1ir.admitted(), file.as_ref()) {
@@ -194,11 +194,11 @@ impl<'a> NativeSfcObservation<'a> {
         self.template.as_ref()
     }
     #[must_use]
-    pub fn file(&self) -> Option<&VueFile<'a>> {
+    pub fn file(&self) -> Option<&VueL2Ir<'a>> {
         self.file.as_ref()?.as_ref().ok()
     }
     #[must_use]
-    pub fn rejected_file(&self) -> Option<&RejectedVueFile<'a>> {
+    pub fn rejected_file(&self) -> Option<&RejectedVueL2Ir<'a>> {
         self.file.as_ref()?.as_ref().err()
     }
     #[must_use]
@@ -230,7 +230,7 @@ impl<'a> NativeSfcObservation<'a> {
 /// ```
 pub struct NativeSfc<'o, 'a> {
     observation: &'o NativeSfcObservation<'a>,
-    file: &'o VueFile<'a>,
+    file: &'o VueL2Ir<'a>,
 }
 impl<'o, 'a> NativeSfc<'o, 'a> {
     #[must_use]
@@ -238,7 +238,7 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
         self.observation
     }
     #[must_use]
-    pub fn file(&self) -> &'o VueFile<'a> {
+    pub fn file(&self) -> &'o VueL2Ir<'a> {
         self.file
     }
 }

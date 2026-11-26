@@ -9,7 +9,7 @@ use vize_l1::{
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{NativeTemplateL2Ir, NativeTemplateOwner},
     op::Op,
 };
 
@@ -50,7 +50,7 @@ fn owner<'a>(
 fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<NativeTemplateL2Ir<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;
@@ -74,7 +74,7 @@ fn node(l2ir: &L2Ir<'_>, index: usize) -> Result<NodeId, &'static str> {
         .ok_or("original row")?
         .state()
     {
-        NativeFileAttributeValueState::Attached { node, .. } => Ok(node),
+        NativeL2IrAttributeValueState::Attached { node, .. } => Ok(node),
         _ => Err("normal attachment"),
     }
 }

@@ -8,7 +8,7 @@ use std::{hint::black_box, time::Instant};
 use vize_l0::{Allocator, SourceRoot, String, append};
 use vize_l2::{
     file::L2Ir,
-    lang::js::{FileProducer, ProgramInput, ProgramScope},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope},
     query::Model,
 };
 
@@ -22,7 +22,7 @@ fn file<'a>(arena: &'a Allocator, source: &'a str) -> Result<L2Ir<'a>, &'static 
     let parsed = Parser::new(arena, source, SourceType::mjs()).parse_observed();
     let input = ProgramInput::checked(parsed.admitted().ok_or("parse refused")?, block, 0)
         .map_err(|_| "program input refused")?;
-    let mut producer = FileProducer::new(arena, source).map_err(|_| "file refused")?;
+    let mut producer = L2IrProducer::new(arena, source).map_err(|_| "file refused")?;
     producer
         .program(input, ProgramScope::Module)
         .map_err(|_| "program refused")?;

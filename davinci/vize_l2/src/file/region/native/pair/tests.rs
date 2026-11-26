@@ -1,8 +1,8 @@
 extern crate std;
 
 use super::*;
-use crate::file::NativeFileConditionalState;
-use crate::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use crate::file::NativeL2IrConditionalState;
+use crate::lang::js::{NativeTemplateL2Ir, NativeTemplateOwner};
 use crate::op::Op;
 use vize_l0::{
     Allocator,
@@ -46,7 +46,7 @@ pub(super) fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplate
     owner
 }
 
-pub(super) fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+pub(super) fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateL2Ir<'a> {
     let mut owner = owner(arena, source);
     {
         let mut walk = owner.begin().unwrap();
@@ -86,7 +86,7 @@ fn original_pair_mints_one_if_two_real_regions_and_the_same_boolean_file_read() 
         let [record] = file.native_conditionals() else {
             panic!("one actual condition")
         };
-        let NativeFileConditionalState::Admitted(node) = record.state() else {
+        let NativeL2IrConditionalState::Admitted(node) = record.state() else {
             panic!("closed pair")
         };
         let [Op::If(original)] = file.artifact().root().ops.as_slice() else {
@@ -240,7 +240,7 @@ fn paired_text_nested_mixed_headers_and_nonadjacent_roots_stay_lower_refusals() 
         };
         assert_eq!(
             record.state(),
-            NativeFileConditionalState::Refused(Kind::UnsupportedChild)
+            NativeL2IrConditionalState::Refused(Kind::UnsupportedChild)
         );
         assert!(record.original.is_none());
         assert!(core::ptr::eq(
@@ -372,7 +372,7 @@ fn caught_pair_unwind_retains_both_original_headers_and_no_completed_pair_receip
             let [record] = walk.root.facts.native_conditionals() else {
                 panic!("parked If")
             };
-            assert_eq!(record.state(), NativeFileConditionalState::Pending);
+            assert_eq!(record.state(), NativeL2IrConditionalState::Pending);
             assert!(record.original.is_none());
             assert_eq!(
                 record
@@ -406,7 +406,7 @@ fn caught_pair_unwind_retains_both_original_headers_and_no_completed_pair_receip
         let [record] = records else {
             panic!("retained pair owners")
         };
-        assert_eq!(record.state(), NativeFileConditionalState::Pending);
+        assert_eq!(record.state(), NativeL2IrConditionalState::Pending);
         let selected = output.selected();
         let second = selected.children().nth(1).unwrap().into_element().unwrap();
         assert!(

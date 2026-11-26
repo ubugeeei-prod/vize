@@ -40,7 +40,7 @@
     if let Some(template) = template.as_mut() {
         template.construct(producer.as_mut(), &mut issues);
     }
-    let file = producer.map(crate::vue_file::VueFileProducer::finish);
+    let file = producer.map(crate::vue_file::VueL2IrProducer::finish);
     if file.as_ref().is_some_and(Result::is_err) {
         issues.push(NativeSfcIssue {
             container_index: None,

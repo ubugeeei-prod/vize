@@ -4,15 +4,15 @@ mod setup;
 pub use setup::{SelectedSetupDomAnalysis, build_selected_setup_dom_decisions};
 
 use super::{
-    DecisionBuildError, DecisionTables, FileAnalysis,
-    dom::{DomAnalysis, DomFileExpression, DomFileForHead, DomFileHandler},
+    DecisionBuildError, DecisionTables, DomL2IrAnalysis,
+    dom::{DomAnalysis, DomL2IrExpression, DomL2IrForHead, DomL2IrHandler},
     policy::TargetPolicy,
 };
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::L2Template,
     file::L2Ir,
-    lang::js::{NativeTemplateFile, NativeTemplateView},
+    lang::js::{NativeTemplateL2Ir, NativeTemplateView},
 };
 
 /// Decisions retain the moved, non-cloneable lower completion view.
@@ -26,16 +26,16 @@ use vize_l2::{
 ///
 /// A neutral analysis or an externally paired File cannot construct it:
 /// ```compile_fail
-/// use vize_l3::decision::{FileAnalysis, template::TemplateDomAnalysis};
-/// fn forge<'f, 'a>(analysis: FileAnalysis<'f, 'a>) {
+/// use vize_l3::decision::{DomL2IrAnalysis, template::TemplateDomAnalysis};
+/// fn forge<'f, 'a>(analysis: DomL2IrAnalysis<'f, 'a>) {
 ///     let _ = TemplateDomAnalysis { analysis };
 /// }
 /// ```
 /// The actual lower owner cannot be discarded while its analysis is live:
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeTemplateFile;
+/// use vize_l2::lang::js::NativeTemplateL2Ir;
 /// use vize_l3::decision::template::build_template_dom_decisions;
-/// fn discard(owner: NativeTemplateFile<'_>) {
+/// fn discard(owner: NativeTemplateL2Ir<'_>) {
 ///     let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
 ///     drop(owner);
 ///     let _ = analysis.l2ir();
@@ -43,9 +43,9 @@ use vize_l2::{
 /// ```
 /// The completion view cannot be extracted as a neutral analysis or cloned:
 /// ```compile_fail
-/// use vize_l3::decision::{FileAnalysis, template::TemplateDomAnalysis};
+/// use vize_l3::decision::{DomL2IrAnalysis, template::TemplateDomAnalysis};
 /// fn neutral<'f, 'a>(result: TemplateDomAnalysis<'f, 'a>)
-///     -> FileAnalysis<'f, 'a> { result.analysis }
+///     -> DomL2IrAnalysis<'f, 'a> { result.analysis }
 /// ```
 /// ```compile_fail
 /// use vize_l3::decision::template::TemplateDomAnalysis;
@@ -59,13 +59,13 @@ use vize_l2::{
 /// ```
 pub struct TemplateDomAnalysis<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,
-    analysis: FileAnalysis<'owner, 'arena>,
+    analysis: DomL2IrAnalysis<'owner, 'arena>,
 }
 
 impl<'owner, 'arena> TemplateDomAnalysis<'owner, 'arena> {
     /// Original selected Component and File retained by the sole lower owner.
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner NativeTemplateL2Ir<'arena> {
         self.view.owner()
     }
 
@@ -100,7 +100,7 @@ impl<'owner, 'arena> TemplateDomAnalysis<'owner, 'arena> {
     }
 
     #[must_use]
-    pub fn expression(&self, node: NodeId) -> Option<&DomFileExpression<'owner, 'arena>> {
+    pub fn expression(&self, node: NodeId) -> Option<&DomL2IrExpression<'owner, 'arena>> {
         self.dom()?.file_expression(node)
     }
 
@@ -108,14 +108,14 @@ impl<'owner, 'arena> TemplateDomAnalysis<'owner, 'arena> {
     /// Bounded setup reads retain identity; collection runtime spelling and
     /// loop emission remain typed refusals.
     #[must_use]
-    pub fn for_head(&self, node: NodeId) -> Option<&DomFileForHead<'owner, 'arena>> {
+    pub fn for_head(&self, node: NodeId) -> Option<&DomL2IrForHead<'owner, 'arena>> {
         self.dom()?.file_for_head(node)
     }
 
     /// Whole handler custody observed at this original File's actual On event.
     /// Runtime inline/reference classification remains a separate prerequisite.
     #[must_use]
-    pub fn handler(&self, node: NodeId) -> Option<&DomFileHandler<'owner, 'arena>> {
+    pub fn handler(&self, node: NodeId) -> Option<&DomL2IrHandler<'owner, 'arena>> {
         self.dom()?.file_handler(node)
     }
 }
@@ -143,7 +143,7 @@ impl<'owner, 'arena> TemplateDomAnalysis<'owner, 'arena> {
     pub(in crate::decision) fn from_pair(
         target: crate::decision::build::paired::CompletedTarget<'owner, 'arena>,
     ) -> Self {
-        let (view, analysis) = FileAnalysis::from_pair(target);
+        let (view, analysis) = DomL2IrAnalysis::from_pair(target);
         Self { view, analysis }
     }
 }

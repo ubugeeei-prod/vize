@@ -1,7 +1,7 @@
 use super::*;
 use oxc_parser::{ParseOptions, Parser};
 use oxc_span::SourceType;
-use vize_l2::file::FileIssueKind;
+use vize_l2::file::L2IrIssueKind;
 
 #[test]
 fn foreign_bytes_second_program_and_foreign_same_numeric_unit_refuse() -> Result<(), &'static str> {
@@ -55,7 +55,7 @@ fn actual_roles_nested_scope_and_extra_units_cannot_supply_the_root_family()
         )
         .map_err(|_| "input")
     };
-    let mut nested = FileProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
+    let mut nested = L2IrProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
     nested
         .program(input()?, ProgramScope::Nested)
         .map_err(|_| "walk")?;
@@ -144,7 +144,7 @@ fn original_js_ts_profile_and_default_options_are_required_before_ast_shape()
             .err()
             .ok_or("input refusal")?
             .kind,
-            FileIssueKind::InvalidProfile,
+            L2IrIssueKind::InvalidProfile,
         )?;
         check(original.checked(&file)?.is_ok())?;
     }

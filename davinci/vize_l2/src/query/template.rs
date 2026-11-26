@@ -1,7 +1,7 @@
 //! Queries over sealed attached Handler/OriginalFor rows, never bare coordinates.
 
 use super::{Model, PositionQueryError};
-use crate::file::{BindingRef, FileForHead, FileHandler, L2Ir, ScopeId};
+use crate::file::{BindingRef, L2Ir, L2IrForHead, L2IrHandler, ScopeId};
 use crate::resolution::{HandlerBinding, HandlerDeclaration, HandlerScopeId, Usage};
 use vize_l0::Span;
 
@@ -19,21 +19,21 @@ pub enum TemplateQueryError {
 /// The implicit `$event` has a binding but no authored declaration site.
 ///
 /// ```compile_fail
-/// use vize_l2::{file::FileHandler, query::HandlerLocalRef};
+/// use vize_l2::{file::L2IrHandler, query::HandlerLocalRef};
 /// use vize_l2::resolution::HandlerBinding;
-/// fn forge<'f, 'a>(handler: FileHandler<'f, 'a>, binding: &'f HandlerBinding<'a>) {
+/// fn forge<'f, 'a>(handler: L2IrHandler<'f, 'a>, binding: &'f HandlerBinding<'a>) {
 ///     let _ = HandlerLocalRef { handler, binding };
 /// }
 /// ```
 #[derive(Clone, Copy)]
 pub struct HandlerLocalRef<'f, 'a> {
-    handler: FileHandler<'f, 'a>,
+    handler: L2IrHandler<'f, 'a>,
     binding: &'f HandlerBinding<'a>,
 }
 
 impl<'f, 'a> HandlerLocalRef<'f, 'a> {
     #[must_use]
-    pub const fn handler(self) -> FileHandler<'f, 'a> {
+    pub const fn handler(self) -> L2IrHandler<'f, 'a> {
         self.handler
     }
     #[must_use]
@@ -89,13 +89,13 @@ impl<'f, 'a> TemplateSymbolRef<'f, 'a> {
 #[derive(Clone, Copy)]
 pub enum TemplateSiteScope<'f, 'a> {
     File(ScopeId),
-    Handler(FileHandler<'f, 'a>, HandlerScopeId),
+    Handler(L2IrHandler<'f, 'a>, HandlerScopeId),
 }
 
 #[derive(Clone, Copy)]
 enum Origin<'f, 'a> {
-    Handler(FileHandler<'f, 'a>),
-    For(FileForHead<'f, 'a>),
+    Handler(L2IrHandler<'f, 'a>),
+    For(L2IrForHead<'f, 'a>),
 }
 
 /// One original declaration/use, borrowed with its actual immutable File owner.
@@ -140,14 +140,14 @@ impl<'f, 'a> TemplateSiteRef<'f, 'a> {
         self.usage
     }
     #[must_use]
-    pub fn handler(self) -> Option<FileHandler<'f, 'a>> {
+    pub fn handler(self) -> Option<L2IrHandler<'f, 'a>> {
         match self.origin {
             Origin::Handler(handler) => Some(handler),
             Origin::For(_) => None,
         }
     }
     #[must_use]
-    pub fn for_head(self) -> Option<FileForHead<'f, 'a>> {
+    pub fn for_head(self) -> Option<L2IrForHead<'f, 'a>> {
         match self.origin {
             Origin::For(head) => Some(head),
             Origin::Handler(_) => None,

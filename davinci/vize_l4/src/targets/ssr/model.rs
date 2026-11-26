@@ -7,10 +7,10 @@ use crate::{
 };
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{NativeFileModelKind, NativeFileModelState},
+    file::{NativeL2IrModelKind, NativeL2IrModelState},
     op::ElementOp,
 };
-use vize_l3::decision::ssr::{SelectedSetupSsrAnalysis, SsrFileModel};
+use vize_l3::decision::ssr::{SelectedSetupSsrAnalysis, SsrL2IrModel};
 
 pub(super) fn prelude<L: LinkSink>(
     writer: &mut Writer<L>,
@@ -19,8 +19,8 @@ pub(super) fn prelude<L: LinkSink>(
     let [original] = analysis.l2ir().native_models() else {
         return;
     };
-    if matches!(original.state(), NativeFileModelState::Admitted(_))
-        && original.kind() == Some(NativeFileModelKind::Checkbox)
+    if matches!(original.state(), NativeL2IrModelState::Admitted(_))
+        && original.kind() == Some(NativeL2IrModelKind::Checkbox)
     {
         // This generated render-local never substitutes for an original binding.
         writer.push("let __vizeModelProps;");
@@ -59,7 +59,7 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     writer.use_helper(merge);
     writer.use_helper(dynamic_model);
     match row.original().kind() {
-        Some(NativeFileModelKind::Checkbox) => {
+        Some(NativeL2IrModelKind::Checkbox) => {
             let value = analysis
                 .l2ir()
                 .native_attribute_value_for(0, element, 0)
@@ -97,7 +97,7 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
             writer.push("))))}");
             return Ok(true);
         }
-        Some(NativeFileModelKind::Text) => {}
+        Some(NativeL2IrModelKind::Text) => {}
         None => return Err(fail(SsrErrorKind::MissingAnalysis)),
     }
     // Root attrs may carry a real input type/value. The actual pinned runtime
@@ -118,7 +118,7 @@ fn checkbox_type<L: LinkSink>(writer: &mut Writer<L>, name: Span, value: Span) {
     writer.push("\"");
 }
 
-fn access<L: LinkSink>(writer: &mut Writer<L>, row: &SsrFileModel<'_, '_>) {
+fn access<L: LinkSink>(writer: &mut Writer<L>, row: &SsrL2IrModel<'_, '_>) {
     writer.push_named_parts(
         ["$setup.", row.occurrence().name],
         row.authored_span(),

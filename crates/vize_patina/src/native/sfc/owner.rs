@@ -17,7 +17,7 @@ use vize_l1::{
 };
 use vize_l2::{
     file::L2Ir,
-    lang::js::{FileProducer, ProgramInput, ProgramScope, VueSetup},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope, VueSetup},
 };
 
 use super::{NativeSfcLintRefusal as Refusal, envelope};
@@ -87,7 +87,7 @@ impl<'a> NativeSfcLintOwner<'a> {
             span: block.span(),
             hole: syntax.hole(),
         })?;
-        let mut producer = FileProducer::new(allocator, source).map_err(Refusal::File)?;
+        let mut producer = L2IrProducer::new(allocator, source).map_err(Refusal::File)?;
         let input = ProgramInput::checked(program, block, script.container_index())
             .map_err(Refusal::Program)?;
         producer

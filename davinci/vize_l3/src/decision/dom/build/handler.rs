@@ -1,7 +1,7 @@
 //! Join the complete lower owner during the sole canonical binding walk.
 
 use super::{DomBinding, DomBuilder, DomExpressionAnalysis, PropertyRole, ValueKind};
-use crate::decision::dom::{DomUnsupported, handler::DomFileHandler, vue::policy::FileReads};
+use crate::decision::dom::{DomUnsupported, handler::DomL2IrHandler, vue::policy::FileReads};
 use vize_l0::id::NodeId;
 use vize_l2::op::{BindingOp, DynamicName, OnOp, Op};
 
@@ -110,7 +110,7 @@ impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
             .handler_for(on)
             .filter(|handler| handler.id().node() == node)
         else {
-            self.reject(node, on.span, DomUnsupported::FileHandler);
+            self.reject(node, on.span, DomUnsupported::L2IrHandler);
             return;
         };
         if !handler.scope().is_some_and(|scope| {
@@ -122,17 +122,17 @@ impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
             return;
         }
         let Some(resolution) = handler.resolution() else {
-            self.reject(node, on.span, DomUnsupported::FileHandler);
+            self.reject(node, on.span, DomUnsupported::L2IrHandler);
             return;
         };
         let source = resolution.input().operand().syntax().source();
         if !core::ptr::eq(source.authored_root(), file.artifact().source()) {
-            self.reject(node, on.span, DomUnsupported::FileHandler);
+            self.reject(node, on.span, DomUnsupported::L2IrHandler);
             return;
         }
         self.facts.file_handlers.insert(
             node,
-            DomFileHandler {
+            DomL2IrHandler {
                 handler,
                 on,
                 resolution,

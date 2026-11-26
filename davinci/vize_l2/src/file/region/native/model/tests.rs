@@ -3,7 +3,7 @@
 extern crate std;
 
 use crate::file::{
-    DeclarationKind, InitializerKind, Namespace, NativeFileModelKind, NativeFileModelState,
+    DeclarationKind, InitializerKind, Namespace, NativeL2IrModelKind, NativeL2IrModelState,
 };
 use crate::lang::js::NativeTemplateIssueKind as Kind;
 use crate::op::{BindingOp, Op};
@@ -86,7 +86,7 @@ fn original_five_primitive_let_var_models_keep_one_real_readwrite_and_no_alias_s
         let [record] = file.native_models() else {
             panic!("one original Model")
         };
-        let NativeFileModelState::Admitted(node) = record.state() else {
+        let NativeL2IrModelState::Admitted(node) = record.state() else {
             panic!("closed Model")
         };
         let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
@@ -181,7 +181,7 @@ fn equal_foreign_model_nodes_elements_and_bindings_never_satisfy_same_file_custo
     assert_eq!(record.state(), other_record.state());
     assert_eq!(record.binding(), other_record.binding());
     assert_eq!(record.element_node(), other_record.element_node());
-    let NativeFileModelState::Admitted(node) = record.state() else {
+    let NativeL2IrModelState::Admitted(node) = record.state() else {
         panic!("actual node")
     };
     let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
@@ -270,9 +270,9 @@ fn caught_model_transition_unwinds_keep_actual_prefix_but_never_publish_complete
                 assert_eq!(record.original.is_some(), point >= 3);
                 assert_eq!(record.element_node().is_some(), point == 5);
                 if point < 5 {
-                    assert_eq!(record.state(), NativeFileModelState::Pending);
+                    assert_eq!(record.state(), NativeL2IrModelState::Pending);
                 } else {
-                    assert!(matches!(record.state(), NativeFileModelState::Admitted(_)));
+                    assert!(matches!(record.state(), NativeL2IrModelState::Admitted(_)));
                 }
             }
             assert_eq!(walk.child(child).unwrap_err().kind, Kind::Interrupted);
@@ -292,7 +292,7 @@ fn caught_model_transition_unwinds_keep_actual_prefix_but_never_publish_complete
             let [record] = rejected.native_models() else {
                 panic!("whole pending owner")
             };
-            assert_eq!(record.state(), NativeFileModelState::Pending);
+            assert_eq!(record.state(), NativeL2IrModelState::Pending);
             let [Op::Element(element)] = rejected.artifact().parts.root.ops.as_slice() else {
                 panic!("retained pending input")
             };
@@ -313,7 +313,7 @@ fn caught_model_transition_unwinds_keep_actual_prefix_but_never_publish_complete
                 let [record] = file.native_models() else {
                     panic!("closed row, incomplete File")
                 };
-                let NativeFileModelState::Admitted(node) = record.state() else {
+                let NativeL2IrModelState::Admitted(node) = record.state() else {
                     panic!("real closed allocation")
                 };
                 let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {

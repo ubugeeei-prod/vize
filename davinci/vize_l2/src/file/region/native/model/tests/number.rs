@@ -17,7 +17,7 @@ fn number_uses_the_original_attribute_and_same_file_mutable_readwrite_binding() 
         let [record] = file.native_models() else {
             panic!("one original")
         };
-        let NativeFileModelState::Admitted(node) = record.state() else {
+        let NativeL2IrModelState::Admitted(node) = record.state() else {
             panic!("closed")
         };
         let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
@@ -78,7 +78,7 @@ fn number_with_a_late_header_failure_keeps_its_fact_without_a_published_model() 
     let [record] = file.native_models() else {
         panic!("original retained")
     };
-    assert_eq!(record.state(), NativeFileModelState::Pending);
+    assert_eq!(record.state(), NativeL2IrModelState::Pending);
     assert_eq!(
         record
             .input()
@@ -111,7 +111,7 @@ fn number_cannot_make_an_original_const_declaration_writable() {
     };
     assert_eq!(
         record.state(),
-        NativeFileModelState::Refused(Kind::UnsupportedChild)
+        NativeL2IrModelState::Refused(Kind::UnsupportedChild)
     );
     assert_eq!(
         record
@@ -178,9 +178,9 @@ fn number_transition_unwinds_keep_actual_prefix_and_deny_complete_file_access() 
                 assert_eq!(record.original.is_some(), point >= 3);
                 assert_eq!(record.element_node().is_some(), point == 5);
                 if point < 5 {
-                    assert_eq!(record.state(), NativeFileModelState::Pending);
+                    assert_eq!(record.state(), NativeL2IrModelState::Pending);
                 } else {
-                    assert!(matches!(record.state(), NativeFileModelState::Admitted(_)));
+                    assert!(matches!(record.state(), NativeL2IrModelState::Admitted(_)));
                 }
             }
             assert_eq!(walk.child(child).unwrap_err().kind, Kind::Interrupted);
@@ -200,7 +200,7 @@ fn number_transition_unwinds_keep_actual_prefix_and_deny_complete_file_access() 
             let [record] = rejected.native_models() else {
                 panic!("whole pending owner")
             };
-            assert_eq!(record.state(), NativeFileModelState::Pending);
+            assert_eq!(record.state(), NativeL2IrModelState::Pending);
             let [Op::Element(element)] = rejected.artifact().parts.root.ops.as_slice() else {
                 panic!("retained pending input")
             };
@@ -221,7 +221,7 @@ fn number_transition_unwinds_keep_actual_prefix_and_deny_complete_file_access() 
                 let [record] = file.native_models() else {
                     panic!("closed row, incomplete File")
                 };
-                let NativeFileModelState::Admitted(node) = record.state() else {
+                let NativeL2IrModelState::Admitted(node) = record.state() else {
                     panic!("real closed allocation")
                 };
                 let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {

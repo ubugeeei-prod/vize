@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use vize_l0::Span;
 use vize_l1::markup::AttributeValueOperand;
 use vize_l2::file::L2Ir;
-use vize_l2::file::NativeFileAttributeValueState;
+use vize_l2::file::NativeL2IrAttributeValueState;
 use vize_l3::decision::dom::{DomRejection, DomUnsupported};
 use vize_l4::{
     targets::dom::{DomError, DomErrorKind, emit_selected_setup_template},
@@ -67,7 +67,7 @@ pub(super) fn assert_current(class: &crate::NativeSelectedSetupSfcDomCompilation
     };
     assert_eq!(
         record.state(),
-        NativeFileAttributeValueState::Attached {
+        NativeL2IrAttributeValueState::Attached {
             node: NodeId::from_index(1).unwrap(),
             slot: 0
         }

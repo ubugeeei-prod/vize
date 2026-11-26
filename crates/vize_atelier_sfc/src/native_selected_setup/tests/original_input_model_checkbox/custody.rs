@@ -5,8 +5,8 @@ use vize_l1_to_l2::native_file::NativeSelectedSetupSfcObservation;
 use vize_l2::{
     expr::ExprRef,
     file::{
-        DeclarationKind, InitializerKind, Namespace, NativeFileAttributeValueState,
-        NativeFileModelKind, NativeFileModelState,
+        DeclarationKind, InitializerKind, Namespace, NativeL2IrAttributeValueState,
+        NativeL2IrModelKind, NativeL2IrModelState,
     },
     op::{BindingOp, Op},
     resolution::Usage,
@@ -35,7 +35,7 @@ pub(super) fn capture(
     let [record] = file.native_models() else {
         return Err("one actual Model".into());
     };
-    let NativeFileModelState::Admitted(node) = record.state() else {
+    let NativeL2IrModelState::Admitted(node) = record.state() else {
         return Err("normally closed Model".into());
     };
     let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
@@ -58,7 +58,7 @@ pub(super) fn capture(
     let type_value = type_owner.observation().ok_or("actual type observation")?;
     if !file.is_complete()
         || expected_kind != "checkbox"
-        || record.kind() != Some(NativeFileModelKind::Checkbox)
+        || record.kind() != Some(NativeL2IrModelKind::Checkbox)
         || file.units().len() != 1
         || file.scopes().len() != 2
         || file.artifact().node_count() != 2
@@ -74,7 +74,7 @@ pub(super) fn capture(
         || operand.lazy_span().is_some()
         || operand.number_span().is_some()
         || type_record.state()
-            != (NativeFileAttributeValueState::Attached {
+            != (NativeL2IrAttributeValueState::Attached {
                 node: element_node,
                 slot: 0,
             })

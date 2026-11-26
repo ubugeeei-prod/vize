@@ -9,7 +9,7 @@ use vize_l1::{
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{NativeTemplateL2Ir, NativeTemplateOwner},
     op::{BindingOp, Op},
 };
 use vize_l3::decision::{
@@ -17,7 +17,7 @@ use vize_l3::decision::{
     dom::{DomUnsupported, LiteralExpressions},
 };
 
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateL2Ir<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,

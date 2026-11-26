@@ -11,7 +11,7 @@ use vize_l0::{Allocator, config::VueVersion};
 use vize_l1::embed::syntax::{EmbedHole, ForRefusal};
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind;
 use vize_l2::{
-    file::{FileIssueKind, RejectedFileFor, RejectedFileHandler},
+    file::{L2IrIssueKind, RejectedL2IrFor, RejectedL2IrHandler},
     lang::js::{HandlerInputErrorKind, NativeTemplateIssueKind},
     op::{BindingOp, OnOp, Op, Region},
     resolution::ResolutionErrorKind,
@@ -254,12 +254,12 @@ fn refusals() -> Vec<serde_json::Value> {
             "for" => {
                 assert!(compilation.observation().admitted().is_none());
                 assert!(
-                    matches!(error, NativeSsrSfcCompileError::Lowering(issue) if matches!(issue.kind, NativeSelectedSfcIssueKind::Template(issue) if matches!(issue.kind, NativeTemplateIssueKind::For { kind: FileIssueKind::UnsupportedSyntax, .. }))),
+                    matches!(error, NativeSsrSfcCompileError::Lowering(issue) if matches!(issue.kind, NativeSelectedSfcIssueKind::Template(issue) if matches!(issue.kind, NativeTemplateIssueKind::For { kind: L2IrIssueKind::UnsupportedSyntax, .. }))),
                     "{id}: {error:?}"
                 );
                 let original = compilation.observation().template().unwrap();
                 assert!(original.view().is_err());
-                let [RejectedFileFor::Syntax(input)] =
+                let [RejectedL2IrFor::Syntax(input)] =
                     original.file().unwrap().rejected_for_heads()
                 else {
                     panic!(
@@ -275,7 +275,7 @@ fn refusals() -> Vec<serde_json::Value> {
             }
             "handler-global" => {
                 let original = compilation.observation().template().unwrap();
-                let [RejectedFileHandler::Resolution { input, error }] =
+                let [RejectedL2IrHandler::Resolution { input, error }] =
                     original.file().unwrap().rejected_handlers()
                 else {
                     panic!("{id}: original rejected handler resolution missing");
@@ -292,7 +292,7 @@ fn refusals() -> Vec<serde_json::Value> {
             }
             "handler-syntax" => {
                 let original = compilation.observation().template().unwrap();
-                let [RejectedFileHandler::Syntax(input)] =
+                let [RejectedL2IrHandler::Syntax(input)] =
                     original.file().unwrap().rejected_handlers()
                 else {
                     panic!("{id}: original rejected handler syntax missing");

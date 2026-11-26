@@ -1,6 +1,6 @@
 use super::{Allocator, Kind, check, descriptor, equal, kind, owner, syntax};
 use vize_l1::markup::TemplateGrammar;
-use vize_l2::file::FileIssueKind;
+use vize_l2::file::L2IrIssueKind;
 
 #[test]
 fn original_empty_default_js_and_ts_reach_the_selected_template_with_zero_bindings()
@@ -93,12 +93,12 @@ fn selected_empty_default_exception_does_not_admit_other_export_families()
         (
             "export default {} as const;",
             true,
-            Kind::Program(FileIssueKind::UnsupportedSyntax),
+            Kind::Program(L2IrIssueKind::UnsupportedSyntax),
         ),
         (
             "export default {} satisfies object;",
             true,
-            Kind::Program(FileIssueKind::UnsupportedSyntax),
+            Kind::Program(L2IrIssueKind::UnsupportedSyntax),
         ),
         (
             "import 'dep'; export default {};",
@@ -256,7 +256,7 @@ fn copied_equal_ordinary_source_cannot_establish_a_selected_program() -> Result<
     let mut original = owner(&arena, source)?;
     equal(
         kind(original.ordinary_program(foreign.admitted_program().ok_or("foreign")?))?,
-        Kind::Program(FileIssueKind::InvalidSource),
+        Kind::Program(L2IrIssueKind::InvalidSource),
     )?;
     let result = original.finish();
     check(result.view().is_err())?;

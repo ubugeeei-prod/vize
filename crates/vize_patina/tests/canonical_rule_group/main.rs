@@ -13,7 +13,7 @@ use vize_l0::{
 };
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_sfc_native;
-use vize_l2::lang::js::JsxFileProducer;
+use vize_l2::lang::js::JsxL2IrProducer;
 use vize_patina::native::{
     NativeLintFinding,
     canonical::{NativeCanonicalLint, NativeCanonicalLintRefusal},
@@ -151,7 +151,7 @@ fn with_original(
             return Ok(());
         };
         let block = root.whole_block();
-        let Ok(mut producer) = JsxFileProducer::new(&arena, parser, block, 0) else {
+        let Ok(mut producer) = JsxL2IrProducer::new(&arena, parser, block, 0) else {
             count.lowering_refusals += 1;
             return Ok(());
         };

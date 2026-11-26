@@ -4,7 +4,7 @@
 )]
 
 use super::{Allocator, Law};
-use crate::lang::js::{JsxFile, JsxFileProducer, JsxMarkupFile};
+use crate::lang::js::{JsxL2Ir, JsxL2IrProducer, JsxMarkupL2Ir};
 use alloc::{vec, vec::Vec};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -15,7 +15,7 @@ fn native<'a>(
     block: SourceBlock<'a>,
     script: &'a str,
     typescript: bool,
-) -> Result<JsxMarkupFile<'a>, &'static str> {
+) -> Result<JsxMarkupL2Ir<'a>, &'static str> {
     let original = Parser::new(
         arena,
         script,
@@ -27,7 +27,7 @@ fn native<'a>(
     )
     .parse_observed();
     let mut producer =
-        JsxFileProducer::new(arena, original, block, 7).map_err(|_| "block producer")?;
+        JsxL2IrProducer::new(arena, original, block, 7).map_err(|_| "block producer")?;
     producer.walk().map_err(|_| "block walk")?;
     producer.finish_markup().map_err(|_| "block native")
 }
@@ -35,8 +35,8 @@ fn native<'a>(
 #[test]
 fn original_fragment_boundaries_keep_absolute_bytes_utf16_and_owner_after_moves() -> Law {
     assert_eq!(
-        core::mem::size_of::<JsxMarkupFile<'_>>(),
-        core::mem::size_of::<JsxFile<'_>>(),
+        core::mem::size_of::<JsxMarkupL2Ir<'_>>(),
+        core::mem::size_of::<JsxL2Ir<'_>>(),
         "no additional product storage"
     );
     for typescript in [false, true] {

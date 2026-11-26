@@ -3,7 +3,7 @@
     reason = "native ownership laws use exact assertions"
 )]
 
-use super::{JsxFileProducer, JsxMarkupIssue, JsxMarkupIssueKind};
+use super::{JsxL2IrProducer, JsxMarkupIssue, JsxMarkupIssueKind};
 use crate::{
     analysis::template_complexity,
     file::L2Ir,
@@ -62,7 +62,7 @@ fn producer<'a>(
     arena: &'a Allocator,
     source: &'a str,
     typescript: bool,
-) -> Result<JsxFileProducer<'a>, &'static str> {
+) -> Result<JsxL2IrProducer<'a>, &'static str> {
     let kind = if typescript {
         SourceType::tsx().with_module(true)
     } else {
@@ -70,7 +70,7 @@ fn producer<'a>(
     };
     let block = SourceRoot::new(source).map_err(|_| "root")?.whole_block();
     let original = Parser::new(arena, source, kind).parse_observed();
-    let mut producer = JsxFileProducer::new(arena, original, block, 0).map_err(|_| "producer")?;
+    let mut producer = JsxL2IrProducer::new(arena, original, block, 0).map_err(|_| "producer")?;
     producer.walk().map_err(|_| "walk")?;
     Ok(producer)
 }

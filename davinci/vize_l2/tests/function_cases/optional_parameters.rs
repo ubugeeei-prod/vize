@@ -8,7 +8,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, cstr};
 use vize_l2::file::{DeclarationKind, Namespace, ReferenceTarget};
-use vize_l2::lang::js::JsxFileProducer;
+use vize_l2::lang::js::JsxL2IrProducer;
 
 #[test]
 fn the_original_optional_number_input_now_has_its_actual_complete_scope() {
@@ -147,7 +147,7 @@ fn genuine_tsx_owner_retains_optional_parameters_and_the_authored_fragment() {
     let observed =
         Parser::new(&arena, source, SourceType::tsx().with_module(true)).parse_observed();
     let body = observed.admitted().unwrap().program().body.as_ptr();
-    let mut producer = JsxFileProducer::new(&arena, observed, block, 7)
+    let mut producer = JsxL2IrProducer::new(&arena, observed, block, 7)
         .unwrap_or_else(|rejected| panic!("original TSX: {:?}", rejected.error()));
     producer.walk().unwrap();
     let owner = producer

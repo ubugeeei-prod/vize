@@ -1,7 +1,7 @@
 //! Genuine two-branch originals replay whole independently reviewed captures.
 
 use super::*;
-use vize_l2::{expr::ExprRef, file::NativeFileConditionalState, op::Op, resolution::Usage};
+use vize_l2::{expr::ExprRef, file::NativeL2IrConditionalState, op::Op, resolution::Usage};
 use vize_l3::decision::dom::control::ConditionalFallback;
 
 #[test]
@@ -116,7 +116,7 @@ fn twelve_whole_original_root_if_else_components_and_raw_maps_are_captured() -> 
                 let [record] = file.native_conditionals() else {
                     return Err(cstr!("{id}: exactly one conditional owner"));
                 };
-                let NativeFileConditionalState::Admitted(node) = record.state() else {
+                let NativeL2IrConditionalState::Admitted(node) = record.state() else {
                     return Err(cstr!("{id}: normally completed whole pair"));
                 };
                 require!(

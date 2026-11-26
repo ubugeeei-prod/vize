@@ -203,7 +203,7 @@ fn actual_setup_method_candidate_keeps_full_unsupported_method_refusal_without_a
         assert_eq!(
             format!("{error:?}"),
             format!(
-                "FileIssues {{ issues: [FileIssue {{ unit: ScriptUnitId(0), span: Span {{ start: {}, end: {} }}, kind: UnsupportedSyntax }}], interruptions: [] }}",
+                "FileIssues {{ issues: [L2IrIssue {{ unit: ScriptUnitId(0), span: Span {{ start: {}, end: {} }}, kind: UnsupportedSyntax }}], interruptions: [] }}",
                 method.start, method.end
             )
         );

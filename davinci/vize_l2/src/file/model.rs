@@ -1,6 +1,6 @@
 //! Original Model inputs, sealed only by their normally closed Element factory.
 
-use super::{L2Ir, RejectedFile, ScopeId};
+use super::{L2Ir, RejectedL2Ir, ScopeId};
 use crate::lang::js::{NativeModelInput, NativeTemplateIssueKind};
 use crate::op::{ElementOp, ModelOp};
 use crate::resolution::BindingId;
@@ -9,17 +9,17 @@ use vize_l1::markup::AttributeExpressionFailure;
 
 #[derive(Default)]
 pub(crate) struct ModelStorage<'a> {
-    rows: alloc::vec::Vec<NativeFileModel<'a>>,
+    rows: alloc::vec::Vec<NativeL2IrModel<'a>>,
     failures: alloc::vec::Vec<AttributeExpressionFailure<'a>>,
 }
 
 impl<'a> super::build::L2Script<'a> {
-    pub(crate) fn native_models(&self) -> &[NativeFileModel<'a>] {
+    pub(crate) fn native_models(&self) -> &[NativeL2IrModel<'a>] {
         self.model_storage
             .as_deref()
             .map_or(&[], |storage| storage.rows.as_slice())
     }
-    pub(crate) fn native_models_mut(&mut self) -> &mut alloc::vec::Vec<NativeFileModel<'a>> {
+    pub(crate) fn native_models_mut(&mut self) -> &mut alloc::vec::Vec<NativeL2IrModel<'a>> {
         &mut self
             .model_storage
             .get_or_insert_with(|| alloc::boxed::Box::new(ModelStorage::default()))
@@ -41,7 +41,7 @@ impl<'a> super::build::L2Script<'a> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeFileModelState {
+pub enum NativeL2IrModelState {
     Pending,
     Admitted(NodeId),
     Refused(NativeTemplateIssueKind),
@@ -50,34 +50,34 @@ pub enum NativeFileModelState {
 /// Input behavior established by the normally closed original Element factory.
 /// It grants neither mutation nor generic expression-read permission.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeFileModelKind {
+pub enum NativeL2IrModelKind {
     Text,
     Checkbox,
 }
 
 /// Original observation and its real attached Model/Element identity.
 /// No caller-owned row, numeric ID or raw span can construct this record.
-pub struct NativeFileModel<'a> {
+pub struct NativeL2IrModel<'a> {
     pub(crate) input: NativeModelInput<'a>,
-    pub(crate) state: NativeFileModelState,
+    pub(crate) state: NativeL2IrModelState,
     pub(crate) scope: ScopeId,
     pub(crate) binding: Option<BindingId>,
     pub(crate) original: Option<core::ptr::NonNull<ModelOp<'a>>>,
     pub(crate) element: Option<(NodeId, core::ptr::NonNull<ElementOp<'a>>)>,
-    pub(crate) kind: Option<NativeFileModelKind>,
+    pub(crate) kind: Option<NativeL2IrModelKind>,
 }
 
-impl<'a> NativeFileModel<'a> {
+impl<'a> NativeL2IrModel<'a> {
     #[must_use]
     pub const fn input(&self) -> &NativeModelInput<'a> {
         &self.input
     }
     #[must_use]
-    pub const fn state(&self) -> NativeFileModelState {
+    pub const fn state(&self) -> NativeL2IrModelState {
         self.state
     }
     #[must_use]
-    pub const fn kind(&self) -> Option<NativeFileModelKind> {
+    pub const fn kind(&self) -> Option<NativeL2IrModelKind> {
         self.kind
     }
     #[must_use]
@@ -94,14 +94,14 @@ impl<'a> NativeFileModel<'a> {
     }
     #[must_use]
     pub fn accepts(&self, original: &ModelOp<'a>) -> bool {
-        matches!(self.state, NativeFileModelState::Admitted(_))
+        matches!(self.state, NativeL2IrModelState::Admitted(_))
             && self
                 .original
                 .is_some_and(|pointer| core::ptr::eq(pointer.as_ptr(), original))
     }
     #[must_use]
     pub fn accepts_element(&self, node: NodeId, original: &ElementOp<'a>) -> bool {
-        matches!(self.state, NativeFileModelState::Admitted(_))
+        matches!(self.state, NativeL2IrModelState::Admitted(_))
             && self.element.is_some_and(|(actual, pointer)| {
                 actual == node && core::ptr::eq(pointer.as_ptr(), original)
             })
@@ -110,7 +110,7 @@ impl<'a> NativeFileModel<'a> {
 
 impl<'a> L2Ir<'a> {
     #[must_use]
-    pub fn native_models(&self) -> &[NativeFileModel<'a>] {
+    pub fn native_models(&self) -> &[NativeL2IrModel<'a>] {
         self.facts.native_models()
     }
     #[must_use]
@@ -118,21 +118,21 @@ impl<'a> L2Ir<'a> {
         self.facts.native_model_failures()
     }
     #[must_use]
-    pub fn native_model(&self, node: NodeId) -> Option<&NativeFileModel<'a>> {
+    pub fn native_model(&self, node: NodeId) -> Option<&NativeL2IrModel<'a>> {
         if !self.is_complete() {
             return None;
         }
         let [record] = self.facts.native_models() else {
             return None;
         };
-        matches!(record.state(), NativeFileModelState::Admitted(actual) if actual == node)
+        matches!(record.state(), NativeL2IrModelState::Admitted(actual) if actual == node)
             .then_some(record)
     }
 }
 
-impl<'a> RejectedFile<'a> {
+impl<'a> RejectedL2Ir<'a> {
     #[must_use]
-    pub fn native_models(&self) -> &[NativeFileModel<'a>] {
+    pub fn native_models(&self) -> &[NativeL2IrModel<'a>] {
         self.facts.native_models()
     }
     #[must_use]

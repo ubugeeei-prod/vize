@@ -15,7 +15,7 @@ use vize_l2::file::{
     L2Ir,
     vue::{ExposureIssue, ExposureIssueKind, VueExposure},
 };
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 mod admission;
 mod bindings;
@@ -63,7 +63,7 @@ impl<'a> Observed<'a> {
     fn file(&self, arena: &'a Allocator) -> Result<L2Ir<'a>, &'static str> {
         let script = self.script()?;
         let mut producer =
-            FileProducer::new(arena, self.l1ir.source()).map_err(|_| "actual file")?;
+            L2IrProducer::new(arena, self.l1ir.source()).map_err(|_| "actual file")?;
         producer
             .program(
                 ProgramInput::checked(

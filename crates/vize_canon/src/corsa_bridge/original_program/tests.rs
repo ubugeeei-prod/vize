@@ -7,7 +7,7 @@ use vize_l1::embed::{
     EmbedSource, Lang,
     syntax::{ProgramOptions, parse_program_once},
 };
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use vize_l4::targets::ts::project_program;
 
 #[test]
@@ -21,7 +21,7 @@ fn authored_lsp_ranges_preserve_newlines_and_refuse_bad_or_generated_positions()
             EmbedSource::authored(&source, block.span()).unwrap(),
             ProgramOptions::module(Lang::Js),
         );
-        let mut producer = FileProducer::new(&arena, &source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, &source).unwrap();
         producer
             .program(
                 ProgramInput::checked(syntax.admitted_program().unwrap(), block, 17).unwrap(),

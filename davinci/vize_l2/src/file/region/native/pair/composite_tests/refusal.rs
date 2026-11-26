@@ -76,7 +76,7 @@ fn third_same_kind_nested_comment_whitespace_entity_and_non_bare_parts_stay_refu
             assert!(conditional.else_input().is_some() && conditional.original.is_none());
             assert!(matches!(
                 conditional.state(),
-                NativeFileConditionalState::Refused(_)
+                NativeL2IrConditionalState::Refused(_)
             ));
         }
     }
@@ -157,7 +157,7 @@ fn late_second_and_third_parts_retain_real_admitted_prefixes_without_completing_
         };
         assert_eq!(
             conditional.state(),
-            NativeFileConditionalState::Refused(Kind::UnsupportedChild)
+            NativeL2IrConditionalState::Refused(Kind::UnsupportedChild)
         );
         assert!(conditional.original.is_none() && conditional.else_input().is_some());
     }
@@ -214,7 +214,7 @@ fn caught_composite_pair_unwind_keeps_queryable_prefixes_and_denies_selected_out
     let [conditional] = file.native_conditionals() else {
         panic!("pending outer pair")
     };
-    assert_eq!(conditional.state(), NativeFileConditionalState::Pending);
+    assert_eq!(conditional.state(), NativeL2IrConditionalState::Pending);
     assert!(conditional.original.is_none());
     let [Op::If(original)] = file.artifact().root().ops.as_slice() else {
         panic!("actual closed If")

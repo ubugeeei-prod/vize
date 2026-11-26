@@ -2,8 +2,8 @@
 
 use super::{ProgramInput, Walk};
 use crate::file::build::L2Script;
-use crate::file::{FileIssueKind, Namespace, Reference, ReferenceTarget, ScopeId, ScriptUnitId};
-use crate::lang::js::file::observer::{CallEvent, FileObserver, InvocationEvent, SyntaxEvent};
+use crate::file::{L2IrIssueKind, Namespace, Reference, ReferenceTarget, ScopeId, ScriptUnitId};
+use crate::lang::js::file::observer::{CallEvent, InvocationEvent, L2IrObserver, SyntaxEvent};
 use crate::resolution::sink::{ReferenceEvent, ReferenceSink};
 use crate::resolution::{ResolutionError, ResolutionErrorKind};
 use oxc_ast::ast::{CallExpression, Expression, ModuleExportName};
@@ -18,7 +18,7 @@ struct Pending<'f, 'p, 'a, O> {
     observer: &'f mut O,
 }
 
-impl<'a, O: FileObserver<'a>> ReferenceSink<'a> for Pending<'_, '_, 'a, O> {
+impl<'a, O: L2IrObserver<'a>> ReferenceSink<'a> for Pending<'_, '_, 'a, O> {
     type Checkpoint = (usize, O::Checkpoint);
 
     fn checkpoint(&self) -> Self::Checkpoint {
@@ -127,7 +127,7 @@ impl<'a, O: FileObserver<'a>> ReferenceSink<'a> for Pending<'_, '_, 'a, O> {
     }
 }
 
-impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
+impl<'a, O: L2IrObserver<'a>> Walk<'_, '_, 'a, O> {
     pub(super) fn expression(&mut self, expression: &Expression<'a>) {
         let mut sink = Pending {
             input: self.input,
@@ -175,10 +175,10 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             self.unit,
             span,
             match error.kind {
-                ResolutionErrorKind::InvalidSpan => FileIssueKind::InvalidSpan,
-                ResolutionErrorKind::TraversalLimit => FileIssueKind::BindingLimit,
-                ResolutionErrorKind::MissingBinding => FileIssueKind::UnresolvedReference,
-                ResolutionErrorKind::UnsupportedSyntax => FileIssueKind::UnsupportedSyntax,
+                ResolutionErrorKind::InvalidSpan => L2IrIssueKind::InvalidSpan,
+                ResolutionErrorKind::TraversalLimit => L2IrIssueKind::BindingLimit,
+                ResolutionErrorKind::MissingBinding => L2IrIssueKind::UnresolvedReference,
+                ResolutionErrorKind::UnsupportedSyntax => L2IrIssueKind::UnsupportedSyntax,
             },
         );
     }

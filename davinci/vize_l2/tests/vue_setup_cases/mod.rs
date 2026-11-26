@@ -26,9 +26,9 @@ use super::{L2Ir, Observed};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, String, cstr};
-use vize_l2::file::{FileIssueKind, ScriptUnit, vue::ExposureIssueKind};
+use vize_l2::file::{L2IrIssueKind, ScriptUnit, vue::ExposureIssueKind};
 use vize_l2::lang::js::{
-    CallEvent, DeclaredEvent, FileObserver, FileProducer, ProgramInput, ProgramScope, SetupIssue,
+    CallEvent, DeclaredEvent, L2IrObserver, L2IrProducer, ProgramInput, ProgramScope, SetupIssue,
     SetupIssueKind, StatementEvent, VueSetup,
 };
 use vize_l2::resolution::ResolutionErrorKind;
@@ -202,7 +202,7 @@ fn caller_selected_module_scope_does_not_replace_the_authentic_setup_root() -> R
     let arena = Allocator::default();
     let original = Observed::new(&arena, "<script setup>let value=1;</script>")?;
     let script = original.script()?;
-    let mut producer = FileProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
+    let mut producer = L2IrProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
     producer
         .program(
             ProgramInput::checked(
@@ -237,7 +237,7 @@ impl Interrupt {
         }
     }
 }
-impl<'a> FileObserver<'a> for Interrupt {
+impl<'a> L2IrObserver<'a> for Interrupt {
     type Checkpoint = ();
     fn unit(&mut self, _: &ScriptUnit) {
         self.observe(Point::Unit);
@@ -268,7 +268,7 @@ fn every_actual_setup_callback_interruption_refuses_sealing_with_original_owners
         let script = original.script()?;
         for point in [Point::Unit, Point::Statement, Point::Declared] {
             let mut producer =
-                FileProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
+                L2IrProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
             let mut observer = Interrupt(point);
             let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 producer
@@ -296,7 +296,7 @@ fn every_actual_setup_callback_interruption_refuses_sealing_with_original_owners
             let unit = file.units().first().ok_or("retained unit")?;
             equal!(
                 unit.interruption().ok_or("interrupted row")?.kind,
-                FileIssueKind::InterruptedProgram
+                L2IrIssueKind::InterruptedProgram
             );
             equal!(
                 file.bindings().count(),

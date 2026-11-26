@@ -33,7 +33,7 @@ use std::sync::atomic::AtomicUsize;
 use tower_lsp::lsp_types::{Location, Position, Url};
 use vize_l0::FxHashMap;
 use vize_l1::embed::{Lang, syntax::ProgramOptions};
-use vize_l2::query::{FileIssue, PositionQueryError};
+use vize_l2::query::{L2IrIssue, PositionQueryError};
 
 use super::{SnapshotRefusal, SourceQueryProject, SourceSnapshot};
 pub use intrinsic::IntrinsicTagTarget;
@@ -48,7 +48,7 @@ pub enum NavigationRefusal {
     Host(SnapshotRefusal),
     Language,
     Syntax,
-    Producer(Vec<FileIssue>),
+    Producer(Vec<L2IrIssue>),
     Projection,
     Position,
     Query(PositionQueryError),

@@ -2,7 +2,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l2::file::ReferenceTarget;
-use vize_l2::lang::js::{JsxFile, JsxFileProducer};
+use vize_l2::lang::js::{JsxL2Ir, JsxL2IrProducer};
 use vize_l3::jsx::{JsxDecisionKind as Decision, JsxIssueKind as Issue, build_jsx_decisions};
 
 type LawResult<T = ()> = Result<T, &'static str>;
@@ -26,7 +26,7 @@ fn equal<T: PartialEq>(actual: T, expected: T) -> LawResult {
         Err("owned fact differs")
     }
 }
-fn lower<'a>(arena: &'a Allocator, source: &'a str, profile: SourceType) -> LawResult<JsxFile<'a>> {
+fn lower<'a>(arena: &'a Allocator, source: &'a str, profile: SourceType) -> LawResult<JsxL2Ir<'a>> {
     embedded(arena, source, Span::new(0, source.len() as u32), profile)
 }
 fn embedded<'a>(
@@ -34,7 +34,7 @@ fn embedded<'a>(
     source: &'a str,
     content: Span,
     profile: SourceType,
-) -> LawResult<JsxFile<'a>> {
+) -> LawResult<JsxL2Ir<'a>> {
     let raw = source
         .get(content.start as usize..content.end as usize)
         .required()?;
@@ -42,7 +42,7 @@ fn embedded<'a>(
         .required()?
         .block(raw, content.start)
         .required()?;
-    let mut producer = JsxFileProducer::new(
+    let mut producer = JsxL2IrProducer::new(
         arena,
         Parser::new(arena, raw, profile).parse_observed(),
         block,
@@ -300,7 +300,7 @@ fn unresolved_original_components_fail_lower_sealing_before_any_upper_view() -> 
     let arena = Allocator::default();
     let source = "/*kept*/ const view = <Missing/>;";
     let block = SourceRoot::new(source).required()?.whole_block();
-    let mut producer = JsxFileProducer::new(
+    let mut producer = JsxL2IrProducer::new(
         &arena,
         Parser::new(&arena, source, SourceType::jsx()).parse_observed(),
         block,

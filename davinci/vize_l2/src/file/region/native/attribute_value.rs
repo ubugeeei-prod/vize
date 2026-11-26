@@ -2,8 +2,8 @@
 
 use super::NativeVisibility;
 use crate::artifact::{ElementAllocation, RegionBuilder};
-use crate::file::region::FileRegion;
-use crate::file::{NativeFileAttributeValue, NativeFileAttributeValueState as State};
+use crate::file::region::L2IrRegion;
+use crate::file::{NativeL2IrAttributeValue, NativeL2IrAttributeValueState as State};
 use crate::lang::js::NativeTemplateIssueKind as Kind;
 use crate::op::Attribute;
 use core::{
@@ -18,7 +18,7 @@ pub(super) struct PreparedAttributes<'a> {
     storage: NonNull<[Attribute<'a>]>,
 }
 
-impl<'a: 'b, 'b, R> FileRegion<'_, 'b, 'a, R, NativeVisibility>
+impl<'a: 'b, 'b, R> L2IrRegion<'_, 'b, 'a, R, NativeVisibility>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
 {
@@ -88,7 +88,7 @@ where
             region
                 .facts
                 .native_attribute_values
-                .push(NativeFileAttributeValue {
+                .push(NativeL2IrAttributeValue {
                     observation,
                     state: State::Pending,
                     slot,

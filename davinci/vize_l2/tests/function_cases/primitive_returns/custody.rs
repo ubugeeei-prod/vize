@@ -3,7 +3,7 @@ use oxc_ast::ast::{Statement, TSType};
 use oxc_parser::ParseOptions;
 use oxc_span::GetSpan;
 use vize_l0::{Span, String};
-use vize_l2::file::FileIssueKind;
+use vize_l2::file::L2IrIssueKind;
 use vize_l2::lang::js::ProgramInput;
 
 #[test]
@@ -87,7 +87,7 @@ fn original_annotated_function_never_accepts_equal_foreign_source_or_nondefault_
         Parser::new(&arena, &source, SourceType::ts().with_module(true)).parse_observed();
     assert!(matches!(
         ProgramInput::checked(observed.admitted().unwrap(), SourceRoot::new(&foreign).unwrap().whole_block(), 7),
-        Err(issue) if issue.span == Span::new(0, source.len() as u32) && issue.kind == FileIssueKind::InvalidSource
+        Err(issue) if issue.span == Span::new(0, source.len() as u32) && issue.kind == L2IrIssueKind::InvalidSource
     ));
     let changed = Parser::new(&arena, &source, SourceType::ts().with_module(true))
         .with_options(ParseOptions {
@@ -97,7 +97,7 @@ fn original_annotated_function_never_accepts_equal_foreign_source_or_nondefault_
         .parse_observed();
     assert!(matches!(
         ProgramInput::checked(changed.admitted().unwrap(), SourceRoot::new(&source).unwrap().whole_block(), 7),
-        Err(issue) if issue.span == Span::new(0, source.len() as u32) && issue.kind == FileIssueKind::InvalidProfile
+        Err(issue) if issue.span == Span::new(0, source.len() as u32) && issue.kind == L2IrIssueKind::InvalidProfile
     ));
     let original = finish(&arena, &observed).unwrap();
     assert!(original.is_complete());
@@ -123,10 +123,10 @@ fn actual_script_definition_and_javascript_profiles_never_promote_keyword_return
         assert_eq!(file.bindings().count(), 0);
         assert_eq!(
             file.issues(),
-            &[vize_l2::file::FileIssue {
+            &[vize_l2::file::L2IrIssue {
                 unit: file.units()[0].id,
                 span: Span::new(0, source.len() as u32),
-                kind: FileIssueKind::InvalidProfile,
+                kind: L2IrIssueKind::InvalidProfile,
             }]
         );
     }
@@ -138,10 +138,10 @@ fn actual_script_definition_and_javascript_profiles_never_promote_keyword_return
     assert_eq!(file.bindings().count(), 0);
     assert_eq!(
         file.issues(),
-        &[vize_l2::file::FileIssue {
+        &[vize_l2::file::L2IrIssue {
             unit: file.units()[0].id,
             span: Span::new(0, ambient.len() as u32),
-            kind: FileIssueKind::InvalidProfile,
+            kind: L2IrIssueKind::InvalidProfile,
         }]
     );
     let observed = Parser::new(&arena, source, SourceType::mjs()).parse_observed();

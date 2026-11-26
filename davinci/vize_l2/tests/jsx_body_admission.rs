@@ -10,8 +10,8 @@ use oxc_parser::{ParseOptions, Parser};
 use oxc_span::SourceType;
 use support::file_jsx::{LawResult, Required, lower};
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l2::file::FileIssueKind;
-use vize_l2::lang::js::{JsxFileError, JsxFileProducer, ProgramInputError};
+use vize_l2::file::L2IrIssueKind;
+use vize_l2::lang::js::{JsxL2IrError, JsxL2IrProducer, ProgramInputError};
 
 #[test]
 fn exact_copied_and_foreign_block_sources_never_pair_original_program_with_another_file()
@@ -22,14 +22,14 @@ fn exact_copied_and_foreign_block_sources_never_pair_original_program_with_anoth
     for candidate in [copy.as_str(), "/*keep*/ const view = <span/>;"] {
         let block = SourceRoot::new(candidate).required()?.whole_block();
         let observation = Parser::new(&arena, source, SourceType::jsx()).parse_observed();
-        let rejected = JsxFileProducer::new(&arena, observation, block, 0)
+        let rejected = JsxL2IrProducer::new(&arena, observation, block, 0)
             .err()
             .required()?;
         assert_eq!(
             rejected.error(),
-            JsxFileError::Input(ProgramInputError {
+            JsxL2IrError::Input(ProgramInputError {
                 span: block.span(),
-                kind: FileIssueKind::InvalidSource
+                kind: L2IrIssueKind::InvalidSource
             })
         );
         assert!(core::ptr::eq(
@@ -52,16 +52,16 @@ fn stock_original_jsx_profile_is_required_and_recovered_observation_keeps_diagno
             "const view = <div/>;",
             SourceType::tsx(),
             ParseOptions::default(),
-            JsxFileError::Input(ProgramInputError {
+            JsxL2IrError::Input(ProgramInputError {
                 span: Span::new(0, 20),
-                kind: FileIssueKind::InvalidProfile,
+                kind: L2IrIssueKind::InvalidProfile,
             }),
         ),
         (
             "const value = 1;",
             SourceType::mjs(),
             ParseOptions::default(),
-            JsxFileError::InvalidProfile,
+            JsxL2IrError::InvalidProfile,
         ),
         (
             "const view = <div/>;",
@@ -70,16 +70,16 @@ fn stock_original_jsx_profile_is_required_and_recovered_observation_keeps_diagno
                 allow_return_outside_function: true,
                 ..ParseOptions::default()
             },
-            JsxFileError::Input(ProgramInputError {
+            JsxL2IrError::Input(ProgramInputError {
                 span: Span::new(0, 20),
-                kind: FileIssueKind::InvalidProfile,
+                kind: L2IrIssueKind::InvalidProfile,
             }),
         ),
         (
             "const view = <div>{/uv}</div>;",
             SourceType::jsx(),
             ParseOptions::default(),
-            JsxFileError::SyntaxAdmission,
+            JsxL2IrError::SyntaxAdmission,
         ),
     ] {
         let observation = Parser::new(&arena, source, profile)
@@ -87,7 +87,7 @@ fn stock_original_jsx_profile_is_required_and_recovered_observation_keeps_diagno
             .parse_observed();
         let original_errors = observation.diagnostics().has_errors();
         let block = SourceRoot::new(source).required()?.whole_block();
-        let rejected = JsxFileProducer::new(&arena, observation, block, 0)
+        let rejected = JsxL2IrProducer::new(&arena, observation, block, 0)
             .err()
             .required()?;
         assert_eq!(rejected.error(), expected);
@@ -97,7 +97,7 @@ fn stock_original_jsx_profile_is_required_and_recovered_observation_keeps_diagno
         );
         assert_eq!(
             rejected.observation().admitted().is_none(),
-            expected == JsxFileError::SyntaxAdmission
+            expected == JsxL2IrError::SyntaxAdmission
         );
         assert_eq!(rejected.recorded_nodes(), 0);
     }
@@ -114,7 +114,7 @@ fn genuine_work_limit_rolls_back_original_body_and_keeps_prior_completed_express
     source.push_str("</div>;");
     let source = source.as_str();
     let block = SourceRoot::new(source).required()?.whole_block();
-    let mut producer = JsxFileProducer::new(
+    let mut producer = JsxL2IrProducer::new(
         &arena,
         Parser::new(&arena, source, SourceType::jsx()).parse_observed(),
         block,
@@ -123,7 +123,7 @@ fn genuine_work_limit_rolls_back_original_body_and_keeps_prior_completed_express
     .required()?;
     producer.walk().required()?;
     let rejected = producer.finish().err().required()?;
-    assert_eq!(rejected.error(), JsxFileError::IncompleteFile);
+    assert_eq!(rejected.error(), JsxL2IrError::IncompleteFile);
     assert_eq!(rejected.recorded_nodes(), 4);
     assert_eq!(rejected.file().required()?.references().len(), 0);
     assert_eq!(
@@ -134,7 +134,7 @@ fn genuine_work_limit_rolls_back_original_body_and_keeps_prior_completed_express
             .iter()
             .map(|issue| issue.kind)
             .collect::<Vec<_>>(),
-        [FileIssueKind::BindingLimit]
+        [L2IrIssueKind::BindingLimit]
     );
     Ok(())
 }

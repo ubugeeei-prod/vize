@@ -1,8 +1,8 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l2::file::{DeclarationKind, FileIssueKind, InitializerKind, Namespace};
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::file::{DeclarationKind, InitializerKind, L2IrIssueKind, Namespace};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 #[test]
 fn actual_declaration_sites_keep_container_index_and_full_file_spans() {
@@ -17,7 +17,7 @@ fn actual_declaration_sites_keep_container_index_and_full_file_spans() {
     let parsed = Parser::new(&arena, block.source(), SourceType::mjs()).parse_observed();
     assert!(parsed.diagnostics().is_empty());
     let input = ProgramInput::checked(parsed.admitted().unwrap(), block, 3).unwrap();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let unit = producer.program(input, ProgramScope::Module).unwrap();
     let file = producer.finish().unwrap();
     assert!(file.is_complete());
@@ -47,7 +47,7 @@ fn type_only_imports_occupy_the_type_namespace_without_runtime_binding() {
     let parsed = Parser::new(&arena, source, source_type).parse_observed();
     assert!(parsed.diagnostics().is_empty());
     let block = SourceRoot::new(source).unwrap().whole_block();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(parsed.admitted().unwrap(), block, 0).unwrap(),
@@ -84,7 +84,7 @@ fn borrowed_handles_distinguish_files_even_when_numeric_ids_match() {
     let parsed = Parser::new(&arena, source, SourceType::mjs()).parse_observed();
     let block = SourceRoot::new(source).unwrap().whole_block();
     let build = || {
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program(
                 ProgramInput::checked(parsed.admitted().unwrap(), block, 0).unwrap(),
@@ -112,10 +112,10 @@ fn whole_program_admission_rejects_foreign_source_and_builder_ownership() {
     let foreign = SourceRoot::new(&copy).unwrap().whole_block();
     assert!(
         matches!(ProgramInput::checked(parsed.admitted().unwrap(), foreign, 0),
-        Err(error) if error.kind == FileIssueKind::InvalidSource)
+        Err(error) if error.kind == L2IrIssueKind::InvalidSource)
     );
     let block = SourceRoot::new(&source).unwrap().whole_block();
-    let mut producer = FileProducer::new(&arena, &copy).unwrap();
+    let mut producer = L2IrProducer::new(&arena, &copy).unwrap();
     assert_eq!(
         producer
             .program(
@@ -124,7 +124,7 @@ fn whole_program_admission_rejects_foreign_source_and_builder_ownership() {
             )
             .unwrap_err()
             .kind,
-        FileIssueKind::InvalidSource
+        L2IrIssueKind::InvalidSource
     );
 }
 
@@ -140,7 +140,7 @@ fn actual_nested_unit_shadowing_preserves_distinct_declaration_sites() {
         .unwrap();
     let a = Parser::new(&arena, first.source(), SourceType::mjs()).parse_observed();
     let b = Parser::new(&arena, second.source(), SourceType::mjs()).parse_observed();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(a.admitted().unwrap(), first, 0).unwrap(),
@@ -178,7 +178,7 @@ fn unsupported_subtrees_never_produce_false_complete_script_units() {
         let parsed =
             Parser::new(&arena, source, SourceType::ts().with_module(true)).parse_observed();
         assert!(parsed.diagnostics().is_empty(), "{source}");
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program(
                 ProgramInput::checked(
@@ -195,7 +195,7 @@ fn unsupported_subtrees_never_produce_false_complete_script_units() {
         assert!(
             file.issues()
                 .iter()
-                .any(|issue| issue.kind == FileIssueKind::UnsupportedSyntax)
+                .any(|issue| issue.kind == L2IrIssueKind::UnsupportedSyntax)
         );
         assert!(file.references().is_empty());
     }
@@ -207,7 +207,7 @@ fn duplicate_container_indices_are_rejected_without_duplicate_bindings() {
     let source = "const value = 1;";
     let parsed = Parser::new(&arena, source, SourceType::mjs()).parse_observed();
     let block = SourceRoot::new(source).unwrap().whole_block();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(parsed.admitted().unwrap(), block, 7).unwrap(),
@@ -222,7 +222,7 @@ fn duplicate_container_indices_are_rejected_without_duplicate_bindings() {
             )
             .unwrap_err()
             .kind,
-        FileIssueKind::DuplicateUnit
+        L2IrIssueKind::DuplicateUnit
     );
     let file = producer.finish().unwrap();
     assert!(!file.is_complete());
@@ -237,7 +237,7 @@ fn declaration_names_come_from_real_ast_semantics_with_authored_escape_ranges() 
     let source = "const \\u0076alue = 1;";
     let parsed = Parser::new(&arena, source, SourceType::mjs()).parse_observed();
     assert!(parsed.diagnostics().is_empty());
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(
@@ -267,7 +267,7 @@ fn declaration_profiles_outside_the_admitted_module_family_stay_incomplete() {
             .with_typescript_definition(true),
     ] {
         let parsed = Parser::new(&arena, source, source_type).parse_observed();
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program(
                 ProgramInput::checked(
@@ -282,6 +282,6 @@ fn declaration_profiles_outside_the_admitted_module_family_stay_incomplete() {
         let file = producer.finish().unwrap();
         assert!(!file.is_complete());
         assert_eq!(file.bindings().count(), 0);
-        assert_eq!(file.issues()[0].kind, FileIssueKind::InvalidProfile);
+        assert_eq!(file.issues()[0].kind, L2IrIssueKind::InvalidProfile);
     }
 }

@@ -2,12 +2,12 @@ use super::{BuildResult, JsxDecisionKind as Decision, JsxIssue, JsxIssueKind as 
 use super::{JsxAnalysis, RejectedJsxAnalysis};
 use alloc::{boxed::Box, vec::Vec};
 use vize_l2::file::{Namespace, ReferenceTarget};
-use vize_l2::lang::js::{JsxFile, JsxNode};
+use vize_l2::lang::js::{JsxL2Ir, JsxNode};
 use vize_l2::resolution::{SyntaxKind as Syntax, Usage};
 
 /// Project only the genuine completed owner's same-walk scalar records.
 /// Unsupported constructs refuse the whole view while retaining its custody.
-pub fn build_jsx_decisions(owner: JsxFile<'_>) -> BuildResult<'_> {
+pub fn build_jsx_decisions(owner: JsxL2Ir<'_>) -> BuildResult<'_> {
     let mut decisions = Vec::new();
     let mut issues = Vec::new();
     let mut original_end = 0;

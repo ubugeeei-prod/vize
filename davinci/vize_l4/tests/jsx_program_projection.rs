@@ -3,7 +3,7 @@
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, cstr};
-use vize_l2::lang::js::{JsxFile, JsxFileError, JsxFileProducer};
+use vize_l2::lang::js::{JsxL2Ir, JsxL2IrError, JsxL2IrProducer};
 use vize_l4::targets::ts::{
     MappingError, ProjectionError, SourceKind, project_jsx_program, project_jsx_program_no_links,
     project_program, project_program_no_links,
@@ -15,10 +15,10 @@ fn lower<'a>(
     arena: &'a Allocator,
     block: SourceBlock<'a>,
     profile: SourceType,
-) -> Result<JsxFile<'a>, &'static str> {
+) -> Result<JsxL2Ir<'a>, &'static str> {
     let observation = Parser::new(arena, block.source(), profile).parse_observed();
     let mut producer =
-        JsxFileProducer::new(arena, observation, block, 17).map_err(|_| "admission")?;
+        JsxL2IrProducer::new(arena, observation, block, 17).map_err(|_| "admission")?;
     producer.walk().map_err(|_| "walk")?;
     producer.finish().map_err(|_| "complete owner")
 }
@@ -211,22 +211,22 @@ fn rejected_original_profiles_holes_and_incomplete_files_never_supply_jsx_owners
         (
             "const value = 1;",
             SourceType::mjs(),
-            JsxFileError::InvalidProfile,
+            JsxL2IrError::InvalidProfile,
         ),
         (
             "const view = <div/>;",
             SourceType::jsx().with_script(true),
-            JsxFileError::InvalidProfile,
+            JsxL2IrError::InvalidProfile,
         ),
         (
             "/*kept*/ const view = <div>;",
             SourceType::jsx(),
-            JsxFileError::SyntaxAdmission,
+            JsxL2IrError::SyntaxAdmission,
         ),
     ] {
         let block = SourceRoot::new(source).map_err(|_| "source")?.whole_block();
         let observation = Parser::new(&arena, source, profile).parse_observed();
-        let rejected = match JsxFileProducer::new(&arena, observation, block, 0) {
+        let rejected = match JsxL2IrProducer::new(&arena, observation, block, 0) {
             Err(rejected) => rejected,
             Ok(_) => return Err("rejected profile minted producer"),
         };
@@ -236,13 +236,13 @@ fn rejected_original_profiles_holes_and_incomplete_files_never_supply_jsx_owners
     let block = SourceRoot::new(source).map_err(|_| "source")?.whole_block();
     let observation = Parser::new(&arena, source, SourceType::jsx()).parse_observed();
     let mut producer =
-        JsxFileProducer::new(&arena, observation, block, 0).map_err(|_| "producer")?;
+        JsxL2IrProducer::new(&arena, observation, block, 0).map_err(|_| "producer")?;
     producer.walk().map_err(|_| "walk")?;
     let rejected = match producer.finish() {
         Err(rejected) => rejected,
         Ok(_) => return Err("incomplete File minted owner"),
     };
-    assert_eq!(rejected.error(), JsxFileError::IncompleteFile);
+    assert_eq!(rejected.error(), JsxL2IrError::IncompleteFile);
     assert_eq!(rejected.observation().comments().len(), 1);
     let file = rejected.file().ok_or("retained File")?;
     assert!(!file.is_complete());

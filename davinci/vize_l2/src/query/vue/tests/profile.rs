@@ -28,14 +28,14 @@ fn sample(source: &str, repetitions: u32, fused: bool) -> u128 {
             black_box(owner.model().options().unwrap());
             black_box(owner);
         } else {
-            let mut first = FileProducer::new(&arena, source).unwrap();
+            let mut first = L2IrProducer::new(&arena, source).unwrap();
             let mut binding = OrdinaryObserver::new();
             first
                 .program_observed(input(), ProgramScope::Module, &mut binding)
                 .unwrap();
             black_box(binding.finish().unwrap());
             black_box(first.finish().unwrap());
-            let mut second = FileProducer::new(&arena, source).unwrap();
+            let mut second = L2IrProducer::new(&arena, source).unwrap();
             let mut options = OptionsObserver::new();
             second
                 .program_observed(input(), ProgramScope::Module, &mut options)

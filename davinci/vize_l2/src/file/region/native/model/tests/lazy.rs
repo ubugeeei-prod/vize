@@ -17,7 +17,7 @@ fn lazy_uses_the_original_attribute_and_same_file_mutable_readwrite_binding() {
         let [record] = file.native_models() else {
             panic!("one original")
         };
-        let NativeFileModelState::Admitted(node) = record.state() else {
+        let NativeL2IrModelState::Admitted(node) = record.state() else {
             panic!("closed")
         };
         let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
@@ -77,7 +77,7 @@ fn lazy_with_a_late_header_failure_keeps_its_fact_without_a_published_model() {
     let [record] = file.native_models() else {
         panic!("original retained")
     };
-    assert_eq!(record.state(), NativeFileModelState::Pending);
+    assert_eq!(record.state(), NativeL2IrModelState::Pending);
     assert_eq!(
         record.input().operand().lazy_span().unwrap().slice(source),
         "lazy"
@@ -106,7 +106,7 @@ fn lazy_cannot_make_an_original_const_declaration_writable() {
     };
     assert_eq!(
         record.state(),
-        NativeFileModelState::Refused(Kind::UnsupportedChild)
+        NativeL2IrModelState::Refused(Kind::UnsupportedChild)
     );
     assert_eq!(
         record.input().operand().lazy_span().unwrap().slice(source),

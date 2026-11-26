@@ -1,13 +1,13 @@
 //! Only the original default statement's staged Options refusal may resolve.
 
-use super::{VueFileIssue, VueFileIssueKind, VueScriptReceipt};
+use super::{VueL2IrIssue, VueL2IrIssueKind, VueScriptReceipt};
 use vize_l2::lang::js::OrdinaryEmptyScript;
 
 pub(super) fn staged_options(
     ordinary: Option<VueScriptReceipt>,
     setup: Option<VueScriptReceipt>,
     family: Option<OrdinaryEmptyScript<'_>>,
-) -> Option<VueFileIssue> {
+) -> Option<VueL2IrIssue> {
     if setup.is_some() {
         return None;
     }
@@ -19,10 +19,10 @@ pub(super) fn staged_options(
     {
         return None;
     }
-    Some(VueFileIssue {
+    Some(VueL2IrIssue {
         unit: Some(family.unit()),
         scope: Some(family.scope()),
         span: family.statement_span(),
-        kind: VueFileIssueKind::UnsupportedOptions,
+        kind: VueL2IrIssueKind::UnsupportedOptions,
     })
 }

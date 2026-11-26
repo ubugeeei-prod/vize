@@ -7,7 +7,7 @@ use tower_lsp::lsp_types::Range;
 use vize_l0::{Allocator, SourceRoot};
 use vize_l2::{
     file::{DeclarationKind, InitializerKind},
-    lang::js::{FileProducer, ProgramInput, ProgramScope},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope},
 };
 
 fn range(source: &str, span: Span) -> Range {
@@ -25,7 +25,7 @@ fn original_has_arrows(source: &str, ty: SourceType) -> bool {
     };
     let input =
         ProgramInput::checked(program, SourceRoot::new(source).unwrap().whole_block(), 0).unwrap();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             input.with_lexical_arrow_initializers(),

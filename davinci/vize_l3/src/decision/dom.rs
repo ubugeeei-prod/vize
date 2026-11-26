@@ -22,10 +22,10 @@ pub mod vue;
 
 pub use context::ContextOnly;
 pub use dependencies::DomDependency;
-pub use file::{DomFileExpression, FileAnalysis, build_dom_file_decisions};
-pub use for_head::DomFileForHead;
-pub use handler::DomFileHandler;
-pub use model::DomFileModel;
+pub use file::{DomL2IrAnalysis, DomL2IrExpression, build_dom_file_decisions};
+pub use for_head::DomL2IrForHead;
+pub use handler::DomL2IrHandler;
+pub use model::DomL2IrModel;
 
 /// A complete expression's references all have explicitly declared context bindings.
 ///
@@ -64,8 +64,8 @@ pub enum DomUnsupported {
     ConditionalCondition,
     ConditionalRoot,
     FileExpression,
-    FileHandler,
-    FileForHead,
+    L2IrHandler,
+    L2IrForHead,
     ForCollectionAccess,
     ForCollectionRuntime,
     ForShape,
@@ -198,9 +198,9 @@ pub struct DomAnalysis<'owner, 'arena> {
     pub(super) bindings: SideTable<DomBinding<'owner, 'arena>>,
     pub(super) controls: SideTable<control::DomConditional<'owner, 'arena>>,
     pub(super) dependencies: Vec<DomDependency>,
-    pub(super) file_expressions: SideTable<DomFileExpression<'owner, 'arena>>,
-    pub(super) file_handlers: SideTable<DomFileHandler<'owner, 'arena>>,
-    pub(super) file_for_heads: SideTable<DomFileForHead<'owner, 'arena>>,
+    pub(super) file_expressions: SideTable<DomL2IrExpression<'owner, 'arena>>,
+    pub(super) file_handlers: SideTable<DomL2IrHandler<'owner, 'arena>>,
+    pub(super) file_for_heads: SideTable<DomL2IrForHead<'owner, 'arena>>,
     pub(super) vue_expressions: SideTable<vue::VueRenderExpression<'owner, 'arena>>,
     pub(super) unsupported: Vec<DomRejection>,
     pub(super) child_values: bool,
@@ -242,20 +242,20 @@ impl<'owner, 'arena> DomAnalysis<'owner, 'arena> {
 
     /// A complete same-file resolution admitted at an actual canonical event.
     #[must_use]
-    pub fn file_expression(&self, id: NodeId) -> Option<&DomFileExpression<'owner, 'arena>> {
+    pub fn file_expression(&self, id: NodeId) -> Option<&DomL2IrExpression<'owner, 'arena>> {
         self.file_expressions.get(id)
     }
 
     /// The whole same-File handler observed at this owner's actual On event.
     /// This row alone supplies no Vue inline/reference or runtime access policy.
     #[must_use]
-    pub fn file_handler(&self, id: NodeId) -> Option<&DomFileHandler<'owner, 'arena>> {
+    pub fn file_handler(&self, id: NodeId) -> Option<&DomL2IrHandler<'owner, 'arena>> {
         self.file_handlers.get(id)
     }
 
     /// A dedicated mutable original Model receipt, independent of read policy.
     #[must_use]
-    pub fn file_model(&self, id: NodeId) -> Option<DomFileModel<'owner, 'arena>> {
+    pub fn file_model(&self, id: NodeId) -> Option<DomL2IrModel<'owner, 'arena>> {
         model::get(self, id)
     }
 
@@ -263,7 +263,7 @@ impl<'owner, 'arena> DomAnalysis<'owner, 'arena> {
     /// Bounded setup read classification grants no collection runtime spelling
     /// or loop target eligibility.
     #[must_use]
-    pub fn file_for_head(&self, id: NodeId) -> Option<&DomFileForHead<'owner, 'arena>> {
+    pub fn file_for_head(&self, id: NodeId) -> Option<&DomL2IrForHead<'owner, 'arena>> {
         self.file_for_heads.get(id)
     }
 

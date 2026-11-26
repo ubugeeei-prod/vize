@@ -3,37 +3,37 @@
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Allocator, Span};
 use vize_l2::artifact::L2TemplateError;
-use vize_l2::file::{BindingRef, L2Ir, RejectedFile, ScriptUnitId};
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::file::{BindingRef, L2Ir, RejectedL2Ir, ScriptUnitId};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 mod ordinary;
 mod policy;
 mod profile;
 mod records;
 pub use records::{
-    VueDeclaration, VueFileIssue, VueFileIssueKind, VueScriptReceipt, VueScriptRole,
+    VueDeclaration, VueL2IrIssue, VueL2IrIssueKind, VueScriptReceipt, VueScriptRole,
 };
 mod region;
 pub(crate) use policy::Visibility as NativeTemplateVisibility;
 use policy::{PolicyObserver, Visibility};
 pub(crate) use profile::NativeTemplateProfile;
-pub use region::VueFileRegion;
+pub use region::VueL2IrRegion;
 
 /// An opaque producer derives scope/exposure from its own actual unit receipts.
-pub struct VueFileProducer<'a> {
-    producer: FileProducer<'a>,
+pub struct VueL2IrProducer<'a> {
+    producer: L2IrProducer<'a>,
     ordinary: Option<VueScriptReceipt>,
     setup: Option<VueScriptReceipt>,
     declarations: Vec<VueDeclaration>,
-    issues: Vec<VueFileIssue>,
+    issues: Vec<VueL2IrIssue>,
     template_started: bool,
     source: &'a str,
 }
 
-impl<'a> VueFileProducer<'a> {
+impl<'a> VueL2IrProducer<'a> {
     pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, L2TemplateError> {
         Ok(Self {
-            producer: FileProducer::new(allocator, source)?,
+            producer: L2IrProducer::new(allocator, source)?,
             ordinary: None,
             setup: None,
             declarations: Vec::new(),
@@ -42,28 +42,28 @@ impl<'a> VueFileProducer<'a> {
             source,
         })
     }
-    pub fn ordinary(&mut self, input: ProgramInput<'_, 'a>) -> Result<ScriptUnitId, VueFileIssue> {
+    pub fn ordinary(&mut self, input: ProgramInput<'_, 'a>) -> Result<ScriptUnitId, VueL2IrIssue> {
         self.program(input, VueScriptRole::Ordinary)
     }
-    pub fn setup(&mut self, input: ProgramInput<'_, 'a>) -> Result<ScriptUnitId, VueFileIssue> {
+    pub fn setup(&mut self, input: ProgramInput<'_, 'a>) -> Result<ScriptUnitId, VueL2IrIssue> {
         self.program(input, VueScriptRole::Setup)
     }
     fn program(
         &mut self,
         input: ProgramInput<'_, 'a>,
         role: VueScriptRole,
-    ) -> Result<ScriptUnitId, VueFileIssue> {
+    ) -> Result<ScriptUnitId, VueL2IrIssue> {
         let span = input.span();
         let duplicate = match role {
             VueScriptRole::Ordinary => self.ordinary.is_some(),
             VueScriptRole::Setup => self.setup.is_some(),
         };
         let misuse = if self.template_started {
-            Some(VueFileIssueKind::ScriptAfterTemplate)
+            Some(VueL2IrIssueKind::ScriptAfterTemplate)
         } else if duplicate {
-            Some(VueFileIssueKind::DuplicateRole)
+            Some(VueL2IrIssueKind::DuplicateRole)
         } else if role == VueScriptRole::Ordinary && self.setup.is_some() {
-            Some(VueFileIssueKind::OrdinaryAfterSetup)
+            Some(VueL2IrIssueKind::OrdinaryAfterSetup)
         } else {
             None
         };
@@ -88,7 +88,7 @@ impl<'a> VueFileProducer<'a> {
         ) {
             Ok(value) => value,
             Err(error) => {
-                return Err(self.reject(error.span, VueFileIssueKind::InvalidProgram(error.kind)));
+                return Err(self.reject(error.span, VueL2IrIssueKind::InvalidProgram(error.kind)));
             }
         };
         let receipt = observer.receipt;
@@ -99,11 +99,11 @@ impl<'a> VueFileProducer<'a> {
         Ok(unit)
     }
     /// No caller scope, unit, lookup or name map can confer file completeness.
-    pub fn template_region(&mut self) -> Result<VueFileRegion<'_, 'a>, VueFileIssue> {
+    pub fn template_region(&mut self) -> Result<VueL2IrRegion<'_, 'a>, VueL2IrIssue> {
         let source = self.source;
         let span = Span::new(0, source.len() as u32);
         if self.template_started {
-            return Err(self.reject(span, VueFileIssueKind::DuplicateTemplate));
+            return Err(self.reject(span, VueL2IrIssueKind::DuplicateTemplate));
         }
         let profile = match NativeTemplateProfile::checked(self.ordinary, self.setup) {
             Ok(profile) => profile,
@@ -123,7 +123,7 @@ impl<'a> VueFileProducer<'a> {
             || !self.producer.issues().is_empty()
             || self.producer.interrupted_programs().next().is_some()
         {
-            return Err(self.reject(span, VueFileIssueKind::PreviousIssues));
+            return Err(self.reject(span, VueL2IrIssueKind::PreviousIssues));
         }
         self.template_started = true;
         let policy = Visibility::new(self.ordinary, self.setup);
@@ -133,21 +133,21 @@ impl<'a> VueFileProducer<'a> {
             vize_l2::file::TemplateScope::Root
         };
         match self.producer.template_region(selection, policy) {
-            Ok(region) => Ok(VueFileRegion::new(region, profile)),
+            Ok(region) => Ok(VueL2IrRegion::new(region, profile)),
             Err(kind) => {
-                let issue = VueFileIssue {
+                let issue = VueL2IrIssue {
                     span,
                     unit: None,
                     scope: None,
-                    kind: VueFileIssueKind::InvalidProgram(kind),
+                    kind: VueL2IrIssueKind::InvalidProgram(kind),
                 };
                 self.issues.push(issue);
                 Err(issue)
             }
         }
     }
-    fn reject(&mut self, span: Span, kind: VueFileIssueKind) -> VueFileIssue {
-        let issue = VueFileIssue {
+    fn reject(&mut self, span: Span, kind: VueL2IrIssueKind) -> VueL2IrIssue {
+        let issue = VueL2IrIssue {
             span,
             unit: None,
             scope: None,
@@ -156,7 +156,7 @@ impl<'a> VueFileProducer<'a> {
         self.issues.push(issue);
         issue
     }
-    pub fn finish(mut self) -> Result<VueFile<'a>, RejectedVueFile<'a>> {
+    pub fn finish(mut self) -> Result<VueL2Ir<'a>, RejectedVueL2Ir<'a>> {
         if let Err(issue) = NativeTemplateProfile::checked(self.ordinary, self.setup)
             && !self.issues.contains(&issue)
         {
@@ -171,13 +171,13 @@ impl<'a> VueFileProducer<'a> {
             self.issues.remove(index);
         }
         match file {
-            Ok(file) if file.is_complete() && self.issues.is_empty() => Ok(VueFile {
+            Ok(file) if file.is_complete() && self.issues.is_empty() => Ok(VueL2Ir {
                 l2ir: file,
                 ordinary: self.ordinary,
                 setup: self.setup,
                 declarations: self.declarations,
             }),
-            file => Err(RejectedVueFile {
+            file => Err(RejectedVueL2Ir {
                 file: Box::new(file),
                 ordinary: self.ordinary,
                 setup: self.setup,
@@ -190,22 +190,22 @@ impl<'a> VueFileProducer<'a> {
 
 /// Completeness of the admitted Vue file family; descriptor membership remains
 /// the native SFC assembler's checked obligation.
-pub struct VueFile<'a> {
+pub struct VueL2Ir<'a> {
     l2ir: L2Ir<'a>,
     ordinary: Option<VueScriptReceipt>,
     setup: Option<VueScriptReceipt>,
     declarations: Vec<VueDeclaration>,
 }
-impl core::fmt::Debug for VueFile<'_> {
+impl core::fmt::Debug for VueL2Ir<'_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("VueFile")
+            .debug_struct("VueL2Ir")
             .field("ordinary", &self.ordinary)
             .field("setup", &self.setup)
             .finish_non_exhaustive()
     }
 }
-impl<'a> VueFile<'a> {
+impl<'a> VueL2Ir<'a> {
     #[must_use]
     pub fn l2ir(&self) -> &L2Ir<'a> {
         &self.l2ir
@@ -242,13 +242,13 @@ impl<'a> VueFile<'a> {
 }
 
 pub struct VueExposure<'f, 'a> {
-    file: &'f VueFile<'a>,
+    file: &'f VueL2Ir<'a>,
     binding: BindingRef<'f, 'a>,
     declaration: &'f VueDeclaration,
 }
 impl<'f, 'a> VueExposure<'f, 'a> {
     #[must_use]
-    pub fn file(&self) -> &'f VueFile<'a> {
+    pub fn file(&self) -> &'f VueL2Ir<'a> {
         self.file
     }
     #[must_use]
@@ -262,30 +262,30 @@ impl<'f, 'a> VueExposure<'f, 'a> {
 }
 
 /// Both canonical and semantic partial owners survive failure.
-pub struct RejectedVueFile<'a> {
-    file: Box<Result<L2Ir<'a>, RejectedFile<'a>>>,
+pub struct RejectedVueL2Ir<'a> {
+    file: Box<Result<L2Ir<'a>, RejectedL2Ir<'a>>>,
     ordinary: Option<VueScriptReceipt>,
     setup: Option<VueScriptReceipt>,
     declarations: Vec<VueDeclaration>,
-    issues: Vec<VueFileIssue>,
+    issues: Vec<VueL2IrIssue>,
 }
-impl core::fmt::Debug for RejectedVueFile<'_> {
+impl core::fmt::Debug for RejectedVueL2Ir<'_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("RejectedVueFile")
+            .debug_struct("RejectedVueL2Ir")
             .field("ordinary", &self.ordinary)
             .field("setup", &self.setup)
             .field("issues", &self.issues)
             .finish_non_exhaustive()
     }
 }
-impl<'a> RejectedVueFile<'a> {
+impl<'a> RejectedVueL2Ir<'a> {
     #[must_use]
     pub fn file(&self) -> Option<&L2Ir<'a>> {
         self.file.as_ref().as_ref().ok()
     }
     #[must_use]
-    pub fn rejected_file(&self) -> Option<&RejectedFile<'a>> {
+    pub fn rejected_file(&self) -> Option<&RejectedL2Ir<'a>> {
         self.file.as_ref().as_ref().err()
     }
     #[must_use]
@@ -301,13 +301,13 @@ impl<'a> RejectedVueFile<'a> {
         &self.declarations
     }
     #[must_use]
-    pub fn issues(&self) -> &[VueFileIssue] {
+    pub fn issues(&self) -> &[VueL2IrIssue] {
         &self.issues
     }
 }
 
 #[cfg(feature = "lexical-arrow-initializers")]
-impl<'a> VueFileProducer<'a> {
+impl<'a> VueL2IrProducer<'a> {
     pub(crate) fn for_lexical_initializers(
         allocator: &'a Allocator,
         source: &'a str,
@@ -319,7 +319,7 @@ impl<'a> VueFileProducer<'a> {
 }
 
 #[cfg(feature = "lexical-arrow-initializers")]
-impl VueFileProducer<'_> {
+impl VueL2IrProducer<'_> {
     pub(crate) fn reserve_template_storage(&mut self, roots: usize, expressions: usize) {
         self.producer.reserve_template_storage(roots, expressions);
     }

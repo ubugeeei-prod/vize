@@ -7,7 +7,7 @@ use vize_l0::{
 };
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_sfc_native;
-use vize_l2::lang::js::{JsxFileProducer, JsxMarkupFile};
+use vize_l2::lang::js::{JsxL2IrProducer, JsxMarkupL2Ir};
 use vize_patina::{
     Linter, RuleRegistry,
     native::{NativeLintFinding, canonical::NativeCanonicalLint},
@@ -29,7 +29,7 @@ pub fn options() -> DescriptorOptions {
     }
 }
 
-pub fn jsx<'a>(a: &'a Allocator, source: &'a str, typescript: bool) -> JsxMarkupFile<'a> {
+pub fn jsx<'a>(a: &'a Allocator, source: &'a str, typescript: bool) -> JsxMarkupL2Ir<'a> {
     let kind = if typescript {
         oxc_span::SourceType::tsx()
     } else {
@@ -38,7 +38,7 @@ pub fn jsx<'a>(a: &'a Allocator, source: &'a str, typescript: bool) -> JsxMarkup
     .with_module(true);
     let block = SourceRoot::new(source).unwrap().whole_block();
     let original = oxc_parser::Parser::new(a, source, kind).parse_observed();
-    let mut producer = JsxFileProducer::new(a, original, block, 0)
+    let mut producer = JsxL2IrProducer::new(a, original, block, 0)
         .unwrap_or_else(|rejected| panic!("native Program: {:?}", rejected.error()));
     producer.walk().unwrap();
     producer

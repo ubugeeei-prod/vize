@@ -80,7 +80,7 @@ export const ORIGINAL_DISABLED_VAPOR_REFUSAL =
   "Descriptor { issues: [DescriptorIssue { code: UnsupportedAttribute, container_index: Some(0), span: Span { start: 14, end: 19 } }], errors: [] }";
 
 export const ORIGINAL_REF_CALL_REFUSAL =
-  "FileIssues { issues: [FileIssue { unit: ScriptUnitId(0), span: Span { start: 64, end: 98 }, kind: UnsupportedSyntax }], interruptions: [] }";
+  "FileIssues { issues: [L2IrIssue { unit: ScriptUnitId(0), span: Span { start: 64, end: 98 }, kind: UnsupportedSyntax }], interruptions: [] }";
 
 export function expectedSfcReason(input: any, api: string) {
   if (input.id === ORIGINAL_SLOT_ATTRIBUTE_WIRE.id) {

@@ -6,7 +6,7 @@ use super::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{SourceRoot, Span, String, cstr, line_index::LineBreaks};
-use vize_l2::lang::js::JsxFileProducer;
+use vize_l2::lang::js::JsxL2IrProducer;
 use vize_l4::targets::ts::SourceKind;
 
 fn uri(path: &Path) -> String {
@@ -93,7 +93,7 @@ fn configured_original_array_ts_tsx_preserve_complete_reports_and_related_author
         let observed =
             Parser::new(&arena, tsx_source, SourceType::tsx().with_module(true)).parse_observed();
         let body = observed.admitted().unwrap().program().body.as_ptr();
-        let mut producer = JsxFileProducer::new(&arena, observed, block, 17)
+        let mut producer = JsxL2IrProducer::new(&arena, observed, block, 17)
             .unwrap_or_else(|rejected| panic!("original TSX: {:?}", rejected.error()));
         producer.walk().unwrap();
         let owner = Box::new(

@@ -5,7 +5,7 @@ use vize_l0::{Allocator, SourceBlock, SourceRoot, Span};
 use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang, SourceError};
 use vize_l2::file::Namespace;
-use vize_l2::lang::js::{FileProducer, ModuleSourceKind, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ModuleSourceKind, ProgramInput, ProgramScope};
 use vize_l2::query::Model;
 
 fn syntax<'a>(
@@ -49,7 +49,7 @@ fn actual_jsx_and_tsx_elements_keep_original_module_literals_and_reference_rows(
             panic!("original export")
         };
         let literals = [&import.source, export.source.as_ref().unwrap()];
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program(
                 ProgramInput::checked(admitted, block, 0).unwrap(),
@@ -105,7 +105,7 @@ fn original_tsx_declaration_namespaces_remain_separate_from_jsx_component_reads(
     let source = "import type {Model} from './types.ts'; import Widget from './widget.tsx'; const view = <Widget/>; export type {Model as PublicModel} from './public.ts';";
     let block = SourceRoot::new(source).unwrap().whole_block();
     let original = syntax(&arena, block, Lang::Ts).unwrap();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(original.admitted_program().unwrap(), block, 0).unwrap(),
@@ -164,7 +164,7 @@ fn nonzero_original_jsx_source_keeps_authored_crlf_unicode_and_escaped_spans() {
         .block(source.get(start..end).unwrap(), start as u32)
         .unwrap();
     let original = syntax(&arena, block, Lang::Js).unwrap();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(original.admitted_program().unwrap(), block, 7).unwrap(),

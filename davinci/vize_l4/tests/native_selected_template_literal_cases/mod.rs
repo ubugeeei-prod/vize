@@ -4,14 +4,14 @@ use super::{check, equal};
 use vize_l0::{Span, id::NodeId};
 use vize_l1::markup::SurfaceChild;
 use vize_l2::{
-    expr::ExprRef, file::NativeFileInterpolationState, lang::js::NativeTemplateFile, op::Op,
+    expr::ExprRef, file::NativeL2IrInterpolationState, lang::js::NativeTemplateL2Ir, op::Op,
 };
 use vize_l3::decision::template::TemplateDomAnalysis;
 use vize_l4::write::EmitDocument;
 
 pub(super) fn inspect<'owner, 'a>(
     id: &str,
-    original: &'owner NativeTemplateFile<'a>,
+    original: &'owner NativeTemplateL2Ir<'a>,
     analysis: &TemplateDomAnalysis<'owner, 'a>,
     document: &EmitDocument,
     nodes: u32,
@@ -58,7 +58,7 @@ pub(super) fn inspect<'owner, 'a>(
                 let record = file
                     .native_interpolation(node)
                     .ok_or("normal original input association")?;
-                equal(record.state(), NativeFileInterpolationState::Admitted(node))?;
+                equal(record.state(), NativeL2IrInterpolationState::Admitted(node))?;
                 let operand = record.input().operand();
                 check(operand.admitted_for(selected, child.reborrow()).is_some())?;
                 equal(operand.full_span(), op.span)?;

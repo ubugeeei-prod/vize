@@ -1,5 +1,5 @@
 use super::*;
-use crate::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use crate::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 use alloc::vec::Vec;
 use core::cell::RefCell;
 use oxc_parser::Parser;
@@ -13,7 +13,7 @@ struct Events<'f> {
     rollback_order: &'f RefCell<Vec<u8>>,
 }
 
-impl<'a> FileObserver<'a> for Events<'_> {
+impl<'a> L2IrObserver<'a> for Events<'_> {
     type Checkpoint = usize;
     fn unit(&mut self, unit: &ScriptUnit) {
         self.rows.push(("unit", unit.span));
@@ -64,7 +64,7 @@ fn both_observers_see_the_same_events_and_rollback_their_own_subtree() {
             rollback_order: &rollback_order,
         };
         let mut pair = (observer(0), observer(1));
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         producer
             .program_observed(
                 ProgramInput::checked(syntax.admitted().unwrap(), root.whole_block(), 0).unwrap(),

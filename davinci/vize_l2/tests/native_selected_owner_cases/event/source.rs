@@ -156,7 +156,7 @@ fn ordinary_script_rows_never_gain_selected_setup_visibility() -> Result<(), &'s
         let Kind::Handler { span, kind } = issue.kind else {
             return Err("handler refusal");
         };
-        equal(kind, FileIssueKind::UnresolvedReference)?;
+        equal(kind, L2IrIssueKind::UnresolvedReference)?;
         equal(span.slice(source), "value")?;
     }
     let output = original.finish();
@@ -195,7 +195,7 @@ fn actual_file_handlers_retain_intrinsic_ts_profile_and_precise_annotation_refus
                 else {
                     return Err("precise handler refusal");
                 };
-                equal(kind, FileIssueKind::UnsupportedSyntax)?;
+                equal(kind, L2IrIssueKind::UnsupportedSyntax)?;
                 equal(span.slice(&source), "x:number=1")?;
                 check(walk.complete().is_err())?;
             }
@@ -215,7 +215,7 @@ fn actual_file_handlers_retain_intrinsic_ts_profile_and_precise_annotation_refus
                 .ok_or("whole facts")?
                 .input()
         } else {
-            let [RejectedFileHandler::Resolution { input, .. }] = file.rejected_handlers() else {
+            let [RejectedL2IrHandler::Resolution { input, .. }] = file.rejected_handlers() else {
                 return Err("whole typed owner");
             };
             input

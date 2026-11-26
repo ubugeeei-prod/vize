@@ -2,9 +2,9 @@
 
 use super::NativeVisibility;
 use crate::artifact::RegionBuilder;
-use crate::file::FileIssueKind;
-use crate::file::for_head::{PendingFor, RejectedFileFor};
-use crate::file::region::{FileRegion, Lookup};
+use crate::file::L2IrIssueKind;
+use crate::file::for_head::{PendingFor, RejectedL2IrFor};
+use crate::file::region::{L2IrRegion, Lookup};
 use crate::lang::js::{NativeForInput, file::native::NativeTemplateIssueKind as Kind};
 use crate::resolution::{ForResolutionErrorKind, ResolutionErrorKind, resolve_for_facts};
 use core::ops::DerefMut;
@@ -15,7 +15,7 @@ pub(super) struct ObservedFor {
     pub(super) index: usize,
 }
 
-impl<'a: 'b, 'b, R> FileRegion<'_, 'b, 'a, R, NativeVisibility>
+impl<'a: 'b, 'b, R> L2IrRegion<'_, 'b, 'a, R, NativeVisibility>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
 {
@@ -31,15 +31,15 @@ where
         if !core::ptr::eq(block.root_source(), self.source)
             || !core::ptr::eq(selected.component(), attribute.component())
         {
-            return Err(self.for_error(name_span, FileIssueKind::InvalidSource));
+            return Err(self.for_error(name_span, L2IrIssueKind::InvalidSource));
         }
         let operand = match selected.observe_attribute_for_head(attribute.reborrow()) {
             Ok(operand) => operand,
             Err(error) => {
                 self.facts
                     .rejected_for_heads
-                    .push(RejectedFileFor::Observation(error));
-                return Err(self.for_error(name_span, FileIssueKind::UnsupportedSyntax));
+                    .push(RejectedL2IrFor::Observation(error));
+                return Err(self.for_error(name_span, L2IrIssueKind::UnsupportedSyntax));
             }
         };
         let value_span = operand.value_span();
@@ -48,8 +48,8 @@ where
             Err(error) => {
                 self.facts
                     .rejected_for_heads
-                    .push(RejectedFileFor::Syntax(error));
-                return Err(self.for_error(value_span, FileIssueKind::UnsupportedSyntax));
+                    .push(RejectedL2IrFor::Syntax(error));
+                return Err(self.for_error(value_span, L2IrIssueKind::UnsupportedSyntax));
             }
         };
         let index = self.facts.pending_for_heads.len();
@@ -70,7 +70,7 @@ where
             .admitted_for(selected, attribute)
             .is_none()
         {
-            return Err(self.for_error(value_span, FileIssueKind::InvalidSource));
+            return Err(self.for_error(value_span, L2IrIssueKind::InvalidSource));
         }
         #[cfg(test)]
         super::for_tests::after_park();
@@ -126,19 +126,19 @@ where
                     .ok_or(Kind::InvalidEvent)?;
                 let kind = match error.kind {
                     ForResolutionErrorKind::Reference(ResolutionErrorKind::MissingBinding) => {
-                        FileIssueKind::UnresolvedReference
+                        L2IrIssueKind::UnresolvedReference
                     }
                     ForResolutionErrorKind::Reference(ResolutionErrorKind::InvalidSpan) => {
-                        FileIssueKind::InvalidSpan
+                        L2IrIssueKind::InvalidSpan
                     }
                     ForResolutionErrorKind::Reference(ResolutionErrorKind::TraversalLimit) => {
-                        FileIssueKind::BindingLimit
+                        L2IrIssueKind::BindingLimit
                     }
-                    _ => FileIssueKind::UnsupportedSyntax,
+                    _ => L2IrIssueKind::UnsupportedSyntax,
                 };
                 self.facts
                     .rejected_for_heads
-                    .push(RejectedFileFor::Resolution {
+                    .push(RejectedL2IrFor::Resolution {
                         input: alloc::boxed::Box::new(input),
                         error,
                     });
@@ -158,12 +158,12 @@ where
             }
             Err(input) => {
                 pending.input = Some(*input);
-                Err(self.for_error(span, FileIssueKind::InvalidSource))
+                Err(self.for_error(span, L2IrIssueKind::InvalidSource))
             }
         }
     }
 
-    pub(super) fn for_error(&mut self, span: Span, kind: FileIssueKind) -> Kind {
+    pub(super) fn for_error(&mut self, span: Span, kind: L2IrIssueKind) -> Kind {
         let _ = self.reject(span, kind);
         Kind::For { span, kind }
     }

@@ -94,7 +94,7 @@ fn membership_owners_reject_ordinary_calls_markers_and_equal_text_foreign_progra
     assert_eq!(observed.issues().len(), 2);
     assert!(matches!(observed.issues().first().map(|issue| issue.kind),
         Some(NativeSfcIssueKind::TemplateFactory(issue))
-        if issue.kind == vize_l1_to_l2::vue_file::VueFileIssueKind::PreviousIssues));
+        if issue.kind == vize_l1_to_l2::vue_file::VueL2IrIssueKind::PreviousIssues));
     assert_eq!(
         observed.issues().last().unwrap().kind,
         NativeSfcIssueKind::FileRejected

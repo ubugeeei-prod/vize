@@ -1,7 +1,7 @@
 use super::support::{construct, script};
 use vize_l0::Allocator;
 use vize_l1::embed::Lang;
-use vize_l1_to_l2::vue_file::{VueFileProducer, VueScriptRole};
+use vize_l1_to_l2::vue_file::{VueL2IrProducer, VueScriptRole};
 use vize_l2::file::Namespace;
 use vize_l2::lang::js::ProgramInput;
 
@@ -11,7 +11,7 @@ fn setup_only_native_template_resolves_bind_and_interpolation_at_actual_sites() 
     let source = "é<script setup>const 日本語 = 1; let title = 2;</script><template><div :title=\"title\">{{日本語 + title}}</div></template>";
     let (syntax, block) =
         script(&arena, source, "const 日本語 = 1; let title = 2;", Lang::Js).unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     producer
         .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
         .unwrap();
@@ -62,7 +62,7 @@ fn combined_roles_use_actual_indices_and_parent_scope_even_when_authored_reverse
     let (ordinary, ordinary_block) =
         script(&arena, source, "export const ordinary = 1;", Lang::Js).unwrap();
     let (setup, setup_block) = script(&arena, source, "const local = ordinary;", Lang::Js).unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     producer
         .ordinary(
             ProgramInput::checked(ordinary.admitted_program().unwrap(), ordinary_block, 1).unwrap(),
@@ -117,7 +117,7 @@ fn script_only_and_setup_only_without_template_finish_without_missing_template()
     let source = "const local = 1;";
     let (syntax, block) = script(&arena, source, source, Lang::Js).unwrap();
     for setup in [false, true] {
-        let mut producer = VueFileProducer::new(&arena, source).unwrap();
+        let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
         let input = ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap();
         if setup {
             producer.setup(input).unwrap();
@@ -136,7 +136,7 @@ fn setup_type_import_identity_is_retained_without_runtime_exposure() {
     let arena = Allocator::default();
     let source = "import type {T} from 'types'; import {value} from 'dep'; const local = value;";
     let (syntax, block) = script(&arena, source, source, Lang::Ts).unwrap();
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&arena, source).unwrap();
     producer
         .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
         .unwrap();

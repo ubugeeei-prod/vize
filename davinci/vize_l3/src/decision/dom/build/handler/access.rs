@@ -100,11 +100,11 @@ mod tests {
         markup::{SelectedTemplateComponent, SurfaceParseOptions},
     };
     use vize_l2::{
-        lang::js::{NativeTemplateFile, NativeTemplateOwner},
+        lang::js::{NativeTemplateL2Ir, NativeTemplateOwner},
         op::{BindingOp, Op},
     };
 
-    fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+    fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateL2Ir<'a> {
         let descriptor = Vue.observe_descriptor(
             arena,
             source,
@@ -128,7 +128,7 @@ mod tests {
         owner.finish()
     }
 
-    fn resolution<'o, 'a>(owner: &'o NativeTemplateFile<'a>) -> &'o HandlerResolution<'a> {
+    fn resolution<'o, 'a>(owner: &'o NativeTemplateL2Ir<'a>) -> &'o HandlerResolution<'a> {
         let file = owner.file().unwrap();
         let Some(Op::Element(element)) = file.artifact().root().ops.first() else {
             panic!("actual element")

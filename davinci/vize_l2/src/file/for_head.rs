@@ -31,7 +31,7 @@ pub(crate) struct TemplateDeclarationRow {
 }
 
 #[derive(Debug)]
-pub enum RejectedFileFor<'a> {
+pub enum RejectedL2IrFor<'a> {
     Observation(AttributeForHeadFailure<'a>),
     Syntax(Box<RejectedNativeForInput<'a>>),
     Resolution {
@@ -85,12 +85,12 @@ impl<'f, 'a> TemplateDeclaration<'f, 'a> {
 ///     let _ = original.declaration().original();
 /// }
 /// ```
-pub struct FileTemplateDeclaration<'f, 'a> {
+pub struct L2IrTemplateDeclaration<'f, 'a> {
     l2ir: &'f L2Ir<'a>,
     declaration: TemplateDeclaration<'f, 'a>,
 }
 
-impl<'f, 'a> FileTemplateDeclaration<'f, 'a> {
+impl<'f, 'a> L2IrTemplateDeclaration<'f, 'a> {
     #[must_use]
     pub const fn l2ir(&self) -> &'f L2Ir<'a> {
         self.l2ir
@@ -100,45 +100,45 @@ impl<'f, 'a> FileTemplateDeclaration<'f, 'a> {
         &self.declaration
     }
     #[must_use]
-    pub fn same_owner(&self, other: &FileTemplateDeclaration<'_, '_>) -> bool {
+    pub fn same_owner(&self, other: &L2IrTemplateDeclaration<'_, '_>) -> bool {
         core::ptr::eq(self.l2ir, other.l2ir)
     }
 }
 
 /// Numeric lookup is File-local; `for_head_for` joins an actual arena allocation.
 #[derive(Clone, Copy)]
-pub struct FileForHead<'f, 'a> {
+pub struct L2IrForHead<'f, 'a> {
     l2ir: &'f L2Ir<'a>,
     id: OriginalForId,
 }
 
 impl<'a> L2Ir<'a> {
     /// Borrow genuine alias rows from this File; no script-unit is invented.
-    pub fn template_declarations(&self) -> impl Iterator<Item = FileTemplateDeclaration<'_, 'a>> {
+    pub fn template_declarations(&self) -> impl Iterator<Item = L2IrTemplateDeclaration<'_, 'a>> {
         self.facts.template_declarations.iter().filter_map(|row| {
             let record = self.facts.for_heads.get(row.owner.node())?;
             let id = match row.role {
                 ForAliasRole::Value => record.value?,
                 ForAliasRole::Key => record.key?,
             };
-            Some(FileTemplateDeclaration {
+            Some(L2IrTemplateDeclaration {
                 l2ir: self,
                 declaration: TemplateDeclaration { record, row, id },
             })
         })
     }
     #[must_use]
-    pub fn for_head(&self, id: OriginalForId) -> Option<FileForHead<'_, 'a>> {
+    pub fn for_head(&self, id: OriginalForId) -> Option<L2IrForHead<'_, 'a>> {
         self.facts.for_heads.get(id.node())?;
-        Some(FileForHead { l2ir: self, id })
+        Some(L2IrForHead { l2ir: self, id })
     }
     #[must_use]
-    pub fn for_head_for(&self, original: &OriginalForOp<'a>) -> Option<FileForHead<'_, 'a>> {
+    pub fn for_head_for(&self, original: &OriginalForOp<'a>) -> Option<L2IrForHead<'_, 'a>> {
         let head = self.for_head(original.id())?;
         head.accepts(original).then_some(head)
     }
     #[must_use]
-    pub fn rejected_for_heads(&self) -> &[RejectedFileFor<'a>] {
+    pub fn rejected_for_heads(&self) -> &[RejectedL2IrFor<'a>] {
         &self.facts.rejected_for_heads
     }
     pub fn unattached_for_heads(&self) -> impl Iterator<Item = &NativeForInput<'a>> {
@@ -158,7 +158,7 @@ impl<'a> L2Ir<'a> {
     }
 }
 
-impl<'f, 'a> FileForHead<'f, 'a> {
+impl<'f, 'a> L2IrForHead<'f, 'a> {
     #[must_use]
     pub const fn l2ir(self) -> &'f L2Ir<'a> {
         self.l2ir
@@ -209,15 +209,15 @@ impl<'f, 'a> FileForHead<'f, 'a> {
 
 impl<'f, 'a> BindingRef<'f, 'a> {
     #[must_use]
-    pub fn template_declaration(self) -> Option<FileTemplateDeclaration<'f, 'a>> {
-        Some(FileTemplateDeclaration {
+    pub fn template_declaration(self) -> Option<L2IrTemplateDeclaration<'f, 'a>> {
+        Some(L2IrTemplateDeclaration {
             l2ir: self.l2ir(),
             declaration: self.l2ir().facts.template_declaration(self.id())?,
         })
     }
 }
 
-impl<'a> super::RejectedFile<'a> {
+impl<'a> super::RejectedL2Ir<'a> {
     /// Read original owners from a refused or interrupted factory; no completion
     /// or actual arena allocation association is granted by these observations.
     pub fn original_for_inputs(&self) -> impl Iterator<Item = &NativeForInput<'a>> {
@@ -237,7 +237,7 @@ impl<'a> super::RejectedFile<'a> {
             )
     }
     #[must_use]
-    pub fn rejected_for_heads(&self) -> &[RejectedFileFor<'a>] {
+    pub fn rejected_for_heads(&self) -> &[RejectedL2IrFor<'a>] {
         &self.facts.rejected_for_heads
     }
 }

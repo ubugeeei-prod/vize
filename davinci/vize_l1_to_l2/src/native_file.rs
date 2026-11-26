@@ -39,9 +39,9 @@ pub enum NativeSfcIssueKind {
     /// Structural role presence is not upstream's effective script selection.
     EmptyScriptSelection,
     ScriptInput(vize_l2::lang::js::ProgramInputError),
-    VueScript(crate::vue_file::VueFileIssue),
+    VueScript(crate::vue_file::VueL2IrIssue),
     TemplateSource(vize_l1::markup::ComponentSourceError),
-    TemplateFactory(crate::vue_file::VueFileIssue),
+    TemplateFactory(crate::vue_file::VueL2IrIssue),
     TemplateComponentSource,
     /// The original owner is parked; genuine construction custody is unfinished.
     TemplateConstructionPending,
@@ -60,7 +60,7 @@ pub struct NativeSfcIssue {
 
 macro_rules! create_producer {
     ($allocator:expr, $source:expr) => {
-        crate::vue_file::VueFileProducer::new($allocator, $source)
+        crate::vue_file::VueL2IrProducer::new($allocator, $source)
     };
 }
 
@@ -115,7 +115,7 @@ pub fn lower_sfc_with_lexical_initializers<'a>(
     use template::prepare_lexical as prepare;
     macro_rules! create_producer {
         ($allocator:expr, $source:expr) => {
-            crate::vue_file::VueFileProducer::for_lexical_initializers($allocator, $source)
+            crate::vue_file::VueL2IrProducer::for_lexical_initializers($allocator, $source)
         };
     }
     include!("native_file/assembly.rs")

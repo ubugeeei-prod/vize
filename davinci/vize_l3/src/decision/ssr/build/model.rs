@@ -4,7 +4,7 @@ use super::super::{SsrUnsupported, model};
 use super::SsrBuilder;
 use vize_l0::id::NodeId;
 use vize_l2::{
-    file::NativeFileModelState,
+    file::NativeL2IrModelState,
     op::{BindingOp, ModelOp},
 };
 
@@ -32,7 +32,7 @@ impl<'owner, 'arena> SsrBuilder<'_, 'owner, 'arena> {
         let [original] = setup.l2ir().native_models() else {
             return;
         };
-        let NativeFileModelState::Admitted(node) = original.state() else {
+        let NativeL2IrModelState::Admitted(node) = original.state() else {
             return;
         };
         if self

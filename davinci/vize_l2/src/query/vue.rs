@@ -17,7 +17,7 @@ use vize_l0::Span;
 mod producer;
 #[cfg(test)]
 mod tests;
-pub use producer::{OrdinaryDemand, VueDemand, VueFileProducer, VueProgramError};
+pub use producer::{OrdinaryDemand, VueDemand, VueL2IrProducer, VueProgramError};
 
 /// A fact family a consumer can request from the original walks.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -59,11 +59,11 @@ struct OrdinaryFamilies {
 }
 
 /// An immutable File plus the fact families requested from its own producer.
-pub struct VueFile<'a> {
+pub struct VueL2Ir<'a> {
     l2ir: L2Ir<'a>,
     facts: VueAnalysis,
 }
-impl<'a> VueFile<'a> {
+impl<'a> VueL2Ir<'a> {
     #[must_use]
     pub fn l2ir(&self) -> &L2Ir<'a> {
         &self.l2ir
@@ -105,7 +105,7 @@ impl<'f, 'a> Model<'f, 'a> {
         }
     }
     /// Attach only an observation belonging to this exact immutable File.
-    pub fn with_vue(self, owner: &'f VueFile<'a>) -> Result<VueModel<'f, 'a>, VueQueryError> {
+    pub fn with_vue(self, owner: &'f VueL2Ir<'a>) -> Result<VueModel<'f, 'a>, VueQueryError> {
         if !core::ptr::eq(self.l2ir(), owner.l2ir()) {
             return Err(VueQueryError::ForeignFile);
         }

@@ -5,7 +5,7 @@ use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
 use vize_l2::file::{L2Ir, ScriptUnit};
 use vize_l2::lang::js::{
-    CallEvent, DeclaredEvent, FileObserver, FileProducer, ProgramInput, ProgramScope,
+    CallEvent, DeclaredEvent, L2IrObserver, L2IrProducer, ProgramInput, ProgramScope,
     StatementEvent,
 };
 use vize_l2::resolution::ResolutionErrorKind;
@@ -21,7 +21,7 @@ struct Observer {
     interrupt: bool,
 }
 
-impl<'a> FileObserver<'a> for Observer {
+impl<'a> L2IrObserver<'a> for Observer {
     type Checkpoint = ();
     fn unit(&mut self, unit: &ScriptUnit) {
         self.initial = Some(unit.has_comments());
@@ -51,7 +51,7 @@ fn observe<'a>(
         .map_err(|_| "original source")?
         .whole_block();
     let input = ProgramInput::checked(admitted, block, 0).map_err(|_| "actual Program input")?;
-    let mut producer = FileProducer::new(arena, source).map_err(|_| "original File")?;
+    let mut producer = L2IrProducer::new(arena, source).map_err(|_| "original File")?;
     let mut observer = Observer {
         initial: None,
         interrupt,

@@ -1,7 +1,7 @@
 use super::records::Record;
 use crate::file::ScriptUnit;
 use crate::lang::js::file::observer::{
-    CallEvent, DeclaredEvent, FileObserver, StatementEvent, SyntaxEvent,
+    CallEvent, DeclaredEvent, L2IrObserver, StatementEvent, SyntaxEvent,
 };
 use crate::resolution::{ResolutionErrorKind, SyntaxEdge, SyntaxKind};
 use alloc::vec::Vec;
@@ -28,7 +28,7 @@ impl<'a> Recorder<'a> {
     }
 }
 
-impl<'a> FileObserver<'a> for Recorder<'a> {
+impl<'a> L2IrObserver<'a> for Recorder<'a> {
     type Checkpoint = (usize, usize, usize);
     fn unit(&mut self, _: &ScriptUnit) {}
     fn statement(&mut self, _: StatementEvent<'_, 'a>) {}

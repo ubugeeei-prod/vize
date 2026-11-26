@@ -180,7 +180,7 @@ fn three_original_checkbox_models_retain_all_target_mode_attempts_before_verdict
         "fixtures":captures,"custody":owners,"attempts":attempts,"refusals":refusals,
         "refusalInputPack":refusal_pack,
         "layouts":{"declaration":core::mem::size_of::<vize_l2::file::Declaration>(),
-            "nativeModel":core::mem::size_of::<vize_l2::file::NativeFileModel<'_>>(),
+            "nativeModel":core::mem::size_of::<vize_l2::file::NativeL2IrModel<'_>>(),
             "modelOp":core::mem::size_of::<vize_l2::op::ModelOp<'_>>()},
     });
     finish::write(capture, complete)

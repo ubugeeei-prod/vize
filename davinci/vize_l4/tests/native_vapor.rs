@@ -12,14 +12,14 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{NativeTemplateL2Ir, NativeTemplateOwner};
 use vize_l3::decision::vapor::{VaporUnsupported, build_template_vapor_decisions};
 use vize_l4::{
     targets::vapor::{VaporErrorKind, emit_template},
     write::{NoLinks, Recorded},
 };
 
-fn original<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn original<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateL2Ir<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,

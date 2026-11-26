@@ -14,7 +14,7 @@ use vize_l1::embed::{
     syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
 };
 use vize_l2::framework::vue::{SetupAnalysis, SetupBindingKind, SetupObserver};
-use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 use crate::types::{BindingMetadata, BindingType, SfcDescriptor, SfcError, TemplateCompileOptions};
 
@@ -47,7 +47,7 @@ impl<'a> SetupCompileAnalysis<'a> {
         };
         let block = SourceRoot::new(content).map_err(refused)?.whole_block();
         let input = ProgramInput::checked(admitted, block, 0).map_err(refused)?;
-        let mut producer = FileProducer::new(arena, content).map_err(refused)?;
+        let mut producer = L2IrProducer::new(arena, content).map_err(refused)?;
         let hoist_static = descriptor.script.is_none()
             && template
                 .compiler_options

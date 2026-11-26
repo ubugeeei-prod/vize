@@ -1,7 +1,7 @@
 //! The original refused source becomes positive only with its genuine provider.
 
 use super::*;
-use vize_l2::{expr::ExprRef, file::NativeFileInterpolationState, op::Op};
+use vize_l2::{expr::ExprRef, file::NativeL2IrInterpolationState, op::Op};
 
 #[test]
 fn exact_original_nested_case_retains_element_operand_file_scope_and_setup_read() {
@@ -56,7 +56,7 @@ fn exact_original_nested_case_retains_element_operand_file_scope_and_setup_read(
     let [record] = file.native_interpolations() else {
         panic!("one complete original operand");
     };
-    let NativeFileInterpolationState::Admitted(node) = record.state() else {
+    let NativeL2IrInterpolationState::Admitted(node) = record.state() else {
         panic!("normally attached original node");
     };
     assert!(core::ptr::eq(

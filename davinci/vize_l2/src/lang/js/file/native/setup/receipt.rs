@@ -1,6 +1,6 @@
 //! A short original setup/Program/unit join, without a second syntax walk.
 
-use super::{EmbedSyntax, NativeTemplateFile};
+use super::{EmbedSyntax, NativeTemplateL2Ir};
 use crate::file::{L2Ir, ScopeId, ScriptUnit, ScriptUnitId};
 use oxc_parser::AdmittedProgram;
 use vize_l0::Span;
@@ -37,35 +37,35 @@ pub struct NativeSetupIssue {
 /// fn copy(view: NativeSelectedSetup<'_, '_>) { let _ = view.clone(); }
 /// ```
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeTemplateFile;
-/// fn discard(owner: NativeTemplateFile<'_>) {
+/// use vize_l2::lang::js::NativeTemplateL2Ir;
+/// fn discard(owner: NativeTemplateL2Ir<'_>) {
 ///     let setup = owner.setup().unwrap();
 ///     drop(owner);
 ///     let _ = setup.program();
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeTemplateFile;
-/// fn separate(owner: &mut NativeTemplateFile<'_>) { owner.retained_setup.take(); }
+/// use vize_l2::lang::js::NativeTemplateL2Ir;
+/// fn separate(owner: &mut NativeTemplateL2Ir<'_>) { owner.retained_setup.take(); }
 /// ```
 /// A caller cannot replace the real Program with a foreign parse:
 /// ```compile_fail
 /// use vize_l1::embed::syntax::EmbedSyntax;
-/// use vize_l2::lang::js::NativeTemplateFile;
-/// fn pair<'a>(owner: &NativeTemplateFile<'a>, foreign: EmbedSyntax<'a>) {
+/// use vize_l2::lang::js::NativeTemplateL2Ir;
+/// fn pair<'a>(owner: &NativeTemplateL2Ir<'a>, foreign: EmbedSyntax<'a>) {
 ///     let _ = owner.setup(foreign);
 /// }
 /// ```
 /// The Program borrow cannot outlive the normally retained owner:
 /// ```compile_fail
 /// use oxc_ast::ast::Program;
-/// use vize_l2::lang::js::NativeTemplateFile;
-/// fn escape<'a>(owner: NativeTemplateFile<'a>) -> &'a Program<'a> {
+/// use vize_l2::lang::js::NativeTemplateL2Ir;
+/// fn escape<'a>(owner: NativeTemplateL2Ir<'a>) -> &'a Program<'a> {
 ///     owner.retained_setup().unwrap().program().unwrap()
 /// }
 /// ```
 pub struct NativeSelectedSetup<'owner, 'arena> {
-    owner: &'owner NativeTemplateFile<'arena>,
+    owner: &'owner NativeTemplateL2Ir<'arena>,
     syntax: &'owner EmbedSyntax<'arena>,
     selected: ScriptSelection<'owner, 'arena>,
     program: AdmittedProgram<'owner, 'arena>,
@@ -74,7 +74,7 @@ pub struct NativeSelectedSetup<'owner, 'arena> {
 }
 impl<'owner, 'arena> NativeSelectedSetup<'owner, 'arena> {
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner NativeTemplateL2Ir<'arena> {
         self.owner
     }
     #[must_use]
@@ -108,7 +108,7 @@ impl<'owner, 'arena> NativeSelectedSetup<'owner, 'arena> {
 }
 
 pub(super) fn checked<'owner, 'arena>(
-    owner: &'owner NativeTemplateFile<'arena>,
+    owner: &'owner NativeTemplateL2Ir<'arena>,
 ) -> Result<NativeSelectedSetup<'owner, 'arena>, NativeSetupIssue> {
     use NativeSetupIssueKind as Kind;
     let span = owner.selected().component().block().span();

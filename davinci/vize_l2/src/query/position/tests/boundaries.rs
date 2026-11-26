@@ -1,5 +1,5 @@
 use super::{
-    Allocator, Error, FileProducer, ProgramScope, SourceRoot, SourceType, Span, append, offset,
+    Allocator, Error, L2IrProducer, ProgramScope, SourceRoot, SourceType, Span, append, offset,
 };
 use crate::query::Model;
 
@@ -13,7 +13,7 @@ fn authored_utf8_boundaries_nonzero_origins_and_half_open_ends_are_checked() {
         .unwrap()
         .block(source.get(start as usize..end as usize).unwrap(), start)
         .unwrap();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     append(
         &arena,
         &mut producer,
@@ -94,7 +94,7 @@ fn units_can_be_recorded_in_reverse_source_order_without_crossing_opaque_gaps() 
     let root = SourceRoot::new(source).unwrap();
     let first_end = offset(source, "\nopaque");
     let second_start = offset(source, "const later");
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     for (start, end, index) in [(second_start, source.len() as u32, 9), (0, first_end, 4)] {
         append(
             &arena,
@@ -138,7 +138,7 @@ fn overlapping_original_unit_observations_are_ambiguous_even_on_a_non_name_byte(
     let arena = Allocator::default();
     let source = "const local = 1; local;";
     let block = SourceRoot::new(source).unwrap().whole_block();
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     for index in [3, 8] {
         append(
             &arena,

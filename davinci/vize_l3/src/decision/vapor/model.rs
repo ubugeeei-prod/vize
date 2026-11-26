@@ -3,7 +3,7 @@
 use super::VaporUnsupported;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{BindingRef, FileResolution, NativeFileModel},
+    file::{BindingRef, L2IrResolution, NativeL2IrModel},
     lang::js::NativeSelectedSetup,
     op::{BindingOp, ElementOp, ModelOp},
     resolution::Occurrence,
@@ -13,7 +13,7 @@ use vize_l2::{
 /// Its compact carrier reuses the original File's immutable resolution table.
 #[derive(Clone, Copy)]
 pub struct VaporModel<'owner, 'arena> {
-    resolution: FileResolution<'owner, 'arena>,
+    resolution: L2IrResolution<'owner, 'arena>,
 }
 
 pub(super) fn classify<'owner, 'arena>(
@@ -55,12 +55,12 @@ impl core::fmt::Debug for VaporModel<'_, '_> {
 
 impl<'owner, 'arena> VaporModel<'owner, 'arena> {
     #[must_use]
-    pub const fn resolution(&self) -> FileResolution<'owner, 'arena> {
+    pub const fn resolution(&self) -> L2IrResolution<'owner, 'arena> {
         self.resolution
     }
 
     #[must_use]
-    pub fn original(&self) -> Option<&'owner NativeFileModel<'arena>> {
+    pub fn original(&self) -> Option<&'owner NativeL2IrModel<'arena>> {
         self.resolution.l2ir().native_model(self.resolution.node())
     }
 

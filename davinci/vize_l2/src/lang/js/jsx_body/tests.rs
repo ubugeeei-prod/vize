@@ -7,7 +7,7 @@ use super::*;
 extern crate std;
 use crate::file::ScriptUnit;
 use crate::lang::js::file::observer::{
-    CallEvent, DeclaredEvent, FileObserver, StatementEvent, SyntaxEvent,
+    CallEvent, DeclaredEvent, L2IrObserver, StatementEvent, SyntaxEvent,
 };
 use crate::resolution::{ResolutionErrorKind, SyntaxEdge, SyntaxKind};
 use oxc_parser::Parser;
@@ -19,8 +19,8 @@ type LawResult = Result<(), &'static str>;
 struct Interrupt<'r, 'a> {
     recorder: &'r mut Recorder<'a>,
 }
-impl<'a> FileObserver<'a> for Interrupt<'_, 'a> {
-    type Checkpoint = <Recorder<'a> as FileObserver<'a>>::Checkpoint;
+impl<'a> L2IrObserver<'a> for Interrupt<'_, 'a> {
+    type Checkpoint = <Recorder<'a> as L2IrObserver<'a>>::Checkpoint;
     fn unit(&mut self, _: &ScriptUnit) {}
     fn statement(&mut self, _: StatementEvent<'_, 'a>) {}
     fn declared(&mut self, _: DeclaredEvent<'_, 'a>) {}
@@ -57,7 +57,7 @@ fn caught_unwind_preserves_original_comments_partial_records_and_real_file_inter
         .program()
         .body
         .as_ptr();
-    let mut producer = JsxFileProducer::new(&arena, original, block, 0).map_err(|_| "producer")?;
+    let mut producer = JsxL2IrProducer::new(&arena, original, block, 0).map_err(|_| "producer")?;
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         producer.walk_with(|file, input, recorder| {
             file.program_observed(input, ProgramScope::Module, &mut Interrupt { recorder })
@@ -65,12 +65,12 @@ fn caught_unwind_preserves_original_comments_partial_records_and_real_file_inter
         })
     }));
     assert!(result.is_err());
-    assert_eq!(producer.walk(), Err(JsxFileError::AlreadyWalked));
+    assert_eq!(producer.walk(), Err(JsxL2IrError::AlreadyWalked));
     let rejected = match producer.finish() {
         Err(rejected) => rejected,
         Ok(_) => return Err("interrupted seal"),
     };
-    assert_eq!(rejected.error(), JsxFileError::Interrupted);
+    assert_eq!(rejected.error(), JsxL2IrError::Interrupted);
     assert_eq!(
         rejected
             .observation()
@@ -93,8 +93,8 @@ fn caught_unwind_preserves_original_comments_partial_records_and_real_file_inter
 struct Damage<'r, 'a> {
     recorder: &'r mut Recorder<'a>,
 }
-impl<'a> FileObserver<'a> for Damage<'_, 'a> {
-    type Checkpoint = <Recorder<'a> as FileObserver<'a>>::Checkpoint;
+impl<'a> L2IrObserver<'a> for Damage<'_, 'a> {
+    type Checkpoint = <Recorder<'a> as L2IrObserver<'a>>::Checkpoint;
     fn unit(&mut self, _: &ScriptUnit) {}
     fn statement(&mut self, _: StatementEvent<'_, 'a>) {}
     fn declared(&mut self, _: DeclaredEvent<'_, 'a>) {}
@@ -120,7 +120,7 @@ fn late_unbalanced_header_rolls_back_actual_expression_and_cannot_seal() -> LawR
     let arena = Allocator::default();
     let source = "import C from 'dep'; const view = <C></C>;";
     let block = SourceRoot::new(source).map_err(|_| "source")?.whole_block();
-    let mut producer = JsxFileProducer::new(
+    let mut producer = JsxL2IrProducer::new(
         &arena,
         Parser::new(&arena, source, SourceType::jsx()).parse_observed(),
         block,
@@ -137,14 +137,14 @@ fn late_unbalanced_header_rolls_back_actual_expression_and_cannot_seal() -> LawR
         Err(rejected) => rejected,
         Ok(_) => return Err("damaged seal"),
     };
-    assert_eq!(rejected.error(), JsxFileError::IncompleteFile);
+    assert_eq!(rejected.error(), JsxL2IrError::IncompleteFile);
     assert_eq!(rejected.recorded_nodes(), 0);
     let file = rejected.file().ok_or("file")?;
     assert_eq!(file.references().len(), 0);
     assert_eq!(file.issues().len(), 1);
     assert_eq!(
         file.issues().first().ok_or("issue")?.kind,
-        crate::file::FileIssueKind::InvalidSpan
+        crate::file::L2IrIssueKind::InvalidSpan
     );
     Ok(())
 }

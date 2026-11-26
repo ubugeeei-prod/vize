@@ -190,7 +190,7 @@ fn ts_setup_requires_original_module_language_and_default_parser_profile() -> Re
         equal!(admitted.options(), options);
         require!(matches!(
             ProgramInput::checked(admitted, script.block(), script.container_index()),
-            Err(issue) if issue.kind == FileIssueKind::InvalidProfile
+            Err(issue) if issue.kind == L2IrIssueKind::InvalidProfile
         ));
         require!(matches!(
             VueSetup::checked(&file, script, wrong.admitted().ok_or("nondefault TS admission")?),
@@ -211,7 +211,7 @@ fn every_ts_setup_callback_interruption_preserves_original_owners_and_refuses_se
     )?;
     let script = original.script()?;
     for point in [Point::Unit, Point::Statement, Point::Declared] {
-        let mut producer = FileProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
+        let mut producer = L2IrProducer::new(&arena, original.l1ir.source()).map_err(|_| "file")?;
         let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             producer
                 .program_observed(
@@ -243,7 +243,7 @@ fn every_ts_setup_callback_interruption_preserves_original_owners_and_refuses_se
         require!(unit.profile.typescript);
         equal!(
             unit.interruption().ok_or("TS interruption")?.kind,
-            FileIssueKind::InterruptedProgram
+            L2IrIssueKind::InterruptedProgram
         );
         require!(matches!(checked(&original, &file)?, Err(issue)
             if issue.kind == SetupIssueKind::Exposure(ExposureIssueKind::IncompleteFile)));

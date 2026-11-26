@@ -19,10 +19,10 @@ fn checkbox_original_inline_successor_and_both_header_orders_keep_real_type_and_
         let [record] = file.native_models() else {
             panic!("one Model")
         };
-        let NativeFileModelState::Admitted(node) = record.state() else {
+        let NativeL2IrModelState::Admitted(node) = record.state() else {
             panic!("closed Model")
         };
-        assert_eq!(record.kind(), Some(NativeFileModelKind::Checkbox));
+        assert_eq!(record.kind(), Some(NativeL2IrModelKind::Checkbox));
         let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
             panic!("input")
         };
@@ -192,7 +192,7 @@ fn checkbox_unwinds_keep_the_actual_prefix_and_never_publish_an_incomplete_file(
                 panic!("retained active Model prefix")
             };
             assert_eq!(record.kind(), None);
-            assert_eq!(record.state(), NativeFileModelState::Pending);
+            assert_eq!(record.state(), NativeL2IrModelState::Pending);
             assert!(record.element_node().is_none());
             let [Op::Element(element)] = rejected.artifact().parts.root.ops.as_slice() else {
                 panic!("retained active input")
@@ -206,7 +206,7 @@ fn checkbox_unwinds_keep_the_actual_prefix_and_never_publish_an_incomplete_file(
             };
             assert_eq!(
                 value.state(),
-                crate::file::NativeFileAttributeValueState::Pending
+                crate::file::NativeL2IrAttributeValueState::Pending
             );
             assert_eq!(value.observation().unwrap().source().text(), "checkbox");
             continue;
@@ -221,13 +221,13 @@ fn checkbox_unwinds_keep_the_actual_prefix_and_never_publish_an_incomplete_file(
             };
             if point < 5 {
                 assert_eq!(record.kind(), None);
-                assert_eq!(record.state(), NativeFileModelState::Pending);
+                assert_eq!(record.state(), NativeL2IrModelState::Pending);
                 assert!(record.element_node().is_none());
             } else {
-                let NativeFileModelState::Admitted(node) = record.state() else {
+                let NativeL2IrModelState::Admitted(node) = record.state() else {
                     panic!("real closed prefix")
                 };
-                assert_eq!(record.kind(), Some(NativeFileModelKind::Checkbox));
+                assert_eq!(record.kind(), Some(NativeL2IrModelKind::Checkbox));
                 assert!(record.element_node().is_some());
                 assert!(file.native_model(node).is_none());
             }

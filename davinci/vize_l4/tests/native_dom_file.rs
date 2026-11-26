@@ -5,7 +5,7 @@ use support::{construct, script};
 use vize_l0::Allocator;
 use vize_l2::{
     file::{Namespace, TemplateScope},
-    lang::js::{FileProducer, ProgramInput, ProgramScope},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope},
 };
 use vize_l3::decision::{build_dom_file_decisions, dom::DomUnsupported};
 use vize_l4::module::assemble_template;
@@ -22,7 +22,7 @@ fn complete_static_and_literal_modules_keep_real_file_owners_and_link_sinks() {
         let arena = Allocator::default();
         let source = fixture["source"].as_str().unwrap();
         let template = fixture["template"].as_str().unwrap();
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         let syntax = fixture["setup"]
             .as_str()
             .map(|content| script(&arena, source, content));
@@ -131,7 +131,7 @@ fn const_initializers_and_nested_unit_shadowing_never_authorize_context_access()
     let source = "<!--雪🌸--><script>const msg = 'outer';</script><script setup>const msg = 'inner';</script><template><p :title=\"'first'\">{{msg}}</p></template>";
     let (ordinary, ordinary_block) = script(&arena, source, "const msg = 'outer';");
     let (setup, setup_block) = script(&arena, source, "const msg = 'inner';");
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(ordinary.admitted_program().unwrap(), ordinary_block, 0).unwrap(),
@@ -214,7 +214,7 @@ fn const_initializers_and_nested_unit_shadowing_never_authorize_context_access()
 fn zero_reference_nonliteral_keeps_the_real_l3_refusal_and_full_source() {
     let arena = Allocator::default();
     let source = "<p :title=\"[]\"/>";
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let native = construct(&arena, source, source, &mut producer, TemplateScope::Root);
     let vue = producer.finish().unwrap();
     let analysis = build_dom_file_decisions(&vue).unwrap();
@@ -239,7 +239,7 @@ fn zero_reference_nonliteral_keeps_the_real_l3_refusal_and_full_source() {
 fn special_attribute_refusal_keeps_exact_binding_diagnostics_before_any_output() {
     let arena = Allocator::default();
     let source = "<p :key=\"'identity'\">text</p>";
-    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let mut producer = L2IrProducer::new(&arena, source).unwrap();
     let native = construct(&arena, source, source, &mut producer, TemplateScope::Root);
     let vue = producer.finish().unwrap();
     let analysis = build_dom_file_decisions(&vue).unwrap();

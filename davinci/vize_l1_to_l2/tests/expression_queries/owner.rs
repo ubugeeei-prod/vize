@@ -8,7 +8,7 @@ use vize_l2::{
     artifact::ComponentFactory,
     expr::JsExpr,
     file::{Declaration, TemplatePolicy, TemplateScope},
-    lang::js::{FileProducer, ProgramInput, ProgramScope},
+    lang::js::{L2IrProducer, ProgramInput, ProgramScope},
 };
 
 #[derive(Clone, Copy)]
@@ -19,11 +19,11 @@ impl TemplatePolicy for Visible {
     }
 }
 
-fn producer<'a>(arena: &'a Allocator, source: &'a str) -> FileProducer<'a> {
+fn producer<'a>(arena: &'a Allocator, source: &'a str) -> L2IrProducer<'a> {
     let (script, _) = source.split_once('\n').unwrap();
     let block = SourceRoot::new(source).unwrap().block(script, 0).unwrap();
     let input = Parser::new(arena, script, SourceType::mjs()).parse_observed();
-    let mut producer = FileProducer::new(arena, source).unwrap();
+    let mut producer = L2IrProducer::new(arena, source).unwrap();
     producer
         .program(
             ProgramInput::checked(input.admitted().unwrap(), block, 0).unwrap(),

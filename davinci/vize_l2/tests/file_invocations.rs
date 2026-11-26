@@ -2,9 +2,9 @@ use oxc_ast::ast::{Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l2::file::{FileIssueKind, ScopeId, ScriptUnit, ScriptUnitId};
+use vize_l2::file::{L2IrIssueKind, ScopeId, ScriptUnit, ScriptUnitId};
 use vize_l2::lang::js::{
-    CallEvent, DeclaredEvent, FileObserver, FileProducer, InvocationEvent, ProgramInput,
+    CallEvent, DeclaredEvent, InvocationEvent, L2IrObserver, L2IrProducer, ProgramInput,
     ProgramScope, StatementEvent,
 };
 use vize_l2::resolution::ResolutionErrorKind;
@@ -21,7 +21,7 @@ struct Observer {
     event: Option<(usize, Span, ScriptUnitId, ScopeId)>,
     rollback: usize,
 }
-impl<'a> FileObserver<'a> for Observer {
+impl<'a> L2IrObserver<'a> for Observer {
     type Checkpoint = ();
     fn unit(&mut self, _: &ScriptUnit) {}
     fn statement(&mut self, _: StatementEvent<'_, 'a>) {}
@@ -82,7 +82,7 @@ fn actual_invocation_callback_unwind_retains_originals_and_interrupts_the_real_u
             event: None,
             rollback: 0,
         };
-        let mut producer = FileProducer::new(&arena, source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, source).unwrap();
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             producer.program_observed(
                 ProgramInput::checked(parsed.admitted().unwrap(), block, 5).unwrap(),
@@ -97,7 +97,7 @@ fn actual_invocation_callback_unwind_retains_originals_and_interrupts_the_real_u
             panic!("one original unit");
         };
         let issue = unit.interruption().unwrap();
-        assert_eq!(issue.kind, FileIssueKind::InterruptedProgram);
+        assert_eq!(issue.kind, L2IrIssueKind::InterruptedProgram);
         assert_eq!(issue.unit, unit.id);
         assert_eq!(issue.span, block.span());
         let (pointer, span, id, scope) = observer.event.unwrap();
@@ -137,7 +137,7 @@ fn rejected_invocation_rolls_back_the_same_subtree_references_before_normal_unit
             "function Factory() {{}} function tag() {{}} let known = 1; let value = known + {suffix};"
         );
         let parsed = Parser::new(&arena, &source, SourceType::mjs()).parse_observed();
-        let mut producer = FileProducer::new(&arena, &source).unwrap();
+        let mut producer = L2IrProducer::new(&arena, &source).unwrap();
         let mut observer = Observer {
             fail: None,
             reject: true,
@@ -160,7 +160,7 @@ fn rejected_invocation_rolls_back_the_same_subtree_references_before_normal_unit
         assert!(!file.is_complete());
         assert!(file.references().is_empty());
         assert!(file.units()[0].interruption().is_none());
-        assert_eq!(file.issues()[0].kind, FileIssueKind::UnsupportedSyntax);
+        assert_eq!(file.issues()[0].kind, L2IrIssueKind::UnsupportedSyntax);
         assert_eq!(observer.rollback, 1);
         let (_, span, unit, scope) = observer.event.unwrap();
         assert_eq!(unit, file.units()[0].id);

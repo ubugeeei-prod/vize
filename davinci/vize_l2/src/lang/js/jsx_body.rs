@@ -1,8 +1,8 @@
 //! Original syntax and completed File facts owned with same-walk JSX structure.
 
-use super::{FileProducer, ProgramInput, ProgramInputError, ProgramScope};
+use super::{L2IrProducer, ProgramInput, ProgramInputError, ProgramScope};
 use crate::artifact::L2TemplateError;
-use crate::file::{L2Ir, RejectedFile};
+use crate::file::{L2Ir, RejectedL2Ir};
 use alloc::boxed::Box;
 use oxc_parser::ProgramObservation;
 use vize_l0::{Allocator, SourceBlock};
@@ -10,12 +10,12 @@ use vize_l0::{Allocator, SourceBlock};
 mod markup;
 mod recorder;
 mod records;
-pub use markup::{JsxMarkupFile, JsxMarkupIssue, JsxMarkupIssueKind, RejectedJsxMarkupFile};
+pub use markup::{JsxMarkupIssue, JsxMarkupIssueKind, JsxMarkupL2Ir, RejectedJsxMarkupL2Ir};
 use recorder::Recorder;
 pub use records::{JsxChildren, JsxNode};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum JsxFileError {
+pub enum JsxL2IrError {
     SyntaxAdmission,
     Input(ProgramInputError),
     Artifact(L2TemplateError),
@@ -40,16 +40,16 @@ enum Phase {
 /// ```compile_fail
 /// use oxc_ast::ast::Program;
 /// use vize_l0::{Allocator, SourceBlock};
-/// use vize_l2::lang::js::JsxFileProducer;
+/// use vize_l2::lang::js::JsxL2IrProducer;
 /// fn forge<'a>(arena: &'a Allocator, program: Program<'a>, block: SourceBlock<'a>) {
-///     let _ = JsxFileProducer::new(arena, program, block, 0);
+///     let _ = JsxL2IrProducer::new(arena, program, block, 0);
 /// }
 /// ```
-pub struct JsxFileProducer<'a> {
+pub struct JsxL2IrProducer<'a> {
     observation: ProgramObservation<'a>,
     block: SourceBlock<'a>,
     index: usize,
-    producer: FileProducer<'a>,
+    producer: L2IrProducer<'a>,
     recorder: Recorder<'a>,
     phase: Phase,
 }
@@ -57,51 +57,51 @@ pub struct JsxFileProducer<'a> {
 /// A completed source body retains its actual original observation and File.
 ///
 /// ```compile_fail
-/// use vize_l2::lang::js::JsxFile;
-/// fn forge<'a>() { let _ = JsxFile { observation: todo!(), l2ir: todo!(), records: vec![] }; }
+/// use vize_l2::lang::js::JsxL2Ir;
+/// fn forge<'a>() { let _ = JsxL2Ir { observation: todo!(), l2ir: todo!(), records: vec![] }; }
 /// ```
-pub struct JsxFile<'a> {
+pub struct JsxL2Ir<'a> {
     observation: ProgramObservation<'a>,
     l2ir: L2Ir<'a>,
     records: alloc::vec::Vec<records::Record<'a>>,
 }
 
 /// Failed admission, walk or sealing retains original syntax and actual facts.
-pub struct RejectedJsxFile<'a> {
+pub struct RejectedJsxL2Ir<'a> {
     observation: ProgramObservation<'a>,
-    error: JsxFileError,
+    error: JsxL2IrError,
     file: Option<L2Ir<'a>>,
-    rejected_file: Option<Box<RejectedFile<'a>>>,
+    rejected_file: Option<Box<RejectedL2Ir<'a>>>,
     records: alloc::vec::Vec<records::Record<'a>>,
 }
 
-impl<'a> JsxFileProducer<'a> {
+impl<'a> JsxL2IrProducer<'a> {
     pub fn new(
         allocator: &'a Allocator,
         observation: ProgramObservation<'a>,
         block: SourceBlock<'a>,
         container_index: usize,
-    ) -> Result<Self, Box<RejectedJsxFile<'a>>> {
+    ) -> Result<Self, Box<RejectedJsxL2Ir<'a>>> {
         let admission = observation
             .admitted()
-            .ok_or(JsxFileError::SyntaxAdmission)
+            .ok_or(JsxL2IrError::SyntaxAdmission)
             .and_then(|admitted| {
                 let input = ProgramInput::checked(admitted, block, container_index)
-                    .map_err(JsxFileError::Input)?;
+                    .map_err(JsxL2IrError::Input)?;
                 if !input.source_type().is_jsx() || !input.source_type().is_module() {
-                    return Err(JsxFileError::InvalidProfile);
+                    return Err(JsxL2IrError::InvalidProfile);
                 }
                 Ok(())
             });
         if let Err(error) = admission {
-            return Err(Box::new(RejectedJsxFile::new(observation, error)));
+            return Err(Box::new(RejectedJsxL2Ir::new(observation, error)));
         }
-        let producer = match FileProducer::new(allocator, block.root_source()) {
+        let producer = match L2IrProducer::new(allocator, block.root_source()) {
             Ok(producer) => producer,
             Err(error) => {
-                return Err(Box::new(RejectedJsxFile::new(
+                return Err(Box::new(RejectedJsxL2Ir::new(
                     observation,
-                    JsxFileError::Artifact(error),
+                    JsxL2IrError::Artifact(error),
                 )));
             }
         };
@@ -117,7 +117,7 @@ impl<'a> JsxFileProducer<'a> {
 
     /// Park the owning state before the sole visit. A caught unwind cannot retry
     /// or turn an interrupted original File/body into a completed view.
-    pub fn walk(&mut self) -> Result<(), JsxFileError> {
+    pub fn walk(&mut self) -> Result<(), JsxL2IrError> {
         self.walk_with(|producer, input, recorder| {
             producer
                 .program_observed(input, ProgramScope::Module, recorder)
@@ -128,22 +128,22 @@ impl<'a> JsxFileProducer<'a> {
     fn walk_with(
         &mut self,
         visit: impl FnOnce(
-            &mut FileProducer<'a>,
+            &mut L2IrProducer<'a>,
             ProgramInput<'_, 'a>,
             &mut Recorder<'a>,
         ) -> Result<(), ProgramInputError>,
-    ) -> Result<(), JsxFileError> {
+    ) -> Result<(), JsxL2IrError> {
         if self.phase != Phase::Pending {
-            return Err(JsxFileError::AlreadyWalked);
+            return Err(JsxL2IrError::AlreadyWalked);
         }
         self.phase = Phase::Interrupted;
         let admitted = self
             .observation
             .admitted()
-            .ok_or(JsxFileError::SyntaxAdmission)?;
+            .ok_or(JsxL2IrError::SyntaxAdmission)?;
         let input =
-            ProgramInput::checked(admitted, self.block, self.index).map_err(JsxFileError::Input)?;
-        visit(&mut self.producer, input, &mut self.recorder).map_err(JsxFileError::Input)?;
+            ProgramInput::checked(admitted, self.block, self.index).map_err(JsxL2IrError::Input)?;
+        visit(&mut self.producer, input, &mut self.recorder).map_err(JsxL2IrError::Input)?;
         self.phase = Phase::Complete;
         Ok(())
     }
@@ -153,7 +153,7 @@ impl<'a> JsxFileProducer<'a> {
         &self.observation
     }
 
-    pub fn finish(self) -> Result<JsxFile<'a>, Box<RejectedJsxFile<'a>>> {
+    pub fn finish(self) -> Result<JsxL2Ir<'a>, Box<RejectedJsxL2Ir<'a>>> {
         let Self {
             observation,
             producer,
@@ -162,19 +162,19 @@ impl<'a> JsxFileProducer<'a> {
             ..
         } = self;
         let body_complete = recorder.frames_complete() && recorder.jsx_count() > 0;
-        let mut rejection = RejectedJsxFile::new(
+        let mut rejection = RejectedJsxL2Ir::new(
             observation,
             match phase {
-                Phase::Pending => JsxFileError::NotWalked,
-                Phase::Interrupted => JsxFileError::Interrupted,
-                Phase::Complete => JsxFileError::IncompleteBody,
+                Phase::Pending => JsxL2IrError::NotWalked,
+                Phase::Interrupted => JsxL2IrError::Interrupted,
+                Phase::Complete => JsxL2IrError::IncompleteBody,
             },
         );
         rejection.records = recorder.records;
         let file = match producer.finish() {
             Ok(file) => file,
             Err(file) => {
-                rejection.error = JsxFileError::Artifact(file.artifact.error);
+                rejection.error = JsxL2IrError::Artifact(file.artifact.error);
                 rejection.rejected_file = Some(Box::new(file));
                 return Err(Box::new(rejection));
             }
@@ -185,7 +185,7 @@ impl<'a> JsxFileProducer<'a> {
         }
         // Structural File sealing alone does not imply semantic completion.
         if !file.is_complete() {
-            rejection.error = JsxFileError::IncompleteFile;
+            rejection.error = JsxL2IrError::IncompleteFile;
             rejection.file = Some(file);
             return Err(Box::new(rejection));
         }
@@ -193,7 +193,7 @@ impl<'a> JsxFileProducer<'a> {
             rejection.file = Some(file);
             return Err(Box::new(rejection));
         }
-        Ok(JsxFile {
+        Ok(JsxL2Ir {
             observation: rejection.observation,
             l2ir: file,
             records: rejection.records,
@@ -201,7 +201,7 @@ impl<'a> JsxFileProducer<'a> {
     }
 }
 
-impl<'a> JsxFile<'a> {
+impl<'a> JsxL2Ir<'a> {
     #[must_use]
     pub fn observation(&self) -> &ProgramObservation<'a> {
         &self.observation
@@ -220,8 +220,8 @@ impl<'a> JsxFile<'a> {
     }
 }
 
-impl<'a> RejectedJsxFile<'a> {
-    fn new(observation: ProgramObservation<'a>, error: JsxFileError) -> Self {
+impl<'a> RejectedJsxL2Ir<'a> {
+    fn new(observation: ProgramObservation<'a>, error: JsxL2IrError) -> Self {
         Self {
             observation,
             error,
@@ -231,7 +231,7 @@ impl<'a> RejectedJsxFile<'a> {
         }
     }
     #[must_use]
-    pub fn error(&self) -> JsxFileError {
+    pub fn error(&self) -> JsxL2IrError {
         self.error
     }
     #[must_use]
@@ -243,7 +243,7 @@ impl<'a> RejectedJsxFile<'a> {
         self.file.as_ref()
     }
     #[must_use]
-    pub fn rejected_file(&self) -> Option<&RejectedFile<'a>> {
+    pub fn rejected_file(&self) -> Option<&RejectedL2Ir<'a>> {
         self.rejected_file.as_deref()
     }
     /// Partial recording is diagnostic evidence, never a completed node view.

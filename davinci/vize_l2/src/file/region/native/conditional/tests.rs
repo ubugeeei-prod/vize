@@ -1,8 +1,8 @@
 extern crate std;
 
 use super::*;
-use crate::file::{InitializerKind, NativeFileConditionalState};
-use crate::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use crate::file::{InitializerKind, NativeL2IrConditionalState};
+use crate::lang::js::{NativeTemplateL2Ir, NativeTemplateOwner};
 use crate::op::Op;
 use vize_l0::{
     Allocator,
@@ -64,7 +64,7 @@ fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateOwner<'a> {
     owner
 }
 
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateL2Ir<'a> {
     let mut owner = owner(arena, source);
     {
         let mut walk = owner.begin().unwrap();
@@ -108,7 +108,7 @@ fn native_boolean_if_keeps_actual_input_read_scope_and_if_allocation_without_ali
         let [record] = file.native_conditionals() else {
             panic!("one actual If input");
         };
-        let NativeFileConditionalState::Admitted(node) = record.state() else {
+        let NativeL2IrConditionalState::Admitted(node) = record.state() else {
             panic!("closed If");
         };
         let [Op::If(original)] = file.artifact().root().ops.as_slice() else {
@@ -208,7 +208,7 @@ fn equal_foreign_if_nodes_and_bindings_do_not_satisfy_the_original_file_receipt(
     let [other_record] = other.native_conditionals() else {
         panic!("foreign If");
     };
-    let NativeFileConditionalState::Admitted(node) = record.state() else {
+    let NativeL2IrConditionalState::Admitted(node) = record.state() else {
         panic!("own node");
     };
     assert_eq!(other_record.state(), record.state());
@@ -264,7 +264,7 @@ fn original_literal_numeric_and_dynamic_refusals_do_not_publish_an_if_query() {
         };
         assert_eq!(
             record.state(),
-            NativeFileConditionalState::Refused(Kind::UnsupportedChild)
+            NativeL2IrConditionalState::Refused(Kind::UnsupportedChild)
         );
         assert!(record.original.is_none());
         assert!(core::ptr::eq(

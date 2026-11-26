@@ -1,9 +1,9 @@
 //! Concrete borrowed children retain the same private semantic recorder.
 
-use super::{FileRegion, TemplatePolicy};
+use super::{L2IrRegion, TemplatePolicy};
 use crate::artifact::{ComponentBody, ComponentFactory, L2TemplateError, RegionBuilder};
 use crate::expr::JsExpr;
-use crate::file::{FileIssueKind, TemplateIssue};
+use crate::file::{L2IrIssueKind, TemplateIssue};
 use crate::op::{Attribute, Namespace};
 use crate::provenance::ProvenanceRecord;
 use core::{marker::PhantomData, ops::DerefMut};
@@ -20,7 +20,7 @@ mod element;
 /// }
 /// ```
 pub struct TemplateChildRegion<'r, 'b, 'a, P: TemplatePolicy> {
-    pub(super) inner: FileRegion<'r, 'b, 'a, &'r mut RegionBuilder<'b, 'a>, P>,
+    pub(super) inner: L2IrRegion<'r, 'b, 'a, &'r mut RegionBuilder<'b, 'a>, P>,
 }
 
 /// A concrete callback preserves compile-local captures without a GAT.
@@ -43,7 +43,7 @@ pub trait TemplateBody<'a, P: TemplatePolicy> {
         'b: 'r;
 }
 
-impl<'a: 'b, 'b, R, P> FileRegion<'_, 'b, 'a, R, P>
+impl<'a: 'b, 'b, R, P> L2IrRegion<'_, 'b, 'a, R, P>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
     P: TemplatePolicy,
@@ -68,7 +68,7 @@ where
             region.element(tag, namespace, attributes, span, |child, node| {
                 body.run(
                     &mut TemplateChildRegion {
-                        inner: FileRegion {
+                        inner: L2IrRegion {
                             region: child,
                             facts,
                             scope: *scope,
@@ -103,11 +103,11 @@ where
                 facts.template_issues.push(TemplateIssue {
                     node: Some(node),
                     span,
-                    kind: FileIssueKind::UnsupportedComponent,
+                    kind: L2IrIssueKind::UnsupportedComponent,
                 });
                 body.run(
                     &mut TemplateChildRegion {
-                        inner: FileRegion {
+                        inner: L2IrRegion {
                             region: child,
                             facts,
                             scope: *scope,

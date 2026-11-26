@@ -6,7 +6,7 @@ use vize_l0::{Allocator, config::VueVersion};
 use vize_l1::container::vue::ScriptRole;
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind as Lower;
 use vize_l2::{
-    file::{FileIssueKind, RejectedFileHandler},
+    file::{L2IrIssueKind, RejectedL2IrHandler},
     lang::js::{NativeSetupIssueKind, NativeTemplateIssueKind as Template},
     op::Op,
 };
@@ -20,7 +20,7 @@ enum Expected {
     Lower(Lower),
     Template(Template),
     Ssr(SsrUnsupported),
-    Handler(FileIssueKind),
+    Handler(L2IrIssueKind),
     Collision,
 }
 
@@ -126,12 +126,12 @@ pub fn capture() -> Vec<serde_json::Value> {
         (
             "handler-unresolved",
             "<script setup>const value=1</script><template><button @click='missing'/></template>",
-            Expected::Handler(FileIssueKind::UnresolvedReference),
+            Expected::Handler(L2IrIssueKind::UnresolvedReference),
         ),
         (
             "handler-safety",
             "<script setup>const value=1</script><template><button @click='return ('/></template>",
-            Expected::Handler(FileIssueKind::UnsupportedSyntax),
+            Expected::Handler(L2IrIssueKind::UnsupportedSyntax),
         ),
     ] {
         let arena = Allocator::default();
@@ -232,7 +232,7 @@ pub fn capture() -> Vec<serde_json::Value> {
                 let file = original.file().unwrap();
                 assert!(!file.is_complete());
                 match (name, file.rejected_handlers()) {
-                    ("handler-unresolved", [RejectedFileHandler::Resolution { input, error }]) => {
+                    ("handler-unresolved", [RejectedL2IrHandler::Resolution { input, error }]) => {
                         assert_eq!(
                             error.kind,
                             vize_l2::resolution::ResolutionErrorKind::MissingBinding
@@ -245,7 +245,7 @@ pub fn capture() -> Vec<serde_json::Value> {
                         let diagnostics: Vec<_> = input.operand().syntax().diagnostics().collect();
                         assert!(diagnostics.is_empty());
                     }
-                    ("handler-safety", [RejectedFileHandler::Syntax(input)]) => {
+                    ("handler-safety", [RejectedL2IrHandler::Syntax(input)]) => {
                         assert_eq!(
                             input.kind,
                             vize_l2::lang::js::HandlerInputErrorKind::IncompleteSyntax

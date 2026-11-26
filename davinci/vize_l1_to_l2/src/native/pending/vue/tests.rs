@@ -2,7 +2,7 @@ extern crate std;
 
 use super::super::{NativeWalkState, PendingNativeComponent};
 use crate::native::{NativeComponent, NativeVueConstructionError, Point, Probe};
-use crate::vue_file::VueFileProducer;
+use crate::vue_file::VueL2IrProducer;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use vize_l0::{Allocator, SourceRoot, id::NodeId};
 use vize_l1::embed::Lang;
@@ -11,7 +11,7 @@ use vize_l1::embed::{
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l2::lang::js::ProgramInput;
-use vize_l2::{artifact::Builder, expr::ExprRef, file::FileIssueKind, op::Op};
+use vize_l2::{artifact::Builder, expr::ExprRef, file::L2IrIssueKind, op::Op};
 
 mod admission;
 
@@ -33,7 +33,7 @@ fn real_native_route_retains_original_ast_comments_and_actual_file_tables() {
     let component = NativeComponent::parse_in(&a, block).unwrap();
     let carrier = component.carrier().tree.children.as_ptr();
     let mut pending = PendingNativeComponent::from_component(component);
-    let mut producer = VueFileProducer::new(&a, source).unwrap();
+    let mut producer = VueL2IrProducer::new(&a, source).unwrap();
     producer
         .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), script_block, 0).unwrap())
         .unwrap();
@@ -127,7 +127,7 @@ fn real_guard_keeps_original_owner_before_between_and_after_last_callbacks() {
         let component = NativeComponent::parse_in(&a, block).unwrap();
         let carrier = component.carrier().tree.children.as_ptr();
         let mut pending = PendingNativeComponent::from_component(component);
-        let mut producer = VueFileProducer::new(&a, source).unwrap();
+        let mut producer = VueL2IrProducer::new(&a, source).unwrap();
         producer
             .setup(
                 ProgramInput::checked(syntax.admitted_program().unwrap(), script_block, 0).unwrap(),
@@ -192,7 +192,7 @@ fn real_guard_keeps_original_owner_before_between_and_after_last_callbacks() {
             _ => panic!("one genuine partial File owner"),
         };
         assert_eq!(interruption.span, span);
-        assert_eq!(interruption.kind, FileIssueKind::InterruptedTemplate);
+        assert_eq!(interruption.kind, L2IrIssueKind::InterruptedTemplate);
         assert_eq!(authored.as_ptr(), source.as_ptr());
         if expected_embeds == 2 {
             let [Op::Element(element)] = ops else {
@@ -253,7 +253,7 @@ fn foreign_equal_source_keeps_pending_and_rejects_native_before_any_ast_mint() {
         NativeComponent::parse_in(&a, SourceRoot::new(&original).unwrap().whole_block()).unwrap();
     let carrier = component.carrier().tree.children.as_ptr();
     let mut pending = PendingNativeComponent::from_component(component);
-    let mut producer = VueFileProducer::new(&a, &foreign).unwrap();
+    let mut producer = VueL2IrProducer::new(&a, &foreign).unwrap();
     assert_eq!(
         pending.construct_vue_file_in(&mut producer.template_region().unwrap()),
         Err(NativeVueConstructionError::ForeignSource)
@@ -277,6 +277,6 @@ fn foreign_equal_source_keeps_pending_and_rejects_native_before_any_ast_mint() {
             .template_interruption()
             .unwrap()
             .kind,
-        FileIssueKind::InterruptedTemplate
+        L2IrIssueKind::InterruptedTemplate
     );
 }

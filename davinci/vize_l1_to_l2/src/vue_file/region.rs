@@ -14,8 +14,8 @@ mod walk;
 ///
 /// ```compile_fail
 /// use vize_l1::embed::Lang;
-/// use vize_l1_to_l2::{native::NativeComponent, vue_file::VueFileRegion};
-/// fn override_lang<'a>(component: NativeComponent<'a>, region: &mut VueFileRegion<'_, 'a>) {
+/// use vize_l1_to_l2::{native::NativeComponent, vue_file::VueL2IrRegion};
+/// fn override_lang<'a>(component: NativeComponent<'a>, region: &mut VueL2IrRegion<'_, 'a>) {
 ///     let _ = component.construct_vue_file_in(region, Lang::Ts);
 /// }
 /// ```
@@ -23,11 +23,11 @@ mod walk;
 /// ```compile_fail
 /// use vize_l1_to_l2::vue_file::NativeTemplateProfile;
 /// ```
-pub struct VueFileRegion<'f, 'a> {
+pub struct VueL2IrRegion<'f, 'a> {
     inner: TemplateRegion<'f, 'a, Visibility>,
     profile: NativeTemplateProfile,
 }
-impl<'f, 'a> VueFileRegion<'f, 'a> {
+impl<'f, 'a> VueL2IrRegion<'f, 'a> {
     pub(super) fn new(
         inner: TemplateRegion<'f, 'a, Visibility>,
         profile: NativeTemplateProfile,
@@ -38,7 +38,7 @@ impl<'f, 'a> VueFileRegion<'f, 'a> {
         self.profile
     }
 }
-impl<'a> ComponentFactory<'a> for VueFileRegion<'_, 'a> {
+impl<'a> ComponentFactory<'a> for VueL2IrRegion<'_, 'a> {
     fn source(&self) -> &'a str {
         self.inner.source()
     }

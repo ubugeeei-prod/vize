@@ -4,10 +4,10 @@ use super::{
     DomBinding, DomBuilder, DomDependency, DomExpressionAnalysis, DomUnsupported, PropertyRole,
     ValueKind,
 };
-use crate::decision::dom::{file::DomFileExpression, vue::policy::FileReads};
+use crate::decision::dom::{file::DomL2IrExpression, vue::policy::FileReads};
 use vize_l0::id::NodeId;
 use vize_l2::{
-    file::FileResolution,
+    file::L2IrResolution,
     op::{BindingOp, ModelOp, Op},
 };
 
@@ -29,8 +29,8 @@ impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
             .native_model(node)
             .and_then(|original| original.kind())
         {
-            Some(vize_l2::file::NativeFileModelKind::Text) => DomDependency::TextModel,
-            Some(vize_l2::file::NativeFileModelKind::Checkbox) => DomDependency::CheckboxModel,
+            Some(vize_l2::file::NativeL2IrModelKind::Text) => DomDependency::TextModel,
+            Some(vize_l2::file::NativeL2IrModelKind::Checkbox) => DomDependency::CheckboxModel,
             None => {
                 self.reject(node, model.span, DomUnsupported::FileBinding);
                 return;
@@ -47,7 +47,7 @@ impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
         // allows deriving the separate borrowed read/write receipt.
         self.facts
             .file_expressions
-            .insert(node, DomFileExpression { resolution });
+            .insert(node, DomL2IrExpression { resolution });
         self.facts.bindings.insert(
             node,
             DomBinding {
@@ -65,7 +65,7 @@ impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
         node: NodeId,
         binding: &'owner BindingOp<'arena>,
         model: &'owner ModelOp<'arena>,
-    ) -> Option<FileResolution<'owner, 'arena>> {
+    ) -> Option<L2IrResolution<'owner, 'arena>> {
         // Only the genuine selected setup specialization gets this separate
         // receipt. SelectedReads::classify continues to reject every write.
         if !R::SELECTED_SETUP || self.root_count != 1 {

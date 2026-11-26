@@ -2,7 +2,7 @@
 
 use super::*;
 use crate::expr::ExprRef;
-use crate::file::{Namespace, NativeFileInterpolationState};
+use crate::file::{Namespace, NativeL2IrInterpolationState};
 use crate::resolution::Usage;
 
 #[test]
@@ -44,7 +44,7 @@ fn root_if_text_keeps_original_ast_single_read_current_scope_and_distinct_real_n
         let [conditional] = file.native_conditionals() else {
             panic!("original If input");
         };
-        let NativeFileConditionalState::Admitted(if_node) = conditional.state() else {
+        let NativeL2IrConditionalState::Admitted(if_node) = conditional.state() else {
             panic!("closed If");
         };
         let [Op::If(original)] = file.artifact().root().ops.as_slice() else {
@@ -69,7 +69,7 @@ fn root_if_text_keeps_original_ast_single_read_current_scope_and_distinct_real_n
         let [record] = file.native_interpolations() else {
             panic!("whole original input");
         };
-        let NativeFileInterpolationState::Admitted(node) = record.state() else {
+        let NativeL2IrInterpolationState::Admitted(node) = record.state() else {
             panic!("actual mint");
         };
         assert_ne!(node, if_node);
@@ -136,7 +136,7 @@ fn equal_if_text_files_and_ids_never_exchange_original_binding_or_ast_ownership(
         panic!("foreign original");
     };
     assert_eq!(record.state(), foreign_record.state());
-    let NativeFileInterpolationState::Admitted(node) = record.state() else {
+    let NativeL2IrInterpolationState::Admitted(node) = record.state() else {
         panic!("real node");
     };
     let own = file.expression(node).unwrap();
@@ -206,7 +206,7 @@ fn non_bare_or_unowned_if_text_is_refused_with_whole_original_input_custody() {
         };
         assert!(matches!(
             conditional.state(),
-            NativeFileConditionalState::Refused(_)
+            NativeL2IrConditionalState::Refused(_)
         ));
         assert!(conditional.original.is_none());
         assert_eq!(rejected.scopes().len(), 2);
@@ -246,7 +246,7 @@ fn late_if_text_suffix_refusal_keeps_real_prefix_read_and_denies_whole_if_comple
     };
     assert_eq!(
         conditional.state(),
-        NativeFileConditionalState::Refused(Kind::UnsupportedChild)
+        NativeL2IrConditionalState::Refused(Kind::UnsupportedChild)
     );
     assert!(conditional.original.is_none());
     let [record] = rejected.native_interpolations() else {
@@ -254,7 +254,7 @@ fn late_if_text_suffix_refusal_keeps_real_prefix_read_and_denies_whole_if_comple
     };
     assert!(matches!(
         record.state(),
-        NativeFileInterpolationState::Admitted(_)
+        NativeL2IrInterpolationState::Admitted(_)
     ));
     let [Op::If(original)] = rejected.artifact().parts.root.ops.as_slice() else {
         panic!("incomplete If");
@@ -306,7 +306,7 @@ fn narrower_body_refusal_preserves_complete_existing_resolution_and_original_syn
         };
         assert_eq!(
             record.state(),
-            NativeFileInterpolationState::Refused(Kind::UnsupportedChild)
+            NativeL2IrInterpolationState::Refused(Kind::UnsupportedChild)
         );
         assert_eq!(record.input().operand().full_span().slice(&source), body);
         assert_eq!(
@@ -352,7 +352,7 @@ fn if_text_body_unwind_retains_both_real_inputs_without_completing_the_if() {
         };
         assert!(matches!(
             record.state(),
-            NativeFileInterpolationState::Admitted(_)
+            NativeL2IrInterpolationState::Admitted(_)
         ));
         assert_eq!(walk.complete().unwrap_err().kind, Kind::Interrupted);
     }
@@ -363,7 +363,7 @@ fn if_text_body_unwind_retains_both_real_inputs_without_completing_the_if() {
     let [conditional] = rejected.native_conditionals() else {
         panic!("parked If");
     };
-    assert_eq!(conditional.state(), NativeFileConditionalState::Pending);
+    assert_eq!(conditional.state(), NativeL2IrConditionalState::Pending);
     assert!(conditional.original.is_none());
     assert_eq!(rejected.native_interpolations().len(), 1);
     assert!(output.retained_setup().is_some());

@@ -16,7 +16,7 @@ use vize_l1::{
     },
     markup::SurfaceParseOptions,
 };
-use vize_l2::query::vue::{OrdinaryDemand, VueDemand, VueFileProducer};
+use vize_l2::query::vue::{OrdinaryDemand, VueDemand, VueL2IrProducer};
 
 mod profile;
 
@@ -148,14 +148,14 @@ fn compare(view: AdmittedDescriptor<'_, '_>, arena: &Allocator, counts: &mut Cou
             }
             assert!(core::ptr::eq(b, programs.get(role).unwrap()));
         }
-        let baseline = VueFileProducer::scripts(
+        let baseline = VueL2IrProducer::scripts(
             arena,
             view,
             ordinary.as_ref().and_then(EmbedSyntax::admitted_program),
             setup.as_ref().and_then(EmbedSyntax::admitted_program),
             ALL,
         );
-        let candidate = VueFileProducer::from_script_programs(arena, programs, ALL);
+        let candidate = VueL2IrProducer::from_script_programs(arena, programs, ALL);
         match (baseline, candidate) {
             (Ok(old), Ok(new)) => {
                 let (a, b) = (old.finish().unwrap(), new.finish().unwrap());

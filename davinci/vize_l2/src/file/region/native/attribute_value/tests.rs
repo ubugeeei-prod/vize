@@ -1,7 +1,7 @@
 //! Independent original-source, canonical allocation and custody laws.
 
-use crate::file::{L2Ir, NativeFileAttributeValueState as State};
-use crate::lang::js::{NativeTemplateFile, NativeTemplateIssueKind as Kind, NativeTemplateOwner};
+use crate::file::{L2Ir, NativeL2IrAttributeValueState as State};
+use crate::lang::js::{NativeTemplateIssueKind as Kind, NativeTemplateL2Ir, NativeTemplateOwner};
 use crate::op::{ElementOp, Op};
 use vize_l0::{
     Allocator,
@@ -54,7 +54,7 @@ fn owner<'a>(
 fn lower<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<NativeTemplateL2Ir<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;
@@ -69,7 +69,7 @@ fn lower<'a>(
 fn lower_setup<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<NativeTemplateL2Ir<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     original
         .parse_setup_program()

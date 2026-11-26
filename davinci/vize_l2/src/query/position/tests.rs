@@ -4,15 +4,15 @@ use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span};
 
 use crate::file::{
-    Declaration, FileBuilder, FileIssueKind, Namespace, TemplatePolicy, TemplateScope,
+    Declaration, L2IrBuilder, L2IrIssueKind, Namespace, TemplatePolicy, TemplateScope,
 };
-use crate::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use crate::lang::js::{L2IrProducer, ProgramInput, ProgramScope};
 
 use super::{L2Ir, PositionQueryError as Error};
 
 fn append<'a>(
     arena: &'a Allocator,
-    producer: &mut FileProducer<'a>,
+    producer: &mut L2IrProducer<'a>,
     block: SourceBlock<'a>,
     index: usize,
     source_type: SourceType,
@@ -29,7 +29,7 @@ fn append<'a>(
 }
 
 fn file<'a>(arena: &'a Allocator, source: &'a str, source_type: SourceType) -> L2Ir<'a> {
-    let mut producer = FileProducer::new(arena, source).unwrap();
+    let mut producer = L2IrProducer::new(arena, source).unwrap();
     append(
         arena,
         &mut producer,

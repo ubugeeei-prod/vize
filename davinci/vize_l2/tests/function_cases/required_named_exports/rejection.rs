@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::file::FileIssueKind;
+use vize_l2::file::L2IrIssueKind;
 use vize_l2::query::{Model, PositionQueryError};
 
 #[test]
@@ -42,8 +42,8 @@ fn optional_named_exports_keep_full_genuine_refusals_with_and_without_keyword_re
                 .map(|i| (i.kind, i.span.slice(source)))
                 .collect::<Vec<_>>(),
             [
-                (FileIssueKind::UnsupportedSyntax, parameter),
-                (FileIssueKind::UnresolvedReference, "value")
+                (L2IrIssueKind::UnsupportedSyntax, parameter),
+                (L2IrIssueKind::UnresolvedReference, "value")
             ]
         );
         assert_eq!(file.references()[0].target, ReferenceTarget::Unresolved);
@@ -73,7 +73,7 @@ fn keyword_named_exports_keep_exact_default_type_only_and_source_reexport_roles(
             .map(|i| (i.kind, i.span.slice(source)))
             .collect::<Vec<_>>(),
         [(
-            FileIssueKind::UnsupportedSyntax,
+            L2IrIssueKind::UnsupportedSyntax,
             "function f(value:number):number{return value;}"
         )]
     );
@@ -90,7 +90,7 @@ fn keyword_named_exports_keep_exact_default_type_only_and_source_reexport_roles(
             .iter()
             .map(|i| (i.kind, i.span.slice(source)))
             .collect::<Vec<_>>(),
-        [(FileIssueKind::UnresolvedReference, "f")]
+        [(L2IrIssueKind::UnresolvedReference, "f")]
     );
     let source = "export function f(value:number):number{return value;}export {other as remote} from './source';export * as space from './namespace';";
     let parsed = Parser::new(&arena, source, SourceType::ts().with_module(true)).parse_observed();
@@ -117,17 +117,17 @@ fn newly_admitted_named_return_never_hides_original_parameter_body_or_late_error
         (
             "export function f(value:number|string):number{return value;}",
             vec![
-                (FileIssueKind::UnsupportedSyntax, "value:number|string"),
-                (FileIssueKind::UnresolvedReference, "value"),
+                (L2IrIssueKind::UnsupportedSyntax, "value:number|string"),
+                (L2IrIssueKind::UnresolvedReference, "value"),
             ],
         ),
         (
             "export function f(value:number):number{return missing+value;}",
-            vec![(FileIssueKind::UnresolvedReference, "missing")],
+            vec![(L2IrIssueKind::UnresolvedReference, "missing")],
         ),
         (
             "export function f(value:number):number{return value;}class Unsupported{}",
-            vec![(FileIssueKind::UnsupportedSyntax, "class Unsupported{}")],
+            vec![(L2IrIssueKind::UnsupportedSyntax, "class Unsupported{}")],
         ),
     ] {
         let parsed =

@@ -3,7 +3,7 @@ use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
 use vize_l1_to_l2::native::{NativeComponent, NativeProduced};
 use vize_l2::file::{Declaration, TemplatePolicy, TemplateScope};
-use vize_l2::lang::js::FileProducer;
+use vize_l2::lang::js::L2IrProducer;
 
 #[derive(Clone, Copy)]
 struct LexicalValues;
@@ -41,7 +41,7 @@ pub fn construct<'a>(
     arena: &'a Allocator,
     source: &'a str,
     template: &str,
-    producer: &mut FileProducer<'a>,
+    producer: &mut L2IrProducer<'a>,
     scope: TemplateScope,
 ) -> Option<NativeProduced<'a>> {
     let component = NativeComponent::parse_in(arena, block(source, template)?).ok()?;

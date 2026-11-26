@@ -7,7 +7,7 @@
 
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::Span;
-use vize_l2::lang::js::{JsxFile, JsxNode};
+use vize_l2::lang::js::{JsxL2Ir, JsxNode};
 use vize_l2::resolution::BindingId;
 
 mod build;
@@ -78,20 +78,20 @@ pub struct JsxIssue {
 /// A caller cannot associate independent tables or foreign numeric ids.
 ///
 /// ```compile_fail
-/// use vize_l2::lang::js::JsxFile;
+/// use vize_l2::lang::js::JsxL2Ir;
 /// use vize_l3::jsx::JsxAnalysis;
-/// fn forge<'a>(owner: JsxFile<'a>) {
+/// fn forge<'a>(owner: JsxL2Ir<'a>) {
 ///     let _ = JsxAnalysis { owner, decisions: vec![] };
 /// }
 /// ```
 pub struct JsxAnalysis<'a> {
-    owner: JsxFile<'a>,
+    owner: JsxL2Ir<'a>,
     decisions: Vec<JsxDecisionKind<'a>>,
 }
 
 impl<'a> JsxAnalysis<'a> {
     #[must_use]
-    pub fn owner(&self) -> &JsxFile<'a> {
+    pub fn owner(&self) -> &JsxL2Ir<'a> {
         &self.owner
     }
 
@@ -158,13 +158,13 @@ impl<'owner, 'a> JsxDecision<'owner, 'a> {
 /// A refusal keeps every original owner and completed lower fact intact.
 /// It exposes no partially admitted decision iterator or mutable AST/File.
 pub struct RejectedJsxAnalysis<'a> {
-    owner: JsxFile<'a>,
+    owner: JsxL2Ir<'a>,
     issues: Vec<JsxIssue>,
 }
 
 impl<'a> RejectedJsxAnalysis<'a> {
     #[must_use]
-    pub fn owner(&self) -> &JsxFile<'a> {
+    pub fn owner(&self) -> &JsxL2Ir<'a> {
         &self.owner
     }
     #[must_use]

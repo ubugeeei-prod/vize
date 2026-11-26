@@ -1,12 +1,12 @@
 use super::{Law, dom};
 use crate::{
-    lang::js::{JsxFile, JsxMarkupFile, JsxNode},
+    lang::js::{JsxL2Ir, JsxMarkupL2Ir, JsxNode},
     resolution::SyntaxKind as Syntax,
 };
 use alloc::{collections::BTreeMap, vec::Vec};
 use serde_json::{Value, json};
 
-pub(super) fn original(left: &JsxFile<'_>, right: &JsxFile<'_>) -> Law {
+pub(super) fn original(left: &JsxL2Ir<'_>, right: &JsxL2Ir<'_>) -> Law {
     assert_eq!(left.nodes().count(), right.nodes().count());
     for (left, right) in left.nodes().zip(right.nodes()) {
         assert_eq!(left.kind(), right.kind());
@@ -59,7 +59,7 @@ fn range(node: JsxNode<'_, '_>) -> Result<Value, &'static str> {
     let span = node.span().ok_or("original span")?;
     Ok(json!({"start":span.start,"end":span.end}))
 }
-pub(super) fn boundaries(owner: &JsxMarkupFile<'_>) -> Result<Value, &'static str> {
+pub(super) fn boundaries(owner: &JsxMarkupL2Ir<'_>) -> Result<Value, &'static str> {
     let mut packets = Vec::new();
     for node in owner.fragment_boundaries() {
         let kind = match node.kind() {
@@ -89,7 +89,7 @@ pub(super) fn boundaries(owner: &JsxMarkupFile<'_>) -> Result<Value, &'static st
 
 // Test-only realization consumes checked canonical values and actual retained
 // boundary records. Its backend-specific anchors never enter semantic IR.
-pub(super) fn mounted(owner: &JsxMarkupFile<'_>) -> Result<Value, &'static str> {
+pub(super) fn mounted(owner: &JsxMarkupL2Ir<'_>) -> Result<Value, &'static str> {
     let mut values = BTreeMap::new();
     fn collect(ops: &[crate::op::Op<'_>], values: &mut BTreeMap<(u32, u32), Value>) -> Law {
         for op in ops {

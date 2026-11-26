@@ -5,14 +5,14 @@ use crate::source_project::navigation::{IntrinsicTagTarget, coordinates};
 use tower_lsp::lsp_types::Position;
 use vize_l2::{
     file::ScriptUnit,
-    lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent, SyntaxEvent},
+    lang::js::{CallEvent, DeclaredEvent, L2IrObserver, StatementEvent, SyntaxEvent},
     resolution::{ResolutionErrorKind, SyntaxEdge, SyntaxKind},
 };
 
 #[derive(Default)]
 pub(super) struct Tags<'a>(pub(super) Vec<(&'a str, Span)>);
 
-impl<'a> FileObserver<'a> for Tags<'a> {
+impl<'a> L2IrObserver<'a> for Tags<'a> {
     type Checkpoint = usize;
     fn unit(&mut self, _: &ScriptUnit) {}
     fn statement(&mut self, _: StatementEvent<'_, 'a>) {}

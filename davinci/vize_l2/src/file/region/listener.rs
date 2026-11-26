@@ -1,11 +1,11 @@
 //! Resolve a named method reference in the same lexical scope that attaches the On.
-use super::{FileRegion, ScopedResolution, TemplateChildRegion, TemplatePolicy, TemplateRegion};
+use super::{L2IrRegion, ScopedResolution, TemplateChildRegion, TemplatePolicy, TemplateRegion};
 use crate::artifact::{L2TemplateError, RegionBuilder};
 use crate::expr::JsExpr;
 use core::ops::DerefMut;
 use vize_l0::{Span, id::NodeId};
 
-impl<'a: 'b, 'b, R, P> FileRegion<'_, 'b, 'a, R, P>
+impl<'a: 'b, 'b, R, P> L2IrRegion<'_, 'b, 'a, R, P>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
     P: TemplatePolicy,

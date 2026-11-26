@@ -11,8 +11,8 @@ extern crate std;
 use super::tests::{completed, owner};
 use super::*;
 use crate::expr::ExprRef;
-use crate::file::{Namespace as BindingNamespace, NativeFileInterpolationState as State};
-use crate::lang::js::NativeTemplateFile;
+use crate::file::{Namespace as BindingNamespace, NativeL2IrInterpolationState as State};
+use crate::lang::js::NativeTemplateL2Ir;
 use crate::op::Op;
 use crate::resolution::Usage;
 use crate::walk::NodeRef;
@@ -23,7 +23,7 @@ mod refusal;
 const FIRST_SUCCESSOR: &str = "<script setup>let ready=true</script><template><p v-if='ready'>{{ready}}</p><b v-else/></template>";
 const ELSE_SUCCESSOR: &str = "<script setup>let ready=true</script><template><p v-if='ready'/><b v-else>{{ready}}</b></template>";
 
-fn assert_reads(output: &NativeTemplateFile<'_>, names: &[&str]) {
+fn assert_reads(output: &NativeTemplateL2Ir<'_>, names: &[&str]) {
     let setup = output.setup().unwrap();
     let file = output.file().unwrap();
     let source = file.artifact().source();
@@ -34,7 +34,7 @@ fn assert_reads(output: &NativeTemplateFile<'_>, names: &[&str]) {
     let [conditional] = file.native_conditionals() else {
         panic!("one original conditional");
     };
-    let NativeFileConditionalState::Admitted(if_node) = conditional.state() else {
+    let NativeL2IrConditionalState::Admitted(if_node) = conditional.state() else {
         panic!("whole pair closed");
     };
     let [Op::If(original)] = file.artifact().root().ops.as_slice() else {

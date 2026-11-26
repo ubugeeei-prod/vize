@@ -1,11 +1,11 @@
 //! Genuine original styled-template custody through the same sole SSR walk.
 
-use super::{SsrAnalysis, SsrFileAnalysis, SsrTemplateBuildError};
+use super::{SsrAnalysis, SsrL2IrAnalysis, SsrTemplateBuildError};
 use crate::decision::DecisionTables;
 use vize_l2::{
     artifact::L2Template,
     file::L2Ir,
-    lang::js::{NativeScopedTemplateView, NativeTemplateFile},
+    lang::js::{NativeScopedTemplateView, NativeTemplateL2Ir},
 };
 
 /// Original style/parser/selected-File authority cannot be replaced by neutral
@@ -18,8 +18,8 @@ use vize_l2::{
 /// ```
 /// ```compile_fail
 /// use vize_l2::lang::js::NativeScopedTemplateView;
-/// use vize_l3::decision::ssr::{SsrFileAnalysis, TemplateScopedSsrAnalysis};
-/// fn forge<'o, 'a>(view: NativeScopedTemplateView<'o, 'a>, analysis: SsrFileAnalysis<'o, 'a>) {
+/// use vize_l3::decision::ssr::{SsrL2IrAnalysis, TemplateScopedSsrAnalysis};
+/// fn forge<'o, 'a>(view: NativeScopedTemplateView<'o, 'a>, analysis: SsrL2IrAnalysis<'o, 'a>) {
 ///     let _ = TemplateScopedSsrAnalysis { view, analysis };
 /// }
 /// ```
@@ -29,7 +29,7 @@ use vize_l2::{
 /// ```
 pub struct TemplateScopedSsrAnalysis<'owner, 'arena> {
     view: NativeScopedTemplateView<'owner, 'arena>,
-    analysis: SsrFileAnalysis<'owner, 'arena>,
+    analysis: SsrL2IrAnalysis<'owner, 'arena>,
 }
 impl<'owner, 'arena> TemplateScopedSsrAnalysis<'owner, 'arena> {
     #[must_use]
@@ -37,7 +37,7 @@ impl<'owner, 'arena> TemplateScopedSsrAnalysis<'owner, 'arena> {
         &self.view
     }
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner NativeTemplateL2Ir<'arena> {
         self.view.owner()
     }
     #[must_use]

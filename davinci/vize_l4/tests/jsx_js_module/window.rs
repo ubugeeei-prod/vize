@@ -14,7 +14,7 @@ fn genuine_embedded_jsx_owner_does_not_authorize_copying_the_outer_module()
         .map_err(|_| "block")?;
     let observation = Parser::new(&arena, script, SourceType::jsx()).parse_observed();
     let mut producer =
-        JsxFileProducer::new(&arena, observation, block, 0).map_err(|_| "producer")?;
+        JsxL2IrProducer::new(&arena, observation, block, 0).map_err(|_| "producer")?;
     producer.walk().map_err(|_| "walk")?;
     let analysis =
         build_jsx_decisions(producer.finish().map_err(|_| "finish")?).map_err(|_| "L3")?;

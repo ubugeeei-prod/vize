@@ -1,6 +1,6 @@
 use super::{Allocator, DeclarationKind, Namespace, Parser, SourceType, finish};
 use vize_l0::cstr;
-use vize_l2::file::{FileIssueKind, ReferenceTarget};
+use vize_l2::file::{L2IrIssueKind, ReferenceTarget};
 
 #[test]
 fn unsupported_optional_types_retain_both_original_issue_sites() {
@@ -42,10 +42,10 @@ fn unsupported_optional_types_retain_both_original_issue_sites() {
             sites,
             [
                 (
-                    FileIssueKind::UnsupportedSyntax,
+                    L2IrIssueKind::UnsupportedSyntax,
                     cstr!("value?: {annotation}").as_str()
                 ),
-                (FileIssueKind::UnresolvedReference, "value")
+                (L2IrIssueKind::UnresolvedReference, "value")
             ],
             "{annotation}"
         );
@@ -73,8 +73,8 @@ fn direct_optional_typed_exports_refuse_and_later_export_events_survive() {
             .map(|issue| (issue.kind, issue.span.slice(source)))
             .collect::<Vec<_>>(),
         [
-            (FileIssueKind::UnsupportedSyntax, "value?: number"),
-            (FileIssueKind::UnresolvedReference, "value")
+            (L2IrIssueKind::UnsupportedSyntax, "value?: number"),
+            (L2IrIssueKind::UnresolvedReference, "value")
         ]
     );
     for source in [
@@ -153,8 +153,8 @@ fn the_exact_unannotated_optional_negative_remains_a_whole_two_site_refusal() {
             .map(|issue| (issue.kind, issue.span.slice(source)))
             .collect::<Vec<_>>(),
         [
-            (FileIssueKind::UnsupportedSyntax, "value?"),
-            (FileIssueKind::UnresolvedReference, "value"),
+            (L2IrIssueKind::UnsupportedSyntax, "value?"),
+            (L2IrIssueKind::UnresolvedReference, "value"),
         ]
     );
     assert_eq!(file.references().len(), 1);

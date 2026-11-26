@@ -1,5 +1,5 @@
 use super::{NativeScriptObservation, NativeSfcIssue, NativeSfcIssueKind};
-use crate::vue_file::VueFileProducer;
+use crate::vue_file::VueL2IrProducer;
 use alloc::vec::Vec;
 use vize_l0::Allocator;
 use vize_l1::container::vue::{ScriptRole, ScriptView};
@@ -12,7 +12,7 @@ use vize_l2::lang::js::ProgramInput;
 pub(super) fn observe<'a>(
     allocator: &'a Allocator,
     selected: ScriptView<'_, 'a>,
-    producer: Option<&mut VueFileProducer<'a>>,
+    producer: Option<&mut VueL2IrProducer<'a>>,
     issues: &mut Vec<NativeSfcIssue>,
 ) -> NativeScriptObservation<'a> {
     let block = selected.block();

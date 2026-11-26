@@ -2,7 +2,7 @@ use super::support::{jsx, options};
 use vize_carton::i18n::{Locale, translator};
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1_to_l2::native_file::lower_sfc_native;
-use vize_l2::lang::js::{JsxFileProducer, JsxMarkupIssueKind};
+use vize_l2::lang::js::{JsxL2IrProducer, JsxMarkupIssueKind};
 use vize_patina::native::canonical::{NativeCanonicalLint, NativeCanonicalLintRefusal};
 
 #[test]
@@ -62,7 +62,7 @@ fn jsx_original_comment_coordinates_retain_nonzero_utf8_source_block_offsets() {
     let original = oxc_parser::Parser::new(&a, text, oxc_span::SourceType::tsx().with_module(true))
         .parse_observed();
     let mut producer =
-        JsxFileProducer::new(&a, original, block, 0).unwrap_or_else(|_| panic!("native block"));
+        JsxL2IrProducer::new(&a, original, block, 0).unwrap_or_else(|_| panic!("native block"));
     producer.walk().unwrap();
     let owner = producer
         .finish_markup()
@@ -99,7 +99,7 @@ fn later_unprovided_jsx_shapes_never_create_a_partial_native_lint_context() {
             oxc_parser::Parser::new(&a, source, oxc_span::SourceType::tsx().with_module(true))
                 .parse_observed();
         let block = SourceRoot::new(source).unwrap().whole_block();
-        let mut producer = JsxFileProducer::new(&a, original, block, 0)
+        let mut producer = JsxL2IrProducer::new(&a, original, block, 0)
             .unwrap_or_else(|_| panic!("native original"));
         producer.walk().unwrap();
         let Err(refused) = producer.finish_markup() else {
@@ -114,7 +114,7 @@ fn later_unprovided_jsx_shapes_never_create_a_partial_native_lint_context() {
             let original = refused.rejected_owner().unwrap();
             assert_eq!(
                 original.error(),
-                vize_l2::lang::js::JsxFileError::IncompleteFile
+                vize_l2::lang::js::JsxL2IrError::IncompleteFile
             );
             assert!(original.observation().admitted().is_some());
             let file = original.file().unwrap();
@@ -125,8 +125,8 @@ fn later_unprovided_jsx_shapes_never_create_a_partial_native_lint_context() {
         let owner = refused.owner().unwrap();
         assert!(owner.l2ir().is_complete());
         assert_eq!(owner.l2ir().artifact().node_count(), 0);
-        // Only JsxMarkupFile can construct the lint context. This retained
-        // original JsxFile is deliberately not such a capability.
+        // Only JsxMarkupL2Ir can construct the lint context. This retained
+        // original JsxL2Ir is deliberately not such a capability.
         assert!(owner.observation().admitted().is_some());
     }
 }
