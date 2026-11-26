@@ -13,7 +13,25 @@ import { compileJsxModule, VizeSfcCompileError } from "../compiler.ts";
 import { composeSourceMaps, parseSourceMap, type SourceMapV3 } from "../utils/source-map.ts";
 import type { VizePluginState } from "./state.ts";
 
-const JSX_SCRIPT = /<script\b[^>]*?\slang\s*=\s*["']?([jt]sx)\b/;
+// Matches wherever a `jsx` or `tsx` lang attribute could be, and in more places
+// besides, so a source it does not match cannot hold a JSX script block.
+const JSX_LANG = /\blang\s*=\s*["']?[jt]sx\b/;
+const SCRIPT_OPEN = /<script(?=\s)/g;
+// One attribute of an opening tag, read as the SFC parser reads it. A quote
+// opens a value only right after `=`, and a `>` inside a quoted value does not
+// end the tag. A stray `=` before a name is skipped, as the parser skips it.
+const TAG_ATTRIBUTE = /[\s=]*([^\s=>/]+)(?:\s*=\s*(?:"([^"]*)"?|'([^']*)'?|([^\s>/]*)))?/y;
+
+/** The `lang` of the opening tag whose attributes start at `from`. */
+function openingTagLang(source: string, from: number): string | undefined {
+  let lang: string | undefined;
+  TAG_ATTRIBUTE.lastIndex = from;
+  for (let match = TAG_ATTRIBUTE.exec(source); match; match = TAG_ATTRIBUTE.exec(source)) {
+    // The parser keeps the last of repeated attributes.
+    if (match[1] === "lang") lang = match[2] ?? match[3] ?? match[4];
+  }
+  return lang;
+}
 
 /** A JSX-bearing script block: its language and the line its tag opens on. */
 export interface SfcJsxScript {
@@ -22,17 +40,20 @@ export interface SfcJsxScript {
 }
 
 /**
- * The SFC's JSX-bearing script block, or `null`. This one pattern test is all
- * an SFC without such a block pays. Vue rejects script blocks of different
- * languages, so the first match names the language of both.
+ * The SFC's JSX-bearing script block, or `null`. One pattern test is all an
+ * SFC without such a block pays; only a source it matches has its script tags
+ * read. Vue rejects script blocks of different languages, so the first block
+ * found names the language of both.
  */
 export function findSfcJsxScript(source: string): SfcJsxScript | null {
-  const match = JSX_SCRIPT.exec(source);
-  if (!match) return null;
-  return {
-    lang: match[1] as SfcJsxScript["lang"],
-    line: countNewlines(source.slice(0, match.index)) + 1,
-  };
+  if (!JSX_LANG.test(source)) return null;
+  for (const tag of source.matchAll(SCRIPT_OPEN)) {
+    const lang = openingTagLang(source, tag.index + "<script".length);
+    if (lang === "jsx" || lang === "tsx") {
+      return { lang, line: countNewlines(source.slice(0, tag.index)) + 1 };
+    }
+  }
+  return null;
 }
 
 // The SFC compiler's own runtime-helper imports. The JSX compiler rejects any
@@ -75,22 +96,24 @@ export function lowerSfcJsx(
     return `/*vize-sfc-helpers:${setAside.length - 1}*/`;
   });
 
+  // The binding reports no spans, so point at the block the JSX came from.
+  const where = `in <script lang="${script.lang}"> (line ${script.line})`;
   let lowered: ReturnType<typeof compileJsxModule>;
   try {
-    // The same options, in the same precedence, as a standalone `.tsx` module.
+    // Client builds use the same options, in the same precedence, as a
+    // standalone `.tsx` module. The SFC's server render renders VNodes, and
+    // Vapor JSX output needs the DOM, so SSR always takes the VDOM output.
     const fileOptions = state.fileCompilerOptions?.(filePath) ?? state.mergedOptions;
     lowered = compileJsxModule(filePath, masked, {
-      jsxMode: fileOptions.jsxMode,
+      jsxMode: ssr ? "vdom" : fileOptions.jsxMode,
       jsxCompat: fileOptions.jsxCompat,
-      vapor: fileOptions.vapor ?? false,
+      vapor: ssr ? false : (fileOptions.vapor ?? false),
       ssr,
       lang: script.lang,
       sourceMap: emitted.map !== null,
     });
   } catch (error) {
     if (!(error instanceof VizeSfcCompileError)) throw error;
-    // The binding reports no spans, so point at the block the JSX came from.
-    const where = `in <script lang="${script.lang}"> (line ${script.line})`;
     throw new VizeSfcCompileError(
       filePath,
       error.diagnostics.map((diagnostic) => `${diagnostic} ${where}`),
@@ -98,15 +121,25 @@ export function lowerSfcJsx(
   }
 
   // What remains of this pattern is the JSX compiler's helper preamble.
-  const imported = new Set<string>();
+  const imported = new Map<string, string>();
   for (const [, list] of lowered.code.matchAll(HELPER_IMPORT)) {
-    for (const [, local] of helperSpecifiers(list) ?? []) imported.add(local);
+    for (const [specifier, local] of helperSpecifiers(list) ?? []) imported.set(local, specifier);
   }
   // A same-line substitution, so the lowered map still holds.
   const code = lowered.code.replace(HELPER_PLACEHOLDER, (_, index: string) => {
-    const kept = (setAside[Number(index)] ?? [])
-      .filter(([, local]) => !imported.has(local))
-      .map(([specifier]) => specifier);
+    const kept: string[] = [];
+    for (const [specifier, local] of setAside[Number(index)] ?? []) {
+      const preamble = imported.get(local);
+      if (preamble === undefined) kept.push(specifier);
+      // An authored import can share a helper's local name, such as
+      // `ref as _createElementVNode`. Dropping it would rebind every authored
+      // use to the helper, so only the identical import is merged.
+      else if (preamble !== specifier) {
+        throw new VizeSfcCompileError(filePath, [
+          `\`${specifier}\` from "vue" binds \`${local}\`, which JSX lowering imports as \`${preamble}\`; rename the local ${where}`,
+        ]);
+      }
+    }
     return kept.length > 0 ? `import { ${kept.join(", ")} } from "vue"` : "";
   });
 
