@@ -1,0 +1,10 @@
+# Compile scoped nesting with the commit under test, keeping every earlier scoped CSS oracle passing.
+use $bin::{cargo, git}
+
+let checkout = git rev-parse HEAD
+if $checkout != $env::HEAD_SHA {
+  fail 1 $"The checkout is $checkout, not the commit under test $env::HEAD_SHA"
+}
+cargo test --locked --profile ci -p vize_atelier_sfc --lib vite_plugin::css_scope:: -- --nocapture
+cargo test --locked --profile ci -p vize_atelier_sfc --test scoped_nesting_specificity -- --nocapture
+cargo test --locked --profile ci -p vize_atelier_sfc --test mixed_style_scope -- --nocapture

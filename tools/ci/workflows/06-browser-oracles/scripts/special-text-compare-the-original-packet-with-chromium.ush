@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
-# DO NOT EDIT. Generated from tools/ci/workflows/06-browser-oracles/scripts/special-text-compare-the-original-packet-with-chromium.sh.pkl.
-# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
+# Compare the original document packet's parse with Chromium's for each content-model family.
+use $bin::{vp}
+
 vp node --test \
   tests/tooling/davinci-document-body-elements.test.ts \
   tests/tooling/davinci-document-disclosure-elements.test.ts \

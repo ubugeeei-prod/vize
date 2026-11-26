@@ -39,7 +39,7 @@ steps = new Listing {
       VIZE_FIRST_NEWLINE_BIN = "${{ github.workspace }}/target/ci/vize"
       VIZE_FIRST_NEWLINE_CAPTURE = "${{ runner.temp }}/first-newline-observations.json"
     }
-    run = ci.workflowScript("first-newline-build-the-actual-cli-and-run-source-bound-browser-observations.sh")
+    run = ci.workflowProgram("first-newline-build-the-actual-cli-and-run-source-bound-browser-observations")
   }
   new Dynamic {
     uses = ci.uploadArtifact

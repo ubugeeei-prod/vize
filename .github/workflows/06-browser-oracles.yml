@@ -210,9 +210,9 @@ jobs:
         with:
           workspace: ./tests
       - name: Compare the original packet with native and legacy Rust
-        run: . "${{ env.VIZE_CI_FILES }}/special-text-compare-the-original-packet-with-native-and-legacy-rust.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/special-text-compare-the-original-packet-with-native-and-legacy-rust.sh"
       - name: Compare the original packet with Chromium
-        run: . "${{ env.VIZE_CI_FILES }}/special-text-compare-the-original-packet-with-chromium.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/special-text-compare-the-original-packet-with-chromium.sh"
   first-newline:
     if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.changes.outputs.first-newline == 'true') }}
     needs: changes
@@ -243,7 +243,7 @@ jobs:
         env:
           VIZE_FIRST_NEWLINE_BIN: ${{ github.workspace }}/target/ci/vize
           VIZE_FIRST_NEWLINE_CAPTURE: ${{ runner.temp }}/first-newline-observations.json
-        run: . "${{ env.VIZE_CI_FILES }}/first-newline-build-the-actual-cli-and-run-source-bound-browser-observations.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/first-newline-build-the-actual-cli-and-run-source-bound-browser-observations.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
@@ -301,7 +301,7 @@ jobs:
       - name: Compile current source and retain all prior scoped CSS oracles
         env:
           VIZE_SCOPED_NESTING_CAPTURE: ${{ runner.temp }}/scoped-nesting-modules.json
-        run: . "${{ env.VIZE_CI_FILES }}/scoped-nesting-compile-current-source-and-retain-all-prior-scoped-css-oracles.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/scoped-nesting-compile-current-source-and-retain-all-prior-scoped-css-oracles.sh"
       - name: Verify complete scoped CSS and real Chromium cascade and pixels
         env:
           VIZE_SCOPED_NESTING_CAPTURE: ${{ runner.temp }}/scoped-nesting-modules.json

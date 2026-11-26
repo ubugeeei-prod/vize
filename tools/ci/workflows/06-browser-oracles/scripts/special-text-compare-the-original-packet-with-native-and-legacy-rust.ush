@@ -1,7 +1,10 @@
-#!/usr/bin/env bash
-# DO NOT EDIT. Generated from tools/ci/workflows/06-browser-oracles/scripts/special-text-compare-the-original-packet-with-native-and-legacy-rust.sh.pkl.
-# Edit the Pkl source and run `node tools/commands/generate/repository-config.ts`.
-test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+# Compare the original document packet's parse in native and legacy Rust, at the commit under test.
+use $bin::{cargo, git}
+
+let checkout = git rev-parse HEAD
+if $checkout != $env::HEAD_SHA {
+  fail 1 $"The checkout is $checkout, not the commit under test $env::HEAD_SHA"
+}
 cargo test --locked --profile ci -p vize_l1 \
   --test html_body_elements \
   --test html_body_elements_legacy_oracle \

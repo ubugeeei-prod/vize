@@ -34,7 +34,7 @@ steps = new Listing {
   new Dynamic {
     name = "Compile current source and retain all prior scoped CSS oracles"
     env { VIZE_SCOPED_NESTING_CAPTURE = "${{ runner.temp }}/scoped-nesting-modules.json" }
-    run = ci.workflowScript("scoped-nesting-compile-current-source-and-retain-all-prior-scoped-css-oracles.sh")
+    run = ci.workflowProgram("scoped-nesting-compile-current-source-and-retain-all-prior-scoped-css-oracles")
   }
   new Dynamic {
     name = "Verify complete scoped CSS and real Chromium cascade and pixels"

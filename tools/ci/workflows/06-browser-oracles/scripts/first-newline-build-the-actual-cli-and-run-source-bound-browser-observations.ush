@@ -1,0 +1,19 @@
+# Build the CLI and run the first-newline observations, recording the source and the tokenizer's current captures.
+use $bin::{cargo, git, vp}
+use std::fs::mkdir_p
+use std::io::to_file
+
+let captures = $"$env::RUNNER_TEMP/first-newline-tokenizer-current"
+
+git rev-parse HEAD | to_file $"$env::RUNNER_TEMP/first-newline-source.txt"
+cargo build --locked --profile ci -p vize
+cargo test --locked --profile ci -p vize_armature --lib
+cargo test --locked --profile ci -p vize_l1_to_l2 --test integration -- \
+  pre_textarea_first_newline:: \
+  text_pass:: \
+  text_singleton::
+vp node --test tests/tooling/pre-textarea-first-newline.test.mjs
+mkdir_p $captures
+export VIZE_TOKENIZER_CAPTURE_DIR = $captures {
+  cargo test --locked --profile ci -p vize_armature --features legacy --lib
+}

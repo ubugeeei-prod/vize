@@ -34,10 +34,10 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Compare the original packet with native and legacy Rust"
-    run = ci.workflowScript("special-text-compare-the-original-packet-with-native-and-legacy-rust.sh")
+    run = ci.workflowProgram("special-text-compare-the-original-packet-with-native-and-legacy-rust")
   }
   new Dynamic {
     name = "Compare the original packet with Chromium"
-    run = ci.workflowScript("special-text-compare-the-original-packet-with-chromium.sh")
+    run = ci.workflowProgram("special-text-compare-the-original-packet-with-chromium")
   }
 }
