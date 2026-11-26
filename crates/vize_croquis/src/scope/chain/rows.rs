@@ -11,6 +11,14 @@
 //! `get_unchecked`'s precondition (see `creusot.rs` beside this file). No
 //! method has a precondition, so the proof holds whatever the rest of the
 //! crate passes in.
+//!
+//! The invariant must also hold when a method unwinds, because a caught
+//! panic leaves the table in use. Creusot models a panic as an unreachable
+//! state and proves the invariant only on return, so it does not check this.
+//! Each method therefore changes `current` only after every call that can
+//! panic: `push_selected` selects the new row after `Vec::push`, which panics
+//! on capacity overflow. A test catches that panic and checks the selected
+//! row.
 
 #[cfg(creusot)]
 use creusot_std::prelude::*;
