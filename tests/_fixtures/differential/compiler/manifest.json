@@ -4348,6 +4348,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
         "requiredFacets": [
           "code",
           "css",
@@ -4364,7 +4365,8 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "html-template"
+              "html-template",
+              "ts"
             ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
@@ -4454,6 +4456,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
         "requiredFacets": [
           "code",
           "css",
@@ -4470,7 +4473,8 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "html-template"
+              "html-template",
+              "ts"
             ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
