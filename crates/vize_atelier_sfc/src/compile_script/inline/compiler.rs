@@ -17,6 +17,7 @@ mod trace;
 
 use std::borrow::Cow;
 
+use vize_carton::string_builder::TextBuf;
 use vize_carton::{String, ToCompactString, profile};
 
 use crate::script::ScriptCompileContext;
@@ -62,9 +63,10 @@ pub fn compile_script_setup_inline(
         .as_ref()
         .map(|content| content.as_str())
         .unwrap_or(content);
-    let ctx = build_script_setup_context(content, normal_script_content, filename, source_is_ts);
+    let mut ctx =
+        build_script_setup_context(content, normal_script_content, filename, source_is_ts);
     let mut result = compile_script_setup_inline_with_context(
-        ctx,
+        &mut ctx,
         content,
         None,
         component_name,
@@ -93,7 +95,7 @@ pub fn compile_script_setup_inline(
 
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(crate) fn compile_script_setup_inline_with_context(
-    ctx: ScriptCompileContext,
+    ctx: &mut ScriptCompileContext,
     content: &str,
     setup_program: Option<&oxc_ast::ast::Program<'_>>,
     component_name: &str,
@@ -144,7 +146,7 @@ pub(crate) fn compile_script_setup_inline_with_context(
     let setup_code: String = setup_lines.join("\n").into();
 
     // Assembled in the heap buffer that becomes the returned code.
-    let mut output: Vec<u8> = Vec::with_capacity(4096);
+    let mut output = TextBuf::with_capacity(4096);
 
     // Store normal script content to add AFTER TypeScript transformation
     // This preserves type definitions that would otherwise be stripped
@@ -181,9 +183,9 @@ pub(crate) fn compile_script_setup_inline_with_context(
                 .unwrap_or(false));
 
     if setup_program.is_none() {
-        validate_macro_scope_references(&ctx, 0, content)?;
+        validate_macro_scope_references(ctx, 0, content)?;
     }
-    validate_props_destructure_default_types(&ctx, 0, content)?;
+    validate_props_destructure_default_types(ctx, 0, content)?;
 
     let has_define_model = !ctx.macros.define_models.is_empty();
     // `mergeModels` is needed when defineModel coexists with a user-declared

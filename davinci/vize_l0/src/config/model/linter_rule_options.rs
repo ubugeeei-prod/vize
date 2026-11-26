@@ -29,6 +29,7 @@ mod merge;
 mod multi_word_component_names;
 mod mustache_spacing;
 mod no_mutating_props;
+mod no_undefined_refs;
 mod no_use_v_if_with_v_for;
 mod prop_name_casing;
 mod props_destructuring;
@@ -136,6 +137,8 @@ pub struct ConfigLintRuleOptions {
         skip_serializing_if = "Option::is_none"
     )]
     require_component_registration: Option<component_registration::ComponentRegistrationOptions>,
+    #[serde(rename = "vue/no-undefined-refs")]
+    no_undefined_refs: Option<no_undefined_refs::NoUndefinedRefsOptions>,
     #[serde(
         rename = "html/no-empty-palpable-content",
         skip_serializing_if = "Option::is_none"
@@ -311,6 +314,7 @@ impl ConfigLintRuleOptions {
             && self.valid_v_slot.is_none()
             && self.musea_prefer_design_tokens.is_none()
             && self.require_component_registration.is_none()
+            && self.no_undefined_refs.is_none()
             && self.block_lang.is_none()
             && self.max_lines.is_none()
             && self.max_lines_per_block.is_none()

@@ -2,9 +2,10 @@
 
 use crate::{script::ScriptCompileContext, types::BindingType};
 use vize_carton::String;
+use vize_carton::string_builder::TextBuf;
 
 pub(super) fn emit_setter(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     setup_bindings: &[String],
     ctx: &ScriptCompileContext,
 ) {
@@ -18,29 +19,29 @@ pub(super) fn emit_setter(
         })
         .collect();
     if refs.is_empty() {
-        output.extend_from_slice(b"const vaporTemplateRefSetter = _createTemplateRefSetter()\n");
+        output.push_str("const vaporTemplateRefSetter = _createTemplateRefSetter()\n");
         return;
     }
     // The runtime reads a string ref from setupState only in development.
     // Getters retain actual declarations (including reassignable setup lets),
     // rather than their proxy-unwrapped values or an instance-private field.
-    output.extend_from_slice(b"const vaporTemplateRefSetter = ((bindings) => {\n");
-    output.extend_from_slice(b"  const setRef = _createTemplateRefSetter()\n");
-    output.extend_from_slice(b"  return (element, value, refFor, refKey) => {\n");
-    output.extend_from_slice(b"    const bound = typeof value === 'string' && value in bindings\n");
-    output.extend_from_slice(b"    return setRef(element, bound ? bindings[value] : value, refFor, bound ? refKey ?? value : refKey)\n");
-    output.extend_from_slice(b"  }\n})({ __proto__: null, ");
+    output.push_str("const vaporTemplateRefSetter = ((bindings) => {\n");
+    output.push_str("  const setRef = _createTemplateRefSetter()\n");
+    output.push_str("  return (element, value, refFor, refKey) => {\n");
+    output.push_str("    const bound = typeof value === 'string' && value in bindings\n");
+    output.push_str("    return setRef(element, bound ? bindings[value] : value, refFor, bound ? refKey ?? value : refKey)\n");
+    output.push_str("  }\n})({ __proto__: null, ");
     for (index, name) in refs.into_iter().enumerate() {
         if index > 0 {
-            output.extend_from_slice(b", ");
+            output.push_str(", ");
         }
-        output.extend_from_slice(b"get ");
-        output.extend_from_slice(name.as_bytes());
-        output.extend_from_slice(b"() { return ");
-        output.extend_from_slice(name.as_bytes());
-        output.extend_from_slice(b" }");
+        output.push_str("get ");
+        output.push_str(name);
+        output.push_str("() { return ");
+        output.push_str(name);
+        output.push_str(" }");
     }
-    output.extend_from_slice(b" })\n");
+    output.push_str(" })\n");
 }
 
 #[cfg(test)]
@@ -48,6 +49,7 @@ mod tests {
     use super::emit_setter;
     use crate::{script::ScriptCompileContext, types::BindingType};
     use vize_carton::String;
+    use vize_carton::string_builder::TextBuf;
 
     #[test]
     fn setter_joins_only_actual_ref_capable_setup_declarations() {
@@ -64,21 +66,21 @@ mod tests {
         ] {
             ctx.bindings.bindings.insert(String::from(name), kind);
         }
-        let mut output = Vec::new();
+        let mut output = TextBuf::new();
         emit_setter(&mut output, &bindings, &ctx);
         assert_eq!(
-            output.as_slice(),
-            b"const vaporTemplateRefSetter = ((bindings) => {\n  const setRef = _createTemplateRefSetter()\n  return (element, value, refFor, refKey) => {\n    const bound = typeof value === 'string' && value in bindings\n    return setRef(element, bound ? bindings[value] : value, refFor, bound ? refKey ?? value : refKey)\n  }\n})({ __proto__: null, get el() { return el }, get maybe() { return maybe }, get mutable() { return mutable } })\n"
+            output.as_str(),
+            "const vaporTemplateRefSetter = ((bindings) => {\n  const setRef = _createTemplateRefSetter()\n  return (element, value, refFor, refKey) => {\n    const bound = typeof value === 'string' && value in bindings\n    return setRef(element, bound ? bindings[value] : value, refFor, bound ? refKey ?? value : refKey)\n  }\n})({ __proto__: null, get el() { return el }, get maybe() { return maybe }, get mutable() { return mutable } })\n"
         );
     }
 
     #[test]
     fn setter_without_ref_capable_bindings_keeps_the_original_factory() {
-        let mut output = Vec::new();
+        let mut output = TextBuf::new();
         emit_setter(&mut output, &[], &ScriptCompileContext::new(""));
         assert_eq!(
-            output.as_slice(),
-            b"const vaporTemplateRefSetter = _createTemplateRefSetter()\n"
+            output.as_str(),
+            "const vaporTemplateRefSetter = _createTemplateRefSetter()\n"
         );
     }
 }

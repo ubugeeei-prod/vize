@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_elim_Some": { "prover": "alt-ergo", "time": 0.004 },
+      "vc_eq_Option_ref_u8": { "prover": "alt-ergo", "time": 0.004 },
+      "vc_get_u8": { "prover": "alt-ergo", "time": 0.004 },
+      "vc_saturating_add": { "prover": "alt-ergo", "time": 0.004 },
+      "vc_whitespace_gap_line_breaks": { "prover": "z3", "time": 0.018 }
+    }
+  }
+}

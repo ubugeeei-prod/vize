@@ -9,9 +9,11 @@ Disallow undefined variable references in templates.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | [Rule options](../options.md) |
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
+
+`globals` lists names a build step defines for every template, such as `unplugin-auto-import` imports. In a Nuxt project, `vize lint` reads the auto-imports from the generated `.nuxt/types/imports.d.ts` and adds them, so they need no entry; until `nuxi prepare` has generated that file, the rule is skipped with a notice. Names are exact. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.
 
 ## Bad
 
@@ -41,6 +43,13 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/no-undefined-refs": "warn"
+    },
+    "ruleOptions": {
+      "vue/no-undefined-refs": {
+        "globals": [
+          "formatCount"
+        ]
+      }
     }
   },
 });
@@ -51,5 +60,6 @@ Then run `vp run lint`.
 ## Related
 
 - [Vue rules](../vue.md)
+- [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_undefined_refs.rs#L12)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_undefined_refs.rs#L13)
