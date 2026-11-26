@@ -6,7 +6,7 @@
 mod slotted;
 mod where_selector;
 
-use vize_carton::{Allocator, Vec as ArenaVec};
+use vize_carton::{Allocator, StringBuilder};
 
 pub(super) use slotted::transform_slotted;
 pub(super) use where_selector::add_scope_to_element;
@@ -17,16 +17,14 @@ use super::transform::find_matching_paren;
 
 /// Apply scoped CSS transformation
 pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &str) -> &'a str {
-    let css_bytes = css.as_bytes();
-
     // Build attr_selector: [scope_id]
-    let mut attr_selector = ArenaVec::with_capacity_in(scope_id.len() + 2, &bump);
-    attr_selector.push(b'[');
-    attr_selector.extend_from_slice(scope_id.as_bytes());
-    attr_selector.push(b']');
-    let attr_selector = bump.alloc_slice_copy(&attr_selector);
+    let mut attr_selector = StringBuilder::with_capacity_in(scope_id.len() + 2, bump);
+    attr_selector.push('[');
+    attr_selector.push_str(scope_id);
+    attr_selector.push(']');
+    let attr_selector = attr_selector.into_str();
 
-    let mut output = ArenaVec::with_capacity_in(css_bytes.len() * 2, &bump);
+    let mut output = StringBuilder::with_capacity_in(css.len() * 2, bump);
     let mut chars = css.char_indices().peekable();
     let mut in_selector = true;
     let mut string: Option<StringBody> = None;
@@ -53,7 +51,7 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
         if let Some(body) = string {
             string = body.step(c);
             if !in_selector && !in_at_rule {
-                output.extend_from_slice(c.encode_utf8(&mut [0; 4]).as_bytes());
+                output.push(c);
             }
             continue;
         }
@@ -62,7 +60,7 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
             '"' | '\'' => {
                 string = Some(StringBody::open(c));
                 if !in_selector && !in_at_rule {
-                    output.push(c as u8);
+                    output.push(c);
                 }
             }
             '/' => {
@@ -70,7 +68,7 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
                     chars.next();
                     in_comment = true;
                 } else if !in_selector && !in_at_rule {
-                    output.push(b'/');
+                    output.push('/');
                 }
             }
             '@' if in_selector => {
@@ -87,15 +85,15 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
             }
             '@' => {
                 // @ in non-selector context (e.g., CSS nesting @media inside a rule)
-                output.push(b'@');
+                output.push('@');
             }
             ';' if in_at_rule => {
                 // Statement at-rule (e.g., @import, @charset, @namespace)
                 // Flush the entire at-rule including the semicolon
                 if let Some(stmt_str) = css.get(last_selector_end..=i).map(str::trim) {
-                    output.extend_from_slice(stmt_str.as_bytes());
+                    output.push_str(stmt_str);
                 }
-                output.push(b'\n');
+                output.push('\n');
                 in_at_rule = false;
                 in_selector = true;
                 pending_keyframes = false;
@@ -107,9 +105,9 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
                     in_at_rule = false;
                     // Flush the buffered at-rule header (e.g., "@media (--mobile)")
                     if let Some(at_rule_str) = css.get(last_selector_end..i).map(str::trim) {
-                        output.extend_from_slice(at_rule_str.as_bytes());
+                        output.push_str(at_rule_str);
                     }
-                    output.push(b'{');
+                    output.push('{');
                     if pending_keyframes {
                         saved_at_rule_depth = Some(at_rule_depth);
                         keyframes_brace_depth = Some(brace_depth);
@@ -121,9 +119,9 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
                 } else if keyframes_brace_depth.is_some_and(|d| brace_depth > d) {
                     // Inside @keyframes: output the stop name (from/to/0%/100%)
                     if let Some(kf_str) = css.get(last_selector_end..i).map(str::trim) {
-                        output.extend_from_slice(kf_str.as_bytes());
+                        output.push_str(kf_str);
                     }
-                    output.push(b'{');
+                    output.push('{');
                     in_selector = false;
                     last_selector_end = i + 1;
                 } else if in_selector
@@ -137,16 +135,16 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
                             attr_selector,
                         );
                     }
-                    output.push(b'{');
+                    output.push('{');
                     in_selector = false;
                     last_selector_end = i + 1;
                 } else {
-                    output.push(b'{');
+                    output.push('{');
                 }
             }
             '}' => {
                 brace_depth = brace_depth.saturating_sub(1);
-                output.push(b'}');
+                output.push('}');
                 // Check @keyframes block end — restore parent at_rule_depth
                 if keyframes_brace_depth.is_some_and(|d| brace_depth < d) {
                     keyframes_brace_depth = None;
@@ -168,30 +166,24 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
                 // Still building selector or at-rule header, don't output yet
             }
             _ => {
-                output.extend_from_slice(c.encode_utf8(&mut [0; 4]).as_bytes());
+                output.push(c);
             }
         }
     }
 
     // Handle any remaining content
-    if in_selector && let Some(rest) = css_bytes.get(last_selector_end..) {
-        output.extend_from_slice(rest);
+    if in_selector && let Some(rest) = css.get(last_selector_end..) {
+        output.push_str(rest);
     }
 
-    // SAFETY: `output` is built by copying selector/content ranges from the
-    // original UTF-8 `css` string and injecting ASCII-only scope attributes and
-    // punctuation. Ranges are advanced at `char_indices` boundaries or ASCII
-    // delimiter positions, so copied slices cannot split a code point. The arena
-    // copy owns the bytes for the returned lifetime, and skipping revalidation
-    // keeps scoped-style rewriting linear with minimal overhead.
-    unsafe { std::str::from_utf8_unchecked(bump.alloc_slice_copy(&output)) }
+    output.into_str()
 }
 
 /// Add scope to selector text while preserving leading CSS comments verbatim.
 fn scope_selector_with_leading_comments(
-    out: &mut ArenaVec<u8>,
+    out: &mut StringBuilder<'_>,
     selector: &str,
-    attr_selector: &[u8],
+    attr_selector: &str,
 ) {
     let Some(prefix_end) = leading_css_comment_trivia_end(selector) else {
         scope_selector(out, selector.trim(), attr_selector);
@@ -201,7 +193,7 @@ fn scope_selector_with_leading_comments(
     let (prefix, selector_body) = selector
         .split_at_checked(prefix_end)
         .unwrap_or((selector, ""));
-    out.extend_from_slice(prefix.as_bytes());
+    out.push_str(prefix);
 
     let selector_body = selector_body.trim();
     if !selector_body.is_empty() {
@@ -234,14 +226,14 @@ fn leading_css_comment_trivia_end(value: &str) -> Option<usize> {
 }
 
 /// Add scope attribute to a selector
-fn scope_selector(out: &mut ArenaVec<u8>, selector: &str, attr_selector: &[u8]) {
+fn scope_selector(out: &mut StringBuilder<'_>, selector: &str, attr_selector: &str) {
     if selector.is_empty() {
         return;
     }
 
     // Handle at-rules that don't have selectors
     if selector.starts_with('@') {
-        out.extend_from_slice(selector.as_bytes());
+        out.push_str(selector);
         return;
     }
 
@@ -250,7 +242,7 @@ fn scope_selector(out: &mut ArenaVec<u8>, selector: &str, attr_selector: &[u8]) 
     let mut first = true;
     for part in split_top_level_commas(selector) {
         if !first {
-            out.extend_from_slice(b", ");
+            out.push_str(", ");
         }
         first = false;
         scope_single_selector(out, part.trim(), attr_selector);
@@ -279,7 +271,7 @@ fn split_top_level_commas(s: &str) -> Vec<&str> {
 }
 
 /// Add scope attribute to a single selector
-fn scope_single_selector(out: &mut ArenaVec<u8>, selector: &str, attr_selector: &[u8]) {
+fn scope_single_selector(out: &mut StringBuilder<'_>, selector: &str, attr_selector: &str) {
     if selector.is_empty() {
         return;
     }
@@ -302,17 +294,16 @@ fn scope_single_selector(out: &mut ArenaVec<u8>, selector: &str, attr_selector: 
 
     if let Some((prefix, boundary, suffix)) = split_before_trailing_universal_or_pseudo(selector) {
         if suffix.starts_with(":where(")
-            && let Ok(attr) = std::str::from_utf8(attr_selector)
-            && let Some(scoped) = crate::style::scope_bare_where(suffix, attr)
+            && let Some(scoped) = crate::style::scope_bare_where(suffix, attr_selector)
         {
-            out.extend_from_slice(prefix.as_bytes());
-            out.extend_from_slice(boundary.as_bytes());
-            out.extend_from_slice(scoped.as_bytes());
+            out.push_str(prefix);
+            out.push_str(boundary);
+            out.push_str(&scoped);
             return;
         }
         scope_single_selector(out, prefix.trim_end(), attr_selector);
-        out.extend_from_slice(boundary.as_bytes());
-        out.extend_from_slice(suffix.trim_start().as_bytes());
+        out.push_str(boundary);
+        out.push_str(suffix.trim_start());
         return;
     }
 
@@ -320,12 +311,12 @@ fn scope_single_selector(out: &mut ArenaVec<u8>, selector: &str, attr_selector: 
     let parts: Vec<&str> = split_top_level_whitespace(selector);
     // Add scope to the last part
     let Some((last, leading)) = parts.split_last() else {
-        out.extend_from_slice(selector.as_bytes());
+        out.push_str(selector);
         return;
     };
     for part in leading {
-        out.extend_from_slice(part.as_bytes());
-        out.push(b' ');
+        out.push_str(part);
+        out.push(' ');
     }
     add_scope_to_element(out, last, attr_selector);
 }
@@ -368,25 +359,25 @@ fn split_top_level_whitespace(s: &str) -> Vec<&str> {
 
 /// Transform :deep() to descendant selector
 pub(super) fn transform_deep(
-    out: &mut ArenaVec<u8>,
+    out: &mut StringBuilder<'_>,
     selector: &str,
     start: usize,
-    attr_selector: &[u8],
+    attr_selector: &str,
 ) {
     if let Some((before, inner, rest)) = split_pseudo_function(selector, start, ":deep(") {
         push_deep_scope_prefix(out, before, attr_selector);
-        out.push(b' ');
-        out.extend_from_slice(inner.as_bytes());
-        out.extend_from_slice(rest.as_bytes());
+        out.push(' ');
+        out.push_str(inner);
+        out.push_str(rest);
     } else {
-        out.extend_from_slice(selector.as_bytes());
+        out.push_str(selector);
     }
 }
 
-fn push_deep_scope_prefix(out: &mut ArenaVec<u8>, before: &str, attr_selector: &[u8]) {
+fn push_deep_scope_prefix(out: &mut StringBuilder<'_>, before: &str, attr_selector: &str) {
     let before = before.trim_end();
     if before.is_empty() {
-        out.extend_from_slice(attr_selector);
+        out.push_str(attr_selector);
         return;
     }
 
@@ -401,13 +392,13 @@ fn push_deep_scope_prefix(out: &mut ArenaVec<u8>, before: &str, attr_selector: &
     };
     let target = target.trim_end();
     if target.is_empty() {
-        out.extend_from_slice(attr_selector);
-        out.extend_from_slice(combinator.as_bytes());
+        out.push_str(attr_selector);
+        out.push_str(combinator);
         return;
     }
 
     scope_single_selector(out, target, attr_selector);
-    out.extend_from_slice(before.get(target.len()..).unwrap_or_default().as_bytes());
+    out.push_str(before.get(target.len()..).unwrap_or_default());
 }
 
 fn trailing_combinator_start(value: &str) -> Option<usize> {
@@ -420,11 +411,11 @@ fn trailing_combinator_start(value: &str) -> Option<usize> {
 }
 
 /// Transform :global() to unscoped
-pub(super) fn transform_global(out: &mut ArenaVec<u8>, selector: &str, start: usize) {
+pub(super) fn transform_global(out: &mut StringBuilder<'_>, selector: &str, start: usize) {
     if let Some((_, inner, _)) = split_pseudo_function(selector, start, ":global(") {
-        out.extend_from_slice(inner.as_bytes());
+        out.push_str(inner);
     } else {
-        out.extend_from_slice(selector.as_bytes());
+        out.push_str(selector);
     }
 }
 

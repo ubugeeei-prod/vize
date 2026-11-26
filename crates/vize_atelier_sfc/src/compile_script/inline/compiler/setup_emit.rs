@@ -2,6 +2,7 @@ use crate::compile_script::erasure::{Erasure, emit_runtime_helper};
 use std::borrow::Cow;
 
 use vize_atelier_core::BindingMetadata;
+use vize_carton::string_builder::TextBuf;
 use vize_carton::{String, profile};
 
 use crate::script::{ScriptCompileContext, gen_props_access_exp};
@@ -81,7 +82,7 @@ fn transform_css_var_expression(
 
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_setup_body(
-    output: &mut Vec<u8>,
+    output: &mut TextBuf,
     ctx: &ScriptCompileContext,
     model_infos: &[ModelInfo],
     setup_body_lines: &[String],
@@ -104,11 +105,11 @@ pub(super) fn emit_setup_body(
         && let Some(ref binding_name) = emits_macro.binding_name
     {
         tracer.macro_binding(output.len(), emits_macro.start);
-        output.extend_from_slice(b"const ");
-        output.extend_from_slice(binding_name.as_bytes());
-        output.extend_from_slice(b" = __emit\n");
+        output.push_str("const ");
+        output.push_str(binding_name);
+        output.push_str(" = __emit\n");
         if has_blank_line_after_macro(ctx.source.as_str(), emits_macro.end) {
-            output.push(b'\n');
+            output.push('\n');
         }
     }
 
@@ -117,13 +118,13 @@ pub(super) fn emit_setup_body(
         && let Some(ref binding_name) = props_macro.binding_name
     {
         tracer.macro_binding(output.len(), props_macro.start);
-        output.extend_from_slice(b"const ");
-        output.extend_from_slice(binding_name.as_bytes());
-        output.extend_from_slice(b" = __props");
+        output.push_str("const ");
+        output.push_str(binding_name);
+        output.push_str(" = __props");
         if has_semicolon_after_macro(ctx.source.as_str(), props_macro.end) {
-            output.push(b';');
+            output.push(';');
         }
-        output.push(b'\n');
+        output.push('\n');
     }
 
     // Model bindings: const model = _useModel<T>(__props, 'modelValue')
@@ -131,17 +132,17 @@ pub(super) fn emit_setup_body(
         for (model_name, binding_name, modifiers_binding_name, _, runtime_options, type_arg) in
             model_infos
         {
-            output.extend_from_slice(b"const ");
+            output.push_str("const ");
             if let Some(modifiers_binding_name) = modifiers_binding_name {
-                output.push(b'[');
-                output.extend_from_slice(binding_name.as_bytes());
-                output.extend_from_slice(b", ");
-                output.extend_from_slice(modifiers_binding_name.as_bytes());
-                output.extend_from_slice(b"]");
+                output.push('[');
+                output.push_str(binding_name);
+                output.push_str(", ");
+                output.push_str(modifiers_binding_name);
+                output.push_str("]");
             } else {
-                output.extend_from_slice(binding_name.as_bytes());
+                output.push_str(binding_name);
             }
-            output.extend_from_slice(b" = ");
+            output.push_str(" = ");
             emit_runtime_helper(output, erasure.as_deref_mut(), "_useModel");
             // Thread an explicit `<T>` type argument through to `useModel` so the
             // model ref's type matches @vue/compiler-sfc in TypeScript output.
@@ -149,18 +150,18 @@ pub(super) fn emit_setup_body(
                 && let Some(type_arg) = type_arg.as_deref().map(str::trim)
                 && !type_arg.is_empty()
             {
-                output.push(b'<');
-                output.extend_from_slice(type_arg.as_bytes());
-                output.push(b'>');
+                output.push('<');
+                output.push_str(type_arg);
+                output.push('>');
             }
-            output.extend_from_slice(b"(__props, \"");
-            output.extend_from_slice(model_name.as_bytes());
-            output.push(b'"');
+            output.push_str("(__props, \"");
+            output.push_str(model_name);
+            output.push('"');
             if let Some(runtime_options) = runtime_options {
-                output.extend_from_slice(b", ");
-                output.extend_from_slice(runtime_options.as_bytes());
+                output.push_str(", ");
+                output.push_str(runtime_options);
             }
-            output.extend_from_slice(b")\n");
+            output.push_str(")\n");
         }
     }
 
@@ -169,11 +170,11 @@ pub(super) fn emit_setup_body(
         && let Some(ref binding_name) = slots_macro.binding_name
     {
         tracer.macro_binding(output.len(), slots_macro.start);
-        output.extend_from_slice(b"const ");
-        output.extend_from_slice(binding_name.as_bytes());
-        output.extend_from_slice(b" = ");
+        output.push_str("const ");
+        output.push_str(binding_name);
+        output.push_str(" = ");
         emit_runtime_helper(output, erasure.as_deref_mut(), "_useSlots");
-        output.extend_from_slice(b"()\n");
+        output.push_str("()\n");
     }
 
     // SSR's existing VDOM fallback keeps the VDOM helper.
@@ -187,7 +188,7 @@ pub(super) fn emit_setup_body(
                 "_useCssVars"
             },
         );
-        output.extend_from_slice(b"(_ctx => ({\n");
+        output.push_str("(_ctx => ({\n");
         for (i, var_expr) in css_vars.iter().enumerate() {
             let var_name = if is_prod {
                 crate::css::prod_scoped_v_bind_name(css_vars_id, var_expr)
@@ -197,32 +198,32 @@ pub(super) fn emit_setup_body(
             let var_value = css_var_values.get(i).map_or("", String::as_str);
             let mut quoted_name = String::default();
             crate::vite_plugin::js_string::push_js_string_literal(&mut quoted_name, &var_name);
-            output.extend_from_slice(b"  ");
-            output.extend_from_slice(quoted_name.as_bytes());
-            output.extend_from_slice(b": (");
-            output.extend_from_slice(var_value.as_bytes());
-            output.extend_from_slice(b")");
+            output.push_str("  ");
+            output.push_str(&quoted_name);
+            output.push_str(": (");
+            output.push_str(var_value);
+            output.push_str(")");
             if i < css_vars.len() - 1 {
-                output.extend_from_slice(b",");
+                output.push_str(",");
             }
-            output.extend_from_slice(b"\n");
+            output.push_str("\n");
         }
-        output.extend_from_slice(b"}))\n\n");
+        output.push_str("}))\n\n");
     }
 
     for module_name in setup_css_module_names {
-        output.extend_from_slice(b"const ");
-        output.extend_from_slice(module_name.as_bytes());
-        output.extend_from_slice(b" = ");
+        output.push_str("const ");
+        output.push_str(module_name);
+        output.push_str(" = ");
         emit_runtime_helper(output, erasure.as_deref_mut(), "_useCssModule");
-        output.push(b'(');
+        output.push('(');
         if module_name != "$style" {
-            output.extend_from_slice(json_string(module_name).as_bytes());
+            output.push_str(&json_string(module_name));
         }
-        output.extend_from_slice(b")\n");
+        output.push_str(")\n");
     }
     if !setup_css_module_names.is_empty() {
-        output.push(b'\n');
+        output.push('\n');
     }
 
     // Output setup code lines (non-hoisted), transforming await expressions for async setup
@@ -237,8 +238,8 @@ pub(super) fn emit_setup_body(
         }
         for (index, line) in transformed_async.iter().enumerate() {
             tracer.copy(output.len(), async_runs.get(index));
-            output.extend_from_slice(line.as_bytes());
-            output.push(b'\n');
+            output.push_str(line);
+            output.push('\n');
         }
     } else {
         for (index, line) in setup_body_lines.iter().enumerate() {
@@ -246,8 +247,8 @@ pub(super) fn emit_setup_body(
                 output.len(),
                 body_runs.as_ref().and_then(|runs| runs.get(index)),
             );
-            output.extend_from_slice(line.as_bytes());
-            output.push(b'\n');
+            output.push_str(line);
+            output.push('\n');
         }
     }
 
@@ -255,9 +256,9 @@ pub(super) fn emit_setup_body(
     if let Some(ref expose_macro) = ctx.macros.define_expose {
         tracer.macro_binding(output.len(), expose_macro.start);
         let args = expose_macro.args.trim();
-        output.extend_from_slice(b"__expose(");
-        output.extend_from_slice(args.as_bytes());
-        output.extend_from_slice(b")\n");
+        output.push_str("__expose(");
+        output.push_str(args);
+        output.push_str(")\n");
     }
 }
 

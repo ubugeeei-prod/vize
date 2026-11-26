@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 
+use vize_carton::string_builder::TextBuf;
 use vize_carton::{String, profile};
 
 use crate::compile_script::erasure::{Erasure, elide_generated_imports};
@@ -45,7 +46,7 @@ pub(super) fn compile_script_setup_inline_body(
     user_imports: Vec<String>,
     ts_declarations: Vec<String>,
     setup_code: String,
-    mut output: Vec<u8>,
+    mut output: TextBuf,
     preserved_normal_script: Option<String>,
     needs_merge_defaults: bool,
     mut with_defaults_values: Option<WithDefaultsValues>,
@@ -184,7 +185,7 @@ pub(super) fn compile_script_setup_inline_body(
         None
     };
     // The render or setup-state return closes `setup`; it has no provenance.
-    let mut render_return = Vec::new();
+    let mut render_return = TextBuf::new();
     emit_render_return(
         &mut render_return,
         &template,
@@ -236,9 +237,7 @@ pub(super) fn compile_script_setup_inline_body(
             .iter()
             .map(|import| extract_import_identifiers(import))
             .collect();
-        // SAFETY: the render return is ASCII glue around UTF-8 template code.
-        let render_return = unsafe { std::str::from_utf8_unchecked(&render_return) };
-        for generated in [render_return, template.hoisted, template.render_fn]
+        for generated in [render_return.as_str(), template.hoisted, template.render_fn]
             .into_iter()
             .filter(|piece| !piece.is_empty())
         {
@@ -246,13 +245,12 @@ pub(super) fn compile_script_setup_inline_body(
         }
         // Erased macro arguments count where they are emitted.
         let mut options =
-            Vec::with_capacity(props_emits_buf.len() + model_props_emits_buf.len() + 6);
-        options.extend_from_slice(b"({\n");
-        options.extend_from_slice(&props_emits_buf);
-        options.extend_from_slice(&model_props_emits_buf);
-        options.extend_from_slice(b"})");
-        // SAFETY: macro arguments and ASCII glue are UTF-8.
-        erasure.javascript(unsafe { std::str::from_utf8_unchecked(&options) });
+            TextBuf::with_capacity(props_emits_buf.len() + model_props_emits_buf.len() + 6);
+        options.push_str("({\n");
+        options.push_str(&props_emits_buf);
+        options.push_str(&model_props_emits_buf);
+        options.push_str("})");
+        erasure.javascript(&options);
         let macros = &ctx.macros;
         for call in [&macros.define_options, &macros.define_expose]
             .into_iter()
@@ -295,8 +293,8 @@ pub(super) fn compile_script_setup_inline_body(
     }
     for (index, line) in hoisted_lines.iter().enumerate() {
         tracer.copy(output.len(), hoisted_runs.get(index));
-        output.extend_from_slice(line.as_bytes());
-        output.push(b'\n');
+        output.push_str(line);
+        output.push('\n');
     }
 
     let component_state = emit_component_definition(
@@ -321,8 +319,8 @@ pub(super) fn compile_script_setup_inline_body(
         if let Some(erasure) = erasure.as_mut() {
             erasure.javascript(&declaration);
         }
-        output.extend_from_slice(declaration.as_bytes());
-        output.push(b'\n');
+        output.push_str(&declaration);
+        output.push('\n');
     }
 
     emit_setup_body(
@@ -345,42 +343,33 @@ pub(super) fn compile_script_setup_inline_body(
         &mut tracer,
     );
 
-    output.push(b'\n');
-    output.extend_from_slice(render_return.as_slice());
+    output.push('\n');
+    output.push_str(&render_return);
 
-    output.extend_from_slice(b"}\n");
-    output.push(b'\n');
+    output.push_str("}\n");
+    output.push('\n');
     if is_vapor && (component_state.has_options || head.has_default_export) {
-        output.extend_from_slice(b"}))\n");
+        output.push_str("}))\n");
     } else if component_state.has_options || head.has_default_export || is_ts || is_vapor {
-        output.extend_from_slice(b"})\n");
+        output.push_str("})\n");
     } else {
-        output.extend_from_slice(b"}\n");
+        output.push_str("}\n");
     }
 
-    // SAFETY: `output` is assembled from UTF-8 source slices, OXC-generated
-    // strings, and ASCII glue emitted by this compiler. The buffer type is bytes
-    // only because we need cheap `extend_from_slice` during script assembly. No
-    // raw non-UTF-8 bytes are ever appended, so validating the whole script again
-    // would only add work to the hot SFC compile path.
-    #[expect(clippy::disallowed_types, reason = "unchecked UTF-8")]
-    let output_str: std::string::String =
-        unsafe { std::string::String::from_utf8_unchecked(output) };
-
     let final_code: String = if is_ts {
-        annotate_event_params(&output_str, &mut tracer)
+        annotate_event_params(&output, &mut tracer)
     } else if let Some(erasure) = erasure.as_ref().filter(|erasure| erasure.is_complete()) {
-        match elide_generated_imports(&output_str, generated_imports_end, erasure) {
+        match elide_generated_imports(&output, generated_imports_end, erasure) {
             Some((code, runs)) => {
                 if let Some(trace) = tracer.trace() {
                     trace.output = runs.compose(&trace.output);
                 }
                 code
             }
-            None => output_str.into(),
+            None => output.into_compact(),
         }
     } else {
-        output_str.into()
+        output.into_compact()
     };
 
     Ok(ScriptCompileResult {
@@ -429,10 +418,10 @@ fn annotate_event_params(code: &str, tracer: &mut Tracer<'_>) -> String {
     second
 }
 
-fn ensure_blank_line(output: &mut Vec<u8>) {
-    match output.as_slice() {
-        bytes if bytes.ends_with(b"\n\n") => {}
-        bytes if bytes.ends_with(b"\n") => output.push(b'\n'),
-        _ => output.extend_from_slice(b"\n\n"),
+fn ensure_blank_line(output: &mut TextBuf) {
+    match output.as_str() {
+        text if text.ends_with("\n\n") => {}
+        text if text.ends_with('\n') => output.push('\n'),
+        _ => output.push_str("\n\n"),
     }
 }
