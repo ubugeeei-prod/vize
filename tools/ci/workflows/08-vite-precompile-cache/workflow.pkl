@@ -64,7 +64,7 @@ jobs {
       new Dynamic {
         name = "Verify in-memory, persistent and SSR precompile identities"
         env { VIZE_CI_FILES = "${{ github.workspace }}/tools/ci/workflows/08-vite-precompile-cache/scripts" }
-        run = ci.workflowScript("verify-in-memory-persistent-and-ssr-precompile.sh")
+        run = ci.workflowProgram("verify-in-memory-persistent-and-ssr-precompile")
       }
     }
   }

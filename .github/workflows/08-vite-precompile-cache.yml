@@ -55,4 +55,4 @@ jobs:
       - name: Verify in-memory, persistent and SSR precompile identities
         env:
           VIZE_CI_FILES: ${{ github.workspace }}/tools/ci/workflows/08-vite-precompile-cache/scripts
-        run: . "${{ env.VIZE_CI_FILES }}/verify-in-memory-persistent-and-ssr-precompile.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-in-memory-persistent-and-ssr-precompile.sh"
