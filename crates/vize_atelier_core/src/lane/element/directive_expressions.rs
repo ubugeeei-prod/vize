@@ -20,12 +20,12 @@ pub(super) fn process_directive_expressions<'a>(
     let mut style = None;
     for (index, prop) in el.props.iter_mut().enumerate() {
         if let PropNode::Directive(dir) = prop {
+            // SSR codegen emits a dynamic key verbatim, so a bare name must
+            // resolve through the setup bindings here like any value does.
             if ctx.options.ssr
                 && matches!(dir.name, "bind" | "on")
                 && let Some(arg @ ExpressionNode::Simple(simple)) = &dir.arg
                 && !simple.is_static
-                && !(crate::codegen::is_valid_js_identifier(simple.content)
-                    && !matches!(simple.content, "true" | "false" | "null" | "undefined"))
             {
                 dir.arg = Some(process_expression(ctx, arg, false));
             }

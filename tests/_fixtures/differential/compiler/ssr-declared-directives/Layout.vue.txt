@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const ok = true;
+const items = [1, 2];
+</script>
+
+<template>
+  <input v-focus v-show="ok" />
+  <div v-focus:a.b="ok">x</div>
+  <span v-for="i in items" :key="i" v-focus v-tip="i">{{ i }}</span>
+</template>

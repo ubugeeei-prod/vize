@@ -28,7 +28,7 @@ Case {
 Sfc(
     Ok(
         SfcCompileResult {
-            code: "import { ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from \"@vue/server-renderer\"\nimport { resolveDirective as _resolveDirective } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><p${_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _resolveDirective(\"focus\"), _ctx.x))}>t</p></div>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            code: "import { ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from \"@vue/server-renderer\"\nimport { resolveDirective as _resolveDirective } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  const _directive_focus = _resolveDirective(\"focus\")\n  _push(`<div${_ssrRenderAttrs(_attrs)}><p${_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _directive_focus, _ctx.x))}>t</p></div>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
             css: None,
             map: None,
             errors: [],

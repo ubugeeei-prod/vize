@@ -2,4 +2,4 @@
 source: crates/vize_atelier_sfc/tests/plugin_directive_contracts.rs
 expression: "directive_calls(&result.code).join(\"\\n\")"
 ---
-_push(`<!--[--><a${_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _resolveDirective("track"), $setup.payload, void 0, { strict: true, passive: true }))}>go</a><b${_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _resolveDirective("track"), void 0, "click", { once: true, strict: true, passive: true }))}>x</b><i${_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _resolveDirective("focus"), void 0, void 0, { x: true }))}>y</i><!--]-->`)
+_push(`<!--[--><a${_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _directive_track, $setup.payload, void 0, { strict: true, passive: true }))}>go</a><b${_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _directive_track, void 0, "click", { once: true, strict: true, passive: true }))}>x</b><i${_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _directive_focus, void 0, void 0, { x: true }))}>y</i><!--]-->`)

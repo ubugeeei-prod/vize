@@ -132,7 +132,7 @@
       },
       "reference": {
         "path": "vue0-10-repeat/module.expected.txt",
-        "sha256": "66ce3130ab756a9bc170a5c2f7e5328b6d5dfdbe27a466064ecf5bc10035a959",
+        "sha256": "9adb93d2faeb817c11542661662ddf450c01871fd26b8ec2665a1848f764ef79",
         "source": "davinci/vize_l1/src/dialect/vue.rs:Templates iterate with v-repeat"
       },
       "adapters": {
@@ -186,7 +186,7 @@
       },
       "reference": {
         "path": "vue0-11-repeat/module.expected.txt",
-        "sha256": "66ce3130ab756a9bc170a5c2f7e5328b6d5dfdbe27a466064ecf5bc10035a959",
+        "sha256": "9adb93d2faeb817c11542661662ddf450c01871fd26b8ec2665a1848f764ef79",
         "source": "davinci/vize_l1/src/dialect/vue.rs:Shares the clause-style directive surface with 0.10"
       },
       "adapters": {
@@ -2784,7 +2784,7 @@
       },
       "reference": {
         "path": "qualification-20261105/module.expected.txt",
-        "sha256": "be71d02220e20a77ed8f1f2751b3e0ffd02adb4660f1c0472222af1a577c2368",
+        "sha256": "f7f87b50615555355126bfe4635a7ac6d9e352df2703cf87550d9724fa17ef7a",
         "source": "crates/vize_atelier_sfc/src/compile_template/duplicates/preflight_tests.rs:actual_dom_dispatch_observes_native_parse_or_original_compatibility_once; complete SSR observed with published v0.691.0 source 6c1d71493990c76d40f8bf1a2b8825040e59e2d9; candidate Actions qualification pending"
       },
       "adapters": {
@@ -4319,6 +4319,59 @@
       }
     },
     {
+      "id": "compiler/sfc/ssr-declared-directives",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "ssr-declared-directives",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "24e6cc5a042d2c6c8b2362fd890aec9e5c87e762bc61b68c7cb69c2a403c7399",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ssr-declared-directives/module.expected.txt",
+        "sha256": "6040c4c2378e091dd3551b1a59df8c2e8b5072c26fd3b5b512503b67c29d01b9",
+        "source": "crates/vize_atelier_ssr/src/sfc_fixture_tests.rs:setup_asset_fixtures_compile_to_their_pinned_modules"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native compiler remains unavailable; this source-built SSR observation pins resolved directives declared once at the top of ssrRender (Vue 3.5 declares const _directive_focus = _resolveDirective(\"focus\"), the form Nuxt directive auto-imports rewrite) without native parity credit."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/ssr-dotted-slot-names",
       "state": "active",
       "targets": [
@@ -4344,6 +4397,59 @@
         "native": null,
         "reasons": {
           "native": "Whole-product native compiler remains unavailable; this source-built SSR observation pins dotted v-slot names (Vue 3.5 keeps #item.alpha as the slot item.alpha on the static and createSlots routes) without native parity credit."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/ssr-setup-dynamic-attributes",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "ssr-setup-dynamic-attributes",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "7a9e5b5994298c21eec37c9b3130b718a074f3db0354c2a895689581582dff84",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ssr-setup-dynamic-attributes/module.expected.txt",
+        "sha256": "4984c46f14aed9d1e36872c2c1f1f7d9c39216f81c3e18d3f935e143b713ff5c",
+        "source": "crates/vize_atelier_ssr/src/sfc_fixture_tests.rs:setup_asset_fixtures_compile_to_their_pinned_modules"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native compiler remains unavailable; this source-built SSR observation pins dynamic attribute names read through the setup binding table (Vue 3.5 emits $setup.attr / $props.pk for :[attr]) without native parity credit."
         }
       },
       "comparison": {
