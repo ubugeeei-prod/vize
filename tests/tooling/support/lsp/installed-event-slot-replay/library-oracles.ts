@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { gunzipSync } from "node:zlib";
 import type { Packet } from "../installed-alias-replay/protocol.ts";
+import { utf16Position } from "../installed-alias-replay/apply.ts";
 import { originalVueConfigFixtureSource } from "../../vue-config-source-custody.ts";
 
 type ObjectValue = Record<string, any>;
@@ -27,6 +28,7 @@ export interface LibrarySession {
     text: string,
     version: number,
     count: number,
+    confirmationAfterFirst?: Packet,
   ): Promise<Packet[]>;
   readonly notifications: readonly Packet[];
 }
@@ -185,11 +187,81 @@ export function remapLibraryExpected(value: unknown, projectRoot: string): any {
   };
   return freeze(visit(value));
 }
+/** Current partial-application contract, authored independently of historical actual packets. */
+function currentPartialProjection(
+  oracle: LibraryCase,
+  transaction: ObjectValue,
+  sequences: ObjectValue[],
+  projectRoot: string,
+): readonly [ObjectValue, ObjectValue[]] {
+  const callOnly = oracle.context.includes("CallOnly");
+  const argument = callOnly ? "update" : "change",
+    parameter = callOnly ? "change" : "update";
+  const source: string = transaction.partialFiles[0].text;
+  const token = JSON.stringify(argument),
+    offset = source.indexOf(token);
+  assert.ok(
+    offset >= 0 && source.indexOf(token, offset + token.length) < 0,
+    "one authored emit argument",
+  );
+  const range = {
+    start: utf16Position(source, offset),
+    end: utf16Position(source, offset + token.length),
+  };
+  const native = {
+    range,
+    severity: 1,
+    code: 2345,
+    source: "vize/types",
+    message: `Argument of type '${token}' is not assignable to parameter of type '"${parameter}"'.`,
+  };
+  assert.deepEqual(
+    transaction.partialFiles[0].diagnostics,
+    [native],
+    "unchanged authored native geometry",
+  );
+  const lint = {
+    range,
+    severity: 2,
+    code: "script/require-explicit-emits",
+    source: "vize/lint",
+    codeDescription: { href: "https://eslint.vuejs.org/rules/script/require-explicit-emits.html" },
+    message: `The emitted event '${argument}' is not declared in defineEmits or the emits option.\n\nHelp: Add this event to the defineEmits declaration (or the Options API emits option) so the component's event surface is explicit.`,
+  };
+  // These fields mirror the current safety_controls authored expectations:
+  // lint precedes TS2345, and a declaration-only CallOnly repair carries TS2345.
+  // The archived expected/actual packets remain frozen historical evidence.
+  return [
+    {
+      ...transaction,
+      partialFiles: transaction.partialFiles.map((row: ObjectValue, index: number) =>
+        index === 0 ? { ...row, diagnostics: [lint, native] } : row,
+      ),
+    },
+    sequences.map((row: ObjectValue) => {
+      if (row.file !== "src/Toggle.vue") return row;
+      assert.ok(!row.opening && (row.version === 2 || row.version === 3));
+      const diagnostics =
+        row.version === 2 ? [[lint], [lint, native]] : [callOnly ? [native] : [], []];
+      return {
+        ...row,
+        expected: diagnostics.map((items) =>
+          publication(projectRoot, row.file, row.version, items),
+        ),
+      };
+    }),
+  ];
+}
+
 export function prepareLibraryExpectation(oracle: LibraryCase, projectRoot: string): ObjectValue {
-  const [transaction, sequences] = remapLibraryExpected(
+  const historical = remapLibraryExpected(
     [oracle.expected, oracle.publicationSequences],
     projectRoot,
   );
+  const [transaction, sequences] =
+    oracle.kind === "partial"
+      ? currentPartialProjection(oracle, historical[0], historical[1], projectRoot)
+      : historical;
   const invalid = publication(projectRoot, "src/NativeGuard.vue", 1, [
     {
       range: { start: { line: 1, character: 6 }, end: { line: 1, character: 17 } },
@@ -200,7 +272,9 @@ export function prepareLibraryExpectation(oracle: LibraryCase, projectRoot: stri
     },
   ]);
   const repaired = [
-    publication(projectRoot, "src/NativeGuard.vue", 2, []),
+    // Repairing the literal leaves the identifier's native error range intact;
+    // prompt feedback carries that error until the native answer clears it.
+    publication(projectRoot, "src/NativeGuard.vue", 2, invalid.params.diagnostics),
     publication(projectRoot, "src/NativeGuard.vue", 2, []),
   ];
   const initial = names
@@ -230,11 +304,23 @@ export function prepareLibraryExpectation(oracle: LibraryCase, projectRoot: stri
       method: request.method,
       packet: { jsonrpc: "2.0", id: index + 2, result: request.result },
     })),
+    // Current replay protocol, derived only from authored envelopes. The
+    // immutable historical executions are not claimed to have sent these saves.
     publicationSequences: sequences.map((row: ObjectValue) => ({
       file: row.file,
       version: row.version,
       opening: row.opening,
       packets: row.expected,
+      saveConfirmationAfterFirstPublication:
+        !row.opening &&
+        row.expected.length === 2 &&
+        isDeepStrictEqual(row.expected[0], row.expected[1])
+          ? {
+              jsonrpc: "2.0",
+              method: "textDocument/didSave",
+              params: { textDocument: { uri: uri(projectRoot, row.file) } },
+            }
+          : null,
     })),
     libraryBytesUnchanged: true,
     publicationGroups: [

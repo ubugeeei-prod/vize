@@ -153,6 +153,7 @@ export class InstalledAliasSession {
     text: string,
     version: number,
     count: number,
+    confirmationAfterFirst?: Packet,
   ): Promise<Packet[]> {
     return this.publishMany(
       uri,
@@ -163,6 +164,7 @@ export class InstalledAliasSession {
         contentChanges: [{ text }],
       },
       count,
+      confirmationAfterFirst,
     );
   }
   private publish(uri: string, version: number, method: string, params: unknown): Promise<Packet> {
@@ -175,9 +177,12 @@ export class InstalledAliasSession {
     method: string,
     params: unknown,
     count: number,
+    confirmationAfterFirst?: Packet,
   ): Promise<Packet[]> {
     if (!Number.isSafeInteger(version) || version < 1) throw new Error("invalid document version");
     if (!Number.isSafeInteger(count) || count < 1) throw new Error("invalid publication count");
+    if (confirmationAfterFirst !== undefined && count < 2)
+      throw new Error("publication confirmation requires a subsequent publication");
     return new Promise((resolve, reject) => {
       const wait: PublicationWait = {
         uri,
@@ -185,6 +190,9 @@ export class InstalledAliasSession {
         after: this.notifications.length,
         packets: [],
         count,
+        ...(confirmationAfterFirst === undefined
+          ? {}
+          : { afterFirst: () => this.send(confirmationAfterFirst) }),
         resolve,
         reject,
         timer: setTimeout(() => {
