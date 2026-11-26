@@ -239,20 +239,17 @@ impl EmitDocument {
     /// escaped byte lands before its replacement.
     pub fn push_escaped(&mut self, other: &EmitDocument, escapes: &[(&str, &str)]) {
         let bytes = other.text.as_bytes();
-        // Only a byte that starts some pattern can begin a replacement. Most
-        // text holds none, and is then copied in one step.
+        // Only a byte that starts a pattern can begin a replacement.
         let mut starts = [false; 256];
         for (from, _) in escapes {
-            if let Some(slot) = from
-                .as_bytes()
-                .first()
-                .and_then(|&byte| starts.get_mut(usize::from(byte)))
-            {
+            let at = from.bytes().next().map(usize::from);
+            if let Some(slot) = at.and_then(|at| starts.get_mut(at)) {
                 *slot = true;
             }
         }
         let starts_pattern = |byte: &u8| starts.get(usize::from(*byte)).copied().unwrap_or(false);
-        let Some(first) = bytes.iter().position(starts_pattern) else {
+        let next = |at: usize| bytes.get(at..)?.iter().position(starts_pattern);
+        let Some(first) = next(0) else {
             self.push_spanned(other);
             return;
         };
@@ -260,11 +257,8 @@ impl EmitDocument {
         // (input offset of an escape, total growth once it is applied)
         let mut growth: Vec<(usize, usize)> = Vec::new();
         let (mut start, mut index) = (0, first);
-        while index < bytes.len() {
-            if !bytes.get(index).is_some_and(starts_pattern) {
-                index += 1;
-                continue;
-            }
+        while let Some(skip) = next(index) {
+            index += skip;
             let rest = bytes.split_at(index).1;
             let Some((from, to)) = escapes.iter().find(|(from, _)| {
                 let pattern = from.as_bytes();
