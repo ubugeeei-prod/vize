@@ -204,15 +204,16 @@
         "tynix": "tynix"
       },
       "locked": {
-        "lastModified": 1795597284,
-        "narHash": "sha256-BzlrhAiLrKkDkBNky10CaECkYcAJ4QIAsgasaDxXqTo=",
+        "lastModified": 1795664192,
+        "narHash": "sha256-H1SHHaTxuV31OSmUcrwc9ZMyZ5gxJHFFtR0BJKNMU30=",
         "owner": "ubugeeei-prod",
         "repo": "ush",
-        "rev": "986b39f10ea1d4cfc2a48ebe8ed868e2d05490fa",
+        "rev": "bc07d1c794b78eb32e7133d4eabc2c295ceafd95",
         "type": "github"
       },
       "original": {
         "owner": "ubugeeei-prod",
+        "ref": "v0.18.0",
         "repo": "ush",
         "type": "github"
       }

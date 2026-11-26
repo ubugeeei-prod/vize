@@ -14,6 +14,10 @@
       renderScript = import ./render-script.nix;
       nodejs = pkgs.nodejs_24;
       pnpm = pkgs.pnpm;
+      # The ush compiler at the flake.nix release tag. ush's own CI has tested that
+      # release, so building it here skips its test suite, which takes far longer.
+      ush = inputs'.ush.packages.default.overrideAttrs { doCheck = false; };
+
       # A Nix-provided Darwin stdenv has no Xcode behind it. Answer the two
       # queries the toolchain actually makes and defer the rest to the host
       # `xcrun` when the machine has one.
@@ -43,7 +47,7 @@
           pkgs.cargo-insta
           pkgs.jq
           pkgs.pkg-config
-          inputs'.ush.packages.default
+          ush
         ]
         ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
           workspaceXcrun
