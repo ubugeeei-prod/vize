@@ -22,6 +22,7 @@ use super::super::props::{
     normalize_destructure_default_value_with_factory as normalize_default, runtime_prop_key,
     validate_macro_scope_and_props,
 };
+use super::super::returned_bindings::push_returned_binding;
 use super::expose::emit_expose;
 use super::helpers::{is_reserved_word, runtime_identifier_references};
 use super::imports::{dedupe_imports, insert_imports};
@@ -255,24 +256,18 @@ pub fn compile_script_setup(
         &model_binding_names,
     );
 
-    let returned_props: Vec<String> = returned_bindings
-        .iter()
-        .map(|name| {
-            if is_reserved_word(name) {
-                let mut entry = String::with_capacity(name.len() * 2 + 4);
-                entry.push('"');
-                entry.push_str(name);
-                entry.push_str("\": ");
-                entry.push_str(name);
-                entry
-            } else {
-                name.clone()
-            }
-        })
-        .collect();
-
     output.extend_from_slice(b"  const __returned__ = { ");
-    output.extend_from_slice(returned_props.join(", ").as_bytes());
+    for (index, name) in returned_bindings.iter().enumerate() {
+        if index > 0 {
+            output.extend_from_slice(b", ");
+        }
+        if is_reserved_word(name) {
+            output.push(b'"');
+            output.extend_from_slice(name.as_bytes());
+            output.extend_from_slice(b"\": ");
+        }
+        push_returned_binding(&mut output, name, &ctx);
+    }
     output.extend_from_slice(b" }\n");
     output.extend_from_slice(b"  Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
     output.extend_from_slice(b"  return __returned__\n");

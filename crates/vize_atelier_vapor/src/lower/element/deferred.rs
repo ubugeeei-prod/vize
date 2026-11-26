@@ -290,6 +290,7 @@ fn transform_slot_outlet_child<'a>(
             parent: Some(parent_id),
             anchor: Some(anchor),
         }));
+    transform_template_ref(ctx, el, element_id, block);
 }
 
 fn transform_existing_element<'a>(

@@ -110,6 +110,9 @@ fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
                     }
                     continue;
                 }
+                if is_template_ref_prop(attr.name) {
+                    continue;
+                }
 
                 let key = Box::new_in(
                     SimpleExpressionNode::new(attr.name, true, SourceLocation::STUB),
@@ -144,6 +147,9 @@ fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
                             }
                             continue;
                         }
+                        if arg.is_static && is_template_ref_prop(arg.content) {
+                            continue;
+                        }
 
                         let key = Box::new_in(SimpleExpressionNode::from_node(arg), &ctx.allocator);
                         let mut values = Vec::new_in(&ctx.allocator);
@@ -176,6 +182,12 @@ fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
     (props, scope, name)
 }
 
+/// A template ref on an outlet targets the rendered slot fragment, so it is
+/// registered for the outlet instead of being passed to the slot as a prop.
+fn is_template_ref_prop(name: &str) -> bool {
+    matches!(name, "ref" | "ref_for" | "ref_key")
+}
+
 /// Slot props only copy original facts; scope must be applied before fallback effects.
 pub(in crate::lower) fn transform_slot<'a>(
     ctx: &mut TransformContext<'a>,
@@ -203,6 +215,7 @@ pub(in crate::lower) fn transform_slot<'a>(
             parent: None,
             anchor: None,
         }));
+    super::template::transform_template_ref(ctx, el, id, block);
     block.returns.push(id);
     if once {
         ctx.exit_non_reactive_scope();

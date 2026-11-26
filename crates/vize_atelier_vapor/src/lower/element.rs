@@ -389,6 +389,7 @@ pub(super) fn transform_classified_element<'a>(
             };
 
             block.operation.push(OperationNode::SlotOutlet(slot_outlet));
+            transform_template_ref(ctx, el, element_id, block);
         }
         ElementType::Template => {
             // Peeled at entry (no DOM element); emit nothing, never an invalid op.
