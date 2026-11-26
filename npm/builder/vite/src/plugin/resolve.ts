@@ -197,6 +197,28 @@ function resolveBareImportCandidatesWithNode(
   return null;
 }
 
+/**
+ * Vite answered a bare request with another bare specifier. An external answer
+ * is the host's decision to leave the package out of the bundle (an SSR build
+ * externalizes dependencies), so it is kept: resolving it here would bundle
+ * the file that Node's `require` condition selects. Any other bare answer is
+ * not loadable, and Node resolves it from the real importer.
+ */
+function resolveBareViteAnswer(
+  state: Pick<VizePluginState, "root" | "cssAliasRules" | "logger">,
+  kind: "bare" | "aliased bare",
+  id: string,
+  importer: string,
+  answer: { id: string; external?: boolean },
+): ResolvedSfcId | null {
+  if (answer.external) return answer;
+  const nodeResolved = resolveBareImportCandidatesWithNode(state, id, importer, answer.id);
+  if (nodeResolved) {
+    state.logger.log(`resolveId: normalized ${kind} ${id} to ${nodeResolved} via Node fallback`);
+  }
+  return nodeResolved;
+}
+
 function findPackageRoot(resolvedFile: string): string | null {
   let current = path.dirname(resolvedFile);
   while (current !== path.dirname(current)) {
@@ -1084,19 +1106,7 @@ export async function resolveIdHook(
                 return null;
               }
 
-              const nodeResolved = resolveBareImportCandidatesWithNode(
-                state,
-                id,
-                cleanImporter,
-                resolved.id,
-              );
-              if (nodeResolved) {
-                state.logger.log(
-                  `resolveId: normalized bare ${id} to ${nodeResolved} via Node fallback`,
-                );
-                return nodeResolved;
-              }
-              return null;
+              return resolveBareViteAnswer(state, "bare", id, cleanImporter, resolved);
             }
             return resolved;
           }
@@ -1147,19 +1157,7 @@ export async function resolveIdHook(
               }
 
               if (isViteBareSpecifier(resolved.id)) {
-                const nodeResolved = resolveBareImportCandidatesWithNode(
-                  state,
-                  id,
-                  cleanImporter,
-                  resolved.id,
-                );
-                if (nodeResolved) {
-                  state.logger.log(
-                    `resolveId: normalized aliased bare ${id} to ${nodeResolved} via Node fallback`,
-                  );
-                  return nodeResolved;
-                }
-                return null;
+                return resolveBareViteAnswer(state, "aliased bare", id, cleanImporter, resolved);
               }
               return resolved;
             }
