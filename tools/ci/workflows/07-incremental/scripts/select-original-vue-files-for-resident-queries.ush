@@ -1,0 +1,5 @@
+# List the tracked Vue files, NUL-separated, that the resident block queries compare against.
+use $bin::{git}
+use std::io::to_file
+
+git ls-files -z -- *.vue *.vue.txt | to_file $"$env::RUNNER_TEMP/resident-block-query-files"

@@ -23,17 +23,27 @@ type Workflow = {
   jobs: Record<string, Job>;
 };
 
-const workflow = parseYaml(
-  readAutomationPrograms(path.join(repoRoot, ".github/workflows/07-incremental.yml")),
-) as Workflow;
+const workflowFile = path.join(repoRoot, ".github/workflows/07-incremental.yml");
+const workflow = parseYaml(readAutomationPrograms(workflowFile)) as Workflow;
+const runnerWorkflow = parseYaml(fs.readFileSync(workflowFile, "utf8")) as Workflow;
 
 const shard = ["splitpanes", "layoutit-grid", "cssgridgenerator"];
 const fixtures =
   "--fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools";
 const driver = "node tools/commands/davinci/incremental-equivalence.ts";
 
+// A step's ush program opens with its purpose comment, imports and a blank line.
+const programPreamble = /^(?:#.*|use .*|)$/u;
+
 function runs(job: Job): string[] {
-  return job.steps.flatMap((step) => (step.run ? step.run.trim().split("\n") : []));
+  return job.steps.flatMap((step) =>
+    step.run
+      ? step.run
+          .trim()
+          .split("\n")
+          .filter((line) => !programPreamble.test(line))
+      : [],
+  );
 }
 
 test("the incrementality workflow triggers on the resident tier and its keyers", () => {
@@ -56,7 +66,7 @@ test("the incrementality workflow triggers on the resident tier and its keyers",
 test("TS-42 runs over the hydrated corpus shard and proves the seeded defect caught", () => {
   const job = workflow.jobs["incremental-equivalence"];
   assert.ok(
-    job.steps.every((step) => !step.run?.includes("\n")),
+    runnerWorkflow.jobs["incremental-equivalence"].steps.every((step) => !step.run?.includes("\n")),
     "workflow commands belong in one named step instead of an inline script",
   );
   assert.equal(
@@ -68,7 +78,7 @@ test("TS-42 runs over the hydrated corpus shard and proves the seeded defect cau
     `git submodule update --init --depth 1 -- ${shard.map((id) => `tests/_fixtures/_git/${id}`).join(" ")}`,
     "cargo test -p vize_incremental",
     "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --lib block_query::",
-    `git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/resident-block-query-files"`,
+    `git ls-files -z -- *.vue *.vue.txt | to_file $"$env::RUNNER_TEMP/resident-block-query-files"`,
     "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --lib block_query::corpus::original_documents -- --exact --ignored --nocapture",
     "cargo run --locked --profile ci-opt -p vize_incremental --features block-queries --example resident_block_alloc",
     "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --test resident_block_profile -- --exact paired_resident_requests --ignored --nocapture",

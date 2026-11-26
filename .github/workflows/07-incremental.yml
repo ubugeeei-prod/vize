@@ -112,7 +112,7 @@ jobs:
       - name: Check borrowed stages and selective invalidation
         run: "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --lib block_query::"
       - name: Select original Vue files for resident queries
-        run: . "${{ env.VIZE_CI_FILES }}/select-original-vue-files-for-resident-queries.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/select-original-vue-files-for-resident-queries.sh"
       - name: Compare every borrowed stage with the original files
         env:
           VIZE_BLOCK_QUERY_MANIFEST: ${{ runner.temp }}/resident-block-query-files
