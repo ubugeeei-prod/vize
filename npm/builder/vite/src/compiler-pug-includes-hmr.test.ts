@@ -17,7 +17,8 @@ const require = createRequire(import.meta.url);
 const freshConnection = { headers: { connection: "close" } };
 
 const scenarios = [
-  { name: "template only", script: "", selfAccepting: false },
+  // A template-only SFC accepts its own updates, as with @vitejs/plugin-vue.
+  { name: "template only", script: "", selfAccepting: true },
   {
     name: "script setup",
     script: "<script setup>const authored = 1;</script>\n",
