@@ -1,0 +1,9 @@
+# Test the version-specific Nuxt lint and builder plans against the original modern oracle.
+use $bin::{vp}
+
+# Node's test runner expands the `*` patterns itself, as the shell did before.
+vp node --test \
+  npm/framework/nuxt-lint-config/src/*.test.ts \
+  npm/framework/nuxt/src/lint/generation*.test.ts \
+  npm/framework/nuxt/src/builder.test.ts \
+  npm/framework/nuxt/src/lint/checker/setup.test.ts
