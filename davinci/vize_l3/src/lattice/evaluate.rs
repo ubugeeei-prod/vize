@@ -1,15 +1,15 @@
 use vize_l0::{Allocator, Vec};
 
 use super::axis::classify;
-use super::{BindingFact, BindingId, BindingInput};
+use super::{BindingId, BindingInfo, BindingInput};
 
 /// Reactivity-lattice facts for one L3 artifact.
 #[derive(Debug)]
-pub struct LatticeFacts<'a> {
-    pub bindings: Vec<'a, BindingFact>,
+pub struct LatticeAnalysis<'a> {
+    pub bindings: Vec<'a, BindingInfo>,
 }
 
-impl<'a> LatticeFacts<'a> {
+impl<'a> LatticeAnalysis<'a> {
     /// Empty fact group.
     #[must_use]
     pub fn new(allocator: &'a Allocator) -> Self {
@@ -19,13 +19,13 @@ impl<'a> LatticeFacts<'a> {
     }
 
     /// Add one binding fact.
-    pub fn push(&mut self, fact: BindingFact) {
+    pub fn push(&mut self, fact: BindingInfo) {
         self.bindings.push(fact);
     }
 
     /// Find a fact by id.
     #[must_use]
-    pub fn get(&self, id: BindingId) -> Option<&BindingFact> {
+    pub fn get(&self, id: BindingId) -> Option<&BindingInfo> {
         self.bindings.iter().find(|fact| fact.id == id)
     }
 }
@@ -35,8 +35,8 @@ impl<'a> LatticeFacts<'a> {
 pub fn evaluate<'a>(
     allocator: &'a Allocator,
     inputs: impl IntoIterator<Item = BindingInput>,
-) -> LatticeFacts<'a> {
-    let mut facts = LatticeFacts::new(allocator);
+) -> LatticeAnalysis<'a> {
+    let mut facts = LatticeAnalysis::new(allocator);
     for input in inputs {
         facts.push(evaluate_binding(input));
     }
@@ -45,8 +45,8 @@ pub fn evaluate<'a>(
 
 /// Naive declarative-rule evaluator for one binding summary.
 #[must_use]
-pub const fn evaluate_binding(input: BindingInput) -> BindingFact {
-    BindingFact {
+pub const fn evaluate_binding(input: BindingInput) -> BindingInfo {
+    BindingInfo {
         id: input.id,
         class: classify(input.origin, input.effects, input.escape),
         verdict: input.verdict,

@@ -65,7 +65,7 @@ impl BindingInput {
 
 /// Published lattice fact for one binding.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct BindingFact {
+pub struct BindingInfo {
     pub id: BindingId,
     pub class: ReactivityClass,
     pub verdict: Verdict,
@@ -75,7 +75,7 @@ pub struct BindingFact {
     pub span: Span,
 }
 
-impl BindingFact {
+impl BindingInfo {
     /// Returns the class only when the epistemic axis is proven.
     #[must_use]
     pub const fn proven_class(self) -> Option<ReactivityClass> {

@@ -6,7 +6,7 @@
 
 use vize_l0::{Span, id::NodeId};
 use vize_l3::decision::ssr::{
-    SelectedSetupSsrAnalysis, SsrFacts, SsrFileAnalysis, SsrPart, SsrUnsupported,
+    SelectedSetupSsrAnalysis, SsrAnalysis, SsrFileAnalysis, SsrPart, SsrUnsupported,
     TemplateScopedSsrAnalysis, TemplateSsrAnalysis,
 };
 use vize_l3::decision::{DecisionAnalysis, policy::TargetPolicy};
@@ -100,7 +100,7 @@ pub fn emit_scoped_template<L: LinkSink>(
 
 fn encode<'owner, 'arena, L: LinkSink>(
     source: &str,
-    facts: Option<&SsrFacts<'owner, 'arena>>,
+    facts: Option<&SsrAnalysis<'owner, 'arena>>,
     scope: Option<ScopeId<'_>>,
     setup: Option<&SelectedSetupSsrAnalysis<'_, 'owner, 'arena>>,
 ) -> Result<Writer<L>, SsrError> {

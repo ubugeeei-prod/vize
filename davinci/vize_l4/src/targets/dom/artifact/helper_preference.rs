@@ -13,7 +13,7 @@ use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{ComponentOp, Op, Region};
 
 use vize_l2::analysis::fragment_facts::LoopFragment;
-use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::pass_facts::L2Analyses;
 use vize_l2::analysis::text_facts::TextParts;
 use vize_l2::walk::PageWalk;
 
@@ -30,7 +30,7 @@ use slot_order::{
 /// What the preference walk reads besides the region it is walking.
 pub(super) struct PreferCx<'a> {
     pub(super) source: &'a str,
-    pub(super) facts: &'a L2Facts,
+    pub(super) facts: &'a L2Analyses,
     pub(super) texts: &'a SideTable<TextParts>,
     pub(super) for_wrappers: &'a SideTable<LoopFragment>,
     /// The script bindings, when the emit carries them: a component tag

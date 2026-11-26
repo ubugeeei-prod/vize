@@ -6,7 +6,7 @@ mod payload;
 
 use vize_l0::{Allocator, Span, Vec};
 use vize_l2::op as l2;
-use vize_l2_to_l3::{PartitionFacts, PartitionKind};
+use vize_l2_to_l3::{PartitionAnalysis, PartitionKind};
 
 pub use payload::{SsrStringPayload, SsrStringPayloadKind};
 
@@ -132,7 +132,7 @@ pub enum SsrStringPlanErrorKind {
 pub fn lower_l2_to_string_plan<'r, 'a>(
     allocator: &'a Allocator,
     root: &'r l2::Region<'a>,
-    partition: &PartitionFacts<'_>,
+    partition: &PartitionAnalysis<'_>,
 ) -> SsrStringPlanLowering<'r, 'a> {
     lower::lower(allocator, root, partition)
 }

@@ -8,9 +8,9 @@
 
 use std::sync::{Mutex, MutexGuard};
 
-use vize_l0::fact::{
-    Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView,
-    ProducerEntry, ids,
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisProducer, AnalysisRegistry, AnalysisTable, AnalysisView,
+    Demand, ProducerEntry, ids,
 };
 use vize_l0::pass::{AnalysisId, Fusability, PassDesc, PassKind, Preserved};
 
@@ -27,7 +27,7 @@ pub type Numbers = Vec<u32>;
 macro_rules! group {
     ($ty:ident, $id:expr, $name:literal, $stratum:expr, $depends:expr, $key:ty, $value:ty) => {
         pub struct $ty;
-        impl FactGroup for $ty {
+        impl Analysis for $ty {
             const ID: AnalysisId = $id;
             const NAME: &'static str = $name;
             const STRATUM: u8 = $stratum;
@@ -84,39 +84,39 @@ group!(
     usize
 );
 
-impl FactProducer<Numbers> for Values {
-    fn produce(numbers: &Numbers, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Numbers> for Values {
+    fn produce(numbers: &Numbers, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         (0u32..).zip(numbers.iter().copied()).collect()
     }
 }
 
-impl FactProducer<Numbers> for Count {
-    fn produce(numbers: &Numbers, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Numbers> for Count {
+    fn produce(numbers: &Numbers, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         [((), numbers.len())].into_iter().collect()
     }
 }
 
-impl FactProducer<Numbers> for Total {
-    fn produce(_: &Numbers, inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Numbers> for Total {
+    fn produce(_: &Numbers, inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let values = inputs.get::<Values>().expect("declared input");
         let total = values.iter().map(|(_, value)| u64::from(*value)).sum();
         [((), total)].into_iter().collect()
     }
 }
 
-impl FactProducer<Numbers> for BindingsLike {
-    fn produce(numbers: &Numbers, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Numbers> for BindingsLike {
+    fn produce(numbers: &Numbers, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         [((), numbers.len())].into_iter().collect()
     }
 }
 
-impl FactProducer<Numbers> for UsagesLike {
-    fn produce(numbers: &Numbers, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Numbers> for UsagesLike {
+    fn produce(numbers: &Numbers, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         [((), numbers.len())].into_iter().collect()
     }
 }
 
-pub const REGISTRY: FactRegistry<Numbers> = FactRegistry::new(&[
+pub const REGISTRY: AnalysisRegistry<Numbers> = AnalysisRegistry::new(&[
     ProducerEntry::of::<Values>(),
     ProducerEntry::of::<Count>(),
     ProducerEntry::of::<Total>(),
@@ -126,7 +126,7 @@ pub const REGISTRY: FactRegistry<Numbers> = FactRegistry::new(&[
 
 /// Reads everything the fixture computes.
 pub struct Everything;
-impl FactConsumer for Everything {
+impl AnalysisConsumer for Everything {
     const NAME: &'static str = "everything";
     const DEMAND: Demand = Demand::NONE
         .with(Values::ID)

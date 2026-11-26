@@ -77,7 +77,7 @@ fn forgotten_real_walk_refuses_second_entry_and_cannot_issue_native_output() {
         assert_eq!(
             pending.construct_vue_file_in(&mut region),
             Err(NativeVueConstructionError::Artifact(
-                vize_l2::artifact::ArtifactError::InvalidSpan { node: None, span }
+                vize_l2::artifact::L2TemplateError::InvalidSpan { node: None, span }
             ))
         );
     }

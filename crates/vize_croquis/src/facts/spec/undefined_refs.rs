@@ -29,7 +29,7 @@ use crate::UndefinedRef;
 use crate::builtins::{is_event_local, is_js_global, is_vue_builtin};
 use crate::drawer::{extract_identifiers_oxc, is_keyword};
 use crate::facts::bindings::Bindings;
-use crate::facts::{BindingsTable, FactTable};
+use crate::facts::{AnalysisTable, BindingsTable};
 use crate::scope::{ScopeChain, ScopeId};
 
 /// The context every template unresolved read reports.
@@ -187,7 +187,7 @@ fn first_occurrence(content: &str, name: &str) -> u32 {
 pub fn evaluate(
     checked: &[CheckedExpression],
     scopes: &ScopeChain,
-    bindings: &FactTable<Bindings>,
+    bindings: &AnalysisTable<Bindings>,
 ) -> Vec<UndefinedRef> {
     let mut facts = Vec::new();
     for expression in checked {

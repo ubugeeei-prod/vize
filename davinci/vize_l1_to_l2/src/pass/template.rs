@@ -6,7 +6,7 @@ use vize_l0::pass::{PassFailure, PassObserver, Pipeline, run_grouped_pipeline};
 use vize_l2::{analysis::template, provenance::ProvenanceSink};
 
 /// Both L2 query results from the shared traversal.
-pub use vize_l2::analysis::template::TemplateFacts as TemplateAnalysis;
+pub use vize_l2::analysis::template::TemplateAnalysis;
 
 #[cfg(feature = "original-template-queries")]
 mod original;

@@ -14,7 +14,7 @@ use vize_l2::expr::ExprRef;
 use vize_l2::op::{
     Attribute, BindOp, BindingOp, DynamicName, InterpolationOp, OnOp, Op, Region, TextOp,
 };
-use vize_l2::scope::{ScopeFacts, ScopeTag};
+use vize_l2::scope::{ScopeAnalysis, ScopeTag};
 use vize_relief::{ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 use crate::Lowerer;
@@ -35,7 +35,7 @@ pub struct JsxL2Root<'a> {
     /// Number of operations, including attached bindings when they land.
     pub op_count: u32,
     /// Hygiene scope facts keyed by L2 page-order ids.
-    pub scopes: SideTable<ScopeFacts>,
+    pub scopes: SideTable<ScopeAnalysis>,
     /// L2 operation families observed while projecting this JSX root.
     pub features: LoweringFeatures,
     /// Lowered from the oxc AST by the shared L1→L2 JSX lowering, rather
@@ -104,7 +104,7 @@ pub enum L2Refusal {
 struct ProjectCx {
     op_count: u32,
     next_scope: u32,
-    scopes: SideTable<ScopeFacts>,
+    scopes: SideTable<ScopeAnalysis>,
     features: LoweringFeatures,
 }
 
@@ -134,7 +134,7 @@ impl ProjectCx {
         tag
     }
 
-    fn attach_scope(&mut self, node: Option<NodeId>, facts: ScopeFacts) {
+    fn attach_scope(&mut self, node: Option<NodeId>, facts: ScopeAnalysis) {
         if let Some(id) = node {
             self.scopes.insert(id, facts);
         }

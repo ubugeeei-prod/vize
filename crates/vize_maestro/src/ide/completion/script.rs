@@ -17,10 +17,10 @@ mod reactive_infer;
 /// `maestro/script-completion`'s declared fact demand.
 struct ScriptCompletion;
 
-impl vize_croquis::facts::FactConsumer for ScriptCompletion {
+impl vize_croquis::facts::AnalysisConsumer for ScriptCompletion {
     const NAME: &'static str = "maestro/script-completion";
     const DEMAND: vize_croquis::facts::Demand = vize_croquis::facts::Demand::NONE
-        .with(<vize_croquis::facts::Bindings as vize_croquis::facts::FactGroup>::ID);
+        .with(<vize_croquis::facts::Bindings as vize_croquis::facts::Analysis>::ID);
 }
 
 #[cfg(test)]

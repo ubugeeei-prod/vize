@@ -9,18 +9,18 @@
 
 **Lane:** A
 
-**Deliverable:** `vize_davinci::fact`, the one typed query surface of charter #5/#8: fact groups as const data, static demand declarations per consumer, a `FactManager` that computes exactly the demanded union, and the debug-build undeclared-access detector with the stratification check. The crate stays `#![no_std]` + `alloc`.
+**Deliverable:** `vize_davinci::fact`, the one typed query surface of charter #5/#8: fact groups as const data, static demand declarations per consumer, a `AnalysisManager` that computes exactly the demanded union, and the debug-build undeclared-access detector with the stratification check. The crate stays `#![no_std]` + `alloc`.
 
 **Steps:**
 
-- [x] `davinci/vize_davinci/src/fact.rs` + `fact/`: `trait FactGroup { const ID: AnalysisId; const STRATUM: u8; const DEPENDS: Demand; type Key; type Value; }` — group identity **reuses** `pass::preserved::AnalysisId`, so a pass's `Preserved` mask names fact groups directly (one identity space, capped by `MAX_ANALYSES = 64` with its existing const assertion)
+- [x] `davinci/vize_davinci/src/fact.rs` + `fact/`: `trait Analysis { const ID: AnalysisId; const STRATUM: u8; const DEPENDS: Demand; type Key; type Value; }` — group identity **reuses** `pass::preserved::AnalysisId`, so a pass's `Preserved` mask names fact groups directly (one identity space, capped by `MAX_ANALYSES = 64` with its existing const assertion)
 - [x] `Demand(u64)` built in `const` context (`Demand::NONE.with(G::ID)`); each consumer declares `const DEMAND: Demand`
 - [x] Stratification as a `const fn` over the registered group descriptors: a group may depend only on strictly lower strata, so a demand cycle is unrepresentable (the Swift anti-lesson); violations are compile errors proved by `compile_fail` doctests
-- [x] `FactManager` computes the transitive demand closure in stratum order through registered producers, each group at most once per artifact (a process-global counter pins it), and serves `get::<G>()` as a borrowed table
-- [x] Debug detector: under `debug_assertions` a `FactView` carries its consumer's `Demand`; an undeclared access returns `FactError::Undeclared { consumer, group }` and bumps a counter; the release shape is a zero-sized type, const-asserted
+- [x] `AnalysisManager` computes the transitive demand closure in stratum order through registered producers, each group at most once per artifact (a process-global counter pins it), and serves `get::<G>()` as a borrowed table
+- [x] Debug detector: under `debug_assertions` a `AnalysisView` carries its consumer's `Demand`; an undeclared access returns `AnalysisError::Undeclared { consumer, group }` and bumps a counter; the release shape is a zero-sized type, const-asserted
 - [x] Register the TS-35 command in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test fact_demand`
 
-**Acceptance:** `cargo test -p vize_davinci --test fact_demand --test fact_manager` green; `cargo test -p vize_davinci --doc` runs the two stratification `compile_fail` doctests; an undeclared access is asserted equal to the exact `FactError` value; the once-per-artifact counter is pinned; TS-24 (`--target wasm32-wasip2`, with and without default features) green; TS-1, TS-13; TS-11 empty (nothing consumes the API yet).
+**Acceptance:** `cargo test -p vize_davinci --test fact_demand --test fact_manager` green; `cargo test -p vize_davinci --doc` runs the two stratification `compile_fail` doctests; an undeclared access is asserted equal to the exact `AnalysisError` value; the once-per-artifact counter is pinned; TS-24 (`--target wasm32-wasip2`, with and without default features) green; TS-1, TS-13; TS-11 empty (nothing consumes the API yet).
 
 **Deps:** none (phase-2 exit).
 
@@ -38,9 +38,9 @@
 
 **Steps:**
 
-- [x] `davinci/vize_davinci/src/fact/preserve.rs`: `FactManager::after_pass(&PassDesc)` drops every group outside `desc.preserved`; named groups (`PRESERVE_STRUCTURE`, `PRESERVE_BINDINGS`) are `const Preserved` values
-- [x] `FactVerifyObserver` (P2-3 static dispatch, release ZST): after each pass, recompute every group the pass claims to preserve and compare by exact equality
-- [x] A fixture pass that claims `Preserved::ALL` while mutating is rejected with the exact `FactError::StalePreserved { pass, group }`
+- [x] `davinci/vize_davinci/src/fact/preserve.rs`: `AnalysisManager::after_pass(&PassDesc)` drops every group outside `desc.preserved`; named groups (`PRESERVE_STRUCTURE`, `PRESERVE_BINDINGS`) are `const Preserved` values
+- [x] `AnalysisVerifyObserver` (P2-3 static dispatch, release ZST): after each pass, recompute every group the pass claims to preserve and compare by exact equality
+- [x] A fixture pass that claims `Preserved::ALL` while mutating is rejected with the exact `AnalysisError::StalePreserved { pass, group }`
 
 **Acceptance:** `cargo test -p vize_davinci --test fact_preserve` green including the lying-pass fixture; bench pair `davinci_fact_query_observed` / `davinci_fact_query_unobserved` registered in `budgets.toml [bench]` with measured, identical `allocs` (TS-10 — the P2-3 zero-cost shape); TS-22 walk counts unchanged; TS-1, TS-13.
 
@@ -48,7 +48,7 @@
 
 **Non-goals:** caching facts across compiles (P5-1); L3 phase ordering (phase 3).
 
-**Landed 2026-09-22:** `after_pass` invalidation, `PRESERVE_STRUCTURE` / `PRESERVE_BINDINGS` over the new `fact::ids` table, the `FactVerifyObserver` recompute-and-compare mode with the lying-pass fixture, and the 19/19-alloc bench pair — see the [P4-1b record](./phase-4-records/p4-1b.md).
+**Landed 2026-09-22:** `after_pass` invalidation, `PRESERVE_STRUCTURE` / `PRESERVE_BINDINGS` over the new `fact::ids` table, the `AnalysisVerifyObserver` recompute-and-compare mode with the lying-pass fixture, and the 19/19-alloc bench pair — see the [P4-1b record](./phase-4-records/p4-1b.md).
 
 ## P4-2 — Fact-group alpha beta split
 
@@ -60,7 +60,7 @@
 
 **Steps:**
 
-- [x] `trait AlphaExport: FactGroup { const ALPHA_SCHEMA: u16; type Alpha: Folio; fn export(..) -> Self::Alpha; fn import(Self::Alpha) -> FactTable<Self>; }` in `davinci/vize_davinci/src/fact/alpha.rs`
+- [x] `trait AlphaExport: Analysis { const ALPHA_SCHEMA: u16; type Alpha: Folio; fn export(..) -> Self::Alpha; fn import(Self::Alpha) -> AnalysisTable<Self>; }` in `davinci/vize_davinci/src/fact/alpha.rs`
 - [x] α values are owned and `'static`-asserted (the P1-11 arena/cache contract); each α page prints `schema_version` (the P2-17 rule)
 - [x] `docs/davinci/plan/fact-alpha-schemas.md` documents every α group's key, value and version; a Rust test reads it via `include_str!` and fails on an undocumented group
 
@@ -82,7 +82,7 @@
 
 **Steps:**
 
-- [x] `vize_croquis` gains a `vize_davinci` dependency; groups implement `FactGroup`, keyed as written in the P4-2 schema doc (binding name / `SymbolId`; L2 `NodeId` re-keying waits for L2 to carry script scope)
+- [x] `vize_croquis` gains a `vize_davinci` dependency; groups implement `Analysis`, keyed as written in the P4-2 schema doc (binding name / `SymbolId`; L2 `NodeId` re-keying waits for L2 to carry script scope)
 - [x] Declarative spec + naive evaluator in `crates/vize_croquis/src/facts/spec/` (the Polonius discipline); TS-34 compares it with production over the P2-15 matrix plane and a corpus shard (`VIZE_DAVINCI_FACT_CORPUS`, the two test-scripts submodules, skips counted)
 - [ ] Switch readers to `get::<Bindings>()` / `get::<UndefinedRefs>()` **except** `crates/vize_canon/src/virtual_ts/**` and `crates/vize_maestro/src/virtual_code/**` (lane C deletes those readers in P4-5c) **and the legacy compile lane** (`vize_atelier_core/src/lane/`, `vize_atelier_jsx`, the `vize_atelier_sfc` compiler), which reads the analysis it builds in the same pipeline as a fused attribute (semantic-engine.md #2): a demand there costs a table build per compile — measured 0.02–1.02 % of an SFC compile on the P0-2 ladder, a regression charter #22 refuses — and the lane retires with the legacy transform lane (charter #26); the struct fields stay as producer storage until then _(scope amended 2026-09-22, see the record)_. The DOM reader `vize_atelier_dom/src/compile/croquis_facts.rs` demands `Bindings` (`dom/croquis-projection`). The legacy compile lane stays fused.
 - [x] Regenerate [croquis-consumption.md](./croquis-consumption.md) (`node tools/support/compat/davinci/croquis-consumers.ts --write`)

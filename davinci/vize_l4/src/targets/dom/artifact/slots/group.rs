@@ -5,13 +5,13 @@ use vize_l2::op::{IfOp, Op, Region};
 use super::{SlotPiece, capture_child, emit_template_pieces, is_slot_template};
 use crate::targets::dom::artifact::create_slots_walk::{advance_after_op, first_slot_template};
 use crate::targets::dom::artifact::{EmitCx, EmitError, UnsupportedReason as Reason};
-use vize_l2::analysis::slot_facts::{SlotCarrier, SlotFacts, SlotParams};
+use vize_l2::analysis::slot_facts::{SlotAnalysis, SlotCarrier, SlotParams};
 use vize_l2::walk::PageWalk;
 
 pub(super) fn collect_pieces(
     cx: &mut EmitCx<'_>,
     children: &Region<'_>,
-    facts: &SlotFacts,
+    facts: &SlotAnalysis,
     buckets: &mut [StdVec<SlotPiece>],
 ) -> Result<(), EmitError> {
     let mut group_keys = group_branch_key_starts(cx, children, facts);
@@ -112,7 +112,7 @@ fn scoped_params(params: &SlotParams) -> Option<&str> {
 fn group_branch_key_starts(
     cx: &EmitCx<'_>,
     children: &Region<'_>,
-    facts: &SlotFacts,
+    facts: &SlotAnalysis,
 ) -> StdVec<u32> {
     let mut counts = facts.groups.iter().map(|_| 0u32).collect::<StdVec<_>>();
     let mut walk = cx.walk.clone();

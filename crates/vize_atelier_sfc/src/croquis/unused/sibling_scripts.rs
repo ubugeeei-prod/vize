@@ -3,11 +3,11 @@ use crate::croquis::{
 };
 use crate::{SfcParseOptions, parse_sfc};
 use vize_croquis::facts::{
-    Bindings, CroquisFacts, Demand, FactConsumer, FactGroup, UnusedBindings,
+    Analysis, AnalysisConsumer, Bindings, CroquisFacts, Demand, UnusedBindings,
 };
 
 struct Reader;
-impl FactConsumer for Reader {
+impl AnalysisConsumer for Reader {
     const NAME: &'static str = "test/sibling-script-unused";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID).with(UnusedBindings::ID);
 }

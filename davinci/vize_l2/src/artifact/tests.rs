@@ -2,7 +2,7 @@ use alloc::vec;
 use alloc::vec::Vec as OwnedVec;
 use vize_l0::{Allocator, Box, Span, String, Vec, id::NodeId};
 
-use super::{Artifact, ArtifactError, ArtifactParts, IfShape};
+use super::{IfShape, L2Template, L2TemplateError, L2TemplateParts};
 use crate::analysis::for_facts::{ForName, ForParts};
 use crate::analysis::fragment_facts::LoopFragment;
 use crate::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
@@ -11,7 +11,7 @@ use crate::op::{
     InterpolationOp, Namespace, Op, Region, SlotContentOp, SlotOp, TextOp, VueOnceOp,
 };
 use crate::provenance::ProvenanceRecord;
-use crate::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
+use crate::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin, ScopeTag};
 use crate::walk::{NodeEvent, NodeRef, PageWalk};
 
 mod invariants;
@@ -36,12 +36,12 @@ fn opaque<'a>(a: &'a Allocator, span: Span) -> ExprRef<'a> {
     }))
 }
 
-fn parts<'a>(source: &'a str, root: Region<'a>) -> ArtifactParts<'a> {
-    ArtifactParts::new(source, root)
+fn parts<'a>(source: &'a str, root: Region<'a>) -> L2TemplateParts<'a> {
+    L2TemplateParts::new(source, root)
 }
 
-fn scope(tag: u32) -> ScopeFacts {
-    ScopeFacts {
+fn scope(tag: u32) -> ScopeAnalysis {
+    ScopeAnalysis {
         tag: ScopeTag::from_index(tag),
         bindings: OwnedVec::new(),
     }
@@ -62,7 +62,7 @@ fn retained_js_carrier_and_ast_are_the_original_once_parsed_payload() {
             &&a,
         ))],
     );
-    let artifact = Artifact::try_new(parts("{{value}}", root)).unwrap();
+    let artifact = L2Template::try_new(parts("{{value}}", root)).unwrap();
     let mut seen = 0;
     artifact
         .visit_nodes(&mut |id, node| {
@@ -169,7 +169,7 @@ fn attached_ids_and_mutable_pass_accounting_share_exact_page_order() {
     });
     assert_eq!(walk.minted(), 11);
     assert_eq!(walk.visits(), 9);
-    let artifact = Artifact::try_new(input).unwrap();
+    let artifact = L2Template::try_new(input).unwrap();
     assert_eq!(artifact.node_count(), 11);
     let mut all = OwnedVec::new();
     let mut ops = OwnedVec::new();
@@ -278,7 +278,7 @@ fn scope_origin_order_and_failed_provenance_survive_sealing_and_rejection() {
     let mut input = parts("x", root);
     input.scopes.insert(
         NodeId::FIRST,
-        ScopeFacts {
+        ScopeAnalysis {
             tag: ScopeTag::from_index(0),
             bindings: vec![
                 ScopeBinding {
@@ -301,7 +301,7 @@ fn scope_origin_order_and_failed_provenance_survive_sealing_and_rejection() {
         after: String::default(),
         span,
     });
-    let artifact = Artifact::try_new(input).unwrap();
+    let artifact = L2Template::try_new(input).unwrap();
     assert_eq!(artifact.provenance()[0].node, None);
     assert_eq!(
         artifact.scopes().get(NodeId::FIRST).unwrap().bindings.len(),
@@ -309,10 +309,10 @@ fn scope_origin_order_and_failed_provenance_survive_sealing_and_rejection() {
     );
     let mut changed = artifact.into_parts();
     changed.root.ops.clear();
-    let rejected = Artifact::try_new(changed).unwrap_err();
+    let rejected = L2Template::try_new(changed).unwrap_err();
     assert_eq!(
         rejected.error,
-        ArtifactError::DanglingScope {
+        L2TemplateError::DanglingScope {
             node: NodeId::FIRST
         }
     );
@@ -324,7 +324,7 @@ fn scope_origin_order_and_failed_provenance_survive_sealing_and_rejection() {
 #[test]
 fn empty_artifact_has_no_numbered_nodes_and_preserves_source_identity() {
     let a = Allocator::default();
-    let artifact = Artifact::try_new(parts("source", region(&a, []))).unwrap();
+    let artifact = L2Template::try_new(parts("source", region(&a, []))).unwrap();
     assert_eq!(artifact.node_count(), 0);
     assert!(!artifact.contains_node(NodeId::FIRST));
     let mut calls = 0;
@@ -346,7 +346,7 @@ fn every_side_table_fact_must_key_a_numbered_node() {
         index: ForName::Absent,
     };
     input.for_facts.insert(NodeId::FIRST, row.clone());
-    let artifact = Artifact::try_new(input).unwrap();
+    let artifact = L2Template::try_new(input).unwrap();
     assert_eq!(artifact.parts().for_facts.get(NodeId::FIRST), Some(&row));
 
     let dangling = NodeId::from_index(1).unwrap();
@@ -354,10 +354,10 @@ fn every_side_table_fact_must_key_a_numbered_node() {
     changed
         .loop_fragments
         .insert(dangling, LoopFragment::default());
-    let rejected = Artifact::try_new(changed).unwrap_err();
+    let rejected = L2Template::try_new(changed).unwrap_err();
     assert_eq!(
         rejected.error,
-        ArtifactError::DanglingFact { node: dangling }
+        L2TemplateError::DanglingFact { node: dangling }
     );
     assert_eq!(
         rejected.parts.loop_fragments.get(dangling),

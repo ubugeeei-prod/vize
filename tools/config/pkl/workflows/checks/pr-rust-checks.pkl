@@ -173,7 +173,7 @@ jobs {
         name = "Run affected Rust doctests"
         `if` = "${{ matrix.lane == 'clippy' }}"
         env { VIZE_RUST_CASE_LABEL = "Affected Rust doctests" }
-        run = #"node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --doc"#
+        run = #"node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --doc -- --nocapture"#
       }
       new Dynamic {
         name = "Require Rust source test cases"

@@ -1,6 +1,6 @@
 use vize_l0::{Allocator, Box, Span, Vec, id::NodeId};
 use vize_l2::{
-    artifact::{Artifact, ArtifactParts},
+    artifact::{L2Template, L2TemplateParts},
     expr::{ExprRef, OpaqueExpr, OpaqueReason},
     op::{
         BindOp, BindingContract, BindingOp, ComponentOp, DynamicName, ElementOp, InterpolationOp,
@@ -8,7 +8,7 @@ use vize_l2::{
         VueDirectiveOp, VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp, VueSlotScopeOp, VueSyncOp,
         VueTextOp,
     },
-    scope::{ScopeFacts, ScopeTag},
+    scope::{ScopeAnalysis, ScopeTag},
 };
 
 pub const SPAN: Span = Span::new(0, 1);
@@ -27,30 +27,30 @@ pub fn region<'a>(allocator: &'a Allocator, ops: impl IntoIterator<Item = Op<'a>
     }
 }
 
-pub fn seal<'a>(root: Region<'a>) -> Artifact<'a> {
+pub fn seal<'a>(root: Region<'a>) -> L2Template<'a> {
     seal_scoped(root, [])
 }
 
 pub fn seal_scoped<'a>(
     root: Region<'a>,
     scope_nodes: impl IntoIterator<Item = NodeId>,
-) -> Artifact<'a> {
+) -> L2Template<'a> {
     let scopes = scope_nodes
         .into_iter()
         .enumerate()
         .map(|(index, node)| {
             (
                 node,
-                ScopeFacts {
+                ScopeAnalysis {
                     tag: ScopeTag::from_index(index as u32),
                     bindings: std::vec::Vec::new(),
                 },
             )
         })
         .collect();
-    Artifact::try_new(ArtifactParts {
+    L2Template::try_new(L2TemplateParts {
         scopes,
-        ..ArtifactParts::new("%", root)
+        ..L2TemplateParts::new("%", root)
     })
     .expect("native fixture has valid spans and canonical controls")
 }

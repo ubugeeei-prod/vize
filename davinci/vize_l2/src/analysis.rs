@@ -14,5 +14,5 @@ pub mod text_facts;
 /// Joint compiler and tooling queries over a shared canonical region.
 #[cfg(any(test, feature = "composed-template-analysis"))]
 pub mod template {
-    pub use super::static_facts::composed::{OwnerFacts, TemplateFacts, run};
+    pub use super::static_facts::composed::{OwnerAnalysis, TemplateAnalysis, run};
 }

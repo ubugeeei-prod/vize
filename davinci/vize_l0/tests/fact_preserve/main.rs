@@ -12,13 +12,14 @@ use numbers::{
     BindingsLike, Count, DOUBLE, Everything, LYING_DOUBLE, REGISTRY, RENAME, Total, UsagesLike,
     Values, double, serial,
 };
-use vize_l0::fact::{
-    Demand, FactConsumer, FactError, FactGroup, FactManager, FactTable, FactVerifyObserver,
-    NoFactVerify, PRESERVE_BINDINGS, PRESERVE_STRUCTURE, ids, produced_count,
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisError, AnalysisManager, AnalysisTable,
+    AnalysisVerifyObserver, Demand, NoAnalysisVerify, PRESERVE_BINDINGS, PRESERVE_STRUCTURE, ids,
+    produced_count,
 };
 use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 
-fn total(manager: &FactManager<'_, Vec<u32>>) -> Result<u64, FactError> {
+fn total(manager: &AnalysisManager<'_, Vec<u32>>) -> Result<u64, AnalysisError> {
     let view = manager.view::<Everything>();
     Ok(*view.get::<Total>()?.get(&()).expect("one total"))
 }
@@ -28,10 +29,10 @@ fn a_pass_that_preserves_everything_keeps_every_table() {
     // `rename` changes nothing the facts read, and says so.
     let _serial = serial();
     let numbers = vec![1, 2, 3];
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager.compute(&numbers, Everything::DEMAND).unwrap();
     assert_eq!(
-        manager.after_pass::<FactVerifyObserver>(&numbers, &RENAME),
+        manager.after_pass::<AnalysisVerifyObserver>(&numbers, &RENAME),
         Ok(Demand::NONE)
     );
     assert_eq!(manager.computed(), Everything::DEMAND);
@@ -42,11 +43,11 @@ fn a_pass_that_preserves_everything_keeps_every_table() {
 fn a_pass_drops_exactly_what_it_does_not_preserve() {
     let _serial = serial();
     let mut numbers = vec![1, 2, 3];
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager.compute(&numbers, Everything::DEMAND).unwrap();
 
     double(&mut numbers);
-    let dropped = manager.after_pass::<FactVerifyObserver>(&numbers, &DOUBLE);
+    let dropped = manager.after_pass::<AnalysisVerifyObserver>(&numbers, &DOUBLE);
     assert_eq!(dropped, Ok(Demand::NONE.with(Values::ID).with(Total::ID)));
     assert_eq!(
         manager.computed(),
@@ -57,7 +58,7 @@ fn a_pass_drops_exactly_what_it_does_not_preserve() {
     );
     assert_eq!(
         total(&manager),
-        Err(FactError::NotComputed { group: Total::ID })
+        Err(AnalysisError::NotComputed { group: Total::ID })
     );
 
     // The next demand recomputes only what the pass dropped, on the new
@@ -77,13 +78,13 @@ fn a_pass_drops_exactly_what_it_does_not_preserve() {
 fn a_pass_lying_about_what_it_preserves_is_rejected_exactly() {
     let _serial = serial();
     let mut numbers = vec![1, 2, 3];
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager.compute(&numbers, Everything::DEMAND).unwrap();
 
     double(&mut numbers);
     assert_eq!(
-        manager.after_pass::<FactVerifyObserver>(&numbers, &LYING_DOUBLE),
-        Err(FactError::StalePreserved {
+        manager.after_pass::<AnalysisVerifyObserver>(&numbers, &LYING_DOUBLE),
+        Err(AnalysisError::StalePreserved {
             pass: "lying-double",
             group: Values::ID,
         })
@@ -105,11 +106,11 @@ fn a_pass_lying_about_what_it_preserves_is_rejected_exactly() {
 fn trusting_mode_keeps_what_a_pass_claims() {
     let _serial = serial();
     let mut numbers = vec![1, 2, 3];
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager.compute(&numbers, Everything::DEMAND).unwrap();
     double(&mut numbers);
     assert_eq!(
-        manager.after_pass::<NoFactVerify>(&numbers, &LYING_DOUBLE),
+        manager.after_pass::<NoAnalysisVerify>(&numbers, &LYING_DOUBLE),
         Ok(Demand::NONE)
     );
     // Stale by construction: this is what verify mode exists to catch.
@@ -121,11 +122,11 @@ fn trusting_mode_keeps_what_a_pass_claims() {
 fn release_verify_mode_is_the_trusting_mode() {
     let _serial = serial();
     let mut numbers = vec![1, 2, 3];
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager.compute(&numbers, Everything::DEMAND).unwrap();
     double(&mut numbers);
     assert_eq!(
-        manager.after_pass::<FactVerifyObserver>(&numbers, &LYING_DOUBLE),
+        manager.after_pass::<AnalysisVerifyObserver>(&numbers, &LYING_DOUBLE),
         Ok(Demand::NONE)
     );
 }
@@ -164,19 +165,19 @@ const HOIST: PassDesc = PassDesc::new(
 fn a_named_group_keeps_its_members_and_drops_the_rest() {
     let _serial = serial();
     let numbers = vec![4, 5];
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     manager.compute(&numbers, Everything::DEMAND).unwrap();
     assert_eq!(
-        manager.after_pass::<FactVerifyObserver>(&numbers, &HOIST),
+        manager.after_pass::<AnalysisVerifyObserver>(&numbers, &HOIST),
         Ok(Everything::DEMAND.minus(Demand::NONE.with(BindingsLike::ID)))
     );
     assert_eq!(manager.computed(), Demand::NONE.with(BindingsLike::ID));
     let view = manager.view::<Everything>();
     assert_eq!(
-        view.get::<UsagesLike>().map(FactTable::len),
-        Err(FactError::NotComputed {
+        view.get::<UsagesLike>().map(AnalysisTable::len),
+        Err(AnalysisError::NotComputed {
             group: UsagesLike::ID
         })
     );
-    assert_eq!(view.get::<BindingsLike>().map(FactTable::len), Ok(1));
+    assert_eq!(view.get::<BindingsLike>().map(AnalysisTable::len), Ok(1));
 }

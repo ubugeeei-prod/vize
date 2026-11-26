@@ -7,7 +7,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String};
 use vize_croquis::facts::{
-    Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup, FactTable,
+    Analysis, AnalysisConsumer, AnalysisTable, Bindings, BindingsTable, CroquisFacts, Demand,
     UndefinedRefs,
 };
 use vize_croquis::{BindingType, Croquis, OptionGroup};
@@ -16,7 +16,7 @@ use vize_croquis::{BindingType, Croquis, OptionGroup};
 /// template's unresolved reads through a declared demand.
 struct SetupSpreadBindings;
 
-impl FactConsumer for SetupSpreadBindings {
+impl AnalysisConsumer for SetupSpreadBindings {
     const NAME: &'static str = "canon/options-api-setup-spread";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID).with(UndefinedRefs::ID);
 }
@@ -73,7 +73,7 @@ fn setup_return_has_spread(script: &str) -> bool {
 
 fn collect_descriptor_setup_bindings(
     summary: &Croquis,
-    bindings: &FactTable<Bindings>,
+    bindings: &AnalysisTable<Bindings>,
     options_api: bool,
 ) -> Vec<String> {
     if !options_api || bindings.is_script_setup() {
@@ -98,8 +98,8 @@ fn collect_descriptor_setup_bindings(
 
 fn extend_spread_bindings(
     names: &mut Vec<String>,
-    bindings: &FactTable<Bindings>,
-    undefined: &FactTable<UndefinedRefs>,
+    bindings: &AnalysisTable<Bindings>,
+    undefined: &AnalysisTable<UndefinedRefs>,
     template_referenced_names: Option<&FxHashSet<String>>,
 ) {
     if let Some(template_referenced_names) = template_referenced_names {
@@ -122,7 +122,7 @@ fn extend_spread_bindings(
     );
 }
 
-fn is_safe_spread_binding(bindings: &FactTable<Bindings>, name: &str) -> bool {
+fn is_safe_spread_binding(bindings: &AnalysisTable<Bindings>, name: &str) -> bool {
     is_safe_value_identifier(name) && bindings.binding_type(name).is_none()
 }
 

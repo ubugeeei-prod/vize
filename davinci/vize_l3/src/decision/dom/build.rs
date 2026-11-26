@@ -2,8 +2,9 @@
 
 use super::control::build::ConditionalFrame;
 use super::{
-    DomBinding, DomChanges, DomChild, DomChildren, DomDependency, DomExpressionFacts, DomFacts,
-    DomNode, DomRejection, DomRoot, DomRootKind, DomText, DomUnsupported, PropertyRole, ValueKind,
+    DomAnalysis, DomBinding, DomChanges, DomChild, DomChildren, DomDependency,
+    DomExpressionAnalysis, DomNode, DomRejection, DomRoot, DomRootKind, DomText, DomUnsupported,
+    PropertyRole, ValueKind,
 };
 use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId, side_table::SideTable};
@@ -28,7 +29,7 @@ pub(in crate::decision) struct DomBuilder<'facts, 'owner, 'arena, F, R> {
     reads: &'facts R,
     file: Option<&'owner L2Ir<'arena>>,
     frames: Vec<(NodeId, DomFrame<'owner, 'arena>)>,
-    facts: DomFacts<'owner, 'arena>,
+    facts: DomAnalysis<'owner, 'arena>,
     root_count: usize,
 }
 
@@ -42,7 +43,7 @@ struct DomFrame<'owner, 'arena> {
     has_text: bool,
 }
 
-impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+impl<'facts, 'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
     DomBuilder<'facts, 'owner, 'arena, F, R>
 {
     pub(in crate::decision) fn new(
@@ -57,7 +58,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
             file,
             frames: Vec::new(),
             root_count,
-            facts: DomFacts {
+            facts: DomAnalysis {
                 root: DomRoot {
                     kind: DomRootKind::Empty,
                     children: Vec::new(),
@@ -253,7 +254,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
         Ok(())
     }
 
-    pub(in crate::decision) fn finish(mut self) -> DomFacts<'owner, 'arena> {
+    pub(in crate::decision) fn finish(mut self) -> DomAnalysis<'owner, 'arena> {
         self.facts.root.kind = match self.facts.root.children.as_slice() {
             [] => DomRootKind::Empty,
             [DomChild::Node(id)] => {

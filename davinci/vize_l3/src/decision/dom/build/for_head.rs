@@ -1,6 +1,6 @@
 //! Direct same-owner joins only; no second AST, header or canonical walk.
 
-use super::{DomBuilder, DomExpressionFacts};
+use super::{DomBuilder, DomExpressionAnalysis};
 use crate::decision::dom::{DomUnsupported, for_head::DomFileForHead, vue::policy::FileReads};
 use vize_l0::id::NodeId;
 use vize_l2::{
@@ -13,7 +13,7 @@ mod read;
 mod runtime;
 mod value;
 
-impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
 {
     pub(super) fn record_for_head(

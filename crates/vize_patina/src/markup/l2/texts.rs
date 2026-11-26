@@ -53,7 +53,7 @@ pub(super) fn lookup<'a>(
 
 #[cfg(test)]
 mod tests {
-    use crate::markup::L2Template;
+    use crate::markup::LintL2Template;
     use vize_l0::Allocator;
     use vize_l1_to_l2::lower::TextParts;
     use vize_l2::op::Op;
@@ -103,7 +103,7 @@ mod tests {
         let source = "<p>Hello {{ name }}, you have {{ count }}</p><p>{{ only }}</p>\
                       <div>{{ a }}-{{ b }}</div>";
         let allocator = Allocator::new();
-        let lowered = L2Template::lower(&allocator, source);
+        let lowered = LintL2Template::lower(&allocator, source);
         let markup = lowered.markup();
         let mut compounds = 0;
         let mut plain = 0;

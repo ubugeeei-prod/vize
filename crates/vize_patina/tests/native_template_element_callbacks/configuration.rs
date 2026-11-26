@@ -4,7 +4,7 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
 };
 use vize_l0::config::VueVersion;
-use vize_l1::markup::ComponentTagFacts;
+use vize_l1::markup::ComponentTagAnalysis;
 use vize_patina::{
     HelpLevel, Linter, Locale, Rule, RuleMeta, RuleRegistry, Severity,
     native::{
@@ -29,7 +29,7 @@ impl NativeTemplateRule for RootOnly {
     fn run_on_template<'a>(
         &self,
         _: &mut NativeTemplateLintContext<'_, 'a>,
-        _: &ComponentTagFacts<'a>,
+        _: &ComponentTagAnalysis<'a>,
     ) -> Result<(), Refusal> {
         Ok(())
     }

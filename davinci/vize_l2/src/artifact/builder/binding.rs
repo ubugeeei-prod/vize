@@ -1,6 +1,6 @@
 //! Attached factories check phase and ownership in the construction walk.
 
-use super::{ArtifactError, Builder, check};
+use super::{Builder, L2TemplateError, check};
 use crate::expr::ExprRef;
 use crate::op::{BindOp, BindingOp, DynamicName};
 use vize_l0::{Box, Span, id::NodeId};
@@ -15,7 +15,7 @@ impl<'a> Builder<'a> {
         name_span: Span,
         value: ExprRef<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare_binding(span)?;
         check::owned_span(self.parts.source, id, name_span, Some(span))?;
         if name.is_empty()
@@ -25,7 +25,7 @@ impl<'a> Builder<'a> {
                 .get(name_span.start as usize..name_span.end as usize)
                 != Some(name)
         {
-            return Err(ArtifactError::InvalidBindingName {
+            return Err(L2TemplateError::InvalidBindingName {
                 node: id,
                 span: name_span,
             });
@@ -38,7 +38,7 @@ impl<'a> Builder<'a> {
         &mut self,
         value: ExprRef<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare_binding(span)?;
         self.attach(id, None, value, span)
     }
@@ -50,21 +50,21 @@ impl<'a> Builder<'a> {
         name: &'a str,
         value: ExprRef<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare_binding(span)?;
         self.attach(id, Some(DynamicName::Static(name)), value, span)
     }
 
-    fn prepare_binding(&mut self, span: Span) -> Result<NodeId, ArtifactError> {
+    fn prepare_binding(&mut self, span: Span) -> Result<NodeId, L2TemplateError> {
         let frame = self
             .frames
             .last()
-            .ok_or(ArtifactError::BindingWithoutOwner { span })?;
+            .ok_or(L2TemplateError::BindingWithoutOwner { span })?;
         if !frame.owner.accepts_bindings() {
-            return Err(ArtifactError::BindingWithoutOwner { span });
+            return Err(L2TemplateError::BindingWithoutOwner { span });
         }
         if frame.children_started {
-            return Err(ArtifactError::BindingAfterChild {
+            return Err(L2TemplateError::BindingAfterChild {
                 node: frame.id,
                 span,
             });
@@ -78,14 +78,14 @@ impl<'a> Builder<'a> {
         name: Option<DynamicName<'a>>,
         value: ExprRef<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         check::expression(self.parts.source, id, value, span)?;
         // The phase and exact next index are checked above. This attached mint
         // leaves the child-region phase unchanged; no traversal is involved.
         let frame = self
             .frames
             .last_mut()
-            .ok_or(ArtifactError::BindingWithoutOwner { span })?;
+            .ok_or(L2TemplateError::BindingWithoutOwner { span })?;
         let _ = self.walk.mint_attached();
         frame.bindings.push(BindingOp::Bind(Box::new_in(
             BindOp {

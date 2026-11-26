@@ -1,7 +1,7 @@
 //! Original syntax and completed File facts owned with same-walk JSX structure.
 
 use super::{FileProducer, ProgramInput, ProgramInputError, ProgramScope};
-use crate::artifact::ArtifactError;
+use crate::artifact::L2TemplateError;
 use crate::file::{L2Ir, RejectedFile};
 use alloc::boxed::Box;
 use oxc_parser::ProgramObservation;
@@ -18,7 +18,7 @@ pub use records::{JsxChildren, JsxNode};
 pub enum JsxFileError {
     SyntaxAdmission,
     Input(ProgramInputError),
-    Artifact(ArtifactError),
+    Artifact(L2TemplateError),
     InvalidProfile,
     AlreadyWalked,
     NotWalked,

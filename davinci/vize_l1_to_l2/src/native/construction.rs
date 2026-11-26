@@ -1,7 +1,7 @@
 //! Private recursive construction; public diagnostics keep their original bound.
 
 use vize_l0::{Span, id::NodeId};
-use vize_l2::artifact::{ArtifactError, ComponentBody, ComponentFactory};
+use vize_l2::artifact::{ComponentBody, ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
 use vize_l2::op::{Attribute, Namespace};
 use vize_l2::provenance::ProvenanceRecord;
@@ -24,23 +24,23 @@ pub(crate) trait ConstructionFactory<'a>: Sized {
         _: vize_l0::Vec<'a, &'a str>,
         _: Option<&'a JsExpr<'a>>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
-        Err(ArtifactError::MissingEventRecorder { span })
+    ) -> Result<NodeId, L2TemplateError> {
+        Err(L2TemplateError::MissingEventRecorder { span })
     }
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError>;
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError>;
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError>;
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError>;
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError>;
+    ) -> Result<NodeId, L2TemplateError>;
     fn bind(
         &mut self,
         name: &'a str,
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError>;
+    ) -> Result<NodeId, L2TemplateError>;
     fn element<B: ConstructionBody<'a>>(
         &mut self,
         tag: &'a str,
@@ -48,15 +48,15 @@ pub(crate) trait ConstructionFactory<'a>: Sized {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError>;
+    ) -> Result<NodeId, L2TemplateError>;
     fn component<B: ConstructionBody<'a>>(
         &mut self,
         name: &'a str,
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError>;
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError>;
+    ) -> Result<NodeId, L2TemplateError>;
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError>;
 }
 
 /// Stack-only delegation into a caller's real public diagnostic factory.
@@ -75,11 +75,11 @@ impl<'a, R: ComponentFactory<'a>> ConstructionFactory<'a> for Diagnostic<'_, R> 
         self.region.source()
     }
 
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.text(text, span)
     }
 
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.comment(text, span)
     }
 
@@ -87,7 +87,7 @@ impl<'a, R: ComponentFactory<'a>> ConstructionFactory<'a> for Diagnostic<'_, R> 
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.interpolation(expression, span)
     }
 
@@ -97,7 +97,7 @@ impl<'a, R: ComponentFactory<'a>> ConstructionFactory<'a> for Diagnostic<'_, R> 
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.bind(name, name_span, expression, span)
     }
 
@@ -108,7 +108,7 @@ impl<'a, R: ComponentFactory<'a>> ConstructionFactory<'a> for Diagnostic<'_, R> 
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region
             .element(tag, namespace, attributes, span, DiagnosticBody(body))
     }
@@ -119,12 +119,12 @@ impl<'a, R: ComponentFactory<'a>> ConstructionFactory<'a> for Diagnostic<'_, R> 
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region
             .component(name, attributes, span, DiagnosticBody(body))
     }
 
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         self.region.record(record)
     }
 }

@@ -11,17 +11,17 @@ use vize_l0::side_table::SideTable;
 use vize_l0::{Span, String, ensure_sufficient_stack};
 use vize_l2::op::{BindingOp, Op};
 use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
-use vize_l2::scope::{ScopeFacts, ScopeTag};
+use vize_l2::scope::{ScopeAnalysis, ScopeTag};
 
 use super::super::walk::PageWalk;
 use super::spell::spelling;
-use super::{MISPLACED_MESSAGE, SlotFacts, SlotName, SlotParams, group};
+use super::{MISPLACED_MESSAGE, SlotAnalysis, SlotName, SlotParams, group};
 use vize_l2::analysis::fragment_facts::{BranchFragments, LoopFragment};
 
 /// The pass's channels: the read-only scope table, the unified output
 /// channels, and the pass state.
 pub(super) struct Channels<'l, P> {
-    pub scopes: &'l SideTable<ScopeFacts>,
+    pub scopes: &'l SideTable<ScopeAnalysis>,
     pub wrappers: &'l SideTable<BranchFragments>,
     pub for_wrappers: &'l SideTable<LoopFragment>,
     pub diagnostics: &'l mut StdVec<Diagnostic>,
@@ -29,7 +29,7 @@ pub(super) struct Channels<'l, P> {
     /// Every consumed slot-scope tag, for the freshness law.
     pub seen_tags: StdVec<ScopeTag>,
     /// The published facts, keyed by `ui.component` id.
-    pub facts: SideTable<SlotFacts>,
+    pub facts: SideTable<SlotAnalysis>,
 }
 
 impl<P: ProvenanceSink> Channels<'_, P> {

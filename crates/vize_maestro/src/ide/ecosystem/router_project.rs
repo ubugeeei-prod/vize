@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 use vize_croquis_cf::providers::vue_router::{NamedRoute, RouteParams};
 use vize_croquis_cf::providers::{PROJECT_FACTS, ProjectSources};
 use vize_l0::String;
-use vize_l0::fact::{Demand, FactConsumer, FactGroup, FactManager};
+use vize_l0::analysis::{Analysis, AnalysisConsumer, AnalysisManager, Demand};
 
 /// How many ancestors are searched for the project's `package.json`.
 const MAX_ANCESTORS: usize = 16;
@@ -35,7 +35,7 @@ const SKIPPED_DIRS: &[&str] = &[
 /// Maestro's route-name completion, a declared consumer of `route-params`.
 struct RouteNameCompletion;
 
-impl FactConsumer for RouteNameCompletion {
+impl AnalysisConsumer for RouteNameCompletion {
     const NAME: &'static str = "maestro/route-name-completion";
     const DEMAND: Demand = Demand::NONE.with(RouteParams::ID);
 }
@@ -70,7 +70,7 @@ pub(super) fn project_routes(file: &Path) -> Vec<ProjectRoute> {
         let relative = path.strip_prefix(&root).unwrap_or(path);
         project.add(&relative.to_string_lossy(), &source);
     }
-    let mut manager = FactManager::new(&PROJECT_FACTS);
+    let mut manager = AnalysisManager::new(&PROJECT_FACTS);
     let Ok(view) = manager.prepare::<RouteNameCompletion>(&project) else {
         return Vec::new();
     };

@@ -1,7 +1,7 @@
 //! The α form of a fact group (P4-2) — the Lean environment-extension
 //! import.
 //!
-//! Every group has a **β** form: the in-memory [`FactTable`] a manager
+//! Every group has a **β** form: the in-memory [`AnalysisTable`] a manager
 //! rebuilds on demand. A group that crosses a compile boundary also declares
 //! an **α** form: an owned, versioned page produced by an explicit
 //! [`AlphaExport::export`] and read back by [`AlphaExport::import`], which is
@@ -20,12 +20,12 @@ use core::marker::PhantomData;
 
 use vize_l0::{String, cstr};
 
-use super::{FactGroup, FactTable};
+use super::{Analysis, AnalysisTable};
 use crate::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use crate::pass::AnalysisId;
 
 /// A fact group with an exported α form.
-pub trait AlphaExport: FactGroup {
+pub trait AlphaExport: Analysis {
     /// The α page's schema version: bumped whenever the page's shape or
     /// meaning changes, independently of every other group.
     const ALPHA_SCHEMA: u16;
@@ -34,9 +34,9 @@ pub trait AlphaExport: FactGroup {
     type Alpha: Dump + PartialEq + Send + Sync + 'static;
 
     /// Export the β table as its α page.
-    fn export(table: &FactTable<Self>) -> Self::Alpha;
+    fn export(table: &AnalysisTable<Self>) -> Self::Alpha;
     /// Rebuild the β table from an α page; `import(export(t)) == t`.
-    fn import(alpha: Self::Alpha) -> FactTable<Self>;
+    fn import(alpha: Self::Alpha) -> AnalysisTable<Self>;
 
     /// This group's α identity, for the schema-doc check.
     const ALPHA_DESC: AlphaDesc = AlphaDesc {
@@ -57,7 +57,7 @@ pub struct AlphaDesc {
 /// Every production group with an α form. A group gains its row here in the
 /// same change that implements [`AlphaExport`] for it, and the schema doc
 /// documents it before that change can land.
-pub const ALPHA_GROUPS: &[AlphaDesc] = &[<super::ExpressionFacts as AlphaExport>::ALPHA_DESC];
+pub const ALPHA_GROUPS: &[AlphaDesc] = &[<super::ExpressionAnalysis as AlphaExport>::ALPHA_DESC];
 
 /// An α page inside its versioned header.
 ///
@@ -95,7 +95,7 @@ where
 impl<G: AlphaExport> AlphaDocument<G> {
     /// Export `table` as a versioned α document.
     #[must_use]
-    pub fn export(table: &FactTable<G>) -> Self {
+    pub fn export(table: &AnalysisTable<G>) -> Self {
         Self {
             alpha: G::export(table),
             group: PhantomData,
@@ -104,7 +104,7 @@ impl<G: AlphaExport> AlphaDocument<G> {
 
     /// Rebuild the β table.
     #[must_use]
-    pub fn import(self) -> FactTable<G> {
+    pub fn import(self) -> AnalysisTable<G> {
         G::import(self.alpha)
     }
 }

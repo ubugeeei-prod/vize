@@ -22,7 +22,7 @@ mod output;
 pub use helpers::HELPERS;
 pub use mapping::MappingError;
 pub use module::{JsxModuleRefusal, project_jsx_module};
-pub use output::{DirectiveKind, DirectiveRange, LinkFact, LinkMapping, LinkRole, TsDocument};
+pub use output::{DirectiveKind, DirectiveRange, LinkInfo, LinkMapping, LinkRole, TsDocument};
 pub mod vue;
 
 const MODULE_SUFFIX: &str = "\n;\nexport {};\n";

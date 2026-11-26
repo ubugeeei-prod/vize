@@ -93,8 +93,8 @@ fn genuine_pre_recovery_context_is_refused_without_fabricating_children() {
 #[test]
 fn unchanged_header_registry_still_verifies_aria_and_rejects_child_only_groups() {
     use vize_l0::{
+        analysis::Analysis,
         diag::{WitnessChain, WitnessLink, verify::WitnessError},
-        fact::FactGroup,
     };
     use vize_patina::native::child_facts::NativeDirectInterpolations;
     let source = "<template><meta role /></template>";

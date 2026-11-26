@@ -9,10 +9,10 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::String;
 use vize_l0::side_table::SideTable;
 
-use super::model_facts::ModelFacts;
-use super::slot_facts::SlotFacts;
-use super::static_facts::StaticFacts;
-use super::template_complexity::ComplexityFacts;
+use super::model_facts::ModelAnalysis;
+use super::slot_facts::SlotAnalysis;
+use super::static_facts::StaticAnalysis;
+use super::template_complexity::ComplexityAnalysis;
 
 /// Runtime-resolved filter assets a legalization introduced.
 ///
@@ -30,21 +30,21 @@ pub struct FilterAssets {
 
 /// The facts the L2 pass pipeline produces beside the artifact.
 #[derive(Debug, Default)]
-pub struct L2Facts {
+pub struct L2Analyses {
     /// Filter assets from legalization; empty when no input spelled one.
     pub filters: FilterAssets,
     /// Per-`ui.component` canonical slot grouping, keyed by the op's
     /// page-order id.
-    pub slot_facts: SideTable<SlotFacts>,
+    pub slot_facts: SideTable<SlotAnalysis>,
     /// Per-`ui.model` validation faults, keyed by the binding op's
     /// page-order id; sparse — entries only for faulted models.
-    pub model_faults: SideTable<ModelFacts>,
+    pub model_faults: SideTable<ModelAnalysis>,
     /// Per-owner static-analysis facts, keyed by the `ui.element` /
     /// `ui.component` op's page-order id; dense over the owner family. The
     /// pipeline's first `Optional` product: skipping the pass loses these
     /// and nothing else.
-    pub static_facts: SideTable<StaticFacts>,
+    pub static_facts: SideTable<StaticAnalysis>,
     /// The component's own template complexity; `None` when the plan
     /// declined the `Optional` analysis.
-    pub complexity: Option<ComplexityFacts>,
+    pub complexity: Option<ComplexityAnalysis>,
 }

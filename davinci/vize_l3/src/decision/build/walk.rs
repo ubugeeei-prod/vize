@@ -3,7 +3,7 @@
 use super::{Builder, Frame, Levels};
 use crate::decision::{
     ControlKind, ControlRegion, DecisionBuildError, DecisionTables, NodeDecision, StaticLevel,
-    dom::DomExpressionFacts,
+    dom::DomExpressionAnalysis,
     dom::vue::policy::FileReads,
     policy::{BindingOwner, BindingRole},
 };
@@ -15,7 +15,7 @@ use vize_l2::{
     walk::{NodeEvent, NodeRef},
 };
 
-impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
     Builder<'_, 'owner, 'arena, F, R>
 {
     pub(super) fn finish(self) -> Result<DecisionTables, DecisionBuildError> {

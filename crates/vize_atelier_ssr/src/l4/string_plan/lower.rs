@@ -2,7 +2,7 @@
 
 use vize_l0::{Allocator, Span, Vec};
 use vize_l2::op as l2;
-use vize_l2_to_l3::{PartitionFacts, PartitionKind};
+use vize_l2_to_l3::{PartitionAnalysis, PartitionKind};
 
 use super::binding::{binding_kind, binding_payload, binding_span};
 use super::payload::slot_name_payload;
@@ -15,7 +15,7 @@ use super::{
 pub(super) fn lower<'r, 'a>(
     allocator: &'a Allocator,
     root: &'r l2::Region<'a>,
-    partition: &PartitionFacts<'_>,
+    partition: &PartitionAnalysis<'_>,
 ) -> SsrStringPlanLowering<'r, 'a> {
     let mut cx = Cx {
         partition,
@@ -31,7 +31,7 @@ pub(super) fn lower<'r, 'a>(
 }
 
 struct Cx<'facts, 'r, 'a> {
-    partition: &'facts PartitionFacts<'facts>,
+    partition: &'facts PartitionAnalysis<'facts>,
     next_fact: usize,
     plan: SsrStringPlan<'r, 'a>,
     errors: Vec<'a, SsrStringPlanError>,

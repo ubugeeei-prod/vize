@@ -1,7 +1,7 @@
 //! [`WitnessError`] — why a witness link does not verify.
 
+use crate::analysis::AnalysisError;
 use crate::diag::{Verdict, WitnessKey};
-use crate::fact::FactError;
 use crate::pass::AnalysisId;
 use vize_l0::Span;
 
@@ -14,9 +14,9 @@ pub enum WitnessError {
     /// registered for — a group that cannot back a witness.
     UnknownGroup { link: usize, group: AnalysisId },
     /// Reading the group through the producer's view failed: the producer
-    /// did not declare it ([`FactError::Undeclared`], debug builds), no run
+    /// did not declare it ([`AnalysisError::Undeclared`], debug builds), no run
     /// computed it, or another group type owns its id.
-    Fact { link: usize, error: FactError },
+    Fact { link: usize, error: AnalysisError },
     /// The link's key has a shape the group's key type cannot take.
     KeyShape {
         link: usize,

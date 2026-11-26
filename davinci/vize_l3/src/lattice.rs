@@ -18,16 +18,16 @@ pub use crate::lattice::dump::{Binding as DumpBinding, Page as ReactivityPage};
 pub use axis::{BindingOrigin, EscapeKind};
 pub use class::ReactivityClass;
 pub use effect::{EffectKind, EffectSet};
-pub use evaluate::{LatticeFacts, evaluate, evaluate_binding};
+pub use evaluate::{LatticeAnalysis, evaluate, evaluate_binding};
 pub use from_kind::SourceKind;
 pub use id::BindingId;
-pub use input::{BindingFact, BindingInput, Verdict};
+pub use input::{BindingInfo, BindingInput, Verdict};
 
-const _: () = assert!(!core::mem::needs_drop::<BindingFact>());
+const _: () = assert!(!core::mem::needs_drop::<BindingInfo>());
 const _: () = assert!(!core::mem::needs_drop::<BindingInput>());
 
 #[cfg(target_pointer_width = "64")]
 const _: () = {
-    assert!(core::mem::size_of::<BindingFact>() <= 32);
+    assert!(core::mem::size_of::<BindingInfo>() <= 32);
     assert!(core::mem::size_of::<BindingInput>() <= 32);
 };

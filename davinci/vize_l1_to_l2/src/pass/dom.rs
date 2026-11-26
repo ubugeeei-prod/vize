@@ -8,7 +8,7 @@ use vize_l0::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline}
 use crate::lower::Lowered;
 use vize_l2::provenance::ProvenanceSink;
 
-use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::pass_facts::L2Analyses;
 
 use super::{L2_STAGE, TransformProfile, hoist, legacy, vmodel, vslot};
 
@@ -28,8 +28,8 @@ pub fn run_dom_transform_with_profile<'a, O: PassObserver>(
     lowered: &mut Lowered<'a, impl ProvenanceSink>,
     observer: &mut O,
     profile: TransformProfile,
-) -> L2Facts {
-    let mut facts = L2Facts::default();
+) -> L2Analyses {
+    let mut facts = L2Analyses::default();
 
     if lowered.caps.needs_sugar() {
         run_dom_legacy_transform(lowered, observer, &mut facts);
@@ -51,7 +51,7 @@ pub fn run_dom_transform_with_profile<'a, O: PassObserver>(
 fn run_dom_legacy_transform<'a, O: PassObserver>(
     lowered: &mut Lowered<'a, impl ProvenanceSink>,
     observer: &mut O,
-    facts: &mut L2Facts,
+    facts: &mut L2Analyses,
 ) {
     #[cfg(debug_assertions)]
     let mut verify = vize_l2::verify::VerifyObserver::new();

@@ -11,7 +11,7 @@ use crate::facts::{reactivity_losses, reactivity_sources};
 use crate::reactivity::ReactiveKind;
 use vize_carton::{CompactString, Span, cstr};
 use vize_l3::lattice::{
-    BindingFact, BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind,
+    BindingId, BindingInfo, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind,
     ReactivityClass, SourceKind, Verdict, evaluate_binding,
 };
 
@@ -171,8 +171,8 @@ fn kind_input(kind: ReactiveKind) -> Option<(EffectSet, Verdict)> {
     })
 }
 
-fn spec_fact(input: BindingInput) -> BindingFact {
-    BindingFact {
+fn spec_fact(input: BindingInput) -> BindingInfo {
+    BindingInfo {
         id: input.id,
         class: classify(input.origin, input.effects, input.escape),
         verdict: input.verdict,

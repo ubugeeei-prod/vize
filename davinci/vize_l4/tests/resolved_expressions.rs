@@ -7,13 +7,13 @@ use vize_l4::expr::{
 };
 use vize_l4::write::{NoLinks, Writer};
 
-struct Facts;
-impl BindingLookup for Facts {
+struct AllBindings;
+impl BindingLookup for AllBindings {
     fn lookup(&self, _name: &str) -> Option<BindingId> {
         Some(BindingId::new(0))
     }
 }
-impl AccessProvider for Facts {
+impl AccessProvider for AllBindings {
     fn spelling(
         &self,
         _: &vize_l2::resolution::Occurrence<'_>,
@@ -34,17 +34,17 @@ fn exact_retained_ast_reuses_its_resolution_without_rebinding() {
     let first = JsExpr::parse_in(&arena, "first", Span::new(0, 5)).unwrap();
     let second = JsExpr::parse_in(&arena, "second", Span::new(6, 12)).unwrap();
     let tables = [
-        resolve_expression(first, &Facts).unwrap(),
-        resolve_expression(second, &Facts).unwrap(),
+        resolve_expression(first, &AllBindings).unwrap(),
+        resolve_expression(second, &AllBindings).unwrap(),
     ];
     let expressions = ResolvedExpressions::checked(&tables).unwrap();
     let mut writer = Writer::<NoLinks>::default();
     expressions
-        .write_retained(&mut writer, file, second, &Facts)
+        .write_retained(&mut writer, file, second, &AllBindings)
         .unwrap();
     writer.push(" + ");
     expressions
-        .write_retained(&mut writer, file, first, &Facts)
+        .write_retained(&mut writer, file, first, &AllBindings)
         .unwrap();
     assert_eq!(writer.as_str(), "_ctx.second + _ctx.first");
 }
@@ -54,12 +54,12 @@ fn same_text_from_another_parse_cannot_reuse_the_table() {
     let arena = Allocator::default();
     let original = JsExpr::parse_in(&arena, "value", Span::new(0, 5)).unwrap();
     let foreign = JsExpr::parse_in(&arena, "value", Span::new(0, 5)).unwrap();
-    let tables = [resolve_expression(original, &Facts).unwrap()];
+    let tables = [resolve_expression(original, &AllBindings).unwrap()];
     let expressions = ResolvedExpressions::checked(&tables).unwrap();
     let mut writer = Writer::<NoLinks>::default();
     assert_eq!(
         expressions
-            .write_retained(&mut writer, "value", foreign, &Facts)
+            .write_retained(&mut writer, "value", foreign, &AllBindings)
             .unwrap_err()
             .kind,
         EmitErrorKind::SourceMismatch
@@ -68,7 +68,7 @@ fn same_text_from_another_parse_cannot_reuse_the_table() {
     let missing = ResolvedExpressions::checked(&[]).unwrap();
     assert_eq!(
         missing
-            .write_retained(&mut writer, "value", original, &Facts)
+            .write_retained(&mut writer, "value", original, &AllBindings)
             .unwrap_err()
             .kind,
         EmitErrorKind::MissingResolution
@@ -82,16 +82,16 @@ fn duplicate_or_unordered_expression_ownership_is_rejected() {
     let first = JsExpr::parse_in(&arena, "first", Span::new(0, 5)).unwrap();
     let second = JsExpr::parse_in(&arena, "second", Span::new(6, 12)).unwrap();
     let reversed = [
-        resolve_expression(second, &Facts).unwrap(),
-        resolve_expression(first, &Facts).unwrap(),
+        resolve_expression(second, &AllBindings).unwrap(),
+        resolve_expression(first, &AllBindings).unwrap(),
     ];
     assert_eq!(
         ResolvedExpressions::checked(&reversed).unwrap_err(),
         ResolutionSetError::UnorderedOrDuplicateSpan
     );
     let duplicate = [
-        resolve_expression(first, &Facts).unwrap(),
-        resolve_expression(first, &Facts).unwrap(),
+        resolve_expression(first, &AllBindings).unwrap(),
+        resolve_expression(first, &AllBindings).unwrap(),
     ];
     assert_eq!(
         ResolvedExpressions::checked(&duplicate).unwrap_err(),

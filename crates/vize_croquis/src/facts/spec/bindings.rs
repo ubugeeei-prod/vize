@@ -20,7 +20,7 @@ use vize_carton::CompactString;
 use vize_relief::BindingType;
 
 use super::bindings_extract::{Decl, Form, Init, PatternSource, VarKind};
-use crate::facts::FactTable;
+use crate::facts::AnalysisTable;
 use crate::facts::bindings::{BindingFact, BindingKey, Bindings};
 
 /// What a rule yields for a declared name.
@@ -279,7 +279,7 @@ pub fn evaluate(
     decls: &[Decl],
     macro_props: &[CompactString],
     script_setup: bool,
-) -> FactTable<Bindings> {
+) -> AnalysisTable<Bindings> {
     let mut aliases: BTreeMap<CompactString, &'static str> = BTreeMap::new();
     let mut kinds: BTreeMap<CompactString, BindingType> = BTreeMap::new();
     let mut spans: BTreeMap<CompactString, (u32, u32)> = BTreeMap::new();

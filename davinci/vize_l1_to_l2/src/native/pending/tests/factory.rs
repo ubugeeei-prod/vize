@@ -1,5 +1,5 @@
 use vize_l0::{Allocator, Span, id::NodeId};
-use vize_l2::artifact::{ArtifactError, ComponentBody, ComponentFactory, RegionBuilder};
+use vize_l2::artifact::{ComponentBody, ComponentFactory, L2TemplateError, RegionBuilder};
 use vize_l2::expr::JsExpr;
 use vize_l2::op::{Attribute, Namespace};
 use vize_l2::provenance::ProvenanceRecord;
@@ -33,17 +33,17 @@ impl<'a> ComponentFactory<'a> for Factory<'_, '_, 'a> {
         );
         ComponentFactory::source(self.region)
     }
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.text(text, span)
     }
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.comment(text, span)
     }
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         if self.callbacks.interpolation_panics {
             self.callbacks.arena_at_panic = Some(self.allocator.allocated_bytes());
             pre_mint_interruption();
@@ -56,7 +56,7 @@ impl<'a> ComponentFactory<'a> for Factory<'_, '_, 'a> {
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         ComponentFactory::bind(self.region, name, name_span, expression, span)
     }
     fn element<B: ComponentBody<'a>>(
@@ -66,7 +66,7 @@ impl<'a> ComponentFactory<'a> for Factory<'_, '_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let callbacks = &mut *self.callbacks;
         let allocator = self.allocator;
         self.region
@@ -87,7 +87,7 @@ impl<'a> ComponentFactory<'a> for Factory<'_, '_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let callbacks = &mut *self.callbacks;
         let allocator = self.allocator;
         self.region
@@ -102,7 +102,7 @@ impl<'a> ComponentFactory<'a> for Factory<'_, '_, 'a> {
                 );
             })
     }
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         if record.rule.as_str() == "native.interpolation" {
             self.callbacks.interpolation_records += 1;
             if self.callbacks.interpolation_records == 2 {

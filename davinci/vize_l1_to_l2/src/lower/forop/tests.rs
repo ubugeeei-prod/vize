@@ -5,9 +5,9 @@ use crate::lower::{Lowered, lower, lower_preserving_comments, lower_source_block
 use vize_l0::{Allocator, SourceRoot, Span, String, cstr};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{ForOp, Op};
-use vize_l2::scope::{ScopeFacts, ScopeOrigin};
+use vize_l2::scope::{ScopeAnalysis, ScopeOrigin};
 
-fn with_for(source: &str, check: impl FnOnce(&Lowered<'_>, &ForOp<'_>, &ScopeFacts, &ForParts)) {
+fn with_for(source: &str, check: impl FnOnce(&Lowered<'_>, &ForOp<'_>, &ScopeAnalysis, &ForParts)) {
     let arena = Allocator::new();
     let (tree, errors) = vize_l1::markup::parse(&arena, source);
     assert!(errors.is_empty(), "{errors:?}");
@@ -31,7 +31,10 @@ fn with_for(source: &str, check: impl FnOnce(&Lowered<'_>, &ForOp<'_>, &ScopeFac
 }
 
 #[cfg(test)]
-fn declarations<'a>(source: &'a str, scope: &'a ScopeFacts) -> alloc::vec::Vec<(&'a str, &'a str)> {
+fn declarations<'a>(
+    source: &'a str,
+    scope: &'a ScopeAnalysis,
+) -> alloc::vec::Vec<(&'a str, &'a str)> {
     scope
         .bindings
         .iter()

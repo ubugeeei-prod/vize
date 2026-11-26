@@ -1,6 +1,6 @@
 //! Scoped context semantics from the real complete retained-AST resolver.
 
-use super::DomExpressionFacts;
+use super::DomExpressionAnalysis;
 use vize_l2::{
     expr::JsExpr,
     resolution::{BindingId, ResolutionTable},
@@ -30,7 +30,7 @@ impl<'facts, 'arena> ContextOnly<'facts, 'arena> {
     }
 }
 
-impl DomExpressionFacts for ContextOnly<'_, '_> {
+impl DomExpressionAnalysis for ContextOnly<'_, '_> {
     fn is_context_only(&self, expression: &JsExpr<'_>) -> bool {
         self.expressions.iter().any(|table| {
             let retained = table.expression();

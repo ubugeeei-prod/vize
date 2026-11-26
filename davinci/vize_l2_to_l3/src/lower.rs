@@ -4,7 +4,7 @@ use vize_l3::op::{
     EdgeKind, EffectId, EffectScope, L3Ir, Op, OpId, OpKind, Phase, Region, RegionId, StateEdge,
 };
 
-use crate::{PartitionFact, PartitionFacts, PartitionKind};
+use crate::{PartitionAnalysis, PartitionInfo, PartitionKind};
 
 mod binding_operands;
 mod classify;
@@ -17,7 +17,7 @@ pub struct Lowered<'a> {
     /// Flat L3 program in the `built` phase.
     pub l3ir: L3Ir<'a>,
     /// Static/dynamic partition facts exported beside the program.
-    pub partition: PartitionFacts<'a>,
+    pub partition: PartitionAnalysis<'a>,
 }
 
 /// Lower an L2 root region to an L3 program plus shared partition facts.
@@ -29,7 +29,7 @@ pub fn lower<'a>(allocator: &'a Allocator, root: &l2::Region<'_>) -> Lowered<'a>
 struct Cx<'a> {
     allocator: &'a Allocator,
     l3ir: L3Ir<'a>,
-    partition: PartitionFacts<'a>,
+    partition: PartitionAnalysis<'a>,
     next_op: u32,
     next_region: u32,
     next_effect: u32,
@@ -41,7 +41,7 @@ impl<'a> Cx<'a> {
         Self {
             allocator,
             l3ir: L3Ir::new(allocator, Phase::Built),
-            partition: PartitionFacts::new(allocator),
+            partition: PartitionAnalysis::new(allocator),
             next_op: 0,
             next_region: 0,
             next_effect: 0,
@@ -301,7 +301,7 @@ impl<'a> Cx<'a> {
             self.last_effectful = Some(id);
         }
         self.l3ir.push_op(op);
-        self.partition.push(PartitionFact {
+        self.partition.push(PartitionInfo {
             op: id,
             kind: partition,
             span,

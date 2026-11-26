@@ -14,7 +14,7 @@ use std::collections::BTreeMap;
 use support::vue_options::observe;
 use support::vue_setup::{corpus, slice, text};
 use vize_l0::{String, cstr};
-use vize_l2::framework::vue::{ComponentShape, OptionMemberKind, OptionsFacts};
+use vize_l2::framework::vue::{ComponentShape, OptionMemberKind, OptionsAnalysis};
 use vize_relief::BindingType;
 
 /// Files where Croquis disagrees with Vue, which is the authority. A
@@ -72,7 +72,7 @@ fn template_name(name: &str) -> Option<String> {
 fn native_bindings(
     content: &str,
     base: u32,
-    facts: &OptionsFacts,
+    facts: &OptionsAnalysis,
 ) -> BTreeMap<String, BindingType> {
     let mut bindings = BTreeMap::new();
     let Some(component) = facts.component() else {

@@ -153,12 +153,12 @@ fn compare_file<'a>(
             .map_err(|e| VueQueryError::SetupIncomplete(*e));
         assert_eq!(
             model.contract(),
-            oracle.map(SetupFacts::contract),
+            oracle.map(SetupAnalysis::contract),
             "{path:?}"
         );
         assert_eq!(
             model.macro_calls(),
-            oracle.map(SetupFacts::macro_calls),
+            oracle.map(SetupAnalysis::macro_calls),
             "{path:?}"
         );
         count.macros += model.macro_calls().map_or(0, <[_]>::len);
@@ -171,7 +171,7 @@ fn compare_file<'a>(
     if let Some((_, _, facts)) = &ordinary {
         let oracle = facts
             .as_ref()
-            .map(OptionsFacts::component)
+            .map(OptionsAnalysis::component)
             .map_err(|e| VueQueryError::OptionsIncomplete(*e));
         assert_eq!(model.options(), oracle, "{path:?}");
         count.options_members += model

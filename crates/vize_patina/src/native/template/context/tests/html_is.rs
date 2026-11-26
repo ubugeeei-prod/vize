@@ -5,7 +5,7 @@ use crate::rules::vue::NoDeprecatedHtmlElementIs;
 use crate::{RuleMeta, RuleRegistry};
 use vize_l0::SmallVec;
 
-fn view<'o, 'a>(root: &'o ComponentTagFacts<'a>) -> NativeTemplateElement<'o, 'a> {
+fn view<'o, 'a>(root: &'o ComponentTagAnalysis<'a>) -> NativeTemplateElement<'o, 'a> {
     let element = root.children().next().unwrap().into_element().unwrap();
     let mut attributes = SmallVec::new();
     for original in element.attributes() {
@@ -27,8 +27,8 @@ fn html_is_callback_and_error_mint_refuse_equal_buffer_foreign_owners_even_when_
     let allocator = Allocator::new();
     for source in ["<div/>", "<div is=\"Other\"/>", "<div is=\"vue:Other\"/>"] {
         let block = SourceRoot::new(source).unwrap().whole_block();
-        let owner = ComponentTagFacts::parse_in(&allocator, block).unwrap();
-        let foreign = ComponentTagFacts::parse_in(&allocator, block).unwrap();
+        let owner = ComponentTagAnalysis::parse_in(&allocator, block).unwrap();
+        let foreign = ComponentTagAnalysis::parse_in(&allocator, block).unwrap();
         assert!(core::ptr::eq(
             owner.component().block().source(),
             foreign.component().block().source()

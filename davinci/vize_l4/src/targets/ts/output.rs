@@ -44,7 +44,7 @@ pub enum LinkMapping {
 
 /// The facts of one link, parallel to [`EmitDocument::links`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct LinkFact {
+pub struct LinkInfo {
     pub role: LinkRole,
     pub mapping: LinkMapping,
 }
@@ -70,7 +70,7 @@ pub struct DirectiveRange {
 #[derive(Debug)]
 pub struct TsDocument {
     document: EmitDocument,
-    facts: Vec<LinkFact>,
+    facts: Vec<LinkInfo>,
     directives: Vec<DirectiveRange>,
 }
 
@@ -83,7 +83,7 @@ impl TsDocument {
 
     /// One fact per link of [`Self::document`], in the same order.
     #[must_use]
-    pub fn link_facts(&self) -> &[LinkFact] {
+    pub fn link_facts(&self) -> &[LinkInfo] {
         &self.facts
     }
 
@@ -151,7 +151,7 @@ impl TsDocument {
 /// A recording writer that keeps one fact per link.
 pub(super) struct Out {
     writer: Writer<Recorded>,
-    facts: Vec<LinkFact>,
+    facts: Vec<LinkInfo>,
 }
 
 impl Out {
@@ -178,7 +178,7 @@ impl Out {
     /// Append authored bytes `text`, which are the source at `authored`.
     pub(super) fn verbatim(&mut self, text: &str, authored: Span, role: LinkRole) {
         self.writer.push_linked(text, authored);
-        self.facts.push(LinkFact {
+        self.facts.push(LinkInfo {
             role,
             mapping: LinkMapping::Verbatim,
         });
@@ -186,7 +186,7 @@ impl Out {
 
     #[cfg(feature = "component-projection")]
     pub(super) fn open_anchor(&mut self, role: LinkRole) -> crate::write::OpenLink {
-        self.facts.push(LinkFact {
+        self.facts.push(LinkInfo {
             role,
             mapping: LinkMapping::Anchor,
         });
@@ -208,7 +208,7 @@ impl Out {
     #[cfg(feature = "component-projection")]
     pub(super) fn rewritten(&mut self, text: &str, authored: Span, role: LinkRole) {
         self.writer.push_linked(text, authored);
-        self.facts.push(LinkFact {
+        self.facts.push(LinkInfo {
             role,
             mapping: LinkMapping::Anchor,
         });
@@ -217,7 +217,7 @@ impl Out {
     /// Append a finished fragment as one anchor unit owned by `authored`.
     pub(super) fn append_anchor(&mut self, fragment: Self, authored: Span, role: LinkRole) {
         self.writer.append_linked(fragment.writer, authored);
-        self.facts.push(LinkFact {
+        self.facts.push(LinkInfo {
             role,
             mapping: LinkMapping::Anchor,
         });

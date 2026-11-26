@@ -135,10 +135,13 @@ pub use linter::css_rules::{BuiltinCssRuleMeta, builtin_css_rules};
 pub use linter::script_rules::{BuiltinScriptRuleMeta, builtin_script_rules};
 pub use linter::{LintResult, Linter};
 pub use markup::{
-    L2Markup, L2Template, MarkupAttribute, MarkupBinding, MarkupBindingKind, MarkupConditional,
+    L2Markup, LintL2Template, MarkupAttribute, MarkupBinding, MarkupBindingKind, MarkupConditional,
     MarkupContext, MarkupDirective, MarkupDocument, MarkupDocumentVisitor, MarkupElement,
     MarkupElementKind, MarkupList, MarkupNode, MarkupRule, MarkupText,
 };
+/// Compatibility name retained for one minor release; use [`LintL2Template`].
+#[deprecated(note = "use LintL2Template; retained for one minor release (#13707)")]
+pub type L2Template<'a> = markup::LintL2Template<'a>;
 pub use output::{
     OutputFormat, format_results, format_summary, register_plugin_rule_docs, rule_docs_path,
 };

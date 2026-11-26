@@ -1,7 +1,7 @@
 //! Original receiver retains only the transient actual canonical allocation.
 
 use super::{FileRegion, TemplateBody, TemplateChildRegion, TemplatePolicy};
-use crate::artifact::{ArtifactError, ElementAllocation, RegionBuilder};
+use crate::artifact::{ElementAllocation, L2TemplateError, RegionBuilder};
 use crate::op::{Attribute, Namespace};
 use core::{marker::PhantomData, ops::DerefMut};
 use vize_l0::{Span, id::NodeId};
@@ -18,7 +18,7 @@ where
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<(NodeId, ElementAllocation<'a>), ArtifactError> {
+    ) -> Result<(NodeId, ElementAllocation<'a>), L2TemplateError> {
         self.with_walk(span, |file| {
             let Self {
                 region,

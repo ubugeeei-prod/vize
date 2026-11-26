@@ -113,16 +113,20 @@ croquis_hoist_gate_off_small = { fixture = "tools/benchmarks/crates/davinci_harn
 croquis_hoist_gate_on_small = { fixture = "tools/benchmarks/crates/davinci_harness/fixtures/small.vue", fixture_sha256 = "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4", instructions = 169896, window = "routine-return" }
 # Runtime owner identities: three identical measurements, numeric ceilings unchanged.
 # Source: 001f3eee417b1522392233bf79b00f8fe32cf3d7; Actions run 36778058361.
-davinci_fact_query_observed = { fixture = "davinci/vize_l0/benches/fact_runtime.rs", fixture_sha256 = "c60dc63e4e974698c11052c32c4e147b58f0695e4a674aec49f47199408fceb4", instructions = 11141, window = "routine-return" }
-davinci_fact_query_unobserved = { fixture = "davinci/vize_l0/benches/fact_runtime.rs", fixture_sha256 = "c60dc63e4e974698c11052c32c4e147b58f0695e4a674aec49f47199408fceb4", instructions = 11290, window = "routine-return" }
+# Query fixture successor only: de865d626f0745a4173bd25efd153771c61c71de, three identical samples (6079 observed, 6228 unobserved).
+# Evidence: https://github.com/ubugeeei-prod/vize/actions/runs/45695408381; existing numerical ceilings and windows retained.
+davinci_fact_query_observed = { fixture = "davinci/vize_l0/benches/fact_runtime.rs", fixture_sha256 = "dc24dfa5ab864e5248179e52eefaf19645799c14c8b466f0f29991b4cd262f91", instructions = 11141, window = "routine-return" }
+davinci_fact_query_unobserved = { fixture = "davinci/vize_l0/benches/fact_runtime.rs", fixture_sha256 = "dc24dfa5ab864e5248179e52eefaf19645799c14c8b466f0f29991b4cd262f91", instructions = 11290, window = "routine-return" }
 davinci_pipeline_no_observer = { fixture = "davinci/vize_l0/benches/pass_runtime.rs", fixture_sha256 = "de92f1a3da8d0ec2e85d94062bddfbcd9cdd1a8775f0b0ed12915ccf692651a1", instructions = 5, window = "routine-return" }
 davinci_pipeline_unobserved = { fixture = "davinci/vize_l0/benches/pass_runtime.rs", fixture_sha256 = "de92f1a3da8d0ec2e85d94062bddfbcd9cdd1a8775f0b0ed12915ccf692651a1", instructions = 5, window = "routine-return" }
 harness-selfcheck = { fixture = "synthetic:vec-fill-1024", fixture_sha256 = "5fd07d2dbca7ec08ad4b6f4a9b33aa908b978c7bee61ca93fe6c80727e11a0e1", instructions = 15481, window = "routine-return" }
 musea_parse_art_define_art = { fixture = "synthetic:musea-corpus-define-art", fixture_sha256 = "e2e5a4ebf3b16713fdff823f63615a82fa5603fc9cdac2bbd261ce95e85883dc", instructions = 153822, window = "stage-return" }
 musea_parse_art_inline = { fixture = "examples/vite-musea/src/components/MuseaBadge.vue", fixture_sha256 = "8eab672b9d7b541cd787cfcbe97808e4cd1001470e9b274d6b0876c5f7dc090c", instructions = 148057, window = "stage-return" }
 musea_parse_art_legacy_attrs = { fixture = "synthetic:musea-legacy-attrs", fixture_sha256 = "b6219519dcf4cd27e58ff77879ab1eccb80a1e9b926506692766799e7b5e1746", instructions = 73746, window = "stage-return" }
-patina_jsx_markup_one_root = { fixture = "synthetic:jsx-one-root-gallery", fixture_sha256 = "21592a3a61846f2b3f60f815d33f4d142b81f3e3412021e009e648a62a66dd4c", instructions = 45385, window = "stage-return" }
-patina_s2_markup_one_root = { fixture = "synthetic:l2-one-root-gallery", fixture_sha256 = "169019e1bcf8f3995feeaa2d8400a6f64abec859b4a016de0f8f34f756783e4a", instructions = 539107, window = "stage-return" }
+# Markup fixture successors only: de865d626f0745a4173bd25efd153771c61c71de, three identical samples (41178 JSX, 369756 template).
+# Evidence: https://github.com/ubugeeei-prod/vize/actions/runs/45695408381; existing numerical ceilings and windows retained.
+patina_jsx_markup_one_root = { fixture = "synthetic:jsx-one-root-gallery", fixture_sha256 = "200d98ee448e96a03833c47b49106dcdf1d03e813da823f0192cee23c327a86e", instructions = 45385, window = "stage-return" }
+patina_s2_markup_one_root = { fixture = "synthetic:l2-one-root-gallery", fixture_sha256 = "d01d4f3765378e6c9c8249804db76e9eb564ba9bb3d1f11980973ee142891c36", instructions = 539107, window = "stage-return" }
 s1_to_s2_emit_p2_11_dom_surface = { fixture = "synthetic:p2-11-dom-surface", fixture_sha256 = "2aad3009dc2c87b70f80638c41fb3fa8e1d873970f18c64e0cb431ae397021a6", instructions = 197851, window = "stage-return" }
 s1_to_s2_emit_helper_rich_large = { fixture = "fixture:davinci/vize_l1_to_l2/benches/fixtures/helper-rich-large.vue", fixture_sha256 = "58de8952218e12d99610f9eae29ef5e694562b792b3671c706e98d43d70d45a3", instructions = 16072012, window = "stage-return" }
 s1_to_s2_emit_von_two_per_bucket = { fixture = "synthetic:v-on-two-option-event-key-modifiers", fixture_sha256 = "1bd0aeb405bacd455e1afa22b68765ce30bb63d179e644631232b34e6d0e0d7c", instructions = 46119, window = "stage-return" }

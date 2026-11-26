@@ -5,7 +5,7 @@ use vize_l0::{Allocator, Box, Span, String, Vec};
 use vize_l2::artifact::OpFamily;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, DynamicName, SlotContentOp};
-use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
+use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin};
 use vize_relief::{DirectiveNode, ExpressionNode};
 
 use super::{L2Refusal, ProjectCx, lower_expression, simple_identifier};
@@ -73,7 +73,7 @@ fn attach_slot_scope(cx: &mut ProjectCx, node: Option<NodeId>, params: &ExprRef<
             },
         });
     }
-    cx.attach_scope(node, ScopeFacts { tag, bindings });
+    cx.attach_scope(node, ScopeAnalysis { tag, bindings });
 }
 
 fn cover_span(left: Span, right: Span) -> Span {

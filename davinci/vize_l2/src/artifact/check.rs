@@ -4,14 +4,14 @@ use alloc::collections::BTreeSet;
 use oxc_span::GetSpan;
 use vize_l0::{Span, id::NodeId};
 
-use super::{ArtifactError, ArtifactParts, IfShape};
+use super::{IfShape, L2TemplateError, L2TemplateParts};
 use crate::expr::{ExprRef, OpaqueReason};
 use crate::op::{BindingOp, ForOp, HostFor, Op};
 use crate::scope::ScopeOrigin;
 use crate::walk::{NodeEvent, NodeRef, PageWalk};
 
-pub(super) fn check(parts: &ArtifactParts<'_>) -> Result<u32, ArtifactError> {
-    u32::try_from(parts.source.len()).map_err(|_| ArtifactError::SourceLimit)?;
+pub(super) fn check(parts: &L2TemplateParts<'_>) -> Result<u32, L2TemplateError> {
+    u32::try_from(parts.source.len()).map_err(|_| L2TemplateError::SourceLimit)?;
     let mut walk = PageWalk::new();
     let mut first_error = None;
     crate::walk::visit_events(&mut walk, &parts.root.ops, &mut |event| {
@@ -26,7 +26,7 @@ pub(super) fn check(parts: &ArtifactParts<'_>) -> Result<u32, ArtifactError> {
             first_error = check_node(parts, id, node, owner_span).err();
         }
     })
-    .map_err(|_| ArtifactError::NodeLimit)?;
+    .map_err(|_| L2TemplateError::NodeLimit)?;
     if let Some(error) = first_error {
         return Err(error);
     }
@@ -36,17 +36,17 @@ pub(super) fn check(parts: &ArtifactParts<'_>) -> Result<u32, ArtifactError> {
         if let Some(node) = provenance.node
             && node.index() >= count
         {
-            return Err(ArtifactError::DanglingProvenance { record, node });
+            return Err(L2TemplateError::DanglingProvenance { record, node });
         }
     }
     let mut tags = BTreeSet::new();
     let scope_count = parts.scopes.len();
     for (node, facts) in parts.scopes.sorted_entries() {
         if node.index() >= count {
-            return Err(ArtifactError::DanglingScope { node });
+            return Err(L2TemplateError::DanglingScope { node });
         }
         if facts.tag.index() as usize >= scope_count || !tags.insert(facts.tag) {
-            return Err(ArtifactError::InvalidScopeTag {
+            return Err(L2TemplateError::InvalidScopeTag {
                 node,
                 tag: facts.tag,
             });
@@ -59,23 +59,23 @@ pub(super) fn check(parts: &ArtifactParts<'_>) -> Result<u32, ArtifactError> {
         .chain(parts.loop_fragments.iter().map(|(node, _)| node));
     for node in fact_nodes {
         if node.index() >= count {
-            return Err(ArtifactError::DanglingFact { node });
+            return Err(L2TemplateError::DanglingFact { node });
         }
     }
     Ok(count)
 }
 
 fn check_node(
-    parts: &ArtifactParts<'_>,
+    parts: &L2TemplateParts<'_>,
     id: NodeId,
     node: NodeRef<'_, '_>,
     owner: Option<Span>,
-) -> Result<(), ArtifactError> {
+) -> Result<(), L2TemplateError> {
     owned_span(parts.source, id, node.span(), owner)?;
     if let NodeRef::Op(Op::OriginalFor(original)) = node
         && original.id().node() != id
     {
-        return Err(ArtifactError::InvalidOriginalForReference {
+        return Err(L2TemplateError::InvalidOriginalForReference {
             node: id,
             original: original.id().node(),
         });
@@ -84,7 +84,7 @@ fn check_node(
         && let Some(handler) = on.handler.and_then(crate::op::OnHandlerRef::body)
         && handler.node() != id
     {
-        return Err(ArtifactError::InvalidHandlerReference {
+        return Err(L2TemplateError::InvalidHandlerReference {
             node: id,
             handler: handler.node(),
         });
@@ -103,7 +103,7 @@ fn check_node(
     }
     if let NodeRef::Op(Op::If(if_op)) = node {
         if if_op.branches.is_empty() {
-            return Err(ArtifactError::InvalidIf {
+            return Err(L2TemplateError::InvalidIf {
                 node: id,
                 shape: IfShape::Empty,
             });
@@ -114,12 +114,12 @@ fn check_node(
             if let Some(expr) = branch.condition {
                 owned_span(parts.source, id, expr.span(), Some(branch.span))?;
             } else if index == 0 {
-                return Err(ArtifactError::InvalidIf {
+                return Err(L2TemplateError::InvalidIf {
                     node: id,
                     shape: IfShape::LeadingElse,
                 });
             } else if index != last {
-                return Err(ArtifactError::InvalidIf {
+                return Err(L2TemplateError::InvalidIf {
                     node: id,
                     shape: IfShape::NonTrailingElse,
                 });
@@ -139,7 +139,7 @@ fn check_node(
     };
     if let Some(scope) = parts.scopes.get(id) {
         if !introduces {
-            return Err(ArtifactError::InvalidScopeSite { node: id });
+            return Err(L2TemplateError::InvalidScopeSite { node: id });
         }
         for binding in &scope.bindings {
             if let ScopeOrigin::Authored { span } = binding.origin {
@@ -147,7 +147,7 @@ fn check_node(
             }
         }
     } else if introduces {
-        return Err(ArtifactError::MissingScope { node: id });
+        return Err(L2TemplateError::MissingScope { node: id });
     }
     Ok(())
 }
@@ -159,7 +159,7 @@ fn host_for(
     id: NodeId,
     for_op: &ForOp<'_>,
     host: &HostFor<'_>,
-) -> Result<(), ArtifactError> {
+) -> Result<(), L2TemplateError> {
     let left = host.left.span();
     let left = Span::new(left.start, left.end);
     owned_span(source, id, left, Some(for_op.span))?;
@@ -179,7 +179,7 @@ fn host_for(
         || binding.key.is_some()
         || binding.index.is_some()
     {
-        return Err(ArtifactError::InvalidHostFor { node: id });
+        return Err(L2TemplateError::InvalidHostFor { node: id });
     }
     Ok(())
 }
@@ -192,7 +192,7 @@ pub(super) fn expression(
     id: NodeId,
     expr: ExprRef<'_>,
     owner: Span,
-) -> Result<(), ArtifactError> {
+) -> Result<(), L2TemplateError> {
     owned_span(source, id, expr.span(), Some(owner))?;
     // A filter is a dialect payload, not an excuse to omit its authored
     // subranges. Iteration avoids recursion through user-constructed chains.
@@ -206,14 +206,14 @@ pub(super) fn expression(
     }
     if let ExprRef::Js(js) = current {
         if js.coordinates.is_some() && !js.matches_authored_source(source) {
-            return Err(ArtifactError::MismatchedJsSource {
+            return Err(L2TemplateError::MismatchedJsSource {
                 node: id,
                 span: js.span,
             });
         }
         let ast = js.ast.span();
         if js.ast_span_to_source(ast).is_none() {
-            return Err(ArtifactError::InvalidJsSpan {
+            return Err(L2TemplateError::InvalidJsSpan {
                 node: id,
                 span: Span::new(ast.start, ast.end),
             });
@@ -227,12 +227,12 @@ pub(super) fn owned_span(
     id: NodeId,
     range: Span,
     owner: Option<Span>,
-) -> Result<(), ArtifactError> {
+) -> Result<(), L2TemplateError> {
     span(source, Some(id), range)?;
     if let Some(owner) = owner
         && (range.start < owner.start || range.end > owner.end)
     {
-        return Err(ArtifactError::OutsideOwner {
+        return Err(L2TemplateError::OutsideOwner {
             node: id,
             span: range,
             owner,
@@ -241,13 +241,13 @@ pub(super) fn owned_span(
     Ok(())
 }
 
-pub(super) fn span(source: &str, node: Option<NodeId>, range: Span) -> Result<(), ArtifactError> {
+pub(super) fn span(source: &str, node: Option<NodeId>, range: Span) -> Result<(), L2TemplateError> {
     if range.start > range.end
         || source
             .get(range.start as usize..range.end as usize)
             .is_none()
     {
-        return Err(ArtifactError::InvalidSpan { node, span: range });
+        return Err(L2TemplateError::InvalidSpan { node, span: range });
     }
     Ok(())
 }

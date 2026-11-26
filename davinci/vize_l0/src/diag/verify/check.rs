@@ -2,8 +2,8 @@
 //! [`WitnessChecks`] registry the verifier dispatches through.
 
 use super::WitnessError;
+use crate::analysis::{Analysis, AnalysisView, Demand};
 use crate::diag::{Verdict, WitnessKeyed, WitnessLink};
-use crate::fact::{Demand, FactGroup, FactView};
 use crate::pass::AnalysisId;
 use vize_l0::Span;
 
@@ -14,7 +14,7 @@ use vize_l0::Span;
 /// The span is what makes a link checkable rather than merely nameable: a
 /// witness that points at the right fact from the wrong place is a forged
 /// witness.
-pub trait WitnessGroup: FactGroup<Key: WitnessKeyed> {
+pub trait WitnessGroup: Analysis<Key: WitnessKeyed> {
     /// The authored-file range the fact stored under `key` is about.
     fn fact_span(key: &Self::Key, value: &Self::Value) -> Span;
 
@@ -27,7 +27,7 @@ pub trait WitnessGroup: FactGroup<Key: WitnessKeyed> {
 }
 
 /// How the verifier re-checks one link against one group's table.
-type CheckFn = fn(&FactView<'_>, usize, &WitnessLink) -> Result<(), WitnessError>;
+type CheckFn = fn(&AnalysisView<'_>, usize, &WitnessLink) -> Result<(), WitnessError>;
 
 /// One witness-capable group, as const registry data: its identity and the
 /// monomorphized check. Dispatch is one function pointer per link.
@@ -67,7 +67,7 @@ impl WitnessCheck {
     /// The exact [`WitnessError`] for the first check that fails.
     pub fn run(
         &self,
-        facts: &FactView<'_>,
+        facts: &AnalysisView<'_>,
         index: usize,
         link: &WitnessLink,
     ) -> Result<(), WitnessError> {
@@ -76,7 +76,7 @@ impl WitnessCheck {
 }
 
 fn check_link<G: WitnessGroup>(
-    facts: &FactView<'_>,
+    facts: &AnalysisView<'_>,
     index: usize,
     link: &WitnessLink,
 ) -> Result<(), WitnessError> {
@@ -125,13 +125,13 @@ fn check_link<G: WitnessGroup>(
 ///
 /// ```compile_fail,E0080
 /// use vize_l0::diag::Verdict;
-/// use vize_l0::fact::{Demand, FactGroup};
+/// use vize_l0::analysis::{Demand, Analysis};
 /// use vize_l0::pass::AnalysisId;
 /// use vize_l0::diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup};
 /// use vize_l0::Span;
 ///
 /// struct Tags;
-/// impl FactGroup for Tags {
+/// impl Analysis for Tags {
 ///     const ID: AnalysisId = AnalysisId::new(4);
 ///     const NAME: &'static str = "tags";
 ///     const STRATUM: u8 = 0;
@@ -154,13 +154,13 @@ fn check_link<G: WitnessGroup>(
 ///
 /// ```
 /// use vize_l0::diag::Verdict;
-/// use vize_l0::fact::{Demand, FactGroup};
+/// use vize_l0::analysis::{Demand, Analysis};
 /// use vize_l0::pass::AnalysisId;
 /// use vize_l0::diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup};
 /// use vize_l0::Span;
 ///
 /// struct Tags;
-/// impl FactGroup for Tags {
+/// impl Analysis for Tags {
 ///     const ID: AnalysisId = AnalysisId::new(4);
 ///     const NAME: &'static str = "tags";
 ///     const STRATUM: u8 = 0;

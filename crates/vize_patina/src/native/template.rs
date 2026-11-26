@@ -4,7 +4,7 @@
 //! Existing selected header/child APIs and the default product route are unchanged.
 
 use vize_l0::{SourceFrameError, Span, String, config::VueVersion};
-use vize_l1::markup::{ComponentSourceError, ComponentTagFacts};
+use vize_l1::markup::{ComponentSourceError, ComponentTagAnalysis};
 
 use super::NativeLintRefusal;
 
@@ -163,7 +163,7 @@ pub trait NativeTemplateRule: Send + Sync {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
-        root: &ComponentTagFacts<'a>,
+        root: &ComponentTagAnalysis<'a>,
     ) -> Result<(), NativeTemplateLintRefusal>;
 
     /// Runs for each admitted original element during the existing traversal.

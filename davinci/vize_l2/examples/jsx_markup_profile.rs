@@ -71,7 +71,7 @@ fn main() -> Result<(), &'static str> {
         let artifact = native.l2ir().artifact();
         let facts = template_complexity::run(artifact.root(), artifact.node_count());
         if artifact.node_count() != children as u32 + 1
-            || facts != template_complexity::ComplexityFacts::empty()
+            || facts != template_complexity::ComplexityAnalysis::empty()
         {
             return Err("full native result");
         }

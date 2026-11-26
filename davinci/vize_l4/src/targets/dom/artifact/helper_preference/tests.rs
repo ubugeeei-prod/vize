@@ -14,7 +14,7 @@ use vize_l0::{Allocator, ensure_sufficient_stack};
 use vize_l1::markup::parse;
 use vize_l1_to_l2::lower::{Lowered, lower};
 use vize_l1_to_l2::pass::{TransformProfile, run_dom_transform_with_profile};
-use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::pass_facts::L2Analyses;
 use vize_l2::op::{AndOp, Op, Region};
 use vize_l2::walk::PageWalk;
 
@@ -98,7 +98,7 @@ fn oracle_names<'a>(root: &Region<'a>, source: &str) -> Names<'a> {
     names
 }
 
-fn fused_names<'a>(lowered: &Lowered<'a>, facts: &L2Facts) -> Names<'a> {
+fn fused_names<'a>(lowered: &Lowered<'a>, facts: &L2Analyses) -> Names<'a> {
     let mut buf = Buf::new(false);
     let cx = PreferCx {
         source: lowered.artifact.source,
@@ -237,7 +237,7 @@ fn fused_assets_skip_components_only_inside_and_regions() {
         &arena,
     )));
 
-    let fused = fused_names(&lowered, &L2Facts::default());
+    let fused = fused_names(&lowered, &L2Analyses::default());
     let oracle = oracle_names(&lowered.artifact.root, source);
     assert_eq!(fused.components, oracle.components);
     assert_eq!(fused.directives, oracle.directives);

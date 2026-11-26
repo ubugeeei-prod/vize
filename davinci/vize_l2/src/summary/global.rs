@@ -10,7 +10,7 @@ use alloc::vec::Vec;
 use vize_l0::String;
 
 use super::{Fingerprint, digest};
-use vize_l0::fact::ids::{COMPONENT_USAGES, PROVIDE_INJECT};
+use vize_l0::analysis::ids::{COMPONENT_USAGES, PROVIDE_INJECT};
 
 const DOMAIN: &[u8] = b"vize.global-summary.v2\0";
 
@@ -48,7 +48,7 @@ impl GlobalFacet {
 /// One orphan fact: identity plus the contract spelling, not a body.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GlobalEntry {
-    /// Fact identity.
+    /// GlobalRecord identity.
     pub name: String,
     /// Contract spelling. Not a function body.
     pub contract: String,
@@ -56,7 +56,7 @@ pub struct GlobalEntry {
 
 /// The three orphan groups, still empty when the project has none.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct GlobalFacts {
+pub struct GlobalAnalysis {
     /// P4-3b global components.
     pub components: Vec<GlobalEntry>,
     /// P4-3f app-level provides.
@@ -66,13 +66,13 @@ pub struct GlobalFacts {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct Fact {
+struct GlobalRecord {
     facet: GlobalFacet,
     name: String,
     contract: String,
 }
 
-impl Fact {
+impl GlobalRecord {
     fn fingerprint(&self) -> Fingerprint {
         digest(
             DOMAIN,
@@ -87,7 +87,7 @@ impl Fact {
 /// The project summary. It does not store per-file declarations.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GlobalSummary {
-    facts: Vec<Fact>,
+    facts: Vec<GlobalRecord>,
 }
 
 impl GlobalSummary {
@@ -97,7 +97,7 @@ impl GlobalSummary {
     ///
     /// A bad name, a contract that contains a newline, or two facts of the
     /// same facet with the same name.
-    pub fn from_facts(facts: GlobalFacts) -> Result<Self, GlobalError> {
+    pub fn from_facts(facts: GlobalAnalysis) -> Result<Self, GlobalError> {
         let mut stored = Vec::new();
         insert_all(&mut stored, GlobalFacet::Component, facts.components)?;
         insert_all(&mut stored, GlobalFacet::Provide, facts.provides)?;
@@ -203,7 +203,7 @@ pub enum GlobalError {
 }
 
 fn insert_all(
-    out: &mut Vec<Fact>,
+    out: &mut Vec<GlobalRecord>,
     facet: GlobalFacet,
     entries: Vec<GlobalEntry>,
 ) -> Result<(), GlobalError> {
@@ -214,7 +214,7 @@ fn insert_all(
 }
 
 fn insert(
-    out: &mut Vec<Fact>,
+    out: &mut Vec<GlobalRecord>,
     facet: GlobalFacet,
     name: String,
     contract: String,
@@ -231,7 +231,7 @@ fn insert(
     {
         return Err(GlobalError::Duplicate { facet, name });
     }
-    out.push(Fact {
+    out.push(GlobalRecord {
         facet,
         name,
         contract,

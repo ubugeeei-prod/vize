@@ -7,7 +7,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l0::id::NodeId;
 use vize_l0::{String, ToCompactString};
-use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, IfFacts};
+use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, IfAnalysis};
 use vize_l2::expr::{ExprRef, JsExpr};
 use vize_l2::op::{BindingOp, IfBranch, IfOp, Op};
 
@@ -28,7 +28,7 @@ impl BranchKeys {
     pub(super) fn emit(
         &mut self,
         cx: &EmitCx<'_>,
-        facts: Option<&IfFacts>,
+        facts: Option<&IfAnalysis>,
         index: usize,
         branch: &IfBranch<'_>,
         allocated: u32,

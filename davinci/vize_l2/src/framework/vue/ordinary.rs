@@ -16,11 +16,11 @@ pub type OrdinaryBinding = SetupBinding;
 
 /// Top-level runtime bindings of one normal `<script>` Program.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OrdinaryFacts {
+pub struct OrdinaryAnalysis {
     bindings: alloc::vec::Vec<OrdinaryBinding>,
 }
 
-impl OrdinaryFacts {
+impl OrdinaryAnalysis {
     /// Runtime imports and direct top-level declarations, in source order.
     #[must_use]
     pub fn bindings(&self) -> &[OrdinaryBinding] {
@@ -30,7 +30,7 @@ impl OrdinaryFacts {
 
 /// Why the observer cannot claim facts for the complete Program.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum OrdinaryFactsIncomplete {
+pub enum OrdinaryAnalysisIncomplete {
     /// The walk never started a Program.
     NoProgram,
     /// One observer saw a second Program.
@@ -74,23 +74,23 @@ impl<'a> OrdinaryObserver<'a> {
         Self::default()
     }
 
-    pub fn finish(self) -> Result<OrdinaryFacts, OrdinaryFactsIncomplete> {
+    pub fn finish(self) -> Result<OrdinaryAnalysis, OrdinaryAnalysisIncomplete> {
         let Some(program) = self.program else {
-            return Err(OrdinaryFactsIncomplete::NoProgram);
+            return Err(OrdinaryAnalysisIncomplete::NoProgram);
         };
         if self.second_program {
-            return Err(OrdinaryFactsIncomplete::SecondProgram);
+            return Err(OrdinaryAnalysisIncomplete::SecondProgram);
         }
         if self.bindings.overflow {
-            return Err(OrdinaryFactsIncomplete::SpanOverflow);
+            return Err(OrdinaryAnalysisIncomplete::SpanOverflow);
         }
         if self.observed != program.statements {
-            return Err(OrdinaryFactsIncomplete::MissingStatements {
+            return Err(OrdinaryAnalysisIncomplete::MissingStatements {
                 observed: self.observed,
                 expected: program.statements,
             });
         }
-        Ok(OrdinaryFacts {
+        Ok(OrdinaryAnalysis {
             bindings: self.bindings.rows,
         })
     }

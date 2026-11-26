@@ -8,7 +8,7 @@
 
 use vize_l0::String;
 use vize_l2::summary::{
-    AlphaEntry, AlphaPages, Facet, GlobalEntry, GlobalError, GlobalFacet, GlobalFacts,
+    AlphaEntry, AlphaPages, Facet, GlobalAnalysis, GlobalEntry, GlobalError, GlobalFacet,
     GlobalResolution, GlobalSummary, SfcSummary, Signature,
 };
 
@@ -24,7 +24,7 @@ fn facts(
     provides: &[(&str, &str)],
     directives: &[(&str, &str)],
 ) -> GlobalSummary {
-    GlobalSummary::from_facts(GlobalFacts {
+    GlobalSummary::from_facts(GlobalAnalysis {
         components: components
             .iter()
             .map(|(name, contract)| entry(name, contract))
@@ -124,7 +124,7 @@ fn adding_a_global_component_invalidates_exactly_its_resolvers() {
 
 #[test]
 fn a_duplicate_global_component_is_refused() {
-    let error = GlobalSummary::from_facts(GlobalFacts {
+    let error = GlobalSummary::from_facts(GlobalAnalysis {
         components: vec![entry("AppDialog", "local"), entry("AppDialog", "other")],
         provides: Vec::new(),
         directives: Vec::new(),

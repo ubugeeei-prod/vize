@@ -24,7 +24,7 @@
 //!   for `ui.bind`).
 //! - **The pass body (here):** what `collect_slots`, `get_slot_name` /
 //!   `params.rs`, and `validate.rs` establish — the **canonical slot
-//!   grouping** published as [`SlotFacts`] per `ui.component`, the
+//!   grouping** published as [`SlotAnalysis`] per `ui.component`, the
 //!   default-name and implicit-default-slot **synthesis** (the series'
 //!   first [`ScopeOrigin::Synthesized`](vize_l2::scope::ScopeOrigin::Synthesized) producer), the slot-props
 //!   scope **consumption** (the vfor pattern extended to slot
@@ -77,7 +77,7 @@
 //! [`super::walk::PageWalk`] (flat visitation cannot give a component
 //! its children's carrier ids — the mint arithmetic still has one
 //! home), count-asserted against the minted accounting on every run.
-//! [`SlotFacts`] is keyed by the `ui.component`'s id, sparse: only
+//! [`SlotAnalysis`] is keyed by the `ui.component`'s id, sparse: only
 //! components with at least one group. Provenance: `pass.v-slot.scope`
 //! per consumed params scope, `pass.v-slot.group` per grouped component
 //! (static groups print quoted, dynamic in brackets, synthesized with a
@@ -96,7 +96,7 @@ mod spell;
 
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
-use vize_l2::artifact::ArtifactParts;
+use vize_l2::artifact::L2TemplateParts;
 
 /// The pass name in pipeline strings and folio pages.
 pub const NAME: &str = "v-slot";
@@ -130,7 +130,7 @@ pub const RULE_DEFAULT_NAME: &str = "normalize.v-slot.default-name";
 pub const RULE_IMPLICIT_DEFAULT: &str = "normalize.v-slot.implicit-default";
 
 pub use vize_l2::analysis::slot_facts::{
-    SlotBound, SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams,
+    SlotAnalysis, SlotBound, SlotCarrier, SlotGroup, SlotName, SlotParams,
 };
 
 /// Run the pass over `lowered`.
@@ -149,10 +149,10 @@ pub use vize_l2::analysis::slot_facts::{
 /// paramless one with), a reused tag, or recorded bindings that
 /// disagree with the params surface.
 #[must_use]
-pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<SlotFacts> {
+pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<SlotAnalysis> {
     let Lowered {
         artifact:
-            ArtifactParts {
+            L2TemplateParts {
                 root,
                 provenance,
                 scopes,

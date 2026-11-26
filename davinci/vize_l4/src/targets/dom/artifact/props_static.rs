@@ -8,7 +8,7 @@ use vize_l0::String;
 use vize_l0::id::NodeId;
 use vize_l2::op::{Attribute, BindingOp};
 
-use vize_l2::analysis::static_facts::{StaticFacts, StaticLevel};
+use vize_l2::analysis::static_facts::{StaticAnalysis, StaticLevel};
 
 use super::EmitCx;
 use super::EmitError;
@@ -63,7 +63,7 @@ pub(super) fn should_hoist(
 /// is the pass's, and the option is the emit's — so a template whose
 /// root has static props and no component/structural descendant hoists
 /// them where a non-inlined render function would keep them inline.
-fn inline_root_arm(cx: &EmitCx<'_>, fact: &StaticFacts) -> bool {
+fn inline_root_arm(cx: &EmitCx<'_>, fact: &StaticAnalysis) -> bool {
     cx.scope.inline() && fact.native_descendants
 }
 

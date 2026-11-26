@@ -9,14 +9,14 @@
 
 use crate::support;
 
-use support::{Artifact, assert_authored_artifact};
+use support::{LoweringSnapshot, assert_authored_artifact};
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, SourceRoot, Span, String};
 use vize_l2::dump::Page as L2Page;
 use vize_l2::provenance::ProvenanceRecord;
-use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
+use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin, ScopeTag};
 use vize_l2::verify::{Rigor, Violation, verify, verify_table};
 
 fn authored(name: &str, start: u32, end: u32) -> ScopeBinding {
@@ -39,7 +39,7 @@ fn element_span(source: &str, open: &str, close: &str) -> Span {
     Span::new(start, end as u32)
 }
 
-fn source_block_artifact(source: &str, block_source: &str, block_start: usize) -> Artifact {
+fn source_block_artifact(source: &str, block_source: &str, block_start: usize) -> LoweringSnapshot {
     let allocator = Allocator::new();
     let (tree, errors) = vize_l1::markup::parse(&allocator, block_source);
     let root = SourceRoot::new(source).expect("source is small");
@@ -67,7 +67,7 @@ fn source_block_artifact(source: &str, block_source: &str, block_start: usize) -
         Vec::<Violation>::new()
     );
 
-    Artifact {
+    LoweringSnapshot {
         folio: folio.print_to_string(DumpMode::Full),
         op_count: lowered.op_count,
         diagnostics: lowered.diagnostics.clone(),
@@ -103,7 +103,7 @@ fn source_block_side_tables_use_file_absolute_spans() {
         art.scopes,
         vec![(
             2,
-            ScopeFacts {
+            ScopeAnalysis {
                 tag: ScopeTag::from_index(0),
                 bindings: vec![
                     authored("item", item_span.start, item_span.end),

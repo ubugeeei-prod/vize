@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec as OwnedVec;
 use vize_l0::{Allocator, Box, Span, String, Vec, id::NodeId};
-use vize_l2::artifact::{Artifact, ArtifactParts};
+use vize_l2::artifact::{L2Template, L2TemplateParts};
 use vize_l2::expr::{ExprRef, JsExpr};
 use vize_l2::op::{
     Attribute, BindOp, BindingOp, CommentOp, DynamicName, ElementOp, InterpolationOp, Namespace,
@@ -108,7 +108,7 @@ fn element<'a>(
 /// Each node is constructed with its real authored span. This target test
 /// receives the sealed native owner directly, not a legacy parser artifact.
 /// Expressions parse once into retained ASTs; emission never calls a parser.
-pub(super) fn build<'a>(arena: &'a Allocator, id: &str, source: &'a str) -> Artifact<'a> {
+pub(super) fn build<'a>(arena: &'a Allocator, id: &str, source: &'a str) -> L2Template<'a> {
     let root = match id {
         "empty" => region(arena, []),
         "empty-element" => region(arena, [element(arena, source, source, "div", [], [], [])]),
@@ -235,14 +235,14 @@ pub(super) fn build<'a>(arena: &'a Allocator, id: &str, source: &'a str) -> Arti
         _ => extra::build(arena, id, source)
             .unwrap_or_else(|| panic!("unknown native DOM reference {id}")),
     };
-    Artifact::try_new(ArtifactParts::new(source, root)).unwrap()
+    L2Template::try_new(L2TemplateParts::new(source, root)).unwrap()
 }
 
 pub(super) fn property_value<'a>(
     arena: &'a Allocator,
     source: &'a str,
     value: &'a str,
-) -> Artifact<'a> {
+) -> L2Template<'a> {
     let root = region(
         arena,
         [element(
@@ -255,10 +255,10 @@ pub(super) fn property_value<'a>(
             [],
         )],
     );
-    Artifact::try_new(ArtifactParts::new(source, root)).unwrap()
+    L2Template::try_new(L2TemplateParts::new(source, root)).unwrap()
 }
 
-pub(super) fn rejected_event(arena: &Allocator) -> Artifact<'_> {
+pub(super) fn rejected_event(arena: &Allocator) -> L2Template<'_> {
     let source = "<button @click=\"handler\"/>";
     let at = span(source, "@click=\"handler\"");
     let binding = BindingOp::On(Box::new_in(
@@ -281,9 +281,9 @@ pub(super) fn rejected_event(arena: &Allocator) -> Artifact<'_> {
         arena,
         [element(arena, source, source, "button", [], [binding], [])],
     );
-    Artifact::try_new(ArtifactParts {
+    L2Template::try_new(L2TemplateParts {
         provenance,
-        ..ArtifactParts::new(source, root)
+        ..L2TemplateParts::new(source, root)
     })
     .unwrap()
 }

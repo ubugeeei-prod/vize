@@ -6,27 +6,28 @@
 
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-use vize_l0::fact::{
-    Demand, FactConsumer, FactError, FactGroup, FactManager, produced_count, undeclared_accesses,
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisError, AnalysisManager, Demand, produced_count,
+    undeclared_accesses,
 };
 use vize_l0::{Allocator, SourceRoot};
 use vize_l1_to_l2::pass::cfg::{self, TEMPLATE_FACTS, TemplateComplexityGroup};
 use vize_l1_to_l2::{lower, lower_source_block};
 
 struct Rule;
-impl FactConsumer for Rule {
+impl AnalysisConsumer for Rule {
     const NAME: &'static str = "test/rule";
     const DEMAND: Demand = Demand::NONE.with(TemplateComplexityGroup::ID);
 }
 
 struct Report;
-impl FactConsumer for Report {
+impl AnalysisConsumer for Report {
     const NAME: &'static str = "test/report";
     const DEMAND: Demand = Demand::NONE.with(TemplateComplexityGroup::ID);
 }
 
 struct Stranger;
-impl FactConsumer for Stranger {
+impl AnalysisConsumer for Stranger {
     const NAME: &'static str = "test/stranger";
     const DEMAND: Demand = Demand::NONE;
 }
@@ -40,7 +41,7 @@ fn the_group_is_computed_once_read_under_demand_and_equals_the_pass() {
     let produced = produced_count(TemplateComplexityGroup::ID);
     let undeclared = undeclared_accesses();
 
-    let mut manager = FactManager::new(&TEMPLATE_FACTS);
+    let mut manager = AnalysisManager::new(&TEMPLATE_FACTS);
     let rule_facts = manager
         .prepare::<Rule>(TEMPLATE)
         .unwrap()
@@ -77,7 +78,7 @@ fn the_group_is_computed_once_read_under_demand_and_equals_the_pass() {
             .err();
         assert_eq!(
             refused,
-            Some(FactError::Undeclared {
+            Some(AnalysisError::Undeclared {
                 consumer: "test/stranger",
                 group: TemplateComplexityGroup::ID,
             })

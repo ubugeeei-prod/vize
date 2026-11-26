@@ -1,4 +1,4 @@
-use super::{Allocator, ComponentTagFacts, NativeTemplateLintContext, SourceRoot, attributes};
+use super::{Allocator, ComponentTagAnalysis, NativeTemplateLintContext, SourceRoot, attributes};
 use crate::native::template::{NativeTemplateEventModifier, NativeTemplateLintRefusal as Refusal};
 use crate::rules::vue::NoDeprecatedVOnNativeModifier;
 use crate::{LintResult, Linter, Rule, RuleMeta, RuleRegistry};
@@ -51,8 +51,8 @@ fn fix_none_preserves_owner_callback_linter_and_sibling_token_authority() {
     let arena = Allocator::new();
     let source = "<div @click.native=\"a\"/><div @keyup.native=\"b\"/>";
     let block = SourceRoot::new(source).unwrap().whole_block();
-    let root = ComponentTagFacts::parse_in(&arena, block).unwrap();
-    let foreign = ComponentTagFacts::parse_in(&arena, block).unwrap();
+    let root = ComponentTagAnalysis::parse_in(&arena, block).unwrap();
+    let foreign = ComponentTagAnalysis::parse_in(&arena, block).unwrap();
     let proofs = attributes(&root);
     let foreign_proofs = attributes(&foreign);
     let mut registry = RuleRegistry::new();

@@ -29,18 +29,18 @@ use vize_carton::{CompactString, cstr};
 use super::{agreement::Agreement, bindings_extract, trace::CheckedExpression};
 use crate::Croquis;
 use crate::drawer::{extract_identifiers_checked, extract_identifiers_oxc};
-use crate::facts::{Bindings, BindingsTable, FactTable, UnusedBindingFact, UnusedBindings};
+use crate::facts::{AnalysisTable, Bindings, BindingsTable, UnusedBindingFact, UnusedBindings};
 use crate::sfc::SfcDescriptor;
 
 /// Rules over independent declarations, resolved reads and source blocks.
 pub fn evaluate(
     descriptor: &SfcDescriptor<'_>,
-    bindings: &FactTable<Bindings>,
+    bindings: &AnalysisTable<Bindings>,
     checked: &[CheckedExpression],
     croquis: &Croquis,
-) -> Result<FactTable<UnusedBindings>, &'static str> {
+) -> Result<AnalysisTable<UnusedBindings>, &'static str> {
     let Some(setup) = descriptor.script_setup.as_ref() else {
-        return Ok(FactTable::default());
+        return Ok(AnalysisTable::default());
     };
     if descriptor
         .script
@@ -59,10 +59,10 @@ pub fn evaluate(
         })
         || descriptor.styles.iter().any(|block| block.src.is_some())
     {
-        return Ok(FactTable::default());
+        return Ok(AnalysisTable::default());
     }
     let Some(module_reads) = normal_reads::read(descriptor.script.as_ref()) else {
-        return Ok(FactTable::default());
+        return Ok(AnalysisTable::default());
     };
     let jsx = matches!(setup.lang.as_deref(), Some("jsx" | "tsx"));
     let decls = bindings_extract::extract(&setup.content, jsx)?;
@@ -98,7 +98,7 @@ pub fn evaluate(
             .scope_descendants_from_root()
             .any(|scope| scoping.scope_flags(scope).contains_direct_eval())
     {
-        return Ok(FactTable::default());
+        return Ok(AnalysisTable::default());
     }
     let mut reads = BTreeSet::new();
     if let Some(template) = descriptor.template.as_ref() {
@@ -106,7 +106,7 @@ pub fn evaluate(
     }
     for expression in checked {
         if extract_identifiers_checked(&expression.content).is_none() {
-            return Ok(FactTable::default());
+            return Ok(AnalysisTable::default());
         }
         for name in extract_identifiers_oxc(&expression.content) {
             if !expression.scope_vars.contains(&name) {
@@ -117,12 +117,12 @@ pub fn evaluate(
     for style in &descriptor.styles {
         let Some(ranges) = crate::sfc::__internal::checked_v_bind_expression_ranges(&style.content)
         else {
-            return Ok(FactTable::default());
+            return Ok(AnalysisTable::default());
         };
         for range in ranges {
             if let Some(expression) = style.content.get(range) {
                 let Some(style_reads) = extract_identifiers_checked(expression) else {
-                    return Ok(FactTable::default());
+                    return Ok(AnalysisTable::default());
                 };
                 reads.extend(style_reads);
             }
@@ -202,10 +202,10 @@ fn normalized(name: &str) -> CompactString {
 pub fn compare(
     name: &str,
     descriptor: &SfcDescriptor<'_>,
-    bindings: &FactTable<Bindings>,
+    bindings: &AnalysisTable<Bindings>,
     checked: Option<&[CheckedExpression]>,
     croquis: &Croquis,
-    production: &FactTable<UnusedBindings>,
+    production: &AnalysisTable<UnusedBindings>,
     agreement: &mut Agreement,
 ) {
     let Some(checked) = checked else {

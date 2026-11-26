@@ -16,7 +16,7 @@ use vize_l0::ErrorCode;
 use vize_l0::Vec;
 
 use crate::markup::htmlish::parse::SurfaceError;
-use crate::markup::htmlish::surface::{HeaderFacts, TagKindFact};
+use crate::markup::htmlish::surface::{HeaderAnalysis, TagKindInfo};
 
 /// What a tokenizer callback reported. Directive name pieces
 /// (`on_dir_name` / `on_dir_arg` / `on_dir_modifier`) all record as
@@ -95,12 +95,12 @@ impl Event {
         self.aux & 1 != 0
     }
 
-    pub(crate) fn tag_facts(&self) -> Option<TagKindFact> {
+    pub(crate) fn tag_facts(&self) -> Option<TagKindInfo> {
         debug_assert!(matches!(
             self.kind,
             EventKind::OpenTagEnd | EventKind::SelfClosingTag
         ));
-        TagKindFact::from_aux(self.aux)
+        TagKindInfo::from_aux(self.aux)
     }
 
     pub(crate) fn header_is_literal(&self) -> bool {
@@ -180,7 +180,7 @@ impl Recorder<'_, '_> {
         kind: EventKind,
         end: usize,
         verbatim: bool,
-        facts: HeaderFacts,
+        facts: HeaderAnalysis,
     ) {
         debug_assert!(matches!(
             kind,

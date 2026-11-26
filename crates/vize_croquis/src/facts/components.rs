@@ -9,7 +9,7 @@
 //! The cross-file render tree is a later group.
 
 use vize_carton::CompactString;
-use vize_l0::fact::{Demand, FactGroup, FactProducer, FactTable, FactView, ids};
+use vize_l0::analysis::{Analysis, AnalysisProducer, AnalysisTable, AnalysisView, Demand, ids};
 use vize_l0::pass::AnalysisId;
 
 use crate::Croquis;
@@ -40,7 +40,7 @@ pub struct GroupedComponentUse {
 /// The `ComponentUsages` fact group.
 pub struct ComponentUsages;
 
-impl FactGroup for ComponentUsages {
+impl Analysis for ComponentUsages {
     const ID: AnalysisId = ids::COMPONENT_USAGES;
     const NAME: &'static str = "component-usages";
     const STRATUM: u8 = 0;
@@ -49,8 +49,8 @@ impl FactGroup for ComponentUsages {
     type Value = Vec<GroupedComponentUse>;
 }
 
-impl FactProducer<Croquis> for ComponentUsages {
-    fn produce(croquis: &Croquis, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Croquis> for ComponentUsages {
+    fn produce(croquis: &Croquis, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let mut grouped: Vec<(ComponentIdentity, Vec<GroupedComponentUse>)> =
             Vec::with_capacity(croquis.component_usages.len());
         for (index, usage) in croquis.component_usages.iter().enumerate() {
@@ -311,12 +311,12 @@ pub fn homogeneous_index_property<'a>(
 mod tests {
     use super::ComponentUsages;
     use crate::drawer::{Drawer, DrawerOptions};
-    use crate::facts::{CroquisFacts, Demand, FactConsumer, FactGroup};
+    use crate::facts::{Analysis, AnalysisConsumer, CroquisFacts, Demand};
     use vize_armature::parse;
     use vize_carton::Allocator;
 
     struct Reader;
-    impl FactConsumer for Reader {
+    impl AnalysisConsumer for Reader {
         const NAME: &'static str = "test/component-usages-reader";
         const DEMAND: Demand = Demand::NONE.with(ComponentUsages::ID);
     }

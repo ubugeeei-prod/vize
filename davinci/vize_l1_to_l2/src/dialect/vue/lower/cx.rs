@@ -10,7 +10,7 @@ use vize_l0::{Allocator, SourceBlock, Span, String};
 use vize_l1::markup::{Element, ElementClose, Token};
 use vize_l2::expr::ExprRef;
 use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
-use vize_l2::scope::{ScopeFacts, ScopeTag};
+use vize_l2::scope::{ScopeAnalysis, ScopeTag};
 
 use super::text::{Lane, TextLane, TextSource, TextWhitespace};
 
@@ -44,11 +44,11 @@ pub(crate) struct Cx<'a, P> {
     pub diagnostics: Vec<Diagnostic>,
     /// Decisions, kept only when the consumer chose a recording sink.
     pub provenance: P,
-    pub scopes: SideTable<ScopeFacts>,
+    pub scopes: SideTable<ScopeAnalysis>,
     pub texts: SideTable<super::text::TextParts>,
     pub consumed_expressions: Vec<ExprRef<'a>>,
     pub for_facts: SideTable<super::forop::ForParts>,
-    pub if_facts: SideTable<super::if_keys::IfFacts>,
+    pub if_facts: SideTable<super::if_keys::IfAnalysis>,
     pub wrappers: SideTable<vize_l2::analysis::fragment_facts::BranchFragments>,
     pub for_wrappers: SideTable<vize_l2::analysis::fragment_facts::LoopFragment>,
     pub caps: super::caps::LegacyCaps,
@@ -253,7 +253,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
 
     /// Attach scope facts to an op, when the op has an id (after id
     /// exhaustion the tree stays total and only the keying stops).
-    pub(crate) fn attach_scope(&mut self, node: Option<NodeId>, facts: ScopeFacts) {
+    pub(crate) fn attach_scope(&mut self, node: Option<NodeId>, facts: ScopeAnalysis) {
         if let Some(id) = node {
             self.scopes.insert(id, facts);
         }

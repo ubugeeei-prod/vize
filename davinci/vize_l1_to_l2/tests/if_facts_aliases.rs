@@ -3,7 +3,7 @@
 use crate::support;
 use vize_l0::{Span, String, side_table::SideTable};
 use vize_l1_to_l2::{lower, pass};
-use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, IfFacts};
+use vize_l2::analysis::if_facts::{BranchKey, BranchKeyKind, IfAnalysis};
 use vize_l2::dump::Op;
 
 fn span(source: &str, token: &str) -> Result<Span, String> {
@@ -20,10 +20,10 @@ fn real_lowering_and_pass_aliases_borrow_the_canonical_fact_type() -> Result<(),
     let source =
         "<p v-if='ready' :title='label' :key='id' key='late'>x</p><slot v-else key='fallback'/>";
     support::with_transformed(source, |lowered, folio, _, _| {
-        let canonical: &SideTable<IfFacts> = &lowered.artifact.if_facts;
-        let old_lower: &SideTable<lower::IfFacts> = canonical;
-        let old_pass: &SideTable<pass::IfFacts> = canonical;
-        let old_vif: &SideTable<pass::vif::IfFacts> = canonical;
+        let canonical: &SideTable<IfAnalysis> = &lowered.artifact.if_facts;
+        let old_lower: &SideTable<lower::IfAnalysis> = canonical;
+        let old_pass: &SideTable<pass::IfAnalysis> = canonical;
+        let old_vif: &SideTable<pass::vif::IfAnalysis> = canonical;
         assert!(core::ptr::eq(canonical, old_lower));
         assert!(core::ptr::eq(canonical, old_pass));
         assert!(core::ptr::eq(canonical, old_vif));
@@ -34,7 +34,7 @@ fn real_lowering_and_pass_aliases_borrow_the_canonical_fact_type() -> Result<(),
         assert_eq!(node.index(), 0);
         assert_eq!(
             **row,
-            IfFacts {
+            IfAnalysis {
                 branches: vec![
                     Some(BranchKey {
                         kind: BranchKeyKind::Dynamic {

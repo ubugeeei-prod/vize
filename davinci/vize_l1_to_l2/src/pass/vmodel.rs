@@ -54,7 +54,7 @@
 //! - *Why `MandatoryDiagnostic` and not `MandatoryLowering`:* the pass
 //!   canonicalizes nothing and mutates nothing — the artifact and every
 //!   fact the lowering published are byte-identical across it; its
-//!   whole product is the two diagnostics plus [`ModelFacts`], the
+//!   whole product is the two diagnostics plus [`ModelAnalysis`], the
 //!   record of which models failed (the legacy lane *removes* invalid
 //!   models from its tree — a binding op cannot leave the L2 surface
 //!   without shifting every page-order id, so the fault fact is the
@@ -71,7 +71,7 @@
 //! The pass drives its own shaped recursion over the shared
 //! [`super::walk::PageWalk`] (the environment is call-stack scoped), and
 //! asserts the re-derived count against the lowering's minted accounting
-//! on every run. [`ModelFacts`] is keyed by the `ui.model` binding op's
+//! on every run. [`ModelAnalysis`] is keyed by the `ui.model` binding op's
 //! page-order id, sparse: entries exist only for faulted models. Every
 //! diagnostic leaves provenance (`error.v-model-on-scope` /
 //! `error.v-model-arg-on-element`).
@@ -83,14 +83,14 @@ use vize_l0::diag::Diagnostic;
 use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_l0::side_table::SideTable;
 use vize_l0::{String, ensure_sufficient_stack};
-pub use vize_l2::analysis::model_facts::{ModelFacts, ModelFault};
+pub use vize_l2::analysis::model_facts::{ModelAnalysis, ModelFault};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, Op};
 use vize_l2::provenance::ProvenanceSink;
 
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
-use vize_l2::artifact::ArtifactParts;
+use vize_l2::artifact::L2TemplateParts;
 
 mod check;
 use check::check_model;
@@ -127,10 +127,10 @@ pub const DESC: PassDesc = PassDesc::new(
 /// lowering's minted accounting — a compiler bug by the id law, never an
 /// input property.
 #[must_use]
-pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<ModelFacts> {
+pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<ModelAnalysis> {
     let Lowered {
         allocator,
-        artifact: ArtifactParts {
+        artifact: L2TemplateParts {
             root, provenance, ..
         },
         op_count,
@@ -155,7 +155,7 @@ pub(super) struct Channels<'l, P> {
     pub(super) allocator: &'l Allocator,
     pub(super) diagnostics: &'l mut StdVec<Diagnostic>,
     pub(super) provenance: &'l mut P,
-    pub(super) facts: SideTable<ModelFacts>,
+    pub(super) facts: SideTable<ModelAnalysis>,
 }
 
 fn region<'a>(

@@ -15,36 +15,36 @@ use vize_l0::dump::value::DumpValue;
 use vize_l0::dump::{Dump, Error as DumpError};
 use vize_l0::{Span, cstr};
 
-use super::{PartitionFact, PartitionFacts, PartitionKind};
+use super::{PartitionAnalysis, PartitionInfo, PartitionKind};
 
 /// Owned folio page for the exported partition facts, `[s3-partition-folio]`.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
 #[dump(name = "s3-partition-folio")]
 pub struct Page {
     /// One record per canonical L3 op, in export order.
-    pub ops: Vec<Fact>,
+    pub ops: Vec<PartitionRecord>,
 }
 
 impl Page {
     /// Mirror live arena facts into the owned page.
     #[must_use]
-    pub fn of(facts: &PartitionFacts<'_>) -> Self {
+    pub fn of(facts: &PartitionAnalysis<'_>) -> Self {
         Self {
-            ops: facts.ops.iter().map(Fact::from).collect(),
+            ops: facts.ops.iter().map(PartitionRecord::from).collect(),
         }
     }
 }
 
 /// One `op=<n> kind=<static|dynamic> span=<start>:<end>` record.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Fact {
+pub struct PartitionRecord {
     pub op: u32,
     pub kind: PartitionKind,
     pub span: Span,
 }
 
-impl From<&PartitionFact> for Fact {
-    fn from(fact: &PartitionFact) -> Self {
+impl From<&PartitionInfo> for PartitionRecord {
+    fn from(fact: &PartitionInfo) -> Self {
         Self {
             op: fact.op.index(),
             kind: fact.kind,
@@ -53,7 +53,7 @@ impl From<&PartitionFact> for Fact {
     }
 }
 
-impl DumpValue for Fact {
+impl DumpValue for PartitionRecord {
     fn print_value<W: fmt::Write>(&self, w: &mut W) -> fmt::Result {
         write!(
             w,

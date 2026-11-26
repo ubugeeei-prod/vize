@@ -1,4 +1,4 @@
-use super::{StaticFacts, StaticLevel, run};
+use super::{StaticAnalysis, StaticLevel, run};
 use crate::artifact::Builder;
 use crate::op::Namespace;
 use crate::provenance::ProvenanceRecord;
@@ -49,7 +49,7 @@ fn native_artifact_publishes_exact_static_facts_and_postorder_provenance() {
         .into_iter()
         .map(|(id, fact)| (id.index(), *fact))
         .collect();
-    let fact = |level, nested_static, native_descendants| StaticFacts {
+    let fact = |level, nested_static, native_descendants| StaticAnalysis {
         level,
         props_hoistable: false,
         nested_static,

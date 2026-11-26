@@ -10,7 +10,7 @@ pub(crate) enum LexicalScope {
 
 use crate::markup::Sink;
 use crate::markup::htmlish::event::Recorder;
-use crate::markup::htmlish::surface::TagKindFact;
+use crate::markup::htmlish::surface::TagKindInfo;
 use vize_l0::Vec;
 
 #[derive(Default)]
@@ -39,7 +39,7 @@ pub(crate) trait SurfacePolicy {
         _verbatim: bool,
         _exact_pre: bool,
         _inherited: bool,
-    ) -> Option<TagKindFact> {
+    ) -> Option<TagKindInfo> {
         None
     }
 

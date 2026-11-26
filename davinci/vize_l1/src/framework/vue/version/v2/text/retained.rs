@@ -24,7 +24,7 @@ use crate::embed::{EmbedSource, Grammar, SourceError};
 /// ```
 #[derive(Debug)]
 pub struct TextExpression<'a> {
-    artifact: Artifact<'a>,
+    artifact: RetainedPart<'a>,
 }
 
 #[derive(Debug)]
@@ -32,7 +32,7 @@ pub struct TextExpression<'a> {
     clippy::large_enum_variant,
     reason = "Keep successful owning handoffs inline to avoid a heap allocation per callback/filter slot"
 )]
-enum Artifact<'a> {
+enum RetainedPart<'a> {
     Retained(RetainedExpression<'a>),
     Original(Box<EmbedSyntax<'a>>),
 }
@@ -40,52 +40,52 @@ enum Artifact<'a> {
 impl<'a> TextExpression<'a> {
     fn consume(syntax: EmbedSyntax<'a>) -> Self {
         let artifact = match syntax.into_expression() {
-            Ok(retained) => Artifact::Retained(retained),
-            Err(original) => Artifact::Original(original),
+            Ok(retained) => RetainedPart::Retained(retained),
+            Err(original) => RetainedPart::Original(original),
         };
         Self { artifact }
     }
 
     pub fn retained(&self) -> Option<&RetainedExpression<'a>> {
         match &self.artifact {
-            Artifact::Retained(retained) => Some(retained),
-            Artifact::Original(_) => None,
+            RetainedPart::Retained(retained) => Some(retained),
+            RetainedPart::Original(_) => None,
         }
     }
 
     /// A refusal preserves the complete actual owner, never a replacement hole.
     pub fn original(&self) -> Option<&EmbedSyntax<'a>> {
         match &self.artifact {
-            Artifact::Retained(_) => None,
-            Artifact::Original(original) => Some(original),
+            RetainedPart::Retained(_) => None,
+            RetainedPart::Original(original) => Some(original),
         }
     }
 
     pub fn grammar(&self) -> Grammar {
         match &self.artifact {
-            Artifact::Retained(retained) => retained.grammar(),
-            Artifact::Original(original) => original.grammar(),
+            RetainedPart::Retained(retained) => retained.grammar(),
+            RetainedPart::Original(original) => original.grammar(),
         }
     }
 
     pub fn source_type(&self) -> SourceType {
         match &self.artifact {
-            Artifact::Retained(retained) => retained.source_type(),
-            Artifact::Original(original) => original.source_type(),
+            RetainedPart::Retained(retained) => retained.source_type(),
+            RetainedPart::Original(original) => original.source_type(),
         }
     }
 
     pub fn source(&self) -> EmbedSource<'a> {
         match &self.artifact {
-            Artifact::Retained(retained) => retained.source(),
-            Artifact::Original(original) => original.source(),
+            RetainedPart::Retained(retained) => retained.source(),
+            RetainedPart::Original(original) => original.source(),
         }
     }
 
     pub fn hole(&self) -> Option<EmbedHole> {
         match &self.artifact {
-            Artifact::Retained(retained) => retained.hole(),
-            Artifact::Original(original) => original.hole(),
+            RetainedPart::Retained(retained) => retained.hole(),
+            RetainedPart::Original(original) => original.hole(),
         }
     }
 
@@ -119,15 +119,15 @@ impl<'a> TextExpression<'a> {
 
     pub fn decoded_span(&self, span: oxc_span::Span) -> Result<Span, SourceError> {
         match &self.artifact {
-            Artifact::Retained(retained) => retained.decoded_span(span),
-            Artifact::Original(original) => original.decoded_span(span),
+            RetainedPart::Retained(retained) => retained.decoded_span(span),
+            RetainedPart::Original(original) => original.decoded_span(span),
         }
     }
 
     pub fn authored_span(&self, span: oxc_span::Span) -> Result<Span, SourceError> {
         match &self.artifact {
-            Artifact::Retained(retained) => retained.authored_span(span),
-            Artifact::Original(original) => original.authored_span(span),
+            RetainedPart::Retained(retained) => retained.authored_span(span),
+            RetainedPart::Original(original) => original.authored_span(span),
         }
     }
 }

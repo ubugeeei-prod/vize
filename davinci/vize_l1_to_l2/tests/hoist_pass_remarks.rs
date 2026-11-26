@@ -23,7 +23,7 @@ use vize_l0::pass::{NoObserver, RemarkCollector, RemarkKind};
 use vize_l0::{Allocator, Span, String};
 use vize_l1::markup::parse;
 use vize_l1_to_l2::pass::hoist::{STATIC_PROPS, STATIC_SUBTREE};
-use vize_l1_to_l2::pass::{StaticFacts, StaticLevel, run_transform};
+use vize_l1_to_l2::pass::{StaticAnalysis, StaticLevel, run_transform};
 use vize_l1_to_l2::{LegacyCaps, lower_with_caps};
 use vize_l2::dump::{Op as DumpOp, Page as L2Page};
 
@@ -41,7 +41,7 @@ fn fixture(name: &str) -> String {
 /// One run: the post-pass folio, the facts in id order, and the remarks.
 struct Run {
     folio: L2Page,
-    facts: Vec<StaticFacts>,
+    facts: Vec<StaticAnalysis>,
     remarks: RemarkLog,
 }
 
@@ -63,7 +63,7 @@ fn run(source: &str) -> Run {
     }
 }
 
-fn detached_facts(source: &str) -> Vec<StaticFacts> {
+fn detached_facts(source: &str) -> Vec<StaticAnalysis> {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let mut lowered = lower_with_caps(&allocator, &tree, &errors, LegacyCaps::VUE3);

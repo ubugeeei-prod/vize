@@ -27,7 +27,7 @@ use self::scope::PropScope;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_croquis::facts::{Bindings, Demand, FactConsumer, FactGroup};
+use vize_croquis::facts::{Analysis, AnalysisConsumer, Bindings, Demand};
 use vize_l0::FxHashSet;
 use vize_l0::String;
 use vize_l0::cstr;
@@ -47,7 +47,7 @@ pub struct NoMutatingProps {
     options: options_api::OptionsApiScript,
 }
 
-impl FactConsumer for NoMutatingProps {
+impl AnalysisConsumer for NoMutatingProps {
     const NAME: &'static str = "vue/no-mutating-props";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 }

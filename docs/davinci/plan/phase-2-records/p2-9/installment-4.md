@@ -197,7 +197,7 @@ a member of the reparse residual and this installment as a possible
 first mover; measured: **unmoved**, for the standing reason — the S2
 lane feeds no shipped `rewrite_expression` site, so nothing the merge
 produces is consumed by the legacy prefixer. `TextFacts` joins
-`ForFacts`/`SlotFacts` as the prepared feed the P2-5b widening will
+`ForFacts`/`SlotAnalysis` as the prepared feed the P2-5b widening will
 read.
 
 ### The 5 comment-filler slots (the handed-forward class)

@@ -2,11 +2,11 @@
 //!
 //! A JS manifest declares its demands as a static list of group **names**
 //! (`demands: ["templateScopes"]`). The host resolves each name against this
-//! registry's [`GroupDesc`](vize_l0::fact::GroupDesc) names into one
-//! [`Demand`], computes exactly its closure with a [`FactManager`] (each
+//! registry's [`GroupDesc`](vize_l0::analysis::GroupDesc) names into one
+//! [`Demand`], computes exactly its closure with a [`AnalysisManager`] (each
 //! group at most once per document, however many plugins demand it), and
 //! serializes only the declared groups into the plugin's batch. The host is
-//! the Rust-side [`FactConsumer`]; the per-plugin declared set is enforced
+//! the Rust-side [`AnalysisConsumer`]; the per-plugin declared set is enforced
 //! twice — the batch never carries an undeclared group, and the SDK's
 //! `ctx.facts(name)` throws on one (the TS-35 rule, on the JS side).
 //!
@@ -21,10 +21,10 @@
 )]
 
 use serde::Serialize;
-use vize_l0::fact::ids::FIXTURE_BASE;
-use vize_l0::fact::{
-    Demand, FactConsumer, FactGroup, FactManager, FactProducer, FactRegistry, FactTable, FactView,
-    ProducerEntry,
+use vize_l0::analysis::ids::FIXTURE_BASE;
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisManager, AnalysisProducer, AnalysisRegistry, AnalysisTable,
+    AnalysisView, Demand, ProducerEntry,
 };
 use vize_l0::pass::AnalysisId;
 
@@ -36,7 +36,7 @@ use super::error::HostError;
 /// for scoped-slot parameters). Destructuring positions bind no entry.
 pub struct TemplateScopes;
 
-impl FactGroup for TemplateScopes {
+impl Analysis for TemplateScopes {
     const ID: AnalysisId = AnalysisId::new(FIXTURE_BASE);
     const NAME: &'static str = "templateScopes";
     const STRATUM: u8 = 0;
@@ -54,8 +54,8 @@ pub struct ScopeEntry {
     pub position: &'static str,
 }
 
-impl FactProducer<PluginDocument> for TemplateScopes {
-    fn produce(document: &PluginDocument, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<PluginDocument> for TemplateScopes {
+    fn produce(document: &PluginDocument, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let entries = |node: &PluginNode| scope_entries(document, node).map(|e| (node.id, e));
         document.nodes.iter().filter_map(entries).collect()
     }
@@ -92,8 +92,8 @@ fn is_identifier(text: &str) -> bool {
 }
 
 /// Every group a JS plugin may demand.
-pub const REGISTRY: FactRegistry<PluginDocument> =
-    FactRegistry::new(&[ProducerEntry::of::<TemplateScopes>()]);
+pub const REGISTRY: AnalysisRegistry<PluginDocument> =
+    AnalysisRegistry::new(&[ProducerEntry::of::<TemplateScopes>()]);
 
 /// The names of [`REGISTRY`]'s groups, as the unknown-demand error lists them.
 pub const JS_VISIBLE: &[&str] = &[
@@ -117,7 +117,7 @@ pub const JS_VISIBLE: &[&str] = &[
 /// JS-visible group.
 pub struct JsPluginHost;
 
-impl FactConsumer for JsPluginHost {
+impl AnalysisConsumer for JsPluginHost {
     const NAME: &'static str = "js-plugin-host";
     const DEMAND: Demand = Demand::NONE.with(TemplateScopes::ID);
 }
@@ -144,7 +144,7 @@ pub fn resolve_demands(plugin: &str, names: &[String]) -> Result<Demand, HostErr
 
 /// Compute `demand` and serialize exactly its groups, keyed by name.
 pub fn demanded_facts(
-    manager: &mut FactManager<'_, PluginDocument>,
+    manager: &mut AnalysisManager<'_, PluginDocument>,
     document: &PluginDocument,
     demand: Demand,
 ) -> serde_json::Map<String, serde_json::Value> {

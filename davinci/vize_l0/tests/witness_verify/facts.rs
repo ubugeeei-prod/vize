@@ -8,11 +8,12 @@
 //! `repeated-word` demands `words`, `repeats` and `sentence`; `hidden` is
 //! witness-capable but outside its demand.
 
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisProducer, AnalysisRegistry, AnalysisTable, AnalysisView,
+    Demand, ProducerEntry,
+};
 use vize_l0::diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup};
 use vize_l0::diag::{Diagnostic, Stage, Verdict, WitnessChain, WitnessLink};
-use vize_l0::fact::{
-    Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry,
-};
 use vize_l0::pass::AnalysisId;
 use vize_l0::{Span, String, cstr};
 
@@ -28,7 +29,7 @@ pub struct Word {
 macro_rules! group {
     ($ty:ident, $id:expr, $name:literal, $stratum:expr, $depends:expr, $key:ty, $value:ty) => {
         pub struct $ty;
-        impl FactGroup for $ty {
+        impl Analysis for $ty {
             const ID: AnalysisId = AnalysisId::new($id);
             const NAME: &'static str = $name;
             const STRATUM: u8 = $stratum;
@@ -78,14 +79,14 @@ fn words(text: &str) -> impl Iterator<Item = (u32, Word)> + '_ {
     })
 }
 
-impl FactProducer<str> for Words {
-    fn produce(text: &str, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<str> for Words {
+    fn produce(text: &str, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         words(text).collect()
     }
 }
 
-impl FactProducer<str> for Repeats {
-    fn produce(_: &str, inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<str> for Repeats {
+    fn produce(_: &str, inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let words = inputs.get::<Words>().expect("declared input");
         let mut repeats = Vec::new();
         for (index, word) in words.iter() {
@@ -98,23 +99,23 @@ impl FactProducer<str> for Repeats {
     }
 }
 
-impl FactProducer<str> for Sentence {
-    fn produce(text: &str, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<str> for Sentence {
+    fn produce(text: &str, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let length = u32::try_from(text.len()).expect("fits");
         [((), Span::new(0, length))].into_iter().collect()
     }
 }
 
-impl FactProducer<str> for Lengths {
-    fn produce(text: &str, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<str> for Lengths {
+    fn produce(text: &str, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         words(text)
             .map(|(index, word)| (index, word.text.len()))
             .collect()
     }
 }
 
-impl FactProducer<str> for Hidden {
-    fn produce(text: &str, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<str> for Hidden {
+    fn produce(text: &str, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         words(text)
             .map(|(index, word)| (index, word.span))
             .collect()
@@ -149,7 +150,7 @@ impl WitnessGroup for Hidden {
     }
 }
 
-pub static REGISTRY: FactRegistry<str> = FactRegistry::new(&[
+pub static REGISTRY: AnalysisRegistry<str> = AnalysisRegistry::new(&[
     ProducerEntry::of::<Words>(),
     ProducerEntry::of::<Sentence>(),
     ProducerEntry::of::<Lengths>(),
@@ -169,7 +170,7 @@ pub static CHECKS: WitnessChecks = WitnessChecks::new(&[
 /// on proof only — a repeat whose first occurrence is a maybe is silent.
 pub struct RepeatedWord;
 
-impl FactConsumer for RepeatedWord {
+impl AnalysisConsumer for RepeatedWord {
     const NAME: &'static str = "repeated-word";
     const DEMAND: Demand = Demand::NONE
         .with(Words::ID)
@@ -177,7 +178,7 @@ impl FactConsumer for RepeatedWord {
         .with(Sentence::ID);
 }
 
-pub fn repeated_words(facts: &FactView<'_>) -> Vec<Diagnostic> {
+pub fn repeated_words(facts: &AnalysisView<'_>) -> Vec<Diagnostic> {
     let words = facts.get::<Words>().expect("declared");
     let repeats = facts.get::<Repeats>().expect("declared");
     let sentence = facts.get::<Sentence>().expect("declared");

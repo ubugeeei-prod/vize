@@ -1,6 +1,6 @@
 //! Vapor's bounded eligibility joins the existing shared event stream.
 
-use super::{VaporFacts, VaporPart, VaporRejection, VaporRoot, VaporUnsupported};
+use super::{VaporAnalysis, VaporPart, VaporRejection, VaporRoot, VaporUnsupported};
 use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
@@ -13,7 +13,7 @@ mod model;
 
 pub(in crate::decision) struct VaporBuilder<'facts, 'owner, 'arena> {
     setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
-    facts: VaporFacts<'owner, 'arena>,
+    facts: VaporAnalysis<'owner, 'arena>,
     frames: Vec<(NodeId, Option<&'owner ElementOp<'arena>>, bool)>,
     non_comments: usize,
     root_element: Option<NodeId>,
@@ -23,7 +23,7 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
     pub fn new(setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>) -> Self {
         Self {
             setup,
-            facts: VaporFacts {
+            facts: VaporAnalysis {
                 parts: Vec::new(),
                 roots: Vec::new(),
                 unsupported: Vec::new(),
@@ -230,7 +230,7 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
             .push(VaporRejection { node, span, reason });
     }
 
-    pub fn finish(mut self) -> VaporFacts<'owner, 'arena> {
+    pub fn finish(mut self) -> VaporAnalysis<'owner, 'arena> {
         self.finish_model();
         if self.non_comments == 1 {
             self.facts.inherit_attrs = self.root_element;

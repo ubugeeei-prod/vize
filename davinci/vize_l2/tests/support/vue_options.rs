@@ -10,10 +10,14 @@ use vize_l1::embed::{
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l1::markup::SurfaceParseOptions;
-use vize_l2::framework::vue::{OptionsFacts, OptionsFactsIncomplete, OptionsObserver};
+use vize_l2::framework::vue::{OptionsAnalysis, OptionsAnalysisIncomplete, OptionsObserver};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
-pub type Observed = (String, u32, Result<OptionsFacts, OptionsFactsIncomplete>);
+pub type Observed = (
+    String,
+    u32,
+    Result<OptionsAnalysis, OptionsAnalysisIncomplete>,
+);
 
 /// The facts of the file's normal `<script>` with its content and start,
 /// or `None` when the native levels refuse the file first. JSX is not

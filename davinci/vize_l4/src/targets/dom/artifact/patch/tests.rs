@@ -1,4 +1,4 @@
-use super::storage::StoredPatchFacts;
+use super::storage::StoredPatchAnalysis;
 use super::*;
 
 #[test]
@@ -60,10 +60,10 @@ fn patch_facts_materialize_lattice_handler_gate() {
 
 #[test]
 fn patch_facts_table_retains_owner_keyed_entries() {
-    let mut table = PatchFactsTable::new();
+    let mut table = PatchAnalysisTable::new();
     let owner = NodeId::from_index(7).expect("test owner id exists");
     let dynamic_props = alloc::vec![String::from("id")];
-    let first = PatchFacts {
+    let first = PatchAnalysis {
         flag: 8,
         dynamic_props,
     };
@@ -73,10 +73,10 @@ fn patch_facts_table_retains_owner_keyed_entries() {
     assert_eq!(table.materialize(Some(owner), first.clone()), first);
     assert_eq!(
         table.get(owner),
-        Some(&StoredPatchFacts::from_patch(&first))
+        Some(&StoredPatchAnalysis::from_patch(&first))
     );
 
-    let replacement = PatchFacts {
+    let replacement = PatchAnalysis {
         flag: 16,
         dynamic_props: StdVec::new(),
     };
@@ -86,26 +86,26 @@ fn patch_facts_table_retains_owner_keyed_entries() {
     );
     assert_eq!(
         table.get(owner),
-        Some(&StoredPatchFacts::from_patch(&replacement))
+        Some(&StoredPatchAnalysis::from_patch(&replacement))
     );
     assert_eq!(table.len(), 1);
 }
 
 #[test]
 fn patch_facts_table_replaces_owners_after_out_of_order_spill() {
-    let mut table = PatchFactsTable::new();
+    let mut table = PatchAnalysisTable::new();
     for index in (0..40).rev() {
         let owner = NodeId::from_index(index * 3).expect("test owner id exists");
         table.materialize(
             Some(owner),
-            PatchFacts {
+            PatchAnalysis {
                 flag: index as i32,
                 dynamic_props: StdVec::new(),
             },
         );
     }
     let owner = NodeId::from_index(21).unwrap();
-    let replacement = PatchFacts {
+    let replacement = PatchAnalysis {
         flag: 8,
         dynamic_props: StdVec::from([String::from("title")]),
     };
@@ -113,18 +113,18 @@ fn patch_facts_table_replaces_owners_after_out_of_order_spill() {
     assert_eq!(table.len(), 40);
     assert_eq!(
         table.get(owner),
-        Some(&StoredPatchFacts::from_patch(&replacement))
+        Some(&StoredPatchAnalysis::from_patch(&replacement))
     );
     assert!(table.get(NodeId::from_index(1).unwrap()).is_none());
     for index in (0..40).filter(|index| *index != 7) {
         let owner = NodeId::from_index(index * 3).unwrap();
-        let expected = PatchFacts {
+        let expected = PatchAnalysis {
             flag: index as i32,
             dynamic_props: StdVec::new(),
         };
         assert_eq!(
             table.get(owner),
-            Some(&StoredPatchFacts::from_patch(&expected))
+            Some(&StoredPatchAnalysis::from_patch(&expected))
         );
     }
 }
@@ -193,7 +193,7 @@ fn lattice_inputs_keep_dense_ids_stable() {
     }
 }
 
-fn materialized_handler_facts(kind: BindingKind) -> PatchFacts {
+fn materialized_handler_facts(kind: BindingKind) -> PatchAnalysis {
     let allocator = vize_l0::Allocator::new();
     let arena = &allocator;
     let handler = "handler";

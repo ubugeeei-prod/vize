@@ -1,5 +1,5 @@
 //! The hoist-static pass's lattice walk — the post-order region
-//! recursion computing [`StaticFacts`] per owner, split from
+//! recursion computing [`StaticAnalysis`] per owner, split from
 //! `analysis/static_facts.rs` under the source budget. The rules live
 //! beside the L2 fact schema; this file is their single implementation.
 
@@ -10,7 +10,7 @@ use vize_l0::side_table::SideTable;
 use vize_l0::{cstr, ensure_sufficient_stack};
 
 use super::consts::{props_all_hoistable, slot_props_static};
-use super::{StaticFacts, StaticLevel};
+use super::{StaticAnalysis, StaticLevel};
 use crate::walk::PageWalk;
 
 /// What one child op contributes to its parent's three predicates.
@@ -95,7 +95,7 @@ pub(super) fn visit_region<P: ProvenanceSink, R: RemarkSink>(
     ops: &[Op<'_>],
     ns: Namespace,
     provenance: &mut P,
-    facts: &mut SideTable<StaticFacts>,
+    facts: &mut SideTable<StaticAnalysis>,
     remarks: &mut R,
 ) -> RegionSummary {
     ensure_sufficient_stack(|| visit_region_guarded(walk, ops, ns, provenance, facts, remarks))
@@ -106,7 +106,7 @@ fn visit_region_guarded<P: ProvenanceSink, R: RemarkSink>(
     ops: &[Op<'_>],
     ns: Namespace,
     provenance: &mut P,
-    facts: &mut SideTable<StaticFacts>,
+    facts: &mut SideTable<StaticAnalysis>,
     remarks: &mut R,
 ) -> RegionSummary {
     let mut summary = RegionSummary::empty();
@@ -237,7 +237,7 @@ fn visit_region_guarded<P: ProvenanceSink, R: RemarkSink>(
 }
 
 /// The element's own facts from its surface plus its children summary.
-fn element_facts(element: &ElementOp<'_>, children: &RegionSummary) -> StaticFacts {
+fn element_facts(element: &ElementOp<'_>, children: &RegionSummary) -> StaticAnalysis {
     let props_static = props_all_hoistable(&element.attributes, &element.bindings);
     // The shipped svg quirk: any directive on a literal `<svg>` tag
     // blocks staticness outright.
@@ -249,7 +249,7 @@ fn element_facts(element: &ElementOp<'_>, children: &RegionSummary) -> StaticFac
     } else {
         StaticLevel::FullyStatic
     };
-    StaticFacts {
+    StaticAnalysis {
         level,
         props_hoistable: props_static
             && !(element.attributes.is_empty() && element.bindings.is_empty()),
@@ -266,9 +266,9 @@ fn component_facts(
     component: &ComponentOp<'_>,
     ns: Namespace,
     children: &RegionSummary,
-) -> StaticFacts {
+) -> StaticAnalysis {
     let props_static = props_all_hoistable(&component.attributes, &component.bindings);
-    StaticFacts {
+    StaticAnalysis {
         level: StaticLevel::NotStatic,
         props_hoistable: props_static
             && !(component.attributes.is_empty() && component.bindings.is_empty()),
@@ -293,7 +293,7 @@ fn children_ns(own: Namespace, tag: &str) -> Namespace {
 /// The element's contribution to its parent: `FullyStatic` keeps the
 /// parent static, anything else (dynamic text included) is dynamic —
 /// the shipped nested-element rule.
-fn element_contribution(element: &ElementOp<'_>, fact: StaticFacts) -> Contribution {
+fn element_contribution(element: &ElementOp<'_>, fact: StaticAnalysis) -> Contribution {
     // A `v-slot` carrier is the shipped `ElementType::Template`: never
     // a static nested child, never a native descendant. (Structural
     // templates never reach L2 as elements — the lowering unwraps
@@ -320,11 +320,11 @@ fn element_contribution(element: &ElementOp<'_>, fact: StaticFacts) -> Contribut
 /// Publish one owner's fact with its provenance record.
 fn publish(
     provenance: &mut impl ProvenanceSink,
-    facts: &mut SideTable<StaticFacts>,
+    facts: &mut SideTable<StaticAnalysis>,
     id: Option<vize_l0::id::NodeId>,
     owner: &str,
     span: vize_l0::Span,
-    fact: StaticFacts,
+    fact: StaticAnalysis,
 ) {
     // Past id exhaustion there is no key to publish under; the analysis
     // stays total and only the keying stops (the lowering's own rule).

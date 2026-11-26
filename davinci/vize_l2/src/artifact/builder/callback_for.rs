@@ -2,10 +2,10 @@
 //! value and key aliases are the callback's parameters, iterated as `v-for`
 //! iterates an array, and whose region is what the callback returns.
 
-use super::{ArtifactError, Builder, Owner, RegionBuilder, check};
+use super::{Builder, L2TemplateError, Owner, RegionBuilder, check};
 use crate::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 use crate::op::ForBinding;
-use crate::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
+use crate::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin, ScopeTag};
 use oxc_ast::ast::FormalParameters;
 use oxc_span::GetSpan;
 use vize_l0::{Span, id::NodeId};
@@ -25,7 +25,7 @@ impl<'a> Builder<'a> {
         head: CallbackForHead<'a>,
         span: Span,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare(span)?;
         let params = head.params;
         if params.rest.is_some()
@@ -35,7 +35,7 @@ impl<'a> Builder<'a> {
                 .iter()
                 .any(|param| param.initializer.is_some() || !param.decorators.is_empty())
         {
-            return Err(ArtifactError::InvalidHostFor { node: id });
+            return Err(L2TemplateError::InvalidHostFor { node: id });
         }
         check::expression(self.parts.source, id, ExprRef::Js(head.collection), span)?;
         let mut aliases = [None, None];
@@ -48,7 +48,7 @@ impl<'a> Builder<'a> {
                 .parts
                 .source
                 .get(pattern.start as usize..pattern.end as usize)
-                .ok_or(ArtifactError::InvalidSpan {
+                .ok_or(L2TemplateError::InvalidSpan {
                     node: Some(id),
                     span: pattern,
                 })?;
@@ -76,9 +76,12 @@ impl<'a> Builder<'a> {
             }))
         });
         let tag = ScopeTag::from_index(
-            u32::try_from(self.parts.scopes.len()).map_err(|_| ArtifactError::NodeLimit)?,
+            u32::try_from(self.parts.scopes.len()).map_err(|_| L2TemplateError::NodeLimit)?,
         );
-        let _ = self.parts.scopes.insert(id, ScopeFacts { tag, bindings });
+        let _ = self
+            .parts
+            .scopes
+            .insert(id, ScopeAnalysis { tag, bindings });
         self.children(
             Owner::CallbackFor {
                 binding: ForBinding {

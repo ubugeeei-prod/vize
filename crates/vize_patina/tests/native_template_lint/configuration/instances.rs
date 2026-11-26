@@ -4,7 +4,7 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
 };
 use vize_l0::config::VueVersion;
-use vize_l1::markup::ComponentTagFacts;
+use vize_l1::markup::ComponentTagAnalysis;
 use vize_patina::{
     LintContext, LintPreset, Linter, Rule, RuleCategory, RuleMeta, RuleRegistry, Severity,
     native::template::{
@@ -49,7 +49,7 @@ impl NativeTemplateRule for AuditRule {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
-        root: &ComponentTagFacts<'a>,
+        root: &ComponentTagAnalysis<'a>,
     ) -> Result<(), Refusal> {
         assert!(core::ptr::eq(context.owner(), root));
         assert!(core::ptr::eq(

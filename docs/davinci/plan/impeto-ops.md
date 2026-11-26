@@ -163,7 +163,7 @@ The pass writes only `PlacementRecord::chosen` and is described as
 `Preserved::ALL`. `vize_l3::optimize::OPTIMIZE` is the `s3` pipeline
 `annotate-placements` then `extract-placements`; run through the pass manager,
 each decision becomes one `s3.extract-placements` remark (registered in
-`remarks-format.md`), and `PartitionFacts::stale` stays `None`. Under the
+`remarks-format.md`), and `PartitionAnalysis::stale` stays `None`. Under the
 pinned zero epsilons a cache always costs 6 bytes more than the effect unit it
 removes, so it is recorded as missed until a budget ratchet decides otherwise.
 

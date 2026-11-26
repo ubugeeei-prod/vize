@@ -8,7 +8,7 @@ use super::{
 use crate::{HelpLevel, LintDiagnostic, LintResult, Linter, Severity};
 use vize_carton::i18n::{Locale, t, t_fmt};
 use vize_l0::{Span, String, config::VueVersion};
-use vize_l1::markup::ComponentTagFacts;
+use vize_l1::markup::ComponentTagAnalysis;
 
 mod event;
 pub use event::{NativeTemplateEventModifier, NativeTemplateEventModifiers};
@@ -18,7 +18,7 @@ pub use event::{NativeTemplateEventModifier, NativeTemplateEventModifiers};
 /// Inline comment suppression is not inferred; the initial driver refuses it.
 pub struct NativeTemplateLintContext<'o, 'a> {
     linter: &'o Linter,
-    root: &'o ComponentTagFacts<'a>,
+    root: &'o ComponentTagAnalysis<'a>,
     filename: &'o str,
     pub(super) current_rule: &'static str,
     pub(super) current_owner_profile: NativeTemplateOwnerProfile,
@@ -29,7 +29,7 @@ pub struct NativeTemplateLintContext<'o, 'a> {
 impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
     pub(super) fn new(
         linter: &'o Linter,
-        root: &'o ComponentTagFacts<'a>,
+        root: &'o ComponentTagAnalysis<'a>,
         filename: &'o str,
     ) -> Self {
         Self {
@@ -45,7 +45,7 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
 
     /// Returns the authenticated original bare-template owner.
     #[must_use]
-    pub fn owner(&self) -> &'o ComponentTagFacts<'a> {
+    pub fn owner(&self) -> &'o ComponentTagAnalysis<'a> {
         self.root
     }
     /// Returns the caller-provided filename used for reporting.

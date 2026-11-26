@@ -3,7 +3,7 @@
 use alloc::vec::Vec;
 use vize_l0::{Allocator, Box, Span, id::NodeId};
 
-use super::{Artifact, ArtifactError, ArtifactParts, OpFamily, RejectedArtifact, check};
+use super::{L2Template, L2TemplateError, L2TemplateParts, OpFamily, RejectedL2Template, check};
 use crate::expr::ExprRef;
 use crate::op::{Attribute, BindingOp, CommentOp, InterpolationOp, Namespace, Op, Region};
 use crate::provenance::ProvenanceRecord;
@@ -106,7 +106,7 @@ pub(crate) use text::TextAllocation;
 /// `finish` directly seals this accounting; it never walks or reparses the tree.
 pub struct Builder<'a> {
     allocator: &'a Allocator,
-    parts: ArtifactParts<'a>,
+    parts: L2TemplateParts<'a>,
     frames: Vec<Frame<'a>>,
     walk: PageWalk,
 }
@@ -117,11 +117,11 @@ impl<'a> Builder<'a> {
         RegionBuilder { builder: self }
     }
 
-    pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, ArtifactError> {
-        u32::try_from(source.len()).map_err(|_| ArtifactError::SourceLimit)?;
+    pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, L2TemplateError> {
+        u32::try_from(source.len()).map_err(|_| L2TemplateError::SourceLimit)?;
         Ok(Self {
             allocator,
-            parts: ArtifactParts::new(
+            parts: L2TemplateParts::new(
                 source,
                 Region {
                     ops: vize_l0::Vec::new_in(&allocator),
@@ -132,7 +132,7 @@ impl<'a> Builder<'a> {
         })
     }
 
-    pub fn comment(&mut self, content: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    pub fn comment(&mut self, content: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare(span)?;
         self.mint();
         self.push(Op::Comment(Box::new_in(
@@ -146,7 +146,7 @@ impl<'a> Builder<'a> {
         &mut self,
         expression: ExprRef<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare(span)?;
         check::expression(self.parts.source, id, expression, span)?;
         self.mint();
@@ -166,7 +166,7 @@ impl<'a> Builder<'a> {
         &mut self,
         expression: ExprRef<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare(span)?;
         check::expression(self.parts.source, id, expression, span)?;
         self.mint();
@@ -192,7 +192,7 @@ impl<'a> Builder<'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare_owner(&attributes, span)?;
         self.children(
             Owner::Element {
@@ -213,19 +213,19 @@ impl<'a> Builder<'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare_owner(&attributes, span)?;
         self.children(Owner::Component { name, attributes }, span, id, children)?;
         Ok(id)
     }
 
     /// Failed decisions have no node and still retain source and authored order.
-    pub fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    pub fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         check::span(self.parts.source, record.node, record.span)?;
         if let Some(node) = record.node
             && node.index() >= self.walk.minted()
         {
-            return Err(ArtifactError::DanglingProvenance {
+            return Err(L2TemplateError::DanglingProvenance {
                 record: self.parts.provenance.len(),
                 node,
             });
@@ -235,26 +235,26 @@ impl<'a> Builder<'a> {
     }
 
     /// Seal only factory-created nodes. There is no validation/counting walk.
-    pub fn finish(mut self) -> Result<Artifact<'a>, RejectedArtifact<'a>> {
+    pub fn finish(mut self) -> Result<L2Template<'a>, RejectedL2Template<'a>> {
         if let Some(node) = self.frames.last().map(|frame| frame.id) {
             // After a caught callback unwind, retain every partial child and
             // pending owner. Closing only pending frames is not a tree walk.
             while let Some(frame) = self.frames.pop() {
                 let _ = self.close(frame);
             }
-            return Err(RejectedArtifact {
-                error: ArtifactError::UnfinishedOwner { node },
+            return Err(RejectedL2Template {
+                error: L2TemplateError::UnfinishedOwner { node },
                 parts: alloc::boxed::Box::new(self.parts),
             });
         }
-        Ok(Artifact {
+        Ok(L2Template {
             parts: self.parts,
             node_count: self.walk.minted(),
         })
     }
 
-    fn prepare(&self, span: Span) -> Result<NodeId, ArtifactError> {
-        let id = NodeId::from_index(self.walk.minted()).ok_or(ArtifactError::NodeLimit)?;
+    fn prepare(&self, span: Span) -> Result<NodeId, L2TemplateError> {
+        let id = NodeId::from_index(self.walk.minted()).ok_or(L2TemplateError::NodeLimit)?;
         check::owned_span(
             self.parts.source,
             id,
@@ -268,7 +268,7 @@ impl<'a> Builder<'a> {
         &self,
         attributes: &[Attribute<'a>],
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         let id = self.prepare(span)?;
         for attribute in attributes {
             check::owned_span(self.parts.source, id, attribute.span, Some(span))?;
@@ -290,7 +290,7 @@ impl<'a> Builder<'a> {
         span: Span,
         id: NodeId,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<close::ClosedFrame<'a>, ArtifactError> {
+    ) -> Result<close::ClosedFrame<'a>, L2TemplateError> {
         self.mint();
         self.frames.push(Frame {
             id,
@@ -305,14 +305,14 @@ impl<'a> Builder<'a> {
         // pending nested frame or report this outer owner as complete.
         let pending = self.frames.last().map(|frame| frame.id);
         if pending != Some(id) {
-            return Err(ArtifactError::UnfinishedOwner {
+            return Err(L2TemplateError::UnfinishedOwner {
                 node: pending.unwrap_or(id),
             });
         }
         let frame = self
             .frames
             .pop()
-            .ok_or(ArtifactError::UnfinishedOwner { node: id })?;
+            .ok_or(L2TemplateError::UnfinishedOwner { node: id })?;
         Ok(self.close(frame))
     }
 

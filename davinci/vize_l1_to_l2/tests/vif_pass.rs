@@ -74,7 +74,7 @@ fn extraction_moves_the_key_from_the_attribute_surface_to_a_fact() {
             lowered.artifact.if_facts.sorted_entries(),
             vec![(
                 NodeId::from_index(0).expect("op 0 has an id"),
-                &vif::IfFacts {
+                &vif::IfAnalysis {
                     branches: vec![
                         Some(BranchKey {
                             kind: BranchKeyKind::Static(Some("x".into())),

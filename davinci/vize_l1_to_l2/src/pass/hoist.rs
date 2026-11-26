@@ -12,7 +12,7 @@
 //!
 //! - **The analysis** — `static_type.rs`'s whole-subtree lattice
 //!   (`StaticType`) and `props.rs`'s per-prop hoistability — is this
-//!   pass's body, published per owner as [`StaticFacts`].
+//!   pass's body, published per owner as [`StaticAnalysis`].
 //! - **The decisions** — which node whole-hoists, which props-hoist —
 //!   are *position- and option-dependent* (`is_root`, the inherited
 //!   `hoist_static_vnodes` flag, `hoist_static`/`inline`/`scope_id`
@@ -64,7 +64,7 @@
 //!
 //! # Facts and accounting
 //!
-//! Dense over `ui.element` + `ui.component` ops ([`StaticFacts`], keyed
+//! Dense over `ui.element` + `ui.component` ops ([`StaticAnalysis`], keyed
 //! by page-order id); outlets need no entry (`has_static_props` is
 //! false for them by rule, their level `NotStatic` by kind). The pass
 //! drives its own shaped recursion over the shared
@@ -80,7 +80,7 @@ use vize_l2::provenance::ProvenanceSink;
 use crate::lower::Lowered;
 
 pub use vize_l2::analysis::static_facts::{
-    DESC, NAME, STATIC_PROPS, STATIC_SUBTREE, StaticFacts, StaticLevel, constant_for_hoist,
+    DESC, NAME, STATIC_PROPS, STATIC_SUBTREE, StaticAnalysis, StaticLevel, constant_for_hoist,
 };
 
 /// Run the L2-owned analysis over the transitional lowering result.
@@ -89,7 +89,7 @@ pub use vize_l2::analysis::static_facts::{
 ///
 /// Panics only on mismatched page accounting, which is a producer invariant.
 #[must_use]
-pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<StaticFacts> {
+pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<StaticAnalysis> {
     vize_l2::analysis::static_facts::run(
         &lowered.artifact.root,
         lowered.op_count,
@@ -106,7 +106,7 @@ pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<StaticFa
 pub fn run_remarked<R: RemarkSink>(
     lowered: &mut Lowered<'_, impl ProvenanceSink>,
     remarks: &mut R,
-) -> SideTable<StaticFacts> {
+) -> SideTable<StaticAnalysis> {
     vize_l2::analysis::static_facts::run_remarked(
         &lowered.artifact.root,
         lowered.op_count,

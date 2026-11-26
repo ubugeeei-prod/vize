@@ -11,7 +11,7 @@ use std::path::Path;
 
 use support::vue_setup::{corpus, observe, slice, text};
 use vize_l0::{String, cstr};
-use vize_l2::framework::vue::{ReactiveSource, SetupBindingKind, SetupFacts};
+use vize_l2::framework::vue::{ReactiveSource, SetupAnalysis, SetupBindingKind};
 
 fn croquis_kind(kind: vize_relief::BindingType) -> Option<SetupBindingKind> {
     use vize_relief::BindingType;
@@ -240,7 +240,7 @@ fn binding_kinds_follow_the_compiler_rules() {
 /// `(key, local, default)` of each destructured prop, sorted, plus the rest.
 type Destructure = (Vec<(String, String, Option<String>)>, Option<String>);
 
-fn native_destructure(content: &str, base: u32, facts: &SetupFacts) -> Option<Destructure> {
+fn native_destructure(content: &str, base: u32, facts: &SetupAnalysis) -> Option<Destructure> {
     let props = facts.props_destructure()?;
     let mut fields = props
         .fields

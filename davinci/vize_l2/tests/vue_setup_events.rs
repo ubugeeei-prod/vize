@@ -10,9 +10,9 @@ mod support {
 
 use support::vue_setup::{corpus, observe, slice, text};
 use vize_l0::{Span, String, cstr};
-use vize_l2::framework::vue::{ModelName, SetupFacts};
+use vize_l2::framework::vue::{ModelName, SetupAnalysis};
 
-fn facts(script: &str) -> (String, u32, SetupFacts) {
+fn facts(script: &str) -> (String, u32, SetupAnalysis) {
     let source = cstr!("<script setup lang=\"ts\">{script}</script>");
     let (content, base, facts) = observe(&source).expect("the setup is admitted");
     (content, base, facts.expect("every statement is observed"))

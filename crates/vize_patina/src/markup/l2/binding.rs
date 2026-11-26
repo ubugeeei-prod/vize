@@ -221,7 +221,7 @@ pub(in crate::markup) fn surface_expression<'a>(
 #[cfg(test)]
 mod tests {
     use super::{L2Item, walk_items};
-    use crate::markup::L2Template;
+    use crate::markup::LintL2Template;
     use vize_l0::{Allocator, Box, Span};
     use vize_l2::op::{Attribute, BindingOp, VueOnceOp};
 
@@ -254,7 +254,7 @@ mod tests {
             ),
         ];
         let allocator = Allocator::new();
-        let lowered = L2Template::lower(&allocator, "");
+        let lowered = LintL2Template::lower(&allocator, "");
         let document = lowered.markup();
         for &(attribute_spans, binding_spans, expected) in cases {
             let attributes: std::vec::Vec<_> = attribute_spans

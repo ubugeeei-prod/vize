@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use vize_l0::Span;
 use vize_l0::pass::{Remark, RemarkKind, RemarkSink, observer::RemarkArgValue};
 use vize_l1_to_l2::Lowered;
-use vize_l2::analysis::{static_facts, template, template_complexity::ComplexityFacts};
+use vize_l2::analysis::{static_facts, template, template_complexity::ComplexityAnalysis};
 use vize_l2::walk::{NodeRef, PageWalk, visit_nodes};
 
 type Row = (
@@ -34,7 +34,7 @@ impl RemarkSink for Rows {
     }
 }
 
-pub(super) fn check(lowered: &Lowered<'_>, complexity: &ComplexityFacts) {
+pub(super) fn check(lowered: &Lowered<'_>, complexity: &ComplexityAnalysis) {
     let root = &lowered.artifact.root;
     let total = lowered.op_count;
     let mut original_trace = lowered.artifact.provenance.clone();

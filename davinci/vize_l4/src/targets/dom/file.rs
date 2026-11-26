@@ -2,7 +2,7 @@
 
 use vize_l0::id::NodeId;
 use vize_l2::{expr::ExprRef, file::L2Ir, resolution::Occurrence};
-use vize_l3::decision::{FileAnalysis, dom::DomFacts, template::TemplateDomAnalysis};
+use vize_l3::decision::{FileAnalysis, dom::DomAnalysis, template::TemplateDomAnalysis};
 
 use super::expression::ExpressionWriter;
 use super::{DomError, DomErrorKind, encode};
@@ -75,7 +75,7 @@ pub fn emit_template<L: LinkSink>(
 // an arbitrary File with DOM rows or discard the selected completion wrapper.
 struct FileExpressions<'s, 'owner, 'arena> {
     l2ir: &'owner L2Ir<'arena>,
-    facts: Option<&'s DomFacts<'owner, 'arena>>,
+    facts: Option<&'s DomAnalysis<'owner, 'arena>>,
 }
 
 impl ExpressionWriter for FileExpressions<'_, '_, '_> {

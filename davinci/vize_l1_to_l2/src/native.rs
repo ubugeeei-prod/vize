@@ -13,7 +13,9 @@ use vize_l1::embed::syntax::{EmbedHole, EmbedSyntax, RetainedExpression};
 use vize_l1::embed::{Lang, SourceError};
 use vize_l1::markup::{ComponentParse, DirectiveNameError};
 use vize_l1::markup::{SurfaceChild, Token};
-use vize_l2::artifact::{Artifact, ArtifactError, ArtifactParts, Builder, RejectedArtifact};
+use vize_l2::artifact::{
+    Builder, L2Template, L2TemplateError, L2TemplateParts, RejectedL2Template,
+};
 use vize_l2::op::{Namespace, Region};
 use vize_l2::provenance::ProvenanceRecord;
 
@@ -48,7 +50,7 @@ pub enum NativeHoleKind {
     ExpressionCoordinates(vize_l2::expr::js::JsCoordinateError),
     /// Vue's simple-identifier spelling for outer NBSP/BOM is not admitted yet.
     InterpolationIdentifierTrivia,
-    Construction(ArtifactError),
+    Construction(L2TemplateError),
 }
 
 /// Source evidence for a construct this bounded native producer cannot admit.
@@ -68,7 +70,7 @@ pub struct NativeEmbed<'a> {
 /// A real canonical fragment artifact with explicit native incompleteness.
 #[derive(Debug)]
 pub struct NativeLowered<'a> {
-    pub artifact: Artifact<'a>,
+    pub artifact: L2Template<'a>,
     pub holes: Vec<NativeHole>,
     pub diagnostics: Vec<Diagnostic>,
     /// The original native carrier, including all errors and admission facts.
@@ -96,17 +98,17 @@ pub fn lower_component_native<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     lang: Lang,
-) -> Result<NativeLowered<'a>, RejectedArtifact<'a>> {
+) -> Result<NativeLowered<'a>, RejectedL2Template<'a>> {
     let mut builder = Builder::new(allocator, source)
         .map_err(|error| empty_rejection(allocator, source, error))?;
     let block = SourceRoot::new(source)
-        .map_err(|_| empty_rejection(allocator, source, ArtifactError::SourceLimit))?
+        .map_err(|_| empty_rejection(allocator, source, L2TemplateError::SourceLimit))?
         .whole_block();
     let component = NativeComponent::parse_in(allocator, block)
-        .map_err(|_| empty_rejection(allocator, source, ArtifactError::SourceLimit))?;
+        .map_err(|_| empty_rejection(allocator, source, L2TemplateError::SourceLimit))?;
     let produced = component
         .construct_in(&mut builder.region(), lang)
-        .map_err(|_| empty_rejection(allocator, source, ArtifactError::SourceLimit))?;
+        .map_err(|_| empty_rejection(allocator, source, L2TemplateError::SourceLimit))?;
     Ok(NativeLowered {
         artifact: builder.finish()?,
         holes: produced.holes,
@@ -120,11 +122,11 @@ pub fn lower_component_native<'a>(
 fn empty_rejection<'a>(
     allocator: &'a Allocator,
     source: &'a str,
-    error: ArtifactError,
-) -> RejectedArtifact<'a> {
-    RejectedArtifact {
+    error: L2TemplateError,
+) -> RejectedL2Template<'a> {
+    RejectedL2Template {
         error,
-        parts: Box::new(ArtifactParts::new(
+        parts: Box::new(L2TemplateParts::new(
             source,
             Region {
                 ops: vize_l0::Vec::new_in(&allocator),
@@ -227,7 +229,7 @@ impl<'a> Context<'_, 'a> {
     fn produced<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
-        result: Result<NodeId, ArtifactError>,
+        result: Result<NodeId, L2TemplateError>,
         rule: &'static str,
         span: Span,
         after: &'static str,

@@ -28,7 +28,7 @@ use vize_l2::op::{
     Attribute, BindingContract, BindingOp, DynamicName, ModelOp, SlotContentOp, VueDirectiveOp,
 };
 use vize_l2::provenance::ProvenanceSink;
-use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
+use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin};
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{Arg, Directive, Head};
@@ -325,7 +325,7 @@ pub(crate) fn lower_slot_content<'a>(
         }
         cx.attach_scope(
             node,
-            ScopeFacts {
+            ScopeAnalysis {
                 tag,
                 bindings: scope_bindings,
             },

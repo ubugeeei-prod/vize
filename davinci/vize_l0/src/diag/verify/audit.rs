@@ -2,7 +2,7 @@
 //! re-checked in debug and CI builds, and the audit is a zero-sized type that
 //! does nothing in release builds.
 //!
-//! A producer hands the audit each batch together with the [`FactView`] it
+//! A producer hands the audit each batch together with the [`AnalysisView`] it
 //! produced the batch from. Chains are verified with [`verify_chain`];
 //! failures are kept with the ordinal of the diagnostic that carried them
 //! and bump a process-global counter ([`unverifiable_witnesses`]) that a
@@ -14,8 +14,8 @@ use core::sync::atomic::{AtomicU64, Ordering};
 #[cfg(debug_assertions)]
 use super::verify_chain;
 use super::{WitnessChecks, WitnessError};
+use crate::analysis::AnalysisView;
 use crate::diag::Diagnostic;
-use crate::fact::FactView;
 
 /// How many witnesses have failed verification in this process — TS-36's
 /// "zero unverifiable witnesses" reads this. Always 0 in release builds,
@@ -88,7 +88,7 @@ impl WitnessAudit {
     pub fn audit(
         &mut self,
         diagnostics: &[Diagnostic],
-        facts: &FactView<'_>,
+        facts: &AnalysisView<'_>,
         checks: &WitnessChecks,
     ) {
         #[cfg(debug_assertions)]

@@ -7,7 +7,7 @@ fn normally_owned_checked_attribute_reports_only_its_exact_component_and_full_ra
     let allocator = Allocator::new();
     let source = "界\r\n<div :title.camel='opaque'/>";
     let root =
-        ComponentTagFacts::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
+        ComponentTagAnalysis::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
             .unwrap();
     let mut children = root.children();
     assert!(matches!(
@@ -59,8 +59,8 @@ fn same_source_buffer_and_equal_span_cannot_substitute_for_the_contexts_original
     let allocator = Allocator::new();
     let source = "<div title='same'/>";
     let block = SourceRoot::new(source).unwrap().whole_block();
-    let root = ComponentTagFacts::parse_in(&allocator, block).unwrap();
-    let foreign = ComponentTagFacts::parse_in(&allocator, block).unwrap();
+    let root = ComponentTagAnalysis::parse_in(&allocator, block).unwrap();
+    let foreign = ComponentTagAnalysis::parse_in(&allocator, block).unwrap();
     assert!(core::ptr::eq(
         root.component().block().source(),
         foreign.component().block().source()
@@ -97,7 +97,7 @@ fn an_authentic_attribute_of_another_element_cannot_join_a_same_component_checke
     let allocator = Allocator::new();
     let source = "<div title='same'/><span title='same'/>";
     let root =
-        ComponentTagFacts::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
+        ComponentTagAnalysis::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
             .unwrap();
     let mut children = root.children();
     let first = children.next().unwrap().into_element().unwrap();

@@ -4,7 +4,7 @@
 use super::{Vue2Access, Vue2Error, Vue2ErrorKind};
 use crate::expr::{EmitError, ResolvedExpressions};
 use vize_l0::{FxHashSet, Span, String, cstr};
-use vize_l2::{artifact::Artifact, expr::ExprRef, op::Op, walk::NodeRef};
+use vize_l2::{artifact::L2Template, expr::ExprRef, op::Op, walk::NodeRef};
 
 pub(super) struct Names {
     pub(super) receiver: String,
@@ -14,7 +14,7 @@ pub(super) struct Names {
 
 impl Names {
     pub(super) fn checked<'a>(
-        artifact: &Artifact<'a>,
+        artifact: &L2Template<'a>,
         expressions: ResolvedExpressions<'_, 'a>,
         access: &Vue2Access<'_>,
     ) -> Result<Self, Vue2Error> {
@@ -62,7 +62,7 @@ fn fresh(base: &str, occupied: &FxHashSet<&str>) -> Option<String> {
 }
 
 fn visit_verbatim<'a>(
-    artifact: &Artifact<'a>,
+    artifact: &L2Template<'a>,
     expressions: ResolvedExpressions<'_, 'a>,
     access: &Vue2Access<'_>,
     visit: &mut impl FnMut(&'a str),

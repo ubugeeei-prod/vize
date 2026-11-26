@@ -1,9 +1,9 @@
-//! P3-3 export contract: `PartitionFacts::stale` names the first fact that
+//! P3-3 export contract: `PartitionAnalysis::stale` names the first fact that
 //! stops describing the program, and optional passes never produce one.
 
 use vize_l0::pass::NoObserver;
 use vize_l0::{Allocator, Span};
-use vize_l2_to_l3::{Lowered, PartitionFact, PartitionKind, lower};
+use vize_l2_to_l3::{Lowered, PartitionInfo, PartitionKind, lower};
 use vize_l3::extract::OptTier;
 use vize_l3::op::{EffectId, OpId};
 use vize_l3::optimize::optimize;
@@ -54,7 +54,7 @@ fn each_drift_names_its_first_position() {
     });
     with_lowered(|mut lowered| {
         let extra = lowered.partition.ops.len();
-        lowered.partition.push(PartitionFact {
+        lowered.partition.push(PartitionInfo {
             op: OpId::new(extra as u32),
             kind: PartitionKind::Static,
             span: Span::new(0, 0),

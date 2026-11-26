@@ -15,7 +15,7 @@ use vize_l2::scope::ScopeOrigin;
 use crate::lower::Lowered;
 use crate::pass::walk::{PageWalk, visit_ops};
 
-use super::{FragmentKind, HoleFact, HoleKind};
+use super::{FragmentKind, HoleInfo, HoleKind};
 
 pub(crate) struct KeptFragment {
     pub node: u32,
@@ -34,7 +34,7 @@ pub(crate) struct KeptName {
 }
 
 pub(crate) struct PartialPage {
-    pub holes: Vec<HoleFact>,
+    pub holes: Vec<HoleInfo>,
     pub fragments: Vec<KeptFragment>,
     pub names: Vec<KeptName>,
 }
@@ -147,13 +147,13 @@ fn binding_span(binding: &BindingOp<'_>) -> Span {
     }
 }
 
-fn collect_holes(source: &str, tree: &SurfaceTree<'_>) -> Vec<HoleFact> {
+fn collect_holes(source: &str, tree: &SurfaceTree<'_>) -> Vec<HoleInfo> {
     let mut holes = Vec::new();
     walk_children(source, &tree.children, &mut holes);
     holes
 }
 
-fn walk_children(source: &str, children: &[SurfaceChild<'_>], holes: &mut Vec<HoleFact>) {
+fn walk_children(source: &str, children: &[SurfaceChild<'_>], holes: &mut Vec<HoleInfo>) {
     for child in children {
         match child {
             SurfaceChild::Element(element) => walk_element(source, element, holes),
@@ -165,7 +165,7 @@ fn walk_children(source: &str, children: &[SurfaceChild<'_>], holes: &mut Vec<Ho
             SurfaceChild::Unexpected(token) => {
                 let span = token_span(source, token);
                 if !span.is_empty() {
-                    holes.push(HoleFact {
+                    holes.push(HoleInfo {
                         kind: HoleKind::Unexpected,
                         span,
                     });
@@ -180,7 +180,7 @@ fn walk_children(source: &str, children: &[SurfaceChild<'_>], holes: &mut Vec<Ho
     }
 }
 
-fn walk_element(source: &str, element: &Element<'_>, holes: &mut Vec<HoleFact>) {
+fn walk_element(source: &str, element: &Element<'_>, holes: &mut Vec<HoleInfo>) {
     record_token(source, &element.open.lt_name, holes);
     for attr in &element.open.attrs {
         record_token(source, &attr.name, holes);
@@ -209,7 +209,7 @@ fn walk_element(source: &str, element: &Element<'_>, holes: &mut Vec<HoleFact>) 
         }
         ElementClose::Missing => {
             let end = token_span(source, &element.open.gt).end;
-            holes.push(HoleFact {
+            holes.push(HoleInfo {
                 kind: HoleKind::Missing,
                 span: Span::new(end, end),
             });
@@ -218,9 +218,9 @@ fn walk_element(source: &str, element: &Element<'_>, holes: &mut Vec<HoleFact>) 
     }
 }
 
-fn record_token(source: &str, token: &Token<'_>, holes: &mut Vec<HoleFact>) {
+fn record_token(source: &str, token: &Token<'_>, holes: &mut Vec<HoleInfo>) {
     if token.is_missing() {
-        holes.push(HoleFact {
+        holes.push(HoleInfo {
             kind: HoleKind::Missing,
             span: token_span(source, token),
         });

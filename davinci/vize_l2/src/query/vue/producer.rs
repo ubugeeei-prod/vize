@@ -1,8 +1,8 @@
 //! Observe the original scripts in lexical order. Descriptor roles, language,
 //! source, static-hoist policy and scope all come from the same SFC.
 
-use super::{Observed, OrdinaryFamilies, VueFacts, VueFile};
-use crate::artifact::ArtifactError;
+use super::{Observed, OrdinaryFamilies, VueAnalysis, VueFile};
+use crate::artifact::L2TemplateError;
 use crate::file::{FileIssueKind, RejectedFile, TemplatePolicy, TemplateRegion, TemplateScope};
 use crate::framework::vue::{OptionsObserver, OrdinaryObserver, SetupObserver};
 use crate::lang::js::{FileProducer, ProgramInput, ProgramInputError, ProgramScope};
@@ -32,14 +32,14 @@ pub enum VueProgramError {
     Missing(ScriptRole),
     Unexpected(ScriptRole),
     Program(ProgramInputError),
-    Artifact(ArtifactError),
+    Artifact(L2TemplateError),
 }
 
 /// A File whose present scripts have all been walked in their original roles.
 /// The template producer may then attach its typed region before sealing it.
 pub struct VueFileProducer<'a> {
     producer: FileProducer<'a>,
-    facts: VueFacts,
+    facts: VueAnalysis,
 }
 
 impl<'a> VueFileProducer<'a> {
@@ -57,7 +57,7 @@ impl<'a> VueFileProducer<'a> {
         let mut this = Self {
             producer: FileProducer::new(allocator, descriptor.source())
                 .map_err(VueProgramError::Artifact)?,
-            facts: VueFacts::default(),
+            facts: VueAnalysis::default(),
         };
         if let Some(input) = ordinary {
             if let Some(demand) = demand.ordinary {

@@ -5,7 +5,7 @@ use vize_l0::{Allocator, Box, Span, String, Vec};
 use vize_l2::artifact::OpFamily;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{ForBinding, ForOp, IfBranch, IfOp, Op, Region};
-use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
+use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin};
 use vize_relief::{ForNode, IfNode};
 
 use super::{L2Refusal, ProjectCx, lower_children, lower_expression, simple_identifier};
@@ -117,5 +117,5 @@ fn attach_for_scope(cx: &mut ProjectCx, node: Option<NodeId>, binding: &ForBindi
             });
         }
     }
-    cx.attach_scope(node, ScopeFacts { tag, bindings });
+    cx.attach_scope(node, ScopeAnalysis { tag, bindings });
 }

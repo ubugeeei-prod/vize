@@ -16,7 +16,7 @@ use vize_l0::id::NodeId;
 use vize_l0::{Span, String};
 use vize_l2::op::{Attribute, BindOp, BindingOp, ModelOp, OnOp};
 use vize_l3::lattice::{
-    BindingFact, BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind,
+    BindingId, BindingInfo, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind,
     ReactivityClass, Verdict, evaluate_binding,
 };
 
@@ -26,10 +26,10 @@ use super::props::{
     bind_value_uses_legacy_patchless_runtime_expr, has_prop_modifier, is_dynamic_bind_name,
     is_emitted_key_bind, static_bind_key,
 };
-pub(in crate::targets::dom::artifact) use storage::PatchFactsTable;
+pub(in crate::targets::dom::artifact) use storage::PatchAnalysisTable;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(super) struct PatchFacts {
+pub(super) struct PatchAnalysis {
     pub flag: i32,
     pub dynamic_props: StdVec<String>,
 }
@@ -42,7 +42,7 @@ impl super::EmitCx<'_> {
         is_component: bool,
         if_key: Option<&str>,
         for_item: bool,
-    ) -> PatchFacts {
+    ) -> PatchAnalysis {
         let facts = binding_patch_facts(
             bindings,
             is_component,
@@ -117,7 +117,7 @@ pub(super) fn binding_patch_facts<'a>(
     handler_is_constant: &dyn Fn(&OnOp<'a>) -> bool,
     handler_is_cached: &dyn Fn(&OnOp<'a>) -> bool,
     caches_handlers: bool,
-) -> PatchFacts {
+) -> PatchAnalysis {
     if super::merge::has_object_spread(bindings) {
         return super::merge::object_patch(
             bindings,
@@ -256,7 +256,7 @@ pub(super) fn binding_patch_facts<'a>(
     if flag & 16 != 0 {
         flag &= !(2 | 4 | 8);
     }
-    PatchFacts {
+    PatchAnalysis {
         flag,
         dynamic_props,
     }
@@ -298,7 +298,7 @@ fn handler_static_patch_binding(kind: BindingKind) -> bool {
         && binding_kind_lattice_fact(kind).fires_as(ReactivityClass::Static)
 }
 
-fn binding_kind_lattice_fact(kind: BindingKind) -> BindingFact {
+fn binding_kind_lattice_fact(kind: BindingKind) -> BindingInfo {
     evaluate_binding(binding_kind_lattice_input(kind))
 }
 

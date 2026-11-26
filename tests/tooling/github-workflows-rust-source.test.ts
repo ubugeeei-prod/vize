@@ -295,6 +295,19 @@ function requireSplitRustRecipes(
       );
       assert.equal(cache?.with?.["frontend-jobs"], "8");
       delete cache!.with!["frontend-jobs"];
+      // Authenticate the sole diagnostic-output successor before restoring its
+      // exact historical command; retain every other field in the whole hash.
+      const doctests = job.steps.filter((step) => step.name === "Run affected Rust doctests");
+      assert.equal(doctests.length, 1);
+      const originalDoctest =
+        'node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --doc';
+      assert.deepEqual(doctests[0], {
+        name: "Run affected Rust doctests",
+        if: "${{ matrix.lane == 'clippy' }}",
+        env: { VIZE_RUST_CASE_LABEL: "Affected Rust doctests" },
+        run: originalDoctest + " -- --nocapture",
+      });
+      doctests[0].run = originalDoctest;
       restoreRustCaseReporting(job, contracts);
       job.steps[contracts].run =
         "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts";
@@ -370,6 +383,18 @@ test("whole split preservation refuses changed current policy and unrelated prod
     "legacy-extra",
     "legacy-position",
     "legacy-duplicate",
+    "doctest-missing",
+    "doctest-command",
+    "doctest-prefix",
+    "doctest-old-output",
+    "doctest-flag",
+    "doctest-duplicate-flag",
+    "doctest-guard",
+    "doctest-env",
+    "doctest-extra",
+    "doctest-position",
+    "doctest-duplicate",
+    "unrelated-command",
   ]) {
     const changed = rustWorkflow("pr-rust-checks.yml");
     const job = changed.jobs["pr-rust-build"];
@@ -402,6 +427,23 @@ test("whole split preservation refuses changed current policy and unrelated prod
     if (mutation === "legacy-extra") legacy["continue-on-error"] = true;
     if (mutation === "legacy-position") job.steps.unshift(...job.steps.splice(legacyIndex, 1));
     if (mutation === "legacy-duplicate") job.steps.push(structuredClone(legacy));
+    const doctestIndex = job.steps.findIndex((step) => step.name === "Run affected Rust doctests");
+    const doctest = job.steps[doctestIndex];
+    if (mutation === "doctest-missing") job.steps.splice(doctestIndex, 1);
+    if (mutation === "doctest-command") doctest.run += " --ignored";
+    if (mutation === "doctest-prefix") doctest.run = "true\n" + doctest.run;
+    if (mutation === "doctest-old-output")
+      doctest.run = doctest.run?.replace(" -- --nocapture", "");
+    if (mutation === "doctest-flag")
+      doctest.run = doctest.run?.replace("--nocapture", "--show-output");
+    if (mutation === "doctest-duplicate-flag") doctest.run += " --nocapture";
+    if (mutation === "doctest-guard") doctest.if = "${{ false }}";
+    if (mutation === "doctest-env") doctest.env!.VIZE_RUST_CASE_LABEL = "Changed doctests";
+    if (mutation === "doctest-extra") doctest["continue-on-error"] = true;
+    if (mutation === "doctest-position") job.steps.unshift(...job.steps.splice(doctestIndex, 1));
+    if (mutation === "doctest-duplicate") job.steps.push(structuredClone(doctest));
+    if (mutation === "unrelated-command")
+      job.steps.find((step) => step.name === "Clippy affected crates")!.run += " --no-deps";
     assert.throws(() => requireSplitRustRecipes(changed), assert.AssertionError, mutation);
   }
 });

@@ -1,32 +1,32 @@
 use super::{Evidence, NativeInterpolationFact, NativeLintHeaders, NativeTextareaMustacheFact};
 use vize_l0::{
     Span,
-    diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup},
-    fact::{
-        Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView,
-        ProducerEntry, ids,
+    analysis::{
+        Analysis, AnalysisConsumer, AnalysisProducer, AnalysisRegistry, AnalysisTable,
+        AnalysisView, Demand, ProducerEntry, ids,
     },
+    diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup},
     pass::AnalysisId,
 };
 
 // Copy only the already authenticated header obtained through its declared SDK
 // view. The existing header registry and producer remain completely unchanged.
-impl FactProducer<Evidence> for NativeLintHeaders {
-    fn produce(evidence: &Evidence, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Evidence> for NativeLintHeaders {
+    fn produce(evidence: &Evidence, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         [(evidence.header_key, evidence.header.clone())]
             .into_iter()
             .collect()
     }
 }
 pub(super) struct HeaderDemand;
-impl FactConsumer for HeaderDemand {
+impl AnalysisConsumer for HeaderDemand {
     const NAME: &'static str = "native-direct-child-header";
     const DEMAND: Demand = Demand::NONE.with(ids::ORIGINAL_LINT_HEADERS);
 }
 
 /// Fact group containing closed interpolation markers from one direct child.
 pub struct NativeDirectInterpolations;
-impl FactGroup for NativeDirectInterpolations {
+impl Analysis for NativeDirectInterpolations {
     const ID: AnalysisId = ids::ORIGINAL_DIRECT_INTERPOLATIONS;
     const NAME: &'static str = "native-direct-interpolations";
     const STRATUM: u8 = 0;
@@ -34,8 +34,8 @@ impl FactGroup for NativeDirectInterpolations {
     type Key = u32;
     type Value = NativeInterpolationFact;
 }
-impl FactProducer<Evidence> for NativeDirectInterpolations {
-    fn produce(evidence: &Evidence, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Evidence> for NativeDirectInterpolations {
+    fn produce(evidence: &Evidence, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         evidence.marker.into_iter().collect()
     }
 }
@@ -47,7 +47,7 @@ impl WitnessGroup for NativeDirectInterpolations {
 
 /// Fact group containing textarea interpolation counterexamples.
 pub struct NativeTextareaMustache;
-impl FactGroup for NativeTextareaMustache {
+impl Analysis for NativeTextareaMustache {
     const ID: AnalysisId = ids::ORIGINAL_TEXTAREA_MUSTACHE;
     const NAME: &'static str = "native-textarea-mustache";
     const STRATUM: u8 = 1;
@@ -57,19 +57,19 @@ impl FactGroup for NativeTextareaMustache {
     type Key = u32;
     type Value = NativeTextareaMustacheFact;
 }
-impl FactProducer<Evidence> for NativeTextareaMustache {
-    fn produce(_: &Evidence, inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Evidence> for NativeTextareaMustache {
+    fn produce(_: &Evidence, inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let (Ok(headers), Ok(markers)) = (
             inputs.get::<NativeLintHeaders>(),
             inputs.get::<NativeDirectInterpolations>(),
         ) else {
-            return FactTable::default();
+            return AnalysisTable::default();
         };
         let Some((header_key, header)) = headers.iter().next() else {
-            return FactTable::default();
+            return AnalysisTable::default();
         };
         if header.tag() != "textarea" {
-            return FactTable::default();
+            return AnalysisTable::default();
         }
         markers
             .iter()
@@ -94,14 +94,14 @@ impl WitnessGroup for NativeTextareaMustache {
 
 /// Declared fact demand for the `vue/no-textarea-mustache` native query.
 pub struct TextareaMustacheDemand;
-impl FactConsumer for TextareaMustacheDemand {
+impl AnalysisConsumer for TextareaMustacheDemand {
     const NAME: &'static str = "vue/no-textarea-mustache";
     const DEMAND: Demand = Demand::NONE
         .with(ids::ORIGINAL_LINT_HEADERS)
         .with(ids::ORIGINAL_DIRECT_INTERPOLATIONS)
         .with(ids::ORIGINAL_TEXTAREA_MUSTACHE);
 }
-pub(super) static REGISTRY: FactRegistry<Evidence> = FactRegistry::new(&[
+pub(super) static REGISTRY: AnalysisRegistry<Evidence> = AnalysisRegistry::new(&[
     ProducerEntry::of::<NativeLintHeaders>(),
     ProducerEntry::of::<NativeDirectInterpolations>(),
     ProducerEntry::of::<NativeTextareaMustache>(),

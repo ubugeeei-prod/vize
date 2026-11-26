@@ -3,7 +3,7 @@
 use super::Visibility;
 use crate::native::{ConstructionBody, ConstructionFactory};
 use vize_l0::{Span, id::NodeId};
-use vize_l2::artifact::{ArtifactError, ComponentFactory};
+use vize_l2::artifact::{ComponentFactory, L2TemplateError};
 use vize_l2::expr::JsExpr;
 use vize_l2::file::{TemplateBody, TemplateChildRegion, TemplateWalkRegion};
 use vize_l2::op::{Attribute, Namespace};
@@ -21,17 +21,17 @@ impl<'a> ConstructionFactory<'a> for VueNative<'_, '_, '_, 'a> {
     fn source(&self) -> &'a str {
         self.region.source()
     }
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.text(text, span)
     }
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.comment(text, span)
     }
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.interpolation(expression, span)
     }
     fn bind(
@@ -40,7 +40,7 @@ impl<'a> ConstructionFactory<'a> for VueNative<'_, '_, '_, 'a> {
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.bind(name, name_span, expression, span)
     }
     fn element<B: ConstructionBody<'a>>(
@@ -50,7 +50,7 @@ impl<'a> ConstructionFactory<'a> for VueNative<'_, '_, '_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region
             .element_with(tag, namespace, attributes, span, NativeBody(body))
     }
@@ -60,7 +60,7 @@ impl<'a> ConstructionFactory<'a> for VueNative<'_, '_, '_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region
             .component_with(name, attributes, span, NativeBody(body))
     }
@@ -71,10 +71,10 @@ impl<'a> ConstructionFactory<'a> for VueNative<'_, '_, '_, 'a> {
         modifiers: vize_l0::Vec<'a, &'a str>,
         handler: Option<&'a JsExpr<'a>>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.event_reference(name, modifiers, handler, span)
     }
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         self.region.record(record)
     }
 }
@@ -86,17 +86,17 @@ impl<'a> ConstructionFactory<'a> for NativeChild<'_, '_, '_, 'a> {
     fn source(&self) -> &'a str {
         self.region.source()
     }
-    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.text(text, span)
     }
-    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
+    fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, L2TemplateError> {
         self.region.comment(text, span)
     }
     fn interpolation(
         &mut self,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.interpolation(expression, span)
     }
     fn bind(
@@ -105,7 +105,7 @@ impl<'a> ConstructionFactory<'a> for NativeChild<'_, '_, '_, 'a> {
         name_span: Span,
         expression: &'a JsExpr<'a>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.bind(name, name_span, expression, span)
     }
     fn element<B: ConstructionBody<'a>>(
@@ -115,7 +115,7 @@ impl<'a> ConstructionFactory<'a> for NativeChild<'_, '_, '_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region
             .element_with(tag, namespace, attributes, span, NativeBody(body))
     }
@@ -125,7 +125,7 @@ impl<'a> ConstructionFactory<'a> for NativeChild<'_, '_, '_, 'a> {
         attributes: vize_l0::Vec<'a, Attribute<'a>>,
         span: Span,
         body: B,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region
             .component_with(name, attributes, span, NativeBody(body))
     }
@@ -136,10 +136,10 @@ impl<'a> ConstructionFactory<'a> for NativeChild<'_, '_, '_, 'a> {
         modifiers: vize_l0::Vec<'a, &'a str>,
         handler: Option<&'a JsExpr<'a>>,
         span: Span,
-    ) -> Result<NodeId, ArtifactError> {
+    ) -> Result<NodeId, L2TemplateError> {
         self.region.event_reference(name, modifiers, handler, span)
     }
-    fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
+    fn record(&mut self, record: ProvenanceRecord) -> Result<(), L2TemplateError> {
         self.region.record(record)
     }
 }

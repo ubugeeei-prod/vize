@@ -1,6 +1,6 @@
 //! The plugin host and health analyzer read the same original inline Vue template.
 use vize_croquis_cf::TemplateComplexity;
-use vize_l0::fact::FactManager;
+use vize_l0::analysis::AnalysisManager;
 use vize_patina::plugin_batch::{
     batch::{BuiltBatch, PluginSpec, build_batch},
     document::PluginDocument,
@@ -29,7 +29,7 @@ pub fn analyze(source: &str, filename: &str, spec: &PluginSpec<'_>) -> PluginTem
     });
     match prepared {
         Ok((document, complexity)) => {
-            let plugin = build_batch(&document, spec, &mut FactManager::new(&REGISTRY))
+            let plugin = build_batch(&document, spec, &mut AnalysisManager::new(&REGISTRY))
                 .map(|batch| PluginTemplateBatch { batch, document });
             PluginTemplateProducts { plugin, complexity }
         }

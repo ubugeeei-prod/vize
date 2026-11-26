@@ -190,7 +190,7 @@ fn same_original_file_populates_complete_static_tree_and_preserves_all_script_fa
             assert_eq!(native.l2ir().artifact().node_count(), 4);
             assert_eq!(
                 template_complexity::run(native.l2ir().artifact().root(), 4),
-                template_complexity::ComplexityFacts::empty(),
+                template_complexity::ComplexityAnalysis::empty(),
                 "shared analysis consumes native canonical Region"
             );
         }

@@ -5,7 +5,7 @@
 
 mod unicode;
 
-use vize_l0::fact::{Demand, FactManager, FactProducer};
+use vize_l0::analysis::{AnalysisManager, AnalysisProducer, Demand};
 
 use super::batch::{PluginSpec, build_batch, diagnostics};
 use super::document::PluginDocument;
@@ -78,7 +78,7 @@ fn the_page_is_flattened_in_l2_id_order() {
 #[test]
 fn a_batch_carries_the_visited_kinds_all_parents_and_only_demanded_facts() {
     let document = PluginDocument::build(TODOS, "Todos.vue").expect("splits");
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let (visit, demands) = (
         strings(&["ui.for", "ui.bind"]),
         strings(&["templateScopes"]),
@@ -105,7 +105,7 @@ fn a_demand_is_computed_once_per_document_however_many_plugins_declare_it() {
     let document = PluginDocument::build(TODOS, "Todos.vue").expect("splits");
     let demands = strings(&["templateScopes"]);
     let demand = resolve_demands("team", &demands).expect("known");
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     for _ in 0..3 {
         build_batch(&document, &spec(None, &demands), &mut manager).expect("builds");
     }
@@ -118,7 +118,7 @@ fn a_demand_is_computed_once_per_document_however_many_plugins_declare_it() {
 fn destructured_and_slot_scopes_bind_exactly_their_names() {
     let source = "<template><Card v-for=\"({ id }, key, n) in rows\" v-slot=\"props\">{{ id }}</Card></template>";
     let document = PluginDocument::build(source, "Card.vue").expect("splits");
-    let view_manager = &mut FactManager::new(&REGISTRY);
+    let view_manager = &mut AnalysisManager::new(&REGISTRY);
     let table = TemplateScopes::produce(
         &document,
         &view_manager.view::<super::facts::JsPluginHost>(),
@@ -153,7 +153,7 @@ fn destructured_and_slot_scopes_bind_exactly_their_names() {
 #[test]
 fn a_manifest_naming_an_unknown_group_or_kind_is_refused_exactly() {
     let document = PluginDocument::build(TODOS, "Todos.vue").expect("splits");
-    let mut manager = FactManager::new(&REGISTRY);
+    let mut manager = AnalysisManager::new(&REGISTRY);
     let bindings = strings(&["future-facts"]);
     let error =
         build_batch(&document, &spec(None, &bindings), &mut manager).expect_err("unknown fact");

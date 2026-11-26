@@ -9,12 +9,12 @@
 use alloc::vec::Vec;
 
 use vize_l0::{id::NodeId, side_table::SideTable};
-use vize_l2::artifact::Artifact;
+use vize_l2::artifact::L2Template;
 
 use crate::placement::Placement;
 
 mod attribute_value;
-pub use attribute_value::OriginalAttributeFacts;
+pub use attribute_value::OriginalAttributeAnalysis;
 mod build;
 pub mod dom;
 mod model;
@@ -36,11 +36,15 @@ use policy::TargetPolicy;
 /// Keeping the borrow also prevents unsealing the owner while this result lives.
 ///
 /// Arbitrary complete tables cannot claim an owner's identity:
-/// ```compile_fail
-/// use vize_l2::artifact::Artifact;
+/// ```compile_fail,E0451
+/// use vize_l2::artifact::L2Template;
 /// use vize_l3::decision::{DecisionTables, DecisionAnalysis};
-/// fn forge<'o, 'a>(artifact: &'o Artifact<'a>, tables: DecisionTables) {
-///     let _ = DecisionAnalysis { artifact, tables };
+/// fn forge<'o, 'a>(
+///     artifact: &'o L2Template<'a>,
+///     tables: DecisionTables,
+///     actual: DecisionAnalysis<'o, 'a>,
+/// ) {
+///     let _ = DecisionAnalysis { artifact, tables, ..actual };
 /// }
 /// ```
 /// Its tables cannot be modified through the analysis:
@@ -51,34 +55,34 @@ use policy::TargetPolicy;
 /// }
 /// ```
 /// Unsealing the owner cannot invalidate live decisions:
-/// ```compile_fail
-/// use vize_l2::artifact::Artifact;
+/// ```compile_fail,E0505
+/// use vize_l2::artifact::L2Template;
 /// use vize_l3::decision::{build_decisions, policy::TargetPolicy};
-/// fn unseal(artifact: Artifact<'_>) {
+/// fn unseal(artifact: L2Template<'_>) {
 ///     let analysis = build_decisions(&artifact, TargetPolicy::Ssr).unwrap();
 ///     let _parts = artifact.into_parts();
 ///     let _ = analysis.tables();
 /// }
 /// ```
 pub struct DecisionAnalysis<'owner, 'arena> {
-    artifact: &'owner Artifact<'arena>,
+    artifact: &'owner L2Template<'arena>,
     tables: DecisionTables,
-    original_attributes: Option<OriginalAttributeFacts<'owner, 'arena>>,
-    dom: Option<dom::DomFacts<'owner, 'arena>>,
-    ssr: Option<ssr::SsrFacts<'owner, 'arena>>,
-    vapor: Option<vapor::VaporFacts<'owner, 'arena>>,
+    original_attributes: Option<OriginalAttributeAnalysis<'owner, 'arena>>,
+    dom: Option<dom::DomAnalysis<'owner, 'arena>>,
+    ssr: Option<ssr::SsrAnalysis<'owner, 'arena>>,
+    vapor: Option<vapor::VaporAnalysis<'owner, 'arena>>,
 }
 
 impl<'owner, 'arena> DecisionAnalysis<'owner, 'arena> {
     /// The exact sealed artifact used by the native producer.
     #[must_use]
-    pub fn artifact(&self) -> &'owner Artifact<'arena> {
+    pub fn artifact(&self) -> &'owner L2Template<'arena> {
         self.artifact
     }
 
     /// Complete original values from this owner's existing sole attribute visits.
     #[must_use]
-    pub fn original_attributes(&self) -> Option<&OriginalAttributeFacts<'owner, 'arena>> {
+    pub fn original_attributes(&self) -> Option<&OriginalAttributeAnalysis<'owner, 'arena>> {
         self.original_attributes.as_ref()
     }
 
@@ -90,19 +94,19 @@ impl<'owner, 'arena> DecisionAnalysis<'owner, 'arena> {
 
     /// Bounded DOM facts from this owner's original decision traversal.
     #[must_use]
-    pub fn dom(&self) -> Option<&dom::DomFacts<'owner, 'arena>> {
+    pub fn dom(&self) -> Option<&dom::DomAnalysis<'owner, 'arena>> {
         self.dom.as_ref()
     }
 
     /// SSR semantics from this owner's original decision traversal.
     #[must_use]
-    pub fn ssr(&self) -> Option<&ssr::SsrFacts<'owner, 'arena>> {
+    pub fn ssr(&self) -> Option<&ssr::SsrAnalysis<'owner, 'arena>> {
         self.ssr.as_ref()
     }
 
     /// Vapor semantics from this owner's original decision traversal.
     #[must_use]
-    pub fn vapor(&self) -> Option<&vapor::VaporFacts<'owner, 'arena>> {
+    pub fn vapor(&self) -> Option<&vapor::VaporAnalysis<'owner, 'arena>> {
         self.vapor.as_ref()
     }
 

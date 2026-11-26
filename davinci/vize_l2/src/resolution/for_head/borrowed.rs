@@ -5,23 +5,23 @@ use oxc_ast::ast::{Expression, FormalParameter};
 use vize_l0::Span;
 use vize_l1::embed::{EmbedSource, Grammar, syntax::ForHeadPart};
 
-use super::{Facts, ForResolution, ForResolutionError, ForResolutionErrorKind, resolve};
+use super::{ForHeadAnalysis, ForResolution, ForResolutionError, ForResolutionErrorKind, resolve};
 use crate::lang::js::NativeForInput;
 use crate::resolution::{BindingLookup, ResolutionErrorKind};
 
 /// Private and move-only: caller facts/root tuples cannot construct this packet.
 /// Its consuming join independently checks the whole original source and roots.
 #[derive(Debug)]
-pub(crate) struct ResolvedForFacts<'a> {
+pub(crate) struct ResolvedForAnalysis<'a> {
     aliases: &'a [FormalParameter<'a>],
     collection: &'a Expression<'a>,
     sources: [EmbedSource<'a>; 3],
     grammar: Grammar,
     name_span: Span,
-    parts: Facts<'a>,
+    parts: ForHeadAnalysis<'a>,
 }
 
-impl<'a> ResolvedForFacts<'a> {
+impl<'a> ResolvedForAnalysis<'a> {
     pub(crate) fn join(
         self,
         input: NativeForInput<'a>,
@@ -57,9 +57,9 @@ impl<'a> ResolvedForFacts<'a> {
 pub(crate) fn resolve_for_facts<'a>(
     input: &NativeForInput<'a>,
     enclosing: &impl BindingLookup,
-) -> Result<ResolvedForFacts<'a>, ForResolutionError> {
+) -> Result<ResolvedForAnalysis<'a>, ForResolutionError> {
     let parts = resolve(input, enclosing)?;
-    Ok(ResolvedForFacts {
+    Ok(ResolvedForAnalysis {
         aliases: input.aliases(),
         collection: input.collection(),
         sources: sources(input).ok_or_else(invalid_source)?,

@@ -1,13 +1,13 @@
 use vize_l0::{
     Span,
-    diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup},
-    fact::{
-        Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView,
-        ProducerEntry, ids,
+    analysis::{
+        Analysis, AnalysisConsumer, AnalysisProducer, AnalysisRegistry, AnalysisTable,
+        AnalysisView, Demand, ProducerEntry, ids,
     },
+    diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup},
     pass::AnalysisId,
 };
-use vize_l1::markup::TagFactsKind;
+use vize_l1::markup::TagAnalysisKind;
 
 use crate::rules::a11y::helpers::ARIA_UNSUPPORTED_ELEMENTS;
 
@@ -17,7 +17,7 @@ use super::{
 
 /// Original authored header fact group, scoped to one genuine element.
 pub struct NativeLintHeaders;
-impl FactGroup for NativeLintHeaders {
+impl Analysis for NativeLintHeaders {
     const ID: AnalysisId = ids::ORIGINAL_LINT_HEADERS;
     const NAME: &'static str = "native-lint-headers";
     const STRATUM: u8 = 0;
@@ -25,8 +25,8 @@ impl FactGroup for NativeLintHeaders {
     type Key = u32;
     type Value = NativeHeaderFact;
 }
-impl FactProducer<Evidence> for NativeLintHeaders {
-    fn produce(evidence: &Evidence, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Evidence> for NativeLintHeaders {
+    fn produce(evidence: &Evidence, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         [(evidence.header_key, evidence.header.clone())]
             .into_iter()
             .collect()
@@ -40,7 +40,7 @@ impl WitnessGroup for NativeLintHeaders {
 
 /// Checked original authored attributes, with their real attribute ordinals.
 pub struct NativeLintAttributes;
-impl FactGroup for NativeLintAttributes {
+impl Analysis for NativeLintAttributes {
     const ID: AnalysisId = ids::ORIGINAL_LINT_ATTRIBUTES;
     const NAME: &'static str = "native-lint-attributes";
     const STRATUM: u8 = 0;
@@ -48,8 +48,8 @@ impl FactGroup for NativeLintAttributes {
     type Key = u32;
     type Value = NativeAttributeFact;
 }
-impl FactProducer<Evidence> for NativeLintAttributes {
-    fn produce(evidence: &Evidence, _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Evidence> for NativeLintAttributes {
+    fn produce(evidence: &Evidence, _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         evidence.attributes.iter().cloned().collect()
     }
 }
@@ -61,7 +61,7 @@ impl WitnessGroup for NativeLintAttributes {
 
 /// Authored rule counterexamples, derived solely from genuine header and attrs.
 pub struct NativeUnsupportedAria;
-impl FactGroup for NativeUnsupportedAria {
+impl Analysis for NativeUnsupportedAria {
     const ID: AnalysisId = ids::ORIGINAL_UNSUPPORTED_ARIA;
     const NAME: &'static str = "native-unsupported-aria";
     const STRATUM: u8 = 1;
@@ -71,20 +71,20 @@ impl FactGroup for NativeUnsupportedAria {
     type Key = u32;
     type Value = NativeUnsupportedAriaFact;
 }
-impl FactProducer<Evidence> for NativeUnsupportedAria {
-    fn produce(_: &Evidence, inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<Evidence> for NativeUnsupportedAria {
+    fn produce(_: &Evidence, inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         let (Ok(headers), Ok(attributes)) = (
             inputs.get::<NativeLintHeaders>(),
             inputs.get::<NativeLintAttributes>(),
         ) else {
-            return FactTable::default();
+            return AnalysisTable::default();
         };
         let Some((header_key, header)) = headers.iter().next() else {
-            return FactTable::default();
+            return AnalysisTable::default();
         };
         // This is the exact registered lint rule's authored-name contract, not
         // a DOM/runtime classification or a legacy semantic helper invocation.
-        if header.kind == TagFactsKind::Component
+        if header.kind == TagAnalysisKind::Component
             || !ARIA_UNSUPPORTED_ELEMENTS.contains(&header.tag.as_str())
             || attributes.iter().any(|(_, attr)| {
                 attr.kind == NativeBindingKind::Static
@@ -95,7 +95,7 @@ impl FactProducer<Evidence> for NativeUnsupportedAria {
                         .is_some_and(|value| value.starts_with("vue:"))
             })
         {
-            return FactTable::default();
+            return AnalysisTable::default();
         }
         attributes
             .iter()
@@ -127,7 +127,7 @@ impl WitnessGroup for NativeUnsupportedAria {
 
 /// The complete demand for the future witnessed rule consumer.
 pub struct UnsupportedAriaDemand;
-impl FactConsumer for UnsupportedAriaDemand {
+impl AnalysisConsumer for UnsupportedAriaDemand {
     const NAME: &'static str = "a11y/aria-unsupported-elements";
     const DEMAND: Demand = Demand::NONE
         .with(ids::ORIGINAL_LINT_HEADERS)
@@ -135,7 +135,7 @@ impl FactConsumer for UnsupportedAriaDemand {
         .with(ids::ORIGINAL_UNSUPPORTED_ARIA);
 }
 
-pub(super) static REGISTRY: FactRegistry<Evidence> = FactRegistry::new(&[
+pub(super) static REGISTRY: AnalysisRegistry<Evidence> = AnalysisRegistry::new(&[
     ProducerEntry::of::<NativeLintHeaders>(),
     ProducerEntry::of::<NativeLintAttributes>(),
     ProducerEntry::of::<NativeUnsupportedAria>(),

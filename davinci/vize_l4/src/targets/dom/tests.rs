@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 use vize_l0::{Allocator, Span, id::NodeId};
-use vize_l2::artifact::Artifact;
+use vize_l2::artifact::L2Template;
 use vize_l2::expr::ExprRef;
 use vize_l2::resolution::{BindingId, BindingLookup, ResolutionTable, resolve_expression};
 use vize_l3::decision::{
@@ -37,7 +37,7 @@ impl BindingLookup for Bindings {
     }
 }
 
-fn resolutions<'a>(artifact: &Artifact<'a>) -> Vec<ResolutionTable<'a>> {
+fn resolutions<'a>(artifact: &L2Template<'a>) -> Vec<ResolutionTable<'a>> {
     let mut resolutions = Vec::new();
     artifact
         .visit_nodes(&mut |_, node| {

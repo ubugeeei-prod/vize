@@ -62,4 +62,4 @@ pub use htmlish::view::{
 pub use profile::{Component, Document, Profile, ProfileKind};
 pub use token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 
-pub use htmlish::view::{ComponentTagFacts, TagFacts, TagFactsKind, TagFactsRefusal};
+pub use htmlish::view::{ComponentTagAnalysis, TagAnalysis, TagAnalysisKind, TagAnalysisRefusal};

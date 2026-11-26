@@ -1,13 +1,13 @@
 //! Join the complete lower owner during the sole canonical binding walk.
 
-use super::{DomBinding, DomBuilder, DomExpressionFacts, PropertyRole, ValueKind};
+use super::{DomBinding, DomBuilder, DomExpressionAnalysis, PropertyRole, ValueKind};
 use crate::decision::dom::{DomUnsupported, handler::DomFileHandler, vue::policy::FileReads};
 use vize_l0::id::NodeId;
 use vize_l2::op::{BindingOp, DynamicName, OnOp, Op};
 
 mod access;
 
-impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+impl<'owner, 'arena, F: DomExpressionAnalysis, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
 {
     pub(super) fn handler_binding(

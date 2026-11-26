@@ -17,7 +17,7 @@ use vize_l0::{Box, Span, String, Vec};
 use vize_l2::artifact::OpFamily;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{ForBinding, ForOp, IfBranch, IfOp, InterpolationOp, Op, Region};
-use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
+use vize_l2::scope::{ScopeAnalysis, ScopeBinding, ScopeOrigin};
 
 use super::children::{contains_jsx, element};
 use super::{Cx, Depth, JsxRefusal, span};
@@ -157,7 +157,7 @@ fn map_call<'a>(
             });
         }
     }
-    cx.attach_scope(node, ScopeFacts { tag, bindings });
+    cx.attach_scope(node, ScopeAnalysis { tag, bindings });
     let region = render_region(cx, body)?;
     cx.observe(OpFamily::For);
     Ok(Op::For(Box::new_in(

@@ -5004,7 +5004,7 @@ davinci/vize_l0/src/expression_guard.rs	0	0	4	0	0	0	0
 davinci/vize_l0/src/expression_guard/analyze.rs	0	1	16	0	0	0	2
 davinci/vize_l0/src/expression_guard/operators.rs	0	1	0	0	0	0	0
 davinci/vize_l0/src/expression_guard/scan.rs	0	0	8	0	0	0	15
-davinci/vize_l0/src/fact/alpha.rs	0	0	0	0	1	0	0
+davinci/vize_l0/src/analysis/alpha.rs	0	0	0	0	1	0	0
 davinci/vize_l0/src/general.rs	0	0	1	0	1	1	0
 davinci/vize_l0/src/hash.rs	0	0	0	1	0	1	0
 davinci/vize_l0/src/js_string_kani.rs	0	0	0	0	0	0	1

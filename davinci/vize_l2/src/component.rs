@@ -6,7 +6,7 @@
 
 use vize_l0::Span;
 
-use crate::artifact::ArtifactParts;
+use crate::artifact::L2TemplateParts;
 
 /// How a component's render code runs. The execution model is semantics, not
 /// only a target: it fixes whether a value computed before the render stays
@@ -37,7 +37,7 @@ pub struct ComponentDef<'a> {
     pub scope: RenderScope,
     /// The authored range of the render root.
     pub span: Span,
-    pub body: ArtifactParts<'a>,
+    pub body: L2TemplateParts<'a>,
     /// Ops and attached bindings minted while building `body`.
     pub op_count: u32,
 }

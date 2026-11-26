@@ -177,10 +177,10 @@ const element = ref(null);
 fn unused_bindings_require_the_inline_template_view() {
     use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
     use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-    use vize_croquis::facts::{CroquisFacts, Demand, FactConsumer, FactGroup, UnusedBindings};
+    use vize_croquis::facts::{Analysis, AnalysisConsumer, CroquisFacts, Demand, UnusedBindings};
 
     struct Reader;
-    impl FactConsumer for Reader {
+    impl AnalysisConsumer for Reader {
         const NAME: &'static str = "test/unused-template-view";
         const DEMAND: Demand = Demand::NONE.with(UnusedBindings::ID);
     }

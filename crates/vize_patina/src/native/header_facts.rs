@@ -6,11 +6,11 @@
 
 use vize_l0::{
     String,
+    analysis::{AnalysisConsumer, AnalysisError, AnalysisManager, AnalysisTable, AnalysisView},
     diag::{
         WitnessChain, WitnessLink,
         verify::{WitnessError, verify_chain},
     },
-    fact::{FactConsumer, FactError, FactManager, FactTable, FactView},
 };
 use vize_l1::markup::{Element, ElementView, SelectedTemplateComponent};
 
@@ -34,7 +34,7 @@ pub enum NativeHeaderFactError {
     /// Header syntax admission or element ownership validation failed.
     Header(NativeLintRefusal),
     /// A required SDK fact table or entry is unavailable.
-    Fact(FactError),
+    Fact(AnalysisError),
 }
 
 impl From<NativeLintRefusal> for NativeHeaderFactError {
@@ -42,8 +42,8 @@ impl From<NativeLintRefusal> for NativeHeaderFactError {
         Self::Header(error)
     }
 }
-impl From<FactError> for NativeHeaderFactError {
-    fn from(error: FactError) -> Self {
+impl From<AnalysisError> for NativeHeaderFactError {
+    fn from(error: AnalysisError) -> Self {
         Self::Fact(error)
     }
 }
@@ -66,7 +66,7 @@ struct Evidence {
 pub struct NativeHeaderFacts<'o, 'a> {
     owner: &'o SelectedTemplateComponent<'a>,
     original: &'o Element<'a>,
-    manager: FactManager<'static, Evidence>,
+    manager: AnalysisManager<'static, Evidence>,
 }
 
 impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
@@ -124,7 +124,7 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
             },
             attributes,
         };
-        let mut manager = FactManager::new(&REGISTRY);
+        let mut manager = AnalysisManager::new(&REGISTRY);
         manager.prepare::<UnsupportedAriaDemand>(&evidence)?;
         Ok(Self {
             owner,
@@ -147,12 +147,12 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
 
     /// Every read uses the caller's actual declared SDK demand.
     #[must_use]
-    pub fn facts<C: FactConsumer>(&self) -> FactView<'_> {
+    pub fn facts<C: AnalysisConsumer>(&self) -> AnalysisView<'_> {
         self.manager.view::<C>()
     }
 
     /// Returns unsupported-ARIA counterexamples derived from this header.
-    pub fn unsupported_aria(&self) -> Result<&FactTable<NativeUnsupportedAria>, FactError> {
+    pub fn unsupported_aria(&self) -> Result<&AnalysisTable<NativeUnsupportedAria>, AnalysisError> {
         self.facts::<UnsupportedAriaDemand>()
             .get::<NativeUnsupportedAria>()
     }
@@ -162,7 +162,7 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
     pub fn unsupported_aria_chain(
         &self,
         attribute: u32,
-    ) -> Result<Option<WitnessChain>, FactError> {
+    ) -> Result<Option<WitnessChain>, AnalysisError> {
         let facts = self.facts::<UnsupportedAriaDemand>();
         let Some(counterexample) = facts.get::<NativeUnsupportedAria>()?.get(&attribute) else {
             return Ok(None);

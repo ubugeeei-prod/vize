@@ -1,10 +1,10 @@
 //! Original selected-template authority retained through the sole SSR walk.
 
-use super::{SsrFacts, SsrFileAnalysis};
+use super::{SsrAnalysis, SsrFileAnalysis};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l0::Span;
 use vize_l2::{
-    artifact::Artifact,
+    artifact::L2Template,
     file::L2Ir,
     lang::js::{NativeTemplateFile, NativeTemplateView},
 };
@@ -71,11 +71,11 @@ impl<'owner, 'arena> TemplateSsrAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn original_attributes(
         &self,
-    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+    ) -> Option<&crate::decision::OriginalAttributeAnalysis<'owner, 'arena>> {
         self.analysis.original_attributes()
     }
     #[must_use]
-    pub fn artifact(&self) -> &'owner Artifact<'arena> {
+    pub fn artifact(&self) -> &'owner L2Template<'arena> {
         self.analysis.artifact()
     }
     #[must_use]
@@ -83,7 +83,7 @@ impl<'owner, 'arena> TemplateSsrAnalysis<'owner, 'arena> {
         self.analysis.tables()
     }
     #[must_use]
-    pub fn ssr(&self) -> Option<&SsrFacts<'owner, 'arena>> {
+    pub fn ssr(&self) -> Option<&SsrAnalysis<'owner, 'arena>> {
         self.analysis.ssr()
     }
 }

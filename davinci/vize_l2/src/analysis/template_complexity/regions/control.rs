@@ -55,7 +55,7 @@ macro_rules! branch {
 pub(super) use branch;
 
 #[cfg(any(test, feature = "composed-template-analysis"))]
-use super::{ComplexityFacts, DecisionKind, NodeId, score};
+use super::{ComplexityAnalysis, DecisionKind, NodeId, score};
 
 #[cfg(any(test, feature = "composed-template-analysis"))]
 #[inline(always)]
@@ -64,7 +64,7 @@ pub(in crate::analysis) fn score_structure(
     kind: DecisionKind,
     id: Option<NodeId>,
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) {
     structure!(span, kind, id, depth, facts);
 }
@@ -76,7 +76,7 @@ pub(in crate::analysis) fn score_branch(
     index: usize,
     id: Option<NodeId>,
     depth: u32,
-    facts: &mut ComplexityFacts,
+    facts: &mut ComplexityAnalysis,
 ) {
     branch!(branch, index, id, depth, facts);
 }

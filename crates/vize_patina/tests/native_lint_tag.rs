@@ -10,8 +10,8 @@ use vize_l0::{
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{
-        ChildrenView, SelectedTemplateComponent, SurfaceParseOptions, TagFactsKind,
-        TagFactsRefusal, check_fidelity,
+        ChildrenView, SelectedTemplateComponent, SurfaceParseOptions, TagAnalysisKind,
+        TagAnalysisRefusal, check_fidelity,
     },
 };
 use vize_patina::{
@@ -157,12 +157,12 @@ fn observed(
     (captured, actual)
 }
 
-fn native_kind(kind: TagFactsKind) -> MarkupElementKind {
+fn native_kind(kind: TagAnalysisKind) -> MarkupElementKind {
     match kind {
-        TagFactsKind::Element => MarkupElementKind::Element,
-        TagFactsKind::Component => MarkupElementKind::Component,
-        TagFactsKind::Slot => MarkupElementKind::Slot,
-        TagFactsKind::Template => MarkupElementKind::Template,
+        TagAnalysisKind::Element => MarkupElementKind::Element,
+        TagAnalysisKind::Component => MarkupElementKind::Component,
+        TagAnalysisKind::Slot => MarkupElementKind::Slot,
+        TagAnalysisKind::Template => MarkupElementKind::Template,
     }
 }
 

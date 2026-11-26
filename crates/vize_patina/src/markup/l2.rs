@@ -104,7 +104,7 @@ impl<'a> L2Markup<'a> {
     /// View a sealed L2 artifact of markup embedded in a script module (a
     /// TSRX region). Like a JSX root it has no L1 surface; spans address the
     /// whole module source.
-    pub fn from_artifact(artifact: &'a vize_l2::artifact::Artifact<'a>) -> Self {
+    pub fn from_artifact(artifact: &'a vize_l2::artifact::L2Template<'a>) -> Self {
         Self {
             root: artifact.root(),
             source: artifact.source(),
@@ -222,14 +222,14 @@ impl<'a> L2Markup<'a> {
 
 /// An owned L1 parse plus its comment-preserving L2 lowering, for callers that
 /// start from template source.
-pub struct L2Template<'a, P> {
+pub struct LintL2Template<'a, P> {
     tree: SurfaceTree<'a>,
     authored: Option<SurfaceTree<'a>>,
     errors: vize_l0::Vec<'a, SurfaceError>,
     lowered: Lowered<'a, P>,
 }
 
-impl<'a, P: ProvenanceSink + Default> L2Template<'a, P> {
+impl<'a, P: ProvenanceSink + Default> LintL2Template<'a, P> {
     /// Parse `source` into L1 and lower it into L2, keeping authored comments
     /// as `ui.comment` ops (the child list the lint parser sees).
     pub fn lower(allocator: &'a Allocator, source: &'a str) -> Self {

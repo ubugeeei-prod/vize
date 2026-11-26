@@ -22,7 +22,7 @@ mod usage;
 pub use facet::schema;
 pub use facet::{Facet, SummaryError};
 pub use global::{
-    GlobalEntry, GlobalError, GlobalFacet, GlobalFacts, GlobalResolution, GlobalSummary,
+    GlobalAnalysis, GlobalEntry, GlobalError, GlobalFacet, GlobalResolution, GlobalSummary,
 };
 pub use usage::Usage;
 

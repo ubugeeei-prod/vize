@@ -1,6 +1,6 @@
 //! Restricted Program admission and the actual file construction capability.
 
-use crate::artifact::ArtifactError;
+use crate::artifact::L2TemplateError;
 use crate::file::{
     FileBuilder, FileIssueKind, L2Ir, RejectedFile, ScopeId, ScriptProfile, ScriptUnitId,
 };
@@ -123,7 +123,7 @@ pub struct FileProducer<'a> {
 }
 
 impl<'a> FileProducer<'a> {
-    pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, ArtifactError> {
+    pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, L2TemplateError> {
         Ok(Self {
             builder: FileBuilder::new(allocator, source)?,
             #[cfg(feature = "lexical-arrow-initializers")]

@@ -8,8 +8,9 @@
 
 use std::sync::{Mutex, MutexGuard};
 
-use vize_l0::fact::{
-    Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry,
+use vize_l0::analysis::{
+    Analysis, AnalysisConsumer, AnalysisProducer, AnalysisRegistry, AnalysisTable, AnalysisView,
+    Demand, ProducerEntry,
 };
 use vize_l0::pass::AnalysisId;
 
@@ -41,7 +42,7 @@ fn log(name: &'static str) {
 macro_rules! group {
     ($ty:ident, $id:expr, $name:literal, $stratum:expr, $depends:expr, $value:ty) => {
         pub struct $ty;
-        impl FactGroup for $ty {
+        impl Analysis for $ty {
             const ID: AnalysisId = AnalysisId::new($id);
             const NAME: &'static str = $name;
             const STRATUM: u8 = $stratum;
@@ -75,22 +76,22 @@ group!(
 // A group sharing `Squares`' id with another value type (never registered).
 group!(Impostor, 42, "impostor", 1, Demand::NONE, i8);
 
-impl FactProducer<[u32]> for Values {
-    fn produce(artifact: &[u32], _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<[u32]> for Values {
+    fn produce(artifact: &[u32], _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         log(Self::NAME);
         (0u32..).zip(artifact.iter().copied()).collect()
     }
 }
 
-impl FactProducer<[u32]> for Unused {
-    fn produce(_: &[u32], _: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<[u32]> for Unused {
+    fn produce(_: &[u32], _: &AnalysisView<'_>) -> AnalysisTable<Self> {
         log(Self::NAME);
-        FactTable::default()
+        AnalysisTable::default()
     }
 }
 
-impl FactProducer<[u32]> for Squares {
-    fn produce(_: &[u32], inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<[u32]> for Squares {
+    fn produce(_: &[u32], inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         log(Self::NAME);
         let values = inputs.get::<Values>().expect("declared input");
         values
@@ -100,8 +101,8 @@ impl FactProducer<[u32]> for Squares {
     }
 }
 
-impl FactProducer<[u32]> for Parity {
-    fn produce(_: &[u32], inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<[u32]> for Parity {
+    fn produce(_: &[u32], inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         log(Self::NAME);
         let values = inputs.get::<Values>().expect("declared input");
         values
@@ -111,8 +112,8 @@ impl FactProducer<[u32]> for Parity {
     }
 }
 
-impl FactProducer<[u32]> for Summary {
-    fn produce(_: &[u32], inputs: &FactView<'_>) -> FactTable<Self> {
+impl AnalysisProducer<[u32]> for Summary {
+    fn produce(_: &[u32], inputs: &AnalysisView<'_>) -> AnalysisTable<Self> {
         log(Self::NAME);
         let squares = inputs.get::<Squares>().expect("declared input");
         let parity = inputs.get::<Parity>().expect("declared input");
@@ -126,7 +127,7 @@ impl FactProducer<[u32]> for Summary {
 }
 
 /// The fixture registry: stratification-checked at compile time.
-pub const REGISTRY: FactRegistry<[u32]> = FactRegistry::new(&[
+pub const REGISTRY: AnalysisRegistry<[u32]> = AnalysisRegistry::new(&[
     ProducerEntry::of::<Values>(),
     ProducerEntry::of::<Unused>(),
     ProducerEntry::of::<Squares>(),
@@ -135,22 +136,23 @@ pub const REGISTRY: FactRegistry<[u32]> = FactRegistry::new(&[
 ]);
 
 /// A registry without `Unused`, for the unregistered-demand case.
-pub const PARTIAL: FactRegistry<[u32]> = FactRegistry::new(&[ProducerEntry::of::<Values>()]);
+pub const PARTIAL: AnalysisRegistry<[u32]> =
+    AnalysisRegistry::new(&[ProducerEntry::of::<Values>()]);
 
 pub struct SquareRule;
-impl FactConsumer for SquareRule {
+impl AnalysisConsumer for SquareRule {
     const NAME: &'static str = "square-rule";
     const DEMAND: Demand = Demand::NONE.with(Squares::ID);
 }
 
 pub struct SummaryRule;
-impl FactConsumer for SummaryRule {
+impl AnalysisConsumer for SummaryRule {
     const NAME: &'static str = "summary-rule";
     const DEMAND: Demand = Demand::NONE.with(Summary::ID);
 }
 
 pub struct UnusedRule;
-impl FactConsumer for UnusedRule {
+impl AnalysisConsumer for UnusedRule {
     const NAME: &'static str = "unused-rule";
     const DEMAND: Demand = Demand::NONE.with(Unused::ID);
 }

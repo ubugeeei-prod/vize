@@ -32,7 +32,7 @@ in the transform lane at all — the old step file
 - **The pass body** (`vize_s1_to_s2::pass::vslot`, one shaped
   page-order recursion): the **canonical grouping** `collect_slots` +
   the component-`v-slot` read establish — published as
-  `SideTable<SlotFacts>` per `ui.component` (own spellings, template
+  `SideTable<SlotAnalysis>` per `ui.component` (own spellings, template
   groups in child order with duplicate static names dropped silently,
   the implicit default last, carriers as op ids); `get_slot_name`'s
   canonicalization (modifier folding, the synthesized default); the
@@ -170,7 +170,7 @@ admitted 196,236; legacy total 28,636 of 224,872 = **12.73%**
 `ts_strip_rewrote` 272). The contract flagged slot params as a
 possible first mover (they feed `rewrite_expression` in the old lane);
 measured: **unmoved**, for the same reason as installment 2 — the S2
-lane feeds no shipped `rewrite_expression` site; `SlotFacts` joins
+lane feeds no shipped `rewrite_expression` site; `SlotAnalysis` joins
 `ForFacts` as the prepared feed the P2-5b widening will read.
 
 ### TS-17
@@ -219,7 +219,7 @@ exact diagnostic order.
   split legacy-side into `slots_old.rs`); no `mod.rs` under `src/`;
   ricalco stays `no_std + alloc` (wasm32-wasip2 build green);
   `SlotName` 48 / `SlotBound` 24 / `SlotParams` 56 / `SlotCarrier` 8 /
-  `SlotGroup` 112 / `SlotFacts` 24 size asserts (first guesses were
+  `SlotGroup` 112 / `SlotAnalysis` 24 size asserts (first guesses were
   corrected by the probe — the ratchet working) and `SlotContentOp`
   72 in disegno; clippy house invocation clean, the new/touched test
   targets additionally clippy-clean under `--tests`; `cargo fmt

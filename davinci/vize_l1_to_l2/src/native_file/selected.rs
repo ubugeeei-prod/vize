@@ -11,7 +11,7 @@ use vize_l1::{
     markup::{ComponentSourceError, InterpolationFailure, SelectedTemplateComponent},
 };
 use vize_l2::{
-    artifact::ArtifactError,
+    artifact::L2TemplateError,
     lang::js::{
         NativeScopedTemplateIssueKind, NativeTemplateFile, NativeTemplateIssue,
         NativeTemplateOwner, NativeTemplateView, RejectedNativeTemplateOwner,
@@ -32,7 +32,7 @@ pub enum NativeSelectedSfcIssueKind {
     MissingTemplate,
     MissingSetup,
     Source(ComponentSourceError),
-    FileCreation(ArtifactError),
+    FileCreation(L2TemplateError),
     Template(NativeTemplateIssue),
     RootText(vize_l1::markup::RootTextError),
     Interpolation(vize_l1::markup::InterpolationError),

@@ -96,12 +96,12 @@ test("EmitCx carries an owner-keyed PatchFacts inline table", () => {
   const storageSource = read(patchStoragePath);
 
   assert.match(patchSource, /mod storage;/);
-  assert.match(patchSource, /use storage::PatchFactsTable;/);
-  assert.match(storageSource, /struct PatchFactsTable/);
-  assert.match(storageSource, /SmallVec<\[\(NodeId, StoredPatchFacts\); 16\]>/);
-  assert.match(storageSource, /StoredPatchFacts::from_patch/);
-  assert.match(emitSource, /patch_facts: patch::PatchFactsTable,/);
-  assert.match(runSource, /patch_facts: super::patch::PatchFactsTable::new\(\),/);
+  assert.match(patchSource, /use storage::PatchAnalysisTable;/);
+  assert.match(storageSource, /struct PatchAnalysisTable/);
+  assert.match(storageSource, /SmallVec<\[\(NodeId, StoredPatchAnalysis\); 16\]>/);
+  assert.match(storageSource, /StoredPatchAnalysis::from_patch/);
+  assert.match(emitSource, /patch_facts: patch::PatchAnalysisTable,/);
+  assert.match(runSource, /patch_facts: super::patch::PatchAnalysisTable::new\(\),/);
 });
 
 test("VNode and component writers read materialized patch facts", () => {

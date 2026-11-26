@@ -1,8 +1,8 @@
 use super::support::{selected, span};
 use vize_l0::{
     Allocator, Span,
+    analysis::{Analysis, AnalysisConsumer, AnalysisError, Demand, ids},
     diag::{WitnessChain, WitnessKey, WitnessLink, verify::WitnessError},
-    fact::{Demand, FactConsumer, FactError, FactGroup, ids},
     pass::AnalysisId,
 };
 use vize_patina::native::{
@@ -131,12 +131,12 @@ fn each_original_full_range_is_checked_and_later_link_reports_its_exact_index() 
 #[test]
 fn declared_sdk_views_reject_undeclared_access_and_group_type_aliases() {
     struct EmptyDemand;
-    impl FactConsumer for EmptyDemand {
+    impl AnalysisConsumer for EmptyDemand {
         const NAME: &'static str = "native-child-fixture-empty-demand";
         const DEMAND: Demand = Demand::NONE;
     }
     struct WrongHeaderType;
-    impl FactGroup for WrongHeaderType {
+    impl Analysis for WrongHeaderType {
         const ID: AnalysisId = ids::ORIGINAL_LINT_HEADERS;
         const NAME: &'static str = "native-child-fixture-wrong-type";
         const STRATUM: u8 = 0;
@@ -160,7 +160,7 @@ fn declared_sdk_views_reject_undeclared_access_and_group_type_aliases() {
             .facts::<EmptyDemand>()
             .get::<NativeLintHeaders>()
             .err(),
-        Some(FactError::Undeclared {
+        Some(AnalysisError::Undeclared {
             consumer: EmptyDemand::NAME,
             group: NativeLintHeaders::ID
         })
@@ -170,7 +170,7 @@ fn declared_sdk_views_reject_undeclared_access_and_group_type_aliases() {
             .facts::<TextareaMustacheDemand>()
             .get::<WrongHeaderType>()
             .err(),
-        Some(FactError::TypeMismatch {
+        Some(AnalysisError::TypeMismatch {
             group: NativeLintHeaders::ID,
             expected: core::any::type_name::<WrongHeaderType>()
         })

@@ -1,6 +1,6 @@
 //! Actual template rows share the full File binding domain without script IDs.
 
-use super::{Facts, FileIssueKind, Names, Scope, ScopeId, TemplateIssue};
+use super::{FileIssueKind, L2Script, Names, Scope, ScopeId, TemplateIssue};
 use crate::file::for_head::{TemplateDeclaration, TemplateDeclarationRow};
 use crate::op::OriginalForId;
 use crate::resolution::{BindingId, ForAliasRole};
@@ -17,7 +17,7 @@ pub(super) fn script_binding_available(index: u32, template_count: usize) -> boo
         .is_some_and(|lowest| index < lowest)
 }
 
-impl<'a> Facts<'a> {
+impl<'a> L2Script<'a> {
     pub(crate) fn template_scope(
         &mut self,
         owner: OriginalForId,

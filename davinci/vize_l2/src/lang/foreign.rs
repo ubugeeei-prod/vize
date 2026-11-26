@@ -5,7 +5,7 @@ use vize_l0::{Span, Vec};
 
 /// One dialect-attached fact row (see [`ForeignExpr::facts`]).
 #[derive(Debug, Clone, Copy)]
-pub struct ForeignFact<'a> {
+pub struct ForeignInfo<'a> {
     /// The dialect's key for this fact.
     pub key: &'a str,
     /// The fact's value, opaque to the core.
@@ -30,7 +30,7 @@ pub struct ForeignExpr<'a> {
     /// folio payload is dialect + source + span only (the P2-5b
     /// contract's list), so a value carrying facts does not round-trip
     /// through a folio yet. That is part of what "type-only" means.
-    pub facts: Vec<'a, ForeignFact<'a>>,
+    pub facts: Vec<'a, ForeignInfo<'a>>,
 }
 
 impl<'a> ForeignExpr<'a> {
@@ -45,6 +45,6 @@ impl<'a> ForeignExpr<'a> {
 const _: () = assert!(!core::mem::needs_drop::<ForeignExpr<'static>>());
 #[cfg(target_pointer_width = "64")]
 const _: () = {
-    assert!(core::mem::size_of::<ForeignFact<'_>>() == 32);
+    assert!(core::mem::size_of::<ForeignInfo<'_>>() == 32);
     assert!(core::mem::size_of::<ForeignExpr<'_>>() == 64);
 };

@@ -12,7 +12,9 @@
 use vize_carton::CompactString;
 use vize_carton::cstr;
 use vize_croquis::Croquis;
-use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
+use vize_croquis::facts::{
+    Analysis, AnalysisConsumer, Bindings, BindingsTable, CroquisFacts, Demand,
+};
 use vize_relief::BindingType;
 
 use crate::virtual_ts::ProjectionMapping;
@@ -124,7 +126,7 @@ pub enum CursorContext {
 /// Hover, completion and definition read bindings through a declared demand.
 struct TypeIntelligenceFacts;
 
-impl FactConsumer for TypeIntelligenceFacts {
+impl AnalysisConsumer for TypeIntelligenceFacts {
     const NAME: &'static str = "canon/type-intelligence";
     const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 }

@@ -53,7 +53,7 @@ impl BranchKey {
 
 /// Per-`ui.if` branch-key facts, one slot per branch in authored order.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct IfFacts {
+pub struct IfAnalysis {
     /// `branches[i]` is branch `i`'s extracted key, when it had one.
     pub branches: StdVec<Option<BranchKey>>,
 }
@@ -63,7 +63,7 @@ const _: () = {
     const fn assert_owned<T: 'static>() {}
     assert_owned::<BranchKey>();
     assert_owned::<BranchKeyKind>();
-    assert_owned::<IfFacts>();
+    assert_owned::<IfAnalysis>();
 };
 
 /// 64-bit footprints, guarded like every node-size assert (the wasm32
@@ -71,7 +71,7 @@ const _: () = {
 #[cfg(target_pointer_width = "64")]
 const _: () = {
     assert!(core::mem::size_of::<BranchKey>() == 48);
-    assert!(core::mem::size_of::<IfFacts>() == 24);
+    assert!(core::mem::size_of::<IfAnalysis>() == 24);
 };
 
 /// The attribute/binding surface of a branch's carrier op: the branch

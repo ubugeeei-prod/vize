@@ -9,7 +9,7 @@ use vize_l0::diag::{Severity, Stage};
 use vize_l2::op::Namespace;
 
 use vize_l1_to_l2::lower::Lowered;
-use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::analysis::pass_facts::L2Analyses;
 use vize_l2::walk::PageWalk;
 
 use super::buf::Buf;
@@ -30,14 +30,14 @@ pub(super) struct DomEmitObservation {
 /// Emit a DOM render function from an already-lowered (and typically
 /// transformed) L2 artifact under the shipped default options. `facts`
 /// is the transform product compounds compile from.
-pub fn emit_dom<P>(lowered: &Lowered<'_, P>, facts: &L2Facts) -> Result<DomEmit, EmitError> {
+pub fn emit_dom<P>(lowered: &Lowered<'_, P>, facts: &L2Analyses) -> Result<DomEmit, EmitError> {
     emit_dom_with_options(lowered, facts, &DomEmitOptions::DEFAULT)
 }
 
 /// [`emit_dom`] under explicit [`DomEmitOptions`].
 pub fn emit_dom_with_options<'f, P>(
     lowered: &'f Lowered<'_, P>,
-    facts: &'f L2Facts,
+    facts: &'f L2Analyses,
     options: &DomEmitOptions<'f>,
 ) -> Result<DomEmit, EmitError> {
     emit_dom_with_emit_budget(lowered, facts, options).map(|(emit, _)| emit)
@@ -45,7 +45,7 @@ pub fn emit_dom_with_options<'f, P>(
 
 pub(super) fn emit_dom_with_emit_budget<'f, P>(
     lowered: &'f Lowered<'_, P>,
-    facts: &'f L2Facts,
+    facts: &'f L2Analyses,
     options: &DomEmitOptions<'f>,
 ) -> Result<(DomEmit, u32), EmitError> {
     emit_dom_observed(lowered, facts, options, false, false, true)
@@ -54,7 +54,7 @@ pub(super) fn emit_dom_with_emit_budget<'f, P>(
 
 pub(super) fn emit_dom_observed<'f, P>(
     lowered: &'f Lowered<'_, P>,
-    facts: &'f L2Facts,
+    facts: &'f L2Analyses,
     options: &DomEmitOptions<'f>,
     strict_slot_params: bool,
     no_slotted: bool,
@@ -97,7 +97,7 @@ pub(super) fn emit_dom_observed<'f, P>(
         scopes: &lowered.artifact.scopes,
         wrappers: &lowered.artifact.branch_fragments,
         for_wrappers: &lowered.artifact.loop_fragments,
-        patch_facts: super::patch::PatchFactsTable::new(),
+        patch_facts: super::patch::PatchAnalysisTable::new(),
         walk: PageWalk::new(),
         scope_names: StdVec::new(),
         if_branch_key: 0,

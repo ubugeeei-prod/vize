@@ -1,10 +1,10 @@
 // Exercise witness formatting through the public renderer.
 // Test-only exemptions live outside the production source inventory.
 use vize::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
+use vize_l0::analysis::ids;
 use vize_l0::diag::{
     Advisory, Diagnostic, Exemption, Stage, WitnessChain, WitnessKey, WitnessLink,
 };
-use vize_l0::fact::ids;
 use vize_l0::pass::AnalysisId;
 use vize_l0::{Span, String};
 
