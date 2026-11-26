@@ -23,6 +23,9 @@ pub enum SetupContextViolationKind {
     ModuleLevelInject = 4,
     /// Module-level lifecycle hook - invalid, will throw
     ModuleLevelLifecycle = 5,
+    /// Module-level `useTemplateRef` - no instance to register the key on, so
+    /// the returned ref is never set
+    ModuleLevelTemplateRef = 6,
 }
 
 impl SetupContextViolationKind {
@@ -36,6 +39,7 @@ impl SetupContextViolationKind {
             Self::ModuleLevelProvide => "module-level-provide",
             Self::ModuleLevelInject => "module-level-inject",
             Self::ModuleLevelLifecycle => "module-level-lifecycle",
+            Self::ModuleLevelTemplateRef => "module-level-template-ref",
         }
     }
 
@@ -43,10 +47,11 @@ impl SetupContextViolationKind {
     #[inline]
     pub const fn severity(self) -> ViolationSeverity {
         match self {
-            // These will throw at runtime - error
-            Self::ModuleLevelProvide | Self::ModuleLevelInject | Self::ModuleLevelLifecycle => {
-                ViolationSeverity::Error
-            }
+            // These never work outside setup - error
+            Self::ModuleLevelProvide
+            | Self::ModuleLevelInject
+            | Self::ModuleLevelLifecycle
+            | Self::ModuleLevelTemplateRef => ViolationSeverity::Error,
             // CSRP risk - warning
             Self::ModuleLevelState => ViolationSeverity::Warning,
             // Memory leak risk - warning
@@ -71,6 +76,9 @@ impl SetupContextViolationKind {
             Self::ModuleLevelLifecycle => {
                 "Lifecycle hooks must be called inside setup() or <script setup>"
             }
+            Self::ModuleLevelTemplateRef => {
+                "useTemplateRef() must be called inside setup() or <script setup>; outside, the ref is never set"
+            }
         }
     }
 
@@ -94,6 +102,9 @@ impl SetupContextViolationKind {
 
             // Inject - invalid outside setup
             "inject" => Some(Self::ModuleLevelInject),
+
+            // Template ref - needs the instance its key is registered on
+            "useTemplateRef" => Some(Self::ModuleLevelTemplateRef),
 
             // Lifecycle hooks - invalid outside setup
             "onMounted" | "onUnmounted" | "onBeforeMount" | "onBeforeUnmount" | "onUpdated"
