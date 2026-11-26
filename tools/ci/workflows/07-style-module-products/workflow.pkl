@@ -67,7 +67,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify source positions and style attributes for arbitrary finite input"
-        run = ci.workflowScript("verify-source-coordinates-and-style-headers.sh")
+        run = ci.workflowProgram("verify-source-coordinates-and-style-headers")
       }
     }
   }
@@ -113,7 +113,7 @@ jobs {
           `package-manager-cache` = false
         }
       }
-      ci.command("Compare scoped output to Vue and replay the editor revisions", ci.workflowScript("check-scoped-components.sh"))
+      ci.command("Compare scoped output to Vue and replay the editor revisions", ci.workflowProgram("check-scoped-components"))
     }
   }
 }

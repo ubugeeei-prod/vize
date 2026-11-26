@@ -1,0 +1,47 @@
+# Compare scoped SCSS components with Vue's own compiler, then replay the editor's toolchain revisions against the same oracle.
+use $bin::{cargo, git, node, npm}
+use std::io::{from_file, to_file}
+use std::path::from_source
+
+let temp = $env::RUNNER_TEMP
+let oracle = $"$temp/scoped-oracle"
+let manifest = $"$temp/scoped-components"
+let styled_session = $"$temp/styled-session.json"
+let scoped_session = $"$temp/scoped-session.json"
+let maestro_features = "experimental-lexical-arrow-queries,experimental-recovered-literal-prefix,experimental-scoped-component-session,experimental-style-lint-products,micro-profiling"
+
+export NODE_PATH = $"$oracle/node_modules"
+let sass_version = node (from_source "read-pinned-sass-version.ts")
+npm install --prefix $oracle --no-audit --no-fund --ignore-scripts --save-exact \
+  sass@$sass_version \
+  @vue/compiler-sfc@3.5.35 \
+  @jridgewell/sourcemap-codec@1.6.0 \
+  postcss-selector-parser@7.1.6 \
+  vue@3.5.35
+export VIZE_SCSS_MANIFEST = manifest
+export VIZE_REQUIRE_REPOSITORY_SCSS = "1"
+git ls-files -z -- *.vue *.vue.txt *.scss | to_file $manifest
+cargo test --locked --profile ci-opt -p vize_atelier_sfc \
+  --features native-scoped-scss \
+  --test native_sfc_scss \
+  observed_scoped_components_match_published_style_and_render_products \
+  -- --ignored
+
+export VIZE_TOOLCHAIN_HISTORY = $"$temp/scoped-revisions"
+export VIZE_STYLED_SESSION_OUTPUT = styled_session
+export VIZE_SCOPED_SESSION_OUTPUT = scoped_session
+cargo test --locked --profile ci-opt -p vize_maestro \
+  --features $maestro_features \
+  --lib toolchain_session_from_one_open_buffer
+from_file $styled_session | node crates/vize_atelier_sfc/tests/component_scss/oracle.ts
+from_file $scoped_session | node crates/vize_atelier_sfc/tests/component_scss/oracle.ts
+node (from_source "check-style-revisions.ts")
+cargo test --locked --profile ci-opt -p vize_atelier_sfc \
+  --features bundler-block-products \
+  --test bundler_toolchain_session \
+  -- --ignored
+cargo test --locked --profile ci-opt \
+  --manifest-path crates/vize_incremental/providers/graph/Cargo.toml \
+  --test incremental \
+  original_template_graphs_follow_the_same_toolchain_session \
+  -- --ignored

@@ -1,0 +1,21 @@
+# Install the pinned Lean release and check the source-map coordinate and style-header theorems with the axioms each may use.
+use $bin::{curl, grep, sha256sum, tar, tee}
+use std::process::exec
+
+let lean_version = "4.33.1"
+let lean = $"lean-$lean_version-linux/bin/lean"
+let formal = $"$env::GITHUB_WORKSPACE/tests/formal"
+
+cd $env::RUNNER_TEMP {
+  curl -fsSL --retry 3 -o lean.tar.zst $"https://github.com/leanprover/lean4/releases/download/v$lean_version/lean-$lean_version-linux.tar.zst"
+  "890afd185370f85666025b883914ab4f4b339136f8c96167b69cfb62aecaf235  lean.tar.zst\n" | sha256sum -c
+  tar --zstd -xf lean.tar.zst
+  exec $lean ["-DwarningAsError=true", $"$formal/source-map/LineBreaks.lean"] | tee line-breaks.log
+  grep -Fx "'Davinci.SourceMap.LineBreaks.first_exact' does not depend on any axioms" line-breaks.log
+  grep -Fx "'Davinci.SourceMap.LineBreaks.last_exact' depends on axioms: [propext]" line-breaks.log
+  exec $lean ["-DwarningAsError=true", $"$formal/source-map/Coordinates.lean"] | tee theorem.log
+  grep -Fx "'Davinci.SourceMap.column_exact' depends on axioms: [propext, Quot.sound]" theorem.log
+  grep -Fx "'Davinci.SourceMap.diagnostic_range_rebased' depends on axioms: [propext, Quot.sound]" theorem.log
+  exec $lean ["-DwarningAsError=true", $"$formal/style-format/Header.lean"] | tee header.log
+  grep -Fx "'Davinci.StyleFormat.accepted_iff' depends on axioms: [propext, Classical.choice, Quot.sound]" header.log
+}

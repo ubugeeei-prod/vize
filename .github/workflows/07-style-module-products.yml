@@ -74,7 +74,7 @@ jobs:
           command: kani
           args: davinci/vize_l4/src/write/source_map/indexed/kani.rs --output-format=terse
       - name: Verify source positions and style attributes for arbitrary finite input
-        run: . "${{ env.VIZE_CI_FILES }}/verify-source-coordinates-and-style-headers.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-source-coordinates-and-style-headers.sh"
   nearest-line-starts:
     name: Prove nearest LSP line starts on ARM64
     runs-on: blacksmith-32vcpu-ubuntu-2404-arm
@@ -126,4 +126,4 @@ jobs:
           node-version-file: package.json
           package-manager-cache: false
       - name: Compare scoped output to Vue and replay the editor revisions
-        run: . "${{ env.VIZE_CI_FILES }}/check-scoped-components.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/check-scoped-components.sh"
