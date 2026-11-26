@@ -320,8 +320,8 @@ authoring form inside a JSX style block.
 
 Glyph formats JSX/TSX script content with the OXC parser and formatter. In `.vue` files,
 `<script lang="jsx">`, `<script lang="tsx">`, and `<script setup lang="tsx">` are parsed as JSX/TSX
-instead of falling back to plain TypeScript, so JSX children and TSX annotations are formatted as
-real syntax:
+instead of falling back to plain TypeScript, and builds lower that JSX with the standalone modules'
+`jsxMode`/`jsxCompat`. JSX children and TSX annotations are formatted as real syntax:
 
 ```vue
 <script setup lang="tsx">
@@ -340,9 +340,6 @@ const Card = ({ title, items }: CardProps) => (
 );
 </script>
 ```
-
-Builds lower the JSX in these script blocks too: the Vite plugin compiles it with the same
-`jsxMode` and `jsxCompat` options as standalone `.jsx`/`.tsx` modules.
 
 Standalone `.jsx`/`.tsx` modules are discovered by `vize fmt` alongside `.vue` files and formatted
 with the same JSX/TSX source-type handling:
