@@ -24,6 +24,7 @@ fn budget() -> usize {
 pub(super) fn start_for(files: usize) {
     let _ = rayon::ThreadPoolBuilder::new()
         .num_threads(workers_for(files, budget()))
+        .stack_size(crate::commands::WORKER_STACK_BYTES)
         .build_global();
 }
 

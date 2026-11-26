@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 use vize_l0::String as CartonString;
 use vize_l0::append;
 
-use super::files::{collect_files, is_default_ignored_story_path, is_story_file};
+use super::files::{collect_files, is_default_ignored_story_path, is_story_file, write_art_file};
 use csf::extract_csf;
 use emit::emit_art;
 
@@ -140,7 +140,7 @@ fn migrate_file(
                 message
             })?;
         }
-        fs::write(&target, result.content.as_str()).map_err(|error| {
+        write_art_file(&target, result.content.as_str()).map_err(|error| {
             let mut message = CartonString::from("failed to write file: ");
             append!(message, "{error}");
             message

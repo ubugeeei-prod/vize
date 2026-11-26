@@ -21,11 +21,14 @@
 //!
 //! Discovery ends at those project roots. Global executables require an
 //! explicit configuration or environment path; discovery does not run npm.
+//! A shared scratch directory such as `/tmp` is never probed: anyone can
+//! create a `node_modules` there.
 //!
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 mod packages;
+use crate::config::is_shared_scratch_directory;
 use packages::{
     find_node_modules_native, find_node_modules_tsrs, find_node_modules_wrapper, resolve_bin_shim,
     resolve_owned_launcher,
@@ -302,6 +305,9 @@ fn discover_in_walk_checked(
                 continue;
             }
             visited.push(dir);
+            if is_shared_scratch_directory(dir) {
+                continue;
+            }
             match probe_directory(dir) {
                 Ok(Some(Candidate::Native(path) | Candidate::Legacy(path))) => {
                     return Ok(Some(path));
@@ -331,6 +337,9 @@ fn discover_batch_in_walk_checked(
                 continue;
             }
             visited.push(dir);
+            if is_shared_scratch_directory(dir) {
+                continue;
+            }
             if let Some(path) = find_node_modules_tsrs(dir)? {
                 return Ok(Some(path));
             }

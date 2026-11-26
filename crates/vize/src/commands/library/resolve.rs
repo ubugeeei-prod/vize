@@ -112,6 +112,29 @@ fn valid_npm_package_name(package: &str) -> bool {
     segment(package)
 }
 
+/// Accept a version, a range or a dist-tag. A scheme or a path after the
+/// package name would make npm fetch from somewhere other than the registry.
+fn valid_npm_range(range: &str) -> bool {
+    !range.starts_with('-')
+        && range.bytes().all(|byte| {
+            byte.is_ascii_alphanumeric()
+                || matches!(
+                    byte,
+                    b'.' | b'-'
+                        | b'_'
+                        | b'~'
+                        | b'^'
+                        | b'<'
+                        | b'>'
+                        | b'='
+                        | b'|'
+                        | b'*'
+                        | b'+'
+                        | b' '
+                )
+        })
+}
+
 impl Origin {
     /// Parse a configured source; relative paths resolve against `base`.
     pub fn parse(source: &str, base: &Path) -> LibResult<Self> {
@@ -130,7 +153,7 @@ impl Origin {
                 ),
                 None => (String::from(spec), None),
             };
-            if !valid_npm_package_name(&package) {
+            if !valid_npm_package_name(&package) || !range.is_none_or(valid_npm_range) {
                 return Err(LibError::new(cstr!("invalid npm registry source {source}")));
             }
             return Ok(Self::Npm {
@@ -378,6 +401,31 @@ mod tests {
             "npm:@acme/../outside",
             "npm:--help",
             "npm:@acme//kit",
+        ] {
+            assert!(Origin::parse(source, base).is_err(), "{source}");
+        }
+    }
+
+    #[test]
+    fn npm_registry_source_takes_versions_ranges_and_tags_only() {
+        let base = Path::new("/project");
+        for source in [
+            "npm:vue@3.5.0",
+            "npm:vue@>=3.4 <4",
+            "npm:vue@^3 || ~2.7",
+            "npm:@acme/vue-kit@1.0.0-beta.1+build",
+            "npm:@acme/vue-kit@next",
+        ] {
+            assert!(Origin::parse(source, base).is_ok(), "{source}");
+        }
+        for source in [
+            "npm:vue@git+https://example.test/repo.git",
+            "npm:vue@https://example.test/vue.tgz",
+            "npm:vue@file:../outside",
+            "npm:vue@../outside",
+            "npm:vue@github:owner/repo",
+            "npm:vue@npm:other@1",
+            "npm:vue@--tag",
         ] {
             assert!(Origin::parse(source, base).is_err(), "{source}");
         }

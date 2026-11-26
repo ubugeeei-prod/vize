@@ -7,6 +7,7 @@ pub mod formatter_lint_plan;
     reason = "host config evaluation retains its existing std error and process strings"
 )]
 mod loader;
+pub(crate) use loader::shared_scratch::is_shared_scratch_directory;
 #[cfg(any(test, feature = "lint-glob"))]
 pub mod matcher;
 pub mod plugin_plan;
