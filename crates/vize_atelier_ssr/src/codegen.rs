@@ -120,6 +120,11 @@ pub struct SsrCodegenContext<'a> {
     pub(crate) temps: u32,
     /// Where the render body starts, so temp declarations land there.
     body_start: usize,
+    /// Directive names resolved through `_resolveDirective`, in first-use
+    /// order, each declared once as `_directive_<name>`.
+    resolved_directives: std::vec::Vec<String>,
+    /// Where asset declarations land: before the CSS-variable prelude.
+    assets_start: usize,
 }
 
 impl<'a> SsrCodegenContext<'a> {
@@ -166,6 +171,8 @@ impl<'a> SsrCodegenContext<'a> {
             source_map_filename,
             temps: 0,
             body_start: 0,
+            resolved_directives: std::vec::Vec::new(),
+            assets_start: 0,
         }
     }
 
@@ -226,6 +233,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
         self.push(") {\n");
         self.indent_level += 1;
+        self.assets_start = self.out.len();
 
         if let Some(css_vars) = &self.options.ssr_css_vars {
             self.push_indent();
@@ -245,6 +253,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.indent_level -= 1;
         self.push("}\n");
         self.declare_temps();
+        self.declare_directives();
 
         let preamble = self.build_preamble();
 

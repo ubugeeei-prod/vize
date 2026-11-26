@@ -25,50 +25,24 @@ enum Segment {
 }
 
 impl Emitter<'_, '_, '_, '_, '_, '_> {
-    /// A `v-bind` / `v-on` key: bare identifiers retain their original context
-    /// spelling; non-identifiers use the existing scope/binding-aware provider.
+    /// A `v-bind` / `v-on` key or a custom directive's dynamic argument. The
+    /// transform prefixes it like a value (`$setup.x` / `$props.x` under
+    /// binding metadata), so a name it leaves bare is a local or a global.
+    /// Only an unprefixed rewrite leaves a free name bare, and the walker
+    /// reads that name from `_ctx`.
     pub(super) fn dynamic_key(&self, name: &DynamicName<'_>) -> Result<String> {
         let DynamicName::Dynamic(expr) = name else {
             return Err(LegacyReason::Binding.into());
         };
-        let source = expr.source();
-        if is_valid_js_identifier(source)
-            && !matches!(source, "true" | "false" | "null" | "undefined")
-        {
-            return Ok(self.ctx_key(source));
-        }
         super::attrs::admit_dynamic_key(expr)?;
-        self.expr(expr, TransformContent::Padded)
-    }
-
-    /// A custom directive's dynamic argument. The transform prefixes it like
-    /// a value (`$setup.x` / `$props.x` under binding metadata), and the
-    /// legacy `dynamic_arg_to_string` then spells a still-bare identifier as
-    /// `_ctx.<name>`.
-    pub(super) fn directive_argument(&self, name: &DynamicName<'_>) -> Result<String> {
-        let DynamicName::Dynamic(expr) = name else {
-            return Err(LegacyReason::Binding.into());
-        };
-        super::attrs::admit_dynamic_key(expr)?;
-        let rewritten = self
-            .exprs
-            .expr(expr, TransformContent::Padded)
-            .map_err(|_| LegacyReason::ExpressionOrEncoding)?;
-        if rewritten.used_unref {
-            return Err(LegacyReason::ExpressionOrEncoding.into());
-        }
-        let text = rewritten.text;
-        if is_valid_js_identifier(&text)
+        let text = self.expr(expr, TransformContent::Padded)?;
+        if !self.exprs.prefixes_identifiers()
+            && is_valid_js_identifier(&text)
             && !matches!(text.as_str(), "true" | "false" | "null" | "undefined")
         {
             return Ok(self.ctx_key(&text));
         }
-        Ok(
-            crate::codegen::scope_prefix::strip_scope_prefixes_for_scoped_params(
-                &self.scoped_params,
-                &text,
-            ),
-        )
+        Ok(text)
     }
 
     fn ctx_key(&self, name: &str) -> String {
@@ -186,13 +160,10 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                         entries.push(component_prop_entry(&key, &value, false));
                     }
                     Some(name) => {
-                        let key = self.dynamic_key(name)?;
-                        let key = if bind.modifiers.contains(&"camel") {
-                            self.ctx.use_core_helper(RuntimeHelper::Camelize);
-                            cstr!("_camelize(({key}) || \"\")")
-                        } else {
-                            key
-                        };
+                        let mut key = self.dynamic_key(name)?;
+                        if bind.modifiers.contains(&"camel") {
+                            key = self.ctx.camelized_dynamic_key(&key);
+                        }
                         entries.push(component_prop_entry(&key, &value, true));
                     }
                 }

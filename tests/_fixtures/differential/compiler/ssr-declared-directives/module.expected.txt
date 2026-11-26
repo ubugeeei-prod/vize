@@ -1,0 +1,32 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderList as _ssrRenderList, ssrGetDirectiveProps as _ssrGetDirectiveProps } from "@vue/server-renderer"
+import { resolveDirective as _resolveDirective, mergeProps as _mergeProps } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  const _directive_focus = _resolveDirective("focus")
+  const _directive_tip = _resolveDirective("tip")
+  _push(`<!--[--><input${_ssrRenderAttrs(_mergeProps({ style: (($setup.ok) ? null : { display: "none" }) }, _ssrGetDirectiveProps(_ctx, _directive_focus)))}><div${_ssrRenderAttrs(_ssrGetDirectiveProps(_ctx, _directive_focus, $setup.ok, "a", { b: true }))}>x</div>`)
+  _push(`<!--[-->`)
+  _ssrRenderList($setup.items, (i) => {
+    _push(`<span${_ssrRenderAttrs(_mergeProps({ key: i }, _ssrGetDirectiveProps(_ctx, _directive_focus), _ssrGetDirectiveProps(_ctx, _directive_tip, i)))}>${_ssrInterpolate(i)}</span>`)
+  })
+  _push(`<!--]-->`)
+  _push(`<!--]-->`)
+}
+
+const ok = true;
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+const items = [1, 2];
+
+const __returned__ = { ok, items }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

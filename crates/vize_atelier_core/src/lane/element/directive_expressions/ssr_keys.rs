@@ -8,8 +8,12 @@ use crate::{
 use vize_l0::{Allocator, FxHashMap};
 
 #[test]
-fn nonidentifier_arguments_use_existing_context_setup_global_and_scope_rules() {
+fn dynamic_arguments_use_existing_context_setup_global_and_scope_rules() {
     for (argument, expected, local, setup) in [
+        ("key", "_ctx.key", false, false),
+        ("keys", "$setup.keys", false, true),
+        ("row", "row", true, false),
+        ("Math", "Math", false, false),
         ("keys['name]']", "_ctx.keys['name]']", false, false),
         (
             "keys[indices[index]]",
@@ -213,20 +217,12 @@ fn actual_for_and_slot_traversal_keep_locals_and_do_not_leak_them_to_owners_or_s
 }
 
 #[test]
-fn literal_and_bare_ssr_keys_and_default_dom_vapor_carriers_keep_original_content() {
+fn literal_ssr_keys_and_default_dom_vapor_carriers_keep_original_content() {
     for (ssr, vapor, arguments) in [
         (
             true,
             false,
-            vec![
-                "key",
-                "true",
-                "false",
-                "null",
-                "undefined",
-                "0",
-                "'literal'",
-            ],
+            vec!["true", "false", "null", "undefined", "0", "'literal'"],
         ),
         (false, false, vec!["keys[index]", "key", "'literal'"]),
         (false, true, vec!["keys[index]", "key", "'literal'"]),
