@@ -248,7 +248,7 @@ jobs {
           REQUESTED_TARGET_SHA = "${{ inputs.target_sha }}"
           RUN_HEAD_SHA = "${{ github.sha }}"
         }
-        run = ci.workflowScript("validate-optional-target-sha.sh")
+        run = ci.workflowProgram("validate-optional-target-sha")
       }
       new Dynamic {
         name = "Begin Testbox"

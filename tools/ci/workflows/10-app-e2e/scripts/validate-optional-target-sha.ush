@@ -1,0 +1,15 @@
+# Require a requested target_sha to be a full commit SHA that the dispatched ref points at.
+use std::process::exit
+use std::regex::is_match
+
+let requested = $env::REQUESTED_TARGET_SHA
+let run_head = $env::RUN_HEAD_SHA
+
+if !(is_match $requested "^[0-9a-f]{40}$") {
+  echo "::error title=Invalid target_sha::target_sha must be a full lowercase 40-character commit SHA"
+  exit 1
+}
+if run_head != requested {
+  echo $"::error title=Dispatch ref mismatch::--ref must point at $requested (got $run_head)"
+  exit 1
+}
