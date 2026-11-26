@@ -41,7 +41,7 @@ jobs:
           persist-credentials: false
       # The runner's rustup installs the toolchain pinned in rust-toolchain.toml.
       - name: Install the repository Rust toolchain
-        run: . "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-the-repository-rust-toolchain.sh"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -59,7 +59,7 @@ jobs:
       - name: Record the source-built server identity
         run: node tests/editor-conformance/server-artifact.ts write target/ci/vize target/ci/server.json "$GITHUB_SHA"
       - name: Record the real server source and executable identity
-        run: . "${{ env.VIZE_CI_FILES }}/record-the-real-server-source-and-executable-identity.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/record-the-real-server-source-and-executable-identity.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: vize-server
@@ -98,29 +98,29 @@ jobs:
           name: vize-server
           path: ${{ runner.temp }}/vize-server
       - name: Verify the source-built server
-        run: . "${{ env.VIZE_CI_FILES }}/verify-the-source-built-server.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-the-source-built-server.sh"
 
       - name: Install pinned Neovim
         if: matrix.client == 'neovim'
         env:
           NVIM_SHA256: a74740047e73b2b380d63a474282814063d10650cd6cc95efa16d1713c7e616c
           NVIM_VERSION: v0.11.4
-        run: . "${{ env.VIZE_CI_FILES }}/install-pinned-neovim.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-pinned-neovim.sh"
 
       - name: Exercise both packaged Neovim headless suites
         if: matrix.client == 'neovim'
-        run: . "${{ env.VIZE_CI_FILES }}/exercise-both-packaged-neovim-headless-suites.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/exercise-both-packaged-neovim-headless-suites.sh"
 
       - name: Install pinned Helix
         if: matrix.client == 'helix'
         env:
           HELIX_VERSION: 25.07.1
           HELIX_SHA256: 3f08e63ecd388fff657ad39722f88bb03dcf326f1f2da2700d99e1dc40ab2e8b
-        run: . "${{ env.VIZE_CI_FILES }}/install-pinned-helix.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-pinned-helix.sh"
 
       - name: Install the repository Rust toolchain for VS Code packaging
         if: matrix.client == 'vscode'
-        run: . "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain-for-vs-code-packaging.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-the-repository-rust-toolchain-for-vs-code-packaging.sh"
       - name: Setup Rust Script for VS Code packaging
         if: matrix.client == 'vscode'
         uses: ./.github/actions/setup-rust-script
@@ -131,7 +131,7 @@ jobs:
         if: matrix.client == 'vscode'
         env:
           VIZE_TEST_VSCODE_VERSION: "1.107.1"
-        run: . "${{ env.VIZE_CI_FILES }}/prepare-pinned-vs-code.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/prepare-pinned-vs-code.sh"
 
       - name: Exercise existing VS Code configuration and lifecycle contracts
         if: matrix.client == 'vscode'
@@ -140,14 +140,14 @@ jobs:
         run: xvfb-run -a vp run --workspace-root test:vscode-extension:host
       - name: Hydrate pinned create-vue fixture for the original real host suite
         if: matrix.client == 'vscode'
-        run: . "${{ env.VIZE_CI_FILES }}/hydrate-pinned-create-vue-fixture-for-the-original-real-host-suite.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/hydrate-pinned-create-vue-fixture-for-the-original-real-host-suite.sh"
       - name: Exercise original real VS Code authoring contracts
         if: matrix.client == 'vscode'
         env:
           VIZE_TEST_VSCODE_VERSION: "1.107.1"
           VIZE_LSP_TRACE_NATIVE_SCOPE: "1"
           VIZE_RICH_CUSTODY_OUTPUT: ${{ runner.temp }}/rich-host-evidence/public-api.json
-        run: . "${{ env.VIZE_CI_FILES }}/exercise-original-real-vs-code-authoring-contracts.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/exercise-original-real-vs-code-authoring-contracts.sh"
       - name: Retain VS Code configuration and lifecycle evidence
         if: ${{ always() && matrix.client == 'vscode' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -171,7 +171,7 @@ jobs:
       - name: Play the TS-45 scenario
         env:
           VIZE_TEST_VSCODE_VERSION: "1.107.1"
-        run: . "${{ env.VIZE_CI_FILES }}/play-the-ts-45-scenario.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/play-the-ts-45-scenario.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -184,7 +184,7 @@ jobs:
 
       - name: Hydrate the pinned full-host fixture
         if: matrix.client == 'vscode'
-        run: . "${{ env.VIZE_CI_FILES }}/hydrate-pinned-create-vue-fixture-for-the-original-real-host-suite.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/hydrate-pinned-create-vue-fixture-for-the-original-real-host-suite.sh"
       - name: Run the complete packaged VS Code authoring oracle
         if: matrix.client == 'vscode'
         working-directory: editors/vscode
@@ -196,7 +196,7 @@ jobs:
         run: xvfb-run -a node test/run-extension-host-real.mjs
       - name: Verify the full host used this source-built binary
         if: matrix.client == 'vscode'
-        run: . "${{ env.VIZE_CI_FILES }}/verify-the-full-host-used-this-source-built-binary.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-the-full-host-used-this-source-built-binary.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() && matrix.client == 'vscode' }}
         with:
@@ -237,17 +237,17 @@ jobs:
           name: vize-server
           path: ${{ runner.temp }}/vize-server
       - name: Verify the source-built server
-        run: . "${{ env.VIZE_CI_FILES }}/verify-the-source-built-server-2.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-the-source-built-server-2.sh"
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install the actual client
         env:
           CLIENT: ${{ matrix.client }}
-        run: . "${{ env.VIZE_CI_FILES }}/install-the-actual-client.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-the-actual-client.sh"
       - name: Install pinned vim-lsp
         if: matrix.client == 'vim'
         env:
           VIM_LSP_COMMIT: 474c656659b5fb51eec6770309e0211c8aa49b5b
-        run: . "${{ env.VIZE_CI_FILES }}/install-pinned-vim-lsp.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-pinned-vim-lsp.sh"
       - name: Qualify serialized profiles against the verified server
         run: node tests/editor-conformance/named-profiles.ts "${{ matrix.client }}" "${RUNNER_TEMP}/configuration-client/named-profiles"
       - name: Exercise project configuration through the actual client
@@ -256,7 +256,7 @@ jobs:
           VIZE_TEST_VIM_LSP_PATH: ${{ runner.temp }}/vim-lsp
           VIZE_VIM_ARTIFACT_DIR: ${{ runner.temp }}/configuration-client
           VIZE_EMACS_ARTIFACT_DIR: ${{ runner.temp }}/configuration-client
-        run: . "${{ env.VIZE_CI_FILES }}/exercise-project-configuration-through-the-actual-client.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/exercise-project-configuration-through-the-actual-client.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

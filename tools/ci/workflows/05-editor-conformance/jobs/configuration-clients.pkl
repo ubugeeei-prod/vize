@@ -35,19 +35,19 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Verify the source-built server"
-    run = #". "${{ env.VIZE_CI_FILES }}/verify-the-source-built-server-2.sh""#
+    run = ci.workflowProgram("verify-the-source-built-server-2")
   }
   ci.use("./.github/actions/setup-ubuntu-archive")
   new Dynamic {
     name = "Install the actual client"
     env { CLIENT = "${{ matrix.client }}" }
-    run = #". "${{ env.VIZE_CI_FILES }}/install-the-actual-client.sh""#
+    run = ci.workflowProgram("install-the-actual-client")
   }
   new Dynamic {
     name = "Install pinned vim-lsp"
     `if` = "matrix.client == 'vim'"
     env { VIM_LSP_COMMIT = "474c656659b5fb51eec6770309e0211c8aa49b5b" }
-    run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-vim-lsp.sh""#
+    run = ci.workflowProgram("install-pinned-vim-lsp")
   }
   new Dynamic {
     name = "Qualify serialized profiles against the verified server"
@@ -61,7 +61,7 @@ steps = new Listing {
       VIZE_VIM_ARTIFACT_DIR = "${{ runner.temp }}/configuration-client"
       VIZE_EMACS_ARTIFACT_DIR = "${{ runner.temp }}/configuration-client"
     }
-    run = #". "${{ env.VIZE_CI_FILES }}/exercise-project-configuration-through-the-actual-client.sh""#
+    run = ci.workflowProgram("exercise-project-configuration-through-the-actual-client")
   }
   new Dynamic {
     uses = ci.uploadArtifact

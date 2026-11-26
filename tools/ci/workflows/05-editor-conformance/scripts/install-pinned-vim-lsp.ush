@@ -1,0 +1,12 @@
+# Check out vim-lsp at its pinned commit, and refuse any other.
+use $bin::{git}
+
+let checkout = $"$env::RUNNER_TEMP/vim-lsp"
+
+git init $checkout
+git -C $checkout remote add origin https://github.com/prabirshrestha/vim-lsp.git
+git -C $checkout fetch --depth 1 origin $env::VIM_LSP_COMMIT
+git -C $checkout checkout --detach FETCH_HEAD
+if (git -C $checkout rev-parse HEAD) != $env::VIM_LSP_COMMIT {
+  fail 1 $"vim-lsp is not at the pinned commit $env::VIM_LSP_COMMIT"
+}

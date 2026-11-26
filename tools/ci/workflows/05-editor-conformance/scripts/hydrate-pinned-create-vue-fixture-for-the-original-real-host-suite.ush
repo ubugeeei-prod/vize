@@ -1,0 +1,9 @@
+# Check out the create-vue fixture at the commit this revision pins, and refuse any other.
+use $bin::{git}
+
+let fixture = "tests/_fixtures/_git/create-vue"
+
+git submodule update --init --force --depth 1 -- $fixture
+if (git rev-parse $"HEAD:$fixture") != (git -C $fixture rev-parse HEAD) {
+  fail 1 $"$fixture is not at the commit this revision pins"
+}

@@ -291,8 +291,9 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
   assert.ok(steps[packageExtension].run);
   assert.match(
     steps[packageExtension].run.trim(),
-    /xvfb-run -a vp run --workspace-root test:vscode-extension:host-real$/u,
+    /xvfb_run -a vp run --workspace-root test:vscode-extension:host-real$/u,
   );
+  assert.match(steps[packageExtension].run, /"xvfb-run" as xvfb_run/u);
   assert.doesNotMatch(steps[packageExtension].run, /lsp-tap|rich-host-tap/);
   assert.match(steps[packageExtension].run, /consumed-server\.sha256/);
   const producerSteps = workflow.jobs.server.steps;
@@ -304,7 +305,10 @@ test("CI runs every client at the editor-host-smoke pins and requires all four r
     (step: { name?: string }) =>
       step.name === "Record the real server source and executable identity",
   );
-  assert.match(receipt.run, /test "\$\(git rev-parse HEAD\)" = "\$\{GITHUB_SHA\}"/);
+  assert.match(
+    receipt.run,
+    /let source = git rev-parse HEAD\nif \$source != \$env::GITHUB_SHA \{\n {2}fail 1 /u,
+  );
   const verify = steps.find((step) => step.name === "Verify the source-built server")?.run;
   assert.ok(verify);
   assert.match(verify, /sha256sum --check vize\.sha256/);

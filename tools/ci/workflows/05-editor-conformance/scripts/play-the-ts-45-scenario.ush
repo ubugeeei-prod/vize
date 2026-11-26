@@ -1,0 +1,10 @@
+# Play the TS-45 scenario through the matrix's client; VS Code needs a virtual display.
+use $bin::{node, "xvfb-run" as xvfb_run}
+
+let out = $"$env::RUNNER_TEMP/ts45"
+
+if $env::CLIENT == "vscode" {
+  xvfb_run -a node tests/editor-conformance/run.ts $env::CLIENT --out $out
+} else {
+  node tests/editor-conformance/run.ts $env::CLIENT --out $out
+}

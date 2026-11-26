@@ -1,0 +1,19 @@
+# Install the pinned Helix release, verified by its digest, and point the suites at it.
+mod "../../../lib/github.ush" as github
+use $bin::{bash, tar}
+use std::fs::mkdir_p
+use std::process::exec
+
+let release = $"helix-${env::HELIX_VERSION}-x86_64-linux.tar.xz"
+let archive = $"$env::RUNNER_TEMP/$release"
+let helix = $"$env::RUNNER_TEMP/helix"
+
+bash .github/actions/vscode-host-smoke/download-artifact.sh \
+  $"https://github.com/helix-editor/helix/releases/download/${env::HELIX_VERSION}/$release" \
+  $archive \
+  $env::HELIX_SHA256
+mkdir_p $helix
+tar -xJf $archive -C $helix --strip-components=1
+github::export_env VIZE_TEST_HELIX_PATH $"$helix/hx"
+github::export_env HELIX_RUNTIME $"$helix/runtime"
+exec $"$helix/hx" ["--version"]

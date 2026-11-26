@@ -1,0 +1,12 @@
+# Run the real VS Code authoring contracts, first keeping which server and harness they exercise.
+use $bin::{cp, git, sha256sum, "xvfb-run" as xvfb_run}
+use std::fs::mkdir_p
+use std::io::to_file
+
+let evidence = $"$env::RUNNER_TEMP/rich-host-evidence"
+
+mkdir_p $evidence
+cp $"$env::RUNNER_TEMP/vize-server/vize-producer.txt" $"$evidence/"
+sha256sum $env::VIZE_SERVER_PATH | to_file $"$evidence/consumed-server.sha256"
+git rev-parse HEAD | to_file $"$evidence/harness-sha.txt"
+xvfb_run -a vp run --workspace-root test:vscode-extension:host-real

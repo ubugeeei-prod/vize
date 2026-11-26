@@ -1,0 +1,7 @@
+# Check that the full VS Code host ran the server this commit built, and score its result.
+use $bin::{node}
+
+node tests/editor-conformance/server-artifact.ts scorecard \
+  $"$env::RUNNER_TEMP/vize-server/server.json" \
+  $"$env::RUNNER_TEMP/vscode-full-host/host-result.json" \
+  $env::GITHUB_SHA

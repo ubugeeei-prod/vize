@@ -1,0 +1,9 @@
+# Verify the downloaded server against its manifest for this commit, and hand its path to later steps.
+mod "../../../lib/github.ush" as github
+use $bin::{chmod, node}
+
+let server = $"$env::RUNNER_TEMP/vize-server"
+
+node tests/editor-conformance/server-artifact.ts verify $"$server/vize" $"$server/server.json" $env::GITHUB_SHA
+chmod +x $"$server/vize"
+github::export_env VIZE_SERVER_PATH $"$server/vize"

@@ -1,0 +1,12 @@
+# Exercise project configuration through the matrix's real client, then bind its receipt to the verified server.
+use $bin::{node}
+
+if $env::CLIENT == "vim" {
+  node tools/support/compat/vim-vize/run-config-server.ts
+} else {
+  node tools/support/compat/emacs-vize/run-real-server.ts
+}
+node tests/editor-conformance/server-artifact.ts host \
+  $"$env::RUNNER_TEMP/vize-server/server.json" \
+  $"$env::RUNNER_TEMP/configuration-client/receipt.json" \
+  $env::GITHUB_SHA

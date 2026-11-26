@@ -124,7 +124,7 @@ test("CI runs all real-server editor scenarios from one built server binary", ()
   assert.ok(
     workflow.jobs.conformance.steps.some(
       (step: any) =>
-        step.run?.includes("server-artifact.ts scorecard") && step.run.includes('"$GITHUB_SHA"'),
+        step.run?.includes("server-artifact.ts scorecard") && step.run.includes("$env::GITHUB_SHA"),
     ),
   );
   const retention = workflow.jobs.conformance.steps.find(
@@ -217,10 +217,10 @@ test("CI runs both headless editor specs", () => {
   const commands = headless.run.split("\n").map((line) => line.trim());
   let previousCommand = -1;
   for (const command of [
-    "set -euo pipefail",
-    'PATH="$(dirname "${VIZE_TEST_NVIM_PATH}"):$PATH"',
-    "export PATH",
-    'test "$(command -v nvim)" = "${VIZE_TEST_NVIM_PATH}"',
+    "let pinned = $env::VIZE_TEST_NVIM_PATH",
+    'export PATH = $"${dirname $pinned}:$env::PATH"',
+    "if (command -v nvim) != $pinned {",
+    'fail 1 $"The nvim on PATH is not the pinned $pinned"',
     "command -v nvim",
     "nvim --version | head -1",
     "vp run --workspace-root test:nvim-extension:headless",

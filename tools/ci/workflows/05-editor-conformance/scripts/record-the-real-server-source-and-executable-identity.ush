@@ -1,0 +1,20 @@
+# Record the source, toolchain and recipe that built the server, and the digest of the binary.
+use $bin::{cargo, git, rustc, sha256sum}
+use std::io::to_file
+
+fn producer_record(source: String) -> () {
+  echo $"producer=$source"
+  echo "recipe=cargo build --profile ci -p vize"
+  rustc --version --verbose
+  cargo --version
+  sha256sum rust-toolchain.toml Cargo.lock target/ci/vize
+}
+
+let source = git rev-parse HEAD
+if $source != $env::GITHUB_SHA {
+  fail 1 $"The checkout is $source, not the commit under test $env::GITHUB_SHA"
+}
+producer_record $source | to_file target/ci/vize-producer.txt
+cd "target/ci" {
+  sha256sum vize | to_file vize.sha256
+}

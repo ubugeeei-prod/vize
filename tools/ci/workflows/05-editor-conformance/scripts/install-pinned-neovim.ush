@@ -1,0 +1,15 @@
+# Install the pinned Neovim release, verified by its digest, and point the suites at it.
+mod "../../../lib/github.ush" as github
+use $bin::{bash, head, tar}
+use std::process::exec
+
+let archive = $"$env::RUNNER_TEMP/nvim.tar.gz"
+let nvim = $"$env::RUNNER_TEMP/nvim-linux-x86_64/bin/nvim"
+
+bash .github/actions/vscode-host-smoke/download-artifact.sh \
+  $"https://github.com/neovim/neovim/releases/download/${env::NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
+  $archive \
+  $env::NVIM_SHA256
+tar -C $env::RUNNER_TEMP -xzf $archive
+github::export_env VIZE_TEST_NVIM_PATH $nvim
+exec $nvim ["--version"] | head -1

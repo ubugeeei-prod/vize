@@ -1,0 +1,13 @@
+# Run both packaged Neovim headless suites with the pinned Neovim first on PATH.
+use $bin::{command, head, nvim, vp}
+use std::path::dirname
+
+let pinned = $env::VIZE_TEST_NVIM_PATH
+
+export PATH = $"${dirname $pinned}:$env::PATH"
+if (command -v nvim) != $pinned {
+  fail 1 $"The nvim on PATH is not the pinned $pinned"
+}
+command -v nvim
+nvim --version | head -1
+vp run --workspace-root test:nvim-extension:headless

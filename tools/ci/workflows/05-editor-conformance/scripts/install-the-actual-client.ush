@@ -1,0 +1,10 @@
+# Install the terminal build of the matrix's real client from the Ubuntu archive.
+use $bin::{sudo, "vize-ci-apt-retry" as apt_retry}
+
+let client_package = match $env::CLIENT {
+  "vim" => "vim-nox"
+  _ => "emacs-nox"
+}
+
+apt_retry sudo apt-get update
+apt_retry sudo apt-get install -y $client_package

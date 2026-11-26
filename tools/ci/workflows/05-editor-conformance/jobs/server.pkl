@@ -14,7 +14,7 @@ steps = new Listing {
   // The runner's rustup installs the toolchain pinned in rust-toolchain.toml.
   new Dynamic {
     name = "Install the repository Rust toolchain"
-    run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh""#
+    run = ci.workflowProgram("install-the-repository-rust-toolchain")
   }
   ci.wild()
   new Dynamic {
@@ -39,7 +39,7 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Record the real server source and executable identity"
-    run = #". "${{ env.VIZE_CI_FILES }}/record-the-real-server-source-and-executable-identity.sh""#
+    run = ci.workflowProgram("record-the-real-server-source-and-executable-identity")
   }
   new Dynamic {
     uses = ci.uploadArtifact
