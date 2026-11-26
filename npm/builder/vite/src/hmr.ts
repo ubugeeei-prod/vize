@@ -68,10 +68,40 @@ export function detectHmrUpdateType(
 }
 
 /**
+ * The custom event a hot update sends, before Vite's own update, with the HMR
+ * ids of the SFCs whose save changed only their template.
+ */
+export const VIZE_RERENDER_EVENT = "vize:rerender";
+
+/**
+ * The compiled module keeps the update type of the save that produced it, but
+ * the same code runs again whenever an import changes: an edited composable
+ * re-executes the SFC with the cached output, and a rerender would keep the
+ * setup state the old composable computed. Like @vitejs/plugin-vue, the
+ * module only rerenders when the update that runs it is the save of this SFC.
+ * The previous instance's listener records that, and this instance reads it
+ * once, so any later execution reloads the component.
+ */
+function rerenderOnlyForItsOwnSave(): string {
+  return `
+if (import.meta.hot) {
+  const rerenderRequested = import.meta.hot.data.vizeRerender === true;
+  import.meta.hot.data.vizeRerender = false;
+  if (!rerenderRequested && _sfc_main.__hmrUpdateType === "template-only") {
+    _sfc_main.__hmrUpdateType = "full-reload";
+  }
+  import.meta.hot.on(${JSON.stringify(VIZE_RERENDER_EVENT)}, (data) => {
+    import.meta.hot.data.vizeRerender = data.ids.includes(_sfc_main.__hmrId);
+  });
+}
+`;
+}
+
+/**
  * Generate HMR-aware code output based on update type.
  */
 export function generateHmrCode(scopeId: string, updateType: HmrUpdateType): string {
-  return generateViteHmrCode(scopeId, updateType);
+  return `${generateViteHmrCode(scopeId, updateType)}${rerenderOnlyForItsOwnSave()}`;
 }
 
 /**

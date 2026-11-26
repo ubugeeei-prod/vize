@@ -86,6 +86,17 @@ if (import.meta.hot) {
     __VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId, _sfc_main);
   }
 }
+if (import.meta.hot) {
+  const rerenderRequested = import.meta.hot.data.vizeRerender === true;
+  import.meta.hot.data.vizeRerender = false;
+  if (!rerenderRequested && _sfc_main.__hmrUpdateType === "template-only") {
+    _sfc_main.__hmrUpdateType = "full-reload";
+  }
+  import.meta.hot.on("vize:rerender", (data) => {
+    import.meta.hot.data.vizeRerender = data.ids.includes(_sfc_main.__hmrId);
+  });
+}
+
 `;
 
 exports[`generateOutput snapshots production extracted plain CSS 1`] = `
@@ -148,6 +159,17 @@ if (import.meta.hot) {
     __VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId, _sfc_main);
   }
 }
+if (import.meta.hot) {
+  const rerenderRequested = import.meta.hot.data.vizeRerender === true;
+  import.meta.hot.data.vizeRerender = false;
+  if (!rerenderRequested && _sfc_main.__hmrUpdateType === "template-only") {
+    _sfc_main.__hmrUpdateType = "full-reload";
+  }
+  import.meta.hot.on("vize:rerender", (data) => {
+    import.meta.hot.data.vizeRerender = data.ids.includes(_sfc_main.__hmrId);
+  });
+}
+
 `;
 
 exports[`resolveCssImports snapshots RegExp alias URL resolution 1`] = `
