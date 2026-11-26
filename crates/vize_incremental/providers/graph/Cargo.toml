@@ -19,6 +19,11 @@ vize_l2 = { path = "../../../../davinci/vize_l2" }
 vize_l2_to_l3 = { path = "../../../../davinci/vize_l2_to_l3", features = ["graph-queries"] }
 vize_l3 = { path = "../../../../davinci/vize_l3", features = ["graph-queries"] }
 
+[lints.rust]
+# The Creusot proof package compiles `src/recovery/positions/window.rs` with
+# `cfg(creusot)` (docs/davinci/decisions/2026-11-17-creusot.md).
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(creusot)'] }
+
 [dev-dependencies]
 davinci_harness = { path = "../../../../tools/benchmarks/crates/davinci_harness" }
 

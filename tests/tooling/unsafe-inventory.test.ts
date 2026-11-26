@@ -6,8 +6,9 @@ import { fileURLToPath } from "node:url";
 import { parse as parseYaml } from "yaml";
 
 // docs/davinci/decisions/2026-11-24-unsafe-model-checking.md: every `unsafe`
-// token in product Rust (the module trees of crates/*/src and davinci/*/src,
-// without `#[cfg(test)]` modules) is a row of the inventory, every Kani
+// token in product Rust (the module trees of crates/*/src, davinci/*/src and
+// the provider packages crates/*/providers/*/src, without `#[cfg(test)]`
+// modules) is a row of the inventory, every Kani
 // harness the inventory names exists and runs in the Davinci Kani workflow, and
 // every Creusot proof it names sits in a kernel the Davinci Creusot workflow
 // replays.
@@ -118,17 +119,30 @@ function productFiles(): Map<string, string> {
       visit(target, isDirOwner ? path.dirname(target) : target.slice(0, -3));
     });
   };
-  for (const group of ["crates", "davinci"]) {
-    for (const crate of fs.readdirSync(path.join(repoRoot, group)).sort()) {
-      const src = path.join(repoRoot, group, crate, "src");
-      for (const root of ["lib.rs", "main.rs"]) {
-        if (fs.existsSync(path.join(src, root))) visit(path.join(src, root), src);
-      }
-      const bin = path.join(src, "bin");
-      if (fs.existsSync(bin)) {
-        for (const entry of fs.readdirSync(bin).filter((name) => name.endsWith(".rs"))) {
-          visit(path.join(bin, entry), path.join(bin, entry.slice(0, -3)));
-        }
+  const packages = ["crates", "davinci"].flatMap((group) =>
+    fs
+      .readdirSync(path.join(repoRoot, group))
+      .sort()
+      .flatMap((crate) => {
+        const providers = path.join(repoRoot, group, crate, "providers");
+        const nested = fs.existsSync(providers)
+          ? fs
+              .readdirSync(providers)
+              .sort()
+              .map((provider) => path.join(providers, provider))
+          : [];
+        return [path.join(repoRoot, group, crate), ...nested];
+      }),
+  );
+  for (const dir of packages) {
+    const src = path.join(dir, "src");
+    for (const root of ["lib.rs", "main.rs"]) {
+      if (fs.existsSync(path.join(src, root))) visit(path.join(src, root), src);
+    }
+    const bin = path.join(src, "bin");
+    if (fs.existsSync(bin)) {
+      for (const entry of fs.readdirSync(bin).filter((name) => name.endsWith(".rs"))) {
+        visit(path.join(bin, entry), path.join(bin, entry.slice(0, -3)));
       }
     }
   }
