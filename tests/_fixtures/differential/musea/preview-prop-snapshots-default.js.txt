@@ -357,6 +357,32 @@ function renderError(title, error) {
 
 
 
+function __museaDeclaredProps(component, declared = new Set()) {
+  const options = typeof component === 'function'
+    ? component.options || component.__vccOpts || component
+    : component;
+  if (!options) return declared;
+  for (const name of Array.isArray(options.props) ? options.props : Object.keys(options.props || {})) {
+    declared.add(__museaCamelize(name));
+  }
+  for (const mixin of options.mixins || []) __museaDeclaredProps(mixin, declared);
+  return __museaDeclaredProps(options.extends, declared);
+}
+
+function __museaCamelize(name) {
+  return String(name).replace(/-(\w)/g, (_, letter) => letter.toUpperCase());
+}
+
+function __museaRenderedProps(component, record) {
+  const declared = __museaDeclaredProps(component);
+  return Object.fromEntries(Object.entries(record).filter(([name]) =>
+    declared.has(__museaCamelize(name)) ||
+    (/^[\p{ID_Start}$_][\p{ID_Continue}$-]*$/u.test(name) &&
+      !/^on/i.test(name) &&
+      !/^(innerHTML|outerHTML|srcdoc)$/i.test(name))
+  ));
+}
+
 window.__museaSetProps = (props, attrs = {}) => {
   propsOverride.value = { ...props };
   attrsOverride.value = { ...attrs };
@@ -421,7 +447,7 @@ async function remountWithProps(Component) {
         for (const [name, content] of Object.entries(slotsOverride)) {
           if (content) slotFns[name] = () => h('span', String(content));
         }
-        return h(Component, { ...attrsOverride.value, ...propsOverride.value }, slotFns);
+        return h(Component, __museaRenderedProps(Component, { ...attrsOverride.value, ...propsOverride.value }), slotFns);
       };
     }
   });
