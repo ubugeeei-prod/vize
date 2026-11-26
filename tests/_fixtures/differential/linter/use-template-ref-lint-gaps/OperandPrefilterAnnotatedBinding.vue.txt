@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import { onMounted, ref, useTemplateRef, type ShallowRef } from 'vue'
+
+const count = ref(0)
+count.value++
+const el: Readonly<ShallowRef<HTMLInputElement | null>> = useTemplateRef('el')
+onMounted(() => {
+  if (el) {
+    el.focus()
+  }
+})
+</script>
+
+<template>
+  <input ref="el" :value="count">
+</template>

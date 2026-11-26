@@ -366,3 +366,45 @@ fn real_app_loop_shadow_does_not_hide_a_true_ref_operand() {
         (start, start + 5)
     );
 }
+
+// --- Auto-imported (unbound) Vue factories ---
+
+fn lint_without_imports(source: &str) -> ScriptLintResult {
+    let mut linter = ScriptLinter::new();
+    linter.add_rule(Box::new(NoRefAsOperand));
+    linter.lint(source, 0)
+}
+
+#[test]
+fn unbound_factories_are_the_auto_imported_vue_ones() {
+    for source in [
+        "const el = useTemplateRef('el')\nif (el) {}",
+        "const count = ref(0)\nconsole.log(count + 1)",
+        "const double = computed(() => 2)\nconst next = double + 1",
+    ] {
+        assert_eq!(lint_without_imports(source).error_count, 1, "{source}");
+    }
+}
+
+#[test]
+fn a_local_or_foreign_binding_named_like_a_factory_is_not_vue() {
+    for source in [
+        "function ref(value) { return { value } }\nconst count = ref(0)\nconsole.log(count + 1)",
+        "import { ref } from './local'\nconst count = ref(0)\nconsole.log(count + 1)",
+        "function setup(useTemplateRef) {\n  const el = useTemplateRef('el')\n  if (el) {}\n}",
+    ] {
+        assert_eq!(lint_without_imports(source).error_count, 0, "{source}");
+    }
+}
+
+#[test]
+fn a_non_null_assertion_is_still_the_ref_object() {
+    assert_eq!(
+        lint("const count = ref(0)\nconst next = count! + 1").error_count,
+        1
+    );
+    assert_eq!(
+        lint("const count = ref(0)\nif ((count!)!) {}").error_count,
+        1
+    );
+}

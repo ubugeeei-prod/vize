@@ -269,3 +269,21 @@ fn reads_every_composition_api_module_eslint_plugin_vue_traces() {
         0,
     );
 }
+
+#[test]
+fn unbound_factories_are_the_auto_imported_vue_ones() {
+    assert_copies("const count = ref(0)\nconst copy = count.value\n", 1);
+    assert_copies("const { a } = toRefs(props)\nconst copy = a.value\n", 1);
+}
+
+#[test]
+fn a_local_or_foreign_binding_named_like_a_factory_is_not_vue() {
+    assert_copies(
+        "function ref(value) { return { value } }\nconst count = ref(0)\nconst copy = count.value\n",
+        0,
+    );
+    assert_copies(
+        "import { ref } from './local'\nconst count = ref(0)\nconst copy = count.value\n",
+        0,
+    );
+}

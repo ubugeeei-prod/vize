@@ -139,7 +139,12 @@ impl Visitor<'_, '_> {
 
     fn is_named_call(&self, expr: &Expression<'_>, kind: Kind, property: &str) -> bool {
         match Self::peel(expr) {
-            Expression::Identifier(id) => self.lookup(id.name.as_str()) == Some(kind),
+            // An unbound Vue API name is the auto-imported one, as for
+            // `defineModel`.
+            Expression::Identifier(id) => match self.lookup(id.name.as_str()) {
+                None => id.name == property,
+                found => found == Some(kind),
+            },
             Expression::StaticMemberExpression(member) => {
                 matches!(self.namespace_of(&member.object), Some(Kind::Namespace))
                     && member.property.name == property
@@ -155,9 +160,15 @@ impl Visitor<'_, '_> {
         self.lookup(id.name.as_str())
     }
 
+    /// Vue's ref factories: imported from Vue, read from a Vue namespace, or an
+    /// unbound name an auto-import (Nuxt, unplugin-auto-import) provides. A
+    /// local or non-Vue binding of the same name is not a factory.
     fn is_ref_factory(&self, expr: &Expression<'_>) -> bool {
         match Self::peel(expr) {
-            Expression::Identifier(id) => self.lookup(id.name.as_str()) == Some(Kind::Factory),
+            Expression::Identifier(id) => match self.lookup(id.name.as_str()) {
+                None => REF_FACTORIES.contains(&id.name.as_str()),
+                found => found == Some(Kind::Factory),
+            },
             Expression::StaticMemberExpression(member) => {
                 matches!(self.namespace_of(&member.object), Some(Kind::Namespace))
                     && REF_FACTORIES.contains(&member.property.name.as_str())

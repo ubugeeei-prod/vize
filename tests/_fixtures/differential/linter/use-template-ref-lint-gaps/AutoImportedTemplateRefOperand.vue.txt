@@ -1,0 +1,12 @@
+<script setup lang="ts">
+const el = useTemplateRef<HTMLInputElement>('el')
+onMounted(() => {
+  if (el) {
+    el.focus()
+  }
+})
+</script>
+
+<template>
+  <input ref="el">
+</template>

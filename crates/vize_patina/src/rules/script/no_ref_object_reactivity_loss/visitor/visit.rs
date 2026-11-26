@@ -13,6 +13,24 @@ use oxc_span::GetSpan;
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::FxHashMap;
 
+impl Visitor<'_, '_> {
+    /// Hoisted function and class names shadow an auto-imported Vue API of
+    /// the same name throughout their scope, so a local `function ref()` is
+    /// never read as Vue's factory.
+    fn prime_declarations(&mut self, statements: &[Statement<'_>]) {
+        for statement in statements {
+            let id = match statement {
+                Statement::FunctionDeclaration(function) => function.id.as_ref(),
+                Statement::ClassDeclaration(class) => class.id.as_ref(),
+                _ => None,
+            };
+            if let Some(id) = id {
+                self.insert(id.name.as_str(), Kind::Other);
+            }
+        }
+    }
+}
+
 impl<'a> Visit<'a> for Visitor<'_, 'a> {
     fn visit_program(&mut self, it: &Program<'a>) {
         self.frames.push(FxHashMap::default());
@@ -28,6 +46,7 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
                 self.record_import(import);
             }
         }
+        self.prime_declarations(&it.body);
         walk_program(self, it);
         self.frames.pop();
     }
@@ -46,6 +65,7 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
 
     fn visit_function_body(&mut self, it: &oxc_ast::ast::FunctionBody<'a>) {
         self.frames.push(FxHashMap::default());
+        self.prime_declarations(&it.statements);
         walk_function_body(self, it);
         self.frames.pop();
     }
@@ -61,6 +81,7 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
 
     fn visit_block_statement(&mut self, it: &oxc_ast::ast::BlockStatement<'a>) {
         self.frames.push(FxHashMap::default());
+        self.prime_declarations(&it.body);
         walk_block_statement(self, it);
         self.frames.pop();
     }

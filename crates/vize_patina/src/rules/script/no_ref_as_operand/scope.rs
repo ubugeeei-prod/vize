@@ -48,7 +48,21 @@ pub(super) fn resolve(name: &str, local: &Frame, outer: &[Frame]) -> Binding {
                 .rev()
                 .find_map(|frame| frame.get(name).copied())
         })
-        .unwrap_or(Binding::Other)
+        .unwrap_or_else(|| unbound_binding(name))
+}
+
+/// A Vue API name with no lexical binding in any frame is Vue's own: an
+/// auto-import (Nuxt, unplugin-auto-import) supplies it at build time, the
+/// same reading `defineModel` gets. Any import or declaration of the name,
+/// Vue's or not, is recorded in a frame and shadows this.
+fn unbound_binding(name: &str) -> Binding {
+    if REF_FACTORIES.contains(&name) {
+        Binding::Factory
+    } else if REF_OBJECT_FACTORIES.contains(&name) {
+        Binding::RefObjectFactory
+    } else {
+        Binding::Other
+    }
 }
 
 pub(super) fn collect_scope_bindings(statements: &[Statement<'_>], outer: &[Frame]) -> Frame {

@@ -1,0 +1,12 @@
+<script setup lang="ts">
+const count = ref(0)
+onMounted(() => {
+  if (count) {
+    console.log(count + 1)
+  }
+})
+</script>
+
+<template>
+  <p>{{ count }}</p>
+</template>

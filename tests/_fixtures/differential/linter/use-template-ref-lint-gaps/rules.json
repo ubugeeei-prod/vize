@@ -1,0 +1,6 @@
+{
+  "vue/no-unused-refs": "warn",
+  "script/no-ref-as-operand": "warn",
+  "script/prefer-use-template-ref": "warn",
+  "vue/no-ref-object-reactivity-loss": "warn"
+}
