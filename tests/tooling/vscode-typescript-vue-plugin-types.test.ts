@@ -252,6 +252,7 @@ function createProject() {
     JSON.stringify({ main: "index.cjs", name: "@vizejs/vite-plugin", version: "0.0.0" }),
   );
   fs.writeFileSync(path.join(vitePluginDir, "index.cjs"), '"use strict";\n');
+  linkPlugin(rootDir);
 
   const nativeDir = path.join(vitePluginDir, "node_modules/@vizejs/native");
   fs.mkdirSync(nativeDir, { recursive: true });
@@ -283,6 +284,17 @@ function createProject() {
   );
 
   return { ambientDts, appVue, mainTs, nativeCalls, nativeDir, packageVue, root: rootDir };
+}
+
+// nativePath is honoured only when the project resolves this checkout's plugin.
+function linkPlugin(project: string) {
+  const scope = path.join(project, "node_modules/@vizejs");
+  fs.mkdirSync(scope, { recursive: true });
+  fs.symlinkSync(
+    fs.realpathSync(path.join(root, "npm/typescript-plugin")),
+    path.join(scope, "typescript-vue-plugin"),
+    process.platform === "win32" ? "junction" : "dir",
+  );
 }
 
 function createHost(rootDir: string, rootFiles: string[]) {

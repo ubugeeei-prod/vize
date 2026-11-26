@@ -205,7 +205,7 @@
     "sha256": "387ae510993056ce19f1aca3c285f6d88a93cfc2a5854e07decbba9344c09b32"
   },
   "historicalEvidence": {
-    "originalReceiptSha256": "97fe1dedaab708ca3ff1d439995bff8d77ad274fbf80ebd5a0b0c4a945804dd4",
+    "originalReceiptSha256": "0e01f342ad8e3247acb7fb144011dacb1cc7e7173c61a331718ad819e4e7a3f2",
     "originalCaseFileSha256": "af6e2923bbe07a2e15041ac81873030684e57e680791db3d5c133843e5fd0c94",
     "allOriginal13SnapshotHashesMatchReceipt": true,
     "originalBadSnapshotSha256": "1a045bef701482a8543a5d2737e3bfe86a4f67178ba5aa7e98877c8357071f9a",

@@ -11,6 +11,9 @@ for `vue` and `art-vue`. By default, the server reads `vue` settings from `vite.
 and `vueCompilerOptions` from `tsconfig.json`, including nested projects.
 Named profiles and explicit `init_options` override project features.
 
+The server evaluates the project's Vite config and uses the project's TypeScript runtime, so
+enable it only for projects you trust.
+
 Profiles:
 
 - `lint`: enables lint diagnostics; disables type checking, editor features,

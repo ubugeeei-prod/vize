@@ -41,6 +41,7 @@ import {
 } from "../transform.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
+import { isServedFileAllowed } from "./served-files.ts";
 import { loadedSfcModule } from "./tree-shaking.ts";
 import { TYPE_PROJECT_CHANGED_MESSAGE, watchTypeProject } from "./type-project-watches.ts";
 import { evictCompiledModule } from "./compiled-module-cache.ts";
@@ -141,6 +142,8 @@ export function loadSfcModuleSource(
   sfc: SfcModuleRequest,
   ssr: boolean,
 ): string | { code: string; map: SourceMapV3 } | null {
+  // Vite's own load then answers for a file its `server.fs` rules refuse.
+  if (!isServedFileAllowed(state, sfc.realPath, ssr)) return null;
   // A build compiles one snapshot of each source: what its first reader took
   // (a pre-compile, a batch, another environment's load) is what the module
   // loads. A dev server reads the file on every request.

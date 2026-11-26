@@ -18,7 +18,7 @@ export { generateGalleryModule } from "./module.js";
  */
 export function generateGalleryHtml(
   basePath: string,
-  devSessionToken: string,
+  devSessionToken: string | undefined,
   themeConfig?: { default: string; custom?: Record<string, unknown> },
   tokenPreviewConfig?: MuseaTokenPreviewConfig,
   toolbar?: ResolvedMuseaToolbarControl[],

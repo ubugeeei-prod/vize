@@ -3,6 +3,8 @@ import { normalizeSavedPaletteState, type SavedPaletteState } from "../composabl
 export const MUSEA_PROPS_QUERY = "museaProps";
 export const MAX_PROPS_PERMALINK_LENGTH = 24_000;
 
+const SHARED_PROP_NAME = /^[\p{ID_Start}$_][\p{ID_Continue}$-]*$/u;
+
 export interface PropsPermalinkState {
   palette: SavedPaletteState;
   slots: Record<string, string>;
@@ -98,8 +100,12 @@ function normalizeState(input: unknown): PropsPermalinkState {
   ) {
     throw new Error("Invalid shared props, controls or slot content.");
   }
-  // These native DOM escape hatches must never be activated by an untrusted URL.
   const names = [...Object.keys(palette.values), ...palette.customProps.map((prop) => prop.name)];
+  // Vue reads a leading "." or "^" on a prop key as a forced DOM property or attribute.
+  if ([...names, ...palette.deletedPaletteProps].some((name) => !SHARED_PROP_NAME.test(name))) {
+    throw new Error("Prop names shared in a URL must be identifiers or kebab-case names.");
+  }
+  // These native DOM escape hatches must never be activated by an untrusted URL.
   if (names.some((name) => /^(innerHTML|outerHTML|srcdoc)$/i.test(name) || /^on/i.test(name))) {
     throw new Error("DOM HTML and event handler props cannot be shared in a URL.");
   }

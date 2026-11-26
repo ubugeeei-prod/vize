@@ -109,6 +109,27 @@ export function isLoopbackRequest(req: IncomingMessage): boolean {
   return isLoopbackAddress(remote);
 }
 
+const FORWARDING_HEADERS = ["forwarded", "x-forwarded-for", "x-forwarded-host", "x-real-ip"];
+// A host name or bracketed IPv6 literal, with an optional port and nothing else.
+const HOST_NAME = /^(\[[^\]\s]+\]|[^\s/:@[\]]+)(?::\d+)?$/;
+
+/**
+ * A tunnel or reverse proxy on this machine also connects from loopback, so a
+ * local request must be addressed to a loopback name and carry no forwarding
+ * headers as well.
+ */
+export function isLocalRequest(req: IncomingMessage): boolean {
+  if (!isLoopbackRequest(req)) return false;
+  if (FORWARDING_HEADERS.some((name) => req.headers[name] !== undefined)) return false;
+  const name = HOST_NAME.exec(getHost(req) ?? "")?.[1].toLowerCase();
+  return (
+    name === "localhost" ||
+    name === "127.0.0.1" ||
+    name === "[::1]" ||
+    name?.endsWith(".localhost") === true
+  );
+}
+
 export function validateDevApiRequest(
   req: IncomingMessage,
   sessionToken: string,
@@ -120,8 +141,13 @@ export function validateDevApiRequest(
     return null;
   }
 
-  if (!isLoopbackRequest(req)) {
-    return new HttpError("Musea write APIs are limited to loopback clients", 403);
+  // Browsers name the origin of every write; a request without one cannot be matched to the Host.
+  if (!getHeader(req, "origin")) {
+    return new HttpError("Musea write APIs require an Origin header", 403);
+  }
+
+  if (!isLocalRequest(req)) {
+    return new HttpError("Musea write APIs are limited to local requests", 403);
   }
 
   if (!hasValidSessionToken(req, sessionToken)) {
@@ -172,7 +198,7 @@ function validateOrigin(req: IncomingMessage): HttpError | null {
   const origin = getHeader(req, "origin");
   if (!origin) return null;
 
-  const host = getHeader(req, "host");
+  const host = getHost(req);
   if (!host) {
     return new HttpError("Missing Host header", 400);
   }
@@ -196,6 +222,11 @@ function hasValidSessionToken(req: IncomingMessage, expectedToken: string): bool
   const actual = Buffer.from(actualToken);
   const expected = Buffer.from(expectedToken);
   return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
+
+/** HTTP/2 requests carry the authority instead of a Host header. */
+function getHost(req: IncomingMessage): string | undefined {
+  return getHeader(req, "host") ?? getHeader(req, ":authority");
 }
 
 function getHeader(req: IncomingMessage, name: string): string | undefined {

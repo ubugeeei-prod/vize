@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
+const root = useTemplateRef<HTMLDivElement>('container')
+function onClick(event: MouseEvent): void {
+  if (event.target === root) {
+    console.log('clicked the container itself')
+  }
+}
+</script>
+
+<template>
+  <div ref="container" @click="onClick">x</div>
+</template>
