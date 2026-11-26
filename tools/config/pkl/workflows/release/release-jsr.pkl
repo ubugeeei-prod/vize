@@ -1,5 +1,15 @@
 import "../../../../ci/lib/Actions.pkl" as ci
 
+// Publish only from main of this repository.
+local publishFromMain = "github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'"
+
+// Runs before the source checkout: source_sha is empty or one full commit SHA.
+local requireFullSourceCommit = new Dynamic {
+  name = "Require a full commit SHA for the release source"
+  env { JSR_SOURCE_SHA = "${{ inputs.source_sha }}" }
+  run = ci.workflowScript("require-a-full-source-commit.sh")
+}
+
 name = "Release JSR"
 // Publishes every npm release package to JSR at the same exact version, then
 // installs the compatibility facade from JSR in fresh Node, Deno and Bun projects.
@@ -47,6 +57,7 @@ jobs {
     }
     steps = new Listing {
       ...ci.stageWorkflowScripts("release-jsr")
+      requireFullSourceCommit
       ci.checkoutAt("${{ inputs.source_sha || github.sha }}")
       new Dynamic {
         uses = ci.setupNode
@@ -68,6 +79,7 @@ jobs {
   publish {
     name = "Publish the JSR package"
     needs = "channel"
+    `if` = publishFromMain
     `runs-on` = "ubuntu-24.04"
     // 0.496.0-0.504.0 were accepted while `deno publish` kept polling until the
     // old 75-minute job limit. Bound the CLI below that, but long enough for the
@@ -81,6 +93,7 @@ jobs {
     }
     steps = new Listing {
       ...ci.stageWorkflowScripts("release-jsr")
+      requireFullSourceCommit
       ci.checkoutAt("${{ inputs.source_sha || github.sha }}")
       new Dynamic {
         uses = ci.setupNode
@@ -128,6 +141,7 @@ jobs {
   `publish-packages` {
     name = "Publish JSR package (${{ matrix.jsrName }})"
     needs = "channel"
+    `if` = publishFromMain
     strategy {
       `fail-fast` = false
       matrix = "${{ fromJSON(needs.channel.outputs.packages) }}"
@@ -140,6 +154,7 @@ jobs {
     }
     steps = new Listing {
       ...ci.stageWorkflowScripts("release-jsr")
+      requireFullSourceCommit
       ci.checkoutAt("${{ inputs.source_sha || github.sha }}")
       new Dynamic {
         uses = ci.setupNode
