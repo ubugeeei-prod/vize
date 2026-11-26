@@ -4,7 +4,7 @@ import { stringify } from "yaml";
 import { assertStarListingWorkflowSetup } from "../../tools/support/compat/github/empty-vue-star-listing-source.mjs";
 
 test("current Star workflow setup retains commands, conditions, matrix and path triggers", () => {
-  const file = ".github/workflows/04-typechecker-native-phases.yml";
+  const file = ".github/workflows/typechecker-native-phases.yml";
   const original = {
     on: {
       pull_request: { paths: ["tools/benchmarks/scripts/typecheck-command.mjs", "crates/**"] },

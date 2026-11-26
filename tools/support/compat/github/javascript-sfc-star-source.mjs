@@ -30,7 +30,7 @@ assert.equal(data.beforeSource, "3a680d0a0b59b720af0d23a70a85cf56c5c4f175");
 assert.deepEqual(
   data.cells.map(({ path }) => path),
   [
-    ".github/workflows/04-typechecker-native-phases.yml",
+    ".github/workflows/typechecker-native-phases.yml",
     "crates/vize_canon/src/batch/virtual_project/build.rs",
     "crates/vize_canon/src/batch/virtual_project/module_projection.rs",
     "crates/vize_canon/src/batch/virtual_project/project/artifacts.rs",

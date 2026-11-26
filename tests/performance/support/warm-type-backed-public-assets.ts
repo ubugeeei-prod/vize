@@ -155,7 +155,7 @@ export async function loadSourceReference(authority: PublishedAuthority, output:
   );
   assert.equal(run.conclusion, "success");
   assert.equal(run.run_attempt, reference.attempt);
-  assert.equal(run.path, ".github/workflows/03-canon-scaling.yml");
+  assert.equal(run.path, ".github/workflows/davinci-canon-scaling.yml");
   assert.equal(run.name, "Davinci Canon distinct-host scaling");
   assert.equal(run.head_sha, reference.driverRevision);
   assert.equal(run.event, "workflow_dispatch");
