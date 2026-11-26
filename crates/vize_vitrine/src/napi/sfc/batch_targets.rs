@@ -9,8 +9,9 @@
 //! imported-type graph.
 //!
 //! The targets differ only in `ssr`, `vapor` and `inlineTemplate`; every other
-//! option holds for the whole call. Each target's result is the result a
-//! separate `compileSfcBatchWithResults` call with that target's options
+//! option holds for the whole call. The compiler analyzes each file once for
+//! all of its targets and emits per target. Each target's result is the result
+//! a separate `compileSfcBatchWithResults` call with that target's options
 //! returns, field for field, with one exception: a later target leaves out
 //! `dependencies` that are the first target's (see `dependenciesShared`).
 
@@ -20,9 +21,10 @@ use napi_derive::napi;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::time::Instant;
 use vize_atelier_sfc::{
-    ScriptCompileOptions, SfcCompileOptions, SfcDescriptor, SfcParseOptions, SfcScriptOutputMode,
-    StyleCompileOptions, TemplateCompileOptions, compile_sfc_for_adapter_with_project,
-    module_shape::finalize_module_output_with_map, parse_sfc,
+    ScriptCompileOptions, SfcCompileOptions, SfcCompileTarget, SfcDescriptor, SfcParseOptions,
+    SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
+    compile_sfc_for_adapter_targets_with_project, module_shape::finalize_module_output_with_map,
+    parse_sfc,
 };
 use vize_l0::cstr;
 
@@ -83,13 +85,6 @@ pub fn compile_sfc_batch_for_targets(
         .install(|| compile_for_targets(files, &opts, &targets, vue_version))
 }
 
-/// The options of one target, resolved once per call.
-struct Target {
-    ssr: bool,
-    vapor: bool,
-    shape: SfcOutputShape,
-}
-
 /// The options every file and target of the call share, resolved once.
 struct Shared<'a> {
     opts: &'a BatchCompileOptionsNapi,
@@ -101,6 +96,8 @@ struct Shared<'a> {
     template_syntax: vize_atelier_core::TemplateSyntaxMode,
     whitespace: ResolvedWhitespace,
     is_ts: bool,
+    /// The call's output shape; a target chooses only its script output.
+    shape: SfcOutputShape,
 }
 
 fn compile_for_targets(
@@ -127,17 +124,24 @@ fn compile_for_targets(
         whitespace: resolve_whitespace(opts.whitespace.as_deref())
             .map_err(|message| napi::Error::new(Status::InvalidArg, message))?,
         is_ts: opts.is_ts.unwrap_or(false),
+        shape: sfc_output_shape(opts.mode.as_deref(), opts.inline_template, opts.is_prod),
     };
-    let targets: Vec<Target> = targets
+    let targets: Vec<SfcCompileTarget> = targets
         .iter()
-        .map(|target| Target {
+        .map(|target| SfcCompileTarget {
             ssr: target.ssr.or(opts.ssr).unwrap_or(false),
             vapor: target.vapor.or(opts.vapor).unwrap_or(false),
-            shape: sfc_output_shape(
+            script_output: if sfc_output_shape(
                 opts.mode.as_deref(),
                 target.inline_template.or(opts.inline_template),
                 opts.is_prod,
-            ),
+            )
+            .inline_render
+            {
+                SfcScriptOutputMode::InlineTemplate
+            } else {
+                SfcScriptOutputMode::SeparateTemplate
+            },
         })
         .collect();
     let total_count = files.len();
@@ -148,11 +152,7 @@ fn compile_for_targets(
     let _type_resolution_batch = vize_atelier_sfc::join_type_resolution_batch();
     let rows: Vec<(Vec<(BatchFileResultNapi, bool)>, bool)> = files
         .into_par_iter()
-        .map(|file| {
-            let mut row = compile_file_for_targets(file, &shared, &targets);
-            let shared = leave_out_shared_dependencies(&mut row);
-            (row, shared)
-        })
+        .map(|file| compile_file_for_targets(file, &shared, &targets))
         .collect();
     let time_ms = start.elapsed().as_secs_f64() * 1000.0;
 
@@ -259,11 +259,13 @@ fn block_payload<T>(
     }
 }
 
+/// Each target's result for `file`, and whether the later targets leave out
+/// the first target's `dependencies`.
 fn compile_file_for_targets(
     file: BatchFileInputNapi,
     shared: &Shared<'_>,
-    targets: &[Target],
-) -> Vec<(BatchFileResultNapi, bool)> {
+    targets: &[SfcCompileTarget],
+) -> (Vec<(BatchFileResultNapi, bool)>, bool) {
     let opts = shared.opts;
     let scope_id: vize_l0::String = file.scope_id.as_deref().map_or_else(
         || vize_atelier_sfc::generate_bundler_scope_id(&file.path, None, false, None),
@@ -288,10 +290,11 @@ fn compile_file_for_targets(
         Ok(descriptor) => descriptor,
         Err(error) => {
             let message: String = error.message.into();
-            return targets
+            let row = targets
                 .iter()
                 .map(|_| (facts.failure(message.clone(), None, opts), false))
                 .collect();
+            return (row, false);
         }
     };
     if opts.include_hashes.unwrap_or(false) {
@@ -307,7 +310,7 @@ fn compile_file_for_targets(
         Ok(type_project) => type_project,
         Err(error) => {
             let message: String = error.message.into();
-            return targets
+            let row = targets
                 .iter()
                 .map(|_| {
                     (
@@ -316,90 +319,103 @@ fn compile_file_for_targets(
                     )
                 })
                 .collect();
+            return (row, false);
         }
     };
-    targets
-        .iter()
-        .map(|target| {
-            let compiled = shared.whitespace.apply(|| {
-                compile_sfc_for_adapter_with_project(
-                    &descriptor,
-                    target_compile_options(shared, target, &facts, &filename),
-                    shared.template_syntax,
-                    shared.custom_elements.clone(),
-                    // A requested map is the compiler's structured SFC module map.
-                    sfc_codegen_options(
-                        opts.include_source_map.unwrap_or(false),
-                        opts.runtime_module_name.as_deref(),
-                        opts.runtime_global_name.as_deref(),
+    let compiled = shared.whitespace.apply(|| {
+        compile_sfc_for_adapter_targets_with_project(
+            &descriptor,
+            &call_compile_options(shared, &facts, &filename),
+            targets,
+            shared.template_syntax,
+            &shared.custom_elements,
+            // A requested map is the compiler's structured SFC module map.
+            &sfc_codegen_options(
+                opts.include_source_map.unwrap_or(false),
+                opts.runtime_module_name.as_deref(),
+                opts.runtime_global_name.as_deref(),
+            ),
+            &shared.experimentals.sfc_options(),
+            opts.nuxt_page_meta.unwrap_or(false),
+            type_project.as_deref(),
+        )
+    });
+    let analyzed_once = compiled.dependencies_shared;
+    let mut row: Vec<(BatchFileResultNapi, bool)> = compiled
+        .results
+        .into_iter()
+        .enumerate()
+        .map(|(index, compiled)| match compiled {
+            Ok(result) => {
+                // A later target compiled the first target's list and
+                // leaves it out, so the project is recorded in the first.
+                let result = if analyzed_once && index > 0 {
+                    result
+                } else {
+                    type_project.track(result)
+                };
+                let (code, shape, map) =
+                    finalize_module_output_with_map(result.code, shared.is_ts, result.map);
+                let file_result = BatchFileResultNapi {
+                    path: facts.path.clone(),
+                    module_shape: shape.map(ModuleShapeNapi::from),
+                    type_project: type_project_to_napi(&type_project),
+                    code: code.into(),
+                    map: map.and_then(|map| serde_json::to_string(&map).ok()),
+                    css: result.css.map(Into::into),
+                    scope_id: facts.scope_id.as_str().into(),
+                    has_scoped: facts.has_scoped,
+                    errors: result
+                        .errors
+                        .into_iter()
+                        .map(|e| e.message.into())
+                        .collect(),
+                    warnings: result
+                        .warnings
+                        .into_iter()
+                        .map(|e| e.message.into())
+                        .collect(),
+                    template_hash: facts.template_hash.clone(),
+                    style_hash: facts.style_hash.clone(),
+                    script_hash: facts.script_hash.clone(),
+                    styles: block_payload(Some(&descriptor), opts.include_styles, |d| {
+                        style_blocks_to_napi(&d.styles)
+                    }),
+                    custom_blocks: block_payload(
+                        Some(&descriptor),
+                        opts.include_custom_blocks,
+                        |d| custom_blocks_to_napi(&d.custom_blocks),
                     ),
-                    if target.shape.inline_render {
-                        SfcScriptOutputMode::InlineTemplate
+                    macro_artifacts: if opts.include_macro_artifacts.unwrap_or(false) {
+                        macro_artifacts_to_napi(result.macro_artifacts)
                     } else {
-                        SfcScriptOutputMode::SeparateTemplate
+                        vec![]
                     },
-                    shared.experimentals.sfc_options(),
-                    opts.nuxt_page_meta.unwrap_or(false),
-                    type_project.as_deref(),
-                )
-            });
-            match compiled {
-                Ok(result) => {
-                    let result = type_project.track(result);
-                    let (code, shape, map) =
-                        finalize_module_output_with_map(result.code, shared.is_ts, result.map);
-                    let file_result = BatchFileResultNapi {
-                        path: facts.path.clone(),
-                        module_shape: shape.map(ModuleShapeNapi::from),
-                        type_project: type_project_to_napi(&type_project),
-                        code: code.into(),
-                        map: map.and_then(|map| serde_json::to_string(&map).ok()),
-                        css: result.css.map(Into::into),
-                        scope_id: facts.scope_id.as_str().into(),
-                        has_scoped: facts.has_scoped,
-                        errors: result
-                            .errors
-                            .into_iter()
-                            .map(|e| e.message.into())
-                            .collect(),
-                        warnings: result
-                            .warnings
-                            .into_iter()
-                            .map(|e| e.message.into())
-                            .collect(),
-                        template_hash: facts.template_hash.clone(),
-                        style_hash: facts.style_hash.clone(),
-                        script_hash: facts.script_hash.clone(),
-                        styles: block_payload(Some(&descriptor), opts.include_styles, |d| {
-                            style_blocks_to_napi(&d.styles)
-                        }),
-                        custom_blocks: block_payload(
-                            Some(&descriptor),
-                            opts.include_custom_blocks,
-                            |d| custom_blocks_to_napi(&d.custom_blocks),
-                        ),
-                        macro_artifacts: if opts.include_macro_artifacts.unwrap_or(false) {
-                            macro_artifacts_to_napi(result.macro_artifacts)
-                        } else {
-                            vec![]
-                        },
-                        dependencies: dependencies_to_napi(result.dependencies),
-                    };
-                    (file_result, true)
-                }
-                Err(error) => (
-                    facts.failure(error.message.into(), Some(&descriptor), opts),
-                    false,
-                ),
+                    dependencies: dependencies_to_napi(result.dependencies),
+                };
+                (file_result, true)
             }
+            Err(error) => (
+                facts.failure(error.message.into(), Some(&descriptor), opts),
+                false,
+            ),
         })
-        .collect()
+        .collect();
+    let dependencies_shared = if analyzed_once {
+        row.len() > 1
+            && row
+                .first()
+                .is_some_and(|(first, _)| first.dependencies.is_some())
+    } else {
+        leave_out_shared_dependencies(&mut row)
+    };
+    (row, dependencies_shared)
 }
 
-/// The options `compileSfcBatchWithResults` builds for one file, for `target`.
-fn target_compile_options(
+/// The options `compileSfcBatchWithResults` builds for one file; each target
+/// sets its own `ssr` and `vapor`.
+fn call_compile_options(
     shared: &Shared<'_>,
-    target: &Target,
     facts: &FileFacts,
     filename: &vize_l0::CompactString,
 ) -> SfcCompileOptions {
@@ -426,15 +442,14 @@ fn target_compile_options(
         parse: SfcParseOptions::default(),
         script: ScriptCompileOptions {
             id: Some(filename.clone()),
-            inline_template: target.shape.standalone,
+            inline_template: shared.shape.standalone,
             is_ts: shared.is_ts,
             ..Default::default()
         },
         template: TemplateCompileOptions {
             scoped: facts.has_scoped,
-            ssr: target.ssr,
             is_ts: shared.is_ts,
-            is_prod: target.shape.is_prod,
+            is_prod: shared.shape.is_prod,
             custom_renderer: opts.custom_renderer.unwrap_or(false),
             dialect: shared.vue_version,
             compiler_options: Some(dom_options),
@@ -446,7 +461,7 @@ fn target_compile_options(
             trim: opts.style_trim.unwrap_or(false),
             ..Default::default()
         },
-        vapor: target.vapor,
+        vapor: false,
         scope_id: Some(facts.scope_id.clone()),
     }
 }

@@ -189,6 +189,7 @@ export interface VizeRuleOptions {
     natural?: boolean;
   };
   "vue/require-component-registration"?: { globals?: string[] };
+  "vue/no-undefined-refs"?: { globals?: string[] };
   "vue/sfc-element-order"?: SfcElementOrderOption;
   "vue/html-self-closing"?: HtmlSelfClosingOption;
   "vue/html-quotes"?: HtmlQuotesConfig;

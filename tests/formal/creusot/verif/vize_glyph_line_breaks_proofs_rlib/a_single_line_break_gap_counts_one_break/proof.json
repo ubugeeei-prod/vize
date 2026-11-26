@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_single_line_break_gap_counts_one_break": {
+        "prover": "alt-ergo",
+        "time": 0.006
+      },
+      "vc_is_single_line_break_gap": { "prover": "alt-ergo", "time": 0.004 }
+    }
+  }
+}
