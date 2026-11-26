@@ -6,6 +6,7 @@ use super::string_tracking::{
     StringTrackState, count_braces_with_state, count_delims_with_state, count_parens_with_state,
 };
 use super::{TemplateBlockCompileResult, TemplateCodeSections};
+use crate::module_map::Runs;
 
 /// Slice the structural sections out of compiled template code using
 /// emission-recorded byte offsets.
@@ -24,29 +25,70 @@ pub(crate) fn slice_template_parts(
     let imports = String::new(slice(sections.imports));
     let hoisted = String::new(slice(sections.hoisted));
 
-    // Asset-resolution statements carry the render function's indentation;
-    // the inline assembly expects them trimmed, one per line. The region also
-    // ends with the blank separator line codegen emits before `return`.
     let assets_raw = slice(sections.assets);
     let mut preamble = String::with_capacity(assets_raw.len());
-    for line in assets_raw.lines() {
-        let trimmed = line.trim();
-        if !trimmed.is_empty() {
-            preamble.push_str(trimmed);
-            preamble.push('\n');
-        }
+    for statement in asset_statements(assets_raw) {
+        preamble.push_str(statement);
+        preamble.push('\n');
     }
-
-    // Same trailing cleanup as `finalize_render_body`: drop trailing
-    // whitespace, then at most one `;`.
-    let mut body = slice(sections.return_expr);
-    body = body.trim_end_matches([' ', '\t', '\n', '\r']);
-    if let Some(stripped) = body.strip_suffix(';') {
-        body = stripped;
-    }
-    let render_body = String::new(body);
+    let render_body = String::new(return_expression(slice(sections.return_expr)));
 
     (imports, hoisted, preamble, render_body, "render")
+}
+
+/// Asset-resolution statements carry the render function's indentation; the
+/// inline assembly expects them trimmed, one per line. The region also ends
+/// with the blank separator line codegen emits before `return`.
+fn asset_statements(assets: &str) -> impl Iterator<Item = &str> {
+    assets
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+}
+
+/// Same trailing cleanup as `finalize_render_body`: drop trailing whitespace,
+/// then at most one `;`.
+fn return_expression(return_expr: &str) -> &str {
+    let body = return_expr.trim_end_matches([' ', '\t', '\n', '\r']);
+    body.strip_suffix(';').unwrap_or(body)
+}
+
+/// Where the `preamble` and `render_body` of [`slice_template_parts`] were
+/// copied from in `template_code`, for the source map of an inline render.
+pub(crate) fn slice_template_parts_runs(
+    template_code: &str,
+    sections: &TemplateCodeSections,
+) -> (Runs, Runs) {
+    let slice = |(start, end): (usize, usize)| template_code.get(start..end).unwrap_or_default();
+    let mut preamble = Runs::default();
+    preamble.copy_lines(
+        0,
+        template_code,
+        asset_statements(slice(sections.assets)),
+        0,
+    );
+    let mut render_body = Runs::default();
+    let body = return_expression(slice(sections.return_expr));
+    render_body.copy(0, sections.return_expr.0, body.len());
+    (preamble, render_body)
+}
+
+/// Where `render_fn`, the function [`template_parts_full`] returned for
+/// `output`, was copied from in `output.code`, for its source map.
+///
+/// Both extractions keep the function's lines in order and end each with one
+/// `\n`. The runs are verified against the code, so a line the scanner filed
+/// under another part loses its mapping instead of shifting the rest.
+pub(crate) fn render_fn_runs(output: &TemplateBlockCompileResult, render_fn: &str) -> Runs {
+    let function = output.code.get(output.render_at..).unwrap_or_default();
+    let lines = function.lines().scan(0, |end, line| {
+        let inside = *end < render_fn.len();
+        *end += line.len() + 1;
+        inside.then_some(line)
+    });
+    let mut runs = Runs::default();
+    runs.copy_lines(0, &output.code, lines, 0);
+    runs.verified(render_fn, &output.code)
 }
 
 /// Imports, hoists and the whole render function of a compiled template:

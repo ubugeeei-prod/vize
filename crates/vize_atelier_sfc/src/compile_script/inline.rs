@@ -17,4 +17,4 @@ mod tests;
 pub(crate) mod type_handling;
 
 pub use compiler::compile_script_setup_inline;
-pub(crate) use compiler::{SetupTrace, compile_script_setup_inline_with_context};
+pub(crate) use compiler::{SetupTrace, TemplateTrace, compile_script_setup_inline_with_context};

@@ -123,6 +123,9 @@ function productFiles(): Map<string, string> {
     fs
       .readdirSync(path.join(repoRoot, group))
       .sort()
+      // A generated copy compiles its plain crate's source, whose rows cover
+      // it (tools/commands/generate/composed-crates.ts).
+      .filter((crate) => !crate.endsWith("_composed"))
       .flatMap((crate) => {
         const providers = path.join(repoRoot, group, crate, "providers");
         const nested = fs.existsSync(providers)

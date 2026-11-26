@@ -204,6 +204,7 @@ pub(super) fn emit_preamble(
 
     if !template.render_fn.is_empty() {
         output.push('\n');
+        tracer.render_fn(output.len());
         output.push_str(template.render_fn);
         if let Some(alias) = vapor_render_alias {
             output.push_str("const ");

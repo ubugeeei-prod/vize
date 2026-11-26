@@ -12,7 +12,7 @@ use vize_l4::module::RenderFunctionName;
 use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block_vapor, compile_template_block_with_capture,
 };
-use crate::module_map::{Runs, module_map_value};
+use crate::module_map::module_map_value;
 use crate::types::{
     SfcCompileOptions, SfcCompileResult, SfcError, SfcMacroArtifact, SfcTemplateBlock,
 };
@@ -107,7 +107,6 @@ fn compile_template_only(
                     experimental_self_component: input.experimental_self_component,
                     bindings: None,
                     script_tables: None,
-                    collect_map: input.pug_source_map.is_some(),
                     authored_source: Some(input.source),
                     pug_source_map: input.pug_source_map,
                 },
@@ -139,7 +138,6 @@ fn compile_template_only(
                     experimental_self_component: input.experimental_self_component,
                     bindings: None,
                     script_tables: None,
-                    collect_map: input.pug_source_map.is_some(),
                     authored_source: Some(input.source),
                     pug_source_map: input.pug_source_map,
                 },
@@ -195,8 +193,7 @@ fn compile_template_only(
     );
     trim_trailing_newlines(&mut code);
 
-    let map = template_map.and_then(|map| {
-        let authored = authored_template_points(&map, template.loc.start, input.pug_source_map);
+    let map = template_map.and_then(|authored| {
         let authored = match &rewrite {
             Some(rewrite) => rewrite.compose(&authored),
             None => authored,
@@ -214,17 +211,4 @@ fn compile_template_only(
         macro_artifacts,
         dependencies: Vec::new(),
     })
-}
-
-fn authored_template_points(
-    generated: &Runs,
-    template_start: usize,
-    pug_source_map: Option<&PugSourceMap>,
-) -> Runs {
-    let mut authored = Runs::default();
-    for &(output, source) in generated.points() {
-        let source = pug_source_map.map_or(source, |map| map.offset_to_pug(source as u32) as usize);
-        authored.point(output, template_start + source);
-    }
-    authored
 }

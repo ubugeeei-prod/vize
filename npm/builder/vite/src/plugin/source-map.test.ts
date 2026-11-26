@@ -82,6 +82,32 @@ function segmentForLine(map: SourceMapV3, code: string, text: string): DecodedSe
   return decodeMappings(map.mappings).find((segment) => segment.generatedLine === generatedLine);
 }
 
+/**
+ * The authored position a stack frame resolves to for the code that follows
+ * `before`: the last segment at or before that generated position on its line.
+ */
+function frameAfter(
+  map: SourceMapV3,
+  code: string,
+  before: string,
+): { sourceLine: number; sourceColumn: number } | undefined {
+  const found = code.indexOf(before);
+  assert.notEqual(found, -1, `emitted module should contain ${JSON.stringify(before)}`);
+  const at = found + before.length;
+  const generatedLine = code.slice(0, at).split("\n").length - 1;
+  const generatedColumn = at - (code.lastIndexOf("\n", at - 1) + 1);
+  const segment = decodeMappings(map.mappings)
+    .filter(
+      (candidate) =>
+        candidate.generatedLine === generatedLine && candidate.generatedColumn <= generatedColumn,
+    )
+    .at(-1);
+  return segment && { sourceLine: segment.sourceLine, sourceColumn: segment.sourceColumn };
+}
+
+// `{{ message }}` is authored on line 1 (0-based), and `message` starts at column 22.
+const TEMPLATE_EXPRESSION = { sourceLine: 1, sourceColumn: 22 };
+
 // ---------------------------------------------------------------------------
 // shiftMappedLines / MappedModule
 // ---------------------------------------------------------------------------
@@ -194,6 +220,25 @@ assert.deepEqual(
   },
   "the copied statement resolves to its authored line and column",
 );
+// The render maps back to the template too: a frame, a breakpoint or
+// a coverage range in a template expression is not left on generated code.
+assert.deepEqual(
+  frameAfter(compiledMap, compiled.code, "_toDisplayString("),
+  TEMPLATE_EXPRESSION,
+  "a template expression resolves to its authored line and column",
+);
+const compiledForServer = compileFile(sfcPath, new Map(), {
+  sourceMap: true,
+  ssr: true,
+  vapor: false,
+});
+const serverMap = parseSourceMap(compiledForServer.map);
+assert.ok(serverMap, "the server module must be mapped too");
+assert.deepEqual(
+  frameAfter(serverMap, compiledForServer.code, "_ssrInterpolate("),
+  TEMPLATE_EXPRESSION,
+  "a template expression of the server render resolves to its authored line and column",
+);
 
 // ---------------------------------------------------------------------------
 // generateOutputWithMap: the map survives the module rewrites
@@ -217,6 +262,11 @@ assert.deepEqual(
     sourceColumn: 0,
   },
   "prepending the inline <style> injection moves the mapping with the code",
+);
+assert.deepEqual(
+  frameAfter(generated.map, generated.code, "_toDisplayString("),
+  TEMPLATE_EXPRESSION,
+  "the template mapping moves with the render code as well",
 );
 
 // ---------------------------------------------------------------------------
@@ -291,6 +341,11 @@ assert.deepEqual(
     sourceColumn: 0,
   },
   "a frame in the loaded module resolves to the authored .vue line",
+);
+assert.deepEqual(
+  frameAfter(loadedMap, loaded.code, "_toDisplayString("),
+  TEMPLATE_EXPRESSION,
+  "a frame in the loaded module's inlined render resolves to the authored template",
 );
 
 fs.rmSync(projectRoot, { recursive: true, force: true });

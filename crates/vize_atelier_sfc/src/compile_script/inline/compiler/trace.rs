@@ -17,6 +17,18 @@ use super::super::super::statement_sections::{SectionTrace, extract_script_secti
 
 type Sections = (Vec<String>, Vec<String>, Vec<String>);
 
+/// The compiled template's parts → `.vue`, each from its own first byte, so
+/// emission appends a part's provenance at the offset the part lands on.
+#[derive(Debug, Default)]
+pub(crate) struct TemplateTrace {
+    /// The render function emitted beside the component.
+    pub(crate) render_fn: Runs,
+    /// The inline render's component and directive resolution statements.
+    pub(crate) preamble: Runs,
+    /// The inline render's return expression.
+    pub(crate) render_body: Runs,
+}
+
 /// Provenance of one inline compile, in `.vue` offsets.
 #[derive(Debug, Default)]
 pub(crate) struct SetupTrace {
@@ -25,6 +37,8 @@ pub(crate) struct SetupTrace {
     pub(crate) content: Runs,
     /// The extracted normal `<script>` content → `.vue`, when it is present.
     pub(crate) normal: Option<Runs>,
+    /// The template parts the compile embeds → `.vue`.
+    pub(crate) template: TemplateTrace,
     /// The compiled module → `.vue`: the result of the compile.
     pub(crate) output: Runs,
     /// Per user import: its text's provenance and its statement's start.
@@ -39,10 +53,11 @@ pub(crate) struct SetupTrace {
 }
 
 impl SetupTrace {
-    pub(crate) fn new(content: Runs, normal: Option<Runs>) -> Self {
+    pub(crate) fn new(content: Runs, normal: Option<Runs>, template: TemplateTrace) -> Self {
         Self {
             content,
             normal,
+            template,
             ..Self::default()
         }
     }
@@ -108,6 +123,13 @@ impl Tracer<'_> {
     pub(super) fn point(&mut self, at: usize, origin: Option<usize>) {
         if let (Some(trace), Some(origin)) = (self.0.as_deref_mut(), origin) {
             trace.output.point(at, origin);
+        }
+    }
+
+    /// The template's render function was written at `at`.
+    pub(super) fn render_fn(&mut self, at: usize) {
+        if let Some(trace) = self.0.as_deref_mut() {
+            trace.output.append(at, &trace.template.render_fn);
         }
     }
 

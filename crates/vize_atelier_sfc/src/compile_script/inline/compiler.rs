@@ -36,8 +36,8 @@ use super::super::{ScriptCompileResult, TemplateParts};
 use body::compile_script_setup_inline_body;
 use parser::parse_script_content;
 use render::build_vapor_render_alias;
-pub(crate) use trace::SetupTrace;
 use trace::traced_sections;
+pub(crate) use trace::{SetupTrace, TemplateTrace};
 
 /// Compile script setup with inline template (Vue's inline template mode)
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]

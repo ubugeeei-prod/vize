@@ -308,14 +308,7 @@ fn compile_ssr_inner_with_context<'a>(
     )
 }
 
-/// Which emitter owns a compile. Production always asks the L4 selector;
-/// the differential battery pins the legacy walker on the same input.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum SsrLane {
-    Selected,
-    #[cfg(any(test, feature = "legacy-differential"))]
-    LegacyOnly,
-}
+pub(crate) use crate::shared::SsrLane;
 
 #[expect(
     clippy::too_many_arguments,
@@ -430,7 +423,7 @@ fn compile_ssr_on_lane_with_runtime<'a>(
     };
     #[cfg(feature = "legacy-differential")]
     if lane == SsrLane::Selected {
-        crate::differential::record_verdict(&selection);
+        crate::differential::record_verdict(l4::lane_label(&selection));
     }
 
     let transform_opts = crate::stage_options::transform_options(&codegen_options);

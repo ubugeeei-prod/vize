@@ -38,7 +38,6 @@ impl<'a> SfcTemplateContext<'a> {
             experimental_self_component: self.experimental_self_component,
             bindings,
             script_tables,
-            collect_map: false,
             authored_source: Some(self.authored_source),
             pug_source_map: self.pug_source_map,
         }

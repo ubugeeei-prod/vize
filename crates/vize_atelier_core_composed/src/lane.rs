@@ -1,0 +1,396 @@
+// DO NOT EDIT. Generated from crates/vize_atelier_core/src/lane.rs by `node tools/commands/generate/composed-crates.ts`.
+// Edit the source and run the command again.
+//! Template transform lane for Vue template AST.
+//!
+//! This module provides the transform context, traversal, and base transform traits.
+
+mod context;
+pub mod element;
+mod extensions;
+mod frozen;
+mod options;
+pub mod patterned_template;
+use vize_atelier_core::lane as script_tables;
+pub mod structural;
+mod structural_keys;
+pub(crate) mod traverse;
+
+use vize_croquis::ScopeChain;
+use vize_l0::{Allocator, Box, SmallVec, Span, String, Vec, interner::Interner, profile};
+
+use crate::errors::CompilerError;
+use crate::options::TransformOptions;
+use crate::runtime_helpers::RuntimeHelpers;
+use crate::{
+    CacheExpression, DirectiveNode, ElementNode, ForNode, IfBranchNode, JsChildNode, PropNode,
+    RootNode, RuntimeHelper, TemplateChildNode,
+};
+
+#[doc(hidden)]
+pub use frozen::transform_with_frozen_elements;
+pub(crate) use options::{JsxTransformCompat, TransformLaneOptions};
+pub use script_tables::{ReactiveSource, ScriptTables};
+use traverse::traverse_children;
+
+#[expect(deprecated, reason = "kept exported until removal")]
+pub use extensions::{
+    transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+    transform_with_hoisted_scope_id, transform_with_jsx_compatibility,
+    transform_with_plain_element_model_argument, transform_with_source_text,
+    transform_with_template_syntax_quirks_and_hoisted_scope_id,
+    transform_with_vue_parser_quirks_and_hoisted_scope_id,
+};
+
+/// Transform function for nodes - returns optional exit function(s)
+pub type NodeTransform<'a> =
+    fn(&mut TransformContext<'a>, &mut TemplateChildNode<'a>) -> Option<ExitFns<'a>>;
+
+/// Exit function called after children are processed
+pub type ExitFn<'a> = std::boxed::Box<dyn FnOnce(&mut TransformContext<'a>) + 'a>;
+pub type ExitFns<'a> = SmallVec<[ExitFn<'a>; 2]>;
+
+pub type DirectiveTransform<'a> = fn(
+    &mut TransformContext<'a>,
+    &mut ElementNode<'a>,
+    &DirectiveNode<'a>,
+) -> Option<DirectiveTransformResult<'a>>;
+
+/// Result of a directive transform
+pub struct DirectiveTransformResult<'a> {
+    /// Props to add to the element
+    pub props: Vec<'a, PropNode<'a>>,
+    /// Whether to remove the directive
+    pub remove_directive: bool,
+    /// SSR tag type hint
+    pub ssr_tag_type: Option<u8>,
+}
+
+pub type StructuralDirectiveTransform<'a> =
+    fn(&mut TransformContext<'a>, &mut ElementNode<'a>, &DirectiveNode<'a>) -> Option<ExitFn<'a>>;
+
+/// Transform context for AST traversal.
+///
+/// Raw traversal cursors are internal capabilities. The public context can be
+/// constructed independently, but it cannot acquire or inject pointers into a
+/// tree whose borrow has ended. Use [`transform`] to traverse an owned root.
+///
+/// Parent handles are not part of the public API:
+///
+/// ```compile_fail
+/// use vize_atelier_core::ParentNode;
+/// ```
+///
+/// ```compile_fail
+/// use vize_atelier_core::lane::ParentNode;
+/// ```
+///
+/// Each raw cursor is inaccessible to a safe external caller:
+///
+/// ```compile_fail
+/// fn inject(ctx: &mut vize_atelier_core::TransformContext<'_>) {
+///     ctx.root = Some(std::ptr::null_mut());
+/// }
+/// ```
+///
+/// ```compile_fail
+/// fn inject(ctx: &mut vize_atelier_core::TransformContext<'_>) {
+///     ctx.parent = None;
+/// }
+/// ```
+///
+/// ```compile_fail
+/// fn inject(ctx: &mut vize_atelier_core::TransformContext<'_>) {
+///     ctx.grandparent = None;
+/// }
+/// ```
+///
+/// ```compile_fail
+/// fn inject(ctx: &mut vize_atelier_core::TransformContext<'_>) {
+///     ctx.current_node = Some(std::ptr::null_mut());
+/// }
+/// ```
+///
+/// Internal traversal entries cannot leave raw cursors in a public context:
+///
+/// ```compile_fail
+/// use vize_atelier_core::lane::traverse::traverse_children;
+/// ```
+///
+/// ```compile_fail
+/// use vize_atelier_core::lane::traverse::traverse_node;
+/// ```
+///
+/// An independently created context has no active tree cursor:
+///
+/// ```
+/// use vize_atelier_core::{Allocator, TransformContext, TransformOptions};
+/// let allocator = Allocator::default();
+/// let mut context = TransformContext::new(&allocator, "", TransformOptions::default());
+/// assert!(context.take_current_node().is_none());
+/// context.remove_node_at(0);
+/// ```
+pub struct TransformContext<'a> {
+    /// Arena allocator
+    pub allocator: &'a Allocator,
+    /// Transform options
+    pub options: TransformOptions,
+    pub(crate) custom_elements: crate::options::CustomElementMatcher,
+    /// Template source the spans index into, at the arena lifetime (P1-10).
+    pub source: &'a str,
+    /// Atoms for names this pass synthesizes rather than slices (P1-10).
+    pub interner: Interner<'a>,
+    /// Parent node stack
+    pub(crate) parent: Option<ParentNode<'a>>,
+    /// Grandparent node
+    pub(crate) grandparent: Option<ParentNode<'a>>,
+    /// Current node being transformed
+    pub(crate) current_node: Option<*mut TemplateChildNode<'a>>,
+    /// Child index in parent
+    pub child_index: usize,
+    /// Helpers used
+    pub helpers: RuntimeHelpers,
+    /// Components used (Vec to maintain template order for code generation)
+    pub components: std::vec::Vec<String>,
+    /// Directives used (Vec to maintain template order for code generation)
+    pub directives: std::vec::Vec<String>,
+    /// Vue 2 pipe filters referenced by the template, first-seen order.
+    /// Flushed to [`RootNode::filters`](crate::RootNode) and emitted as
+    /// `_resolveFilter` asset declarations. Legacy-only and dialect-gated.
+    #[cfg(feature = "legacy")]
+    pub(crate) filters: std::vec::Vec<String>,
+    /// Hoisted expressions
+    pub hoists: Vec<'a, Option<JsChildNode<'a>>>,
+    /// Cached expressions
+    pub cached: Vec<'a, Option<Box<'a, CacheExpression<'a>>>>,
+    /// Temp variable count
+    pub temps: u32,
+    /// Scope chain for tracking variable visibility
+    pub scope_chain: ScopeChain,
+    /// Scoped slots
+    pub scoped_slots: u32,
+    /// Whether in v-once
+    pub in_v_once: bool,
+    /// Whether in SSR
+    pub in_ssr: bool,
+    /// Errors collected
+    pub errors: std::vec::Vec<CompilerError>,
+    /// Enables compatibility for template syntax edge-case behavior.
+    pub(crate) template_syntax_quirks: bool,
+    pub(crate) jsx_compat: JsxTransformCompat,
+    /// Deferred node removal, including branch whitespace from this index.
+    pub(crate) node_removed_from: Option<usize>,
+    /// The `<script setup>` facts the transform reads beyond binding metadata.
+    pub(crate) script_tables: Option<&'a ScriptTables>,
+    /// Scope ID to bake into static VNodes hoisted outside render scope.
+    pub(crate) hoisted_scope_id: Option<String>,
+    /// Validated compiler opt-in provenance; ordinary transform entries leave it empty.
+    pub(crate) frozen_elements: &'a [Span],
+}
+
+impl TransformContext<'_> {
+    pub(crate) fn is_jsx_custom_element(&self, el: &ElementNode<'_>) -> bool {
+        self.jsx_compat
+            .custom_element_spans
+            .contains(&(el.loc.span.start, el.loc.span.end))
+    }
+}
+
+/// Enum for parent node types
+#[derive(Clone, Copy)]
+pub(crate) enum ParentNode<'a> {
+    Root(*mut RootNode<'a>),
+    Element(*mut ElementNode<'a>),
+    IfBranch(*mut IfBranchNode<'a>),
+    For(*mut ForNode<'a>),
+}
+
+impl<'a> ParentNode<'a> {
+    /// Get mutable access to children through raw pointer.
+    ///
+    /// # Safety
+    /// `ParentNode` stores pointers into the bump-allocated template tree so the
+    /// traversal can mutate parents without cloning children on every visit. The
+    /// active traversal loop owns the only mutable child slice for the current
+    /// parent, and nested calls only use descendants created from that slice.
+    /// Keeping the invariant here avoids an allocation-heavy zipper structure in
+    /// the hottest template transform path.
+    #[expect(clippy::mut_from_ref, reason = "the parent pointer owns the children")]
+    pub(crate) fn children_mut(&self) -> Option<&mut Vec<'a, TemplateChildNode<'a>>> {
+        // SAFETY: every pointer is produced from a live `RootNode`, `ElementNode`,
+        // `IfBranchNode`, or `ForNode` borrowed by the transform driver. The
+        // transform is single-threaded and never keeps two active mutable child
+        // slices for the same parent; sibling traversal advances only after the
+        // previous borrow has been consumed.
+        unsafe {
+            match self {
+                ParentNode::Root(r) => Some(&mut (*(*r)).children),
+                ParentNode::Element(e) => Some(&mut (*(*e)).children),
+                ParentNode::IfBranch(b) => Some(&mut (*(*b)).children),
+                ParentNode::For(f) => Some(&mut (*(*f)).children),
+            }
+        }
+    }
+}
+
+/// Transform the root AST node.
+///
+/// Returns the diagnostics collected during the transform (e.g. invalid
+/// directive usage or unparseable expressions) so callers can surface them
+/// alongside parse errors instead of silently dropping them.
+pub fn transform<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    script_tables: Option<&'a ScriptTables>,
+) -> std::vec::Vec<CompilerError> {
+    transform_inner(
+        allocator,
+        root,
+        options,
+        script_tables,
+        TransformLaneOptions::default(),
+        None,
+    )
+}
+
+/// Transform the root AST node with template syntax quirk compatibility enabled.
+pub fn transform_with_template_syntax_quirks<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    script_tables: Option<&'a ScriptTables>,
+) -> std::vec::Vec<CompilerError> {
+    transform_inner(
+        allocator,
+        root,
+        options,
+        script_tables,
+        TransformLaneOptions {
+            template_syntax_quirks: true,
+            ..Default::default()
+        },
+        None,
+    )
+}
+
+/// Transform the root AST node with Vue parser quirk compatibility enabled.
+#[deprecated(note = "use transform_with_template_syntax_quirks instead")]
+pub fn transform_with_vue_parser_quirks<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    script_tables: Option<&'a ScriptTables>,
+) -> std::vec::Vec<CompilerError> {
+    transform_with_template_syntax_quirks(allocator, root, options, script_tables)
+}
+
+pub(crate) fn transform_inner<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    script_tables: Option<&'a ScriptTables>,
+    lane_options: TransformLaneOptions<'a>,
+    source_text: Option<&'a str>,
+) -> std::vec::Vec<CompilerError> {
+    let TransformLaneOptions {
+        template_syntax_quirks,
+        hoisted_scope_id,
+        jsx_compat,
+        custom_elements,
+        frozen_elements,
+    } = lane_options;
+    let source = source_text.unwrap_or(root.source);
+    let mut ctx = TransformContext::new_with_template_syntax_quirks(
+        allocator,
+        source,
+        options,
+        template_syntax_quirks,
+    );
+    ctx.script_tables = script_tables;
+    ctx.jsx_compat = jsx_compat;
+    ctx.hoisted_scope_id = hoisted_scope_id;
+    ctx.custom_elements = custom_elements;
+    ctx.frozen_elements = frozen_elements;
+
+    // Legacy (Vue 2 / 2.7) template-sugar pre-transform. Resolved once per file
+    // from the dialect; a no-op for the default Vue 3 dialect (the resolved
+    // capability set is the all-off `VUE3` set, so this returns before touching
+    // the tree). Compiled only under the `legacy` cargo feature — the default
+    // Vue 3 build never sees it, keeping the hot path byte-identical.
+    #[cfg(feature = "legacy")]
+    {
+        use vize_armature::legacy::LegacyDialectCapabilities;
+        let caps = LegacyDialectCapabilities::for_dialect(ctx.options.dialect);
+        crate::steps::legacy::desugar_legacy_template(allocator, root, caps);
+    }
+
+    if ctx.options.experimental_patterned_template {
+        patterned_template::desugar_patterned_templates(&mut ctx, root);
+    } else {
+        patterned_template::diagnose_disabled_patterned_templates(&mut ctx, root);
+    }
+
+    // Transform the root children
+    crate::walk_probe::record_walk(crate::walk_probe::WalkStage::Transform);
+    profile!(
+        "atelier.transform.traverse_children",
+        traverse_children(&mut ctx, ParentNode::Root(root as *mut _))
+    );
+
+    // Apply static hoisting after traversal (before codegen)
+    use crate::steps::hoist_static::hoist_static;
+    profile!(
+        "atelier.transform.hoist_static",
+        hoist_static(&mut ctx, &mut root.children)
+    );
+
+    // Register helpers implied by the root shape.
+    profile!(
+        "atelier.transform.register_root_helpers",
+        register_root_helpers(&mut ctx, root)
+    );
+
+    // Update root with context results
+    for helper in ctx.helpers.iter() {
+        root.helpers.push(helper);
+    }
+    // Asset names are computed and recur, so they land in the arena as atoms.
+    for component in ctx.components.iter() {
+        let atom = ctx.interner.intern(component);
+        root.components.push(atom);
+    }
+    for directive in ctx.directives.iter() {
+        let atom = ctx.interner.intern(directive);
+        root.directives.push(atom);
+    }
+    // Transfer Vue 2 pipe filters (legacy-only; empty for Vue 3).
+    #[cfg(feature = "legacy")]
+    for filter in ctx.filters.iter() {
+        let atom = ctx.interner.intern(filter);
+        root.filters.push(atom);
+    }
+    // Transfer hoisted nodes to root
+    for hoist in ctx.hoists.into_iter() {
+        root.hoists.push(hoist);
+    }
+    root.temps = ctx.temps;
+    root.transformed = true;
+
+    ctx.errors
+}
+
+fn register_root_helpers<'a>(ctx: &mut TransformContext<'a>, root: &mut RootNode<'a>) {
+    if root.children.is_empty() {
+        return;
+    }
+
+    if root.children.len() > 1 {
+        // Multiple root children need to be wrapped in a fragment
+        ctx.helper(RuntimeHelper::OpenBlock);
+        ctx.helper(RuntimeHelper::CreateElementBlock);
+        ctx.helper(RuntimeHelper::Fragment);
+    }
+}
+
+#[cfg(test)]
+mod tests;

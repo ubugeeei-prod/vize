@@ -185,7 +185,6 @@ fn rejected_preflight_preserves_complete_error_and_the_original_sidecar_boundary
                 experimental_self_component: false,
                 bindings: None,
                 script_tables: None,
-                collect_map: false,
                 authored_source: None,
                 pug_source_map: None,
             },

@@ -1,0 +1,489 @@
+// DO NOT EDIT. Generated from crates/vize_atelier_core/src/lane/context.rs by `node tools/commands/generate/composed-crates.ts`.
+// Edit the source and run the command again.
+//! TransformContext implementation.
+#[cfg(all(test, feature = "legacy"))]
+mod dialect_tests;
+mod for_bindings;
+use vize_croquis::{BindingType, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
+use vize_l0::{Allocator, Box, CompactString, String, Vec, interner::Interner};
+
+use crate::errors::{CompilerError, ErrorCode};
+use crate::options::TransformOptions;
+use crate::{
+    CacheExpression, CommentNode, ExpressionNode, JsChildNode, RuntimeHelper, SimpleExpressionNode,
+    SourceLocation, TemplateChildNode,
+};
+
+use super::{ParentNode, ReactiveSource, TransformContext};
+
+impl<'a> TransformContext<'a> {
+    /// Create a new transform context
+    pub fn new(allocator: &'a Allocator, source: &'a str, options: TransformOptions) -> Self {
+        Self::new_with_template_syntax_quirks(allocator, source, options, false)
+    }
+
+    /// Create a new transform context with template syntax quirk compatibility.
+    pub fn new_with_template_syntax_quirks(
+        allocator: &'a Allocator,
+        source: &'a str,
+        options: TransformOptions,
+        template_syntax_quirks: bool,
+    ) -> Self {
+        Self {
+            allocator,
+            source,
+            interner: Interner::new(allocator),
+            in_ssr: options.ssr,
+            options,
+            custom_elements: Default::default(),
+            parent: None,
+            grandparent: None,
+            current_node: None,
+            child_index: 0,
+            helpers: crate::runtime_helpers::RuntimeHelpers::default(),
+            components: std::vec::Vec::new(),
+            directives: std::vec::Vec::new(),
+            #[cfg(feature = "legacy")]
+            filters: std::vec::Vec::new(),
+            hoists: vize_l0::Vec::new_in(&allocator),
+            cached: vize_l0::Vec::new_in(&allocator),
+            temps: 0,
+            scope_chain: vize_croquis::ScopeChain::new(),
+            scoped_slots: 0,
+            in_v_once: false,
+            errors: std::vec::Vec::new(),
+            template_syntax_quirks,
+            jsx_compat: super::JsxTransformCompat::default(),
+            node_removed_from: None,
+            script_tables: None,
+            hoisted_scope_id: None,
+            frozen_elements: &[],
+        }
+    }
+
+    /// Create a new transform context with Vue parser quirk compatibility.
+    #[deprecated(note = "use new_with_template_syntax_quirks instead")]
+    pub fn new_with_vue_parser_quirks(
+        allocator: &'a Allocator,
+        source: &'a str,
+        options: TransformOptions,
+        vue_parser_quirks: bool,
+    ) -> Self {
+        Self::new_with_template_syntax_quirks(allocator, source, options, vue_parser_quirks)
+    }
+
+    /// Whether template syntax quirk compatibility is enabled.
+    #[inline]
+    pub fn template_syntax_quirks(&self) -> bool {
+        self.template_syntax_quirks
+    }
+
+    /// Whether Vue parser quirk compatibility is enabled.
+    #[inline]
+    #[deprecated(note = "use template_syntax_quirks instead")]
+    pub fn vue_parser_quirks(&self) -> bool {
+        self.template_syntax_quirks()
+    }
+
+    /// Check if a variable is defined (from scope chain or binding metadata)
+    ///
+    /// This checks both the scope chain (template-local) and script bindings.
+    pub fn is_variable_defined(&self, name: &str) -> bool {
+        // First check scope chain (v-for, v-slot variables)
+        if self.scope_chain.is_defined(name) {
+            return true;
+        }
+
+        // Fall back to binding metadata from options
+        if let Some(metadata) = &self.options.binding_metadata {
+            return metadata.bindings.contains_key(name);
+        }
+
+        false
+    }
+
+    /// Get the binding type for a name
+    pub fn get_binding_type(&self, name: &str) -> Option<BindingType> {
+        // First check scope chain
+        if let Some((_, binding)) = self.scope_chain.lookup(name) {
+            return Some(binding.binding_type);
+        }
+
+        // Fall back to binding metadata
+        if let Some(metadata) = &self.options.binding_metadata {
+            return metadata.bindings.get(name).copied();
+        }
+
+        None
+    }
+
+    /// Check if a name needs $setup prefix (for script setup bindings)
+    ///
+    /// Returns true if the name is a script binding and should use $setup prefix.
+    pub fn needs_setup_prefix(&self, name: &str) -> bool {
+        // Skip if in scope (v-for, v-slot)
+        if self.scope_chain.is_defined(name) {
+            return false;
+        }
+
+        // Check binding type
+        if let Some(binding_type) = self.get_binding_type(name) {
+            matches!(
+                binding_type,
+                BindingType::SetupConst
+                    | BindingType::SetupLet
+                    | BindingType::SetupRef
+                    | BindingType::SetupMaybeRef
+                    | BindingType::SetupReactiveConst
+            )
+        } else {
+            false
+        }
+    }
+
+    /// Check if a binding is a ref that needs .value in script
+    pub fn is_ref(&self, name: &str) -> bool {
+        if let Some(binding_type) = self.get_binding_type(name) {
+            matches!(
+                binding_type,
+                BindingType::SetupRef | BindingType::SetupMaybeRef
+            )
+        } else {
+            false
+        }
+    }
+
+    /// Check if a binding is from props
+    pub fn is_prop(&self, name: &str) -> bool {
+        matches!(
+            self.get_binding_type(name),
+            Some(BindingType::Props | BindingType::PropsAliased)
+        )
+    }
+
+    /// The reactivity API whose result initializes the setup binding `name`.
+    pub fn reactive_source(&self, name: &str) -> Option<ReactiveSource> {
+        self.script_tables?.reactive_source(name)
+    }
+
+    /// Check if a component is registered (from the script tables or binding metadata)
+    pub fn is_component_registered(&self, name: &str) -> bool {
+        if let Some(tables) = self.script_tables
+            && tables.registers_component(name)
+        {
+            return true;
+        }
+
+        if let Some(metadata) = &self.options.binding_metadata
+            && metadata.bindings.contains_key(name)
+        {
+            return true;
+        }
+
+        false
+    }
+
+    /// Add a helper
+    pub fn helper(&mut self, helper: RuntimeHelper) {
+        self.helpers.add(helper);
+    }
+
+    /// Remove a helper
+    pub fn remove_helper(&mut self, helper: RuntimeHelper) {
+        self.helpers.remove(helper);
+    }
+
+    /// Check if helper exists
+    pub fn has_helper(&self, helper: RuntimeHelper) -> bool {
+        self.helpers.contains(helper)
+    }
+
+    /// Add a component (maintains insertion order for code generation)
+    pub fn add_component(&mut self, component: impl Into<String>) {
+        let component = component.into();
+        if !self.components.contains(&component) {
+            self.components.push(component);
+        }
+    }
+
+    /// Add a directive (maintains insertion order for code generation)
+    pub fn add_directive(&mut self, directive: impl Into<String>) {
+        let directive = directive.into();
+        if !self.directives.contains(&directive) {
+            self.directives.push(directive);
+        }
+    }
+
+    /// Register a Vue 2 pipe filter (maintains first-seen order for codegen).
+    /// Legacy-only; only ever called from the dialect-gated filter rewrite.
+    #[cfg(feature = "legacy")]
+    pub(crate) fn add_filter(&mut self, filter: impl Into<String>) {
+        let filter = filter.into();
+        if !self.filters.contains(&filter) {
+            self.filters.push(filter);
+        }
+    }
+
+    /// Whether the resolved dialect supports Vue 2 pipe filters
+    /// (`{{ msg | capitalize }}`). Resolved from
+    /// [`vize_armature::legacy::LegacyDialectCapabilities`] for the dialect on
+    /// [`TransformOptions::dialect`](crate::options::TransformOptions::dialect).
+    ///
+    /// Always `false` for the default Vue 3 dialect, so the filter rewrite is
+    /// never entered there. Legacy-only.
+    #[cfg(feature = "legacy")]
+    #[inline]
+    pub(crate) fn supports_filters(&self) -> bool {
+        vize_armature::legacy::LegacyDialectCapabilities::for_dialect(self.options.dialect)
+            .supports_filters
+    }
+
+    /// Whether the shared capability table enables Vue 2 / 2.7 event sugar
+    /// (`@click.native` and numeric keycodes such as `@keyup.13`).
+    ///
+    /// Read the current [`TransformOptions::dialect`](crate::options::TransformOptions::dialect)
+    /// so option changes remain authoritative. Vue 3 and other legacy lines
+    /// leave event modifiers unchanged.
+    #[cfg(feature = "legacy")]
+    #[inline]
+    pub(crate) fn supports_v2_event_sugar(&self) -> bool {
+        vize_armature::legacy::LegacyDialectCapabilities::for_dialect(self.options.dialect)
+            .v2_event_sugar
+    }
+
+    /// Add an identifier to current scope
+    pub fn add_identifier(&mut self, id: impl Into<CompactString>) {
+        self.scope_chain
+            .add_binding(id.into(), ScopeBinding::new(BindingType::SetupConst, 0));
+    }
+
+    /// Enter a new scope
+    pub fn enter_scope(&mut self, kind: ScopeKind) {
+        self.scope_chain.enter_scope(kind);
+    }
+
+    /// Exit the current scope
+    pub fn exit_scope(&mut self) {
+        self.scope_chain.exit_scope();
+    }
+
+    /// Enter a v-for scope with the given aliases
+    pub fn enter_v_for_scope(
+        &mut self,
+        value_alias: Option<&str>,
+        key_alias: Option<&str>,
+        index_alias: Option<&str>,
+        source: &str,
+    ) {
+        self.enter_v_for_scope_with_names(value_alias, key_alias, index_alias, source, [None; 3]);
+    }
+
+    pub(crate) fn enter_v_for_scope_with_names(
+        &mut self,
+        value_alias: Option<&str>,
+        key_alias: Option<&str>,
+        index_alias: Option<&str>,
+        source: &str,
+        names: [Option<&[&str]>; 3],
+    ) {
+        let [value_names, key_names, index_names] = names;
+        // Scope names are the bound names, without TypeScript annotations.
+        let untyped = crate::steps::untyped_for_alias;
+        let (value_alias, key_alias, index_alias) = (
+            value_alias.map(untyped),
+            key_alias.map(untyped),
+            index_alias.map(untyped),
+        );
+        self.scope_chain.enter_v_for_scope(
+            VForScopeData {
+                value_alias: CompactString::new(value_alias.unwrap_or("")),
+                value_bindings: match value_names {
+                    Some(names) => names.iter().map(|name| CompactString::new(name)).collect(),
+                    None => value_alias
+                        .map(for_bindings::value_bindings)
+                        .unwrap_or_default(),
+                },
+                key_alias: match key_names {
+                    Some(names) => names.first().map(|name| CompactString::new(name)),
+                    None => key_alias.map(CompactString::new),
+                },
+                index_alias: match index_names {
+                    Some(names) => names.first().map(|name| CompactString::new(name)),
+                    None => index_alias.map(CompactString::new),
+                },
+                source: CompactString::new(source),
+                key_expression: None,
+            },
+            0,
+            0,
+        );
+    }
+
+    /// Enter a v-slot scope with the given slot params
+    pub fn enter_v_slot_scope(
+        &mut self,
+        name: &str,
+        props_pattern: Option<&str>,
+        prop_names: &[String],
+        start: u32,
+        end: u32,
+    ) {
+        self.scope_chain.enter_v_slot_scope(
+            VSlotScopeData {
+                name: CompactString::new(name),
+                props_pattern: props_pattern.map(CompactString::new),
+                prop_names: prop_names
+                    .iter()
+                    .map(|name| CompactString::new(name.as_str()))
+                    .collect(),
+                // The runtime transform does not type slot props; only the
+                // editor's virtual-TS generation consumes the owning component.
+                component: None,
+            },
+            start,
+            end,
+        );
+    }
+
+    /// Whether a lexical template binding is visible here. Seeded host globals
+    /// use the compiler's Vue allow-list rather than becoming template locals.
+    pub fn is_in_scope(&self, id: &str) -> bool {
+        self.scope_chain.lookup(id).is_some_and(|(_, binding)| {
+            !matches!(
+                binding.binding_type,
+                BindingType::JsGlobalUniversal
+                    | BindingType::JsGlobalBrowser
+                    | BindingType::JsGlobalNode
+                    | BindingType::JsGlobalDeno
+                    | BindingType::JsGlobalBun
+                    | BindingType::VueGlobal
+            )
+        })
+    }
+
+    /// Hoist an expression
+    pub fn hoist(&mut self, node: JsChildNode<'a>) -> usize {
+        let index = self.hoists.len();
+        self.hoists.push(Some(node));
+        index
+    }
+
+    /// Cache an expression
+    pub fn cache(&mut self, exp: CacheExpression<'a>) -> usize {
+        let index = self.cached.len();
+        let boxed = Box::new_in(exp, &self.allocator);
+        self.cached.push(Some(boxed));
+        index
+    }
+
+    /// Report an error
+    pub fn on_error(&mut self, code: ErrorCode, loc: Option<SourceLocation>) {
+        self.errors.push(CompilerError::new(code, loc));
+    }
+
+    /// Report an error with a custom message (e.g. parser details appended
+    /// to the code's default message, mirroring `@vue/compiler-core`).
+    pub fn on_error_with_message(
+        &mut self,
+        code: ErrorCode,
+        message: impl Into<CompactString>,
+        loc: Option<SourceLocation>,
+    ) {
+        self.errors
+            .push(CompilerError::with_message(code, message, loc));
+    }
+
+    /// Replace current node with a new node
+    pub fn replace_node(&mut self, new_node: TemplateChildNode<'a>) {
+        if let Some(current) = self.current_node {
+            // SAFETY: `current_node` is created from the active child slot that
+            // traversal is visiting. Replacing through that pointer avoids
+            // borrowing the parent children vector a second time while the
+            // current slot is already mutably borrowed.
+            unsafe {
+                *current = new_node;
+            }
+        }
+    }
+
+    /// Take the current node, replacing it with a placeholder
+    pub fn take_current_node(&mut self) -> Option<TemplateChildNode<'a>> {
+        if let Some(current) = self.current_node {
+            let placeholder = TemplateChildNode::Comment(Box::new_in(
+                CommentNode::new("", SourceLocation::STUB),
+                &self.allocator,
+            ));
+            // SAFETY: see `replace_node`. The pointer is derived from the
+            // active traversal slot, so this replacement does not create an
+            // independent mutable borrow of the parent children vector.
+            return Some(unsafe { std::mem::replace(&mut *current, placeholder) });
+        }
+        None
+    }
+
+    /// Remove current node
+    pub fn remove_node(&mut self) {
+        self.current_node = None;
+        self.node_removed_from = Some(self.child_index);
+    }
+
+    /// Remove a specific node
+    pub fn remove_node_at(&mut self, index: usize) {
+        if let Some(children) = self.parent.as_ref().and_then(ParentNode::children_mut)
+            && index < children.len()
+        {
+            children.remove(index);
+            if index < self.child_index {
+                self.child_index -= 1;
+            }
+            self.node_removed_from = Some(self.child_index);
+        }
+    }
+
+    /// Check if node was removed
+    pub fn was_node_removed(&self) -> bool {
+        self.node_removed_from.is_some()
+    }
+
+    /// Reset node removed flag
+    pub fn reset_node_removed(&mut self) {
+        self.node_removed_from = None;
+    }
+}
+
+/// Clone an expression into the arena
+pub(super) fn clone_expression<'a>(
+    allocator: &'a Allocator,
+    exp: &ExpressionNode<'a>,
+    source: &'a str,
+) -> ExpressionNode<'a> {
+    match exp {
+        ExpressionNode::Simple(s) => ExpressionNode::Simple(Box::new_in(
+            SimpleExpressionNode {
+                content: s.content,
+                is_static: s.is_static,
+                const_type: s.const_type,
+                loc: s.loc.clone(),
+                js_ast: s.js_ast,
+                hoisted: None,
+                identifiers: s.identifiers.as_ref().map(|names| {
+                    let mut retained = Vec::new_in(&allocator);
+                    for name in names {
+                        retained.push(*name);
+                    }
+                    retained
+                }),
+                is_handler_key: s.is_handler_key,
+                is_ref_transformed: s.is_ref_transformed,
+            },
+            &allocator,
+        )),
+        ExpressionNode::Compound(c) => ExpressionNode::Simple(Box::new_in(
+            SimpleExpressionNode {
+                is_handler_key: c.is_handler_key,
+                ..SimpleExpressionNode::new(c.loc.span.slice(source), false, c.loc.clone())
+            },
+            &allocator,
+        )),
+    }
+}

@@ -5407,6 +5407,65 @@
       }
     },
     {
+      "id": "compiler/sfc/template-source-map-13547",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "template-source-map-13547",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "47d85cb19e5366cc0a67f667761e10c0d0381f376f1d99e547b4caab585aa2e3",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "template-source-map-13547/module.expected.txt",
+        "sha256": "3b9c8eca35d1097b064aba33e7a08e27eb93ea2cf79c38ffd530541fdb595cba",
+        "source": "crates/vize_atelier_sfc/tests/template_source_maps.rs:the_server_module_is_the_pinned_reference_with_or_without_a_map"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native compiler remains unavailable; this source-built SSR observation pins the module of the reported script-bearing component, which a source-map request must leave byte-identical while its render maps back to the template, without native parity credit."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/13547",
+        "reporter": "RyutaroYako"
+      }
+    },
+    {
       "id": "compiler/sfc/template-ts-unscanned-erasure",
       "state": "active",
       "targets": [

@@ -2,6 +2,18 @@
 //!
 //! This module generates JavaScript render function code from the transformed AST.
 
+/// Push the setup binding a component tag resolves to, as
+/// [`CodegenContext::push_component_binding_tag`] does. A composed map also
+/// anchors the read at the authored tag.
+macro_rules! push_component_binding {
+    ($ctx:expr, $el:expr) => {
+        render_map_copy!(
+            plain { $ctx.push_component_binding_tag($el.tag) }
+            composed { $ctx.push_composed_component_binding($el) }
+        )
+    };
+}
+
 mod children;
 mod component_binding;
 mod context;
@@ -12,6 +24,16 @@ mod emit;
 mod entry;
 mod expression;
 mod generate;
+render_map_copy! {
+    plain {
+        #[cfg(test)]
+        mod for_alias_spans;
+    }
+    composed {
+        mod for_alias_spans;
+        pub use for_alias_spans::locate_for_aliases;
+    }
+}
 mod helpers;
 mod node;
 mod patch_flag;
