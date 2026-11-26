@@ -2082,6 +2082,58 @@
       }
     },
     {
+      "id": "lsp/regression/document-link-directory-containment",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "document-link-directory-containment",
+        "files": [
+          {
+            "path": "Links.vue.txt",
+            "sha256": "39169f664686125a2bc8128a3d3da8065f181920a2a6aad158a4e52013aac88f"
+          },
+          {
+            "path": "card.html.txt",
+            "sha256": "314a0ea942da79824c381677ef6246f767b413fa3e92fc0eb9280bada6a32944"
+          },
+          {
+            "path": "reset.css.txt",
+            "sha256": "d84907d26eab21e7448c557bf7cde56e206794c6b218f86d8b717745892d4c16"
+          },
+          {
+            "path": "theme.css.txt",
+            "sha256": "6c8e440e99c6ca4beba68a6e40e41bb58586d84cd5623c79422ac7970dff1328"
+          }
+        ]
+      },
+      "case": {
+        "path": "document-link-directory-containment/case.json",
+        "sha256": "54d445f7915415aeb1f77c11414e43c116a5a98def6dec675f31694655152183"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/document-symbol-outline-myswitch",
       "state": "active",
       "targets": [

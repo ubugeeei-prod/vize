@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "id": "lsp/regression/document-link-directory-containment",
+  "provenance": {
+    "fixCommit": "673c97e16f65b81392fd0c6f94d46e64ac968aaf",
+    "witnessPath": "crates/vize_maestro/src/ide/document_link.rs",
+    "witnessTest": "a_link_target_stays_under_the_documents_directory",
+    "inputOrigin": "repository-authored SFC: two block src attributes and four style imports, three of them spelled with a leading double slash",
+    "contractOrigin": "complete ordered documentLink response over stdio: the block src and the './' and single-slash imports resolve under the document's directory; the double-slash src, @import string and @import url() produce no link"
+  },
+  "files": [
+    {
+      "runtimePath": "src/Links.vue",
+      "source": "Links.vue.txt",
+      "sha256": "39169f664686125a2bc8128a3d3da8065f181920a2a6aad158a4e52013aac88f"
+    },
+    {
+      "runtimePath": "src/partials/card.html",
+      "source": "card.html.txt",
+      "sha256": "314a0ea942da79824c381677ef6246f767b413fa3e92fc0eb9280bada6a32944"
+    },
+    {
+      "runtimePath": "src/styles/reset.css",
+      "source": "reset.css.txt",
+      "sha256": "d84907d26eab21e7448c557bf7cde56e206794c6b218f86d8b717745892d4c16"
+    },
+    {
+      "runtimePath": "src/styles/theme.css",
+      "source": "theme.css.txt",
+      "sha256": "6c8e440e99c6ca4beba68a6e40e41bb58586d84cd5623c79422ac7970dff1328"
+    }
+  ],
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "entry": "src/Links.vue",
+  "documentVersion": 1,
+  "method": "textDocument/documentLink",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38245000d45ff72d087e62cae54d20d85c4a47c49c37e1cca2aa3619fbe86e43"
+  },
+  "scope": "standard legacy documentLink only; production stdio replay required; no native provider credit"
+}
