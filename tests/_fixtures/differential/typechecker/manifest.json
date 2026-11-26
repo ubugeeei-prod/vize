@@ -62863,6 +62863,51 @@
       }
     },
     {
+      "id": "typechecker/editor-mirror-storage-owner/linked-shared-name",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "corsa_bridge::editor_session::storage_root::tests::a_shared_name_of_another_user_or_kind_is_not_adopted",
+      "inputs": [
+        {
+          "path": "editor-mirror-storage-owner/App.vue.txt",
+          "role": "editor-session-document",
+          "sha256": "d3559715bec4a51c51140075bdf74c11f7534ce7682e237a6358c367cb3f7ce5"
+        },
+        {
+          "path": "editor-mirror-storage-owner/tsconfig.json.txt",
+          "role": "editor-session-project-config",
+          "sha256": "730d5f919f65ea76d853d88f60a4bfc66c57a4ffa0156d63a3167e9e1b799985"
+        },
+        {
+          "path": "editor-mirror-storage-owner/temporary-directory.json",
+          "role": "filesystem-ownership-precondition-and-session",
+          "sha256": "b3928ef9fdb74e039ce359eb7335993e1f475b6abb0eaec7107adeaf99170044"
+        },
+        {
+          "path": "editor-mirror-storage-owner/storage.observed.json",
+          "role": "complete-current-observation",
+          "sha256": "0ec40aa948bd56c17cb1f3f9c5b017538a5287e25841f71b31a9fb2142231eea"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "editor mirror storage placement observed from a source-built `vize lsp` typecheck session whose temporary directory holds `vize-canon` as a link; the link is not followed and the storage levels are created 0700 under vize-canon-{uid}. Input-only registration: no batch or native adapter reads editor storage, so there is no parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/editor-vite-stub-11145/whole-install-ownership",
       "state": "active",
       "targets": [
