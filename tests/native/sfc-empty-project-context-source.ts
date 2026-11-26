@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 interface SourceChange {
   path: string;
@@ -28,6 +28,15 @@ const plan = JSON.parse(bytes.toString("utf8")) as {
 assert.equal(plan.schema, "vize.sfc-empty-compile-project-context-source-successor.v1");
 
 export const emptyProjectContextSupportingBlobs = plan.supportingSources;
+
+/**
+ * The bytes of a source this law reviewed. A source that has since moved on
+ * is authenticated through its frozen copy under `tests/_fixtures/byte-custody`.
+ */
+export function readReviewedSource(file: string): Buffer {
+  const frozen = new URL(`../_fixtures/byte-custody/${file}`, import.meta.url);
+  return readFileSync(existsSync(frozen) ? frozen : new URL(`../../${file}`, import.meta.url));
+}
 
 function blob(bytes: Uint8Array): string {
   return createHash("sha1")
@@ -273,7 +282,7 @@ export function emptyCompileSourcesForReference(
     Object.fromEntries(
       Object.keys(plan.supportingSources).map((file) => [
         file,
-        readFileSync(new URL(`../../${file}`, import.meta.url)),
+        readReviewedSource(file),
       ]),
     );
   assert.deepEqual(Object.keys(supporting).sort(), Object.keys(plan.supportingSources).sort());

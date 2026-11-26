@@ -3,11 +3,12 @@
 
 use super::{
     BatchCompileOptionsNapi, BatchCompileResultWithFilesNapi, BatchCompileTargetNapi,
-    BatchFileInputNapi, BatchFileResultNapi, compile_sfc_batch_for_targets,
-    compile_sfc_batch_with_results,
+    BatchFileInputNapi, compile_sfc_batch_for_targets, compile_sfc_batch_with_results,
 };
 use std::path::{Path, PathBuf};
 
+mod cases;
+mod dependencies;
 mod fields;
 mod window;
 use fields::{custom_blocks, macro_artifacts, module_shape, styles, type_project};
@@ -348,62 +349,6 @@ fn target_specific_cases_compile_as_they_do_apart() {
     assert!(!ssr.is_empty(), "the SSR target refuses duplicate props");
 }
 
-/// What one target's emit changes in the shared analysis, and what decides
-/// whether the targets can share it at all.
-#[test]
-fn shared_analysis_cases_compile_as_they_do_apart() {
-    let files = [
-        case(
-            "BothScripts",
-            "<script lang=\"ts\">\nimport { helper } from './helper'\nexport interface Shared { id: string }\nexport default { name: 'Both' }\n</script>\n<script setup lang=\"ts\">\nconst props = defineProps<Shared>()\nconst label = helper(props.id)\n</script>\n<template><p>{{ label }}</p></template>\n",
-        ),
-        case(
-            "EmitsByRender",
-            "<script setup lang=\"ts\">\nconst emit = defineEmits<{ (event: 'save', id: number): void }>()\n</script>\n<template><button @click=\"emit('save', 1)\">save</button><i @click=\"$emit('save', 2)\">x</i></template>\n",
-        ),
-        case(
-            "DestructureExpose",
-            "<script setup lang=\"ts\">\nconst { count = 1, label } = defineProps<{ count?: number; label: string }>()\ndefineExpose({ double: () => count * 2, label: label as string })\n</script>\n<template><p>{{ count }} {{ label }}</p></template>\n",
-        ),
-        case(
-            "DefaultsModel",
-            "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ size?: number; tag?: string }>(), { size: 2 as number, tag: 'p' })\nconst model = defineModel<string>({ default: '' as string })\nconst [title, modifiers] = defineModel<string>('title')\n</script>\n<template><component :is=\"props.tag\"><input v-model=\"model\" /><input v-model=\"title\" />{{ props.size }} {{ modifiers }}</component></template>\n",
-        ),
-        case(
-            "CssModules",
-            "<script setup>\nconst active = true\n</script>\n<template><p :class=\"[$style.box, theme.dark]\">{{ active }}</p></template>\n<style module>\n.box { color: red }\n</style>\n<style module=\"theme\">\n.dark { color: black }\n</style>\n",
-        ),
-        case(
-            "CssModuleShadowed",
-            "<script setup>\nconst theme = { dark: 'local' }\n</script>\n<template><p :class=\"theme.dark\">x</p></template>\n<style module=\"theme\">\n.dark { color: black }\n</style>\n",
-        ),
-        case(
-            "DemotionOrder",
-            "<script setup>\nimport { reactive } from 'vue'\nconst first = reactive({ text: '' })\nconst second = reactive({ text: '' })\n</script>\n<template><input v-model=\"first\" /><input v-model=\"second\" /><div v-if=\"first\" v-for=\"item in [1]\" :key=\"item\">{{ item }}</div></template>\n<style scoped>\n:deep { color: red }\n</style>\n",
-        ),
-        case(
-            "VaporSetup",
-            "<script setup vapor>\nimport { ref } from 'vue'\nconst count = ref(0)\n</script>\n<template><button @click=\"count++\">{{ count }}</button></template>\n",
-        ),
-        case(
-            "RootMatch",
-            "<script setup>\nconst result = { kind: 'ok', data: 'ready' }\n</script>\n<template v-match=\"result\"><p v-when=\"{ kind: 'ok', const data }\">{{ data }}</p><i v-when=\"_\">other</i></template>\n",
-        ),
-        case(
-            "MissingType",
-            "<script setup lang=\"ts\">\nimport type { Missing } from './does-not-exist'\ndefineProps<Missing>()\n</script>\n<template><p>x</p></template>\n",
-        ),
-    ];
-    let errors = assert_targets_compile_apart(&files);
-    for (index, [client, ssr]) in errors.iter().enumerate() {
-        // Root v-match is refused without its experiment; a missing type
-        // module fails every target alike.
-        let refused = matches!(index, 8 | 9);
-        assert_eq!(!client.is_empty(), refused, "{index}: {client:?}");
-        assert_eq!(client, ssr, "{index}");
-    }
-}
-
 /// A project whose components type their props through imported modules: a
 /// relative import, a `paths` alias, a star barrel, and a pug include.
 fn typed_project(root: &Path) -> Vec<(String, String)> {
@@ -508,56 +453,4 @@ fn an_omitted_target_field_keeps_the_call_option() {
 fn a_call_without_targets_is_refused() {
     let refused = compile_sfc_batch_for_targets(vec![], None, vec![]);
     assert!(refused.is_err());
-}
-
-fn result_with(dependencies: Option<&[&str]>) -> BatchFileResultNapi {
-    BatchFileResultNapi {
-        type_project: None,
-        path: "/virtual/Shared.vue".into(),
-        code: String::new(),
-        map: None,
-        css: None,
-        scope_id: String::new(),
-        has_scoped: false,
-        errors: vec![],
-        warnings: vec![],
-        template_hash: None,
-        style_hash: None,
-        script_hash: None,
-        styles: vec![],
-        custom_blocks: vec![],
-        macro_artifacts: vec![],
-        module_shape: None,
-        dependencies: dependencies.map(|list| list.iter().map(|path| (*path).into()).collect()),
-    }
-}
-
-#[test]
-fn only_an_equal_dependency_list_is_left_out() {
-    use super::batch_targets::leave_out_shared_dependencies;
-    let list: &[&str] = &["/project/types.ts"];
-    let mut equal = [
-        (result_with(Some(list)), true),
-        (result_with(Some(list)), true),
-    ];
-    assert!(leave_out_shared_dependencies(&mut equal));
-    let [(first, _), (later, _)] = &equal;
-    assert_eq!(
-        first.dependencies.as_deref(),
-        Some(&["/project/types.ts".into()][..])
-    );
-    assert_eq!(later.dependencies, None);
-
-    // A later target that failed has no list: it shares nothing.
-    let mut failed = [(result_with(Some(list)), true), (result_with(None), false)];
-    assert!(!leave_out_shared_dependencies(&mut failed));
-    let mut different = [
-        (result_with(Some(list)), true),
-        (result_with(Some(&["/project/other.ts"])), true),
-    ];
-    assert!(!leave_out_shared_dependencies(&mut different));
-    let [_, (later, _)] = &different;
-    assert_eq!(later.dependencies.as_ref().map(Vec::len), Some(1));
-    let mut none = [(result_with(None), true), (result_with(None), true)];
-    assert!(!leave_out_shared_dependencies(&mut none));
 }

@@ -16,6 +16,7 @@ import {
 import {
   emptyCompileSourcesForReference,
   emptyProjectContextSupportingBlobs,
+  readReviewedSource,
 } from "../native/sfc-empty-project-context-source.ts";
 import type { ExposurePacket } from "./support/script-setup-default-expose.ts";
 import {
@@ -157,7 +158,7 @@ await test("empty compile references reject altered or incomplete complete produ
     Object.fromEntries(
       Object.keys(emptyCompileSourceBlobs).map((file) => [
         file,
-        readFileSync(new URL(`../../${file}`, import.meta.url)),
+        readReviewedSource(file),
       ]),
     ),
     emptyCompileSourceBlobs,
@@ -182,7 +183,7 @@ test("the project-context successor rejects unknown, incomplete and mixed source
     Object.fromEntries(
       Object.keys(blobs).map((file) => [
         file,
-        readFileSync(new URL(`../../${file}`, import.meta.url)),
+        readReviewedSource(file),
       ]),
     );
   const sources = read(emptyCompileSourceBlobs);
