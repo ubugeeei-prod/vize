@@ -73,11 +73,11 @@ jobs {
       }
       new Dynamic {
         name = "Verify comparison controls and fetch both commits"
-        run = ci.workflowScript("verify-comparison-controls-and-fetch-both-commits.sh")
+        run = ci.workflowProgram("verify-comparison-controls-and-fetch-both-commits")
       }
       new Dynamic {
         name = "Compare independently compiled products"
-        run = ci.workflowScript("compare-independently-compiled-products.sh")
+        run = ci.workflowProgram("compare-independently-compiled-products")
       }
       new Dynamic {
         uses = ci.uploadArtifact

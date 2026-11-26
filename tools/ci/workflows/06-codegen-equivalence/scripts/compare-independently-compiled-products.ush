@@ -1,0 +1,12 @@
+# Compile the product at both commits independently and compare them, streaming the report into the job summary.
+use $bin::{node, tee}
+
+# tee streams the report to the log and the summary as it is written; github.ush appends whole values only.
+node tools/commands/levels/codegen-equivalence.ts \
+  $env::BASE_SHA \
+  $env::HEAD_SHA \
+  $env::PACKAGE \
+  $env::PRODUCT \
+  $env::MODE \
+  $"$env::RUNNER_TEMP/codegen-$env::MODE.json" |
+  tee -a $env::GITHUB_STEP_SUMMARY

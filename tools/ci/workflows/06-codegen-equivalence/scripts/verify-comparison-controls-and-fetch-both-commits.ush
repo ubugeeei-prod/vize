@@ -1,0 +1,21 @@
+# Check that the comparison can detect a difference, then fetch the two full commit SHAs it compares.
+use $bin::{git, node}
+
+# A full commit SHA: forty characters, each a lowercase hexadecimal digit.
+fn is_commit_sha(value: String) -> Bool {
+  match value {
+    glob "*[!0-9a-f]*" => false
+    glob "????????????????????????????????????????" => true
+    _ => false
+  }
+}
+
+export VIZE_CODEGEN_PROBE = "1" {
+  node --test tests/tooling/levels-codegen-equivalence.test.ts
+}
+for sha in [$env::BASE_SHA, $env::HEAD_SHA] {
+  if !(is_commit_sha $sha) {
+    fail 1 $"$sha is not a full commit SHA"
+  }
+}
+git fetch --no-tags --depth=1 origin $env::BASE_SHA $env::HEAD_SHA
