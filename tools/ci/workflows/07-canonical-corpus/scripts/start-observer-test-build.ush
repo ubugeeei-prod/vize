@@ -1,0 +1,6 @@
+# Start building the observer's test binaries in the background, so they compile while the corpus hydrates.
+use $bin::{nohup, node}
+use std::io::to_file
+
+detach nohup node tools/support/compat/github/canonical-corpus-shards.ts prebuild $env::OBSERVER |&
+  to_file $"$env::RUNNER_TEMP/canonical-prebuild.log"

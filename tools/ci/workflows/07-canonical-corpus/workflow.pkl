@@ -73,7 +73,7 @@ jobs {
       new Dynamic {
         name = "Start observer test build"
         env { OBSERVER = "${{ matrix.observer }}" }
-        run = ci.workflowScript("start-observer-test-build.sh")
+        run = ci.workflowProgram("start-observer-test-build")
       }
       new Dynamic {
         name = "Plan canonical corpus identity"

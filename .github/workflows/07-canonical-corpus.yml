@@ -48,7 +48,7 @@ jobs:
       # the build lock and then finds them fresh.
       - name: Start observer test build
         env: { OBSERVER: "${{ matrix.observer }}" }
-        run: . "${{ env.VIZE_CI_FILES }}/start-observer-test-build.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/start-observer-test-build.sh"
       - name: Plan canonical corpus identity
         id: corpus-plan
         run: node tools/support/compat/github/canonical-corpus-observer.mjs plan

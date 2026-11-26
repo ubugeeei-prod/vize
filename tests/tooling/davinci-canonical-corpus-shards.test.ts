@@ -240,7 +240,15 @@ await test("the observer workflow builds in the background and runs each sharded
   const position = (name: string) => names.indexOf(name);
   assert.equal(
     step("Start observer test build").run,
-    'nohup node tools/support/compat/github/canonical-corpus-shards.ts prebuild "$OBSERVER" > "$RUNNER_TEMP/canonical-prebuild.log" 2>&1 &',
+    [
+      "# Start building the observer's test binaries in the background, so they compile while the corpus hydrates.",
+      "use $bin::{nohup, node}",
+      "use std::io::to_file",
+      "",
+      "detach nohup node tools/support/compat/github/canonical-corpus-shards.ts prebuild $env::OBSERVER |&",
+      '  to_file $"$env::RUNNER_TEMP/canonical-prebuild.log"',
+      "",
+    ].join("\n"),
   );
   assert(position("Setup Node") < position("Start observer test build"));
   assert(
