@@ -1,0 +1,13 @@
+# Install Chromium and its system packages, with apt reading only the package indices that resolution needs.
+use $bin::{sudo, "vize-ci-apt-retry" as apt_retry}
+use std::io::to_file
+
+# Browser dependency resolution needs package indices, not desktop metadata.
+let apt_config = """
+  Acquire::Languages "none";
+  Acquire::IndexTargets::deb::DEP-11::DefaultEnabled "false";
+  Acquire::IndexTargets::deb::CNF::DefaultEnabled "false";
+"""
+
+$"$apt_config\n" | sudo tee /etc/apt/apt.conf.d/81-vize-musea-package-indexes | to_file "/dev/null"
+apt_retry vp exec --filter ./npm/builder/vite-musea -- playwright install --with-deps chromium

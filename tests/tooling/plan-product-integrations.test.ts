@@ -78,7 +78,7 @@ test("Musea native CLI builds install their transitive rule generator runner", (
   };
   const native = workflow.jobs["musea-native-inline"].steps!;
   const runner = native.findIndex((step) => step.uses === "./.github/actions/setup-rust-script");
-  const cliBuild = native.findIndex((step) => step.run?.includes("--filter './npm/cli' build"));
+  const cliBuild = native.findIndex((step) => step.run?.includes("--filter ./npm/cli build"));
   assert.ok(runner >= 0 && cliBuild > runner);
   for (const [name, job] of Object.entries(workflow.jobs)) {
     if (name === "musea-native-inline") continue;

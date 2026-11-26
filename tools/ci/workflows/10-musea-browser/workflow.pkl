@@ -57,7 +57,7 @@ jobs {
         name = "Select changed product inputs"
         id = "plan"
         env { BASE_SHA = "${{ github.event.pull_request.base.sha || github.event.before }}" }
-        run = ci.workflowScript("select-changed-product-inputs.sh")
+        run = ci.workflowProgram("select-changed-product-inputs")
       }
     }
   }
@@ -105,19 +105,19 @@ jobs {
       }
       new Dynamic {
         name = "Build the exact source native binding and gallery"
-        run = ci.workflowScript("build-the-exact-source-native-binding-and-gallery.sh")
+        run = ci.workflowProgram("build-the-exact-source-native-binding-and-gallery")
       }
       new Dynamic {
         name = "Verify actual native inline component rendering and globals"
         `working-directory` = "npm/builder/vite-musea"
         env { VIZE_MUSEA_NATIVE_BROWSER_TESTS = "1" }
-        run = ci.workflowScript("verify-actual-native-inline-component-rendering-and-globals.sh")
+        run = ci.workflowProgram("verify-actual-native-inline-component-rendering-and-globals")
       }
       new Dynamic {
         name = "Verify hosted CLI capture and snapshot identities with the exact source packages"
         `working-directory` = "npm/builder/vite-musea"
         env { VIZE_MUSEA_BROWSER_TESTS = "1" }
-        run = ci.workflowScript("verify-hosted-cli-capture-and-snapshot-identities-with-the-exact-source.sh")
+        run = ci.workflowProgram("verify-hosted-cli-capture-and-snapshot-identities-with-the-exact-source")
       }
       new Dynamic {
         name = "Retain native inline Art browser observations"
@@ -195,13 +195,13 @@ jobs {
       ci.use("./.github/actions/setup-ubuntu-archive")
       new Dynamic {
         name = "Install Chromium and its system dependencies"
-        run = ci.workflowScript("install-chromium-and-its-system-dependencies.sh")
+        run = ci.workflowProgram("install-chromium-and-its-system-dependencies")
       }
       new Dynamic {
         name = "Verify real accessibility and deterministic screenshots"
         `working-directory` = "npm/builder/vite-musea"
         env { VIZE_MUSEA_BROWSER_TESTS = "1" }
-        run = ci.workflowScript("verify-real-accessibility-and-deterministic-screenshots.sh")
+        run = ci.workflowProgram("verify-real-accessibility-and-deterministic-screenshots")
       }
       new Dynamic {
         name = "Retain gallery browser observations and screenshots"

@@ -1,0 +1,12 @@
+# Plan the product integrations this change touches, fetching the base commit first when the event names one.
+use $bin::{git, node}
+use std::env::get
+use std::regex::is_match
+
+let base_sha = get BASE_SHA
+
+# A push that creates a branch reports an all-zero base.
+if is_match $base_sha "^[a-f0-9]{40}$" && !(is_match $base_sha "^0+$") {
+  git fetch --no-tags --depth=1 origin $base_sha
+}
+node tools/support/compat/github/plan-product-integrations.ts $env::GITHUB_EVENT_NAME $base_sha $env::GITHUB_SHA

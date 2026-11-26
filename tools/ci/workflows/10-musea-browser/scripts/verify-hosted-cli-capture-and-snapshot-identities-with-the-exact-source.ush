@@ -1,0 +1,5 @@
+# Check hosted CLI captures and snapshot identities in the gallery built from the exact source packages.
+use $bin::{vp}
+
+vp exec tsx --test gallery/components/hosted-vrt.browser.test.ts
+vp exec tsx --test gallery/components/snapshot-identities.browser.test.ts

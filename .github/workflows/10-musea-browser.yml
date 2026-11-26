@@ -56,7 +56,7 @@ jobs:
         id: plan
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: . "${{ env.VIZE_CI_FILES }}/select-changed-product-inputs.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/select-changed-product-inputs.sh"
 
   musea-native-inline:
     name: Musea native inline Art contracts
@@ -91,17 +91,17 @@ jobs:
       - name: Install Chromium and its system dependencies
         run: vize-ci-apt-retry vp exec --filter './npm/builder/vite-musea' -- playwright install --with-deps chromium
       - name: Build the exact source native binding and gallery
-        run: . "${{ env.VIZE_CI_FILES }}/build-the-exact-source-native-binding-and-gallery.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/build-the-exact-source-native-binding-and-gallery.sh"
       - name: Verify actual native inline component rendering and globals
         working-directory: npm/builder/vite-musea
         env:
           VIZE_MUSEA_NATIVE_BROWSER_TESTS: "1"
-        run: . "${{ env.VIZE_CI_FILES }}/verify-actual-native-inline-component-rendering-and-globals.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-actual-native-inline-component-rendering-and-globals.sh"
       - name: Verify hosted CLI capture and snapshot identities with the exact source packages
         working-directory: npm/builder/vite-musea
         env:
           VIZE_MUSEA_BROWSER_TESTS: "1"
-        run: . "${{ env.VIZE_CI_FILES }}/verify-hosted-cli-capture-and-snapshot-identities-with-the-exact-source.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-hosted-cli-capture-and-snapshot-identities-with-the-exact-source.sh"
       - name: Retain native inline Art browser observations
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -163,12 +163,12 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install Chromium and its system dependencies
-        run: . "${{ env.VIZE_CI_FILES }}/install-chromium-and-its-system-dependencies.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-chromium-and-its-system-dependencies.sh"
       - name: Verify real accessibility and deterministic screenshots
         working-directory: npm/builder/vite-musea
         env:
           VIZE_MUSEA_BROWSER_TESTS: "1"
-        run: . "${{ env.VIZE_CI_FILES }}/verify-real-accessibility-and-deterministic-screenshots.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/verify-real-accessibility-and-deterministic-screenshots.sh"
       - name: Retain gallery browser observations and screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
