@@ -1,0 +1,73 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_every_displaced_label_is_the_reference_prefix_entry_T": {
+        "prover": "z3",
+        "time": 0.003
+      },
+      "vc_len_T": { "prover": "alt-ergo", "time": 0.005 },
+      "vc_the_window_is_the_prefix_of_the_stable_ranking_T": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.009 },
+              { "prover": "z3", "time": 0.016 },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.069 },
+              { "prover": "z3", "time": 0.011 },
+              { "prover": "z3", "time": 0.013 },
+              { "prover": "z3", "time": 0.006 },
+              { "prover": "z3", "time": 0.004 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  {
+                    "tactic": "split_vc",
+                    "children": [{ "prover": "z3", "time": 0.004 }]
+                  }
+                ]
+              },
+              { "prover": "z3", "time": 0.009 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  {
+                    "tactic": "split_vc",
+                    "children": [
+                      {
+                        "tactic": "compute_in_goal",
+                        "children": [
+                          {
+                            "tactic": "split_vc",
+                            "children": [
+                              { "prover": "z3", "time": 0.033 },
+                              { "prover": "z3", "time": 0.019 },
+                              { "prover": "z3", "time": 0.037 }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              { "prover": "z3", "time": 0.004 },
+              { "prover": "z3", "time": 0.012 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.004 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_a_landed_row_extends_the_ranking_prefix_T": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "z3", "time": 0.003 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.012 },
+              { "prover": "z3", "time": 0.015 },
+              { "prover": "z3", "time": 0.028 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "cvc5", "time": 0.046 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.011 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.015 },
+              { "prover": "z3", "time": 0.016 },
+              { "prover": "z3", "time": 0.014 },
+              { "prover": "z3", "time": 0.046 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.072 },
+              { "prover": "z3", "time": 0.009 },
+              { "prover": "z3", "time": 0.01 },
+              { "prover": "z3", "time": 0.071 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
