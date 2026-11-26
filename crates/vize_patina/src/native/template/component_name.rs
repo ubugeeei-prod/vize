@@ -1,7 +1,9 @@
 //! Genuine registered filename callback over the original native bare root.
 
 use crate::{
-    component_name::{EXCEPTION_NAMES, is_kebab_case, is_nuxt_route_file, is_pascal_case},
+    component_name::{
+        EXCEPTION_NAMES, definition_name_stem, is_kebab_case, is_nuxt_route_file, is_pascal_case,
+    },
     rules::vue::ComponentDefinitionNameCasing,
 };
 use vize_l1::markup::ComponentTagAnalysis;
@@ -24,14 +26,7 @@ impl NativeTemplateRule for ComponentDefinitionNameCasing {
         {
             return Ok(());
         }
-        let stem = filename
-            .rsplit('/')
-            .next()
-            .unwrap_or(filename)
-            .rsplit('\\')
-            .next()
-            .unwrap_or(filename)
-            .trim_end_matches(".vue");
+        let stem = definition_name_stem(filename);
         if EXCEPTION_NAMES.contains(&stem)
             || stem.starts_with('[')
             || stem.chars().all(|c| c.is_ascii_lowercase())
