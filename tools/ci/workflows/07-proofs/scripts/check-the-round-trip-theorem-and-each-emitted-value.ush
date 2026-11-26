@@ -1,0 +1,29 @@
+# Check the string-literal round-trip theorem with Lean, then every value the compiler emitted and one planted wrong spelling.
+use $bin::{curl, grep, node, sha256sum, tar, tee}
+use std::fs::write_text
+use std::io::to_file
+use std::path::from_source
+use std::process::exec
+
+let temp = $env::RUNNER_TEMP
+let archive = $"$temp/lean.tar.zst"
+let lean = $"$temp/lean-4.33.1-linux/bin/lean"
+let axioms = $"$temp/literal-axioms"
+let emitted_rows = $"$temp/rust-literals.jsonl"
+let wrong_rows = $"$temp/wrong-literal.jsonl"
+let rejection = $"$temp/literal-rejection"
+
+curl -fsSL --retry 3 -o $archive https://github.com/leanprover/lean4/releases/download/v4.33.1/lean-4.33.1-linux.tar.zst
+$"890afd185370f85666025b883914ab4f4b339136f8c96167b69cfb62aecaf235  $archive\n" | sha256sum --check --strict
+tar --zstd -xf $archive -C $temp
+exec $lean ["-DwarningAsError=true", "Emission.lean"] | tee $axioms
+grep -Fx "'Davinci.StringLiteral.literal_round_trip' depends on axioms: [propext, Quot.sound]" $axioms
+exec $lean ["-DwarningAsError=true", "--run", "Emission.lean", emitted_rows]
+node (from_source "check-emitted-literal-values.mts") $emitted_rows
+
+# The checker must reject a row whose emitted spelling differs from its value.
+write_text $wrong_rows ('["x","\"y\""]' + "\n")
+if exec $lean ["--run", "Emission.lean", wrong_rows] |& to_file $rejection {
+  fail 1 "The round-trip check accepted a different emitted spelling"
+}
+grep -F "different emitted spelling at row 1" $rejection

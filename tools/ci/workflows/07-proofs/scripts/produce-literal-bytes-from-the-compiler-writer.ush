@@ -1,0 +1,5 @@
+# Run the compiler writer's string-literal tests, which record the bytes it emits for the round-trip proof.
+use $bin::{cargo}
+
+cargo test --locked --profile ci-opt -p vize_l0 --lib js_string::tests
+cargo test --locked --profile ci-opt -p vize_l0 --test emitted_string_literals

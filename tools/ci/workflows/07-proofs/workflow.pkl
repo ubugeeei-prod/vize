@@ -141,12 +141,12 @@ jobs {
       new Dynamic {
         name = "Produce literal bytes from the compiler writer"
         env { VIZE_LITERAL_PROOF_ROWS = "${{ runner.temp }}/rust-literals.jsonl" }
-        run = ". \"${{ env.VIZE_CI_FILES }}/produce-literal-bytes-from-the-compiler-writer.sh\""
+        run = ci.workflowProgram("produce-literal-bytes-from-the-compiler-writer")
       }
       new Dynamic {
         name = "Check the round-trip theorem and each emitted value"
         `working-directory` = "tests/formal/string-literal"
-        run = ". \"${{ env.VIZE_CI_FILES }}/check-the-round-trip-theorem-and-each-emitted-value.sh\""
+        run = ci.workflowProgram("check-the-round-trip-theorem-and-each-emitted-value")
       }
       new Dynamic {
         uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"
