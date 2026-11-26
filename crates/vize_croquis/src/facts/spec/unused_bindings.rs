@@ -4,10 +4,15 @@
 //! candidate(n, s) :- setup_decl(n, s), runtime_symbol(n), valid_script
 //! read(n)         :- resolved_script_reference(n, read_or_type)
 //! read(n)         :- template_reference(n), not template_shadow(n)
+//! read(n)         :- template_ref_attribute(n), not template_ref_handle(n)
 //! read(n)         :- component_or_directive(n)
 //! read(n)         :- free_style_v_bind_reference(n)
 //! unused(n, s)    :- candidate(n, s), not read(n), known_inline_blocks
+//! template_ref_handle(n) :- setup_decl(n, _), initializer(n) = useTemplateRef(..)
 //! ```
+//!
+//! A `useTemplateRef(key)` handle is wired to the template by its key string,
+//! so a `ref` attribute that spells the handle's own name does not read it.
 //!
 //! This evaluator reparses only in the assurance harness. For every input
 //! declaration it rescans every semantic reference and every traced expression;
@@ -101,9 +106,11 @@ pub fn evaluate(
         return Ok(AnalysisTable::default());
     }
     let mut reads = BTreeSet::new();
-    if let Some(template) = descriptor.template.as_ref() {
-        reads.extend(refs::evaluate(&template.content));
-    }
+    let ref_attributes = descriptor
+        .template
+        .as_ref()
+        .map(|template| refs::evaluate(&template.content))
+        .unwrap_or_default();
     for expression in checked {
         if extract_identifiers_checked(&expression.content).is_none() {
             return Ok(AnalysisTable::default());
@@ -179,9 +186,12 @@ pub fn evaluate(
             .used_directives
             .iter()
             .any(|directive| normalized(&cstr!("v-{directive}")) == normalized(&decl.name));
+        let ref_attribute_read = ref_attributes.contains(&decl.name)
+            && !refs::is_template_ref_handle(&semantic, semantic.symbol_declaration(symbol).kind());
         if !script_read
             && !(flags.contains(SymbolFlags::Import) && module_reads.contains(&decl.name))
             && !reads.contains(&decl.name)
+            && !ref_attribute_read
             && !template_tag_read
             && let Some(span) = declaration_span
         {

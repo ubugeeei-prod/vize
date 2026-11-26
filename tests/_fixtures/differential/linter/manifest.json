@@ -26911,6 +26911,48 @@
       }
     },
     {
+      "id": "linter/template-ref-after-await",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "template-ref-after-await",
+        "files": [
+          {
+            "path": "ScriptSetupAfterAwaitControl.vue.txt",
+            "role": "script-setup-restores-the-instance-control",
+            "sha256": "15e55aeb692c963acb637ace74c4922c0569426d4a071f796238424db680224d"
+          },
+          {
+            "path": "SetupAfterAwait.vue.txt",
+            "role": "template-ref-after-await-in-setup",
+            "sha256": "2819206517e631510cfafc9cb62a3e303b4ec294089bb1d28f60caaec98d0a14"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "173a3c5346c3c4ae69fdf8fe02b7e3fd2fe071f284600779029705be15fa68dc"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/template-script-shadow-10822",
       "state": "active",
       "targets": [

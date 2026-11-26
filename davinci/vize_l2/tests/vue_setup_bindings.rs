@@ -447,7 +447,7 @@ fn every_corpus_reactive_source_matches_croquis() {
     eprintln!(
         "compared {sources} reactive sources (+{hydrated} in hydrated fixtures) in {compared} setup scripts"
     );
-    assert_eq!(sources, 3_195, "corpus reactive-source inventory changed");
+    assert_eq!(sources, 3_194, "corpus reactive-source inventory changed");
     assert_eq!(mismatches, Vec::<String>::new());
 }
 

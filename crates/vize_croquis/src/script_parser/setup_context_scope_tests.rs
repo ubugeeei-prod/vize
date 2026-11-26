@@ -19,3 +19,59 @@ export function installState() {
         source.find("ref(0)").expect("module-level ref call")
     );
 }
+
+#[test]
+fn a_module_level_template_ref_has_no_instance_to_register_on() {
+    let source = r#"
+import { defineComponent, useTemplateRef } from "vue"
+const el = useTemplateRef("el")
+
+export default defineComponent({
+    setup() {
+        const inside = useTemplateRef("inside")
+        return { inside }
+    },
+})
+"#;
+    let result = parse_script(source);
+    let violations: Vec<_> = result
+        .setup_context
+        .violations()
+        .iter()
+        .map(|violation| (violation.kind, violation.api_name.as_str(), violation.start))
+        .collect();
+    assert_eq!(
+        violations,
+        [(
+            crate::setup_context::SetupContextViolationKind::ModuleLevelTemplateRef,
+            "useTemplateRef",
+            source
+                .find("useTemplateRef(\"el\")")
+                .expect("module-level call") as u32,
+        )]
+    );
+}
+
+#[test]
+fn module_level_apis_resolve_by_binding_origin() {
+    let source = r#"
+import { useTemplateRef } from "./helpers"
+import { ref as makeRef } from "vue"
+const el = useTemplateRef("el")
+const count = makeRef(0)
+"#;
+    let result = parse_script(source);
+    let violations: Vec<_> = result
+        .setup_context
+        .violations()
+        .iter()
+        .map(|violation| (violation.kind, violation.api_name.as_str()))
+        .collect();
+    assert_eq!(
+        violations,
+        [(
+            crate::setup_context::SetupContextViolationKind::ModuleLevelState,
+            "makeRef"
+        )]
+    );
+}
