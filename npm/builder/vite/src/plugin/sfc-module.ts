@@ -45,6 +45,7 @@ import { loadedSfcModule } from "./tree-shaking.ts";
 import { TYPE_PROJECT_CHANGED_MESSAGE, watchTypeProject } from "./type-project-watches.ts";
 import { evictCompiledModule } from "./compiled-module-cache.ts";
 import { siblingTargetFor, type BuildEnvironment } from "./sibling-compiles.ts";
+import { findSfcJsxScript, lowerSfcJsx } from "./sfc-jsx.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -265,7 +266,11 @@ export async function transformSfcModule(
       ),
     };
   }
-  const emitted = generateOutputWithMap(compiled, outputOptions);
+  const assembled = generateOutputWithMap(compiled, outputOptions);
+  const jsxScript = findSfcJsxScript(code);
+  const emitted = jsxScript
+    ? lowerSfcJsx(state, realPath, jsxScript, assembled, { ssr: isSsr, logWarnings })
+    : assembled;
   // Each rewrite below substitutes inside a single line, but they go through
   // `MappedModule` anyway so the map cannot silently drift if one ever does not.
   const rewritten = new MappedModule(

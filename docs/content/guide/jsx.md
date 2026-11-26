@@ -341,6 +341,9 @@ const Card = ({ title, items }: CardProps) => (
 </script>
 ```
 
+Builds lower the JSX in these script blocks too: the Vite plugin compiles it with the same
+`jsxMode` and `jsxCompat` options as standalone `.jsx`/`.tsx` modules.
+
 Standalone `.jsx`/`.tsx` modules are discovered by `vize fmt` alongside `.vue` files and formatted
 with the same JSX/TSX source-type handling:
 
