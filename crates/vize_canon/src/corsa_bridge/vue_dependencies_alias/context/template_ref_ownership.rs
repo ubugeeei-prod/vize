@@ -70,11 +70,11 @@ pub(super) fn editor_declares_vue_template_ref(
 }
 
 fn declaration_facts(path: &Path, overlays: &FxHashMap<PathBuf, &str>) -> Option<DeclarationFacts> {
-    if let Some(text) = overlays.get(path).copied().or_else(|| {
-        overlays
-            .get(&vize_l0::path::physical_path(path))
-            .copied()
-    }) {
+    if let Some(text) = overlays
+        .get(path)
+        .copied()
+        .or_else(|| overlays.get(&vize_l0::path::physical_path(path)).copied())
+    {
         // Unsaved bytes are authoritative and never cached.
         return Some(read_facts(path, text, None));
     }
@@ -114,7 +114,10 @@ fn reference_paths(path: &Path, text: &str) -> Vec<PathBuf> {
             let rest = directive.strip_prefix("<reference")?;
             let (_, after) = rest.split_once("path")?;
             let after = after.trim_start().strip_prefix('=')?.trim_start();
-            let quote = after.chars().next().filter(|quote| matches!(quote, '"' | '\''))?;
+            let quote = after
+                .chars()
+                .next()
+                .filter(|quote| matches!(quote, '"' | '\''))?;
             let (target, _) = after.get(1..)?.split_once(quote)?;
             Some(directory.join(target))
         })

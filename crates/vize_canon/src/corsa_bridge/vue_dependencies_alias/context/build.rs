@@ -123,6 +123,8 @@ pub(super) fn build_with_import_facts(
             overlays,
         ),
     );
+    let imports_alias_template_ref = project.imports_alias_reexports_vue_template_ref();
+    project.set_imports_alias_vue_template_ref(imports_alias_template_ref);
     #[cfg(feature = "ambient-project-declarations")]
     let virtual_ts_options = editor_declaration_options(&mut project, &revision, environment)?;
     project.set_editor_document_options(
@@ -132,6 +134,7 @@ pub(super) fn build_with_import_facts(
             experimental_patterned_template: options.experimental_patterned_template,
             preserve_event_navigation: options.preserve_event_navigation,
             configured_global_template_ref: project.configured_global_template_ref(),
+            imports_alias_template_ref,
             dialect: options.dialect,
             preserve_missing_vue_diagnostics: true,
         },
@@ -347,6 +350,7 @@ pub(super) fn build_with_import_facts(
     // and disappear. Switching back to the authored path would leave live
     // native overlays in the previous project after a rename or deletion.
     let configured_global_template_ref = project.configured_global_template_ref();
+    let imports_alias_template_ref = project.template_ref_ownership().imports_alias;
     let mirror = Some(project);
 
     Ok(AliasContext {
@@ -362,6 +366,7 @@ pub(super) fn build_with_import_facts(
         #[cfg(feature = "ambient-project-declarations")]
         virtual_ts_options,
         configured_global_template_ref,
+        imports_alias_template_ref,
         query_surface: Default::default(),
     })
 }
