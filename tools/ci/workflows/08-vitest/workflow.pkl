@@ -46,7 +46,7 @@ jobs {
       }
       new Dynamic {
         name = "Build both source configuration adapters"
-        run = ci.workflowScript("build-both-source-configuration-adapters.sh")
+        run = ci.workflowProgram("build-both-source-configuration-adapters")
       }
       new Dynamic {
         name = "Install the exact released reproduction"

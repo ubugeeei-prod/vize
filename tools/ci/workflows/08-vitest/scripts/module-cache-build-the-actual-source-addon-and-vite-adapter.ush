@@ -1,0 +1,6 @@
+# Build the source native addon and the Vite adapter, then run the adapter's tests against them.
+use $bin::{node, vp}
+
+vp run --workspace-root build:native:test
+vp run --workspace-root build:vite-plugin
+node npm/builder/vite/scripts/run-tests.ts --require-prepared

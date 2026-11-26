@@ -1,0 +1,9 @@
+# Pack the CLI and Vite adapter from source, for the Vitest projects to compare with the release.
+use $bin::{vp}
+
+cd "npm/cli" {
+  vp pack
+}
+cd "npm/builder/vite" {
+  vp pack
+}

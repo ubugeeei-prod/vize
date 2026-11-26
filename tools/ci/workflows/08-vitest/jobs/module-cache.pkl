@@ -39,7 +39,7 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Build the actual source addon and Vite adapter"
-    run = ci.workflowScript("module-cache-build-the-actual-source-addon-and-vite-adapter.sh")
+    run = ci.workflowProgram("module-cache-build-the-actual-source-addon-and-vite-adapter")
   }
   new Dynamic {
     name = "Install the locked Vitest and Vue fixture"
@@ -52,7 +52,7 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Execute cold, warm, warm again, failure and source-change controls"
-    run = ci.workflowScript("execute-cold-warm-warm-again-failure-and-source-change.sh")
+    run = ci.workflowProgram("execute-cold-warm-warm-again-failure-and-source-change")
   }
   new Dynamic {
     name = "Retain successful and failed cache observations"

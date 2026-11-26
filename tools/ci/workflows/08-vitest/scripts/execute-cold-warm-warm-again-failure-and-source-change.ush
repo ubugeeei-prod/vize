@@ -1,0 +1,6 @@
+# Run the Vitest module-cache controls: cold, warm, warm again, a failure and a source change.
+use $bin::{node}
+
+node npm/native/scripts/test-preparation.mjs node tools/support/compat/vitest-module-cache.ts \
+  --candidate npm/builder/vite/dist/index.mjs \
+  --output target/vitest-module-cache
