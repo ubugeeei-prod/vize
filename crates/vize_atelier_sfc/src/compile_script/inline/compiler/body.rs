@@ -30,7 +30,7 @@ use super::{
 
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn compile_script_setup_inline_body(
-    mut ctx: ScriptCompileContext,
+    ctx: &mut ScriptCompileContext,
     component_name: &str,
     is_ts: bool,
     source_is_ts: bool,
@@ -73,7 +73,7 @@ pub(super) fn compile_script_setup_inline_body(
     // elide the imports the module does not use as values.
     let mut erasure = (source_is_ts && !is_ts).then(Erasure::default);
     if let Some(erasure) = erasure.as_mut() {
-        erasure.macro_arguments(&mut ctx);
+        erasure.macro_arguments(ctx);
         if let Some(defaults) = with_defaults_values.as_mut() {
             for value in defaults.static_values.values_mut() {
                 *value = erasure.expression(value);
@@ -81,7 +81,7 @@ pub(super) fn compile_script_setup_inline_body(
             erasure.optional_expression(&mut defaults.runtime_expression);
         }
     }
-    transform_define_expose_destructured_props(&mut ctx)?;
+    transform_define_expose_destructured_props(ctx)?;
     let has_css_vars = !css_vars.is_empty();
     let has_css_modules = !setup_css_module_names.is_empty();
     let needs_prop_type = false;
@@ -89,7 +89,7 @@ pub(super) fn compile_script_setup_inline_body(
     let props_emits_buf = profile!(
         "atelier.script_inline.build_props_emits",
         build_props_emits(
-            &ctx,
+            ctx,
             is_ts,
             needs_prop_type,
             needs_merge_defaults,
@@ -100,7 +100,7 @@ pub(super) fn compile_script_setup_inline_body(
 
     let mut model_infos: Vec<ModelInfo> = profile!(
         "atelier.script_inline.collect_model_infos",
-        collect_model_infos(&ctx)
+        collect_model_infos(ctx)
     );
     if let Some(erasure) = erasure.as_mut() {
         for (_, _, _, options, runtime_options, _) in &mut model_infos {
@@ -112,7 +112,7 @@ pub(super) fn compile_script_setup_inline_body(
     let model_props_emits_buf = profile!(
         "atelier.script_inline.build_model_props_emits",
         build_model_props_emits(
-            &ctx,
+            ctx,
             &model_infos,
             is_ts,
             needs_prop_type,
@@ -153,7 +153,7 @@ pub(super) fn compile_script_setup_inline_body(
     let setup_parse = parse_setup_body(&setup_allocator, &transformed_setup);
     let (hoisted, body) = profile!(
         "atelier.script_inline.separate_hoisted",
-        separate_hoisted_consts(&transformed_setup, &setup_parse, &ctx)
+        separate_hoisted_consts(&transformed_setup, &setup_parse, ctx)
     );
     let segment_runs = |trace: &SetupTrace, segments: &[(String, usize)]| -> Vec<Runs> {
         let slice = |(text, offset): &(String, usize)| trace.setup_code.slice(*offset, text.len());
@@ -166,7 +166,7 @@ pub(super) fn compile_script_setup_inline_body(
     }
     let hoisted_lines: Vec<String> = hoisted.into_iter().map(|(text, _)| text).collect();
     let setup_body_lines: Vec<String> = body.into_iter().map(|(text, _)| text).collect();
-    let css_var_values = css_var_values(&ctx, css_vars, source_is_ts);
+    let css_var_values = css_var_values(ctx, css_vars, source_is_ts);
 
     let mut head = AuthoredHead::collect(
         &user_imports,
@@ -196,7 +196,7 @@ pub(super) fn compile_script_setup_inline_body(
         is_vapor,
         is_prod,
         vapor_render_alias.as_deref(),
-        &ctx,
+        ctx,
     );
 
     let (ts_declarations, declaration_runs) = {
@@ -301,7 +301,7 @@ pub(super) fn compile_script_setup_inline_body(
 
     let component_state = emit_component_definition(
         &mut output,
-        &ctx,
+        ctx,
         component_name,
         is_ts,
         is_vapor,
@@ -327,7 +327,7 @@ pub(super) fn compile_script_setup_inline_body(
 
     emit_setup_body(
         &mut output,
-        &ctx,
+        ctx,
         &model_infos,
         &setup_body_lines,
         source_is_ts,
@@ -385,7 +385,8 @@ pub(super) fn compile_script_setup_inline_body(
 
     Ok(ScriptCompileResult {
         code: final_code,
-        bindings: Some(ctx.bindings),
+        // The caller's context keeps everything else it analyzed.
+        bindings: Some(std::mem::take(&mut ctx.bindings)),
     })
 }
 

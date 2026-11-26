@@ -8,7 +8,7 @@ import { restrictedHtmlElementsSchema, restrictedVOnSchema } from "./restricted-
 import { blockLangSchema, maxLinesPerBlockSchema, maxLinesSchema } from "./block-limit-options.js";
 import { collectActiveRule, getActiveRuleDiagnostics } from "./active-rule-collection.js";
 
-import { getPatinaRules } from "./binding.js";
+import { getPatinaRules, withHostGlobals } from "./binding.js";
 import { pluginRules } from "./plugin-rules.js";
 import { createOxlintDiagnostic, shouldReportForCurrentProgram } from "./report.js";
 import { getScriptMap, markDiagnosticAsReported } from "./file-state.js";
@@ -45,7 +45,11 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
             context,
             program,
             ruleMeta.name,
-            getRuleOptions(ruleMeta.name, contextOptions(context)),
+            withHostGlobals(
+              ruleMeta.name,
+              getRuleOptions(ruleMeta.name, contextOptions(context)),
+              context.languageOptions.globals,
+            ),
           );
         },
         "Program:exit"(program) {
@@ -195,6 +199,7 @@ function ruleOptionsSchema(ruleName: string): unknown[] | Record<string, unknown
     case "vue/no-restricted-v-on":
       return restrictedVOnSchema();
     case "vue/require-component-registration":
+    case "vue/no-undefined-refs":
       return [objectSchema({ globals: stringArraySchema() })];
     case "vue/valid-v-on":
       return [objectSchema({ modifiers: stringArraySchema() })];

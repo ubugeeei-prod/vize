@@ -12,6 +12,7 @@ import { getActivePreset } from "./settings.js";
 
 const VUE_ROUTER_COMPONENTS = ["RouterLink", "RouterView"] as const;
 const COMPONENT_REGISTRATION_RULE = "vue/require-component-registration";
+const UNDEFINED_REFS_RULE = "vue/no-undefined-refs";
 
 export function lintPatina(
   source: string,
@@ -51,6 +52,30 @@ function withVueRouterComponentGlobals(
         ...registration,
         globals: [...new Set([...(registration.globals ?? []), ...VUE_ROUTER_COMPONENTS])],
       },
+    },
+  };
+}
+
+/**
+ * The host's `globals` name what a build step defines for every module, such
+ * as the auto-imports `@vizejs/nuxt` lists. Templates read the same names.
+ */
+export function withHostGlobals(
+  ruleName: string,
+  options: PatinaRuleOptions | undefined,
+  hostGlobals: Readonly<Record<string, unknown>> | undefined,
+): PatinaRuleOptions | undefined {
+  if (ruleName !== UNDEFINED_REFS_RULE || !hostGlobals) return options;
+  const names = Object.keys(hostGlobals).filter((name) => hostGlobals[name] !== "off");
+  if (names.length === 0) return options;
+
+  const ruleOptions = options?.ruleOptions ?? {};
+  const configured = ruleOptions[UNDEFINED_REFS_RULE]?.globals ?? [];
+  return {
+    ...options,
+    ruleOptions: {
+      ...ruleOptions,
+      [UNDEFINED_REFS_RULE]: { globals: [...new Set([...configured, ...names])] },
     },
   };
 }
