@@ -3,9 +3,7 @@
 
 use super::binding::{MarkupBinding, MarkupBindingInner, MarkupBindingKind};
 use super::element::{MarkupElement, MarkupElementInner};
-use super::jsx_names::{
-    jsx_attribute_arg_name, jsx_attribute_binding_kind, jsx_attribute_ref, jsx_element_ref,
-};
+use super::jsx_names::{jsx_attribute_arg_name, jsx_attribute_binding_kind};
 use super::l2::binding::kind_of_directive;
 use oxc_ast::ast::{JSXAttributeName, JSXElementName};
 use vize_relief::ExpressionNode;
@@ -19,19 +17,15 @@ impl<'a> MarkupElement<'a> {
     pub fn is_unqualified_tag_exact(&self, expected: &str) -> bool {
         match self.inner {
             MarkupElementInner::Relief(node) => node.tag == expected,
-            MarkupElementInner::JsxElement { node, .. } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                match &unsafe { jsx_element_ref(node) }.opening_element.name {
-                    JSXElementName::Identifier(identifier) => identifier.name.as_str() == expected,
-                    JSXElementName::IdentifierReference(reference) => {
-                        reference.name.as_str() == expected
-                    }
-                    JSXElementName::NamespacedName(_)
-                    | JSXElementName::MemberExpression(_)
-                    | JSXElementName::ThisExpression(_) => false,
+            MarkupElementInner::JsxElement { node, .. } => match &node.opening_element.name {
+                JSXElementName::Identifier(identifier) => identifier.name.as_str() == expected,
+                JSXElementName::IdentifierReference(reference) => {
+                    reference.name.as_str() == expected
                 }
-            }
+                JSXElementName::NamespacedName(_)
+                | JSXElementName::MemberExpression(_)
+                | JSXElementName::ThisExpression(_) => false,
+            },
             MarkupElementInner::JsxFragment { .. } => false,
             MarkupElementInner::Authored { .. }
             | MarkupElementInner::L2 { .. }
@@ -142,9 +136,7 @@ impl<'a> MarkupBinding<'a> {
                 },
             },
             MarkupBindingInner::Jsx { node, .. } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                let attr = unsafe { jsx_attribute_ref(node) };
+                let attr = node;
                 match &attr.name {
                     JSXAttributeName::Identifier(identifier) => {
                         match jsx_attribute_binding_kind(attr) {

@@ -1,8 +1,8 @@
 //! [`MarkupBinding`]: the normalized view of anything written on an opening tag.
 
 use super::jsx_names::{
-    jsx_attribute_arg_name, jsx_attribute_binding_kind, jsx_attribute_name, jsx_attribute_ref,
-    jsx_static_value, jsx_value_is_dynamic,
+    jsx_attribute_arg_name, jsx_attribute_binding_kind, jsx_attribute_name, jsx_static_value,
+    jsx_value_is_dynamic,
 };
 use super::l2::L2Markup;
 use super::l2::binding::{L2Item, kind_of_directive, surface_expression};
@@ -54,7 +54,7 @@ pub(super) enum MarkupBindingInner<'a> {
     ReliefAttribute(&'a AttributeNode<'a>),
     ReliefDirective(&'a DirectiveNode<'a>),
     Jsx {
-        node: *const JSXAttribute<'a>,
+        node: &'a JSXAttribute<'a>,
         offset: u32,
     },
     L2Attribute {
@@ -125,7 +125,7 @@ impl<'a> MarkupBinding<'a> {
         Self::from_inner(MarkupBindingInner::ReliefDirective(node))
     }
 
-    pub(super) const fn from_jsx(node: *const JSXAttribute<'a>, offset: u32) -> Self {
+    pub(super) const fn from_jsx(node: &'a JSXAttribute<'a>, offset: u32) -> Self {
         Self::from_inner(MarkupBindingInner::Jsx { node, offset })
     }
 
@@ -162,11 +162,7 @@ impl<'a> MarkupBinding<'a> {
                 MarkupBindingKind::Attribute
             }
             MarkupBindingInner::ReliefDirective(node) => kind_of_directive(node.name),
-            MarkupBindingInner::Jsx { node, .. } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                jsx_attribute_binding_kind(unsafe { jsx_attribute_ref(node) })
-            }
+            MarkupBindingInner::Jsx { node, .. } => jsx_attribute_binding_kind(node),
             MarkupBindingInner::L2Binding(binding) => kind_of_directive(binding.name()),
             MarkupBindingInner::Surface {
                 attr, static_name, ..
@@ -195,9 +191,7 @@ impl<'a> MarkupBinding<'a> {
                 },
             },
             MarkupBindingInner::Jsx { node, .. } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                let attr = unsafe { jsx_attribute_ref(node) };
+                let attr = node;
                 match jsx_attribute_binding_kind(attr) {
                     MarkupBindingKind::On => jsx_attribute_arg_name(attr),
                     _ => Some(jsx_attribute_name(&attr.name)),
@@ -246,11 +240,7 @@ impl<'a> MarkupBinding<'a> {
                 false
             }
             MarkupBindingInner::ReliefDirective(_) | MarkupBindingInner::L2Binding(_) => true,
-            MarkupBindingInner::Jsx { node, .. } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                jsx_value_is_dynamic(unsafe { jsx_attribute_ref(node) }.value.as_ref())
-            }
+            MarkupBindingInner::Jsx { node, .. } => jsx_value_is_dynamic(node.value.as_ref()),
             MarkupBindingInner::Surface {
                 attr, static_name, ..
             } => surface_directive(attr, static_name).is_some(),
@@ -265,11 +255,7 @@ impl<'a> MarkupBinding<'a> {
                 node.value.as_ref().map(|value| value.content)
             }
             MarkupBindingInner::ReliefDirective(_) | MarkupBindingInner::L2Binding(_) => None,
-            // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-            // into the program this facade borrows for `'a`.
-            MarkupBindingInner::Jsx { node, .. } => {
-                jsx_static_value(unsafe { jsx_attribute_ref(node) })
-            }
+            MarkupBindingInner::Jsx { node, .. } => jsx_static_value(node),
             MarkupBindingInner::L2Attribute { attribute, doc } => {
                 attribute.value.map(|value| doc.decode_attribute(value))
             }
@@ -327,11 +313,7 @@ impl<'a> MarkupBinding<'a> {
                         None => false,
                     }
             }
-            // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-            // into the program this facade borrows for `'a`.
-            MarkupBindingInner::Jsx { node, .. } => {
-                unsafe { jsx_attribute_ref(node) }.value.is_some()
-            }
+            MarkupBindingInner::Jsx { node, .. } => node.value.is_some(),
             MarkupBindingInner::L2Attribute { attribute, doc } => attribute
                 .value
                 .is_some_and(|value| !doc.decode_attribute(value).trim().is_empty()),
@@ -363,11 +345,7 @@ impl<'a> MarkupBinding<'a> {
                 })
             }
             MarkupBindingInner::Jsx { node, offset } => {
-                let JSXAttributeValue::ExpressionContainer(container) =
-                    // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                    // into the program this facade borrows for `'a`.
-                    unsafe { jsx_attribute_ref(node) }.value.as_ref()?
-                else {
+                let JSXAttributeValue::ExpressionContainer(container) = node.value.as_ref()? else {
                     return None;
                 };
                 let expression = match &container.expression {
@@ -432,11 +410,7 @@ impl<'a> MarkupBinding<'a> {
         match self.inner {
             MarkupBindingInner::ReliefAttribute(node) => loc_to_range(&node.loc),
             MarkupBindingInner::ReliefDirective(node) => loc_to_range(&node.loc),
-            MarkupBindingInner::Jsx { node, offset } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                span_to_range(unsafe { jsx_attribute_ref(node) }.span, offset)
-            }
+            MarkupBindingInner::Jsx { node, offset } => span_to_range(node.span, offset),
             MarkupBindingInner::L2Attribute { attribute, .. } => l2_range(attribute.span),
             MarkupBindingInner::L2Binding(binding) => l2_range(binding.span()),
             MarkupBindingInner::Surface { attr, doc, .. } => l2_range(attr_span(doc.source, attr)),

@@ -1,7 +1,6 @@
 //! [`MarkupText`] and the [`MarkupNode`] child view.
 
 use super::element::MarkupElement;
-use super::jsx_names::jsx_text_ref;
 use super::{loc_to_range, span_to_range};
 use crate::ir::ByteRange;
 use oxc_ast::ast::JSXText;
@@ -11,14 +10,8 @@ use vize_relief::{TemplateChildNode, TextNode};
 #[derive(Clone, Copy)]
 enum MarkupTextInner<'a> {
     Relief(&'a TextNode<'a>),
-    Jsx {
-        node: *const JSXText<'a>,
-        offset: u32,
-    },
-    Static {
-        content: &'a str,
-        range: ByteRange,
-    },
+    Jsx { node: &'a JSXText<'a>, offset: u32 },
+    Static { content: &'a str, range: ByteRange },
 }
 
 /// Text node view.
@@ -40,7 +33,7 @@ impl<'a> MarkupText<'a> {
         Self::from_inner(MarkupTextInner::Relief(node))
     }
 
-    pub(super) const fn from_jsx(node: *const JSXText<'a>, offset: u32) -> Self {
+    pub(super) const fn from_jsx(node: &'a JSXText<'a>, offset: u32) -> Self {
         Self::from_inner(MarkupTextInner::Jsx { node, offset })
     }
 
@@ -52,9 +45,7 @@ impl<'a> MarkupText<'a> {
     pub fn content(&self) -> &'a str {
         match self.inner {
             MarkupTextInner::Relief(node) => node.content,
-            // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-            // into the program this facade borrows for `'a`.
-            MarkupTextInner::Jsx { node, .. } => unsafe { jsx_text_ref(node) }.value.as_str(),
+            MarkupTextInner::Jsx { node, .. } => node.value.as_str(),
             MarkupTextInner::Static { content, .. } => content,
         }
     }
@@ -63,11 +54,7 @@ impl<'a> MarkupText<'a> {
     pub fn range(&self) -> ByteRange {
         match self.inner {
             MarkupTextInner::Relief(node) => loc_to_range(&node.loc),
-            // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-            // into the program this facade borrows for `'a`.
-            MarkupTextInner::Jsx { node, offset } => {
-                span_to_range(unsafe { jsx_text_ref(node) }.span, offset)
-            }
+            MarkupTextInner::Jsx { node, offset } => span_to_range(node.span, offset),
             MarkupTextInner::Static { range, .. } => range,
         }
     }

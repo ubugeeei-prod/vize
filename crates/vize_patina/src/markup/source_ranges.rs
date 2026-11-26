@@ -1,7 +1,6 @@
 //! Authored opening-tag windows, for formatting-shaped rules.
 
 use super::element::{MarkupElement, MarkupElementInner};
-use super::jsx_names::jsx_element_ref;
 use super::l2::binding::{L2Item, is_v_pre, opens_v_pre};
 use super::l2::surface::{SurfaceDirective, attr_span};
 use super::{l2_range, loc_to_range, span_to_range};
@@ -87,9 +86,7 @@ impl MarkupElement<'_> {
                 }
             }
             MarkupElementInner::JsxElement { node, offset } => {
-                // SAFETY: a `from_jsx*` constructor stored `node` from a reference
-                // into the program this facade borrows for `'a`.
-                for attribute in &unsafe { jsx_element_ref(node) }.opening_element.attributes {
+                for attribute in &node.opening_element.attributes {
                     match attribute {
                         JSXAttributeItem::Attribute(attr) => {
                             visitor(span_to_range(attr.span, offset));

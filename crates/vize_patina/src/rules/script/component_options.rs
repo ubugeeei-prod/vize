@@ -7,11 +7,11 @@
 //! definitions. Objects that appear only in a `mixins` array are not
 //! definitions.
 
+use crate::lent_walk::{self, LentNodes};
 use oxc_ast::ast::{
     BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression, ObjectExpression,
     ObjectPropertyKind, Program, Statement,
 };
-use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use vize_l0::FxHashMap;
 
 pub(super) fn component_definitions<'a>(program: &'a Program<'a>) -> Vec<&'a ObjectExpression<'a>> {
@@ -24,7 +24,7 @@ pub(super) fn component_definitions<'a>(program: &'a Program<'a>) -> Vec<&'a Obj
         bindings: &bindings,
         objects,
     };
-    collector.visit_program(program);
+    lent_walk::walk_program(&mut collector, program);
     collector.objects
 }
 
@@ -178,19 +178,12 @@ struct Collector<'ast, 'map> {
     objects: Vec<&'ast ObjectExpression<'ast>>,
 }
 
-impl<'ast> Visit<'ast> for Collector<'ast, '_> {
-    fn visit_call_expression(&mut self, call: &CallExpression<'ast>) {
-        // SAFETY: `call` points at a node inside the `Program` borrowed for
-        // `'ast`. The visitor only reborrows it for this callback. Extending
-        // that reborrow back to `'ast` is sound because the collected objects
-        // are returned only for the same program, the walk is single-threaded,
-        // and nothing moves or frees the arena node while those references live.
-        let call = unsafe { &*(call as *const CallExpression<'ast>) };
+impl<'ast> LentNodes<'ast> for Collector<'ast, '_> {
+    fn call_expression(&mut self, call: &'ast CallExpression<'ast>) {
         if let Some(object) = object_from_call(call, self.bindings)
             .or_else(|| registered_component(call, self.bindings))
         {
             push_unique(&mut self.objects, object);
         }
-        walk_call_expression(self, call);
     }
 }
