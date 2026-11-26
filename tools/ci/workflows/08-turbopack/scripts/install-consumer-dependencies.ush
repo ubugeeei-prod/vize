@@ -1,0 +1,10 @@
+# Install the locked workspace graphs that the Rspack and Turbopack consumers build with.
+use $bin::{vp}
+
+vp install \
+  --filter vize-workspace \
+  --filter @vize/tests \
+  --filter @vizejs/rspack-plugin... \
+  --filter @vizejs/turbopack-plugin... \
+  --frozen-lockfile \
+  --prefer-offline

@@ -1,0 +1,16 @@
+# Test Turbopack's authored positions and the shared Rspack behavior, keeping the unit TAP.
+use $bin::{node, tee}
+use std::fs::mkdir_p
+
+mkdir_p $env::VIZE_TURBOPACK_ARTIFACTS
+node --test \
+  tests/tooling/turbopack-workflow.test.ts \
+  npm/builder/turbopack/test/consumer-packaging.test.mjs
+# Node's test runner expands the `*` patterns itself, as the shell did before.
+node --test \
+  npm/builder/turbopack/src/*.test.ts \
+  npm/builder/shared/*.test.ts \
+  npm/builder/rspack/src/shared/source-map.test.ts \
+  npm/builder/rspack/src/shared/output.test.ts \
+  npm/builder/rspack/src/shared/hotReload.test.ts |
+  tee $env::VIZE_TURBOPACK_ARTIFACTS/source-unit.tap

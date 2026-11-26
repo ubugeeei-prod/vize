@@ -51,17 +51,17 @@ jobs {
       }
       new Dynamic {
         name = "Install consumer dependencies"
-        run = ci.workflowScript("install-consumer-dependencies.sh")
+        run = ci.workflowProgram("install-consumer-dependencies")
       }
       ci.command("Build the actual source native image", "vp run --filter @vizejs/native build:ci")
       ci.command("Seal native image and source identity", "node npm/native/scripts/native-build-receipt.mjs")
       new Dynamic {
         name = "Check authored positions and existing Rspack behavior"
-        run = ci.workflowScript("check-authored-positions-and-existing-rspack-behavior.sh")
+        run = ci.workflowProgram("check-authored-positions-and-existing-rspack-behavior")
       }
       new Dynamic {
         name = "Build both public adapters with bundled shared code"
-        run = ci.workflowScript("build-both-public-adapters-with-bundled-shared-code.sh")
+        run = ci.workflowProgram("build-both-public-adapters-with-bundled-shared-code")
       }
       new Dynamic {
         name = "Prepare the actual browser"

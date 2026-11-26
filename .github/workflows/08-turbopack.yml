@@ -40,15 +40,15 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: turbopack-consumers, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Install consumer dependencies
-        run: . "${{ env.VIZE_CI_FILES }}/install-consumer-dependencies.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/install-consumer-dependencies.sh"
       - name: Build the actual source native image
         run: vp run --filter @vizejs/native build:ci
       - name: Seal native image and source identity
         run: node npm/native/scripts/native-build-receipt.mjs
       - name: Check authored positions and existing Rspack behavior
-        run: . "${{ env.VIZE_CI_FILES }}/check-authored-positions-and-existing-rspack-behavior.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/check-authored-positions-and-existing-rspack-behavior.sh"
       - name: Build both public adapters with bundled shared code
-        run: . "${{ env.VIZE_CI_FILES }}/build-both-public-adapters-with-bundled-shared-code.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/build-both-public-adapters-with-bundled-shared-code.sh"
       - name: Prepare the actual browser
         working-directory: npm/builder/turbopack
         run: vp exec playwright install --with-deps chromium

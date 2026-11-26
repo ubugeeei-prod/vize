@@ -1,0 +1,5 @@
+# Build the public Rspack and Turbopack adapters, each bundling the shared builder code.
+use $bin::{vp}
+
+vp run --filter @vizejs/rspack-plugin build
+vp run --filter @vizejs/turbopack-plugin build
