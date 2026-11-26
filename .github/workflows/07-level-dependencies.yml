@@ -29,7 +29,7 @@ jobs:
       - name: Fetch dependency policy comparison base
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
-        run: . "${{ env.VIZE_CI_FILES }}/fetch-dependency-policy-comparison-base.sh"
+        run: sh "${{ env.VIZE_CI_FILES }}/compiled/fetch-dependency-policy-comparison-base.sh"
       - name: Test dependency policy mutations
         run: node --test tests/tooling/davinci-level-dependencies.test.mjs tests/tooling/davinci-directory-dependencies.test.ts
       - name: Report and ratchet normal level dependencies

@@ -1,0 +1,17 @@
+# Fetch the commit the dependency policy compares against, the event's base or else HEAD's parent, and export it.
+mod "../../../lib/github.ush" as github
+use $bin::{git}
+use std::env::get
+use std::regex::is_match
+
+let requested = get BASE_SHA
+let dependency_base = match requested {
+  "" => git rev-parse HEAD^
+  sha => sha
+}
+# A push that creates a branch reports an all-zero `before`.
+if !(is_match $dependency_base "^[0-9a-f]{40}$") || is_match $dependency_base "^0+$" {
+  fail 1 "Missing dependency policy comparison base"
+}
+git fetch --no-tags --depth=1 origin $dependency_base
+github::export_env DEPENDENCY_BASE $dependency_base
